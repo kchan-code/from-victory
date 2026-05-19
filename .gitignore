@@ -34,3 +34,6 @@ next-env.d.ts
 # Supabase
 supabase/.branches
 supabase/.temp
+
+# CI artifacts (kids-privacy-officer staging dir — diff + review output)
+.pr-review/

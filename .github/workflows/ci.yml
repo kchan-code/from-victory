@@ -64,16 +64,17 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          git diff origin/main...HEAD > /tmp/pr.diff
-          claude -p "Use the kids-privacy-officer subagent to review the diff at /tmp/pr.diff against the rules in CLAUDE.md and .claude/agents/kids-privacy-officer.md. Output the structured PR comment per your instructions, ending with the exact VERDICT line." \
-            --output-format text > /tmp/review.txt
-          cat /tmp/review.txt
+          mkdir -p .pr-review
+          git diff origin/main...HEAD > .pr-review/pr.diff
+          claude -p "Use the kids-privacy-officer subagent to review the diff at .pr-review/pr.diff against the rules in CLAUDE.md and .claude/agents/kids-privacy-officer.md. Output the structured PR comment per your instructions. The very last line of your output must be the VERDICT line on its own line (for example 'VERDICT: PASSED' or 'VERDICT: BLOCKED') with no markdown, prose, code fences, or trailing content after it." \
+            --output-format text > .pr-review/review.txt
+          cat .pr-review/review.txt
       - name: Post review to PR
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const body = fs.readFileSync('/tmp/review.txt', 'utf8');
+            const body = fs.readFileSync('.pr-review/review.txt', 'utf8');
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -82,7 +83,7 @@ jobs:
             });
       - name: Fail on BLOCKED verdict
         run: |
-          if grep -q "VERDICT: BLOCKED" /tmp/review.txt; then
+          if tail -5 .pr-review/review.txt | grep -q "^VERDICT: BLOCKED$"; then
             echo "Kids-privacy-officer blocked this PR. See review comment."
             exit 1
           fi
