@@ -30,6 +30,10 @@ The full brand identity is at `docs/brand.md`. Every agent that works on
 content, copy, voice, UI, or visual identity reads it. The PDF source
 lives at `docs/From_Victory_Comprehensive_Design_Document.pdf`.
 
+The visual design system (SVG logos, CSS tokens, preview cards, mobile
+UI kit) is at `docs/Claude Design System/`. Invoke via the
+`/from-victory-design` skill for in-session design help.
+
 ## Founder Context
 KC (GitHub: kchan-code). Hockey dad. Building this to a working state,
 then recruiting a credible chaplain or sports psychologist advisor.
@@ -240,8 +244,9 @@ docs/brand.md "Voice Modes" for the full table. Default mode is Mentor.
 - USPTO trademark search (pending)
 - Clinical advisor for safety-keyword vocabulary (pending recruit)
 - Stripe price IDs (set on first Stripe project setup)
-- Logo SVG vectors (designer producing from PDF spec)
-- Brand font licenses (using Inter as placeholder until decided)
+- Brand font licenses (design system pins Big Shoulders Display / Sora /
+  Manrope / Source Serif 4 / JetBrains Mono as Google Fonts stand-ins —
+  swap for licensed brand fonts when chosen)
 - 18+ athlete fork (self-onboard, self-pay) — design later, post-MVP.
 
 ## Code Conventions

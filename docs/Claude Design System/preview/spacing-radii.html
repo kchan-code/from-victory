@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Spacing & Radii</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--bg);padding:24px;color:var(--fg);}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:32px;}
+  .col{display:flex;flex-direction:column;gap:10px;}
+  .label{font-family:var(--font-mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--fg-3);margin-bottom:6px;}
+  .sp-row{display:flex;align-items:center;gap:14px;}
+  .sp-bar{height:10px;background:var(--fv-gold);border-radius:2px;}
+  .sp-name{font-family:var(--font-mono);font-size:11px;color:var(--fg-2);min-width:80px;}
+  .r-row{display:flex;align-items:center;gap:14px;}
+  .r-tile{height:40px;width:80px;background:var(--bg-elev-2);border:1px solid var(--border);}
+  .r-name{font-family:var(--font-mono);font-size:11px;color:var(--fg-2);}
+</style>
+</head>
+<body>
+  <div class="split">
+    <div class="col">
+      <div class="label">Spacing · 8pt grid + 4 micro</div>
+      <div class="sp-row"><span class="sp-name">--s-1 · 4</span><span class="sp-bar" style="width:4px;"></span></div>
+      <div class="sp-row"><span class="sp-name">--s-2 · 8</span><span class="sp-bar" style="width:8px;"></span></div>
+      <div class="sp-row"><span class="sp-name">--s-3 · 12</span><span class="sp-bar" style="width:12px;"></span></div>
+      <div class="sp-row"><span class="sp-name">--s-4 · 16</span><span class="sp-bar" style="width:16px;"></span></div>
+      <div class="sp-row"><span class="sp-name">--s-5 · 20</span><span class="sp-bar" style="width:20px;"></span></div>
+      <div class="sp-row"><span class="sp-name">--s-6 · 24</span><span class="sp-bar" style="width:24px;"></span></div>
+      <div class="sp-row"><span class="sp-name">--s-7 · 32</span><span class="sp-bar" style="width:32px;"></span></div>
+      <div class="sp-row"><span class="sp-name">--s-8 · 40</span><span class="sp-bar" style="width:40px;"></span></div>
+      <div class="sp-row"><span class="sp-name">--s-9 · 56</span><span class="sp-bar" style="width:56px;"></span></div>
+      <div class="sp-row"><span class="sp-name">--s-10 · 72</span><span class="sp-bar" style="width:72px;"></span></div>
+    </div>
+    <div class="col">
+      <div class="label">Radii</div>
+      <div class="r-row"><div class="r-tile" style="border-radius:4px;"></div><span class="r-name">--r-xs · 4</span></div>
+      <div class="r-row"><div class="r-tile" style="border-radius:8px;"></div><span class="r-name">--r-sm · 8 · chips</span></div>
+      <div class="r-row"><div class="r-tile" style="border-radius:14px;"></div><span class="r-name">--r-md · 14 · cards</span></div>
+      <div class="r-row"><div class="r-tile" style="border-radius:20px;"></div><span class="r-name">--r-lg · 20 · prayer</span></div>
+      <div class="r-row"><div class="r-tile" style="border-radius:28px;"></div><span class="r-name">--r-xl · 28 · sheets</span></div>
+      <div class="r-row"><div class="r-tile" style="border-radius:999px;width:120px;"></div><span class="r-name">--r-pill</span></div>
+    </div>
+  </div>
+</body>
+</html>

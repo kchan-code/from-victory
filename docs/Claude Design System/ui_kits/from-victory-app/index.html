@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>From Victory — UI Kit</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  html, body {
+    margin: 0; padding: 0; background: #0a0a0a; min-height: 100vh;
+    font-family: 'Manrope', system-ui, sans-serif;
+  }
+  body {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 40px 24px 60px; box-sizing: border-box;
+    background:
+      radial-gradient(60% 40% at 50% 0%, rgba(223,175,55,0.06), transparent 70%),
+      radial-gradient(60% 40% at 50% 100%, rgba(36,91,255,0.05), transparent 70%),
+      #0a0a0a;
+  }
+  .hero {
+    text-align: center; max-width: 640px; margin-bottom: 32px;
+  }
+  .hero .eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: #DFAF37; margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: 'Big Shoulders Display', sans-serif; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.04em; font-size: 44px;
+    margin: 0; color: #F7F7F7; line-height: 1;
+  }
+  .hero p {
+    font-family: 'Manrope', sans-serif; font-size: 14px; color: rgba(247,247,247,0.6);
+    margin-top: 14px; text-wrap: pretty;
+  }
+  .device-wrap {
+    transform: scale(0.92); transform-origin: top center;
+  }
+  @media (min-width: 980px) {
+    .device-wrap { transform: scale(1); }
+  }
+  .device-shadow {
+    box-shadow: 0 60px 120px -40px rgba(0,0,0,0.9), 0 20px 60px -20px rgba(0,0,0,0.8);
+    border-radius: 56px;
+  }
+  .footer {
+    margin-top: 28px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.18em; text-transform: uppercase; color: rgba(247,247,247,0.35);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="eyebrow">From Victory · UI Kit</div>
+    <img src="../../assets/logo-stacked.svg" alt="From Victory" style="height:120px;margin:8px auto 6px;display:block;">
+    <p>Tap a tab to explore the app. Today shows the daily rhythm card and modules; Train walks through the path; Word opens the devotional; Journal lets you draft a private entry; You shows the profile. The pre-game reset (a Coach-mode breath surface) is reachable from the Today hero.</p>
+  </div>
+
+  <div class="device-wrap">
+    <div id="app" class="device-shadow"></div>
+  </div>
+
+  <div class="footer">Dark-mode-first · 402×874 device frame · Live React prototype</div>
+
+  <!-- React + Babel -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <!-- iOS frame + UI pieces -->
+  <script type="text/babel" src="ios-frame.jsx"></script>
+  <script type="text/babel" src="Icon.jsx"></script>
+  <script type="text/babel" src="Components.jsx"></script>
+  <script type="text/babel" src="AppShell.jsx"></script>
+  <script type="text/babel" src="TodayScreen.jsx"></script>
+  <script type="text/babel" src="DevotionalScreen.jsx"></script>
+  <script type="text/babel" src="PregameScreen.jsx"></script>
+  <script type="text/babel" src="JournalScreen.jsx"></script>
+  <script type="text/babel" src="ProfileScreen.jsx"></script>
+  <script type="text/babel" src="App.jsx"></script>
+
+  <script type="text/babel">
+    const root = ReactDOM.createRoot(document.getElementById('app'));
+    function Mount() {
+      return (
+        <IOSDevice width={402} height={874} dark>
+          <FromVictoryApp/>
+        </IOSDevice>
+      );
+    }
+    root.render(<Mount/>);
+  </script>
+</body>
+</html>

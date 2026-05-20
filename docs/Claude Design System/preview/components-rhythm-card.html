@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rhythm Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--bg);padding:24px;color:var(--fg);}
+  .card{background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;display:flex;align-items:center;gap:22px;max-width:620px;}
+  .ring{position:relative;width:96px;height:96px;flex:none;}
+  .ring svg{transform:rotate(-90deg);}
+  .ring-track{stroke:rgba(247,247,247,0.06);}
+  .ring-fill{stroke:var(--fv-cobalt);stroke-linecap:round;}
+  .ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--fg);}
+  .body{display:flex;flex-direction:column;gap:6px;flex:1;}
+  .eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--fg-3);}
+  .title{font-family:var(--font-heading);font-weight:600;font-size:20px;}
+  .sub{font-family:var(--font-body);font-size:14px;color:var(--fg-2);}
+  .cta{font-family:var(--font-heading);font-weight:600;font-size:14px;color:var(--fv-gold);}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="ring">
+      <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+        <circle cx="48" cy="48" r="42" stroke-width="8" class="ring-track" fill="none"/>
+        <circle cx="48" cy="48" r="42" stroke-width="8" class="ring-fill" fill="none"
+                stroke-dasharray="263.9" stroke-dashoffset="79"/>
+      </svg>
+      <div class="ring-pct">70<span style="font-size:13px;opacity:.7;">%</span></div>
+    </div>
+    <div class="body">
+      <span class="eyebrow">Today's rhythm</span>
+      <span class="title">Two reps left — devotional + journal</span>
+      <span class="sub">~5 minutes. Pick up where you are today.</span>
+    </div>
+    <span class="cta">Continue →</span>
+  </div>
+</body>
+</html>

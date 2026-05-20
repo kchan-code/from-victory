@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Inputs</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--bg);padding:24px;color:var(--fg);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 24px;}
+  .group{display:flex;flex-direction:column;gap:8px;}
+  .lab{font-family:var(--font-mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--fg-3);}
+  input,textarea{font-family:var(--font-body);font-size:15px;color:var(--fg);background:var(--bg-elev-3);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 16px;width:100%;box-sizing:border-box;outline:none;}
+  input::placeholder,textarea::placeholder{color:var(--fg-3);}
+  .focus{border-color:var(--fv-cobalt);box-shadow:0 0 0 3px rgba(36,91,255,0.25);}
+  .toggle{display:inline-flex;align-items:center;gap:12px;}
+  .switch{width:46px;height:26px;border-radius:999px;background:var(--bg-elev-3);position:relative;border:1px solid var(--border);}
+  .switch.on{background:var(--fv-cobalt);border-color:var(--fv-cobalt);}
+  .knob{width:20px;height:20px;border-radius:50%;background:var(--fv-white);position:absolute;top:2px;left:2px;transition:left 180ms var(--ease-out);}
+  .switch.on .knob{left:22px;}
+  .seg{display:flex;background:var(--bg-elev-2);border:1px solid var(--border);border-radius:var(--r-pill);padding:4px;width:fit-content;}
+  .seg button{font-family:var(--font-heading);font-weight:600;font-size:13px;background:transparent;color:var(--fg-2);border:0;padding:8px 16px;border-radius:999px;cursor:pointer;}
+  .seg button.on{background:var(--fv-gold);color:#050505;}
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="group">
+      <span class="lab">Text · default</span>
+      <input placeholder="What's on your mind?">
+    </div>
+    <div class="group">
+      <span class="lab">Text · focus</span>
+      <input class="focus" value="Felt nervous before warm-ups.">
+    </div>
+    <div class="group" style="grid-column:1/-1;">
+      <span class="lab">Journal · multiline</span>
+      <textarea rows="3" placeholder="Your journal is yours. Write when you have something."></textarea>
+    </div>
+    <div class="group">
+      <span class="lab">Toggle</span>
+      <div class="toggle"><div class="switch on"><div class="knob"></div></div><span style="font-family:var(--font-body);font-size:14px;">Evening reminder</span></div>
+    </div>
+    <div class="group">
+      <span class="lab">Segmented</span>
+      <div class="seg"><button class="on">Today</button><button>Week</button><button>Season</button></div>
+    </div>
+  </div>
+</body>
+</html>
