@@ -235,8 +235,6 @@ docs/brand.md "Voice Modes" for the full table. Default mode is Mentor.
 - Stripe price IDs (set on first Stripe project setup)
 - Logo SVG vectors (designer producing from PDF spec)
 - Brand font licenses (using Inter as placeholder until decided)
-- kids-privacy-officer.md still encodes COPPA-under-13 logic that no longer
-  applies (13+ floor). Needs a revision pass in a small follow-up PR.
 - 18+ athlete fork (self-onboard, self-pay) — design later, post-MVP.
 
 ## Code Conventions
