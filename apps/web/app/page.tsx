@@ -4,7 +4,7 @@ export default function Page() {
       <h1 className="text-5xl font-semibold tracking-tight sm:text-6xl">
         From Victory
       </h1>
-      <p className="mt-6 max-w-xl text-lg text-slate-600 sm:text-xl">
+      <p className="mt-6 max-w-xl text-lg text-silver sm:text-xl">
         From Christ&apos;s victory, we compete freely.
       </p>
     </main>
