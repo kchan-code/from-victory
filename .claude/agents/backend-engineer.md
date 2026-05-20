@@ -142,6 +142,13 @@ create table streaks (
   updated_at timestamptz not null default now()
 );
 
+-- streaks: per athlete. Internal data model still tracks current_streak
+-- and longest_streak — useful for analytics, content unlock logic, and
+-- internal product decisions. However, the user-facing concept is
+-- ALWAYS "rhythm," never "streak." Frontend renders this as a rhythm
+-- visualization. Copy never says "streak broken" or shames missed days.
+-- See docs/brand.md "Gamification Principle" and CLAUDE.md "Gamification."
+
 -- safety_events: log of detection events, NEVER content
 create table safety_events (
   id uuid primary key default gen_random_uuid(),
