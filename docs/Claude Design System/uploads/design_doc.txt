@@ -1,0 +1,1111 @@
+
+
+
+
+
+FROM VICTORY
+
+
+
+Comprehensive Logo + Brand Identity Design Document
+
+
+
+Faith-based Christian athlete mental toughness, daily discipline, mindset training, and reflection app
+
+
+
+
+
+
+
+
+
+Locked preferred logo direction: open-book V, centered flame, cross-T wordmark.
+
+
+
+Prepared for creative refinement and vector execution
+
+
+
+
+
+
+
+
+Contents
+
+
+
+
+
+1. Executive Summary
+
+
+
+
+
+2. Brand Strategy Foundation
+
+
+
+
+
+3. Locked Logo Direction
+
+
+
+
+
+4. Symbol System and Meaning
+
+
+
+
+
+5. Logo Architecture
+
+
+
+
+
+6. Visual Refinement Requirements
+
+
+
+
+
+7. Color System
+
+
+
+
+
+8. Typography Direction
+
+
+
+
+
+9. Usage Rules
+
+
+
+
+
+10. Brand Voice Guardrails
+
+
+
+
+
+11. Product Design Implications
+
+
+
+
+
+12. Designer Production Checklist
+
+
+
+
+
+13. Visual Appendix
+
+
+
+
+
+
+
+
+1. Executive Summary
+
+
+
+
+
+From Victory is a faith-based Christian athlete mindset and mental toughness app. The brand must feel premium, athletic, gender-neutral, and modern while remaining spiritually grounded. The logo should not look like a generic ministry logo, a youth group emblem, or a Bible app clone. It should feel like a serious performance brand with biblical depth underneath.
+
+
+
+
+
+The locked logo direction is an open-book V with a centered rising flame, paired with a wordmark where the T in VICTORY becomes a subtle cross. This gives the app icon a clean, performance-oriented feel while allowing the full logo to reveal the Christ-centered foundation.
+
+
+
+
+
+Core mark: Open-book V + centered flame.
+
+
+
+
+
+Full wordmark: FROM VICTORY with the T as a subtle cross.
+
+
+
+
+
+Core idea: Athletes compete from the victory already won in Christ, not to earn identity or salvation.
+
+
+
+
+
+Internal design anchor: Rooted in the Word. Fueled by the Spirit. Built for Victory.
+
+
+
+
+
+Public tagline: Your Identity Is Secure. Compete From Victory.
+
+
+
+
+
+2. Brand Strategy Foundation
+
+
+
+
+
+Audience
+
+
+
+
+
+The initial audience is youth athletes, followed by college athletes and parents/coaches as buyers and supporters. Hockey is the beachhead because it is the founding context, but the brand must work across all sports.
+
+
+
+
+
+Brand Personality
+
+
+
+
+
+The brand should blend the energy of a bold warrior, the steadiness of a calm champion, and the polish of a modern performance app. It should be disciplined and confident without being harsh, shame-based, or overly aggressive.
+
+
+
+
+
+Product Positioning
+
+
+
+
+
+From Victory is first a mental toughness training app with faith built in. It is not primarily a devotional app with sports language added. Daily discipline is the method. Mental toughness, confidence, and resilience are the outcomes. Secure identity in Christ is the foundation.
+
+
+
+
+
+Brand Model
+
+Foundation
+
+Secure identity in Christ
+
+Training Method
+
+Daily discipline
+
+Outcomes
+
+Mental toughness, confidence, resilience
+
+Product Experience
+
+Flexible modules that mature into progressive training plans
+
+
+
+
+
+3. Locked Logo Direction
+
+
+
+
+
+The preferred direction is the Open-Book V + Centered Flame + Cross-T Wordmark. The icon should be strong enough to stand alone as an app icon, social avatar, hoodie mark, hat embroidery, helmet sticker, and workbook/journal cover symbol.
+
+
+
+
+
+
+
+
+
+Primary preferred direction selected by the team.
+
+
+
+
+
+Creative Direction Statement
+
+
+
+
+
+Create a flat, premium logo for From Victory using a wide V that also subtly reads as an open book. Place a centered flame rising from the middle of the book/V form. Do not include a cross inside the icon. Instead, replace the T in VICTORY with a subtle cross in the full wordmark. The final system should feel athletic, app-ready, gender-neutral, and spiritually grounded.
+
+
+
+
+
+4. Symbol System and Meaning
+
+
+
+
+
+The V
+
+
+
+
+
+The V represents victory. It should feel wide, stable, athletic, and confident. The V should not be tall, narrow, sharp in a medieval way, or overly aggressive.
+
+
+
+
+
+The Open Book
+
+
+
+
+
+The V also subtly suggests an open book, pointing to the Word of God as the foundation of the athlete’s identity, discipline, and mental toughness. The book meaning should be clear when explained, but not so literal that the app icon becomes a Bible-app icon.
+
+
+
+
+
+The Flame
+
+
+
+
+
+The flame represents the Holy Spirit, spiritual conviction, inner fire, focus, courage, and disciplined daily training. The flame should rise from the center of the open-book V, reinforcing the idea that the athlete’s growth flows from being rooted in the Word and fueled by the Spirit.
+
+
+
+
+
+The Cross-T
+
+
+
+
+
+The cross belongs in the wordmark, not the standalone icon. The T in VICTORY should become a subtle cross. It should read as a T first and a cross second. This keeps the app icon premium and subtle while allowing the full logo to be clearly Christ-centered.
+
+
+
+
+
+5. Logo Architecture
+
+
+
+
+
+Primary stacked lockup: Icon above FROM / VICTORY. Best for splash screens, hero sections, covers, and app onboarding.
+
+
+
+
+
+Horizontal lockup: Icon left, wordmark right. Best for website navigation, app headers, decks, and email signatures.
+
+
+
+
+
+Icon-only mark: Open-book V + centered flame. Best for app icon, social profile, stickers, apparel, and favicon.
+
+
+
+
+
+Wordmark-only version: FROM VICTORY with the cross-T. Best for narrow layouts and secondary applications.
+
+
+
+
+
+
+
+
+
+Logo architecture and meaning shown in context.
+
+
+
+
+
+6. Visual Refinement Requirements
+
+
+
+
+
+Icon Refinement
+
+
+
+
+
+Preserve the open-book V shape from the locked direction.
+
+
+
+
+
+Keep the flame centered and rising from the book/V intersection.
+
+
+
+
+
+Use subtle page-line details in the primary mark, but create a simplified small-size version without relying on those lines.
+
+
+
+
+
+Keep the official icon flat and clean.
+
+
+
+
+
+Do not place the cross in the icon.
+
+
+
+
+
+Flame Refinement
+
+
+
+
+
+The flame should be smooth, premium, and not overly literal.
+
+
+
+
+
+It should not feel like a campfire, torch, generic sports flame, or cartoon flame.
+
+
+
+
+
+It should feel Spirit-fueled, disciplined, and upward-moving.
+
+
+
+
+
+The flame should not be so tall that it dominates the V/book shape.
+
+
+
+
+
+Wordmark Refinement
+
+
+
+
+
+VICTORY should be dominant.
+
+
+
+
+
+FROM should be smaller, spaced, and positioned above VICTORY in the stacked lockup.
+
+
+
+
+
+The cross-T should be integrated into the typography and not feel pasted on.
+
+
+
+
+
+Avoid esports-heavy, overly beveled, or overly aggressive letterforms.
+
+
+
+
+
+The final wordmark should feel athletic, premium, and app-appropriate.
+
+
+
+
+
+7. Color System
+
+
+
+
+
+The signature treatment is warm athletic gold on near-black, supported by white and silver-white wordmark treatments. The official logo should remain flat. Gradients and metallic effects can be used in marketing, splash screens, or mockups, but not as the core logo file.
+
+Color
+
+Role
+
+Hex
+
+Swatch
+
+Onyx Black
+
+Primary background
+
+#050505
+
+
+
+Deep Charcoal
+
+Secondary background
+
+#101010
+
+
+
+Warm Athletic Gold
+
+Primary logo/accent
+
+#DFAF37
+
+
+
+Bright Gold Highlight
+
+Digital highlight only
+
+#F4C24F
+
+
+
+Clean White
+
+Wordmark/high contrast
+
+#F7F7F7
+
+
+
+Silver White
+
+Secondary wordmark tone
+
+#D9DCE1
+
+
+
+Electric Cobalt
+
+UI progress/accent, not primary logo
+
+#245BFF
+
+
+
+Deep Royal Navy
+
+Depth/background option
+
+#071A33
+
+
+
+Deep Purple
+
+Faith-forward depth option
+
+#24113F
+
+
+
+
+
+
+
+Logo Color Rules
+
+
+
+
+
+Signature: gold icon on black background.
+
+
+
+
+
+Secondary: white mark on black.
+
+
+
+
+
+Light mode: black or near-black mark on white.
+
+
+
+
+
+App icon: black/gold or gold/black preferred.
+
+
+
+
+
+Avoid low-contrast gold on light backgrounds.
+
+
+
+
+
+Avoid cobalt blue in the primary logo; reserve cobalt for app UI progress, interaction, and performance accents.
+
+
+
+
+
+8. Typography Direction
+
+
+
+
+
+The typographic system should combine athletic confidence with app-brand refinement. The logo wordmark can use a custom athletic sans, but the app UI and brand documents should use cleaner modern sans-serif typography for readability.
+
+Use Case
+
+Style
+
+Guidance
+
+Logo wordmark
+
+Athletic premium sans
+
+Strong uppercase, slightly forward-moving, not esports-heavy.
+
+App headings
+
+Modern geometric sans
+
+Clean, confident, high contrast.
+
+Body/UI text
+
+Readable humanist or modern sans
+
+Calm, accessible, and comfortable for journaling and Scripture reading.
+
+Scripture callouts
+
+Modern sans or restrained serif accent
+
+Elevated but not decorative or old-fashioned.
+
+
+
+
+
+9. Usage Rules
+
+
+
+
+
+Do
+
+
+
+
+
+Keep the mark clean and scalable.
+
+
+
+
+
+Use the icon by itself for app, social, favicon, apparel, and stickers.
+
+
+
+
+
+Use the cross-T only in the full wordmark.
+
+
+
+
+
+Create both detailed and small-size simplified icon versions.
+
+
+
+
+
+Maintain generous clear space around the mark.
+
+
+
+
+
+Use flat official logo files for production.
+
+
+
+
+
+Don’t
+
+
+
+
+
+Do not place a cross inside the standalone icon.
+
+
+
+
+
+Do not add shields, crowns, athlete silhouettes, hockey sticks, pucks, helmets, or sport-specific imagery.
+
+
+
+
+
+Do not make the icon overly churchy or generic ministry-like.
+
+
+
+
+
+Do not use metallic 3D effects as the official logo.
+
+
+
+
+
+Do not distort, stretch, rotate, outline, or add glow effects to the official mark.
+
+
+
+
+
+Do not let page-line details become so thin that they disappear or clog at small sizes.
+
+
+
+
+
+10. Brand Voice Guardrails
+
+
+
+
+
+Although the first brand kit is primarily visual, the logo system should align with the product’s voice. The public-facing brand should lead with performance and mental toughness while revealing the biblical foundation through product experience, Scripture, and deeper messaging.
+
+
+
+
+
+Core voice: Mentor — steady, wise, encouraging.
+
+
+
+
+
+Action moments: Coach — direct, focused, disciplined.
+
+
+
+
+
+Reflection moments: Devotional guide — biblical, honest, formative.
+
+
+
+
+
+Encouragement moments: Teammate — supportive, simple, no shame.
+
+
+
+
+
+Words to Use
+
+
+
+
+
+Rhythm
+
+
+
+
+
+Discipline
+
+
+
+
+
+Reset
+
+
+
+
+
+Return
+
+
+
+
+
+Identity
+
+
+
+
+
+Confidence
+
+
+
+
+
+Resilience
+
+
+
+
+
+Focus
+
+
+
+
+
+Growth
+
+
+
+
+
+Training
+
+
+
+
+
+From Victory
+
+
+
+
+
+Words to Avoid
+
+
+
+
+
+Spiritual score
+
+
+
+
+
+Faith rank
+
+
+
+
+
+God points
+
+
+
+
+
+Worth score
+
+
+
+
+
+Better Christian level
+
+
+
+
+
+Streak broken
+
+
+
+
+
+Failure language tied to missed days
+
+
+
+
+
+11. Product Design Implications
+
+
+
+
+
+The logo and brand system should support a dark-mode-first app experience. The product should feel like a daily training environment for the mind and spirit, not a static devotional reader.
+
+
+
+
+
+Daily habit model: Flexible modules first, later developing into progressive training plans.
+
+
+
+
+
+No shame-based gamification: Use rhythm, not streak punishment.
+
+
+
+
+
+Sport-adaptive structure: Core brand remains sport-neutral while hockey is the first content path.
+
+
+
+
+
+Faith comfort level: The experience may flex in explicitness, but it should remain grounded in Scripture.
+
+
+
+
+
+Gamification principle: Reward participation and return, never identity or spiritual worth.
+
+
+
+
+
+12. Designer Production Checklist
+
+
+
+
+
+The designer should recreate the locked direction as clean vector artwork. The AI-generated visuals should be treated as conceptual mockups, not production-ready assets.
+
+
+
+
+
+Primary stacked logo
+
+
+
+
+
+Horizontal logo
+
+
+
+
+
+Icon-only mark
+
+
+
+
+
+Wordmark-only version
+
+
+
+
+
+App icon version
+
+
+
+
+
+Small-size simplified icon
+
+
+
+
+
+One-color black version
+
+
+
+
+
+One-color white version
+
+
+
+
+
+Gold-on-black signature version
+
+
+
+
+
+Black-on-white light version
+
+
+
+
+
+Clear-space rules
+
+
+
+
+
+Minimum-size rules
+
+
+
+
+
+Color palette with hex codes
+
+
+
+
+
+Typography recommendations
+
+
+
+
+
+SVG, PDF, PNG, and editable vector source files
+
+
+
+
+
+13. Visual Appendix
+
+
+
+
+
+The images below document the selected direction and key iterations. The final vector designer should use the locked preferred version as the main reference and the alternate visuals only as context.
+
+
+
+
+
+A. Original V-Flame Exploration
+
+
+
+
+
+
+
+
+
+Initial V-flame direction that established the athletic/spiritual symbol family.
+
+
+
+
+
+B. Cross-T Wordmark Architecture
+
+
+
+
+
+
+
+
+
+Refinement showing the cross removed from the icon and placed into the T in VICTORY.
+
+
+
+
+
+C. Open-Book V Direction
+
+
+
+
+
+
+
+
+
+Open-book V and centered flame direction with cross-T wordmark.
+
+
+
+
+
+D. Small-Size Simplification Context
+
+
+
+
+
+
+
+
+
+Exploration without page lines, useful as reference for small-size simplification.
+
+
+

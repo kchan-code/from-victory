@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Buttons</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--bg);padding:24px;color:var(--fg);}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:center;}
+  .group{display:flex;flex-direction:column;gap:10px;}
+  .lab{font-family:var(--font-mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--fg-3);}
+  .btn{font-family:var(--font-heading);font-weight:600;font-size:15px;padding:14px 22px;border-radius:var(--r-pill);border:1px solid transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:all 140ms var(--ease-out);width:fit-content;}
+  .btn.primary{background:var(--fv-gold);color:#050505;border-color:var(--fv-gold);}
+  .btn.primary.hover{background:var(--fv-gold-bright);box-shadow:0 12px 30px -10px rgba(244,194,79,0.5);}
+  .btn.primary.press{background:var(--fv-gold-deep);transform:scale(0.97);}
+  .btn.secondary{background:transparent;color:var(--fg);border-color:var(--border-strong);}
+  .btn.ghost{background:transparent;color:var(--fg-2);border-color:transparent;padding-left:0;padding-right:0;}
+  .btn.coach{background:var(--fv-onyx);color:#F7F7F7;border:1px solid var(--fv-gold);font-family:var(--font-display);font-weight:800;text-transform:uppercase;letter-spacing:0.14em;font-size:14px;padding:16px 26px;border-radius:8px;}
+  .btn.danger{background:transparent;color:var(--fv-danger);border-color:rgba(229,86,76,0.4);}
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="group"><span class="lab">Primary · default</span><button class="btn primary">Start today's rhythm</button></div>
+    <div class="group"><span class="lab">Primary · hover</span><button class="btn primary hover">Start today's rhythm</button></div>
+    <div class="group"><span class="lab">Primary · press</span><button class="btn primary press">Start today's rhythm</button></div>
+    <div class="group"><span class="lab">Secondary</span><button class="btn secondary">Skip for now</button></div>
+    <div class="group"><span class="lab">Ghost</span><button class="btn ghost">Read full passage →</button></div>
+    <div class="group"><span class="lab">Coach (game day)</span><button class="btn coach">PRE-GAME RESET</button></div>
+  </div>
+</body>
+</html>

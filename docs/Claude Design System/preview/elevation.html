@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Elevation & Borders</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--bg);padding:24px;color:var(--fg);}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .surf{height:140px;border-radius:var(--r-md);padding:16px;display:flex;flex-direction:column;justify-content:space-between;}
+  .lab{font-family:var(--font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--fg-3);}
+  .nm{font-family:var(--font-heading);font-weight:600;font-size:14px;color:var(--fg);}
+  .s0{background:var(--bg-elev-1);border:1px solid var(--border);}
+  .s1{background:var(--bg-elev-2);border:1px solid var(--border);}
+  .s2{background:var(--bg-elev-3);border:1px solid var(--border);box-shadow:var(--shadow-2);}
+  .glow{background:var(--bg-elev-1);border:1px solid rgba(223,175,55,0.4);box-shadow:var(--shadow-glow-gold);}
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="surf s0"><span class="lab">elev-1 · hairline</span><span class="nm">Card default</span></div>
+    <div class="surf s1"><span class="lab">elev-2 · hairline</span><span class="nm">Hover / input</span></div>
+    <div class="surf s2"><span class="lab">elev-3 · shadow-2</span><span class="nm">Floating sheet</span></div>
+    <div class="surf glow"><span class="lab">gold glow</span><span class="nm">Primary CTA focus</span></div>
+  </div>
+</body>
+</html>

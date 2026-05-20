@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Type — Display</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--bg);padding:28px;}
+  .group{display:flex;flex-direction:column;gap:18px;}
+  .row{display:flex;align-items:baseline;gap:18px;border-bottom:1px solid var(--border);padding-bottom:14px;}
+  .row:last-child{border:0;padding:0;}
+  .meta{font-family:var(--font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--fg-3);min-width:130px;}
+</style>
+</head>
+<body>
+  <div class="group">
+    <div class="row">
+      <span class="meta">Display XL · 64</span>
+      <span class="fv-display fv-display-xl" style="color:var(--fv-gold);">FROM VICTORY</span>
+    </div>
+    <div class="row">
+      <span class="meta">Display · 48</span>
+      <span class="fv-display fv-display">PRE-GAME RESET</span>
+    </div>
+    <div class="row">
+      <span class="meta">Eyebrow · 11 / +18%</span>
+      <span class="fv-eyebrow">Today's rhythm</span>
+    </div>
+  </div>
+</body>
+</html>
