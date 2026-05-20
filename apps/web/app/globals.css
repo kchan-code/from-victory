@@ -105,12 +105,14 @@
   --d-prayer: 720ms;
 
   /* ---- FONT FAMILIES ------------------------------------ */
-  /* Web font loading is deferred. System fallbacks hold for now. */
-  --font-display:   'Big Shoulders Display', 'Saira Condensed', Impact, sans-serif;
-  --font-heading:   'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-body:      'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-scripture: 'Source Serif 4', Georgia, serif;
-  --font-mono:      'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  /* Fonts self-hosted via next/font/google (see app/layout.tsx).
+     Each --font-<family> variable is injected as a class on <html>.
+     System-stack fallbacks remain in case a web font fails to load. */
+  --font-display:   var(--font-big-shoulders),   'Saira Condensed', Impact, sans-serif;
+  --font-heading:   var(--font-sora),            system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body:      var(--font-manrope),         system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-scripture: var(--font-source-serif),    Georgia, serif;
+  --font-mono:      var(--font-jetbrains-mono),  ui-monospace, SFMono-Regular, monospace;
 
   /* ---- TYPE SCALE (px @ 16 root) ------------------------ */
   --t-display-xl:  64px;
