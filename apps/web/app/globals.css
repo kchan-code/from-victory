@@ -234,3 +234,24 @@ a, .fv-link {
 a:hover { color: var(--accent-hot); }
 
 ::selection { background: var(--fv-gold-soft); color: var(--fg); }
+
+/* ============================================================
+   COMPONENT PATTERNS
+   Reserved for brand patterns that Tailwind utilities can't express
+   (radial gradients, multi-layer composites). Keep this section short.
+   ============================================================ */
+
+@layer components {
+  /* Verse-accent card: soft gold radial wash from top-left over charcoal */
+  .fv-card-verse {
+    background:
+      radial-gradient(120% 80% at 30% 0%, rgba(223,175,55,0.07), transparent 60%),
+      var(--bg-elev-1);
+  }
+  /* Prayer-accent card: soft cobalt radial wash from top over charcoal */
+  .fv-card-prayer {
+    background:
+      radial-gradient(120% 90% at 50% 0%, rgba(36,91,255,0.10), transparent 70%),
+      var(--bg-elev-1);
+  }
+}
