@@ -134,8 +134,15 @@ curator integrates into a single training session in one voice.
 1. Never edit `main` directly. Every task starts with `git checkout -b feature/<name>`.
 2. Commit in small logical units. Conventional commits: feat:, fix:, chore:, test:, docs:.
 3. Open a PR for every change. Never merge locally and push. Merge through GitHub UI.
-4. CI must pass before merge. Build, typecheck, tests, kids-privacy-officer review.
+4. CI must pass before merge. Build, typecheck, tests, lint.
 5. Hotfixes get a hotfix/<name> branch, same flow. No exceptions.
+6. Privacy review is manual while pre-MVP. Before merging any PR that
+   touches `apps/web/**`, `supabase/**`, `packages/content/**`,
+   `.claude/agents/**`, `CLAUDE.md`, or `docs/brand.md`, invoke the
+   kids-privacy-officer subagent from a Claude Code session against the
+   PR diff. Findings posted as a PR comment for audit trail.
+   The automated CI gate will return when schema/auth/journal code lands
+   (see `.github/workflows/ci.yml` note for re-enabling reference).
 
 ## MVP Scope (locked — kill scope creep ruthlessly)
 - Parent signup + Stripe subscription ($8.99/mo or $79/yr)
