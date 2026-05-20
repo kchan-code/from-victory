@@ -92,21 +92,50 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Detect privacy-relevant changes
+        id: paths
+        run: |
+          # Privacy review runs when any of these change. Everything else
+          # (design system assets, prototype, marketing copy, READMEs, etc.)
+          # has no privacy surface for the officer to inspect, so we skip
+          # and post a skip notice on the PR.
+          #   apps/web/**           — app code (auth, journal, UI surfacing minor data)
+          #   supabase/**           — schema, RLS, migrations
+          #   packages/content/**   — content + safety-keywords.json
+          #   .claude/agents/**     — agent definitions (incl. kids-privacy-officer)
+          #   CLAUDE.md             — scope and policy authority
+          #   docs/brand.md         — content/voice rules
+          #   .github/workflows/**  — CI policy itself
+          if git diff origin/main...HEAD --name-only \
+              | grep -qE '^(apps/web/|supabase/|packages/content/|\.claude/agents/|CLAUDE\.md$|docs/brand\.md$|\.github/workflows/)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Privacy-relevant paths detected. Running kids-privacy-officer."
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "No privacy-relevant paths in this PR. Skipping kids-privacy-officer."
+          fi
       - uses: actions/setup-node@v4
+        if: steps.paths.outputs.run == 'true'
         with:
           node-version: '20'
       - name: Install Claude Code
+        if: steps.paths.outputs.run == 'true'
         run: npm install -g @anthropic-ai/claude-code
       - name: Run kids-privacy-officer
+        if: steps.paths.outputs.run == 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
+          set -o pipefail
           mkdir -p .pr-review
           git diff origin/main...HEAD > .pr-review/pr.diff
+          # Stream claude output to both logs and review.txt so a failed
+          # invocation is debuggable from CI logs (previously the redirect
+          # silenced all output and we couldn't see what broke).
           claude -p "Use the kids-privacy-officer subagent to review the diff at .pr-review/pr.diff against the rules in CLAUDE.md and .claude/agents/kids-privacy-officer.md. Output the structured PR comment per your instructions. The very last line of your output must be the VERDICT line on its own line (for example 'VERDICT: PASSED' or 'VERDICT: BLOCKED') with no markdown, prose, code fences, or trailing content after it." \
-            --output-format text > .pr-review/review.txt
-          cat .pr-review/review.txt
+            --output-format text 2>&1 | tee .pr-review/review.txt
       - name: Post review to PR
+        if: steps.paths.outputs.run == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -118,7 +147,30 @@ jobs:
               repo: context.repo.repo,
               body: body
             });
+      - name: Post skip notice to PR
+        if: steps.paths.outputs.run == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                '## kids-privacy-officer review',
+                '',
+                '**Skipped** — this PR changes no privacy-relevant paths.',
+                'Path filter is defined in `.github/workflows/ci.yml` and runs',
+                'kids-privacy-officer only when one of these is touched:',
+                '`apps/web/**`, `supabase/**`, `packages/content/**`,',
+                '`.claude/agents/**`, `CLAUDE.md`, `docs/brand.md`,',
+                '`.github/workflows/**`.',
+                '',
+                'VERDICT: SKIPPED'
+              ].join('\n')
+            });
       - name: Fail on BLOCKED verdict
+        if: steps.paths.outputs.run == 'true'
         run: |
           if tail -5 .pr-review/review.txt | grep -q "^VERDICT: BLOCKED$"; then
             echo "Kids-privacy-officer blocked this PR. See review comment."
