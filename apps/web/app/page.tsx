@@ -1,12 +1,36 @@
-export default function Page() {
+import { AppPreview } from "@/components/landing/AppPreview";
+import { Audiences } from "@/components/landing/Audiences";
+import { Faith } from "@/components/landing/Faith";
+import { Footer } from "@/components/landing/Footer";
+import { Framework } from "@/components/landing/Framework";
+import { Hero } from "@/components/landing/Hero";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { LandingIconDefs } from "@/components/landing/icons";
+import { Posture } from "@/components/landing/Posture";
+import { Problem } from "@/components/landing/Problem";
+import { ScrollNav } from "@/components/landing/ScrollNav";
+import { Sports } from "@/components/landing/Sports";
+import { Waitlist } from "@/components/landing/Waitlist";
+import { WhySport } from "@/components/landing/WhySport";
+
+export default function LandingPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
-      <h1 className="text-5xl font-semibold tracking-tight sm:text-6xl">
-        From Victory
-      </h1>
-      <p className="mt-6 max-w-xl text-lg text-silver sm:text-xl">
-        From Christ&apos;s victory, we compete freely.
-      </p>
-    </main>
+    <>
+      <LandingIconDefs />
+      <ScrollNav />
+      <a id="top" />
+      <Hero />
+      <Problem />
+      <WhySport />
+      <Framework />
+      <HowItWorks />
+      <AppPreview />
+      <Posture />
+      <Sports />
+      <Audiences />
+      <Faith />
+      <Waitlist />
+      <Footer />
+    </>
   );
 }

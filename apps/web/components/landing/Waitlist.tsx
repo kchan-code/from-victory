@@ -1,0 +1,78 @@
+import { Reveal } from "./Reveal";
+import { SectionMeta } from "./SectionMeta";
+import { SvgIcon } from "./SvgIcon";
+import { WaitlistForm } from "./WaitlistForm";
+
+const bullets = [
+  {
+    icon: "flame" as const,
+    title: "First in line for the hockey beta",
+    body: "Early access invitations roll out by sport, starting with hockey.",
+  },
+  {
+    icon: "book" as const,
+    title: "Shape the daily rhythm",
+    body: "Beta testers help us tune prompts, pacing, and pre-game flow.",
+  },
+  {
+    icon: "shield" as const,
+    title: "No spam, no shame, no streak emails",
+    body: "Launch updates only. We email when there's something real to share.",
+  },
+];
+
+export function Waitlist() {
+  return (
+    <section
+      id="waitlist"
+      className="relative overflow-hidden py-20 sm:py-24 md:py-32"
+    >
+      <div className="fv-final-bg absolute inset-0 pointer-events-none" />
+      <div className="relative mx-auto max-w-[1240px] px-5 sm:px-8">
+        <Reveal>
+          <SectionMeta num="10" label="Join the early access list" />
+        </Reveal>
+
+        <div className="grid gap-12 lg:gap-16 items-center grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
+          <Reveal>
+            <h2 className="fv-final-headline">
+              Start training from <em>secure identity.</em>
+            </h2>
+            <p className="fv-lede mb-8">
+              Join the early access list for From Victory and help shape the
+              first Christian athlete mindset training app built around daily
+              rhythm, Scripture, reflection, and game-day resilience.
+            </p>
+            <div className="flex flex-col gap-3.5">
+              {bullets.map((b) => (
+                <div key={b.title} className="flex items-start gap-3.5">
+                  <div
+                    className="w-8 h-8 rounded-[10px] flex items-center justify-center text-gold flex-none"
+                    style={{
+                      background: "var(--fv-gold-soft)",
+                      border: "1px solid rgba(223,175,55,0.28)",
+                    }}
+                  >
+                    <SvgIcon name={b.icon} size={16} />
+                  </div>
+                  <div>
+                    <div className="font-heading font-semibold text-[15px] text-cream">
+                      {b.title}
+                    </div>
+                    <div className="font-body text-[13.5px] text-cream/50 leading-[1.5]">
+                      {b.body}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+
+          <Reveal>
+            <WaitlistForm />
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
