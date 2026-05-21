@@ -94,6 +94,12 @@ export default async function DashboardPage() {
                         </p>
                       ) : null}
                     </div>
+                    <Link
+                      href={`/dashboard/athletes/${a.id}/pair`}
+                      className="font-heading font-semibold text-[13px] text-cream/80 hover:text-cream bg-onyx border border-hairline hover:border-cream/30 rounded-pill px-4 py-2 no-underline transition-colors duration-fast ease-out"
+                    >
+                      Pair device
+                    </Link>
                   </li>
                 );
               })}
