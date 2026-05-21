@@ -7,10 +7,20 @@
 --     2. parent_athlete_links — many-to-many parent ↔ athlete relationship
 --     3. subscriptions   — mirror of Stripe billing state, keyed to parent
 --
+-- Structure:
+--   - Section 0: shared trigger function (set_updated_at)
+--   - Sections 1-3: all CREATE TABLE statements + comments + indexes + triggers
+--   - Section 4: ENABLE RLS on all three tables
+--   - Section 5: all CREATE POLICY statements, grouped by table
+--   This ordering matters: a SELECT policy on profiles references
+--   parent_athlete_links via EXISTS, so that table must already exist when
+--   the policy is created. Keeping all policies at the bottom is the
+--   robust pattern.
+--
 -- Privacy model summary (reviewed by kids-privacy-officer):
 --   - Athlete PII is minimal: first_name, birthdate, parent link only.
 --     No email, phone, address, photos, or geolocation on athlete rows.
---   - Journal content is NOT in this migration (PR-04).
+--   - Journal content is NOT in this migration (PR-04+).
 --   - RLS is enabled on every table in the same transaction that creates it.
 --   - Policies follow least-privilege: each role sees exactly what it needs.
 --   - Parents cannot read athlete rows via this migration beyond their own
@@ -101,60 +111,6 @@ create trigger profiles_set_updated_at
   before update on public.profiles
   for each row execute function public.set_updated_at();
 
--- ---------------------------------------------------------------------------
--- 1a. profiles — Row Level Security
--- ---------------------------------------------------------------------------
-
-alter table public.profiles enable row level security;
-
--- Own-row read: any authenticated user can read their own profile.
-create policy "profiles_select_own"
-  on public.profiles
-  for select
-  using (id = auth.uid());
-
--- Parent reads linked athletes' profiles.
--- Scope: only athlete rows where a parent_athlete_links row ties the
--- calling user (as parent) to that athlete. Parents see the athlete's
--- full row — but the row contains only first_name, birthdate, and role,
--- all of which are needed by the parent dashboard.
--- Athletes do NOT get an equivalent policy; they cannot look up their
--- parent's profile from the client.
-create policy "profiles_parent_select_linked_athlete"
-  on public.profiles
-  for select
-  using (
-    role = 'athlete'
-    and exists (
-      select 1
-      from public.parent_athlete_links pal
-      where pal.athlete_id = profiles.id
-        and pal.parent_id  = auth.uid()
-    )
-  );
-
--- Own-row insert: users can only insert a profile row for themselves.
--- Creating an athlete account on behalf of a child is handled by a
--- server action using service role (PR-04). This policy prevents a
--- client from fabricating a profile for a different auth.users id.
-create policy "profiles_insert_own"
-  on public.profiles
-  for insert
-  with check (id = auth.uid());
-
--- Own-row update: users may update their own profile only.
--- Service role (server actions) can update any row without a policy.
-create policy "profiles_update_own"
-  on public.profiles
-  for update
-  using  (id = auth.uid())
-  with check (id = auth.uid());
-
--- No client DELETE policy. Deletion flows through:
---   a) auth.users cascade (Supabase Auth delete → profiles delete)
---   b) a server action using service role for parent-initiated child deletion.
--- Omitting a client DELETE policy is intentional — not an oversight.
-
 
 -- ---------------------------------------------------------------------------
 -- 2. parent_athlete_links
@@ -240,28 +196,6 @@ create trigger parent_athlete_links_role_check
   before insert or update on public.parent_athlete_links
   for each row execute function public.check_parent_athlete_link_roles();
 
--- ---------------------------------------------------------------------------
--- 2a. parent_athlete_links — Row Level Security
--- ---------------------------------------------------------------------------
-
-alter table public.parent_athlete_links enable row level security;
-
--- Either side of the link can read the row: a parent sees all their linked
--- athletes; an athlete can see who their parent(s) are (needed so the
--- athlete app can surface "your parent manages this subscription").
-create policy "parent_athlete_links_select_participant"
-  on public.parent_athlete_links
-  for select
-  using (
-    parent_id  = auth.uid()
-    or
-    athlete_id = auth.uid()
-  );
-
--- No INSERT / UPDATE / DELETE policies for clients.
--- All link management (creating athlete accounts, unlinking) is performed
--- by server actions via service role. Service role bypasses RLS entirely.
-
 
 -- ---------------------------------------------------------------------------
 -- 3. subscriptions
@@ -342,11 +276,100 @@ create trigger subscriptions_set_updated_at
   before update on public.subscriptions
   for each row execute function public.set_updated_at();
 
+
+-- ===========================================================================
+-- 4. ROW LEVEL SECURITY — enable on all tables
+--    Enabled here as a group, after every table exists, so policies can
+--    safely cross-reference (e.g., a profiles policy that does EXISTS on
+--    parent_athlete_links).
+-- ===========================================================================
+
+alter table public.profiles             enable row level security;
+alter table public.parent_athlete_links enable row level security;
+alter table public.subscriptions        enable row level security;
+
+
+-- ===========================================================================
+-- 5. POLICIES — grouped by table
+-- ===========================================================================
+
 -- ---------------------------------------------------------------------------
--- 3a. subscriptions — Row Level Security
+-- 5a. profiles
 -- ---------------------------------------------------------------------------
 
-alter table public.subscriptions enable row level security;
+-- Own-row read: any authenticated user can read their own profile.
+create policy "profiles_select_own"
+  on public.profiles
+  for select
+  using (id = auth.uid());
+
+-- Parent reads linked athletes' profiles.
+-- Scope: only athlete rows where a parent_athlete_links row ties the
+-- calling user (as parent) to that athlete. Parents see the athlete's
+-- full row — but the row contains only first_name, birthdate, and role,
+-- all of which are needed by the parent dashboard.
+-- Athletes do NOT get an equivalent policy; they cannot look up their
+-- parent's profile from the client.
+create policy "profiles_parent_select_linked_athlete"
+  on public.profiles
+  for select
+  using (
+    role = 'athlete'
+    and exists (
+      select 1
+      from public.parent_athlete_links pal
+      where pal.athlete_id = profiles.id
+        and pal.parent_id  = auth.uid()
+    )
+  );
+
+-- Own-row insert: users can only insert a profile row for themselves.
+-- Creating an athlete account on behalf of a child is handled by a
+-- server action using service role (PR-04). This policy prevents a
+-- client from fabricating a profile for a different auth.users id.
+create policy "profiles_insert_own"
+  on public.profiles
+  for insert
+  with check (id = auth.uid());
+
+-- Own-row update: users may update their own profile only.
+-- Service role (server actions) can update any row without a policy.
+create policy "profiles_update_own"
+  on public.profiles
+  for update
+  using  (id = auth.uid())
+  with check (id = auth.uid());
+
+-- No client DELETE policy. Deletion flows through:
+--   a) auth.users cascade (Supabase Auth delete → profiles delete)
+--   b) a server action using service role for parent-initiated child deletion.
+-- Omitting a client DELETE policy is intentional — not an oversight.
+
+
+-- ---------------------------------------------------------------------------
+-- 5b. parent_athlete_links
+-- ---------------------------------------------------------------------------
+
+-- Either side of the link can read the row: a parent sees all their linked
+-- athletes; an athlete can see who their parent(s) are (needed so the
+-- athlete app can surface "your parent manages this subscription").
+create policy "parent_athlete_links_select_participant"
+  on public.parent_athlete_links
+  for select
+  using (
+    parent_id  = auth.uid()
+    or
+    athlete_id = auth.uid()
+  );
+
+-- No INSERT / UPDATE / DELETE policies for clients.
+-- All link management (creating athlete accounts, unlinking) is performed
+-- by server actions via service role. Service role bypasses RLS entirely.
+
+
+-- ---------------------------------------------------------------------------
+-- 5c. subscriptions
+-- ---------------------------------------------------------------------------
 
 -- Parents read their own subscription row.
 -- This is the only client-readable policy. Athletes have no access —
