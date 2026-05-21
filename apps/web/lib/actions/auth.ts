@@ -81,13 +81,13 @@ export async function signUp(
     // Atomic rollback: delete the orphan auth.users row so the email is freed
     // for a retry. Closes HIGH #2 from PR #19's kids-privacy-officer review.
     const service = createServiceClient();
-    const { error: rollbackError } = await service.auth.admin.deleteUser(
-      data.user.id,
-    );
+    const userId = data.user.id;
+    const { error: rollbackError } =
+      await service.auth.admin.deleteUser(userId);
     console.error(
-      "[auth.signUp] profile insert failed; rolled back auth.users:",
-      profileError.message,
-      rollbackError ? `rollback error: ${rollbackError.message}` : "",
+      `[auth.signUp] profile insert failed (userId=${userId}); rolled back auth.users (rollback_ok=${!rollbackError}): ${profileError.message}${
+        rollbackError ? ` | rollback error: ${rollbackError.message}` : ""
+      }`,
     );
     return {
       ok: false,

@@ -4,23 +4,12 @@ import { randomBytes, randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const ATHLETE_EMAIL_DOMAIN = "athletes.fromvictory.app";
 const MIN_ATHLETE_AGE = 13;
-
-function yearsBetween(birthdate: Date, ref: Date): number {
-  let years = ref.getFullYear() - birthdate.getFullYear();
-  const monthDiff = ref.getMonth() - birthdate.getMonth();
-  if (
-    monthDiff < 0 ||
-    (monthDiff === 0 && ref.getDate() < birthdate.getDate())
-  ) {
-    years--;
-  }
-  return years;
-}
 
 const CreateAthleteSchema = z
   .object({
@@ -35,9 +24,8 @@ const CreateAthleteSchema = z
   })
   .refine(
     (data) => {
-      const d = new Date(`${data.birthdate}T00:00:00Z`);
-      if (Number.isNaN(d.getTime())) return false;
-      return yearsBetween(d, new Date()) >= MIN_ATHLETE_AGE;
+      const age = ageFromBirthdate(data.birthdate);
+      return age !== null && age >= MIN_ATHLETE_AGE;
     },
     {
       message: `Athletes must be ${MIN_ATHLETE_AGE} or older.`,
@@ -101,9 +89,9 @@ export async function createAthlete(
     const { error: rollbackError } =
       await service.auth.admin.deleteUser(athleteId);
     console.error(
-      "[athletes.createAthlete] profile insert failed; rolled back auth.users:",
-      profileError.message,
-      rollbackError ? `rollback error: ${rollbackError.message}` : "",
+      `[athletes.createAthlete] profile insert failed (parentId=${parentId} athleteId=${athleteId}); rolled back auth.users (rollback_ok=${!rollbackError}): ${profileError.message}${
+        rollbackError ? ` | rollback error: ${rollbackError.message}` : ""
+      }`,
     );
     return {
       ok: false,
@@ -125,10 +113,9 @@ export async function createAthlete(
     const { error: userRollback } =
       await service.auth.admin.deleteUser(athleteId);
     console.error(
-      "[athletes.createAthlete] link insert failed; rolled back profile+auth.users:",
-      linkError.message,
-      profileRollback ? `profile rollback error: ${profileRollback.message}` : "",
-      userRollback ? `user rollback error: ${userRollback.message}` : "",
+      `[athletes.createAthlete] link insert failed (parentId=${parentId} athleteId=${athleteId}); rolled back profile+auth.users (profile_rollback_ok=${!profileRollback} user_rollback_ok=${!userRollback}): ${linkError.message}${
+        profileRollback ? ` | profile rollback error: ${profileRollback.message}` : ""
+      }${userRollback ? ` | user rollback error: ${userRollback.message}` : ""}`,
     );
     return {
       ok: false,

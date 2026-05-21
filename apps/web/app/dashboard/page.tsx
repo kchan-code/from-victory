@@ -2,26 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { signOut } from "@/lib/actions/auth";
+import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
   title: "Dashboard · From Victory",
 };
-
-function yearsOld(birthdate: string): number {
-  const d = new Date(`${birthdate}T00:00:00Z`);
-  const now = new Date();
-  let years = now.getFullYear() - d.getFullYear();
-  const monthDiff = now.getMonth() - d.getMonth();
-  if (
-    monthDiff < 0 ||
-    (monthDiff === 0 && now.getDate() < d.getDate())
-  ) {
-    years--;
-  }
-  return years;
-}
 
 export default async function DashboardPage() {
   const { profile } = await requireParent();
@@ -89,8 +76,10 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <ul className="grid gap-3">
-              {linkedAthletes.map((a) =>
-                a.birthdate ? (
+              {linkedAthletes.map((a) => {
+                if (!a.birthdate) return null;
+                const age = ageFromBirthdate(a.birthdate);
+                return (
                   <li
                     key={a.id}
                     className="flex items-center justify-between bg-charcoal border border-hairline rounded-xl px-5 py-4"
@@ -99,13 +88,15 @@ export default async function DashboardPage() {
                       <p className="font-display font-bold text-cream text-[18px] leading-tight">
                         {a.first_name}
                       </p>
-                      <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-cream/50 mt-1">
-                        Age {yearsOld(a.birthdate)}
-                      </p>
+                      {age !== null ? (
+                        <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-cream/50 mt-1">
+                          Age {age}
+                        </p>
+                      ) : null}
                     </div>
                   </li>
-                ) : null,
-              )}
+                );
+              })}
             </ul>
           )}
         </section>
