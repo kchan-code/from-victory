@@ -39,6 +39,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      device_pairings: {
+        Row: {
+          athlete_id: string
+          code: string
+          consumed_at: string | null
+          created_at: string
+          created_by: string
+          expires_at: string
+        }
+        Insert: {
+          athlete_id: string
+          code: string
+          consumed_at?: string | null
+          created_at?: string
+          created_by: string
+          expires_at: string
+        }
+        Update: {
+          athlete_id?: string
+          code?: string
+          consumed_at?: string | null
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_pairings_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "device_pairings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parent_athlete_links: {
         Row: {
           athlete_id: string
