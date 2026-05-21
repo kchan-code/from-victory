@@ -6,7 +6,7 @@ interface FlameMarkProps {
 export function FlameMark({ size = 18, className }: FlameMarkProps) {
   return (
     <svg
-      viewBox="200 22 50 168"
+      viewBox="175 20 80 146"
       style={{ height: size, width: "auto" }}
       className={["block text-gold", className ?? ""].filter(Boolean).join(" ")}
       aria-hidden

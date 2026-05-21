@@ -1,6 +1,5 @@
 import { Reveal } from "./Reveal";
 import { SectionMeta } from "./SectionMeta";
-import { SvgIcon } from "./SvgIcon";
 
 const steps = [
   {
@@ -25,49 +24,6 @@ const steps = [
   },
 ];
 
-const features = [
-  {
-    icon: "zap" as const,
-    name: "Quick check-in",
-    desc: "Three minutes. Mood, one truth, one controllable.",
-  },
-  {
-    icon: "flame" as const,
-    name: "Full daily training",
-    desc: "Center, truth, reflect, train, carry.",
-  },
-  {
-    icon: "target" as const,
-    name: "Pre-game mindset",
-    desc: "Breathwork, identity, one controllable goal.",
-  },
-  {
-    icon: "anchor" as const,
-    name: "Post-game reset",
-    desc: "Reflection for wins, losses, mistakes, tough games.",
-  },
-  {
-    icon: "book" as const,
-    name: "Scripture reflection",
-    desc: "Short verses, real time to sit with them.",
-  },
-  {
-    icon: "wind" as const,
-    name: "Prayer & breathwork",
-    desc: "Guided rhythms for stillness and focus.",
-  },
-  {
-    icon: "pulse" as const,
-    name: "Weekly rhythm review",
-    desc: "Consistency and growth — never shame-based.",
-  },
-  {
-    icon: "link" as const,
-    name: "Sport-specific paths",
-    desc: "Hockey first. More sports added over time.",
-  },
-];
-
 export function HowItWorks() {
   return (
     <section id="how" className="py-20 sm:py-24 md:py-32">
@@ -89,7 +45,7 @@ export function HowItWorks() {
         </Reveal>
 
         <Reveal>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-b border-hairline mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-b border-hairline">
             {steps.map((step, i) => (
               <div
                 key={step.num}
@@ -119,40 +75,6 @@ export function HowItWorks() {
                 <p className="font-body text-[14px] leading-[1.55] text-cream/70 m-0">
                   {step.body}
                 </p>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-
-        <Reveal>
-          <div className="flex justify-between items-end gap-8 mb-6 flex-wrap">
-            <div>
-              <div className="fv-eyebrow gold mb-2.5">
-                Eight surfaces, one rhythm
-              </div>
-              <h3 className="font-heading font-semibold text-[clamp(24px,2.6vw,32px)] leading-[1.1] tracking-[-0.01em] m-0 text-cream max-w-[24ch]">
-                Built for the moments athletes actually face.
-              </h3>
-            </div>
-          </div>
-        </Reveal>
-
-        <Reveal>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-hairline border border-hairline rounded-[18px] overflow-hidden">
-            {features.map((f) => (
-              <div
-                key={f.name}
-                className="bg-onyx p-6 flex flex-col gap-3 min-h-[144px] transition-colors duration-base ease-out hover:bg-charcoal"
-              >
-                <div className="w-9 h-9 rounded-[10px] bg-cream/[0.04] flex items-center justify-center text-cream/70">
-                  <SvgIcon name={f.icon} size={18} />
-                </div>
-                <div className="font-heading font-semibold text-[15px] text-cream">
-                  {f.name}
-                </div>
-                <div className="font-body text-[13px] text-cream/50 leading-[1.5]">
-                  {f.desc}
-                </div>
               </div>
             ))}
           </div>
