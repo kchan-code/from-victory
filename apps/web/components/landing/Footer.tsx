@@ -30,9 +30,9 @@ export function Footer() {
             <Image
               src="/logo-stacked.svg"
               alt="From Victory"
-              width={96}
-              height={48}
-              className="h-12 w-auto mb-5"
+              width={140}
+              height={80}
+              className="h-20 w-auto mb-5"
             />
             <div className="font-display font-bold text-[12px] tracking-[0.16em] uppercase text-cream/70 leading-[1.55] max-w-[320px]">
               Rooted in the Word.

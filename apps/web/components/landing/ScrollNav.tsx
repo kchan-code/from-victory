@@ -30,14 +30,19 @@ export function ScrollNav() {
             <Image
               src="/logo-icon.svg"
               alt=""
-              width={28}
+              width={64}
+              height={36}
+              className="block h-9 w-auto"
+              priority
+            />
+            <Image
+              src="/logo-wordmark.svg"
+              alt="From Victory"
+              width={88}
               height={28}
               className="block h-7 w-auto"
               priority
             />
-            <span className="font-display font-extrabold uppercase tracking-[0.10em] text-[16px]">
-              <span className="text-gold mr-1">FROM</span>VICTORY
-            </span>
           </a>
           <div className="flex items-center gap-1.5 font-heading text-[14px]">
             <a
