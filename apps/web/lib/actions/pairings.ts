@@ -126,66 +126,67 @@ export async function claimPairing(
 
   const service = createServiceClient();
 
-  const { data: pairing, error: lookupError } = await service
+  // Atomic consume — THE LOCK. The conditional UPDATE returns a row if and
+  // only if the code existed, was unconsumed, and was unexpired. Any
+  // concurrent claim for the same code (network retry, link shared twice,
+  // racing tabs) loses here. This must happen BEFORE we touch the password,
+  // otherwise two claimants could both update the password and the second
+  // one would silently win. HIGH #1 from PR #21 review.
+  const nowIso = new Date().toISOString();
+  const { data: claimed, error: consumeError } = await service
     .from("device_pairings")
-    .select("code, athlete_id, expires_at, consumed_at")
+    .update({ consumed_at: nowIso })
     .eq("code", parsed.data.code)
+    .is("consumed_at", null)
+    .gt("expires_at", nowIso)
+    .select("athlete_id")
     .maybeSingle();
 
-  if (lookupError || !pairing) {
+  if (consumeError) {
     console.error(
-      `[pairings.claim] lookup failed: ${lookupError?.message ?? "no row"}`,
+      `[pairings.claim] atomic consume failed: ${consumeError.message}`,
     );
-    return { ok: false, error: "This pairing link is invalid or has expired." };
+    return { ok: false, error: "Could not complete pairing. Please try again." };
+  }
+  if (!claimed) {
+    // Either the code doesn't exist, has been used, or has expired. Single
+    // message — we don't expose which, both to avoid enumeration and because
+    // the recovery action (ask the parent for a fresh link) is the same.
+    return {
+      ok: false,
+      error: "This pairing link is invalid, expired, or already used.",
+    };
   }
 
-  if (pairing.consumed_at !== null) {
-    return { ok: false, error: "This pairing link has already been used." };
-  }
-  if (new Date(pairing.expires_at).getTime() < Date.now()) {
-    return { ok: false, error: "This pairing link has expired. Ask your parent for a new one." };
-  }
+  const athleteId = claimed.athlete_id;
 
   // Fetch the athlete's synthetic email (lives on auth.users, not profiles).
   const { data: userData, error: userError } =
-    await service.auth.admin.getUserById(pairing.athlete_id);
+    await service.auth.admin.getUserById(athleteId);
   if (userError || !userData.user?.email) {
     console.error(
-      `[pairings.claim] getUserById failed (athleteId=${pairing.athlete_id}): ${userError?.message ?? "no email"}`,
+      `[pairings.claim] post-consume getUserById failed (athleteId=${athleteId}); code is burned, athlete needs a fresh pairing link: ${userError?.message ?? "no email"}`,
     );
     return { ok: false, error: "Could not complete pairing. Please try again." };
   }
   const syntheticEmail = userData.user.email;
 
   // Update the athlete's password from the random temp set in PR-04c.
+  // If this fails, the code is already burned (consumed_at set) so the
+  // athlete must request a fresh pairing link. Logged loudly for forensics.
   const { error: pwError } = await service.auth.admin.updateUserById(
-    pairing.athlete_id,
+    athleteId,
     { password: parsed.data.password },
   );
   if (pwError) {
     console.error(
-      `[pairings.claim] updateUserById failed (athleteId=${pairing.athlete_id}): ${pwError.message}`,
+      `[pairings.claim] post-consume updateUserById failed (athleteId=${athleteId}); code is burned, athlete needs a fresh pairing link: ${pwError.message}`,
     );
     return { ok: false, error: "Could not set the password. Please try again." };
   }
 
-  // Mark code consumed BEFORE signing in — if the sign-in step later fails,
-  // we don't want the code reusable. Athlete can re-enter the password on
-  // /signin with the device cookie set.
-  const { error: consumeError } = await service
-    .from("device_pairings")
-    .update({ consumed_at: new Date().toISOString() })
-    .eq("code", parsed.data.code)
-    .is("consumed_at", null);
-  if (consumeError) {
-    console.error(
-      `[pairings.claim] consume update failed (athleteId=${pairing.athlete_id}): ${consumeError.message}`,
-    );
-    return { ok: false, error: "Could not complete pairing. Please try again." };
-  }
-
   // Bind device cookie to this athlete BEFORE redirect.
-  setDeviceAthleteId(pairing.athlete_id);
+  setDeviceAthleteId(athleteId);
 
   // Sign in via the anon-key client (sets the Supabase session cookies).
   const supabase = createClient();
@@ -195,7 +196,7 @@ export async function claimPairing(
   });
   if (signInError) {
     console.error(
-      `[pairings.claim] signInWithPassword failed after claim (athleteId=${pairing.athlete_id}): ${signInError.message}`,
+      `[pairings.claim] post-consume signInWithPassword failed (athleteId=${athleteId}); cookie is set, athlete can retry from /signin: ${signInError.message}`,
     );
     // Cookie is set; athlete can retry from /signin which will show
     // password-only form with the device cookie binding.
