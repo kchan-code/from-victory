@@ -19,7 +19,7 @@ export function ScrollNav() {
     <div className="fv-nav-wrap" data-scrolled={scrolled}>
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         <nav
-          className="flex items-center justify-between h-[72px]"
+          className="flex items-center h-[72px]"
           aria-label="Primary"
         >
           <a
@@ -38,12 +38,13 @@ export function ScrollNav() {
             <Image
               src="/logo-wordmark.svg"
               alt="From Victory"
-              width={88}
-              height={28}
-              className="block h-7 w-auto"
+              width={100}
+              height={32}
+              className="block h-8 w-auto"
               priority
             />
           </a>
+          <div className="flex-1 min-w-8 sm:min-w-12 md:min-w-16" aria-hidden />
           <div className="flex items-center gap-1.5 font-heading text-[14px]">
             <a
               href="#how"
