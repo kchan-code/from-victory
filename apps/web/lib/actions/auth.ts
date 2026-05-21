@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { createServiceClient } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
 
 const SignUpSchema = z.object({
@@ -77,13 +78,16 @@ export async function signUp(
     birthdate: null,
   });
   if (profileError) {
-    // TODO(PR-04c): when service-role lands, reconcile the orphan auth.users
-    // row here — either retry the profile insert, or service-role-delete the
-    // auth user so the email is freed for a retry. Tracked as HIGH #2 on
-    // PR #19's kids-privacy-officer review.
+    // Atomic rollback: delete the orphan auth.users row so the email is freed
+    // for a retry. Closes HIGH #2 from PR #19's kids-privacy-officer review.
+    const service = createServiceClient();
+    const { error: rollbackError } = await service.auth.admin.deleteUser(
+      data.user.id,
+    );
     console.error(
-      "[auth.signUp] profile insert failed; auth.users row is orphaned:",
+      "[auth.signUp] profile insert failed; rolled back auth.users:",
       profileError.message,
+      rollbackError ? `rollback error: ${rollbackError.message}` : "",
     );
     return {
       ok: false,
