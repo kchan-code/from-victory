@@ -39,10 +39,10 @@ export default function TermsPage() {
           Victory opens for accounts. You can ask to be removed from the list at any time by
           emailing{" "}
           <a
-            href="mailto:hello@fromvictoryapp.com"
+            href="mailto:privacy@fromvictoryapp.com"
             className="text-cream underline underline-offset-2 hover:text-gold"
           >
-            hello@fromvictoryapp.com
+            privacy@fromvictoryapp.com
           </a>
           .
         </p>
@@ -61,10 +61,10 @@ export default function TermsPage() {
         <p>
           Questions about these terms:{" "}
           <a
-            href="mailto:hello@fromvictoryapp.com"
+            href="mailto:privacy@fromvictoryapp.com"
             className="text-cream underline underline-offset-2 hover:text-gold"
           >
-            hello@fromvictoryapp.com
+            privacy@fromvictoryapp.com
           </a>
           .
         </p>

@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy · From Victory",
+  title: "Privacy Policy · From Victory",
   description:
-    "How From Victory handles the data of athletes, parents, and waitlist signups. Minimal data, no third-party tracking, athlete-private journal entries.",
+    "How From Victory collects, uses, stores, and protects information submitted through our website, including the Join the Waitlist form.",
   robots: { index: true, follow: true },
 };
 
-const LAST_UPDATED = "May 22, 2026";
+const EFFECTIVE_DATE = "May 22, 2026";
+const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
 export default function PrivacyPage() {
   return (
@@ -16,202 +17,226 @@ export default function PrivacyPage() {
       <header className="mb-10">
         <p className="fv-eyebrow gold mb-3">Privacy</p>
         <h1 className="font-heading font-bold text-[40px] sm:text-[52px] leading-[1.05] tracking-[-0.02em] m-0 mb-3">
-          Privacy at From Victory
+          From Victory Privacy Policy
         </h1>
         <p className="text-cream/60 text-[14px]">
-          Last updated {LAST_UPDATED}. This policy will be updated as the product evolves
-          before public launch.
+          Effective Date: {EFFECTIVE_DATE}
+          <br />
+          Website: FromVictoryApp.com
+          <br />
+          Contact:{" "}
+          <a
+            href={`mailto:${PRIVACY_EMAIL}`}
+            className="text-cream/80 underline underline-offset-2 hover:text-gold"
+          >
+            {PRIVACY_EMAIL}
+          </a>
         </p>
       </header>
 
-      <section className="rounded-[18px] border border-hairline bg-charcoal/70 p-6 mb-10">
-        <h2 className="font-heading font-semibold text-[18px] m-0 mb-3">Short version</h2>
-        <ul className="m-0 pl-5 text-cream/80 leading-relaxed space-y-1.5">
-          <li>We collect the minimum data the product needs to work.</li>
-          <li>No behavioral analytics, no ads, no third-party tracking on any 13–17 account.</li>
-          <li>Athlete journal entries are private to the athlete. Parents cannot read them.</li>
-          <li>Parents control deletion of an athlete account; we remove the data within 30 days.</li>
-          <li>We are not a mental health service. We point athletes in crisis to professional resources.</li>
-        </ul>
+      <section className="mb-10 text-cream/85 leading-relaxed space-y-4">
+        <p>
+          From Victory respects your privacy. This Privacy Policy explains how we collect, use,
+          store, and protect information submitted through our website, including the Join the
+          Waitlist form.
+        </p>
+        <p>
+          By submitting information through the Join the Waitlist form, you acknowledge the
+          practices described in this Privacy Policy.
+        </p>
       </section>
 
-      <Section title="Who this covers">
-        <p>
-          From Victory is a daily mental-toughness and faith training app for athletes ages 13–21.
-          Parents buy and manage the subscription; athletes use the app. This policy applies to
-          everyone who interacts with us — waitlist signups, parents who create an account, and
-          athletes whose parents add them.
-        </p>
-      </Section>
-
-      <Section title="What we collect today">
-        <p className="mb-3">
-          The product is in pre-launch. Today, the only personal data we collect is from the
-          waitlist signup form on our landing page:
-        </p>
-        <ul className="m-0 pl-5 text-cream/85 leading-relaxed space-y-1.5">
-          <li>Name (a first name and last initial is plenty)</li>
+      <Section title="1. Information We Collect">
+        <p>When you join the From Victory waitlist, we may collect the following information:</p>
+        <ul className="mt-2 mb-3 pl-5 list-disc">
+          <li>Name</li>
           <li>Email address</li>
-          <li>Role you identified (athlete, parent, coach, or other)</li>
+          <li>Role, such as athlete, parent, coach, or other</li>
           <li>Primary sport</li>
-          <li>Optional note about what you’re hoping the app helps with</li>
+          <li>Optional note, if you choose to provide one</li>
         </ul>
+        <p>
+          We do not ask you to provide sensitive personal information through the waitlist form.
+          Please do not include sensitive personal information, medical information, financial
+          information, passwords, or highly personal details in the optional note field.
+        </p>
+      </Section>
+
+      <Section title="2. How We Use Your Information">
+        <p>We use the information you provide to:</p>
+        <ul className="mt-2 mb-3 pl-5 list-disc">
+          <li>Add you to the From Victory waitlist</li>
+          <li>
+            Communicate with you about early access, product updates, launch announcements, and
+            related information
+          </li>
+          <li>
+            Understand the types of users interested in From Victory, including athletes, parents,
+            coaches, and sports communities
+          </li>
+          <li>Improve our messaging, product experience, and future app features</li>
+          <li>Respond to questions or comments submitted through the optional note field</li>
+          <li>Maintain security, prevent abuse, and operate our website</li>
+        </ul>
+        <p>We do not sell your personal information.</p>
+      </Section>
+
+      <Section title="3. Email Communications">
+        <p>
+          By joining the waitlist, you agree that From Victory may contact you by email about early
+          access, product updates, launch information, and related communications.
+        </p>
         <p className="mt-3">
-          We do not collect your IP address for storage, your device identifiers, your location, or
-          anything else from the waitlist form. We do not place tracking pixels or analytics scripts
-          on this site.
+          You may unsubscribe or request removal from the waitlist at any time by following the
+          unsubscribe instructions in our emails, if available, or by contacting us at{" "}
+          <PrivacyEmailLink />.
         </p>
       </Section>
 
-      <Section title="What we will collect at launch">
-        <p className="mb-3">
-          When the product opens to real accounts, we will also collect:
-        </p>
-        <ul className="m-0 pl-5 text-cream/85 leading-relaxed space-y-2">
-          <li>
-            <strong className="text-cream">From parents:</strong> name, email, billing information
-            handled by Stripe (we never see your card number), and the names + birthdates of the
-            athletes you add.
-          </li>
-          <li>
-            <strong className="text-cream">From athletes (ages 13–17):</strong> a first name and a
-            birthdate (to confirm 13+ and to apply the right protections). We do not collect athlete
-            email, phone number, address, or photos. Athletes do not have outside login credentials —
-            they sign in via a device pairing flow set up by their parent.
-          </li>
-          <li>
-            <strong className="text-cream">Journal entries from athletes:</strong> protected by
-            database-level row-level security so only the athlete who wrote them can read them.
-            Storage infrastructure encrypts data at rest.
-          </li>
-          <li>
-            <strong className="text-cream">Participation metadata:</strong> session start and
-            completion times, training-rhythm dates. This metadata (not journal content) feeds the
-            parent dashboard so parents can see whether their athlete is engaging.
-          </li>
-        </ul>
-      </Section>
-
-      <Section title="What we do not do">
-        <ul className="m-0 pl-5 text-cream/85 leading-relaxed space-y-1.5">
-          <li>We do not show ads to anyone, ever — and especially not to minors.</li>
-          <li>We do not run behavioral analytics on any 13–17 account.</li>
-          <li>We do not sell, rent, or share your data with marketers.</li>
-          <li>We do not allow third-party tracking SDKs on athlete-facing surfaces.</li>
-          <li>We do not let parents read their athlete’s journal entries.</li>
-          <li>We do not claim to be a mental health service or a substitute for professional care.</li>
-        </ul>
-      </Section>
-
-      <Section title="How journals are protected">
-        <p className="mb-3">
-          When an athlete writes a journal entry, the entry is private to that athlete by default.
-          No parent, coach, or third party can read it.
-        </p>
-        <p className="mb-3">
-          We do run a server-side safety check when an entry is saved: a fixed vocabulary of
-          crisis-related keywords (suicidal ideation, self-harm, abuse) is checked against the
-          entry. If the check flags the entry, the athlete is shown an in-line resource screen —
-          the 988 Suicide &amp; Crisis Lifeline, the Crisis Text Line, and a prompt to talk to a
-          trusted adult. No one else is notified. The check produces a log of the event (date,
-          category) but never stores the athlete’s text outside the entry itself.
-        </p>
+      <Section title="4. How We Store Your Information">
         <p>
-          The keyword vocabulary is reviewed quarterly by a clinical advisor and updated as needed.
-          We treat this as a safety net, not a diagnosis.
+          Information submitted through the waitlist form is stored using secure third-party
+          service providers that help us operate our website, manage waitlist submissions, and
+          maintain our database.
         </p>
-      </Section>
-
-      <Section title="How we use the data">
-        <ul className="m-0 pl-5 text-cream/85 leading-relaxed space-y-1.5">
-          <li>To run the product (sign you in, deliver today’s training, save your journal).</li>
-          <li>To let parents see participation metadata for their athlete.</li>
-          <li>To send transactional emails (account-related, billing, safety responses).</li>
-          <li>To keep the system secure and prevent abuse.</li>
-          <li>To respond when you contact us.</li>
-        </ul>
         <p className="mt-3">
-          We do not use personal data for advertising, lookalike targeting, or any kind of profile
-          building.
+          We use reasonable administrative, technical, and organizational safeguards designed to
+          protect the information submitted through the waitlist form. However, no method of
+          internet transmission or electronic storage is completely secure.
+        </p>
+        <p className="mt-3">
+          We may change or add service providers over time as our website and business needs
+          evolve.
         </p>
       </Section>
 
-      <Section title="Who can see your data">
-        <p className="mb-3">
-          A very small number of people: the From Victory founder and any future team members with
-          a business need to look at the system. Access is logged and limited.
-        </p>
-        <p className="mb-3">
-          We use a small number of trusted infrastructure providers to run the product: Supabase
-          (database and authentication), Vercel (hosting), Stripe (payments), and Resend (the
-          email service that delivers transactional and admin-notification emails). They process
-          data on our behalf and are bound by their own privacy obligations.
-        </p>
+      <Section title="5. How We Share Information">
         <p>
-          We do not share data with anyone else.
+          We may share your information with trusted service providers who help us operate the
+          website, manage the waitlist, store data, send communications, or support our business
+          operations.
+        </p>
+        <p className="mt-3">
+          These service providers may only use your information to provide services to us and not
+          for their own independent marketing purposes.
+        </p>
+        <p className="mt-3">
+          We may also disclose information if required to do so by law, legal process, government
+          request, or to protect the rights, safety, or security of From Victory, our users, or
+          others.
+        </p>
+        <p className="mt-3">We do not sell your personal information.</p>
+      </Section>
+
+      <Section title="6. Children's Privacy">
+        <p>
+          From Victory is designed to support athletes, parents, and coaches, including families
+          and youth sports communities. However, the waitlist form is not intended to collect
+          personal information directly from children under the age of 13.
+        </p>
+        <p className="mt-3">
+          If you are under 13, please do not submit the waitlist form yourself. A parent or legal
+          guardian should submit the form on your behalf.
+        </p>
+        <p className="mt-3">
+          If we learn that we have collected personal information directly from a child under 13
+          without appropriate parental consent, we will take reasonable steps to delete that
+          information.
+        </p>
+        <p className="mt-3">
+          Parents or guardians may contact us at <PrivacyEmailLink /> to request deletion of
+          information submitted by or about a child.
         </p>
       </Section>
 
-      <Section title="Your rights">
-        <ul className="m-0 pl-5 text-cream/85 leading-relaxed space-y-2">
-          <li>
-            <strong className="text-cream">Access:</strong> you can ask what we have on file. Email
-            the address below and we’ll send it.
-          </li>
-          <li>
-            <strong className="text-cream">Correction:</strong> tell us what to change.
-          </li>
-          <li>
-            <strong className="text-cream">Deletion:</strong> parents can request deletion of an
-            athlete account; we cascade-delete the athlete’s data — profile, sessions, journal
-            entries — within 30 days. Waitlist signups can be removed at any time by emailing us.
-          </li>
-          <li>
-            <strong className="text-cream">Withdraw consent:</strong> close your account or remove
-            yourself from the waitlist any time. You don’t need to give us a reason.
-          </li>
+      <Section title="7. Data Security">
+        <p>
+          We take reasonable administrative, technical, and organizational measures to protect the
+          information submitted through the waitlist form.
+        </p>
+        <p className="mt-3">
+          However, no method of transmission over the internet or electronic storage is completely
+          secure. We cannot guarantee absolute security, but we work to protect your information
+          using reasonable safeguards appropriate for the type of information collected.
+        </p>
+      </Section>
+
+      <Section title="8. Data Retention">
+        <p>We retain waitlist information for as long as reasonably necessary to:</p>
+        <ul className="mt-2 mb-3 pl-5 list-disc">
+          <li>Manage the waitlist</li>
+          <li>Communicate about From Victory</li>
+          <li>Support early access or launch activities</li>
+          <li>Comply with legal obligations</li>
+          <li>Resolve disputes</li>
+          <li>Maintain business records</li>
         </ul>
+        <p>
+          You may request deletion of your waitlist information by contacting us at{" "}
+          <PrivacyEmailLink />.
+        </p>
       </Section>
 
-      <Section title="Athletes ages 13–17 (special protections)">
-        <p className="mb-3">
-          All athletes on From Victory are 13 or older — we do not knowingly create accounts for
-          children under 13. Athletes 13–17 still carry extra protections under state and
-          international laws, and we apply those protections by default:
+      <Section title="9. Your Choices">
+        <p>
+          You may contact us at <PrivacyEmailLink /> to:
         </p>
-        <ul className="m-0 pl-5 text-cream/85 leading-relaxed space-y-1.5">
-          <li>No behavioral analytics. No ads. No third-party tracking.</li>
-          <li>Minimal PII (first name and birthdate only).</li>
-          <li>Parent controls deletion.</li>
-          <li>Journal content stays athlete-private.</li>
+        <ul className="mt-2 mb-3 pl-5 list-disc">
+          <li>Request access to the information you submitted</li>
+          <li>Correct inaccurate information</li>
+          <li>Ask us to delete your waitlist submission</li>
+          <li>Opt out of future emails</li>
+          <li>Ask questions about this Privacy Policy</li>
         </ul>
-      </Section>
-
-      <Section title="Security">
         <p>
-          Data is transmitted over TLS and stored encrypted at rest. We use database-level
-          row-level security (RLS) so that even a misbehaving piece of application code cannot read
-          data it shouldn’t. We log access to administrative interfaces and limit who can sign in.
+          Depending on where you live, you may have additional privacy rights under applicable
+          state, national, or regional privacy laws.
         </p>
       </Section>
 
-      <Section title="Changes to this policy">
-        <p>
-          We will update this page as the product evolves before public launch. Material changes
-          will be communicated to active users by email.
+      <Section title="10. No Sale or Sharing for Targeted Advertising">
+        <p>We do not sell personal information collected through the waitlist form.</p>
+        <p className="mt-3">
+          We also do not use waitlist information for cross-context behavioral advertising or
+          targeted advertising.
+        </p>
+        <p className="mt-3">
+          If our practices change, we will update this Privacy Policy and provide any required
+          notices or choices.
         </p>
       </Section>
 
-      <Section title="Contact">
+      <Section title="11. International Users">
         <p>
-          Questions, deletion requests, or anything else:{" "}
-          <a
-            href="mailto:hello@fromvictoryapp.com"
-            className="text-cream underline underline-offset-2 hover:text-gold"
-          >
-            hello@fromvictoryapp.com
-          </a>
-          .
+          From Victory is currently intended for users in the United States. If you access the
+          website from outside the United States, you understand that your information may be
+          processed and stored in the United States or other locations where our service providers
+          operate.
+        </p>
+      </Section>
+
+      <Section title="12. Changes to This Privacy Policy">
+        <p>
+          We may update this Privacy Policy from time to time. If we make material changes, we will
+          update the effective date above and may provide additional notice where appropriate.
+        </p>
+        <p className="mt-3">
+          Your continued use of the website or continued participation in the waitlist after an
+          update means you acknowledge the updated Privacy Policy.
+        </p>
+      </Section>
+
+      <Section title="13. Contact Us">
+        <p>
+          If you have questions about this Privacy Policy or want to exercise your privacy choices,
+          contact us at:
+        </p>
+        <p className="mt-3">
+          From Victory
+          <br />
+          Email: <PrivacyEmailLink />
+          <br />
+          Website: FromVictoryApp.com
         </p>
       </Section>
 
@@ -235,5 +260,16 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       </h2>
       <div className="text-cream/80 leading-relaxed">{children}</div>
     </section>
+  );
+}
+
+function PrivacyEmailLink() {
+  return (
+    <a
+      href={`mailto:${PRIVACY_EMAIL}`}
+      className="text-cream underline underline-offset-2 hover:text-gold"
+    >
+      {PRIVACY_EMAIL}
+    </a>
   );
 }

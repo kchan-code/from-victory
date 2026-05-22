@@ -79,13 +79,13 @@ export function WaitlistForm() {
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-        <Field id="w-name" label="Name">
+        <Field id="w-name" label="First name">
           <input
             id="w-name"
             name="name"
             type="text"
-            autoComplete="name"
-            placeholder="Jordan T."
+            autoComplete="given-name"
+            placeholder="Jordan"
             required
             maxLength={120}
             aria-invalid={errorField === "name"}
@@ -220,6 +220,20 @@ export function WaitlistForm() {
       )}
 
       <SubmitButton />
+
+      <p className="mt-4 text-cream/55 text-[12px] leading-relaxed">
+        By joining the waitlist, you agree that From Victory may use your information
+        to contact you about early access, product updates, and launch announcements.
+        We do not sell your personal information. If you are under 13, a parent or
+        guardian should submit this form. See our{" "}
+        <Link
+          href="/privacy"
+          className="text-cream/85 underline underline-offset-2 hover:text-gold transition-colors duration-fast ease-out"
+        >
+          Privacy Policy
+        </Link>
+        .
+      </p>
     </form>
   );
 }
