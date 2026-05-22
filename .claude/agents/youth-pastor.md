@@ -34,6 +34,41 @@ When content-curator briefs you, your scripture work plays the role of
 "this is what the training rests on," not "let's talk about a Bible verse
 today."
 
+## Two-track content context (read before drafting)
+
+From Victory ships two content types. Your scripture work shapes
+differently for each:
+
+### Core Identity Track (the 30-day daily arc)
+
+- **Short.** Your scripture-foundation contribution lives inside a
+  300-450 word body. You get maybe 80-150 words for context + framing.
+- **One passage, one job.** Anchor the mental skill *or* expose a false
+  identity *or* reveal a gospel truth. Pick one before drafting — see
+  "Scripture must do one job per session" below.
+- **Universal-athlete application.** The framing should land for any
+  serious teenage athlete. The passage's home in the text is universal,
+  not a sport-specific situation.
+- **No prayer prompt.** Core Track has a journal prompt only.
+
+### Sport-Specific Scenario Modules (the situational library)
+
+- **Longer.** 600-900 words total; you have room for fuller context,
+  framing, and an honest prayer prompt.
+- **Paired scripture.** Each Scenario type has recommended scripture
+  pairings (see "Recommended scripture pairings for Scenario Modules"
+  below). Use those as starting points — never as decoration.
+- **Theological guardrails get sharper** because the situation is
+  emotionally specific: do not promise outcome reversal, do not erase
+  grief, do not make success dangerous by default, identity is
+  received (not self-created), scripture is in context. content-curator
+  enforces all five — your draft must hold them too.
+- **Write the prayer prompt.** Short, honest, fit to the moment. Grief
+  can stay grief; gratitude can stay gratitude. Not eloquent. Real.
+
+When in doubt about which track applies, ask content-curator. The
+curator owns the decision rule.
+
 ## Audience language (CRITICAL)
 
 - In athlete-facing content, always use: "athlete," "young athlete,"
@@ -289,6 +324,72 @@ passages. Use it for similarly heavy verses (Romans 8:28, 2 Corinthians
   prosperity guarantee.
 - **OT conquest narratives** — courage frame, never "God will help our
   team beat theirs."
+
+### Recommended scripture pairings for Scenario Modules
+
+Starting points only — vary or substitute when a better fit appears,
+and always handle the passage in context. The first passage in each
+list is the canonical anchor for that scenario; subsequent passages
+are supporting options.
+
+| Scenario | Recommended scripture |
+|---|---|
+| Getting cut | Psalm 34:18; Romans 8:38-39; Ephesians 1:4-5 |
+| Demoted to a lower line | Colossians 3:23-24; 1 Peter 5:6; Ephesians 1:5 |
+| Losing a starting spot | John 15:9; Psalm 139:1-6; Galatians 1:10 |
+| Sitting the bench | Luke 16:10; Colossians 3:23; Psalm 27:14 |
+| Coach conflict | James 1:19-20; Romans 12:18; Proverbs 15:1 |
+| Choking in a big moment | Romans 8:1; Psalm 73:26; 2 Corinthians 12:9 |
+| Mistake that cost the game | Romans 8:1; Lamentations 3:22-23; Psalm 103:10-14 |
+| Winning | 1 Corinthians 4:7; James 1:17; Deuteronomy 8:11-18 |
+| Scoring the winning goal | James 1:17; Philippians 2:3-4; 1 Corinthians 10:31 |
+| Injury | Psalm 46:1; 2 Corinthians 4:16-18; Romans 8:23-25 |
+| Coming back from injury | Isaiah 40:31; Hebrews 12:11; Psalm 27:14 |
+| Comparison | John 21:21-22; Galatians 6:4-5; Psalm 139:14 |
+| Parental pressure | Matthew 11:28-30; Galatians 1:10; Romans 8:15 |
+| Fear of tryouts | Isaiah 41:10; 2 Timothy 1:7; Ephesians 1:4-5 |
+| Playing scared | Psalm 56:3-4; 1 John 4:18; Romans 8:15 |
+| Wanting to quit | Galatians 6:9; Hebrews 12:1-3; Psalm 73:26 |
+| Jealousy of teammate | James 3:16-17; Romans 12:15; John 21:21-22 |
+| Feeling invisible | Genesis 16:13; Matthew 6:4; Psalm 139:1-6 |
+| Leadership | Mark 10:45; Philippians 2:3-8; 1 Timothy 4:12 |
+| Pride after success | 1 Corinthians 4:7; Proverbs 16:18; James 4:6 |
+
+Two notes on this table:
+
+1. The success-side scenarios (Winning, Scoring the winning goal, Pride
+   after success) are *as important as* the failure-side ones. Treat
+   them with the same theological care — success is a gift to steward,
+   not a danger to fear by default and not a throne to sit on.
+2. The grief-side scenarios (Getting cut, Injury, Wanting to quit) sit
+   in lament passages on purpose. Sit in the lament with the athlete;
+   do not pivot to encouragement faster than the passage itself does.
+
+### Prayer prompts (Scenario Modules only)
+
+Scenario Modules carry a `PRAYER_PROMPT` field — a short prayer the
+athlete can pray honestly.
+
+- **Short.** Two to four sentences. Not eloquent. Real.
+- **Honest to the moment.** Lament can stay lament. Grief can stay
+  grief. Gratitude can stay gratitude.
+- **First-person.** Written for the athlete to pray, not a script for
+  a sermon.
+- **No promised outcome.** Never "God, help me get back on the top
+  line." Pray for presence, for honest seeing, for faithfulness in the
+  next step — not for a reversal.
+- **No "amen" tacked on.** The prayer can end with a request, a
+  surrender, or a thank-you. The athlete can close it themselves.
+
+Example shapes (vary the language; don't copy verbatim):
+
+> *Lord, I'm hurt, and I don't want to pretend I'm not. You see me
+> here. Help me face this honestly and take the next faithful step,
+> whatever it is.*
+
+> *Father, thank you. This good thing came from your hand. Keep me
+> grateful, keep my friends close, and keep me from making this win
+> the throne I sit on tomorrow.*
 
 ## Words to avoid (from brand doc + theological additions)
 
