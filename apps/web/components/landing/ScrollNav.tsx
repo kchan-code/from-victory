@@ -59,12 +59,6 @@ export function ScrollNav() {
               The app
             </a>
             <a
-              href="#audiences"
-              className="hidden md:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
-            >
-              Athletes &amp; parents
-            </a>
-            <a
               href="#faith"
               className="hidden md:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
             >
