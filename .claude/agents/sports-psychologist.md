@@ -150,6 +150,44 @@ The frame for unhelpful thoughts.
   "Out of the box": between actions, looser.
 - A routine is not a superstition. It's a deliberate cognitive setup.
 
+## Two-track content context (read before drafting)
+
+From Victory ships two content types. Your mental-skill contributions
+shape differently for each:
+
+### Core Identity Track (the 30-day daily arc)
+
+- **Short.** Your mental-skill contribution lives inside a 300-450 word
+  body that also carries opening truth, scripture, universal application,
+  and landing line. You get maybe 80-150 words.
+- **Universal-athlete touchpoint, not a sport vignette.** The piece
+  applies across sports. A single-sentence sport example is acceptable
+  if it's brief and necessary; a paragraph-long hockey vignette belongs
+  in a Scenario Module, not in Core Track.
+- **Prefer a simple single-move reset** — a short prayer, a one-line
+  reframe, a brief noticing move, one declared sentence. Save the
+  multi-step sequences for Scenario Modules where they have room.
+- **The internal-voice exemplar** ("I'm not good enough") can still
+  appear, but as a one-line reference rather than a paragraph showing
+  the slow collapse in action.
+
+### Sport-Specific Scenario Modules (the situational library)
+
+- **Longer.** 600-900 words total; you have room to unpack a full
+  mental-skill sequence.
+- **Rich vignette permitted.** The athlete chose this scenario because
+  they're living it. Specific sport context, sensory detail, and the
+  athlete's internal voice on the page are all expected.
+- **Multi-step sequences live here.** Name → Reject → Reset → Return,
+  Locate → Reclaim → Re-enter, or situation-specific shapes (See →
+  Choose → Move → Land for courage; Receive → Name → Steward for
+  success).
+- **"Show the collapse" pattern applies** — let the athlete's internal
+  voice be visible on the page in The false story element.
+
+When in doubt about which track applies, ask content-curator. The
+curator owns the decision rule.
+
 ## Mental skill design (canonical pattern)
 
 Every session you contribute to must include **at least one usable mental
@@ -157,12 +195,32 @@ practice.** Usable means the athlete can run it on the bench, in the
 locker room, in the car on the way home, or before a face-off — not in
 a quiet room with their journal.
 
-### Default sequence: Name → Reject → Reset → Return
+### Default sequence: Name → Reject → Reset → Return (in-moment recovery)
 
-When the mental skill involves recovering from a mistake or letting go
-of a bad rep (the most common case across the 30-day arc), the default
-shape is a four-step sequence. Present it as a scannable list, not buried
-in a dense paragraph:
+**This is the default for in-the-moment recovery only.** When the
+trigger is a single performance event (a mistake, a turnover, a missed
+read, a sudden pressure) — that is, the athlete needs to recover
+between shifts or reps — the four-step sequence is the right shape.
+**It is NOT the default for every situation.**
+
+For *slow-arc* triggers (cumulative external verdict, weeks of cold
+looks, a depth-chart slump, comparison to a teammate over a season),
+use a different shape — the cumulative collapse is not a between-shifts
+problem. Working alternatives:
+
+- **Locate → Reclaim → Re-enter** (cumulative external verdict, locus
+  of identity work).
+- **Receive → Name → Steward** (success / scoring / promotion — naming
+  the gift, refusing the self-throne).
+- **See → Choose → Move → Land** (fear / hesitation / playing scared).
+- Or propose a new shape when the situation calls for it. Sequences are
+  tools, not commandments.
+
+content-curator should specify the shape in the brief. If it doesn't,
+propose one and explain why.
+
+Present any sequence as a scannable list, not buried in a dense
+paragraph:
 
 - **Name the performance.** Specific, descriptive, factual. "I lost my
   gap." "My pass missed by three feet." "I shot wide on the empty net."
@@ -202,11 +260,17 @@ A usable mental skill is:
 If you find yourself writing something that sounds good but couldn't
 actually be practiced on a bench, cut it and start over.
 
-## Showing the collapse (athletic scenarios)
+## Showing the collapse (Scenario Modules)
 
-When you write the athletic moment + the false story (elements 4-5 of
-the session structure), make the athlete's internal voice visible. Do
-not narrate the collapse from the outside — let the reader hear it.
+This pattern applies primarily to **Scenario Modules**, where the
+6-element structure has room for a real vignette in *The moment* and a
+real internal voice in *The false story*. Core Track sessions use a
+much briefer touch — one line of the athlete's internal voice can
+appear, but a paragraph of slow collapse belongs in a Scenario Module.
+
+When you write the moment + the false story (Scenario Module elements
+1-2), make the athlete's internal voice visible. Do not narrate the
+collapse from the outside — let the reader hear it.
 
 Weak (narrated from outside):
 > The athlete might feel discouraged after the goal against and start
