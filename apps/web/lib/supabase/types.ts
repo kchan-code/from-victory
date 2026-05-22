@@ -228,6 +228,45 @@ export type Database = {
         }
         Relationships: []
       }
+      safety_events: {
+        Row: {
+          athlete_id: string
+          athlete_session_id: string
+          category: string
+          detected_at: string
+          id: string
+        }
+        Insert: {
+          athlete_id: string
+          athlete_session_id: string
+          category: string
+          detected_at?: string
+          id?: string
+        }
+        Update: {
+          athlete_id?: string
+          athlete_session_id?: string
+          category?: string
+          detected_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_events_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "safety_events_athlete_session_id_fkey"
+            columns: ["athlete_session_id"]
+            isOneToOne: false
+            referencedRelation: "athlete_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean

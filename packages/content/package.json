@@ -1,0 +1,10 @@
+{
+  "name": "@from-victory/content",
+  "private": true,
+  "version": "0.0.0",
+  "main": "./safety-keywords.json",
+  "files": [
+    "safety-keywords.json",
+    "README.md"
+  ]
+}

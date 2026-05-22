@@ -1,0 +1,63 @@
+{
+  "$schema": "./safety-keywords.schema.json",
+  "version": 1,
+  "status": "STUB",
+  "warning": "This vocabulary is a placeholder shipped with PR-06. It has NOT been reviewed by a clinical advisor. CLAUDE.md Open Items tracks the clinical-advisor recruit; quarterly review of this file is the long-term cadence. Until a clinical advisor lands, treat detections as best-effort signals, not authoritative crisis identification.",
+  "matching_strategy": "case_insensitive_substring",
+  "matching_notes": [
+    "Detection uses lowercase substring match on entry content.",
+    "Substring matching has false-positive risk (e.g. 'killed it on the ice' contains 'kill' as substring of 'killed'; we use multi-word phrases to reduce this).",
+    "Multi-word phrases are intentional. Single-word triggers like 'die' or 'kill' produce too many false positives in athlete language.",
+    "Order of categories below matters: detector returns the FIRST matching category, so most-urgent goes first."
+  ],
+  "categories": [
+    {
+      "id": "crisis",
+      "label": "Crisis (suicide ideation / immediate harm)",
+      "resources_focus": "988_lifeline",
+      "keywords": [
+        "kill myself",
+        "want to die",
+        "wanna die",
+        "end my life",
+        "end it all",
+        "suicidal",
+        "suicide",
+        "better off dead",
+        "no reason to live",
+        "no point living",
+        "no point in living"
+      ]
+    },
+    {
+      "id": "self_harm",
+      "label": "Self-harm",
+      "resources_focus": "crisis_text_line",
+      "keywords": [
+        "cutting myself",
+        "hurt myself",
+        "harm myself",
+        "self harm",
+        "self-harm",
+        "burn myself"
+      ]
+    },
+    {
+      "id": "abuse",
+      "label": "Abuse / harm by others",
+      "resources_focus": "trusted_adult",
+      "keywords": [
+        "he hits me",
+        "she hits me",
+        "they hit me",
+        "hits me",
+        "beats me",
+        "touched me",
+        "made me touch",
+        "made me do",
+        "scared to go home",
+        "afraid to go home"
+      ]
+    }
+  ]
+}
