@@ -9,8 +9,14 @@ export const metadata = {
   title: "Sign in · From Victory",
 };
 
-export default async function SignInPage() {
+type Props = {
+  searchParams: { reset?: string };
+};
+
+export default async function SignInPage({ searchParams }: Props) {
   await redirectIfAuthed();
+
+  const resetInvalid = searchParams.reset === "invalid";
 
   const deviceAthleteId = getDeviceAthleteId();
 
@@ -37,6 +43,21 @@ export default async function SignInPage() {
 
   return (
     <AuthShell title="Welcome back" subtitle="Sign in to your parent account.">
+      {resetInvalid ? (
+        <div
+          role="alert"
+          className="mb-6 rounded-[10px] border border-[rgba(229,62,76,0.4)] bg-[rgba(229,62,76,0.08)] px-3.5 py-3 text-[13px] text-[#ffb3b9]"
+        >
+          That reset link can&rsquo;t be used. Request a fresh one from{" "}
+          <a
+            href="/forgot-password"
+            className="underline underline-offset-2 hover:text-cream"
+          >
+            forgot password
+          </a>
+          .
+        </div>
+      ) : null}
       <SignInForm />
     </AuthShell>
   );
