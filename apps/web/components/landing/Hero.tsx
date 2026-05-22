@@ -52,11 +52,6 @@ export function Hero() {
               </a>
             </div>
 
-            <div className="flex items-center gap-3.5 fv-eyebrow">
-              <span>Built first for hockey</span>
-              <span className="w-6 h-px bg-[color:var(--fv-hairline-2)]" />
-              <span>Designed for every athlete</span>
-            </div>
           </Reveal>
 
           {/* Right column: stacked phone mockups */}

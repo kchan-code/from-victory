@@ -10,7 +10,7 @@ export function Framework() {
     >
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         <Reveal>
-          <SectionMeta num="03" label="The framework" />
+          <SectionMeta num="02" label="The framework" />
         </Reveal>
 
         <div className="grid gap-14 lg:gap-20 items-center grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">

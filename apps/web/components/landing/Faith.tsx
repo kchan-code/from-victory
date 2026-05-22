@@ -30,7 +30,7 @@ export function Faith() {
               <FlameMark size={64} />
             </div>
 
-            <SectionMeta num="09" label="Faith foundation" centered />
+            <SectionMeta num="05" label="Faith foundation" centered />
 
             <h2 className="fv-h-section mx-auto mb-7 text-center max-w-[18ch]">
               Christ-centered without being performance-centered.
