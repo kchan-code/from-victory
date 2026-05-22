@@ -54,8 +54,12 @@ export async function signUp(
   });
   if (error) {
     // Generic message: returning Supabase's raw error (e.g. "User already
-    // registered") enables account enumeration. Log server-side instead.
-    console.error("[auth.signUp] supabase.auth.signUp failed:", error.message);
+    // registered", "over_email_send_rate_limit") enables account enumeration.
+    // Log full diagnostic info server-side so Vercel logs surface code+status
+    // when something breaks.
+    console.error(
+      `[auth.signUp] supabase.auth.signUp failed: ${error.message} (status=${error.status ?? "n/a"} code=${error.code ?? "n/a"})`,
+    );
     return {
       ok: false,
       error:
@@ -121,6 +125,12 @@ export async function signIn(
     password: parsed.data.password,
   });
   if (error) {
+    // Generic user-facing message (no enumeration). Server-side log carries
+    // the diagnostic — distinguishes "invalid_credentials" from rate-limit
+    // / network / Supabase-down conditions.
+    console.error(
+      `[auth.signIn] signInWithPassword failed: ${error.message} (status=${error.status ?? "n/a"} code=${error.code ?? "n/a"})`,
+    );
     return { ok: false, error: "Email or password is incorrect." };
   }
 
