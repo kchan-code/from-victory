@@ -47,7 +47,9 @@ they compete from victory, not toward it.
 mobile-friendly, Scripture-first, sport-agnostic. Applicable across
 sports — hockey examples only when brief and necessary.
 
-**Length.** Target **300-450 words** for the body (MENTAL_SKILL_MD).
+**Length.** **≤300 words** for the body (MENTAL_SKILL_MD). Aim for
+roughly 250-300; landing tighter is welcome when the writing earns it.
+**Never pad to hit a floor.** Every sentence should earn its place.
 
 **Reader context.** A serious teenage athlete on a phone before school,
 after practice, before a game, after a disappointing performance, or
@@ -131,7 +133,8 @@ Run all ten. If any answer is "no," the piece is not done.
 ### Track-specific addenda
 
 **Core Track sessions additionally must:**
-- Stay within 300-450 words in `MENTAL_SKILL_MD`.
+- Stay **≤300 words** in `MENTAL_SKILL_MD`. Aim for ~250-300; tighter
+  is welcome when earned. Never pad.
 - Be `general_athlete` applicable — no long sport-specific vignette.
 - Reinforce the core gospel reversal (world says perform-then-belong;
   gospel says standing-then-performance) without repeating Day 1's
@@ -263,9 +266,13 @@ Every session follows this pipeline:
 
 ## Core Identity Track — daily session structure
 
-A Core Track session runs **300-450 words** in `MENTAL_SKILL_MD`. The
-framing is "today's training," not "today's devotional." The structure
-is five elements inside the body, plus the framing fields.
+A Core Track session runs **≤300 words** in `MENTAL_SKILL_MD` — aim
+for ~250-300, but tighter is welcome when the writing earns it. **Never
+pad to hit a floor.** The framing is "today's training," not "today's
+devotional." The structure is five elements inside the body, plus the
+framing fields. The body is short on purpose — the athlete is reading
+on a phone between practice and dinner, not sitting down for an essay.
+Every sentence earns its place; nothing decorative survives.
 
 ### Schema fields
 
