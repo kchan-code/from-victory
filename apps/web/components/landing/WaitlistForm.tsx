@@ -198,13 +198,14 @@ export function WaitlistForm() {
           aria-invalid={errorField === "consent"}
         />
         <span>
-          I agree to the{" "}
-          <Link href="/privacy" className="text-cream underline underline-offset-2 hover:text-gold">
+          I agree that From Victory may use my information to contact me about
+          early access, product updates, and launch announcements, and I
+          acknowledge the{" "}
+          <Link
+            href="/privacy"
+            className="text-cream underline underline-offset-2 hover:text-gold"
+          >
             Privacy Policy
-          </Link>{" "}
-          and{" "}
-          <Link href="/terms" className="text-cream underline underline-offset-2 hover:text-gold">
-            Terms
           </Link>
           .
         </span>
