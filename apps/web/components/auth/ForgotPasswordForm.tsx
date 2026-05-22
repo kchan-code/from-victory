@@ -3,19 +3,42 @@
 import Link from "next/link";
 import { useFormState } from "react-dom";
 
-import { signIn, type AuthActionState } from "@/lib/actions/auth";
+import {
+  requestPasswordReset,
+  type AuthActionState,
+} from "@/lib/actions/auth";
 
 import { Field } from "./Field";
 import { SubmitButton } from "./SubmitButton";
 
 const initialState: AuthActionState = null;
 
-export function SignInForm() {
-  const [state, formAction] = useFormState(signIn, initialState);
+export function ForgotPasswordForm() {
+  const [state, formAction] = useFormState(requestPasswordReset, initialState);
   const fieldError = (name: string) =>
     state && !state.ok && state.field === name ? state.error : undefined;
   const formError =
     state && !state.ok && !state.field ? state.error : undefined;
+
+  if (state?.ok) {
+    return (
+      <div role="status" aria-live="polite">
+        <p className="font-body text-cream/85 text-[15px] leading-relaxed mb-4">
+          If an account exists for that email, we&rsquo;ve sent reset
+          instructions. Check your inbox — and your spam folder, just in case.
+        </p>
+        <p className="font-body text-cream/60 text-[14px] leading-relaxed mb-6">
+          The reset link works for one hour.
+        </p>
+        <Link
+          href="/signin"
+          className="text-gold hover:text-gold-bright no-underline font-heading font-semibold text-[14px]"
+        >
+          Back to sign in
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction} noValidate>
@@ -28,23 +51,6 @@ export function SignInForm() {
         required
         error={fieldError("email")}
       />
-      <Field
-        id="password"
-        name="password"
-        label="Password"
-        type="password"
-        autoComplete="current-password"
-        required
-        error={fieldError("password")}
-      />
-      <p className="-mt-3 mb-5 font-body text-[13px]">
-        <Link
-          href="/forgot-password"
-          className="text-cream/60 hover:text-cream underline decoration-cream/30 hover:decoration-cream"
-        >
-          Forgot password?
-        </Link>
-      </p>
       {formError ? (
         <p
           className="mb-5 font-body text-[14px] text-red-400"
@@ -53,14 +59,14 @@ export function SignInForm() {
           {formError}
         </p>
       ) : null}
-      <SubmitButton pendingLabel="Signing in…">Sign in</SubmitButton>
+      <SubmitButton pendingLabel="Sending…">Send reset link</SubmitButton>
       <p className="mt-6 font-body text-[14px] text-cream/60 text-center">
-        New here?{" "}
+        Remembered it?{" "}
         <Link
-          href="/signup"
+          href="/signin"
           className="text-gold hover:text-gold-bright no-underline"
         >
-          Create a parent account
+          Back to sign in
         </Link>
       </p>
     </form>

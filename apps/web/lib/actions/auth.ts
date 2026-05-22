@@ -147,3 +147,110 @@ export async function signOut() {
   await supabase.auth.signOut();
   redirect("/");
 }
+
+// -----------------------------------------------------------------------------
+// Password reset (parent flow only — athletes have no email; their recovery
+// path is "ask your parent for a new pairing link")
+// -----------------------------------------------------------------------------
+
+const RequestPasswordResetSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Enter a valid email."),
+});
+
+const UpdatePasswordSchema = z.object({
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters.")
+    .max(72, "Password is too long."),
+});
+
+const PUBLIC_SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.fromvictoryapp.com";
+
+// Athletes are created with synthetic emails under this domain (PR-04c).
+// They have no real inbox and recover via parent-generated pairing links —
+// not via this flow. Guard short-circuits any attempt to trigger a reset
+// against an athlete address.
+const ATHLETE_SYNTHETIC_EMAIL_DOMAIN = "@athletes.fromvictoryapp.app";
+
+export async function requestPasswordReset(
+  _prev: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = RequestPasswordResetSchema.safeParse({
+    email: formData.get("email"),
+  });
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    return {
+      ok: false,
+      error: issue?.message ?? "Invalid input.",
+      field: issue?.path[0]?.toString(),
+    };
+  }
+
+  // Anti-enumeration: return ok:true whether the email is a parent account,
+  // an athlete synthetic address, or doesn't exist at all. But short-circuit
+  // the actual Supabase call when we recognize an athlete address so we
+  // don't burn an email send on an undeliverable inbox.
+  if (parsed.data.email.endsWith(ATHLETE_SYNTHETIC_EMAIL_DOMAIN)) {
+    return { ok: true };
+  }
+
+  const supabase = createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    parsed.data.email,
+    {
+      redirectTo: `${PUBLIC_SITE_URL}/auth/callback?next=/reset-password`,
+    },
+  );
+  if (error) {
+    // Log diagnostic; user-facing response stays generic to prevent
+    // account enumeration (we return ok:true whether or not the email
+    // matched an existing account).
+    console.error(
+      `[auth.requestPasswordReset] resetPasswordForEmail failed: ${error.message} (status=${error.status ?? "n/a"} code=${error.code ?? "n/a"})`,
+    );
+  }
+  return { ok: true };
+}
+
+export async function updatePassword(
+  _prev: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = UpdatePasswordSchema.safeParse({
+    password: formData.get("password"),
+  });
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    return {
+      ok: false,
+      error: issue?.message ?? "Invalid input.",
+      field: issue?.path[0]?.toString(),
+    };
+  }
+
+  const supabase = createClient();
+  const { error } = await supabase.auth.updateUser({
+    password: parsed.data.password,
+  });
+  if (error) {
+    console.error(
+      `[auth.updatePassword] updateUser failed: ${error.message} (status=${error.status ?? "n/a"} code=${error.code ?? "n/a"})`,
+    );
+    if (error.message?.toLowerCase().includes("session")) {
+      return {
+        ok: false,
+        error:
+          "Your reset link expired. Request a new one from the forgot-password page.",
+      };
+    }
+    return {
+      ok: false,
+      error: "We couldn't update your password. Try again in a minute.",
+    };
+  }
+
+  redirect("/dashboard");
+}
