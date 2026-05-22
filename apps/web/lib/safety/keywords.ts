@@ -1,8 +1,15 @@
 import "server-only";
 
-// Loaded from @from-victory/content at server start. The keyword vocabulary
-// is a stub pending clinical-advisor review per CLAUDE.md Open Items.
-import keywordsData from "@from-victory/content/safety-keywords.json";
+// Loaded at server start. The keyword vocabulary is a stub pending
+// clinical-advisor review per CLAUDE.md Open Items.
+//
+// CLAUDE.md originally specified this file at packages/content/
+// safety-keywords.json so it could be shared across future apps. That
+// abstraction is deferred — Vercel's default monorepo install didn't
+// resolve npm workspaces reliably, and we have only one app today.
+// When PR-07 lands shared training-session content and requires a
+// proper monorepo Vercel build, move this back into packages/content.
+import keywordsData from "./safety-keywords.json";
 
 export type SafetyResourcesFocus =
   | "988_lifeline"
