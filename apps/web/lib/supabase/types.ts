@@ -350,6 +350,36 @@ export type Database = {
         }
         Relationships: []
       }
+      waitlist_signups: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          note: string | null
+          role: string
+          sport: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          note?: string | null
+          role: string
+          sport: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          note?: string | null
+          role?: string
+          sport?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       athlete_session_metadata: {
