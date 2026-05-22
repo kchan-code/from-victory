@@ -32,7 +32,7 @@ const WaitlistSchema = z.object({
     .optional()
     .transform((v) => (v && v.length > 0 ? v : undefined)),
   consent: z.literal("on", {
-    message: "You need to agree to the Privacy Policy.",
+    message: "You need to agree to the Terms of Use and acknowledge the Privacy Policy.",
   }),
   // Honeypot. Real users leave this blank; bots fill every field.
   // Submissions with a non-empty value are silently accepted (no DB write,
