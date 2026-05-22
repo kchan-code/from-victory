@@ -165,7 +165,7 @@ export async function claimPairing(
     await service.auth.admin.getUserById(athleteId);
   if (userError || !userData.user?.email) {
     console.error(
-      `[pairings.claim] post-consume getUserById failed (athleteId=${athleteId}); code is burned, athlete needs a fresh pairing link: ${userError?.message ?? "no email"}`,
+      `[pairings.claim] post-consume getUserById failed (athleteId=${athleteId}); code is burned, athlete needs a fresh pairing link: ${userError?.message ?? "no email"} (status=${userError?.status ?? "n/a"} code=${userError?.code ?? "n/a"})`,
     );
     return { ok: false, error: "Could not complete pairing. Please try again." };
   }
@@ -180,7 +180,7 @@ export async function claimPairing(
   );
   if (pwError) {
     console.error(
-      `[pairings.claim] post-consume updateUserById failed (athleteId=${athleteId}); code is burned, athlete needs a fresh pairing link: ${pwError.message}`,
+      `[pairings.claim] post-consume updateUserById failed (athleteId=${athleteId}); code is burned, athlete needs a fresh pairing link: ${pwError.message} (status=${pwError.status ?? "n/a"} code=${pwError.code ?? "n/a"})`,
     );
     return { ok: false, error: "Could not set the password. Please try again." };
   }
@@ -196,7 +196,7 @@ export async function claimPairing(
   });
   if (signInError) {
     console.error(
-      `[pairings.claim] post-consume signInWithPassword failed (athleteId=${athleteId}); cookie is set, athlete can retry from /signin: ${signInError.message}`,
+      `[pairings.claim] post-consume signInWithPassword failed (athleteId=${athleteId}); cookie is set, athlete can retry from /signin: ${signInError.message} (status=${signInError.status ?? "n/a"} code=${signInError.code ?? "n/a"})`,
     );
     // Cookie is set; athlete can retry from /signin which will show
     // password-only form with the device cookie binding.
@@ -239,7 +239,7 @@ export async function athleteSignIn(
     await service.auth.admin.getUserById(athleteId);
   if (userError || !userData.user?.email) {
     console.error(
-      `[pairings.athleteSignIn] getUserById failed (athleteId=${athleteId}): ${userError?.message ?? "no email"}`,
+      `[pairings.athleteSignIn] getUserById failed (athleteId=${athleteId}): ${userError?.message ?? "no email"} (status=${userError?.status ?? "n/a"} code=${userError?.code ?? "n/a"})`,
     );
     return { ok: false, error: "Sign-in is unavailable. Please try again." };
   }
@@ -250,6 +250,12 @@ export async function athleteSignIn(
     password: parsed.data.password,
   });
   if (signInError) {
+    // Generic user-facing message (no enumeration). Server-side log carries
+    // the diagnostic — distinguishes wrong-password from rate-limit /
+    // network conditions.
+    console.error(
+      `[pairings.athleteSignIn] signInWithPassword failed (athleteId=${athleteId}): ${signInError.message} (status=${signInError.status ?? "n/a"} code=${signInError.code ?? "n/a"})`,
+    );
     return { ok: false, error: "Password is incorrect." };
   }
 
