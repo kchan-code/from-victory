@@ -5,7 +5,6 @@ const productLinks = [
   { href: "#how", label: "How it works" },
   { href: "#app", label: "The app" },
   { href: "#waitlist", label: "Join waitlist" },
-  { href: "#sports", label: "Sports roadmap" },
 ];
 
 const forLinks = [

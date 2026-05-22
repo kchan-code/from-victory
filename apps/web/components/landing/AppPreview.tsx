@@ -13,7 +13,7 @@ export function AppPreview() {
       <div className="fv-preview-bg absolute inset-0 pointer-events-none" />
       <div className="relative mx-auto max-w-[1240px] px-5 sm:px-8">
         <Reveal>
-          <SectionMeta num="05" label="The app" />
+          <SectionMeta num="04" label="The app" />
         </Reveal>
         <Reveal>
           <div className="grid gap-x-16 gap-y-10 items-end mb-6 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">

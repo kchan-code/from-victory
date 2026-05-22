@@ -7,7 +7,6 @@ import { HowItWorks } from "@/components/landing/HowItWorks";
 import { LandingIconDefs } from "@/components/landing/icons";
 import { Problem } from "@/components/landing/Problem";
 import { ScrollNav } from "@/components/landing/ScrollNav";
-import { Sports } from "@/components/landing/Sports";
 import { Waitlist } from "@/components/landing/Waitlist";
 
 export default function LandingPage() {
@@ -21,7 +20,6 @@ export default function LandingPage() {
       <Framework />
       <HowItWorks />
       <AppPreview />
-      <Sports />
       <Faith />
       <Waitlist />
       <Footer />
