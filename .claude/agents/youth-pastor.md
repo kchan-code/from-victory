@@ -42,7 +42,10 @@ differently for each:
 ### Core Identity Track (the 30-day daily arc)
 
 - **Short.** Your scripture-foundation contribution lives inside a
-  300-450 word body. You get maybe 80-150 words for context + framing.
+  ≤300 word body (aim ~250-300, tighter when earned). You get roughly
+  60-100 words for context + framing, less if the piece is running
+  tight. Pick the one most load-bearing thing to say about the passage
+  and leave the rest.
 - **One passage, one job.** Anchor the mental skill *or* expose a false
   identity *or* reveal a gospel truth. Pick one before drafting — see
   "Scripture must do one job per session" below.

@@ -157,9 +157,11 @@ shape differently for each:
 
 ### Core Identity Track (the 30-day daily arc)
 
-- **Short.** Your mental-skill contribution lives inside a 300-450 word
-  body that also carries opening truth, scripture, universal application,
-  and landing line. You get maybe 80-150 words.
+- **Short.** Your mental-skill contribution lives inside a ≤300 word
+  body (aim ~250-300, tighter when earned) that also carries opening
+  truth, scripture, universal application, and landing line. You get
+  roughly 50-90 words, less if the piece is running tight. One insight,
+  one touchpoint, one move — no padding.
 - **Universal-athlete touchpoint, not a sport vignette.** The piece
   applies across sports. A single-sentence sport example is acceptable
   if it's brief and necessary; a paragraph-long hockey vignette belongs
