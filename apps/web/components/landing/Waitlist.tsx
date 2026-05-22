@@ -6,8 +6,8 @@ import { WaitlistForm } from "./WaitlistForm";
 const bullets = [
   {
     icon: "flame" as const,
-    title: "First in line for the hockey beta",
-    body: "Early access invitations roll out by sport, starting with hockey.",
+    title: "First in line for early access",
+    body: "Invitations roll out as we open the app by sport.",
   },
   {
     icon: "book" as const,
