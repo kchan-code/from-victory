@@ -39,6 +39,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      athlete_sessions: {
+        Row: {
+          athlete_id: string
+          catalog_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          started_at: string
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          catalog_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          started_at?: string
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          catalog_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          started_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_sessions_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_sessions_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       device_pairings: {
         Row: {
           athlete_id: string
@@ -77,6 +122,48 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journal_entries: {
+        Row: {
+          athlete_id: string
+          athlete_session_id: string
+          content: string
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          athlete_session_id: string
+          content: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          athlete_session_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_entries_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_entries_athlete_session_id_fkey"
+            columns: ["athlete_session_id"]
+            isOneToOne: true
+            referencedRelation: "athlete_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -185,9 +272,64 @@ export type Database = {
           },
         ]
       }
+      training_sessions_catalog: {
+        Row: {
+          created_at: string
+          day_number: number
+          id: string
+          journal_prompt: string
+          mental_skill_md: string
+          scripture_ref: string
+          scripture_text: string
+          sport: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_number: number
+          id?: string
+          journal_prompt: string
+          mental_skill_md: string
+          scripture_ref: string
+          scripture_text: string
+          sport?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_number?: number
+          id?: string
+          journal_prompt?: string
+          mental_skill_md?: string
+          scripture_ref?: string
+          scripture_text?: string
+          sport?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      athlete_session_metadata: {
+        Row: {
+          athlete_id: string | null
+          last_completed_at: string | null
+          sessions_completed: number | null
+          sessions_started: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_sessions_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
