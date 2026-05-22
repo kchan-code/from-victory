@@ -1,11 +1,14 @@
-// client: waitlist form. Visual-only stub for now — validates name/email
-// locally then renders the success state. Persistence wiring (server
-// action + supabase) is deferred to a follow-up PR.
+// client: waitlist form. Submits to a Supabase-backed server action,
+// fires an admin notification email, and renders an idempotent success
+// state on duplicate submissions.
 "use client";
 
-import { useState, type FormEvent } from "react";
+import Link from "next/link";
+import { useFormState, useFormStatus } from "react-dom";
+import { useState } from "react";
 import { FlameMark } from "@/components/ui";
 import { SvgIcon } from "./SvgIcon";
+import { submitWaitlist, type WaitlistActionState } from "@/lib/actions/waitlist";
 
 const ROLES = ["Athlete", "Parent", "Coach", "Other"] as const;
 const SPORTS = [
@@ -23,18 +26,13 @@ const SPORTS = [
 ] as const;
 
 export function WaitlistForm() {
-  const [submitted, setSubmitted] = useState(false);
+  const [state, formAction] = useFormState<WaitlistActionState, FormData>(
+    submitWaitlist,
+    null,
+  );
   const [role, setRole] = useState<(typeof ROLES)[number]>("Athlete");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!name.trim() || !email.trim()) return;
-    setSubmitted(true);
-  }
-
-  if (submitted) {
+  if (state?.ok) {
     return (
       <div
         className="rounded-[18px] p-7 text-center"
@@ -50,19 +48,25 @@ export function WaitlistForm() {
           <FlameMark size={40} />
         </div>
         <h4 className="font-heading font-semibold text-[22px] tracking-[-0.01em] m-0 mb-2 text-cream">
-          You&apos;re on the list.
+          {state.alreadyOnList
+            ? "You're already on the list."
+            : "You're on the list."}
         </h4>
         <p className="text-cream/70 m-0">
-          We&apos;ll keep you updated as From Victory gets ready to launch. Glad
-          you&apos;re here.
+          {state.alreadyOnList
+            ? "Glad you're with us. We'll keep you updated."
+            : "We'll keep you updated as From Victory gets ready to launch. Glad you're here."}
         </p>
       </div>
     );
   }
 
+  const errorField = state && !state.ok ? state.field : undefined;
+  const errorMessage = state && !state.ok ? state.error : undefined;
+
   return (
     <form
-      onSubmit={handleSubmit}
+      action={formAction}
       noValidate
       className="bg-charcoal border border-hairline rounded-[24px] p-8"
     >
@@ -75,27 +79,29 @@ export function WaitlistForm() {
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-        <Field id="w-name" label="Name">
+        <Field id="w-name" label="First name">
           <input
             id="w-name"
+            name="name"
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            autoComplete="name"
-            placeholder="Jordan T."
+            autoComplete="given-name"
+            placeholder="Jordan"
             required
+            maxLength={120}
+            aria-invalid={errorField === "name"}
             className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[15px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18]"
           />
         </Field>
         <Field id="w-email" label="Email">
           <input
             id="w-email"
+            name="email"
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
             placeholder="you@email.com"
             required
+            maxLength={320}
+            aria-invalid={errorField === "email"}
             className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[15px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18]"
           />
         </Field>
@@ -160,27 +166,89 @@ export function WaitlistForm() {
           id="w-note"
           name="note"
           placeholder="What are you hoping this helps with?"
+          maxLength={1000}
           className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[15px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18] resize-y min-h-20"
         />
       </Field>
 
-      <button
-        type="submit"
-        className="w-full mt-1.5 inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
+      {/* Honeypot — hidden from sighted users + assistive tech.
+          Real users leave it blank; bots fill it. */}
+      <div
+        aria-hidden="true"
+        style={{ position: "absolute", left: "-10000px", top: "auto", width: "1px", height: "1px", overflow: "hidden" }}
       >
-        Join the waitlist
-        <SvgIcon name="arrow" size={16} />
-      </button>
-
-      <div className="flex justify-center mt-4">
-        <a
-          href="#audiences"
-          className="fv-eyebrow text-cream/50 no-underline hover:text-cream"
-        >
-          I&apos;m a coach or parent →
-        </a>
+        <label htmlFor="w-website">
+          Website (leave blank)
+          <input
+            id="w-website"
+            name="website"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+          />
+        </label>
       </div>
+
+      <label className="flex items-start gap-2.5 mt-4 text-cream/70 text-[13px] leading-snug">
+        <input
+          type="checkbox"
+          name="consent"
+          required
+          className="mt-1 accent-cobalt cursor-pointer"
+          aria-invalid={errorField === "consent"}
+        />
+        <span>
+          I agree to the{" "}
+          <Link href="/privacy" className="text-cream underline underline-offset-2 hover:text-gold">
+            Privacy Policy
+          </Link>{" "}
+          and{" "}
+          <Link href="/terms" className="text-cream underline underline-offset-2 hover:text-gold">
+            Terms
+          </Link>
+          .
+        </span>
+      </label>
+
+      {errorMessage && (
+        <div
+          role="alert"
+          className="mt-3 rounded-[10px] border border-[rgba(229,62,76,0.4)] bg-[rgba(229,62,76,0.08)] px-3.5 py-3 text-[13px] text-[#ffb3b9]"
+        >
+          {errorMessage}
+        </div>
+      )}
+
+      <SubmitButton />
+
+      <p className="mt-4 text-cream/55 text-[12px] leading-relaxed">
+        By joining the waitlist, you agree that From Victory may use your information
+        to contact you about early access, product updates, and launch announcements.
+        We do not sell your personal information. If you are under 13, a parent or
+        guardian should submit this form. See our{" "}
+        <Link
+          href="/privacy"
+          className="text-cream/85 underline underline-offset-2 hover:text-gold transition-colors duration-fast ease-out"
+        >
+          Privacy Policy
+        </Link>
+        .
+      </p>
     </form>
+  );
+}
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="w-full mt-4 inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed"
+    >
+      {pending ? "Joining…" : "Join the waitlist"}
+      {!pending && <SvgIcon name="arrow" size={16} />}
+    </button>
   );
 }
 

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 const productLinks = [
   { href: "#how", label: "How it works" },
@@ -17,8 +18,8 @@ const forLinks = [
 const companyLinks = [
   { href: "#", label: "About" },
   { href: "#", label: "Contact" },
-  { href: "#", label: "Privacy" },
-  { href: "#", label: "Terms" },
+  { href: "/privacy", label: "Privacy" },
+  { href: "/terms", label: "Terms" },
 ];
 
 export function Footer() {
@@ -121,16 +122,24 @@ function FooterColumn({
         {title}
       </h5>
       <ul className="list-none p-0 m-0 flex flex-col gap-3">
-        {links.map((l) => (
-          <li key={l.label}>
-            <a
-              href={l.href}
-              className="font-body text-[14px] text-cream/70 no-underline hover:text-cream transition-colors duration-fast ease-out"
-            >
-              {l.label}
-            </a>
-          </li>
-        ))}
+        {links.map((l) => {
+          const isRoute = l.href.startsWith("/");
+          const className =
+            "font-body text-[14px] text-cream/70 no-underline hover:text-cream transition-colors duration-fast ease-out";
+          return (
+            <li key={l.label}>
+              {isRoute ? (
+                <Link href={l.href} className={className}>
+                  {l.label}
+                </Link>
+              ) : (
+                <a href={l.href} className={className}>
+                  {l.label}
+                </a>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
