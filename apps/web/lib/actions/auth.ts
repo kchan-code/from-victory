@@ -17,6 +17,10 @@ const SignUpSchema = z.object({
     .trim()
     .min(1, "First name is required.")
     .max(50, "First name is too long."),
+  consent: z.literal("on", {
+    message:
+      "You need to agree to the Terms of Use and acknowledge the Privacy Policy.",
+  }),
 });
 
 const SignInSchema = z.object({
@@ -37,6 +41,7 @@ export async function signUp(
     email: formData.get("email"),
     password: formData.get("password"),
     first_name: formData.get("first_name"),
+    consent: formData.get("consent"),
   });
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
