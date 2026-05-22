@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "npm ci && echo '=== node_modules/@from-victory ===' && ls -la node_modules/@from-victory/ 2>&1 || true && echo '=== apps/web/node_modules/@from-victory ===' && ls -la apps/web/node_modules/@from-victory/ 2>&1 || true",
+  "installCommand": "echo '=== cwd:' && pwd && echo '=== ls:' && ls -la && echo '=== install:' && npm ci && echo '=== root node_modules/@from-victory ===' && ls -la node_modules/@from-victory/ 2>&1 || true && echo '=== apps/web node_modules/@from-victory ===' && ls -la apps/web/node_modules/@from-victory/ 2>&1 || true",
   "buildCommand": "npm run build",
   "outputDirectory": "apps/web/.next"
 }
