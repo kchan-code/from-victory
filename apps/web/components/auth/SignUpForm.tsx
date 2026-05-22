@@ -49,6 +49,40 @@ export function SignUpForm() {
         hint="At least 8 characters."
         error={fieldError("password")}
       />
+      <label className="flex items-start gap-2.5 mt-1 mb-5 text-cream/70 text-[13px] leading-snug">
+        <input
+          type="checkbox"
+          name="consent"
+          required
+          className="mt-1 accent-cobalt cursor-pointer"
+          aria-invalid={fieldError("consent") !== undefined}
+        />
+        <span>
+          I agree to the{" "}
+          <Link
+            href="/terms"
+            className="text-cream underline underline-offset-2 hover:text-gold"
+          >
+            Terms of Use
+          </Link>{" "}
+          and acknowledge the{" "}
+          <Link
+            href="/privacy"
+            className="text-cream underline underline-offset-2 hover:text-gold"
+          >
+            Privacy Policy
+          </Link>
+          .
+        </span>
+      </label>
+      {fieldError("consent") ? (
+        <p
+          className="-mt-3 mb-5 font-body text-[14px] text-red-400"
+          role="alert"
+        >
+          {fieldError("consent")}
+        </p>
+      ) : null}
       {formError ? (
         <p
           className="mb-5 font-body text-[14px] text-red-400"
