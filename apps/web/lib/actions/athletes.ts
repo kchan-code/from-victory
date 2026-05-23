@@ -5,10 +5,10 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { ageFromBirthdate } from "@/lib/age";
+import { ATHLETE_SYNTHETIC_EMAIL_DOMAIN } from "@/lib/auth/athlete-email";
 import { requireParent } from "@/lib/auth/guards";
 import { createServiceClient } from "@/lib/supabase/service";
 
-const ATHLETE_EMAIL_DOMAIN = "athletes.fromvictory.app";
 const MIN_ATHLETE_AGE = 13;
 
 const CreateAthleteSchema = z
@@ -58,7 +58,7 @@ export async function createAthlete(
   const { userId: parentId } = await requireParent();
   const service = createServiceClient();
 
-  const email = `athlete-${randomUUID()}@${ATHLETE_EMAIL_DOMAIN}`;
+  const email = `athlete-${randomUUID()}@${ATHLETE_SYNTHETIC_EMAIL_DOMAIN}`;
   const tempPassword = randomBytes(32).toString("base64url");
 
   const { data: created, error: createError } =

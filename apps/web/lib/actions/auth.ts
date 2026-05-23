@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { isSyntheticAthleteEmail } from "@/lib/auth/athlete-email";
 import { createServiceClient } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
 
@@ -167,11 +168,11 @@ const UpdatePasswordSchema = z.object({
 const PUBLIC_SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.fromvictoryapp.com";
 
-// Athletes are created with synthetic emails under this domain (PR-04c).
-// They have no real inbox and recover via parent-generated pairing links —
-// not via this flow. Guard short-circuits any attempt to trigger a reset
-// against an athlete address.
-const ATHLETE_SYNTHETIC_EMAIL_DOMAIN = "@athletes.fromvictoryapp.app";
+// Athletes paired via the parent flow (PR-04c) have synthetic emails;
+// they recover via a new parent-generated pairing link, not this flow.
+// Direct-signup athletes (admin-created beta path) have real emails and
+// DO go through this flow. isSyntheticAthleteEmail() distinguishes them
+// — see lib/auth/athlete-email.ts for the canonical domain.
 
 export async function requestPasswordReset(
   _prev: AuthActionState,
@@ -193,7 +194,7 @@ export async function requestPasswordReset(
   // an athlete synthetic address, or doesn't exist at all. But short-circuit
   // the actual Supabase call when we recognize an athlete address so we
   // don't burn an email send on an undeliverable inbox.
-  if (parsed.data.email.endsWith(ATHLETE_SYNTHETIC_EMAIL_DOMAIN)) {
+  if (isSyntheticAthleteEmail(parsed.data.email)) {
     return { ok: true };
   }
 
