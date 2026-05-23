@@ -65,8 +65,14 @@ export function ScrollNav() {
               Faith
             </a>
             <a
+              href="/signin"
+              className="inline-flex items-center bg-transparent text-cream border border-hairline-strong hover:border-cream/50 font-heading font-semibold text-[13px] rounded-pill px-[18px] py-[11px] no-underline transition-colors duration-base ease-out"
+            >
+              Sign in
+            </a>
+            <a
               href="#waitlist"
-              className="ml-3 inline-flex items-center gap-2 bg-gold text-onyx border border-gold font-heading font-semibold text-[13px] rounded-pill px-[18px] py-[11px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright"
+              className="ml-2 inline-flex items-center gap-2 bg-gold text-onyx border border-gold font-heading font-semibold text-[13px] rounded-pill px-[18px] py-[11px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright"
             >
               Join the waitlist
               <SvgIcon name="arrow" size={14} />
