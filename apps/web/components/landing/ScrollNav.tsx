@@ -65,6 +65,12 @@ export function ScrollNav() {
               Faith
             </a>
             <a
+              href="/signin"
+              className="hidden sm:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
+            >
+              Sign in
+            </a>
+            <a
               href="#waitlist"
               className="ml-3 inline-flex items-center gap-2 bg-gold text-onyx border border-gold font-heading font-semibold text-[13px] rounded-pill px-[18px] py-[11px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright"
             >
