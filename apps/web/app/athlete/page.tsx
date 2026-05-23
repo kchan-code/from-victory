@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import { signOut } from "@/lib/actions/auth";
 import { requireAthlete } from "@/lib/auth/guards";
@@ -45,6 +46,36 @@ export default async function AthleteHomePage() {
             like.
           </p>
         </section>
+
+        <Link
+          href="/athlete/pregame"
+          className="block mb-8 rounded-2xl border border-[rgba(223,175,55,0.4)] no-underline transition-colors duration-base ease-out hover:border-gold"
+          style={{
+            background:
+              "linear-gradient(180deg,rgba(223,175,55,0.10),rgba(223,175,55,0)),var(--bg-elev-1)",
+          }}
+        >
+          <div className="p-6 sm:p-7 flex items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold mb-2">
+                Game day
+              </p>
+              <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[20px] sm:text-[22px] leading-[1.15] mb-1.5">
+                Start pregame
+              </p>
+              <p className="font-body text-cream/65 text-[14px] leading-relaxed">
+                A short guided flow — visualization, breath, and a settled
+                identity — before you step on.
+              </p>
+            </div>
+            <span
+              aria-hidden="true"
+              className="font-display text-gold text-[28px] leading-none flex-none"
+            >
+              →
+            </span>
+          </div>
+        </Link>
 
         <article className="bg-charcoal border border-hairline rounded-2xl p-7 sm:p-9 mb-8">
           <div className="flex items-center justify-between mb-6">
