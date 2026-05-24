@@ -2,17 +2,28 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// Stable callback ref pattern: the parent passes a fresh `onComplete` closure
-// on every render (sets `breathDone` in state, which re-renders the parent).
-// If we put `onComplete` in the rAF effect's dep array, every parent render
-// tears down the in-flight breathing animation and re-arms it — visible glitch
-// at the end of a phase. We mirror the latest closure into a ref instead so
-// the effect depends only on actual breathing state.
-
 // 4-in / 6-out box-breathing variant. Cobalt-glowing orb that resolves to a
 // gold "Ready" state on completion. PETTLEP-friendly: visual + numeric cue.
+//
+// Two modes:
+//   1. Standalone (default) — sphere owns the timer. User taps to start;
+//      sphere cycles rounds via rAF; calls onComplete on natural finish.
+//   2. Controlled — parent supplies phase + t + round (and isPlaying for
+//      hint state). Used when audio drives the rhythm: BreathScreen reads
+//      audio.currentTime, maps it to phase/t via the timeline JSON, and
+//      passes it down. Internal timer is disabled.
 
 type Phase = "idle" | "inhale" | "exhale" | "done";
+
+export type ControlledBreath = {
+  phase: Phase;
+  // 0..1 within the current phase.
+  t: number;
+  // Current/last round index (0-based).
+  round: number;
+  // True while audio is playing; affects pip + label hints.
+  isPlaying: boolean;
+};
 
 export function BreathingSphere({
   rounds = 4,
@@ -22,6 +33,7 @@ export function BreathingSphere({
   autoStart = false,
   onComplete,
   compact = false,
+  controlled,
 }: {
   rounds?: number;
   inhale?: number;
@@ -30,11 +42,15 @@ export function BreathingSphere({
   autoStart?: boolean;
   onComplete?: () => void;
   compact?: boolean;
+  controlled?: ControlledBreath;
 }) {
+  const isControlled = !!controlled;
+
+  // ── Internal state (standalone mode) ─────────────────────────────────
   const [running, setRunning] = useState(autoStart);
-  const [phase, setPhase] = useState<Phase>("idle");
-  const [round, setRound] = useState(0);
-  const [t, setT] = useState(0);
+  const [phaseInternal, setPhaseInternal] = useState<Phase>("idle");
+  const [roundInternal, setRoundInternal] = useState(0);
+  const [tInternal, setTInternal] = useState(0);
   const rafRef = useRef<number | null>(null);
   const startRef = useRef(0);
   const onCompleteRef = useRef(onComplete);
@@ -43,35 +59,36 @@ export function BreathingSphere({
   }, [onComplete]);
 
   useEffect(() => {
+    if (isControlled) return;
     if (!running) return;
-    if (phase === "idle") {
-      setPhase("inhale");
-      setRound(0);
+    if (phaseInternal === "idle") {
+      setPhaseInternal("inhale");
+      setRoundInternal(0);
       return;
     }
-    if (phase === "done") return;
+    if (phaseInternal === "done") return;
 
-    const dur = (phase === "inhale" ? inhale : exhale) * 1000;
+    const dur = (phaseInternal === "inhale" ? inhale : exhale) * 1000;
     startRef.current = performance.now();
     const tick = (now: number) => {
       const elapsed = now - startRef.current;
       const p = Math.min(1, elapsed / dur);
-      setT(p);
+      setTInternal(p);
       if (p < 1) {
         rafRef.current = requestAnimationFrame(tick);
         return;
       }
-      if (phase === "inhale") {
-        setPhase("exhale");
+      if (phaseInternal === "inhale") {
+        setPhaseInternal("exhale");
       } else {
-        const next = round + 1;
+        const next = roundInternal + 1;
         if (next >= rounds) {
-          setPhase("done");
+          setPhaseInternal("done");
           setRunning(false);
           onCompleteRef.current?.();
         } else {
-          setRound(next);
-          setPhase("inhale");
+          setRoundInternal(next);
+          setPhaseInternal("inhale");
         }
       }
     };
@@ -79,7 +96,13 @@ export function BreathingSphere({
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [phase, running, round, inhale, exhale, rounds]);
+  }, [phaseInternal, running, roundInternal, inhale, exhale, rounds, isControlled]);
+
+  // ── Resolve display state from whichever source is active ──────────────
+  const phase: Phase = isControlled ? controlled.phase : phaseInternal;
+  const round = isControlled ? controlled.round : roundInternal;
+  const t = isControlled ? controlled.t : tInternal;
+  const isPlaying = isControlled ? controlled.isPlaying : running;
 
   const ease = (x: number) =>
     x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
@@ -113,33 +136,42 @@ export function BreathingSphere({
   const orbBorder = isDone ? "rgba(223,175,55,0.55)" : "rgba(61,114,255,0.55)";
 
   const handleClick = () => {
+    if (isControlled) return; // parent owns play/pause
     if (phase === "done") return;
     if (!running) {
       setRunning(true);
-      if (phase === "idle") setPhase("inhale");
+      if (phase === "idle") setPhaseInternal("inhale");
     }
   };
 
+  const interactive = !isControlled && !isDone;
+
   return (
     <div
-      role="button"
-      tabIndex={0}
-      aria-label={
-        phase === "idle"
-          ? "Start guided breathing"
-          : phase === "done"
-            ? "Breathing complete"
-            : `${label}: ${countdown} seconds`
-      }
-      onClick={handleClick}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          handleClick();
-        }
-      }}
+      {...(interactive
+        ? {
+            role: "button" as const,
+            tabIndex: 0,
+            "aria-label":
+              phase === "idle"
+                ? "Start guided breathing"
+                : `${label}: ${countdown} seconds`,
+            onClick: handleClick,
+            onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleClick();
+              }
+            },
+          }
+        : {
+            "aria-label":
+              phase === "done"
+                ? "Breathing complete"
+                : `${label}${countdown > 0 ? `: ${countdown} seconds` : ""}`,
+          })}
       className="relative flex flex-none items-center justify-center"
-      style={{ width: size, height: size, cursor: isDone ? "default" : "pointer" }}
+      style={{ width: size, height: size, cursor: interactive ? "pointer" : "default" }}
     >
       <div
         className="pointer-events-none absolute inset-0 rounded-full transition-colors duration-slow"
@@ -191,7 +223,7 @@ export function BreathingSphere({
         <span className="mt-2 font-mono text-[10px] uppercase tracking-[0.22em] text-cream/50">
           {sub}
         </span>
-        {!isDone && running && countdown > 0 && (
+        {!isDone && isPlaying && countdown > 0 && (
           <span className="mt-2.5 font-mono text-[11px] tracking-[0.16em] text-cream/40">
             {countdown}
           </span>
@@ -208,7 +240,7 @@ export function BreathingSphere({
                 background:
                   i < round || isDone
                     ? "var(--fv-gold)"
-                    : i === round && running
+                    : i === round && isPlaying
                       ? "rgba(61,114,255,0.65)"
                       : "rgba(247,247,247,0.10)",
               }}

@@ -1,6 +1,9 @@
 "use client";
 
+import { useCallback } from "react";
+
 import { BreathingSphere } from "./BreathingSphere";
+import { useBreathAudio } from "./audio/useBreathAudio";
 import {
   Button,
   Card,
@@ -96,6 +99,13 @@ export function PregameStart({
 // Required before any setup choices. 4-in / 6-out, three rounds, no hold.
 // Sphere is the hero; copy stays minimal so the screen feels like a door,
 // not a survey.
+//
+// Two render paths:
+//   1. Audio-driven — loads /audio/pregame/breath-threshold.mp3 + timeline
+//      JSON. Sphere runs in controlled mode synced to audio.currentTime.
+//   2. Standalone fallback — if MP3/JSON 404 or autoplay fails, sphere
+//      runs on its internal rAF timer (tap-to-start). This is the path
+//      until the generator runs and commits the audio.
 export function BreathScreen({
   state,
   set,
@@ -103,6 +113,18 @@ export function BreathScreen({
   state: PregameState;
   set: SetFn;
 }) {
+  const markDone = useCallback(() => set("breathDone", true), [set]);
+  const audio = useBreathAudio({
+    slug: "breath-threshold",
+    expectedRounds: 3,
+    onComplete: markDone,
+  });
+
+  const audioReady = audio.status === "ready";
+  const showPlayButton =
+    audioReady && !audio.isPlaying && audio.controlled.phase === "idle";
+  const showPauseButton = audioReady && audio.isPlaying;
+
   return (
     <ScreenBody className="flex flex-col">
       <SectionLabel>Step 01 · Threshold</SectionLabel>
@@ -113,15 +135,48 @@ export function BreathScreen({
         Before you choose your focus, lead your body back to ready.
       </p>
 
-      <div className="flex min-h-[360px] flex-1 flex-col items-center justify-center py-3 pb-7">
-        <BreathingSphere
-          rounds={3}
-          inhale={4}
-          exhale={6}
-          size={280}
-          autoStart={false}
-          onComplete={() => set("breathDone", true)}
-        />
+      <div className="relative flex min-h-[360px] flex-1 flex-col items-center justify-center py-3 pb-7">
+        {audioReady ? (
+          <BreathingSphere
+            rounds={3}
+            inhale={4}
+            exhale={6}
+            size={280}
+            controlled={audio.controlled}
+          />
+        ) : (
+          <BreathingSphere
+            rounds={3}
+            inhale={4}
+            exhale={6}
+            size={280}
+            autoStart={false}
+            onComplete={markDone}
+          />
+        )}
+
+        {audioReady && (
+          // eslint-disable-next-line jsx-a11y/media-has-caption -- transcript
+          // equivalent is rendered as the on-screen "Inhale / Exhale"
+          // labels driven by the sphere; WebVTT track will follow when
+          // the audio script settles.
+          <audio
+            ref={audio.audioRef}
+            src="/audio/pregame/breath-threshold.mp3"
+            preload="auto"
+          />
+        )}
+
+        {(showPlayButton || showPauseButton) && (
+          <button
+            type="button"
+            onClick={() => (audio.isPlaying ? audio.pause() : void audio.play())}
+            aria-label={audio.isPlaying ? "Pause guided breath" : "Play guided breath"}
+            className="absolute bottom-2 flex h-12 w-12 items-center justify-center rounded-full border border-gold bg-gold text-onyx transition-transform duration-fast active:scale-95"
+          >
+            <Icon name={audio.isPlaying ? "pause" : "play"} size={20} />
+          </button>
+        )}
       </div>
 
       <div className="flex justify-center gap-6 pb-2">

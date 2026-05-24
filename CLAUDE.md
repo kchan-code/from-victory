@@ -159,11 +159,18 @@ curator integrates into a single training session in one voice.
 - One landing page
 - Age-gated onboarding (13+ floor); minor protections for 13-17
 - Crisis-resource keyword detection (Option C — see below)
+- **Pregame guided audio session** (~5 min). Athlete makes setup
+  selections, then a real audio narration delivers the visualization,
+  coping plan, and send-off. Added to MVP 2026-05-24 in response to
+  direct beta-tester feedback. Production model (single generic file vs.
+  per-position vs. TTS) is a separate open decision; until the audio
+  ships, the AudioSessionScreen falls back to a text-mode timer.
 
-Out of scope for MVP: video, audio narration, community feed, coach view,
-team mode, native app wrap, multi-sport expansion, AI-personalized content,
-free tier, social sign-in, progressive training plans (that's v2),
-leaderboards (never), 18+ self-onboard/self-pay fork (post-MVP).
+Out of scope for MVP: video, daily training session audio (text-only
+for MVP — only the pregame session has narration), community feed, coach
+view, team mode, native app wrap, multi-sport expansion, AI-personalized
+content, free tier, social sign-in, progressive training plans (that's
+v2), leaderboards (never), 18+ self-onboard/self-pay fork (post-MVP).
 
 ## Non-Negotiable Constraints
 
