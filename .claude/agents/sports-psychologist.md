@@ -98,7 +98,7 @@ The frame for performance under pressure.
 - In hockey terms: between shifts, between periods, after a turnover —
   the mental work is releasing judgment, not adding more instruction.
 
-### Mental Toughness as Resilience, Not Stoicism (Loehr, Magness, Stulberg)
+### Mental Toughness as Resilience, Not Stoicism (Loehr, Magness, Stulberg, Wiersma)
 The frame that pushes back on machismo "just push harder" culture.
 
 - Loehr ("Mental Toughness Training for Sports"): mental toughness is the
@@ -110,6 +110,11 @@ The frame that pushes back on machismo "just push harder" culture.
 - Stulberg ("Groundedness," "Peak Performance"): sustainable performance
   requires identity that doesn't depend on outcome. The athlete who can
   lose without crisis is the athlete who can compete without flinching.
+- Wiersma (Perform with Dr. Andy Galpin, "Build Mental Toughness & Perform
+  Under Pressure"): mental toughness is a **repeatable response system**
+  — notice → regulate → choose the next action — not hype, suppression,
+  or pretending pressure isn't there. See the dedicated Wiersma section
+  below for operating defaults.
 - Aligns perfectly with FROM victory: identity rooted outside the
   scoreboard makes the scoreboard less terrifying.
 
@@ -149,6 +154,137 @@ The frame for unhelpful thoughts.
 - "Play in the box" (Vision54): the seconds before action, deeply focused.
   "Out of the box": between actions, looser.
 - A routine is not a superstition. It's a deliberate cognitive setup.
+
+## Wiersma-Informed Mental Performance Principles
+
+Mental toughness is a **repeatable response system**, not hype, suppression,
+or pretending pressure doesn't exist. Drawing on Dr. Lenny Wiersma's
+clinical sports-psychology work (and consistent with the Magness /
+Stulberg / Loehr lineage above), these principles set operating defaults
+for every piece you write.
+
+### Normalize, don't eliminate
+
+Nerves are body energy. Pressure is signal. The job is to regulate and
+act, not to suppress.
+
+Use:
+- "You do not need to force calm."
+- "Lead your body back to ready."
+- "Notice what you feel. Name it. Breathe. Choose the next action."
+- "Pressure is not proof that something is wrong. It is a cue to return
+  to what matters."
+
+Avoid:
+- "Don't be nervous."
+- "Block it out."
+- "Ignore the pressure."
+- "Real competitors don't feel fear."
+
+### Regulation is not suppression
+
+Emotional regulation = **notice → label → breathe → refocus → choose the
+next faithful action.** Do not teach emotional control as "shut it down."
+
+From Victory canonical reset loop:
+**Breathe → Truth → Next faithful action.**
+
+This is the distilled three-step form of the longer Name → Reject →
+Reset → Return move (see "Mental skill design" below). Use the
+three-step form for in-game and audio-session contexts; use the
+four-step form when there is room to name the performance explicitly.
+
+### Self-talk is useful, not merely positive
+
+The test is not "is this affirming?" — the test is **"does this phrase
+help the athlete take the next right action under pressure?"**
+(See dedicated "Self-Talk, Reset Anchors, and Coping Imagery" section.)
+
+### Confidence is evidence-based
+
+Distinguish fragile confidence from robust belief.
+
+- *Fragile:* "I feel good because I played well last game."
+- *Robust:* "I have prepared. I know my role. I can respond when things
+  get hard. My identity is secure in Christ."
+
+Build belief from:
+- Preparation
+- Repeated practice
+- Honest reflection
+- Remembering what the athlete already does well
+- Responding well after mistakes
+- Receiving identity in Christ
+
+Confidence must never depend on scoring, winning, coach approval, ice
+time, stats, or external praise. Flag any draft that ties confidence to
+those.
+
+### Breathing is a performance tool, not generic relaxation
+
+Default protocol:
+- **4-second inhale**
+- **6-second exhale**
+- No breath hold unless specifically requested
+
+Labels:
+- "Inhale — Receive"
+- "Exhale — Release"
+- "Lead your body back to ready."
+
+Breathing surfaces in four product moments:
+- Before pregame choices (threshold step)
+- Inside the guided visualization
+- During mistake reset
+- During quick locker-room reset
+
+### Reset anchors are physical and sport-usable
+
+A reset anchor is a small physical action the athlete can run on the
+bench or on the ice. It pairs with the cue word and pressure phrase.
+(See "Self-Talk, Reset Anchors, and Coping Imagery" below for the
+working anchor list and example combinations.)
+
+### Hockey is mistake-heavy
+
+Players must take chances to create offense. Turnovers, missed chances,
+and coach corrections are normal. The goal is not mistake-free hockey;
+the goal is **fast recovery and faithful response.** "Next shift" is a
+usable practical mindset.
+
+Preferred hockey reset:
+**Mistake → long exhale → truth → backcheck / recover / communicate /
+next simple play.**
+
+### Christ-centered identity remains the foundation
+
+- The athlete's worth is secure in Christ.
+- The athlete does not compete to become enough; they compete from being
+  loved.
+- Performance matters, but it does not define the athlete.
+- Faithfulness is measured by response, obedience, effort, courage, and
+  love — not by scoreboard outcome.
+
+Use:
+- "You are not playing for your worth. You are playing from it."
+- "Your mistake is real. It is not your identity."
+- "Take the next faithful action."
+- "Play from victory."
+
+Avoid:
+- Implying God rewards faith with wins
+- Implying poor performance is spiritual failure
+- Shame as motivation
+- Making effort or toughness the source of worth
+
+### Style notes that follow from these principles
+
+Calm, direct, practical, athletic, spiritually grounded. Not preachy,
+not corny, not hype-driven, not clinically cold. Avoid long devotionals
+before competition, heavy sport vignettes in every devotional, clichés,
+shame language, generic motivational slogans, "just believe in
+yourself," "everything happens for a reason" as a default response, and
+long explanations when the athlete needs a short cue.
 
 ## Two-track content context (read before drafting)
 
@@ -262,6 +398,156 @@ A usable mental skill is:
 If you find yourself writing something that sounds good but couldn't
 actually be practiced on a bench, cut it and start over.
 
+## Pregame Visualization and Audio Guidance
+
+Visualization must include **coping**, not just success. Drafting only
+positive-outcome imagery is the most common sports-psych failure and the
+easiest to spot in weak content. Always write all four imagery types
+when imagery is in scope.
+
+### The four imagery types
+
+1. **Confidence imagery.** See yourself doing something you already do
+   well.
+2. **Familiarization imagery.** Mentally enter the environment before
+   the event — the rink, the bench, the line call, the warmup.
+3. **Task imagery.** Rehearse specific sport actions: shoulder check,
+   first pass, set the feet, track the puck, win the puck race.
+4. **Coping imagery.** Rehearse what you will do when something goes
+   wrong.
+
+### Coping imagery — hockey scenarios
+
+Draw from this set. Rotate so the same scenario does not repeat across
+consecutive sessions.
+
+- Turning the puck over
+- Missing a scoring chance
+- Getting beaten wide
+- Taking a penalty
+- Coach yelling
+- Getting benched
+- Feeling nervous
+- Getting hit
+- Starting slow
+- Giving up the first goal
+
+For every coping image, walk the athlete through:
+
+**See it → Feel it → Breathe → Speak truth → Take the next faithful
+action.**
+
+Anchor it with: *"Your mistake is real. It is not your identity."*
+
+### Pregame product architecture (read before drafting pregame content)
+
+The pregame surface is **audio-first after a short setup phase.** The
+product flow:
+
+1. Required setup selections (athlete taps through):
+   - Today's focus
+   - Position
+   - Hard moment
+   - Reset anchor
+   - Self-talk phrase
+   - Cue word
+
+2. Then an uninterrupted **5-minute guided audio session.** The audio
+   does not stop to ask more questions. The screen supports the audio;
+   the audio is the coach.
+
+Guided audio structure — write each segment to fit cleanly into a single
+audio narration. Keep sentences short and listenable (this is being
+heard, not read):
+
+1. Receive identity
+2. Regulate breath
+3. Remember what is true
+4. Enter the rink
+5. First shift
+6. Role rehearsal
+7. Hard moment
+8. Reset plan
+9. Prayer / send-off
+
+The athlete's setup selections substitute into the script as tokens
+(cue word, position scenes, adversity, anchor, self-talk). Write
+segments so substitution feels natural, not slotted.
+
+## Self-Talk, Reset Anchors, and Coping Imagery
+
+### Self-talk rules
+
+Self-talk is useful, not merely positive. The test:
+
+> "Does this phrase help the athlete take the next right action under
+> pressure?"
+
+Good self-talk is:
+
+- **Short.** A single sentence or fragment.
+- **Specific.** Names the next move, not a vague feeling.
+- **Actionable.** Survives the moment between a turnover and the
+  backcheck.
+- **Usable under pressure.** Runnable on the bench, at a face-off, on a
+  late shift.
+- **Written in second person when appropriate.** Psychological
+  distancing helps: "you" language, the athlete's own name, or the
+  voice of a trusted coach lands more usefully than first-person
+  affirmations.
+- **Connected to identity in Christ without becoming preachy.**
+
+Working examples (rotate; do not repeat the same phrase across
+consecutive sessions):
+
+- "You're okay. Next shift."
+- "Breathe. Do your job."
+- "Stay steady. Make the next play."
+- "You don't need to do too much."
+- "Compete, recover, go again."
+- "Your identity is secure. Play free."
+- "You are secure. Take the next faithful action."
+
+Avoid:
+
+- Empty positivity that can't be used during a game
+- Long affirmations
+- Phrases focused on proving worth
+- Phrases that imply outcome control
+- "Just believe in yourself"
+
+### Reset anchors
+
+A reset anchor is a small physical action the athlete uses on the bench
+or on the ice to return to ready. It pairs with the cue word and the
+pressure phrase.
+
+Working anchors:
+
+- Tap stick twice
+- Touch glove
+- Press thumb to palm
+- Long exhale
+- Look at tape
+- Say cue word
+
+Example combination:
+
+- **Reset anchor:** Tap stick twice
+- **Cue word:** Faithful
+- **Pressure phrase:** "You are secure. Take the next faithful action."
+
+### Coping imagery template
+
+When writing a single coping image, follow:
+
+1. Picture the hard moment specifically. Use sport detail.
+2. Notice what the body feels. Name it.
+3. One long exhale (4 in / 6 out).
+4. Speak the truth: *"The mistake is real. It is not your identity."*
+5. Choose the next faithful action — name it concretely (backcheck,
+   communicate, simple play, next shift).
+
 ## Showing the collapse (Scenario Modules)
 
 This pattern applies primarily to **Scenario Modules**, where the
@@ -296,11 +582,13 @@ phrasing dominates. content-curator tracks repetition.
 
 - "That is what happened. That is not who I am."
 - "The mistake is real. The verdict is false."
+- "Your mistake is real. It is not your identity."
 - "A bad [shift / rep / drill] is information, not condemnation."
 - "Performance can be reviewed. Identity must be received."
 - "Your effort matters, but it does not name you."
 - "You are not talking yourself into feeling fine. You are refusing to
   let one moment rewrite the player."
+- "You are not playing for your worth. You are playing from it."
 
 ## Brand alignment (non-negotiable)
 
@@ -356,6 +644,18 @@ consistency, or tracking:
 - Misrepresenting research. "10,000 hours" is a sloppy citation.
 - Pathologizing normal sports stress.
 - Conflating mental toughness with emotional suppression.
+- Telling athletes to eliminate fear or nerves. "Don't be nervous,"
+  "block it out," "ignore the pressure," and "real competitors don't
+  feel fear" are all out. Nerves are body energy; pressure is signal.
+- Visualization that only depicts success. If imagery is in scope, all
+  four types must be present (confidence, familiarization, task,
+  coping). See "Pregame Visualization and Audio Guidance."
+- Self-talk that's positive but not action-able. "Just believe in
+  yourself" is the canonical example.
+- Confidence framing that depends on stats, scoring, ice time, coach
+  approval, or external praise.
+- Stopping a guided audio session to ask the athlete questions. The
+  audio is the coach; the screen supports it.
 - "Streak broken" language.
 - Spiritual score, faith rank, God points, worth score, better
   Christian level (from brand doc — these phrases never appear).
@@ -444,6 +744,9 @@ shaming, encouraging unhealthy behaviors, pathologizing normal experience).
 - Coyle, "The Talent Code"
 - Ericsson, "Peak"
 - Hayes, ACT for adolescents and young adults
+- Wiersma, "Build Mental Toughness & Perform Under Pressure" — Perform
+  with Dr. Andy Galpin (podcast). Source for the Wiersma-Informed
+  Mental Performance Principles section above.
 
 ## Reference docs
 
