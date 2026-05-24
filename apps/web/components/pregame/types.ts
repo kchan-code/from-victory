@@ -1,15 +1,10 @@
-// Pregame v2 — state model + content constants.
-// Designed from the Claude Design bundle. No persistence yet (see
-// docs/feature-roadmap.md). Local state only.
-
-export type GameType =
-  | "Regular game"
-  | "Tournament game"
-  | "Tryout / showcase"
-  | "Playoff game"
-  | "Rivalry game"
-  | "Return from injury"
-  | "Other";
+// Pregame v2.1 — state model + content constants.
+// Designed from the Claude Design bundle, restructured per KC's revision:
+// Breathe is the threshold step (immediately after Start), setup is six
+// single-select taps, then a Review checkpoint, a 5-minute Guided Audio
+// Session, and finally the Pregame Card. Identity scripture + prayer fold
+// into the audio narrative (not standalone screens). No persistence yet
+// (see docs/feature-roadmap.md). Local state only.
 
 export type NeedToday =
   | "Confidence"
@@ -24,46 +19,30 @@ export type NeedToday =
 export type Role = "Forward" | "Defense" | "Goalie";
 
 export type PregameState = {
-  gameType: GameType | null;
+  breathDone: boolean;
   need: NeedToday | null;
-  confidence: string | null;
-  rinkCues: string[];
   role: Role | null;
   adversity: string | null;
-  selfTalk: string | null;
   anchor: string | null;
+  selfTalk: string | null;
   cueWord: string;
-  commitment: string | null;
-  breathDone: boolean;
+  audioCompleted: boolean;
 };
 
 export const INITIAL_STATE: PregameState = {
-  gameType: null,
+  breathDone: false,
   need: null,
-  confidence: null,
-  rinkCues: [],
   role: null,
   adversity: null,
-  selfTalk: null,
   anchor: null,
+  selfTalk: null,
   cueWord: "Faithful",
-  commitment: null,
-  breathDone: false,
+  audioCompleted: false,
 };
 
 // ---------------------------------------------------------------------------
 // Option lists
 // ---------------------------------------------------------------------------
-
-export const GAME_TYPES: GameType[] = [
-  "Regular game",
-  "Tournament game",
-  "Tryout / showcase",
-  "Playoff game",
-  "Rivalry game",
-  "Return from injury",
-  "Other",
-];
 
 export const NEEDS: NeedToday[] = [
   "Confidence",
@@ -74,44 +53,6 @@ export const NEEDS: NeedToday[] = [
   "Better puck decisions",
   "Leadership",
   "Joy",
-];
-
-export const CONFIDENCE_OPTIONS: string[] = [
-  "I skate hard.",
-  "I compete for pucks.",
-  "I make smart passes.",
-  "I defend hard.",
-  "I shoot with courage.",
-  "I encourage teammates.",
-  "I recover after mistakes.",
-  "I stay calm under pressure.",
-];
-
-export type RinkCue = {
-  id: string;
-  label: string;
-  icon: "eye" | "ear" | "hand" | "stick" | "bolt" | "pin";
-};
-
-export const RINK_CUES: RinkCue[] = [
-  { id: "ice", label: "See the ice.", icon: "eye" },
-  { id: "skates", label: "Hear the skates.", icon: "ear" },
-  { id: "gloves", label: "Feel your gloves.", icon: "hand" },
-  { id: "stick", label: "Feel your stick.", icon: "stick" },
-  { id: "edges", label: "Feel your edges.", icon: "bolt" },
-  { id: "team", label: "Hear your teammates.", icon: "ear" },
-  { id: "bench", label: "Picture the bench.", icon: "pin" },
-];
-
-export const FIRST_SHIFT_SEQUENCE: string[] = [
-  "Your line is called.",
-  "Over the boards.",
-  "Three hard strides.",
-  "Eyes up.",
-  "Shoulder check.",
-  "Simple strong play.",
-  "Recover.",
-  "Next action.",
 ];
 
 export const ROLE_CONTENT: Record<Role, { title: string; scenes: string[] }> = {
@@ -160,6 +101,8 @@ export const ADVERSITIES: string[] = [
   "We give up the first goal.",
 ];
 
+// Five-step coping response — surfaced inside the Audio Session narrative,
+// not as a standalone setup screen anymore.
 export const COPING_PLAN: string[] = [
   "See it.",
   "Feel it.",
@@ -200,20 +143,8 @@ export const CUE_WORDS: string[] = [
   "Relentless",
 ];
 
-export const COMMITMENT_OPTIONS: string[] = [
-  "Finish every backcheck.",
-  "Win my first race.",
-  "Communicate every shift.",
-  "Reset after mistakes.",
-  "Shoot when I have space.",
-  "Keep my feet moving.",
-  "Encourage teammates.",
-  "Stay composed after contact.",
-  "Make the simple play under pressure.",
-];
-
 // ---------------------------------------------------------------------------
-// Brand-anchor constants (canonical pregame copy — used on Pregame Card too)
+// Brand-anchor constants — surfaced in the audio narrative + Pregame Card
 // ---------------------------------------------------------------------------
 
 export const SCRIPTURE_REF = "Romans 8:37";
@@ -224,13 +155,81 @@ export const SCRIPTURE_SHORT = "More than conquerors through him who loved us.";
 export const IDENTITY_TRUTH =
   "You are not playing to become enough. In Christ, you are already loved.";
 
-// Sensible defaults used on the Pregame Card if the user skipped a step.
+// Sensible defaults used on the Pregame Card if the athlete skipped a step.
 export const DEFAULTS = {
   cueWord: "Faithful",
   anchor: "Long exhale",
   selfTalk: "You are secure. Take the next faithful action.",
-  commitment: "Reset after mistakes.",
 } as const;
+
+// ---------------------------------------------------------------------------
+// 5-Minute Guided Audio Session
+// ---------------------------------------------------------------------------
+
+// Total length the player gates "Continue" against, in seconds.
+export const AUDIO_SESSION_DURATION_S = 300;
+
+// Audio file the <audio> element looks for. When the MP3 doesn't exist
+// (current state), the player falls back to a text-mode timer that walks
+// through AUDIO_SCRIPT segments at the same total duration.
+// TODO(content-trio): replace placeholder MP3 with content-curator +
+// sports-psychologist + youth-pastor co-authored audio file.
+export const AUDIO_SESSION_SRC = "/audio/pregame-session-v1.mp3";
+
+export type AudioSegment = {
+  startSec: number;
+  eyebrow: string;
+  body: string;
+};
+
+// Script segments (timestamps in seconds). Folds in the brand-spine moments
+// that used to live on standalone screens: Identity (Romans 8:37) at the
+// top, the coping plan around the visualization, and the prayer at the
+// close. Copy here is a working draft pending content-curator review.
+// {{cueWord}}, {{role}}, {{adversity}}, {{anchor}}, {{selfTalk}} are
+// substituted at render time.
+export const AUDIO_SCRIPT: AudioSegment[] = [
+  {
+    startSec: 0,
+    eyebrow: "Identity",
+    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+  },
+  {
+    startSec: 35,
+    eyebrow: "Settle",
+    body: "Sit tall. Long exhale. Lead your body back to ready. Four counts in. Six counts out. Let your shoulders drop.",
+  },
+  {
+    startSec: 80,
+    eyebrow: "See the rink",
+    body: "See the ice. Hear the skates. Feel your gloves, your stick, your edges. You belong here. You are ready.",
+  },
+  {
+    startSec: 120,
+    eyebrow: "Your first shift",
+    body: "Your line is called. Three hard strides. Eyes up. Shoulder check. Simple, strong play. Recover. Next action.",
+  },
+  {
+    startSec: 165,
+    eyebrow: "Play your role · {{role}}",
+    body: "{{roleScenes}}",
+  },
+  {
+    startSec: 210,
+    eyebrow: "If this happens",
+    body: "{{adversity}} See it. Feel it. Breathe. Speak truth. Take the next faithful action. Your mistake is real. It is not your identity.",
+  },
+  {
+    startSec: 250,
+    eyebrow: "Coach yourself",
+    body: "{{selfTalk}} When pressure hits, return here. Your anchor: {{anchor}}. Your cue word: {{cueWord}}.",
+  },
+  {
+    startSec: 275,
+    eyebrow: "Send-off",
+    body: "Lord, help me compete with courage, humility, and joy. Help me serve my team, respond well to mistakes, and remember that my worth is secure in You. Amen. Play from victory.",
+  },
+];
 
 // ---------------------------------------------------------------------------
 // Flow definition
@@ -240,19 +239,58 @@ export type FlowStep = {
   id: string;
   label: string;
   required: (state: PregameState) => boolean;
+  cta?: string;
+  hideBottomBar?: boolean;
 };
 
 export const FLOW: FlowStep[] = [
-  { id: "context", label: "Context", required: (s) => !!s.gameType && !!s.need },
-  { id: "identity", label: "Identity", required: () => true },
-  { id: "breath", label: "Breath", required: () => true },
-  { id: "confidence", label: "Evidence", required: (s) => !!s.confidence },
-  { id: "rink", label: "Enter Rink", required: (s) => s.rinkCues.length > 0 },
-  { id: "firstShift", label: "First Shift", required: () => true },
-  { id: "role", label: "Your Role", required: (s) => !!s.role },
-  { id: "coping", label: "Coping", required: (s) => !!s.adversity },
-  { id: "selfTalk", label: "Self-Talk", required: (s) => !!s.selfTalk },
-  { id: "reset", label: "Reset Anchor", required: (s) => !!s.anchor && !!s.cueWord },
-  { id: "commit", label: "Commitment", required: (s) => !!s.commitment },
-  { id: "prayer", label: "Send-Off", required: () => true },
+  {
+    id: "breath",
+    label: "Breathe",
+    required: (s) => s.breathDone,
+    cta: "SET MY FOCUS",
+  },
+  {
+    id: "todaysFocus",
+    label: "Today's Focus",
+    required: (s) => !!s.need,
+  },
+  {
+    id: "position",
+    label: "Position",
+    required: (s) => !!s.role,
+  },
+  {
+    id: "hardMoment",
+    label: "Hard Moment",
+    required: (s) => !!s.adversity,
+  },
+  {
+    id: "resetAnchor",
+    label: "Reset Anchor",
+    required: (s) => !!s.anchor,
+  },
+  {
+    id: "selfTalk",
+    label: "Self-Talk",
+    required: (s) => !!s.selfTalk,
+  },
+  {
+    id: "cueWord",
+    label: "Cue Word",
+    required: (s) => !!s.cueWord,
+  },
+  {
+    id: "review",
+    label: "Review",
+    required: () => true,
+    cta: "BEGIN GUIDED SESSION",
+  },
+  {
+    id: "audio",
+    label: "Guided Audio Session",
+    required: (s) => s.audioCompleted,
+    cta: "SHOW MY PRE-GAME CARD",
+    hideBottomBar: true,
+  },
 ];
