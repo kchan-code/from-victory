@@ -1,31 +1,28 @@
 "use client";
 
-// Pregame v2 — state machine router.
+// Pregame v2.1 — state machine router.
 // View states: 'start' | 'flow' (index 0..FLOW.length-1) | 'card' | 'quick'.
+// Setup phase (steps 0-7): tap-through choices. Step 8 is the audio session
+// (Identity scripture + visualization + coping + prayer fold into the
+// transcript). Card lives outside FLOW and renders after audio completes.
 // No persistence — see docs/feature-roadmap.md.
 
 import { useState } from "react";
 
 import { QuickReset } from "./QuickReset";
-// Note: SavedToast / persistence intentionally not yet wired — see
-// docs/feature-roadmap.md. The Pregame Card uses "screenshot it" copy so we
-// don't promise a save we don't have.
 import {
   BreathScreen,
-  ConfidenceScreen,
-  FirstShiftScreen,
-  GameContextScreen,
-  IdentityScreen,
+  HardMomentScreen,
+  PositionScreen,
   PregameStart,
-  RinkScreen,
+  TodaysFocusScreen,
 } from "./screens-a";
 import {
-  CommitScreen,
-  CopingScreen,
+  AudioSessionScreen,
+  CueWordScreen,
   PregameCardScreen,
-  PrayerScreen,
-  ResetScreen,
-  RoleScreen,
+  ResetAnchorScreen,
+  ReviewScreen,
   SelfTalkScreen,
 } from "./screens-b";
 import {
@@ -121,11 +118,10 @@ export function PregameFlow({ athleteFirstName }: Props) {
   }
 
   const step = FLOW[view.index];
-  if (!step) {
-    return null;
-  }
+  if (!step) return null;
   const canAdvance = step.required(data);
   const isLast = view.index === FLOW.length - 1;
+  const ctaLabel = step.cta ?? (isLast ? "SHOW MY PRE-GAME CARD" : "CONTINUE");
 
   return (
     <PregameShell>
@@ -136,18 +132,25 @@ export function PregameFlow({ athleteFirstName }: Props) {
         onBack={goBack}
         onClose={goStart}
       />
-      <ScreenSwitch stepId={step.id} state={data} set={set} />
-      <BottomBar>
-        <Button
-          variant="coach"
-          full
-          disabled={!canAdvance}
-          onClick={goNext}
-          className={canAdvance ? "" : "opacity-45"}
-        >
-          {isLast ? "SHOW MY PRE-GAME CARD" : "CONTINUE"}
-        </Button>
-      </BottomBar>
+      <ScreenSwitch
+        stepId={step.id}
+        state={data}
+        set={set}
+        onContinue={goNext}
+      />
+      {!step.hideBottomBar && (
+        <BottomBar>
+          <Button
+            variant="coach"
+            full
+            disabled={!canAdvance}
+            onClick={goNext}
+            className={canAdvance ? "" : "opacity-45"}
+          >
+            {ctaLabel}
+          </Button>
+        </BottomBar>
+      )}
     </PregameShell>
   );
 }
@@ -156,38 +159,35 @@ function ScreenSwitch({
   stepId,
   state,
   set,
+  onContinue,
 }: {
   stepId: string;
   state: PregameState;
   set: <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
+  onContinue: () => void;
 }) {
   switch (stepId) {
-    case "context":
-      return <GameContextScreen state={state} set={set} />;
-    case "identity":
-      return <IdentityScreen />;
     case "breath":
       return <BreathScreen state={state} set={set} />;
-    case "confidence":
-      return <ConfidenceScreen state={state} set={set} />;
-    case "rink":
-      return <RinkScreen state={state} set={set} />;
-    case "firstShift":
-      return <FirstShiftScreen />;
-    case "role":
-      return <RoleScreen state={state} set={set} />;
-    case "coping":
-      return <CopingScreen state={state} set={set} />;
+    case "todaysFocus":
+      return <TodaysFocusScreen state={state} set={set} />;
+    case "position":
+      return <PositionScreen state={state} set={set} />;
+    case "hardMoment":
+      return <HardMomentScreen state={state} set={set} />;
+    case "resetAnchor":
+      return <ResetAnchorScreen state={state} set={set} />;
     case "selfTalk":
       return <SelfTalkScreen state={state} set={set} />;
-    case "reset":
-      return <ResetScreen state={state} set={set} />;
-    case "commit":
-      return <CommitScreen state={state} set={set} />;
-    case "prayer":
-      return <PrayerScreen />;
+    case "cueWord":
+      return <CueWordScreen state={state} set={set} />;
+    case "review":
+      return <ReviewScreen state={state} />;
+    case "audio":
+      return (
+        <AudioSessionScreen state={state} set={set} onContinue={onContinue} />
+      );
     default:
       return null;
   }
 }
-
