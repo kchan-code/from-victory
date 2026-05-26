@@ -83,6 +83,21 @@ export const metadata: Metadata = {
     description: socialDescription,
     images: [socialImage],
   },
+  icons: {
+    icon: [
+      // SVG is the source of truth for browsers that support it.
+      { url: "/app-icon.svg", type: "image/svg+xml" },
+      // PNG fallbacks (and what the manifest route exposes as the
+      // installable home-screen icon).
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      // iOS requires PNG for apple-touch-icon — SVG does not render on
+      // the home screen. 180x180 is the canonical Apple size.
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({
