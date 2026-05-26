@@ -17,22 +17,17 @@ export const BREATH_THRESHOLD_SCRIPT: AudioScript = {
     "Speak in a soft, hushed, almost-whispered voice. Like a meditation guide settling someone into stillness, not a coach giving direction. Slow and breath-aware. Warm. Intimate. Let each phrase land before the next — leave space. Never urgent. Never preachy. The athlete is closing their eyes; speak like you know it.",
   speed: 0.88,
   segments: [
-    // ── Intro — runs at conversational pace; the meditative pace
-    // kicks in once we hit the breath cues. Keeps the door from
-    // feeling laborious.
+    // ── Intro — single short cue, slightly brisk pace. The protocol
+    // (4 in / 6 out, 3 rounds) is communicated by the on-screen
+    // Inhale/Exhale labels + the breath cues themselves; the intro
+    // doesn't need to recite it.
     {
       type: "speech",
-      text: "Breathe first.",
-      speed: 1.0,
+      text: "Breathe first and reset.",
+      speed: 1.1,
       mark: { phase: "intro" },
     },
-    { type: "silence", durationSec: 0.6 },
-    {
-      type: "speech",
-      text: "Before you choose your focus, lead your body back to ready. Four counts in. Six counts out. Three rounds.",
-      speed: 1.0,
-    },
-    { type: "silence", durationSec: 1.2 },
+    { type: "silence", durationSec: 1.0 },
 
     // ── Round 1
     {
