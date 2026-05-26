@@ -134,7 +134,8 @@ async function generateOne(script: AudioScript, flags: Flags): Promise<void> {
       text: seg.text,
       voice: script.voice,
       instructions: seg.instructions ?? script.instructions,
-      speed: script.speed,
+      // Per-segment speed wins; falls back to script-level default.
+      speed: seg.speed ?? script.speed,
       outPath: segPath,
     });
     const dur = await probeDurationSec(segPath);

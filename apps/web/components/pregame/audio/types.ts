@@ -24,6 +24,10 @@ export type Segment =
       // "Receive", slower for the prayer). Defaults to the script-level
       // instruction.
       instructions?: string;
+      // Per-segment speed override (0.25..4.0). Lets the intro run
+      // closer to conversational pace while breath cues stay at the
+      // meditative script-level default.
+      speed?: number;
       // If present, marks this segment's *start* as a new phase boundary
       // in the emitted timeline.
       mark?: PhaseMark;
