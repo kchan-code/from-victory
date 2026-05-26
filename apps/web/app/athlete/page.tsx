@@ -20,7 +20,7 @@ export default async function AthleteHomePage() {
             alt="From Victory"
             width={105}
             height={60}
-            className="h-14 w-auto"
+            className="h-[84px] w-auto"
             priority
           />
           <form action={signOut}>

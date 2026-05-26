@@ -60,7 +60,7 @@ export function PregameStart({
           <img
             src="/logo-stacked.svg"
             alt="From Victory"
-            className="h-12 w-auto"
+            className="h-[72px] w-auto"
           />
         </Link>
         {onClose && (
