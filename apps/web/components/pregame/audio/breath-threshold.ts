@@ -9,10 +9,13 @@ import type { AudioScript } from "./types";
 
 export const BREATH_THRESHOLD_SCRIPT: AudioScript = {
   slug: "breath-threshold",
-  voice: "ash",
+  // sage reads softer and more meditative than ash. Reserved for breath +
+  // settling moments; the full 5-min session may want ash for the more
+  // active visualization segments.
+  voice: "sage",
   instructions:
-    "Speak in a calm, grounded mentor voice. Slightly slower than conversational. Pause naturally between sentences. Sound like a trusted coach who believes what they're saying. Not preachy, not hype.",
-  speed: 0.95,
+    "Speak in a soft, hushed, almost-whispered voice. Like a meditation guide settling someone into stillness, not a coach giving direction. Slow and breath-aware. Warm. Intimate. Let each phrase land before the next — leave space. Never urgent. Never preachy. The athlete is closing their eyes; speak like you know it.",
+  speed: 0.88,
   segments: [
     // ── Intro
     {
@@ -32,14 +35,15 @@ export const BREATH_THRESHOLD_SCRIPT: AudioScript = {
       type: "speech",
       text: "Inhale.",
       instructions:
-        "Soft and even. Begin the breath cue right at the start of the inhale.",
+        "Almost whispered. Breathy. Let the word itself sound like a slow in-breath rising.",
       mark: { phase: "inhale", round: 0 },
     },
     { type: "silence", durationSec: 4 },
     {
       type: "speech",
       text: "Exhale.",
-      instructions: "Soft. Lengthen the word slightly to match the long out-breath.",
+      instructions:
+        "Soft, lengthened, with audible breath. Let the word drop away like a long out-breath.",
       mark: { phase: "exhale", round: 0 },
     },
     { type: "silence", durationSec: 6 },
