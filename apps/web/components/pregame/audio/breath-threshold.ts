@@ -14,54 +14,48 @@ export const BREATH_THRESHOLD_SCRIPT: AudioScript = {
   // active visualization segments.
   voice: "sage",
   instructions:
-    "Speak in a soft, hushed, almost-whispered voice. Like a meditation guide settling someone into stillness, not a coach giving direction. Slow and breath-aware. Warm. Intimate. Let each phrase land before the next — leave space. Never urgent. Never preachy. The athlete is closing their eyes; speak like you know it.",
-  speed: 0.88,
+    "Speak in a soft, hushed voice. Like a meditation guide settling someone into stillness, not a coach giving direction. Calm and breath-aware. Warm. Intimate. Not preachy. The athlete is closing their eyes; speak like you know it.",
+  speed: 0.95,
   segments: [
-    // ── Intro — single short cue, slightly brisk pace. The protocol
-    // (4 in / 6 out, 3 rounds) is communicated by the on-screen
-    // Inhale/Exhale labels + the breath cues themselves; the intro
-    // doesn't need to recite it.
+    // ── Intro — slightly brisk for the threshold cue; protocol callout
+    // lands as a single line so the door doesn't feel laborious.
     {
       type: "speech",
-      text: "Breathe first and reset.",
+      text: "Breathe first and reset. 4 seconds in, 6 seconds out, from the diaphragm, not the chest.",
       speed: 1.1,
       mark: { phase: "intro" },
     },
     { type: "silence", durationSec: 1.0 },
 
-    // ── Round 1
+    // ── Round 1 — per-segment instructions intentionally dropped. Prior
+    // "slow rising / lengthened" overrides made R1 cues drag noticeably
+    // longer than R3's plain "Inhale./Exhale.". Keeping breath cues
+    // uniform on the script-level instructions is closer to what beta
+    // testers reacted well to.
     {
       type: "speech",
       text: "Inhale.",
-      instructions:
-        "Almost whispered. Breathy. Let the word itself sound like a slow in-breath rising.",
       mark: { phase: "inhale", round: 0 },
     },
     { type: "silence", durationSec: 4 },
     {
       type: "speech",
       text: "Exhale.",
-      instructions:
-        "Soft, lengthened, with audible breath. Let the word drop away like a long out-breath.",
       mark: { phase: "exhale", round: 0 },
     },
     { type: "silence", durationSec: 6 },
 
-    // ── Round 2 — "Receive" intentionally dropped from the audio;
-    // the on-screen "Receive · 4s" label still carries the cue.
+    // ── Round 2 — "Receive" intentionally dropped from the audio; the
+    // on-screen "Receive · 4s" label still carries the cue.
     {
       type: "speech",
       text: "Inhale.",
-      instructions:
-        "Almost whispered. Breathy. Let the word itself sound like a slow in-breath rising.",
       mark: { phase: "inhale", round: 1 },
     },
     { type: "silence", durationSec: 4 },
     {
       type: "speech",
       text: "Exhale. Release.",
-      instructions:
-        "Soft, lengthened, with audible breath. Let the word drop away like a long out-breath.",
       mark: { phase: "exhale", round: 1 },
     },
     { type: "silence", durationSec: 6 },
@@ -80,11 +74,13 @@ export const BREATH_THRESHOLD_SCRIPT: AudioScript = {
     },
     { type: "silence", durationSec: 6 },
 
-    // ── Outro
-    { type: "silence", durationSec: 1 },
+    // ── Outro — matches intro energy (1.0 speed) so the close doesn't
+    // drag after the meditative middle.
+    { type: "silence", durationSec: 0.8 },
     {
       type: "speech",
       text: "Ready. Now set your focus.",
+      speed: 1.0,
       mark: { phase: "done" },
     },
   ],
