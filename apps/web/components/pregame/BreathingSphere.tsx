@@ -34,6 +34,7 @@ export function BreathingSphere({
   onComplete,
   compact = false,
   controlled,
+  onTap,
 }: {
   rounds?: number;
   inhale?: number;
@@ -43,6 +44,10 @@ export function BreathingSphere({
   onComplete?: () => void;
   compact?: boolean;
   controlled?: ControlledBreath;
+  // Optional click handler. When set, sphere becomes tappable in
+  // controlled mode (parent decides what to do — typically start audio).
+  // Standalone mode ignores this; it owns its own click → start path.
+  onTap?: () => void;
 }) {
   const isControlled = !!controlled;
 
@@ -115,11 +120,30 @@ export function BreathingSphere({
   const phaseDur = phase === "inhale" ? inhale : phase === "exhale" ? exhale : 0;
   const countdown = phaseDur > 0 ? Math.max(1, Math.ceil(phaseDur - phaseDur * t)) : 0;
 
+  // In controlled mode, the "idle" phase means the audio file is loaded
+  // but hasn't started yet OR it's in the intro segment before the first
+  // breath cue. Different copy in each case.
+  const idleLabel = isControlled
+    ? isPlaying
+      ? "" // intro narration playing; let voice carry the moment
+      : "Begin"
+    : "Begin";
+  const idleSub = isControlled
+    ? isPlaying
+      ? "Settling"
+      : "Tap to begin"
+    : "Tap to begin";
   const label =
-    phase === "idle" ? "Begin" : phase === "inhale" ? "Inhale" : phase === "exhale" ? "Exhale" : "Ready";
+    phase === "idle"
+      ? idleLabel
+      : phase === "inhale"
+        ? "Inhale"
+        : phase === "exhale"
+          ? "Exhale"
+          : "Ready";
   const sub =
     phase === "idle"
-      ? "Tap to begin"
+      ? idleSub
       : phase === "inhale"
         ? "Receive"
         : phase === "exhale"
@@ -136,7 +160,14 @@ export function BreathingSphere({
   const orbBorder = isDone ? "rgba(223,175,55,0.55)" : "rgba(61,114,255,0.55)";
 
   const handleClick = () => {
-    if (isControlled) return; // parent owns play/pause
+    if (isControlled) {
+      // Controlled mode: only respond to taps when idle + not yet
+      // playing. Parent (onTap) starts the audio. After play begins,
+      // the sphere is non-interactive — the audio runs to completion or
+      // the user backs out via the header.
+      if (!isPlaying && phase === "idle" && onTap) onTap();
+      return;
+    }
     if (phase === "done") return;
     if (!running) {
       setRunning(true);
@@ -144,7 +175,9 @@ export function BreathingSphere({
     }
   };
 
-  const interactive = !isControlled && !isDone;
+  const interactive = isControlled
+    ? !isPlaying && phase === "idle" && !!onTap
+    : !isDone;
 
   return (
     <div

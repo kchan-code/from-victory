@@ -102,10 +102,16 @@ export function useBreathAudio({
   }, [slug]);
 
   // Wire audio element listeners
+  //
+  // We deliberately do NOT use audio "timeupdate" for the sphere clock —
+  // that event only fires every ~250ms in most browsers (some platforms
+  // worse), which gives 4 frames over a 1s phase change and visible
+  // chop. Instead we run a rAF loop while isPlaying and read
+  // audio.currentTime directly at 60fps. The play/pause/ended listeners
+  // still gate that loop on/off.
   useEffect(() => {
     const el = audioRef.current;
     if (!el || status !== "ready") return;
-    const onTime = () => setCurrentSec(el.currentTime);
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
     const onEnded = () => {
@@ -115,17 +121,30 @@ export function useBreathAudio({
         onComplete?.();
       }
     };
-    el.addEventListener("timeupdate", onTime);
     el.addEventListener("play", onPlay);
     el.addEventListener("pause", onPause);
     el.addEventListener("ended", onEnded);
     return () => {
-      el.removeEventListener("timeupdate", onTime);
       el.removeEventListener("play", onPlay);
       el.removeEventListener("pause", onPause);
       el.removeEventListener("ended", onEnded);
     };
   }, [status, onComplete]);
+
+  // rAF clock — reads audio.currentTime at the display refresh rate so
+  // the sphere expands/contracts smoothly instead of in 250ms steps.
+  useEffect(() => {
+    if (!isPlaying) return;
+    const el = audioRef.current;
+    if (!el) return;
+    let raf = 0;
+    const tick = () => {
+      setCurrentSec(el.currentTime);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [isPlaying]);
 
   const play = useCallback(async () => {
     const el = audioRef.current;

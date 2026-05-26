@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback } from "react";
 
 import { BreathingSphere } from "./BreathingSphere";
@@ -45,9 +46,23 @@ export function PregameStart({
       }}
     >
       <div className="flex items-center justify-between px-5 pb-3 pt-[58px]">
-        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-cream/50">
-          From Victory
-        </span>
+        {/* Logo doubles as a back affordance — tapping returns to the
+            athlete dashboard, which is the screen that launched this
+            flow. Plain <img> instead of next/image since SVGs aren't
+            optimized further and it keeps the bundle smaller. */}
+        <Link
+          href="/athlete"
+          aria-label="Back to dashboard"
+          className="flex items-center transition-opacity duration-fast hover:opacity-80"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element -- SVG, no
+              optimization needed; next/image would add wrapper overhead */}
+          <img
+            src="/logo-stacked.svg"
+            alt="From Victory"
+            className="h-12 w-auto"
+          />
+        </Link>
         {onClose && (
           <button
             type="button"
@@ -121,9 +136,6 @@ export function BreathScreen({
   });
 
   const audioReady = audio.status === "ready";
-  const showPlayButton =
-    audioReady && !audio.isPlaying && audio.controlled.phase === "idle";
-  const showPauseButton = audioReady && audio.isPlaying;
 
   return (
     <ScreenBody className="flex flex-col">
@@ -143,6 +155,7 @@ export function BreathScreen({
             exhale={6}
             size={280}
             controlled={audio.controlled}
+            onTap={() => void audio.play()}
           />
         ) : (
           <BreathingSphere
@@ -165,17 +178,6 @@ export function BreathScreen({
             src="/audio/pregame/breath-threshold.mp3"
             preload="auto"
           />
-        )}
-
-        {(showPlayButton || showPauseButton) && (
-          <button
-            type="button"
-            onClick={() => (audio.isPlaying ? audio.pause() : void audio.play())}
-            aria-label={audio.isPlaying ? "Pause guided breath" : "Play guided breath"}
-            className="absolute bottom-2 flex h-12 w-12 items-center justify-center rounded-full border border-gold bg-gold text-onyx transition-transform duration-fast active:scale-95"
-          >
-            <Icon name={audio.isPlaying ? "pause" : "play"} size={20} />
-          </button>
         )}
       </div>
 
