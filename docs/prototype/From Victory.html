@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>From Victory — Prototype</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  :root { color-scheme: dark; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100vh; height: 100%;
+    background: #050505;
+    font-family: 'Manrope', system-ui, sans-serif;
+    color: #F7F7F7;
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background:
+      radial-gradient(55% 40% at 28% 22%, rgba(223,175,55,0.05), transparent 70%),
+      radial-gradient(50% 35% at 80% 88%, rgba(36,91,255,0.05), transparent 70%),
+      #050505;
+    background-attachment: fixed;
+  }
+  .frame-wrap {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    transform-origin: center center;
+    transition: transform 200ms ease-out;
+  }
+  /* drop shadow */
+  .device-shadow {
+    border-radius: 56px;
+    box-shadow:
+      0 60px 120px -40px rgba(0,0,0,0.95),
+      0 20px 60px -20px rgba(0,0,0,0.85),
+      0 0 60px -20px rgba(223,175,55,0.04);
+  }
+  /* Eyebrow caption underneath */
+  .caption {
+    position: absolute; left: 50%; bottom: -42px; transform: translateX(-50%);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(247,247,247,0.32); white-space: nowrap; font-weight: 600;
+    text-align: center;
+  }
+  /* keep tweaks panel above the device frame */
+  /* Reduce motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="frame-wrap">
+    <div id="app" class="device-shadow"></div>
+    <div class="caption">From Victory · Interactive prototype</div>
+  </div>
+
+  <script>
+    // Fit the device into the viewport with margin, scaling down as needed.
+    function fitDevice() {
+      const wrap = document.querySelector('.frame-wrap');
+      if (!wrap) return;
+      const fitH = (window.innerHeight - 60) / 874;
+      const fitW = (window.innerWidth - 40) / 402;
+      const s = Math.min(1, fitH, fitW);
+      wrap.style.transform = `scale(${s})`;
+    }
+    window.addEventListener('resize', fitDevice);
+    document.addEventListener('DOMContentLoaded', fitDevice);
+    setTimeout(fitDevice, 60);
+  </script>
+
+  <!-- React + Babel -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <!-- iOS frame + UI pieces -->
+  <script type="text/babel" src="src/ios-frame.jsx"></script>
+  <script type="text/babel" src="src/icon.jsx"></script>
+  <script type="text/babel" src="src/components.jsx"></script>
+  <script type="text/babel" src="src/app-shell.jsx"></script>
+  <script type="text/babel" src="src/screens-onboarding.jsx"></script>
+  <script type="text/babel" src="src/screens-today.jsx"></script>
+  <script type="text/babel" src="src/screens-game.jsx"></script>
+  <script type="text/babel" src="src/screens-rest.jsx"></script>
+  <script type="text/babel" src="src/tweaks-panel.jsx"></script>
+  <script type="text/babel" src="src/app.jsx"></script>
+
+  <script type="text/babel" data-presets="env,react">
+    const root = ReactDOM.createRoot(document.getElementById('app'));
+    function Mount() {
+      return (
+        <IOSDevice width={402} height={874} dark>
+          <FromVictoryApp/>
+        </IOSDevice>
+      );
+    }
+    root.render(<Mount/>);
+  </script>
+</body>
+</html>

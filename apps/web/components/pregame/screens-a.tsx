@@ -5,6 +5,7 @@ import { useCallback } from "react";
 
 import { BreathingSphere } from "./BreathingSphere";
 import { useBreathAudio } from "./audio/useBreathAudio";
+import { audioAssetUrl } from "./audio-mapping";
 import {
   Button,
   Card,
@@ -141,7 +142,7 @@ export function BreathScreen({
   const done = state.breathDone;
 
   return (
-    <ScreenBody className="flex flex-col">
+    <ScreenBody className="flex flex-col !pb-6">
       <SectionLabel>Step 01 · Threshold</SectionLabel>
       {done ? (
         <>
@@ -169,7 +170,7 @@ export function BreathScreen({
         // eslint-disable-next-line jsx-a11y/media-has-caption
         <audio
           ref={audio.audioRef}
-          src="/audio/pregame/breath-threshold.mp3"
+          src={audioAssetUrl("breath-threshold", "mp3")}
           preload="auto"
         />
       )}

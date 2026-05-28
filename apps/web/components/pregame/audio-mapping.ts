@@ -10,6 +10,16 @@
 
 import type { NeedToday, Role } from "./types";
 
+// Bumped whenever any audio binary changes. Appended as ?v= to every
+// MP3 + sidecar JSON URL so Vercel's CDN + browsers can't serve a
+// stale cached version after a regen. Bump this when you rerun
+// `npm run audio:generate`.
+export const AUDIO_CACHE_BUST = "3";
+
+export function audioAssetUrl(slug: string, ext: "mp3" | "json"): string {
+  return `/audio/pregame/${slug}.${ext}?v=${AUDIO_CACHE_BUST}`;
+}
+
 export const NEED_OPENER_SLUGS: Record<NeedToday, string> = {
   Confidence: "opener-confidence",
   Calm: "opener-calm",
@@ -45,7 +55,7 @@ export function cellSlugFor(role: Role, adversity: string): string {
 
 export function openerSrcFor(need: NeedToday | null): string | null {
   if (!need) return null;
-  return `/audio/pregame/${NEED_OPENER_SLUGS[need]}.mp3`;
+  return audioAssetUrl(NEED_OPENER_SLUGS[need], "mp3");
 }
 
 export function cellSrcFor(
@@ -53,5 +63,5 @@ export function cellSrcFor(
   adversity: string | null,
 ): string | null {
   if (!role || !adversity) return null;
-  return `/audio/pregame/${cellSlugFor(role, adversity)}.mp3`;
+  return audioAssetUrl(cellSlugFor(role, adversity), "mp3");
 }

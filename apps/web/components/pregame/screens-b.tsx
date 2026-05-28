@@ -562,6 +562,9 @@ export function AudioSessionScreen({
                 openerRef.current?.pause();
                 cellRef.current?.pause();
               }
+              // Navigate straight to the Pre-Game Card instead of forcing
+              // a second click on the "SHOW MY PRE-GAME CARD" button.
+              onContinue();
             }}
             className="self-center font-mono text-[10px] uppercase tracking-[0.18em] text-cream/50 hover:text-cream"
           >
