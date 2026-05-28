@@ -1,0 +1,54 @@
+{
+  "slug": "session-defense-benched",
+  "durationSec": 250.416,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 5.912,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 11.28,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 19.224,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 24.64,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 50.392
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 87.578
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 155.732
+    },
+    {
+      "phase": "reset",
+      "startSec": 202.764
+    },
+    {
+      "phase": "prayer",
+      "startSec": 219.992
+    },
+    {
+      "phase": "done",
+      "startSec": 243.396
+    }
+  ]
+}

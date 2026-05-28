@@ -1,0 +1,54 @@
+{
+  "slug": "session-forward-coach-yells",
+  "durationSec": 250.296,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 5.792,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 11.784,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 19.2,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 25.72,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 51.52
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 89.786
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 157.45
+    },
+    {
+      "phase": "reset",
+      "startSec": 203.234
+    },
+    {
+      "phase": "prayer",
+      "startSec": 219.91
+    },
+    {
+      "phase": "done",
+      "startSec": 243.818
+    }
+  ]
+}

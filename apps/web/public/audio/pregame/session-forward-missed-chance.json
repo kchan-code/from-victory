@@ -1,0 +1,54 @@
+{
+  "slug": "session-forward-missed-chance",
+  "durationSec": 252.84,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.584,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 13.104,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 21.576,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 28.264,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 52.672
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 90.866
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 161.938
+    },
+    {
+      "phase": "reset",
+      "startSec": 206.45
+    },
+    {
+      "phase": "prayer",
+      "startSec": 223.126
+    },
+    {
+      "phase": "done",
+      "startSec": 246.53
+    }
+  ]
+}

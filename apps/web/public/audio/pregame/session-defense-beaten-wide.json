@@ -1,0 +1,54 @@
+{
+  "slug": "session-defense-beaten-wide",
+  "durationSec": 264.288,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 5.96,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.792,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 20.88,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 27.616,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 55.12
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 92.834
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 160.532
+    },
+    {
+      "phase": "reset",
+      "startSec": 215.228
+    },
+    {
+      "phase": "prayer",
+      "startSec": 233.248
+    },
+    {
+      "phase": "done",
+      "startSec": 257.852
+    }
+  ]
+}

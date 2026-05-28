@@ -1,0 +1,54 @@
+{
+  "slug": "session-forward-bad-penalty",
+  "durationSec": 259.056,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.128,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.6,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 20.544,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 26.848,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 52.768
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 89.258
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 157.858
+    },
+    {
+      "phase": "reset",
+      "startSec": 210.298
+    },
+    {
+      "phase": "prayer",
+      "startSec": 227.454
+    },
+    {
+      "phase": "done",
+      "startSec": 251.722
+    }
+  ]
+}

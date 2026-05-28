@@ -14,7 +14,8 @@ export type NeedToday =
   | "Physical courage"
   | "Better puck decisions"
   | "Leadership"
-  | "Joy";
+  | "Joy"
+  | "Hope";
 
 export type Role = "Forward" | "Defense" | "Goalie";
 
@@ -53,6 +54,7 @@ export const NEEDS: NeedToday[] = [
   "Better puck decisions",
   "Leadership",
   "Joy",
+  "Hope",
 ];
 
 export const ROLE_CONTENT: Record<Role, { title: string; scenes: string[] }> = {
@@ -147,10 +149,10 @@ export const CUE_WORDS: string[] = [
 // Brand-anchor constants — surfaced in the audio narrative + Pregame Card
 // ---------------------------------------------------------------------------
 
-export const SCRIPTURE_REF = "Romans 8:37";
+export const SCRIPTURE_REF = "Hebrews 12:1-2";
 export const SCRIPTURE_TEXT =
-  "No, in all these things we are more than conquerors through him who loved us.";
-export const SCRIPTURE_SHORT = "More than conquerors through him who loved us.";
+  "Let us run with perseverance the race marked out for us, fixing our eyes on Jesus, the pioneer and perfecter of faith.";
+export const SCRIPTURE_SHORT = "Run with perseverance, eyes fixed on Jesus.";
 
 export const IDENTITY_TRUTH =
   "You are not playing to become enough. In Christ, you are already loved.";
@@ -166,15 +168,10 @@ export const DEFAULTS = {
 // 5-Minute Guided Audio Session
 // ---------------------------------------------------------------------------
 
-// Total length the player gates "Continue" against, in seconds.
+// Fallback duration used by the text-mode timer when audio fails to
+// load. Audio mode derives the real total from opener + cell metadata
+// at runtime (see AudioSessionScreen).
 export const AUDIO_SESSION_DURATION_S = 300;
-
-// Audio file the <audio> element looks for. When the MP3 doesn't exist
-// (current state), the player falls back to a text-mode timer that walks
-// through AUDIO_SCRIPT segments at the same total duration.
-// TODO(content-trio): replace placeholder MP3 with content-curator +
-// sports-psychologist + youth-pastor co-authored audio file.
-export const AUDIO_SESSION_SRC = "/audio/pregame-session-v1.mp3";
 
 export type AudioSegment = {
   startSec: number;

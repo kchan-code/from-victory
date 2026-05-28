@@ -1,0 +1,10 @@
+{
+  "slug": "opener-reset",
+  "durationSec": 50.32,
+  "phases": [
+    {
+      "phase": "intro",
+      "startSec": 0
+    }
+  ]
+}

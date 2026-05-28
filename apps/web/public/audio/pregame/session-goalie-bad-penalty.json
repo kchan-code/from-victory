@@ -1,0 +1,54 @@
+{
+  "slug": "session-goalie-bad-penalty",
+  "durationSec": 253.296,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 7.016,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.912,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 20.808,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 27.16,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 54.712
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 91.474
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 151.418
+    },
+    {
+      "phase": "reset",
+      "startSec": 205.874
+    },
+    {
+      "phase": "prayer",
+      "startSec": 221.998
+    },
+    {
+      "phase": "done",
+      "startSec": 246.458
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "slug": "session-goalie-get-hit",
+  "durationSec": 252.384,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.704,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 13.128,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 21.648,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 27.424,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 54.496
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 91.402
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 150.506
+    },
+    {
+      "phase": "reset",
+      "startSec": 203.498
+    },
+    {
+      "phase": "prayer",
+      "startSec": 222.022
+    },
+    {
+      "phase": "done",
+      "startSec": 245.738
+    }
+  ]
+}

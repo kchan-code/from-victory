@@ -1,0 +1,10 @@
+{
+  "slug": "opener-hope",
+  "durationSec": 64.12,
+  "phases": [
+    {
+      "phase": "intro",
+      "startSec": 0
+    }
+  ]
+}

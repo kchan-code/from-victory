@@ -1,0 +1,54 @@
+{
+  "slug": "session-forward-beaten-wide",
+  "durationSec": 260.184,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.128,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 13.176,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 22.392,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 27.76,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 56.032
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 95.186
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 166.618
+    },
+    {
+      "phase": "reset",
+      "startSec": 212.282
+    },
+    {
+      "phase": "prayer",
+      "startSec": 229.606
+    },
+    {
+      "phase": "done",
+      "startSec": 252.722
+    }
+  ]
+}

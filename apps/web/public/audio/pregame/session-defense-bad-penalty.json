@@ -1,0 +1,54 @@
+{
+  "slug": "session-defense-bad-penalty",
+  "durationSec": 255.216,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.008,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.048,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 19.2,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 24.568,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 52.864
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 89.33
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 154.58
+    },
+    {
+      "phase": "reset",
+      "startSec": 204.812
+    },
+    {
+      "phase": "prayer",
+      "startSec": 222.88
+    },
+    {
+      "phase": "done",
+      "startSec": 248.948
+    }
+  ]
+}
