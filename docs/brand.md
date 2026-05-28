@@ -94,9 +94,12 @@ These exact phrases are the brand spine. Use them consistently.
 - "Rooted in the Word. Fueled by the Spirit. Built for Victory."
 
 ### Theological spine
-- **FROM Christ's victory** — the foundational frame. We compete FROM a
-  place of already-won victory through Christ (1 Corinthians 15:57,
-  Romans 8:37), not TOWARD a victory we are trying to earn.
+- **Hebrews 12:1-2** — the foundational frame. "Let us run with
+  perseverance the race marked out for us, fixing our eyes on Jesus,
+  the pioneer and perfecter of faith. For the joy set before him he
+  endured the cross." We run with endurance fixed on the One who
+  already ran his race for us — competing FROM that completed work,
+  not striving TOWARD a victory we have to earn.
 
 ## 7. Gamification Principle (NON-NEGOTIABLE)
 
