@@ -124,9 +124,11 @@ export function PregameStart({
 export function BreathScreen({
   state,
   set,
+  onContinue,
 }: {
   state: PregameState;
   set: SetFn;
+  onContinue: () => void;
 }) {
   const markDone = useCallback(() => set("breathDone", true), [set]);
   const audio = useBreathAudio({
@@ -136,71 +138,94 @@ export function BreathScreen({
   });
 
   const audioReady = audio.status === "ready";
+  const done = state.breathDone;
 
   return (
     <ScreenBody className="flex flex-col">
       <SectionLabel>Step 01 · Threshold</SectionLabel>
-      <h1 className="mb-2 font-heading text-[28px] font-bold leading-[1.15] text-cream">
-        Breathe first.
-      </h1>
-      <p className="mb-4 font-body text-[15px] leading-[1.5] text-cream/70">
-        Before you choose your focus, lead your body back to ready.
-      </p>
+      {done ? (
+        <>
+          <h1 className="mb-2 font-heading text-[28px] font-bold leading-[1.15] text-cream">
+            Body&rsquo;s ready.
+          </h1>
+          <p className="mb-4 font-body text-[15px] leading-[1.5] text-cream/70">
+            Now your mind chooses what to train.
+          </p>
+        </>
+      ) : (
+        <>
+          <h1 className="mb-2 font-heading text-[28px] font-bold leading-[1.15] text-cream">
+            Breathe first.
+          </h1>
+          <p className="mb-4 font-body text-[15px] leading-[1.5] text-cream/70">
+            Before you choose your focus, lead your body back to ready.
+          </p>
+        </>
+      )}
 
-      <div className="relative flex min-h-[360px] flex-1 flex-col items-center justify-center py-3 pb-7">
-        {audioReady ? (
-          <BreathingSphere
-            rounds={3}
-            inhale={4}
-            exhale={6}
-            size={280}
-            controlled={audio.controlled}
-            onTap={() => void audio.play()}
-          />
-        ) : (
-          <BreathingSphere
-            rounds={3}
-            inhale={4}
-            exhale={6}
-            size={280}
-            autoStart={false}
-            onComplete={markDone}
-          />
-        )}
+      {/* Persistent audio element so the post-breath visual change
+          doesn't tear down the playback that just completed. */}
+      {audioReady && (
+        // eslint-disable-next-line jsx-a11y/media-has-caption
+        <audio
+          ref={audio.audioRef}
+          src="/audio/pregame/breath-threshold.mp3"
+          preload="auto"
+        />
+      )}
 
-        {audioReady && (
-          // eslint-disable-next-line jsx-a11y/media-has-caption -- transcript
-          // equivalent is rendered as the on-screen "Inhale / Exhale"
-          // labels driven by the sphere; WebVTT track will follow when
-          // the audio script settles.
-          <audio
-            ref={audio.audioRef}
-            src="/audio/pregame/breath-threshold.mp3"
-            preload="auto"
-          />
-        )}
-      </div>
-
-      <div className="flex justify-center gap-6 pb-2">
-        <div className="text-center">
-          <Eyebrow>Inhale</Eyebrow>
-          <div className="mt-0.5 font-heading text-[14px] font-semibold text-cream">
-            Receive · 4s
-          </div>
+      {done ? (
+        // Post-breathing: hide the sphere + Inhale/Exhale legend, put the
+        // CTA in the middle (per KC UX feedback 2026-05-28). The global
+        // bottom bar is suppressed on this step via hideBottomBar=true.
+        <div className="relative flex flex-1 flex-col items-center justify-center gap-6 py-8">
+          <p className="text-center font-heading text-[17px] font-semibold text-gold">
+            Ready. Now set your focus.
+          </p>
+          <Button variant="coach" onClick={onContinue}>
+            SET MY FOCUS
+          </Button>
         </div>
-        <div className="w-px bg-hairline" />
-        <div className="text-center">
-          <Eyebrow>Exhale</Eyebrow>
-          <div className="mt-0.5 font-heading text-[14px] font-semibold text-cream">
-            Release · 6s
+      ) : (
+        <>
+          <div className="relative flex min-h-[360px] flex-1 flex-col items-center justify-center py-3 pb-7">
+            {audioReady ? (
+              <BreathingSphere
+                rounds={3}
+                inhale={4}
+                exhale={6}
+                size={280}
+                controlled={audio.controlled}
+                onTap={() => void audio.play()}
+              />
+            ) : (
+              <BreathingSphere
+                rounds={3}
+                inhale={4}
+                exhale={6}
+                size={280}
+                autoStart={false}
+                onComplete={markDone}
+              />
+            )}
           </div>
-        </div>
-      </div>
 
-      {state.breathDone && (
-        <p className="mt-4 text-center font-heading text-[15px] font-semibold text-gold">
-          Ready. Now set your focus.
-        </p>
+          <div className="flex justify-center gap-6 pb-2">
+            <div className="text-center">
+              <Eyebrow>Inhale</Eyebrow>
+              <div className="mt-0.5 font-heading text-[14px] font-semibold text-cream">
+                Receive · 4s
+              </div>
+            </div>
+            <div className="w-px bg-hairline" />
+            <div className="text-center">
+              <Eyebrow>Exhale</Eyebrow>
+              <div className="mt-0.5 font-heading text-[14px] font-semibold text-cream">
+                Release · 6s
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </ScreenBody>
   );

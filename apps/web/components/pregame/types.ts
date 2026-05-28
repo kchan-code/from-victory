@@ -246,6 +246,9 @@ export const FLOW: FlowStep[] = [
     label: "Breathe",
     required: (s) => s.breathDone,
     cta: "SET MY FOCUS",
+    // BreathScreen renders its own in-screen CTA post-breathing (per KC
+    // UX feedback) — the global bottom bar is suppressed for this step.
+    hideBottomBar: true,
   },
   {
     id: "todaysFocus",
