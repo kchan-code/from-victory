@@ -1,0 +1,54 @@
+{
+  "slug": "session-goalie-pulled",
+  "durationSec": 250.728,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.8,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.84,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 21.096,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 27.136,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 54.544
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 91.858
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 154.898
+    },
+    {
+      "phase": "reset",
+      "startSec": 200.082
+    },
+    {
+      "phase": "prayer",
+      "startSec": 218.102
+    },
+    {
+      "phase": "done",
+      "startSec": 243.714
+    }
+  ]
+}

@@ -24,6 +24,45 @@ import type {
   Segment,
 } from "../components/pregame/audio/types.ts";
 import { BREATH_THRESHOLD_SCRIPT } from "../components/pregame/audio/breath-threshold.ts";
+import { SESSION_FORWARD_MISSED_CHANCE_SCRIPT } from "../components/pregame/audio/session-forward-missed-chance.ts";
+import { SESSION_GOALIE_COACH_YELLS_SCRIPT } from "../components/pregame/audio/session-goalie-coach-yells.ts";
+import { SESSION_DEFENSE_BEATEN_WIDE_SCRIPT } from "../components/pregame/audio/session-defense-beaten-wide.ts";
+import { SESSION_FORWARD_TURNOVER_SCRIPT } from "../components/pregame/audio/session-forward-turnover.ts";
+import { SESSION_FORWARD_BEATEN_WIDE_SCRIPT } from "../components/pregame/audio/session-forward-beaten-wide.ts";
+import { SESSION_FORWARD_BAD_PENALTY_SCRIPT } from "../components/pregame/audio/session-forward-bad-penalty.ts";
+import { SESSION_FORWARD_COACH_YELLS_SCRIPT } from "../components/pregame/audio/session-forward-coach-yells.ts";
+import { SESSION_FORWARD_BENCHED_SCRIPT } from "../components/pregame/audio/session-forward-benched.ts";
+import { SESSION_FORWARD_NERVOUS_SCRIPT } from "../components/pregame/audio/session-forward-nervous.ts";
+import { SESSION_FORWARD_GET_HIT_SCRIPT } from "../components/pregame/audio/session-forward-get-hit.ts";
+import { SESSION_FORWARD_START_SLOW_SCRIPT } from "../components/pregame/audio/session-forward-start-slow.ts";
+import { SESSION_FORWARD_FIRST_GOAL_AGAINST_SCRIPT } from "../components/pregame/audio/session-forward-first-goal-against.ts";
+import { SESSION_DEFENSE_TURNOVER_SCRIPT } from "../components/pregame/audio/session-defense-turnover.ts";
+import { SESSION_DEFENSE_MISSED_CHANCE_SCRIPT } from "../components/pregame/audio/session-defense-missed-chance.ts";
+import { SESSION_DEFENSE_BAD_PENALTY_SCRIPT } from "../components/pregame/audio/session-defense-bad-penalty.ts";
+import { SESSION_DEFENSE_COACH_YELLS_SCRIPT } from "../components/pregame/audio/session-defense-coach-yells.ts";
+import { SESSION_DEFENSE_BENCHED_SCRIPT } from "../components/pregame/audio/session-defense-benched.ts";
+import { SESSION_DEFENSE_NERVOUS_SCRIPT } from "../components/pregame/audio/session-defense-nervous.ts";
+import { SESSION_DEFENSE_GET_HIT_SCRIPT } from "../components/pregame/audio/session-defense-get-hit.ts";
+import { SESSION_DEFENSE_START_SLOW_SCRIPT } from "../components/pregame/audio/session-defense-start-slow.ts";
+import { SESSION_DEFENSE_FIRST_GOAL_AGAINST_SCRIPT } from "../components/pregame/audio/session-defense-first-goal-against.ts";
+import { SESSION_GOALIE_TURNOVER_SCRIPT } from "../components/pregame/audio/session-goalie-turnover.ts";
+import { SESSION_GOALIE_MISSED_CHANCE_SCRIPT } from "../components/pregame/audio/session-goalie-missed-chance.ts";
+import { SESSION_GOALIE_BEATEN_WIDE_SCRIPT } from "../components/pregame/audio/session-goalie-beaten-wide.ts";
+import { SESSION_GOALIE_BAD_PENALTY_SCRIPT } from "../components/pregame/audio/session-goalie-bad-penalty.ts";
+import { SESSION_GOALIE_PULLED_SCRIPT } from "../components/pregame/audio/session-goalie-pulled.ts";
+import { SESSION_GOALIE_NERVOUS_SCRIPT } from "../components/pregame/audio/session-goalie-nervous.ts";
+import { SESSION_GOALIE_GET_HIT_SCRIPT } from "../components/pregame/audio/session-goalie-get-hit.ts";
+import { SESSION_GOALIE_START_SLOW_SCRIPT } from "../components/pregame/audio/session-goalie-start-slow.ts";
+import { SESSION_GOALIE_FIRST_GOAL_AGAINST_SCRIPT } from "../components/pregame/audio/session-goalie-first-goal-against.ts";
+import { OPENER_CONFIDENCE_SCRIPT } from "../components/pregame/audio/opener-confidence.ts";
+import { OPENER_CALM_SCRIPT } from "../components/pregame/audio/opener-calm.ts";
+import { OPENER_COMPETE_LEVEL_SCRIPT } from "../components/pregame/audio/opener-compete-level.ts";
+import { OPENER_RESET_SCRIPT } from "../components/pregame/audio/opener-reset.ts";
+import { OPENER_COURAGE_SCRIPT } from "../components/pregame/audio/opener-courage.ts";
+import { OPENER_DECISIONS_SCRIPT } from "../components/pregame/audio/opener-decisions.ts";
+import { OPENER_LEADERSHIP_SCRIPT } from "../components/pregame/audio/opener-leadership.ts";
+import { OPENER_JOY_SCRIPT } from "../components/pregame/audio/opener-joy.ts";
+import { OPENER_HOPE_SCRIPT } from "../components/pregame/audio/opener-hope.ts";
 import {
   clearSilenceCache,
   concatMp3s,
@@ -36,7 +75,53 @@ import { estimateCostUsd, synthesizeSpeech } from "./lib/tts.ts";
 
 const SCRIPTS: AudioScript[] = [
   BREATH_THRESHOLD_SCRIPT,
-  // Future: BREATH_QUICKRESET_SCRIPT, PREGAME_SESSION_SCRIPTS (30 of them), ...
+  // Need-specific identity openers — stitched at runtime in front of
+  // the cell-specific session MP3. Selected by athlete's "today's focus"
+  // setup tap.
+  OPENER_CONFIDENCE_SCRIPT,
+  OPENER_CALM_SCRIPT,
+  OPENER_COMPETE_LEVEL_SCRIPT,
+  OPENER_RESET_SCRIPT,
+  OPENER_COURAGE_SCRIPT,
+  OPENER_DECISIONS_SCRIPT,
+  OPENER_LEADERSHIP_SCRIPT,
+  OPENER_JOY_SCRIPT,
+  OPENER_HOPE_SCRIPT,
+  // Cell-specific session scripts — selected by (position, adversity).
+  // Forward (10 cells)
+  SESSION_FORWARD_MISSED_CHANCE_SCRIPT,
+  SESSION_FORWARD_TURNOVER_SCRIPT,
+  SESSION_FORWARD_BEATEN_WIDE_SCRIPT,
+  SESSION_FORWARD_BAD_PENALTY_SCRIPT,
+  SESSION_FORWARD_COACH_YELLS_SCRIPT,
+  SESSION_FORWARD_BENCHED_SCRIPT,
+  SESSION_FORWARD_NERVOUS_SCRIPT,
+  SESSION_FORWARD_GET_HIT_SCRIPT,
+  SESSION_FORWARD_START_SLOW_SCRIPT,
+  SESSION_FORWARD_FIRST_GOAL_AGAINST_SCRIPT,
+  // Defense (10 cells)
+  SESSION_DEFENSE_BEATEN_WIDE_SCRIPT,
+  SESSION_DEFENSE_TURNOVER_SCRIPT,
+  SESSION_DEFENSE_MISSED_CHANCE_SCRIPT,
+  SESSION_DEFENSE_BAD_PENALTY_SCRIPT,
+  SESSION_DEFENSE_COACH_YELLS_SCRIPT,
+  SESSION_DEFENSE_BENCHED_SCRIPT,
+  SESSION_DEFENSE_NERVOUS_SCRIPT,
+  SESSION_DEFENSE_GET_HIT_SCRIPT,
+  SESSION_DEFENSE_START_SLOW_SCRIPT,
+  SESSION_DEFENSE_FIRST_GOAL_AGAINST_SCRIPT,
+  // Goalie (10 cells)
+  SESSION_GOALIE_COACH_YELLS_SCRIPT,
+  SESSION_GOALIE_TURNOVER_SCRIPT,
+  SESSION_GOALIE_MISSED_CHANCE_SCRIPT,
+  SESSION_GOALIE_BEATEN_WIDE_SCRIPT,
+  SESSION_GOALIE_BAD_PENALTY_SCRIPT,
+  SESSION_GOALIE_PULLED_SCRIPT,
+  SESSION_GOALIE_NERVOUS_SCRIPT,
+  SESSION_GOALIE_GET_HIT_SCRIPT,
+  SESSION_GOALIE_START_SLOW_SCRIPT,
+  SESSION_GOALIE_FIRST_GOAL_AGAINST_SCRIPT,
+  // Future: BREATH_QUICKRESET_SCRIPT.
 ];
 
 const DEFAULT_OUT_DIR = "public/audio/pregame";

@@ -5,7 +5,19 @@
 // plus a sidecar JSON timeline that the runtime uses to sync visuals
 // (BreathingSphere, transcript scroll) to audio playback.
 
-export type Phase = "intro" | "inhale" | "exhale" | "settle" | "done";
+export type Phase =
+  | "intro"
+  | "inhale"
+  | "exhale"
+  | "settle"
+  // ── Guided-session phases (segments 4-9 of the 5-min session)
+  | "rink"
+  | "firstShift"
+  | "roleRehearsal"
+  | "hardMoment"
+  | "reset"
+  | "prayer"
+  | "done";
 
 export type PhaseMark = {
   // Logical phase the segment starts. Runtime maps this back onto the

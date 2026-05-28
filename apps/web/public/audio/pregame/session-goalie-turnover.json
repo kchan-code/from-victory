@@ -1,0 +1,54 @@
+{
+  "slug": "session-goalie-turnover",
+  "durationSec": 254.04,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.176,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.696,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 20.592,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 26.44,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 55.264
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 93.322
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 150.482
+    },
+    {
+      "phase": "reset",
+      "startSec": 207.074
+    },
+    {
+      "phase": "prayer",
+      "startSec": 223.078
+    },
+    {
+      "phase": "done",
+      "startSec": 247.346
+    }
+  ]
+}

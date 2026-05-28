@@ -1,0 +1,54 @@
+{
+  "slug": "session-forward-first-goal-against",
+  "durationSec": 262.944,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 7.64,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 14.64,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 21.744,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 27.736,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 55.816
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 94.778
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 167.53
+    },
+    {
+      "phase": "reset",
+      "startSec": 212.858
+    },
+    {
+      "phase": "prayer",
+      "startSec": 230.014
+    },
+    {
+      "phase": "done",
+      "startSec": 255.866
+    }
+  ]
+}

@@ -168,7 +168,7 @@ function ScreenSwitch({
 }) {
   switch (stepId) {
     case "breath":
-      return <BreathScreen state={state} set={set} />;
+      return <BreathScreen state={state} set={set} onContinue={onContinue} />;
     case "todaysFocus":
       return <TodaysFocusScreen state={state} set={set} />;
     case "position":

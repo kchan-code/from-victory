@@ -88,60 +88,59 @@ export default async function AthleteHomePage() {
           </div>
 
           <h2 className="font-display font-extrabold uppercase tracking-[0.02em] text-cream text-[28px] sm:text-[32px] leading-[1.1] mb-6">
-            From Victory, Not Toward It
+            Run Your Race. Eyes on Jesus.
           </h2>
 
           <div className="border-l-2 border-gold/50 pl-4 mb-7">
             <p className="font-scripture text-cream text-[18px] leading-relaxed italic">
-              &ldquo;No, in all these things we are more than conquerors through
-              him who loved us.&rdquo;
+              &ldquo;Let us run with perseverance the race marked out for us,
+              fixing our eyes on Jesus, the pioneer and perfecter of faith.&rdquo;
             </p>
             <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gold mt-2">
-              Romans 8:37 · NIV
+              Hebrews 12:1-2 · NIV
             </p>
           </div>
 
           <div className="font-body text-cream/85 text-[15.5px] leading-relaxed space-y-4">
             <p className="text-cream font-display font-semibold uppercase tracking-[0.02em] text-[18px] not-italic">
-              A bad day should tell you what happened. It should not tell you
-              who you are.
+              Your race is your race. Run it with your eyes on Jesus.
             </p>
 
             <p>
-              Paul wrote Romans 8:37 to believers in Rome facing real loss —
-              trouble, hardship, persecution, danger, sword. &ldquo;More than
-              conquerors&rdquo; is the line he reaches for in the middle of
-              suffering, not after a winning streak. The verse does not mean
-              Christians never lose. It means loss does not get the final word.
-              Nothing on that list — nothing — can separate you from the love
-              of God in Christ.
+              The writer of Hebrews wrote chapter 12 to believers who were worn
+              down — suffering, tempted to quit. There&rsquo;s a great cloud of
+              witnesses surrounding you, the writer says. Throw off everything
+              that hinders. Run with perseverance the race marked out for you.
+              And — this is the key — fix your eyes on Jesus, who already ran
+              his race and is now at the right hand of God.
             </p>
 
             <p>
-              Every serious athlete knows the voice that takes one mistake and
-              turns it into a verdict. The missed shot becomes &ldquo;I&rsquo;m
-              not a real player.&rdquo; The benched practice becomes
-              &ldquo;Coach doesn&rsquo;t see me anymore.&rdquo; The lost game
-              becomes &ldquo;I let everyone down.&rdquo; That voice is fast,
-              and it sounds like the truth. Most of the time it isn&rsquo;t.
+              Every serious athlete knows the voice that pulls your eyes off
+              your race. Onto the teammate getting more ice time. Onto the
+              coach&rsquo;s clipboard. Onto the parents in the stands. Onto
+              your own stat line. The voice is constant. It tells you where to
+              look. Most of the time it&rsquo;s the wrong place.
             </p>
 
-            <p>When it starts, say it back in two sentences:</p>
+            <p>When the voice starts, say it back:</p>
 
             <p className="font-scripture text-cream text-[17px] italic text-center my-5">
-              That is what happened. That is not who I am.
+              This is my race. My eyes are on Jesus.
             </p>
 
             <p>
-              The performance is on tape. The verdict isn&rsquo;t real. Take a
-              breath. Look at the next play.
+              Fixed eyes don&rsquo;t mean ignoring the score or your teammates.
+              They mean Christ — the One who already finished his race — is
+              where you look for what you need. He&rsquo;s not waiting for you
+              to earn it. He gave it before you laced up.
             </p>
 
             <p>
-              The world says: perform, then belong. The gospel says: in Christ
-              you already belong, and effort flows from there. The worst game
-              you play does not lower your standing with God. The best game you
-              play does not raise it.
+              The world says: prove yourself, then belong. The gospel says: in
+              Christ you already belong, so run from there. Run from
+              already-finished work. Run with your eyes on the Person who
+              finished it.
             </p>
 
             <p className="font-display font-semibold uppercase tracking-[0.02em] text-cream text-[16px] not-italic pt-2">
@@ -156,9 +155,9 @@ export default async function AthleteHomePage() {
             Journal prompt
           </p>
           <p className="font-body text-cream/85 text-[15px] leading-relaxed">
-            When did a single mistake last start rewriting how you see
-            yourself — and what changes if you read it back through &ldquo;more
-            than conquerors through him who loved us&rdquo;?
+            When did comparison or fatigue last pull your eyes off your race —
+            and what changes when you fix them back on Jesus, who already ran
+            his for you?
           </p>
           <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-cream/40 mt-4 leading-relaxed">
             When the full app launches, you&rsquo;ll write your reflection

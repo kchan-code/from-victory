@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AudioTimeline, Phase } from "./types";
+import { audioAssetUrl } from "../audio-mapping";
 
 // BreathingSphere only knows four phases. Map the broader audio timeline
 // phase set onto them: intro/settle (and anything else non-breath) collapse
@@ -80,8 +81,7 @@ export function useBreathAudio({
   // can fall back to sphere-standalone mode.
   useEffect(() => {
     let cancelled = false;
-    const base = `/audio/pregame/${slug}`;
-    fetch(`${base}.json`)
+    fetch(audioAssetUrl(slug, "json"))
       .then(async (res) => {
         if (cancelled) return;
         if (!res.ok) {

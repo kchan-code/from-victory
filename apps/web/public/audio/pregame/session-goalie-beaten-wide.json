@@ -1,0 +1,54 @@
+{
+  "slug": "session-goalie-beaten-wide",
+  "durationSec": 253.032,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.056,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 11.304,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 18.936,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 25.768,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 53.32
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 89.386
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 146.954
+    },
+    {
+      "phase": "reset",
+      "startSec": 206.066
+    },
+    {
+      "phase": "prayer",
+      "startSec": 222.526
+    },
+    {
+      "phase": "done",
+      "startSec": 246.29
+    }
+  ]
+}

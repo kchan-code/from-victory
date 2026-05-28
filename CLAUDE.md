@@ -13,15 +13,19 @@ It is NOT a devotional app with sports language added. The ordering
 matters and shapes every product decision.
 
 ## Brand Spine
-"From Victory" = from Christ's victory (1 Corinthians 15:57, Romans 8:37).
-We operate FROM a place of already-won victory, not striving TOWARD it.
-Identity precedes performance. An athlete who gets cut, benched, or loses
-is still loved and still operating from victory.
+"From Victory" anchored in Hebrews 12:1-2 — "Let us run with perseverance
+the race marked out for us, fixing our eyes on Jesus, the pioneer and
+perfecter of faith." We run the race God has marked out, eyes on the One
+who already ran his for us. We compete FROM that completed work, not
+toward a victory we are trying to earn. Identity precedes performance.
+An athlete who gets cut, benched, or loses is still loved and still
+operating from victory.
 
 ### Canonical phrases
 - Public tagline: "Your Identity Is Secure. Compete From Victory."
 - Internal anchor: "Rooted in the Word. Fueled by the Spirit. Built for
   Victory."
+- Spine verse (home page): Hebrews 12:1-2
 
 Use these exactly. Don't paraphrase.
 

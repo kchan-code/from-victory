@@ -9,12 +9,22 @@ import type { AudioScript } from "./types";
 
 export const BREATH_THRESHOLD_SCRIPT: AudioScript = {
   slug: "breath-threshold",
-  // sage reads softer and more meditative than ash. Reserved for breath +
-  // settling moments; the full 5-min session may want ash for the more
-  // active visualization segments.
-  voice: "sage",
-  instructions:
-    "Speak in a soft, hushed voice. Like a meditation guide settling someone into stillness, not a coach giving direction. Calm and breath-aware. Warm. Intimate. Not preachy. The athlete is closing their eyes; speak like you know it.",
+  // ash is the From Victory voice — warm, grounded mentor. Same voice
+  // carries through the breath threshold and all 30 guided-session
+  // scripts. Calm-vibe instructions in the 6-facet form below steer
+  // ash toward the meditative end of its range for this script.
+  voice: "ash",
+  instructions: `Voice Affect: Calm, composed, grounded. A trusted mentor guiding the athlete through stillness — not a fitness instructor, not a preacher, not a meditation app narrator.
+
+Tone: Warm, present, intimate. Spiritually steady without being sentimental. Not preachy. Not soft to the point of disappearing.
+
+Pacing: Slow and unhurried. Each breath cue is a complete sentence, fully voiced, before the silence segment takes over. Do not rush.
+
+Emotion: Quiet care. The athlete has their eyes closed; speak as if you know it. No performance, no hype, no urgency.
+
+Pronunciation: Clear and gentle. Land "Inhale" and "Exhale" cleanly — fully voiced, never sharp, never rushed.
+
+Pauses: The script's typed silence segments carry structural pauses. Let your sentence ends breathe naturally into them. A brief beat after each cue is enough.`,
   speed: 0.95,
   segments: [
     // ── Intro — slightly brisk for the threshold cue; protocol callout

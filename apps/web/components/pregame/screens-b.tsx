@@ -15,7 +15,6 @@ import {
 import {
   AUDIO_SCRIPT,
   AUDIO_SESSION_DURATION_S,
-  AUDIO_SESSION_SRC,
   CUE_WORDS,
   DEFAULTS,
   RESET_ANCHORS,
@@ -26,6 +25,7 @@ import {
   type AudioSegment,
   type PregameState,
 } from "./types";
+import { cellSrcFor, openerSrcFor } from "./audio-mapping";
 
 type SetFn = <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
 
@@ -249,14 +249,22 @@ export function ReviewScreen({ state }: { state: PregameState }) {
 }
 
 // ─── SCREEN 9 ─── 5-Minute Guided Audio Session
-// Tries to play a real audio file at AUDIO_SESSION_SRC. If the file is
-// missing or fails (404, autoplay block recovery, etc.), falls back to a
-// text-mode timer that walks through AUDIO_SCRIPT segments at the same
-// total duration. Brand-spine moments (Romans 8:37 opener, coping plan,
-// send-off prayer) live inside that script.
 //
-// Sets state.audioCompleted = true on natural finish so the BottomBar
-// CTA on the next FLOW step can unlock "Show my Pre-Game Card."
+// Compositional architecture: a need-specific opener.mp3 plays first
+// (~0:50-1:07 — identity + Hebrews 12 brand spine), then the
+// (position × adversity) cell.mp3 plays (~4:00-4:30 — breath, rink,
+// first shift, role rehearsal, hard moment, reset, prayer, send-off).
+// Sequential playback: opener.ended → cell.play(). Total composed
+// duration is opener.duration + cell.duration (typically 5:00-5:30).
+//
+// If either file is missing / fails (HEAD 404, autoplay block,
+// decode error), falls back to the legacy text-mode timer that walks
+// AUDIO_SCRIPT segments. The text-mode AUDIO_SCRIPT still embeds the
+// old Romans 8:37 framing for the eyebrow/body display — fine as a
+// fallback; the audio path is the primary experience.
+//
+// Sets state.audioCompleted = true on cell.ended so the FLOW's next
+// step CTA can unlock "Show my Pre-Game Card."
 function substituteSegment(seg: AudioSegment, state: PregameState): { eyebrow: string; body: string } {
   const role = state.role;
   const roleScenes = role
@@ -284,30 +292,48 @@ export function AudioSessionScreen({
   set: SetFn;
   onContinue: () => void;
 }) {
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const openerRef = useRef<HTMLAudioElement>(null);
+  const cellRef = useRef<HTMLAudioElement>(null);
+
+  // Derive MP3 sources from pregame state.
+  const openerSrc = openerSrcFor(state.need);
+  const cellSrc = cellSrcFor(state.role, state.adversity);
+
   const [audioMode, setAudioMode] = useState<"audio" | "text">("text");
   const [playing, setPlaying] = useState(false);
+  const [activeSegment, setActiveSegment] = useState<"opener" | "cell">("opener");
+  const [openerDuration, setOpenerDuration] = useState(0);
+  const [cellDuration, setCellDuration] = useState(0);
   const [elapsed, setElapsed] = useState(0);
-  const total = AUDIO_SESSION_DURATION_S;
   const completed = state.audioCompleted;
 
-  // Probe for audio availability once on mount. We use a HEAD request to
-  // avoid loading the full file just to test for 404.
+  // Combined target duration. Falls back to the legacy constant until
+  // metadata loads; once durations stream in, switches to the real sum.
+  const total =
+    audioMode === "audio" && openerDuration + cellDuration > 0
+      ? openerDuration + cellDuration
+      : AUDIO_SESSION_DURATION_S;
+
+  // Probe both files. Switch to audio mode only if BOTH respond OK.
   useEffect(() => {
+    if (!openerSrc || !cellSrc) return;
     let cancelled = false;
-    fetch(AUDIO_SESSION_SRC, { method: "HEAD" })
-      .then((res) => {
-        if (!cancelled && res.ok) setAudioMode("audio");
+    Promise.all([
+      fetch(openerSrc, { method: "HEAD" }),
+      fetch(cellSrc, { method: "HEAD" }),
+    ])
+      .then(([o, c]) => {
+        if (!cancelled && o.ok && c.ok) setAudioMode("audio");
       })
       .catch(() => {
-        // network error / file missing — stay in text mode
+        // network / file missing — stay in text mode
       });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [openerSrc, cellSrc]);
 
-  // Text-mode timer: ticks elapsed forward while playing.
+  // Text-mode timer (fallback). Unchanged from prior behavior.
   useEffect(() => {
     if (audioMode !== "text" || !playing || completed) return;
     const id = window.setInterval(() => {
@@ -324,66 +350,128 @@ export function AudioSessionScreen({
     return () => window.clearInterval(id);
   }, [audioMode, playing, completed, total, set]);
 
-  // Audio-mode wiring
+  // Audio-mode wiring: two elements, sequential playback.
   useEffect(() => {
     if (audioMode !== "audio") return;
-    const el = audioRef.current;
-    if (!el) return;
-    const onTime = () => setElapsed(Math.floor(el.currentTime));
-    const onPlay = () => setPlaying(true);
-    const onPause = () => setPlaying(false);
-    const onEnded = () => {
+    const o = openerRef.current;
+    const c = cellRef.current;
+    if (!o || !c) return;
+
+    const onOpenerMeta = () => setOpenerDuration(o.duration || 0);
+    const onCellMeta = () => setCellDuration(c.duration || 0);
+
+    const onOpenerTime = () => {
+      if (activeSegment === "opener") setElapsed(o.currentTime);
+    };
+    const onCellTime = () => {
+      if (activeSegment === "cell") setElapsed(openerDuration + c.currentTime);
+    };
+
+    const onOpenerEnded = () => {
+      // Auto-transition to the cell. Don't flip `playing` — we're still
+      // playing, just from a different element.
+      setActiveSegment("cell");
+      c.play().catch(() => {
+        // Cell failed to autoplay → drop to text mode so the session
+        // still completes for the athlete.
+        setAudioMode("text");
+        setPlaying(true);
+      });
+    };
+    const onCellEnded = () => {
       setPlaying(false);
       set("audioCompleted", true);
     };
-    el.addEventListener("timeupdate", onTime);
-    el.addEventListener("play", onPlay);
-    el.addEventListener("pause", onPause);
-    el.addEventListener("ended", onEnded);
-    return () => {
-      el.removeEventListener("timeupdate", onTime);
-      el.removeEventListener("play", onPlay);
-      el.removeEventListener("pause", onPause);
-      el.removeEventListener("ended", onEnded);
+
+    const onAnyPlay = () => setPlaying(true);
+    const onAnyPause = (which: "opener" | "cell") => () => {
+      // Don't flip to paused on the opener's natural end — the cell
+      // takes over before this matters, but the `pause` event fires on
+      // `ended` in some browsers. Filter that case.
+      if (which === "opener" && o.ended) return;
+      setPlaying(false);
     };
-  }, [audioMode, set]);
+
+    o.addEventListener("loadedmetadata", onOpenerMeta);
+    c.addEventListener("loadedmetadata", onCellMeta);
+    o.addEventListener("timeupdate", onOpenerTime);
+    c.addEventListener("timeupdate", onCellTime);
+    o.addEventListener("ended", onOpenerEnded);
+    c.addEventListener("ended", onCellEnded);
+    o.addEventListener("play", onAnyPlay);
+    c.addEventListener("play", onAnyPlay);
+    const openerPauseHandler = onAnyPause("opener");
+    const cellPauseHandler = onAnyPause("cell");
+    o.addEventListener("pause", openerPauseHandler);
+    c.addEventListener("pause", cellPauseHandler);
+
+    // If metadata already loaded before listeners attached (cache hit),
+    // pull durations immediately.
+    if (o.duration && !openerDuration) setOpenerDuration(o.duration);
+    if (c.duration && !cellDuration) setCellDuration(c.duration);
+
+    return () => {
+      o.removeEventListener("loadedmetadata", onOpenerMeta);
+      c.removeEventListener("loadedmetadata", onCellMeta);
+      o.removeEventListener("timeupdate", onOpenerTime);
+      c.removeEventListener("timeupdate", onCellTime);
+      o.removeEventListener("ended", onOpenerEnded);
+      c.removeEventListener("ended", onCellEnded);
+      o.removeEventListener("play", onAnyPlay);
+      c.removeEventListener("play", onAnyPlay);
+      o.removeEventListener("pause", openerPauseHandler);
+      c.removeEventListener("pause", cellPauseHandler);
+    };
+  }, [audioMode, activeSegment, openerDuration, cellDuration, set]);
 
   const togglePlay = () => {
     if (audioMode === "audio") {
-      const el = audioRef.current;
-      if (!el) return;
-      if (el.paused) {
-        el.play().catch(() => {
-          // autoplay block / decode error — drop to text mode so the
-          // session is still usable
+      const o = openerRef.current;
+      const c = cellRef.current;
+      if (!o || !c) return;
+      const active = activeSegment === "opener" ? o : c;
+      if (active.paused) {
+        active.play().catch(() => {
+          // Autoplay block / decode error → fall back to text mode.
           setAudioMode("text");
           setPlaying(true);
         });
       } else {
-        el.pause();
+        active.pause();
       }
     } else {
       setPlaying((p) => !p);
     }
   };
 
-  // Pick the current segment by startSec ≤ elapsed
-  const segments = AUDIO_SCRIPT;
-  let currentIdx = 0;
-  for (let i = 0; i < segments.length; i++) {
-    const seg = segments[i];
-    if (seg && seg.startSec <= elapsed) currentIdx = i;
+  // On-screen view text.
+  // Audio mode: minimal display (athlete's eyes are closed — the audio is
+  // the experience). Shows phase label + Hebrews 12 spine quote.
+  // Text mode: walk AUDIO_SCRIPT segments by elapsed time (legacy).
+  let view: { eyebrow: string; body: string };
+  if (audioMode === "audio") {
+    view = {
+      eyebrow: activeSegment === "opener" ? "Identity" : "Guided Session",
+      body: SCRIPTURE_SHORT,
+    };
+  } else {
+    const segments = AUDIO_SCRIPT;
+    let currentIdx = 0;
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i];
+      if (seg && seg.startSec <= elapsed) currentIdx = i;
+    }
+    const seg = segments[currentIdx];
+    view = seg
+      ? substituteSegment(seg, state)
+      : { eyebrow: "Identity", body: SCRIPTURE_SHORT };
   }
-  const seg = segments[currentIdx];
-  const view = seg
-    ? substituteSegment(seg, state)
-    : { eyebrow: "Identity", body: SCRIPTURE_SHORT };
 
   const remaining = Math.max(0, total - elapsed);
   const mm = Math.floor(remaining / 60);
-  const ss = remaining % 60;
+  const ss = Math.floor(remaining % 60);
   const remainingLabel = `${mm}:${String(ss).padStart(2, "0")}`;
-  const pct = Math.min(100, (elapsed / total) * 100);
+  const pct = total > 0 ? Math.min(100, (elapsed / total) * 100) : 0;
 
   return (
     <div
@@ -411,15 +499,23 @@ export function AudioSessionScreen({
         />
       </div>
 
-      {audioMode === "audio" && (
-        // eslint-disable-next-line jsx-a11y/media-has-caption -- transcript
-        // is rendered visually below; native track support skipped for MVP.
-        <audio
-          ref={audioRef}
-          src={AUDIO_SESSION_SRC}
-          preload="auto"
-          onError={() => setAudioMode("text")}
-        />
+      {audioMode === "audio" && openerSrc && cellSrc && (
+        <>
+          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+          <audio
+            ref={openerRef}
+            src={openerSrc}
+            preload="auto"
+            onError={() => setAudioMode("text")}
+          />
+          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+          <audio
+            ref={cellRef}
+            src={cellSrc}
+            preload="auto"
+            onError={() => setAudioMode("text")}
+          />
+        </>
       )}
 
       <div
@@ -462,9 +558,13 @@ export function AudioSessionScreen({
               setPlaying(false);
               setElapsed(total);
               set("audioCompleted", true);
-              if (audioMode === "audio" && audioRef.current) {
-                audioRef.current.pause();
+              if (audioMode === "audio") {
+                openerRef.current?.pause();
+                cellRef.current?.pause();
               }
+              // Navigate straight to the Pre-Game Card instead of forcing
+              // a second click on the "SHOW MY PRE-GAME CARD" button.
+              onContinue();
             }}
             className="self-center font-mono text-[10px] uppercase tracking-[0.18em] text-cream/50 hover:text-cream"
           >

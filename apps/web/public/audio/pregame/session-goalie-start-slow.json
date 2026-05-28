@@ -1,0 +1,54 @@
+{
+  "slug": "session-goalie-start-slow",
+  "durationSec": 248.184,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.056,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.216,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 19.464,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 25.144,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 52.72
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 89.098
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 147.578
+    },
+    {
+      "phase": "reset",
+      "startSec": 201.89
+    },
+    {
+      "phase": "prayer",
+      "startSec": 218.35
+    },
+    {
+      "phase": "done",
+      "startSec": 241.802
+    }
+  ]
+}

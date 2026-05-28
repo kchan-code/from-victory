@@ -1,0 +1,54 @@
+{
+  "slug": "session-defense-coach-yells",
+  "durationSec": 255.816,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.584,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 11.88,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 21.144,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 28.408,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 57.088
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 93.794
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 161.804
+    },
+    {
+      "phase": "reset",
+      "startSec": 207.66
+    },
+    {
+      "phase": "prayer",
+      "startSec": 223.736
+    },
+    {
+      "phase": "done",
+      "startSec": 249.9
+    }
+  ]
+}
