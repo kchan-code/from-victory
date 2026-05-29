@@ -259,9 +259,9 @@ export function ReviewScreen({ state }: { state: PregameState }) {
 //
 // If either file is missing / fails (HEAD 404, autoplay block,
 // decode error), falls back to the legacy text-mode timer that walks
-// AUDIO_SCRIPT segments. The text-mode AUDIO_SCRIPT still embeds the
-// old Romans 8:37 framing for the eyebrow/body display — fine as a
-// fallback; the audio path is the primary experience.
+// AUDIO_SCRIPT segments. The text-mode Identity segment renders the
+// Hebrews 12:1-2 spine via SCRIPTURE_REF/SCRIPTURE_TEXT; the audio path
+// is the primary experience.
 //
 // Sets state.audioCompleted = true on cell.ended so the FLOW's next
 // step CTA can unlock "Show my Pre-Game Card."

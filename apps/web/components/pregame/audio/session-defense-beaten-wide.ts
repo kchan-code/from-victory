@@ -3,8 +3,8 @@
 // THIRD pilot. Completes position coverage (Forward + Goalie + Defense)
 // and validates the canonical template across all three positions.
 // Mirrors the structure locked in session-forward-missed-chance.ts.
-// Same 7 voice-instruction blocks (duplicated below — will refactor to
-// a shared module once this third pilot confirms the pattern holds).
+// Shares the canonical voice-instruction blocks via ./instructions.ts,
+// with cell-specific VISUALIZATION / HARD_MOMENT overrides kept local below.
 // Same 9-segment shape. Same runtime target (~4:45-4:55).
 //
 // What's identical to Forward + Goalie:
@@ -47,36 +47,19 @@
 // during playback — they are NOT in the audio.
 
 import type { AudioScript } from "./types";
+import {
+  BREATH_INSTRUCTIONS,
+  NARRATIVE_INSTRUCTIONS,
+  PRAYER_INSTRUCTIONS,
+  RESET_PLAN_INSTRUCTIONS,
+  SCRIPT_INSTRUCTIONS,
+} from "./instructions.ts";
 
 // Per-segment overrides REPLACE the script-level instruction entirely
 // for that segment's API call. Duplicated from
 // session-forward-missed-chance.ts for the pilot phase; will be
 // hoisted to a shared module now that a third pilot confirms the
 // pattern holds.
-
-const SCRIPT_INSTRUCTIONS = `Voice Affect: Calm, composed, grounded. A trusted mentor sitting next to the athlete on headphones before a game — not a preacher, not a hype coach.
-
-Tone: Sincere, warm, spiritually steady. Honest without being heavy. Confident without being hyped.
-
-Pacing: Steady and moderate. Slower and more contemplative in devotional and prayer segments; a half-step more active in rink and first-shift visualization; meditative on breath cues.
-
-Emotion: Genuine care and quiet confidence. Honest in the prayer; assured in the visualization; steady in the reset cues. Never performative, never urgent.
-
-Pronunciation: Clear and precise. Land identity-anchoring phrases ("you are already loved," "your mistake is real," "play from victory") with weight, not emphasis. Breath cues fully voiced.
-
-Pauses: Generous beats after weight-bearing sentences. Brief beats between Coach-voice cues. The script's typed silence segments carry structural pauses; let your sentence ends breathe naturally into them.`;
-
-const BREATH_INSTRUCTIONS = `Voice Affect: Calm, composed, grounded. A trusted mentor guiding the athlete through stillness — not a fitness instructor, not a preacher, not a meditation app narrator.
-
-Tone: Warm, present, intimate. Spiritually steady without being sentimental. Not preachy. Not soft to the point of disappearing.
-
-Pacing: Slow and unhurried. Each breath cue is a complete sentence, fully voiced, before the silence segment takes over. Do not rush.
-
-Emotion: Quiet care. The athlete has their eyes closed; speak as if you know it. No performance, no hype, no urgency.
-
-Pronunciation: Clear and gentle. Land "Inhale" and "Exhale" cleanly — fully voiced, never sharp, never rushed.
-
-Pauses: The script's typed silence segments carry structural pauses. Let your sentence ends breathe naturally into them. A brief beat after each cue is enough.`;
 
 const VISUALIZATION_INSTRUCTIONS = `Voice Affect: Steady, present mentor walking the athlete through a mental rehearsal. Half a step more active than the meditative breath cues; not preachy, not hyped.
 
@@ -113,42 +96,6 @@ Emotion: Confident care. The voice that knows the move and is calling it.
 Pronunciation: Land "real," "identity," and "reset and go again" with weight, not emphasis. Clear and grounded.
 
 Pauses: A breath between each truth-claim — "Your mistake is real." / "It is not your identity." / "Reset and go again."`;
-
-const RESET_PLAN_INSTRUCTIONS = `Voice Affect: Coach voice. Clean and repeatable, the way a teammate would tap the five steps out for you on the bench.
-
-Tone: Direct and focused. No warmth-bleed; this is the move, not the comfort.
-
-Pacing: Five short cues with a long beat between each. Even, drilled, memorable. The pauses are part of the move, not gaps between sentences.
-
-Emotion: Steady confidence. The voice that has run this move a thousand times.
-
-Pronunciation: Each cue distinct and clean. Do not run them together.
-
-Pauses: A long, clear beat between every cue — long enough for the athlete to mentally rehearse the step before the next one arrives. Do not run them together under any circumstances. Each cue must be heard, processed, and the image formed before the next cue begins. This is the most important facet for this register.`;
-
-const NARRATIVE_INSTRUCTIONS = `Voice Affect: Engaged and present, like a trusted pastor or sermon-giver unpacking truth in real time — not a meditation guide, not a hype coach. Conversational depth with quiet conviction.
-
-Tone: Sincere, warm, convicted. The speaker believes what they are saying and wants the athlete to receive it.
-
-Pacing: Lively and conversational. Sermon-cadenced, not meditation-cadenced. Do not slow down for emphasis; let meaning land through clarity, not drag.
-
-Emotion: Quiet conviction. Honest. No drama, no excess weight on individual words.
-
-Pronunciation: Clear and engaged. Key phrases ("more than conquerors," "loved before you lace up," "you are already loved") land with the natural emphasis a sermon-giver would give them, not with artificial slowness.
-
-Pauses: Natural sermon rhythm — beats between thoughts, not between every word. The script's typed silence segments handle structural pauses; let your sentences breathe at a conversational pace.`;
-
-const PRAYER_INSTRUCTIONS = `Voice Affect: Devotional guide voice. As if the athlete is praying along, not being preached at.
-
-Tone: Honest and grounded. Not eloquent. Not sentimental. Not sermon-cadenced.
-
-Pacing: Slow, quiet, unhurried. The slowest segment in the session.
-
-Emotion: Real before God. Quiet trust, not performance.
-
-Pronunciation: "Father" and the key requests ("compete with courage," "respond well") land softly but clearly. No emphasis-for-effect anywhere.
-
-Pauses: Generous. Let each sentence settle before the next one starts.`;
 
 export const SESSION_DEFENSE_BEATEN_WIDE_SCRIPT: AudioScript = {
   slug: "session-defense-beaten-wide",
