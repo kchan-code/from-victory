@@ -180,9 +180,10 @@ export type AudioSegment = {
 };
 
 // Script segments (timestamps in seconds). Folds in the brand-spine moments
-// that used to live on standalone screens: Identity (Romans 8:37) at the
-// top, the coping plan around the visualization, and the prayer at the
-// close. Copy here is a working draft pending content-curator review.
+// that used to live on standalone screens: Identity (Hebrews 12:1-2, pulled
+// from SCRIPTURE_REF/SCRIPTURE_TEXT so it tracks the spine) at the top, the
+// coping plan around the visualization, and the prayer at the close. Copy
+// here is a working draft pending content-curator review.
 // {{cueWord}}, {{role}}, {{adversity}}, {{anchor}}, {{selfTalk}} are
 // substituted at render time.
 export const AUDIO_SCRIPT: AudioSegment[] = [
