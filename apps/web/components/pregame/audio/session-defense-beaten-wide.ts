@@ -48,18 +48,18 @@
 
 import type { AudioScript } from "./types";
 import {
-  BREATH_INSTRUCTIONS,
-  NARRATIVE_INSTRUCTIONS,
-  PRAYER_INSTRUCTIONS,
-  RESET_PLAN_INSTRUCTIONS,
   SCRIPT_INSTRUCTIONS,
 } from "./instructions.ts";
+import {
+  CLOSING,
+  OPENING,
+} from "./segments.ts";
 
 // Per-segment overrides REPLACE the script-level instruction entirely
-// for that segment's API call. Duplicated from
-// session-forward-missed-chance.ts for the pilot phase; will be
-// hoisted to a shared module now that a third pilot confirms the
-// pattern holds.
+// for that segment's API call. The canonical instruction blocks live in
+// ./instructions.ts; the const below stays LOCAL on purpose — its cues
+// are tuned to this D-zone "beaten wide" scene, so it intentionally
+// diverges from the shared register rather than import it.
 
 const VISUALIZATION_INSTRUCTIONS = `Voice Affect: Steady, present mentor walking the athlete through a mental rehearsal. Half a step more active than the meditative breath cues; not preachy, not hyped.
 
@@ -103,61 +103,8 @@ export const SESSION_DEFENSE_BEATEN_WIDE_SCRIPT: AudioScript = {
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 0.95,
   segments: [
-    // ── Regulate breath (Mentor, meditative)
-    // Cell starts at breath section. Segment 1 (identity) is delivered by
-    // the need-specific opener.mp3 stitched in front of this file at
-    // runtime. See compositional architecture in audio/types.ts.
-    {
-      type: "speech",
-      text: "Now, take two breaths. Four in. Six out.",
-      mark: { phase: "settle" },
-    },
-    { type: "silence", durationSec: 0.8 },
-    {
-      type: "speech",
-      text: "Inhale.",
-      instructions: BREATH_INSTRUCTIONS,
-      mark: { phase: "inhale", round: 0 },
-    },
-    { type: "silence", durationSec: 4 },
-    {
-      type: "speech",
-      text: "Exhale.",
-      instructions: BREATH_INSTRUCTIONS,
-      mark: { phase: "exhale", round: 0 },
-    },
-    { type: "silence", durationSec: 6 },
-    {
-      type: "speech",
-      text: "Inhale.",
-      instructions: BREATH_INSTRUCTIONS,
-      mark: { phase: "inhale", round: 1 },
-    },
-    { type: "silence", durationSec: 4 },
-    {
-      type: "speech",
-      text: "Exhale.",
-      instructions: BREATH_INSTRUCTIONS,
-      mark: { phase: "exhale", round: 1 },
-    },
-    { type: "silence", durationSec: 6 },
+    ...OPENING,
 
-    // ── Remember what is true (Devotional guide)
-    // Identical to the Forward + Goalie pilots. One Keller-tone line.
-    {
-      type: "speech",
-      text: "Remember what is true.",
-      speed: 1.0,
-      instructions: NARRATIVE_INSTRUCTIONS,
-    },
-    { type: "silence", durationSec: 0.8 },
-    {
-      type: "speech",
-      text: "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
-      speed: 1.0,
-      instructions: NARRATIVE_INSTRUCTIONS,
-    },
-    { type: "silence", durationSec: 1.0 },
 
     // ── Enter the rink (Mentor) — SKATER SENSORY
     // Defense and Forward share the pre-game gear/sensory experience,
@@ -302,6 +249,7 @@ export const SESSION_DEFENSE_BEATEN_WIDE_SCRIPT: AudioScript = {
     },
     { type: "silence", durationSec: 2.0 },
 
+
     // ── Hard moment (Mentor → Coach) — DEFENSE × BEATEN WIDE
     // Coping imagery template: See it → Feel it → Breathe → Speak truth.
     // Reset Plan (segment 8) handles "next faithful action."
@@ -369,41 +317,6 @@ export const SESSION_DEFENSE_BEATEN_WIDE_SCRIPT: AudioScript = {
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 1.5 },
-
-    // ── Reset plan (Coach)
-    // Identical to the Forward + Goalie pilots. The generic 5-step move.
-    {
-      type: "speech",
-      text: "This is the move. Every time. Whatever happens tonight.",
-      speed: 1.0,
-      mark: { phase: "reset" },
-    },
-    { type: "silence", durationSec: 1.0 },
-    {
-      type: "speech",
-      text: "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
-      speed: 1.0,
-      instructions: RESET_PLAN_INSTRUCTIONS,
-    },
-    { type: "silence", durationSec: 2.5 },
-
-    // ── Prayer / send-off (Devotional guide)
-    // Identical to the Forward + Goalie pilots. "Let's pray." prefix +
-    // Christian close ending with "In Jesus' name, Amen." Lands the
-    // brand spine — play from victory.
-    {
-      type: "speech",
-      text: "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-      speed: 1.0,
-      instructions: PRAYER_INSTRUCTIONS,
-      mark: { phase: "prayer" },
-    },
-    { type: "silence", durationSec: 2.5 },
-    {
-      type: "speech",
-      text: "You are secure. Now play from victory.",
-      speed: 1.0,
-      mark: { phase: "done" },
-    },
+    ...CLOSING,
   ],
 };
