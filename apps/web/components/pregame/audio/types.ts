@@ -62,6 +62,13 @@ export type AudioScript = {
   // 0.25..4.0 — TTS playback speed. Default 1.0; mentor pace usually 0.95.
   speed?: number;
   segments: Segment[];
+  // Optional ffmpeg audio-filter chain applied once to the final
+  // concatenated MP3 (the generator re-encodes instead of stream-copying
+  // when this is set). Used to correct the tonal balance of a render —
+  // e.g. breath-threshold came out thin/tinny relative to the other files,
+  // so it gets a warming EQ here. Keep in sync with any manual
+  // post-process applied to the committed MP3.
+  postFilter?: string;
 };
 
 // Sidecar timeline JSON — emitted by the generator alongside the MP3 so

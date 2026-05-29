@@ -230,8 +230,9 @@ async function generateOne(script: AudioScript, flags: Flags): Promise<void> {
   }
   process.stdout.write("\n");
 
-  // 2. Concat into one MP3
-  await concatMp3s(concatInputs, outMp3, workDir);
+  // 2. Concat into one MP3 (re-encode through postFilter if the script
+  // declares one — e.g. breath-threshold's warming EQ).
+  await concatMp3s(concatInputs, outMp3, workDir, script.postFilter);
   const finalDur = await probeDurationSec(outMp3);
 
   // 3. Build + write sidecar timeline
