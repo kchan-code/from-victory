@@ -5,6 +5,8 @@ import { signOut } from "@/lib/actions/auth";
 import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
+import { DeleteAccountSection } from "@/components/dashboard/DeleteAccountSection";
+import { DeleteAthleteButton } from "@/components/dashboard/DeleteAthleteButton";
 
 export const metadata = {
   title: "Dashboard · From Victory",
@@ -94,18 +96,26 @@ export default async function DashboardPage() {
                         </p>
                       ) : null}
                     </div>
-                    <Link
-                      href={`/dashboard/athletes/${a.id}/pair`}
-                      className="font-heading font-semibold text-[13px] text-cream/80 hover:text-cream bg-onyx border border-hairline hover:border-cream/30 rounded-pill px-4 py-2 no-underline transition-colors duration-fast ease-out"
-                    >
-                      Pair device
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/dashboard/athletes/${a.id}/pair`}
+                        className="font-heading font-semibold text-[13px] text-cream/80 hover:text-cream bg-onyx border border-hairline hover:border-cream/30 rounded-pill px-4 py-2 no-underline transition-colors duration-fast ease-out"
+                      >
+                        Pair device
+                      </Link>
+                      <DeleteAthleteButton
+                        athleteId={a.id}
+                        firstName={a.first_name}
+                      />
+                    </div>
                   </li>
                 );
               })}
             </ul>
           )}
         </section>
+
+        <DeleteAccountSection />
       </div>
     </main>
   );
