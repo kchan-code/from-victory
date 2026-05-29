@@ -299,7 +299,14 @@ export function AudioSessionScreen({
   const openerSrc = openerSrcFor(state.need);
   const cellSrc = cellSrcFor(state.role, state.adversity);
 
-  const [audioMode, setAudioMode] = useState<"audio" | "text">("text");
+  // Default optimistically to audio: the assets exist in the normal path, so
+  // we render the clean audio-mode card (and mount/preload the <audio>
+  // elements) immediately. The HEAD probe below only DOWNGRADES to text if the
+  // files are genuinely missing — starting in "text" caused a one-frame flash
+  // of the long reading-mode paragraph before the probe flipped to audio.
+  const [audioMode, setAudioMode] = useState<"audio" | "text">(
+    openerSrc && cellSrc ? "audio" : "text",
+  );
   const [playing, setPlaying] = useState(false);
   const [activeSegment, setActiveSegment] = useState<"opener" | "cell">("opener");
   const [openerDuration, setOpenerDuration] = useState(0);
@@ -314,19 +321,24 @@ export function AudioSessionScreen({
       ? openerDuration + cellDuration
       : AUDIO_SESSION_DURATION_S;
 
-  // Probe both files. Switch to audio mode only if BOTH respond OK.
+  // Probe both files. We start in audio mode (above) and only DOWNGRADE to
+  // text-mode reading if a file is missing / unreachable, so the normal path
+  // never flashes the reading paragraph.
   useEffect(() => {
-    if (!openerSrc || !cellSrc) return;
+    if (!openerSrc || !cellSrc) {
+      setAudioMode("text");
+      return;
+    }
     let cancelled = false;
     Promise.all([
       fetch(openerSrc, { method: "HEAD" }),
       fetch(cellSrc, { method: "HEAD" }),
     ])
       .then(([o, c]) => {
-        if (!cancelled && o.ok && c.ok) setAudioMode("audio");
+        if (!cancelled && (!o.ok || !c.ok)) setAudioMode("text");
       })
       .catch(() => {
-        // network / file missing — stay in text mode
+        if (!cancelled) setAudioMode("text");
       });
     return () => {
       cancelled = true;
