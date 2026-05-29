@@ -54,10 +54,16 @@ export async function deleteAthlete(
   // Confirmation — the typed value must match the athlete's first name.
   const { data: athlete } = await service
     .from("profiles")
-    .select("first_name")
+    .select("first_name, role")
     .eq("id", athleteId)
     .maybeSingle();
   if (!athlete) return { ok: false, error: "Athlete not found." };
+  // Defense-in-depth: only athlete rows are deletable here. The link
+  // role-check trigger already guarantees athlete_id points at an athlete,
+  // so this is belt-and-suspenders against ever deleting a parent row.
+  if (athlete.role !== "athlete") {
+    return { ok: false, error: "That account can't be deleted here." };
+  }
   if (confirm.toLowerCase() !== athlete.first_name.trim().toLowerCase()) {
     return {
       ok: false,
@@ -106,6 +112,9 @@ export async function deleteAccount(
   // Delete only athletes this parent SOLELY manages. An athlete also linked
   // to a co-parent is left intact — deleting this parent's auth.users row
   // cascade-removes just this parent's link, not the shared child's data.
+  //
+  // If any sole-managed athlete fails to delete, abort BEFORE deleting the
+  // parent — otherwise we'd orphan that athlete's data with no manager left.
   let deletedAthletes = 0;
   for (const athleteId of athleteIds) {
     const { count } = await service
@@ -117,11 +126,15 @@ export async function deleteAccount(
     const { error } = await service.auth.admin.deleteUser(athleteId);
     if (error) {
       console.error(
-        `[account.deleteAccount] athlete delete failed (parent=${parentId} athlete=${athleteId}): ${error.message}`,
+        `[account.deleteAccount] athlete delete failed (parent=${parentId} athlete=${athleteId}); aborting before parent delete: ${error.message}`,
       );
-    } else {
-      deletedAthletes++;
+      return {
+        ok: false,
+        error:
+          "Could not delete one of your athletes, so your account was left intact. Please try again.",
+      };
     }
+    deletedAthletes++;
   }
 
   // Stripe: an active subscription must be cancelled in Stripe so the parent
