@@ -71,6 +71,11 @@ export async function concatMp3s(
   inputs: ConcatInput[],
   outPath: string,
   workDir: string,
+  // Optional ffmpeg audio-filter chain. When set, the concatenated stream is
+  // re-encoded through this filter (24kHz mono, matching the TTS source)
+  // instead of being stream-copied — used to correct a render's tonal
+  // balance (see AudioScript.postFilter).
+  filter?: string,
 ): Promise<void> {
   // Resolve every silence to a generated MP3 path first.
   const resolved: string[] = [];
@@ -83,18 +88,39 @@ export async function concatMp3s(
   const listBody = resolved.map((p) => `file '${p.replace(/'/g, "'\\''")}'`).join("\n");
   await writeFile(listPath, listBody);
 
-  const args = [
-    "-y",
-    "-f",
-    "concat",
-    "-safe",
-    "0",
-    "-i",
-    listPath,
-    "-c",
-    "copy",
-    outPath,
-  ];
+  const args = filter
+    ? [
+        "-y",
+        "-f",
+        "concat",
+        "-safe",
+        "0",
+        "-i",
+        listPath,
+        "-af",
+        filter,
+        "-ar",
+        "24000",
+        "-ac",
+        "1",
+        "-c:a",
+        "libmp3lame",
+        "-b:a",
+        "128k",
+        outPath,
+      ]
+    : [
+        "-y",
+        "-f",
+        "concat",
+        "-safe",
+        "0",
+        "-i",
+        listPath,
+        "-c",
+        "copy",
+        outPath,
+      ];
   await runVoid("ffmpeg", args);
 }
 
