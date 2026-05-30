@@ -2113,6 +2113,195 @@ export const CLIP_CW_FREE_SENDOFF_SCRIPT: AudioScript = { slug: "cw-free-sendoff
 export const CLIP_CW_RELENTLESS_RESET_SCRIPT: AudioScript = { slug: "cw-relentless-reset", voice: "ash", instructions: CUE_WORD_RESET_INSTRUCTIONS, speed: 0.95, postFilter: CLIP_LOUDNORM_FILTER, segments: [{ type: "speech", text: "Relentless." }] };
 export const CLIP_CW_RELENTLESS_SENDOFF_SCRIPT: AudioScript = { slug: "cw-relentless-sendoff", voice: "ash", instructions: CUE_WORD_SENDOFF_INSTRUCTIONS, speed: 0.95, postFilter: CLIP_LOUDNORM_FILTER, segments: [{ type: "speech", text: "Relentless." }] };
 
+// ── Pre-practice "Get To" clips (generic, no per-position/need tree) ─────────
+//
+// Five sequential beats that form a single ~2-min pre-practice primer.
+// Registered in manifest.json under the top-level "practice" key:
+//   { "clips": ["pp-settle-receive","pp-name-standard","pp-goal-fusion",
+//               "pp-choose-focus","pp-see-it-go"] }
+// The practice screen is a simple player — no phase-synced reveals in v1,
+// so phases: [] on all five catalog entries.
+//
+// Beat 1 (pp-settle-receive) uses a Mentor/Devotional register — the faith
+// anchor lands here ("you don't have to practice; you get to"). Beats 2-5
+// are Coach register — direct, drilled, no warmth-bleed.
+
+// Mentor / devotional blend for beat 1 — warm, present, gospel-grounded.
+const PP_MENTOR_DEVOTIONAL_INSTRUCTIONS = `Voice Affect: Calm, grounded mentor with a devotional undertone — warm and personal, not preacher-loud, not meditation-app soft. Speaking directly into the athlete's ear before a session.
+
+Tone: Sincere and settled. The voice knows the gospel anchor it is delivering and speaks with the ease of someone who has stood on this ground before.
+
+Pacing: Unhurried. The opening "Stay here a second" is a full stop, not a setup. The identity statement "you are already loved" is not rushed. The closing pivot from "have to" to "get to" has its own beat.
+
+Emotion: Quiet joy with conviction. Not heavy, not sentimental. The gospel is settled news, not a sell.
+
+Pronunciation: "Helmet's not on yet" lands conversationally. "Already loved. Fully. Today." — each word is its own sentence in delivery weight. "You get to." ends with a quiet, confident close, not an upswing.
+
+Pauses: A clear beat after "One breath." Give the athlete a moment in the silence. Another beat after "In... and out." before moving into the identity statement. The three-beat staccato — "Already loved. Fully. Today." — needs space between each word.`;
+
+// Coach register for beats 2-5 — direct, drilled, no warmth-bleed.
+const PP_COACH_INSTRUCTIONS = `Voice Affect: Coach voice — direct, steady, assured. Not a hype coach, not a preacher. The voice of someone who has run this room a hundred times and means every word.
+
+Tone: Confident and purposeful. No warmth-bleed from the devotional register. This is the voice that knows the move and is calling it.
+
+Pacing: Deliberate. Short declarative sentences land clean. Longer sentences move at a good coaching pace — not rushed, not slow. Key phrases get their own breath.
+
+Emotion: Steady confidence. The athlete is being coached, not comforted. Honest without being harsh.
+
+Pronunciation: "Your body keeps the receipts." — plain and final. "Full reps. Full compete. No coasting." — each cue distinct. "That is the playoff shift." and "That is overtime." — delivered with quiet weight, not hype. "Play from victory." closes with grounded finality.
+
+Pauses: A beat between each coaching declaration. "Not someday. Right now." — a clear pause between the two. The send-off line "Helmet on. Go compete. Play from victory." — each clause its own breath.`;
+
+export const CLIP_PP_SETTLE_RECEIVE_SCRIPT: AudioScript = {
+  slug: "pp-settle-receive",
+  voice: "ash",
+  instructions: PP_MENTOR_DEVOTIONAL_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Helmet's not on yet. Stay here a second.",
+    },
+    { type: "silence", durationSec: 0.6 },
+    {
+      type: "speech",
+      text: "One breath. In... and out.",
+    },
+    { type: "silence", durationSec: 2.0 },
+    {
+      type: "speech",
+      text: "Before you skate, hear this: you're not stepping on the ice to earn anything. Your worth was settled a long time ago — at a cross, not at center ice.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "You're already loved. So you don't have to practice. You get to.",
+    },
+    { type: "silence", durationSec: 0.5 },
+  ],
+};
+
+export const CLIP_PP_NAME_STANDARD_SCRIPT: AudioScript = {
+  slug: "pp-name-standard",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Here's the truth most players never learn: you don't rise to the big game. You sink to your training.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "How you practice is how you play.",
+    },
+    { type: "silence", durationSec: 0.6 },
+    {
+      type: "speech",
+      text: "Every rep you take at half-speed is a rep you'll take at half-speed when it counts. Your body keeps the receipts.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "So the bar today is simple. Full reps. Full compete. No coasting.",
+    },
+    { type: "silence", durationSec: 0.5 },
+  ],
+};
+
+export const CLIP_PP_GOAL_FUSION_SCRIPT: AudioScript = {
+  slug: "pp-goal-fusion",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Now here's the move.",
+    },
+    { type: "silence", durationSec: 0.5 },
+    {
+      type: "speech",
+      text: "That drill you've done a thousand times — the boring one nobody's watching? You're not getting through it. You're rehearsing the moment you dream about, early, while it's quiet.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "That battle in the corner — that is the playoff shift.",
+    },
+    { type: "silence", durationSec: 0.6 },
+    {
+      type: "speech",
+      text: "Treat it like the Super Bowl today, and when the real one comes, it's just another shift.",
+    },
+    { type: "silence", durationSec: 0.6 },
+    {
+      type: "speech",
+      text: "This isn't about the perfect rep — it's about the full one. Pour everything in, because nothing out there can touch who you already are.",
+    },
+    { type: "silence", durationSec: 0.5 },
+  ],
+};
+
+export const CLIP_PP_CHOOSE_FOCUS_SCRIPT: AudioScript = {
+  slug: "pp-choose-focus",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "You picked your one focus today. That's your throttle.",
+    },
+    { type: "silence", durationSec: 0.6 },
+    {
+      type: "speech",
+      text: "Not something to fix when it goes wrong — something to drive, from the first whistle.",
+    },
+    { type: "silence", durationSec: 0.6 },
+    {
+      type: "speech",
+      text: "Every drill, every line, every race to the puck, you bring it. Lock it in.",
+    },
+    { type: "silence", durationSec: 0.5 },
+  ],
+};
+
+export const CLIP_PP_SEE_IT_GO_SCRIPT: AudioScript = {
+  slug: "pp-see-it-go",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "See one rep. You, at full compete, your focus locked in, nothing left on the bench.",
+    },
+    { type: "silence", durationSec: 1.5 },
+    {
+      type: "speech",
+      text: "And when a rep goes bad — because some will — that's information, not a verdict. Read it, drop it, next rep.",
+    },
+    { type: "silence", durationSec: 0.6 },
+    {
+      type: "speech",
+      text: "You're not skating to prove who you are. You already know.",
+    },
+    { type: "silence", durationSec: 0.5 },
+    {
+      type: "speech",
+      text: "Helmet on. Go compete. Play from victory.",
+    },
+    { type: "silence", durationSec: 0.5 },
+  ],
+};
+
 // ── Ordered list of TTS clip scripts (no openers — they are loudnorm-passed) ──
 //
 // Phase 2 ordering: shared structural → VIZ × 3 positions → HM × 30 cells
@@ -2196,4 +2385,11 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_CW_FREE_SENDOFF_SCRIPT,
   CLIP_CW_RELENTLESS_RESET_SCRIPT,
   CLIP_CW_RELENTLESS_SENDOFF_SCRIPT,
+  // Pre-practice "Get To" session clips (generic, ~2 min).
+  // Resume-safe: existing files in clips/ are skipped.
+  CLIP_PP_SETTLE_RECEIVE_SCRIPT,
+  CLIP_PP_NAME_STANDARD_SCRIPT,
+  CLIP_PP_GOAL_FUSION_SCRIPT,
+  CLIP_PP_CHOOSE_FOCUS_SCRIPT,
+  CLIP_PP_SEE_IT_GO_SCRIPT,
 ];

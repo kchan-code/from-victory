@@ -53,6 +53,12 @@ export type ClipManifest = {
   version: string;
   clips: Record<string, ClipCatalogEntry>;
   templates: PlaylistTemplate[];
+  /** Fixed-order playlists that are not session-personalization templates.
+   *  Added in p4. The "practice" key holds the ordered generic clip list
+   *  for the pre-practice "Get To" session. */
+  practice?: {
+    clips: string[]; // ordered slug list
+  };
 };
 
 // ---------------------------------------------------------------------------
