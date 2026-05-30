@@ -124,6 +124,7 @@ from-victory/
 | product-strategist | MVP scope, scope-creep killer |
 | frontend-engineer | Next.js, Tailwind, mobile-first UI, PWA shell, brand visual application |
 | backend-engineer | Supabase schema, RLS, auth, Stripe webhooks |
+| audio-engineer | Pregame guided-audio pipeline: TTS generation, ffmpeg/EQ mastering, AudioScript.postFilter, regeneration, AUDIO_CACHE_BUST, spectral QA |
 | content-curator | Orchestrates training content; integrates sports-psychologist + youth-pastor outputs into one voice across the four voice modes |
 | sports-psychologist | Mental skills content (Dweck, Gallwey, Loehr, etc.). Co-author. |
 | youth-pastor | Scripture and theological framing (Keller, Lewis). Co-author. |
