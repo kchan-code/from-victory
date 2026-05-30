@@ -1,0 +1,10 @@
+{
+  "slug": "shared-prayer",
+  "durationSec": 24.316,
+  "phases": [
+    {
+      "phase": "prayer",
+      "startSec": 0
+    }
+  ]
+}

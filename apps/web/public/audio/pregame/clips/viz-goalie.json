@@ -1,0 +1,14 @@
+{
+  "slug": "viz-goalie",
+  "durationSec": 98.578,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 40.218
+    }
+  ]
+}

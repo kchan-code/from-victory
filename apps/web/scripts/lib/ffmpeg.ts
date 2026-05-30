@@ -128,6 +128,33 @@ export function clearSilenceCache(): void {
   SILENCE_CACHE.clear();
 }
 
+// Re-encode a single MP3 through an ffmpeg audio-filter chain.
+// Used to loudnorm-pass an existing file (e.g. an opener MP3) to match
+// the clip loudness target without re-running TTS.
+export async function reEncodeMp3(
+  inPath: string,
+  outPath: string,
+  filter: string,
+): Promise<void> {
+  const args = [
+    "-y",
+    "-i",
+    inPath,
+    "-af",
+    filter,
+    "-ar",
+    "24000",
+    "-ac",
+    "1",
+    "-c:a",
+    "libmp3lame",
+    "-b:a",
+    "128k",
+    outPath,
+  ];
+  await runVoid("ffmpeg", args);
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // Process helpers
 

@@ -1,0 +1,10 @@
+{
+  "slug": "hm-defense-get-hit",
+  "durationSec": 53.424,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug": "hm-forward-get-hit",
+  "durationSec": 51.6,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

@@ -510,8 +510,11 @@ export const GOALIE_VIZ: Segment[] = [
     { type: "silence", durationSec: 2.0 }
 ];
 
-export const CLOSING: Segment[] = [
-
+// ── CLOSING sub-arrays — single source of truth for each phase of the
+// shared CLOSING run. Legacy cells import CLOSING unchanged; the clip
+// generator imports the individual sub-arrays to render each as its own
+// independently-leveled MP3.
+export const RESET_PLAN_SEGMENTS: Segment[] = [
 
     // ── Reset plan (Coach)
     {
@@ -528,8 +531,11 @@ export const CLOSING: Segment[] = [
       instructions: RESET_PLAN_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.5 },
+];
 
-    // ── Prayer / send-off (Devotional guide)
+export const PRAYER_SEGMENTS: Segment[] = [
+
+    // ── Prayer (Devotional guide)
     {
       type: "speech",
       text: "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
@@ -538,10 +544,23 @@ export const CLOSING: Segment[] = [
       mark: { phase: "prayer" },
     },
     { type: "silence", durationSec: 2.5 },
+];
+
+export const SENDOFF_SEGMENTS: Segment[] = [
+
+    // ── Send-off (Mentor)
     {
       type: "speech",
       text: "You are secure. Now play from victory.",
       speed: 1.0,
       mark: { phase: "done" },
-    }
+    },
+];
+
+// CLOSING is the concatenation of the three sub-arrays. All legacy cells
+// import this unchanged — single source of truth preserved.
+export const CLOSING: Segment[] = [
+  ...RESET_PLAN_SEGMENTS,
+  ...PRAYER_SEGMENTS,
+  ...SENDOFF_SEGMENTS,
 ];

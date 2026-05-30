@@ -1,0 +1,10 @@
+{
+  "slug": "hm-forward-start-slow",
+  "durationSec": 52.176,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

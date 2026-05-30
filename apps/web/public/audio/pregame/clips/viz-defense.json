@@ -1,0 +1,14 @@
+{
+  "slug": "viz-defense",
+  "durationSec": 104.524,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 37.114
+    }
+  ]
+}
