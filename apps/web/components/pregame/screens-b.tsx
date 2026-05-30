@@ -17,6 +17,7 @@ import {
   AUDIO_SESSION_DURATION_S,
   CUE_WORDS,
   DEFAULTS,
+  NEED_VERSE,
   RESET_ANCHORS,
   ROLE_CONTENT,
   SCRIPTURE_REF,
@@ -24,9 +25,11 @@ import {
   SCRIPTURE_TEXT,
   SELF_TALK_OPTIONS,
   type AudioSegment,
+  type NeedVerse,
   type PregameState,
 } from "./types";
-import { cellSrcFor, openerSrcFor } from "./audio-mapping";
+import { audioAssetUrl, cellSrcFor, cellSlugFor, openerSrcFor } from "./audio-mapping";
+import type { AudioTimeline, Phase } from "./audio/types";
 
 type SetFn = <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
 
@@ -252,7 +255,7 @@ export function ReviewScreen({ state }: { state: PregameState }) {
 // ─── SCREEN 9 ─── 5-Minute Guided Audio Session
 //
 // Compositional architecture: a need-specific opener.mp3 plays first
-// (~0:50-1:07 — identity + Hebrews 12 brand spine), then the
+// (~0:50-1:07 — identity + need-specific verse), then the
 // (position × adversity) cell.mp3 plays (~4:00-4:30 — breath, rink,
 // first shift, role rehearsal, hard moment, reset, prayer, send-off).
 // Sequential playback: opener.ended → cell.play(). Total composed
@@ -261,11 +264,85 @@ export function ReviewScreen({ state }: { state: PregameState }) {
 // If either file is missing / fails (HEAD 404, autoplay block,
 // decode error), falls back to the legacy text-mode timer that walks
 // AUDIO_SCRIPT segments. The text-mode Identity segment renders the
-// Hebrews 12:1-2 spine via SCRIPTURE_REF/SCRIPTURE_TEXT; the audio path
+// need-specific verse via NEED_VERSE[state.need]; the audio path
 // is the primary experience.
 //
 // Sets state.audioCompleted = true on cell.ended so the FLOW's next
 // step CTA can unlock "Show my Pre-Game Card."
+
+// ---------------------------------------------------------------------------
+// Section pip helpers
+//
+// Six sections map the ~39-phase timeline onto unlabeled position dots.
+// The section grouping is intentional for "eyes closed" mode — we want
+// ~6 equal-feeling beats, not 11 micro-phases. The pip lights gold as the
+// athlete moves through the session; it never animates or pulses.
+//
+// OPENER contributes phase "intro".
+// CELL contributes settle/inhale/exhale/rink/firstShift/roleRehearsal/
+//   hardMoment/reset/prayer/done.
+// ---------------------------------------------------------------------------
+
+type PipSection = 0 | 1 | 2 | 3 | 4 | 5;
+
+const PHASE_TO_SECTION: Record<Phase, PipSection> = {
+  intro: 0,
+  settle: 1,
+  inhale: 1,
+  exhale: 1,
+  rink: 2,
+  firstShift: 3,
+  roleRehearsal: 3,
+  hardMoment: 4,
+  reset: 5,
+  prayer: 5,
+  done: 5,
+};
+
+function findActivePhaseFromTimeline(
+  timeline: AudioTimeline,
+  currentSec: number,
+): Phase | null {
+  let active: Phase | null = null;
+  for (let i = 0; i < timeline.phases.length; i++) {
+    const p = timeline.phases[i];
+    if (p && p.startSec <= currentSec) active = p.phase;
+    else break;
+  }
+  return active;
+}
+
+// ---------------------------------------------------------------------------
+// Text-mode stage labels (reading mode — eyes open by definition)
+// ---------------------------------------------------------------------------
+
+const STAGE_LABELS: Record<string, string> = {
+  Identity: "Receive",
+  Settle: "Settle",
+  "Breathe in": "Breathe in",
+  "Long exhale": "Long exhale",
+  "See the rink": "See the rink",
+  "Your first shift": "First shift",
+  "Play your role": "First shift",
+  "If this happens": "The hard moment",
+  "Coach yourself": "Reset and go again",
+  "Send-off": "Send-off",
+};
+
+// Eyebrow text → athlete-facing stage label. Goalie-aware for firstShift.
+function eyebrowToStageLabel(eyebrow: string, role: PregameState["role"]): string {
+  // Strip the role suffix from "Play your role · Forward" etc.
+  const base = eyebrow.split("·")[0]?.trim() ?? eyebrow;
+  if (base === "Your first shift") {
+    return role === "Goalie" ? "First save" : "First shift";
+  }
+  return (
+    STAGE_LABELS[base] ??
+    STAGE_LABELS[eyebrow] ??
+    base
+  );
+}
+
 function substituteSegment(seg: AudioSegment, state: PregameState): { eyebrow: string; body: string } {
   const role = state.role;
   const roleScenes = role
@@ -315,6 +392,12 @@ export function AudioSessionScreen({
   const [elapsed, setElapsed] = useState(0);
   const completed = state.audioCompleted;
 
+  // Sidecar timelines for pip section detection.
+  // Loaded in parallel with the HEAD probe; failure is graceful — pips
+  // simply don't render rather than blocking playback.
+  const [openerTimeline, setOpenerTimeline] = useState<AudioTimeline | null>(null);
+  const [cellTimeline, setCellTimeline] = useState<AudioTimeline | null>(null);
+
   // Combined target duration. Falls back to the legacy constant until
   // metadata loads; once durations stream in, switches to the real sum.
   const total =
@@ -345,6 +428,44 @@ export function AudioSessionScreen({
       cancelled = true;
     };
   }, [openerSrc, cellSrc]);
+
+  // Load sidecar JSON timelines for pip section detection.
+  // Completely separate from the HEAD probe — failures are silent, pips
+  // just don't render.
+  useEffect(() => {
+    if (!state.need || audioMode !== "audio") return;
+    let cancelled = false;
+
+    // Re-use NEED_OPENER_SLUGS mapping from audio-mapping via the opener
+    // src URL: derive the slug from openerSrc rather than duplicating the map.
+    if (openerSrc) {
+      // Slug is the path segment before ".mp3", e.g. "opener-confidence"
+      const match = openerSrc.match(/\/([^/]+)\.mp3/);
+      const openerSlug = match?.[1] ?? null;
+      if (openerSlug) {
+        fetch(audioAssetUrl(openerSlug, "json"))
+          .then(async (res) => {
+            if (cancelled || !res.ok) return;
+            const json = (await res.json()) as AudioTimeline;
+            setOpenerTimeline(json);
+          })
+          .catch(() => {/* graceful: pips just don't render */});
+      }
+    }
+
+    if (state.role && state.adversity) {
+      const cellSlug = cellSlugFor(state.role, state.adversity);
+      fetch(audioAssetUrl(cellSlug, "json"))
+        .then(async (res) => {
+          if (cancelled || !res.ok) return;
+          const json = (await res.json()) as AudioTimeline;
+          setCellTimeline(json);
+        })
+        .catch(() => {/* graceful: pips just don't render */});
+    }
+
+    return () => { cancelled = true; };
+  }, [state.need, state.role, state.adversity, audioMode, openerSrc]);
 
   // Text-mode timer (fallback). Unchanged from prior behavior.
   useEffect(() => {
@@ -457,16 +578,51 @@ export function AudioSessionScreen({
     }
   };
 
+  // ---------------------------------------------------------------------------
+  // Verse for audio-mode card: need-specific from NEED_VERSE, fallback to spine.
+  // The verse is fixed for the whole session — one focal point, no changes
+  // mid-session — giving the athlete something to return to with their eyes closed.
+  // ---------------------------------------------------------------------------
+  const sessionVerse: NeedVerse =
+    state.need != null
+      ? NEED_VERSE[state.need]
+      : { reference: SCRIPTURE_REF, displayText: SCRIPTURE_TEXT };
+
+  // ---------------------------------------------------------------------------
+  // Pip section detection (audio mode only)
+  // Derive the current pip section (0-5) from sidecar timelines.
+  // Opener phases are in [0, openerDuration); cell phases are offset.
+  // If timelines haven't loaded, activePip is null — pips don't render.
+  // ---------------------------------------------------------------------------
+  const activePip: PipSection | null = (() => {
+    if (audioMode !== "audio") return null;
+    if (activeSegment === "opener") {
+      if (!openerTimeline) return null;
+      const phase = findActivePhaseFromTimeline(openerTimeline, elapsed);
+      if (phase === null) return null;
+      return PHASE_TO_SECTION[phase] ?? null;
+    } else {
+      // Cell: elapsed is opener+cell combined; cell currentTime = elapsed - openerDuration
+      if (!cellTimeline) return null;
+      const cellTime = Math.max(0, elapsed - openerDuration);
+      const phase = findActivePhaseFromTimeline(cellTimeline, cellTime);
+      if (phase === null) return null;
+      return PHASE_TO_SECTION[phase] ?? null;
+    }
+  })();
+
+  // ---------------------------------------------------------------------------
   // On-screen view text.
-  // Audio mode: the card holds the full Hebrews 12:1-2 spine verse (the
-  // identity anchor for the whole session) — it fits one screen, so no
-  // pagination. The reference renders below the verse.
+  // Audio mode: show the session verse (need-specific). Fixed the whole session.
   // Text mode: walk AUDIO_SCRIPT segments by elapsed time (legacy).
+  // ---------------------------------------------------------------------------
   let view: { eyebrow: string; body: string };
+  let textModeStageLabel: string | null = null;
+
   if (audioMode === "audio") {
     view = {
       eyebrow: "Identity",
-      body: SCRIPTURE_TEXT,
+      body: sessionVerse.displayText,
     };
   } else {
     const segments = AUDIO_SCRIPT;
@@ -479,6 +635,7 @@ export function AudioSessionScreen({
     view = seg
       ? substituteSegment(seg, state)
       : { eyebrow: "Identity", body: SCRIPTURE_SHORT };
+    textModeStageLabel = eyebrowToStageLabel(view.eyebrow, state.role);
   }
 
   const remaining = Math.max(0, total - elapsed);
@@ -499,19 +656,44 @@ export function AudioSessionScreen({
 
       <div className="mb-4 flex items-baseline justify-between">
         <h1 className="font-heading text-[24px] font-bold leading-[1.15] text-cream">
-          Five minutes. Eyes closed.
+          {audioMode === "text" ? "Five minutes. Read along." : "Five minutes. Eyes closed."}
         </h1>
         <span className="font-mono text-[12px] tracking-[0.14em] text-cream/70">
           {remainingLabel}
         </span>
       </div>
 
-      <div className="mb-5 h-1 overflow-hidden rounded-full bg-cream/[0.08]">
+      {/* Progress bar */}
+      <div className="mb-2 h-1 overflow-hidden rounded-full bg-cream/[0.08]">
         <div
           className="h-full bg-gold transition-[width] duration-fast"
           style={{ width: `${pct}%` }}
         />
       </div>
+
+      {/* Section pips — audio mode only, only when timelines have loaded.
+          Unlabeled dots; gold = current section, no animation/pulse. */}
+      {audioMode === "audio" && activePip !== null && (
+        <div
+          className="mb-5 flex items-center justify-center gap-[7px]"
+          role="presentation"
+          aria-label={`Session progress: section ${activePip + 1} of 6`}
+        >
+          {([0, 1, 2, 3, 4, 5] as const).map((i) => (
+            <span
+              key={i}
+              className={`block h-[5px] w-[5px] rounded-full transition-colors duration-300 ${
+                i === activePip ? "bg-gold" : "bg-cream/[0.18]"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+      {/* Reserve the pip row height when not shown so layout doesn't shift
+          between audio and text modes or before timelines load. */}
+      {(audioMode !== "audio" || activePip === null) && (
+        <div className="mb-5 h-[5px]" aria-hidden />
+      )}
 
       {audioMode === "audio" && openerSrc && cellSrc && (
         <>
@@ -539,13 +721,28 @@ export function AudioSessionScreen({
             "radial-gradient(120% 80% at 30% 0%, rgba(223,175,55,0.07), transparent 60%), var(--fv-charcoal)",
         }}
       >
+        {audioMode === "text" && textModeStageLabel && (
+          <div className="mb-3 font-display text-[28px] font-extrabold uppercase leading-none tracking-[0.04em] text-cream">
+            {textModeStageLabel}
+          </div>
+        )}
+
         <Eyebrow className="!text-gold">{view.eyebrow}</Eyebrow>
+
+        {/* In audio mode, show eyebrow framing line above the verse if present */}
+        {audioMode === "audio" && sessionVerse.eyebrow && (
+          <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-gold/70">
+            {sessionVerse.eyebrow}
+          </p>
+        )}
+
         <p className="mt-4 font-scripture text-[20px] italic leading-[1.55] text-cream">
           {view.body}
         </p>
+
         {audioMode === "audio" && (
           <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.16em] text-gold/70">
-            {SCRIPTURE_REF}
+            {sessionVerse.reference}
           </p>
         )}
         {audioMode === "text" && (
@@ -626,6 +823,13 @@ export function PregameCardScreen({
   onQuick: () => void;
   onDone: () => void;
 }) {
+  // Mirror the same verse the athlete heard in the audio session.
+  // Fallback: spine Hebrews 12:1-2 if need is null.
+  const cardVerse: NeedVerse =
+    state.need != null
+      ? NEED_VERSE[state.need]
+      : { reference: SCRIPTURE_REF, displayText: SCRIPTURE_SHORT };
+
   return (
     <div className="flex-1 overflow-y-auto bg-onyx px-5 pb-8 pt-5">
       <div className="mb-4 text-center">
@@ -665,10 +869,18 @@ export function PregameCardScreen({
           )}
         </div>
 
+        {/* Verse block — mirrors what the athlete heard in the audio session.
+            Eyebrow framing line (e.g. Hope) shown if present; this card gets
+            screenshotted so the framing matters for teammates reading it. */}
         <div className="mb-5">
-          <VerseRef>{SCRIPTURE_REF.toUpperCase()}</VerseRef>
+          <VerseRef>{cardVerse.reference.toUpperCase()}</VerseRef>
+          {cardVerse.eyebrow && (
+            <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-gold/70">
+              {cardVerse.eyebrow}
+            </p>
+          )}
           <p className="mt-2 font-scripture text-[15px] italic leading-[1.5] text-cream/70">
-            {SCRIPTURE_SHORT}
+            {cardVerse.displayText}
           </p>
         </div>
 
