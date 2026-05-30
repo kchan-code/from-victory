@@ -1,6 +1,6 @@
 {
   "slug": "session-defense-turnover",
-  "durationSec": 262.824,
+  "durationSec": 253.944,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 5.912,
+      "startSec": 6.056,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 11.64,
+      "startSec": 12.216,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 20.112,
+      "startSec": 20.424,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 26.32,
+      "startSec": 25.84,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 54.064
+      "startSec": 52.648
     },
     {
       "phase": "firstShift",
-      "startSec": 92.21
+      "startSec": 90.914
     },
     {
       "phase": "hardMoment",
-      "startSec": 160.124
+      "startSec": 156.044
     },
     {
       "phase": "reset",
-      "startSec": 214.364
+      "startSec": 208.58
     },
     {
       "phase": "prayer",
-      "startSec": 230.944
+      "startSec": 223.456
     },
     {
       "phase": "done",
-      "startSec": 256.844
+      "startSec": 247.676
     }
   ]
 }

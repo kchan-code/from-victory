@@ -1,6 +1,6 @@
 {
   "slug": "session-defense-start-slow",
-  "durationSec": 260.832,
+  "durationSec": 255.984,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 5.96,
+      "startSec": 7.448,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 13.056,
+      "startSec": 14.184,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 21.048,
+      "startSec": 22.344,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 26.776,
+      "startSec": 27.592,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 54.568
+      "startSec": 53.896
     },
     {
       "phase": "firstShift",
-      "startSec": 95.906
+      "startSec": 92.234
     },
     {
       "phase": "hardMoment",
-      "startSec": 162.164
+      "startSec": 157.82
     },
     {
       "phase": "reset",
-      "startSec": 215.18
+      "startSec": 209.42
     },
     {
       "phase": "prayer",
-      "startSec": 230.848
+      "startSec": 225.544
     },
     {
       "phase": "done",
-      "startSec": 253.052
+      "startSec": 249.404
     }
   ]
 }

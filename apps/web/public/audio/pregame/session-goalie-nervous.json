@@ -1,6 +1,6 @@
 {
   "slug": "session-goalie-nervous",
-  "durationSec": 247.872,
+  "durationSec": 253.944,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.224,
+      "startSec": 7.016,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 12.96,
+      "startSec": 13.8,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 20.64,
+      "startSec": 21.696,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 27.064,
+      "startSec": 27.424,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 53.056
+      "startSec": 55.96
     },
     {
       "phase": "firstShift",
-      "startSec": 91.306
+      "startSec": 95.194
     },
     {
       "phase": "hardMoment",
-      "startSec": 151.634
+      "startSec": 157.922
     },
     {
       "phase": "reset",
-      "startSec": 198.81
+      "startSec": 206.274
     },
     {
       "phase": "prayer",
-      "startSec": 217.19
+      "startSec": 222.998
     },
     {
       "phase": "done",
-      "startSec": 240.738
+      "startSec": 247.362
     }
   ]
 }

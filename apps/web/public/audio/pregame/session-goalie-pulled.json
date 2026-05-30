@@ -1,6 +1,6 @@
 {
   "slug": "session-goalie-pulled",
-  "durationSec": 250.728,
+  "durationSec": 244.464,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.8,
+      "startSec": 6.368,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 12.84,
+      "startSec": 13.056,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 21.096,
+      "startSec": 20.352,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 27.136,
+      "startSec": 26.92,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 54.544
+      "startSec": 53.872
     },
     {
       "phase": "firstShift",
-      "startSec": 91.858
+      "startSec": 92.05
     },
     {
       "phase": "hardMoment",
-      "startSec": 154.898
+      "startSec": 150.266
     },
     {
       "phase": "reset",
-      "startSec": 200.082
+      "startSec": 195.714
     },
     {
       "phase": "prayer",
-      "startSec": 218.102
+      "startSec": 212.942
     },
     {
       "phase": "done",
-      "startSec": 243.714
+      "startSec": 236.898
     }
   ]
 }

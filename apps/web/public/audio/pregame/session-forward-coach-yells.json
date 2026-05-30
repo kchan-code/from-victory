@@ -1,6 +1,6 @@
 {
   "slug": "session-forward-coach-yells",
-  "durationSec": 250.296,
+  "durationSec": 259.68,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 5.792,
+      "startSec": 6.488,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 11.784,
+      "startSec": 11.904,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 19.2,
+      "startSec": 20.064,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 25.72,
+      "startSec": 26.536,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 51.52
+      "startSec": 55.12
     },
     {
       "phase": "firstShift",
-      "startSec": 89.786
+      "startSec": 93.674
     },
     {
       "phase": "hardMoment",
-      "startSec": 157.45
+      "startSec": 168.634
     },
     {
       "phase": "reset",
-      "startSec": 203.234
+      "startSec": 213.122
     },
     {
       "phase": "prayer",
-      "startSec": 219.91
+      "startSec": 229.846
     },
     {
       "phase": "done",
-      "startSec": 243.818
+      "startSec": 253.802
     }
   ]
 }

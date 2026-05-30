@@ -1,6 +1,6 @@
 {
   "slug": "session-goalie-first-goal-against",
-  "durationSec": 249.984,
+  "durationSec": 258.072,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.224,
+      "startSec": 7.016,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 13.272,
+      "startSec": 14.064,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 20.64,
+      "startSec": 22.536,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 27.544,
+      "startSec": 29.056,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 52.408
+      "startSec": 57.136
     },
     {
       "phase": "firstShift",
-      "startSec": 90.442
+      "startSec": 95.41
     },
     {
       "phase": "hardMoment",
-      "startSec": 149.33
+      "startSec": 154.058
     },
     {
       "phase": "reset",
-      "startSec": 203.21
+      "startSec": 206.714
     },
     {
       "phase": "prayer",
-      "startSec": 218.974
+      "startSec": 224.47
     },
     {
       "phase": "done",
-      "startSec": 242.834
+      "startSec": 250.874
     }
   ]
 }

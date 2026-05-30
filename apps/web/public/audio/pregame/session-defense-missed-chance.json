@@ -1,6 +1,6 @@
 {
   "slug": "session-defense-missed-chance",
-  "durationSec": 253.752,
+  "durationSec": 249.84,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.32,
+      "startSec": 5.744,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 12.096,
+      "startSec": 12.432,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 20.4,
+      "startSec": 21.168,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 27.616,
+      "startSec": 27.064,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 53.68
+      "startSec": 54.52
     },
     {
       "phase": "firstShift",
-      "startSec": 92.162
+      "startSec": 91.178
     },
     {
       "phase": "hardMoment",
-      "startSec": 159.62
+      "startSec": 156.86
     },
     {
       "phase": "reset",
-      "startSec": 205.86
+      "startSec": 202.716
     },
     {
       "phase": "prayer",
-      "startSec": 223.184
+      "startSec": 218.984
     },
     {
       "phase": "done",
-      "startSec": 247.884
+      "startSec": 243.084
     }
   ]
 }

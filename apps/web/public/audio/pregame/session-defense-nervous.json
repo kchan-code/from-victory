@@ -1,6 +1,6 @@
 {
   "slug": "session-defense-nervous",
-  "durationSec": 250.272,
+  "durationSec": 256.872,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 5.912,
+      "startSec": 6.896,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 11.376,
+      "startSec": 13.32,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 19.848,
+      "startSec": 21.528,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 25.576,
+      "startSec": 28.792,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 50.416
+      "startSec": 56.344
     },
     {
       "phase": "firstShift",
-      "startSec": 86.498
+      "startSec": 93.53
     },
     {
       "phase": "hardMoment",
-      "startSec": 156.164
+      "startSec": 163.172
     },
     {
       "phase": "reset",
-      "startSec": 204.492
+      "startSec": 210.18
     },
     {
       "phase": "prayer",
-      "startSec": 220.76
+      "startSec": 227
     },
     {
       "phase": "done",
-      "startSec": 244.164
+      "startSec": 250.716
     }
   ]
 }

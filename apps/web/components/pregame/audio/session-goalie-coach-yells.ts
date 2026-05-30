@@ -284,7 +284,7 @@ export const SESSION_GOALIE_COACH_YELLS_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Now the reset. One long exhale in your crease.",
+      text: "Now the reset. Return to your anchor.",
       speed: 1.0,
     },
     { type: "silence", durationSec: 2.0 },

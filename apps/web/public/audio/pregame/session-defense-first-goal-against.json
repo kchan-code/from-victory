@@ -1,6 +1,6 @@
 {
   "slug": "session-defense-first-goal-against",
-  "durationSec": 256.632,
+  "durationSec": 262.128,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 5.84,
+      "startSec": 6.584,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 12.936,
+      "startSec": 12.744,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 21.144,
+      "startSec": 20.832,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 26.92,
+      "startSec": 27.76,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 55.216
+      "startSec": 54.856
     },
     {
       "phase": "firstShift",
-      "startSec": 92.546
+      "startSec": 93.626
     },
     {
       "phase": "hardMoment",
-      "startSec": 157.556
+      "startSec": 159.116
     },
     {
       "phase": "reset",
-      "startSec": 210.188
+      "startSec": 213.188
     },
     {
       "phase": "prayer",
-      "startSec": 226.552
+      "startSec": 229.84
     },
     {
       "phase": "done",
-      "startSec": 250.268
+      "startSec": 255.596
     }
   ]
 }

@@ -14,7 +14,7 @@ import type { NeedToday, Role } from "./types";
 // MP3 + sidecar JSON URL so Vercel's CDN + browsers can't serve a
 // stale cached version after a regen. Bump this when you rerun
 // `npm run audio:generate`.
-export const AUDIO_CACHE_BUST = "5";
+export const AUDIO_CACHE_BUST = "6";
 
 export function audioAssetUrl(slug: string, ext: "mp3" | "json"): string {
   return `/audio/pregame/${slug}.${ext}?v=${AUDIO_CACHE_BUST}`;
