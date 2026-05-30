@@ -220,14 +220,18 @@ export function PregameHeader({
   return (
     <div className="sticky top-0 z-10 border-b border-hairline bg-onyx/80 backdrop-blur-md">
       <div className="flex items-center gap-3 px-[18px] pb-3 pt-[58px]">
+        {/* -m-1.25 pulls in negative margin so the 44px hit area doesn't
+            shift layout; the visible circle stays h-[34px] w-[34px]. */}
         <button
           type="button"
           onClick={onBack}
           disabled={!onBack}
           aria-label="Back"
-          className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-pill border border-hairline text-cream transition-colors duration-fast disabled:text-cream/30"
+          className="flex h-[44px] w-[44px] flex-none -m-[5px] items-center justify-center rounded-pill text-cream transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx disabled:text-cream/30"
         >
-          <Icon name="arrowLeft" size={16} />
+          <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">
+            <Icon name="arrowLeft" size={16} />
+          </span>
         </button>
         <div className="min-w-0 flex-1">
           <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.22em] text-gold">
@@ -242,9 +246,11 @@ export function PregameHeader({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-pill border border-hairline text-cream/70"
+            className="flex h-[44px] w-[44px] flex-none -m-[5px] items-center justify-center rounded-pill text-cream/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
           >
-            <Icon name="close" size={16} />
+            <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">
+              <Icon name="close" size={16} />
+            </span>
           </button>
         )}
       </div>
@@ -394,7 +400,7 @@ export function CustomInputRow({
         placeholder={placeholder}
         maxLength={maxLength}
         aria-label={ariaLabel ?? placeholder}
-        className="min-w-0 flex-1 border-none bg-transparent font-heading text-[14px] font-medium text-cream outline-none placeholder:text-cream/40"
+        className="min-w-0 flex-1 border-none bg-transparent font-heading text-[14px] font-medium text-cream outline-none placeholder:text-cream/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx rounded-sm"
       />
     </div>
   );

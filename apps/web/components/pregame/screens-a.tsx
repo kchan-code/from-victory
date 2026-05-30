@@ -69,9 +69,11 @@ export function PregameStart({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline text-cream/70"
+            className="flex h-[44px] w-[44px] -m-[5px] items-center justify-center rounded-pill text-cream/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
           >
-            <Icon name="close" size={16} />
+            <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">
+              <Icon name="close" size={16} />
+            </span>
           </button>
         )}
       </div>

@@ -70,7 +70,7 @@ export function DeleteAccountSection() {
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
               autoComplete="off"
-              className="bg-onyx border border-hairline focus:border-red-500/60 rounded-lg px-3 py-2 font-body text-[14px] text-cream placeholder:text-cream/35 outline-none transition-colors duration-fast"
+              className="bg-onyx border border-hairline focus:border-red-500/60 rounded-lg px-3 py-2 font-body text-[14px] text-cream placeholder:text-cream/35 outline-none transition-colors duration-fast focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
             />
             {state && !state.ok ? (
               <p className="font-body text-[13px] text-red-400" role="alert">
