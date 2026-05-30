@@ -26,13 +26,15 @@ Pronunciation: Clear and gentle. Land "Inhale" and "Exhale" cleanly — fully vo
 
 Pauses: The script's typed silence segments carry structural pauses. Let your sentence ends breathe naturally into them. A brief beat after each cue is enough.`,
   speed: 0.95,
-  // Warming EQ — this render came out thin/tinny relative to the openers and
-  // session cells: ~6 dB quieter overall, weaker low body, hotter highs. This
-  // restores the low end, tames the harsh ~4 kHz presence and top, and lifts
-  // the level to match the rest of the session. Applied at final encode.
-  // (Also applied once to the committed MP3; keep the two identical.)
+  // Warming EQ — this render came out thin/tinny. Matching it to the other
+  // files' spectral balance wasn't enough (they read thin too), so this goes
+  // further per KC's by-ear pick: restore low body (bass + 350 Hz lift), tame
+  // the harsh ~3-4 kHz presence and brittle top, lift the level, and cap peaks
+  // with a true-peak limiter so the makeup gain doesn't clip. Applied once at
+  // final encode. (Also applied once to the committed MP3; keep the two
+  // identical — regenerating breath-threshold reproduces this exactly.)
   postFilter:
-    "bass=g=4:f=180,equalizer=f=4000:width_type=q:width=1.2:g=-2.5,treble=g=-2:f=8000,volume=4.5dB",
+    "bass=g=4:f=180,equalizer=f=4000:width_type=q:width=1.2:g=-2.5,treble=g=-2:f=8000,volume=4.5dB,bass=g=3:f=140,equalizer=f=350:width_type=o:width=1.2:g=3,equalizer=f=3200:width_type=o:width=1.4:g=-3,treble=g=-4:f=7500,volume=1dB,alimiter=limit=0.95",
   segments: [
     // ── Intro — slightly brisk for the threshold cue; protocol callout
     // lands as a single line so the door doesn't feel laborious.
