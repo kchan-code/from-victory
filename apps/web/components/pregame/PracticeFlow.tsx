@@ -39,13 +39,19 @@ type PracticeView = "picker" | "session";
 // ---------------------------------------------------------------------------
 
 function FocusPickerScreen({
+  initialFocus = "",
   onStart,
 }: {
+  /** Pre-selects a previously-chosen focus when returning from the session
+   *  screen so the athlete can re-start with one tap or quickly swap. */
+  initialFocus?: string;
   onStart: (focus: string) => void;
 }) {
-  const [selected, setSelected] = useState<string>("");
+  const [selected, setSelected] = useState<string>(initialFocus);
   // Custom input value — only active when selected is not in PRACTICE_FOCUS_OPTIONS.
-  const [customValue, setCustomValue] = useState("");
+  const [customValue, setCustomValue] = useState(
+    initialFocus && !PRACTICE_FOCUS_OPTIONS.includes(initialFocus) ? initialFocus : "",
+  );
 
   const isCustom =
     !!selected && !PRACTICE_FOCUS_OPTIONS.includes(selected);
@@ -152,9 +158,13 @@ const PRACTICE_SESSION_DURATION_S = 150;
 
 function PracticeSessionScreen({
   focus,
+  onBack,
   onDone,
 }: {
   focus: string;
+  /** Return to the focus picker (unmounts this component, triggering full
+   *  AudioContext / wake-lock / rAF / interval cleanup automatically). */
+  onBack: () => void;
   onDone: () => void;
 }) {
   // Reduced-motion: read the media query once on mount. CSS transition is
@@ -277,13 +287,31 @@ function PracticeSessionScreen({
 
   return (
     <div
-      className="flex flex-1 flex-col overflow-y-auto px-6 pb-6 pt-5"
+      className="relative flex flex-1 flex-col overflow-y-auto px-6 pb-6 pt-5"
       aria-busy={clipLoading}
       style={{
         background:
           "radial-gradient(80% 50% at 50% 20%, rgba(36,91,255,0.10), transparent 65%), radial-gradient(60% 40% at 50% 100%, rgba(223,175,55,0.06), transparent 70%), var(--fv-onyx)",
       }}
     >
+      {/* Escape affordance — returns to focus picker.
+          Sits in the safe-area top-left, visually matches the picker's back
+          arrow idiom. Absolutely positioned so it never shifts content layout.
+          Teardown is implicit: unmounting this component closes the AudioContext,
+          releases the wake lock, cancels the rAF loop, and clears the text-mode
+          interval — all via their respective useEffect cleanup returns. */}
+      <button
+        type="button"
+        onClick={onBack}
+        aria-label="Back to focus"
+        data-testid="practice-back-btn"
+        className="absolute left-[13px] top-[14px] flex h-[44px] w-[44px] -m-[5px] items-center justify-center rounded-pill text-cream/60 transition-colors duration-fast hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx motion-safe:transition-transform active:scale-95"
+      >
+        <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">
+          <Icon name="arrowLeft" size={16} />
+        </span>
+      </button>
+
       <SectionLabel>Pre-practice · Guided Session</SectionLabel>
 
       <div className="mb-4 flex items-baseline justify-between">
@@ -403,6 +431,16 @@ export function PracticeFlow() {
     setView("session");
   };
 
+  // Returns to the picker with the previously-selected focus still held in
+  // state. The picker re-highlights the prior selection so a re-pick (or
+  // immediate re-start) is a single tap. No audio/context teardown needed here:
+  // switching view to "picker" unmounts PracticeSessionScreen, which triggers
+  // useClipPlayer's cleanup effect (closes AudioContext, releases wake lock,
+  // cancels rAF) and the text-mode intervalRef cleanup.
+  const handleBack = () => {
+    setView("picker");
+  };
+
   const handleDone = () => {
     // Navigate back to the athlete home. We use window.location for simplicity
     // since this component is already a leaf in a server-rendered route tree
@@ -441,9 +479,9 @@ export function PracticeFlow() {
         </div>
       )}
 
-      {view === "picker" && <FocusPickerScreen onStart={handleStart} />}
+      {view === "picker" && <FocusPickerScreen initialFocus={focus} onStart={handleStart} />}
       {view === "session" && (
-        <PracticeSessionScreen focus={focus} onDone={handleDone} />
+        <PracticeSessionScreen focus={focus} onBack={handleBack} onDone={handleDone} />
       )}
     </PregameShell>
   );
