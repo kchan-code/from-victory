@@ -1,5 +1,5 @@
 {
-  "version": "p3",
+  "version": "p4",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.mp3",
@@ -403,96 +403,6 @@
         }
       ]
     },
-    "opener-confidence": {
-      "url": "/audio/pregame/clips/opener-confidence.mp3",
-      "durationSec": 48.112,
-      "phases": [
-        {
-          "phase": "intro",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "opener-calm": {
-      "url": "/audio/pregame/clips/opener-calm.mp3",
-      "durationSec": 59.728,
-      "phases": [
-        {
-          "phase": "intro",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "opener-compete-level": {
-      "url": "/audio/pregame/clips/opener-compete-level.mp3",
-      "durationSec": 56.056,
-      "phases": [
-        {
-          "phase": "intro",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "opener-reset": {
-      "url": "/audio/pregame/clips/opener-reset.mp3",
-      "durationSec": 50.32,
-      "phases": [
-        {
-          "phase": "intro",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "opener-courage": {
-      "url": "/audio/pregame/clips/opener-courage.mp3",
-      "durationSec": 57.808,
-      "phases": [
-        {
-          "phase": "intro",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "opener-decisions": {
-      "url": "/audio/pregame/clips/opener-decisions.mp3",
-      "durationSec": 54.976,
-      "phases": [
-        {
-          "phase": "intro",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "opener-leadership": {
-      "url": "/audio/pregame/clips/opener-leadership.mp3",
-      "durationSec": 68.752,
-      "phases": [
-        {
-          "phase": "intro",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "opener-joy": {
-      "url": "/audio/pregame/clips/opener-joy.mp3",
-      "durationSec": 64.912,
-      "phases": [
-        {
-          "phase": "intro",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "opener-hope": {
-      "url": "/audio/pregame/clips/opener-hope.mp3",
-      "durationSec": 64.12,
-      "phases": [
-        {
-          "phase": "intro",
-          "offsetSec": 0
-        }
-      ]
-    },
     "anc-long-exhale": {
       "url": "/audio/pregame/clips/anc-long-exhale.mp3",
       "durationSec": 2.988,
@@ -652,6 +562,121 @@
       "url": "/audio/pregame/clips/cw-relentless-sendoff.mp3",
       "durationSec": 2.844,
       "phases": []
+    },
+    "pp-settle-receive": {
+      "url": "/audio/pregame/clips/pp-settle-receive.mp3",
+      "durationSec": 32.756,
+      "phases": []
+    },
+    "pp-name-standard": {
+      "url": "/audio/pregame/clips/pp-name-standard.mp3",
+      "durationSec": 29.436,
+      "phases": []
+    },
+    "pp-goal-fusion": {
+      "url": "/audio/pregame/clips/pp-goal-fusion.mp3",
+      "durationSec": 42.84,
+      "phases": []
+    },
+    "pp-choose-focus": {
+      "url": "/audio/pregame/clips/pp-choose-focus.mp3",
+      "durationSec": 18.908,
+      "phases": []
+    },
+    "pp-see-it-go": {
+      "url": "/audio/pregame/clips/pp-see-it-go.mp3",
+      "durationSec": 29.74,
+      "phases": []
+    },
+    "opener-confidence": {
+      "url": "/audio/pregame/clips/opener-confidence.mp3",
+      "durationSec": 48.112,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-calm": {
+      "url": "/audio/pregame/clips/opener-calm.mp3",
+      "durationSec": 59.728,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-compete-level": {
+      "url": "/audio/pregame/clips/opener-compete-level.mp3",
+      "durationSec": 56.056,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-reset": {
+      "url": "/audio/pregame/clips/opener-reset.mp3",
+      "durationSec": 50.32,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-courage": {
+      "url": "/audio/pregame/clips/opener-courage.mp3",
+      "durationSec": 57.808,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-decisions": {
+      "url": "/audio/pregame/clips/opener-decisions.mp3",
+      "durationSec": 54.976,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-leadership": {
+      "url": "/audio/pregame/clips/opener-leadership.mp3",
+      "durationSec": 68.752,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-joy": {
+      "url": "/audio/pregame/clips/opener-joy.mp3",
+      "durationSec": 64.912,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-hope": {
+      "url": "/audio/pregame/clips/opener-hope.mp3",
+      "durationSec": 64.12,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
     }
   },
   "templates": [
@@ -1135,5 +1160,14 @@
         "shared-sendoff"
       ]
     }
-  ]
+  ],
+  "practice": {
+    "clips": [
+      "pp-settle-receive",
+      "pp-name-standard",
+      "pp-goal-fusion",
+      "pp-choose-focus",
+      "pp-see-it-go"
+    ]
+  }
 }

@@ -53,6 +53,12 @@ export type ClipManifest = {
   version: string;
   clips: Record<string, ClipCatalogEntry>;
   templates: PlaylistTemplate[];
+  /** Fixed-order playlists that are not session-personalization templates.
+   *  Added in p4. The "practice" key holds the ordered generic clip list
+   *  for the pre-practice "Get To" session. */
+  practice?: {
+    clips: string[]; // ordered slug list
+  };
 };
 
 // ---------------------------------------------------------------------------
@@ -223,6 +229,41 @@ export function resolvePlaylist(
       // silently omitting a clip, which would produce a shorter session.
       return null;
     }
+    resolved.push({
+      slug,
+      url: bustUrl(entry.url),
+      durationSec: entry.durationSec,
+      phases: entry.phases,
+    });
+  }
+  return resolved;
+}
+
+// ---------------------------------------------------------------------------
+// resolvePracticePlaylist
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve the ordered clip list for the fixed-order "practice" playlist.
+ * The practice session is a generic, non-personalized 5-clip sequence
+ * (~2.5 min) for the pre-practice "Get To" flow.
+ *
+ * Returns null when:
+ *   - manifest.practice is absent (older manifest version without the practice key)
+ *   - any slug listed in manifest.practice.clips is absent from the clip catalog
+ *
+ * Fail-closed: the caller should fall back to a text timer on null, the same
+ * way AudioSessionScreen handles a null from resolvePlaylist.
+ */
+export function resolvePracticePlaylist(
+  manifest: ClipManifest,
+): ResolvedClip[] | null {
+  if (!manifest.practice) return null;
+
+  const resolved: ResolvedClip[] = [];
+  for (const slug of manifest.practice.clips) {
+    const entry = manifest.clips[slug];
+    if (!entry) return null; // missing slug — fail closed
     resolved.push({
       slug,
       url: bustUrl(entry.url),

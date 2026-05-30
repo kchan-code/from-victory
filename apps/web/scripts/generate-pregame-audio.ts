@@ -389,7 +389,7 @@ async function generateClips(flags: Flags): Promise<void> {
     console.log(`\n[clips] Templates: ${PHASE2_TEMPLATES.length}`);
     console.log(
       `[clips] Catalog will have: ${CLIP_SCRIPTS.length} TTS + ${OPENER_SLUGS.length} openers = ` +
-      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p3: 78 expected)`,
+      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p4: 83 expected)`,
     );
     return;
   }
@@ -439,13 +439,38 @@ async function generateClips(flags: Flags): Promise<void> {
       if (existsSync(existingMp3)) {
         console.log(`  [skip] ${script.slug} already exists — skipping (resume).`);
         const jsonPath = join(clipsDir, `${script.slug}.json`);
-        const rawJson = await readFile(jsonPath, "utf8");
-        const timeline = JSON.parse(rawJson) as AudioTimeline;
-        catalog[script.slug] = {
-          url: `/audio/pregame/${CLIPS_SUBDIR}/${script.slug}.mp3`,
-          durationSec: timeline.durationSec,
-          phases: timelineToClipPhases(timeline),
-        };
+        if (existsSync(jsonPath)) {
+          // Preferred path: read the sidecar timeline for exact duration + phases.
+          const rawJson = await readFile(jsonPath, "utf8");
+          const timeline = JSON.parse(rawJson) as AudioTimeline;
+          catalog[script.slug] = {
+            url: `/audio/pregame/${CLIPS_SUBDIR}/${script.slug}.mp3`,
+            durationSec: timeline.durationSec,
+            phases: timelineToClipPhases(timeline),
+          };
+        } else {
+          // Fallback: no sidecar (e.g. short personalization clips committed
+          // before sidecar generation was added). Probe the MP3 for duration
+          // and derive phases from the script's segment marks.
+          const dur = await probeDurationSec(existingMp3);
+          const phaseMarks: ClipPhaseEntry[] = [];
+          let cursor = 0;
+          for (const seg of script.segments) {
+            if (seg.mark) {
+              phaseMarks.push({ phase: seg.mark.phase as Phase, offsetSec: cursor });
+            }
+            // We don't know exact per-segment durations without TTS, so
+            // phase offsets are approximations. For clips with no phase marks
+            // (anc, st, cw, pp) this produces an empty phases array, which is
+            // the correct catalog value (phases: []).
+            break; // Only the first mark is at offset 0; remaining are unknown.
+          }
+          catalog[script.slug] = {
+            url: `/audio/pregame/${CLIPS_SUBDIR}/${script.slug}.mp3`,
+            durationSec: Math.round(dur * 1000) / 1000,
+            phases: phaseMarks.length > 0 ? phaseMarks : [],
+          };
+        }
         completedSlugs.push(script.slug);
         continue;
       }
@@ -552,10 +577,23 @@ async function generateClips(flags: Flags): Promise<void> {
     ],
   }));
 
+  // Pre-practice "Get To" — fixed generic playlist, no personalization tree.
+  // Frontend reads manifest.practice.clips to build the practice player queue.
+  const practicePlaylist = {
+    clips: [
+      "pp-settle-receive",
+      "pp-name-standard",
+      "pp-goal-fusion",
+      "pp-choose-focus",
+      "pp-see-it-go",
+    ],
+  };
+
   const manifest: ClipManifest = {
-    version: "p3",
+    version: "p4",
     clips: catalog,
     templates,
+    practice: practicePlaylist,
   };
 
   const manifestPath = join(clipsDir, "manifest.json");
@@ -566,9 +604,9 @@ async function generateClips(flags: Flags): Promise<void> {
   const templateCount = templates.length;
   console.log(`\n[clips] manifest.json written: ${catalogCount} catalog entries, ${templateCount} templates.`);
 
-  // p3: 46 structural + 32 personalization = 78 total
-  if (catalogCount !== 78) {
-    console.warn(`  WARNING: expected 78 catalog entries (46 structural + 32 personalization), got ${catalogCount}.`);
+  // p4: 46 structural + 32 personalization + 5 practice = 83 total
+  if (catalogCount !== 83) {
+    console.warn(`  WARNING: expected 83 catalog entries (46 structural + 32 personalization + 5 practice), got ${catalogCount}.`);
   }
   if (templateCount !== 30) {
     console.warn(`  WARNING: expected 30 templates (3 positions × 10 adversities), got ${templateCount}.`);

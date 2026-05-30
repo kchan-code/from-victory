@@ -217,7 +217,51 @@ describe("UI option coverage — CUE_WORDS", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 5. Full matrix coverage: exactly (3 positions × 10 adversities) = 30 templates
+// 5. Practice playlist integrity — manifest.practice exists and each slug
+//    resolves to a real non-zero file on disk.
+// ---------------------------------------------------------------------------
+
+describe("practice playlist integrity", () => {
+  it("manifest.practice exists and is non-empty", () => {
+    expect(manifest.practice).toBeDefined();
+    expect(manifest.practice!.clips.length).toBeGreaterThan(0);
+  });
+
+  it("every slug in manifest.practice.clips is in the catalog AND has a real non-zero file", () => {
+    // Guard: if the block above failed, this would NPE — exit cleanly.
+    if (!manifest.practice) {
+      expect(manifest.practice).toBeDefined();
+      return;
+    }
+
+    const broken: string[] = [];
+
+    for (const slug of manifest.practice.clips) {
+      // 1. Slug must exist in the catalog.
+      const entry = catalog[slug];
+      if (!entry) {
+        broken.push(`practice slug "${slug}" not found in catalog`);
+        continue;
+      }
+
+      // 2. File must exist on disk and be non-zero.
+      const absPath = urlToAbsPath(entry.url);
+      if (!fs.existsSync(absPath)) {
+        broken.push(`practice slug "${slug}": file not found at ${absPath}`);
+        continue;
+      }
+      const stat = fs.statSync(absPath);
+      if (stat.size === 0) {
+        broken.push(`practice slug "${slug}": file is zero bytes at ${absPath}`);
+      }
+    }
+
+    expect(broken).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 6. Full matrix coverage: exactly (3 positions × 10 adversities) = 30 templates
 // ---------------------------------------------------------------------------
 
 describe("template matrix completeness", () => {
