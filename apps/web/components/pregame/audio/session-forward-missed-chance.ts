@@ -164,7 +164,7 @@ export const SESSION_FORWARD_MISSED_CHANCE_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Now the reset. One long exhale on the bench.",
+      text: "Now the reset. Return to your anchor.",
       speed: 1,
     },
     { type: "silence", durationSec: 2.0 },

@@ -589,26 +589,40 @@ export function AudioSessionScreen({
       : { reference: SCRIPTURE_REF, displayText: SCRIPTURE_TEXT };
 
   // ---------------------------------------------------------------------------
-  // Pip section detection (audio mode only)
-  // Derive the current pip section (0-5) from sidecar timelines.
-  // Opener phases are in [0, openerDuration); cell phases are offset.
-  // If timelines haven't loaded, activePip is null — pips don't render.
+  // Pip section detection + active phase (audio mode only).
+  // Both are derived from the same sidecar timeline lookup — the phase is
+  // surfaced here so card content can swap on phase boundaries.
+  // If timelines haven't loaded, both are null — pips hide, card shows verse.
   // ---------------------------------------------------------------------------
-  const activePip: PipSection | null = (() => {
-    if (audioMode !== "audio") return null;
+  const { activePip, activePhase } = (() => {
+    if (audioMode !== "audio") return { activePip: null, activePhase: null };
     if (activeSegment === "opener") {
-      if (!openerTimeline) return null;
+      if (!openerTimeline) return { activePip: null, activePhase: null };
       const phase = findActivePhaseFromTimeline(openerTimeline, elapsed);
-      if (phase === null) return null;
-      return PHASE_TO_SECTION[phase] ?? null;
+      if (phase === null) return { activePip: null, activePhase: null };
+      return { activePip: PHASE_TO_SECTION[phase] ?? null, activePhase: phase };
     } else {
       // Cell: elapsed is opener+cell combined; cell currentTime = elapsed - openerDuration
-      if (!cellTimeline) return null;
+      if (!cellTimeline) return { activePip: null, activePhase: null };
       const cellTime = Math.max(0, elapsed - openerDuration);
       const phase = findActivePhaseFromTimeline(cellTimeline, cellTime);
-      if (phase === null) return null;
-      return PHASE_TO_SECTION[phase] ?? null;
+      if (phase === null) return { activePip: null, activePhase: null };
+      return { activePip: PHASE_TO_SECTION[phase] ?? null, activePhase: phase };
     }
+  })() as { activePip: PipSection | null; activePhase: Phase | null };
+
+  // ---------------------------------------------------------------------------
+  // Card view: which content fills the focal card during audio mode.
+  // Driven purely by phase — no extra state, no timers.
+  //   "verse"     — the need-specific scripture (default / no-timeline fallback)
+  //   "resetTrio" — anchor + self-talk + cue word (hardMoment + reset phases)
+  //   "cueOnly"   — the cue word alone, carried out the door (prayer + done)
+  // ---------------------------------------------------------------------------
+  type CardView = "verse" | "resetTrio" | "cueOnly";
+  const cardView: CardView = (() => {
+    if (activePhase === "hardMoment" || activePhase === "reset") return "resetTrio";
+    if (activePhase === "prayer" || activePhase === "done") return "cueOnly";
+    return "verse";
   })();
 
   // ---------------------------------------------------------------------------
@@ -721,34 +735,137 @@ export function AudioSessionScreen({
             "radial-gradient(120% 80% at 30% 0%, rgba(223,175,55,0.07), transparent 60%), var(--fv-charcoal)",
         }}
       >
-        {audioMode === "text" && textModeStageLabel && (
-          <div className="mb-3 font-display text-[28px] font-extrabold uppercase leading-none tracking-[0.04em] text-cream">
-            {textModeStageLabel}
-          </div>
-        )}
-
-        <Eyebrow className="!text-gold">{view.eyebrow}</Eyebrow>
-
-        {/* In audio mode, show eyebrow framing line above the verse if present */}
-        {audioMode === "audio" && sessionVerse.eyebrow && (
-          <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-gold/70">
-            {sessionVerse.eyebrow}
-          </p>
-        )}
-
-        <p className="mt-4 font-scripture text-[20px] italic leading-[1.55] text-cream">
-          {view.body}
-        </p>
-
-        {audioMode === "audio" && (
-          <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.16em] text-gold/70">
-            {sessionVerse.reference}
-          </p>
-        )}
+        {/* ── TEXT MODE ── stage label + script body + choice strip ── */}
         {audioMode === "text" && (
-          <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-cream/40">
-            Reading mode · audio coming soon
-          </p>
+          <>
+            {textModeStageLabel && (
+              <div className="mb-3 font-display text-[28px] font-extrabold uppercase leading-none tracking-[0.04em] text-cream">
+                {textModeStageLabel}
+              </div>
+            )}
+
+            <Eyebrow className="!text-gold">{view.eyebrow}</Eyebrow>
+            <p className="mt-4 font-scripture text-[20px] italic leading-[1.55] text-cream">
+              {view.body}
+            </p>
+
+            {/* Persistent choice strip — reading mode; athlete can glance at their
+                three choices without phase-gating since eyes are open. */}
+            <div className="mt-6 flex flex-col gap-3 border-t border-hairline pt-5">
+              <div>
+                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                  Your Anchor
+                </p>
+                <p className="mt-0.5 line-clamp-2 font-heading text-[14px] font-medium leading-[1.35] text-cream/80">
+                  {state.anchor || DEFAULTS.anchor}
+                </p>
+              </div>
+              <div>
+                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                  Cue Word
+                </p>
+                <p className="mt-0.5 font-display text-[22px] font-extrabold uppercase tracking-[0.06em] text-gold">
+                  {state.cueWord || DEFAULTS.cueWord}
+                </p>
+              </div>
+              <div>
+                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                  Coach Yourself
+                </p>
+                <p className="mt-0.5 line-clamp-2 font-heading text-[14px] font-medium leading-[1.35] text-cream/80">
+                  {state.selfTalk || DEFAULTS.selfTalk}
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-cream/40">
+              Reading mode · audio coming soon
+            </p>
+          </>
+        )}
+
+        {/* ── AUDIO MODE ── phase-synced card with ~300ms opacity fade on swap ── */}
+        {audioMode === "audio" && (
+          // key={cardView} causes React to unmount+remount the element on view
+          // change, triggering the animate-in CSS class from globals.css. This is
+          // the simplest phase-boundary fade without adding timers or extra state.
+          <div key={cardView} className="animate-card-fade-in">
+            {/* VIEW: verse (default + intro/settle/breath/rink/firstShift phases) */}
+            {cardView === "verse" && (
+              <>
+                <Eyebrow className="!text-gold">{view.eyebrow}</Eyebrow>
+                {sessionVerse.eyebrow && (
+                  <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-gold/70">
+                    {sessionVerse.eyebrow}
+                  </p>
+                )}
+                <p className="mt-4 font-scripture text-[20px] italic leading-[1.55] text-cream">
+                  {view.body}
+                </p>
+                <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.16em] text-gold/70">
+                  {sessionVerse.reference}
+                </p>
+              </>
+            )}
+
+            {/* VIEW: resetTrio (hardMoment + reset phases)
+                Audio says: "Return to your anchor. Speak the truth. This is the move."
+                Screen carries the athlete's specific choices. */}
+            {cardView === "resetTrio" && (
+              <>
+                <div className="mb-5 flex flex-col gap-4">
+                  {/* Anchor */}
+                  <div>
+                    <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                      Your Anchor
+                    </p>
+                    <p className="mt-1 line-clamp-2 font-heading text-[18px] font-semibold leading-[1.3] text-cream">
+                      {state.anchor || DEFAULTS.anchor}
+                    </p>
+                  </div>
+
+                  {/* Self-talk */}
+                  <div>
+                    <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                      Coach Yourself
+                    </p>
+                    <p className="mt-1 line-clamp-2 font-scripture text-[16px] italic leading-[1.45] text-cream/90">
+                      {state.selfTalk || DEFAULTS.selfTalk}
+                    </p>
+                  </div>
+
+                  {/* Divider before cue word prominence */}
+                  <div className="border-t border-hairline" />
+
+                  {/* Cue word — prominent focal element */}
+                  <div>
+                    <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                      Cue Word
+                    </p>
+                    <p className="mt-1.5 font-display text-[44px] font-extrabold uppercase leading-[0.95] tracking-[0.05em] text-gold">
+                      {state.cueWord || DEFAULTS.cueWord}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* VIEW: cueOnly (prayer + done phases)
+                The one word carried out the door — large, gold, nothing competing. */}
+            {cardView === "cueOnly" && (
+              <div className="flex flex-col items-center justify-center py-4 text-center">
+                <p className="mb-4 font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                  Cue Word
+                </p>
+                <p className="font-display text-[56px] font-extrabold uppercase leading-[0.9] tracking-[0.05em] text-gold">
+                  {state.cueWord || DEFAULTS.cueWord}
+                </p>
+                <p className="mt-5 font-body text-[13px] leading-[1.5] text-cream/50">
+                  Play from victory.
+                </p>
+              </div>
+            )}
+          </div>
         )}
       </div>
 

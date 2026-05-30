@@ -1,6 +1,6 @@
 {
   "slug": "session-forward-get-hit",
-  "durationSec": 262.512,
+  "durationSec": 272.328,
   "phases": [
     {
       "phase": "settle",
@@ -13,42 +13,42 @@
     },
     {
       "phase": "exhale",
-      "startSec": 11.712,
+      "startSec": 13.944,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 19.488,
+      "startSec": 21.936,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 26.128,
+      "startSec": 27.976,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 53.368
+      "startSec": 55.12
     },
     {
       "phase": "firstShift",
-      "startSec": 90.218
+      "startSec": 95.594
     },
     {
       "phase": "hardMoment",
-      "startSec": 160.882
+      "startSec": 168.85
     },
     {
       "phase": "reset",
-      "startSec": 215.698
+      "startSec": 222.658
     },
     {
       "phase": "prayer",
-      "startSec": 232.47
+      "startSec": 241.134
     },
     {
       "phase": "done",
-      "startSec": 255.682
+      "startSec": 265.138
     }
   ]
 }

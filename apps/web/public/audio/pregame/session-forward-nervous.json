@@ -1,6 +1,6 @@
 {
   "slug": "session-forward-nervous",
-  "durationSec": 255.408,
+  "durationSec": 260.568,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.008,
+      "startSec": 6.176,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 13.056,
+      "startSec": 12.816,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 21.408,
+      "startSec": 20.592,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 27.712,
+      "startSec": 26.32,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 54.76
+      "startSec": 52.672
     },
     {
       "phase": "firstShift",
-      "startSec": 92.498
+      "startSec": 92.45
     },
     {
       "phase": "hardMoment",
-      "startSec": 163.258
+      "startSec": 168.754
     },
     {
       "phase": "reset",
-      "startSec": 208.706
+      "startSec": 212.378
     },
     {
       "phase": "prayer",
-      "startSec": 224.83
+      "startSec": 228.79
     },
     {
       "phase": "done",
-      "startSec": 248.882
+      "startSec": 253.658
     }
   ]
 }

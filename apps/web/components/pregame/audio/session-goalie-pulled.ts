@@ -58,7 +58,7 @@ export const SESSION_GOALIE_PULLED_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Now the reset. One long exhale on the bench.",
+      text: "Now the reset. Return to your anchor.",
       speed: 1.0,
     },
     { type: "silence", durationSec: 2.0 },

@@ -1,6 +1,6 @@
 {
   "slug": "session-goalie-get-hit",
-  "durationSec": 252.384,
+  "durationSec": 247.44,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.704,
+      "startSec": 6.176,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 13.128,
+      "startSec": 12.864,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 21.648,
+      "startSec": 20.952,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 27.424,
+      "startSec": 26.152,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 54.496
+      "startSec": 52.24
     },
     {
       "phase": "firstShift",
-      "startSec": 91.402
+      "startSec": 88.594
     },
     {
       "phase": "hardMoment",
-      "startSec": 150.506
+      "startSec": 148.226
     },
     {
       "phase": "reset",
-      "startSec": 203.498
+      "startSec": 200.066
     },
     {
       "phase": "prayer",
-      "startSec": 222.022
+      "startSec": 216.382
     },
     {
       "phase": "done",
-      "startSec": 245.738
+      "startSec": 240.242
     }
   ]
 }

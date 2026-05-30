@@ -1,6 +1,6 @@
 {
   "slug": "session-goalie-missed-chance",
-  "durationSec": 240.24,
+  "durationSec": 250.608,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.224,
+      "startSec": 7.328,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 11.952,
+      "startSec": 14.376,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 19.248,
+      "startSec": 22.368,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 25.504,
+      "startSec": 28.408,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 52.912
+      "startSec": 55.792
     },
     {
       "phase": "firstShift",
-      "startSec": 90.514
+      "startSec": 94.69
     },
     {
       "phase": "hardMoment",
-      "startSec": 150.986
+      "startSec": 156.362
     },
     {
       "phase": "reset",
-      "startSec": 194.994
+      "startSec": 201.402
     },
     {
       "phase": "prayer",
-      "startSec": 211.118
+      "startSec": 218.726
     },
     {
       "phase": "done",
-      "startSec": 234.426
+      "startSec": 244.53
     }
   ]
 }

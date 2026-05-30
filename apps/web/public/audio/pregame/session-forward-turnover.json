@@ -1,6 +1,6 @@
 {
   "slug": "session-forward-turnover",
-  "durationSec": 261.288,
+  "durationSec": 261.408,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.056,
+      "startSec": 6.008,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 11.424,
+      "startSec": 12.312,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 19.152,
+      "startSec": 20.52,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 25.672,
+      "startSec": 27.448,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 50.992
+      "startSec": 56.104
     },
     {
       "phase": "firstShift",
-      "startSec": 92.618
+      "startSec": 95.762
     },
     {
       "phase": "hardMoment",
-      "startSec": 167.482
+      "startSec": 167.674
     },
     {
       "phase": "reset",
-      "startSec": 213.194
+      "startSec": 215.162
     },
     {
       "phase": "prayer",
-      "startSec": 229.606
+      "startSec": 231.334
     },
     {
       "phase": "done",
-      "startSec": 254.714
+      "startSec": 254.738
     }
   ]
 }

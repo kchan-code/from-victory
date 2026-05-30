@@ -1,6 +1,6 @@
 {
   "slug": "session-goalie-coach-yells",
-  "durationSec": 250.056,
+  "durationSec": 247.776,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 5.552,
+      "startSec": 5.72,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 11.52,
+      "startSec": 11.832,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 19.08,
+      "startSec": 19.152,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 26.032,
+      "startSec": 24.616,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 53.392
+      "startSec": 52.192
     },
     {
       "phase": "firstShift",
-      "startSec": 92.074
+      "startSec": 90.562
     },
     {
       "phase": "hardMoment",
-      "startSec": 150.468
+      "startSec": 149.46
     },
     {
       "phase": "reset",
-      "startSec": 202.132
+      "startSec": 202.252
     },
     {
       "phase": "prayer",
-      "startSec": 218.856
+      "startSec": 218.424
     },
     {
       "phase": "done",
-      "startSec": 243.676
+      "startSec": 241.684
     }
   ]
 }
