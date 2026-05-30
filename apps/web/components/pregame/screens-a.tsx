@@ -228,6 +228,18 @@ export function BreathScreen({
               </div>
             </div>
           </div>
+
+          {/* Skip — for athletes who've already settled. Jumps straight to
+              ready (breathDone) without forcing the full three rounds.
+              min-h-[44px] holds the tap target at the 44px floor; visual
+              footprint stays slim via the small font size. */}
+          <button
+            type="button"
+            onClick={markDone}
+            className="mx-auto mt-1 flex min-h-[44px] items-center rounded-sm px-2 font-body text-[12px] text-cream/50 underline underline-offset-2 transition-colors duration-fast hover:text-cream/70 active:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+          >
+            Already settled
+          </button>
         </>
       )}
     </ScreenBody>
