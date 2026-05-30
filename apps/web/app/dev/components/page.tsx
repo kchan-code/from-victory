@@ -67,7 +67,7 @@ export default function ComponentsShowcase() {
       </Section>
 
       <Section title="VerseRef">
-        <VerseRef>Romans 8:37 · NIV</VerseRef>
+        <VerseRef>Hebrews 12:1-2 · NIV</VerseRef>
       </Section>
 
       <Section title="Chip">
@@ -129,10 +129,11 @@ export default function ComponentsShowcase() {
         <Card accent="verse" radius="lg" padding="lg">
           <Eyebrow tone="gold">Today&apos;s passage</Eyebrow>
           <p className="fv-scripture mt-3">
-            For we are more than conquerors through him who loved us.
+            Run with perseverance the race marked out for us, fixing our eyes
+            on Jesus.
           </p>
           <div className="mt-4">
-            <VerseRef>Romans 8:37 · NIV</VerseRef>
+            <VerseRef>Hebrews 12:1-2 · NIV</VerseRef>
           </div>
         </Card>
       </Section>

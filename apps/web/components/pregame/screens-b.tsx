@@ -561,10 +561,23 @@ export function AudioSessionScreen({
           onClick={togglePlay}
           disabled={completed}
           aria-label={playing ? "Pause guided session" : "Play guided session"}
-          className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-gold bg-gold text-onyx transition-transform duration-fast active:scale-95 disabled:opacity-50"
+          className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-gold bg-gold text-onyx transition-transform duration-fast active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
         >
           <Icon name={playing ? "pause" : "play"} size={26} />
         </button>
+
+        {/* Accessible alternative for deaf/HoH athletes or loud environments.
+            Only shown in audio mode — once switched to text mode this row
+            disappears (text mode is already active). */}
+        {audioMode === "audio" && !completed && (
+          <button
+            type="button"
+            onClick={() => setAudioMode("text")}
+            className="mx-auto font-body text-[12px] text-cream/40 underline underline-offset-2 hover:text-cream/70 transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx rounded-sm py-1 px-2"
+          >
+            Read instead
+          </button>
+        )}
 
         {completed && (
           <Button variant="coach" full onClick={onContinue}>

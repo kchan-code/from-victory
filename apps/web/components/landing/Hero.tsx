@@ -76,11 +76,11 @@ export function Hero() {
 
                     <div className="fv-card-verse border border-hairline rounded-lg p-[18px]">
                       <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-gold font-semibold">
-                        ROMANS 8:37
+                        HEBREWS 12:1-2
                       </div>
                       <div className="font-scripture text-[16px] leading-[1.5] text-cream mt-2.5">
-                        &ldquo;More than conquerors through him who loved
-                        us.&rdquo;
+                        &ldquo;Run with perseverance the race marked out for
+                        us, fixing our eyes on Jesus.&rdquo;
                       </div>
                     </div>
 

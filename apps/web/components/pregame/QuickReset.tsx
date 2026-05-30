@@ -52,9 +52,11 @@ export function QuickReset({
           onClick={step === 0 ? undefined : back}
           disabled={step === 0}
           aria-label="Back"
-          className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-pill border border-hairline text-cream disabled:text-cream/30"
+          className="flex h-[44px] w-[44px] flex-none -m-[5px] items-center justify-center rounded-pill text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx disabled:text-cream/30"
         >
-          <Icon name="arrowLeft" size={16} />
+          <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">
+            <Icon name="arrowLeft" size={16} />
+          </span>
         </button>
         <div className="min-w-0 flex-1">
           <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.22em] text-gold">
@@ -68,9 +70,11 @@ export function QuickReset({
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-pill border border-hairline text-cream/70"
+          className="flex h-[44px] w-[44px] flex-none -m-[5px] items-center justify-center rounded-pill text-cream/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
         >
-          <Icon name="close" size={16} />
+          <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">
+            <Icon name="close" size={16} />
+          </span>
         </button>
       </div>
 

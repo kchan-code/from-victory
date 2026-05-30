@@ -40,12 +40,17 @@ export function DeleteAthleteButton({
 
   const matches = typed.trim().toLowerCase() === firstName.trim().toLowerCase();
 
+  const formId = `delete-athlete-${athleteId}`;
+
   if (!open) {
     return (
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="font-heading font-semibold text-[13px] text-cream/50 hover:text-red-400 bg-transparent border border-transparent rounded-pill px-3 py-2 transition-colors duration-fast ease-out"
+        aria-expanded={false}
+        aria-controls={formId}
+        aria-label={`Remove ${firstName} and permanently delete their data`}
+        className="font-heading font-semibold text-[13px] text-cream/50 hover:text-red-400 bg-transparent border border-transparent rounded-pill px-3 py-2 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
       >
         Remove
       </button>
@@ -53,6 +58,12 @@ export function DeleteAthleteButton({
   }
 
   return (
+    <div
+      id={formId}
+      role="group"
+      aria-label={`Permanently delete ${firstName}`}
+      aria-live="polite"
+    >
     <form action={formAction} className="flex flex-col items-end gap-2">
       <input type="hidden" name="athlete_id" value={athleteId} />
       <p className="font-body text-[13px] text-cream/70 text-right max-w-[260px]">
@@ -67,7 +78,7 @@ export function DeleteAthleteButton({
         autoComplete="off"
         aria-label={`Type ${firstName} to confirm`}
         placeholder={`Type "${firstName}" to confirm`}
-        className="w-[260px] bg-onyx border border-hairline focus:border-red-500/60 rounded-lg px-3 py-2 font-body text-[14px] text-cream placeholder:text-cream/35 outline-none transition-colors duration-fast"
+        className="w-[260px] bg-onyx border border-hairline focus:border-red-500/60 rounded-lg px-3 py-2 font-body text-[14px] text-cream placeholder:text-cream/35 outline-none transition-colors duration-fast focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
       />
       {state && !state.ok ? (
         <p className="font-body text-[13px] text-red-400 text-right" role="alert">
@@ -88,5 +99,6 @@ export function DeleteAthleteButton({
         <ConfirmButton disabled={!matches} />
       </div>
     </form>
+    </div>
   );
 }
