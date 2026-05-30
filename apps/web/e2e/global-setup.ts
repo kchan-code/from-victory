@@ -50,7 +50,7 @@ function requireEnv(name: string): string {
 
 const PROD_REF = "kumrgeosgzdlxgljbyju";
 
-function assertNotProd(supabaseUrl: string): void {
+export function assertNotProd(supabaseUrl: string): void {
   if (supabaseUrl.includes(PROD_REF)) {
     throw new Error(
       `[global-setup] REFUSED: E2E_SUPABASE_URL points at the PRODUCTION ` +

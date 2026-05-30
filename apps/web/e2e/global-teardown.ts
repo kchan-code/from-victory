@@ -11,7 +11,7 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { createClient } from "@supabase/supabase-js";
 
-import { cleanupExistingTestParent } from "./global-setup";
+import { assertNotProd, cleanupExistingTestParent } from "./global-setup";
 
 async function globalTeardown(): Promise<void> {
   const supabaseUrl = process.env.E2E_SUPABASE_URL;
@@ -27,6 +27,11 @@ async function globalTeardown(): Promise<void> {
     );
     return;
   }
+
+  // Defense-in-depth: teardown is the destructive (delete) half, so re-assert
+  // the prod guard here too — never run service-role deletes against the live
+  // project even if teardown is somehow invoked independently of setup.
+  assertNotProd(supabaseUrl);
 
   const service = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
