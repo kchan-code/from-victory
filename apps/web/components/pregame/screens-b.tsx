@@ -21,6 +21,7 @@ import {
   ROLE_CONTENT,
   SCRIPTURE_REF,
   SCRIPTURE_SHORT,
+  SCRIPTURE_TEXT,
   SELF_TALK_OPTIONS,
   type AudioSegment,
   type PregameState,
@@ -457,14 +458,15 @@ export function AudioSessionScreen({
   };
 
   // On-screen view text.
-  // Audio mode: minimal display (athlete's eyes are closed — the audio is
-  // the experience). Shows phase label + Hebrews 12 spine quote.
+  // Audio mode: the card holds the full Hebrews 12:1-2 spine verse (the
+  // identity anchor for the whole session) — it fits one screen, so no
+  // pagination. The reference renders below the verse.
   // Text mode: walk AUDIO_SCRIPT segments by elapsed time (legacy).
   let view: { eyebrow: string; body: string };
   if (audioMode === "audio") {
     view = {
-      eyebrow: activeSegment === "opener" ? "Identity" : "Guided Session",
-      body: SCRIPTURE_SHORT,
+      eyebrow: "Identity",
+      body: SCRIPTURE_TEXT,
     };
   } else {
     const segments = AUDIO_SCRIPT;
@@ -538,9 +540,14 @@ export function AudioSessionScreen({
         }}
       >
         <Eyebrow className="!text-gold">{view.eyebrow}</Eyebrow>
-        <p className="mt-4 font-scripture text-[19px] italic leading-[1.55] text-cream">
+        <p className="mt-4 font-scripture text-[20px] italic leading-[1.55] text-cream">
           {view.body}
         </p>
+        {audioMode === "audio" && (
+          <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.16em] text-gold/70">
+            {SCRIPTURE_REF}
+          </p>
+        )}
         {audioMode === "text" && (
           <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-cream/40">
             Reading mode · audio coming soon
@@ -559,29 +566,10 @@ export function AudioSessionScreen({
           <Icon name={playing ? "pause" : "play"} size={26} />
         </button>
 
-        {completed ? (
+        {completed && (
           <Button variant="coach" full onClick={onContinue}>
             SHOW MY PRE-GAME CARD
           </Button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setPlaying(false);
-              setElapsed(total);
-              set("audioCompleted", true);
-              if (audioMode === "audio") {
-                openerRef.current?.pause();
-                cellRef.current?.pause();
-              }
-              // Navigate straight to the Pre-Game Card instead of forcing
-              // a second click on the "SHOW MY PRE-GAME CARD" button.
-              onContinue();
-            }}
-            className="self-center font-mono text-[10px] uppercase tracking-[0.18em] text-cream/50 hover:text-cream"
-          >
-            Skip to the card
-          </button>
         )}
       </div>
     </div>
