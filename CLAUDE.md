@@ -135,6 +135,34 @@ The content trio (content-curator + sports-psychologist + youth-pastor)
 works together: curator briefs both specialists, they return raw material,
 curator integrates into a single training session in one voice.
 
+## Agent Orchestration
+The lead agent is the **sole orchestrator**. Subagents are leaf workers — they
+cannot invoke each other, so every handoff routes through the lead.
+"Coordination" is the lead invoking the right specialist at the right time and
+integrating the result. Agents return findings/work to the lead; the lead is
+accountable for the outcome.
+
+Standing invocation policy — apply these by default, not by memory:
+
+| Trigger | Invoke (before the work / before merge) |
+|---|---|
+| New feature, scope expansion, new dependency, or tech-stack deviation | product-strategist (has veto) — BEFORE building |
+| UI / Next.js / Tailwind / PWA / accessibility work in `apps/web` | frontend-engineer (athlete-UX lens + build-note checklist) |
+| Supabase schema / RLS / migration / auth / Stripe / server action | backend-engineer |
+| Pregame audio pipeline / TTS / ffmpeg / EQ / `AUDIO_CACHE_BUST` | audio-engineer |
+| Athlete-facing training, journal, or scripture content | content-curator (orchestrates sports-psychologist + youth-pastor) |
+| Any PR touching runtime or tested code — before privacy + merge | qa-reviewer |
+| Any PR touching `apps/web/**`, `supabase/**`, `packages/content/**`, `.claude/agents/**`, `CLAUDE.md`, `docs/brand.md` | kids-privacy-officer (also nudged by the privacy-review hook) |
+
+Rules of the road:
+- **Reviewer order:** qa-reviewer → kids-privacy-officer → merge (via GitHub UI).
+- The lead may do small/mechanical work directly, but **delegates substantial
+  engineering to the owning agent** so its encoded discipline (athlete-UX lens,
+  RLS rules, audio QA) actually gets applied — not bypassed for speed.
+- product-strategist and kids-privacy-officer hold vetoes; respect them.
+- Don't add a new agent to fix a coordination gap — fix the invocation policy
+  here first.
+
 ## Workflow Rules (NON-NEGOTIABLE)
 1. Never edit `main` directly. Every task starts with `git checkout -b feature/<name>`.
 2. Commit in small logical units. Conventional commits: feat:, fix:, chore:, test:, docs:.
