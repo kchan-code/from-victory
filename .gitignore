@@ -37,3 +37,9 @@ supabase/.temp
 
 # CI artifacts (kids-privacy-officer staging dir — diff + review output)
 .pr-review/
+
+# Playwright
+apps/web/.env.test
+apps/web/e2e/.auth/
+apps/web/playwright-report/
+apps/web/test-results/
