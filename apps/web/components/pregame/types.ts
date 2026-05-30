@@ -146,6 +146,68 @@ export const CUE_WORDS: string[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Need-specific verses — youth-pastor approved, surfaced in AudioSessionScreen
+// and mirrored on the Pregame Card. Eyebrow is a short framing line shown
+// above the verse for needs where a one-line frame strengthens the truth
+// (e.g. Hope: "Strength you receive, not strength you summon.").
+// ---------------------------------------------------------------------------
+
+export type NeedVerse = {
+  reference: string;
+  displayText: string;
+  eyebrow?: string;
+};
+
+export const NEED_VERSE: Record<NeedToday, NeedVerse> = {
+  Confidence: {
+    reference: "Hebrews 12:1-2",
+    displayText:
+      "Let us run with perseverance the race marked out for us, fixing our eyes on Jesus, the pioneer and perfecter of faith.",
+  },
+  Calm: {
+    reference: "Philippians 4:6-7",
+    displayText:
+      "Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.",
+  },
+  "Compete level": {
+    reference: "Colossians 3:23-24",
+    displayText:
+      "Whatever you do, work at it with all your heart, as working for the Lord, not for human masters... It is the Lord Christ you are serving.",
+  },
+  "Reset after mistakes": {
+    reference: "Romans 8:1",
+    displayText:
+      "Therefore, there is now no condemnation for those who are in Christ Jesus.",
+  },
+  "Physical courage": {
+    reference: "Isaiah 41:10",
+    displayText:
+      "Do not fear, for I am with you; do not be dismayed, for I am your God. I will strengthen you and help you; I will uphold you with my righteous right hand.",
+  },
+  "Better puck decisions": {
+    reference: "Proverbs 3:5-6",
+    displayText:
+      "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him.",
+  },
+  Leadership: {
+    reference: "Mark 10:45",
+    displayText:
+      "For even the Son of Man did not come to be served, but to serve, and to give his life as a ransom for many.",
+  },
+  Joy: {
+    reference: "1 Thessalonians 5:16-18",
+    displayText:
+      "Rejoice always, pray continually, give thanks in all circumstances; for this is God's will for you in Christ Jesus.",
+  },
+  Hope: {
+    reference: "Isaiah 40:31",
+    eyebrow: "Strength you receive, not strength you summon.",
+    displayText:
+      "Those who hope in the Lord will renew their strength... they will run and not grow weary, they will walk and not be faint.",
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Brand-anchor constants — surfaced in the audio narrative + Pregame Card
 // ---------------------------------------------------------------------------
 
