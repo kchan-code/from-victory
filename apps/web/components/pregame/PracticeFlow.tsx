@@ -15,7 +15,7 @@
 //
 // No journal, no scripture reflection, no rhythm surface. One setup tap, then go.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { PRACTICE_FOCUS_OPTIONS } from "./types";
 import { useClipPlayer } from "./useClipPlayer";
@@ -74,15 +74,15 @@ function FocusPickerScreen({
           The audio will cue you to bring it. One focus, held the whole practice.
         </p>
 
-        <div className="flex flex-col gap-2" role="listbox" aria-label="Focus options">
+        <div className="flex flex-col gap-2" role="radiogroup" aria-label="Today's focus">
           {PRACTICE_FOCUS_OPTIONS.map((option) => {
             const active = selected === option;
             return (
               <button
                 key={option}
                 type="button"
-                role="option"
-                aria-selected={active}
+                role="radio"
+                aria-checked={active}
                 onClick={() => handleOptionTap(option)}
                 data-testid={`focus-option-${option}`}
                 className={`flex min-h-[52px] w-full items-center gap-3 rounded-[12px] border px-4 py-3.5 text-left transition-colors duration-fast active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx ${
@@ -169,9 +169,24 @@ function PracticeSessionScreen({
   }, []);
 
   // Text-mode timer — fallback when clip player errors out.
+  // intervalRef holds the active setInterval id so pause and unmount can
+  // clear it. Without this, tapping pause stops the UI flag but NOT the
+  // interval; resume then creates a second concurrent interval (2× elapsed).
+  // Typed as number because window.setInterval returns a number in browser DOM.
+  const intervalRef = useRef<number | null>(null);
   const [textElapsed, setTextElapsed] = useState(0);
   const [textPlaying, setTextPlaying] = useState(false);
   const [textCompleted, setTextCompleted] = useState(false);
+
+  // Cleanup: clear text-mode interval on unmount so it never outlives the component.
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current !== null) {
+        window.clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, []);
 
   const clipPlayer = useClipPlayer({
     // Practice mode: need/position/adversity are not used.
@@ -189,14 +204,22 @@ function PracticeSessionScreen({
   const isClipActive = !clipPlayer.error;
 
   // Start text-mode timer on play when clip player is unavailable.
+  // Always clears any in-flight interval before creating a new one so that
+  // rapid pause → play taps cannot accumulate concurrent intervals.
   const handleTextPlay = () => {
     if (textCompleted) return;
+    // Clear any existing interval before starting a fresh one.
+    if (intervalRef.current !== null) {
+      window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     setTextPlaying(true);
     const id = window.setInterval(() => {
       setTextElapsed((e) => {
         const next = e + 1;
         if (next >= PRACTICE_SESSION_DURATION_S) {
           window.clearInterval(id);
+          intervalRef.current = null;
           setTextPlaying(false);
           setTextCompleted(true);
           return PRACTICE_SESSION_DURATION_S;
@@ -204,6 +227,7 @@ function PracticeSessionScreen({
         return next;
       });
     }, 1000);
+    intervalRef.current = id;
   };
 
   const togglePlay = () => {
@@ -216,6 +240,12 @@ function PracticeSessionScreen({
     } else {
       // Text-mode fallback: simple toggle.
       if (textPlaying) {
+        // Pause: stop the interval so it doesn't keep advancing elapsed time
+        // while the UI shows the paused state.
+        if (intervalRef.current !== null) {
+          window.clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
         setTextPlaying(false);
       } else {
         handleTextPlay();
@@ -269,6 +299,11 @@ function PracticeSessionScreen({
       <div className="mb-5 h-1 overflow-hidden rounded-full bg-cream/[0.08]">
         <div
           className="h-full bg-gold"
+          role="progressbar"
+          aria-valuenow={Math.round(pct)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Session progress"
           style={{
             width: `${pct}%`,
             // Honour reduced-motion: skip the transition if the user prefers it.
