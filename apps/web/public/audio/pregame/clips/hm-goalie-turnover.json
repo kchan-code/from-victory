@@ -1,0 +1,10 @@
+{
+  "slug": "hm-goalie-turnover",
+  "durationSec": 53.904,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

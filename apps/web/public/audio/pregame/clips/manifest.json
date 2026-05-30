@@ -1,0 +1,1139 @@
+{
+  "version": "p3",
+  "clips": {
+    "shared-opening": {
+      "url": "/audio/pregame/clips/shared-opening.mp3",
+      "durationSec": 53.56,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 5.528,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 11.16,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 20.088,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 26.44,
+          "round": 1
+        }
+      ]
+    },
+    "viz-forward": {
+      "url": "/audio/pregame/clips/viz-forward.mp3",
+      "durationSec": 109.698,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 39.73
+        }
+      ]
+    },
+    "viz-defense": {
+      "url": "/audio/pregame/clips/viz-defense.mp3",
+      "durationSec": 104.524,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 37.114
+        }
+      ]
+    },
+    "viz-goalie": {
+      "url": "/audio/pregame/clips/viz-goalie.mp3",
+      "durationSec": 98.578,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 40.218
+        }
+      ]
+    },
+    "hm-forward-nervous": {
+      "url": "/audio/pregame/clips/hm-forward-nervous.mp3",
+      "durationSec": 46.12,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-forward-missed-chance": {
+      "url": "/audio/pregame/clips/hm-forward-missed-chance.mp3",
+      "durationSec": 44.704,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-forward-turnover": {
+      "url": "/audio/pregame/clips/hm-forward-turnover.mp3",
+      "durationSec": 46.408,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-forward-beaten-wide": {
+      "url": "/audio/pregame/clips/hm-forward-beaten-wide.mp3",
+      "durationSec": 46.312,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-forward-bad-penalty": {
+      "url": "/audio/pregame/clips/hm-forward-bad-penalty.mp3",
+      "durationSec": 50.184,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-forward-coach-yells": {
+      "url": "/audio/pregame/clips/hm-forward-coach-yells.mp3",
+      "durationSec": 47.44,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-forward-benched": {
+      "url": "/audio/pregame/clips/hm-forward-benched.mp3",
+      "durationSec": 44.416,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-forward-get-hit": {
+      "url": "/audio/pregame/clips/hm-forward-get-hit.mp3",
+      "durationSec": 51.6,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-forward-start-slow": {
+      "url": "/audio/pregame/clips/hm-forward-start-slow.mp3",
+      "durationSec": 52.176,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-forward-first-goal-against": {
+      "url": "/audio/pregame/clips/hm-forward-first-goal-against.mp3",
+      "durationSec": 45.808,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-defense-beaten-wide": {
+      "url": "/audio/pregame/clips/hm-defense-beaten-wide.mp3",
+      "durationSec": 52.608,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-defense-turnover": {
+      "url": "/audio/pregame/clips/hm-defense-turnover.mp3",
+      "durationSec": 54.528,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-defense-missed-chance": {
+      "url": "/audio/pregame/clips/hm-defense-missed-chance.mp3",
+      "durationSec": 43.072,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-defense-bad-penalty": {
+      "url": "/audio/pregame/clips/hm-defense-bad-penalty.mp3",
+      "durationSec": 51.888,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-defense-coach-yells": {
+      "url": "/audio/pregame/clips/hm-defense-coach-yells.mp3",
+      "durationSec": 48.376,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-defense-benched": {
+      "url": "/audio/pregame/clips/hm-defense-benched.mp3",
+      "durationSec": 45.664,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-defense-nervous": {
+      "url": "/audio/pregame/clips/hm-defense-nervous.mp3",
+      "durationSec": 44.92,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-defense-get-hit": {
+      "url": "/audio/pregame/clips/hm-defense-get-hit.mp3",
+      "durationSec": 53.424,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-defense-start-slow": {
+      "url": "/audio/pregame/clips/hm-defense-start-slow.mp3",
+      "durationSec": 53.64,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-defense-first-goal-against": {
+      "url": "/audio/pregame/clips/hm-defense-first-goal-against.mp3",
+      "durationSec": 54.312,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-goalie-coach-yells": {
+      "url": "/audio/pregame/clips/hm-goalie-coach-yells.mp3",
+      "durationSec": 47.656,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-goalie-turnover": {
+      "url": "/audio/pregame/clips/hm-goalie-turnover.mp3",
+      "durationSec": 53.904,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-goalie-missed-chance": {
+      "url": "/audio/pregame/clips/hm-goalie-missed-chance.mp3",
+      "durationSec": 44.776,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-goalie-beaten-wide": {
+      "url": "/audio/pregame/clips/hm-goalie-beaten-wide.mp3",
+      "durationSec": 53.904,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-goalie-bad-penalty": {
+      "url": "/audio/pregame/clips/hm-goalie-bad-penalty.mp3",
+      "durationSec": 54.12,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-goalie-pulled": {
+      "url": "/audio/pregame/clips/hm-goalie-pulled.mp3",
+      "durationSec": 43.312,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-goalie-nervous": {
+      "url": "/audio/pregame/clips/hm-goalie-nervous.mp3",
+      "durationSec": 48.136,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-goalie-get-hit": {
+      "url": "/audio/pregame/clips/hm-goalie-get-hit.mp3",
+      "durationSec": 53.52,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-goalie-start-slow": {
+      "url": "/audio/pregame/clips/hm-goalie-start-slow.mp3",
+      "durationSec": 53.328,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-goalie-first-goal-against": {
+      "url": "/audio/pregame/clips/hm-goalie-first-goal-against.mp3",
+      "durationSec": 54.912,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "shared-reset-plan": {
+      "url": "/audio/pregame/clips/shared-reset-plan.mp3",
+      "durationSec": 17.564,
+      "phases": [
+        {
+          "phase": "reset",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "shared-prayer": {
+      "url": "/audio/pregame/clips/shared-prayer.mp3",
+      "durationSec": 24.316,
+      "phases": [
+        {
+          "phase": "prayer",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "shared-sendoff": {
+      "url": "/audio/pregame/clips/shared-sendoff.mp3",
+      "durationSec": 4.848,
+      "phases": [
+        {
+          "phase": "done",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-confidence": {
+      "url": "/audio/pregame/clips/opener-confidence.mp3",
+      "durationSec": 48.112,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-calm": {
+      "url": "/audio/pregame/clips/opener-calm.mp3",
+      "durationSec": 59.728,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-compete-level": {
+      "url": "/audio/pregame/clips/opener-compete-level.mp3",
+      "durationSec": 56.056,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-reset": {
+      "url": "/audio/pregame/clips/opener-reset.mp3",
+      "durationSec": 50.32,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-courage": {
+      "url": "/audio/pregame/clips/opener-courage.mp3",
+      "durationSec": 57.808,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-decisions": {
+      "url": "/audio/pregame/clips/opener-decisions.mp3",
+      "durationSec": 54.976,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-leadership": {
+      "url": "/audio/pregame/clips/opener-leadership.mp3",
+      "durationSec": 68.752,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-joy": {
+      "url": "/audio/pregame/clips/opener-joy.mp3",
+      "durationSec": 64.912,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-hope": {
+      "url": "/audio/pregame/clips/opener-hope.mp3",
+      "durationSec": 64.12,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "anc-long-exhale": {
+      "url": "/audio/pregame/clips/anc-long-exhale.mp3",
+      "durationSec": 2.988,
+      "phases": []
+    },
+    "anc-tap-stick-twice": {
+      "url": "/audio/pregame/clips/anc-tap-stick-twice.mp3",
+      "durationSec": 3.228,
+      "phases": []
+    },
+    "anc-touch-glove": {
+      "url": "/audio/pregame/clips/anc-touch-glove.mp3",
+      "durationSec": 2.94,
+      "phases": []
+    },
+    "anc-press-thumb-to-palm": {
+      "url": "/audio/pregame/clips/anc-press-thumb-to-palm.mp3",
+      "durationSec": 2.94,
+      "phases": []
+    },
+    "anc-look-at-tape": {
+      "url": "/audio/pregame/clips/anc-look-at-tape.mp3",
+      "durationSec": 2.196,
+      "phases": []
+    },
+    "st-01": {
+      "url": "/audio/pregame/clips/st-01.mp3",
+      "durationSec": 3.996,
+      "phases": []
+    },
+    "st-02": {
+      "url": "/audio/pregame/clips/st-02.mp3",
+      "durationSec": 3.228,
+      "phases": []
+    },
+    "st-03": {
+      "url": "/audio/pregame/clips/st-03.mp3",
+      "durationSec": 3.564,
+      "phases": []
+    },
+    "st-04": {
+      "url": "/audio/pregame/clips/st-04.mp3",
+      "durationSec": 3.228,
+      "phases": []
+    },
+    "st-05": {
+      "url": "/audio/pregame/clips/st-05.mp3",
+      "durationSec": 4.404,
+      "phases": []
+    },
+    "st-06": {
+      "url": "/audio/pregame/clips/st-06.mp3",
+      "durationSec": 6.396,
+      "phases": []
+    },
+    "st-07": {
+      "url": "/audio/pregame/clips/st-07.mp3",
+      "durationSec": 5.772,
+      "phases": []
+    },
+    "cw-steady-reset": {
+      "url": "/audio/pregame/clips/cw-steady-reset.mp3",
+      "durationSec": 1.452,
+      "phases": []
+    },
+    "cw-steady-sendoff": {
+      "url": "/audio/pregame/clips/cw-steady-sendoff.mp3",
+      "durationSec": 2.916,
+      "phases": []
+    },
+    "cw-courage-reset": {
+      "url": "/audio/pregame/clips/cw-courage-reset.mp3",
+      "durationSec": 1.956,
+      "phases": []
+    },
+    "cw-courage-sendoff": {
+      "url": "/audio/pregame/clips/cw-courage-sendoff.mp3",
+      "durationSec": 2.364,
+      "phases": []
+    },
+    "cw-simple-reset": {
+      "url": "/audio/pregame/clips/cw-simple-reset.mp3",
+      "durationSec": 2.196,
+      "phases": []
+    },
+    "cw-simple-sendoff": {
+      "url": "/audio/pregame/clips/cw-simple-sendoff.mp3",
+      "durationSec": 2.004,
+      "phases": []
+    },
+    "cw-attack-reset": {
+      "url": "/audio/pregame/clips/cw-attack-reset.mp3",
+      "durationSec": 2.412,
+      "phases": []
+    },
+    "cw-attack-sendoff": {
+      "url": "/audio/pregame/clips/cw-attack-sendoff.mp3",
+      "durationSec": 1.956,
+      "phases": []
+    },
+    "cw-next-reset": {
+      "url": "/audio/pregame/clips/cw-next-reset.mp3",
+      "durationSec": 2.676,
+      "phases": []
+    },
+    "cw-next-sendoff": {
+      "url": "/audio/pregame/clips/cw-next-sendoff.mp3",
+      "durationSec": 1.572,
+      "phases": []
+    },
+    "cw-serve-reset": {
+      "url": "/audio/pregame/clips/cw-serve-reset.mp3",
+      "durationSec": 2.964,
+      "phases": []
+    },
+    "cw-serve-sendoff": {
+      "url": "/audio/pregame/clips/cw-serve-sendoff.mp3",
+      "durationSec": 2.076,
+      "phases": []
+    },
+    "cw-compete-reset": {
+      "url": "/audio/pregame/clips/cw-compete-reset.mp3",
+      "durationSec": 1.692,
+      "phases": []
+    },
+    "cw-compete-sendoff": {
+      "url": "/audio/pregame/clips/cw-compete-sendoff.mp3",
+      "durationSec": 2.244,
+      "phases": []
+    },
+    "cw-faithful-reset": {
+      "url": "/audio/pregame/clips/cw-faithful-reset.mp3",
+      "durationSec": 2.46,
+      "phases": []
+    },
+    "cw-faithful-sendoff": {
+      "url": "/audio/pregame/clips/cw-faithful-sendoff.mp3",
+      "durationSec": 2.844,
+      "phases": []
+    },
+    "cw-free-reset": {
+      "url": "/audio/pregame/clips/cw-free-reset.mp3",
+      "durationSec": 1.836,
+      "phases": []
+    },
+    "cw-free-sendoff": {
+      "url": "/audio/pregame/clips/cw-free-sendoff.mp3",
+      "durationSec": 2.076,
+      "phases": []
+    },
+    "cw-relentless-reset": {
+      "url": "/audio/pregame/clips/cw-relentless-reset.mp3",
+      "durationSec": 2.004,
+      "phases": []
+    },
+    "cw-relentless-sendoff": {
+      "url": "/audio/pregame/clips/cw-relentless-sendoff.mp3",
+      "durationSec": 2.844,
+      "phases": []
+    }
+  },
+  "templates": [
+    {
+      "position": "Forward",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-forward",
+        "hm-forward-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Forward",
+      "adversity": "I miss a scoring chance.",
+      "clips": [
+        "shared-opening",
+        "viz-forward",
+        "hm-forward-missed-chance",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Forward",
+      "adversity": "I turn the puck over.",
+      "clips": [
+        "shared-opening",
+        "viz-forward",
+        "hm-forward-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Forward",
+      "adversity": "I get beaten wide.",
+      "clips": [
+        "shared-opening",
+        "viz-forward",
+        "hm-forward-beaten-wide",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Forward",
+      "adversity": "I take a bad penalty.",
+      "clips": [
+        "shared-opening",
+        "viz-forward",
+        "hm-forward-bad-penalty",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Forward",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-forward",
+        "hm-forward-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Forward",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-forward",
+        "hm-forward-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Forward",
+      "adversity": "I get hit.",
+      "clips": [
+        "shared-opening",
+        "viz-forward",
+        "hm-forward-get-hit",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Forward",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-forward",
+        "hm-forward-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Forward",
+      "adversity": "We give up the first goal.",
+      "clips": [
+        "shared-opening",
+        "viz-forward",
+        "hm-forward-first-goal-against",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Defense",
+      "adversity": "I get beaten wide.",
+      "clips": [
+        "shared-opening",
+        "viz-defense",
+        "hm-defense-beaten-wide",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Defense",
+      "adversity": "I turn the puck over.",
+      "clips": [
+        "shared-opening",
+        "viz-defense",
+        "hm-defense-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Defense",
+      "adversity": "I miss a scoring chance.",
+      "clips": [
+        "shared-opening",
+        "viz-defense",
+        "hm-defense-missed-chance",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Defense",
+      "adversity": "I take a bad penalty.",
+      "clips": [
+        "shared-opening",
+        "viz-defense",
+        "hm-defense-bad-penalty",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Defense",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-defense",
+        "hm-defense-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Defense",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-defense",
+        "hm-defense-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Defense",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-defense",
+        "hm-defense-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Defense",
+      "adversity": "I get hit.",
+      "clips": [
+        "shared-opening",
+        "viz-defense",
+        "hm-defense-get-hit",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Defense",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-defense",
+        "hm-defense-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Defense",
+      "adversity": "We give up the first goal.",
+      "clips": [
+        "shared-opening",
+        "viz-defense",
+        "hm-defense-first-goal-against",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Goalie",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-goalie",
+        "hm-goalie-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Goalie",
+      "adversity": "I turn the puck over.",
+      "clips": [
+        "shared-opening",
+        "viz-goalie",
+        "hm-goalie-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Goalie",
+      "adversity": "I miss a scoring chance.",
+      "clips": [
+        "shared-opening",
+        "viz-goalie",
+        "hm-goalie-missed-chance",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Goalie",
+      "adversity": "I get beaten wide.",
+      "clips": [
+        "shared-opening",
+        "viz-goalie",
+        "hm-goalie-beaten-wide",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Goalie",
+      "adversity": "I take a bad penalty.",
+      "clips": [
+        "shared-opening",
+        "viz-goalie",
+        "hm-goalie-bad-penalty",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Goalie",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-goalie",
+        "hm-goalie-pulled",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Goalie",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-goalie",
+        "hm-goalie-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Goalie",
+      "adversity": "I get hit.",
+      "clips": [
+        "shared-opening",
+        "viz-goalie",
+        "hm-goalie-get-hit",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Goalie",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-goalie",
+        "hm-goalie-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Goalie",
+      "adversity": "We give up the first goal.",
+      "clips": [
+        "shared-opening",
+        "viz-goalie",
+        "hm-goalie-first-goal-against",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    }
+  ]
+}

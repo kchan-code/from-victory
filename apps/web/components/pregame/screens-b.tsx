@@ -30,6 +30,8 @@ import {
 } from "./types";
 import { audioAssetUrl, cellSrcFor, cellSlugFor, openerSrcFor } from "./audio-mapping";
 import type { AudioTimeline, Phase } from "./audio/types";
+import { findActivePhase, type AssembledTimeline } from "./audio-playlist";
+import { useClipPlayer } from "./useClipPlayer";
 
 type SetFn = <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
 
@@ -361,6 +363,43 @@ function substituteSegment(seg: AudioSegment, state: PregameState): { eyebrow: s
   return { eyebrow: replace(seg.eyebrow), body: replace(seg.body) };
 }
 
+// ---------------------------------------------------------------------------
+// Clip-player flag  (Phase 4: DEFAULT ON)
+// ---------------------------------------------------------------------------
+//
+// The clip player is now the default experience for all athletes.
+// Append ?clipPlayer=0 to force the legacy two-<audio> path (A/B testing /
+// debugging only — not a supported user-facing option).
+//
+// The flag is read once at component mount (via a ref) so it can't change
+// mid-session and doesn't cause extra renders.
+//
+// When the flag is OFF (?clipPlayer=0), the existing two-<audio> path runs
+// EXACTLY as before. No regressions on the fallback path.
+
+function useClipPlayerFlag(): boolean {
+  // Read from location.search on the client; SSR always returns false.
+  if (typeof window === "undefined") return false;
+  // Default ON: only disabled when explicitly set to "0".
+  return new URLSearchParams(window.location.search).get("clipPlayer") !== "0";
+}
+
+// ---------------------------------------------------------------------------
+// Clip-path active-pip + phase derivation
+// Mirrors the existing legacy inline IIFE in AudioSessionScreen but reads from
+// AssembledTimeline instead of two separate AudioTimeline sidecars.
+// ---------------------------------------------------------------------------
+
+function clipActivePipAndPhase(
+  timeline: AssembledTimeline | null,
+  elapsedSec: number,
+): { activePip: PipSection | null; activePhase: Phase | null } {
+  if (!timeline) return { activePip: null, activePhase: null };
+  const phase = findActivePhase(timeline, elapsedSec);
+  if (phase === null) return { activePip: null, activePhase: null };
+  return { activePip: PHASE_TO_SECTION[phase] ?? null, activePhase: phase };
+}
+
 export function AudioSessionScreen({
   state,
   set,
@@ -370,6 +409,32 @@ export function AudioSessionScreen({
   set: SetFn;
   onContinue: () => void;
 }) {
+  // ── Clip player flag — read once, stable for the session ──
+  // useClipPlayerFlag reads window.location.search; calling it unconditionally
+  // on every render is fine — it's a pure read with no side effects. We still
+  // persist it to a ref so mid-session navigations (unlikely) can't change it.
+  const flagValue = useClipPlayerFlag();
+  const clipPlayerFlagRef = useRef(flagValue);
+  const useClips = clipPlayerFlagRef.current;
+
+  // ── Clip player hook (Phase 0 path) ──
+  // Always called (hooks must not be conditional) but only active when flag is on.
+  // When flag is off, need/position/adversity are passed as null so the hook
+  // returns error="no template" immediately and the legacy path runs as normal.
+  const clipPlayer = useClipPlayer({
+    need: useClips ? (state.need ?? null) : null,
+    position: useClips ? (state.role ?? null) : null,
+    adversity: useClips ? (state.adversity ?? null) : null,
+    anchor: useClips ? state.anchor : null,
+    selfTalk: useClips ? state.selfTalk : null,
+    cueWord: useClips ? (state.cueWord || null) : null,
+    onCompleted: useClips
+      ? () => {
+          set("audioCompleted", true);
+        }
+      : undefined,
+  });
+
   const openerRef = useRef<HTMLAudioElement>(null);
   const cellRef = useRef<HTMLAudioElement>(null);
 
@@ -391,6 +456,20 @@ export function AudioSessionScreen({
   const [cellDuration, setCellDuration] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const completed = state.audioCompleted;
+
+  // ── Clip player error → fall back to text mode ──
+  // Mirrors the `onError` handler on the legacy <audio> elements. Runs once
+  // when clipPlayer.error becomes non-null and the flag is on.
+  useEffect(() => {
+    if (!useClips) return;
+    if (clipPlayer.error) {
+      // "no template" means the current combination has no matching manifest
+      // entry — not a true error, just use the legacy path silently.
+      if (clipPlayer.error !== "no template") {
+        setAudioMode("text");
+      }
+    }
+  }, [useClips, clipPlayer.error]);
 
   // Sidecar timelines for pip section detection.
   // Loaded in parallel with the HEAD probe; failure is graceful — pips
@@ -559,6 +638,16 @@ export function AudioSessionScreen({
   }, [audioMode, activeSegment, openerDuration, cellDuration, set]);
 
   const togglePlay = () => {
+    // ── Clip player path ──
+    if (useClips && audioMode === "audio" && !clipPlayer.error) {
+      if (clipPlayer.playing) {
+        clipPlayer.pause();
+      } else {
+        clipPlayer.play();
+      }
+      return;
+    }
+    // ── Legacy two-<audio> path ──
     if (audioMode === "audio") {
       const o = openerRef.current;
       const c = cellRef.current;
@@ -596,6 +685,11 @@ export function AudioSessionScreen({
   // ---------------------------------------------------------------------------
   const { activePip, activePhase } = (() => {
     if (audioMode !== "audio") return { activePip: null, activePhase: null };
+    // ── Clip path: assembled timeline covers the whole session ──
+    if (useClips && !clipPlayer.error) {
+      return clipActivePipAndPhase(clipPlayer.timeline, clipPlayer.elapsedSec);
+    }
+    // ── Legacy path: two sidecar timelines ──
     if (activeSegment === "opener") {
       if (!openerTimeline) return { activePip: null, activePhase: null };
       const phase = findActivePhaseFromTimeline(openerTimeline, elapsed);
@@ -652,15 +746,35 @@ export function AudioSessionScreen({
     textModeStageLabel = eyebrowToStageLabel(view.eyebrow, state.role);
   }
 
-  const remaining = Math.max(0, total - elapsed);
+  // ── Render-time aliases: clip path overrides legacy values ──
+  // When the clip player is active (flag on, no error), use its values for the
+  // progress bar, timer, and play-button state. Legacy variables (`elapsed`,
+  // `total`, `playing`, `completed`) remain in scope for the legacy path.
+  const isClipActive = useClips && audioMode === "audio" && !clipPlayer.error;
+  const renderElapsed = isClipActive ? clipPlayer.elapsedSec : elapsed;
+  const renderTotal = isClipActive
+    ? (clipPlayer.totalSec > 0 ? clipPlayer.totalSec : AUDIO_SESSION_DURATION_S)
+    : total;
+  const renderPlaying = isClipActive ? clipPlayer.playing : playing;
+  const renderCompleted = isClipActive ? clipPlayer.completed : completed;
+
+  const remaining = Math.max(0, renderTotal - renderElapsed);
   const mm = Math.floor(remaining / 60);
   const ss = Math.floor(remaining % 60);
   const remainingLabel = `${mm}:${String(ss).padStart(2, "0")}`;
-  const pct = total > 0 ? Math.min(100, (elapsed / total) * 100) : 0;
+  const pct = renderTotal > 0 ? Math.min(100, (renderElapsed / renderTotal) * 100) : 0;
+
+  // F3: derive the loading state for the clip path only.
+  // While isClipActive and not yet ready (and not completed), the play button
+  // should be disabled so the affordance matches the silent no-op guard in the
+  // hook. Decoding starts on mount so this window is brief — no layout shift
+  // since disabled:opacity-50 is already wired on the button (no size change).
+  const clipLoading = isClipActive && !clipPlayer.ready && !renderCompleted;
 
   return (
     <div
       className="flex flex-1 flex-col overflow-y-auto px-6 pb-6 pt-5"
+      aria-busy={clipLoading}
       style={{
         background:
           "radial-gradient(80% 50% at 50% 20%, rgba(36,91,255,0.12), transparent 65%), radial-gradient(60% 40% at 50% 100%, rgba(223,175,55,0.08), transparent 70%), var(--fv-onyx)",
@@ -709,7 +823,9 @@ export function AudioSessionScreen({
         <div className="mb-5 h-[5px]" aria-hidden />
       )}
 
-      {audioMode === "audio" && openerSrc && cellSrc && (
+      {/* Legacy <audio> elements — only rendered when the clip player is NOT active.
+          Clip path pre-decodes via Web Audio API; no HTMLAudioElements needed. */}
+      {audioMode === "audio" && openerSrc && cellSrc && !isClipActive && (
         <>
           {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
           <audio
@@ -869,21 +985,40 @@ export function AudioSessionScreen({
         )}
       </div>
 
+      {/* F3: polite live region announces when the clip player finishes
+          decoding. Screen readers pick this up without interrupting the
+          athlete; sighted users see the button enabled. This element is
+          always mounted (zero height, no layout shift) — content is empty
+          until loading resolves. */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {clipLoading ? "Preparing your session…" : ""}
+      </div>
+
       <div className="flex flex-col gap-2.5">
         <button
           type="button"
           onClick={togglePlay}
-          disabled={completed}
-          aria-label={playing ? "Pause guided session" : "Play guided session"}
+          // F3: disable while clip player is active but not yet decoded.
+          // Also disabled once session is completed (CTA replaces it).
+          // Legacy path: only disabled on completion (its own readiness
+          // is handled by the HEAD probe + audioMode state).
+          disabled={renderCompleted || clipLoading}
+          aria-label={
+            clipLoading
+              ? "Preparing your session"
+              : renderPlaying
+                ? "Pause guided session"
+                : "Play guided session"
+          }
           className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-gold bg-gold text-onyx transition-transform duration-fast active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
         >
-          <Icon name={playing ? "pause" : "play"} size={26} />
+          <Icon name={renderPlaying ? "pause" : "play"} size={26} />
         </button>
 
         {/* Accessible alternative for deaf/HoH athletes or loud environments.
             Only shown in audio mode — once switched to text mode this row
             disappears (text mode is already active). */}
-        {audioMode === "audio" && !completed && (
+        {audioMode === "audio" && !renderCompleted && (
           <button
             type="button"
             onClick={() => setAudioMode("text")}
@@ -893,7 +1028,7 @@ export function AudioSessionScreen({
           </button>
         )}
 
-        {completed && (
+        {renderCompleted && (
           <Button variant="coach" full onClick={onContinue}>
             SHOW MY PRE-GAME CARD
           </Button>

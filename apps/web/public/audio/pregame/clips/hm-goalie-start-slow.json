@@ -1,0 +1,10 @@
+{
+  "slug": "hm-goalie-start-slow",
+  "durationSec": 53.328,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}
