@@ -240,6 +240,41 @@ export function resolvePlaylist(
 }
 
 // ---------------------------------------------------------------------------
+// resolvePracticePlaylist
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve the ordered clip list for the fixed-order "practice" playlist.
+ * The practice session is a generic, non-personalized 5-clip sequence
+ * (~2.5 min) for the pre-practice "Get To" flow.
+ *
+ * Returns null when:
+ *   - manifest.practice is absent (older manifest version without the practice key)
+ *   - any slug listed in manifest.practice.clips is absent from the clip catalog
+ *
+ * Fail-closed: the caller should fall back to a text timer on null, the same
+ * way AudioSessionScreen handles a null from resolvePlaylist.
+ */
+export function resolvePracticePlaylist(
+  manifest: ClipManifest,
+): ResolvedClip[] | null {
+  if (!manifest.practice) return null;
+
+  const resolved: ResolvedClip[] = [];
+  for (const slug of manifest.practice.clips) {
+    const entry = manifest.clips[slug];
+    if (!entry) return null; // missing slug — fail closed
+    resolved.push({
+      slug,
+      url: bustUrl(entry.url),
+      durationSec: entry.durationSec,
+      phases: entry.phases,
+    });
+  }
+  return resolved;
+}
+
+// ---------------------------------------------------------------------------
 // buildAssembledTimeline
 // ---------------------------------------------------------------------------
 

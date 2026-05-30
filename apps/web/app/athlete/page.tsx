@@ -77,6 +77,35 @@ export default async function AthleteHomePage() {
           </div>
         </Link>
 
+        <Link
+          href="/athlete/practice"
+          className="block mb-8 rounded-2xl border border-[rgba(223,175,55,0.25)] no-underline transition-colors duration-base ease-out hover:border-[rgba(223,175,55,0.5)]"
+          style={{
+            background:
+              "linear-gradient(180deg,rgba(223,175,55,0.06),rgba(223,175,55,0)),var(--bg-elev-1)",
+          }}
+        >
+          <div className="p-6 sm:p-7 flex items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold/70 mb-2">
+                Practice day
+              </p>
+              <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[20px] sm:text-[22px] leading-[1.15] mb-1.5">
+                Start pre-practice
+              </p>
+              <p className="font-body text-cream/65 text-[14px] leading-relaxed">
+                Two minutes to lock in before you hit the ice — how you practice is how you play.
+              </p>
+            </div>
+            <span
+              aria-hidden="true"
+              className="font-display text-gold/70 text-[28px] leading-none flex-none"
+            >
+              →
+            </span>
+          </div>
+        </Link>
+
         <article className="bg-charcoal border border-hairline rounded-2xl p-7 sm:p-9 mb-8">
           <div className="flex items-center justify-between mb-6">
             <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold">

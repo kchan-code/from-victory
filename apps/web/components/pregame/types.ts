@@ -132,6 +132,22 @@ export const RESET_ANCHORS: string[] = [
   "Say cue word",
 ];
 
+// ---------------------------------------------------------------------------
+// Pre-practice focus options — used in PracticeFlow focus picker.
+// Single-tap from these; athlete may also type a custom focus.
+// ---------------------------------------------------------------------------
+
+export const PRACTICE_FOCUS_OPTIONS: string[] = [
+  "Relentless",
+  "First",
+  "Hungry",
+  "Head up every breakout",
+  "Feet always moving",
+  "Hard first pass",
+  "Win every race to the puck",
+  "Full reps, no glide",
+];
+
 export const CUE_WORDS: string[] = [
   "Steady",
   "Courage",

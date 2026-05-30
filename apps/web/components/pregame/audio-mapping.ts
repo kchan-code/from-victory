@@ -56,7 +56,7 @@ export const CUEWORD_OPTION_SLUGS: Record<string, string> = {
 // MP3 + sidecar JSON URL so Vercel's CDN + browsers can't serve a
 // stale cached version after a regen. Bump this when you rerun
 // `npm run audio:generate`.
-export const AUDIO_CACHE_BUST = "7";
+export const AUDIO_CACHE_BUST = "8";
 
 export function audioAssetUrl(slug: string, ext: "mp3" | "json"): string {
   return `/audio/pregame/${slug}.${ext}?v=${AUDIO_CACHE_BUST}`;

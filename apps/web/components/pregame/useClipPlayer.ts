@@ -33,6 +33,7 @@ import {
   bustUrl,
   manifestUrl,
   resolvePlaylist,
+  resolvePracticePlaylist,
 } from "./audio-playlist";
 
 // ---------------------------------------------------------------------------
@@ -73,6 +74,14 @@ export type UseClipPlayerOptions = {
   selfTalk?: string | null;
   /** Athlete's chosen cue word (p3 personalization). */
   cueWord?: string | null;
+  /**
+   * When true, resolve via resolvePracticePlaylist(manifest) instead of the
+   * pregame resolvePlaylist(...). The need/position/adversity fields are
+   * ignored — the practice playlist is fixed and non-personalized. All other
+   * playback behaviour (decode, schedule, iOS hardening, pause/resume, wake
+   * lock, rAF timer) is shared with the pregame path. Defaults to false.
+   */
+  practice?: boolean;
   /** Called once when the final clip ends. */
   onCompleted?: () => void;
 };
@@ -123,6 +132,7 @@ export function useClipPlayer({
   anchor,
   selfTalk,
   cueWord,
+  practice = false,
   onCompleted,
 }: UseClipPlayerOptions): UseClipPlayerResult {
   // ── init state ──
@@ -200,7 +210,9 @@ export function useClipPlayer({
 
   // ── Phase 0 decode-on-mount: fetch manifest + all clips ──
   useEffect(() => {
-    if (!need || !position || !adversity) return;
+    // Practice mode: skip the need/position/adversity requirement. The manifest
+    // fetch + resolvePracticePlaylist path handles everything.
+    if (!practice && (!need || !position || !adversity)) return;
 
     let cancelled = false;
 
@@ -222,21 +234,32 @@ export function useClipPlayer({
       if (cancelled) return;
 
       // 2. Resolve playlist
-      // need/position/adversity are confirmed non-null here (checked above)
-      // anchor/selfTalk/cueWord are optional; resolvePlaylist handles undefined
-      const clips = resolvePlaylist(
-        need!,
-        position!,
-        adversity!,
-        manifest,
-        anchor,
-        selfTalk,
-        cueWord,
-      );
-      if (!clips) {
-        // No template for this combination — not an error, caller uses legacy path.
-        setError("no template");
-        return;
+      // Practice mode: use the fixed practice playlist from the manifest.
+      // Pregame mode: resolve by need × position × adversity (+ personalization).
+      let clips: ReturnType<typeof resolvePlaylist>;
+      if (practice) {
+        clips = resolvePracticePlaylist(manifest);
+        if (!clips) {
+          setError("no template");
+          return;
+        }
+      } else {
+        // need/position/adversity are confirmed non-null by the guard above.
+        // anchor/selfTalk/cueWord are optional; resolvePlaylist handles undefined.
+        clips = resolvePlaylist(
+          need!,
+          position!,
+          adversity!,
+          manifest,
+          anchor,
+          selfTalk,
+          cueWord,
+        );
+        if (!clips) {
+          // No template for this combination — not an error, caller uses legacy path.
+          setError("no template");
+          return;
+        }
       }
       if (cancelled) return;
 
@@ -323,7 +346,7 @@ export function useClipPlayer({
     return () => {
       cancelled = true;
     };
-  }, [need, position, adversity, anchor, selfTalk, cueWord]);
+  }, [need, position, adversity, anchor, selfTalk, cueWord, practice]);
 
   // ── rAF loop ──
   // Runs while playing. Reads ctx.currentTime and adds playStartElapsedRef to
