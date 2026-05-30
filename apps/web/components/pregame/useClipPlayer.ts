@@ -1,27 +1,63 @@
-"use client"; // client: Web Audio API, requestAnimationFrame, AudioContext
-// React hook encapsulating Web Audio API clip-playlist playback.
+"use client"; // client: HTMLAudioElement, requestAnimationFrame, AudioContext (decode only)
+// React hook encapsulating clip-playlist playback via HTMLAudioElement.
 //
-// Lifecycle:
-//   1. Mount: fetch manifest → resolve playlist → fetch + decode all clips in
-//      parallel. All decoding happens before the first play tap so playback
-//      starts instantly (mirrors `preload="auto"` on the legacy <audio> path).
-//   2. First play gesture: create AudioContext (required by iOS Safari), schedule
-//      all AudioBufferSourceNodes back-to-back for sample-accurate gapless play.
-//   3. Pause / resume: ctx.suspend() / ctx.resume().
-//   4. rAF loop: read ctx.currentTime + suspendOffset to drive elapsedSec.
-//   5. Unmount: cancel rAF, release wake lock, close AudioContext.
+// Architecture (HTMLMediaElement path — replaces the former Web Audio scheduler):
 //
-// iOS Safari specifics addressed here:
-//   - Fix 1 (GC): all scheduled AudioBufferSourceNodes are kept in nodesRef so
-//     iOS Safari cannot GC them before their far-future start times.
-//   - Fix 2 (interruption): AudioContext statechange + visibilitychange listeners
-//     resume a suspended context when the page returns to foreground.
-//   - Fix 3 (wake lock): navigator.wakeLock keeps the screen on during playback
-//     (defence-in-depth — iOS suspends AudioContext on screen lock).
+//   Phase 0 (mount): fetch manifest → resolve playlist → fetch + decode all
+//   clips in parallel. All decoding happens before the first play tap so
+//   playback starts instantly. decodeAudioData still requires an AudioContext,
+//   but we create a decode-only context that is CLOSED once decode finishes —
+//   no AudioContext is held open during playback.
 //
-// Error handling: any failure in fetch/decode/AudioContext sets `error: true`
-// so the screen can fall back to text mode via the same `onError` path used
-// by the legacy <audio> elements.
+//   Phase 1 (after decode): call assembleWavBlob(AudioBuffer[]) → one WAV Blob
+//   → URL.createObjectURL → HTMLAudioElement.src. The audio element is
+//   DOM-attached (hidden) — document.body.appendChild(audio) with
+//   audio.hidden = true. DOM attachment is cheap insurance for iOS background
+//   playback: some iOS versions are less reliable with fully detached Audio()
+//   objects when the screen locks. The hook still has no render output; the
+//   element is invisible and removed on unmount.
+//
+//   Phase 2 (play gesture): audio.play() from inside the user-gesture handler.
+//   Pause: audio.pause(). Both are synchronous from the caller's perspective.
+//
+//   Phase 3 (rAF loop): reads audio.currentTime ~60fps to drive elapsedSec.
+//   `ended` event drives completion. `play`/`pause` events keep `playing` in
+//   sync AND drive startRaf()/stopRaf() so the progress timer is always live
+//   when audio is actually playing (including resumes via MediaSession or the
+//   visibilitychange nudge, not just the play() callback path).
+//
+//   Unmount: cancel rAF, audio.pause(), audio.remove(), revoke object URL,
+//   null the ref.
+//
+// Why HTMLAudioElement (not AudioContext):
+//   iOS Safari suspends an AudioContext when the screen locks — deliberate
+//   power-management behaviour that has no PWA workaround. HTMLMediaElement
+//   is in a different OS category (podcast / media-player) and keeps playing
+//   with the screen locked. The prior Web Audio scheduler died mid-session
+//   whenever the athlete's phone auto-locked. One contiguous WAV blob also
+//   means there are no inter-clip scheduling gaps — gapless playback is
+//   preserved and the complex AudioBufferSourceNode GC / suspend-offset clock
+//   arithmetic is no longer needed.
+//
+// iOS caveats:
+//   - Screen-lock playback requires an HTMLMediaElement started from a user
+//     gesture. This hook satisfies that contract: play() is called from the
+//     athlete's tap handler. The element is DOM-attached-but-hidden to improve
+//     reliability across iOS versions (some treat fully-detached Audio() less
+//     favourably in the background media category).
+//   - Deliberate screen-lock suspends the AudioContext used for decode, but
+//     by that point decode is already complete and the context is closed.
+//   - The decode-only AudioContext still needs webkitAudioContext on older
+//     iOS; vendor prefix detection is kept for that reason.
+//   - Audio is NOT guaranteed to resume after a phone call / system
+//     interruption on iOS without a fresh user gesture. A lightweight
+//     visibilitychange nudge is included; it uses intendedPlayingRef (user
+//     intent) rather than the playing state mirror so it correctly fires even
+//     after iOS-initiated pauses. A phone-call interruption still requires a
+//     manual tap to resume. On-device testing is required to confirm behaviour.
+//
+// Error handling: any failure in fetch/decode/blob sets `error` to a string.
+// The sentinel "no template" triggers the legacy/text-mode fallback in screens.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -30,38 +66,50 @@ import {
   type ClipManifest,
   type ResolvedClip,
   buildAssembledTimeline,
-  bustUrl,
   manifestUrl,
   resolvePlaylist,
   resolvePracticePlaylist,
 } from "./audio-playlist";
+import { assembleWavBlob } from "./audio/encode-wav";
 
 // ---------------------------------------------------------------------------
-// Vendor-prefix + non-standard DOM type helpers
+// Vendor-prefix type helper (decode-only AudioContext)
 // ---------------------------------------------------------------------------
 
 // reason: webkitAudioContext is a Safari/legacy vendor-prefix not in the
 // standard TypeScript DOM lib; least-invasive access without no-any violation.
 type WindowWithWebkit = Window & { webkitAudioContext?: typeof AudioContext };
 
-// reason: AudioContext.state can be "interrupted" on iOS Safari (a non-standard
-// extension not present in the W3C spec or TS lib). We need to detect it to
-// resume after phone-call / notification interruptions.
-type ExtendedAudioContextState = AudioContextState | "interrupted";
+// ---------------------------------------------------------------------------
+// MediaSession feature-detect helper
+// ---------------------------------------------------------------------------
 
-// reason: navigator.wakeLock is present in modern browsers but absent from
-// older TypeScript DOM lib versions; typed minimally to avoid any-escape.
-interface WakeLockSentinel {
-  released: boolean;
-  release(): Promise<void>;
+// reason: navigator.mediaSession is present in modern browsers but absent from
+// some environments (SSR, older iOS). The DOM lib types MediaMetadata and
+// MediaSessionAction fully; we augment Navigator minimally to allow
+// feature-detection and assignment without any-escape.
+interface MediaMetadataInit {
+  title?: string;
+  artist?: string;
+  album?: string;
+  artwork?: MediaImage[];
 }
-interface WakeLock {
-  request(type: "screen"): Promise<WakeLockSentinel>;
+// reason: navigator.mediaSession is present in modern browsers and in the
+// TypeScript DOM lib, but its presence on navigator is not guaranteed at
+// compile time (the TS lib types it as optional). We augment Navigator
+// minimally to allow feature-detection via `in` / optional chaining without
+// any-escape. The metadata and setActionHandler types intentionally match the
+// DOM lib's MediaSession interface so assignments type-check cleanly.
+interface MediaSessionManager {
+  metadata: MediaMetadata | null;
+  setActionHandler(action: MediaSessionAction, handler: MediaSessionActionHandler | null): void;
 }
-type NavigatorWithWakeLock = Navigator & { wakeLock?: WakeLock };
+type NavigatorWithMediaSession = Navigator & {
+  mediaSession?: MediaSessionManager;
+};
 
 // ---------------------------------------------------------------------------
-// Public hook surface
+// Public hook surface (UNCHANGED — consumers must not need changes)
 // ---------------------------------------------------------------------------
 
 export type UseClipPlayerOptions = {
@@ -78,8 +126,8 @@ export type UseClipPlayerOptions = {
    * When true, resolve via resolvePracticePlaylist(manifest) instead of the
    * pregame resolvePlaylist(...). The need/position/adversity fields are
    * ignored — the practice playlist is fixed and non-personalized. All other
-   * playback behaviour (decode, schedule, iOS hardening, pause/resume, wake
-   * lock, rAF timer) is shared with the pregame path. Defaults to false.
+   * playback behaviour (decode, blob assembly, pause/resume, rAF timer) is
+   * shared with the pregame path. Defaults to false.
    */
   practice?: boolean;
   /** Called once when the final clip ends. */
@@ -110,7 +158,7 @@ export type UseClipPlayerResult = {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-/** Fetch a URL as ArrayBuffer with a timeout. Returns null on failure. */
+/** Fetch a URL as ArrayBuffer. Returns null on network/HTTP failure. */
 async function fetchArrayBuffer(url: string): Promise<ArrayBuffer | null> {
   try {
     const res = await fetch(url);
@@ -135,7 +183,7 @@ export function useClipPlayer({
   practice = false,
   onCompleted,
 }: UseClipPlayerOptions): UseClipPlayerResult {
-  // ── init state ──
+  // ── state ──
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [elapsedSec, setElapsedSec] = useState(0);
@@ -144,80 +192,121 @@ export function useClipPlayer({
   const [error, setError] = useState<string | null>(null);
   const [timeline, setTimeline] = useState<AssembledTimeline | null>(null);
 
-  // ── stable refs that persist across renders without causing re-renders ──
-  const ctxRef = useRef<AudioContext | null>(null);
-  const buffersRef = useRef<AudioBuffer[]>([]);
-  const clipsRef = useRef<ResolvedClip[]>([]);
+  // ── refs ──
+  // The single HTMLAudioElement that plays the assembled WAV blob.
+  // DOM-attached-but-hidden (audio.hidden = true; document.body.appendChild).
+  // Attachment improves iOS background-media reliability vs. fully detached;
+  // the hook still exposes no render surface — the element is invisible.
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Object URL for the assembled WAV blob — revoked on unmount.
+  const blobUrlRef = useRef<string | null>(null);
+  // rAF handle.
   const rafRef = useRef<number | null>(null);
-
-  // Fix 1 — GC prevention: hold every scheduled AudioBufferSourceNode so
-  // iOS Safari cannot garbage-collect nodes whose start times are far in the
-  // future. Without this, clips beyond ~1:45 (viz, hardMoment, reset, prayer,
-  // sendoff) are collected before they fire and playback silently dies.
-  const nodesRef = useRef<AudioBufferSourceNode[]>([]);
-
-  // When we suspend/resume, ctx.currentTime continues counting internally in
-  // some implementations. We track the accumulated wall time ourselves so
-  // elapsedSec is stable across pause/resume.
-  const playStartCtxTimeRef = useRef<number>(0); // ctx.currentTime when last play() called
-  const playStartElapsedRef = useRef<number>(0); // elapsedSec value at that moment
-  // Whether we've scheduled all nodes (do it only once per play session).
-  const scheduledRef = useRef(false);
-  // F2: mutex to prevent concurrent ctx.resume() + doSchedule + rAF starts
-  // when the athlete double-taps while the context is still resuming.
-  const resumingRef = useRef(false);
-  // Completed flag ref (to avoid stale closures in event listeners).
+  // Guard against double-fire of onCompleted.
   const completedRef = useRef(false);
+  // Stable ref for onCompleted callback to avoid stale closure in event handlers.
   const onCompletedRef = useRef(onCompleted);
   onCompletedRef.current = onCompleted;
-
-  // Fix 2 — interruption recovery: we need the current playing/completed
-  // state inside event listeners without stale closures. Keep refs in sync.
+  // Mirror of playing state for use inside event listeners (avoids stale closures).
   const playingRef = useRef(false);
   playingRef.current = playing;
+  // Tracks the ATHLETE'S INTENT to play — set true by play(), set false by
+  // pause() and ended/completion. The native "pause" event does NOT clear this:
+  // an iOS-initiated pause (phone call, system interruption) is not the athlete
+  // wanting to stop. The visibilitychange nudge uses this ref (not playingRef)
+  // so it correctly resumes after an iOS interruption while still respecting a
+  // deliberate user pause.
+  const intendedPlayingRef = useRef(false);
+  // Timeline ref for use inside the ended handler without stale closure.
+  const timelineRef = useRef<AssembledTimeline | null>(null);
+  // clipsRef retained (unused in playback but consistent with original structure).
+  const clipsRef = useRef<ResolvedClip[]>([]);
 
-  // Fix 3 — wake lock: hold the sentinel so we can release it later.
-  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  // ── rAF loop ──
+  // Reads audio.currentTime ~60fps. HTMLMediaElement.currentTime is the
+  // authoritative position; we don't need the suspend-offset arithmetic that
+  // the AudioContext path required.
+  const stopRaf = useCallback(() => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, []);
 
-  // ── Wake lock helpers (Fix 3) ──
+  const startRaf = useCallback(() => {
+    // Idempotent: if a loop is already running, don't schedule a second one.
+    // This prevents duplicate rAF loops when both the play() callback path and
+    // the native "play" event listener call startRaf() in close succession.
+    if (rafRef.current !== null) return;
+    const loop = () => {
+      const audio = audioRef.current;
+      // Self-terminate when there's nothing to track (element gone or ended)
+      // so the loop never orphans if stopRaf() isn't reached on completion.
+      if (!audio || audio.ended) {
+        rafRef.current = null;
+        return;
+      }
+      if (!audio.paused) {
+        setElapsedSec(audio.currentTime);
+      }
+      rafRef.current = requestAnimationFrame(loop);
+    };
+    rafRef.current = requestAnimationFrame(loop);
+  }, []);
 
-  const acquireWakeLock = useCallback(async () => {
-    // Feature-detect; navigator.wakeLock absent on older Safari + many browsers.
-    const nav = navigator as NavigatorWithWakeLock;
-    if (!nav.wakeLock) return;
+  // ── MediaSession wiring ──
+  // Registers lock-screen / Control Center title + play/pause handlers.
+  // Feature-detected: absent on SSR and older iOS.
+  const wireMediaSession = useCallback((sessionTitle: string) => {
+    const nav = navigator as NavigatorWithMediaSession;
+    if (!nav.mediaSession) return;
+
+    // reason: MediaMetadata constructor is a browser global, typed loosely here
+    // because the TS lib definition requires importing from a specific lib config.
+    // Constructing via the global avoids an any-escape while staying strict.
     try {
-      // Release any existing sentinel before requesting a new one to avoid leaks.
-      if (wakeLockRef.current && !wakeLockRef.current.released) {
-        await wakeLockRef.current.release();
+      // reason: MediaMetadata is a browser global that TypeScript strict mode
+      // doesn't guarantee is available; runtime check above guards this path.
+      const MediaMetadataCtor = (
+        window as Window & { MediaMetadata?: new (init: MediaMetadataInit) => MediaMetadata }
+      ).MediaMetadata;
+      if (MediaMetadataCtor) {
+        nav.mediaSession.metadata = new MediaMetadataCtor({
+          title: sessionTitle,
+          artist: "From Victory",
+        });
       }
-      wakeLockRef.current = await nav.wakeLock.request("screen");
     } catch {
-      // Fail gracefully — wake lock is defence-in-depth, not a hard requirement.
-      wakeLockRef.current = null;
+      // MediaMetadata constructor failed — non-fatal, skip metadata.
     }
+
+    // Lock-screen control taps are deliberate athlete intent — mirror the
+    // play()/pause() callbacks so intendedPlayingRef stays consistent. Without
+    // this, a lock-screen pause could be auto-resumed by the visibilitychange
+    // nudge (which keys on intent), and a lock-screen play wouldn't be.
+    nav.mediaSession.setActionHandler("play", () => {
+      intendedPlayingRef.current = true;
+      audioRef.current?.play().catch(() => {
+        // Play rejected — state syncs via events; clear intent so the nudge
+        // doesn't loop-retry a play the browser refused.
+        intendedPlayingRef.current = false;
+      });
+    });
+    nav.mediaSession.setActionHandler("pause", () => {
+      intendedPlayingRef.current = false;
+      audioRef.current?.pause();
+    });
   }, []);
 
-  const releaseWakeLock = useCallback(async () => {
-    if (wakeLockRef.current && !wakeLockRef.current.released) {
-      try {
-        await wakeLockRef.current.release();
-      } catch {
-        // Ignore — already released or browser revoked it.
-      }
-    }
-    wakeLockRef.current = null;
-  }, []);
-
-  // ── Phase 0 decode-on-mount: fetch manifest + all clips ──
+  // ── Phase 0: decode-on-mount ──
+  // Fetch manifest → resolve playlist → fetch + decode all clips → assemble WAV.
   useEffect(() => {
-    // Practice mode: skip the need/position/adversity requirement. The manifest
-    // fetch + resolvePracticePlaylist path handles everything.
     if (!practice && (!need || !position || !adversity)) return;
 
     let cancelled = false;
 
     async function init() {
-      // 1. Fetch manifest
+      // 1. Fetch manifest.
       const manifestRes = await fetch(manifestUrl());
       if (cancelled) return;
       if (!manifestRes.ok) {
@@ -233,7 +322,7 @@ export function useClipPlayer({
       }
       if (cancelled) return;
 
-      // 2. Resolve playlist
+      // 2. Resolve playlist.
       // Practice mode: use the fixed practice playlist from the manifest.
       // Pregame mode: resolve by need × position × adversity (+ personalization).
       let clips: ReturnType<typeof resolvePlaylist>;
@@ -244,8 +333,6 @@ export function useClipPlayer({
           return;
         }
       } else {
-        // need/position/adversity are confirmed non-null by the guard above.
-        // anchor/selfTalk/cueWord are optional; resolvePlaylist handles undefined.
         clips = resolvePlaylist(
           need!,
           position!,
@@ -256,7 +343,7 @@ export function useClipPlayer({
           cueWord,
         );
         if (!clips) {
-          // No template for this combination — not an error, caller uses legacy path.
+          // No template for this combination — sentinel triggers legacy path.
           setError("no template");
           return;
         }
@@ -265,9 +352,10 @@ export function useClipPlayer({
 
       clipsRef.current = clips;
 
-      // 3. Build assembled timeline now (before decode) so it's available early.
+      // 3. Build assembled timeline (before decode so UI can show phase info early).
       const assembled = buildAssembledTimeline(clips);
       if (cancelled) return;
+      timelineRef.current = assembled;
       setTimeline(assembled);
       setTotalSec(assembled.totalDurationSec);
 
@@ -277,39 +365,29 @@ export function useClipPlayer({
       );
       if (cancelled) return;
 
-      const anyMissing = bufferResults.some((b) => b === null);
-      if (anyMissing) {
+      if (bufferResults.some((b) => b === null)) {
         setError("clip fetch failed");
         return;
       }
 
       // 5. Decode all ArrayBuffers.
-      // We need an AudioContext for decodeAudioData. On iOS Safari the
-      // AudioContext MUST be created (or resumed) inside a user-gesture handler,
-      // but decodeAudioData is allowed outside one. We create a temporary context
-      // here for decoding only if ctxRef is not yet populated. The real playback
-      // context is created on the first play() call.
-      //
-      // Actually: decodeAudioData on iOS Safari requires an AudioContext even
-      // for decode, and creating one here (before a gesture) is fine — iOS only
-      // restricts *resuming* a suspended context outside a gesture. We reuse
-      // this same context for playback on first play().
-      let ctx = ctxRef.current;
-      if (!ctx) {
-        try {
-          const AudioContextCtor =
-            window.AudioContext ??
-            (window as WindowWithWebkit).webkitAudioContext;
-          if (!AudioContextCtor) {
-            setError("AudioContext not supported");
-            return;
-          }
-          ctx = new AudioContextCtor() as AudioContext;
-          ctxRef.current = ctx;
-        } catch {
-          setError("AudioContext constructor failed");
+      // An AudioContext is required for decodeAudioData, but we CLOSE it once
+      // decode is done — playback is handled by HTMLAudioElement, not Web Audio.
+      // Creating the context here (before a gesture) is fine on iOS Safari;
+      // iOS only restricts *resuming* a suspended context outside a gesture.
+      let decodeCtx: AudioContext | null = null;
+      try {
+        const AudioContextCtor =
+          window.AudioContext ??
+          (window as WindowWithWebkit).webkitAudioContext;
+        if (!AudioContextCtor) {
+          setError("AudioContext not supported");
           return;
         }
+        decodeCtx = new AudioContextCtor() as AudioContext;
+      } catch {
+        setError("AudioContext constructor failed");
+        return;
       }
 
       const decodedBuffers: AudioBuffer[] = [];
@@ -317,23 +395,93 @@ export function useClipPlayer({
         const raw = bufferResults[i];
         if (!raw) {
           setError("clip buffer missing after fetch");
+          decodeCtx.close().catch(() => {/* ignore */});
           return;
         }
         try {
-          // decodeAudioData is async and consumes the ArrayBuffer;
-          // we pass a copy so the ref is not detached if we need to retry.
-          const decoded = await ctx.decodeAudioData(raw.slice(0));
-          if (cancelled) return;
+          // Pass a copy: decodeAudioData consumes (detaches) the ArrayBuffer.
+          const decoded = await decodeCtx.decodeAudioData(raw.slice(0));
+          if (cancelled) {
+            decodeCtx.close().catch(() => {/* ignore */});
+            return;
+          }
           decodedBuffers.push(decoded);
         } catch {
-          if (cancelled) return;
+          if (cancelled) {
+            decodeCtx.close().catch(() => {/* ignore */});
+            return;
+          }
           setError(`clip decode failed at index ${i}`);
+          decodeCtx.close().catch(() => {/* ignore */});
           return;
         }
       }
 
+      // Decode complete — close the AudioContext. It is no longer needed.
+      // HTMLAudioElement takes over from here.
+      decodeCtx.close().catch(() => {/* ignore */});
+
       if (cancelled) return;
-      buffersRef.current = decodedBuffers;
+
+      // 6. Assemble all decoded buffers into a single WAV blob.
+      let blob: Blob;
+      try {
+        blob = assembleWavBlob(decodedBuffers);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "WAV assembly failed");
+        return;
+      }
+      if (cancelled) return;
+
+      // 7. Create an object URL and wire the HTMLAudioElement.
+      const blobUrl = URL.createObjectURL(blob);
+      blobUrlRef.current = blobUrl;
+
+      const audio = new Audio();
+      audio.preload = "auto";
+      audio.src = blobUrl;
+      // Attach to the DOM (hidden) so iOS classifies this element in the
+      // background-media category more reliably across iOS versions. The hook
+      // still has no visible render output; the element is invisible and will
+      // be removed on unmount.
+      audio.hidden = true;
+      document.body.appendChild(audio);
+      audioRef.current = audio;
+
+      // Sync playing state AND drive the rAF loop from native media events.
+      // Driving from events (rather than only from the play() callback's .then())
+      // means the progress timer is also live after resumes triggered by the
+      // visibilitychange nudge or the MediaSession lock-screen play button.
+      audio.addEventListener("play", () => {
+        setPlaying(true);
+        startRaf();
+      });
+      audio.addEventListener("pause", () => {
+        if (!completedRef.current) {
+          setPlaying(false);
+          stopRaf();
+          // Note: intendedPlayingRef is intentionally NOT cleared here.
+          // An iOS-initiated pause (phone call, system interruption) fires the
+          // "pause" event but the athlete has not chosen to stop. The intent ref
+          // is cleared only in the user-initiated pause() callback and on completion.
+        }
+      });
+
+      audio.addEventListener("ended", () => {
+        if (completedRef.current) return;
+        completedRef.current = true;
+        intendedPlayingRef.current = false;
+        const totalDur = timelineRef.current?.totalDurationSec ?? 0;
+        setCompleted(true);
+        setElapsedSec(totalDur);
+        setPlaying(false);
+        stopRaf();
+        onCompletedRef.current?.();
+      });
+
+      // Register lock-screen metadata + controls.
+      wireMediaSession(practice ? "Pre-Practice" : "Pregame");
+
       setReady(true);
     }
 
@@ -346,245 +494,107 @@ export function useClipPlayer({
     return () => {
       cancelled = true;
     };
-  }, [need, position, adversity, anchor, selfTalk, cueWord, practice]);
+  }, [need, position, adversity, anchor, selfTalk, cueWord, practice, startRaf, stopRaf, wireMediaSession]);
 
-  // ── rAF loop ──
-  // Runs while playing. Reads ctx.currentTime and adds playStartElapsedRef to
-  // get the correct session elapsed even after pause/resume cycles.
-  const startRaf = useCallback(() => {
-    const loop = () => {
-      const ctx = ctxRef.current;
-      if (!ctx) return;
-      if (ctx.state === "running") {
-        const sessionElapsed =
-          playStartElapsedRef.current +
-          (ctx.currentTime - playStartCtxTimeRef.current);
-        setElapsedSec(sessionElapsed);
-      }
-      rafRef.current = requestAnimationFrame(loop);
-    };
-    rafRef.current = requestAnimationFrame(loop);
-  }, []);
-
-  const stopRaf = useCallback(() => {
-    if (rafRef.current !== null) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-  }, []);
-
-  // ── Fix 2: interruption / visibility recovery ──
+  // ── Lightweight visibilitychange nudge ──
+  // iOS may pause the audio element when the app is briefly backgrounded (e.g.
+  // Control Center swipe, notification tap). When the app returns to foreground
+  // and the athlete intended to be playing, attempt to resume.
   //
-  // iOS Safari suspends the AudioContext on:
-  //   a) A phone call, FaceTime, or system interruption (fires ctx "statechange"
-  //      with state "interrupted" — a non-standard iOS extension).
-  //   b) The athlete swipes up to Control Center / Notification Center and comes
-  //      back (fires document "visibilitychange" hidden → visible).
-  //   c) A notification banner tap that briefly backgrounds the app.
-  //
-  // In all cases, once the page is foregrounded again we attempt ctx.resume().
-  // The elapsed clock anchor is re-snapped so the progress bar doesn't jump.
-  //
-  // We wire these listeners once, after the AudioContext is available (i.e.
-  // after decode completes). They are torn down on unmount.
+  // Critically, we check intendedPlayingRef (user intent) rather than
+  // playingRef (actual playback state). The native "pause" event — fired by an
+  // iOS-initiated interruption — flips playingRef to false but does NOT clear
+  // intendedPlayingRef. This means the nudge correctly fires after an iOS
+  // interruption, which was previously a silent no-op. After a phone call iOS
+  // may still reject play() (requires a fresh gesture); the athlete can tap
+  // manually in that case. This is best-effort and on-device testing is needed.
   useEffect(() => {
-    // Listeners are only meaningful once we have a context.
     if (!ready) return;
-    const ctx = ctxRef.current;
-    if (!ctx) return;
 
-    // Attempt to resume a suspended/interrupted context. Only acts when we
-    // believe playback is active (playingRef) and the session isn't done.
-    const tryResume = () => {
-      if (completedRef.current) return;
-      if (!playingRef.current) return;
-      if (resumingRef.current) return; // F2 mutex: already resuming
-
-      // reason: "interrupted" is an iOS Safari extension on AudioContextState
-      // not in the TypeScript DOM lib; cast needed for the comparison.
-      const state = ctx.state as ExtendedAudioContextState;
-      if (state === "suspended" || state === "interrupted") {
-        resumingRef.current = true;
-        ctx.resume().then(() => {
-          resumingRef.current = false;
-          // Re-snap the elapsed clock anchor so the progress bar is accurate.
-          // playStartElapsedRef already holds the right elapsed value from the
-          // last pause snapshot; we just need a fresh ctx.currentTime anchor.
-          playStartCtxTimeRef.current = ctx.currentTime;
-          // Restart the rAF loop if it stopped (e.g. page was hidden).
-          if (rafRef.current === null) {
-            startRaf();
-          }
-        }).catch(() => {
-          resumingRef.current = false;
-          // Resume failed — don't set error; leave the athlete's UI intact.
-          // They can tap the play button to manually retry.
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "visible") return;
+      const audio = audioRef.current;
+      if (!audio || completedRef.current || !intendedPlayingRef.current) return;
+      if (audio.paused) {
+        audio.play().catch(() => {
+          // Play rejected — athlete must tap manually. Don't set error.
         });
       }
     };
 
-    // AudioContext statechange fires on iOS for "interrupted" (phone call, etc.)
-    // and for "suspended" after certain system events.
-    const handleStateChange = () => {
-      tryResume();
-      // Re-request wake lock after an interruption restores context state,
-      // in case the system revoked our sentinel during the interruption.
-      if (ctx.state === "running" && playingRef.current) {
-        acquireWakeLock().catch(() => {/* defensive */});
-      }
-    };
-
-    // visibilitychange: fires when athlete returns from Control Center / app
-    // switcher / brief background. This is the most common iOS interruption path.
-    const handleVisibilityChange = () => {
-      if (document.visibilityState !== "visible") return;
-      tryResume();
-      // If playback is active and wake lock was revoked (browsers revoke on
-      // visibility-hidden), re-acquire it now that we're visible again.
-      if (playingRef.current && !completedRef.current) {
-        acquireWakeLock().catch(() => {/* defensive */});
-      }
-    };
-
-    ctx.addEventListener("statechange", handleStateChange);
     document.addEventListener("visibilitychange", handleVisibilityChange);
-
     return () => {
-      ctx.removeEventListener("statechange", handleStateChange);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [ready, startRaf, acquireWakeLock]);
+  }, [ready]);
 
   // ── play ──
   const play = useCallback(() => {
-    // F2: also guard on resumingRef so a second tap during an in-flight
-    // ctx.resume() can't enqueue a second doSchedule + rAF loop.
-    if (!ready || completed || playing || resumingRef.current) return;
-    const ctx = ctxRef.current;
-    const buffers = buffersRef.current;
-    if (!ctx || buffers.length === 0) return;
+    if (!ready || completed || playing) return;
+    const audio = audioRef.current;
+    if (!audio) return;
 
-    // iOS Safari: resume the context inside the gesture handler.
-    const doSchedule = () => {
-      // F2: clear the resuming mutex now that we're inside the resolved handler.
-      resumingRef.current = false;
+    // Record that the athlete intends to be playing. This is set before the
+    // play() call so the visibilitychange nudge can act on it even if the
+    // promise resolves after a brief background trip.
+    intendedPlayingRef.current = true;
 
-      if (scheduledRef.current) {
-        // Already scheduled — just record the resume point.
-        playStartCtxTimeRef.current = ctx.currentTime;
-        // playStartElapsedRef.current is already set from the pause point.
-        setPlaying(true);
-        startRaf();
-        // Fix 3: re-acquire wake lock on manual resume.
-        acquireWakeLock().catch(() => {/* defensive */});
-        return;
-      }
-
-      // First play: schedule all clips back-to-back from now.
-      const startAt = ctx.currentTime;
-      let offset = 0;
-      const assembled = timeline;
-      const totalDur = assembled?.totalDurationSec ?? 0;
-
-      // F1: track the last AudioBufferSourceNode actually started so that
-      // onended fires on the true final clip, not on a fixed last-by-index
-      // entry that may have been skipped by the `if (!buf) continue` guard.
-      let lastNode: AudioBufferSourceNode | null = null;
-
-      // Fix 1: clear any stale nodes from a previous (cancelled) session before
-      // populating. In practice scheduledRef guards against re-entry, but this
-      // is a belt-and-suspenders reset so the array never holds dead refs.
-      nodesRef.current = [];
-
-      for (let i = 0; i < buffers.length; i++) {
-        const buf = buffers[i];
-        if (!buf) continue;
-        const node = ctx.createBufferSource();
-        node.buffer = buf;
-        node.connect(ctx.destination);
-        node.start(startAt + offset);
-        offset += buf.duration;
-        // Fix 1: push every node into the ref array to prevent GC on iOS Safari.
-        // Without this, nodes scheduled > ~100 s in the future are collected
-        // before their start time and never fire — playback dies mid-session.
-        nodesRef.current.push(node);
-        lastNode = node;
-      }
-
-      // F1: attach onended to the true last scheduled node (not a fixed index).
-      if (lastNode !== null) {
-        lastNode.onended = () => {
-          if (completedRef.current) return;
-          completedRef.current = true;
-          setCompleted(true);
-          setElapsedSec(totalDur);
-          setPlaying(false);
-          stopRaf();
-          // Fix 3: release wake lock on natural completion.
-          releaseWakeLock().catch(() => {/* defensive */});
-          // Fix 1: clear node refs — all nodes have finished, GC is now safe.
-          nodesRef.current = [];
-          onCompletedRef.current?.();
-        };
-      }
-
-      scheduledRef.current = true;
-      playStartCtxTimeRef.current = startAt;
-      playStartElapsedRef.current = 0;
-      setPlaying(true);
-      startRaf();
-      // Fix 3: acquire wake lock on first play.
-      acquireWakeLock().catch(() => {/* defensive */});
-    };
-
-    if (ctx.state === "suspended") {
-      // F2: set the mutex before the async call so any tap that arrives
-      // before the promise resolves is rejected at the top of play().
-      resumingRef.current = true;
-      ctx.resume().then(doSchedule).catch(() => {
-        resumingRef.current = false;
-        setError("AudioContext resume failed");
-      });
-    } else {
-      doSchedule();
-    }
-  }, [ready, completed, playing, timeline, startRaf, stopRaf, acquireWakeLock, releaseWakeLock]);
+    // iOS Safari requires play() to be called inside a user-gesture handler.
+    // This callback is always invoked from a button tap, satisfying that requirement.
+    // The native "play" event listener (wired in Phase 0) handles setPlaying(true)
+    // and startRaf() — we no longer call startRaf() from .then() here. This ensures
+    // the rAF loop is always started from the single event-driven path regardless of
+    // whether playback resumed via play(), visibilitychange nudge, or MediaSession.
+    audio.play().catch(() => {
+      // Play rejected by the browser (e.g. second tab, autoplay policy in some
+      // contexts). Clear intent so the nudge doesn't loop-retry. Don't set error
+      // — leave UI intact so the athlete can tap again.
+      intendedPlayingRef.current = false;
+    });
+  }, [ready, completed, playing]);
 
   // ── pause ──
   const pause = useCallback(() => {
     if (!playing) return;
-    const ctx = ctxRef.current;
-    if (!ctx) return;
-    // Snapshot elapsed before suspend so resume continues from here.
-    const sessionElapsed =
-      playStartElapsedRef.current +
-      (ctx.currentTime - playStartCtxTimeRef.current);
-    playStartElapsedRef.current = sessionElapsed;
-    ctx.suspend().then(() => {
-      setPlaying(false);
-      stopRaf();
-      // Fix 3: release wake lock on manual pause.
-      releaseWakeLock().catch(() => {/* defensive */});
-    }).catch(() => {
-      // Ignore — worst case the rAF just reports stale time.
-    });
-  }, [playing, stopRaf, releaseWakeLock]);
+    const audio = audioRef.current;
+    if (!audio) return;
+    // Clear intent BEFORE calling pause() so the visibilitychange nudge — if
+    // it fires immediately after — sees the correct intent state and does not
+    // attempt to resume a deliberately-paused session.
+    intendedPlayingRef.current = false;
+    // audio.pause() is synchronous. The "pause" event listener handles
+    // setPlaying(false) + stopRaf() so we don't need to call them here.
+    audio.pause();
+  }, [playing]);
 
   // ── cleanup on unmount ──
   useEffect(() => {
     return () => {
       stopRaf();
-      // Fix 3: release wake lock on unmount.
-      releaseWakeLock().catch(() => {/* defensive */});
-      // Fix 1: clear node refs on unmount so GC can collect them.
-      nodesRef.current = [];
-      const ctx = ctxRef.current;
-      if (ctx) {
-        ctx.close().catch(() => {/* ignore */});
-        ctxRef.current = null;
+      const audio = audioRef.current;
+      if (audio) {
+        audio.pause();
+        audio.src = "";
+        // Remove from the DOM (mirrors the appendChild in Phase 0).
+        audio.remove();
+        audioRef.current = null;
+      }
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+      // Clear MediaSession handlers to avoid stale closures after unmount.
+      try {
+        const nav = navigator as NavigatorWithMediaSession;
+        if (nav.mediaSession) {
+          nav.mediaSession.setActionHandler("play", null);
+          nav.mediaSession.setActionHandler("pause", null);
+        }
+      } catch {
+        // Non-fatal — navigator may not be available in all teardown contexts.
       }
     };
-  }, [stopRaf, releaseWakeLock]);
+  }, [stopRaf]);
 
   return {
     ready,
