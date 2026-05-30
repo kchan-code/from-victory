@@ -1,0 +1,10 @@
+{
+  "slug": "hm-forward-missed-chance",
+  "durationSec": 44.704,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug": "hm-forward-bad-penalty",
+  "durationSec": 50.184,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

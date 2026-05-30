@@ -1,0 +1,10 @@
+{
+  "slug": "hm-defense-start-slow",
+  "durationSec": 53.64,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

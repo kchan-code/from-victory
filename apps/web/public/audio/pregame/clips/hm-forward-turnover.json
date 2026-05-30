@@ -1,0 +1,10 @@
+{
+  "slug": "hm-forward-turnover",
+  "durationSec": 46.408,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

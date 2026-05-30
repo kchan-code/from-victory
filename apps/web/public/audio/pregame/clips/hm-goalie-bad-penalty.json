@@ -1,0 +1,10 @@
+{
+  "slug": "hm-goalie-bad-penalty",
+  "durationSec": 54.12,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

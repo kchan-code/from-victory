@@ -9,11 +9,18 @@
 // Run: `npm run audio:generate` (from apps/web).
 // Prereqs: OPENAI_API_KEY in apps/web/.env.local + ffmpeg on PATH.
 //
-// CLI flags:
+// CLI flags (legacy baked-cell path):
 //   --slug <name>     Generate only the script with this slug
 //   --dry-run         Validate scripts + estimate cost, no API calls
 //   --keep-segments   Don't delete the per-segment temp files
 //   --out-dir <path>  Override the default output directory
+//
+// CLI flags (clip-playlist path):
+//   --mode clips      Render the 6 forward-nervous clip scripts into
+//                     public/audio/pregame/clips/, loudnorm-pass the
+//                     opener, and write clips/manifest.json.
+//   --dry-run         Validate clip scripts + estimate cost, no API calls
+//   --keep-segments   Don't delete the per-segment temp files
 
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
@@ -21,8 +28,14 @@ import { join, resolve } from "node:path";
 
 import type {
   AudioScript,
+  AudioTimeline,
+  Phase,
   Segment,
 } from "../components/pregame/audio/types.ts";
+import {
+  CLIP_SCRIPTS,
+} from "../components/pregame/audio/clips.ts";
+import type { ClipManifest, ClipPhaseEntry } from "../components/pregame/audio-playlist.ts";
 import { BREATH_THRESHOLD_SCRIPT } from "../components/pregame/audio/breath-threshold.ts";
 import { SESSION_FORWARD_MISSED_CHANCE_SCRIPT } from "../components/pregame/audio/session-forward-missed-chance.ts";
 import { SESSION_GOALIE_COACH_YELLS_SCRIPT } from "../components/pregame/audio/session-goalie-coach-yells.ts";
@@ -67,6 +80,7 @@ import {
   clearSilenceCache,
   concatMp3s,
   probeDurationSec,
+  reEncodeMp3,
   silenceMp3,
   type ConcatInput,
 } from "./lib/ffmpeg.ts";
@@ -131,6 +145,9 @@ type Flags = {
   dryRun: boolean;
   keepSegments: boolean;
   outDir: string;
+  // Clip-playlist generation mode. Renders CLIP_SCRIPTS into clips/
+  // subdirectory, loudnorm-passes the opener, writes manifest.json.
+  mode?: "clips";
 };
 
 function parseFlags(argv: string[]): Flags {
@@ -143,7 +160,10 @@ function parseFlags(argv: string[]): Flags {
     const a = argv[i];
     if (a === "--dry-run") out.dryRun = true;
     else if (a === "--keep-segments") out.keepSegments = true;
-    else if (a === "--slug" && argv[i + 1]) {
+    else if (a === "--mode" && argv[i + 1] === "clips") {
+      out.mode = "clips";
+      i++;
+    } else if (a === "--slug" && argv[i + 1]) {
       out.slug = argv[i + 1];
       i++;
     } else if (a === "--out-dir" && argv[i + 1]) {
@@ -254,9 +274,326 @@ async function generateOne(script: AudioScript, flags: Flags): Promise<void> {
   }
 }
 
+// ──────────────────────────────────────────────────────────────────────
+// Clip-playlist generation path
+
+// All 9 need-specific openers. Each is loudnorm-passed (no re-TTS) from
+// the existing top-level opener-*.mp3 into clips/opener-*.mp3.
+const OPENER_SLUGS = [
+  "opener-confidence",
+  "opener-calm",
+  "opener-compete-level",
+  "opener-reset",
+  "opener-courage",
+  "opener-decisions",
+  "opener-leadership",
+  "opener-joy",
+  "opener-hope",
+] as const;
+
+// Keep the Phase 1 const for backward compat references inside generateClips.
+const OPENER_CONFIDENCE_SLUG = "opener-confidence";
+
+// Clip subdirectory relative to DEFAULT_OUT_DIR.
+const CLIPS_SUBDIR = "clips";
+
+/**
+ * Convert an AudioTimeline's phases (absolute startSec from clip start)
+ * into ClipCatalogEntry phases (offsetSec = startSec within the clip).
+ * Since for a single-clip timeline startSec IS the offset, this is a
+ * rename + optional round passthrough.
+ */
+function timelineToClipPhases(timeline: AudioTimeline): ClipPhaseEntry[] {
+  return timeline.phases.map((p) => {
+    const entry: ClipPhaseEntry = {
+      phase: p.phase as Phase,
+      offsetSec: p.startSec,
+    };
+    if (typeof p.round === "number") entry.round = p.round;
+    return entry;
+  });
+}
+
+// The 30 (position × adversity) template definitions for the Phase 2 manifest.
+// Keyed by position + adversity — NO `need`, opener is prepended by resolver.
+// viz slug chosen by position; hm slug per cell mapping incl. goalie-pulled.
+const PHASE2_TEMPLATES: Array<{
+  position: string;
+  adversity: string;
+  vizSlug: string;
+  hmSlug: string;
+}> = [
+  // Forward × 10 adversities
+  { position: "Forward", adversity: "I feel nervous.",          vizSlug: "viz-forward", hmSlug: "hm-forward-nervous" },
+  { position: "Forward", adversity: "I miss a scoring chance.", vizSlug: "viz-forward", hmSlug: "hm-forward-missed-chance" },
+  { position: "Forward", adversity: "I turn the puck over.",    vizSlug: "viz-forward", hmSlug: "hm-forward-turnover" },
+  { position: "Forward", adversity: "I get beaten wide.",       vizSlug: "viz-forward", hmSlug: "hm-forward-beaten-wide" },
+  { position: "Forward", adversity: "I take a bad penalty.",    vizSlug: "viz-forward", hmSlug: "hm-forward-bad-penalty" },
+  { position: "Forward", adversity: "Coach yells.",             vizSlug: "viz-forward", hmSlug: "hm-forward-coach-yells" },
+  { position: "Forward", adversity: "I get benched.",           vizSlug: "viz-forward", hmSlug: "hm-forward-benched" },
+  { position: "Forward", adversity: "I get hit.",               vizSlug: "viz-forward", hmSlug: "hm-forward-get-hit" },
+  { position: "Forward", adversity: "I start slow.",            vizSlug: "viz-forward", hmSlug: "hm-forward-start-slow" },
+  { position: "Forward", adversity: "We give up the first goal.", vizSlug: "viz-forward", hmSlug: "hm-forward-first-goal-against" },
+  // Defense × 10 adversities
+  { position: "Defense", adversity: "I get beaten wide.",       vizSlug: "viz-defense", hmSlug: "hm-defense-beaten-wide" },
+  { position: "Defense", adversity: "I turn the puck over.",    vizSlug: "viz-defense", hmSlug: "hm-defense-turnover" },
+  { position: "Defense", adversity: "I miss a scoring chance.", vizSlug: "viz-defense", hmSlug: "hm-defense-missed-chance" },
+  { position: "Defense", adversity: "I take a bad penalty.",    vizSlug: "viz-defense", hmSlug: "hm-defense-bad-penalty" },
+  { position: "Defense", adversity: "Coach yells.",             vizSlug: "viz-defense", hmSlug: "hm-defense-coach-yells" },
+  { position: "Defense", adversity: "I get benched.",           vizSlug: "viz-defense", hmSlug: "hm-defense-benched" },
+  { position: "Defense", adversity: "I feel nervous.",          vizSlug: "viz-defense", hmSlug: "hm-defense-nervous" },
+  { position: "Defense", adversity: "I get hit.",               vizSlug: "viz-defense", hmSlug: "hm-defense-get-hit" },
+  { position: "Defense", adversity: "I start slow.",            vizSlug: "viz-defense", hmSlug: "hm-defense-start-slow" },
+  { position: "Defense", adversity: "We give up the first goal.", vizSlug: "viz-defense", hmSlug: "hm-defense-first-goal-against" },
+  // Goalie × 10 adversities (benched → pulled special case)
+  { position: "Goalie", adversity: "Coach yells.",              vizSlug: "viz-goalie", hmSlug: "hm-goalie-coach-yells" },
+  { position: "Goalie", adversity: "I turn the puck over.",     vizSlug: "viz-goalie", hmSlug: "hm-goalie-turnover" },
+  { position: "Goalie", adversity: "I miss a scoring chance.",  vizSlug: "viz-goalie", hmSlug: "hm-goalie-missed-chance" },
+  { position: "Goalie", adversity: "I get beaten wide.",        vizSlug: "viz-goalie", hmSlug: "hm-goalie-beaten-wide" },
+  { position: "Goalie", adversity: "I take a bad penalty.",     vizSlug: "viz-goalie", hmSlug: "hm-goalie-bad-penalty" },
+  { position: "Goalie", adversity: "I get benched.",            vizSlug: "viz-goalie", hmSlug: "hm-goalie-pulled" },
+  { position: "Goalie", adversity: "I feel nervous.",           vizSlug: "viz-goalie", hmSlug: "hm-goalie-nervous" },
+  { position: "Goalie", adversity: "I get hit.",                vizSlug: "viz-goalie", hmSlug: "hm-goalie-get-hit" },
+  { position: "Goalie", adversity: "I start slow.",             vizSlug: "viz-goalie", hmSlug: "hm-goalie-start-slow" },
+  { position: "Goalie", adversity: "We give up the first goal.", vizSlug: "viz-goalie", hmSlug: "hm-goalie-first-goal-against" },
+];
+
+async function generateClips(flags: Flags): Promise<void> {
+  const baseDir = resolve(process.cwd(), DEFAULT_OUT_DIR);
+  const clipsDir = join(baseDir, CLIPS_SUBDIR);
+  await mkdir(clipsDir, { recursive: true });
+
+  const totalChars = CLIP_SCRIPTS.reduce((n, s) => n + totalSpeechChars(s), 0);
+  const cost = estimateCostUsd(totalChars);
+  console.log(
+    `[clips] Phase 2 — ${CLIP_SCRIPTS.length} TTS clip scripts + ${OPENER_SLUGS.length} loudnorm opener passes.`,
+  );
+  console.log(
+    `[clips] TTS chars: ${totalChars}, est. $${cost.toFixed(4)}.`,
+  );
+
+  if (flags.dryRun) {
+    console.log("\n--dry-run: validating clip scripts, no API calls.");
+    for (const s of CLIP_SCRIPTS) {
+      console.log(
+        `  ${s.slug}: ${s.segments.length} segs, ${speechSegmentCount(s)} speech, ${totalSpeechChars(s)} chars`,
+      );
+    }
+    for (const slug of OPENER_SLUGS) {
+      const src = join(baseDir, `${slug}.mp3`);
+      const exists = existsSync(src);
+      console.log(
+        `  ${slug}: loudnorm pass from top-level (no TTS)${exists ? "" : " — WARNING: source not found"}`,
+      );
+    }
+    console.log(`\n[clips] Templates: ${PHASE2_TEMPLATES.length}`);
+    console.log(
+      `[clips] Catalog will have: ${CLIP_SCRIPTS.length} TTS + ${OPENER_SLUGS.length} openers = ` +
+      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p3: 78 expected)`,
+    );
+    return;
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    console.error(
+      "\nOPENAI_API_KEY is not set. Add it to apps/web/.env.local:\n  OPENAI_API_KEY=sk-...\nthen re-run.",
+    );
+    process.exit(1);
+  }
+
+  // Collect manifest data as we go.
+  // clips catalog: slug → { url, durationSec, phases }
+  const catalog: ClipManifest["clips"] = {};
+
+  // ── Step 1: Render TTS clip scripts in batches of ≤10 to limit quota exposure.
+  // clearSilenceCache() is called before each clip so the silence cache doesn't
+  // carry stale paths from a previous clip's work dir (deleted after each clip).
+  const clipsFlags: Flags = { ...flags, outDir: join(DEFAULT_OUT_DIR, CLIPS_SUBDIR) };
+
+  // Batch TTS scripts in groups of ≤10. If a 429/quota error hits mid-batch,
+  // the generator exits with the completed clips written and the remaining
+  // slugs printed so the run can resume with --slug targeting.
+  const BATCH_SIZE = 10;
+  const batches: AudioScript[][] = [];
+  for (let i = 0; i < CLIP_SCRIPTS.length; i += BATCH_SIZE) {
+    batches.push(CLIP_SCRIPTS.slice(i, i + BATCH_SIZE));
+  }
+
+  const completedSlugs: string[] = [];
+  const remainingSlugs: string[] = [];
+
+  console.log(
+    `\n[clips] Rendering ${CLIP_SCRIPTS.length} TTS scripts in ${batches.length} batches of ≤${BATCH_SIZE}.`,
+  );
+
+  let batchIndex = 0;
+  batchLoop:
+  for (const batch of batches) {
+    batchIndex++;
+    const batchSlugs = batch.map((s) => s.slug).join(", ");
+    console.log(`\n[clips] Batch ${batchIndex}/${batches.length}: ${batchSlugs}`);
+
+    for (const script of batch) {
+      // Skip if clip already exists on disk (resume support).
+      const existingMp3 = join(clipsDir, `${script.slug}.mp3`);
+      if (existsSync(existingMp3)) {
+        console.log(`  [skip] ${script.slug} already exists — skipping (resume).`);
+        const jsonPath = join(clipsDir, `${script.slug}.json`);
+        const rawJson = await readFile(jsonPath, "utf8");
+        const timeline = JSON.parse(rawJson) as AudioTimeline;
+        catalog[script.slug] = {
+          url: `/audio/pregame/${CLIPS_SUBDIR}/${script.slug}.mp3`,
+          durationSec: timeline.durationSec,
+          phases: timelineToClipPhases(timeline),
+        };
+        completedSlugs.push(script.slug);
+        continue;
+      }
+
+      clearSilenceCache();
+      try {
+        await generateOne(script, clipsFlags);
+      } catch (err) {
+        const msg = (err as Error).message;
+        const isQuota = msg.includes("429") || msg.includes("quota") || msg.includes("insufficient");
+        if (isQuota) {
+          console.error(
+            `\n[clips] QUOTA LIMIT hit on ${script.slug}.\n` +
+            `  Completed: ${completedSlugs.join(", ") || "(none)"}\n` +
+            `  Remaining: ${script.slug}, ` +
+            CLIP_SCRIPTS.slice(CLIP_SCRIPTS.indexOf(script) + 1)
+              .map((s) => s.slug)
+              .join(", ") + "\n" +
+            `  Top up the OpenAI quota then resume — already-generated clips are\n` +
+            `  written to disk and will be skipped on next run (resume support).`,
+          );
+        } else {
+          console.error(`\n[clips] Failed on ${script.slug}: ${msg}`);
+        }
+        // Mark all remaining as not done.
+        const failIdx = CLIP_SCRIPTS.indexOf(script);
+        for (let i = failIdx; i < CLIP_SCRIPTS.length; i++) {
+          remainingSlugs.push(CLIP_SCRIPTS[i]!.slug);
+        }
+        break batchLoop;
+      }
+
+      // Read back sidecar timeline to build catalog.
+      const jsonPath = join(clipsDir, `${script.slug}.json`);
+      const rawJson = await readFile(jsonPath, "utf8");
+      const timeline = JSON.parse(rawJson) as AudioTimeline;
+      catalog[script.slug] = {
+        url: `/audio/pregame/${CLIPS_SUBDIR}/${script.slug}.mp3`,
+        durationSec: timeline.durationSec,
+        phases: timelineToClipPhases(timeline),
+      };
+      completedSlugs.push(script.slug);
+    }
+  }
+
+  if (remainingSlugs.length > 0) {
+    console.error(
+      `\n[clips] Aborted — ${remainingSlugs.length} clips not generated.\n` +
+      `  Re-run after topping up quota; completed clips are on disk and will be skipped.`,
+    );
+    process.exit(1);
+  }
+
+  // ── Step 2: Loudnorm-pass all 9 opener MP3s → clips/opener-*.mp3.
+  // No re-TTS — filter-only pass to level-match at -16 LUFS.
+  const loudnormFilter = "loudnorm=I=-16:TP=-1.5:LRA=11";
+  console.log(`\n[clips] Loudnorm-passing ${OPENER_SLUGS.length} opener MP3s...`);
+
+  for (const slug of OPENER_SLUGS) {
+    const openerSrc = join(baseDir, `${slug}.mp3`);
+    const openerDst = join(clipsDir, `${slug}.mp3`);
+
+    if (!existsSync(openerSrc)) {
+      console.error(
+        `  ERROR: ${openerSrc} not found. Run the legacy path first to generate ${slug}.mp3.`,
+      );
+      process.exit(1);
+    }
+
+    console.log(`\n── ${slug} (loudnorm pass) ───────────────────`);
+    await reEncodeMp3(openerSrc, openerDst, loudnormFilter);
+    const openerDur = await probeDurationSec(openerDst);
+    console.log(`   ✓ clips/${slug}.mp3  duration=${openerDur.toFixed(3)}s`);
+
+    catalog[slug] = {
+      url: `/audio/pregame/${CLIPS_SUBDIR}/${slug}.mp3`,
+      durationSec: Math.round(openerDur * 1000) / 1000,
+      phases: [{ phase: "intro", offsetSec: 0 }],
+    };
+  }
+
+  // ── Step 3: Write Phase 3 manifest.json (version "p3").
+  // Templates: 30 entries keyed by (position × adversity) ONLY — no `need`,
+  // no opener in clips list. Opener is prepended by resolver per-need.
+  // Phase 3b adds personalization sentinels at lean-structure positions:
+  //   {{anchor}} {{selfTalk}} {{cueReset}} after the hm clip;
+  //   {{cueSendoff}} between shared-prayer and shared-sendoff.
+  // The resolver in audio-playlist.ts substitutes these with the athlete's
+  // chosen anchor/self-talk/cue-word slugs, dropping them gracefully if absent.
+  const templates = PHASE2_TEMPLATES.map((t) => ({
+    position: t.position,
+    adversity: t.adversity,
+    clips: [
+      "shared-opening",
+      t.vizSlug,
+      t.hmSlug,
+      "{{anchor}}",
+      "{{selfTalk}}",
+      "{{cueReset}}",
+      "shared-reset-plan",
+      "shared-prayer",
+      "{{cueSendoff}}",
+      "shared-sendoff",
+    ],
+  }));
+
+  const manifest: ClipManifest = {
+    version: "p3",
+    clips: catalog,
+    templates,
+  };
+
+  const manifestPath = join(clipsDir, "manifest.json");
+  await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
+
+  // ── Step 4: Validate catalog count and report.
+  const catalogCount = Object.keys(catalog).length;
+  const templateCount = templates.length;
+  console.log(`\n[clips] manifest.json written: ${catalogCount} catalog entries, ${templateCount} templates.`);
+
+  // p3: 46 structural + 32 personalization = 78 total
+  if (catalogCount !== 78) {
+    console.warn(`  WARNING: expected 78 catalog entries (46 structural + 32 personalization), got ${catalogCount}.`);
+  }
+  if (templateCount !== 30) {
+    console.warn(`  WARNING: expected 30 templates (3 positions × 10 adversities), got ${templateCount}.`);
+  }
+
+  // Per-clip level spot-checks for one clip per position group.
+  console.log(`\n[clips] Spot-check: measure LUFS/peak on representative clips via`);
+  console.log(`  ffmpeg -hide_banner -i clips/hm-forward-nervous.mp3 -af volumedetect -f null /dev/null`);
+  console.log(`  ffmpeg -hide_banner -i clips/hm-defense-beaten-wide.mp3 -af volumedetect -f null /dev/null`);
+  console.log(`  ffmpeg -hide_banner -i clips/hm-goalie-pulled.mp3 -af volumedetect -f null /dev/null`);
+
+  console.log(`\n[clips] Done. git add apps/web/public/audio/pregame/clips/`);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+
 async function main(): Promise<void> {
   const flags = parseFlags(process.argv.slice(2));
   await tryLoadEnvLocal();
+
+  // Clip-playlist generation path.
+  if (flags.mode === "clips") {
+    await generateClips(flags);
+    return;
+  }
 
   const scripts = flags.slug
     ? SCRIPTS.filter((s) => s.slug === flags.slug)

@@ -1,0 +1,10 @@
+{
+  "slug": "hm-goalie-missed-chance",
+  "durationSec": 44.776,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

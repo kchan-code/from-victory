@@ -1,0 +1,10 @@
+{
+  "slug": "shared-reset-plan",
+  "durationSec": 17.564,
+  "phases": [
+    {
+      "phase": "reset",
+      "startSec": 0
+    }
+  ]
+}

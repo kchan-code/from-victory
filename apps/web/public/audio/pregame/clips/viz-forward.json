@@ -1,0 +1,14 @@
+{
+  "slug": "viz-forward",
+  "durationSec": 109.698,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 39.73
+    }
+  ]
+}
