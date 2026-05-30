@@ -9,7 +9,15 @@
 //      all AudioBufferSourceNodes back-to-back for sample-accurate gapless play.
 //   3. Pause / resume: ctx.suspend() / ctx.resume().
 //   4. rAF loop: read ctx.currentTime + suspendOffset to drive elapsedSec.
-//   5. Unmount: cancel rAF, close AudioContext.
+//   5. Unmount: cancel rAF, release wake lock, close AudioContext.
+//
+// iOS Safari specifics addressed here:
+//   - Fix 1 (GC): all scheduled AudioBufferSourceNodes are kept in nodesRef so
+//     iOS Safari cannot GC them before their far-future start times.
+//   - Fix 2 (interruption): AudioContext statechange + visibilitychange listeners
+//     resume a suspended context when the page returns to foreground.
+//   - Fix 3 (wake lock): navigator.wakeLock keeps the screen on during playback
+//     (defence-in-depth — iOS suspends AudioContext on screen lock).
 //
 // Error handling: any failure in fetch/decode/AudioContext sets `error: true`
 // so the screen can fall back to text mode via the same `onError` path used
@@ -26,6 +34,30 @@ import {
   manifestUrl,
   resolvePlaylist,
 } from "./audio-playlist";
+
+// ---------------------------------------------------------------------------
+// Vendor-prefix + non-standard DOM type helpers
+// ---------------------------------------------------------------------------
+
+// reason: webkitAudioContext is a Safari/legacy vendor-prefix not in the
+// standard TypeScript DOM lib; least-invasive access without no-any violation.
+type WindowWithWebkit = Window & { webkitAudioContext?: typeof AudioContext };
+
+// reason: AudioContext.state can be "interrupted" on iOS Safari (a non-standard
+// extension not present in the W3C spec or TS lib). We need to detect it to
+// resume after phone-call / notification interruptions.
+type ExtendedAudioContextState = AudioContextState | "interrupted";
+
+// reason: navigator.wakeLock is present in modern browsers but absent from
+// older TypeScript DOM lib versions; typed minimally to avoid any-escape.
+interface WakeLockSentinel {
+  released: boolean;
+  release(): Promise<void>;
+}
+interface WakeLock {
+  request(type: "screen"): Promise<WakeLockSentinel>;
+}
+type NavigatorWithWakeLock = Navigator & { wakeLock?: WakeLock };
 
 // ---------------------------------------------------------------------------
 // Public hook surface
@@ -107,6 +139,13 @@ export function useClipPlayer({
   const buffersRef = useRef<AudioBuffer[]>([]);
   const clipsRef = useRef<ResolvedClip[]>([]);
   const rafRef = useRef<number | null>(null);
+
+  // Fix 1 — GC prevention: hold every scheduled AudioBufferSourceNode so
+  // iOS Safari cannot garbage-collect nodes whose start times are far in the
+  // future. Without this, clips beyond ~1:45 (viz, hardMoment, reset, prayer,
+  // sendoff) are collected before they fire and playback silently dies.
+  const nodesRef = useRef<AudioBufferSourceNode[]>([]);
+
   // When we suspend/resume, ctx.currentTime continues counting internally in
   // some implementations. We track the accumulated wall time ourselves so
   // elapsedSec is stable across pause/resume.
@@ -121,6 +160,43 @@ export function useClipPlayer({
   const completedRef = useRef(false);
   const onCompletedRef = useRef(onCompleted);
   onCompletedRef.current = onCompleted;
+
+  // Fix 2 — interruption recovery: we need the current playing/completed
+  // state inside event listeners without stale closures. Keep refs in sync.
+  const playingRef = useRef(false);
+  playingRef.current = playing;
+
+  // Fix 3 — wake lock: hold the sentinel so we can release it later.
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  // ── Wake lock helpers (Fix 3) ──
+
+  const acquireWakeLock = useCallback(async () => {
+    // Feature-detect; navigator.wakeLock absent on older Safari + many browsers.
+    const nav = navigator as NavigatorWithWakeLock;
+    if (!nav.wakeLock) return;
+    try {
+      // Release any existing sentinel before requesting a new one to avoid leaks.
+      if (wakeLockRef.current && !wakeLockRef.current.released) {
+        await wakeLockRef.current.release();
+      }
+      wakeLockRef.current = await nav.wakeLock.request("screen");
+    } catch {
+      // Fail gracefully — wake lock is defence-in-depth, not a hard requirement.
+      wakeLockRef.current = null;
+    }
+  }, []);
+
+  const releaseWakeLock = useCallback(async () => {
+    if (wakeLockRef.current && !wakeLockRef.current.released) {
+      try {
+        await wakeLockRef.current.release();
+      } catch {
+        // Ignore — already released or browser revoked it.
+      }
+    }
+    wakeLockRef.current = null;
+  }, []);
 
   // ── Phase 0 decode-on-mount: fetch manifest + all clips ──
   useEffect(() => {
@@ -198,10 +274,6 @@ export function useClipPlayer({
       let ctx = ctxRef.current;
       if (!ctx) {
         try {
-          // reason: webkitAudioContext is a Safari/legacy vendor-prefix not present
-          // in the standard TypeScript DOM lib; the cast through unknown is the
-          // least invasive way to access it without a no-any violation.
-          type WindowWithWebkit = Window & { webkitAudioContext?: typeof AudioContext };
           const AudioContextCtor =
             window.AudioContext ??
             (window as WindowWithWebkit).webkitAudioContext;
@@ -278,6 +350,88 @@ export function useClipPlayer({
     }
   }, []);
 
+  // ── Fix 2: interruption / visibility recovery ──
+  //
+  // iOS Safari suspends the AudioContext on:
+  //   a) A phone call, FaceTime, or system interruption (fires ctx "statechange"
+  //      with state "interrupted" — a non-standard iOS extension).
+  //   b) The athlete swipes up to Control Center / Notification Center and comes
+  //      back (fires document "visibilitychange" hidden → visible).
+  //   c) A notification banner tap that briefly backgrounds the app.
+  //
+  // In all cases, once the page is foregrounded again we attempt ctx.resume().
+  // The elapsed clock anchor is re-snapped so the progress bar doesn't jump.
+  //
+  // We wire these listeners once, after the AudioContext is available (i.e.
+  // after decode completes). They are torn down on unmount.
+  useEffect(() => {
+    // Listeners are only meaningful once we have a context.
+    if (!ready) return;
+    const ctx = ctxRef.current;
+    if (!ctx) return;
+
+    // Attempt to resume a suspended/interrupted context. Only acts when we
+    // believe playback is active (playingRef) and the session isn't done.
+    const tryResume = () => {
+      if (completedRef.current) return;
+      if (!playingRef.current) return;
+      if (resumingRef.current) return; // F2 mutex: already resuming
+
+      // reason: "interrupted" is an iOS Safari extension on AudioContextState
+      // not in the TypeScript DOM lib; cast needed for the comparison.
+      const state = ctx.state as ExtendedAudioContextState;
+      if (state === "suspended" || state === "interrupted") {
+        resumingRef.current = true;
+        ctx.resume().then(() => {
+          resumingRef.current = false;
+          // Re-snap the elapsed clock anchor so the progress bar is accurate.
+          // playStartElapsedRef already holds the right elapsed value from the
+          // last pause snapshot; we just need a fresh ctx.currentTime anchor.
+          playStartCtxTimeRef.current = ctx.currentTime;
+          // Restart the rAF loop if it stopped (e.g. page was hidden).
+          if (rafRef.current === null) {
+            startRaf();
+          }
+        }).catch(() => {
+          resumingRef.current = false;
+          // Resume failed — don't set error; leave the athlete's UI intact.
+          // They can tap the play button to manually retry.
+        });
+      }
+    };
+
+    // AudioContext statechange fires on iOS for "interrupted" (phone call, etc.)
+    // and for "suspended" after certain system events.
+    const handleStateChange = () => {
+      tryResume();
+      // Re-request wake lock after an interruption restores context state,
+      // in case the system revoked our sentinel during the interruption.
+      if (ctx.state === "running" && playingRef.current) {
+        acquireWakeLock().catch(() => {/* defensive */});
+      }
+    };
+
+    // visibilitychange: fires when athlete returns from Control Center / app
+    // switcher / brief background. This is the most common iOS interruption path.
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "visible") return;
+      tryResume();
+      // If playback is active and wake lock was revoked (browsers revoke on
+      // visibility-hidden), re-acquire it now that we're visible again.
+      if (playingRef.current && !completedRef.current) {
+        acquireWakeLock().catch(() => {/* defensive */});
+      }
+    };
+
+    ctx.addEventListener("statechange", handleStateChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      ctx.removeEventListener("statechange", handleStateChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [ready, startRaf, acquireWakeLock]);
+
   // ── play ──
   const play = useCallback(() => {
     // F2: also guard on resumingRef so a second tap during an in-flight
@@ -298,6 +452,8 @@ export function useClipPlayer({
         // playStartElapsedRef.current is already set from the pause point.
         setPlaying(true);
         startRaf();
+        // Fix 3: re-acquire wake lock on manual resume.
+        acquireWakeLock().catch(() => {/* defensive */});
         return;
       }
 
@@ -312,6 +468,11 @@ export function useClipPlayer({
       // entry that may have been skipped by the `if (!buf) continue` guard.
       let lastNode: AudioBufferSourceNode | null = null;
 
+      // Fix 1: clear any stale nodes from a previous (cancelled) session before
+      // populating. In practice scheduledRef guards against re-entry, but this
+      // is a belt-and-suspenders reset so the array never holds dead refs.
+      nodesRef.current = [];
+
       for (let i = 0; i < buffers.length; i++) {
         const buf = buffers[i];
         if (!buf) continue;
@@ -320,6 +481,10 @@ export function useClipPlayer({
         node.connect(ctx.destination);
         node.start(startAt + offset);
         offset += buf.duration;
+        // Fix 1: push every node into the ref array to prevent GC on iOS Safari.
+        // Without this, nodes scheduled > ~100 s in the future are collected
+        // before their start time and never fire — playback dies mid-session.
+        nodesRef.current.push(node);
         lastNode = node;
       }
 
@@ -332,6 +497,10 @@ export function useClipPlayer({
           setElapsedSec(totalDur);
           setPlaying(false);
           stopRaf();
+          // Fix 3: release wake lock on natural completion.
+          releaseWakeLock().catch(() => {/* defensive */});
+          // Fix 1: clear node refs — all nodes have finished, GC is now safe.
+          nodesRef.current = [];
           onCompletedRef.current?.();
         };
       }
@@ -341,6 +510,8 @@ export function useClipPlayer({
       playStartElapsedRef.current = 0;
       setPlaying(true);
       startRaf();
+      // Fix 3: acquire wake lock on first play.
+      acquireWakeLock().catch(() => {/* defensive */});
     };
 
     if (ctx.state === "suspended") {
@@ -354,7 +525,7 @@ export function useClipPlayer({
     } else {
       doSchedule();
     }
-  }, [ready, completed, playing, timeline, startRaf, stopRaf]);
+  }, [ready, completed, playing, timeline, startRaf, stopRaf, acquireWakeLock, releaseWakeLock]);
 
   // ── pause ──
   const pause = useCallback(() => {
@@ -369,22 +540,28 @@ export function useClipPlayer({
     ctx.suspend().then(() => {
       setPlaying(false);
       stopRaf();
+      // Fix 3: release wake lock on manual pause.
+      releaseWakeLock().catch(() => {/* defensive */});
     }).catch(() => {
       // Ignore — worst case the rAF just reports stale time.
     });
-  }, [playing, stopRaf]);
+  }, [playing, stopRaf, releaseWakeLock]);
 
   // ── cleanup on unmount ──
   useEffect(() => {
     return () => {
       stopRaf();
+      // Fix 3: release wake lock on unmount.
+      releaseWakeLock().catch(() => {/* defensive */});
+      // Fix 1: clear node refs on unmount so GC can collect them.
+      nodesRef.current = [];
       const ctx = ctxRef.current;
       if (ctx) {
         ctx.close().catch(() => {/* ignore */});
         ctxRef.current = null;
       }
     };
-  }, [stopRaf]);
+  }, [stopRaf, releaseWakeLock]);
 
   return {
     ready,
