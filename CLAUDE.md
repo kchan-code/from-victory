@@ -162,6 +162,11 @@ Rules of the road:
 - product-strategist and kids-privacy-officer hold vetoes; respect them.
 - Don't add a new agent to fix a coordination gap — fix the invocation policy
   here first.
+- **Specialist invocation does not license scope expansion.** Invoking a
+  specialist (content trio, frontend, backend, audio) returns work scoped to the
+  current issue's acceptance criteria. Anything the specialist surfaces beyond
+  that becomes a follow-up Linear issue logged in the PR's "Intentionally not
+  done" / "Follow-up issues created" fields — not extra commits in this diff.
 
 ## Workflow Rules (NON-NEGOTIABLE)
 1. Never edit `main` directly. Every task starts with `git checkout -b feature/<name>`.
@@ -176,6 +181,91 @@ Rules of the road:
    PR diff. Findings posted as a PR comment for audit trail.
    The automated CI gate will return when schema/auth/journal code lands
    (see `.github/workflows/ci.yml` note for re-enabling reference).
+7. Every PR fills `.github/pull_request_template.md` completely. The Linear-issue
+   field uses a magic word (`Closes FV-###`); the branch name contains the issue
+   id so Linear auto-links and auto-transitions In Review → Done.
+
+## Issue-Scoped Workflow
+
+Every change is scoped to one Linear issue. The issue is the contract — the
+diff should match it and nothing else. (For a trivial mechanical change with no
+issue, state that in the PR's Linear-issue field as "No issue — <reason>".)
+
+**Before editing.** Read the Linear issue, the linked spec, and the existing
+files you are about to touch. Restate the acceptance criteria and the non-goals
+in your own words. Check how the codebase already solves this kind of problem
+before introducing a new pattern (grep first). Run `git status` so you do not
+disturb unrelated work in progress (the repo intentionally keeps `docs/` working
+files untracked).
+
+**While editing.** Implement only the stated acceptance criteria. Do not change
+unrelated files. Do not refactor opportunistically. Preserve existing behavior
+unless the issue explicitly changes it. Follow existing code style, architecture,
+naming, and UI conventions. Add or update tests when the change affects logic,
+data flow, permissions, integrations, or user-visible behavior. Scope you are
+tempted to add becomes a follow-up issue, not a bigger diff.
+
+**Before opening a PR.** Run the narrowest useful checks for the files you
+touched (see Project Workflow Config → Verify). Review the full diff for changes
+that escaped the issue's scope. Confirm the PR description follows
+`.github/pull_request_template.md` — every section filled.
+
+**Verification discipline.** Use the narrowest useful verification command for
+the task. If a broad check (full build, whole test suite, Vercel Preview) is
+already known to be red for reasons unrelated to your change — e.g. the Preview
+Supabase env gap — say so plainly in the PR's How-to-test / Risk and list the
+targeted checks that DID pass for the code you touched.
+
+**Branch + issue linkage.** Branch names contain the Linear issue id so Linear
+auto-links the PR: `<type>/fv-<n>-<slug>` (e.g. `feat/fv-12-stripe-checkout`).
+PR title carries the id: `feat(pregame): wire Stripe checkout (FV-12)`. PR body
+carries the magic word `Closes FV-12`. Opening the PR moves the issue to
+In Review; merging it moves the issue to Done — no manual status change needed.
+
+**Two modes — name which one you're in.**
+- **Delivery (default):** issue-scoped, tight diffs, parallelizable. All the
+  rules above apply.
+- **Discovery / spike:** explicit + time-boxed exploration to figure out WHAT to
+  build (e.g. a "should we re-architect X?" arc). The issue-scoped diff rules
+  relax, but the DELIVERABLE is a set of well-formed Linear issues — not a merged
+  multi-PR arc that bypassed tracking. Discovery ends by filing issues; delivery
+  then executes them.
+
+## PR Review Standard
+
+Review the PR against the linked Linear issue **only**. The question is "does
+this correctly and safely deliver this issue?" — not "what else could be better
+here?"
+
+Look for: acceptance-criteria gaps, bugs, broken data flow, unnecessary scope
+expansion, security issues, bad abstractions, missing loading/error states, and
+code that will be hard for a future agent to modify safely.
+
+Do **not** suggest unrelated improvements unless they are severe (a real bug, a
+security hole, data loss, a privacy/RLS regression). Drive-by refactor
+suggestions are noise.
+
+Return feedback in exactly three groups:
+
+1. **Must fix before merge** — blocks merge. Bugs, security, AC not met,
+   data-flow breaks, privacy/RLS regressions.
+2. **Should fix soon** — not a blocker; file a follow-up Linear issue. Tech debt,
+   missing edge-case handling, weak tests.
+3. **Safe to merge** — observations and nits the author may take or leave.
+
+**Scope-leash mode: ADVISORY.** An over-scoped PR (diff exceeds the linked
+issue's acceptance criteria) is FLAGGED in group 2 and the extra scope is logged
+in the PR's "Intentionally not done" / "Follow-up issues created" fields — it is
+NOT blocked on scope alone. (Revisit tightening to blocking if scope-creep
+persists.)
+
+**Two reviewer tiers.** qa-reviewer and kids-privacy-officer are mandatory
+cross-cutting gates: they review against global standards (regression / a11y /
+test pyramid; minor-data-protection + RLS) and MAY exceed issue scope, because a
+safety, privacy, or regression finding is "severe" by definition and belongs in
+group 1. The general issue-scoped review (the default-case `/review` pass) is
+bound strictly to the linked issue's AC. Both map output onto the three groups.
+The privacy veto is never suppressed to satisfy "issue-scoped only."
 
 ## MVP Scope (locked — kill scope creep ruthlessly)
 - Parent signup + Stripe subscription ($8.99/mo or $79/yr)
@@ -278,6 +368,67 @@ docs/brand.md "Voice Modes" for the full table. Default mode is Mentor.
 - Smoke-tested on at least one mobile browser (Safari iOS, Chrome Android)
 - README updated if setup steps changed
 - No new third-party SDK without product-strategist approval
+
+## Project Workflow Config
+<!-- vibe-workflow-kit v1.0.0 — the ONLY per-project block. Prose workflow
+     sections above are identical across repos; edit values here only. -->
+
+- **Default branch:** `main`
+- **App path(s):** `apps/web`
+- **Linear team:** From Victory (`9fdb8aa8-8b16-4f44-9ce0-0ace088c4ae1`)
+- **Issue-id prefix:** `FV`
+- **Branch naming:** `<type>/fv-<n>-<slug>` e.g. `feat/fv-12-stripe-checkout`
+- **Verify — fast gates (always), from `apps/web/`:** `npm run typecheck`, `npm run lint`
+- **Verify — full (runtime / routing / server-action / schema changes):** `npm run build` (+ `npm test` when tests cover the path)
+- **Verify — narrowest:** prefer a single test file or `tsc` on touched paths over the whole suite.
+- **Review gate (before merge):** general `/review` (issue-scoped) → qa-reviewer → kids-privacy-officer (if privacy path) → merge
+- **Privacy-sensitive paths (trigger kids-privacy-officer):** `apps/web/**`, `supabase/**`, `packages/content/**`, `.claude/agents/**`, `CLAUDE.md`, `docs/brand.md`
+- **Project-specific guards:** if any committed `*.mp3` changed, bump `AUDIO_CACHE_BUST` in `apps/web/components/pregame/audio-mapping.ts`
+- **Agent roster:** see `## Subagents` and `## Agent Orchestration` in this file.
+
+## Merge Authority & Risk Tiers
+
+The goal is to keep KC off the critical path for low-risk work and reserve his
+attention for high-stakes calls. Every PR is one of two tiers.
+
+**Tier 1 — auto-merge (no KC gate).** Mechanism: GitHub auto-merge
+(`gh pr merge --auto`) — the PR merges itself once CI is green AND the
+issue-scoped `/review` is clean AND (if it touches a privacy path) the
+kids-privacy-officer is clean. No waiting on KC. Tier 1 = work CI + the gates
+fully verify and that can't quietly harm a user:
+  - docs, tests, CI/infra, isolated chores / dependency bumps
+  - content-DATA additions that pass the `playlist-integrity` / schema guards
+  - isolated bug fixes with a regression test, in a single non-hot file
+  - anything labeled `tier:auto`
+
+**Tier 2 — KC-gated (explicit approval before merge).** Waits for KC:
+  - payments/Stripe, auth, RLS, DB migrations (`supabase/**`)
+  - by-ear audio quality calls (`area:audio` quality, not asset plumbing)
+  - athlete-facing brand/voice CONTENT, or any product-scope change
+  - any privacy/clinical finding ≥ HIGH, or a public/marketing surface
+  - anything labeled `kc-gate`
+
+**Prerequisite:** Tier-1 auto-merge requires GitHub Settings → "Allow auto-merge"
+enabled + the `main` ruleset's required status checks set, so auto-merge waits
+for CI. Until then, all merges stay manual (KC remains the funnel).
+
+## Stream Boundaries & Parallel Work
+
+Parallel streams only go faster if they don't fight over the same files.
+
+**Independent areas — safe to run concurrent streams:** `packages/content/**`;
+audio clip generation + `components/pregame/audio/clips.ts` + clip assets;
+`supabase/migrations/**`; `.github/**` + CI; `docs/**`.
+
+**Collision-prone hot files — serialize, do NOT parallelize:**
+`components/pregame/screens-b.tsx`, `useClipPlayer.ts`, `PracticeFlow.tsx`,
+`shared.tsx`, `types.ts`, `audio-mapping.ts`, `CLAUDE.md`, `package.json`/lockfile.
+
+Route concurrent Linear issues to independent areas. When two issues touch the
+same hot file, set a Linear dependency (one blocks the other) and run them
+sequentially — do not open two branches on the same hot file. As the app grows,
+invest in subsystem boundaries so today's hot files become independent modules —
+that conversion, not the tracker, is what raises the parallelism ceiling.
 
 ## Open Items (ask KC before assuming)
 - Domain: fromvictory.com or fromvictory.app (purchase pending)
