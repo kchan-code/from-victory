@@ -62,7 +62,10 @@ paths, branch form, project guards). Read it; don't hardcode.
 
 8. **Merge per tier (CLAUDE.md → Merge Authority & Risk Tiers).** If the PR is
    **Tier 1** and auto-merge is enabled, `gh pr merge --auto` (merges itself on
-   green CI + clean reviews — don't wait on KC). If **Tier 2**, hand off: report
+   green CI + clean reviews — don't wait on KC). **NEVER issue `gh pr merge
+   --auto` on a PR that touches a Privacy-sensitive path until kids-privacy-
+   officer has posted `VERDICT: APPROVED` — such PRs are Tier-2 until then (the
+   Privacy-override hard rule).** If **Tier 2**, hand off: report
    the PR URL + what needs KC (the merge is their call), and any prod-only
    verification. Never merge a Tier-2 PR yourself. After merge, offer to sync
    `main` and delete the branch.

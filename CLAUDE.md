@@ -401,6 +401,16 @@ fully verify and that can't quietly harm a user:
   - isolated bug fixes with a regression test, in a single non-hot file
   - anything labeled `tier:auto`
 
+**Privacy override (HARD RULE).** A PR whose diff touches any Privacy-sensitive
+path (see Project Workflow Config) is NEVER Tier-1 and NEVER auto-merges until
+the kids-privacy-officer has posted `VERDICT: APPROVED` on it (or a CI check
+enforces that verdict). Tier shorthand never demotes a privacy review: a "docs,"
+"chore," "dependency bump," or "content-DATA" diff that ALSO touches a privacy
+path is Tier-2 until privacy is APPROVED. Until a CI gate parses the `VERDICT:`
+line, `gh pr merge --auto` MUST NOT be issued on a privacy-path PR — the lead
+holds the merge until the verdict is APPROVED. A privacy `VERDICT: BLOCKED` /
+`CHANGES_REQUESTED` halts the merge regardless of tier or green CI.
+
 **Tier 2 — KC-gated (explicit approval before merge).** Waits for KC:
   - payments/Stripe, auth, RLS, DB migrations (`supabase/**`)
   - by-ear audio quality calls (`area:audio` quality, not asset plumbing)
