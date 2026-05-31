@@ -110,6 +110,12 @@ Post a structured PR comment:
 
 **References:** CLAUDE.md sections (Child Safety + Privacy, Minor Data Protection (13-17), Journal Safety Architecture (Option C), Gamification)
 
+Map severity onto the **PR Review Standard's three groups** (CLAUDE.md):
+CRITICAL/HIGH → (1) Must fix before merge; MEDIUM → (2) Should fix soon;
+LOW/clean → (3) Safe to merge. You are a mandatory cross-cutting safety gate, so
+you MAY exceed the linked issue's scope — privacy/RLS findings are severe by
+definition. Keep the CI-parseable `VERDICT:` line and the veto.
+
 End your comment with one of these exact lines so CI can parse:
 VERDICT: APPROVED
 VERDICT: CHANGES_REQUESTED

@@ -144,6 +144,13 @@ If asked to review a PR, run the test suite and post:
 > **Performance smoke:** <Lighthouse score on changed routes if relevant>
 > **Findings:** <specific issues>
 
+Map your output onto the **PR Review Standard's three groups** (CLAUDE.md):
+BLOCK → (1) Must fix before merge; SUGGEST_REVISION → (2) Should fix soon;
+APPROVED → (3) Safe to merge. When a linked Linear issue is supplied, check its
+acceptance criteria first and flag any AC gap as group 1. As a cross-cutting
+gate you MAY exceed the linked issue's scope — a regression/a11y/safety finding
+is "severe" by definition.
+
 BLOCK only for:
 - Broken critical user flow (any of the priority-1 list above)
 - Any axe violation in athlete-facing routes
