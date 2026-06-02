@@ -142,8 +142,9 @@ For sport-specific content, content-curator also pulls in the relevant
 authenticity — realistic positions, adversities, vocabulary, and
 age/level fit. The sport-expert advises and verifies; it does NOT write
 the mental skill (sports-psychologist) or the scripture (youth-pastor),
-and it is not a clinician. One sport-expert per launch sport (hockey,
-basketball); sports beyond those are v2.
+and it is not a clinician. One sport-expert per launch sport. (Hockey is
+live; basketball is being brought into MVP scope — scope-lock text
+reconciled in FRO-26.) Sports beyond the launch sports are v2.
 
 ## Agent Orchestration
 The lead agent is the **sole orchestrator**. Subagents are leaf workers — they
