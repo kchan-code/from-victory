@@ -1444,7 +1444,7 @@ export const CLIP_HM_GOALIE_MISSED_CHANCE_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. You missed the puck. It is not your identity. Reset and go again.",
+      text: "Speak the truth. You went for it. It is not your identity. Reset and go again.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -1753,7 +1753,7 @@ export const CLIP_HM_GOALIE_START_SLOW_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 1.5 },
     {
       type: "speech",
-      text: "Feel what your body does. Tight grip on the stick. Shoulders up. I am not in this game.",
+      text: "Feel what your body does. Tight in your glove hand. Shoulders up. I am not in this game.",
       speed: 1.2,
       instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS,
     },

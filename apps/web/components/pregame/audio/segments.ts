@@ -145,14 +145,14 @@ export const FORWARD_VIZ: Segment[] = [
     // ── First shift (Coach) — FORWARD
     {
       type: "speech",
-      text: "Now visualize you that your line is called.",
+      text: "Now visualize that your line is called.",
       speed: 1.0,
       mark: { phase: "firstShift" },
     },
     { type: "silence", durationSec: 0.25 },
     {
       type: "speech",
-      text: "You hop the boards. You see the play",
+      text: "You hop the boards. You see the play.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -166,7 +166,7 @@ export const FORWARD_VIZ: Segment[] = [
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Your Eyes are up. you shoulder check.",
+      text: "Your eyes are up. You shoulder check.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -196,14 +196,14 @@ export const FORWARD_VIZ: Segment[] = [
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "you Get there first, get low, take the body.",
+      text: "You get there first, get low, take the body.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "you make a play, Drive inside, hard to the net, shoot, and score.",
+      text: "You make a play. Drive inside, hard to the net. Shoot, and score.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -217,7 +217,7 @@ export const FORWARD_VIZ: Segment[] = [
     { type: "silence", durationSec: 0.8 },
     {
       type: "speech",
-      text: "Your teamate has the puck, the puck turns over, you backcheck harder than everyone else and stop the goal.",
+      text: "Your teammate has the puck. It turns over. You backcheck harder than everyone else and stop the goal.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },

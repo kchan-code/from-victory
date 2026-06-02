@@ -33,7 +33,7 @@
     },
     "viz-forward": {
       "url": "/audio/pregame/clips/viz-forward.mp3",
-      "durationSec": 109.698,
+      "durationSec": 110.37,
       "phases": [
         {
           "phase": "rink",
@@ -41,7 +41,7 @@
         },
         {
           "phase": "firstShift",
-          "offsetSec": 39.73
+          "offsetSec": 39.586
         }
       ]
     },
@@ -295,7 +295,7 @@
     },
     "hm-goalie-missed-chance": {
       "url": "/audio/pregame/clips/hm-goalie-missed-chance.mp3",
-      "durationSec": 44.776,
+      "durationSec": 46,
       "phases": [
         {
           "phase": "hardMoment",
@@ -355,7 +355,7 @@
     },
     "hm-goalie-start-slow": {
       "url": "/audio/pregame/clips/hm-goalie-start-slow.mp3",
-      "durationSec": 53.328,
+      "durationSec": 54.168,
       "phases": [
         {
           "phase": "hardMoment",
