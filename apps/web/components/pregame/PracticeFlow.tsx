@@ -265,9 +265,13 @@ function FocusPickerScreen({
 // PracticeSessionScreen
 // ---------------------------------------------------------------------------
 
-// Fallback session duration used by the text-mode timer when the clip player
-// is unavailable. The 5 pp clips sum to ~153 s; 150 is a round safe floor.
-const PRACTICE_SESSION_DURATION_S = 150;
+// Fallback session duration (seconds) for the text-mode timer when the clip
+// player is unavailable. Estimate for the FRO-22 state-aware session: opener +
+// shared Beats 2–6 (incl. pp-be-vocal) + injected focus clip ≈ 2:45. When clips
+// load normally the player uses the real total from clipPlayer.totalSec; this
+// floor only governs the degraded text-only mode. Reconcile against the rendered
+// manifest/sidecar totals after MP3 generation (AUDIO_CACHE_BUST=10).
+const PRACTICE_SESSION_DURATION_S = 165;
 
 function PracticeSessionScreen({
   focus,
