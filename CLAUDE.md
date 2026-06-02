@@ -128,12 +128,22 @@ from-victory/
 | content-curator | Orchestrates training content; integrates sports-psychologist + youth-pastor outputs into one voice across the four voice modes |
 | sports-psychologist | Mental skills content (Dweck, Gallwey, Loehr, etc.). Co-author. |
 | youth-pastor | Scripture and theological framing (Keller, Lewis). Co-author. |
+| hockey-expert | Hockey domain authenticity: the game, age/development roadmap, positions, league + recruiting culture. Advises the content trio; verifies sport-specific scripts. NOT a clinician. |
+| basketball-expert | Basketball domain authenticity: the game, age/development roadmap, positions, league + recruiting culture. Advises the content trio; verifies sport-specific scripts. NOT a clinician. |
 | qa-reviewer | Playwright E2E, accessibility, smoke tests |
 | kids-privacy-officer | Minor (13-17) + general data-protection review on every PR. Has veto. |
 
 The content trio (content-curator + sports-psychologist + youth-pastor)
 works together: curator briefs both specialists, they return raw material,
 curator integrates into a single training session in one voice.
+
+For sport-specific content, content-curator also pulls in the relevant
+**sport-expert** (hockey-expert / basketball-expert) for domain
+authenticity — realistic positions, adversities, vocabulary, and
+age/level fit. The sport-expert advises and verifies; it does NOT write
+the mental skill (sports-psychologist) or the scripture (youth-pastor),
+and it is not a clinician. One sport-expert per launch sport (hockey,
+basketball); sports beyond those are v2.
 
 ## Agent Orchestration
 The lead agent is the **sole orchestrator**. Subagents are leaf workers — they
@@ -151,6 +161,7 @@ Standing invocation policy — apply these by default, not by memory:
 | Supabase schema / RLS / migration / auth / Stripe / server action | backend-engineer |
 | Pregame audio pipeline / TTS / ffmpeg / EQ / `AUDIO_CACHE_BUST` | audio-engineer |
 | Athlete-facing training, journal, or scripture content | content-curator (orchestrates sports-psychologist + youth-pastor) |
+| Sport-specific content (hockey/basketball scenarios, positions, examples, pregame scripts) | content-curator + the relevant sport-expert (hockey-expert / basketball-expert) for authenticity |
 | Any PR touching runtime or tested code — before privacy + merge | qa-reviewer |
 | Any PR touching `apps/web/**`, `supabase/**`, `packages/content/**`, `.claude/agents/**`, `CLAUDE.md`, `docs/brand.md` | kids-privacy-officer (also nudged by the privacy-review hook) |
 
