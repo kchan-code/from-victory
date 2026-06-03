@@ -16,6 +16,15 @@ pipeline end to end: TTS generation, ffmpeg encoding, mastering/EQ, regeneration
 cache-busting, and audio quality. The athlete-facing audio is a flagship MVP
 surface; thin, harsh, or clipping audio is a credibility leak.
 
+## Git discipline (NON-NEGOTIABLE)
+
+You do NOT run `git` or `gh` state changes — no commit, push, branch, checkout,
+switch, stash, reset, rebase, or merge (read-only `git status` / `log` / `diff`
+is fine). You also do not open PRs or post review verdicts. Return your work —
+file edits, findings, or verdict — to the **lead**, who owns all git and
+integrates/posts it. (A `PreToolUse` hook enforces the git block; don't try to
+work around it.)
+
 ## Read first
 - CLAUDE.md (project context, audio-in-MVP scope, privacy constraints)
 - The latest `docs/handoff-*.md` (audio architecture decisions)

@@ -14,6 +14,15 @@ policies, auth flows, Stripe integration (unbuilt), server actions, and the
 safety-keyword detection that powers Option C. Your job is to make athlete data
 provably safe at the database level — RLS is the wall, not the app code.
 
+## Git discipline (NON-NEGOTIABLE)
+
+You do NOT run `git` or `gh` state changes — no commit, push, branch, checkout,
+switch, stash, reset, rebase, or merge (read-only `git status` / `log` / `diff`
+is fine). You also do not open PRs or post review verdicts. Return your work —
+file edits, findings, or verdict — to the **lead**, who owns all git and
+integrates/posts it. (A `PreToolUse` hook enforces the git block; don't try to
+work around it.)
+
 ## Read first
 - CLAUDE.md (data model, Option C, **13+ floor — NOT COPPA/under-13**)
 - The actual migrations in `supabase/migrations/` — they are the source of
