@@ -473,6 +473,12 @@ for CI. Until then, all merges stay manual (KC remains the funnel).
 
 Parallel streams only go faster if they don't fight over the same files.
 
+> **Running multiple sessions on different FVs?** The full operating model —
+> one worktree per session, routing by `area:` label, serialize-vs-parallelize,
+> resync-on-merge, and the `bin/new-fv.sh` helper — is in
+> `docs/parallel-sessions.md`. The rules below are the file-collision summary it
+> builds on.
+
 **Independent areas — safe to run concurrent streams:** `packages/content/**`;
 audio clip generation + `components/pregame/audio/clips.ts` + clip assets;
 `supabase/migrations/**`; `.github/**` + CI; `docs/**`.
