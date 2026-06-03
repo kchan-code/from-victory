@@ -180,6 +180,41 @@ Rules of the road:
   that becomes a follow-up Linear issue logged in the PR's "Intentionally not
   done" / "Follow-up issues created" fields — not extra commits in this diff.
 
+### Orchestration mechanics — git ownership, isolation, worktrees (NON-NEGOTIABLE)
+
+These are the MECHANICAL rules that keep parallel agent work from tangling the
+repo. They exist because instruction-only control ("the brief said don't commit")
+has failed repeatedly — a subagent with Bash will run git anyway when it decides
+that "preserves the work." Enforce mechanically, not by reminder.
+
+1. **The lead owns 100% of git.** Only the lead runs `git` / `gh` state changes —
+   branch, commit, push, PR, checkout, stash, rebase, merge. Subagents return
+   **file edits / diffs** to the lead; the lead integrates and commits. Never
+   trust an agent's "I committed it" — if agents never touch git there is nothing
+   to verify after the fact. A `PreToolUse` hook
+   (`.claude/hooks/block-subagent-git.sh`) denies state-changing git to subagents
+   as a backstop; it fails OPEN, so it can never block the lead.
+2. **File-editing agents run in worktree isolation.** Spawn any agent that edits
+   files with the Agent tool's `isolation: "worktree"`, so its filesystem and git
+   are sandboxed and it cannot switch the shared branch or stomp the main tree.
+3. **One git worktree per concurrent session/stream.** Never share a working
+   directory across sessions — cross-session branch-switching drops agents onto
+   the wrong branch mid-operation. Each parallel session/issue gets its own
+   `git worktree add` (the FV-30 pattern). This also isolates untracked-file
+   pileups per worktree.
+
+Recovery playbooks (for when it still happens):
+- **Stacked-PR conflict after a squash-merge:** the squashed base no longer
+  matches your branch's copies of those commits. `git rebase --onto main
+  <old-base> <branch>` replays only your unique commits onto the new `main`.
+  Better: don't stack across a *pending* squash-merge unless necessary — wait for
+  the base to merge, then branch off `main`.
+- **Verify agent source-quotes against source before acting.** Review/expert
+  agents can fabricate line-level "verbatim" quotes; confirm against the file
+  (e.g. a verbatim-extraction diff) before filing an issue or editing.
+- **Privacy `VERDICT:` lines must be unbolded at line-start.** The CI gate regex
+  (`^[ \t>]*VERDICT:`) rejects `**VERDICT: APPROVED**` — the bold breaks the anchor.
+
 ## Workflow Rules (NON-NEGOTIABLE)
 1. Never edit `main` directly. Every task starts with `git checkout -b feature/<name>`.
 2. Commit in small logical units. Conventional commits: feat:, fix:, chore:, test:, docs:.
