@@ -1,0 +1,72 @@
+name: Privacy verdict gate
+
+# FV-4 — converts CLAUDE.md's manual "Privacy override (HARD RULE)" into a real
+# merge gate. On any PR that touches a Privacy-sensitive path, this publishes a
+# `privacy-verdict` commit status that stays red until the kids-privacy-officer
+# posts `VERDICT: APPROVED`. Re-runs on comments so the status flips the moment
+# the verdict lands — no re-push needed.
+#
+# Make `privacy-verdict` a required status check in the `main` ruleset so the
+# gate actually blocks merge. (That, plus enabling "Allow auto-merge", is the
+# manual GitHub step gated on this workflow — see FV-4 AC2.) Add it as REQUIRED
+# so a never-reported status = blocked.
+#
+# Scope: internal branches only (the MVP model — solo founder + agents, no
+# external forks). A `pull_request` from a fork gets a read-only token, so the
+# status write fails and no `privacy-verdict` is published — which, with the
+# context required in the ruleset, leaves the PR blocked (fail-closed). If
+# external forks ever come into scope, harden via `pull_request_target` with a
+# trusted-ref checkout — do NOT just switch the trigger (that would run fork
+# code with a write token). Tracked as a follow-up.
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created, edited, deleted]
+
+# Latest event of the SAME TYPE for a given PR wins; cancel superseded
+# evaluations. The group is scoped by `event_name` so an `issue_comment` run
+# (which only re-publishes the status when a verdict lands) does NOT cancel an
+# in-flight `pull_request` run — without this, posting the REQUIRED
+# kids-privacy-officer audit-trail comment cancels the PR's check jobs via
+# cancel-in-progress, and the pull_request-only "Gate logic unit tests" job
+# never re-runs, wedging the PR red. (FV-42 — regression from the initial FV-4
+# gate.)
+concurrency:
+  group: privacy-verdict-${{ github.event.pull_request.number || github.event.issue.number }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  verdict:
+    name: Require privacy VERDICT
+    # Run for PR events and for comments made on PRs (not plain issues).
+    if: >-
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const { run } = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/privacy-verdict.cjs`)
+            await run({ github, context, core })
+
+  test-logic:
+    name: Gate logic unit tests
+    # Only on PR events — the gate logic can't change on a comment.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --test .github/scripts/privacy-verdict.test.cjs

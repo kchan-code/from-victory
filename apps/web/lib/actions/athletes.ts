@@ -7,6 +7,7 @@ import { z } from "zod";
 import { ageFromBirthdate } from "@/lib/age";
 import { ATHLETE_SYNTHETIC_EMAIL_DOMAIN } from "@/lib/auth/athlete-email";
 import { requireParent } from "@/lib/auth/guards";
+import { SUPPORTED_SPORTS } from "@/lib/sports";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const MIN_ATHLETE_AGE = 13;
@@ -21,6 +22,11 @@ const CreateAthleteSchema = z
     birthdate: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD."),
+    // FV-27: captured-if-provided, defaulted otherwise. The onboarding sport
+    // selector is FV-33; until it ships the create forms omit `sport`, so an
+    // athlete defaults to hockey (the launch sport). FV-33 adds the field so a
+    // parent can choose basketball; sport is editable later regardless.
+    sport: z.enum(SUPPORTED_SPORTS).optional().default("hockey"),
   })
   .refine(
     (data) => {
@@ -45,6 +51,7 @@ export async function createAthlete(
   const parsed = CreateAthleteSchema.safeParse({
     first_name: formData.get("first_name"),
     birthdate: formData.get("birthdate"),
+    sport: formData.get("sport") ?? undefined,
   });
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
@@ -84,6 +91,7 @@ export async function createAthlete(
     role: "athlete",
     first_name: parsed.data.first_name,
     birthdate: parsed.data.birthdate,
+    sport: parsed.data.sport,
   });
   if (profileError) {
     const { error: rollbackError } =

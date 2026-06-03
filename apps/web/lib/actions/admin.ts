@@ -5,6 +5,7 @@ import { z } from "zod";
 import { ageFromBirthdate } from "@/lib/age";
 import { requireAdminParent, isAdminEmail } from "@/lib/auth/admin";
 import { isSyntheticAthleteEmail } from "@/lib/auth/athlete-email";
+import { SUPPORTED_SPORTS } from "@/lib/sports";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -47,6 +48,10 @@ const CreateAthleteDirectSchema = z
       .string()
       .min(8, "Password must be at least 8 characters.")
       .max(72, "Password is too long."),
+    // FV-27: optional + defaulted (mirrors athletes.ts). The admin direct-
+    // create form has no sport field yet (FV-33), so athletes default to
+    // hockey until that selector ships.
+    sport: z.enum(SUPPORTED_SPORTS).optional().default("hockey"),
   })
   .refine(
     (data) => {
@@ -91,6 +96,7 @@ export async function createAthleteDirect(
     birthdate: formData.get("birthdate"),
     email: formData.get("email"),
     password: formData.get("password"),
+    sport: formData.get("sport") ?? undefined,
   });
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
@@ -130,6 +136,7 @@ export async function createAthleteDirect(
     role: "athlete",
     first_name: parsed.data.first_name,
     birthdate: parsed.data.birthdate,
+    sport: parsed.data.sport,
   });
   if (profileError) {
     const { error: rollbackError } =
