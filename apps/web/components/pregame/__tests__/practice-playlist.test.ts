@@ -15,11 +15,16 @@ import { describe, it, expect } from "vitest";
 
 import {
   resolvePracticePlaylist,
-  PRACTICE_FOCUS_SLUGS,
   type ClipManifest,
 } from "../audio-playlist";
 
-import { PRACTICE_FOCUS_OPTIONS, type PracticeState } from "../types";
+import { type PracticeState } from "../types";
+import { HOCKEY_CONFIG } from "../sport-registry";
+
+// Focus options + their pp-focus slugs are sourced from the registry
+// (the runtime authoritative source), not a proxy re-export.
+const PRACTICE_FOCUS_OPTIONS = HOCKEY_CONFIG.practiceFocusOptions;
+const PRACTICE_FOCUS_SLUGS = HOCKEY_CONFIG.practiceFocusSlugs;
 
 // ---------------------------------------------------------------------------
 // Fixture helpers

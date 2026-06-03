@@ -19,7 +19,6 @@ import {
   DEFAULTS,
   NEED_VERSE,
   RESET_ANCHORS,
-  ROLE_CONTENT,
   SCRIPTURE_REF,
   SCRIPTURE_SHORT,
   SCRIPTURE_TEXT,
@@ -29,6 +28,8 @@ import {
   type PregameState,
 } from "./types";
 import { audioAssetUrl, cellSrcFor, cellSlugFor, openerSrcFor } from "./audio-mapping";
+import type { Sport, SportConfig } from "./sport-registry";
+import { HOCKEY_CONFIG } from "./sport-registry";
 import type { AudioTimeline, Phase } from "./audio/types";
 import { findActivePhase, type AssembledTimeline } from "./audio-playlist";
 import { useClipPlayer } from "./useClipPlayer";
@@ -332,6 +333,7 @@ const STAGE_LABELS: Record<string, string> = {
 };
 
 // Eyebrow text → athlete-facing stage label. Goalie-aware for firstShift.
+// role is string | null (PregameState.role); "Goalie" check is still a string comparison.
 function eyebrowToStageLabel(eyebrow: string, role: PregameState["role"]): string {
   // Strip the role suffix from "Play your role · Forward" etc.
   const base = eyebrow.split("·")[0]?.trim() ?? eyebrow;
@@ -345,10 +347,18 @@ function eyebrowToStageLabel(eyebrow: string, role: PregameState["role"]): strin
   );
 }
 
-function substituteSegment(seg: AudioSegment, state: PregameState): { eyebrow: string; body: string } {
+function substituteSegment(
+  seg: AudioSegment,
+  state: PregameState,
+  sportConfig: SportConfig = HOCKEY_CONFIG,
+): { eyebrow: string; body: string } {
   const role = state.role;
-  const roleScenes = role
-    ? ROLE_CONTENT[role].scenes.join(" ")
+  // Guard: roleContent may be absent for no-ask sports, or the selected role
+  // may not be in the map (e.g. a custom string). Fall back to generic scenes.
+  const roleContent = sportConfig.roleContent ?? {};
+  const roleEntry = role ? (roleContent[role] ?? null) : null;
+  const roleScenes = roleEntry
+    ? roleEntry.scenes.join(" ")
     : "Win the next puck race. Make the next read. Recover and go again.";
 
   const replace = (s: string) =>
@@ -404,10 +414,19 @@ export function AudioSessionScreen({
   state,
   set,
   onContinue,
+  sportConfig = HOCKEY_CONFIG,
+  sport = "hockey",
 }: {
   state: PregameState;
   set: SetFn;
   onContinue: () => void;
+  sportConfig?: SportConfig;
+  /**
+   * The athlete's sport key. Threaded into cellSrcFor, cellSlugFor, and
+   * useClipPlayer so the audio engine is sport-aware within the session.
+   * Defaults to "hockey" so callers that haven't migrated yet stay green.
+   */
+  sport?: Sport;
 }) {
   // ── Clip player flag — read once, stable for the session ──
   // useClipPlayerFlag reads window.location.search; calling it unconditionally
@@ -428,6 +447,7 @@ export function AudioSessionScreen({
     anchor: useClips ? state.anchor : null,
     selfTalk: useClips ? state.selfTalk : null,
     cueWord: useClips ? (state.cueWord || null) : null,
+    sport,
     onCompleted: useClips
       ? () => {
           set("audioCompleted", true);
@@ -440,7 +460,7 @@ export function AudioSessionScreen({
 
   // Derive MP3 sources from pregame state.
   const openerSrc = openerSrcFor(state.need);
-  const cellSrc = cellSrcFor(state.role, state.adversity);
+  const cellSrc = cellSrcFor(state.role, state.adversity, sport);
 
   // Default optimistically to audio: the assets exist in the normal path, so
   // we render the clean audio-mode card (and mount/preload the <audio>
@@ -533,7 +553,7 @@ export function AudioSessionScreen({
     }
 
     if (state.role && state.adversity) {
-      const cellSlug = cellSlugFor(state.role, state.adversity);
+      const cellSlug = cellSlugFor(state.role, state.adversity, sport);
       fetch(audioAssetUrl(cellSlug, "json"))
         .then(async (res) => {
           if (cancelled || !res.ok) return;
@@ -544,7 +564,7 @@ export function AudioSessionScreen({
     }
 
     return () => { cancelled = true; };
-  }, [state.need, state.role, state.adversity, audioMode, openerSrc]);
+  }, [state.need, state.role, state.adversity, audioMode, openerSrc, sport]);
 
   // Text-mode timer (fallback). Unchanged from prior behavior.
   useEffect(() => {
@@ -741,7 +761,7 @@ export function AudioSessionScreen({
     }
     const seg = segments[currentIdx];
     view = seg
-      ? substituteSegment(seg, state)
+      ? substituteSegment(seg, state, sportConfig)
       : { eyebrow: "Identity", body: SCRIPTURE_SHORT };
     textModeStageLabel = eyebrowToStageLabel(view.eyebrow, state.role);
   }

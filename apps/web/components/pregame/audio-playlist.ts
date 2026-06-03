@@ -23,6 +23,7 @@ import {
   NEED_OPENER_SLUGS,
   SELFTALK_OPTION_SLUGS,
 } from "./audio-mapping";
+import { HOCKEY_CONFIG, type SportConfig } from "./sport-registry";
 
 // ---------------------------------------------------------------------------
 // Manifest types (locked contract — matches the audio-engineer's schema)
@@ -255,27 +256,6 @@ export function resolvePlaylist(
 }
 
 // ---------------------------------------------------------------------------
-// Practice focus-phrase → clip slug map
-// ---------------------------------------------------------------------------
-
-/**
- * Maps the PRACTICE_FOCUS_OPTIONS strings (from types.ts) to their
- * pp-focus-<slug> clip slugs. Unknown focus strings resolve to null (the focus
- * clip is dropped; lead+tail still flow without crashing).
- *
- * Keys are EXACT option strings — any mismatch silently drops the focus clip.
- */
-export const PRACTICE_FOCUS_SLUGS: Record<string, string> = {
-  "Relentless": "pp-focus-relentless",
-  "Hungry": "pp-focus-hungry",
-  "Head up every breakout": "pp-focus-head-up-every-breakout",
-  "Feet always moving": "pp-focus-feet-always-moving",
-  "Hard first pass": "pp-focus-hard-first-pass",
-  "Win every race to the puck": "pp-focus-win-every-race-to-the-puck",
-  "Full reps, no glide": "pp-focus-full-reps-no-glide",
-};
-
-// ---------------------------------------------------------------------------
 // resolvePracticePlaylist
 // ---------------------------------------------------------------------------
 
@@ -311,6 +291,12 @@ export function resolvePracticePlaylist(
   manifest: ClipManifest,
   state?: PracticeState | null,
   focus?: string | null,
+  /**
+   * Sport config for opener slug resolution and focus slug lookup.
+   * Defaults to HOCKEY_CONFIG so existing call sites (tests, PracticeFlow)
+   * stay green without changes.
+   */
+  sportConfig: SportConfig = HOCKEY_CONFIG,
 ): ResolvedClip[] | null {
   // ── p5 state-aware path ──────────────────────────────────────────────────
   if (manifest.practiceState) {
@@ -318,16 +304,13 @@ export function resolvePracticePlaylist(
     const resolvedState: PracticeState =
       state === "not-feeling-it" ? "not-feeling-it" : "dialed-in";
 
-    const openerSlug =
-      resolvedState === "not-feeling-it"
-        ? "pp-opener-get-to"
-        : "pp-opener-dialed-in";
+    const openerSlug = sportConfig.practiceOpenerSlugs[resolvedState];
 
     const tailSlugs = manifest.practiceState[resolvedState];
 
-    // Focus clip: resolve from map; drop cleanly if unknown/missing.
+    // Focus clip: resolve from sport config's slug map; drop cleanly if unknown/missing.
     const focusSlug =
-      focus ? (PRACTICE_FOCUS_SLUGS[focus] ?? null) : null;
+      focus ? (sportConfig.practiceFocusSlugs[focus] ?? null) : null;
 
     // Assemble: opener → shared-tail with focus injected between lead/tail.
     // The shared-tail array from the manifest already contains lead+tail slugs;

@@ -25,6 +25,7 @@ import {
 } from "../types";
 
 import type { ClipManifest } from "../audio-playlist";
+import { HOCKEY_CONFIG } from "../sport-registry";
 
 // ---------------------------------------------------------------------------
 // Load committed manifest (real file, not a fixture)
@@ -273,19 +274,9 @@ describe("practice playlist integrity", () => {
 describe("template matrix completeness", () => {
   const POSITIONS = ["Forward", "Defense", "Goalie"] as const;
 
-  // These must match ADVERSITIES in types.ts exactly.
-  const ADVERSITIES = [
-    "I turn the puck over.",
-    "I miss a scoring chance.",
-    "I get beaten wide.",
-    "I take a bad penalty.",
-    "Coach yells.",
-    "I get benched.",
-    "I feel nervous.",
-    "I get hit.",
-    "I start slow.",
-    "We give up the first goal.",
-  ] as const;
+  // Sourced from the registry — single source of truth so any adversity rename
+  // is caught here without a separate edit.
+  const ADVERSITIES = HOCKEY_CONFIG.adversities;
 
   it("manifest has exactly 30 templates (3 positions × 10 adversities)", () => {
     expect(manifest.templates).toHaveLength(30);

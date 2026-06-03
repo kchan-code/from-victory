@@ -27,7 +27,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { type PracticeState, PRACTICE_FOCUS_OPTIONS } from "./types";
+import { type PracticeState } from "./types";
+import { getSportConfig, type Sport } from "./sport-registry";
 import { useClipPlayer } from "./useClipPlayer";
 import {
   BottomBar,
@@ -165,10 +166,13 @@ function FocusPickerScreen({
   initialFocus,
   onStart,
   onBack,
+  focusOptions,
 }: {
   initialFocus: string;
   onStart: (focus: string) => void;
   onBack: () => void;
+  /** Sport-specific focus option strings from sportConfig.practiceFocusOptions. */
+  focusOptions: readonly string[];
 }) {
   const [selected, setSelected] = useState<string>(initialFocus);
 
@@ -190,7 +194,7 @@ function FocusPickerScreen({
           role="radiogroup"
           aria-label="Today's focus"
         >
-          {PRACTICE_FOCUS_OPTIONS.map((option) => {
+          {focusOptions.map((option) => {
             const active = selected === option;
             return (
               <button
@@ -278,6 +282,7 @@ function PracticeSessionScreen({
   practiceState,
   onBack,
   onDone,
+  sport = "hockey",
 }: {
   focus: string;
   practiceState: PracticeState;
@@ -285,6 +290,7 @@ function PracticeSessionScreen({
    *  AudioContext / wake-lock / rAF / interval cleanup automatically). */
   onBack: () => void;
   onDone: () => void;
+  sport?: Sport;
 }) {
   // Reduced-motion: read the media query once on mount. CSS transition is
   // stripped from the progress bar if the user prefers reduced motion.
@@ -327,6 +333,7 @@ function PracticeSessionScreen({
     practice: true,
     practiceState,
     practiceFocus: focus,
+    sport,
     onCompleted: () => {
       /* completed state is read from clipPlayer.completed */
     },
@@ -546,7 +553,18 @@ function PracticeSessionScreen({
 // PracticeFlow — top-level component, exported for the /athlete/practice page
 // ---------------------------------------------------------------------------
 
-export function PracticeFlow() {
+export function PracticeFlow({
+  sport = "hockey",
+}: {
+  /**
+   * The athlete's sport. Drives focus-option list and clip slug resolution.
+   * Defaults to "hockey" so existing callers are unaffected until FV-27
+   * wires athlete.sport from the DB.
+   */
+  sport?: Sport;
+} = {}) {
+  const sportConfig = getSportConfig(sport);
+
   const [view, setView] = useState<PracticeView>("state-picker");
   // practiceState + practiceFocus are EPHEMERAL: useState only.
   // They are NEVER written to Supabase, localStorage, analytics, or any
@@ -639,6 +657,7 @@ export function PracticeFlow() {
           initialFocus={focus}
           onStart={handleFocusStart}
           onBack={handleBackToState}
+          focusOptions={sportConfig.practiceFocusOptions}
         />
       )}
       {view === "session" && (
@@ -647,6 +666,7 @@ export function PracticeFlow() {
           practiceState={practiceState}
           onBack={handleBackToFocus}
           onDone={handleDone}
+          sport={sport}
         />
       )}
     </PregameShell>

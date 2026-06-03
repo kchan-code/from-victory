@@ -18,13 +18,11 @@ import {
   StackedHero,
 } from "./shared";
 import {
-  ADVERSITIES,
   NEEDS,
-  ROLE_CONTENT,
   type NeedToday,
   type PregameState,
-  type Role,
 } from "./types";
+import type { SportConfig } from "./sport-registry";
 
 type SetFn = <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
 
@@ -279,19 +277,26 @@ export function TodaysFocusScreen({
 }
 
 // ─── SCREEN 4 ─── Position
+// Only rendered when sportConfig.roles is non-empty (role-ask sports like hockey).
+// No-ask sports (e.g. tennis) skip this screen entirely — the flow root gates
+// this step based on sportConfig.roles presence.
 export function PositionScreen({
   state,
   set,
+  sportConfig,
 }: {
   state: PregameState;
   set: SetFn;
+  sportConfig: SportConfig;
 }) {
   const role = state.role;
-  const roleNames = Object.keys(ROLE_CONTENT) as Role[];
+  // roles is guaranteed non-empty here (caller skips this step for no-ask sports).
+  const roleNames = sportConfig.roles ?? [];
+  const roleContent = sportConfig.roleContent ?? {};
 
   return (
     <ScreenBody>
-      <SectionLabel>Step 03 · Position</SectionLabel>
+      <SectionLabel>Step 03 · {sportConfig.roleLabel ?? "Position"}</SectionLabel>
       <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
         What position are you playing today?
       </h1>
@@ -321,31 +326,35 @@ export function PositionScreen({
         })}
       </div>
 
-      {role && (
-        <div className="mt-5">
-          <Card accent="verse">
-            <Eyebrow className="!text-gold">{role.toUpperCase()}</Eyebrow>
-            <h2 className="mb-4 mt-2 font-heading text-[20px] font-bold leading-[1.3] text-cream">
-              {ROLE_CONTENT[role].title}
-            </h2>
-            <div className="flex flex-col gap-2.5">
-              {ROLE_CONTENT[role].scenes.map((s, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 rounded-[10px] border border-hairline bg-cream/[0.025] px-3.5 py-3"
-                >
-                  <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full border border-gold/45 font-mono text-[10px] text-gold">
-                    {i + 1}
+      {role && (() => {
+        const content = roleContent[role];
+        if (!content) return null;
+        return (
+          <div className="mt-5">
+            <Card accent="verse">
+              <Eyebrow className="!text-gold">{role.toUpperCase()}</Eyebrow>
+              <h2 className="mb-4 mt-2 font-heading text-[20px] font-bold leading-[1.3] text-cream">
+                {content.title}
+              </h2>
+              <div className="flex flex-col gap-2.5">
+                {content.scenes.map((s, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 rounded-[10px] border border-hairline bg-cream/[0.025] px-3.5 py-3"
+                  >
+                    <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full border border-gold/45 font-mono text-[10px] text-gold">
+                      {i + 1}
+                    </div>
+                    <span className="font-heading text-[15px] font-medium text-cream">
+                      {s}
+                    </span>
                   </div>
-                  <span className="font-heading text-[15px] font-medium text-cream">
-                    {s}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-      )}
+                ))}
+              </div>
+            </Card>
+          </div>
+        );
+      })()}
     </ScreenBody>
   );
 }
@@ -357,11 +366,14 @@ export function PositionScreen({
 export function HardMomentScreen({
   state,
   set,
+  sportConfig,
 }: {
   state: PregameState;
   set: SetFn;
+  sportConfig: SportConfig;
 }) {
-  const isCustom = !!state.adversity && !ADVERSITIES.includes(state.adversity);
+  const adversities = sportConfig.adversities;
+  const isCustom = !!state.adversity && !adversities.includes(state.adversity);
   return (
     <ScreenBody>
       <SectionLabel>Step 04 · Hard Moment</SectionLabel>
@@ -374,7 +386,7 @@ export function HardMomentScreen({
       </p>
 
       <div className="flex flex-wrap gap-2">
-        {ADVERSITIES.map((a) => (
+        {adversities.map((a) => (
           <SelectChip
             key={a}
             label={a}
