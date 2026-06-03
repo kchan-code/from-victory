@@ -26,9 +26,16 @@ on:
   issue_comment:
     types: [created, edited, deleted]
 
-# Latest event for a given PR wins; cancel superseded evaluations.
+# Latest event of the SAME TYPE for a given PR wins; cancel superseded
+# evaluations. The group is scoped by `event_name` so an `issue_comment` run
+# (which only re-publishes the status when a verdict lands) does NOT cancel an
+# in-flight `pull_request` run — without this, posting the REQUIRED
+# kids-privacy-officer audit-trail comment cancels the PR's check jobs via
+# cancel-in-progress, and the pull_request-only "Gate logic unit tests" job
+# never re-runs, wedging the PR red. (FV-42 — regression from the initial FV-4
+# gate.)
 concurrency:
-  group: privacy-verdict-${{ github.event.pull_request.number || github.event.issue.number }}
+  group: privacy-verdict-${{ github.event.pull_request.number || github.event.issue.number }}-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
