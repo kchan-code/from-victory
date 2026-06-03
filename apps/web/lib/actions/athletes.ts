@@ -7,16 +7,10 @@ import { z } from "zod";
 import { ageFromBirthdate } from "@/lib/age";
 import { ATHLETE_SYNTHETIC_EMAIL_DOMAIN } from "@/lib/auth/athlete-email";
 import { requireParent } from "@/lib/auth/guards";
+import { SUPPORTED_SPORTS } from "@/lib/sports";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const MIN_ATHLETE_AGE = 13;
-
-// Sport values must match the sport_valid_values CHECK constraint in the DB
-// (20260602000000_athlete_sport.sql). Update both places when adding v2 sports.
-// Exported so the onboarding UI (FV-33) can derive its <select> options from
-// the same source of truth without duplicating the list.
-export const SUPPORTED_SPORTS = ["hockey", "basketball"] as const;
-export type Sport = (typeof SUPPORTED_SPORTS)[number];
 
 const CreateAthleteSchema = z
   .object({
@@ -28,9 +22,11 @@ const CreateAthleteSchema = z
     birthdate: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD."),
-    sport: z.enum(SUPPORTED_SPORTS, {
-      message: "Please select a sport.",
-    }),
+    // FV-27: captured-if-provided, defaulted otherwise. The onboarding sport
+    // selector is FV-33; until it ships the create forms omit `sport`, so an
+    // athlete defaults to hockey (the launch sport). FV-33 adds the field so a
+    // parent can choose basketball; sport is editable later regardless.
+    sport: z.enum(SUPPORTED_SPORTS).optional().default("hockey"),
   })
   .refine(
     (data) => {
@@ -55,7 +51,7 @@ export async function createAthlete(
   const parsed = CreateAthleteSchema.safeParse({
     first_name: formData.get("first_name"),
     birthdate: formData.get("birthdate"),
-    sport: formData.get("sport"),
+    sport: formData.get("sport") ?? undefined,
   });
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
