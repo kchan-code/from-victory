@@ -125,11 +125,24 @@ export type UseClipPlayerOptions = {
   /**
    * When true, resolve via resolvePracticePlaylist(manifest) instead of the
    * pregame resolvePlaylist(...). The need/position/adversity fields are
-   * ignored — the practice playlist is fixed and non-personalized. All other
-   * playback behaviour (decode, blob assembly, pause/resume, rAF timer) is
-   * shared with the pregame path. Defaults to false.
+   * ignored — the practice playlist is state+focus-driven. All other playback
+   * behaviour (decode, blob assembly, pause/resume, rAF timer) is shared with
+   * the pregame path. Defaults to false.
    */
   practice?: boolean;
+  /**
+   * Athlete's self-reported pre-practice state (FRO-22).
+   * "dialed-in" (default) or "not-feeling-it". Drives opener selection.
+   * Only used when practice=true. Unknown values default to "dialed-in".
+   */
+  practiceState?: "dialed-in" | "not-feeling-it" | null;
+  /**
+   * Athlete's chosen focus phrase for today's practice (FRO-22).
+   * Maps to a pp-focus-<slug> clip injected between choose-focus-lead/tail.
+   * Only used when practice=true. Unknown/missing values drop the focus clip
+   * cleanly (lead+tail still play).
+   */
+  practiceFocus?: string | null;
   /** Called once when the final clip ends. */
   onCompleted?: () => void;
 };
@@ -181,6 +194,8 @@ export function useClipPlayer({
   selfTalk,
   cueWord,
   practice = false,
+  practiceState,
+  practiceFocus,
   onCompleted,
 }: UseClipPlayerOptions): UseClipPlayerResult {
   // ── state ──
@@ -323,11 +338,11 @@ export function useClipPlayer({
       if (cancelled) return;
 
       // 2. Resolve playlist.
-      // Practice mode: use the fixed practice playlist from the manifest.
+      // Practice mode: use the state-aware practice playlist from the manifest.
       // Pregame mode: resolve by need × position × adversity (+ personalization).
       let clips: ReturnType<typeof resolvePlaylist>;
       if (practice) {
-        clips = resolvePracticePlaylist(manifest);
+        clips = resolvePracticePlaylist(manifest, practiceState, practiceFocus);
         if (!clips) {
           setError("no template");
           return;
@@ -494,7 +509,7 @@ export function useClipPlayer({
     return () => {
       cancelled = true;
     };
-  }, [need, position, adversity, anchor, selfTalk, cueWord, practice, startRaf, stopRaf, wireMediaSession]);
+  }, [need, position, adversity, anchor, selfTalk, cueWord, practice, practiceState, practiceFocus, startRaf, stopRaf, wireMediaSession]);
 
   // ── Lightweight visibilitychange nudge ──
   // iOS may pause the audio element when the app is briefly backgrounded (e.g.

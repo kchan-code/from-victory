@@ -1,27 +1,36 @@
 "use client"; // client: Web Audio API (useClipPlayer), useState, user-event handlers
 
-// Pre-practice "Get To" flow — lean two-screen state machine.
+// Pre-practice "Get To" flow — lean three-screen state machine.
 //
-// Screen 1 – FocusPicker:
-//   "Pick one thing to own today." — single tap from PRACTICE_FOCUS_OPTIONS,
-//   or type a custom focus. One tap advances to the session.
+// Screen 1 – StatePickerScreen (NEW — FRO-22):
+//   "How are you showing up today?" — single tap between two options:
+//   "Dialed in" (pre-selected default) or "Not feeling it". CONTINUE
+//   advances to Screen 2.
 //
-// Screen 2 – PracticeSession:
-//   Plays the fixed 5-clip `practice` playlist (~2.5 min) via useClipPlayer
-//   (practice: true). The athlete's chosen focus is shown prominently —
-//   it is NOT voiced; they read it. Progress bar + remaining time + play/pause
-//   chrome reused from AudioSessionScreen idiom. On completion: send-off +
-//   back-to-home button.
+// Screen 2 – FocusPickerScreen (updated — FRO-22):
+//   "Pick one thing to own today." — single tap from 7 PRACTICE_FOCUS_OPTIONS.
+//   Custom free-text entry REMOVED (the focus is now VOICED, so it must be
+//   one of the 7 mapped clips). START SESSION advances to Screen 3.
+//   Back arrow returns to Screen 1.
 //
-// No journal, no scripture reflection, no rhythm surface. One setup tap, then go.
+// Screen 3 – PracticeSessionScreen:
+//   Plays the state-aware practice playlist via useClipPlayer
+//   (practice: true, practiceState, practiceFocus). The athlete's chosen
+//   focus is shown prominently AND is voiced in the audio. Progress bar +
+//   remaining time + play/pause chrome. On completion: send-off + done button.
+//
+// State model: practiceState + practiceFocus are EPHEMERAL client state only
+// (useState). They are NEVER written to Supabase, localStorage, analytics,
+// logs, or any network call. They drive clip selection and die on unmount.
+//
+// No journal, no scripture reflection, no rhythm surface.
 
 import { useEffect, useRef, useState } from "react";
 
-import { PRACTICE_FOCUS_OPTIONS } from "./types";
+import { type PracticeState, PRACTICE_FOCUS_OPTIONS } from "./types";
 import { useClipPlayer } from "./useClipPlayer";
 import {
   BottomBar,
-  CustomInputRow,
   Icon,
   PregameShell,
   SectionLabel,
@@ -32,55 +41,155 @@ import {
 // Types
 // ---------------------------------------------------------------------------
 
-type PracticeView = "picker" | "session";
+type PracticeView = "state-picker" | "focus-picker" | "session";
 
 // ---------------------------------------------------------------------------
-// FocusPickerScreen
+// StatePickerScreen — NEW (FRO-22)
+// Athlete self-reports pre-practice state. Two options; "dialed-in" is
+// pre-selected (the safe, non-patronising default — never "you seem fine").
 // ---------------------------------------------------------------------------
 
-function FocusPickerScreen({
-  initialFocus = "",
-  onStart,
+function StatePickerScreen({
+  initialState,
+  onContinue,
 }: {
-  /** Pre-selects a previously-chosen focus when returning from the session
-   *  screen so the athlete can re-start with one tap or quickly swap. */
-  initialFocus?: string;
-  onStart: (focus: string) => void;
+  initialState: PracticeState;
+  onContinue: (state: PracticeState) => void;
 }) {
-  const [selected, setSelected] = useState<string>(initialFocus);
-  // Custom input value — only active when selected is not in PRACTICE_FOCUS_OPTIONS.
-  const [customValue, setCustomValue] = useState(
-    initialFocus && !PRACTICE_FOCUS_OPTIONS.includes(initialFocus) ? initialFocus : "",
-  );
+  const [selected, setSelected] = useState<PracticeState>(initialState);
 
-  const isCustom =
-    !!selected && !PRACTICE_FOCUS_OPTIONS.includes(selected);
-
-  const handleOptionTap = (option: string) => {
-    setSelected(option);
-    // Clear custom text when switching to a preset option.
-    setCustomValue("");
-  };
-
-  const handleCustomChange = (v: string) => {
-    setCustomValue(v);
-    setSelected(v);
-  };
-
-  const readyToGo = selected.trim().length > 0;
+  const OPTIONS: Array<{
+    value: PracticeState;
+    label: string;
+    sub: string;
+    testId: string;
+  }> = [
+    {
+      value: "dialed-in",
+      label: "Dialed in",
+      sub: "Ready to work. Lock in and go.",
+      testId: "state-option-dialed-in",
+    },
+    {
+      value: "not-feeling-it",
+      label: "Not feeling it",
+      sub: "Off, flat, dragging. You showed up anyway.",
+      testId: "state-option-not-feeling-it",
+    },
+  ];
 
   return (
     <>
       <ScreenBody>
         <SectionLabel>Practice day</SectionLabel>
         <h1 className="mb-1 font-heading text-[28px] font-bold leading-[1.12] text-cream">
+          How are you showing up today?
+        </h1>
+        <p className="mb-5 font-body text-[14px] leading-relaxed text-cream/50">
+          Your answer sets the first two minutes.
+        </p>
+
+        <div
+          className="flex flex-col gap-2"
+          role="radiogroup"
+          aria-label="Pre-practice state"
+        >
+          {OPTIONS.map(({ value, label, sub, testId }) => {
+            const active = selected === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setSelected(value)}
+                data-testid={testId}
+                className={`flex min-h-[64px] w-full items-center gap-3 rounded-[12px] border px-4 py-3.5 text-left transition-colors duration-fast active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx ${
+                  active
+                    ? "border-gold/55 bg-gold/[0.06]"
+                    : "border-hairline bg-charcoal"
+                }`}
+              >
+                <div className="min-w-0 flex-1">
+                  <span className="block font-heading text-[17px] font-semibold leading-tight text-cream">
+                    {label}
+                  </span>
+                  <span className="mt-0.5 block font-body text-[13px] leading-snug text-cream/50">
+                    {sub}
+                  </span>
+                </div>
+                <span
+                  className={`flex h-[20px] w-[20px] flex-none items-center justify-center rounded-full border-[1.5px] transition-colors duration-fast ${
+                    active
+                      ? "border-gold bg-gold"
+                      : "border-cream/20 bg-transparent"
+                  }`}
+                >
+                  {active && (
+                    <Icon
+                      name="check"
+                      size={11}
+                      strokeWidth={3}
+                      className="text-onyx"
+                    />
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </ScreenBody>
+
+      <BottomBar>
+        <button
+          type="button"
+          onClick={() => onContinue(selected)}
+          data-testid="state-next-btn"
+          className="inline-flex w-full items-center justify-center gap-2 bg-onyx text-cream border border-gold rounded-[10px] font-display font-extrabold uppercase tracking-[0.14em] text-[14px] px-[26px] py-4 transition-transform duration-fast ease-out active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+        >
+          <span>CONTINUE</span>
+        </button>
+      </BottomBar>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// FocusPickerScreen (updated — FRO-22)
+// Custom free-text entry removed: the chosen focus is now VOICED in the
+// audio, so it must map to one of the 7 pp-focus-* clips. 7 presets only.
+// Back affordance added (returns to state picker).
+// ---------------------------------------------------------------------------
+
+function FocusPickerScreen({
+  initialFocus,
+  onStart,
+  onBack,
+}: {
+  initialFocus: string;
+  onStart: (focus: string) => void;
+  onBack: () => void;
+}) {
+  const [selected, setSelected] = useState<string>(initialFocus);
+
+  const readyToGo = selected.trim().length > 0;
+
+  return (
+    <>
+      <ScreenBody>
+        <SectionLabel>Practice day · Focus</SectionLabel>
+        <h1 className="mb-1 font-heading text-[28px] font-bold leading-[1.12] text-cream">
           Pick one thing to own today.
         </h1>
         <p className="mb-5 font-body text-[14px] leading-relaxed text-cream/50">
-          The audio will cue you to bring it. One focus, held the whole practice.
+          The audio names it. One focus, held the whole practice.
         </p>
 
-        <div className="flex flex-col gap-2" role="radiogroup" aria-label="Today's focus">
+        <div
+          className="flex flex-col gap-2"
+          role="radiogroup"
+          aria-label="Today's focus"
+        >
           {PRACTICE_FOCUS_OPTIONS.map((option) => {
             const active = selected === option;
             return (
@@ -89,7 +198,7 @@ function FocusPickerScreen({
                 type="button"
                 role="radio"
                 aria-checked={active}
-                onClick={() => handleOptionTap(option)}
+                onClick={() => setSelected(option)}
                 data-testid={`focus-option-${option}`}
                 className={`flex min-h-[52px] w-full items-center gap-3 rounded-[12px] border px-4 py-3.5 text-left transition-colors duration-fast active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx ${
                   active
@@ -119,18 +228,22 @@ function FocusPickerScreen({
               </button>
             );
           })}
-
-          <CustomInputRow
-            value={isCustom ? customValue : ""}
-            selected={isCustom}
-            onChange={handleCustomChange}
-            placeholder="Write your own focus"
-            ariaLabel="Write your own practice focus"
-          />
         </div>
       </ScreenBody>
 
-      <BottomBar>
+      <BottomBar
+        secondary={
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex w-full items-center justify-center gap-1.5 font-heading text-[13px] font-medium text-cream/50 py-2 transition-colors duration-fast hover:text-cream/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            aria-label="Back to state picker"
+          >
+            <Icon name="arrowLeft" size={14} />
+            <span>Back</span>
+          </button>
+        }
+      >
         {/* Coach-style CTA — native button so data-testid reaches the DOM. */}
         <button
           type="button"
@@ -152,16 +265,22 @@ function FocusPickerScreen({
 // PracticeSessionScreen
 // ---------------------------------------------------------------------------
 
-// Fallback session duration used by the text-mode timer when the clip player
-// is unavailable. The 5 pp clips sum to ~153 s; 150 is a round safe floor.
-const PRACTICE_SESSION_DURATION_S = 150;
+// Fallback session duration (seconds) for the text-mode timer when the clip
+// player is unavailable. Estimate for the FRO-22 state-aware session: opener +
+// shared Beats 2–6 (incl. pp-be-vocal) + injected focus clip ≈ 2:45. When clips
+// load normally the player uses the real total from clipPlayer.totalSec; this
+// floor only governs the degraded text-only mode. Reconcile against the rendered
+// manifest/sidecar totals after MP3 generation (AUDIO_CACHE_BUST=10).
+const PRACTICE_SESSION_DURATION_S = 165;
 
 function PracticeSessionScreen({
   focus,
+  practiceState,
   onBack,
   onDone,
 }: {
   focus: string;
+  practiceState: PracticeState;
   /** Return to the focus picker (unmounts this component, triggering full
    *  AudioContext / wake-lock / rAF / interval cleanup automatically). */
   onBack: () => void;
@@ -198,12 +317,16 @@ function PracticeSessionScreen({
     };
   }, []);
 
+  // Wire practiceState + practiceFocus into the clip player (FRO-22).
+  // These are ephemeral — never persisted anywhere; they pass through
+  // to resolvePracticePlaylist inside useClipPlayer.
   const clipPlayer = useClipPlayer({
-    // Practice mode: need/position/adversity are not used.
     need: null,
     position: null,
     adversity: null,
     practice: true,
+    practiceState,
+    practiceFocus: focus,
     onCompleted: () => {
       /* completed state is read from clipPlayer.completed */
     },
@@ -341,7 +464,8 @@ function PracticeSessionScreen({
       </div>
 
       {/* Focus card — the one focal element during the session.
-          NOT voiced; the athlete reads it while listening. */}
+          The focus is ALSO voiced in the audio (FRO-22), so the card
+          and the narration agree. */}
       <div
         className="mb-6 flex-1 rounded-[18px] border border-hairline px-6 py-8"
         style={{
@@ -423,22 +547,35 @@ function PracticeSessionScreen({
 // ---------------------------------------------------------------------------
 
 export function PracticeFlow() {
-  const [view, setView] = useState<PracticeView>("picker");
+  const [view, setView] = useState<PracticeView>("state-picker");
+  // practiceState + practiceFocus are EPHEMERAL: useState only.
+  // They are NEVER written to Supabase, localStorage, analytics, or any
+  // network call. They pass through to useClipPlayer and die on unmount.
+  const [practiceState, setPracticeState] = useState<PracticeState>("dialed-in");
   const [focus, setFocus] = useState<string>("");
 
-  const handleStart = (chosenFocus: string) => {
+  const handleStateContinue = (state: PracticeState) => {
+    setPracticeState(state);
+    setView("focus-picker");
+  };
+
+  const handleFocusStart = (chosenFocus: string) => {
     setFocus(chosenFocus);
     setView("session");
   };
 
-  // Returns to the picker with the previously-selected focus still held in
-  // state. The picker re-highlights the prior selection so a re-pick (or
-  // immediate re-start) is a single tap. No audio/context teardown needed here:
-  // switching view to "picker" unmounts PracticeSessionScreen, which triggers
-  // useClipPlayer's cleanup effect (closes AudioContext, releases wake lock,
-  // cancels rAF) and the text-mode intervalRef cleanup.
-  const handleBack = () => {
-    setView("picker");
+  // Returns to the focus picker from the session. The previously-selected
+  // focus is still in state so the picker re-highlights it immediately —
+  // re-start is one tap. Unmounting PracticeSessionScreen triggers
+  // useClipPlayer's cleanup (closes AudioContext, releases wake lock, cancels
+  // rAF, clears text-mode intervalRef) without any explicit teardown here.
+  const handleBackToFocus = () => {
+    setView("focus-picker");
+  };
+
+  // Returns to the state picker from the focus picker.
+  const handleBackToState = () => {
+    setView("state-picker");
   };
 
   const handleDone = () => {
@@ -450,21 +587,33 @@ export function PracticeFlow() {
 
   return (
     <PregameShell>
-      {/* Minimal header — just the back/close affordance.
-          Practice flow is intentionally header-free during the session
-          (one focal element); only the picker screen shows nav context. */}
-      {view === "picker" && (
+      {/* Minimal header — only shown on picker screens.
+          Session screen is intentionally header-free (one focal element). */}
+      {(view === "state-picker" || view === "focus-picker") && (
         <div className="sticky top-0 z-10 border-b border-hairline bg-onyx/80 backdrop-blur-md">
           <div className="flex items-center gap-3 px-[18px] pb-3 pt-[58px]">
-            <a
-              href="/athlete"
-              aria-label="Back to home"
-              className="flex h-[44px] w-[44px] flex-none -m-[5px] items-center justify-center rounded-pill text-cream transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-            >
-              <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">
-                <Icon name="arrowLeft" size={16} />
-              </span>
-            </a>
+            {view === "state-picker" ? (
+              <a
+                href="/athlete"
+                aria-label="Back to home"
+                className="flex h-[44px] w-[44px] flex-none -m-[5px] items-center justify-center rounded-pill text-cream transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+              >
+                <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">
+                  <Icon name="arrowLeft" size={16} />
+                </span>
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={handleBackToState}
+                aria-label="Back to state picker"
+                className="flex h-[44px] w-[44px] flex-none -m-[5px] items-center justify-center rounded-pill text-cream transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+              >
+                <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">
+                  <Icon name="arrowLeft" size={16} />
+                </span>
+              </button>
+            )}
             <div className="min-w-0 flex-1">
               <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.22em] text-gold">
                 Pre-Practice
@@ -479,9 +628,26 @@ export function PracticeFlow() {
         </div>
       )}
 
-      {view === "picker" && <FocusPickerScreen initialFocus={focus} onStart={handleStart} />}
+      {view === "state-picker" && (
+        <StatePickerScreen
+          initialState={practiceState}
+          onContinue={handleStateContinue}
+        />
+      )}
+      {view === "focus-picker" && (
+        <FocusPickerScreen
+          initialFocus={focus}
+          onStart={handleFocusStart}
+          onBack={handleBackToState}
+        />
+      )}
       {view === "session" && (
-        <PracticeSessionScreen focus={focus} onBack={handleBack} onDone={handleDone} />
+        <PracticeSessionScreen
+          focus={focus}
+          practiceState={practiceState}
+          onBack={handleBackToFocus}
+          onDone={handleDone}
+        />
       )}
     </PregameShell>
   );

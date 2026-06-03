@@ -389,7 +389,7 @@ async function generateClips(flags: Flags): Promise<void> {
     console.log(`\n[clips] Templates: ${PHASE2_TEMPLATES.length}`);
     console.log(
       `[clips] Catalog will have: ${CLIP_SCRIPTS.length} TTS + ${OPENER_SLUGS.length} openers = ` +
-      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p4: 83 expected)`,
+      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p5: 93 expected)`,
     );
     return;
   }
@@ -577,23 +577,34 @@ async function generateClips(flags: Flags): Promise<void> {
     ],
   }));
 
-  // Pre-practice "Get To" — fixed generic playlist, no personalization tree.
-  // Frontend reads manifest.practice.clips to build the practice player queue.
-  const practicePlaylist = {
-    clips: [
-      "pp-settle-receive",
-      "pp-name-standard",
-      "pp-goal-fusion",
-      "pp-choose-focus",
-      "pp-see-it-go",
-    ],
+  // Pre-practice "Lock In" — state-aware practice playlist (FRO-22, p5).
+  // practiceState holds the shared-tail slugs (Beats 2–6) for each state.
+  // The opener and focus clip are resolved at runtime by resolvePracticePlaylist.
+  // Beat 4 lead/tail sandwich the injected focus clip; the resolver detects
+  // pp-choose-focus-lead and injects the focus slug immediately after it.
+  //
+  // Backward compat: practice key is retained (empty legacy sentinel) so p4
+  // consumers that check manifest.practice are not broken.
+  const sharedTail = [
+    "pp-name-standard",
+    "pp-goal-fusion",
+    "pp-choose-focus-lead",
+    // focus clip injected by resolver between lead and tail
+    "pp-choose-focus-tail",
+    "pp-be-vocal",
+    "pp-see-it-go",
+  ];
+
+  const practiceStatePlaylist = {
+    "dialed-in": sharedTail,
+    "not-feeling-it": sharedTail,
   };
 
   const manifest: ClipManifest = {
-    version: "p4",
+    version: "p5",
     clips: catalog,
     templates,
-    practice: practicePlaylist,
+    practiceState: practiceStatePlaylist,
   };
 
   const manifestPath = join(clipsDir, "manifest.json");
@@ -604,9 +615,10 @@ async function generateClips(flags: Flags): Promise<void> {
   const templateCount = templates.length;
   console.log(`\n[clips] manifest.json written: ${catalogCount} catalog entries, ${templateCount} templates.`);
 
-  // p4: 46 structural + 32 personalization + 5 practice = 83 total
-  if (catalogCount !== 83) {
-    console.warn(`  WARNING: expected 83 catalog entries (46 structural + 32 personalization + 5 practice), got ${catalogCount}.`);
+  // p5 (FRO-22): 46 structural + 32 personalization + 15 practice = 93 total
+  // (old pp-settle-receive + pp-choose-focus retired; 12 new pp-* clips added)
+  if (catalogCount !== 93) {
+    console.warn(`  WARNING: expected 93 catalog entries (46 structural + 32 personalization + 15 practice), got ${catalogCount}.`);
   }
   if (templateCount !== 30) {
     console.warn(`  WARNING: expected 30 templates (3 positions × 10 adversities), got ${templateCount}.`);

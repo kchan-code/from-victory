@@ -137,9 +137,10 @@ export const RESET_ANCHORS: string[] = [
 // Single-tap from these; athlete may also type a custom focus.
 // ---------------------------------------------------------------------------
 
+// "First" dropped (FRO-22): vague when voiced cold, duplicated
+// "Win every race to the puck". Now 7 presets matching the 7 pp-focus-* clips.
 export const PRACTICE_FOCUS_OPTIONS: string[] = [
   "Relentless",
-  "First",
   "Hungry",
   "Head up every breakout",
   "Feet always moving",
@@ -147,6 +148,10 @@ export const PRACTICE_FOCUS_OPTIONS: string[] = [
   "Win every race to the puck",
   "Full reps, no glide",
 ];
+
+// Athlete's self-reported pre-practice state — drives opener selection.
+// "dialed-in" is the default; "not-feeling-it" swaps Beat 1 only.
+export type PracticeState = "dialed-in" | "not-feeling-it";
 
 export const CUE_WORDS: string[] = [
   "Steady",

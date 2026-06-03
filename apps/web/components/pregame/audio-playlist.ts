@@ -15,6 +15,7 @@
 // of two separate AudioTimeline sidecars.
 
 import type { Phase } from "./audio/types";
+import type { PracticeState } from "./types";
 import {
   ANCHOR_OPTION_SLUGS,
   AUDIO_CACHE_BUST,
@@ -53,11 +54,25 @@ export type ClipManifest = {
   version: string;
   clips: Record<string, ClipCatalogEntry>;
   templates: PlaylistTemplate[];
-  /** Fixed-order playlists that are not session-personalization templates.
-   *  Added in p4. The "practice" key holds the ordered generic clip list
-   *  for the pre-practice "Get To" session. */
+  /**
+   * Fixed-order playlists that are not session-personalization templates.
+   * Added in p4 as a flat clip list for the old single-opener "Get To" session.
+   * Updated in p5 (FRO-22) to a state-keyed structure:
+   *   - practiceState: { "dialed-in": string[]; "not-feeling-it": string[] }
+   *   where each array is the shared-tail slug list (Beats 2–6 except the
+   *   injected focus clip). The opener and focus clip are resolved at runtime
+   *   by resolvePracticePlaylist.
+   *
+   * p4 manifests carry the flat `practice.clips` list; resolvePracticePlaylist
+   * handles both shapes for backward compat.
+   */
   practice?: {
-    clips: string[]; // ordered slug list
+    clips: string[]; // legacy flat list (p4)
+  };
+  practiceState?: {
+    /** Ordered shared-tail slugs for each state (Beats 2–6, no opener/focus). */
+    "dialed-in": string[];
+    "not-feeling-it": string[];
   };
 };
 
@@ -240,28 +255,106 @@ export function resolvePlaylist(
 }
 
 // ---------------------------------------------------------------------------
+// Practice focus-phrase → clip slug map
+// ---------------------------------------------------------------------------
+
+/**
+ * Maps the PRACTICE_FOCUS_OPTIONS strings (from types.ts) to their
+ * pp-focus-<slug> clip slugs. Unknown focus strings resolve to null (the focus
+ * clip is dropped; lead+tail still flow without crashing).
+ *
+ * Keys are EXACT option strings — any mismatch silently drops the focus clip.
+ */
+export const PRACTICE_FOCUS_SLUGS: Record<string, string> = {
+  "Relentless": "pp-focus-relentless",
+  "Hungry": "pp-focus-hungry",
+  "Head up every breakout": "pp-focus-head-up-every-breakout",
+  "Feet always moving": "pp-focus-feet-always-moving",
+  "Hard first pass": "pp-focus-hard-first-pass",
+  "Win every race to the puck": "pp-focus-win-every-race-to-the-puck",
+  "Full reps, no glide": "pp-focus-full-reps-no-glide",
+};
+
+// ---------------------------------------------------------------------------
 // resolvePracticePlaylist
 // ---------------------------------------------------------------------------
 
 /**
- * Resolve the ordered clip list for the fixed-order "practice" playlist.
- * The practice session is a generic, non-personalized 5-clip sequence
- * (~2.5 min) for the pre-practice "Get To" flow.
+ * Resolve the ordered clip list for the state-aware pre-practice "Lock In"
+ * session (FRO-22). Returns the full playlist for the given athlete state and
+ * chosen focus, with each slug mapped to a cache-busted ResolvedClip.
+ *
+ * Playlist order:
+ *   [state opener] → pp-name-standard → pp-goal-fusion →
+ *   pp-choose-focus-lead → [pp-focus-<slug>?] → pp-choose-focus-tail →
+ *   pp-be-vocal → pp-see-it-go
+ *
+ * State resolution:
+ *   - "dialed-in" → pp-opener-dialed-in  (DEFAULT; unknown states fall back here)
+ *   - "not-feeling-it" → pp-opener-get-to
+ *
+ * Focus resolution:
+ *   - Known focus string → inject pp-focus-<slug> between lead and tail.
+ *   - Unknown/missing focus → omit the focus clip; lead+tail still flow.
+ *
+ * Backward compat (p4 manifests with flat manifest.practice.clips):
+ *   If manifest.practiceState is absent, falls back to the legacy flat
+ *   manifest.practice.clips resolution (state/focus ignored).
  *
  * Returns null when:
- *   - manifest.practice is absent (older manifest version without the practice key)
- *   - any slug listed in manifest.practice.clips is absent from the clip catalog
+ *   - Neither manifest.practiceState nor manifest.practice is present.
+ *   - Any required slug in the assembled list is absent from the catalog.
  *
- * Fail-closed: the caller should fall back to a text timer on null, the same
- * way AudioSessionScreen handles a null from resolvePlaylist.
+ * Fail-closed: the caller should fall back to a text timer on null.
  */
 export function resolvePracticePlaylist(
   manifest: ClipManifest,
+  state?: PracticeState | null,
+  focus?: string | null,
 ): ResolvedClip[] | null {
-  if (!manifest.practice) return null;
+  // ── p5 state-aware path ──────────────────────────────────────────────────
+  if (manifest.practiceState) {
+    // Fail-safe: unknown or missing state defaults to "dialed-in".
+    const resolvedState: PracticeState =
+      state === "not-feeling-it" ? "not-feeling-it" : "dialed-in";
 
+    const openerSlug =
+      resolvedState === "not-feeling-it"
+        ? "pp-opener-get-to"
+        : "pp-opener-dialed-in";
+
+    const tailSlugs = manifest.practiceState[resolvedState];
+
+    // Focus clip: resolve from map; drop cleanly if unknown/missing.
+    const focusSlug =
+      focus ? (PRACTICE_FOCUS_SLUGS[focus] ?? null) : null;
+
+    // Assemble: opener → shared-tail with focus injected between lead/tail.
+    // The shared-tail array from the manifest already contains lead+tail slugs;
+    // focus is injected at the pp-choose-focus-lead / pp-choose-focus-tail seam.
+    const slugs: string[] = [openerSlug];
+    for (const s of tailSlugs) {
+      slugs.push(s);
+      if (s === "pp-choose-focus-lead" && focusSlug) {
+        slugs.push(focusSlug);
+      }
+    }
+
+    return mapSlugsToClips(slugs, manifest);
+  }
+
+  // ── p4 legacy flat path ──────────────────────────────────────────────────
+  if (!manifest.practice) return null;
+  return mapSlugsToClips(manifest.practice.clips, manifest);
+}
+
+/** Map an ordered slug list → ResolvedClip[]. Returns null on any missing slug. */
+function mapSlugsToClips(
+  slugs: string[],
+  manifest: ClipManifest,
+): ResolvedClip[] | null {
   const resolved: ResolvedClip[] = [];
-  for (const slug of manifest.practice.clips) {
+  for (const slug of slugs) {
     const entry = manifest.clips[slug];
     if (!entry) return null; // missing slug — fail closed
     resolved.push({
