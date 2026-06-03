@@ -4,6 +4,7 @@ import Link from "next/link";
 import { signOut } from "@/lib/actions/auth";
 import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
+import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { createClient } from "@/lib/supabase/server";
 import { DeleteAccountSection } from "@/components/dashboard/DeleteAccountSection";
 import { DeleteAthleteButton } from "@/components/dashboard/DeleteAthleteButton";
@@ -13,7 +14,7 @@ export const metadata = {
 };
 
 export default async function DashboardPage() {
-  const { profile } = await requireParent();
+  const { userId, profile } = await requireParent();
 
   const supabase = createClient();
   // RLS scopes this to athletes linked to the calling parent.
@@ -24,6 +25,10 @@ export default async function DashboardPage() {
     .order("first_name", { ascending: true });
 
   const linkedAthletes = athletes ?? [];
+
+  // Subscription access — used only to gate the subscribe CTA banner.
+  // Enforcement (route-locking) is a separate issue; we do NOT block here.
+  const accessLevel = await getParentAccessLevel(userId);
 
   return (
     <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
@@ -55,6 +60,36 @@ export default async function DashboardPage() {
             Welcome back, {profile.first_name}.
           </h1>
         </section>
+
+        {/* Subscribe CTA — shown only when not on an active subscription.
+            Non-blocking: current users without a subscription row must not
+            be locked out. Enforcement is a separate issue. */}
+        {accessLevel !== "full" ? (
+          <section
+            aria-label="Subscription"
+            className="mb-10 bg-charcoal border border-hairline rounded-2xl px-5 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5"
+          >
+            <div className="flex-1 min-w-0">
+              <p className="font-mono font-semibold uppercase tracking-[0.18em] text-[10px] text-gold mb-2">
+                Subscription
+              </p>
+              <p className="font-display font-bold uppercase tracking-[0.04em] text-cream text-[18px] leading-tight mb-1">
+                Start training today.
+              </p>
+              <p className="font-body text-cream/60 text-[13px] leading-relaxed">
+                Daily mental-toughness training with faith built in. One
+                subscription covers all your athletes.
+              </p>
+            </div>
+            <Link
+              href="/subscribe"
+              data-testid="dashboard-subscribe-cta"
+              className="flex-shrink-0 inline-flex items-center justify-center font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 min-h-[44px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            >
+              Choose a plan
+            </Link>
+          </section>
+        ) : null}
 
         <section className="mb-10">
           <div className="flex items-baseline justify-between mb-5">
