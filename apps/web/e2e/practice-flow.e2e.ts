@@ -1,7 +1,7 @@
 /**
  * practice-flow.e2e.ts — FRO-22
  *
- * Covers the pre-practice "Get To / Lock In" flow at /athlete/practice.
+ * Covers the pre-practice "Lock In" flow at /athlete/practice.
  *
  * PRE-FRO-22 (current baseline — 2 screens):
  *   Screen 1 – FocusPickerScreen: 8 presets + custom free-text input.
