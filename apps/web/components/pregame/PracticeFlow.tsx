@@ -1,6 +1,6 @@
 "use client"; // client: Web Audio API (useClipPlayer), useState, user-event handlers
 
-// Pre-practice "Get To" flow — lean three-screen state machine.
+// Pre-practice "Lock In" flow — lean three-screen state machine.
 //
 // Screen 1 – StatePickerScreen (NEW — FRO-22):
 //   "How are you showing up today?" — single tap between two options:
@@ -619,7 +619,7 @@ export function PracticeFlow() {
                 Pre-Practice
               </div>
               <div className="mt-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-cream/50">
-                Get To
+                Lock In
               </div>
             </div>
           </div>
