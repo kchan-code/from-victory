@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import type { Sport } from "@/lib/sports";
 
 type ParentProfile = {
   id: string;
@@ -12,6 +13,8 @@ type AthleteProfile = {
   id: string;
   role: "athlete";
   first_name: string;
+  sport: Sport;
+  sport_selected_at: string | null;
 };
 
 export async function requireParent(): Promise<{
@@ -51,7 +54,7 @@ export async function requireAthlete(): Promise<{
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, role, first_name")
+    .select("id, role, first_name, sport, sport_selected_at")
     .eq("id", user.id)
     .single();
 
