@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { signOut } from "@/lib/actions/auth";
 import { requireAthlete } from "@/lib/auth/guards";
@@ -10,6 +11,12 @@ export const metadata = {
 
 export default async function AthleteHomePage() {
   const { profile } = await requireAthlete();
+
+  // First-run gate: athlete has not yet affirmatively chosen their sport.
+  // (sport_selected_at is NULL until the picker writes it — see FV-33 spec §1.)
+  if (!profile.sport_selected_at) {
+    redirect("/athlete/onboarding/sport");
+  }
 
   return (
     <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
