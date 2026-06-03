@@ -1,5 +1,5 @@
 {
-  "version": "p4",
+  "version": "p5",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.mp3",
@@ -563,29 +563,79 @@
       "durationSec": 2.844,
       "phases": []
     },
-    "pp-settle-receive": {
-      "url": "/audio/pregame/clips/pp-settle-receive.mp3",
-      "durationSec": 32.756,
+    "pp-opener-dialed-in": {
+      "url": "/audio/pregame/clips/pp-opener-dialed-in.mp3",
+      "durationSec": 46.336,
+      "phases": []
+    },
+    "pp-opener-get-to": {
+      "url": "/audio/pregame/clips/pp-opener-get-to.mp3",
+      "durationSec": 69.904,
       "phases": []
     },
     "pp-name-standard": {
       "url": "/audio/pregame/clips/pp-name-standard.mp3",
-      "durationSec": 29.436,
+      "durationSec": 20.272,
       "phases": []
     },
     "pp-goal-fusion": {
       "url": "/audio/pregame/clips/pp-goal-fusion.mp3",
-      "durationSec": 42.84,
+      "durationSec": 36.032,
       "phases": []
     },
-    "pp-choose-focus": {
-      "url": "/audio/pregame/clips/pp-choose-focus.mp3",
-      "durationSec": 18.908,
+    "pp-choose-focus-lead": {
+      "url": "/audio/pregame/clips/pp-choose-focus-lead.mp3",
+      "durationSec": 4.652,
+      "phases": []
+    },
+    "pp-choose-focus-tail": {
+      "url": "/audio/pregame/clips/pp-choose-focus-tail.mp3",
+      "durationSec": 10.988,
+      "phases": []
+    },
+    "pp-focus-relentless": {
+      "url": "/audio/pregame/clips/pp-focus-relentless.mp3",
+      "durationSec": 1.416,
+      "phases": []
+    },
+    "pp-focus-hungry": {
+      "url": "/audio/pregame/clips/pp-focus-hungry.mp3",
+      "durationSec": 1.296,
+      "phases": []
+    },
+    "pp-focus-head-up-every-breakout": {
+      "url": "/audio/pregame/clips/pp-focus-head-up-every-breakout.mp3",
+      "durationSec": 2.928,
+      "phases": []
+    },
+    "pp-focus-feet-always-moving": {
+      "url": "/audio/pregame/clips/pp-focus-feet-always-moving.mp3",
+      "durationSec": 2.928,
+      "phases": []
+    },
+    "pp-focus-hard-first-pass": {
+      "url": "/audio/pregame/clips/pp-focus-hard-first-pass.mp3",
+      "durationSec": 3.528,
+      "phases": []
+    },
+    "pp-focus-win-every-race-to-the-puck": {
+      "url": "/audio/pregame/clips/pp-focus-win-every-race-to-the-puck.mp3",
+      "durationSec": 3.576,
+      "phases": []
+    },
+    "pp-focus-full-reps-no-glide": {
+      "url": "/audio/pregame/clips/pp-focus-full-reps-no-glide.mp3",
+      "durationSec": 3,
+      "phases": []
+    },
+    "pp-be-vocal": {
+      "url": "/audio/pregame/clips/pp-be-vocal.mp3",
+      "durationSec": 58.96,
       "phases": []
     },
     "pp-see-it-go": {
       "url": "/audio/pregame/clips/pp-see-it-go.mp3",
-      "durationSec": 29.74,
+      "durationSec": 31.188,
       "phases": []
     },
     "opener-confidence": {
@@ -1161,12 +1211,21 @@
       ]
     }
   ],
-  "practice": {
-    "clips": [
-      "pp-settle-receive",
+  "practiceState": {
+    "dialed-in": [
       "pp-name-standard",
       "pp-goal-fusion",
-      "pp-choose-focus",
+      "pp-choose-focus-lead",
+      "pp-choose-focus-tail",
+      "pp-be-vocal",
+      "pp-see-it-go"
+    ],
+    "not-feeling-it": [
+      "pp-name-standard",
+      "pp-goal-fusion",
+      "pp-choose-focus-lead",
+      "pp-choose-focus-tail",
+      "pp-be-vocal",
       "pp-see-it-go"
     ]
   }
