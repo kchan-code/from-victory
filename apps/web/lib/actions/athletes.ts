@@ -11,6 +11,13 @@ import { createServiceClient } from "@/lib/supabase/service";
 
 const MIN_ATHLETE_AGE = 13;
 
+// Sport values must match the sport_valid_values CHECK constraint in the DB
+// (20260602000000_athlete_sport.sql). Update both places when adding v2 sports.
+// Exported so the onboarding UI (FV-33) can derive its <select> options from
+// the same source of truth without duplicating the list.
+export const SUPPORTED_SPORTS = ["hockey", "basketball"] as const;
+export type Sport = (typeof SUPPORTED_SPORTS)[number];
+
 const CreateAthleteSchema = z
   .object({
     first_name: z
@@ -21,6 +28,9 @@ const CreateAthleteSchema = z
     birthdate: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD."),
+    sport: z.enum(SUPPORTED_SPORTS, {
+      message: "Please select a sport.",
+    }),
   })
   .refine(
     (data) => {
@@ -45,6 +55,7 @@ export async function createAthlete(
   const parsed = CreateAthleteSchema.safeParse({
     first_name: formData.get("first_name"),
     birthdate: formData.get("birthdate"),
+    sport: formData.get("sport"),
   });
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
@@ -84,6 +95,7 @@ export async function createAthlete(
     role: "athlete",
     first_name: parsed.data.first_name,
     birthdate: parsed.data.birthdate,
+    sport: parsed.data.sport,
   });
   if (profileError) {
     const { error: rollbackError } =

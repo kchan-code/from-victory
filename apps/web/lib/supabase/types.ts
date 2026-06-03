@@ -208,6 +208,10 @@ export type Database = {
           first_name: string
           id: string
           role: string
+          // FV-27: regenerate via 'supabase gen types --linked' after the
+          // migration 20260602000000_athlete_sport.sql is applied to prod.
+          // Athlete rows: 'hockey' | 'basketball'. Parent rows: null.
+          sport: string | null
           updated_at: string
         }
         Insert: {
@@ -216,6 +220,8 @@ export type Database = {
           first_name: string
           id: string
           role: string
+          // FV-27: see Row comment above.
+          sport?: string | null
           updated_at?: string
         }
         Update: {
@@ -224,6 +230,8 @@ export type Database = {
           first_name?: string
           id?: string
           role?: string
+          // FV-27: see Row comment above.
+          sport?: string | null
           updated_at?: string
         }
         Relationships: []
