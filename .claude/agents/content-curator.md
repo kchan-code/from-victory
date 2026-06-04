@@ -467,17 +467,25 @@ between practice and dinner. Write accordingly.
 
 - **Short paragraphs.** Most paragraphs land at 2-5 sentences. A single
   long block of prose is a wall on a phone.
-- **At most one strong subhead per session.** Two if the structure
-  genuinely needs it. Never three.
-- **Don't bury the mental skill** inside a dense paragraph. If it's a
-  sequence, format it as a scannable list (see element 6 above).
+- **Use the standing section-header rhythm (FV-23).** Core Track days
+  carry a fixed, scannable header set — `### The truth` /
+  `### What you face` / `### The reset` — so the athlete learns where
+  each move lives and can scan rather than read straight through. Aim for
+  all three; drop to two (`### The truth` + `### The reset`) only when the
+  body braids the application into one movement or holds a deliberately
+  parallel structure a middle header would fracture (e.g. a dual
+  register). Headers are short `###` labels (1-3 words), athletic not
+  churchy; their word cost counts toward the 190 ceiling.
+- **Don't bury the mental skill** inside a dense paragraph. The reset
+  line lives under `### The reset`, set off as its own `>` blockquote.
 - **Use white space.** Each transition (athletic moment → collapse →
   reset → foundation → landing) gets a paragraph break.
 - **Avoid essay rhythm.** Vary sentence length. Short ones for weight.
   Medium ones to carry meaning. Long ones rarely, only when the idea
   earns the length.
-- **No HTML, no images.** Light markdown only: paragraphs, one subhead
-  if needed, scannable list for sequences.
+- **No HTML, no images.** Light markdown only: paragraphs, the standing
+  `###` section headers, the reset `>` blockquote, and a scannable list
+  for sequences.
 
 The writing may have literary strength, but it should not feel like an
 essay when read on a phone. It should feel like daily training.
