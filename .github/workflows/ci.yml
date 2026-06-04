@@ -81,6 +81,42 @@ jobs:
       - if: steps.lockfile.outputs.exists == 'true'
         run: npm run lint --if-present
 
+  audio-cache-bust:
+    name: Audio cache-bust guard
+    runs-on: ubuntu-latest
+    # PR-only: the rule is "a PR that changes *.mp3 must also bump the cache
+    # bust." On a direct push to main there is no base branch to diff against.
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require AUDIO_CACHE_BUST bump when committed *.mp3 files change
+        run: |
+          set -euo pipefail
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+          git fetch --no-tags origin "$BASE_REF"
+          RANGE="origin/${BASE_REF}...HEAD"
+
+          MP3_CHANGED=$(git diff --name-only "$RANGE" | grep -E '\.mp3$' || true)
+          if [ -z "$MP3_CHANGED" ]; then
+            echo "No *.mp3 changes in this PR — cache-bust guard not applicable."
+            exit 0
+          fi
+
+          echo "Changed *.mp3 files:"
+          echo "$MP3_CHANGED"
+
+          # A bump = a newly-added AUDIO_CACHE_BUST assignment line.
+          MAPPING="apps/web/components/pregame/audio-mapping.ts"
+          if git diff "$RANGE" -- "$MAPPING" | grep -qE '^\+.*AUDIO_CACHE_BUST[[:space:]]*='; then
+            echo "✓ AUDIO_CACHE_BUST was bumped in $MAPPING."
+            exit 0
+          fi
+
+          echo "::error file=${MAPPING}::This PR changes *.mp3 files but does not bump AUDIO_CACHE_BUST. Any committed *.mp3 change requires an AUDIO_CACHE_BUST bump (CLAUDE.md → Project Workflow Config)."
+          exit 1
+
 # NOTE: The automated kids-privacy-officer CI gate was removed while the
 # repo is pre-MVP (no schema, no auth, no journal code — nothing for the
 # officer to find on any current PR). Privacy review is now invoked
