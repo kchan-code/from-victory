@@ -1,0 +1,54 @@
+{
+  "slug": "bb-wing-fall-behind-early",
+  "durationSec": 271.272,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 7.376,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 13.32,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 21.312,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 27.784,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 52.984
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 94.826
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 164.656
+    },
+    {
+      "phase": "reset",
+      "startSec": 224.56
+    },
+    {
+      "phase": "prayer",
+      "startSec": 239.532
+    },
+    {
+      "phase": "done",
+      "startSec": 264.352
+    }
+  ]
+}

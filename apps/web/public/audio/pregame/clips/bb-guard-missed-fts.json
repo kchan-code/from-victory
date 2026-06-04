@@ -1,0 +1,54 @@
+{
+  "slug": "bb-guard-missed-fts",
+  "durationSec": 278.208,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.848,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 13.68,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 20.928,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 28.504,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 55.168
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 95.234
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 167.128
+    },
+    {
+      "phase": "reset",
+      "startSec": 229.192
+    },
+    {
+      "phase": "prayer",
+      "startSec": 245.364
+    },
+    {
+      "phase": "done",
+      "startSec": 271.768
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "slug": "bb-wing-coach-yells",
+  "durationSec": 274.464,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.536,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.264,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 21.792,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 27.16,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 55.264
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 97.538
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 168.28
+    },
+    {
+      "phase": "reset",
+      "startSec": 227.248
+    },
+    {
+      "phase": "prayer",
+      "startSec": 243.468
+    },
+    {
+      "phase": "done",
+      "startSec": 267.688
+    }
+  ]
+}

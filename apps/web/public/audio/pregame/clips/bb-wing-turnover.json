@@ -1,0 +1,54 @@
+{
+  "slug": "bb-wing-turnover",
+  "durationSec": 264.24,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 7.064,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.792,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 21.048,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 27.352,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 52.528
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 93.194
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 161.488
+    },
+    {
+      "phase": "reset",
+      "startSec": 216.28
+    },
+    {
+      "phase": "prayer",
+      "startSec": 233.796
+    },
+    {
+      "phase": "done",
+      "startSec": 258.304
+    }
+  ]
+}

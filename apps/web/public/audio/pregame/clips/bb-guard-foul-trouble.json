@@ -1,0 +1,54 @@
+{
+  "slug": "bb-guard-foul-trouble",
+  "durationSec": 270.024,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.272,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 11.904,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 20.736,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 26.032,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 52
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 95.498
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 165.304
+    },
+    {
+      "phase": "reset",
+      "startSec": 224.032
+    },
+    {
+      "phase": "prayer",
+      "startSec": 240.492
+    },
+    {
+      "phase": "done",
+      "startSec": 264.448
+    }
+  ]
+}

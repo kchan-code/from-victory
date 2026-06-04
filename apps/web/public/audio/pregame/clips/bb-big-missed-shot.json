@@ -1,0 +1,54 @@
+{
+  "slug": "bb-big-missed-shot",
+  "durationSec": 269.472,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 5.84,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 11.736,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 19.896,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 26.248,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 51.28
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 94.514
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 166.912
+    },
+    {
+      "phase": "reset",
+      "startSec": 222.04
+    },
+    {
+      "phase": "prayer",
+      "startSec": 239.388
+    },
+    {
+      "phase": "done",
+      "startSec": 262.744
+    }
+  ]
+}

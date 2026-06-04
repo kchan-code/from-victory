@@ -1,0 +1,54 @@
+{
+  "slug": "bb-guard-turnover",
+  "durationSec": 268.584,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.536,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.624,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 20.352,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 26.92,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 53.488
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 98.21
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 167.872
+    },
+    {
+      "phase": "reset",
+      "startSec": 222.352
+    },
+    {
+      "phase": "prayer",
+      "startSec": 238.692
+    },
+    {
+      "phase": "done",
+      "startSec": 262.696
+    }
+  ]
+}

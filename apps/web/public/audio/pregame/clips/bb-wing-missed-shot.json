@@ -1,0 +1,54 @@
+{
+  "slug": "bb-wing-missed-shot",
+  "durationSec": 275.4,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 7.448,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 13.488,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 21.96,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 28.696,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 55.744
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 95.906
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 163.576
+    },
+    {
+      "phase": "reset",
+      "startSec": 226.072
+    },
+    {
+      "phase": "prayer",
+      "startSec": 243.396
+    },
+    {
+      "phase": "done",
+      "startSec": 268.264
+    }
+  ]
+}

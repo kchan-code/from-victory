@@ -1,0 +1,54 @@
+{
+  "slug": "bb-big-start-slow",
+  "durationSec": 274.752,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.32,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 13.056,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 22.104,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 28.888,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 55.168
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 96.602
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 163.888
+    },
+    {
+      "phase": "reset",
+      "startSec": 227.536
+    },
+    {
+      "phase": "prayer",
+      "startSec": 244.5
+    },
+    {
+      "phase": "done",
+      "startSec": 267.712
+    }
+  ]
+}
