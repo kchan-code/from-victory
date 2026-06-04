@@ -1,7 +1,12 @@
 "use client";
-// client: form interaction (radiogroup state, useActionState, pending UI)
+// client: form interaction (radiogroup state via useState) + useFormState for
+// the selectSport server action + useFormStatus for the pending submit button.
+// NOTE: this app is on React 18 (Next 14) — use react-dom's useFormState /
+// useFormStatus, NOT React 19's useActionState (which is undefined at runtime
+// here). Mirrors the established pattern in SubscribeForm / the auth forms.
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
+import { useFormState, useFormStatus } from "react-dom";
 
 import { selectSport } from "@/lib/actions/athlete-sport";
 import { signOut } from "@/lib/actions/auth";
@@ -71,12 +76,38 @@ function ArrowLeftIcon() {
 
 type SelectSportFormState = { ok: false; error: string } | null;
 
+// Submit button — isolated so useFormStatus sees the enclosing <form> and
+// drives the pending/loading state (React 18 pattern; useActionState's third
+// return value isn't available here).
+function ContinueButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      data-testid="sport-continue-btn"
+      disabled={pending}
+      className={[
+        "inline-flex w-full items-center justify-center gap-2",
+        "bg-onyx text-cream border border-gold rounded-[10px]",
+        "font-display font-extrabold uppercase tracking-[0.14em] text-[14px]",
+        "px-[26px] py-4",
+        "transition-transform duration-fast ease-out",
+        "active:scale-[0.97]",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx",
+        "disabled:opacity-70 disabled:cursor-not-allowed",
+      ].join(" ")}
+    >
+      {pending ? "SAVING…" : "CONTINUE"}
+    </button>
+  );
+}
+
 export default function SportPicker({ currentSport }: { currentSport: Sport }) {
   const [selected, setSelected] = useState<Sport>(currentSport);
-  const [state, formAction, isPending] = useActionState<
-    SelectSportFormState,
-    FormData
-  >(selectSport, null);
+  const [state, formAction] = useFormState<SelectSportFormState, FormData>(
+    selectSport,
+    null,
+  );
 
   return (
     <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[480px] flex-col bg-onyx text-cream">
@@ -169,23 +200,7 @@ export default function SportPicker({ currentSport }: { currentSport: Sport }) {
       <div className="sticky bottom-0 z-10 mt-auto bg-gradient-to-t from-onyx from-60% to-transparent px-5 pb-8 pt-3.5">
         <form action={formAction}>
           <input type="hidden" name="sport" value={selected} />
-          <button
-            type="submit"
-            data-testid="sport-continue-btn"
-            disabled={isPending}
-            className={[
-              "inline-flex w-full items-center justify-center gap-2",
-              "bg-onyx text-cream border border-gold rounded-[10px]",
-              "font-display font-extrabold uppercase tracking-[0.14em] text-[14px]",
-              "px-[26px] py-4",
-              "transition-transform duration-fast ease-out",
-              "active:scale-[0.97]",
-              "focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx",
-              "disabled:opacity-70 disabled:cursor-not-allowed",
-            ].join(" ")}
-          >
-            {isPending ? "SAVING…" : "CONTINUE"}
-          </button>
+          <ContinueButton />
         </form>
       </div>
     </div>
