@@ -25,7 +25,7 @@ import {
 } from "../types";
 
 import type { ClipManifest } from "../audio-playlist";
-import { HOCKEY_CONFIG } from "../sport-registry";
+import { HOCKEY_CONFIG, BASKETBALL_CONFIG } from "../sport-registry";
 
 // ---------------------------------------------------------------------------
 // Load committed manifest (real file, not a fixture)
@@ -219,8 +219,8 @@ describe("UI option coverage — CUE_WORDS", () => {
 
 // ---------------------------------------------------------------------------
 // 5. Practice playlist integrity — manifest.practiceState (p6, FV-30) exists
-//    and each hockey shared-tail slug resolves to a real non-zero file on disk.
-//    Basketball slugs (pp-bb-*) are intentionally ABSENT until FV-31 renders them.
+//    and each shared-tail slug (hockey AND basketball) resolves to a real
+//    non-zero file on disk. The basketball pp-bb-* clips were rendered in FV-31.
 // ---------------------------------------------------------------------------
 
 describe("practice playlist integrity", () => {
@@ -245,8 +245,8 @@ describe("practice playlist integrity", () => {
       return;
     }
 
-    // Only validate hockey slugs here — basketball pp-bb-* clips are rendered
-    // in FV-31 and are not expected on disk yet.
+    // Hockey shared-tail slugs. (Basketball tails are validated in the
+    // basketball practiceState test below, now that FV-31 has rendered them.)
     const hockeyEntry = manifest.practiceState["hockey"];
     if (!hockeyEntry || Array.isArray(hockeyEntry)) {
       // Unexpected shape — fail loudly.
@@ -287,16 +287,49 @@ describe("practice playlist integrity", () => {
     expect(broken).toEqual([]);
   });
 
-  it("manifest.practiceState includes basketball sport key (FV-30)", () => {
-    // Basketball tail slugs are defined in the manifest even before FV-31 renders
-    // the audio files. This confirms the manifest is p6-shaped.
-    const bbEntry = manifest.practiceState!["basketball"];
-    expect(bbEntry).toBeDefined();
-    expect(Array.isArray(bbEntry)).toBe(false);
-    if (!Array.isArray(bbEntry) && bbEntry) {
-      expect(bbEntry["dialed-in"].length).toBeGreaterThan(0);
-      expect(bbEntry["not-feeling-it"].length).toBeGreaterThan(0);
+  it("every basketball practiceState slug is in the catalog AND has a real non-zero file", () => {
+    // Guard: if the manifest is missing practiceState, exit cleanly.
+    if (!manifest.practiceState) {
+      expect(manifest.practiceState).toBeDefined();
+      return;
     }
+
+    // p6: practiceState["basketball"]["dialed-in"] is the basketball tail.
+    const bbEntry = manifest.practiceState["basketball"];
+    if (!bbEntry || Array.isArray(bbEntry)) {
+      // Unexpected shape (p5, or sport key missing) — fail loudly.
+      expect(bbEntry).toBeDefined();
+      expect(Array.isArray(bbEntry)).toBe(false);
+      return;
+    }
+
+    expect(bbEntry["dialed-in"].length).toBeGreaterThan(0);
+    expect(bbEntry["not-feeling-it"].length).toBeGreaterThan(0);
+
+    const broken: string[] = [];
+    // Deduplicate (both states share the same tail).
+    const uniqueSlugs = [
+      ...new Set([...bbEntry["dialed-in"], ...bbEntry["not-feeling-it"]]),
+    ];
+
+    for (const slug of uniqueSlugs) {
+      const entry = catalog[slug];
+      if (!entry) {
+        broken.push(`practiceState basketball slug "${slug}" not found in catalog`);
+        continue;
+      }
+      const absPath = urlToAbsPath(entry.url);
+      if (!fs.existsSync(absPath)) {
+        broken.push(`practiceState basketball slug "${slug}": file not found at ${absPath}`);
+        continue;
+      }
+      const stat = fs.statSync(absPath);
+      if (stat.size === 0) {
+        broken.push(`practiceState basketball slug "${slug}": file is zero bytes at ${absPath}`);
+      }
+    }
+
+    expect(broken).toEqual([]);
   });
 });
 
@@ -351,5 +384,97 @@ describe("template matrix completeness", () => {
 
     // hm-goalie-benched must NOT appear (it doesn't exist and would break resolution)
     expect(template!.clips).not.toContain("hm-goalie-benched");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 7. Basketball slug → file integrity (FV-31)
+//    The 42 basketball clips now exist on disk. Validate that the slugs the
+//    REGISTRY produces (cellSlugFor + the pre-practice maps) — not merely
+//    whatever already happens to sit in the catalog — each resolve to a real
+//    non-zero file. This is the basketball analog of the hockey template-matrix
+//    + practiceState checks, and it locks the Big × benched → bb-big-fouled-out
+//    special case to a real file.
+// ---------------------------------------------------------------------------
+
+describe("basketball slug → file integrity (FV-31)", () => {
+  // Local resolver: a slug must be in the catalog AND back a real non-zero file.
+  function checkSlug(slug: string, label: string, broken: string[]): void {
+    const entry = catalog[slug];
+    if (!entry) {
+      broken.push(`${label} slug "${slug}" not found in catalog`);
+      return;
+    }
+    const absPath = urlToAbsPath(entry.url);
+    if (!fs.existsSync(absPath)) {
+      broken.push(`${label} slug "${slug}": file not found at ${absPath}`);
+      return;
+    }
+    if (fs.statSync(absPath).size === 0) {
+      broken.push(`${label} slug "${slug}": file is zero bytes at ${absPath}`);
+    }
+  }
+
+  it("every basketball cell (cellSlugFor over roles × adversities) resolves to a real non-zero file", () => {
+    const broken: string[] = [];
+    const slugs = new Set<string>();
+
+    for (const role of BASKETBALL_CONFIG.roles!) {
+      for (const adversity of BASKETBALL_CONFIG.adversities) {
+        const slug = BASKETBALL_CONFIG.cellSlugFor(adversity, role);
+        slugs.add(slug);
+        checkSlug(slug, `cell [${role} × "${adversity}"]`, broken);
+      }
+    }
+
+    expect(broken).toEqual([]);
+    // 3 roles × 10 adversities = 30 distinct baked cells.
+    expect(slugs.size).toBe(30);
+    // Every cell slug is a bb-* baked session.
+    expect([...slugs].every((s) => s.startsWith("bb-"))).toBe(true);
+  });
+
+  it("Big × 'I get benched.' maps to bb-big-fouled-out (Bigs foul out, not benched)", () => {
+    // The special case in BASKETBALL_CONFIG.cellSlugFor — the basketball analog
+    // of hockey's goalie-pulled.
+    const slug = BASKETBALL_CONFIG.cellSlugFor("I get benched.", "Big");
+    expect(slug).toBe("bb-big-fouled-out");
+    // The non-existent bb-big-benched must never be referenced.
+    expect("bb-big-benched" in catalog).toBe(false);
+  });
+
+  it("every basketball pre-practice slug (focus + opener) resolves to a real non-zero file", () => {
+    const broken: string[] = [];
+
+    for (const slug of Object.values(BASKETBALL_CONFIG.practiceFocusSlugs)) {
+      checkSlug(slug, "practiceFocus", broken);
+    }
+    for (const slug of Object.values(BASKETBALL_CONFIG.practiceOpenerSlugs)) {
+      checkSlug(slug, "practiceOpener", broken);
+    }
+
+    expect(broken).toEqual([]);
+  });
+
+  it("exactly 12 distinct pp-bb-* pre-practice clips exist across the registry + manifest", () => {
+    // Documents the FV-31 count: 7 focus + 1 not-feeling-it opener + 4 shared
+    // tail (name-standard, goal-fusion, be-vocal, see-it-go) = 12. The dialed-in
+    // opener (pp-opener-dialed-in) and the pp-choose-focus-* tails are
+    // sport-neutral and intentionally not counted here.
+    const ppBb = new Set<string>();
+    const collect = (slug: string): void => {
+      if (slug.startsWith("pp-bb-")) ppBb.add(slug);
+    };
+
+    Object.values(BASKETBALL_CONFIG.practiceFocusSlugs).forEach(collect);
+    Object.values(BASKETBALL_CONFIG.practiceOpenerSlugs).forEach(collect);
+
+    const bbEntry = manifest.practiceState?.["basketball"];
+    if (bbEntry && !Array.isArray(bbEntry)) {
+      bbEntry["dialed-in"].forEach(collect);
+      bbEntry["not-feeling-it"].forEach(collect);
+    }
+
+    expect(ppBb.size).toBe(12);
   });
 });
