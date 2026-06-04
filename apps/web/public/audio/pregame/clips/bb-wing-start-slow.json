@@ -1,0 +1,54 @@
+{
+  "slug": "bb-wing-start-slow",
+  "durationSec": 274.992,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.896,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 13.152,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 21.792,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 27.568,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 55.528
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 98.234
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 169.24
+    },
+    {
+      "phase": "reset",
+      "startSec": 227.104
+    },
+    {
+      "phase": "prayer",
+      "startSec": 245.22
+    },
+    {
+      "phase": "done",
+      "startSec": 268.072
+    }
+  ]
+}

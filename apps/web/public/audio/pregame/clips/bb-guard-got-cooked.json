@@ -1,0 +1,54 @@
+{
+  "slug": "bb-guard-got-cooked",
+  "durationSec": 271.392,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.536,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 13.368,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 20.736,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 26.632,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 54.472
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 98.402
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 166.336
+    },
+    {
+      "phase": "reset",
+      "startSec": 222.952
+    },
+    {
+      "phase": "prayer",
+      "startSec": 241.404
+    },
+    {
+      "phase": "done",
+      "startSec": 265.072
+    }
+  ]
+}

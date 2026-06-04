@@ -1,0 +1,54 @@
+{
+  "slug": "bb-wing-missed-fts",
+  "durationSec": 275.88,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 5.84,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.48,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 20.784,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 27.472,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 53.944
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 96.026
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 167.032
+    },
+    {
+      "phase": "reset",
+      "startSec": 225.76
+    },
+    {
+      "phase": "prayer",
+      "startSec": 243.492
+    },
+    {
+      "phase": "done",
+      "startSec": 268.744
+    }
+  ]
+}

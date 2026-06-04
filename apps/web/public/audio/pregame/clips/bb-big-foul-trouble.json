@@ -1,0 +1,54 @@
+{
+  "slug": "bb-big-foul-trouble",
+  "durationSec": 290.112,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 7.184,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 13.44,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 22.128,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 27.592,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 55.984
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 99.602
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 172.336
+    },
+    {
+      "phase": "reset",
+      "startSec": 243.616
+    },
+    {
+      "phase": "prayer",
+      "startSec": 259.476
+    },
+    {
+      "phase": "done",
+      "startSec": 283.192
+    }
+  ]
+}

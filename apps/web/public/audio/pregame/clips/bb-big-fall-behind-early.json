@@ -1,0 +1,54 @@
+{
+  "slug": "bb-big-fall-behind-early",
+  "durationSec": 283.68,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 5.792,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.84,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 21.768,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 28.552,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 54.712
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 96.218
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 168.16
+    },
+    {
+      "phase": "reset",
+      "startSec": 233.56
+    },
+    {
+      "phase": "prayer",
+      "startSec": 248.94
+    },
+    {
+      "phase": "done",
+      "startSec": 276.04
+    }
+  ]
+}

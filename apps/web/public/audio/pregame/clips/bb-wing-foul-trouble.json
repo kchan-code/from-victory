@@ -1,0 +1,54 @@
+{
+  "slug": "bb-wing-foul-trouble",
+  "durationSec": 271.344,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.128,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.696,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 20.208,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 25.576,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 52.096
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 95.018
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 162.592
+    },
+    {
+      "phase": "reset",
+      "startSec": 221.992
+    },
+    {
+      "phase": "prayer",
+      "startSec": 239.82
+    },
+    {
+      "phase": "done",
+      "startSec": 264.472
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "slug": "bb-big-fouled-out",
+  "durationSec": 286.488,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.536,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.048,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 21.528,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 28.456,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 52.288
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 94.274
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 167.056
+    },
+    {
+      "phase": "reset",
+      "startSec": 238
+    },
+    {
+      "phase": "prayer",
+      "startSec": 255.612
+    },
+    {
+      "phase": "done",
+      "startSec": 279.712
+    }
+  ]
+}

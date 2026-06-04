@@ -1,0 +1,54 @@
+{
+  "slug": "bb-big-got-cooked",
+  "durationSec": 270.696,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 6.968,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.912,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 20.856,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 27.016,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 53.848
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 96.386
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 164.32
+    },
+    {
+      "phase": "reset",
+      "startSec": 222.184
+    },
+    {
+      "phase": "prayer",
+      "startSec": 240.564
+    },
+    {
+      "phase": "done",
+      "startSec": 264.976
+    }
+  ]
+}

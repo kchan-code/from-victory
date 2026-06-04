@@ -1,0 +1,54 @@
+{
+  "slug": "bb-guard-benched",
+  "durationSec": 272.856,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 5.792,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 12.096,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 20.184,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 25.648,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 53.608
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 97.25
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 166
+    },
+    {
+      "phase": "reset",
+      "startSec": 225.136
+    },
+    {
+      "phase": "prayer",
+      "startSec": 242.004
+    },
+    {
+      "phase": "done",
+      "startSec": 265.72
+    }
+  ]
+}

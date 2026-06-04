@@ -1,0 +1,54 @@
+{
+  "slug": "bb-big-coach-yells",
+  "durationSec": 275.592,
+  "phases": [
+    {
+      "phase": "settle",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 7.112,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 14.376,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 22.944,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 28.84,
+      "round": 1
+    },
+    {
+      "phase": "rink",
+      "startSec": 55.864
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 96.962
+    },
+    {
+      "phase": "hardMoment",
+      "startSec": 169.12
+    },
+    {
+      "phase": "reset",
+      "startSec": 230.728
+    },
+    {
+      "phase": "prayer",
+      "startSec": 246.636
+    },
+    {
+      "phase": "done",
+      "startSec": 269.104
+    }
+  ]
+}
