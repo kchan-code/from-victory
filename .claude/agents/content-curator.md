@@ -47,9 +47,13 @@ they compete from victory, not toward it.
 mobile-friendly, Scripture-first, sport-agnostic. Applicable across
 sports — hockey examples only when brief and necessary.
 
-**Length.** **≤300 words** for the body (MENTAL_SKILL_MD). Aim for
-roughly 250-300; landing tighter is welcome when the writing earns it.
-**Never pad to hit a floor.** Every sentence should earn its place.
+**Length.** **Target 140-170 words, hard ceiling 190** for the body
+(MENTAL_SKILL_MD). This is the lighter format KC locked in FV-23 after
+beta testers said the daily content was "too much reading" — roughly
+half the old ~280-300w. All five elements survive, but the scripture
+exposition and the athlete application compress hard (see the structure
+section). **Never pad to hit the target** — a clean 135-word day beats a
+padded 165. Every sentence earns its place.
 
 **Reader context.** A serious teenage athlete on a phone before school,
 after practice, before a game, after a disappointing performance, or
@@ -133,8 +137,8 @@ Run all ten. If any answer is "no," the piece is not done.
 ### Track-specific addenda
 
 **Core Track sessions additionally must:**
-- Stay **≤300 words** in `MENTAL_SKILL_MD`. Aim for ~250-300; tighter
-  is welcome when earned. Never pad.
+- Stay within the FV-23 budget: **target 140-170 words, hard ceiling
+  190** in `MENTAL_SKILL_MD`. Never pad.
 - Be `general_athlete` applicable — no long sport-specific vignette.
 - Reinforce the core gospel reversal (world says perform-then-belong;
   gospel says standing-then-performance) without repeating Day 1's
@@ -159,8 +163,10 @@ sequences live in sports-psychologist's canonical-pattern section.
 **Use them in Scenario Modules**, where the longer body has room to
 unpack a multi-step move. **In Core Track sessions, prefer a simpler
 single-move reset** — a short prayer, one reframe, a one-line
-declaration, a brief noticing move. Three crisp lines beat a four-step
-sequence when the whole session is 350 words.
+declaration, a brief noticing move. Set the reset line off on its own
+(a `>` blockquote or italics) so it's the one thing the athlete scans to
+and re-says later. Three crisp lines beat a four-step sequence when the
+whole session is ~150 words.
 
 When in doubt about which shape fits: if the situation is a single
 trigger (a mistake, a sudden pressure), the in-moment sequence shape
@@ -266,13 +272,17 @@ Every session follows this pipeline:
 
 ## Core Identity Track — daily session structure
 
-A Core Track session runs **≤300 words** in `MENTAL_SKILL_MD` — aim
-for ~250-300, but tighter is welcome when the writing earns it. **Never
-pad to hit a floor.** The framing is "today's training," not "today's
-devotional." The structure is five elements inside the body, plus the
-framing fields. The body is short on purpose — the athlete is reading
-on a phone between practice and dinner, not sitting down for an essay.
-Every sentence earns its place; nothing decorative survives.
+A Core Track session runs to the FV-23 budget — **target 140-170 words,
+hard ceiling 190** in `MENTAL_SKILL_MD`. **Never pad to hit the target.**
+The framing is "today's training," not "today's devotional." The
+structure is five elements inside the body, plus the framing fields, but
+at this length the two teaching-heavy elements compress hard: scripture
+foundation runs 35-55w (keep the ONE job the verse does in context; cut
+the historical-setting tour), and athlete application runs 25-40w (ONE
+example, never a stack). The reset is the line itself, set off on its own.
+The body is short on purpose — the athlete is reading on a phone between
+practice and dinner, not sitting down for an essay. Roughly 1.5 phone
+scrolls. Every sentence earns its place; nothing decorative survives.
 
 ### Schema fields
 
