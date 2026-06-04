@@ -200,7 +200,19 @@ async function run({ github, context, core }) {
 
     core.info(`Sensitive files touched: ${sensitiveFiles(changedFiles).length}`);
     core.info(`privacy-verdict → ${state}: ${description}`);
-    if (state === 'failure') core.setFailed(description);
+    // Do NOT core.setFailed() on a decision 'failure' (awaiting / non-APPROVED
+    // verdict). The gate is the `privacy-verdict` COMMIT STATUS published above —
+    // make THAT the required check in the main ruleset. The status self-heals:
+    // a later issue_comment run overwrites it green the instant the verdict
+    // posts, no re-push or manual re-run needed.
+    //
+    // Failing the JOB here created a second, NON-self-healing signal: the
+    // `pull_request` run always fires BEFORE any verdict comment can exist, so
+    // its "Require privacy VERDICT" check-run is born red, and a completed
+    // check-run can't be retroactively greened by the comment-triggered run.
+    // That left every privacy-path PR sitting red until a manual job re-run.
+    // The job's only role is to PUBLISH the status; genuine errors still fail it
+    // (see the catch block below).
   } catch (err) {
     // Fail closed: post a red status so the gate blocks rather than hangs. If
     // the head SHA was never resolved we can't post — the job still goes red and
