@@ -44,6 +44,38 @@ import {
   SENDOFF_SEGMENTS,
 } from "./segments.ts";
 
+// Basketball pregame hard-moment cells (FV-30)
+import { SESSION_GUARD_TURNOVER_SCRIPT } from "./session-guard-turnover.ts";
+import { SESSION_GUARD_MISSED_SHOT_SCRIPT } from "./session-guard-missed-shot.ts";
+import { SESSION_GUARD_GOT_COOKED_SCRIPT } from "./session-guard-got-cooked.ts";
+import { SESSION_GUARD_FOUL_TROUBLE_SCRIPT } from "./session-guard-foul-trouble.ts";
+import { SESSION_GUARD_COACH_YELLS_SCRIPT } from "./session-guard-coach-yells.ts";
+import { SESSION_GUARD_BENCHED_SCRIPT } from "./session-guard-benched.ts";
+import { SESSION_GUARD_NERVOUS_SCRIPT } from "./session-guard-nervous.ts";
+import { SESSION_GUARD_MISSED_FTS_SCRIPT } from "./session-guard-missed-fts.ts";
+import { SESSION_GUARD_START_SLOW_SCRIPT } from "./session-guard-start-slow.ts";
+import { SESSION_GUARD_FALL_BEHIND_EARLY_SCRIPT } from "./session-guard-fall-behind-early.ts";
+import { SESSION_WING_TURNOVER_SCRIPT } from "./session-wing-turnover.ts";
+import { SESSION_WING_MISSED_SHOT_SCRIPT } from "./session-wing-missed-shot.ts";
+import { SESSION_WING_GOT_COOKED_SCRIPT } from "./session-wing-got-cooked.ts";
+import { SESSION_WING_FOUL_TROUBLE_SCRIPT } from "./session-wing-foul-trouble.ts";
+import { SESSION_WING_COACH_YELLS_SCRIPT } from "./session-wing-coach-yells.ts";
+import { SESSION_WING_BENCHED_SCRIPT } from "./session-wing-benched.ts";
+import { SESSION_WING_NERVOUS_SCRIPT } from "./session-wing-nervous.ts";
+import { SESSION_WING_MISSED_FTS_SCRIPT } from "./session-wing-missed-fts.ts";
+import { SESSION_WING_START_SLOW_SCRIPT } from "./session-wing-start-slow.ts";
+import { SESSION_WING_FALL_BEHIND_EARLY_SCRIPT } from "./session-wing-fall-behind-early.ts";
+import { SESSION_BIG_TURNOVER_SCRIPT } from "./session-big-turnover.ts";
+import { SESSION_BIG_MISSED_SHOT_SCRIPT } from "./session-big-missed-shot.ts";
+import { SESSION_BIG_GOT_COOKED_SCRIPT } from "./session-big-got-cooked.ts";
+import { SESSION_BIG_FOUL_TROUBLE_SCRIPT } from "./session-big-foul-trouble.ts";
+import { SESSION_BIG_COACH_YELLS_SCRIPT } from "./session-big-coach-yells.ts";
+import { SESSION_BIG_FOULED_OUT_SCRIPT } from "./session-big-fouled-out.ts";
+import { SESSION_BIG_NERVOUS_SCRIPT } from "./session-big-nervous.ts";
+import { SESSION_BIG_MISSED_FTS_SCRIPT } from "./session-big-missed-fts.ts";
+import { SESSION_BIG_START_SLOW_SCRIPT } from "./session-big-start-slow.ts";
+import { SESSION_BIG_FALL_BEHIND_EARLY_SCRIPT } from "./session-big-fall-behind-early.ts";
+
 // The EBU R128 loudness normalization filter applied to every clip.
 // -16 LUFS integrated / -1.5 dBTP true-peak / LRA 11 LU.
 // To re-pass at a different target, change the I= value here and regenerate.
@@ -2580,4 +2612,37 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_PP_FOCUS_FULL_REPS_NO_GLIDE_SCRIPT,
   CLIP_PP_BE_VOCAL_SCRIPT,
   CLIP_PP_SEE_IT_GO_SCRIPT,
+  // Basketball pregame hard-moment cells (FV-30) — Guard (10)
+  SESSION_GUARD_TURNOVER_SCRIPT,
+  SESSION_GUARD_MISSED_SHOT_SCRIPT,
+  SESSION_GUARD_GOT_COOKED_SCRIPT,
+  SESSION_GUARD_FOUL_TROUBLE_SCRIPT,
+  SESSION_GUARD_COACH_YELLS_SCRIPT,
+  SESSION_GUARD_BENCHED_SCRIPT,
+  SESSION_GUARD_NERVOUS_SCRIPT,
+  SESSION_GUARD_MISSED_FTS_SCRIPT,
+  SESSION_GUARD_START_SLOW_SCRIPT,
+  SESSION_GUARD_FALL_BEHIND_EARLY_SCRIPT,
+  // Basketball pregame hard-moment cells (FV-30) — Wing (10)
+  SESSION_WING_TURNOVER_SCRIPT,
+  SESSION_WING_MISSED_SHOT_SCRIPT,
+  SESSION_WING_GOT_COOKED_SCRIPT,
+  SESSION_WING_FOUL_TROUBLE_SCRIPT,
+  SESSION_WING_COACH_YELLS_SCRIPT,
+  SESSION_WING_BENCHED_SCRIPT,
+  SESSION_WING_NERVOUS_SCRIPT,
+  SESSION_WING_MISSED_FTS_SCRIPT,
+  SESSION_WING_START_SLOW_SCRIPT,
+  SESSION_WING_FALL_BEHIND_EARLY_SCRIPT,
+  // Basketball pregame hard-moment cells (FV-30) — Big (10; benched→fouled-out)
+  SESSION_BIG_TURNOVER_SCRIPT,
+  SESSION_BIG_MISSED_SHOT_SCRIPT,
+  SESSION_BIG_GOT_COOKED_SCRIPT,
+  SESSION_BIG_FOUL_TROUBLE_SCRIPT,
+  SESSION_BIG_COACH_YELLS_SCRIPT,
+  SESSION_BIG_FOULED_OUT_SCRIPT,
+  SESSION_BIG_NERVOUS_SCRIPT,
+  SESSION_BIG_MISSED_FTS_SCRIPT,
+  SESSION_BIG_START_SLOW_SCRIPT,
+  SESSION_BIG_FALL_BEHIND_EARLY_SCRIPT,
 ];
