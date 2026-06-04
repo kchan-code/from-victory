@@ -3,8 +3,10 @@
 // Three areas:
 //   A. HOCKEY_CONFIG.cellSlugFor — all 3 roles × 10 adversities, plus the
 //      Goalie × benched → goalie-pulled special case.
-//   B. BASKETBALL_CONFIG no-roles path — role=null yields a role-less slug
-//      and does not crash or emit a hockey-shaped value.
+//   B. BASKETBALL_CONFIG.cellSlugFor — positional (Guard/Wing/Big), incl. the
+//      Big × benched → bb-big-fouled-out special case.
+//   B2. No-ask path (synthetic fixture) — a sport with no roles yields a
+//      role-less slug and skips the position picker (no MVP sport is no-ask).
 //   C. getSportConfig — returns the correct config per key; type system
 //      ensures no unknown-key path exists at runtime (no fallback to test).
 //
@@ -16,6 +18,7 @@ import {
   HOCKEY_CONFIG,
   BASKETBALL_CONFIG,
   getSportConfig,
+  type SportConfig,
 } from "../sport-registry";
 
 // ---------------------------------------------------------------------------
@@ -71,31 +74,97 @@ describe("HOCKEY_CONFIG.cellSlugFor", () => {
 });
 
 // ---------------------------------------------------------------------------
-// B. No-roles path — BASKETBALL_CONFIG (stub: no roles declared)
+// B. BASKETBALL_CONFIG.cellSlugFor — positional (Guard/Wing/Big), FV-30
 // ---------------------------------------------------------------------------
 
-describe("BASKETBALL_CONFIG no-roles path", () => {
-  it("has no roles field (or an empty roles array) so the position picker is skipped", () => {
-    // Either roles is absent or empty — both are valid no-ask shapes.
-    const roles = BASKETBALL_CONFIG.roles;
+describe("BASKETBALL_CONFIG.cellSlugFor", () => {
+  const roles = ["Guard", "Wing", "Big"] as const;
+
+  it("produces bb-{role.toLowerCase()}-{frag} for every role × adversity combination", () => {
+    const unexpected: string[] = [];
+
+    for (const role of roles) {
+      for (const adversity of BASKETBALL_CONFIG.adversities) {
+        const frag = BASKETBALL_CONFIG.adversitySlugFragments[adversity];
+        // Skip the Big × benched special case — covered separately below.
+        if (role === "Big" && frag === "benched") continue;
+
+        if (frag === undefined) {
+          unexpected.push(`adversity "${adversity}" has no slug fragment in BASKETBALL_CONFIG`);
+          continue;
+        }
+
+        const expected = `bb-${role.toLowerCase()}-${frag}`;
+        const actual = BASKETBALL_CONFIG.cellSlugFor(adversity, role);
+
+        if (actual !== expected) {
+          unexpected.push(
+            `[${role} × "${adversity}"] expected "${expected}" but got "${actual}"`,
+          );
+        }
+      }
+    }
+
+    expect(unexpected).toEqual([]);
+  });
+
+  it("Big × 'I get benched.' → 'bb-big-fouled-out' (not bb-big-benched)", () => {
+    const result = BASKETBALL_CONFIG.cellSlugFor("I get benched.", "Big");
+    expect(result).toBe("bb-big-fouled-out");
+    expect(result).not.toBe("bb-big-benched");
+  });
+
+  it("all 10 adversity strings have a fragment in adversitySlugFragments", () => {
+    const missing: string[] = [];
+    for (const adversity of BASKETBALL_CONFIG.adversities) {
+      if (!(adversity in BASKETBALL_CONFIG.adversitySlugFragments)) {
+        missing.push(adversity);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// B2. No-ask path — synthetic fixture. No MVP sport is no-ask (hockey and
+// basketball both declare roles), but the engine must still support a sport
+// that declares none (e.g. tennis, swimming): no position picker, role=null
+// terminal state, role-less slugs.
+// ---------------------------------------------------------------------------
+
+const NO_ASK_FRAGMENTS: Record<string, string> = { "I lose focus.": "lose-focus" };
+
+const NO_ASK_CONFIG: SportConfig = {
+  displayName: "Test No-Ask Sport",
+  // no `roles` field → no-ask shape
+  adversities: ["I lose focus."],
+  adversitySlugFragments: NO_ASK_FRAGMENTS,
+  cellSlugFor: (adversity, role) => {
+    const frag = NO_ASK_FRAGMENTS[adversity] ?? "lose-focus";
+    return role ? `noask-${role.toLowerCase()}-${frag}` : `noask-${frag}`;
+  },
+  practiceFocusOptions: [],
+  practiceFocusSlugs: {},
+  practiceOpenerSlugs: {
+    "dialed-in": "pp-opener-dialed-in",
+    "not-feeling-it": "pp-opener-get-to",
+  },
+};
+
+describe("no-ask sport path (synthetic fixture)", () => {
+  it("declares no roles, so the position picker is skipped", () => {
+    const roles = NO_ASK_CONFIG.roles;
     const hasNoRoles = roles === undefined || roles.length === 0;
     expect(hasNoRoles).toBe(true);
   });
 
-  it("cellSlugFor with role=null does not crash", () => {
-    // The basketball stub always returns a placeholder slug.
-    // The key assertion is no throw and no hockey-shaped output.
-    expect(() => BASKETBALL_CONFIG.cellSlugFor("any adversity", null)).not.toThrow();
-  });
-
-  it("cellSlugFor with role=null does not return a hockey-shaped slug", () => {
-    const result = BASKETBALL_CONFIG.cellSlugFor("any adversity", null);
-    // Hockey slugs follow session-{forward|defense|goalie}-{frag} pattern.
-    expect(result).not.toMatch(/^session-(forward|defense|goalie)-/);
+  it("cellSlugFor with role=null does not crash and yields a role-less slug", () => {
+    expect(() => NO_ASK_CONFIG.cellSlugFor("I lose focus.", null)).not.toThrow();
+    expect(NO_ASK_CONFIG.cellSlugFor("I lose focus.", null)).toBe("noask-lose-focus");
   });
 
   it("cellSlugFor with role=undefined does not crash", () => {
-    expect(() => BASKETBALL_CONFIG.cellSlugFor("any adversity", undefined)).not.toThrow();
+    expect(() => NO_ASK_CONFIG.cellSlugFor("I lose focus.", undefined)).not.toThrow();
   });
 });
 
