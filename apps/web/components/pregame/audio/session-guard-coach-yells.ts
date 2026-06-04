@@ -12,7 +12,7 @@
 // One of the basketball pregame matrix (FV-30, 3 positions × 10 adversities),
 // authored under content-curator orchestration from the FV-29 taxonomy and
 // mirroring the hockey cell pattern. Faith clips (OPENING/CLOSING) reused.
-// NOT yet wired into clips.ts — that is the FV-28 registry refactor.
+// Registered in clips.ts CLIP_SCRIPTS under the per-sport registry (FV-30).
 
 import type { AudioScript } from "./types";
 import {
