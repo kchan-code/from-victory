@@ -8,7 +8,8 @@
 // Special case: Goalie × "I get benched." → session-goalie-pulled
 // (a goalie isn't "benched," they're "pulled").
 
-import type { NeedToday, Role } from "./types";
+import type { NeedToday } from "./types";
+import { getSportConfig, type Sport } from "./sport-registry";
 
 // ---------------------------------------------------------------------------
 // Personalization clip slug maps — Phase 3b
@@ -74,36 +75,45 @@ export const NEED_OPENER_SLUGS: Record<NeedToday, string> = {
   Hope: "opener-hope",
 };
 
-export const ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
-  "I turn the puck over.": "turnover",
-  "I miss a scoring chance.": "missed-chance",
-  "I get beaten wide.": "beaten-wide",
-  "I take a bad penalty.": "bad-penalty",
-  "Coach yells.": "coach-yells",
-  "I get benched.": "benched",
-  "I feel nervous.": "nervous",
-  "I get hit.": "get-hit",
-  "I start slow.": "start-slow",
-  "We give up the first goal.": "first-goal-against",
-};
-
-export function cellSlugFor(role: Role, adversity: string): string {
-  const roleStr = role.toLowerCase();
-  const advFrag = ADVERSITY_SLUG_FRAGMENTS[adversity] ?? "missed-chance";
-  // Goalie × benched → pulled (goalies don't get "benched," they get pulled)
-  if (role === "Goalie" && advFrag === "benched") return "session-goalie-pulled";
-  return `session-${roleStr}-${advFrag}`;
-}
+// ADVERSITY_SLUG_FRAGMENTS and cellSlugFor have moved to sport-registry.ts
+// (HOCKEY_CONFIG.adversitySlugFragments / HOCKEY_CONFIG.cellSlugFor).
+// They are no longer exported from this module.
 
 export function openerSrcFor(need: NeedToday | null): string | null {
   if (!need) return null;
   return audioAssetUrl(NEED_OPENER_SLUGS[need], "mp3");
 }
 
+/**
+ * Derive the cell MP3 URL for a given (role, adversity, sport) combination.
+ * Delegates slug composition to the sport-specific registry entry so
+ * hockey's goalie-pulled special case (and any future sport logic) is
+ * encapsulated in one place.
+ *
+ * Defaults to "hockey" when sport is not supplied, keeping all existing
+ * call sites green without changes.
+ */
 export function cellSrcFor(
-  role: Role | null,
+  role: string | null,
   adversity: string | null,
+  sport: Sport = "hockey",
 ): string | null {
-  if (!role || !adversity) return null;
-  return audioAssetUrl(cellSlugFor(role, adversity), "mp3");
+  if (!adversity) return null;
+  const config = getSportConfig(sport);
+  const slug = config.cellSlugFor(adversity, role);
+  return audioAssetUrl(slug, "mp3");
+}
+
+/**
+ * Derive the cell clip slug for a given (role, adversity, sport) combination.
+ * Exported so screens-b.tsx can derive the slug for sidecar JSON loading.
+ * Defaults to "hockey".
+ */
+export function cellSlugFor(
+  role: string | null,
+  adversity: string,
+  sport: Sport = "hockey",
+): string {
+  const config = getSportConfig(sport);
+  return config.cellSlugFor(adversity, role);
 }

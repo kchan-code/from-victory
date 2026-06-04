@@ -5,7 +5,7 @@
 // Session, and finally the Pregame Card. Identity scripture + prayer fold
 // into the audio narrative (not standalone screens). No persistence yet
 // (see docs/feature-roadmap.md). Local state only.
-
+//
 export type NeedToday =
   | "Confidence"
   | "Calm"
@@ -17,12 +17,11 @@ export type NeedToday =
   | "Joy"
   | "Hope";
 
-export type Role = "Forward" | "Defense" | "Goalie";
-
 export type PregameState = {
   breathDone: boolean;
   need: NeedToday | null;
-  role: Role | null;
+  /** Sport-specific role/position string, or null for no-ask sports. */
+  role: string | null;
   adversity: string | null;
   anchor: string | null;
   selfTalk: string | null;
@@ -57,51 +56,9 @@ export const NEEDS: NeedToday[] = [
   "Hope",
 ];
 
-export const ROLE_CONTENT: Record<Role, { title: string; scenes: string[] }> = {
-  Forward: {
-    title: "Play your role with courage.",
-    scenes: [
-      "Win a puck race.",
-      "Protect the puck.",
-      "Drive inside.",
-      "Make the next play.",
-      "Backcheck hard.",
-    ],
-  },
-  Defense: {
-    title: "Calm under pressure.",
-    scenes: [
-      "Shoulder check.",
-      "Retrieve the puck.",
-      "Make the first pass.",
-      "Hold your gap.",
-      "Box out.",
-    ],
-  },
-  Goalie: {
-    title: "The next shot.",
-    scenes: [
-      "Set your feet.",
-      "Track the puck.",
-      "Control the rebound.",
-      "Reset after traffic.",
-      "Next shot only.",
-    ],
-  },
-};
-
-export const ADVERSITIES: string[] = [
-  "I turn the puck over.",
-  "I miss a scoring chance.",
-  "I get beaten wide.",
-  "I take a bad penalty.",
-  "Coach yells.",
-  "I get benched.",
-  "I feel nervous.",
-  "I get hit.",
-  "I start slow.",
-  "We give up the first goal.",
-];
+// ROLE_CONTENT and ADVERSITIES have moved to sport-registry.ts (HOCKEY_CONFIG).
+// They are no longer exported from this module; consumers should import from
+// sport-registry.ts or receive a sportConfig prop from the flow root.
 
 // Five-step coping response — surfaced inside the Audio Session narrative,
 // not as a standalone setup screen anymore.
@@ -132,22 +89,9 @@ export const RESET_ANCHORS: string[] = [
   "Say cue word",
 ];
 
-// ---------------------------------------------------------------------------
-// Pre-practice focus options — used in PracticeFlow focus picker.
-// Single-tap from these; athlete may also type a custom focus.
-// ---------------------------------------------------------------------------
-
-// "First" dropped (FRO-22): vague when voiced cold, duplicated
-// "Win every race to the puck". Now 7 presets matching the 7 pp-focus-* clips.
-export const PRACTICE_FOCUS_OPTIONS: string[] = [
-  "Relentless",
-  "Hungry",
-  "Head up every breakout",
-  "Feet always moving",
-  "Hard first pass",
-  "Win every race to the puck",
-  "Full reps, no glide",
-];
+// Pre-practice focus options now live in sport-registry.ts
+// (HOCKEY_CONFIG.practiceFocusOptions). Read them via the sportConfig prop;
+// no proxy export here.
 
 // Athlete's self-reported pre-practice state — drives opener selection.
 // "dialed-in" is the default; "not-feeling-it" swaps Beat 1 only.

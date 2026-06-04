@@ -36,9 +36,16 @@ import {
   INITIAL_STATE,
   type PregameState,
 } from "./types";
+import { getSportConfig, type Sport, type SportConfig } from "./sport-registry";
 
 type Props = {
   athleteFirstName: string;
+  /**
+   * The athlete's sport. Used to resolve the per-sport config (roles,
+   * adversities, clip slugs). Defaults to "hockey" so existing callers
+   * are unaffected until FV-27 wires athlete.sport from the DB.
+   */
+  sport?: Sport;
 };
 
 type View =
@@ -49,7 +56,15 @@ type View =
 
 // Athlete's first name surfaces only in the closing "Go play, {name}." byline
 // on the Pregame Card — kept off the rest of the flow per the design.
-export function PregameFlow({ athleteFirstName }: Props) {
+export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
+  const sportConfig: SportConfig = getSportConfig(sport);
+
+  // Build the active flow: remove the "position" step for no-ask sports
+  // (i.e. sports that declare no roles). Hockey keeps its position step;
+  // future no-ask sports (tennis, swimming) skip it entirely and role stays null.
+  const hasRoles = (sportConfig.roles?.length ?? 0) > 0;
+  const activeFlow = hasRoles ? FLOW : FLOW.filter((s) => s.id !== "position");
+
   const [view, setView] = useState<View>({ kind: "start" });
   const [data, setData] = useState<PregameState>(INITIAL_STATE);
 
@@ -62,7 +77,7 @@ export function PregameFlow({ athleteFirstName }: Props) {
 
   const goNext = () => {
     if (view.kind !== "flow") return;
-    if (view.index >= FLOW.length - 1) {
+    if (view.index >= activeFlow.length - 1) {
       setView({ kind: "card" });
     } else {
       setView({ kind: "flow", index: view.index + 1 });
@@ -97,10 +112,10 @@ export function PregameFlow({ athleteFirstName }: Props) {
     return (
       <PregameShell>
         <PregameHeader
-          step={FLOW.length}
-          total={FLOW.length}
+          step={activeFlow.length}
+          total={activeFlow.length}
           label="Pre-game Card"
-          onBack={() => setView({ kind: "flow", index: FLOW.length - 1 })}
+          onBack={() => setView({ kind: "flow", index: activeFlow.length - 1 })}
           onClose={goStart}
         />
         <PregameCardScreen
@@ -117,17 +132,17 @@ export function PregameFlow({ athleteFirstName }: Props) {
     );
   }
 
-  const step = FLOW[view.index];
+  const step = activeFlow[view.index];
   if (!step) return null;
   const canAdvance = step.required(data);
-  const isLast = view.index === FLOW.length - 1;
+  const isLast = view.index === activeFlow.length - 1;
   const ctaLabel = step.cta ?? (isLast ? "SHOW MY PRE-GAME CARD" : "CONTINUE");
 
   return (
     <PregameShell>
       <PregameHeader
         step={view.index + 1}
-        total={FLOW.length}
+        total={activeFlow.length}
         label={step.label}
         onBack={goBack}
         onClose={goStart}
@@ -137,6 +152,8 @@ export function PregameFlow({ athleteFirstName }: Props) {
         state={data}
         set={set}
         onContinue={goNext}
+        sportConfig={sportConfig}
+        sport={sport}
       />
       {!step.hideBottomBar && (
         <BottomBar>
@@ -160,11 +177,15 @@ function ScreenSwitch({
   state,
   set,
   onContinue,
+  sportConfig,
+  sport,
 }: {
   stepId: string;
   state: PregameState;
   set: <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
   onContinue: () => void;
+  sportConfig: SportConfig;
+  sport: Sport;
 }) {
   switch (stepId) {
     case "breath":
@@ -172,9 +193,9 @@ function ScreenSwitch({
     case "todaysFocus":
       return <TodaysFocusScreen state={state} set={set} />;
     case "position":
-      return <PositionScreen state={state} set={set} />;
+      return <PositionScreen state={state} set={set} sportConfig={sportConfig} />;
     case "hardMoment":
-      return <HardMomentScreen state={state} set={set} />;
+      return <HardMomentScreen state={state} set={set} sportConfig={sportConfig} />;
     case "resetAnchor":
       return <ResetAnchorScreen state={state} set={set} />;
     case "selfTalk":
@@ -185,7 +206,7 @@ function ScreenSwitch({
       return <ReviewScreen state={state} />;
     case "audio":
       return (
-        <AudioSessionScreen state={state} set={set} onContinue={onContinue} />
+        <AudioSessionScreen state={state} set={set} onContinue={onContinue} sportConfig={sportConfig} sport={sport} />
       );
     default:
       return null;

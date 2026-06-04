@@ -71,6 +71,7 @@ import {
   resolvePracticePlaylist,
 } from "./audio-playlist";
 import { assembleWavBlob } from "./audio/encode-wav";
+import { getSportConfig, type Sport } from "./sport-registry";
 
 // ---------------------------------------------------------------------------
 // Vendor-prefix type helper (decode-only AudioContext)
@@ -143,6 +144,11 @@ export type UseClipPlayerOptions = {
    * cleanly (lead+tail still play).
    */
   practiceFocus?: string | null;
+  /**
+   * The athlete's sport. Used to resolve sport-specific practice opener slugs
+   * and focus slug maps. Defaults to "hockey" so existing call sites stay green.
+   */
+  sport?: Sport;
   /** Called once when the final clip ends. */
   onCompleted?: () => void;
 };
@@ -196,6 +202,7 @@ export function useClipPlayer({
   practice = false,
   practiceState,
   practiceFocus,
+  sport = "hockey",
   onCompleted,
 }: UseClipPlayerOptions): UseClipPlayerResult {
   // ── state ──
@@ -342,7 +349,8 @@ export function useClipPlayer({
       // Pregame mode: resolve by need × position × adversity (+ personalization).
       let clips: ReturnType<typeof resolvePlaylist>;
       if (practice) {
-        clips = resolvePracticePlaylist(manifest, practiceState, practiceFocus);
+        const sportConfig = getSportConfig(sport);
+        clips = resolvePracticePlaylist(manifest, practiceState, practiceFocus, sportConfig);
         if (!clips) {
           setError("no template");
           return;
@@ -509,7 +517,7 @@ export function useClipPlayer({
     return () => {
       cancelled = true;
     };
-  }, [need, position, adversity, anchor, selfTalk, cueWord, practice, practiceState, practiceFocus, startRaf, stopRaf, wireMediaSession]);
+  }, [need, position, adversity, anchor, selfTalk, cueWord, practice, practiceState, practiceFocus, sport, startRaf, stopRaf, wireMediaSession]);
 
   // ── Lightweight visibilitychange nudge ──
   // iOS may pause the audio element when the app is briefly backgrounded (e.g.
