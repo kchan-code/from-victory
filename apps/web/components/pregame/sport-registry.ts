@@ -26,6 +26,12 @@ export type Sport = "hockey" | "basketball"; // extend as more sports land
 export type SportConfig = {
   displayName: string;
   /**
+   * Registry key for this sport — matches the `Sport` union and the key used in
+   * `ClipManifest.practiceState` for sport-keyed tail lookup.
+   * Set once per config; never changes after initial declaration.
+   */
+  sportKey: Sport;
+  /**
    * OPTIONAL. When present, the pregame flow renders a position-picker screen
    * and `state.role` must be one of these values.
    * When absent, the position step is SKIPPED and `state.role` stays null.
@@ -96,6 +102,7 @@ const HOCKEY_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
 
 export const HOCKEY_CONFIG: SportConfig = {
   displayName: "Hockey",
+  sportKey: "hockey",
 
   roles: ["Forward", "Defense", "Goalie"] as const,
   roleLabel: "Position",
@@ -204,6 +211,7 @@ const BASKETBALL_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
 
 export const BASKETBALL_CONFIG: SportConfig = {
   displayName: "Basketball",
+  sportKey: "basketball",
 
   roles: ["Guard", "Wing", "Big"] as const,
   roleLabel: "Position",
@@ -267,16 +275,33 @@ export const BASKETBALL_CONFIG: SportConfig = {
     return `bb-${roleStr}-${frag}`;
   },
 
-  // TODO FV-30 pre-practice chunk: basketball practice focus presets are a
-  // separate follow-up; do not invent them here.
-  practiceFocusOptions: [] as const,
-  practiceFocusSlugs: {},
+  // Basketball pre-practice focus presets (FV-30 pre-practice chunk).
+  // Audio rendering = FV-31 (12 pp-bb-* slugs + AUDIO_CACHE_BUST bump).
+  practiceFocusOptions: [
+    "Relentless",
+    "Hungry",
+    "Talk every possession",
+    "Guard your yard",
+    "Hit the glass",
+    "Sprint every transition",
+    "Box out every shot",
+  ] as const,
 
-  // Reuse sport-neutral hockey openers until the basketball get-to variant
-  // ships in the pre-practice chunk.
+  practiceFocusSlugs: {
+    "Relentless": "pp-bb-focus-relentless",
+    "Hungry": "pp-bb-focus-hungry",
+    "Talk every possession": "pp-bb-focus-talk-every-possession",
+    "Guard your yard": "pp-bb-focus-guard-your-yard",
+    "Hit the glass": "pp-bb-focus-hit-the-glass",
+    "Sprint every transition": "pp-bb-focus-sprint-every-transition",
+    "Box out every shot": "pp-bb-focus-box-out-every-shot",
+  },
+
   practiceOpenerSlugs: {
+    // pp-opener-dialed-in is sport-neutral and reused across both sports.
     "dialed-in": "pp-opener-dialed-in",
-    "not-feeling-it": "pp-opener-get-to",
+    // Basketball-specific not-feeling-it opener (FV-30).
+    "not-feeling-it": "pp-bb-opener-get-to",
   },
 };
 

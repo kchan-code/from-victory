@@ -577,15 +577,16 @@ async function generateClips(flags: Flags): Promise<void> {
     ],
   }));
 
-  // Pre-practice "Lock In" — state-aware practice playlist (FRO-22, p5).
-  // practiceState holds the shared-tail slugs (Beats 2–6) for each state.
+  // Pre-practice "Lock In" — sport-keyed state-aware playlist (FV-30, p6).
+  // practiceState is keyed by sport then by state:
+  //   practiceState[sport][state] = shared-tail slug list (Beats 2–6, no opener/focus).
   // The opener and focus clip are resolved at runtime by resolvePracticePlaylist.
   // Beat 4 lead/tail sandwich the injected focus clip; the resolver detects
-  // pp-choose-focus-lead and injects the focus slug immediately after it.
+  // pp-choose-focus-lead and injects the sport-specific focus slug immediately after it.
   //
-  // Backward compat: practice key is retained (empty legacy sentinel) so p4
-  // consumers that check manifest.practice are not broken.
-  const sharedTail = [
+  // pp-choose-focus-lead and pp-choose-focus-tail are sport-neutral and shared.
+  // Hockey Beats 2/3/5/6 use the pp-* slugs; basketball uses the pp-bb-* variants.
+  const hockeySharedTail = [
     "pp-name-standard",
     "pp-goal-fusion",
     "pp-choose-focus-lead",
@@ -595,13 +596,29 @@ async function generateClips(flags: Flags): Promise<void> {
     "pp-see-it-go",
   ];
 
+  const basketballSharedTail = [
+    "pp-bb-name-standard",
+    "pp-bb-goal-fusion",
+    "pp-choose-focus-lead",
+    // focus clip injected by resolver between lead and tail
+    "pp-choose-focus-tail",
+    "pp-bb-be-vocal",
+    "pp-bb-see-it-go",
+  ];
+
   const practiceStatePlaylist = {
-    "dialed-in": sharedTail,
-    "not-feeling-it": sharedTail,
+    hockey: {
+      "dialed-in": hockeySharedTail,
+      "not-feeling-it": hockeySharedTail,
+    },
+    basketball: {
+      "dialed-in": basketballSharedTail,
+      "not-feeling-it": basketballSharedTail,
+    },
   };
 
   const manifest: ClipManifest = {
-    version: "p5",
+    version: "p6",
     clips: catalog,
     templates,
     practiceState: practiceStatePlaylist,
@@ -615,10 +632,11 @@ async function generateClips(flags: Flags): Promise<void> {
   const templateCount = templates.length;
   console.log(`\n[clips] manifest.json written: ${catalogCount} catalog entries, ${templateCount} templates.`);
 
-  // p5 (FRO-22): 46 structural + 32 personalization + 15 practice = 93 total
-  // (old pp-settle-receive + pp-choose-focus retired; 12 new pp-* clips added)
-  if (catalogCount !== 93) {
-    console.warn(`  WARNING: expected 93 catalog entries (46 structural + 32 personalization + 15 practice), got ${catalogCount}.`);
+  // p6 (FV-30): 46 structural + 32 personalization + 15 hockey-practice
+  //             + 12 basketball-practice = 105 total
+  // (old pp-settle-receive + pp-choose-focus retired; 15 hockey pp-* + 12 bb pp-bb-* added)
+  if (catalogCount !== 105) {
+    console.warn(`  WARNING: expected 105 catalog entries (46 structural + 32 personalization + 15 hockey-practice + 12 basketball-practice), got ${catalogCount}.`);
   }
   if (templateCount !== 30) {
     console.warn(`  WARNING: expected 30 templates (3 positions × 10 adversities), got ${templateCount}.`);

@@ -2511,6 +2511,248 @@ export const CLIP_PP_SEE_IT_GO_SCRIPT: AudioScript = {
   ],
 };
 
+// ── Basketball pre-practice "Lock In" clips (FV-30 pre-practice chunk) ────────
+//
+// 1:1 vocab swaps onto the approved hockey pre-practice structure.
+// No new reframe — sports-psych gate not needed.
+// Audio rendering = FV-31 (12 new pp-bb-* slugs + AUDIO_CACHE_BUST bump).
+// Until FV-31 ships, these slugs are absent from manifest.json and the
+// basketball practice tail silently fails open in resolvePracticePlaylist.
+
+// ── Basketball OPENER B — pp-bb-opener-get-to ─────────────────────────────────
+// Identical to pp-opener-get-to except foothold close: "first to every loose ball."
+export const CLIP_PP_BB_OPENER_GET_TO_SCRIPT: AudioScript = {
+  slug: "pp-bb-opener-get-to",
+  voice: "ash",
+  instructions: PRACTICE_GET_TO_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Be honest — you're not really feeling it today. That's allowed. You showed up anyway. That already counts.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Here's the thing nobody tells you: the feeling shows up after you move, not before. You don't wait to want it. You commit to the first rep, go full, and let the rest catch up.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Whatever you do, you do it with everything — for the Lord, not for a mood. The flat day counts to him exactly as much as the good one. He's not grading how you feel.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "And somewhere under the drag — a body that works, a game you actually love. That's real. Let it pull you. Not guilt. Just true.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "So don't try to fix the whole practice. Just win the first drill. First ten minutes, full — feet moving, first to every loose ball.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "First rep. Go.",
+    },
+  ],
+};
+
+// ── Basketball Beat 2 — pp-bb-name-standard ───────────────────────────────────
+// Swap: "shift you'll have in overtime" → "possession you'll have in crunch time."
+export const CLIP_PP_BB_NAME_STANDARD_SCRIPT: AudioScript = {
+  slug: "pp-bb-name-standard",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Whatever you do here is what shows up when it's tight. The rep you give now is the possession you'll have in crunch time. Your hands don't know the difference between a drill and a final.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "So the bar today is simple. Full reps. Full compete. No coasting.",
+    },
+  ],
+};
+
+// ── Basketball Beat 3 — pp-bb-goal-fusion ─────────────────────────────────────
+// Swaps: "shift" → "possession"; "battle in the corner" → "loose ball on the
+// floor, that contested rebound, that closeout you'd rather skip."
+export const CLIP_PP_BB_GOAL_FUSION_SCRIPT: AudioScript = {
+  slug: "pp-bb-goal-fusion",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "That drill you've run a thousand times — the boring one, nobody watching — you're not getting it over with. You're rehearsing the possession you actually want, early, while it's quiet.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "That loose ball on the floor, that contested rebound, that closeout you'd rather skip — that's the one that decides a playoff game. Win it now, at practice, full every time, and the one with everything on the line is just one you've already done.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Not the perfect rep. The full one. That's all today asks.",
+    },
+  ],
+};
+
+// ── Basketball Beat 5 — pp-bb-be-vocal ────────────────────────────────────────
+// Swaps: on-court calls (screen left / shot / I got ball / help on the drive);
+// "wearing a letter" → "hand the team to."
+// By-ear note (FV-31): the listed calls read with the same flat/listed discipline
+// as the hockey version. Decide at render whether to generalize the shared
+// PP_COACH_INSTRUCTIONS example list.
+export const CLIP_PP_BB_BE_VOCAL_SCRIPT: AudioScript = {
+  slug: "pp-bb-be-vocal",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "One more thing nobody says out loud. Out there, talking is competing — calling for the ball, 'screen left,' 'shot,' 'I got ball,' 'help' on the drive. Coaches notice who talks. But most players go quiet — not because they don't know the call. Because being loud feels like drawing eyes, sounding dumb, looking like you're trying too hard.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "That's the same trap. Going quiet is protecting how you look — and you already settled that. What they think of you isn't the scoreboard you're playing to.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "So talk. 'I'm here.' 'Box out.' 'Help.' Be the loud one. The players who run the floor with their voice — call the coverage, call the help, talk every possession — they're the ones coaches build around and hand the team to. Not because they asked for it. Because they were already doing the job.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "Quiet's the easy hide. Don't take it.",
+    },
+  ],
+};
+
+// ── Basketball Beat 6 — pp-bb-see-it-go ──────────────────────────────────────
+// Identical to pp-see-it-go except closer: "Lace 'em up." (was "Helmet on.")
+export const CLIP_PP_BB_SEE_IT_GO_SCRIPT: AudioScript = {
+  slug: "pp-bb-see-it-go",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "See one rep. You, full compete, that focus locked in, nothing saved for the bench.",
+    },
+    { type: "silence", durationSec: 1.5 },
+    {
+      type: "speech",
+      text: "A rep's going to go bad. Some will. That's information, not a verdict — read it, drop it, next rep.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "You're not playing to prove who you are. You already know.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "Lace 'em up. Go compete. Play from victory.",
+    },
+  ],
+};
+
+// ── Basketball focus clips — 7 declarations (pp-bb-focus-*) ───────────────────
+
+export const CLIP_PP_BB_FOCUS_RELENTLESS_SCRIPT: AudioScript = {
+  slug: "pp-bb-focus-relentless",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Relentless." },
+  ],
+};
+
+export const CLIP_PP_BB_FOCUS_HUNGRY_SCRIPT: AudioScript = {
+  slug: "pp-bb-focus-hungry",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Hungry." },
+  ],
+};
+
+export const CLIP_PP_BB_FOCUS_TALK_EVERY_POSSESSION_SCRIPT: AudioScript = {
+  slug: "pp-bb-focus-talk-every-possession",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Talk every possession." },
+  ],
+};
+
+export const CLIP_PP_BB_FOCUS_GUARD_YOUR_YARD_SCRIPT: AudioScript = {
+  slug: "pp-bb-focus-guard-your-yard",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Guard your yard." },
+  ],
+};
+
+export const CLIP_PP_BB_FOCUS_HIT_THE_GLASS_SCRIPT: AudioScript = {
+  slug: "pp-bb-focus-hit-the-glass",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Hit the glass." },
+  ],
+};
+
+export const CLIP_PP_BB_FOCUS_SPRINT_EVERY_TRANSITION_SCRIPT: AudioScript = {
+  slug: "pp-bb-focus-sprint-every-transition",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Sprint every transition." },
+  ],
+};
+
+export const CLIP_PP_BB_FOCUS_BOX_OUT_EVERY_SHOT_SCRIPT: AudioScript = {
+  slug: "pp-bb-focus-box-out-every-shot",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Box out every shot." },
+  ],
+};
+
 // ── Ordered list of TTS clip scripts (no openers — they are loudnorm-passed) ──
 //
 // Phase 2 ordering: shared structural → VIZ × 3 positions → HM × 30 cells
@@ -2612,6 +2854,20 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_PP_FOCUS_FULL_REPS_NO_GLIDE_SCRIPT,
   CLIP_PP_BE_VOCAL_SCRIPT,
   CLIP_PP_SEE_IT_GO_SCRIPT,
+  // Basketball pre-practice "Lock In" clips (FV-30 pre-practice chunk).
+  // Audio rendering = FV-31. Resume-safe: existing files skipped by generator.
+  CLIP_PP_BB_OPENER_GET_TO_SCRIPT,
+  CLIP_PP_BB_NAME_STANDARD_SCRIPT,
+  CLIP_PP_BB_GOAL_FUSION_SCRIPT,
+  CLIP_PP_BB_BE_VOCAL_SCRIPT,
+  CLIP_PP_BB_SEE_IT_GO_SCRIPT,
+  CLIP_PP_BB_FOCUS_RELENTLESS_SCRIPT,
+  CLIP_PP_BB_FOCUS_HUNGRY_SCRIPT,
+  CLIP_PP_BB_FOCUS_TALK_EVERY_POSSESSION_SCRIPT,
+  CLIP_PP_BB_FOCUS_GUARD_YOUR_YARD_SCRIPT,
+  CLIP_PP_BB_FOCUS_HIT_THE_GLASS_SCRIPT,
+  CLIP_PP_BB_FOCUS_SPRINT_EVERY_TRANSITION_SCRIPT,
+  CLIP_PP_BB_FOCUS_BOX_OUT_EVERY_SHOT_SCRIPT,
   // Basketball pregame hard-moment cells (FV-30) — Guard (10)
   SESSION_GUARD_TURNOVER_SCRIPT,
   SESSION_GUARD_MISSED_SHOT_SCRIPT,

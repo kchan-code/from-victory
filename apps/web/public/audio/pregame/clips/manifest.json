@@ -1,5 +1,5 @@
 {
-  "version": "p5",
+  "version": "p6",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.mp3",
@@ -1212,21 +1212,41 @@
     }
   ],
   "practiceState": {
-    "dialed-in": [
-      "pp-name-standard",
-      "pp-goal-fusion",
-      "pp-choose-focus-lead",
-      "pp-choose-focus-tail",
-      "pp-be-vocal",
-      "pp-see-it-go"
-    ],
-    "not-feeling-it": [
-      "pp-name-standard",
-      "pp-goal-fusion",
-      "pp-choose-focus-lead",
-      "pp-choose-focus-tail",
-      "pp-be-vocal",
-      "pp-see-it-go"
-    ]
+    "hockey": {
+      "dialed-in": [
+        "pp-name-standard",
+        "pp-goal-fusion",
+        "pp-choose-focus-lead",
+        "pp-choose-focus-tail",
+        "pp-be-vocal",
+        "pp-see-it-go"
+      ],
+      "not-feeling-it": [
+        "pp-name-standard",
+        "pp-goal-fusion",
+        "pp-choose-focus-lead",
+        "pp-choose-focus-tail",
+        "pp-be-vocal",
+        "pp-see-it-go"
+      ]
+    },
+    "basketball": {
+      "dialed-in": [
+        "pp-bb-name-standard",
+        "pp-bb-goal-fusion",
+        "pp-choose-focus-lead",
+        "pp-choose-focus-tail",
+        "pp-bb-be-vocal",
+        "pp-bb-see-it-go"
+      ],
+      "not-feeling-it": [
+        "pp-bb-name-standard",
+        "pp-bb-goal-fusion",
+        "pp-choose-focus-lead",
+        "pp-choose-focus-tail",
+        "pp-bb-be-vocal",
+        "pp-bb-see-it-go"
+      ]
+    }
   }
 }
