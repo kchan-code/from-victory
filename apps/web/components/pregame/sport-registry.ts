@@ -8,9 +8,10 @@
 //     the field entirely.
 //   - `cellSlugFor` encapsulates all sport-specific slug logic including
 //     hockey's goalie-pulled special case.
-//   - BASKETBALL_CONFIG is a typed stub (shape present, content TODO when
-//     the basketball content sprint lands — FV-30/31). Do not use its
-//     values in any production path.
+//   - BASKETBALL_CONFIG carries the full FV-30 pregame content (positions,
+//     adversities, roleContent, slug scheme). Pre-practice focus presets are
+//     still TODO (a follow-up chunk in the FV-30 lane); audio for the
+//     basketball clips is rendered separately in FV-31.
 
 // ---------------------------------------------------------------------------
 // Sport type
@@ -185,43 +186,97 @@ export const HOCKEY_CONFIG: SportConfig = {
 };
 
 // ---------------------------------------------------------------------------
-// Basketball config stub (FV-30 / FV-31)
-// TODO: fill when basketball content sprint lands. Do NOT use these values
-// in any production path until the content is authored and audio is generated.
+// Basketball config (FV-30)
 // ---------------------------------------------------------------------------
+
+const BASKETBALL_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
+  "I turn the ball over.": "turnover",
+  "I miss an open shot.": "missed-shot",
+  "I get cooked off the dribble.": "got-cooked",
+  "I get into foul trouble.": "foul-trouble",
+  "Coach yells.": "coach-yells",
+  "I get benched.": "benched",
+  "I feel nervous.": "nervous",
+  "I miss two free throws.": "missed-fts",
+  "I start slow.": "start-slow",
+  "We fall behind early.": "fall-behind-early",
+};
 
 export const BASKETBALL_CONFIG: SportConfig = {
   displayName: "Basketball",
 
-  // TODO FV-30: declare roles when basketball position content is ready.
-  // Basketball likely has roles (Guard / Forward / Center) but this is TBD.
-  // Leaving undefined so the no-ask path is exercised until confirmed.
+  roles: ["Guard", "Wing", "Big"] as const,
+  roleLabel: "Position",
+
+  roleContent: {
+    Guard: {
+      title: "Run the team with poise.",
+      scenes: [
+        "Push the pace.",
+        "See the floor.",
+        "Take care of the rock.",
+        "Get downhill.",
+        "Talk on defense.",
+      ],
+    },
+    Wing: {
+      title: "Stay ready. Stay aggressive.",
+      scenes: [
+        "Feet set, shoot it.",
+        "Sprint the lane.",
+        "Take the next open shot.",
+        "Lock up your man.",
+        "Crash and close out.",
+      ],
+    },
+    Big: {
+      title: "Own the paint.",
+      scenes: [
+        "Seal and post strong.",
+        "Hit the glass.",
+        "Protect the rim.",
+        "Roll hard, finish.",
+        "Move your feet, stay vertical.",
+      ],
+    },
+  },
 
   adversities: [
-    // TODO FV-30: basketball-specific adversity list
+    "I turn the ball over.",
+    "I miss an open shot.",
+    "I get cooked off the dribble.",
+    "I get into foul trouble.",
+    "Coach yells.",
+    "I get benched.",
+    "I feel nervous.",
+    "I miss two free throws.",
+    "I start slow.",
+    "We fall behind early.",
   ],
 
-  adversitySlugFragments: {
-    // TODO FV-30: basketball adversity slug fragments
+  adversitySlugFragments: BASKETBALL_ADVERSITY_SLUG_FRAGMENTS,
+
+  cellSlugFor(adversity: string, role?: string | null): string {
+    const frag =
+      BASKETBALL_ADVERSITY_SLUG_FRAGMENTS[adversity] ?? "missed-shot";
+    // Big × benched → fouled-out (Bigs foul out; there is no session-big-benched)
+    if (role === "Big" && frag === "benched") {
+      return "bb-big-fouled-out";
+    }
+    const roleStr = role ? role.toLowerCase() : "guard";
+    return `bb-${roleStr}-${frag}`;
   },
 
-  cellSlugFor(_adversity: string, _role?: string | null): string {
-    // TODO FV-30: basketball cell slug composition
-    return "session-basketball-placeholder";
-  },
+  // TODO FV-30 pre-practice chunk: basketball practice focus presets are a
+  // separate follow-up; do not invent them here.
+  practiceFocusOptions: [] as const,
+  practiceFocusSlugs: {},
 
-  practiceFocusOptions: [
-    // TODO FV-30: basketball practice focus options
-  ] as const,
-
-  practiceFocusSlugs: {
-    // TODO FV-30: basketball practice focus slug map
-  },
-
+  // Reuse sport-neutral hockey openers until the basketball get-to variant
+  // ships in the pre-practice chunk.
   practiceOpenerSlugs: {
-    // TODO FV-30: basketball practice opener slugs
-    "dialed-in": "pp-basketball-opener-dialed-in",
-    "not-feeling-it": "pp-basketball-opener-not-feeling-it",
+    "dialed-in": "pp-opener-dialed-in",
+    "not-feeling-it": "pp-opener-get-to",
   },
 };
 
