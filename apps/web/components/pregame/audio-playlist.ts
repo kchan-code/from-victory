@@ -58,22 +58,33 @@ export type ClipManifest = {
   /**
    * Fixed-order playlists that are not session-personalization templates.
    * Added in p4 as a flat clip list for the old single-opener "Get To" session.
-   * Updated in p5 (FRO-22) to a state-keyed structure:
-   *   - practiceState: { "dialed-in": string[]; "not-feeling-it": string[] }
-   *   where each array is the shared-tail slug list (Beats 2–6 except the
-   *   injected focus clip). The opener and focus clip are resolved at runtime
-   *   by resolvePracticePlaylist.
+   * Updated in p5 (FRO-22) to a state-keyed structure per sport.
    *
-   * p4 manifests carry the flat `practice.clips` list; resolvePracticePlaylist
-   * handles both shapes for backward compat.
+   * Schema evolution:
+   *   - p4: flat `practice.clips` list (legacy, state/sport ignored)
+   *   - p5: `practiceState` keyed by state — sport-neutral hockey-only tails
+   *   - p6 (FV-30): `practiceState` keyed by sport, then by state:
+   *       practiceState: {
+   *         hockey:     { "dialed-in": string[]; "not-feeling-it": string[] }
+   *         basketball: { "dialed-in": string[]; "not-feeling-it": string[] }
+   *       }
+   *     Each string[] is the shared-tail slug list (Beats 2–6, no opener/focus).
+   *     The opener and focus clip are resolved at runtime by resolvePracticePlaylist.
+   *
+   * Backward compat: p5 manifests carry a flat state-keyed practiceState
+   * (no sport nesting); resolvePracticePlaylist treats a missing sport key as a
+   * fallback to "hockey" so p5 consumers are not broken.
    */
   practice?: {
     clips: string[]; // legacy flat list (p4)
   };
   practiceState?: {
-    /** Ordered shared-tail slugs for each state (Beats 2–6, no opener/focus). */
-    "dialed-in": string[];
-    "not-feeling-it": string[];
+    /** p6+: sport-keyed outer map. Each sport maps state → shared-tail slugs. */
+    [sport: string]: {
+      /** Ordered shared-tail slugs for each state (Beats 2–6, no opener/focus). */
+      "dialed-in": string[];
+      "not-feeling-it": string[];
+    } | string[]; // string[] accommodates p5 manifests where the value was the tail array
   };
 };
 
@@ -261,28 +272,39 @@ export function resolvePlaylist(
 
 /**
  * Resolve the ordered clip list for the state-aware pre-practice "Lock In"
- * session (FRO-22). Returns the full playlist for the given athlete state and
- * chosen focus, with each slug mapped to a cache-busted ResolvedClip.
+ * session (FRO-22 / FV-30). Returns the full playlist for the given athlete
+ * state and chosen focus, with each slug mapped to a cache-busted ResolvedClip.
  *
  * Playlist order:
- *   [state opener] → pp-name-standard → pp-goal-fusion →
- *   pp-choose-focus-lead → [pp-focus-<slug>?] → pp-choose-focus-tail →
- *   pp-be-vocal → pp-see-it-go
+ *   [state opener] → [Beat 2] → [Beat 3] →
+ *   pp-choose-focus-lead → [pp-{bb-}focus-<slug>?] → pp-choose-focus-tail →
+ *   [Beat 5] → [Beat 6]
+ *
+ * The specific Beat 2–6 slugs come from the manifest's sport-keyed tail:
+ *   manifest.practiceState[sport][state]
  *
  * State resolution:
- *   - "dialed-in" → pp-opener-dialed-in  (DEFAULT; unknown states fall back here)
- *   - "not-feeling-it" → pp-opener-get-to
+ *   - "dialed-in" → sport opener for "dialed-in" (DEFAULT; unknown states fall back here)
+ *   - "not-feeling-it" → sport opener for "not-feeling-it"
  *
  * Focus resolution:
- *   - Known focus string → inject pp-focus-<slug> between lead and tail.
+ *   - Known focus string → inject pp-{bb-}focus-<slug> between lead and tail.
  *   - Unknown/missing focus → omit the focus clip; lead+tail still flow.
  *
- * Backward compat (p4 manifests with flat manifest.practice.clips):
- *   If manifest.practiceState is absent, falls back to the legacy flat
- *   manifest.practice.clips resolution (state/focus ignored).
+ * Sport-keyed tail lookup (p6+):
+ *   manifest.practiceState[sportConfig.sportKey][state]
+ *   Fallback: if the sport key is absent from the manifest (e.g. basketball clips
+ *   not yet rendered, FV-31 pending), returns null — caller falls back to text timer.
+ *
+ * Backward compat:
+ *   - p5 manifests: practiceState is keyed by state directly (no sport nesting).
+ *     Detected by checking if practiceState["dialed-in"] is an array — treated
+ *     as hockey (the only p5 sport) for uninterrupted existing sessions.
+ *   - p4 manifests: flat manifest.practice.clips list (state/focus/sport ignored).
  *
  * Returns null when:
  *   - Neither manifest.practiceState nor manifest.practice is present.
+ *   - The sport's tail is absent from manifest.practiceState (clips not yet rendered).
  *   - Any required slug in the assembled list is absent from the catalog.
  *
  * Fail-closed: the caller should fall back to a text timer on null.
@@ -298,7 +320,7 @@ export function resolvePracticePlaylist(
    */
   sportConfig: SportConfig = HOCKEY_CONFIG,
 ): ResolvedClip[] | null {
-  // ── p5 state-aware path ──────────────────────────────────────────────────
+  // ── p5/p6 state-aware path ───────────────────────────────────────────────
   if (manifest.practiceState) {
     // Fail-safe: unknown or missing state defaults to "dialed-in".
     const resolvedState: PracticeState =
@@ -306,7 +328,26 @@ export function resolvePracticePlaylist(
 
     const openerSlug = sportConfig.practiceOpenerSlugs[resolvedState];
 
-    const tailSlugs = manifest.practiceState[resolvedState];
+    // ── Tail resolution: p6 sport-keyed vs p5 legacy ─────────────────────
+    // p5 manifest: practiceState["dialed-in"] is a string[] (tail directly).
+    // p6 manifest: practiceState[sport] is { "dialed-in": string[], ... }.
+    // Detect by checking if practiceState["dialed-in"] is an array.
+    let tailSlugs: string[];
+    const p5DialedinValue = manifest.practiceState["dialed-in"];
+    if (Array.isArray(p5DialedinValue)) {
+      // p5 shape — treat as hockey regardless of sportConfig.sportKey.
+      // The tail is shared (sport-neutral hockey tail) for backward compat.
+      tailSlugs = manifest.practiceState[resolvedState] as string[];
+    } else {
+      // p6 shape — look up the sport's tail by sportKey.
+      const sportEntry = manifest.practiceState[sportConfig.sportKey];
+      if (!sportEntry || Array.isArray(sportEntry)) {
+        // Sport not present in manifest (clips not yet rendered — FV-31 pending).
+        // Fail closed so the caller falls back to text timer.
+        return null;
+      }
+      tailSlugs = sportEntry[resolvedState];
+    }
 
     // Focus clip: resolve from sport config's slug map; drop cleanly if unknown/missing.
     const focusSlug =

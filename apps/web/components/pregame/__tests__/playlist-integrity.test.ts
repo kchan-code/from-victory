@@ -218,52 +218,85 @@ describe("UI option coverage — CUE_WORDS", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 5. Practice playlist integrity — manifest.practiceState (p5, FRO-22) exists
-//    and each shared-tail slug resolves to a real non-zero file on disk.
+// 5. Practice playlist integrity — manifest.practiceState (p6, FV-30) exists
+//    and each hockey shared-tail slug resolves to a real non-zero file on disk.
+//    Basketball slugs (pp-bb-*) are intentionally ABSENT until FV-31 renders them.
 // ---------------------------------------------------------------------------
 
 describe("practice playlist integrity", () => {
-  it("manifest.practiceState exists with non-empty state tails", () => {
+  it("manifest.practiceState exists and hockey tails are non-empty", () => {
     expect(manifest.practiceState).toBeDefined();
-    expect(manifest.practiceState!["dialed-in"].length).toBeGreaterThan(0);
-    expect(manifest.practiceState!["not-feeling-it"].length).toBeGreaterThan(0);
+
+    // p6: practiceState["hockey"]["dialed-in"] is the hockey tail.
+    const hockeyEntry = manifest.practiceState!["hockey"];
+    expect(hockeyEntry).toBeDefined();
+    // Guard against p5 shape (should not happen in a p6 manifest).
+    expect(Array.isArray(hockeyEntry)).toBe(false);
+    if (!Array.isArray(hockeyEntry) && hockeyEntry) {
+      expect(hockeyEntry["dialed-in"].length).toBeGreaterThan(0);
+      expect(hockeyEntry["not-feeling-it"].length).toBeGreaterThan(0);
+    }
   });
 
-  it("every slug in manifest.practiceState is in the catalog AND has a real non-zero file", () => {
+  it("every hockey practiceState slug is in the catalog AND has a real non-zero file", () => {
     // Guard: if the block above failed, this would NPE — exit cleanly.
     if (!manifest.practiceState) {
       expect(manifest.practiceState).toBeDefined();
       return;
     }
 
+    // Only validate hockey slugs here — basketball pp-bb-* clips are rendered
+    // in FV-31 and are not expected on disk yet.
+    const hockeyEntry = manifest.practiceState["hockey"];
+    if (!hockeyEntry || Array.isArray(hockeyEntry)) {
+      // Unexpected shape — fail loudly.
+      expect(hockeyEntry).toBeDefined();
+      expect(Array.isArray(hockeyEntry)).toBe(false);
+      return;
+    }
+
     const broken: string[] = [];
 
-    const stateSlugs = [
-      ...manifest.practiceState["dialed-in"],
-      ...manifest.practiceState["not-feeling-it"],
+    const hockeyStateSlugs = [
+      ...hockeyEntry["dialed-in"],
+      ...hockeyEntry["not-feeling-it"],
     ];
+    // Deduplicate (both states share the same tail).
+    const uniqueSlugs = [...new Set(hockeyStateSlugs)];
 
-    for (const slug of stateSlugs) {
+    for (const slug of uniqueSlugs) {
       // 1. Slug must exist in the catalog.
       const entry = catalog[slug];
       if (!entry) {
-        broken.push(`practiceState slug "${slug}" not found in catalog`);
+        broken.push(`practiceState hockey slug "${slug}" not found in catalog`);
         continue;
       }
 
       // 2. File must exist on disk and be non-zero.
       const absPath = urlToAbsPath(entry.url);
       if (!fs.existsSync(absPath)) {
-        broken.push(`practiceState slug "${slug}": file not found at ${absPath}`);
+        broken.push(`practiceState hockey slug "${slug}": file not found at ${absPath}`);
         continue;
       }
       const stat = fs.statSync(absPath);
       if (stat.size === 0) {
-        broken.push(`practiceState slug "${slug}": file is zero bytes at ${absPath}`);
+        broken.push(`practiceState hockey slug "${slug}": file is zero bytes at ${absPath}`);
       }
     }
 
     expect(broken).toEqual([]);
+  });
+
+  it("manifest.practiceState includes basketball sport key (FV-30)", () => {
+    // Basketball tail slugs are defined in the manifest even before FV-31 renders
+    // the audio files. This confirms the manifest is p6-shaped.
+    const bbEntry = manifest.practiceState!["basketball"];
+    expect(bbEntry).toBeDefined();
+    expect(Array.isArray(bbEntry)).toBe(false);
+    if (!Array.isArray(bbEntry) && bbEntry) {
+      expect(bbEntry["dialed-in"].length).toBeGreaterThan(0);
+      expect(bbEntry["not-feeling-it"].length).toBeGreaterThan(0);
+    }
   });
 });
 

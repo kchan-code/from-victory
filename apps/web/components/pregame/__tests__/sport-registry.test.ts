@@ -134,22 +134,26 @@ describe("BASKETBALL_CONFIG.cellSlugFor", () => {
 
 const NO_ASK_FRAGMENTS: Record<string, string> = { "I lose focus.": "lose-focus" };
 
-const NO_ASK_CONFIG: SportConfig = {
+// Cast required: NO_ASK_CONFIG is a synthetic fixture for a hypothetical future
+// no-ask sport (tennis, swimming). It can't carry a valid `Sport` sportKey because
+// that union only contains launch sports. The cast is intentional and safe for
+// this test-only fixture.
+const NO_ASK_CONFIG = {
   displayName: "Test No-Ask Sport",
   // no `roles` field → no-ask shape
   adversities: ["I lose focus."],
   adversitySlugFragments: NO_ASK_FRAGMENTS,
-  cellSlugFor: (adversity, role) => {
+  cellSlugFor: (adversity: string, role?: string | null) => {
     const frag = NO_ASK_FRAGMENTS[adversity] ?? "lose-focus";
     return role ? `noask-${role.toLowerCase()}-${frag}` : `noask-${frag}`;
   },
-  practiceFocusOptions: [],
-  practiceFocusSlugs: {},
+  practiceFocusOptions: [] as const,
+  practiceFocusSlugs: {} as Record<string, string>,
   practiceOpenerSlugs: {
     "dialed-in": "pp-opener-dialed-in",
     "not-feeling-it": "pp-opener-get-to",
   },
-};
+} as unknown as SportConfig;
 
 describe("no-ask sport path (synthetic fixture)", () => {
   it("declares no roles, so the position picker is skipped", () => {
@@ -179,5 +183,57 @@ describe("getSportConfig", () => {
 
   it("returns BASKETBALL_CONFIG for sport='basketball'", () => {
     expect(getSportConfig("basketball")).toBe(BASKETBALL_CONFIG);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// D. sportKey field — registry key round-trip (FV-30)
+// ---------------------------------------------------------------------------
+
+describe("SportConfig.sportKey", () => {
+  it("HOCKEY_CONFIG.sportKey is 'hockey'", () => {
+    expect(HOCKEY_CONFIG.sportKey).toBe("hockey");
+  });
+
+  it("BASKETBALL_CONFIG.sportKey is 'basketball'", () => {
+    expect(BASKETBALL_CONFIG.sportKey).toBe("basketball");
+  });
+
+  it("getSportConfig(sportKey) round-trips to the same config object", () => {
+    expect(getSportConfig(HOCKEY_CONFIG.sportKey)).toBe(HOCKEY_CONFIG);
+    expect(getSportConfig(BASKETBALL_CONFIG.sportKey)).toBe(BASKETBALL_CONFIG);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// E. BASKETBALL_CONFIG practice fields (FV-30 pre-practice chunk)
+// ---------------------------------------------------------------------------
+
+describe("BASKETBALL_CONFIG practice fields (FV-30)", () => {
+  it("practiceFocusOptions has exactly 7 entries", () => {
+    expect(BASKETBALL_CONFIG.practiceFocusOptions).toHaveLength(7);
+  });
+
+  it("practiceFocusSlugs has one entry per practiceFocusOptions item", () => {
+    for (const option of BASKETBALL_CONFIG.practiceFocusOptions) {
+      expect(
+        BASKETBALL_CONFIG.practiceFocusSlugs,
+        `Missing slug for "${option}"`,
+      ).toHaveProperty(option);
+    }
+  });
+
+  it("every practiceFocusSlugs value is a pp-bb-focus-* slug", () => {
+    for (const [option, slug] of Object.entries(BASKETBALL_CONFIG.practiceFocusSlugs)) {
+      expect(slug, `Slug for "${option}"`).toMatch(/^pp-bb-focus-/);
+    }
+  });
+
+  it("practiceOpenerSlugs: dialed-in reuses pp-opener-dialed-in (sport-neutral)", () => {
+    expect(BASKETBALL_CONFIG.practiceOpenerSlugs["dialed-in"]).toBe("pp-opener-dialed-in");
+  });
+
+  it("practiceOpenerSlugs: not-feeling-it uses pp-bb-opener-get-to (basketball-specific)", () => {
+    expect(BASKETBALL_CONFIG.practiceOpenerSlugs["not-feeling-it"]).toBe("pp-bb-opener-get-to");
   });
 });
