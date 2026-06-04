@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireParent } from "@/lib/auth/guards";
+import { isBenignCancelError } from "@/lib/stripe/cancel-errors";
+import { getStripe } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -103,18 +105,78 @@ export async function deleteAccount(
   const { userId: parentId } = await requireParent();
   const service = createServiceClient();
 
-  const { data: links } = await service
-    .from("parent_athlete_links")
-    .select("athlete_id")
-    .eq("parent_id", parentId);
-  const athleteIds = (links ?? []).map((l) => l.athlete_id);
+  // ---------------------------------------------------------------------------
+  // Step 1: Cancel the Stripe subscription BEFORE touching any DB rows.
+  //
+  // Ordering rationale: by cancelling first, an abort-on-unexpected-error
+  // leaves NOTHING deleted — the parent and all athletes are still intact and
+  // the user can retry cleanly. If we cancelled after deleting athletes, a
+  // fatal Stripe error would leave the athletes gone with no manager remaining.
+  //
+  // Error classification (see lib/stripe/cancel-errors.ts):
+  //   - resource_missing / subscription_canceled → benign; sub is already gone,
+  //     log and proceed. The user's data-deletion right must not be blocked
+  //     because Stripe no longer has the record.
+  //   - Any other error → abort and surface to the user. Do NOT proceed with
+  //     deleting the parent while a live billing subscription may still exist.
+  // ---------------------------------------------------------------------------
+  const { data: sub } = await service
+    .from("subscriptions")
+    .select("stripe_subscription_id")
+    .eq("parent_id", parentId)
+    .maybeSingle();
 
+  if (sub?.stripe_subscription_id) {
+    try {
+      await getStripe().subscriptions.cancel(sub.stripe_subscription_id);
+      console.log(
+        `[account.deleteAccount] cancelled Stripe subscription sub=${sub.stripe_subscription_id} for parent=${parentId}`,
+      );
+    } catch (err) {
+      if (isBenignCancelError(err)) {
+        // Sub is already gone in Stripe — nothing to cancel. Proceed.
+        // reason: err is narrowed to StripeInvalidRequestError by
+        // isBenignCancelError, but that narrowing doesn't cross the call
+        // boundary, so read .code defensively for the log line.
+        const code =
+          err instanceof Error
+            ? (err as { code?: string }).code ?? "unknown"
+            : "unknown";
+        console.warn(
+          `[account.deleteAccount] Stripe cancel returned benign error (code=${code}) for sub=${sub.stripe_subscription_id} parent=${parentId} — sub already absent, proceeding with deletion`,
+        );
+      } else {
+        // Unexpected error — abort. Log event only (no sub content, no PII).
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(
+          `[account.deleteAccount] Stripe cancel failed for sub=${sub.stripe_subscription_id} parent=${parentId}: ${message}`,
+        );
+        return {
+          ok: false,
+          error:
+            "Could not cancel your subscription before deleting your account. Please try again or contact support.",
+        };
+      }
+    }
+  }
+  // No subscription row or no stripe_subscription_id — nothing to cancel.
+
+  // ---------------------------------------------------------------------------
+  // Step 2: Delete sole-managed athletes.
+  //
   // Delete only athletes this parent SOLELY manages. An athlete also linked
   // to a co-parent is left intact — deleting this parent's auth.users row
   // cascade-removes just this parent's link, not the shared child's data.
   //
   // If any sole-managed athlete fails to delete, abort BEFORE deleting the
   // parent — otherwise we'd orphan that athlete's data with no manager left.
+  // ---------------------------------------------------------------------------
+  const { data: links } = await service
+    .from("parent_athlete_links")
+    .select("athlete_id")
+    .eq("parent_id", parentId);
+  const athleteIds = (links ?? []).map((l) => l.athlete_id);
+
   let deletedAthletes = 0;
   for (const athleteId of athleteIds) {
     const { count } = await service
@@ -137,23 +199,16 @@ export async function deleteAccount(
     deletedAthletes++;
   }
 
-  // Stripe: an active subscription must be cancelled in Stripe so the parent
-  // stops being billed. Stripe checkout/webhooks are not wired yet; when they
-  // land, cancel the subscription HERE before deleting the parent. Until then,
-  // surface loudly so a real (post-Stripe) subscription can't slip through.
-  const { data: sub } = await service
-    .from("subscriptions")
-    .select("stripe_subscription_id")
-    .eq("parent_id", parentId)
-    .maybeSingle();
-  if (sub?.stripe_subscription_id) {
-    console.warn(
-      `[account.deleteAccount] parent=${parentId} has stripe_subscription_id=${sub.stripe_subscription_id} but Stripe cancellation is not wired yet — manual cancellation required.`,
-    );
-  }
-
-  // Delete the parent — cascades the parent profile, subscription row, and any
-  // remaining link rows (co-parented athletes lose just this parent's link).
+  // ---------------------------------------------------------------------------
+  // Step 3: Delete the parent.
+  //
+  // Cascades the parent profile, subscription row, and any remaining link rows
+  // (co-parented athletes lose just this parent's link). The subscription row
+  // cascade-deletion here is safe because we already cancelled in Stripe above —
+  // the Stripe webhook (customer.subscription.deleted) will fire after this, look
+  // up the row by stripe_customer_id, find nothing (already cascade-deleted), and
+  // return 200 with a console.warn. No orphan, no retry loop.
+  // ---------------------------------------------------------------------------
   const { error } = await service.auth.admin.deleteUser(parentId);
   if (error) {
     console.error(
