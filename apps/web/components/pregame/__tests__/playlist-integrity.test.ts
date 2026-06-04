@@ -114,6 +114,11 @@ const SPORT_CELL_EXPECTATIONS: Record<
   {
     cellCount: number;
     slugPrefix: string;
+    // How this sport's cells live on disk: "catalog" = compositional clip under
+    // clips/ (membership required); "baked" = top-level /audio/pregame/*.mp3.
+    // Drives which resolver the cell check uses, so a catalog-native sport
+    // can't silently pass a catalog miss via the baked-path fallback.
+    cellLayout: "catalog" | "baked";
     specialCase: {
       role: string;
       adversity: string;
@@ -125,6 +130,7 @@ const SPORT_CELL_EXPECTATIONS: Record<
   hockey: {
     cellCount: 30,
     slugPrefix: "session-",
+    cellLayout: "baked",
     specialCase: {
       role: "Goalie",
       adversity: "I get benched.",
@@ -135,6 +141,7 @@ const SPORT_CELL_EXPECTATIONS: Record<
   basketball: {
     cellCount: 30,
     slugPrefix: "bb-",
+    cellLayout: "catalog",
     specialCase: {
       role: "Big",
       adversity: "I get benched.",
@@ -373,6 +380,9 @@ describe("hockey compositional template matrix", () => {
   it("every (position × adversity) combination has exactly one template", () => {
     const missing: string[] = [];
 
+    // Guard against a vacuous pass if the registry roles axis is ever emptied.
+    expect(POSITIONS.length).toBeGreaterThan(0);
+
     for (const position of POSITIONS) {
       for (const adversity of ADVERSITIES) {
         const matches = manifest.templates.filter(
@@ -435,7 +445,13 @@ describe.each(Object.values(SPORT_REGISTRY))(
         for (const adversity of config.adversities) {
           const slug = config.cellSlugFor(adversity, role);
           slugs.add(slug);
-          const err = resolveCellFile(slug);
+          // Catalog sports must resolve THROUGH the catalog (strict); baked
+          // sports resolve via catalog-or-baked. This prevents a catalog-native
+          // sport from masking a catalog miss through the baked-path fallback.
+          const err =
+            expectations.cellLayout === "catalog"
+              ? catalogFileErr(slug)
+              : resolveCellFile(slug);
           if (err) {
             broken.push(`cell [${role} × "${adversity}"] slug "${slug}": ${err}`);
           }
