@@ -107,9 +107,12 @@ jobs:
           echo "Changed *.mp3 files:"
           echo "$MP3_CHANGED"
 
-          # A bump = a newly-added AUDIO_CACHE_BUST assignment line.
+          # A bump = a newly-added AUDIO_CACHE_BUST assignment with a quoted
+          # value, e.g.  +export const AUDIO_CACHE_BUST = "12";
+          # The [^/]* guard + required `= "` exclude comment lines that merely
+          # mention AUDIO_CACHE_BUST (a false-pass the looser pattern allowed).
           MAPPING="apps/web/components/pregame/audio-mapping.ts"
-          if git diff "$RANGE" -- "$MAPPING" | grep -qE '^\+.*AUDIO_CACHE_BUST[[:space:]]*='; then
+          if git diff "$RANGE" -- "$MAPPING" | grep -qE '^\+[^/]*AUDIO_CACHE_BUST[[:space:]]*=[[:space:]]*"'; then
             echo "✓ AUDIO_CACHE_BUST was bumped in $MAPPING."
             exit 0
           fi

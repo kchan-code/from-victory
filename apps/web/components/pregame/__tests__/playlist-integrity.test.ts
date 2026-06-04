@@ -419,7 +419,11 @@ describe("basketball slug → file integrity (FV-31)", () => {
     const broken: string[] = [];
     const slugs = new Set<string>();
 
-    for (const role of BASKETBALL_CONFIG.roles!) {
+    // roles is optional on SportConfig; basketball always declares it. Guard so
+    // a removed roles axis fails with a clear message (and 0 cells → size != 30)
+    // rather than throwing on a non-null assertion.
+    expect(BASKETBALL_CONFIG.roles).toBeDefined();
+    for (const role of BASKETBALL_CONFIG.roles ?? []) {
       for (const adversity of BASKETBALL_CONFIG.adversities) {
         const slug = BASKETBALL_CONFIG.cellSlugFor(adversity, role);
         slugs.add(slug);
@@ -461,6 +465,9 @@ describe("basketball slug → file integrity (FV-31)", () => {
     // tail (name-standard, goal-fusion, be-vocal, see-it-go) = 12. The dialed-in
     // opener (pp-opener-dialed-in) and the pp-choose-focus-* tails are
     // sport-neutral and intentionally not counted here.
+    // CARDINALITY only — file presence for each pp-bb-* is validated above (focus
+    // + opener in the pre-practice slug test; the 4 tails in the practiceState
+    // test).
     const ppBb = new Set<string>();
     const collect = (slug: string): void => {
       if (slug.startsWith("pp-bb-")) ppBb.add(slug);
