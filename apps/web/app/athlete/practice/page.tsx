@@ -6,7 +6,7 @@ export const metadata = {
 };
 
 export default async function PracticePage() {
-  await requireAthlete();
+  const { profile } = await requireAthlete();
 
-  return <PracticeFlow />;
+  return <PracticeFlow sport={profile.sport} />;
 }

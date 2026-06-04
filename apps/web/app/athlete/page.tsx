@@ -101,7 +101,7 @@ export default async function AthleteHomePage() {
                 Start pre-practice
               </p>
               <p className="font-body text-cream/65 text-[14px] leading-relaxed">
-                Two minutes to lock in before you hit the ice — how you practice is how you play.
+                Two minutes to lock in before practice — how you practice is how you play.
               </p>
             </div>
             <span

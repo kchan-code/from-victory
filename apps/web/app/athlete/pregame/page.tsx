@@ -8,5 +8,7 @@ export const metadata = {
 export default async function PregamePage() {
   const { profile } = await requireAthlete();
 
-  return <PregameFlow athleteFirstName={profile.first_name} />;
+  return (
+    <PregameFlow athleteFirstName={profile.first_name} sport={profile.sport} />
+  );
 }
