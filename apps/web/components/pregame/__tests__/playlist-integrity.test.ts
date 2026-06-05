@@ -541,15 +541,14 @@ describe("resolvePlaylist — real manifest (version-drift guard)", () => {
     expect(playlist!.every((c) => !c.slug.includes("{{"))).toBe(true);
   });
 
-  it("resolves for EVERY hockey position (the whole pregame matrix is reachable)", () => {
+  it("resolves the FULL hockey matrix (every position × adversity) to a non-null playlist", () => {
+    // 3 positions × 10 adversities = 30. Catches both a version-branch regression
+    // (all null) and a catalog-miss on any single cell (that combo null).
     for (const position of HOCKEY_CONFIG.roles ?? []) {
-      const playlist = resolvePlaylist(
-        "Calm",
-        position,
-        "I feel nervous.",
-        manifest,
-      );
-      expect(playlist, `${position} × "I feel nervous."`).not.toBeNull();
+      for (const adversity of HOCKEY_CONFIG.adversities) {
+        const playlist = resolvePlaylist("Calm", position, adversity, manifest);
+        expect(playlist, `${position} × "${adversity}"`).not.toBeNull();
+      }
     }
   });
 });
