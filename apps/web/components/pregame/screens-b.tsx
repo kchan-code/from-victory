@@ -406,6 +406,29 @@ function useClipPlayerFlag(): boolean {
   return new URLSearchParams(window.location.search).get("clipPlayer") !== "0";
 }
 
+// FV-112 diagnostic flag. Surfaces the active audio path + clip-player error
+// on-screen so a beta tester can screenshot WHY a session truncated. Sticky via
+// localStorage so it survives client-side navigation inside an installed PWA:
+// append ?debug=1 once (it persists through the flow); ?debug=0 clears it.
+// Off by default — invisible to normal users.
+function readDebugFlag(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const qp = new URLSearchParams(window.location.search).get("debug");
+    if (qp === "1") {
+      window.localStorage.setItem("fv_debug", "1");
+      return true;
+    }
+    if (qp === "0") {
+      window.localStorage.removeItem("fv_debug");
+      return false;
+    }
+    return window.localStorage.getItem("fv_debug") === "1";
+  } catch {
+    return false;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Clip-path active-pip + phase derivation
 // Mirrors the existing legacy inline IIFE in AudioSessionScreen but reads from
@@ -803,6 +826,11 @@ export function AudioSessionScreen({
   // since disabled:opacity-50 is already wired on the button (no size change).
   const clipLoading = isClipActive && !clipPlayer.ready && !renderCompleted;
 
+  // FV-112 diagnostic readout (off unless ?debug=1). Effect-set to avoid an
+  // SSR/hydration mismatch on the localStorage/query read.
+  const [debug, setDebug] = useState(false);
+  useEffect(() => setDebug(readDebugFlag()), []);
+
   return (
     <div
       className="flex flex-1 flex-col overflow-y-auto px-6 pb-6 pt-5"
@@ -813,6 +841,36 @@ export function AudioSessionScreen({
       }}
     >
       <SectionLabel>Step 09 · Guided Session</SectionLabel>
+
+      {debug && (
+        <div className="mb-3 rounded-[8px] border border-gold/50 bg-onyx/95 p-2.5 font-mono text-[10px] leading-[1.5] text-cream/85">
+          <div className="mb-1 font-semibold uppercase tracking-[0.14em] text-gold">
+            FV-112 debug
+          </div>
+          <div>
+            path:{" "}
+            {isClipActive
+              ? "clip (stitched blob)"
+              : audioMode === "text"
+                ? "TEXT — fallback (no audio)"
+                : "legacy two-audio"}
+          </div>
+          <div>
+            useClips: {String(useClips)} · audioMode: {audioMode} · segment:{" "}
+            {activeSegment}
+          </div>
+          <div>
+            clip.ready: {String(clipPlayer.ready)} · clip.dur:{" "}
+            {clipPlayer.totalSec.toFixed(1)}s
+          </div>
+          <div className={clipPlayer.error ? "text-gold" : undefined}>
+            clip.error: {clipPlayer.error ?? "none"}
+          </div>
+          <div>
+            pos: {state.role ?? "—"} · adv: {state.adversity ?? "—"}
+          </div>
+        </div>
+      )}
 
       <div className="mb-4 flex items-baseline justify-between">
         <h1 className="font-heading text-[24px] font-bold leading-[1.15] text-cream">
