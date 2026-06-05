@@ -18,6 +18,7 @@ import {
   HOCKEY_CONFIG,
   BASKETBALL_CONFIG,
   getSportConfig,
+  adversityOptionsFor,
   type SportConfig,
 } from "../sport-registry";
 
@@ -235,5 +236,59 @@ describe("BASKETBALL_CONFIG practice fields (FV-30)", () => {
 
   it("practiceOpenerSlugs: not-feeling-it uses pp-bb-opener-get-to (basketball-specific)", () => {
     expect(BASKETBALL_CONFIG.practiceOpenerSlugs["not-feeling-it"]).toBe("pp-bb-opener-get-to");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// D. adversityOptionsFor — position-aware Hard Moment options (FV-101)
+// ---------------------------------------------------------------------------
+
+describe("adversityOptionsFor — Hard Moment options", () => {
+  it("hockey Goalie gets goalie-true labels mapped to the same cells", () => {
+    const opts = adversityOptionsFor(HOCKEY_CONFIG, "Goalie");
+    const byKey = Object.fromEntries(opts.map((o) => [o.key, o.label]));
+
+    // The bug: a goalie was shown skater-framed labels. These re-label to
+    // goalie-true language WITHOUT changing the canonical key.
+    expect(byKey["I get benched."]).toBe("I get pulled.");
+    expect(byKey["I get beaten wide."]).toBe("I get beat post to post.");
+    expect(byKey["I miss a scoring chance."]).toBe("I get beat on a breakaway.");
+    expect(byKey["We give up the first goal."]).toBe("I let in the first goal.");
+
+    // Every goalie key is a CANONICAL hockey adversity, so cellSlugFor resolves
+    // to a real, already-rendered goalie cell — no new audio.
+    for (const { key } of opts) {
+      expect(HOCKEY_CONFIG.adversities).toContain(key);
+      expect(HOCKEY_CONFIG.cellSlugFor(key, "Goalie")).toMatch(
+        /^session-goalie-/,
+      );
+    }
+  });
+
+  it("drops 'I take a bad penalty' for the goalie (KC: not a goalie issue)", () => {
+    const keys = adversityOptionsFor(HOCKEY_CONFIG, "Goalie").map((o) => o.key);
+    expect(keys).not.toContain("I take a bad penalty.");
+    expect(keys).toHaveLength(9);
+  });
+
+  it("skaters (Forward/Defense) get the flat list, label === key", () => {
+    for (const role of ["Forward", "Defense"]) {
+      const opts = adversityOptionsFor(HOCKEY_CONFIG, role);
+      expect(opts.map((o) => o.key)).toEqual([...HOCKEY_CONFIG.adversities]);
+      expect(opts.every((o) => o.key === o.label)).toBe(true);
+    }
+  });
+
+  it("null role falls back to the flat list", () => {
+    const opts = adversityOptionsFor(HOCKEY_CONFIG, null);
+    expect(opts.map((o) => o.key)).toEqual([...HOCKEY_CONFIG.adversities]);
+  });
+
+  it("basketball (no roleAdversities) returns the flat list for every role", () => {
+    for (const role of BASKETBALL_CONFIG.roles ?? []) {
+      const opts = adversityOptionsFor(BASKETBALL_CONFIG, role);
+      expect(opts.map((o) => o.key)).toEqual([...BASKETBALL_CONFIG.adversities]);
+      expect(opts.every((o) => o.key === o.label)).toBe(true);
+    }
   });
 });

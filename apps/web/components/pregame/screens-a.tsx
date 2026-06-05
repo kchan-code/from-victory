@@ -22,7 +22,7 @@ import {
   type NeedToday,
   type PregameState,
 } from "./types";
-import type { SportConfig } from "./sport-registry";
+import { adversityOptionsFor, type SportConfig } from "./sport-registry";
 
 type SetFn = <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
 
@@ -372,8 +372,11 @@ export function HardMomentScreen({
   set: SetFn;
   sportConfig: SportConfig;
 }) {
-  const adversities = sportConfig.adversities;
-  const isCustom = !!state.adversity && !adversities.includes(state.adversity);
+  // Position-aware options: a goalie sees goalie-true labels (mapped to the same
+  // cells via the canonical key); skaters get the flat list. (FV-101.)
+  const options = adversityOptionsFor(sportConfig, state.role);
+  const isCustom =
+    !!state.adversity && !options.some((o) => o.key === state.adversity);
   return (
     <ScreenBody>
       <SectionLabel>Step 04 · Hard Moment</SectionLabel>
@@ -386,12 +389,12 @@ export function HardMomentScreen({
       </p>
 
       <div className="flex flex-wrap gap-2">
-        {adversities.map((a) => (
+        {options.map(({ key, label }) => (
           <SelectChip
-            key={a}
-            label={a}
-            selected={state.adversity === a}
-            onClick={() => set("adversity", a)}
+            key={key}
+            label={label}
+            selected={state.adversity === key}
+            onClick={() => set("adversity", key)}
           />
         ))}
       </div>
