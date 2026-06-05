@@ -29,7 +29,7 @@ import {
 } from "./types";
 import { audioAssetUrl, cellSrcFor, cellSlugFor, openerSrcFor } from "./audio-mapping";
 import type { Sport, SportConfig } from "./sport-registry";
-import { HOCKEY_CONFIG } from "./sport-registry";
+import { HOCKEY_CONFIG, adversityLabelFor } from "./sport-registry";
 import type { AudioTimeline, Phase } from "./audio/types";
 import { findActivePhase, type AssembledTimeline } from "./audio-playlist";
 import { useClipPlayer } from "./useClipPlayer";
@@ -204,11 +204,20 @@ export function CueWordScreen({
 // Read-only summary before the 5-min guided session. Lets the athlete
 // confirm they like the setup or go back and edit. CTA "BEGIN GUIDED
 // SESSION" lives in the BottomBar (set via FLOW step.cta).
-export function ReviewScreen({ state }: { state: PregameState }) {
+export function ReviewScreen({
+  state,
+  sportConfig = HOCKEY_CONFIG,
+}: {
+  state: PregameState;
+  sportConfig?: SportConfig;
+}) {
   const rows: Array<{ label: string; value: string }> = [
     { label: "Today's focus", value: state.need ?? "—" },
     { label: "Position", value: state.role ?? "—" },
-    { label: "Hard moment", value: state.adversity ?? "—" },
+    {
+      label: "Hard moment",
+      value: adversityLabelFor(sportConfig, state.role, state.adversity) ?? "—",
+    },
     { label: "Reset anchor", value: state.anchor ?? "—" },
     { label: "Self-talk", value: state.selfTalk ?? "—" },
     { label: "Cue word", value: state.cueWord || DEFAULTS.cueWord },
@@ -366,7 +375,10 @@ function substituteSegment(
       .replace(/\{\{cueWord\}\}/g, state.cueWord || DEFAULTS.cueWord)
       .replace(/\{\{role\}\}/g, role ?? "Player")
       .replace(/\{\{roleScenes\}\}/g, roleScenes)
-      .replace(/\{\{adversity\}\}/g, state.adversity ?? "the hard moment")
+      .replace(
+        /\{\{adversity\}\}/g,
+        adversityLabelFor(sportConfig, role, state.adversity) ?? "the hard moment",
+      )
       .replace(/\{\{anchor\}\}/g, state.anchor || DEFAULTS.anchor)
       .replace(/\{\{selfTalk\}\}/g, state.selfTalk || DEFAULTS.selfTalk);
 
@@ -1090,10 +1102,12 @@ export function PregameCardScreen({
   state,
   onQuick,
   onDone,
+  sportConfig = HOCKEY_CONFIG,
 }: {
   state: PregameState;
   onQuick: () => void;
   onDone: () => void;
+  sportConfig?: SportConfig;
 }) {
   // Mirror the same verse the athlete heard in the audio session.
   // Fallback: spine Hebrews 12:1-2 if need is null.
@@ -1173,7 +1187,13 @@ export function PregameCardScreen({
             italic
           />
           {state.role && <CardRow label="Position" value={state.role} />}
-          {state.adversity && <CardRow label="If it gets hard" value={state.adversity} bold />}
+          {state.adversity && (
+            <CardRow
+              label="If it gets hard"
+              value={adversityLabelFor(sportConfig, state.role, state.adversity) ?? state.adversity}
+              bold
+            />
+          )}
         </div>
 
         <div className="mt-5 border-t border-hairline pt-3.5 text-center">

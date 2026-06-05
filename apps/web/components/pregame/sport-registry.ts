@@ -381,3 +381,21 @@ export function adversityOptionsFor(
   if (override) return override;
   return config.adversities.map((a) => ({ key: a, label: a }));
 }
+
+/**
+ * The display LABEL for a stored adversity `key`, given the athlete's role —
+ * the inverse of `adversityOptionsFor` for every place the chosen adversity is
+ * shown downstream (Review screen, session card, text-mode `{{adversity}}`).
+ * A goalie's stored "I get benched." shows as "I get pulled.". Falls back to the
+ * key itself for skaters, custom free-text, and sports without overrides, and
+ * passes a null key straight through. (FV-101.)
+ */
+export function adversityLabelFor(
+  config: SportConfig,
+  role: string | null,
+  key: string | null,
+): string | null {
+  if (!key) return key;
+  const override = role ? config.roleAdversities?.[role] : undefined;
+  return override?.find((o) => o.key === key)?.label ?? key;
+}

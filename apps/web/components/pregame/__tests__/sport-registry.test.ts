@@ -19,6 +19,7 @@ import {
   BASKETBALL_CONFIG,
   getSportConfig,
   adversityOptionsFor,
+  adversityLabelFor,
   type SportConfig,
 } from "../sport-registry";
 
@@ -255,13 +256,25 @@ describe("adversityOptionsFor — Hard Moment options", () => {
     expect(byKey["I miss a scoring chance."]).toBe("I get beat on a breakaway.");
     expect(byKey["We give up the first goal."]).toBe("I let in the first goal.");
 
-    // Every goalie key is a CANONICAL hockey adversity, so cellSlugFor resolves
-    // to a real, already-rendered goalie cell — no new audio.
+    // Every goalie key is a CANONICAL hockey adversity that resolves to its
+    // real, already-rendered goalie cell — no new audio. Asserted to the EXACT
+    // slug (not just a /^session-goalie-/ prefix) so a label accidentally
+    // leaking into the key field can't pass via cellSlugFor's missed-chance
+    // fallback.
+    const expectedSlug: Record<string, string> = {
+      "We give up the first goal.": "session-goalie-first-goal-against",
+      "I get benched.": "session-goalie-pulled",
+      "I get beaten wide.": "session-goalie-beaten-wide",
+      "I miss a scoring chance.": "session-goalie-missed-chance",
+      "I feel nervous.": "session-goalie-nervous",
+      "I start slow.": "session-goalie-start-slow",
+      "I get hit.": "session-goalie-get-hit",
+      "I turn the puck over.": "session-goalie-turnover",
+      "Coach yells.": "session-goalie-coach-yells",
+    };
     for (const { key } of opts) {
       expect(HOCKEY_CONFIG.adversities).toContain(key);
-      expect(HOCKEY_CONFIG.cellSlugFor(key, "Goalie")).toMatch(
-        /^session-goalie-/,
-      );
+      expect(HOCKEY_CONFIG.cellSlugFor(key, "Goalie")).toBe(expectedSlug[key]);
     }
   });
 
@@ -289,6 +302,56 @@ describe("adversityOptionsFor — Hard Moment options", () => {
       const opts = adversityOptionsFor(BASKETBALL_CONFIG, role);
       expect(opts.map((o) => o.key)).toEqual([...BASKETBALL_CONFIG.adversities]);
       expect(opts.every((o) => o.key === o.label)).toBe(true);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// E. adversityLabelFor — downstream display label for a stored key (FV-101)
+//    The chip shows the goalie label, but state.adversity stores the canonical
+//    KEY. Every downstream display (Review, session card, text-mode script)
+//    must render the SAME goalie label, not the skater key — or the bug
+//    reappears one screen later.
+// ---------------------------------------------------------------------------
+
+describe("adversityLabelFor — downstream display label", () => {
+  it("maps a goalie's stored key to its goalie-true label", () => {
+    expect(adversityLabelFor(HOCKEY_CONFIG, "Goalie", "I get benched.")).toBe(
+      "I get pulled.",
+    );
+    expect(
+      adversityLabelFor(HOCKEY_CONFIG, "Goalie", "I miss a scoring chance."),
+    ).toBe("I get beat on a breakaway.");
+    expect(
+      adversityLabelFor(HOCKEY_CONFIG, "Goalie", "We give up the first goal."),
+    ).toBe("I let in the first goal.");
+  });
+
+  it("returns the key unchanged for skaters, custom free-text, and basketball", () => {
+    expect(adversityLabelFor(HOCKEY_CONFIG, "Forward", "I get benched.")).toBe(
+      "I get benched.",
+    );
+    // Custom free-text adversity (not in any override) shows as typed.
+    expect(
+      adversityLabelFor(HOCKEY_CONFIG, "Goalie", "My grandma is watching"),
+    ).toBe("My grandma is watching");
+    expect(
+      adversityLabelFor(BASKETBALL_CONFIG, "Guard", "I get benched."),
+    ).toBe("I get benched.");
+  });
+
+  it("passes a null key through (downstream keeps its own fallback)", () => {
+    expect(adversityLabelFor(HOCKEY_CONFIG, "Goalie", null)).toBeNull();
+    expect(adversityLabelFor(HOCKEY_CONFIG, null, "I get benched.")).toBe(
+      "I get benched.",
+    );
+  });
+
+  it("round-trips with adversityOptionsFor — the chip label IS the display label", () => {
+    for (const role of HOCKEY_CONFIG.roles ?? []) {
+      for (const { key, label } of adversityOptionsFor(HOCKEY_CONFIG, role)) {
+        expect(adversityLabelFor(HOCKEY_CONFIG, role, key)).toBe(label);
+      }
     }
   });
 });
