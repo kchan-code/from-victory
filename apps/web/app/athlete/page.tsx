@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { SessionBody } from "@/components/daily/SessionBody";
-import { RhythmRing } from "@/components/ui/RhythmRing";
+import { AthleteBottomNav } from "@/components/athlete/BottomNav";
+import { Icon, RhythmRing } from "@/components/ui";
 import { signOut } from "@/lib/actions/auth";
 import { requireAthlete } from "@/lib/auth/guards";
 import { getDailySession } from "@/lib/daily/session";
@@ -12,125 +12,6 @@ import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
 export const metadata = {
   title: "Today · From Victory",
 };
-
-// ---------------------------------------------------------------------------
-// Daily session content — fetched server-side, falls back gracefully when no
-// catalog row exists (e.g. basketball before FV-32 content lands).
-// ---------------------------------------------------------------------------
-
-async function DailySession({ athleteFirstName }: { athleteFirstName: string }) {
-  try {
-    const { dayNumber, completedCount, session } = await getDailySession();
-
-    const rhythmPct = Math.round((completedCount / TOTAL_TRAINING_DAYS) * 100);
-    // Label: "Day N of 30" — accurate and rhythm-forward, not streak language.
-    const rhythmLabel = `Day ${dayNumber} of ${TOTAL_TRAINING_DAYS}`;
-
-    return (
-      <>
-        {/* Rhythm ring (RhythmRing carries its own role="img" + aria-label) */}
-        <div className="flex items-center gap-5 mb-10">
-          <RhythmRing
-            pct={rhythmPct}
-            size={80}
-            stroke={7}
-            label={rhythmLabel}
-          />
-          <div>
-            <p className="font-display font-extrabold uppercase tracking-[0.04em] text-cream text-[28px] sm:text-[32px] leading-none mb-1">
-              {athleteFirstName}.
-            </p>
-            <p className="font-body text-cream/60 text-[14px] leading-snug">
-              Your daily training is ready.
-            </p>
-          </div>
-        </div>
-
-        {/* Session article */}
-        <article
-          className="bg-charcoal border border-hairline rounded-2xl p-7 sm:p-9 mb-8"
-          aria-label={`Day ${dayNumber} training session`}
-          data-testid="daily-session-article"
-        >
-          {/* Eyebrow */}
-          <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold mb-5">
-            Day {dayNumber} · Daily Training
-          </p>
-
-          {/* Title */}
-          <h2 className="font-display font-extrabold uppercase tracking-[0.02em] text-cream text-[28px] sm:text-[32px] leading-[1.1] mb-7">
-            {session.title}
-          </h2>
-
-          {/* Mental skill body */}
-          <div className="mb-8" data-testid="mental-skill-body">
-            <SessionBody markdown={session.mental_skill_md} />
-          </div>
-
-          {/* Scripture */}
-          <div
-            className="border-t border-hairline pt-7 mb-7"
-            data-testid="scripture-block"
-          >
-            <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold/70 mb-4">
-              Foundation
-            </p>
-            <div className="border-l-2 border-gold/50 pl-4">
-              <p className="font-scripture text-cream text-[18px] leading-relaxed italic mb-3">
-                &ldquo;{session.scripture_text}&rdquo;
-              </p>
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gold">
-                {session.scripture_ref} &middot; NIV
-              </p>
-            </div>
-          </div>
-
-          {/* Journal prompt — display only (FV-84 adds the entry textarea) */}
-          <div
-            className="bg-onyx border border-hairline rounded-xl p-5"
-            data-testid="journal-prompt"
-          >
-            <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-cream/50 mb-3">
-              Reflect
-            </p>
-            <p className="font-body text-cream/85 text-[15px] leading-relaxed">
-              {session.journal_prompt}
-            </p>
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-cream/35 mt-4">
-              Your reflection is private — only you can read it.
-            </p>
-          </div>
-        </article>
-      </>
-    );
-  } catch {
-    // No catalog row for this athlete's (day, sport). Calm on-brand fallback.
-    // The header + pregame/practice cards stay visible — this is inline only.
-    return (
-      <div
-        className="bg-charcoal border border-hairline rounded-2xl p-7 mb-8"
-        data-testid="session-unavailable"
-        role="region"
-        aria-label="Daily training unavailable"
-      >
-        <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold mb-3">
-          Daily Training
-        </p>
-        <h2 className="font-display font-extrabold uppercase tracking-[0.04em] text-cream text-[22px] leading-snug mb-3">
-          {athleteFirstName}, your training is on its way.
-        </h2>
-        <p className="font-body text-cream/70 text-[15px] leading-relaxed">
-          The full session for your sport will be here shortly. In the
-          meantime, the pregame and pre-practice flows are ready.
-        </p>
-      </div>
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
 
 export default async function AthleteHomePage() {
   const { profile } = await requireAthlete();
@@ -141,99 +22,193 @@ export default async function AthleteHomePage() {
     redirect("/athlete/onboarding/sport");
   }
 
+  // Load session data for the rhythm ring. Wrap in try/catch: basketball
+  // athletes (pre-FV-32 content) have no catalog rows and should NOT crash
+  // the hub. On failure we render ring at 0 and still show the nav cards.
+  // Note: this is a second getDailySession call vs the daily screen — FV-104
+  // will dedupe the data layer. Do not refactor here.
+  let dayNumber = 1;
+  let completedCount = 0;
+  let sessionLoaded = false;
+
+  try {
+    const data = await getDailySession();
+    dayNumber = data.dayNumber;
+    completedCount = data.completedCount;
+    sessionLoaded = true;
+  } catch {
+    // No catalog row for this athlete's (day, sport) — degrade gracefully.
+    sessionLoaded = false;
+  }
+
+  const progressPct = sessionLoaded
+    ? Math.round((completedCount / TOTAL_TRAINING_DAYS) * 100)
+    : 0;
+
   return (
-    <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
-      <div className="mx-auto max-w-[640px]">
-        {/* ---- Header ---- */}
-        <header className="flex items-center justify-between mb-12">
-          <Image
-            src="/logo-stacked.svg"
-            alt="From Victory"
-            width={105}
-            height={60}
-            className="h-[84px] w-auto"
-            priority
+    <main className="min-h-screen bg-onyx pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
+      {/* ── Header ── */}
+      <header className="flex items-center justify-between px-5 pt-10 pb-8 sm:px-8 max-w-[640px] mx-auto">
+        <Image
+          src="/logo-stacked.svg"
+          alt="From Victory"
+          width={105}
+          height={60}
+          className="h-[64px] w-auto"
+          priority
+        />
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="font-heading font-semibold text-[14px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-5 py-2.5 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+          >
+            Sign out
+          </button>
+        </form>
+      </header>
+
+      <div className="px-5 sm:px-8 max-w-[640px] mx-auto">
+        {/* sr-only page h1 */}
+        <h1 className="sr-only">Athlete Home</h1>
+
+        {/* ── Greeting + rhythm ring ── */}
+        <section className="flex items-center gap-5 mb-8" aria-label="Your rhythm">
+          <RhythmRing
+            pct={progressPct}
+            size={80}
+            stroke={6}
+            label={sessionLoaded ? `Day ${dayNumber} of ${TOTAL_TRAINING_DAYS}` : "Getting started"}
           />
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="font-heading font-semibold text-[14px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-5 py-2.5 transition-colors duration-fast ease-out"
-            >
-              Sign out
-            </button>
-          </form>
-        </header>
-
-        {/* Single page-level heading; the session title is its h2 child.
-            sr-only so it doesn't compete with the brand logo + rhythm header. */}
-        <h1 className="sr-only">Today&rsquo;s training</h1>
-
-        {/* ---- Daily session (rhythm ring + article) ---- */}
-        <DailySession athleteFirstName={profile.first_name} />
-
-        {/* ---- Session entry cards ---- */}
-        <Link
-          href="/athlete/pregame"
-          className="block mb-5 rounded-2xl border border-[rgba(223,175,55,0.4)] no-underline transition-colors duration-base ease-out hover:border-gold active:scale-[0.98]"
-          style={{
-            background:
-              "linear-gradient(180deg,rgba(223,175,55,0.10),rgba(223,175,55,0)),var(--bg-elev-1)",
-          }}
-          data-testid="pregame-card"
-        >
-          <div className="p-6 sm:p-7 flex items-center justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold mb-2">
-                Game day
+          <div>
+            <p className="font-display font-extrabold uppercase tracking-[0.04em] text-cream text-[28px] sm:text-[34px] leading-[1.05]">
+              Hi {profile.first_name}.
+            </p>
+            {sessionLoaded ? (
+              <p className="font-body text-cream/60 text-[14px] leading-snug mt-1">
+                Day {dayNumber} of {TOTAL_TRAINING_DAYS} &mdash; keep your rhythm.
               </p>
-              <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[20px] sm:text-[22px] leading-[1.15] mb-1.5">
-                Start pregame
+            ) : (
+              <p className="font-body text-cream/60 text-[14px] leading-snug mt-1">
+                Ready when you are.
               </p>
-              <p className="font-body text-cream/65 text-[14px] leading-relaxed">
-                A short guided flow — visualization, breath, and a settled
-                identity — before you step on.
-              </p>
-            </div>
-            <span
-              aria-hidden="true"
-              className="font-display text-gold text-[28px] leading-none flex-none"
-            >
-              →
-            </span>
+            )}
           </div>
-        </Link>
+        </section>
 
-        <Link
-          href="/athlete/practice"
-          className="block mb-8 rounded-2xl border border-[rgba(223,175,55,0.25)] no-underline transition-colors duration-base ease-out hover:border-[rgba(223,175,55,0.5)] active:scale-[0.98]"
-          style={{
-            background:
-              "linear-gradient(180deg,rgba(223,175,55,0.06),rgba(223,175,55,0)),var(--bg-elev-1)",
-          }}
-          data-testid="practice-card"
-        >
-          <div className="p-6 sm:p-7 flex items-center justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold/70 mb-2">
-                Practice day
-              </p>
-              <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[20px] sm:text-[22px] leading-[1.15] mb-1.5">
-                Start pre-practice
-              </p>
-              <p className="font-body text-cream/65 text-[14px] leading-relaxed">
-                Two minutes to lock in before practice — how you practice is
-                how you play.
-              </p>
+        {/* ── 3-card hub ──
+            All three cards must be visible near the top of a 375px viewport
+            without scrolling. Cards are compact (no paragraph body copy
+            eating vertical space) so they all land above the fold.
+            Trade: less description copy vs. "athlete in the moment" wins.
+            a11y: card titles are intentionally <p>, not headings — each card is
+            a full <Link> so AT users navigate them by link, and the page's single
+            sr-only <h1> anchors heading order. Do NOT promote these to <h2> (it
+            would collide with the daily screen's h1→h2 hierarchy).
+        ── */}
+        <section aria-label="Training sections" className="space-y-3">
+          {/* 1. Daily Training — primary / gold accent */}
+          <Link
+            href="/athlete/daily"
+            className="group block rounded-2xl border border-[rgba(223,175,55,0.40)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-gold active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            style={{
+              background:
+                "linear-gradient(180deg,rgba(223,175,55,0.10),rgba(223,175,55,0)),var(--bg-elev-1)",
+            }}
+          >
+            <div className="px-5 py-4 flex items-center gap-4">
+              <span
+                className="flex-none flex items-center justify-center w-10 h-10 rounded-xl bg-gold/10 border border-gold/20"
+                aria-hidden="true"
+              >
+                <Icon name="book" size={20} color="var(--fv-gold)" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold mb-0.5">
+                  Today
+                </p>
+                <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[18px] leading-[1.15]">
+                  Daily Training
+                </p>
+                <p className="font-body text-cream/55 text-[13px] leading-snug mt-0.5">
+                  Read today&apos;s session &mdash; reset your mind.
+                </p>
+              </div>
+              <span aria-hidden="true" className="flex-none text-gold text-[20px] font-display">
+                →
+              </span>
             </div>
-            <span
-              aria-hidden="true"
-              className="font-display text-gold/70 text-[28px] leading-none flex-none"
-            >
-              →
-            </span>
-          </div>
-        </Link>
+          </Link>
+
+          {/* 2. Pregame */}
+          <Link
+            href="/athlete/pregame"
+            className="group block rounded-2xl border border-[rgba(223,175,55,0.22)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.45)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            style={{
+              background:
+                "linear-gradient(180deg,rgba(223,175,55,0.06),rgba(223,175,55,0)),var(--bg-elev-1)",
+            }}
+          >
+            <div className="px-5 py-4 flex items-center gap-4">
+              <span
+                className="flex-none flex items-center justify-center w-10 h-10 rounded-xl bg-gold/[0.08] border border-gold/[0.15]"
+                aria-hidden="true"
+              >
+                <Icon name="flame" size={20} color="var(--fv-gold)" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold/70 mb-0.5">
+                  Game day
+                </p>
+                <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[18px] leading-[1.15]">
+                  Start Pregame
+                </p>
+                <p className="font-body text-cream/55 text-[13px] leading-snug mt-0.5">
+                  Visualization, breath, and a settled identity before you step on.
+                </p>
+              </div>
+              <span aria-hidden="true" className="flex-none text-gold/70 text-[20px] font-display">
+                →
+              </span>
+            </div>
+          </Link>
+
+          {/* 3. Pre-practice */}
+          <Link
+            href="/athlete/practice"
+            className="group block rounded-2xl border border-[rgba(223,175,55,0.16)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.35)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            style={{
+              background:
+                "linear-gradient(180deg,rgba(223,175,55,0.04),rgba(223,175,55,0)),var(--bg-elev-1)",
+            }}
+          >
+            <div className="px-5 py-4 flex items-center gap-4">
+              <span
+                className="flex-none flex items-center justify-center w-10 h-10 rounded-xl bg-gold/[0.05] border border-gold/[0.10]"
+                aria-hidden="true"
+              >
+                <Icon name="whistle" size={20} color="var(--fv-gold)" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold/60 mb-0.5">
+                  Practice day
+                </p>
+                <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[18px] leading-[1.15]">
+                  Start Pre-Practice
+                </p>
+                <p className="font-body text-cream/55 text-[13px] leading-snug mt-0.5">
+                  Two minutes to lock in &mdash; how you practice is how you play.
+                </p>
+              </div>
+              <span aria-hidden="true" className="flex-none text-gold/60 text-[20px] font-display">
+                →
+              </span>
+            </div>
+          </Link>
+        </section>
       </div>
+
+      {/* ── Bottom nav (no tab active on the hub) ── */}
+      <AthleteBottomNav />
     </main>
   );
 }
