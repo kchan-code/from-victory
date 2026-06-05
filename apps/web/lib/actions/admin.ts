@@ -49,8 +49,8 @@ const CreateAthleteDirectSchema = z
       .min(8, "Password must be at least 8 characters.")
       .max(72, "Password is too long."),
     // FV-27: optional + defaulted (mirrors athletes.ts). The admin direct-
-    // create form has no sport field yet (FV-33), so athletes default to
-    // hockey until that selector ships.
+    // create form supplies this via a sport selector (FV-74); the default
+    // keeps the action safe if the field is ever absent.
     sport: z.enum(SUPPORTED_SPORTS).optional().default("hockey"),
   })
   .refine(
