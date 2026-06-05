@@ -10,13 +10,14 @@ export const metadata = {
 };
 
 type Props = {
-  searchParams: { reset?: string };
+  searchParams: { reset?: string; error?: string };
 };
 
 export default async function SignInPage({ searchParams }: Props) {
   await redirectIfAuthed();
 
   const resetInvalid = searchParams.reset === "invalid";
+  const sessionInvalid = searchParams.error === "session_invalid";
 
   const deviceAthleteId = getDeviceAthleteId();
 
@@ -56,6 +57,14 @@ export default async function SignInPage({ searchParams }: Props) {
             forgot password
           </a>
           .
+        </div>
+      ) : null}
+      {sessionInvalid ? (
+        <div
+          role="alert"
+          className="mb-6 rounded-[10px] border border-[rgba(229,62,76,0.4)] bg-[rgba(229,62,76,0.08)] px-3.5 py-3 text-[13px] text-[#ffb3b9]"
+        >
+          Your session was invalid — please sign in again.
         </div>
       ) : null}
       <SignInForm />
