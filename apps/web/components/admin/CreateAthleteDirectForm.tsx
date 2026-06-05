@@ -9,8 +9,12 @@ import {
   createAthleteDirect,
   type CreateAthleteDirectState,
 } from "@/lib/actions/admin";
+import { SUPPORTED_SPORTS, DEFAULT_SPORT } from "@/lib/sports";
 
 const initialState: CreateAthleteDirectState = null;
+
+const sportLabel = (sport: string) =>
+  sport.charAt(0).toUpperCase() + sport.slice(1);
 
 export function CreateAthleteDirectForm() {
   const [state, formAction] = useFormState(createAthleteDirect, initialState);
@@ -101,6 +105,30 @@ export function CreateAthleteDirectForm() {
         hint="At least 8 characters. You'll share this with the athlete."
         error={fieldError("password")}
       />
+
+      <div className="mb-5">
+        <label
+          htmlFor="sport"
+          className="block font-display font-semibold uppercase tracking-[0.10em] text-[12px] text-cream/80 mb-2"
+        >
+          Sport
+        </label>
+        <select
+          id="sport"
+          name="sport"
+          defaultValue={DEFAULT_SPORT}
+          className="w-full bg-onyx border border-hairline focus:border-gold rounded-md px-4 py-3 font-body text-[15px] text-cream outline-none transition-colors duration-fast ease-out focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+        >
+          {SUPPORTED_SPORTS.map((sport) => (
+            <option key={sport} value={sport}>
+              {sportLabel(sport)}
+            </option>
+          ))}
+        </select>
+        <p className="mt-2 font-body text-[13px] text-cream/50">
+          Drives which content and pregame the athlete sees.
+        </p>
+      </div>
 
       {formError ? (
         <p
