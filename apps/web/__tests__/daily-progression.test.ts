@@ -48,6 +48,8 @@ describe("currentDayNumber", () => {
 type FakeOpts = {
   completedCount: number;
   catalogRow?: Record<string, unknown> | null;
+  /** Force the completed-count query to error (covers the throw branch). */
+  countError?: { message: string };
 };
 
 function makeFakeSupabase(opts: FakeOpts) {
@@ -62,8 +64,10 @@ function makeFakeSupabase(opts: FakeOpts) {
         filters[col] = val;
         return chain;
       },
-      not: (col: string) => {
-        filters[`${col}:not-null`] = true;
+      // Capture the full .not(col, op, val) signature so a change like
+      // .not("completed_at","neq",x) is detectable (not silently swallowed).
+      not: (col: string, op?: string, val?: unknown) => {
+        filters[`${col}:not`] = { op, val };
         return chain;
       },
       is: (col: string, val: unknown) => {
@@ -84,8 +88,8 @@ function makeFakeSupabase(opts: FakeOpts) {
       then: (onFulfilled: (v: unknown) => unknown) => {
         captured.push({ table, filters });
         return Promise.resolve({
-          count: opts.completedCount,
-          error: null,
+          count: opts.countError ? null : opts.completedCount,
+          error: opts.countError ?? null,
         }).then(onFulfilled);
       },
     };
@@ -139,6 +143,16 @@ describe("loadDailySession — sport-keyed fetch", () => {
     );
     expect(catalogQuery?.filters.day_number).toBe(5);
     expect(catalogQuery?.filters.sport).toBe("hockey");
+
+    // The completed-count query is scoped to THIS athlete + completed-only.
+    const countQuery = supabase.captured.find(
+      (c) => c.table === "athlete_sessions",
+    );
+    expect(countQuery?.filters.athlete_id).toBe("athlete-1");
+    expect(countQuery?.filters["completed_at:not"]).toEqual({
+      op: "is",
+      val: null,
+    });
   });
 
   it("basketball athlete with 0 completed fetches day 1, sport=basketball", async () => {
@@ -169,11 +183,31 @@ describe("loadDailySession — sport-keyed fetch", () => {
     expect(view.allComplete).toBe(true);
   });
 
+  it("on the last day but not yet complete: day 30, allComplete=false", async () => {
+    const supabase = makeFakeSupabase({
+      completedCount: 29,
+      catalogRow: catalogRowFixture({ day_number: 30, sport: "hockey" }),
+    });
+    const view = await loadDailySession(supabase, "athlete-boundary", "hockey");
+    expect(view.dayNumber).toBe(TOTAL_TRAINING_DAYS);
+    expect(view.allComplete).toBe(false);
+  });
+
   it("throws a clear error when no catalog row exists for (day, sport)", async () => {
     const supabase = makeFakeSupabase({ completedCount: 0, catalogRow: null });
     await expect(
       loadDailySession(supabase, "athlete-4", "basketball"),
     ).rejects.toThrow(/no catalog row for day 1 sport "basketball"/);
+  });
+
+  it("throws when the completed-count query fails", async () => {
+    const supabase = makeFakeSupabase({
+      completedCount: 0,
+      countError: { message: "db exploded" },
+    });
+    await expect(
+      loadDailySession(supabase, "athlete-6", "hockey"),
+    ).rejects.toThrow(/count failed — db exploded/);
   });
 });
 
