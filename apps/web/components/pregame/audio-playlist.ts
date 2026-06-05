@@ -187,55 +187,9 @@ export function resolvePlaylist(
 ): ResolvedClip[] | null {
   let slugs: string[];
 
-  if (manifest.version === "p3" || manifest.version === "p2") {
-    // ── p2/p3: dimensional resolution ───────────────────────────────────────
-    // 1. Resolve the opener slug for this need.
-    //    NEED_OPENER_SLUGS is keyed by the NeedToday union; `need` arrives as
-    //    a string from the hook. We cast via `as` and treat a missing key as a
-    //    resolution failure (fail closed).
-    // reason: NEED_OPENER_SLUGS is Record<NeedToday, string> and `need` is a
-    //   narrowed string from PregameState — the cast is safe in practice; an
-    //   unknown string returns undefined which we guard below.
-    const openerSlug =
-      NEED_OPENER_SLUGS[need as keyof typeof NEED_OPENER_SLUGS] ?? null;
-    if (!openerSlug) return null;
-
-    // 2. Find the template by (position × adversity) only — no need field.
-    const template = manifest.templates.find(
-      (t) => t.position === position && t.adversity === adversity,
-    );
-    if (!template) return null;
-
-    // 3. Prepend opener to the template's clip list.
-    const rawSlugs = [openerSlug, ...template.clips];
-
-    // 4. For p3: substitute sentinels with athlete-personalized slugs.
-    //    For p2: no sentinels, pass through unchanged.
-    if (manifest.version === "p3") {
-      slugs = [];
-      for (const raw of rawSlugs) {
-        if (raw === "{{anchor}}") {
-          const resolved = anchor ? (ANCHOR_OPTION_SLUGS[anchor] ?? null) : null;
-          if (resolved) slugs.push(resolved);
-          // else: drop the sentinel — "Say cue word" and unknowns produce no clip
-        } else if (raw === "{{selfTalk}}") {
-          const resolved = selfTalk ? (SELFTALK_OPTION_SLUGS[selfTalk] ?? null) : null;
-          if (resolved) slugs.push(resolved);
-        } else if (raw === "{{cueReset}}") {
-          const base = cueWord ? (CUEWORD_OPTION_SLUGS[cueWord] ?? null) : null;
-          if (base) slugs.push(`${base}-reset`);
-        } else if (raw === "{{cueSendoff}}") {
-          const base = cueWord ? (CUEWORD_OPTION_SLUGS[cueWord] ?? null) : null;
-          if (base) slugs.push(`${base}-sendoff`);
-        } else {
-          slugs.push(raw);
-        }
-      }
-    } else {
-      slugs = rawSlugs;
-    }
-  } else {
-    // ── p1 / legacy: exact three-way match ──────────────────────────────────
+  if (manifest.version === "p1") {
+    // ── p1 / legacy: exact three-way match (need + position + adversity) ──────
+    // Only the original p1 manifests carried a `need` field on each template.
     const template = manifest.templates.find(
       (t) =>
         t.need === need &&
@@ -245,6 +199,51 @@ export function resolvePlaylist(
     if (!template) return null;
 
     slugs = template.clips;
+  } else {
+    // ── Dimensional resolution: p2, p3, p6, and EVERY later manifest ──────────
+    // The opener is need-keyed and prepended; the template is keyed by
+    // (position × adversity) only. This is the DEFAULT branch (anything that
+    // isn't legacy p1) so a manifest version bump can never again silently fall
+    // through to the legacy path — the FV-112 bug, where the manifest went to
+    // p6 but this check only matched "p2"/"p3", so every p6 lookup hit the
+    // legacy branch, found no `need` field, and returned null → "no template"
+    // → broken pregame audio for everyone.
+    //
+    // Sentinel substitution runs unconditionally: it's a no-op for a manifest
+    // (p2) whose templates carry no {{...}} tokens (each raw slug just passes
+    // through), so one branch correctly covers every dimensional version.
+    //
+    // NEED_OPENER_SLUGS is Record<NeedToday, string> and `need` arrives as a
+    // narrowed string; cast and fail closed on an unknown key.
+    const openerSlug =
+      NEED_OPENER_SLUGS[need as keyof typeof NEED_OPENER_SLUGS] ?? null;
+    if (!openerSlug) return null;
+
+    const template = manifest.templates.find(
+      (t) => t.position === position && t.adversity === adversity,
+    );
+    if (!template) return null;
+
+    const rawSlugs = [openerSlug, ...template.clips];
+    slugs = [];
+    for (const raw of rawSlugs) {
+      if (raw === "{{anchor}}") {
+        const resolved = anchor ? (ANCHOR_OPTION_SLUGS[anchor] ?? null) : null;
+        if (resolved) slugs.push(resolved);
+        // else: drop the sentinel — "Say cue word" and unknowns produce no clip
+      } else if (raw === "{{selfTalk}}") {
+        const resolved = selfTalk ? (SELFTALK_OPTION_SLUGS[selfTalk] ?? null) : null;
+        if (resolved) slugs.push(resolved);
+      } else if (raw === "{{cueReset}}") {
+        const base = cueWord ? (CUEWORD_OPTION_SLUGS[cueWord] ?? null) : null;
+        if (base) slugs.push(`${base}-reset`);
+      } else if (raw === "{{cueSendoff}}") {
+        const base = cueWord ? (CUEWORD_OPTION_SLUGS[cueWord] ?? null) : null;
+        if (base) slugs.push(`${base}-sendoff`);
+      } else {
+        slugs.push(raw);
+      }
+    }
   }
 
   // ── Map each slug → ResolvedClip ─────────────────────────────────────────
