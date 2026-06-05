@@ -2,12 +2,135 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { SessionBody } from "@/components/daily/SessionBody";
+import { RhythmRing } from "@/components/ui/RhythmRing";
 import { signOut } from "@/lib/actions/auth";
 import { requireAthlete } from "@/lib/auth/guards";
+import { getDailySession } from "@/lib/daily/session";
+import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
 
 export const metadata = {
   title: "Today · From Victory",
 };
+
+// ---------------------------------------------------------------------------
+// Daily session content — fetched server-side, falls back gracefully when no
+// catalog row exists (e.g. basketball before FV-32 content lands).
+// ---------------------------------------------------------------------------
+
+async function DailySession({ athleteFirstName }: { athleteFirstName: string }) {
+  try {
+    const { dayNumber, completedCount, session } = await getDailySession();
+
+    const rhythmPct = Math.round((completedCount / TOTAL_TRAINING_DAYS) * 100);
+    // Label: "Day N of 30" — accurate and rhythm-forward, not streak language.
+    const rhythmLabel = `Day ${dayNumber} of ${TOTAL_TRAINING_DAYS}`;
+
+    return (
+      <>
+        {/* Rhythm ring (RhythmRing carries its own role="img" + aria-label) */}
+        <div className="flex items-center gap-5 mb-10">
+          <RhythmRing
+            pct={rhythmPct}
+            size={80}
+            stroke={7}
+            label={rhythmLabel}
+          />
+          <div>
+            <p className="font-display font-extrabold uppercase tracking-[0.04em] text-cream text-[28px] sm:text-[32px] leading-none mb-1">
+              {athleteFirstName}.
+            </p>
+            <p className="font-body text-cream/60 text-[14px] leading-snug">
+              Your daily training is ready.
+            </p>
+          </div>
+        </div>
+
+        {/* Session article */}
+        <article
+          className="bg-charcoal border border-hairline rounded-2xl p-7 sm:p-9 mb-8"
+          aria-label={`Day ${dayNumber} training session`}
+          data-testid="daily-session-article"
+        >
+          {/* Eyebrow */}
+          <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold mb-5">
+            Day {dayNumber} · Daily Training
+          </p>
+
+          {/* Title */}
+          <h2 className="font-display font-extrabold uppercase tracking-[0.02em] text-cream text-[28px] sm:text-[32px] leading-[1.1] mb-7">
+            {session.title}
+          </h2>
+
+          {/* Mental skill body */}
+          <div className="mb-8" data-testid="mental-skill-body">
+            <SessionBody markdown={session.mental_skill_md} />
+          </div>
+
+          {/* Scripture */}
+          <div
+            className="border-t border-hairline pt-7 mb-7"
+            data-testid="scripture-block"
+          >
+            <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold/70 mb-4">
+              Foundation
+            </p>
+            <div className="border-l-2 border-gold/50 pl-4">
+              <p className="font-scripture text-cream text-[18px] leading-relaxed italic mb-3">
+                &ldquo;{session.scripture_text}&rdquo;
+              </p>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gold">
+                {session.scripture_ref} &middot; NIV
+              </p>
+            </div>
+          </div>
+
+          {/* Journal prompt — display only (FV-84 adds the entry textarea) */}
+          <div
+            className="bg-onyx border border-hairline rounded-xl p-5"
+            data-testid="journal-prompt"
+          >
+            <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-cream/50 mb-3">
+              Reflect
+            </p>
+            <p className="font-body text-cream/85 text-[15px] leading-relaxed">
+              {session.journal_prompt}
+            </p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-cream/35 mt-4">
+              Your reflection is private — only you can read it.
+            </p>
+          </div>
+        </article>
+      </>
+    );
+  } catch {
+    // No catalog row for this athlete's (day, sport). Calm on-brand fallback.
+    // The header + pregame/practice cards stay visible — this is inline only.
+    return (
+      <div
+        className="bg-charcoal border border-hairline rounded-2xl p-7 mb-8"
+        data-testid="session-unavailable"
+        role="region"
+        aria-label="Daily training unavailable"
+      >
+        <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold mb-3">
+          Daily Training
+        </p>
+        <h2 className="font-display font-extrabold uppercase tracking-[0.04em] text-cream text-[22px] leading-snug mb-3">
+          {athleteFirstName}, your training is on its way.
+        </h2>
+        <p className="font-body text-cream/70 text-[15px] leading-relaxed">
+          The full session for your sport will be here shortly. In the
+          meantime, the pregame and pre-practice flows are ready.
+        </p>
+      </div>
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
 
 export default async function AthleteHomePage() {
   const { profile } = await requireAthlete();
@@ -21,6 +144,7 @@ export default async function AthleteHomePage() {
   return (
     <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
       <div className="mx-auto max-w-[640px]">
+        {/* ---- Header ---- */}
         <header className="flex items-center justify-between mb-12">
           <Image
             src="/logo-stacked.svg"
@@ -40,27 +164,22 @@ export default async function AthleteHomePage() {
           </form>
         </header>
 
-        <section className="mb-10">
-          <p className="font-display font-semibold uppercase tracking-[0.18em] text-[12px] text-gold mb-3">
-            Welcome to From Victory
-          </p>
-          <h1 className="font-display font-extrabold uppercase tracking-[0.04em] text-cream text-[36px] sm:text-[44px] leading-[1.05] mb-4">
-            Hi {profile.first_name}.
-          </h1>
-          <p className="font-body text-cream/70 text-[16px] leading-relaxed">
-            Your account is paired. The full daily-training experience opens
-            soon. Below is a preview of Day 1 — what every session will look
-            like.
-          </p>
-        </section>
+        {/* Single page-level heading; the session title is its h2 child.
+            sr-only so it doesn't compete with the brand logo + rhythm header. */}
+        <h1 className="sr-only">Today&rsquo;s training</h1>
 
+        {/* ---- Daily session (rhythm ring + article) ---- */}
+        <DailySession athleteFirstName={profile.first_name} />
+
+        {/* ---- Session entry cards ---- */}
         <Link
           href="/athlete/pregame"
-          className="block mb-8 rounded-2xl border border-[rgba(223,175,55,0.4)] no-underline transition-colors duration-base ease-out hover:border-gold"
+          className="block mb-5 rounded-2xl border border-[rgba(223,175,55,0.4)] no-underline transition-colors duration-base ease-out hover:border-gold active:scale-[0.98]"
           style={{
             background:
               "linear-gradient(180deg,rgba(223,175,55,0.10),rgba(223,175,55,0)),var(--bg-elev-1)",
           }}
+          data-testid="pregame-card"
         >
           <div className="p-6 sm:p-7 flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
@@ -86,11 +205,12 @@ export default async function AthleteHomePage() {
 
         <Link
           href="/athlete/practice"
-          className="block mb-8 rounded-2xl border border-[rgba(223,175,55,0.25)] no-underline transition-colors duration-base ease-out hover:border-[rgba(223,175,55,0.5)]"
+          className="block mb-8 rounded-2xl border border-[rgba(223,175,55,0.25)] no-underline transition-colors duration-base ease-out hover:border-[rgba(223,175,55,0.5)] active:scale-[0.98]"
           style={{
             background:
               "linear-gradient(180deg,rgba(223,175,55,0.06),rgba(223,175,55,0)),var(--bg-elev-1)",
           }}
+          data-testid="practice-card"
         >
           <div className="p-6 sm:p-7 flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
@@ -101,7 +221,8 @@ export default async function AthleteHomePage() {
                 Start pre-practice
               </p>
               <p className="font-body text-cream/65 text-[14px] leading-relaxed">
-                Two minutes to lock in before practice — how you practice is how you play.
+                Two minutes to lock in before practice — how you practice is
+                how you play.
               </p>
             </div>
             <span
@@ -112,98 +233,6 @@ export default async function AthleteHomePage() {
             </span>
           </div>
         </Link>
-
-        <article className="bg-charcoal border border-hairline rounded-2xl p-7 sm:p-9 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold">
-              Day 1 · Preview
-            </p>
-            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-cream/50 bg-onyx border border-hairline rounded-pill px-2.5 py-1">
-              Coming soon
-            </span>
-          </div>
-
-          <h2 className="font-display font-extrabold uppercase tracking-[0.02em] text-cream text-[28px] sm:text-[32px] leading-[1.1] mb-6">
-            Run Your Race. Eyes on Jesus.
-          </h2>
-
-          <div className="border-l-2 border-gold/50 pl-4 mb-7">
-            <p className="font-scripture text-cream text-[18px] leading-relaxed italic">
-              &ldquo;Let us run with perseverance the race marked out for us,
-              fixing our eyes on Jesus, the pioneer and perfecter of faith.&rdquo;
-            </p>
-            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gold mt-2">
-              Hebrews 12:1-2 · NIV
-            </p>
-          </div>
-
-          <div className="font-body text-cream/85 text-[15.5px] leading-relaxed space-y-4">
-            <p className="text-cream font-display font-semibold uppercase tracking-[0.02em] text-[18px] not-italic">
-              Your race is your race. Run it with your eyes on Jesus.
-            </p>
-
-            <p>
-              The writer of Hebrews wrote chapter 12 to believers who were worn
-              down — suffering, tempted to quit. There&rsquo;s a great cloud of
-              witnesses surrounding you, the writer says. Throw off everything
-              that hinders. Run with perseverance the race marked out for you.
-              And — this is the key — fix your eyes on Jesus, who already ran
-              his race and is now at the right hand of God.
-            </p>
-
-            <p>
-              Every serious athlete knows the voice that pulls your eyes off
-              your race. Onto the teammate getting more ice time. Onto the
-              coach&rsquo;s clipboard. Onto the parents in the stands. Onto
-              your own stat line. The voice is constant. It tells you where to
-              look. Most of the time it&rsquo;s the wrong place.
-            </p>
-
-            <p>When the voice starts, say it back:</p>
-
-            <p className="font-scripture text-cream text-[17px] italic text-center my-5">
-              This is my race. My eyes are on Jesus.
-            </p>
-
-            <p>
-              Fixed eyes don&rsquo;t mean ignoring the score or your teammates.
-              They mean Christ — the One who already finished his race — is
-              where you look for what you need. He&rsquo;s not waiting for you
-              to earn it. He gave it before you laced up.
-            </p>
-
-            <p>
-              The world says: prove yourself, then belong. The gospel says: in
-              Christ you already belong, so run from there. Run from
-              already-finished work. Run with your eyes on the Person who
-              finished it.
-            </p>
-
-            <p className="font-display font-semibold uppercase tracking-[0.02em] text-cream text-[16px] not-italic pt-2">
-              You don&rsquo;t compete tonight to earn an identity. You compete
-              from one.
-            </p>
-          </div>
-        </article>
-
-        <section className="bg-onyx border border-hairline rounded-2xl p-6 mb-8">
-          <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-cream/50 mb-3">
-            Journal prompt
-          </p>
-          <p className="font-body text-cream/85 text-[15px] leading-relaxed">
-            When did comparison or fatigue last pull your eyes off your race —
-            and what changes when you fix them back on Jesus, who already ran
-            his for you?
-          </p>
-          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-cream/40 mt-4 leading-relaxed">
-            When the full app launches, you&rsquo;ll write your reflection
-            privately here — only you can read it.
-          </p>
-        </section>
-
-        <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-cream/40 text-center">
-          Preview only · Daily training opens at launch
-        </p>
       </div>
     </main>
   );
