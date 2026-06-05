@@ -70,6 +70,14 @@ export async function requireAthlete(): Promise<{
 /**
  * If a user is already signed in, redirect them to their role's home.
  * Used by /signup and /signin to bounce signed-in visitors away.
+ *
+ * LOOP PREVENTION: if the user is authenticated but has no profiles row
+ * (e.g. the profile insert failed during signUp()), we must NOT redirect
+ * to /dashboard — that page calls requireParent(), which redirects back
+ * to /signin, creating an infinite loop. Instead we redirect to the
+ * /auth/signout Route Handler, which can actually clear the session
+ * cookies (Server Components cannot mutate cookies; Route Handlers can)
+ * and then lands the user on /signin with an explanatory error param.
  */
 export async function redirectIfAuthed() {
   const supabase = createClient();
@@ -85,5 +93,10 @@ export async function redirectIfAuthed() {
     .single();
 
   if (profile?.role === "athlete") redirect("/athlete");
-  redirect("/dashboard");
+  if (profile?.role === "parent") redirect("/dashboard");
+
+  // No profile (or unknown role): the session is orphaned. Redirecting to
+  // /dashboard would loop back here via requireParent(). Route the user
+  // through the sign-out handler so the session is actually cleared first.
+  redirect("/auth/signout");
 }
