@@ -24,7 +24,7 @@ import {
   CUE_WORDS,
 } from "../types";
 
-import type { ClipManifest } from "../audio-playlist";
+import { resolvePlaylist, type ClipManifest } from "../audio-playlist";
 import {
   HOCKEY_CONFIG,
   BASKETBALL_CONFIG,
@@ -505,5 +505,51 @@ describe("basketball pre-practice clip count (FV-31)", () => {
     }
 
     expect(ppBb.size).toBe(12);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 9. resolvePlaylist against the REAL manifest — version-drift guard (FV-112)
+//    The clip player resolves the pregame playlist via resolvePlaylist(manifest).
+//    A manifest version bump (→ p6) once fell through resolvePlaylist's version
+//    check into the legacy three-way branch, which matches on a `need` field
+//    p6 templates don't have → it returned null → "no template" → the player
+//    fell back to the broken legacy two-<audio> path → audio died after the
+//    verse on iOS, for EVERY athlete. The resolver unit tests used synthetic
+//    p2/p3 fixtures and missed it. These run the resolver against the ACTUAL
+//    committed manifest so a future version bump can't silently break it again.
+// ---------------------------------------------------------------------------
+
+describe("resolvePlaylist — real manifest (version-drift guard)", () => {
+  it("resolves a real (need × position × adversity) to a non-null playlist", () => {
+    const playlist = resolvePlaylist(
+      "Compete level",
+      "Forward",
+      "I miss a scoring chance.",
+      manifest,
+      "Long exhale", // anchor
+      "Breathe. Do your job.", // self-talk
+      "Relentless", // cue word
+    );
+
+    expect(playlist).not.toBeNull();
+    // Opener + viz + hard-moment + personalization + reset + prayer + sendoff.
+    expect(playlist!.length).toBeGreaterThan(3);
+    // The need opener is prepended.
+    expect(playlist![0]!.slug).toBe("opener-compete-level");
+    // Every sentinel was substituted — no {{...}} token survives to playback.
+    expect(playlist!.every((c) => !c.slug.includes("{{"))).toBe(true);
+  });
+
+  it("resolves for EVERY hockey position (the whole pregame matrix is reachable)", () => {
+    for (const position of HOCKEY_CONFIG.roles ?? []) {
+      const playlist = resolvePlaylist(
+        "Calm",
+        position,
+        "I feel nervous.",
+        manifest,
+      );
+      expect(playlist, `${position} × "I feel nervous."`).not.toBeNull();
+    }
   });
 });
