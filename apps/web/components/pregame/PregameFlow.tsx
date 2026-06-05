@@ -122,6 +122,7 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
           state={data}
           onQuick={() => setView({ kind: "quick" })}
           onDone={goStart}
+          sportConfig={sportConfig}
         />
         {athleteFirstName && (
           <p className="px-5 pb-2 pt-1 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-cream/50">
@@ -203,7 +204,7 @@ function ScreenSwitch({
     case "cueWord":
       return <CueWordScreen state={state} set={set} />;
     case "review":
-      return <ReviewScreen state={state} />;
+      return <ReviewScreen state={state} sportConfig={sportConfig} />;
     case "audio":
       return (
         <AudioSessionScreen state={state} set={set} onContinue={onContinue} sportConfig={sportConfig} sport={sport} />

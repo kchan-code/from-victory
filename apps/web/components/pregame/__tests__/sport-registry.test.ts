@@ -18,6 +18,8 @@ import {
   HOCKEY_CONFIG,
   BASKETBALL_CONFIG,
   getSportConfig,
+  adversityOptionsFor,
+  adversityLabelFor,
   type SportConfig,
 } from "../sport-registry";
 
@@ -235,5 +237,121 @@ describe("BASKETBALL_CONFIG practice fields (FV-30)", () => {
 
   it("practiceOpenerSlugs: not-feeling-it uses pp-bb-opener-get-to (basketball-specific)", () => {
     expect(BASKETBALL_CONFIG.practiceOpenerSlugs["not-feeling-it"]).toBe("pp-bb-opener-get-to");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// D. adversityOptionsFor — position-aware Hard Moment options (FV-101)
+// ---------------------------------------------------------------------------
+
+describe("adversityOptionsFor — Hard Moment options", () => {
+  it("hockey Goalie gets goalie-true labels mapped to the same cells", () => {
+    const opts = adversityOptionsFor(HOCKEY_CONFIG, "Goalie");
+    const byKey = Object.fromEntries(opts.map((o) => [o.key, o.label]));
+
+    // The bug: a goalie was shown skater-framed labels. These re-label to
+    // goalie-true language WITHOUT changing the canonical key.
+    expect(byKey["I get benched."]).toBe("I get pulled.");
+    expect(byKey["I get beaten wide."]).toBe("I get beat post to post.");
+    expect(byKey["I miss a scoring chance."]).toBe("I get beat on a breakaway.");
+    expect(byKey["We give up the first goal."]).toBe("I let in the first goal.");
+
+    // Every goalie key is a CANONICAL hockey adversity that resolves to its
+    // real, already-rendered goalie cell — no new audio. Asserted to the EXACT
+    // slug (not just a /^session-goalie-/ prefix) so a label accidentally
+    // leaking into the key field can't pass via cellSlugFor's missed-chance
+    // fallback.
+    const expectedSlug: Record<string, string> = {
+      "We give up the first goal.": "session-goalie-first-goal-against",
+      "I get benched.": "session-goalie-pulled",
+      "I get beaten wide.": "session-goalie-beaten-wide",
+      "I miss a scoring chance.": "session-goalie-missed-chance",
+      "I feel nervous.": "session-goalie-nervous",
+      "I start slow.": "session-goalie-start-slow",
+      "I get hit.": "session-goalie-get-hit",
+      "I turn the puck over.": "session-goalie-turnover",
+      "Coach yells.": "session-goalie-coach-yells",
+    };
+    for (const { key } of opts) {
+      expect(HOCKEY_CONFIG.adversities).toContain(key);
+      expect(HOCKEY_CONFIG.cellSlugFor(key, "Goalie")).toBe(expectedSlug[key]);
+    }
+  });
+
+  it("drops 'I take a bad penalty' for the goalie (KC: not a goalie issue)", () => {
+    const keys = adversityOptionsFor(HOCKEY_CONFIG, "Goalie").map((o) => o.key);
+    expect(keys).not.toContain("I take a bad penalty.");
+    expect(keys).toHaveLength(9);
+  });
+
+  it("skaters (Forward/Defense) get the flat list, label === key", () => {
+    for (const role of ["Forward", "Defense"]) {
+      const opts = adversityOptionsFor(HOCKEY_CONFIG, role);
+      expect(opts.map((o) => o.key)).toEqual([...HOCKEY_CONFIG.adversities]);
+      expect(opts.every((o) => o.key === o.label)).toBe(true);
+    }
+  });
+
+  it("null role falls back to the flat list", () => {
+    const opts = adversityOptionsFor(HOCKEY_CONFIG, null);
+    expect(opts.map((o) => o.key)).toEqual([...HOCKEY_CONFIG.adversities]);
+  });
+
+  it("basketball (no roleAdversities) returns the flat list for every role", () => {
+    for (const role of BASKETBALL_CONFIG.roles ?? []) {
+      const opts = adversityOptionsFor(BASKETBALL_CONFIG, role);
+      expect(opts.map((o) => o.key)).toEqual([...BASKETBALL_CONFIG.adversities]);
+      expect(opts.every((o) => o.key === o.label)).toBe(true);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// E. adversityLabelFor — downstream display label for a stored key (FV-101)
+//    The chip shows the goalie label, but state.adversity stores the canonical
+//    KEY. Every downstream display (Review, session card, text-mode script)
+//    must render the SAME goalie label, not the skater key — or the bug
+//    reappears one screen later.
+// ---------------------------------------------------------------------------
+
+describe("adversityLabelFor — downstream display label", () => {
+  it("maps a goalie's stored key to its goalie-true label", () => {
+    expect(adversityLabelFor(HOCKEY_CONFIG, "Goalie", "I get benched.")).toBe(
+      "I get pulled.",
+    );
+    expect(
+      adversityLabelFor(HOCKEY_CONFIG, "Goalie", "I miss a scoring chance."),
+    ).toBe("I get beat on a breakaway.");
+    expect(
+      adversityLabelFor(HOCKEY_CONFIG, "Goalie", "We give up the first goal."),
+    ).toBe("I let in the first goal.");
+  });
+
+  it("returns the key unchanged for skaters, custom free-text, and basketball", () => {
+    expect(adversityLabelFor(HOCKEY_CONFIG, "Forward", "I get benched.")).toBe(
+      "I get benched.",
+    );
+    // Custom free-text adversity (not in any override) shows as typed.
+    expect(
+      adversityLabelFor(HOCKEY_CONFIG, "Goalie", "My grandma is watching"),
+    ).toBe("My grandma is watching");
+    expect(
+      adversityLabelFor(BASKETBALL_CONFIG, "Guard", "I get benched."),
+    ).toBe("I get benched.");
+  });
+
+  it("passes a null key through (downstream keeps its own fallback)", () => {
+    expect(adversityLabelFor(HOCKEY_CONFIG, "Goalie", null)).toBeNull();
+    expect(adversityLabelFor(HOCKEY_CONFIG, null, "I get benched.")).toBe(
+      "I get benched.",
+    );
+  });
+
+  it("round-trips with adversityOptionsFor — the chip label IS the display label", () => {
+    for (const role of HOCKEY_CONFIG.roles ?? []) {
+      for (const { key, label } of adversityOptionsFor(HOCKEY_CONFIG, role)) {
+        expect(adversityLabelFor(HOCKEY_CONFIG, role, key)).toBe(label);
+      }
+    }
   });
 });

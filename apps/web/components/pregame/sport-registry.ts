@@ -19,6 +19,15 @@
 
 export type Sport = "hockey" | "basketball"; // extend as more sports land
 
+/**
+ * A Hard Moment option: the canonical `key` (drives `cellSlugFor` + the stored
+ * `state.adversity`) and the `label` shown to the athlete. For most roles
+ * key === label; a per-role override (see `SportConfig.roleAdversities`) lets a
+ * position show truer language — e.g. a goalie sees "I get pulled" while the key
+ * stays "I get benched", so the same audio cell resolves.
+ */
+export type AdversityOption = { key: string; label: string };
+
 // ---------------------------------------------------------------------------
 // SportConfig shape
 // ---------------------------------------------------------------------------
@@ -47,6 +56,16 @@ export type SportConfig = {
   roleContent?: Record<string, { title: string; scenes: string[] }>;
   /** Ordered list of adversity options shown in the Hard Moment screen. */
   adversities: readonly string[];
+  /**
+   * OPTIONAL per-role override for the Hard Moment options. When present for a
+   * role, the screen shows these {key, label} items (in order) instead of the
+   * flat `adversities` list. `key` is the CANONICAL adversity string — unchanged,
+   * still drives `cellSlugFor` + `state.adversity` — while `label` is the
+   * role-specific display. Lets a goalie see goalie-true labels mapped to the
+   * same existing cells (no new audio). Roles without an entry fall back to the
+   * flat list. (FV-101.)
+   */
+  roleAdversities?: Record<string, readonly AdversityOption[]>;
   /**
    * Maps each adversity option string to a URL-safe slug fragment.
    * Used by `cellSlugFor` to compose the final clip slug.
@@ -152,6 +171,28 @@ export const HOCKEY_CONFIG: SportConfig = {
     "I start slow.",
     "We give up the first goal.",
   ],
+
+  // FV-101 — goalie-specific Hard Moment labels + order. Keys are the canonical
+  // hockey adversities above, so cellSlugFor still resolves the existing goalie
+  // cells (no new audio); labels are goalie-true (hockey-expert + content-curator
+  // ratified). The skater list shows offense framing a goalie never lives; the
+  // audio behind "beaten wide" / "missed chance" is actually a cross-crease beat
+  // and a breakaway walk-around — so we re-label, not re-cut. "I take a bad
+  // penalty" is intentionally dropped for goalies (KC: not a goalie issue; rare
+  // for the position — the weakest of the ten).
+  roleAdversities: {
+    Goalie: [
+      { key: "We give up the first goal.", label: "I let in the first goal." },
+      { key: "I get benched.", label: "I get pulled." },
+      { key: "I get beaten wide.", label: "I get beat post to post." },
+      { key: "I miss a scoring chance.", label: "I get beat on a breakaway." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "I get hit.", label: "I get run in the crease." },
+      { key: "I turn the puck over.", label: "I cough up a bad clear." },
+      { key: "Coach yells.", label: "Coach yells." },
+    ],
+  },
 
   adversitySlugFragments: HOCKEY_ADVERSITY_SLUG_FRAGMENTS,
 
@@ -323,4 +364,38 @@ export const SPORT_REGISTRY: Record<Sport, SportConfig> = {
  */
 export function getSportConfig(sport: Sport): SportConfig {
   return SPORT_REGISTRY[sport];
+}
+
+/**
+ * The Hard Moment options for a (sport config, role): the role's override if one
+ * exists (e.g. hockey Goalie — goalie-true labels mapped to the same cells),
+ * else the flat `adversities` list mapped to {key, label} with key === label.
+ * The `key` always drives `cellSlugFor` + `state.adversity`; only the displayed
+ * `label` varies. (FV-101.)
+ */
+export function adversityOptionsFor(
+  config: SportConfig,
+  role: string | null,
+): readonly AdversityOption[] {
+  const override = role ? config.roleAdversities?.[role] : undefined;
+  if (override) return override;
+  return config.adversities.map((a) => ({ key: a, label: a }));
+}
+
+/**
+ * The display LABEL for a stored adversity `key`, given the athlete's role —
+ * the inverse of `adversityOptionsFor` for every place the chosen adversity is
+ * shown downstream (Review screen, session card, text-mode `{{adversity}}`).
+ * A goalie's stored "I get benched." shows as "I get pulled.". Falls back to the
+ * key itself for skaters, custom free-text, and sports without overrides, and
+ * passes a null key straight through. (FV-101.)
+ */
+export function adversityLabelFor(
+  config: SportConfig,
+  role: string | null,
+  key: string | null,
+): string | null {
+  if (!key) return key;
+  const override = role ? config.roleAdversities?.[role] : undefined;
+  return override?.find((o) => o.key === key)?.label ?? key;
 }
