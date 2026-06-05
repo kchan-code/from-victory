@@ -826,10 +826,33 @@ export function AudioSessionScreen({
   // since disabled:opacity-50 is already wired on the button (no size change).
   const clipLoading = isClipActive && !clipPlayer.ready && !renderCompleted;
 
-  // FV-112 diagnostic readout (off unless ?debug=1). Effect-set to avoid an
-  // SSR/hydration mismatch on the localStorage/query read.
+  // FV-112 diagnostic readout. Enabled by ?debug=1 (desktop) OR by tapping the
+  // step label 5× (the only way to reach it inside an installed iOS PWA, where
+  // there's no address bar and PWA storage is isolated from Safari). Sticky via
+  // localStorage; effect-set to avoid an SSR/hydration mismatch.
   const [debug, setDebug] = useState(false);
   useEffect(() => setDebug(readDebugFlag()), []);
+  const debugTapRef = useRef<{ n: number; t: number }>({ n: 0, t: 0 });
+  const onDebugTap = () => {
+    const now = Date.now();
+    const tap = debugTapRef.current;
+    if (now - tap.t > 3000) tap.n = 0;
+    tap.n += 1;
+    tap.t = now;
+    if (tap.n >= 5) {
+      tap.n = 0;
+      setDebug((d) => {
+        const next = !d;
+        try {
+          if (next) window.localStorage.setItem("fv_debug", "1");
+          else window.localStorage.removeItem("fv_debug");
+        } catch {
+          /* private mode — non-fatal */
+        }
+        return next;
+      });
+    }
+  };
 
   return (
     <div
@@ -840,7 +863,9 @@ export function AudioSessionScreen({
           "radial-gradient(80% 50% at 50% 20%, rgba(36,91,255,0.12), transparent 65%), radial-gradient(60% 40% at 50% 100%, rgba(223,175,55,0.08), transparent 70%), var(--fv-onyx)",
       }}
     >
-      <SectionLabel>Step 09 · Guided Session</SectionLabel>
+      <div onClick={onDebugTap}>
+        <SectionLabel>Step 09 · Guided Session</SectionLabel>
+      </div>
 
       {debug && (
         <div className="mb-3 rounded-[8px] border border-gold/50 bg-onyx/95 p-2.5 font-mono text-[10px] leading-[1.5] text-cream/85">
