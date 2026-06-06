@@ -44,7 +44,7 @@ export const SESSION_GUARD_COACH_YELLS_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     { type: "speech", text: "The correction is about the read, not about you. Take it, run it clean, get the team into the next one.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
     { type: "silence", durationSec: 2.0 },
-    { type: "speech", text: "Speak the truth. Coach reads the play. He doesn't write the player. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "speech", text: "Speak the truth. Coach is correcting the read. He is not correcting who you are. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
     { type: "silence", durationSec: 1.5 },
     ...CLOSING,
   ],

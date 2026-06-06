@@ -40,7 +40,7 @@ export const SESSION_BIG_FOULED_OUT_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     { type: "speech", text: "You're still in this game. On your feet on the bench. Loud on defense, talking coverages, lifting the next big up. Your team needs your voice and your presence.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
     { type: "silence", durationSec: 2.0 },
-    { type: "speech", text: "Speak the truth. Fouling out is real. It cost you the floor, but it did not cost you who you are, and it does not make you a teammate who let everyone down. Reset and back your team from the bench.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "speech", text: "Speak the truth. Fouling out is real. It cost you the floor — it did not cost you who you are. Your team still needs you. Reset, and go again with your voice.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
     { type: "silence", durationSec: 1.5 },
     ...CLOSING,
   ],

@@ -25,6 +25,10 @@ export const ANCHOR_OPTION_SLUGS: Record<string, string> = {
   "Touch glove": "anc-touch-glove",
   "Press thumb to palm": "anc-press-thumb-to-palm",
   "Look at tape": "anc-look-at-tape",
+  // Basketball anchors (FV-115) — FV-117 controls which sport sees these.
+  "Bounce ball twice": "anc-bounce-ball-twice",
+  "Tap floor": "anc-tap-floor",
+  "Look at rim": "anc-look-at-rim",
 };
 
 // Self-talk phrase → slug. Exact strings from SELF_TALK_OPTIONS in types.ts,
@@ -37,6 +41,8 @@ export const SELFTALK_OPTION_SLUGS: Record<string, string> = {
   "Compete, recover, go again.": "st-05",
   "Your identity is secure. Play free.": "st-06",
   "You are secure. Take the next faithful action.": "st-07",
+  // Basketball self-talk (FV-115) — FV-117 controls which sport sees these.
+  "You're okay. Next possession.": "st-bb-01",
 };
 
 // Cue word → base slug. Resolver appends "-reset" or "-sendoff".

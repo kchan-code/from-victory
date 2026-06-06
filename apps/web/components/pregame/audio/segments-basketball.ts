@@ -110,7 +110,7 @@ export const GUARD_VIZ: Segment[] = [
   { type: "silence", durationSec: 2.5 },
   {
     type: "speech",
-    text: "Get back on defense. Talk early.",
+    text: "Get back on defense. Talk, be loud.",
     speed: 1.0,
     instructions: VISUALIZATION_INSTRUCTIONS,
   },
@@ -245,7 +245,7 @@ export const WING_VIZ: Segment[] = [
   { type: "silence", durationSec: 2.5 },
   {
     type: "speech",
-    text: "Crash and close out hard.",
+    text: "Box out, then close out hard.",
     speed: 1.0,
     instructions: VISUALIZATION_INSTRUCTIONS,
   },
