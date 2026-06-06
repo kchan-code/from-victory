@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bb-big-start-slow",
+  "durationSec": 61.08,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bb-wing-start-slow",
+  "durationSec": 55.464,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

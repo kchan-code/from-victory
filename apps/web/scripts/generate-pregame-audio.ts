@@ -399,7 +399,7 @@ async function generateClips(flags: Flags): Promise<void> {
     console.log(`\n[clips] Templates: ${PHASE2_TEMPLATES.length}`);
     console.log(
       `[clips] Catalog will have: ${CLIP_SCRIPTS.length} TTS + ${OPENER_SLUGS.length} openers = ` +
-      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p5: 93 expected)`,
+      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p6/FV-116: 174 expected)`,
     );
     return;
   }
@@ -642,11 +642,17 @@ async function generateClips(flags: Flags): Promise<void> {
   const templateCount = templates.length;
   console.log(`\n[clips] manifest.json written: ${catalogCount} catalog entries, ${templateCount} templates.`);
 
-  // p6 (FV-30): 46 structural + 32 personalization + 15 hockey-practice
-  //             + 12 basketball-practice = 105 total
-  // (old pp-settle-receive + pp-choose-focus retired; 15 hockey pp-* + 12 bb pp-bb-* added)
-  if (catalogCount !== 105) {
-    console.warn(`  WARNING: expected 105 catalog entries (46 structural + 32 personalization + 15 hockey-practice + 12 basketball-practice), got ${catalogCount}.`);
+  // p6 (FV-116): 46 structural + 32 personalization + 15 hockey-practice
+  //              + 12 basketball-practice + 39 basketball-pregame = 144... no:
+  //   46 structural (shared + hockey viz/hm + closing)
+  //   32 personalization (hockey anc/st/cw)
+  //   15 hockey-practice (pp-*)
+  //   12 basketball-practice (pp-bb-*)
+  //   30 legacy basketball baked cells (bb-{role}-{frag})
+  //   39 new basketball compositional clips (viz-guard/wing/big + hm-bb-* + anc-bb + st-bb + opener-bb)
+  //   = 174 total
+  if (catalogCount !== 174) {
+    console.warn(`  WARNING: expected 174 catalog entries, got ${catalogCount}.`);
   }
   if (templateCount !== 30) {
     console.warn(`  WARNING: expected 30 templates (3 positions × 10 adversities), got ${templateCount}.`);

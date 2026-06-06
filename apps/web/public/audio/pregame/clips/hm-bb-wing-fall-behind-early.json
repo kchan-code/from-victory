@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bb-wing-fall-behind-early",
+  "durationSec": 59.832,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

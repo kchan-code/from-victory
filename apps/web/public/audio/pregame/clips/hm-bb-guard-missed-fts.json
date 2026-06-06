@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bb-guard-missed-fts",
+  "durationSec": 63.84,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

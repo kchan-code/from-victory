@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bb-guard-fall-behind-early",
+  "durationSec": 57.264,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

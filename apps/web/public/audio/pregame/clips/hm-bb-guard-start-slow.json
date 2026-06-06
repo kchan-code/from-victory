@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bb-guard-start-slow",
+  "durationSec": 59.136,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}
