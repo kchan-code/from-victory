@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bb-big-fall-behind-early",
+  "durationSec": 64.872,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

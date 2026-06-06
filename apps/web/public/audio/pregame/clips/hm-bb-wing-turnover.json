@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bb-wing-turnover",
+  "durationSec": 56.952,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

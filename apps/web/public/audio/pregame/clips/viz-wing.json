@@ -1,0 +1,14 @@
+{
+  "slug": "viz-wing",
+  "durationSec": 112.056,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 40.57
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bb-wing-missed-shot",
+  "durationSec": 63.264,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

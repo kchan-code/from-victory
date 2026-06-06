@@ -552,3 +552,103 @@ describe("resolvePlaylist — real manifest (version-drift guard)", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// 10. Basketball compositional clips catalog presence (FV-116)
+//     Asserts that every new basketball clip type produced by FV-116 is in the
+//     manifest catalog and backed by a real non-zero file on disk. These slugs
+//     are also covered by section 1 (the sweeping catalog-file check) after the
+//     manifest is updated, but an explicit named section makes regressions
+//     immediately attributable and confirms FV-116 intent.
+// ---------------------------------------------------------------------------
+
+describe("basketball compositional clip catalog presence (FV-116)", () => {
+  it("viz-guard, viz-wing, viz-big are in the catalog with real files", () => {
+    const broken: string[] = [];
+    for (const slug of ["viz-guard", "viz-wing", "viz-big"]) {
+      const err = catalogFileErr(slug);
+      if (err) broken.push(`${slug}: ${err}`);
+    }
+    expect(broken).toEqual([]);
+  });
+
+  it("all 30 hm-bb-* clips (Guard/Wing/Big × 10 adversities) are in the catalog with real files", () => {
+    const broken: string[] = [];
+    // Every adversity the basketball registry maps
+    for (const role of BASKETBALL_CONFIG.roles ?? []) {
+      for (const adversity of BASKETBALL_CONFIG.adversities) {
+        // hm-bb-* slugs follow the cellSlugFor pattern for basketball cells:
+        // bb-{role}-{frag}. The compositional hm-bb-* slugs follow a parallel
+        // convention: hm-bb-{role}-{frag}. Derive by extracting the frag from
+        // the cell slug (which is what the basketball-expert authored in clips.ts).
+        const cellSlug = BASKETBALL_CONFIG.cellSlugFor(adversity, role);
+        // Cell slug is bb-{role}-{frag} → hm-bb-{role}-{frag}
+        const hmSlug = `hm-${cellSlug}`;
+        const err = catalogFileErr(hmSlug);
+        if (err) {
+          broken.push(
+            `hm-bb clip for [${role} × "${adversity}"] slug "${hmSlug}": ${err}`,
+          );
+        }
+      }
+    }
+    expect(broken).toEqual([]);
+    // Confirm we hit exactly 30 cells
+    expect(
+      (BASKETBALL_CONFIG.roles ?? []).length *
+        BASKETBALL_CONFIG.adversities.length,
+    ).toBe(30);
+  });
+
+  it("basketball anchor clips are in the catalog with real files", () => {
+    const broken: string[] = [];
+    for (const slug of [
+      "anc-bounce-ball-twice",
+      "anc-tap-floor",
+      "anc-look-at-rim",
+    ]) {
+      const err = catalogFileErr(slug);
+      if (err) broken.push(`${slug}: ${err}`);
+    }
+    expect(broken).toEqual([]);
+  });
+
+  it("basketball self-talk clip st-bb-01 is in the catalog with a real file", () => {
+    expect(catalogFileErr("st-bb-01")).toBeNull();
+  });
+
+  it("basketball opener clips are in the catalog with real files", () => {
+    const broken: string[] = [];
+    for (const slug of ["opener-bb-courage", "opener-bb-decisions"]) {
+      const err = catalogFileErr(slug);
+      if (err) broken.push(`${slug}: ${err}`);
+    }
+    expect(broken).toEqual([]);
+  });
+
+  it("new basketball anchor + self-talk option-map entries resolve to catalog slugs", () => {
+    const missing: string[] = [];
+    const bbAnchors = [
+      "Bounce ball twice",
+      "Tap floor",
+      "Look at rim",
+    ] as const;
+    for (const opt of bbAnchors) {
+      // ANCHOR_OPTION_SLUGS is imported from audio-mapping
+      const slug = ANCHOR_OPTION_SLUGS[opt];
+      if (!slug) {
+        missing.push(`anchor option "${opt}" not in ANCHOR_OPTION_SLUGS`);
+      } else if (!(slug in catalog)) {
+        missing.push(`anchor "${opt}" → slug "${slug}" not in catalog`);
+      }
+    }
+    const bbSelfTalk = "You're okay. Next possession." as const;
+    const stSlug = SELFTALK_OPTION_SLUGS[bbSelfTalk];
+    if (!stSlug) {
+      missing.push(`self-talk "${bbSelfTalk}" not in SELFTALK_OPTION_SLUGS`);
+    } else if (!(stSlug in catalog)) {
+      missing.push(`self-talk "${bbSelfTalk}" → slug "${stSlug}" not in catalog`);
+    }
+    expect(missing).toEqual([]);
+  });
+});

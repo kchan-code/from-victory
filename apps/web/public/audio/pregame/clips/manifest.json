@@ -2318,6 +2318,368 @@
         }
       ]
     },
+    "viz-guard": {
+      "url": "/audio/pregame/clips/viz-guard.mp3",
+      "durationSec": 109.176,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 38.866
+        }
+      ]
+    },
+    "viz-wing": {
+      "url": "/audio/pregame/clips/viz-wing.mp3",
+      "durationSec": 112.056,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 40.57
+        }
+      ]
+    },
+    "viz-big": {
+      "url": "/audio/pregame/clips/viz-big.mp3",
+      "durationSec": 111.216,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 41.554
+        }
+      ]
+    },
+    "hm-bb-guard-turnover": {
+      "url": "/audio/pregame/clips/hm-bb-guard-turnover.mp3",
+      "durationSec": 54.984,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-guard-missed-shot": {
+      "url": "/audio/pregame/clips/hm-bb-guard-missed-shot.mp3",
+      "durationSec": 57.504,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-guard-got-cooked": {
+      "url": "/audio/pregame/clips/hm-bb-guard-got-cooked.mp3",
+      "durationSec": 55.512,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-guard-foul-trouble": {
+      "url": "/audio/pregame/clips/hm-bb-guard-foul-trouble.mp3",
+      "durationSec": 60.792,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-guard-coach-yells": {
+      "url": "/audio/pregame/clips/hm-bb-guard-coach-yells.mp3",
+      "durationSec": 57.48,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-guard-benched": {
+      "url": "/audio/pregame/clips/hm-bb-guard-benched.mp3",
+      "durationSec": 61.104,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-guard-nervous": {
+      "url": "/audio/pregame/clips/hm-bb-guard-nervous.mp3",
+      "durationSec": 60.168,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-guard-missed-fts": {
+      "url": "/audio/pregame/clips/hm-bb-guard-missed-fts.mp3",
+      "durationSec": 63.84,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-guard-start-slow": {
+      "url": "/audio/pregame/clips/hm-bb-guard-start-slow.mp3",
+      "durationSec": 59.136,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-guard-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-bb-guard-fall-behind-early.mp3",
+      "durationSec": 57.264,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-turnover": {
+      "url": "/audio/pregame/clips/hm-bb-wing-turnover.mp3",
+      "durationSec": 56.952,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-missed-shot": {
+      "url": "/audio/pregame/clips/hm-bb-wing-missed-shot.mp3",
+      "durationSec": 63.264,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-got-cooked": {
+      "url": "/audio/pregame/clips/hm-bb-wing-got-cooked.mp3",
+      "durationSec": 64.32,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-foul-trouble": {
+      "url": "/audio/pregame/clips/hm-bb-wing-foul-trouble.mp3",
+      "durationSec": 58.296,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-coach-yells": {
+      "url": "/audio/pregame/clips/hm-bb-wing-coach-yells.mp3",
+      "durationSec": 60.168,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-benched": {
+      "url": "/audio/pregame/clips/hm-bb-wing-benched.mp3",
+      "durationSec": 67.896,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-nervous": {
+      "url": "/audio/pregame/clips/hm-bb-wing-nervous.mp3",
+      "durationSec": 56.76,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-missed-fts": {
+      "url": "/audio/pregame/clips/hm-bb-wing-missed-fts.mp3",
+      "durationSec": 58.512,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-start-slow": {
+      "url": "/audio/pregame/clips/hm-bb-wing-start-slow.mp3",
+      "durationSec": 55.464,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-bb-wing-fall-behind-early.mp3",
+      "durationSec": 59.832,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-big-turnover": {
+      "url": "/audio/pregame/clips/hm-bb-big-turnover.mp3",
+      "durationSec": 63.384,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-big-missed-shot": {
+      "url": "/audio/pregame/clips/hm-bb-big-missed-shot.mp3",
+      "durationSec": 56.184,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-big-got-cooked": {
+      "url": "/audio/pregame/clips/hm-bb-big-got-cooked.mp3",
+      "durationSec": 59.4,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-big-foul-trouble": {
+      "url": "/audio/pregame/clips/hm-bb-big-foul-trouble.mp3",
+      "durationSec": 67.224,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-big-coach-yells": {
+      "url": "/audio/pregame/clips/hm-bb-big-coach-yells.mp3",
+      "durationSec": 65.592,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-big-fouled-out": {
+      "url": "/audio/pregame/clips/hm-bb-big-fouled-out.mp3",
+      "durationSec": 65.856,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-big-nervous": {
+      "url": "/audio/pregame/clips/hm-bb-big-nervous.mp3",
+      "durationSec": 65.328,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-big-missed-fts": {
+      "url": "/audio/pregame/clips/hm-bb-big-missed-fts.mp3",
+      "durationSec": 59.856,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-big-start-slow": {
+      "url": "/audio/pregame/clips/hm-bb-big-start-slow.mp3",
+      "durationSec": 61.08,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-big-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-bb-big-fall-behind-early.mp3",
+      "durationSec": 64.872,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "anc-bounce-ball-twice": {
+      "url": "/audio/pregame/clips/anc-bounce-ball-twice.mp3",
+      "durationSec": 2.688,
+      "phases": []
+    },
+    "anc-tap-floor": {
+      "url": "/audio/pregame/clips/anc-tap-floor.mp3",
+      "durationSec": 1.848,
+      "phases": []
+    },
+    "anc-look-at-rim": {
+      "url": "/audio/pregame/clips/anc-look-at-rim.mp3",
+      "durationSec": 2.04,
+      "phases": []
+    },
+    "st-bb-01": {
+      "url": "/audio/pregame/clips/st-bb-01.mp3",
+      "durationSec": 3.048,
+      "phases": []
+    },
     "opener-confidence": {
       "url": "/audio/pregame/clips/opener-confidence.mp3",
       "durationSec": 48.112,
@@ -2401,6 +2763,26 @@
     "opener-hope": {
       "url": "/audio/pregame/clips/opener-hope.mp3",
       "durationSec": 64.12,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-bb-courage": {
+      "url": "/audio/pregame/clips/opener-bb-courage.mp3",
+      "durationSec": 59.272,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-bb-decisions": {
+      "url": "/audio/pregame/clips/opener-bb-decisions.mp3",
+      "durationSec": 51.784,
       "phases": [
         {
           "phase": "intro",

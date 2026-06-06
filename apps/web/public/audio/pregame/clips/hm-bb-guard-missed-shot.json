@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bb-guard-missed-shot",
+  "durationSec": 57.504,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}
