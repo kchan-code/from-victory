@@ -15,16 +15,28 @@ import { getSportConfig, type Sport } from "./sport-registry";
 // Sport-aware opener slug resolution (FV-117)
 // ---------------------------------------------------------------------------
 //
-// Basketball has dedicated opener clips for "Physical courage" and
-// "Better decisions with the ball" (both rendered in FV-116).
-// All other basketball needs reuse the shared/hockey opener slugs until FV-120
-// renders the remaining basketball opener variants.
+// Basketball has dedicated opener clips for 8 of the 9 needs (FV-116 + FV-120).
+// "Physical courage" and "Better decisions with the ball" were rendered in FV-116.
+// "Confidence", "Compete level", "Reset after mistakes", "Leadership", "Joy",
+// and "Hope" were rendered in FV-120.
+// "Calm" intentionally reuses opener-calm (no basketball-specific variant needed).
 //
 // Hockey resolution is unchanged: always uses NEED_OPENER_SLUGS directly.
 
 const BASKETBALL_OPENER_OVERRIDES: Partial<Record<NeedToday, string>> = {
+  // FV-116 (courage + decisions rendered first)
   "Physical courage": "opener-bb-courage",
   "Better decisions with the ball": "opener-bb-decisions",
+  // FV-120 (remaining 6 sport-specific variants)
+  // NOTE: "Calm" is intentionally absent — it reuses opener-calm via
+  // the NEED_OPENER_SLUGS fallback in resolveOpenerSlug (no basketball-specific
+  // content change needed for that need).
+  "Confidence": "opener-bb-confidence",
+  "Compete level": "opener-bb-compete-level",
+  "Reset after mistakes": "opener-bb-reset",
+  "Leadership": "opener-bb-leadership",
+  "Joy": "opener-bb-joy",
+  "Hope": "opener-bb-hope",
 };
 
 /**
@@ -97,7 +109,7 @@ export const CUEWORD_OPTION_SLUGS: Record<string, string> = {
 // MP3 + sidecar JSON URL so Vercel's CDN + browsers can't serve a
 // stale cached version after a regen. Bump this when you rerun
 // `npm run audio:generate`.
-export const AUDIO_CACHE_BUST = "12";
+export const AUDIO_CACHE_BUST = "14";
 
 export function audioAssetUrl(slug: string, ext: "mp3" | "json"): string {
   return `/audio/pregame/${slug}.${ext}?v=${AUDIO_CACHE_BUST}`;

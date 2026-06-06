@@ -16,6 +16,7 @@ import {
   ANCHOR_OPTION_SLUGS,
   SELFTALK_OPTION_SLUGS,
   CUEWORD_OPTION_SLUGS,
+  resolveOpenerSlug,
 } from "../audio-mapping";
 
 import {
@@ -665,5 +666,56 @@ describe("basketball compositional clip catalog presence (FV-116)", () => {
       missing.push(`self-talk "${bbSelfTalk}" → slug "${stSlug}" not in catalog`);
     }
     expect(missing).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 11. Basketball opener parity (FV-120) — the 6 new opener-bb-* clips are in
+//     the catalog with real files, and resolveOpenerSlug returns them for
+//     basketball. "Calm" intentionally absent (reuses opener-calm via fallback).
+// ---------------------------------------------------------------------------
+
+describe("basketball opener parity (FV-120)", () => {
+  // The 6 needs that got basketball-specific openers in FV-120, plus their slugs.
+  const BB_OPENER_120: Array<{ need: string; slug: string }> = [
+    { need: "Confidence",           slug: "opener-bb-confidence" },
+    { need: "Compete level",        slug: "opener-bb-compete-level" },
+    { need: "Reset after mistakes", slug: "opener-bb-reset" },
+    { need: "Leadership",           slug: "opener-bb-leadership" },
+    { need: "Joy",                  slug: "opener-bb-joy" },
+    { need: "Hope",                 slug: "opener-bb-hope" },
+  ];
+
+  it("all 6 opener-bb-* clips are in the catalog with real non-zero files", () => {
+    const broken: string[] = [];
+    for (const { slug } of BB_OPENER_120) {
+      const err = catalogFileErr(slug);
+      if (err) broken.push(`${slug}: ${err}`);
+    }
+    expect(broken).toEqual([]);
+  });
+
+  it("resolveOpenerSlug returns the basketball-specific slug for each of the 6 needs", () => {
+    const mismatches: string[] = [];
+    for (const { need, slug } of BB_OPENER_120) {
+      const resolved = resolveOpenerSlug(need, "basketball");
+      if (resolved !== slug) {
+        mismatches.push(
+          `resolveOpenerSlug("${need}", "basketball") = "${resolved}", expected "${slug}"`,
+        );
+      }
+    }
+    expect(mismatches).toEqual([]);
+  });
+
+  it("resolveOpenerSlug('Calm', 'basketball') falls back to opener-calm (no bb variant)", () => {
+    // "Calm" intentionally has no basketball-specific opener — it reuses the
+    // shared opener-calm clip. resolveOpenerSlug must NOT return a bb-calm slug
+    // that doesn't exist.
+    expect(resolveOpenerSlug("Calm", "basketball")).toBe("opener-calm");
+  });
+
+  it("opener-calm is in the catalog (the basketball Calm fallback must resolve)", () => {
+    expect(catalogFileErr("opener-calm")).toBeNull();
   });
 });
