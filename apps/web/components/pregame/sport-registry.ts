@@ -243,6 +243,7 @@ export const HOCKEY_CONFIG: SportConfig = {
     "Hard first pass",
     "Win every race to the puck",
     "Full reps, no glide",
+    "Talk every shift",
   ] as const,
 
   practiceFocusSlugs: {
@@ -253,6 +254,7 @@ export const HOCKEY_CONFIG: SportConfig = {
     "Hard first pass": "pp-focus-hard-first-pass",
     "Win every race to the puck": "pp-focus-win-every-race-to-the-puck",
     "Full reps, no glide": "pp-focus-full-reps-no-glide",
+    "Talk every shift": "pp-focus-talk-every-shift",
   },
 
   // FV-117: per-sport picker lists. Hockey keeps its original lists exactly.

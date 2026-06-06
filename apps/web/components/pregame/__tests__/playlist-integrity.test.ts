@@ -719,3 +719,114 @@ describe("basketball opener parity (FV-120)", () => {
     expect(catalogFileErr("opener-calm")).toBeNull();
   });
 });
+
+// ---------------------------------------------------------------------------
+// 12. Pregame be-vocal beat (FV-122) — both sport variants are in the catalog,
+//     file-backed, and appear immediately before shared-reset-plan in every
+//     template. Hockey templates use "be-vocal"; basketball templates use
+//     "bb-be-vocal". Catalog count bump: 180 → 183.
+// ---------------------------------------------------------------------------
+
+describe("catalog count (FV-122)", () => {
+  it("catalog has exactly 183 entries (180 + 3 new clips from FV-121/FV-122)", () => {
+    expect(Object.keys(catalog)).toHaveLength(183);
+  });
+});
+
+describe("pregame be-vocal beat (FV-122)", () => {
+  it("be-vocal is in the catalog with a real non-zero file", () => {
+    expect(catalogFileErr("be-vocal")).toBeNull();
+  });
+
+  it("bb-be-vocal is in the catalog with a real non-zero file", () => {
+    expect(catalogFileErr("bb-be-vocal")).toBeNull();
+  });
+
+  it("every hockey template (Forward/Defense/Goalie) carries 'be-vocal' immediately before 'shared-reset-plan'", () => {
+    const hockeyPositions = new Set(HOCKEY_CONFIG.roles ?? []);
+    const broken: string[] = [];
+
+    for (const template of manifest.templates) {
+      if (!hockeyPositions.has(template.position)) continue;
+      const resetIdx = template.clips.indexOf("shared-reset-plan");
+      if (resetIdx < 1) {
+        broken.push(`[${template.position} × "${template.adversity}"] missing shared-reset-plan`);
+        continue;
+      }
+      const beforeReset = template.clips[resetIdx - 1];
+      if (beforeReset !== "be-vocal") {
+        broken.push(
+          `[${template.position} × "${template.adversity}"] clip before shared-reset-plan is "${beforeReset}", expected "be-vocal"`,
+        );
+      }
+    }
+
+    expect(broken).toEqual([]);
+  });
+
+  it("every basketball template (Guard/Wing/Big) carries 'bb-be-vocal' immediately before 'shared-reset-plan'", () => {
+    const bbPositions = new Set(BASKETBALL_CONFIG.roles ?? []);
+    const broken: string[] = [];
+
+    for (const template of manifest.templates) {
+      if (!bbPositions.has(template.position)) continue;
+      const resetIdx = template.clips.indexOf("shared-reset-plan");
+      if (resetIdx < 1) {
+        broken.push(`[${template.position} × "${template.adversity}"] missing shared-reset-plan`);
+        continue;
+      }
+      const beforeReset = template.clips[resetIdx - 1];
+      if (beforeReset !== "bb-be-vocal") {
+        broken.push(
+          `[${template.position} × "${template.adversity}"] clip before shared-reset-plan is "${beforeReset}", expected "bb-be-vocal"`,
+        );
+      }
+    }
+
+    expect(broken).toEqual([]);
+  });
+
+  it("resolvePlaylist for a sample hockey template includes 'be-vocal' in the resolved list", () => {
+    const playlist = resolvePlaylist("Calm", "Forward", "I feel nervous.", manifest);
+    expect(playlist).not.toBeNull();
+    const slugs = playlist!.map((c) => c.slug);
+    expect(slugs).toContain("be-vocal");
+    // be-vocal must come before shared-reset-plan
+    const beVocalIdx = slugs.indexOf("be-vocal");
+    const resetIdx = slugs.indexOf("shared-reset-plan");
+    expect(beVocalIdx).toBeLessThan(resetIdx);
+  });
+
+  it("resolvePlaylist for a sample basketball template includes 'bb-be-vocal' in the resolved list", () => {
+    const playlist = resolvePlaylist("Calm", "Guard", "I turn the ball over.", manifest);
+    expect(playlist).not.toBeNull();
+    const slugs = playlist!.map((c) => c.slug);
+    expect(slugs).toContain("bb-be-vocal");
+    // bb-be-vocal must come before shared-reset-plan
+    const beVocalIdx = slugs.indexOf("bb-be-vocal");
+    const resetIdx = slugs.indexOf("shared-reset-plan");
+    expect(beVocalIdx).toBeLessThan(resetIdx);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 13. Hockey "Talk every shift" pre-practice focus (FV-121)
+//     pp-focus-talk-every-shift is in the catalog with a real file.
+//     (Registry checks covered in sport-registry.test.ts section 13.)
+// ---------------------------------------------------------------------------
+
+describe("hockey focus parity — pp-focus-talk-every-shift (FV-121)", () => {
+  it("pp-focus-talk-every-shift is in the catalog with a real non-zero file", () => {
+    expect(catalogFileErr("pp-focus-talk-every-shift")).toBeNull();
+  });
+
+  it("HOCKEY_CONFIG.practiceFocusSlugs maps 'Talk every shift' to 'pp-focus-talk-every-shift'", () => {
+    expect(HOCKEY_CONFIG.practiceFocusSlugs["Talk every shift"]).toBe(
+      "pp-focus-talk-every-shift",
+    );
+  });
+
+  it("HOCKEY_CONFIG.practiceFocusOptions includes 'Talk every shift'", () => {
+    expect(HOCKEY_CONFIG.practiceFocusOptions).toContain("Talk every shift");
+  });
+});

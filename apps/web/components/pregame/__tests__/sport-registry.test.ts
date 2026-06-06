@@ -261,6 +261,42 @@ describe("BASKETBALL_CONFIG practice fields (FV-30)", () => {
 });
 
 // ---------------------------------------------------------------------------
+// F. HOCKEY_CONFIG practice fields — FV-121 "Talk every shift" parity
+// ---------------------------------------------------------------------------
+
+describe("HOCKEY_CONFIG practice fields — FV-121 hockey focus parity", () => {
+  it("practiceFocusOptions includes 'Talk every shift'", () => {
+    expect(HOCKEY_CONFIG.practiceFocusOptions).toContain("Talk every shift");
+  });
+
+  it("practiceFocusSlugs maps 'Talk every shift' → 'pp-focus-talk-every-shift'", () => {
+    expect(HOCKEY_CONFIG.practiceFocusSlugs["Talk every shift"]).toBe(
+      "pp-focus-talk-every-shift",
+    );
+  });
+
+  it("practiceFocusOptions has exactly 8 entries after FV-121 addition", () => {
+    // Was 7 before FV-121; +1 = 8.
+    expect(HOCKEY_CONFIG.practiceFocusOptions).toHaveLength(8);
+  });
+
+  it("practiceFocusSlugs has one entry per practiceFocusOptions item", () => {
+    for (const option of HOCKEY_CONFIG.practiceFocusOptions) {
+      expect(
+        HOCKEY_CONFIG.practiceFocusSlugs,
+        `Missing slug for "${option}"`,
+      ).toHaveProperty(option);
+    }
+  });
+
+  it("every hockey practiceFocusSlugs value is a pp-focus-* slug", () => {
+    for (const [option, slug] of Object.entries(HOCKEY_CONFIG.practiceFocusSlugs)) {
+      expect(slug, `Slug for "${option}"`).toMatch(/^pp-focus-/);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
 // D. adversityOptionsFor — position-aware Hard Moment options (FV-101)
 // ---------------------------------------------------------------------------
 

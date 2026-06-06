@@ -325,8 +325,8 @@ describe("resolvePracticePlaylist — legacy p4 flat path", () => {
 // ---------------------------------------------------------------------------
 
 describe("PRACTICE_FOCUS_OPTIONS shape", () => {
-  it('has exactly 7 options ("First" dropped per FRO-22)', () => {
-    expect(PRACTICE_FOCUS_OPTIONS).toHaveLength(7);
+  it('has exactly 8 options ("Talk every shift" added per FV-121; "First" dropped per FRO-22)', () => {
+    expect(PRACTICE_FOCUS_OPTIONS).toHaveLength(8);
   });
 
   it('does not contain "First"', () => {
@@ -354,8 +354,8 @@ describe("PRACTICE_FOCUS_OPTIONS shape", () => {
 // ---------------------------------------------------------------------------
 
 describe("PRACTICE_FOCUS_SLUGS map", () => {
-  it("has exactly 7 entries, one per focus option", () => {
-    expect(Object.keys(PRACTICE_FOCUS_SLUGS)).toHaveLength(7);
+  it("has exactly 8 entries, one per focus option (FV-121: +1 'Talk every shift')", () => {
+    expect(Object.keys(PRACTICE_FOCUS_SLUGS)).toHaveLength(8);
     for (const option of PRACTICE_FOCUS_OPTIONS) {
       expect(PRACTICE_FOCUS_SLUGS, `Missing slug for "${option}"`).toHaveProperty(option);
     }
@@ -380,6 +380,7 @@ describe("PRACTICE_FOCUS_SLUGS map", () => {
       "Hard first pass": "pp-focus-hard-first-pass",
       "Win every race to the puck": "pp-focus-win-every-race-to-the-puck",
       "Full reps, no glide": "pp-focus-full-reps-no-glide",
+      "Talk every shift": "pp-focus-talk-every-shift",
     };
     for (const [option, expectedSlug] of Object.entries(EXPECTED_MAP)) {
       expect(PRACTICE_FOCUS_SLUGS[option]).toBe(expectedSlug);
@@ -430,6 +431,31 @@ describe("resolvePracticePlaylist — p6 hockey sport-keyed manifest", () => {
       "pp-goal-fusion",
       "pp-choose-focus-lead",
       FOCUS_SLUG,
+      "pp-choose-focus-tail",
+      "pp-be-vocal",
+      "pp-see-it-go",
+    ]);
+  });
+
+  it("p6 hockey: injects the FV-121 'Talk every shift' focus slug at the seam", () => {
+    const manifest = buildP6HockeyManifest({ includeFocus: false });
+    manifest.clips["pp-focus-talk-every-shift"] = catalogEntry(
+      "/audio/pregame/clips/pp-focus-talk-every-shift.mp3",
+      4,
+    );
+    const result = resolvePracticePlaylist(
+      manifest,
+      "dialed-in",
+      "Talk every shift",
+      HOCKEY_CONFIG,
+    );
+    expect(result).not.toBeNull();
+    expect(result!.map((c) => c.slug)).toEqual([
+      "pp-opener-dialed-in",
+      "pp-name-standard",
+      "pp-goal-fusion",
+      "pp-choose-focus-lead",
+      "pp-focus-talk-every-shift",
       "pp-choose-focus-tail",
       "pp-be-vocal",
       "pp-see-it-go",
