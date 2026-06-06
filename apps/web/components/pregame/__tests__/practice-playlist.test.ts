@@ -325,8 +325,8 @@ describe("resolvePracticePlaylist — legacy p4 flat path", () => {
 // ---------------------------------------------------------------------------
 
 describe("PRACTICE_FOCUS_OPTIONS shape", () => {
-  it('has exactly 7 options ("First" dropped per FRO-22)', () => {
-    expect(PRACTICE_FOCUS_OPTIONS).toHaveLength(7);
+  it('has exactly 8 options ("Talk every shift" added per FV-121; "First" dropped per FRO-22)', () => {
+    expect(PRACTICE_FOCUS_OPTIONS).toHaveLength(8);
   });
 
   it('does not contain "First"', () => {
@@ -354,8 +354,8 @@ describe("PRACTICE_FOCUS_OPTIONS shape", () => {
 // ---------------------------------------------------------------------------
 
 describe("PRACTICE_FOCUS_SLUGS map", () => {
-  it("has exactly 7 entries, one per focus option", () => {
-    expect(Object.keys(PRACTICE_FOCUS_SLUGS)).toHaveLength(7);
+  it("has exactly 8 entries, one per focus option (FV-121: +1 'Talk every shift')", () => {
+    expect(Object.keys(PRACTICE_FOCUS_SLUGS)).toHaveLength(8);
     for (const option of PRACTICE_FOCUS_OPTIONS) {
       expect(PRACTICE_FOCUS_SLUGS, `Missing slug for "${option}"`).toHaveProperty(option);
     }

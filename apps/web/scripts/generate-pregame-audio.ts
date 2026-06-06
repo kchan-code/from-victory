@@ -451,7 +451,7 @@ async function generateClips(flags: Flags): Promise<void> {
     console.log(`\n[clips] Templates: ${PHASE2_TEMPLATES.length}`);
     console.log(
       `[clips] Catalog will have: ${CLIP_SCRIPTS.length} TTS + ${OPENER_SLUGS.length} openers = ` +
-      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p6/FV-120: 180 expected, templates: 60)`,
+      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p6/FV-122: 183 expected, templates: 60)`,
     );
     return;
   }
@@ -622,22 +622,29 @@ async function generateClips(flags: Flags): Promise<void> {
   //   {{cueSendoff}} between shared-prayer and shared-sendoff.
   // The resolver in audio-playlist.ts substitutes these with the athlete's
   // chosen anchor/self-talk/cue-word slugs, dropping them gracefully if absent.
-  const templates = PHASE2_TEMPLATES.map((t) => ({
-    position: t.position,
-    adversity: t.adversity,
-    clips: [
-      "shared-opening",
-      t.vizSlug,
-      t.hmSlug,
-      "{{anchor}}",
-      "{{selfTalk}}",
-      "{{cueReset}}",
-      "shared-reset-plan",
-      "shared-prayer",
-      "{{cueSendoff}}",
-      "shared-sendoff",
-    ],
-  }));
+  const templates = PHASE2_TEMPLATES.map((t) => {
+    // FV-122: sport-keyed be-vocal beat inserted immediately before shared-reset-plan.
+    // Basketball templates have positions Guard/Wing/Big (hmSlug starts "hm-bb-");
+    // hockey templates have Forward/Defense/Goalie.
+    const beVocalSlug = t.hmSlug.startsWith("hm-bb-") ? "bb-be-vocal" : "be-vocal";
+    return {
+      position: t.position,
+      adversity: t.adversity,
+      clips: [
+        "shared-opening",
+        t.vizSlug,
+        t.hmSlug,
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        beVocalSlug,            // FV-122 — sport-keyed be-vocal beat
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff",
+      ],
+    };
+  });
 
   // Pre-practice "Lock In" — sport-keyed state-aware playlist (FV-30, p6).
   // practiceState is keyed by sport then by state:
@@ -694,17 +701,18 @@ async function generateClips(flags: Flags): Promise<void> {
   const templateCount = templates.length;
   console.log(`\n[clips] manifest.json written: ${catalogCount} catalog entries, ${templateCount} templates.`);
 
-  // p6 (FV-120): catalog breakdown:
+  // p6 (FV-122): catalog breakdown:
   //   46 structural (shared + hockey viz/hm + closing)
   //   32 personalization (hockey anc/st/cw)
-  //   15 hockey-practice (pp-*)
+  //   16 hockey-practice (pp-*) — +1 pp-focus-talk-every-shift (FV-121)
   //   12 basketball-practice (pp-bb-*)
   //   30 legacy basketball baked cells (bb-{role}-{frag})
   //   39 new basketball compositional clips (viz-guard/wing/big + hm-bb-* + anc-bb + st-bb)
   //   + 6 more basketball openers (FV-120: opener-bb-confidence/compete-level/reset/leadership/joy/hope)
-  //   = 180 total (was 174 at FV-116, +6 opener-bb-* from FV-120)
-  if (catalogCount !== 180) {
-    console.warn(`  WARNING: expected 180 catalog entries, got ${catalogCount}.`);
+  //   + 2 pregame be-vocal beats (FV-122: be-vocal + bb-be-vocal)
+  //   = 183 total (was 180 at FV-120, +3 from FV-121/FV-122)
+  if (catalogCount !== 183) {
+    console.warn(`  WARNING: expected 183 catalog entries, got ${catalogCount}.`);
   }
   if (templateCount !== 60) {
     console.warn(`  WARNING: expected 60 templates (6 positions × 10 adversities — 3 hockey + 3 basketball), got ${templateCount}.`);
