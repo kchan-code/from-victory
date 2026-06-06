@@ -12,6 +12,12 @@
 //     adversities, roleContent, slug scheme). Pre-practice focus presets are
 //     still TODO (a follow-up chunk in the FV-30 lane); audio for the
 //     basketball clips is rendered separately in FV-31.
+//   - `needs`, `anchors`, `selfTalkOptions` are per-sport picker lists
+//     (FV-117). Hockey keeps its original lists exactly; basketball swaps
+//     sport-specific options so hockey-worded chips are never shown to a
+//     basketball athlete.
+
+import type { NeedToday } from "./types";
 
 // ---------------------------------------------------------------------------
 // Sport type
@@ -95,6 +101,28 @@ export type SportConfig = {
    * Keys must exactly match `practiceFocusOptions` entries.
    */
   practiceFocusSlugs: Record<string, string>;
+
+  // ── Pregame personalization picker lists (FV-117) ─────────────────────────
+  /**
+   * Ordered list of "Today's Focus" need options shown in the picker.
+   * Hockey uses the original NEEDS list; basketball swaps "Better puck
+   * decisions" → "Better decisions with the ball".
+   */
+  needs: readonly NeedToday[];
+  /**
+   * Ordered list of reset anchor options shown in the picker.
+   * Hockey: stick-tap / glove-touch variants; basketball: ball-bounce /
+   * floor-tap / rim-look variants. "Long exhale", "Press thumb to palm",
+   * and "Say cue word" are shared across sports.
+   */
+  anchors: readonly string[];
+  /**
+   * Ordered list of self-talk phrases shown in the picker.
+   * Hockey: "You're okay. Next shift." Basketball: "You're okay. Next possession."
+   * All other 6 phrases are sport-neutral and shared.
+   */
+  selfTalkOptions: readonly string[];
+
   /** Opener clip slugs for the two pre-practice states. */
   practiceOpenerSlugs: {
     "dialed-in": string;
@@ -227,6 +255,40 @@ export const HOCKEY_CONFIG: SportConfig = {
     "Full reps, no glide": "pp-focus-full-reps-no-glide",
   },
 
+  // FV-117: per-sport picker lists. Hockey keeps its original lists exactly.
+  needs: [
+    "Confidence",
+    "Calm",
+    "Compete level",
+    "Reset after mistakes",
+    "Physical courage",
+    "Better puck decisions",
+    "Leadership",
+    "Joy",
+    "Hope",
+  ] as const satisfies readonly NeedToday[],
+
+  // Order preserved verbatim from the original RESET_ANCHORS (hockey is the live
+  // beta sport — the registry refactor must not reorder its chips). FV-117.
+  anchors: [
+    "Tap stick twice",
+    "Touch glove",
+    "Press thumb to palm",
+    "Long exhale",
+    "Look at tape",
+    "Say cue word",
+  ] as const,
+
+  selfTalkOptions: [
+    "You're okay. Next shift.",
+    "Breathe. Do your job.",
+    "Stay steady. Make the next play.",
+    "You don't need to do too much.",
+    "Compete, recover, go again.",
+    "Your identity is secure. Play free.",
+    "You are secure. Take the next faithful action.",
+  ] as const,
+
   practiceOpenerSlugs: {
     "dialed-in": "pp-opener-dialed-in",
     "not-feeling-it": "pp-opener-get-to",
@@ -337,6 +399,45 @@ export const BASKETBALL_CONFIG: SportConfig = {
     "Sprint every transition": "pp-bb-focus-sprint-every-transition",
     "Box out every shot": "pp-bb-focus-box-out-every-shot",
   },
+
+  // FV-117: per-sport picker lists for basketball.
+  // "Better puck decisions" → "Better decisions with the ball".
+  // All other 8 needs are sport-neutral and shared with hockey.
+  needs: [
+    "Confidence",
+    "Calm",
+    "Compete level",
+    "Reset after mistakes",
+    "Physical courage",
+    "Better decisions with the ball",
+    "Leadership",
+    "Joy",
+    "Hope",
+  ] as const satisfies readonly NeedToday[],
+
+  // "Tap stick twice" and "Touch glove" are hockey-specific; replaced with
+  // "Bounce ball twice", "Tap floor", and "Look at rim" for basketball.
+  // "Long exhale", "Press thumb to palm", "Say cue word" are shared.
+  anchors: [
+    "Long exhale",
+    "Press thumb to palm",
+    "Bounce ball twice",
+    "Tap floor",
+    "Look at rim",
+    "Say cue word",
+  ] as const,
+
+  // "You're okay. Next shift." → "You're okay. Next possession." for basketball.
+  // The other 6 phrases are sport-neutral.
+  selfTalkOptions: [
+    "You're okay. Next possession.",
+    "Breathe. Do your job.",
+    "Stay steady. Make the next play.",
+    "You don't need to do too much.",
+    "Compete, recover, go again.",
+    "Your identity is secure. Play free.",
+    "You are secure. Take the next faithful action.",
+  ] as const,
 
   practiceOpenerSlugs: {
     // pp-opener-dialed-in is sport-neutral and reused across both sports.

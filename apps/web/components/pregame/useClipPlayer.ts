@@ -356,6 +356,9 @@ export function useClipPlayer({
           return;
         }
       } else {
+        // Pass sport so the opener slug is sport-aware (FV-117 / FV-116):
+        // basketball gets opener-bb-courage / opener-bb-decisions where
+        // available; all other combinations use the shared hockey openers.
         clips = resolvePlaylist(
           need!,
           position!,
@@ -364,6 +367,7 @@ export function useClipPlayer({
           anchor,
           selfTalk,
           cueWord,
+          sport,
         );
         if (!clips) {
           // No template for this combination — sentinel triggers legacy path.

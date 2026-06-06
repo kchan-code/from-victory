@@ -12,6 +12,40 @@ import type { NeedToday } from "./types";
 import { getSportConfig, type Sport } from "./sport-registry";
 
 // ---------------------------------------------------------------------------
+// Sport-aware opener slug resolution (FV-117)
+// ---------------------------------------------------------------------------
+//
+// Basketball has dedicated opener clips for "Physical courage" and
+// "Better decisions with the ball" (both rendered in FV-116).
+// All other basketball needs reuse the shared/hockey opener slugs until FV-120
+// renders the remaining basketball opener variants.
+//
+// Hockey resolution is unchanged: always uses NEED_OPENER_SLUGS directly.
+
+const BASKETBALL_OPENER_OVERRIDES: Partial<Record<NeedToday, string>> = {
+  "Physical courage": "opener-bb-courage",
+  "Better decisions with the ball": "opener-bb-decisions",
+};
+
+/**
+ * Resolve the opener slug for a given (need, sport) pair.
+ * Basketball uses sport-specific clips where available (FV-116);
+ * all other combinations fall back to the shared NEED_OPENER_SLUGS map.
+ * Returns null for unknown needs.
+ */
+export function resolveOpenerSlug(
+  need: string,
+  sport: Sport = "hockey",
+): string | null {
+  if (sport === "basketball") {
+    const override =
+      BASKETBALL_OPENER_OVERRIDES[need as NeedToday] ?? null;
+    if (override) return override;
+  }
+  return NEED_OPENER_SLUGS[need as keyof typeof NEED_OPENER_SLUGS] ?? null;
+}
+
+// ---------------------------------------------------------------------------
 // Personalization clip slug maps — Phase 3b
 // Keys are the EXACT option strings from types.ts (RESET_ANCHORS,
 // SELF_TALK_OPTIONS, CUE_WORDS). Any mismatch silently breaks resolution.
@@ -69,6 +103,11 @@ export function audioAssetUrl(slug: string, ext: "mp3" | "json"): string {
   return `/audio/pregame/${slug}.${ext}?v=${AUDIO_CACHE_BUST}`;
 }
 
+// NEED_OPENER_SLUGS contains the HOCKEY (and shared) opener slugs.
+// Basketball sport-specific overrides are handled by resolveOpenerSlug() above.
+// "Better decisions with the ball" maps to the same opener-decisions clip as
+// "Better puck decisions" (sport-neutral scripture; basketball-specific variant
+// in BASKETBALL_OPENER_OVERRIDES above takes precedence via resolveOpenerSlug).
 export const NEED_OPENER_SLUGS: Record<NeedToday, string> = {
   Confidence: "opener-confidence",
   Calm: "opener-calm",
@@ -76,6 +115,7 @@ export const NEED_OPENER_SLUGS: Record<NeedToday, string> = {
   "Reset after mistakes": "opener-reset",
   "Physical courage": "opener-courage",
   "Better puck decisions": "opener-decisions",
+  "Better decisions with the ball": "opener-decisions",
   Leadership: "opener-leadership",
   Joy: "opener-joy",
   Hope: "opener-hope",
@@ -85,9 +125,14 @@ export const NEED_OPENER_SLUGS: Record<NeedToday, string> = {
 // (HOCKEY_CONFIG.adversitySlugFragments / HOCKEY_CONFIG.cellSlugFor).
 // They are no longer exported from this module.
 
-export function openerSrcFor(need: NeedToday | null): string | null {
+export function openerSrcFor(
+  need: NeedToday | null,
+  sport: Sport = "hockey",
+): string | null {
   if (!need) return null;
-  return audioAssetUrl(NEED_OPENER_SLUGS[need], "mp3");
+  const slug = resolveOpenerSlug(need, sport);
+  if (!slug) return null;
+  return audioAssetUrl(slug, "mp3");
 }
 
 /**

@@ -22,6 +22,26 @@ import {
   adversityLabelFor,
   type SportConfig,
 } from "../sport-registry";
+import { NEEDS, RESET_ANCHORS, SELF_TALK_OPTIONS } from "../types";
+
+// ---------------------------------------------------------------------------
+// FV-117 regression guard: HOCKEY_CONFIG picker lists must stay byte-identical
+// (order + content) to the original global lists. Hockey is the live beta sport,
+// so the per-sport registry refactor must never silently reorder or alter its
+// chips. (Caught a "Long exhale" reorder in qa review of PR #122.)
+// ---------------------------------------------------------------------------
+
+describe("HOCKEY_CONFIG picker lists == original globals (zero hockey change)", () => {
+  it("needs match NEEDS exactly (order + content)", () => {
+    expect(HOCKEY_CONFIG.needs).toEqual(NEEDS);
+  });
+  it("anchors match RESET_ANCHORS exactly (order + content)", () => {
+    expect(HOCKEY_CONFIG.anchors).toEqual(RESET_ANCHORS);
+  });
+  it("selfTalkOptions match SELF_TALK_OPTIONS exactly (order + content)", () => {
+    expect(HOCKEY_CONFIG.selfTalkOptions).toEqual(SELF_TALK_OPTIONS);
+  });
+});
 
 // ---------------------------------------------------------------------------
 // A. HOCKEY_CONFIG.cellSlugFor — 3 roles × 10 adversities
@@ -353,5 +373,232 @@ describe("adversityLabelFor — downstream display label", () => {
         expect(adversityLabelFor(HOCKEY_CONFIG, role, key)).toBe(label);
       }
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-117: per-sport picker lists (needs / anchors / selfTalkOptions)
+// ---------------------------------------------------------------------------
+
+import {
+  ANCHOR_OPTION_SLUGS,
+  SELFTALK_OPTION_SLUGS,
+  NEED_OPENER_SLUGS,
+  resolveOpenerSlug,
+} from "../audio-mapping";
+
+// ── Needs picker ─────────────────────────────────────────────────────────────
+
+describe("FV-117: sport-keyed needs picker", () => {
+  it("hockey needs contains 'Better puck decisions' and NOT 'Better decisions with the ball'", () => {
+    expect(HOCKEY_CONFIG.needs).toContain("Better puck decisions");
+    expect(HOCKEY_CONFIG.needs).not.toContain("Better decisions with the ball");
+  });
+
+  it("basketball needs contains 'Better decisions with the ball' and NOT 'Better puck decisions'", () => {
+    expect(BASKETBALL_CONFIG.needs).toContain("Better decisions with the ball");
+    expect(BASKETBALL_CONFIG.needs).not.toContain("Better puck decisions");
+  });
+
+  it("hockey needs has 9 options (unchanged from original NEEDS list)", () => {
+    expect(HOCKEY_CONFIG.needs).toHaveLength(9);
+  });
+
+  it("basketball needs has 9 options (one swap, same count)", () => {
+    expect(BASKETBALL_CONFIG.needs).toHaveLength(9);
+  });
+
+  it("both sports share 8 common needs (only the sport-specific one differs)", () => {
+    const hockeySet = new Set(HOCKEY_CONFIG.needs);
+    const bbSet = new Set(BASKETBALL_CONFIG.needs);
+    const shared = [...hockeySet].filter((n) => bbSet.has(n));
+    expect(shared).toHaveLength(8);
+  });
+});
+
+// ── Anchors picker ────────────────────────────────────────────────────────────
+
+describe("FV-117: sport-keyed anchors picker", () => {
+  it("hockey anchors contains 'Tap stick twice' and 'Touch glove'", () => {
+    expect(HOCKEY_CONFIG.anchors).toContain("Tap stick twice");
+    expect(HOCKEY_CONFIG.anchors).toContain("Touch glove");
+  });
+
+  it("basketball anchors does NOT contain 'Tap stick twice' or 'Touch glove'", () => {
+    expect(BASKETBALL_CONFIG.anchors).not.toContain("Tap stick twice");
+    expect(BASKETBALL_CONFIG.anchors).not.toContain("Touch glove");
+  });
+
+  it("basketball anchors contains 'Bounce ball twice', 'Tap floor', 'Look at rim'", () => {
+    expect(BASKETBALL_CONFIG.anchors).toContain("Bounce ball twice");
+    expect(BASKETBALL_CONFIG.anchors).toContain("Tap floor");
+    expect(BASKETBALL_CONFIG.anchors).toContain("Look at rim");
+  });
+
+  it("hockey anchors does NOT contain 'Bounce ball twice', 'Tap floor', or 'Look at rim'", () => {
+    expect(HOCKEY_CONFIG.anchors).not.toContain("Bounce ball twice");
+    expect(HOCKEY_CONFIG.anchors).not.toContain("Tap floor");
+    expect(HOCKEY_CONFIG.anchors).not.toContain("Look at rim");
+  });
+
+  it("both sports share 'Long exhale', 'Press thumb to palm', and 'Say cue word'", () => {
+    const shared = ["Long exhale", "Press thumb to palm", "Say cue word"];
+    for (const anchor of shared) {
+      expect(HOCKEY_CONFIG.anchors).toContain(anchor);
+      expect(BASKETBALL_CONFIG.anchors).toContain(anchor);
+    }
+  });
+
+  it("hockey has 6 anchors (unchanged)", () => {
+    expect(HOCKEY_CONFIG.anchors).toHaveLength(6);
+  });
+
+  it("basketball has 6 anchors (same count as hockey)", () => {
+    expect(BASKETBALL_CONFIG.anchors).toHaveLength(6);
+  });
+
+  it("every basketball anchor (except 'Say cue word') has a slug in ANCHOR_OPTION_SLUGS", () => {
+    const skip = new Set(["Say cue word"]);
+    const unmapped: string[] = [];
+    for (const anchor of BASKETBALL_CONFIG.anchors) {
+      if (skip.has(anchor)) continue;
+      if (!(anchor in ANCHOR_OPTION_SLUGS)) {
+        unmapped.push(`basketball anchor "${anchor}" not in ANCHOR_OPTION_SLUGS`);
+      }
+    }
+    expect(unmapped).toEqual([]);
+  });
+});
+
+// ── Self-talk picker ──────────────────────────────────────────────────────────
+
+describe("FV-117: sport-keyed selfTalkOptions picker", () => {
+  it("hockey selfTalkOptions contains 'You're okay. Next shift.'", () => {
+    expect(HOCKEY_CONFIG.selfTalkOptions).toContain("You're okay. Next shift.");
+  });
+
+  it("hockey selfTalkOptions does NOT contain 'You're okay. Next possession.'", () => {
+    expect(HOCKEY_CONFIG.selfTalkOptions).not.toContain(
+      "You're okay. Next possession.",
+    );
+  });
+
+  it("basketball selfTalkOptions contains 'You're okay. Next possession.'", () => {
+    expect(BASKETBALL_CONFIG.selfTalkOptions).toContain(
+      "You're okay. Next possession.",
+    );
+  });
+
+  it("basketball selfTalkOptions does NOT contain 'You're okay. Next shift.'", () => {
+    expect(BASKETBALL_CONFIG.selfTalkOptions).not.toContain(
+      "You're okay. Next shift.",
+    );
+  });
+
+  it("both sports share the 6 sport-neutral self-talk phrases", () => {
+    const neutral = [
+      "Breathe. Do your job.",
+      "Stay steady. Make the next play.",
+      "You don't need to do too much.",
+      "Compete, recover, go again.",
+      "Your identity is secure. Play free.",
+      "You are secure. Take the next faithful action.",
+    ];
+    for (const phrase of neutral) {
+      expect(HOCKEY_CONFIG.selfTalkOptions).toContain(phrase);
+      expect(BASKETBALL_CONFIG.selfTalkOptions).toContain(phrase);
+    }
+  });
+
+  it("hockey has 7 self-talk options (unchanged)", () => {
+    expect(HOCKEY_CONFIG.selfTalkOptions).toHaveLength(7);
+  });
+
+  it("basketball has 7 self-talk options (same count as hockey)", () => {
+    expect(BASKETBALL_CONFIG.selfTalkOptions).toHaveLength(7);
+  });
+
+  it("every basketball selfTalkOption has a slug in SELFTALK_OPTION_SLUGS", () => {
+    const unmapped: string[] = [];
+    for (const phrase of BASKETBALL_CONFIG.selfTalkOptions) {
+      if (!(phrase in SELFTALK_OPTION_SLUGS)) {
+        unmapped.push(`basketball self-talk "${phrase}" not in SELFTALK_OPTION_SLUGS`);
+      }
+    }
+    expect(unmapped).toEqual([]);
+  });
+});
+
+// ── Need→opener slug resolution (FV-117 / FV-116) ────────────────────────────
+
+describe("FV-117: resolveOpenerSlug — sport-keyed opener resolution", () => {
+  it("hockey 'Physical courage' uses the shared opener-courage slug", () => {
+    expect(resolveOpenerSlug("Physical courage", "hockey")).toBe("opener-courage");
+  });
+
+  it("basketball 'Physical courage' uses the sport-specific opener-bb-courage", () => {
+    expect(resolveOpenerSlug("Physical courage", "basketball")).toBe(
+      "opener-bb-courage",
+    );
+  });
+
+  it("basketball 'Better decisions with the ball' uses opener-bb-decisions", () => {
+    expect(resolveOpenerSlug("Better decisions with the ball", "basketball")).toBe(
+      "opener-bb-decisions",
+    );
+  });
+
+  it("hockey has no 'Better decisions with the ball' option so it falls back to opener-decisions", () => {
+    // "Better decisions with the ball" is a basketball-only label, but the
+    // NeedToday union now includes it. Hockey resolution falls back to the
+    // shared map (opener-decisions) via NEED_OPENER_SLUGS.
+    expect(resolveOpenerSlug("Better decisions with the ball", "hockey")).toBe(
+      "opener-decisions",
+    );
+  });
+
+  it("basketball 'Confidence' falls back to the shared opener-confidence (no bb override yet)", () => {
+    expect(resolveOpenerSlug("Confidence", "basketball")).toBe(
+      "opener-confidence",
+    );
+  });
+
+  it("basketball 'Calm' falls back to opener-calm", () => {
+    expect(resolveOpenerSlug("Calm", "basketball")).toBe("opener-calm");
+  });
+
+  it("returns null for an unknown need string", () => {
+    expect(resolveOpenerSlug("Unknown need", "hockey")).toBeNull();
+    expect(resolveOpenerSlug("Unknown need", "basketball")).toBeNull();
+  });
+
+  it("default sport is hockey — resolveOpenerSlug without sport arg uses hockey resolution", () => {
+    // Physical courage: hockey → shared opener-courage (not bb-courage)
+    expect(resolveOpenerSlug("Physical courage")).toBe("opener-courage");
+  });
+
+  it("NEED_OPENER_SLUGS contains 'Better decisions with the ball' mapping to opener-decisions", () => {
+    // Ensures the NeedToday union extension is fully covered in the shared map.
+    expect(NEED_OPENER_SLUGS["Better decisions with the ball"]).toBe("opener-decisions");
+  });
+
+  it("every hockey need has an opener slug via resolveOpenerSlug", () => {
+    const missing: string[] = [];
+    for (const need of HOCKEY_CONFIG.needs) {
+      if (!resolveOpenerSlug(need, "hockey")) {
+        missing.push(need);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it("every basketball need has an opener slug via resolveOpenerSlug", () => {
+    const missing: string[] = [];
+    for (const need of BASKETBALL_CONFIG.needs) {
+      if (!resolveOpenerSlug(need, "basketball")) {
+        missing.push(need);
+      }
+    }
+    expect(missing).toEqual([]);
   });
 });
