@@ -69,7 +69,7 @@ export const SESSION_GUARD_BENCHED_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "A sub is a sub. Stay in the game from the bench. Talk, watch their guard, be ready to check back in.",
+      text: "You're still on this team, still in this game. Stay in it from the bench. Talk, watch their guard, be ready to check back in.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },

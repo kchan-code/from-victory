@@ -37,7 +37,7 @@ export const SESSION_BIG_GOT_COOKED_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     { type: "speech", text: "Next switch, you give him a cushion. Drop, contain, wall him off, and stay vertical at the rim. Make him finish over a wall.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
     { type: "silence", durationSec: 2.0 },
-    { type: "speech", text: "Speak the truth. Getting beat is real. It is not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "speech", text: "Speak the truth. One blow-by is real. It does not mean they own you. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
     { type: "silence", durationSec: 1.5 },
     ...CLOSING,
   ],

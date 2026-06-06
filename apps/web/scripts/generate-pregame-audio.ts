@@ -76,6 +76,8 @@ import { OPENER_DECISIONS_SCRIPT } from "../components/pregame/audio/opener-deci
 import { OPENER_LEADERSHIP_SCRIPT } from "../components/pregame/audio/opener-leadership.ts";
 import { OPENER_JOY_SCRIPT } from "../components/pregame/audio/opener-joy.ts";
 import { OPENER_HOPE_SCRIPT } from "../components/pregame/audio/opener-hope.ts";
+import { OPENER_BB_COURAGE_SCRIPT } from "../components/pregame/audio/opener-bb-courage.ts";
+import { OPENER_BB_DECISIONS_SCRIPT } from "../components/pregame/audio/opener-bb-decisions.ts";
 import {
   clearSilenceCache,
   concatMp3s,
@@ -101,6 +103,10 @@ const SCRIPTS: AudioScript[] = [
   OPENER_LEADERSHIP_SCRIPT,
   OPENER_JOY_SCRIPT,
   OPENER_HOPE_SCRIPT,
+  // Basketball openers (FV-115) — sport-variant rewrites of courage + decisions.
+  // Audio rendering = FV-116.
+  OPENER_BB_COURAGE_SCRIPT,
+  OPENER_BB_DECISIONS_SCRIPT,
   // Cell-specific session scripts — selected by (position, adversity).
   // Forward (10 cells)
   SESSION_FORWARD_MISSED_CHANCE_SCRIPT,
@@ -289,6 +295,10 @@ const OPENER_SLUGS = [
   "opener-leadership",
   "opener-joy",
   "opener-hope",
+  // Basketball openers (FV-115) — rendered from SCRIPTS above, then
+  // loudnorm-passed to clips/ like the hockey openers.
+  "opener-bb-courage",
+  "opener-bb-decisions",
 ] as const;
 
 // Keep the Phase 1 const for backward compat references inside generateClips.

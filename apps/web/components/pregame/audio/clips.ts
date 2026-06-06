@@ -44,6 +44,13 @@ import {
   SENDOFF_SEGMENTS,
 } from "./segments.ts";
 
+// Basketball pregame VIZ segments (FV-115)
+import {
+  BIG_VIZ,
+  GUARD_VIZ,
+  WING_VIZ,
+} from "./segments-basketball.ts";
+
 // Basketball pregame hard-moment cells (FV-30)
 import { SESSION_GUARD_TURNOVER_SCRIPT } from "./session-guard-turnover.ts";
 import { SESSION_GUARD_MISSED_SHOT_SCRIPT } from "./session-guard-missed-shot.ts";
@@ -2753,6 +2760,812 @@ export const CLIP_PP_BB_FOCUS_BOX_OUT_EVERY_SHOT_SCRIPT: AudioScript = {
   ],
 };
 
+// ── Basketball VIZ clips — one per position (FV-115) ────────────────────────
+
+export const CLIP_VIZ_GUARD_SCRIPT: AudioScript = {
+  slug: "viz-guard",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [...GUARD_VIZ],
+};
+
+export const CLIP_VIZ_WING_SCRIPT: AudioScript = {
+  slug: "viz-wing",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [...WING_VIZ],
+};
+
+export const CLIP_VIZ_BIG_SCRIPT: AudioScript = {
+  slug: "viz-big",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [...BIG_VIZ],
+};
+
+// ── Basketball HM clips — Guard (10 cells) (FV-115) ─────────────────────────
+// Each clip extracts the hard-moment block from the corresponding
+// session-guard-*.ts file. Text is verbatim from the (post-CL-* edit) source.
+
+export const CLIP_HM_BB_GUARD_TURNOVER_SCRIPT: AudioScript = {
+  slug: "hm-bb-guard-turnover",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "You are running the offense. You try to force a pass through traffic. They pick it off and go the other way for a layup.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Jaw clenches. Legs go heavy on the backpedal. I can't be trusted with the rock.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Slow it down. Next possession, get the team into something simple.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. Your mistake is real. It is not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_GUARD_MISSED_SHOT_SCRIPT: AudioScript = {
+  slug: "hm-bb-guard-missed-shot",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "You come off the screen wide open. Feet set, clean look, the shot you've made a thousand times. It rims out.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Shoulders drop. A flush climbs up your neck. Now they'll sag off me. I'm not a shooter today.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The read was right. Same shot, next time it's open. Don't shrink it, don't force a worse one.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. One miss is real. It is not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_GUARD_GOT_COOKED_SCRIPT: AudioScript = {
+  slug: "hm-bb-guard-got-cooked",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "You're up on the ball. He hits you with the crossover, gets your hips turned, and blows by for the layup.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Face goes hot. Eyes want to drop to the floor. Everyone saw it. The whole gym saw me get cooked.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Next possession, get in your stance and stay in front. Take it away with your feet, not a reach.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. Getting beat is real. It is not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_GUARD_FOUL_TROUBLE_SCRIPT: AudioScript = {
+  slug: "hm-bb-guard-foul-trouble",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "Two quick reach-ins and the whistle's on you. Now you're guarding soft, can't pick up full-court, playing scared of the third.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Hands pull back on their own. A jolt of caution down your arms. I can't even play D without fouling.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Play angles, not reaches. Beat them to the spot, contest straight up, hands high. Defend with your feet.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The fouls are real. They are not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_GUARD_COACH_YELLS_SCRIPT: AudioScript = {
+  slug: "hm-bb-guard-coach-yells",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "You make a bad read on the pick-and-roll. Coach yells your name and pulls you to the sideline. You're standing there while the game goes on.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Neck goes hot. Chest tightens against the breath. Coach doesn't trust me to run this.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The correction is about the read, not about you. Take it, run it clean, get the team into the next one.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. Coach is correcting the read. He is not correcting who you are. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_GUARD_BENCHED_SCRIPT: AudioScript = {
+  slug: "hm-bb-guard-benched",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "After a turnover, coach calls your number. You come out, and the backup brings the ball up. You watch the offense run without you.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Heat in your chest. Tight in your throat. And the thought lands. They don't trust me to run it.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "You're still on this team, still in this game. Stay in it from the bench. Talk, watch their guard, be ready to check back in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. Coming out is a stretch of the game, not a verdict on you. You did not lose who you are. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_GUARD_NERVOUS_SCRIPT: AudioScript = {
+  slug: "hm-bb-guard-nervous",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "It's warmups. Your handle feels tight, your thoughts are racing, your heart is already going before the ball's even tipped.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Heart pounding in your ears. Fingers buzzing on the ball. What if I cough it up first possession.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "These nerves are readiness, not a warning. The same energy that feels like fear is the energy that makes you quick. First possession, just get the team into something simple.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The nerves are real. They are not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_GUARD_MISSED_FTS_SCRIPT: AudioScript = {
+  slug: "hm-bb-guard-missed-fts",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "Tight game, late. You're at the line to ice it. The gym goes quiet. First one is short. Second one clanks off the front rim.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Stomach sinks. Ears ringing in the quiet. I'm the guard, I'm supposed to close.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Get back on defense. Next time at the line, same routine. Breathe, eyes on the rim, shoot it the way you always do.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. Two misses at the line is a moment in the game, not a measure of the closer. Missing the shot did not unmake you. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_GUARD_START_SLOW_SCRIPT: AudioScript = {
+  slug: "hm-bb-guard-start-slow",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "First few minutes and nothing's clicking. You're over-dribbling, pounding the ball, can't get anyone a clean look.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Grip tightens on the ball. Breath gets short and high. It's on me to fix it.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Stop trying to fix it alone. Give it up, move it, let the offense breathe. The fix is doing less, not more.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. A slow start is real. It is not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_GUARD_FALL_BEHIND_EARLY_SCRIPT: AudioScript = {
+  slug: "hm-bb-guard-fall-behind-early",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "They go on a quick run. You're down early, and you can feel the whole team look to you to stop the bleeding.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Shoulders climb toward your ears. A weight settles across your back. This whole deficit is on me to fix.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "You don't owe them the whole deficit. You owe them the next possession. One stop. One good look. One at a time.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The deficit is real. It is not yours alone to carry, and it is not who you are. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+// ── Basketball HM clips — Wing (10 cells) (FV-115) ───────────────────────────
+
+export const CLIP_HM_BB_WING_TURNOVER_SCRIPT: AudioScript = {
+  slug: "hm-bb-wing-turnover",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "You drive the lane and get stripped. Or you throw the cross-court swing and they jump it. The ball is gone the other way.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Arms go limp at your sides. Feet slow on the sprint back. I tried to do too much.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Sprint back, then get right back into it. Cut hard, show your hands, ask for the ball on the next trip.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The turnover is real. It is not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_WING_MISSED_SHOT_SCRIPT: AudioScript = {
+  slug: "hm-bb-wing-missed-shot",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "You catch it open in your spot. Clean look. Cold off the bench, you brick it. Front rim, nothing.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Hands go cold. A flush of doubt up the back of your neck. I'm bricking, I shouldn't shoot.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Your make doesn't decide your worth, so the miss can't either. Relocate, show your hands, and take the next open one with the same confidence.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The miss is real. It does not vote on whether you take the next one, and it does not name you. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_WING_GOT_COOKED_SCRIPT: AudioScript = {
+  slug: "hm-bb-wing-got-cooked",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "You're on their best scorer. You close out, he rips by you, and finishes over the help. The bench reacts. That one's on the highlight.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Heat floods your face. Your feet feel stuck to the floor. I'm a liability.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "One beat doesn't make you a liability. Get into your stance, take the matchup again, and contest the very next closeout.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. Getting beat on one closeout is real. It does not make you a liability, and it is not who you are. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_WING_FOUL_TROUBLE_SCRIPT: AudioScript = {
+  slug: "hm-bb-wing-foul-trouble",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "Two quick hand-check fouls on a faster guy. The whistle keeps finding you. You feel the bench getting close.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Arms freeze at your sides. A flicker of panic before every closeout. I can't even guard anymore.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Don't back off — defend smarter. Move your feet, stay in front, hands up and back, and contest straight up without reaching.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The fouls are real. They are not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_WING_COACH_YELLS_SCRIPT: AudioScript = {
+  slug: "hm-bb-wing-coach-yells",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "Coach stops the play and barks your name. You didn't close out. You passed up the open one. The whole gym hears it.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Ears go hot. Your eyes drop to your shoes. I can't do anything right.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Coach is coaching what you do, not deciding who you are. Take the note, close out hard, and shoot the next open one without flinching.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The correction is real. It is not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_WING_BENCHED_SCRIPT: AudioScript = {
+  slug: "hm-bb-wing-benched",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "Your shot isn't falling, so coach pulls you. You sit down at the end of the bench and watch the game go on without you.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. A hollow drop behind your ribs. Your gaze fixed on the floor in front of the bench. I'm only as good as my last make.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Your worth wasn't on the scoreboard, so the bench can't take it. Stay locked in, talk on defense from your seat, and be ready the second your name is called.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. Sitting down is real. The bench can hold your spot, but it cannot hold your worth — that was never on the scoreboard. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_WING_NERVOUS_SCRIPT: AudioScript = {
+  slug: "hm-bb-wing-nervous",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "You're in warmups against a ranked team. Scouts are in the gym. Your stroke feels tight and you start doubting the shot before tip-off.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Shallow breath. Hands light. I'm not ready for this.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "This is energy, not a warning. Let it sharpen you — get to your spots, hunt your first catch, and let the first shot go free.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. Your body is awake. It is not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_WING_MISSED_FTS_SCRIPT: AudioScript = {
+  slug: "hm-bb-wing-missed-fts",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "You get fouled on a jumper. Two shots, gym goes quiet, all eyes on you. First one rims out. Second one too.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. The gym goes silent and loud at once. Your mouth goes dry. Even my free shot won't fall.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Two misses don't break your stroke. Keep attacking, keep getting to the line, and trust your routine on the next ones.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The misses are real. They are not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_WING_START_SLOW_SCRIPT: AudioScript = {
+  slug: "hm-bb-wing-start-slow",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "Your first few touches feel off. The ball isn't finding you and the half is slipping by. You can feel yourself going quiet.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Your body goes quiet and small. Energy draining from your legs. I'm invisible out here.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Don't disappear — get loud. Sprint the lanes, cut hard, call for the ball, and demand your next touch.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The slow start is real. It is not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_WING_FALL_BEHIND_EARLY_SCRIPT: AudioScript = {
+  slug: "hm-bb-wing-fall-behind-early",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "They go on a run and you're down early. You can feel the pull to force a shot, to answer it all by yourself, right now.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. A hot urgency surges through your chest. Your hands itch for the ball. I have to fix this myself.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "You don't have to hero-ball this. Stay aggressive inside the offense — move the ball, trust your read, and take the open one in rhythm.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The deficit is real. It is not yours to answer alone, and it is not who you are. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+// ── Basketball HM clips — Big (10 cells) (FV-115) ────────────────────────────
+// Big × benched → slug hm-bb-big-fouled-out (per spec; big is fouled out, not benched).
+
+export const CLIP_HM_BB_BIG_TURNOVER_SCRIPT: AudioScript = {
+  slug: "hm-bb-big-turnover",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "You roll to the rim and the help steps in. You bowl him over. Whistle. Charge. The ball goes the other way.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Shoulders curl inward. A heavy thud of frustration in your chest. Keep it out of my hands.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "You want the ball again. Seal your man, call for it, roll hard, and finish strong through contact.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The turnover is real. It is not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_BIG_MISSED_SHOT_SCRIPT: AudioScript = {
+  slug: "hm-bb-big-missed-shot",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "Wide open under the rim. The layup rolls off. You get the board and the putback rims out too.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Your hands feel like stone. Heat creeping up from your collar. I can't even finish at the rim.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "You go right back at it. Run the rim, demand the ball deep, and crash the offensive glass on the next miss.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The miss is real. It is not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_BIG_GOT_COOKED_SCRIPT: AudioScript = {
+  slug: "hm-bb-big-got-cooked",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "The switch leaves you on their quick guard. He sizes you up, crosses over, and blows by you to the rim.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Legs feel slow and rooted. A flush of exposure across your face. They'll hunt me every time.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Next switch, you give him a cushion. Drop, contain, wall him off, and stay vertical at the rim. Make him finish over a wall.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. One blow-by is real. It does not mean they own you. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_BIG_FOUL_TROUBLE_SCRIPT: AudioScript = {
+  slug: "hm-bb-big-foul-trouble",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "Two quick fouls and the coach sits you. You come back in scared to touch anybody. You stop contesting. You stop boxing out.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Your arms go stiff and cautious. A cold hesitation before every box out. I'm the weak link.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "You can compete hard and stay disciplined at the same time. Stay vertical, hands straight up, beat them to the spot and box out clean. That's how you stay on the floor and help your team.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The fouls are real. They put you in foul trouble, not in question — they do not make you the weak link. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_BIG_COACH_YELLS_SCRIPT: AudioScript = {
+  slug: "hm-bb-big-coach-yells",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "Their five just grabbed another offensive board. The coach turns and barks down the bench, loud enough for everyone. Box out! You're getting pushed around in there.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Your face burns. Shoulders pull down under the words. I'm getting pushed around.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "You answer with your body, physical and under control. Set a hard, legal screen. Hit first on the box out. Own the glass on the next possession.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. One soft screen is real. It does not make you soft. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_BIG_FOULED_OUT_SCRIPT: AudioScript = {
+  slug: "hm-bb-big-fouled-out",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "The whistle blows. Number six. You're done. You walk off, the game still going, and you can't go back in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. The walk off the floor feels long and slow. A lump rising in your throat. I let my team down.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "You're still in this game. On your feet on the bench. Loud on defense, talking coverages, lifting the next big up. Your team needs your voice and your presence.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. Fouling out is real. It cost you the floor — it did not cost you who you are. Your team still needs you. Reset, and go again with your voice.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_BIG_NERVOUS_SCRIPT: AudioScript = {
+  slug: "hm-bb-big-nervous",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "Warmups. You watch their big across the floor. He's taller, he's heavier, and he's already pushing your teammates around.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. A buzz of adrenaline through your arms. Pulse loud in your chest. What if I get bullied inside.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "You get to the spot first. Beat him to your position, get your body low, and hold your ground with your feet and base — not by reaching. Be ready for the contact instead of bracing against it.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. Your body is awake. It is not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_BIG_MISSED_FTS_SCRIPT: AudioScript = {
+  slug: "hm-bb-big-missed-fts",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "They grab you off the ball on purpose. Bonus. Two shots. You step to the line and both clang off the rim.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. The hush of the gym presses on you. Your hands go heavy at the line. They fouled me on purpose because I'm the weak link.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "You make them pay the other way. Get back, protect the rim, then seal deep and demand the ball. Make being fouled cost them.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The misses are real. They are not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_BIG_START_SLOW_SCRIPT: AudioScript = {
+  slug: "hm-bb-big-start-slow",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "First few minutes and you're a step late to everything. He beats you to his spot. He beats you to the glass. They score twice inside.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. Your steps feel a half-beat behind. A tightness winding across your shoulders. I'm letting them set the tone in the paint.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "You take the tone back. Establish position early, beat him to the spot, and get the first hit on every box out. Set it from here.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The slow start is real. It is not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+export const CLIP_HM_BB_BIG_FALL_BEHIND_EARLY_SCRIPT: AudioScript = {
+  slug: "hm-bb-big-fall-behind-early",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Now rehearse the hard moment.", speed: 1.0, mark: { phase: "hardMoment" } },
+    { type: "silence", durationSec: 0.4 },
+    { type: "speech", text: "Down ten early. They're scoring in the paint and crashing the offensive glass, and you're the one back there. It feels like the rim is yours to hold and it's slipping.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+    { type: "speech", text: "Feel what your body does. The weight of the paint settles on your shoulders. Breath shortening as the lead grows. It's all on me to hold the paint.", speed: 1.2, instructions: HARD_MOMENT_NARRATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Now the reset. Return to your anchor.", speed: 1.0 },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "You don't carry the scoreboard. You own the next possession. Wall up the rim, contest vertical, secure one rebound. Then the next one.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "silence", durationSec: 2.0 },
+    { type: "speech", text: "Speak the truth. The deficit is real. The paint is your job, not your worth, and it is not who you are. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
+    { type: "silence", durationSec: 1.5 },
+  ],
+};
+
+// ── Basketball personalization clips (FV-115) ─────────────────────────────────
+// 3 new anchor clips (basketball-specific physical cues)
+// 1 new self-talk clip (bb-token to avoid collision with st-01)
+
+export const CLIP_ANC_BOUNCE_BALL_TWICE_SCRIPT: AudioScript = {
+  slug: "anc-bounce-ball-twice",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Bounce the ball twice." },
+  ],
+};
+
+export const CLIP_ANC_TAP_FLOOR_SCRIPT: AudioScript = {
+  slug: "anc-tap-floor",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Tap the floor." },
+  ],
+};
+
+export const CLIP_ANC_LOOK_AT_RIM_SCRIPT: AudioScript = {
+  slug: "anc-look-at-rim",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Look at the rim." },
+  ],
+};
+
+export const CLIP_ST_BB_01_SCRIPT: AudioScript = {
+  slug: "st-bb-01",
+  voice: "ash",
+  instructions: SELFTALK_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "You're okay. Next possession." },
+  ],
+};
+
 // ── Ordered list of TTS clip scripts (no openers — they are loudnorm-passed) ──
 //
 // Phase 2 ordering: shared structural → VIZ × 3 positions → HM × 30 cells
@@ -2869,6 +3682,9 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_PP_BB_FOCUS_SPRINT_EVERY_TRANSITION_SCRIPT,
   CLIP_PP_BB_FOCUS_BOX_OUT_EVERY_SHOT_SCRIPT,
   // Basketball pregame hard-moment cells (FV-30) — Guard (10)
+  // NOTE: these full-session scripts remain in CLIP_SCRIPTS for the legacy
+  // baked-cell render path. The FV-115 decomposed hm-bb-* clips (below) are
+  // the compositional-clip-playlist equivalents registered for FV-116.
   SESSION_GUARD_TURNOVER_SCRIPT,
   SESSION_GUARD_MISSED_SHOT_SCRIPT,
   SESSION_GUARD_GOT_COOKED_SCRIPT,
@@ -2901,4 +3717,47 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   SESSION_BIG_MISSED_FTS_SCRIPT,
   SESSION_BIG_START_SLOW_SCRIPT,
   SESSION_BIG_FALL_BEHIND_EARLY_SCRIPT,
+  // Basketball VIZ clips (FV-115) — compositional clip-playlist architecture.
+  // Audio rendering = FV-116. Resume-safe: existing files skipped by generator.
+  CLIP_VIZ_GUARD_SCRIPT,
+  CLIP_VIZ_WING_SCRIPT,
+  CLIP_VIZ_BIG_SCRIPT,
+  // Basketball HM clips (FV-115) — Guard (10)
+  CLIP_HM_BB_GUARD_TURNOVER_SCRIPT,
+  CLIP_HM_BB_GUARD_MISSED_SHOT_SCRIPT,
+  CLIP_HM_BB_GUARD_GOT_COOKED_SCRIPT,
+  CLIP_HM_BB_GUARD_FOUL_TROUBLE_SCRIPT,
+  CLIP_HM_BB_GUARD_COACH_YELLS_SCRIPT,
+  CLIP_HM_BB_GUARD_BENCHED_SCRIPT,
+  CLIP_HM_BB_GUARD_NERVOUS_SCRIPT,
+  CLIP_HM_BB_GUARD_MISSED_FTS_SCRIPT,
+  CLIP_HM_BB_GUARD_START_SLOW_SCRIPT,
+  CLIP_HM_BB_GUARD_FALL_BEHIND_EARLY_SCRIPT,
+  // Basketball HM clips (FV-115) — Wing (10)
+  CLIP_HM_BB_WING_TURNOVER_SCRIPT,
+  CLIP_HM_BB_WING_MISSED_SHOT_SCRIPT,
+  CLIP_HM_BB_WING_GOT_COOKED_SCRIPT,
+  CLIP_HM_BB_WING_FOUL_TROUBLE_SCRIPT,
+  CLIP_HM_BB_WING_COACH_YELLS_SCRIPT,
+  CLIP_HM_BB_WING_BENCHED_SCRIPT,
+  CLIP_HM_BB_WING_NERVOUS_SCRIPT,
+  CLIP_HM_BB_WING_MISSED_FTS_SCRIPT,
+  CLIP_HM_BB_WING_START_SLOW_SCRIPT,
+  CLIP_HM_BB_WING_FALL_BEHIND_EARLY_SCRIPT,
+  // Basketball HM clips (FV-115) — Big (10; benched slot → hm-bb-big-fouled-out)
+  CLIP_HM_BB_BIG_TURNOVER_SCRIPT,
+  CLIP_HM_BB_BIG_MISSED_SHOT_SCRIPT,
+  CLIP_HM_BB_BIG_GOT_COOKED_SCRIPT,
+  CLIP_HM_BB_BIG_FOUL_TROUBLE_SCRIPT,
+  CLIP_HM_BB_BIG_COACH_YELLS_SCRIPT,
+  CLIP_HM_BB_BIG_FOULED_OUT_SCRIPT,
+  CLIP_HM_BB_BIG_NERVOUS_SCRIPT,
+  CLIP_HM_BB_BIG_MISSED_FTS_SCRIPT,
+  CLIP_HM_BB_BIG_START_SLOW_SCRIPT,
+  CLIP_HM_BB_BIG_FALL_BEHIND_EARLY_SCRIPT,
+  // Basketball personalization clips (FV-115) — anchors + self-talk
+  CLIP_ANC_BOUNCE_BALL_TWICE_SCRIPT,
+  CLIP_ANC_TAP_FLOOR_SCRIPT,
+  CLIP_ANC_LOOK_AT_RIM_SCRIPT,
+  CLIP_ST_BB_01_SCRIPT,
 ];

@@ -41,7 +41,7 @@ export const SESSION_GUARD_GOT_COOKED_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     { type: "speech", text: "The last play is over. Reset and play the play you're in.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
     { type: "silence", durationSec: 2.0 },
-    { type: "speech", text: "Next possession, sit down and stay in front. Take it away with your feet, not a reach.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
+    { type: "speech", text: "Next possession, get in your stance and stay in front. Take it away with your feet, not a reach.", speed: 1.0, instructions: VISUALIZATION_INSTRUCTIONS },
     { type: "silence", durationSec: 2.0 },
     { type: "speech", text: "Speak the truth. Getting beat is real. It is not your identity. Reset and go again.", speed: 1.2, instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS },
     { type: "silence", durationSec: 1.5 },

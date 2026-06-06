@@ -1,4 +1,4 @@
-// Wing × I get benched
+// Wing × I get benched  ⚠ CLINICAL-GATE CELL (make-equals-worth contingency)
 //
 // Psychological center: confidence / withdrawal. Pulled because the shot isn't
 // falling — shares the make-equals-worth contingency with the FV-29 §6 cells
