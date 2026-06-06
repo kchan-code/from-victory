@@ -3271,6 +3271,486 @@
         "{{cueSendoff}}",
         "shared-sendoff"
       ]
+    },
+    {
+      "position": "Guard",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-guard",
+        "hm-bb-guard-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Guard",
+      "adversity": "I miss an open shot.",
+      "clips": [
+        "shared-opening",
+        "viz-guard",
+        "hm-bb-guard-missed-shot",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Guard",
+      "adversity": "I get cooked off the dribble.",
+      "clips": [
+        "shared-opening",
+        "viz-guard",
+        "hm-bb-guard-got-cooked",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Guard",
+      "adversity": "I get into foul trouble.",
+      "clips": [
+        "shared-opening",
+        "viz-guard",
+        "hm-bb-guard-foul-trouble",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Guard",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-guard",
+        "hm-bb-guard-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Guard",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-guard",
+        "hm-bb-guard-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Guard",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-guard",
+        "hm-bb-guard-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Guard",
+      "adversity": "I miss two free throws.",
+      "clips": [
+        "shared-opening",
+        "viz-guard",
+        "hm-bb-guard-missed-fts",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Guard",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-guard",
+        "hm-bb-guard-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Guard",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-guard",
+        "hm-bb-guard-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Wing",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-wing",
+        "hm-bb-wing-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Wing",
+      "adversity": "I miss an open shot.",
+      "clips": [
+        "shared-opening",
+        "viz-wing",
+        "hm-bb-wing-missed-shot",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Wing",
+      "adversity": "I get cooked off the dribble.",
+      "clips": [
+        "shared-opening",
+        "viz-wing",
+        "hm-bb-wing-got-cooked",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Wing",
+      "adversity": "I get into foul trouble.",
+      "clips": [
+        "shared-opening",
+        "viz-wing",
+        "hm-bb-wing-foul-trouble",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Wing",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-wing",
+        "hm-bb-wing-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Wing",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-wing",
+        "hm-bb-wing-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Wing",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-wing",
+        "hm-bb-wing-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Wing",
+      "adversity": "I miss two free throws.",
+      "clips": [
+        "shared-opening",
+        "viz-wing",
+        "hm-bb-wing-missed-fts",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Wing",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-wing",
+        "hm-bb-wing-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Wing",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-wing",
+        "hm-bb-wing-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Big",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-big",
+        "hm-bb-big-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Big",
+      "adversity": "I miss an open shot.",
+      "clips": [
+        "shared-opening",
+        "viz-big",
+        "hm-bb-big-missed-shot",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Big",
+      "adversity": "I get cooked off the dribble.",
+      "clips": [
+        "shared-opening",
+        "viz-big",
+        "hm-bb-big-got-cooked",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Big",
+      "adversity": "I get into foul trouble.",
+      "clips": [
+        "shared-opening",
+        "viz-big",
+        "hm-bb-big-foul-trouble",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Big",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-big",
+        "hm-bb-big-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Big",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-big",
+        "hm-bb-big-fouled-out",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Big",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-big",
+        "hm-bb-big-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Big",
+      "adversity": "I miss two free throws.",
+      "clips": [
+        "shared-opening",
+        "viz-big",
+        "hm-bb-big-missed-fts",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Big",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-big",
+        "hm-bb-big-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Big",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-big",
+        "hm-bb-big-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
     }
   ],
   "practiceState": {

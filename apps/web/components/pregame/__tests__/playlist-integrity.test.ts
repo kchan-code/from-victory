@@ -373,8 +373,10 @@ describe("hockey compositional template matrix", () => {
   const POSITIONS = HOCKEY_CONFIG.roles ?? [];
   const ADVERSITIES = HOCKEY_CONFIG.adversities;
 
-  it("manifest has exactly 30 templates (3 positions × 10 adversities)", () => {
-    expect(manifest.templates).toHaveLength(30);
+  it("manifest has exactly 60 templates (3 hockey + 3 basketball positions × 10 adversities each)", () => {
+    // 30 hockey (Forward/Defense/Goalie) + 30 basketball (Guard/Wing/Big) = 60.
+    // FV-113 added the basketball arm; FV-116 had established the 30-hockey baseline.
+    expect(manifest.templates).toHaveLength(60);
   });
 
   it("every (position × adversity) combination has exactly one template", () => {
@@ -546,6 +548,19 @@ describe("resolvePlaylist — real manifest (version-drift guard)", () => {
     // (all null) and a catalog-miss on any single cell (that combo null).
     for (const position of HOCKEY_CONFIG.roles ?? []) {
       for (const adversity of HOCKEY_CONFIG.adversities) {
+        const playlist = resolvePlaylist("Calm", position, adversity, manifest);
+        expect(playlist, `${position} × "${adversity}"`).not.toBeNull();
+      }
+    }
+  });
+
+  it("resolves the FULL basketball matrix (every position × adversity) to a non-null playlist", () => {
+    // 3 positions × 10 adversities = 30. Proves every basketball template is in
+    // manifest.templates and every non-sentinel slug — viz-guard/wing/big,
+    // hm-bb-*, shared-* — is in the catalog. A regression here means a basketball
+    // athlete's pregame falls back to the legacy two-<audio> path (FV-113).
+    for (const position of BASKETBALL_CONFIG.roles ?? []) {
+      for (const adversity of BASKETBALL_CONFIG.adversities) {
         const playlist = resolvePlaylist("Calm", position, adversity, manifest);
         expect(playlist, `${position} × "${adversity}"`).not.toBeNull();
       }

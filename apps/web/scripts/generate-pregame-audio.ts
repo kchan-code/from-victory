@@ -366,6 +366,39 @@ const PHASE2_TEMPLATES: Array<{
   { position: "Goalie", adversity: "I get hit.",                vizSlug: "viz-goalie", hmSlug: "hm-goalie-get-hit" },
   { position: "Goalie", adversity: "I start slow.",             vizSlug: "viz-goalie", hmSlug: "hm-goalie-start-slow" },
   { position: "Goalie", adversity: "We give up the first goal.", vizSlug: "viz-goalie", hmSlug: "hm-goalie-first-goal-against" },
+  // Basketball — Guard × 10 adversities (FV-113)
+  { position: "Guard", adversity: "I turn the ball over.",      vizSlug: "viz-guard", hmSlug: "hm-bb-guard-turnover" },
+  { position: "Guard", adversity: "I miss an open shot.",       vizSlug: "viz-guard", hmSlug: "hm-bb-guard-missed-shot" },
+  { position: "Guard", adversity: "I get cooked off the dribble.", vizSlug: "viz-guard", hmSlug: "hm-bb-guard-got-cooked" },
+  { position: "Guard", adversity: "I get into foul trouble.",   vizSlug: "viz-guard", hmSlug: "hm-bb-guard-foul-trouble" },
+  { position: "Guard", adversity: "Coach yells.",               vizSlug: "viz-guard", hmSlug: "hm-bb-guard-coach-yells" },
+  { position: "Guard", adversity: "I get benched.",             vizSlug: "viz-guard", hmSlug: "hm-bb-guard-benched" },
+  { position: "Guard", adversity: "I feel nervous.",            vizSlug: "viz-guard", hmSlug: "hm-bb-guard-nervous" },
+  { position: "Guard", adversity: "I miss two free throws.",    vizSlug: "viz-guard", hmSlug: "hm-bb-guard-missed-fts" },
+  { position: "Guard", adversity: "I start slow.",              vizSlug: "viz-guard", hmSlug: "hm-bb-guard-start-slow" },
+  { position: "Guard", adversity: "We fall behind early.",      vizSlug: "viz-guard", hmSlug: "hm-bb-guard-fall-behind-early" },
+  // Basketball — Wing × 10 adversities (FV-113)
+  { position: "Wing", adversity: "I turn the ball over.",       vizSlug: "viz-wing", hmSlug: "hm-bb-wing-turnover" },
+  { position: "Wing", adversity: "I miss an open shot.",        vizSlug: "viz-wing", hmSlug: "hm-bb-wing-missed-shot" },
+  { position: "Wing", adversity: "I get cooked off the dribble.", vizSlug: "viz-wing", hmSlug: "hm-bb-wing-got-cooked" },
+  { position: "Wing", adversity: "I get into foul trouble.",    vizSlug: "viz-wing", hmSlug: "hm-bb-wing-foul-trouble" },
+  { position: "Wing", adversity: "Coach yells.",                vizSlug: "viz-wing", hmSlug: "hm-bb-wing-coach-yells" },
+  { position: "Wing", adversity: "I get benched.",              vizSlug: "viz-wing", hmSlug: "hm-bb-wing-benched" },
+  { position: "Wing", adversity: "I feel nervous.",             vizSlug: "viz-wing", hmSlug: "hm-bb-wing-nervous" },
+  { position: "Wing", adversity: "I miss two free throws.",     vizSlug: "viz-wing", hmSlug: "hm-bb-wing-missed-fts" },
+  { position: "Wing", adversity: "I start slow.",               vizSlug: "viz-wing", hmSlug: "hm-bb-wing-start-slow" },
+  { position: "Wing", adversity: "We fall behind early.",       vizSlug: "viz-wing", hmSlug: "hm-bb-wing-fall-behind-early" },
+  // Basketball — Big × 10 adversities (FV-113); benched → fouled-out special case
+  { position: "Big", adversity: "I turn the ball over.",        vizSlug: "viz-big", hmSlug: "hm-bb-big-turnover" },
+  { position: "Big", adversity: "I miss an open shot.",         vizSlug: "viz-big", hmSlug: "hm-bb-big-missed-shot" },
+  { position: "Big", adversity: "I get cooked off the dribble.", vizSlug: "viz-big", hmSlug: "hm-bb-big-got-cooked" },
+  { position: "Big", adversity: "I get into foul trouble.",     vizSlug: "viz-big", hmSlug: "hm-bb-big-foul-trouble" },
+  { position: "Big", adversity: "Coach yells.",                 vizSlug: "viz-big", hmSlug: "hm-bb-big-coach-yells" },
+  { position: "Big", adversity: "I get benched.",               vizSlug: "viz-big", hmSlug: "hm-bb-big-fouled-out" },
+  { position: "Big", adversity: "I feel nervous.",              vizSlug: "viz-big", hmSlug: "hm-bb-big-nervous" },
+  { position: "Big", adversity: "I miss two free throws.",      vizSlug: "viz-big", hmSlug: "hm-bb-big-missed-fts" },
+  { position: "Big", adversity: "I start slow.",                vizSlug: "viz-big", hmSlug: "hm-bb-big-start-slow" },
+  { position: "Big", adversity: "We fall behind early.",        vizSlug: "viz-big", hmSlug: "hm-bb-big-fall-behind-early" },
 ];
 
 async function generateClips(flags: Flags): Promise<void> {
@@ -399,7 +432,7 @@ async function generateClips(flags: Flags): Promise<void> {
     console.log(`\n[clips] Templates: ${PHASE2_TEMPLATES.length}`);
     console.log(
       `[clips] Catalog will have: ${CLIP_SCRIPTS.length} TTS + ${OPENER_SLUGS.length} openers = ` +
-      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p6/FV-116: 174 expected)`,
+      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p6/FV-116: 174 expected, templates: 60)`,
     );
     return;
   }
@@ -654,8 +687,8 @@ async function generateClips(flags: Flags): Promise<void> {
   if (catalogCount !== 174) {
     console.warn(`  WARNING: expected 174 catalog entries, got ${catalogCount}.`);
   }
-  if (templateCount !== 30) {
-    console.warn(`  WARNING: expected 30 templates (3 positions × 10 adversities), got ${templateCount}.`);
+  if (templateCount !== 60) {
+    console.warn(`  WARNING: expected 60 templates (6 positions × 10 adversities — 3 hockey + 3 basketball), got ${templateCount}.`);
   }
 
   // Per-clip level spot-checks for one clip per position group.
