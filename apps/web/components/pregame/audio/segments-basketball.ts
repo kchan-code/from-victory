@@ -11,10 +11,10 @@
 // arrival run is shared across the three positions; first-possession + role
 // rehearsal diverge per position (FV-29 §2 ROLE_CONTENT scenes).
 //
-// NOT yet wired into the engine (clips.ts) — that is the FV-28 per-sport
-// registry refactor (FV-30 authors the scripts; FV-28 registers them; FV-31
-// renders the audio). Imported with the ".ts" extension to match the
-// node --strip-types audio generator convention used across this dir.
+// Registered as standalone compositional clips in clips.ts (viz-guard /
+// viz-wing / viz-big) by FV-115; the audio renders in FV-116. Imported with the
+// ".ts" extension to match the node --strip-types audio generator convention
+// used across this dir.
 
 import type { Segment } from "./types";
 import { VISUALIZATION_INSTRUCTIONS } from "./instructions.ts";
