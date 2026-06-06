@@ -557,9 +557,11 @@ describe("FV-117: resolveOpenerSlug — sport-keyed opener resolution", () => {
     );
   });
 
-  it("basketball 'Confidence' falls back to the shared opener-confidence (no bb override yet)", () => {
+  it("basketball 'Confidence' uses the sport-specific opener-bb-confidence (FV-120)", () => {
+    // FV-120 rendered all 6 remaining basketball opener variants.
+    // basketball 'Confidence' now has its own opener-bb-confidence clip.
     expect(resolveOpenerSlug("Confidence", "basketball")).toBe(
-      "opener-confidence",
+      "opener-bb-confidence",
     );
   });
 

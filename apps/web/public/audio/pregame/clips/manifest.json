@@ -2789,6 +2789,66 @@
           "offsetSec": 0
         }
       ]
+    },
+    "opener-bb-confidence": {
+      "url": "/audio/pregame/clips/opener-bb-confidence.mp3",
+      "durationSec": 46.408,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-bb-compete-level": {
+      "url": "/audio/pregame/clips/opener-bb-compete-level.mp3",
+      "durationSec": 64.48,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-bb-reset": {
+      "url": "/audio/pregame/clips/opener-bb-reset.mp3",
+      "durationSec": 50.416,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-bb-leadership": {
+      "url": "/audio/pregame/clips/opener-bb-leadership.mp3",
+      "durationSec": 67.12,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-bb-joy": {
+      "url": "/audio/pregame/clips/opener-bb-joy.mp3",
+      "durationSec": 66.016,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-bb-hope": {
+      "url": "/audio/pregame/clips/opener-bb-hope.mp3",
+      "durationSec": 68.176,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
     }
   },
   "templates": [

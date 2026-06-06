@@ -78,6 +78,12 @@ import { OPENER_JOY_SCRIPT } from "../components/pregame/audio/opener-joy.ts";
 import { OPENER_HOPE_SCRIPT } from "../components/pregame/audio/opener-hope.ts";
 import { OPENER_BB_COURAGE_SCRIPT } from "../components/pregame/audio/opener-bb-courage.ts";
 import { OPENER_BB_DECISIONS_SCRIPT } from "../components/pregame/audio/opener-bb-decisions.ts";
+import { OPENER_BB_CONFIDENCE_SCRIPT } from "../components/pregame/audio/opener-bb-confidence.ts";
+import { OPENER_BB_COMPETE_LEVEL_SCRIPT } from "../components/pregame/audio/opener-bb-compete-level.ts";
+import { OPENER_BB_RESET_SCRIPT } from "../components/pregame/audio/opener-bb-reset.ts";
+import { OPENER_BB_LEADERSHIP_SCRIPT } from "../components/pregame/audio/opener-bb-leadership.ts";
+import { OPENER_BB_JOY_SCRIPT } from "../components/pregame/audio/opener-bb-joy.ts";
+import { OPENER_BB_HOPE_SCRIPT } from "../components/pregame/audio/opener-bb-hope.ts";
 import {
   clearSilenceCache,
   concatMp3s,
@@ -103,10 +109,16 @@ const SCRIPTS: AudioScript[] = [
   OPENER_LEADERSHIP_SCRIPT,
   OPENER_JOY_SCRIPT,
   OPENER_HOPE_SCRIPT,
-  // Basketball openers (FV-115) — sport-variant rewrites of courage + decisions.
-  // Audio rendering = FV-116.
+  // Basketball openers (FV-115/FV-120) — sport-variant rewrites of hockey openers.
+  // courage + decisions rendered in FV-116; remaining 6 rendered in FV-120.
   OPENER_BB_COURAGE_SCRIPT,
   OPENER_BB_DECISIONS_SCRIPT,
+  OPENER_BB_CONFIDENCE_SCRIPT,
+  OPENER_BB_COMPETE_LEVEL_SCRIPT,
+  OPENER_BB_RESET_SCRIPT,
+  OPENER_BB_LEADERSHIP_SCRIPT,
+  OPENER_BB_JOY_SCRIPT,
+  OPENER_BB_HOPE_SCRIPT,
   // Cell-specific session scripts — selected by (position, adversity).
   // Forward (10 cells)
   SESSION_FORWARD_MISSED_CHANCE_SCRIPT,
@@ -299,6 +311,13 @@ const OPENER_SLUGS = [
   // loudnorm-passed to clips/ like the hockey openers.
   "opener-bb-courage",
   "opener-bb-decisions",
+  // Basketball openers (FV-120) — remaining 6 sport-variant openers.
+  "opener-bb-confidence",
+  "opener-bb-compete-level",
+  "opener-bb-reset",
+  "opener-bb-leadership",
+  "opener-bb-joy",
+  "opener-bb-hope",
 ] as const;
 
 // Keep the Phase 1 const for backward compat references inside generateClips.
@@ -432,7 +451,7 @@ async function generateClips(flags: Flags): Promise<void> {
     console.log(`\n[clips] Templates: ${PHASE2_TEMPLATES.length}`);
     console.log(
       `[clips] Catalog will have: ${CLIP_SCRIPTS.length} TTS + ${OPENER_SLUGS.length} openers = ` +
-      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p6/FV-116: 174 expected, templates: 60)`,
+      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p6/FV-120: 180 expected, templates: 60)`,
     );
     return;
   }
@@ -675,17 +694,17 @@ async function generateClips(flags: Flags): Promise<void> {
   const templateCount = templates.length;
   console.log(`\n[clips] manifest.json written: ${catalogCount} catalog entries, ${templateCount} templates.`);
 
-  // p6 (FV-116): 46 structural + 32 personalization + 15 hockey-practice
-  //              + 12 basketball-practice + 39 basketball-pregame = 144... no:
+  // p6 (FV-120): catalog breakdown:
   //   46 structural (shared + hockey viz/hm + closing)
   //   32 personalization (hockey anc/st/cw)
   //   15 hockey-practice (pp-*)
   //   12 basketball-practice (pp-bb-*)
   //   30 legacy basketball baked cells (bb-{role}-{frag})
-  //   39 new basketball compositional clips (viz-guard/wing/big + hm-bb-* + anc-bb + st-bb + opener-bb)
-  //   = 174 total
-  if (catalogCount !== 174) {
-    console.warn(`  WARNING: expected 174 catalog entries, got ${catalogCount}.`);
+  //   39 new basketball compositional clips (viz-guard/wing/big + hm-bb-* + anc-bb + st-bb)
+  //   + 6 more basketball openers (FV-120: opener-bb-confidence/compete-level/reset/leadership/joy/hope)
+  //   = 180 total (was 174 at FV-116, +6 opener-bb-* from FV-120)
+  if (catalogCount !== 180) {
+    console.warn(`  WARNING: expected 180 catalog entries, got ${catalogCount}.`);
   }
   if (templateCount !== 60) {
     console.warn(`  WARNING: expected 60 templates (6 positions × 10 adversities — 3 hockey + 3 basketball), got ${templateCount}.`);
