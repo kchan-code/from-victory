@@ -18,11 +18,9 @@ import {
   CUE_WORDS,
   DEFAULTS,
   NEED_VERSE,
-  RESET_ANCHORS,
   SCRIPTURE_REF,
   SCRIPTURE_SHORT,
   SCRIPTURE_TEXT,
-  SELF_TALK_OPTIONS,
   type AudioSegment,
   type NeedVerse,
   type PregameState,
@@ -37,14 +35,20 @@ import { useClipPlayer } from "./useClipPlayer";
 type SetFn = <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
 
 // ─── SCREEN 5 ─── Reset Anchor (split from old Reset)
+// sportConfig.anchors is sport-keyed (FV-117): hockey shows stick-tap / glove
+// options; basketball shows ball-bounce / floor-tap / rim-look options.
+// "Long exhale", "Press thumb to palm", "Say cue word" are shared.
 export function ResetAnchorScreen({
   state,
   set,
+  sportConfig,
 }: {
   state: PregameState;
   set: SetFn;
+  sportConfig: SportConfig;
 }) {
-  const isCustomAnchor = !!state.anchor && !RESET_ANCHORS.includes(state.anchor);
+  const anchors = sportConfig.anchors;
+  const isCustomAnchor = !!state.anchor && !anchors.includes(state.anchor);
 
   return (
     <ScreenBody>
@@ -57,7 +61,7 @@ export function ResetAnchorScreen({
       </p>
 
       <div className="grid grid-cols-2 gap-2">
-        {RESET_ANCHORS.map((a) => {
+        {anchors.map((a) => {
           const selected = state.anchor === a;
           return (
             <button
@@ -90,14 +94,20 @@ export function ResetAnchorScreen({
 }
 
 // ─── SCREEN 6 ─── Self-Talk Phrase
+// sportConfig.selfTalkOptions is sport-keyed (FV-117): hockey shows
+// "You're okay. Next shift."; basketball shows "You're okay. Next possession."
+// The other 6 phrases are sport-neutral and shared.
 export function SelfTalkScreen({
   state,
   set,
+  sportConfig,
 }: {
   state: PregameState;
   set: SetFn;
+  sportConfig: SportConfig;
 }) {
-  const isCustom = !!state.selfTalk && !SELF_TALK_OPTIONS.includes(state.selfTalk);
+  const selfTalkOptions = sportConfig.selfTalkOptions;
+  const isCustom = !!state.selfTalk && !selfTalkOptions.includes(state.selfTalk);
 
   return (
     <ScreenBody>
@@ -110,7 +120,7 @@ export function SelfTalkScreen({
       </p>
 
       <div className="flex flex-col gap-2">
-        {SELF_TALK_OPTIONS.map((p) => (
+        {selfTalkOptions.map((p) => (
           <SelectCard
             key={p}
             label={p}
@@ -493,8 +503,9 @@ export function AudioSessionScreen({
   const openerRef = useRef<HTMLAudioElement>(null);
   const cellRef = useRef<HTMLAudioElement>(null);
 
-  // Derive MP3 sources from pregame state.
-  const openerSrc = openerSrcFor(state.need);
+  // Derive MP3 sources from pregame state. openerSrcFor is sport-aware so
+  // basketball gets the right opener slug (FV-117 / FV-116).
+  const openerSrc = openerSrcFor(state.need, sport);
   const cellSrc = cellSrcFor(state.role, state.adversity, sport);
 
   // Default optimistically to audio: the assets exist in the normal path, so

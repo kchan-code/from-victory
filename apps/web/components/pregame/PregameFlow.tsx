@@ -192,15 +192,18 @@ function ScreenSwitch({
     case "breath":
       return <BreathScreen state={state} set={set} onContinue={onContinue} />;
     case "todaysFocus":
-      return <TodaysFocusScreen state={state} set={set} />;
+      // sportConfig.needs is sport-keyed (FV-117).
+      return <TodaysFocusScreen state={state} set={set} sportConfig={sportConfig} />;
     case "position":
       return <PositionScreen state={state} set={set} sportConfig={sportConfig} />;
     case "hardMoment":
       return <HardMomentScreen state={state} set={set} sportConfig={sportConfig} />;
     case "resetAnchor":
-      return <ResetAnchorScreen state={state} set={set} />;
+      // sportConfig.anchors is sport-keyed (FV-117).
+      return <ResetAnchorScreen state={state} set={set} sportConfig={sportConfig} />;
     case "selfTalk":
-      return <SelfTalkScreen state={state} set={set} />;
+      // sportConfig.selfTalkOptions is sport-keyed (FV-117).
+      return <SelfTalkScreen state={state} set={set} sportConfig={sportConfig} />;
     case "cueWord":
       return <CueWordScreen state={state} set={set} />;
     case "review":

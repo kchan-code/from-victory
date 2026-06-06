@@ -22,8 +22,9 @@ import {
   CUEWORD_OPTION_SLUGS,
   NEED_OPENER_SLUGS,
   SELFTALK_OPTION_SLUGS,
+  resolveOpenerSlug,
 } from "./audio-mapping";
-import { HOCKEY_CONFIG, type SportConfig } from "./sport-registry";
+import { HOCKEY_CONFIG, type Sport, type SportConfig } from "./sport-registry";
 
 // ---------------------------------------------------------------------------
 // Manifest types (locked contract — matches the audio-engineer's schema)
@@ -184,6 +185,12 @@ export function resolvePlaylist(
   anchor?: string | null,
   selfTalk?: string | null,
   cueWord?: string | null,
+  /**
+   * The athlete's sport. Defaults to "hockey" for backward compat with all
+   * existing call sites. Used only to resolve the opener slug so basketball
+   * gets sport-keyed openers (FV-117 / FV-116).
+   */
+  sport: Sport = "hockey",
 ): ResolvedClip[] | null {
   let slugs: string[];
 
@@ -213,10 +220,10 @@ export function resolvePlaylist(
     // (p2) whose templates carry no {{...}} tokens (each raw slug just passes
     // through), so one branch correctly covers every dimensional version.
     //
-    // NEED_OPENER_SLUGS is Record<NeedToday, string> and `need` arrives as a
-    // narrowed string; cast and fail closed on an unknown key.
-    const openerSlug =
-      NEED_OPENER_SLUGS[need as keyof typeof NEED_OPENER_SLUGS] ?? null;
+    // resolveOpenerSlug is sport-aware: basketball gets sport-keyed openers
+    // where available (FV-116/FV-117); all other combinations fall back to
+    // the shared NEED_OPENER_SLUGS map. Fail closed on an unknown need.
+    const openerSlug = resolveOpenerSlug(need, sport);
     if (!openerSlug) return null;
 
     const template = manifest.templates.find(

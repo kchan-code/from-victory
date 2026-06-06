@@ -13,6 +13,7 @@ export type NeedToday =
   | "Reset after mistakes"
   | "Physical courage"
   | "Better puck decisions"
+  | "Better decisions with the ball"
   | "Leadership"
   | "Joy"
   | "Hope";
@@ -44,6 +45,12 @@ export const INITIAL_STATE: PregameState = {
 // Option lists
 // ---------------------------------------------------------------------------
 
+// NEEDS and RESET_ANCHORS and SELF_TALK_OPTIONS are kept here as the
+// HOCKEY defaults (the original global lists). Sport-specific overrides
+// live in sport-registry.ts (SportConfig.needs / .anchors / .selfTalkOptions).
+// Consumers that need sport-aware lists should use sportConfig.needs etc.
+// These global exports remain only for backward-compat with non-sport-aware
+// call sites (text-mode AUDIO_SCRIPT, defaults, etc.).
 export const NEEDS: NeedToday[] = [
   "Confidence",
   "Calm",
@@ -150,6 +157,12 @@ export const NEED_VERSE: Record<NeedToday, NeedVerse> = {
       "Do not fear, for I am with you; do not be dismayed, for I am your God. I will strengthen you and help you; I will uphold you with my righteous right hand.",
   },
   "Better puck decisions": {
+    reference: "Proverbs 3:5-6",
+    displayText:
+      "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him.",
+  },
+  // Basketball variant — same sport-neutral scripture, different need label. (FV-117)
+  "Better decisions with the ball": {
     reference: "Proverbs 3:5-6",
     displayText:
       "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him.",

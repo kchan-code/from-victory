@@ -18,7 +18,6 @@ import {
   StackedHero,
 } from "./shared";
 import {
-  NEEDS,
   type NeedToday,
   type PregameState,
 } from "./types";
@@ -245,12 +244,16 @@ export function BreathScreen({
 }
 
 // ─── SCREEN 3 ─── Today's Focus
+// sportConfig.needs is sport-keyed (FV-117): hockey shows "Better puck decisions",
+// basketball shows "Better decisions with the ball". All other options are shared.
 export function TodaysFocusScreen({
   state,
   set,
+  sportConfig,
 }: {
   state: PregameState;
   set: SetFn;
+  sportConfig: SportConfig;
 }) {
   return (
     <ScreenBody>
@@ -263,7 +266,7 @@ export function TodaysFocusScreen({
       </p>
 
       <div className="flex flex-wrap gap-2">
-        {NEEDS.map((n) => (
+        {sportConfig.needs.map((n) => (
           <SelectChip
             key={n}
             label={n}
