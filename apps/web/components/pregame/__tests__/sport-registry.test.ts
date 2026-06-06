@@ -22,6 +22,26 @@ import {
   adversityLabelFor,
   type SportConfig,
 } from "../sport-registry";
+import { NEEDS, RESET_ANCHORS, SELF_TALK_OPTIONS } from "../types";
+
+// ---------------------------------------------------------------------------
+// FV-117 regression guard: HOCKEY_CONFIG picker lists must stay byte-identical
+// (order + content) to the original global lists. Hockey is the live beta sport,
+// so the per-sport registry refactor must never silently reorder or alter its
+// chips. (Caught a "Long exhale" reorder in qa review of PR #122.)
+// ---------------------------------------------------------------------------
+
+describe("HOCKEY_CONFIG picker lists == original globals (zero hockey change)", () => {
+  it("needs match NEEDS exactly (order + content)", () => {
+    expect(HOCKEY_CONFIG.needs).toEqual(NEEDS);
+  });
+  it("anchors match RESET_ANCHORS exactly (order + content)", () => {
+    expect(HOCKEY_CONFIG.anchors).toEqual(RESET_ANCHORS);
+  });
+  it("selfTalkOptions match SELF_TALK_OPTIONS exactly (order + content)", () => {
+    expect(HOCKEY_CONFIG.selfTalkOptions).toEqual(SELF_TALK_OPTIONS);
+  });
+});
 
 // ---------------------------------------------------------------------------
 // A. HOCKEY_CONFIG.cellSlugFor — 3 roles × 10 adversities

@@ -268,11 +268,13 @@ export const HOCKEY_CONFIG: SportConfig = {
     "Hope",
   ] as const satisfies readonly NeedToday[],
 
+  // Order preserved verbatim from the original RESET_ANCHORS (hockey is the live
+  // beta sport — the registry refactor must not reorder its chips). FV-117.
   anchors: [
-    "Long exhale",
     "Tap stick twice",
     "Touch glove",
     "Press thumb to palm",
+    "Long exhale",
     "Look at tape",
     "Say cue word",
   ] as const,
