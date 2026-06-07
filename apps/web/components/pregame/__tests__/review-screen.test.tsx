@@ -249,4 +249,52 @@ describe("ReviewScreen offline download (FV-129 / FV-132)", () => {
     expect(errorSpy).not.toHaveBeenCalled();
     errorSpy.mockRestore();
   });
+
+  it("returns to the idle download button when the download saves zero clips (total failure)", async () => {
+    checkPregameAudioCached.mockResolvedValue({
+      cached: 0,
+      total: 0,
+      done: false,
+      error: null,
+    });
+    precachePregameAudio.mockResolvedValue({
+      cached: 0,
+      total: 0,
+      done: false,
+      error: null,
+    });
+
+    render(<ReviewScreen state={makeState()} />);
+    fireEvent.click(await screen.findByRole("button", { name: DOWNLOAD_BTN }));
+    await waitFor(() => expect(precachePregameAudio).toHaveBeenCalled());
+
+    // Zero clips saved → control returns to the tappable idle offer: never stuck
+    // on "Downloading…", never a false "ready", and no retry affordance.
+    const btn = await screen.findByRole("button", { name: DOWNLOAD_BTN });
+    expect(btn).toHaveTextContent(/download for offline/i);
+    expect(btn).toHaveAttribute("aria-busy", "false");
+    expect(screen.queryByText(/ready offline/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: RETRY_BTN }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("recovers to the idle button if the download throws unexpectedly", async () => {
+    checkPregameAudioCached.mockResolvedValue({
+      cached: 0,
+      total: 0,
+      done: false,
+      error: null,
+    });
+    precachePregameAudio.mockRejectedValue(new Error("network blew up"));
+
+    render(<ReviewScreen state={makeState()} />);
+    fireEvent.click(await screen.findByRole("button", { name: DOWNLOAD_BTN }));
+    await waitFor(() => expect(precachePregameAudio).toHaveBeenCalled());
+
+    // The handler's try/catch resets to idle — no stuck spinner, no false "ready".
+    const btn = await screen.findByRole("button", { name: DOWNLOAD_BTN });
+    expect(btn).toHaveTextContent(/download for offline/i);
+    expect(screen.queryByText(/ready offline/i)).not.toBeInTheDocument();
+  });
 });
