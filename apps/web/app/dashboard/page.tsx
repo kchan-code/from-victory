@@ -6,8 +6,10 @@ import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { createClient } from "@/lib/supabase/server";
+import { getAthleteMetadataMap, ZERO_RHYTHM } from "@/lib/dashboard/rhythm";
 import { DeleteAccountSection } from "@/components/dashboard/DeleteAccountSection";
 import { DeleteAthleteButton } from "@/components/dashboard/DeleteAthleteButton";
+import { RhythmRing } from "@/components/ui";
 
 export const metadata = {
   title: "Dashboard · From Victory",
@@ -29,6 +31,11 @@ export default async function DashboardPage() {
   // Subscription access — used only to gate the subscribe CTA banner.
   // Enforcement (route-locking) is a separate issue; we do NOT block here.
   const accessLevel = await getParentAccessLevel(userId);
+
+  // FV-85: rhythm + session-count metadata. getAthleteMetadataMap() creates its
+  // own auth-context client internally; RLS on athlete_session_metadata scopes
+  // results to this parent's linked athletes. NEVER reads journal_entries.
+  const rhythmMap = await getAthleteMetadataMap();
 
   return (
     <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
@@ -116,32 +123,66 @@ export default async function DashboardPage() {
               {linkedAthletes.map((a) => {
                 if (!a.birthdate) return null;
                 const age = ageFromBirthdate(a.birthdate);
+                // FV-85: look up this athlete's rhythm metadata. Athletes who
+                // haven't started yet are absent from the map; fall back to
+                // ZERO_RHYTHM (0%, encouraging "rhythm starts today" copy).
+                const rhythm = rhythmMap.get(a.id) ?? ZERO_RHYTHM;
                 return (
                   <li
                     key={a.id}
-                    className="flex items-center justify-between bg-charcoal border border-hairline rounded-xl px-5 py-4"
+                    className="bg-charcoal border border-hairline rounded-xl px-5 py-4"
                   >
-                    <div>
-                      <p className="font-display font-bold text-cream text-[18px] leading-tight">
-                        {a.first_name}
-                      </p>
-                      {age !== null ? (
-                        <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-cream/50 mt-1">
-                          Age {age}
+                    {/* Top row: name + actions */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <p className="font-display font-bold text-cream text-[18px] leading-tight">
+                          {a.first_name}
                         </p>
-                      ) : null}
+                        {age !== null ? (
+                          <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-cream/50 mt-1">
+                            Age {age}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/dashboard/athletes/${a.id}/pair`}
+                          className="font-heading font-semibold text-[13px] text-cream/80 hover:text-cream bg-onyx border border-hairline hover:border-cream/30 rounded-pill px-4 py-2 no-underline transition-colors duration-fast ease-out"
+                        >
+                          Pair device
+                        </Link>
+                        <DeleteAthleteButton
+                          athleteId={a.id}
+                          firstName={a.first_name}
+                        />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/dashboard/athletes/${a.id}/pair`}
-                        className="font-heading font-semibold text-[13px] text-cream/80 hover:text-cream bg-onyx border border-hairline hover:border-cream/30 rounded-pill px-4 py-2 no-underline transition-colors duration-fast ease-out"
-                      >
-                        Pair device
-                      </Link>
-                      <DeleteAthleteButton
-                        athleteId={a.id}
-                        firstName={a.first_name}
+
+                    {/* Rhythm row — metadata only, never journal content */}
+                    <div
+                      className="flex items-center gap-4 pt-4 border-t border-hairline"
+                      aria-label={`${a.first_name}'s training rhythm`}
+                    >
+                      <RhythmRing
+                        pct={rhythm.progressPct}
+                        size={64}
+                        stroke={5}
                       />
+                      <div className="min-w-0">
+                        <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold mb-1">
+                          Your athlete&rsquo;s rhythm
+                        </p>
+                        <p className="font-body text-cream text-[14px] leading-snug">
+                          {rhythm.ringLabel}
+                        </p>
+                        {rhythm.sessionsStarted > 0 &&
+                          rhythm.sessionsStarted !== rhythm.sessionsCompleted ? (
+                          <p className="font-body text-cream/50 text-[12px] leading-snug mt-0.5">
+                            {rhythm.sessionsStarted} session
+                            {rhythm.sessionsStarted !== 1 ? "s" : ""} started
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
                   </li>
                 );
