@@ -809,6 +809,32 @@ describe("Be more Vocal openers (FV-124)", () => {
     expect(slugs).not.toContain("be-vocal");
     expect(slugs).not.toContain("bb-be-vocal");
   });
+
+  it("resolves the FULL hockey matrix for 'Be more Vocal' — every cell leads with opener-be-vocal, no beat", () => {
+    // 3 positions × 10 adversities. Catches a future PHASE2_TEMPLATES edit that
+    // drops the opener from a specific cell or lets a be-vocal beat back in.
+    for (const position of HOCKEY_CONFIG.roles ?? []) {
+      for (const adversity of HOCKEY_CONFIG.adversities) {
+        const playlist = resolvePlaylist("Be more Vocal", position, adversity, manifest, null, null, null, "hockey");
+        expect(playlist, `${position} × "${adversity}"`).not.toBeNull();
+        const slugs = playlist!.map((c) => c.slug);
+        expect(slugs[0], `${position} × "${adversity}" opener`).toBe("opener-be-vocal");
+        expect(slugs, `${position} × "${adversity}" beat-free`).not.toContain("be-vocal");
+      }
+    }
+  });
+
+  it("resolves the FULL basketball matrix for 'Be more Vocal' — every cell leads with opener-bb-be-vocal, no beat", () => {
+    for (const position of BASKETBALL_CONFIG.roles ?? []) {
+      for (const adversity of BASKETBALL_CONFIG.adversities) {
+        const playlist = resolvePlaylist("Be more Vocal", position, adversity, manifest, null, null, null, "basketball");
+        expect(playlist, `${position} × "${adversity}"`).not.toBeNull();
+        const slugs = playlist!.map((c) => c.slug);
+        expect(slugs[0], `${position} × "${adversity}" opener`).toBe("opener-bb-be-vocal");
+        expect(slugs, `${position} × "${adversity}" beat-free`).not.toContain("bb-be-vocal");
+      }
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
