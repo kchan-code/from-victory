@@ -259,10 +259,13 @@ export function PrayerStyleScreen({
 // confirm they like the setup or go back and edit. CTA "BEGIN GUIDED
 // SESSION" lives in the BottomBar (set via FLOW step.cta).
 //
-// FV-106: while online at this screen, kicks off per-athlete audio precache so
-// the guided session plays start-to-finish with no network (rink, dead zone).
-// The "Ready offline" indicator is keyed to actual Cache Storage state — never
-// navigator.onLine (handles lie-fi correctly).
+// FV-129 (Option B): offline download is OPT-IN via explicit tap. The auto-
+// precache trigger has been removed. On mount we still run a network-free cache
+// check — if the athlete already downloaded on a prior visit the "Ready offline"
+// badge appears immediately with no action and no network call. If not cached,
+// a secondary "Download for offline" button is shown; tapping it starts the
+// precache. The guided session streams fine online; offline is a bonus, not
+// an assumption, and the athlete controls when data is spent.
 export function ReviewScreen({
   state,
   sportConfig = HOCKEY_CONFIG,
@@ -272,37 +275,35 @@ export function ReviewScreen({
   sportConfig?: SportConfig;
   sport?: Sport;
 }) {
-  // ── FV-106: offline readiness indicator ─────────────────────────────────
-  // "idle"    → haven't started yet (SSR / caches API absent)
-  // "loading" → precache in progress
-  // "ready"   → all reachable clips confirmed in cache
-  // "partial" → some clips cached; finished but incomplete (non-critical)
-  type OfflineState = "idle" | "loading" | "ready" | "partial";
+  // ── FV-129: offline readiness indicator ─────────────────────────────────
+  // "idle"     → haven't checked yet (SSR / caches API absent) or not cached
+  // "loading"  → explicit-tap download in progress
+  // "ready"    → all reachable clips confirmed in cache (no network needed)
+  // "partial"  → download finished but incomplete; show retry button
+  // "retrying" → retry tap in progress (same UI as "loading")
+  type OfflineState = "idle" | "loading" | "ready" | "partial" | "retrying";
   const [offlineState, setOfflineState] = useState<OfflineState>("idle");
   const [cacheProgress, setCacheProgress] = useState<{ cached: number; total: number }>({
     cached: 0,
     total: 0,
   });
+  // Ref so the in-flight download can be cancelled if the component unmounts.
+  const downloadCancelledRef = useRef(false);
 
+  // ── Mount-time cache check (network-free) ────────────────────────────────
+  // Only checks; never fetches. If already complete, shows "Ready offline"
+  // immediately. This covers athletes who downloaded on a previous visit.
   useEffect(() => {
-    // Guard: Cache Storage only available client-side over HTTPS (or localhost).
     if (typeof caches === "undefined") return;
-
-    // Only precache if we have enough state to resolve a playlist.
     if (!state.need || !state.adversity) return;
 
     let cancelled = false;
 
-    async function run() {
-      // Lazy import: audio-precache is browser-only (uses caches API).
-      // This dynamic import means the module is not included in SSR bundles.
-      const { precachePregameAudio, checkPregameAudioCached } = await import(
-        "./audio-precache"
-      );
-
+    async function check() {
+      const { checkPregameAudioCached } = await import("./audio-precache");
       if (cancelled) return;
 
-      const params = {
+      const status = await checkPregameAudioCached({
         sport,
         need: state.need!,
         position: state.role ?? null,
@@ -311,46 +312,19 @@ export function ReviewScreen({
         selfTalk: state.selfTalk ?? null,
         cueWord: state.cueWord || null,
         prayerStyle: state.prayerStyle,
-      };
-
-      // First: check what's already cached (no network). If already complete,
-      // show ready immediately without re-fetching anything.
-      const initialCheck = await checkPregameAudioCached(params);
-      if (cancelled) return;
-
-      if (initialCheck.done) {
-        setOfflineState("ready");
-        setCacheProgress({ cached: initialCheck.cached, total: initialCheck.total });
-        return;
-      }
-
-      // Not fully cached — kick off precache with live progress reporting.
-      setOfflineState("loading");
-      setCacheProgress({ cached: initialCheck.cached, total: initialCheck.total });
-
-      const finalStatus = await precachePregameAudio(params, (status) => {
-        if (cancelled) return;
-        setCacheProgress({ cached: status.cached, total: status.total });
       });
 
       if (cancelled) return;
 
-      if (finalStatus.done) {
+      if (status.done) {
         setOfflineState("ready");
-      } else if (finalStatus.cached > 0) {
-        // Partial cache — most clips ready; session will likely work but may
-        // need network for a small number of assets.
-        setOfflineState("partial");
-      } else {
-        // cached=0 and not done: every fetch failed or was skipped (lie-fi,
-        // captive portal, cellular block). Hide the badge rather than leaving
-        // "Downloading audio…" stuck forever — no false promise to the athlete.
-        setOfflineState("idle");
+        setCacheProgress({ cached: status.cached, total: status.total });
       }
+      // Not done → stay "idle"; the opt-in button is shown.
     }
 
-    run().catch(() => {
-      // Non-fatal: indicator just stays hidden if the precache errors.
+    check().catch(() => {
+      // Non-fatal: button stays visible, athlete can still tap to download.
     });
 
     return () => {
@@ -374,6 +348,68 @@ export function ReviewScreen({
   const closeLabel = state.prayerStyle === "self-guided"
     ? "Pray on my own"
     : "Pray with me";
+
+  // ── Explicit-tap download handler ─────────────────────────────────────────
+  // Called when the athlete taps "Download for offline" (or the retry button).
+  // Sets loading state, runs precachePregameAudio with live progress, then
+  // resolves to "ready", "partial" (show retry), or back to "idle" on total
+  // failure — never leaves a stuck spinner, never shows a false "ready."
+  async function handleDownloadTap() {
+    if (typeof caches === "undefined") return;
+    if (!state.need || !state.adversity) return;
+
+    const isRetry = offlineState === "partial";
+    setOfflineState(isRetry ? "retrying" : "loading");
+    setCacheProgress({ cached: 0, total: 0 });
+    downloadCancelledRef.current = false;
+
+    try {
+      const { precachePregameAudio } = await import("./audio-precache");
+
+      const finalStatus = await precachePregameAudio(
+        {
+          sport,
+          need: state.need,
+          position: state.role ?? null,
+          adversity: state.adversity,
+          anchor: state.anchor ?? null,
+          selfTalk: state.selfTalk ?? null,
+          cueWord: state.cueWord || null,
+          prayerStyle: state.prayerStyle,
+        },
+        (status) => {
+          if (downloadCancelledRef.current) return;
+          setCacheProgress({ cached: status.cached, total: status.total });
+        },
+      );
+
+      if (downloadCancelledRef.current) return;
+
+      if (finalStatus.done) {
+        setOfflineState("ready");
+        setCacheProgress({ cached: finalStatus.cached, total: finalStatus.total });
+      } else if (finalStatus.cached > 0) {
+        // Partial: some clips cached but not all. Show retry so the athlete
+        // knows something happened — never silent failure, never false "ready."
+        setOfflineState("partial");
+        setCacheProgress({ cached: finalStatus.cached, total: finalStatus.total });
+      } else {
+        // Zero clips cached: lie-fi, captive portal, cellular block, hard error.
+        // Return to idle (tappable) — no stuck spinner, no false promise.
+        setOfflineState("idle");
+      }
+    } catch {
+      // Unexpected error (dynamic import failure, etc.) — return to tappable.
+      if (!downloadCancelledRef.current) setOfflineState("idle");
+    }
+  }
+
+  // Cancel any in-flight download on unmount.
+  useEffect(() => {
+    return () => {
+      downloadCancelledRef.current = true;
+    };
+  }, []);
 
   const rows: Array<{ label: string; value: string }> = [
     { label: "Today's focus", value: state.need ?? "—" },
@@ -426,47 +462,61 @@ export function ReviewScreen({
         {SCRIPTURE_SHORT}
       </p>
 
-      {/* FV-106 a11y: one persistent live region, always mounted, so VoiceOver /
-          NVDA reliably announce the state change from a stable element. The
-          visual badge below is presentational only. */}
+      {/* FV-129 a11y: one persistent live region, always mounted, so VoiceOver /
+          NVDA reliably announce state changes from a stable element. The
+          visual control below is presentational/interactive only. */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
-        {offlineState === "loading"
+        {offlineState === "loading" || offlineState === "retrying"
           ? cacheProgress.total > 0
             ? `Downloading audio, ${cacheProgress.cached} of ${cacheProgress.total}`
             : "Downloading audio"
           : offlineState === "ready"
             ? "Audio ready for offline play"
-            : ""}
+            : offlineState === "partial"
+              ? `Download didn’t finish, ${cacheProgress.cached} of ${cacheProgress.total} clips saved. Tap to retry.`
+              : ""}
       </div>
 
-      {/* FV-106: offline readiness indicator — keyed to actual cache state */}
-      <OfflineReadyBadge
+      {/* FV-129: opt-in offline download control — keyed to actual cache state */}
+      <OfflineDownloadControl
         state={offlineState}
         cached={cacheProgress.cached}
         total={cacheProgress.total}
+        onTap={handleDownloadTap}
       />
     </ScreenBody>
   );
 }
 
-// ── FV-106 offline readiness badge ───────────────────────────────────────────
+// ── FV-129 offline download control ──────────────────────────────────────────
 // Rendered at the bottom of the Review screen below the scripture quote.
-// "idle" → renders nothing (no network check has run yet, or caches absent).
-// "loading" → "Downloading audio for offline play · X / Y" in silver.
-// "ready" → "Ready offline" in gold — confirmed by cache state, not onLine.
-// "partial" → nothing shown (partial is better than alarming the athlete).
-// The badge is calm and secondary — it must not dominate the pre-game moment.
-function OfflineReadyBadge({
+// Replaces the FV-106 auto-triggered badge with an opt-in tap control.
+//
+// "idle"     → tappable "Download for offline" button (primary offer).
+// "loading"  → same button, aria-busy, showing "Downloading… X / Y" + pulse dot.
+// "retrying" → same as "loading" (athlete tapped retry after partial).
+// "ready"    → gold "Ready offline" badge (confirmed by cache, not onLine).
+// "partial"  → same button, "Couldn't finish — tap to retry".
+//
+// The control is calm and secondary — it must not dominate the pre-game moment.
+// a11y (FV-129 qa): idle/loading/retrying/partial all render the SAME <button>
+// at the same tree position, so keyboard/SR focus is preserved across the
+// tap→download transition. During download it is marked aria-busy + aria-disabled
+// (NOT the native `disabled` attribute, which would blur it and drop focus) and
+// onTap is detached so it can't double-fire. The ≥44px tap target is kept. Only
+// "ready" is a non-button badge (terminal success, announced via the live region).
+function OfflineDownloadControl({
   state,
   cached,
   total,
+  onTap,
 }: {
-  state: "idle" | "loading" | "ready" | "partial";
+  state: "idle" | "loading" | "ready" | "partial" | "retrying";
   cached: number;
   total: number;
+  onTap: () => void;
 }) {
-  if (state === "idle" || state === "partial") return null;
-
+  // "ready" — confirmed cached. Gold badge, no action needed.
   if (state === "ready") {
     return (
       <div className="mt-4 flex items-center justify-center gap-1.5">
@@ -494,22 +544,62 @@ function OfflineReadyBadge({
     );
   }
 
-  // "loading" state — progress counter
-  const progressText =
-    total > 0
-      ? `Downloading audio · ${cached} / ${total}`
-      : "Downloading audio…";
+  // idle / loading / retrying / partial all render the SAME <button> at the same
+  // tree position so React preserves the element — and thus keyboard/SR focus —
+  // across the tap→download transition. (Only "ready" above is a non-button badge.)
+  const busy = state === "loading" || state === "retrying";
+
+  let primary: string;
+  let subtext: string | null;
+  let ariaLabel: string;
+  if (busy) {
+    primary = total > 0 ? `Downloading… ${cached} / ${total}` : "Downloading…";
+    subtext = null;
+    ariaLabel = "Downloading audio for offline play";
+  } else if (state === "partial") {
+    primary = "Couldn’t finish — tap to retry";
+    subtext = null;
+    ariaLabel = "Retry offline audio download";
+  } else {
+    primary = "Download for offline";
+    subtext = "Plays with no signal at the rink. Uses a few MB.";
+    ariaLabel = "Download audio for offline play";
+  }
 
   return (
-    <div className="mt-4 flex items-center justify-center gap-1.5">
-      {/* Minimal animated dot to signal activity without being distracting */}
-      <span
-        className="block h-1.5 w-1.5 animate-pulse rounded-full bg-cream/30"
-        aria-hidden="true"
-      />
-      <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-cream/40">
-        {progressText}
-      </span>
+    <div className="mt-4 flex justify-center">
+      <button
+        type="button"
+        // Detach the handler while busy so a second tap can't start a parallel
+        // download. aria-disabled (not the native `disabled`) keeps it focusable.
+        onClick={busy ? undefined : onTap}
+        aria-busy={busy}
+        aria-disabled={busy}
+        aria-label={ariaLabel}
+        data-testid="offline-download-btn"
+        className={`flex min-h-[44px] flex-col items-center gap-0.5 rounded-sm px-3 py-1 text-center transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx ${
+          busy ? "cursor-default" : "hover:opacity-80 active:scale-95"
+        }`}
+      >
+        <span className="flex items-center gap-1.5">
+          {busy && (
+            <span
+              className="block h-1.5 w-1.5 animate-pulse rounded-full bg-cream/30"
+              aria-hidden="true"
+            />
+          )}
+          <span
+            className={`font-mono text-[11px] uppercase tracking-[0.14em] ${
+              state === "idle" ? "text-cream/50" : "text-cream/40"
+            }`}
+          >
+            {primary}
+          </span>
+        </span>
+        {subtext && (
+          <span className="font-body text-[11px] text-cream/30">{subtext}</span>
+        )}
+      </button>
     </div>
   );
 }
