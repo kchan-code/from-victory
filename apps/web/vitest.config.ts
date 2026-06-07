@@ -7,10 +7,12 @@ export default defineConfig({
     // opt into jsdom per-file via a `@vitest-environment jsdom` docblock (FV-132).
     environment: "node",
   },
-  // Use the automatic JSX runtime (matches Next/tsconfig "jsx": "react-jsx"), so
-  // neither test files nor components need an explicit `import React`. (FV-132)
-  esbuild: {
-    jsx: "automatic",
+  // Vitest 4 transforms with Oxc (not esbuild), and tsconfig is "jsx": "preserve"
+  // for Next — so configure the automatic JSX runtime on Oxc here, otherwise the
+  // .tsx test files + imported components reach the parser as raw JSX. This is the
+  // v4 equivalent of the old `esbuild: { jsx: "automatic" }`. (FV-133)
+  oxc: {
+    jsx: { runtime: "automatic" },
   },
   resolve: {
     alias: {
