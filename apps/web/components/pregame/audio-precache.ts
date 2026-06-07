@@ -41,6 +41,7 @@ import {
   type ClipManifest,
 } from "./audio-playlist";
 import type { Sport } from "./sport-registry";
+import type { PrayerStyle } from "./types";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -61,6 +62,10 @@ export type PrecacheParams = {
   selfTalk?: string | null;
   /** Athlete's chosen cue word (optional — personalization). */
   cueWord?: string | null;
+  /** How the athlete will close the session. Affects the reachable clip set:
+   *  self-guided swaps shared-prayer → shared-prayer-selfguided and drops
+   *  shared-sendoff, so the warmed set must match. Defaults to guided. */
+  prayerStyle?: PrayerStyle | null;
 };
 
 /** Live status returned by precache + check functions. */
@@ -146,6 +151,7 @@ async function resolveReachableUrls(
     params.selfTalk ?? null,
     params.cueWord ?? null,
     params.sport,
+    params.prayerStyle ?? null,
   );
 
   if (!resolved) return null;

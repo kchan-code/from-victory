@@ -499,7 +499,7 @@ function PracticeSessionScreen({
           "radial-gradient(80% 50% at 50% 20%, rgba(36,91,255,0.10), transparent 65%), radial-gradient(60% 40% at 50% 100%, rgba(223,175,55,0.06), transparent 70%), var(--fv-onyx)",
       }}
     >
-      {/* Escape affordance — returns to focus picker.
+      {/* Escape affordance — returns to the closing-prayer picker.
           Sits in the safe-area top-left, visually matches the picker's back
           arrow idiom. Absolutely positioned so it never shifts content layout.
           Teardown is implicit: unmounting this component closes the AudioContext,
@@ -508,7 +508,7 @@ function PracticeSessionScreen({
       <button
         type="button"
         onClick={onBack}
-        aria-label="Back to focus"
+        aria-label="Back to closing prayer"
         data-testid="practice-back-btn"
         className="absolute left-[13px] top-[14px] flex h-[44px] w-[44px] -m-[5px] items-center justify-center rounded-pill text-cream/60 transition-colors duration-fast hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx motion-safe:transition-transform active:scale-95"
       >
@@ -676,16 +676,10 @@ export function PracticeFlow({
     setView("session");
   };
 
-  // Returns to the focus picker from the session. The previously-selected
-  // focus is still in state so the picker re-highlights it immediately —
-  // re-start is one tap. Unmounting PracticeSessionScreen triggers
-  // useClipPlayer's cleanup (closes AudioContext, releases wake lock, cancels
-  // rAF, clears text-mode intervalRef) without any explicit teardown here.
-  const handleBackToFocus = () => {
-    setView("focus-picker");
-  };
-
   // Returns to the prayer picker from the session (back arrow visible).
+  // Unmounting PracticeSessionScreen triggers useClipPlayer's cleanup (closes
+  // AudioContext, releases wake lock, cancels rAF, clears text-mode intervalRef)
+  // without any explicit teardown here.
   const handleBackToPrayer = () => {
     setView("prayer-picker");
   };

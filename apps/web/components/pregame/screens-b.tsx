@@ -235,7 +235,11 @@ export function PrayerStyleScreen({
         Both end in prayer. You choose how.
       </p>
 
-      <div className="flex flex-col gap-2">
+      <div
+        className="flex flex-col gap-2"
+        role="radiogroup"
+        aria-label="Closing prayer style"
+      >
         {PRAYER_STYLE_OPTIONS.map(({ value, label, sub }) => (
           <SelectCard
             key={value}
@@ -306,6 +310,7 @@ export function ReviewScreen({
         anchor: state.anchor ?? null,
         selfTalk: state.selfTalk ?? null,
         cueWord: state.cueWord || null,
+        prayerStyle: state.prayerStyle,
       };
 
       // First: check what's already cached (no network). If already complete,
@@ -363,6 +368,7 @@ export function ReviewScreen({
     state.anchor,
     state.selfTalk,
     state.cueWord,
+    state.prayerStyle,
   ]);
 
   const closeLabel = state.prayerStyle === "self-guided"
@@ -384,7 +390,7 @@ export function ReviewScreen({
 
   return (
     <ScreenBody>
-      <SectionLabel>Step 08 · Review</SectionLabel>
+      <SectionLabel>Step 09 · Review</SectionLabel>
       <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
         Here&rsquo;s what we&rsquo;ll work with.
       </h1>
@@ -1146,7 +1152,7 @@ export function AudioSessionScreen({
         className="select-none"
         style={{ touchAction: "manipulation" }}
       >
-        <SectionLabel>Step 09 · Guided Session</SectionLabel>
+        <SectionLabel>Step 10 · Guided Session</SectionLabel>
       </div>
 
       {debug && (
