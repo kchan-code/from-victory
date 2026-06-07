@@ -3,9 +3,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AthleteBottomNav } from "@/components/athlete/BottomNav";
+import { CompleteSessionButton } from "@/components/daily/CompleteSessionButton";
 import { SessionBody } from "@/components/daily/SessionBody";
 import { Icon, RhythmRing } from "@/components/ui";
 import { signOut } from "@/lib/actions/auth";
+import { completeDailySession } from "@/lib/actions/daily-session";
 import { requireAthlete } from "@/lib/auth/guards";
 import { getDailySession } from "@/lib/daily/session";
 import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
@@ -129,9 +131,9 @@ export default async function DailyPage() {
                 </div>
               )}
 
-              {/* Scripture block */}
+              {/* Scripture block — mb-0: article padding handles trailing space */}
               {sessionData.session.scripture_text && (
-                <div className="border-l-2 border-gold/50 pl-4 mb-7">
+                <div className="border-l-2 border-gold/50 pl-4 mb-0">
                   <p className="font-scripture text-cream text-[18px] leading-relaxed italic">
                     &ldquo;{sessionData.session.scripture_text}&rdquo;
                   </p>
@@ -140,22 +142,34 @@ export default async function DailyPage() {
                   </p>
                 </div>
               )}
-
-              {/* Journal prompt — display-only; FV-84 adds the textarea */}
-              {sessionData.session.journal_prompt && (
-                <section aria-label="Journal prompt" className="bg-onyx border border-hairline rounded-xl p-5">
-                  <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-cream/50 mb-3">
-                    Journal prompt
-                  </p>
-                  <p className="font-body text-cream/85 text-[15px] leading-relaxed">
-                    {sessionData.session.journal_prompt}
-                  </p>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-cream/35 mt-4 leading-relaxed">
-                    Only you can read your journal.
-                  </p>
-                </section>
-              )}
             </article>
+
+            {/* ── Complete CTA / All-complete state ── */}
+            {sessionData.allComplete ? (
+              /* All 30 days done — calm closing, no trophy blast */
+              <div className="bg-charcoal border border-hairline rounded-2xl p-7 text-center mb-6">
+                <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold mb-3">
+                  30 Days Complete
+                </p>
+                <p className="font-display font-extrabold uppercase tracking-[0.02em] text-cream text-[22px] leading-[1.15] mb-3">
+                  Your rhythm is built.
+                </p>
+                <p className="font-body text-cream/65 text-[15px] leading-relaxed">
+                  You finished all 30 sessions. The work you put in is yours —
+                  keep showing up.
+                </p>
+              </div>
+            ) : (
+              /* Normal state — primary CTA in the thumb zone */
+              <div className="mb-6">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/40 text-center mb-3">
+                  Ready to move forward?
+                </p>
+                <form action={completeDailySession}>
+                  <CompleteSessionButton dayNumber={sessionData.dayNumber} />
+                </form>
+              </div>
+            )}
           </>
         )}
       </div>
