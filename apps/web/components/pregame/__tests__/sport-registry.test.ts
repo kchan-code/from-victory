@@ -29,6 +29,8 @@ import { NEEDS, RESET_ANCHORS, SELF_TALK_OPTIONS } from "../types";
 // (order + content) to the original global lists. Hockey is the live beta sport,
 // so the per-sport registry refactor must never silently reorder or alter its
 // chips. (Caught a "Long exhale" reorder in qa review of PR #122.)
+// FV-124: "Be more Vocal" added to both NEEDS and HOCKEY_CONFIG.needs; the
+// parity invariant holds — HOCKEY_CONFIG.needs continues to equal NEEDS.
 // ---------------------------------------------------------------------------
 
 describe("HOCKEY_CONFIG picker lists == original globals (zero hockey change)", () => {
@@ -436,19 +438,24 @@ describe("FV-117: sport-keyed needs picker", () => {
     expect(BASKETBALL_CONFIG.needs).not.toContain("Better puck decisions");
   });
 
-  it("hockey needs has 9 options (unchanged from original NEEDS list)", () => {
-    expect(HOCKEY_CONFIG.needs).toHaveLength(9);
+  it("hockey needs has 10 options (9 original + 'Be more Vocal' from FV-124)", () => {
+    expect(HOCKEY_CONFIG.needs).toHaveLength(10);
   });
 
-  it("basketball needs has 9 options (one swap, same count)", () => {
-    expect(BASKETBALL_CONFIG.needs).toHaveLength(9);
+  it("basketball needs has 10 options (9 original + 'Be more Vocal' from FV-124)", () => {
+    expect(BASKETBALL_CONFIG.needs).toHaveLength(10);
   });
 
-  it("both sports share 8 common needs (only the sport-specific one differs)", () => {
+  it("both sports share 9 common needs (sport-specific one differs, plus shared Be more Vocal)", () => {
     const hockeySet = new Set(HOCKEY_CONFIG.needs);
     const bbSet = new Set(BASKETBALL_CONFIG.needs);
     const shared = [...hockeySet].filter((n) => bbSet.has(n));
-    expect(shared).toHaveLength(8);
+    expect(shared).toHaveLength(9);
+  });
+
+  it("both sports include 'Be more Vocal' (FV-124)", () => {
+    expect(HOCKEY_CONFIG.needs).toContain("Be more Vocal");
+    expect(BASKETBALL_CONFIG.needs).toContain("Be more Vocal");
   });
 });
 
@@ -638,5 +645,14 @@ describe("FV-117: resolveOpenerSlug — sport-keyed opener resolution", () => {
       }
     }
     expect(missing).toEqual([]);
+  });
+
+  // FV-124: Be more Vocal opener resolution
+  it("'Be more Vocal' hockey → 'opener-be-vocal'", () => {
+    expect(resolveOpenerSlug("Be more Vocal", "hockey")).toBe("opener-be-vocal");
+  });
+
+  it("'Be more Vocal' basketball → 'opener-bb-be-vocal'", () => {
+    expect(resolveOpenerSlug("Be more Vocal", "basketball")).toBe("opener-bb-be-vocal");
   });
 });

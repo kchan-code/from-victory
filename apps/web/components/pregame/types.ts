@@ -16,7 +16,8 @@ export type NeedToday =
   | "Better decisions with the ball"
   | "Leadership"
   | "Joy"
-  | "Hope";
+  | "Hope"
+  | "Be more Vocal";
 
 export type PregameState = {
   breathDone: boolean;
@@ -61,6 +62,7 @@ export const NEEDS: NeedToday[] = [
   "Leadership",
   "Joy",
   "Hope",
+  "Be more Vocal",
 ];
 
 // ROLE_CONTENT and ADVERSITIES have moved to sport-registry.ts (HOCKEY_CONFIG).
@@ -182,6 +184,11 @@ export const NEED_VERSE: Record<NeedToday, NeedVerse> = {
     eyebrow: "Strength you receive, not strength you summon.",
     displayText:
       "Those who hope in the Lord will renew their strength... they will run and not grow weary, they will walk and not be faint.",
+  },
+  "Be more Vocal": {
+    reference: "Romans 8:1",
+    displayText:
+      "Therefore, there is now no condemnation for those who are in Christ Jesus.",
   },
 };
 

@@ -3566,80 +3566,6 @@ export const CLIP_ST_BB_01_SCRIPT: AudioScript = {
   ],
 };
 
-// ── Pregame Beat — be-vocal (FV-122) ─────────────────────────────────────────
-// NEW pregame beat (distinct from pre-practice pp-be-vocal). Carries the
-// secure-identity point ONCE via Romans 8:1 ("no condemnation. None.") folded as
-// Paul's words — deliberately NOT echoing shared-prayer ("worth was settled") or
-// shared-sendoff ("You are secure"). LOCAL instruction override: flat-calls
-// discipline + flat/settled gospel delivery (no swell on "no condemnation"/"free").
-const BE_VOCAL_INSTRUCTIONS = `Voice Affect: Coach voice — direct, steady, assured. Not a hype coach, not a preacher. The voice of someone who has run this room a hundred times and means every word.
-
-Tone: Confident and purposeful. The gospel turn ("no condemnation. None." / "Christ already covered it at the cross") is settled news, not a sermon moment — flat and certain, a fact lived with for years, no warmth-bleed and no lift.
-
-Pacing: Deliberate. Short declarative sentences land clean. The defusion ("Hear that voice for what it is. That's not you.") gets its own beat. The dissolve ("Free to be loud. Free to be wrong. Free to compete.") is three even permissions at a declarative clip — parallel, not an escalating build.
-
-Emotion: Steady confidence. The athlete is being coached, not comforted. Honest without being harsh.
-
-Pronunciation: The on-ice calls ('Man on,' 'Time,' 'Heads up,' 'D to D on the breakout') and the teammate calls ('Next shift,' 'I got you') are listed flat and matter-of-fact — NOT yelled or brightened. "No condemnation. None." lands flat and final, no upswing on "None." "Free to be loud. Free to be wrong. Free to compete." — each clause level, same weight, not louder than the last. "Quiet's the easy hide. Don't take it." closes with grounded finality.
-
-Pauses: A beat between each coaching declaration. A full breath after "nothing left to protect" before "You're free." Shorter beats between the three "Free to…" clauses — they are parallel, not sequential reveals.`;
-
-export const CLIP_BE_VOCAL_SCRIPT: AudioScript = {
-  slug: "be-vocal",
-  voice: "ash",
-  instructions: BE_VOCAL_INSTRUCTIONS,
-  speed: 0.95,
-  postFilter: CLIP_LOUDNORM_FILTER,
-  segments: [
-    { type: "speech", text: "One more thing before the whistle. Out there, talking is competing — 'Man on.' 'Time.' 'Heads up.' 'D to D on the breakout.' It moves the play before the play even happens." },
-    { type: "silence", durationSec: 1.2 },
-    { type: "speech", text: "But there's a voice that wants you quiet. Don't risk it. Don't be the one who's wrong out loud. Hear that voice for what it is. That's not you — that's your ego, the part of you that has to look good." },
-    { type: "silence", durationSec: 1.0 },
-    { type: "speech", text: "And here's what Paul wrote: for everyone in Christ, there's no condemnation. None. That part that needs to look good — Christ already covered it at the cross." },
-    { type: "silence", durationSec: 1.2 },
-    { type: "speech", text: "What anyone out there thinks of you — that's not the verdict on you. You've got nothing left to protect. You're free. Free to be loud. Free to be wrong. Free to compete." },
-    { type: "silence", durationSec: 1.0 },
-    { type: "speech", text: "So be the voice that helps them reset. 'Next shift.' 'I got you.' You know that pull to spiral. Give them the way out of it." },
-    { type: "silence", durationSec: 0.8 },
-    { type: "speech", text: "Quiet's the easy hide. Don't take it." },
-  ],
-};
-
-// ── Basketball pregame Beat — bb-be-vocal (FV-122) ───────────────────────────
-// Sport-vocab swap of be-vocal onto the same gospel spine + dissolve.
-const BB_BE_VOCAL_INSTRUCTIONS = `Voice Affect: Coach voice — direct, steady, assured. Not a hype coach, not a preacher. The voice of someone who has run this room a hundred times and means every word.
-
-Tone: Confident and purposeful. The gospel turn ("no condemnation. None." / "Christ already covered it at the cross") is settled news, not a sermon moment — flat and certain, a fact lived with for years, no warmth-bleed and no lift.
-
-Pacing: Deliberate. Short declarative sentences land clean. The defusion ("Hear that voice for what it is. That's not you.") gets its own beat. The dissolve ("Free to be loud. Free to be wrong. Free to compete.") is three even permissions at a declarative clip — parallel, not an escalating build.
-
-Emotion: Steady confidence. The athlete is being coached, not comforted. Honest without being harsh.
-
-Pronunciation: The on-court calls ('I got ball,' 'Screen left,' 'Shot') and the teammate calls ('Next possession,' 'I got you') are listed flat and matter-of-fact — NOT yelled or brightened. "No condemnation. None." lands flat and final, no upswing on "None." "Free to be loud. Free to be wrong. Free to compete." — each clause level, same weight, not louder than the last. "Quiet's the easy hide. Don't take it." closes with grounded finality.
-
-Pauses: A beat between each coaching declaration. A full breath after "nothing left to protect" before "You're free." Shorter beats between the three "Free to…" clauses — they are parallel, not sequential reveals.`;
-
-export const CLIP_BB_BE_VOCAL_SCRIPT: AudioScript = {
-  slug: "bb-be-vocal",
-  voice: "ash",
-  instructions: BB_BE_VOCAL_INSTRUCTIONS,
-  speed: 0.95,
-  postFilter: CLIP_LOUDNORM_FILTER,
-  segments: [
-    { type: "speech", text: "One more thing before the whistle. Out there, talking is competing — 'I got ball.' 'Screen left.' 'Shot.' It moves your defense a half-second before the offense does." },
-    { type: "silence", durationSec: 1.2 },
-    { type: "speech", text: "But there's a voice that wants you quiet. Don't risk it. Don't be the one who's wrong out loud. Hear that voice for what it is. That's not you — that's your ego, the part of you that has to look good." },
-    { type: "silence", durationSec: 1.0 },
-    { type: "speech", text: "And here's what Paul wrote: for everyone in Christ, there's no condemnation. None. That part that needs to look good — Christ already covered it at the cross." },
-    { type: "silence", durationSec: 1.2 },
-    { type: "speech", text: "What anyone out there thinks of you — that's not the verdict on you. You've got nothing left to protect. You're free. Free to be loud. Free to be wrong. Free to compete." },
-    { type: "silence", durationSec: 1.0 },
-    { type: "speech", text: "So be the voice that helps them reset. 'Next possession.' 'I got you.' You know that pull to spiral. Give them the way out of it." },
-    { type: "silence", durationSec: 0.8 },
-    { type: "speech", text: "Quiet's the easy hide. Don't take it." },
-  ],
-};
-
 // ── Hockey pre-practice focus — pp-focus-talk-every-shift (FV-121) ────────────
 // Mirrors pp-bb-focus-talk-every-possession exactly; only the sport vocab differs.
 export const CLIP_PP_FOCUS_TALK_EVERY_SHIFT_SCRIPT: AudioScript = {
@@ -3847,9 +3773,6 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_ANC_TAP_FLOOR_SCRIPT,
   CLIP_ANC_LOOK_AT_RIM_SCRIPT,
   CLIP_ST_BB_01_SCRIPT,
-  // Pregame Beat — be-vocal (FV-122): hockey + basketball variants
-  CLIP_BE_VOCAL_SCRIPT,
-  CLIP_BB_BE_VOCAL_SCRIPT,
   // Pre-practice focus — hockey "Talk every shift" (FV-121)
   CLIP_PP_FOCUS_TALK_EVERY_SHIFT_SCRIPT,
 ];

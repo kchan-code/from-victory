@@ -258,6 +258,7 @@ export const HOCKEY_CONFIG: SportConfig = {
   },
 
   // FV-117: per-sport picker lists. Hockey keeps its original lists exactly.
+  // FV-124: added "Be more Vocal" (opt-in Today's Focus need with dedicated opener).
   needs: [
     "Confidence",
     "Calm",
@@ -268,6 +269,7 @@ export const HOCKEY_CONFIG: SportConfig = {
     "Leadership",
     "Joy",
     "Hope",
+    "Be more Vocal",
   ] as const satisfies readonly NeedToday[],
 
   // Order preserved verbatim from the original RESET_ANCHORS (hockey is the live
@@ -405,6 +407,7 @@ export const BASKETBALL_CONFIG: SportConfig = {
   // FV-117: per-sport picker lists for basketball.
   // "Better puck decisions" → "Better decisions with the ball".
   // All other 8 needs are sport-neutral and shared with hockey.
+  // FV-124: added "Be more Vocal" (opt-in Today's Focus need with dedicated opener).
   needs: [
     "Confidence",
     "Calm",
@@ -415,6 +418,7 @@ export const BASKETBALL_CONFIG: SportConfig = {
     "Leadership",
     "Joy",
     "Hope",
+    "Be more Vocal",
   ] as const satisfies readonly NeedToday[],
 
   // "Tap stick twice" and "Touch glove" are hockey-specific; replaced with
