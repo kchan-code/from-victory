@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireParent } from "@/lib/auth/guards";
+import {
+  isDeletionRateLimited,
+  DELETION_RATE_LIMIT,
+  DELETION_WINDOW_MINUTES,
+} from "@/lib/actions/deletion-rate-limit";
 import { isBenignCancelError } from "@/lib/stripe/cancel-errors";
 import { getStripe } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
@@ -25,7 +30,14 @@ import { createServiceClient } from "@/lib/supabase/service";
 //     (athletes also linked to a co-parent are left intact — see below).
 //
 // Both require a typed confirmation. Deletion events are logged (event only,
-// never content) for an audit trail.
+// never content) for a durable audit trail (FV-14 — account_deletion_events).
+//
+// Rate limiting (FV-14):
+//   Both actions check the rolling-window count of account_deletion_events
+//   rows for this parent before executing. If the count is at or above
+//   DELETION_RATE_LIMIT within DELETION_WINDOW_MINUTES, the action is
+//   rejected without deleting anything. The pure decision function lives in
+//   lib/actions/deletion-rate-limit.ts and is unit-tested independently.
 // =============================================================================
 
 export type DeleteAthleteState = { ok: false; error: string } | null;
@@ -73,6 +85,30 @@ export async function deleteAthlete(
     };
   }
 
+  // ---------------------------------------------------------------------------
+  // Rate limiting (FV-14): count recent deletion events for this parent in the
+  // rolling window BEFORE the destructive deleteUser call. If at or over the
+  // limit, reject without deleting anything.
+  // ---------------------------------------------------------------------------
+  const windowStart = new Date(
+    Date.now() - DELETION_WINDOW_MINUTES * 60 * 1000,
+  ).toISOString();
+  const { count: recentCount } = await service
+    .from("account_deletion_events")
+    .select("id", { count: "exact", head: true })
+    .eq("actor_parent_id", parentId)
+    .gt("created_at", windowStart);
+
+  if (isDeletionRateLimited(recentCount ?? 0)) {
+    console.warn(
+      `[account.deleteAthlete] rate limit hit (parent=${parentId} count=${recentCount ?? 0} limit=${DELETION_RATE_LIMIT} window=${DELETION_WINDOW_MINUTES}min)`,
+    );
+    return {
+      ok: false,
+      error: `Too many deletion requests. Please wait before trying again.`,
+    };
+  }
+
   const { error } = await service.auth.admin.deleteUser(athleteId);
   if (error) {
     console.error(
@@ -87,6 +123,25 @@ export async function deleteAthlete(
   console.log(
     `[account.deleteAthlete] parent=${parentId} deleted athlete=${athleteId}`,
   );
+
+  // ---------------------------------------------------------------------------
+  // Durable audit write (FV-14): best-effort. If this insert fails we log
+  // the error but do NOT fail the user's deletion — their right to have data
+  // removed must not be blocked by our logging infrastructure.
+  // ---------------------------------------------------------------------------
+  const { error: auditError } = await service
+    .from("account_deletion_events")
+    .insert({
+      event_type: "athlete_deleted",
+      actor_parent_id: parentId,
+      target_athlete_id: athleteId,
+    });
+  if (auditError) {
+    console.error(
+      `[account.deleteAthlete] audit insert failed (parent=${parentId} athlete=${athleteId}): ${auditError.message}`,
+    );
+  }
+
   revalidatePath("/dashboard");
   return null;
 }
@@ -104,6 +159,30 @@ export async function deleteAccount(
 
   const { userId: parentId } = await requireParent();
   const service = createServiceClient();
+
+  // ---------------------------------------------------------------------------
+  // Rate limiting (FV-14): reject BEFORE any side effect — Stripe cancel OR DB
+  // delete. Count this parent's deletion events in the rolling window; if at or
+  // over the limit, bail without cancelling the subscription or deleting rows.
+  // ---------------------------------------------------------------------------
+  const windowStart = new Date(
+    Date.now() - DELETION_WINDOW_MINUTES * 60 * 1000,
+  ).toISOString();
+  const { count: recentCount } = await service
+    .from("account_deletion_events")
+    .select("id", { count: "exact", head: true })
+    .eq("actor_parent_id", parentId)
+    .gt("created_at", windowStart);
+
+  if (isDeletionRateLimited(recentCount ?? 0)) {
+    console.warn(
+      `[account.deleteAccount] rate limit hit (parent=${parentId} count=${recentCount ?? 0} limit=${DELETION_RATE_LIMIT} window=${DELETION_WINDOW_MINUTES}min)`,
+    );
+    return {
+      ok: false,
+      error: `Too many deletion requests. Please wait before trying again.`,
+    };
+  }
 
   // ---------------------------------------------------------------------------
   // Step 1: Cancel the Stripe subscription BEFORE touching any DB rows.
@@ -220,6 +299,27 @@ export async function deleteAccount(
   console.log(
     `[account.deleteAccount] deleted parent=${parentId} (athletes_considered=${athleteIds.length} athletes_deleted=${deletedAthletes})`,
   );
+
+  // ---------------------------------------------------------------------------
+  // Durable audit write (FV-14): best-effort. The parent's auth.users row is
+  // gone by the time we reach here, so actor_parent_id is a surviving opaque
+  // UUID (no FK — by design). If this insert fails we log the error but do
+  // NOT block the sign-out/redirect — the deletion right must not depend on
+  // the audit infrastructure.
+  // ---------------------------------------------------------------------------
+  const { error: auditError } = await service
+    .from("account_deletion_events")
+    .insert({
+      event_type: "account_deleted",
+      actor_parent_id: parentId,
+      target_athlete_id: null,
+      athletes_deleted: deletedAthletes,
+    });
+  if (auditError) {
+    console.error(
+      `[account.deleteAccount] audit insert failed (parent=${parentId}): ${auditError.message}`,
+    );
+  }
 
   // Clear the now-orphaned session cookies, then send them home.
   const supabase = createClient();
