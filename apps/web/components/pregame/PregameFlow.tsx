@@ -207,7 +207,7 @@ function ScreenSwitch({
     case "cueWord":
       return <CueWordScreen state={state} set={set} />;
     case "review":
-      return <ReviewScreen state={state} sportConfig={sportConfig} />;
+      return <ReviewScreen state={state} sportConfig={sportConfig} sport={sport} />;
     case "audio":
       return (
         <AudioSessionScreen state={state} set={set} onContinue={onContinue} sportConfig={sportConfig} sport={sport} />

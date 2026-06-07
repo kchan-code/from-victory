@@ -111,6 +111,18 @@ export const CUEWORD_OPTION_SLUGS: Record<string, string> = {
 // MP3 + sidecar JSON URL so Vercel's CDN + browsers can't serve a
 // stale cached version after a regen. Bump this when you rerun
 // `npm run audio:generate`.
+//
+// FV-106 — SW audio cache rotation:
+// Bumping this value ALSO rotates the Service Worker's audio cache. The SW
+// names the cache `fv-audio-${AUDIO_CACHE_BUST}` and its activate handler
+// prunes every cache not in OWNED_CACHES — so old `fv-audio-*` caches are
+// evicted automatically on the next SW activation.
+//
+// IMPORTANT: when bumping this value, also update the matching constant in
+// apps/web/public/sw.js (const AUDIO_CACHE_BUST = "...") to the SAME string
+// in the same PR. A mismatch causes the window-side precache (audio-precache.ts)
+// and the SW to open different cache instances — assets written by one will not
+// be found by the other.
 export const AUDIO_CACHE_BUST = "16";
 
 export function audioAssetUrl(slug: string, ext: "mp3" | "json"): string {

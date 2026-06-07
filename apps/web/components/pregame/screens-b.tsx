@@ -214,13 +214,113 @@ export function CueWordScreen({
 // Read-only summary before the 5-min guided session. Lets the athlete
 // confirm they like the setup or go back and edit. CTA "BEGIN GUIDED
 // SESSION" lives in the BottomBar (set via FLOW step.cta).
+//
+// FV-106: while online at this screen, kicks off per-athlete audio precache so
+// the guided session plays start-to-finish with no network (rink, dead zone).
+// The "Ready offline" indicator is keyed to actual Cache Storage state — never
+// navigator.onLine (handles lie-fi correctly).
 export function ReviewScreen({
   state,
   sportConfig = HOCKEY_CONFIG,
+  sport = "hockey",
 }: {
   state: PregameState;
   sportConfig?: SportConfig;
+  sport?: Sport;
 }) {
+  // ── FV-106: offline readiness indicator ─────────────────────────────────
+  // "idle"    → haven't started yet (SSR / caches API absent)
+  // "loading" → precache in progress
+  // "ready"   → all reachable clips confirmed in cache
+  // "partial" → some clips cached; finished but incomplete (non-critical)
+  type OfflineState = "idle" | "loading" | "ready" | "partial";
+  const [offlineState, setOfflineState] = useState<OfflineState>("idle");
+  const [cacheProgress, setCacheProgress] = useState<{ cached: number; total: number }>({
+    cached: 0,
+    total: 0,
+  });
+
+  useEffect(() => {
+    // Guard: Cache Storage only available client-side over HTTPS (or localhost).
+    if (typeof caches === "undefined") return;
+
+    // Only precache if we have enough state to resolve a playlist.
+    if (!state.need || !state.adversity) return;
+
+    let cancelled = false;
+
+    async function run() {
+      // Lazy import: audio-precache is browser-only (uses caches API).
+      // This dynamic import means the module is not included in SSR bundles.
+      const { precachePregameAudio, checkPregameAudioCached } = await import(
+        "./audio-precache"
+      );
+
+      if (cancelled) return;
+
+      const params = {
+        sport,
+        need: state.need!,
+        position: state.role ?? null,
+        adversity: state.adversity!,
+        anchor: state.anchor ?? null,
+        selfTalk: state.selfTalk ?? null,
+        cueWord: state.cueWord || null,
+      };
+
+      // First: check what's already cached (no network). If already complete,
+      // show ready immediately without re-fetching anything.
+      const initialCheck = await checkPregameAudioCached(params);
+      if (cancelled) return;
+
+      if (initialCheck.done) {
+        setOfflineState("ready");
+        setCacheProgress({ cached: initialCheck.cached, total: initialCheck.total });
+        return;
+      }
+
+      // Not fully cached — kick off precache with live progress reporting.
+      setOfflineState("loading");
+      setCacheProgress({ cached: initialCheck.cached, total: initialCheck.total });
+
+      const finalStatus = await precachePregameAudio(params, (status) => {
+        if (cancelled) return;
+        setCacheProgress({ cached: status.cached, total: status.total });
+      });
+
+      if (cancelled) return;
+
+      if (finalStatus.done) {
+        setOfflineState("ready");
+      } else if (finalStatus.cached > 0) {
+        // Partial cache — most clips ready; session will likely work but may
+        // need network for a small number of assets.
+        setOfflineState("partial");
+      }
+      // error or cached=0: leave as "loading" state that silently fades out.
+    }
+
+    run().catch(() => {
+      // Non-fatal: indicator just stays hidden if the precache errors.
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    // Re-run only when the key setup fields change. Sport config changes never
+    // happen mid-flow so sportConfig is intentionally excluded to avoid an extra
+    // run if the parent re-renders with a stable but re-created config object.
+    sport,
+    state.need,
+    state.role,
+    state.adversity,
+    state.anchor,
+    state.selfTalk,
+    state.cueWord,
+  ]);
+
   const rows: Array<{ label: string; value: string }> = [
     { label: "Today's focus", value: state.need ?? "—" },
     { label: "Position", value: state.role ?? "—" },
@@ -270,7 +370,87 @@ export function ReviewScreen({
       <p className="mt-5 text-center font-scripture text-[15px] italic leading-[1.5] text-cream/70">
         {SCRIPTURE_SHORT}
       </p>
+
+      {/* FV-106: offline readiness indicator — keyed to actual cache state */}
+      <OfflineReadyBadge
+        state={offlineState}
+        cached={cacheProgress.cached}
+        total={cacheProgress.total}
+      />
     </ScreenBody>
+  );
+}
+
+// ── FV-106 offline readiness badge ───────────────────────────────────────────
+// Rendered at the bottom of the Review screen below the scripture quote.
+// "idle" → renders nothing (no network check has run yet, or caches absent).
+// "loading" → "Downloading audio for offline play · X / Y" in silver.
+// "ready" → "Ready offline" in gold — confirmed by cache state, not onLine.
+// "partial" → nothing shown (partial is better than alarming the athlete).
+// The badge is calm and secondary — it must not dominate the pre-game moment.
+function OfflineReadyBadge({
+  state,
+  cached,
+  total,
+}: {
+  state: "idle" | "loading" | "ready" | "partial";
+  cached: number;
+  total: number;
+}) {
+  if (state === "idle" || state === "partial") return null;
+
+  if (state === "ready") {
+    return (
+      <div
+        aria-live="polite"
+        aria-label="Audio ready for offline play"
+        className="mt-4 flex items-center justify-center gap-1.5"
+      >
+        {/* Checkmark circle — inline SVG, no icon dependency */}
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          aria-hidden="true"
+        >
+          <circle cx="7" cy="7" r="6.5" stroke="#DFAF37" strokeWidth="1" />
+          <path
+            d="M4.5 7l1.8 1.8L9.5 5.5"
+            stroke="#DFAF37"
+            strokeWidth="1.25"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-gold">
+          Ready offline
+        </span>
+      </div>
+    );
+  }
+
+  // "loading" state — progress counter
+  const progressText =
+    total > 0
+      ? `Downloading audio · ${cached} / ${total}`
+      : "Downloading audio…";
+
+  return (
+    <div
+      aria-live="polite"
+      aria-label={progressText}
+      className="mt-4 flex items-center justify-center gap-1.5"
+    >
+      {/* Minimal animated dot to signal activity without being distracting */}
+      <span
+        className="block h-1.5 w-1.5 animate-pulse rounded-full bg-cream/30"
+        aria-hidden="true"
+      />
+      <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-cream/40">
+        {progressText}
+      </span>
+    </div>
   );
 }
 
