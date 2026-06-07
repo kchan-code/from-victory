@@ -158,10 +158,19 @@ export default async function DashboardPage() {
                       </div>
                     </div>
 
-                    {/* Rhythm row — metadata only, never journal content */}
+                    {/* Rhythm row — metadata only, never journal content.
+                        role="img" + a status-bearing label so screen readers get
+                        one meaningful announcement ("Alex's training rhythm: 5
+                        sessions complete") instead of the ring's bare "64% rhythm". */}
                     <div
                       className="flex items-center gap-4 pt-4 border-t border-hairline"
-                      aria-label={`${a.first_name}'s training rhythm`}
+                      role="img"
+                      aria-label={`${a.first_name}'s training rhythm: ${rhythm.ringLabel}${
+                        rhythm.sessionsStarted > 0 &&
+                        rhythm.sessionsStarted !== rhythm.sessionsCompleted
+                          ? `, ${rhythm.sessionsStarted} started`
+                          : ""
+                      }`}
                     >
                       <RhythmRing
                         pct={rhythm.progressPct}
