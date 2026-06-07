@@ -129,8 +129,18 @@ jobs:
           # breaks (FV-106). Runs on every PR, not just *.mp3 changes.
           MAPPING="apps/web/components/pregame/audio-mapping.ts"
           SW="apps/web/public/sw.js"
-          TS_BUST=$(grep -oE '^[^/]*AUDIO_CACHE_BUST[[:space:]]*=[[:space:]]*"[^"]*"' "$MAPPING" | grep -oE '"[^"]*"' | head -1 || true)
-          SW_BUST=$(grep -oE '^[^/]*AUDIO_CACHE_BUST[[:space:]]*=[[:space:]]*"[^"]*"' "$SW" | grep -oE '"[^"]*"' | head -1 || true)
+          # Extract the AUDIO_CACHE_BUST string from a TS/JS file. Anchored to an
+          # actual `const` / `export const` declaration (leading indentation OK),
+          # so it never matches the decoy mention inside the audio-mapping.ts
+          # comment block: `// ...(const AUDIO_CACHE_BUST = "...")...` sits ABOVE
+          # the real declaration, and a bare grep would grab "..." from it.
+          # Do NOT loosen this to `grep AUDIO_CACHE_BUST`.
+          extract_bust() {
+            grep -oE '^[[:space:]]*(export[[:space:]]+)?const[[:space:]]+AUDIO_CACHE_BUST[[:space:]]*=[[:space:]]*"[^"]*"' "$1" \
+              | grep -oE '"[^"]*"' | head -1 || true
+          }
+          TS_BUST=$(extract_bust "$MAPPING")
+          SW_BUST=$(extract_bust "$SW")
           echo "audio-mapping.ts AUDIO_CACHE_BUST = ${TS_BUST:-<none>}"
           echo "sw.js            AUDIO_CACHE_BUST = ${SW_BUST:-<none>}"
           if [ -z "$TS_BUST" ] || [ -z "$SW_BUST" ]; then
