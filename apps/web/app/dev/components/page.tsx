@@ -148,10 +148,17 @@ export default function ComponentsShowcase() {
       </Section>
 
       <Section title="RhythmRing">
+        {/* Percentage center — parent dashboard variant */}
         <div className="flex items-center gap-6">
           <RhythmRing pct={0} label="rhythm" />
           <RhythmRing pct={42} label="rhythm" />
           <RhythmRing pct={86} size={72} stroke={6} label="week" />
+        </div>
+        {/* Day-position center — athlete home hub variant (no %, never a zero) */}
+        <div className="flex items-center gap-6 mt-6">
+          <RhythmRing pct={0} size={80} stroke={6} dayNumber={1} totalDays={30} />
+          <RhythmRing pct={40} size={80} stroke={6} dayNumber={12} totalDays={30} />
+          <RhythmRing pct={0} size={80} stroke={6} dayNumber={1} totalDays={30} label="Start" />
         </div>
       </Section>
 

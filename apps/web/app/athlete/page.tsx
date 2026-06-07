@@ -73,11 +73,20 @@ export default async function AthleteHomePage() {
 
         {/* ── Greeting + rhythm ring ── */}
         <section className="flex items-center gap-5 mb-8" aria-label="Your rhythm">
+          {/*
+           * Day-position center: shows "N / 30" so day 1 reads as a beginning,
+           * not "0%". dayNumber starts at 1 — always a positive, forward frame.
+           * The subline on the right says "keep your rhythm" when sessionLoaded,
+           * so context lives in the adjacent copy, not the ring interior.
+           * Parent dashboard still uses pct-only (no dayNumber prop) — unchanged.
+           */}
           <RhythmRing
             pct={progressPct}
             size={80}
             stroke={6}
-            label={sessionLoaded ? `Day ${dayNumber} of ${TOTAL_TRAINING_DAYS}` : "Getting started"}
+            dayNumber={sessionLoaded ? dayNumber : 1}
+            totalDays={TOTAL_TRAINING_DAYS}
+            label={sessionLoaded ? undefined : "Start"}
           />
           <div>
             <p className="font-display font-extrabold uppercase tracking-[0.04em] text-cream text-[28px] sm:text-[34px] leading-[1.05]">
@@ -85,7 +94,7 @@ export default async function AthleteHomePage() {
             </p>
             {sessionLoaded ? (
               <p className="font-body text-cream/60 text-[14px] leading-snug mt-1">
-                Day {dayNumber} of {TOTAL_TRAINING_DAYS} &mdash; keep your rhythm.
+                Keep your rhythm.
               </p>
             ) : (
               <p className="font-body text-cream/60 text-[14px] leading-snug mt-1">
