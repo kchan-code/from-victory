@@ -37,6 +37,8 @@ const BASKETBALL_OPENER_OVERRIDES: Partial<Record<NeedToday, string>> = {
   "Leadership": "opener-bb-leadership",
   "Joy": "opener-bb-joy",
   "Hope": "opener-bb-hope",
+  // FV-124 (Be more Vocal — basketball-specific opener)
+  "Be more Vocal": "opener-bb-be-vocal",
 };
 
 /**
@@ -109,7 +111,7 @@ export const CUEWORD_OPTION_SLUGS: Record<string, string> = {
 // MP3 + sidecar JSON URL so Vercel's CDN + browsers can't serve a
 // stale cached version after a regen. Bump this when you rerun
 // `npm run audio:generate`.
-export const AUDIO_CACHE_BUST = "15";
+export const AUDIO_CACHE_BUST = "16";
 
 export function audioAssetUrl(slug: string, ext: "mp3" | "json"): string {
   return `/audio/pregame/${slug}.${ext}?v=${AUDIO_CACHE_BUST}`;
@@ -131,6 +133,7 @@ export const NEED_OPENER_SLUGS: Record<NeedToday, string> = {
   Leadership: "opener-leadership",
   Joy: "opener-joy",
   Hope: "opener-hope",
+  "Be more Vocal": "opener-be-vocal",
 };
 
 // ADVERSITY_SLUG_FRAGMENTS and cellSlugFor have moved to sport-registry.ts

@@ -84,6 +84,8 @@ import { OPENER_BB_RESET_SCRIPT } from "../components/pregame/audio/opener-bb-re
 import { OPENER_BB_LEADERSHIP_SCRIPT } from "../components/pregame/audio/opener-bb-leadership.ts";
 import { OPENER_BB_JOY_SCRIPT } from "../components/pregame/audio/opener-bb-joy.ts";
 import { OPENER_BB_HOPE_SCRIPT } from "../components/pregame/audio/opener-bb-hope.ts";
+import { OPENER_BE_VOCAL_SCRIPT } from "../components/pregame/audio/opener-be-vocal.ts";
+import { OPENER_BB_BE_VOCAL_SCRIPT } from "../components/pregame/audio/opener-bb-be-vocal.ts";
 import {
   clearSilenceCache,
   concatMp3s,
@@ -119,6 +121,9 @@ const SCRIPTS: AudioScript[] = [
   OPENER_BB_LEADERSHIP_SCRIPT,
   OPENER_BB_JOY_SCRIPT,
   OPENER_BB_HOPE_SCRIPT,
+  // FV-124: Be more Vocal openers — hockey + basketball variants.
+  OPENER_BE_VOCAL_SCRIPT,
+  OPENER_BB_BE_VOCAL_SCRIPT,
   // Cell-specific session scripts — selected by (position, adversity).
   // Forward (10 cells)
   SESSION_FORWARD_MISSED_CHANCE_SCRIPT,
@@ -318,6 +323,9 @@ const OPENER_SLUGS = [
   "opener-bb-leadership",
   "opener-bb-joy",
   "opener-bb-hope",
+  // FV-124: Be more Vocal openers — hockey + basketball.
+  "opener-be-vocal",
+  "opener-bb-be-vocal",
 ] as const;
 
 // Keep the Phase 1 const for backward compat references inside generateClips.
@@ -451,7 +459,7 @@ async function generateClips(flags: Flags): Promise<void> {
     console.log(`\n[clips] Templates: ${PHASE2_TEMPLATES.length}`);
     console.log(
       `[clips] Catalog will have: ${CLIP_SCRIPTS.length} TTS + ${OPENER_SLUGS.length} openers = ` +
-      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p6/FV-122: 183 expected, templates: 60)`,
+      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (p6/FV-124: 183 expected, templates: 60)`,
     );
     return;
   }
@@ -623,10 +631,6 @@ async function generateClips(flags: Flags): Promise<void> {
   // The resolver in audio-playlist.ts substitutes these with the athlete's
   // chosen anchor/self-talk/cue-word slugs, dropping them gracefully if absent.
   const templates = PHASE2_TEMPLATES.map((t) => {
-    // FV-122: sport-keyed be-vocal beat inserted immediately before shared-reset-plan.
-    // Basketball templates have positions Guard/Wing/Big (hmSlug starts "hm-bb-");
-    // hockey templates have Forward/Defense/Goalie.
-    const beVocalSlug = t.hmSlug.startsWith("hm-bb-") ? "bb-be-vocal" : "be-vocal";
     return {
       position: t.position,
       adversity: t.adversity,
@@ -637,7 +641,6 @@ async function generateClips(flags: Flags): Promise<void> {
         "{{anchor}}",
         "{{selfTalk}}",
         "{{cueReset}}",
-        beVocalSlug,            // FV-122 — sport-keyed be-vocal beat
         "shared-reset-plan",
         "shared-prayer",
         "{{cueSendoff}}",
@@ -701,7 +704,7 @@ async function generateClips(flags: Flags): Promise<void> {
   const templateCount = templates.length;
   console.log(`\n[clips] manifest.json written: ${catalogCount} catalog entries, ${templateCount} templates.`);
 
-  // p6 (FV-122): catalog breakdown:
+  // p6 (FV-124): catalog breakdown:
   //   46 structural (shared + hockey viz/hm + closing)
   //   32 personalization (hockey anc/st/cw)
   //   16 hockey-practice (pp-*) — +1 pp-focus-talk-every-shift (FV-121)
@@ -709,8 +712,9 @@ async function generateClips(flags: Flags): Promise<void> {
   //   30 legacy basketball baked cells (bb-{role}-{frag})
   //   39 new basketball compositional clips (viz-guard/wing/big + hm-bb-* + anc-bb + st-bb)
   //   + 6 more basketball openers (FV-120: opener-bb-confidence/compete-level/reset/leadership/joy/hope)
-  //   + 2 pregame be-vocal beats (FV-122: be-vocal + bb-be-vocal)
-  //   = 183 total (was 180 at FV-120, +3 from FV-121/FV-122)
+  //   − 2 retired mid-session be-vocal beats (FV-124: be-vocal + bb-be-vocal removed from templates)
+  //   + 2 new Be more Vocal openers (FV-124: opener-be-vocal + opener-bb-be-vocal)
+  //   = 183 total (net 0: −2 retired beats +2 new openers)
   if (catalogCount !== 183) {
     console.warn(`  WARNING: expected 183 catalog entries, got ${catalogCount}.`);
   }

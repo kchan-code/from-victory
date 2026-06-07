@@ -721,91 +721,119 @@ describe("basketball opener parity (FV-120)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 12. Pregame be-vocal beat (FV-122) — both sport variants are in the catalog,
-//     file-backed, and appear immediately before shared-reset-plan in every
-//     template. Hockey templates use "be-vocal"; basketball templates use
-//     "bb-be-vocal". Catalog count bump: 180 → 183.
+// 12. Catalog count (FV-124) — net zero: −2 retired mid-session be-vocal
+//     beats + 2 new Be more Vocal openers = still 183. be-vocal + bb-be-vocal
+//     are removed from catalog and all 60 templates; opener-be-vocal and
+//     opener-bb-be-vocal are added as catalog entries (loudnorm-passed openers).
 // ---------------------------------------------------------------------------
 
-describe("catalog count (FV-122)", () => {
-  it("catalog has exactly 183 entries (180 + 3 new clips from FV-121/FV-122)", () => {
+describe("catalog count (FV-124)", () => {
+  it("catalog has exactly 183 entries (FV-124: −2 retired beats +2 new openers = net 0)", () => {
     expect(Object.keys(catalog)).toHaveLength(183);
   });
 });
 
-describe("pregame be-vocal beat (FV-122)", () => {
-  it("be-vocal is in the catalog with a real non-zero file", () => {
-    expect(catalogFileErr("be-vocal")).toBeNull();
+describe("FV-122 beats retired (FV-124)", () => {
+  it("be-vocal is NOT in the catalog (retired from templates)", () => {
+    expect(catalog["be-vocal"]).toBeUndefined();
   });
 
-  it("bb-be-vocal is in the catalog with a real non-zero file", () => {
-    expect(catalogFileErr("bb-be-vocal")).toBeNull();
+  it("bb-be-vocal is NOT in the catalog (retired from templates)", () => {
+    expect(catalog["bb-be-vocal"]).toBeUndefined();
   });
 
-  it("every hockey template (Forward/Defense/Goalie) carries 'be-vocal' immediately before 'shared-reset-plan'", () => {
-    const hockeyPositions = new Set(HOCKEY_CONFIG.roles ?? []);
-    const broken: string[] = [];
-
+  it("no template references 'be-vocal'", () => {
     for (const template of manifest.templates) {
-      if (!hockeyPositions.has(template.position)) continue;
-      const resetIdx = template.clips.indexOf("shared-reset-plan");
-      if (resetIdx < 1) {
-        broken.push(`[${template.position} × "${template.adversity}"] missing shared-reset-plan`);
-        continue;
-      }
-      const beforeReset = template.clips[resetIdx - 1];
-      if (beforeReset !== "be-vocal") {
-        broken.push(
-          `[${template.position} × "${template.adversity}"] clip before shared-reset-plan is "${beforeReset}", expected "be-vocal"`,
-        );
-      }
+      expect(template.clips).not.toContain("be-vocal");
     }
-
-    expect(broken).toEqual([]);
   });
 
-  it("every basketball template (Guard/Wing/Big) carries 'bb-be-vocal' immediately before 'shared-reset-plan'", () => {
-    const bbPositions = new Set(BASKETBALL_CONFIG.roles ?? []);
-    const broken: string[] = [];
-
+  it("no template references 'bb-be-vocal'", () => {
     for (const template of manifest.templates) {
-      if (!bbPositions.has(template.position)) continue;
-      const resetIdx = template.clips.indexOf("shared-reset-plan");
-      if (resetIdx < 1) {
-        broken.push(`[${template.position} × "${template.adversity}"] missing shared-reset-plan`);
-        continue;
-      }
-      const beforeReset = template.clips[resetIdx - 1];
-      if (beforeReset !== "bb-be-vocal") {
-        broken.push(
-          `[${template.position} × "${template.adversity}"] clip before shared-reset-plan is "${beforeReset}", expected "bb-be-vocal"`,
-        );
-      }
+      expect(template.clips).not.toContain("bb-be-vocal");
     }
+  });
+});
 
-    expect(broken).toEqual([]);
+// ---------------------------------------------------------------------------
+// 13. Be more Vocal openers (FV-124) — opener-be-vocal and opener-bb-be-vocal
+//     are in the catalog with real files; resolveOpenerSlug returns them for
+//     the correct sport; resolvePlaylist prepends opener-be-vocal for a hockey
+//     "Be more Vocal" session and opener-bb-be-vocal for basketball.
+// ---------------------------------------------------------------------------
+
+describe("Be more Vocal openers (FV-124)", () => {
+  it("opener-be-vocal is in the catalog with a real non-zero file", () => {
+    expect(catalogFileErr("opener-be-vocal")).toBeNull();
   });
 
-  it("resolvePlaylist for a sample hockey template includes 'be-vocal' in the resolved list", () => {
-    const playlist = resolvePlaylist("Calm", "Forward", "I feel nervous.", manifest);
+  it("opener-bb-be-vocal is in the catalog with a real non-zero file", () => {
+    expect(catalogFileErr("opener-bb-be-vocal")).toBeNull();
+  });
+
+  it("resolveOpenerSlug('Be more Vocal', 'hockey') returns 'opener-be-vocal'", () => {
+    expect(resolveOpenerSlug("Be more Vocal", "hockey")).toBe("opener-be-vocal");
+  });
+
+  it("resolveOpenerSlug('Be more Vocal', 'basketball') returns 'opener-bb-be-vocal'", () => {
+    expect(resolveOpenerSlug("Be more Vocal", "basketball")).toBe("opener-bb-be-vocal");
+  });
+
+  it("resolvePlaylist for a 'Be more Vocal' hockey session prepends opener-be-vocal and contains no be-vocal beat", () => {
+    const playlist = resolvePlaylist("Be more Vocal", "Forward", "I feel nervous.", manifest);
     expect(playlist).not.toBeNull();
     const slugs = playlist!.map((c) => c.slug);
-    expect(slugs).toContain("be-vocal");
-    // be-vocal must come before shared-reset-plan
-    const beVocalIdx = slugs.indexOf("be-vocal");
-    const resetIdx = slugs.indexOf("shared-reset-plan");
-    expect(beVocalIdx).toBeLessThan(resetIdx);
+    // opener-be-vocal leads
+    expect(slugs[0]).toBe("opener-be-vocal");
+    // no retired mid-session be-vocal beat
+    expect(slugs).not.toContain("be-vocal");
+    expect(slugs).not.toContain("bb-be-vocal");
   });
 
-  it("resolvePlaylist for a sample basketball template includes 'bb-be-vocal' in the resolved list", () => {
-    const playlist = resolvePlaylist("Calm", "Guard", "I turn the ball over.", manifest);
+  it("resolvePlaylist for a 'Be more Vocal' basketball session prepends opener-bb-be-vocal and contains no be-vocal beat", () => {
+    const playlist = resolvePlaylist(
+      "Be more Vocal",
+      "Guard",
+      "I turn the ball over.",
+      manifest,
+      null, // anchor
+      null, // selfTalk
+      null, // cueWord
+      "basketball",
+    );
     expect(playlist).not.toBeNull();
     const slugs = playlist!.map((c) => c.slug);
-    expect(slugs).toContain("bb-be-vocal");
-    // bb-be-vocal must come before shared-reset-plan
-    const beVocalIdx = slugs.indexOf("bb-be-vocal");
-    const resetIdx = slugs.indexOf("shared-reset-plan");
-    expect(beVocalIdx).toBeLessThan(resetIdx);
+    // opener-bb-be-vocal leads
+    expect(slugs[0]).toBe("opener-bb-be-vocal");
+    // no retired mid-session beats
+    expect(slugs).not.toContain("be-vocal");
+    expect(slugs).not.toContain("bb-be-vocal");
+  });
+
+  it("resolves the FULL hockey matrix for 'Be more Vocal' — every cell leads with opener-be-vocal, no beat", () => {
+    // 3 positions × 10 adversities. Catches a future PHASE2_TEMPLATES edit that
+    // drops the opener from a specific cell or lets a be-vocal beat back in.
+    for (const position of HOCKEY_CONFIG.roles ?? []) {
+      for (const adversity of HOCKEY_CONFIG.adversities) {
+        const playlist = resolvePlaylist("Be more Vocal", position, adversity, manifest, null, null, null, "hockey");
+        expect(playlist, `${position} × "${adversity}"`).not.toBeNull();
+        const slugs = playlist!.map((c) => c.slug);
+        expect(slugs[0], `${position} × "${adversity}" opener`).toBe("opener-be-vocal");
+        expect(slugs, `${position} × "${adversity}" beat-free`).not.toContain("be-vocal");
+      }
+    }
+  });
+
+  it("resolves the FULL basketball matrix for 'Be more Vocal' — every cell leads with opener-bb-be-vocal, no beat", () => {
+    for (const position of BASKETBALL_CONFIG.roles ?? []) {
+      for (const adversity of BASKETBALL_CONFIG.adversities) {
+        const playlist = resolvePlaylist("Be more Vocal", position, adversity, manifest, null, null, null, "basketball");
+        expect(playlist, `${position} × "${adversity}"`).not.toBeNull();
+        const slugs = playlist!.map((c) => c.slug);
+        expect(slugs[0], `${position} × "${adversity}" opener`).toBe("opener-bb-be-vocal");
+        expect(slugs, `${position} × "${adversity}" beat-free`).not.toContain("bb-be-vocal");
+      }
+    }
   });
 });
 

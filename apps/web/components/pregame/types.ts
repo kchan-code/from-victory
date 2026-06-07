@@ -16,7 +16,8 @@ export type NeedToday =
   | "Better decisions with the ball"
   | "Leadership"
   | "Joy"
-  | "Hope";
+  | "Hope"
+  | "Be more Vocal";
 
 export type PregameState = {
   breathDone: boolean;
@@ -61,6 +62,7 @@ export const NEEDS: NeedToday[] = [
   "Leadership",
   "Joy",
   "Hope",
+  "Be more Vocal",
 ];
 
 // ROLE_CONTENT and ADVERSITIES have moved to sport-registry.ts (HOCKEY_CONFIG).
@@ -182,6 +184,16 @@ export const NEED_VERSE: Record<NeedToday, NeedVerse> = {
     eyebrow: "Strength you receive, not strength you summon.",
     displayText:
       "Those who hope in the Lord will renew their strength... they will run and not grow weary, they will walk and not be faint.",
+  },
+  // Deliberately shares Romans 8:1 with "Reset after mistakes" (FV-124): one
+  // gospel spine ("no condemnation"), two applications — reset owns "the next
+  // mistake can't reopen a closed case"; be-vocal owns "the image-protecting
+  // ego is already covered, so you're free to speak." An athlete hears only one
+  // opener per session, so the verse never repeats in-product. Not a copy-paste.
+  "Be more Vocal": {
+    reference: "Romans 8:1",
+    displayText:
+      "Therefore, there is now no condemnation for those who are in Christ Jesus.",
   },
 };
 
