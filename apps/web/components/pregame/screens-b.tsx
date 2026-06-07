@@ -214,13 +214,117 @@ export function CueWordScreen({
 // Read-only summary before the 5-min guided session. Lets the athlete
 // confirm they like the setup or go back and edit. CTA "BEGIN GUIDED
 // SESSION" lives in the BottomBar (set via FLOW step.cta).
+//
+// FV-106: while online at this screen, kicks off per-athlete audio precache so
+// the guided session plays start-to-finish with no network (rink, dead zone).
+// The "Ready offline" indicator is keyed to actual Cache Storage state — never
+// navigator.onLine (handles lie-fi correctly).
 export function ReviewScreen({
   state,
   sportConfig = HOCKEY_CONFIG,
+  sport = "hockey",
 }: {
   state: PregameState;
   sportConfig?: SportConfig;
+  sport?: Sport;
 }) {
+  // ── FV-106: offline readiness indicator ─────────────────────────────────
+  // "idle"    → haven't started yet (SSR / caches API absent)
+  // "loading" → precache in progress
+  // "ready"   → all reachable clips confirmed in cache
+  // "partial" → some clips cached; finished but incomplete (non-critical)
+  type OfflineState = "idle" | "loading" | "ready" | "partial";
+  const [offlineState, setOfflineState] = useState<OfflineState>("idle");
+  const [cacheProgress, setCacheProgress] = useState<{ cached: number; total: number }>({
+    cached: 0,
+    total: 0,
+  });
+
+  useEffect(() => {
+    // Guard: Cache Storage only available client-side over HTTPS (or localhost).
+    if (typeof caches === "undefined") return;
+
+    // Only precache if we have enough state to resolve a playlist.
+    if (!state.need || !state.adversity) return;
+
+    let cancelled = false;
+
+    async function run() {
+      // Lazy import: audio-precache is browser-only (uses caches API).
+      // This dynamic import means the module is not included in SSR bundles.
+      const { precachePregameAudio, checkPregameAudioCached } = await import(
+        "./audio-precache"
+      );
+
+      if (cancelled) return;
+
+      const params = {
+        sport,
+        need: state.need!,
+        position: state.role ?? null,
+        adversity: state.adversity!,
+        anchor: state.anchor ?? null,
+        selfTalk: state.selfTalk ?? null,
+        cueWord: state.cueWord || null,
+      };
+
+      // First: check what's already cached (no network). If already complete,
+      // show ready immediately without re-fetching anything.
+      const initialCheck = await checkPregameAudioCached(params);
+      if (cancelled) return;
+
+      if (initialCheck.done) {
+        setOfflineState("ready");
+        setCacheProgress({ cached: initialCheck.cached, total: initialCheck.total });
+        return;
+      }
+
+      // Not fully cached — kick off precache with live progress reporting.
+      setOfflineState("loading");
+      setCacheProgress({ cached: initialCheck.cached, total: initialCheck.total });
+
+      const finalStatus = await precachePregameAudio(params, (status) => {
+        if (cancelled) return;
+        setCacheProgress({ cached: status.cached, total: status.total });
+      });
+
+      if (cancelled) return;
+
+      if (finalStatus.done) {
+        setOfflineState("ready");
+      } else if (finalStatus.cached > 0) {
+        // Partial cache — most clips ready; session will likely work but may
+        // need network for a small number of assets.
+        setOfflineState("partial");
+      } else {
+        // cached=0 and not done: every fetch failed or was skipped (lie-fi,
+        // captive portal, cellular block). Hide the badge rather than leaving
+        // "Downloading audio…" stuck forever — no false promise to the athlete.
+        setOfflineState("idle");
+      }
+    }
+
+    run().catch(() => {
+      // Non-fatal: indicator just stays hidden if the precache errors.
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    // Re-run only when the key setup fields change. Sport config changes never
+    // happen mid-flow so sportConfig is intentionally excluded to avoid an extra
+    // run if the parent re-renders with a stable but re-created config object.
+    sport,
+    state.need,
+    state.role,
+    state.adversity,
+    state.anchor,
+    state.selfTalk,
+    state.cueWord,
+  ]);
+
   const rows: Array<{ label: string; value: string }> = [
     { label: "Today's focus", value: state.need ?? "—" },
     { label: "Position", value: state.role ?? "—" },
@@ -270,7 +374,92 @@ export function ReviewScreen({
       <p className="mt-5 text-center font-scripture text-[15px] italic leading-[1.5] text-cream/70">
         {SCRIPTURE_SHORT}
       </p>
+
+      {/* FV-106 a11y: one persistent live region, always mounted, so VoiceOver /
+          NVDA reliably announce the state change from a stable element. The
+          visual badge below is presentational only. */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {offlineState === "loading"
+          ? cacheProgress.total > 0
+            ? `Downloading audio, ${cacheProgress.cached} of ${cacheProgress.total}`
+            : "Downloading audio"
+          : offlineState === "ready"
+            ? "Audio ready for offline play"
+            : ""}
+      </div>
+
+      {/* FV-106: offline readiness indicator — keyed to actual cache state */}
+      <OfflineReadyBadge
+        state={offlineState}
+        cached={cacheProgress.cached}
+        total={cacheProgress.total}
+      />
     </ScreenBody>
+  );
+}
+
+// ── FV-106 offline readiness badge ───────────────────────────────────────────
+// Rendered at the bottom of the Review screen below the scripture quote.
+// "idle" → renders nothing (no network check has run yet, or caches absent).
+// "loading" → "Downloading audio for offline play · X / Y" in silver.
+// "ready" → "Ready offline" in gold — confirmed by cache state, not onLine.
+// "partial" → nothing shown (partial is better than alarming the athlete).
+// The badge is calm and secondary — it must not dominate the pre-game moment.
+function OfflineReadyBadge({
+  state,
+  cached,
+  total,
+}: {
+  state: "idle" | "loading" | "ready" | "partial";
+  cached: number;
+  total: number;
+}) {
+  if (state === "idle" || state === "partial") return null;
+
+  if (state === "ready") {
+    return (
+      <div className="mt-4 flex items-center justify-center gap-1.5">
+        {/* Checkmark circle — inline SVG, no icon dependency */}
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          aria-hidden="true"
+        >
+          <circle cx="7" cy="7" r="6.5" stroke="#DFAF37" strokeWidth="1" />
+          <path
+            d="M4.5 7l1.8 1.8L9.5 5.5"
+            stroke="#DFAF37"
+            strokeWidth="1.25"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-gold">
+          Ready offline
+        </span>
+      </div>
+    );
+  }
+
+  // "loading" state — progress counter
+  const progressText =
+    total > 0
+      ? `Downloading audio · ${cached} / ${total}`
+      : "Downloading audio…";
+
+  return (
+    <div className="mt-4 flex items-center justify-center gap-1.5">
+      {/* Minimal animated dot to signal activity without being distracting */}
+      <span
+        className="block h-1.5 w-1.5 animate-pulse rounded-full bg-cream/30"
+        aria-hidden="true"
+      />
+      <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-cream/40">
+        {progressText}
+      </span>
+    </div>
   );
 }
 
@@ -553,7 +742,17 @@ export function AudioSessionScreen({
   // Probe both files. We start in audio mode (above) and only DOWNGRADE to
   // text-mode reading if a file is missing / unreachable, so the normal path
   // never flashes the reading paragraph.
+  //
+  // FV-106: skip the probe entirely when the clip player is active. The clip
+  // path owns reachability — useClipPlayer fetches the manifest + each clip
+  // ArrayBuffer and sets clipPlayer.error on failure, which the effect above
+  // converts to setAudioMode("text"). This probe hits the LEGACY root URLs
+  // (/audio/pregame/opener-*.mp3, /audio/pregame/session-*.mp3), which the SW
+  // and precache never cache — only /audio/pregame/clips/* is cached. Offline
+  // those HEAD fetches throw, so the unguarded probe was dropping a fully
+  // cached clip session to text mode at the rink (the exact case FV-106 fixes).
   useEffect(() => {
+    if (useClips) return;
     if (!openerSrc || !cellSrc) {
       setAudioMode("text");
       return;
@@ -572,7 +771,7 @@ export function AudioSessionScreen({
     return () => {
       cancelled = true;
     };
-  }, [openerSrc, cellSrc]);
+  }, [useClips, openerSrc, cellSrc]);
 
   // Load sidecar JSON timelines for pip section detection.
   // Completely separate from the HEAD probe — failures are silent, pips

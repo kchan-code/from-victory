@@ -120,6 +120,29 @@ jobs:
           echo "::error file=${MAPPING}::This PR changes *.mp3 files but does not bump AUDIO_CACHE_BUST. Any committed *.mp3 change requires an AUDIO_CACHE_BUST bump (CLAUDE.md → Project Workflow Config)."
           exit 1
 
+      - name: Require AUDIO_CACHE_BUST to match between audio-mapping.ts and sw.js
+        run: |
+          set -euo pipefail
+          # The hand-rolled service worker (public/sw.js) can't import the TS
+          # constant, so it keeps its own copy. They MUST match or the window-side
+          # precache and the SW open different caches and offline audio silently
+          # breaks (FV-106). Runs on every PR, not just *.mp3 changes.
+          MAPPING="apps/web/components/pregame/audio-mapping.ts"
+          SW="apps/web/public/sw.js"
+          TS_BUST=$(grep -oE '^[^/]*AUDIO_CACHE_BUST[[:space:]]*=[[:space:]]*"[^"]*"' "$MAPPING" | grep -oE '"[^"]*"' | head -1 || true)
+          SW_BUST=$(grep -oE '^[^/]*AUDIO_CACHE_BUST[[:space:]]*=[[:space:]]*"[^"]*"' "$SW" | grep -oE '"[^"]*"' | head -1 || true)
+          echo "audio-mapping.ts AUDIO_CACHE_BUST = ${TS_BUST:-<none>}"
+          echo "sw.js            AUDIO_CACHE_BUST = ${SW_BUST:-<none>}"
+          if [ -z "$TS_BUST" ] || [ -z "$SW_BUST" ]; then
+            echo "::error::Could not find AUDIO_CACHE_BUST in both $MAPPING and $SW."
+            exit 1
+          fi
+          if [ "$TS_BUST" != "$SW_BUST" ]; then
+            echo "::error file=${SW}::AUDIO_CACHE_BUST mismatch — $MAPPING has ${TS_BUST}, $SW has ${SW_BUST}. Bump both in the same PR (CLAUDE.md → Project Workflow Config)."
+            exit 1
+          fi
+          echo "✓ AUDIO_CACHE_BUST is in sync ($TS_BUST)."
+
 # NOTE: The automated kids-privacy-officer CI gate was removed while the
 # repo is pre-MVP (no schema, no auth, no journal code — nothing for the
 # officer to find on any current PR). Privacy review is now invoked
