@@ -39,6 +39,37 @@ export type Database = {
   }
   public: {
     Tables: {
+      // FV-14: hand-added. Confirm shape via `supabase gen types typescript
+      // --linked` after `supabase db push` applies
+      // 20260607000000_account_deletion_audit.sql to the linked project.
+      // No foreign keys in the migration (by design — see table comment).
+      account_deletion_events: {
+        Row: {
+          athletes_deleted: number | null
+          actor_parent_id: string
+          created_at: string
+          event_type: string
+          id: string
+          target_athlete_id: string | null
+        }
+        Insert: {
+          athletes_deleted?: number | null
+          actor_parent_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          target_athlete_id?: string | null
+        }
+        Update: {
+          athletes_deleted?: number | null
+          actor_parent_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          target_athlete_id?: string | null
+        }
+        Relationships: []
+      }
       athlete_sessions: {
         Row: {
           athlete_id: string
