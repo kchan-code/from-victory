@@ -776,7 +776,16 @@ export function AudioSessionScreen({
   // Load sidecar JSON timelines for pip section detection.
   // Completely separate from the HEAD probe — failures are silent, pips
   // just don't render.
+  //
+  // FV-130: skip entirely when the clip player is active. In that path pips are
+  // derived from clipPlayer.timeline (see the activePip derivation below), so
+  // these LEGACY root sidecars (/audio/pregame/opener-*.json, session-*.json)
+  // are unused — and they're never precached, so offline they 503 on every clip
+  // session at the rink. The condition mirrors the pip-derivation guard so the
+  // "no template" legacy fallback (useClips on, clipPlayer.error set) still
+  // fetches its timelines.
   useEffect(() => {
+    if (useClips && !clipPlayer.error) return;
     if (!state.need || audioMode !== "audio") return;
     let cancelled = false;
 
@@ -809,7 +818,16 @@ export function AudioSessionScreen({
     }
 
     return () => { cancelled = true; };
-  }, [state.need, state.role, state.adversity, audioMode, openerSrc, sport]);
+  }, [
+    state.need,
+    state.role,
+    state.adversity,
+    audioMode,
+    openerSrc,
+    sport,
+    useClips,
+    clipPlayer.error,
+  ]);
 
   // Text-mode timer (fallback). Unchanged from prior behavior.
   useEffect(() => {
