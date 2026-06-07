@@ -7,6 +7,7 @@ import {
   Source_Serif_4,
 } from "next/font/google";
 import "./globals.css";
+import { ServiceWorkerRegistrar } from "./_components/ServiceWorkerRegistrar";
 
 const bigShoulders = Big_Shoulders_Display({
   subsets: ["latin"],
@@ -109,6 +110,8 @@ export default function RootLayout({
     <html lang="en" className={fontVariables}>
       <body className="min-h-screen bg-onyx text-cream antialiased">
         {children}
+        {/* FV-105: service worker registration — runs after window load, renders nothing */}
+        <ServiceWorkerRegistrar />
       </body>
     </html>
   );
