@@ -259,7 +259,7 @@ function FocusPickerScreen({
           data-testid="start-practice-btn"
           className={`inline-flex w-full items-center justify-center gap-2 bg-onyx text-cream border border-gold rounded-[10px] font-display font-extrabold uppercase tracking-[0.14em] text-[14px] px-[26px] py-4 transition-transform duration-fast ease-out active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx disabled:cursor-not-allowed ${readyToGo ? "" : "opacity-45"}`}
         >
-          <span>START SESSION</span>
+          <span>CONTINUE</span>
         </button>
       </BottomBar>
     </>
