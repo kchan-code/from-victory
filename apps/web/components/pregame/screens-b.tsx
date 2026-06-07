@@ -371,6 +371,19 @@ export function ReviewScreen({
         {SCRIPTURE_SHORT}
       </p>
 
+      {/* FV-106 a11y: one persistent live region, always mounted, so VoiceOver /
+          NVDA reliably announce the state change from a stable element. The
+          visual badge below is presentational only. */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {offlineState === "loading"
+          ? cacheProgress.total > 0
+            ? `Downloading audio, ${cacheProgress.cached} of ${cacheProgress.total}`
+            : "Downloading audio"
+          : offlineState === "ready"
+            ? "Audio ready for offline play"
+            : ""}
+      </div>
+
       {/* FV-106: offline readiness indicator — keyed to actual cache state */}
       <OfflineReadyBadge
         state={offlineState}
@@ -401,11 +414,7 @@ function OfflineReadyBadge({
 
   if (state === "ready") {
     return (
-      <div
-        aria-live="polite"
-        aria-label="Audio ready for offline play"
-        className="mt-4 flex items-center justify-center gap-1.5"
-      >
+      <div className="mt-4 flex items-center justify-center gap-1.5">
         {/* Checkmark circle — inline SVG, no icon dependency */}
         <svg
           width="14"
@@ -437,11 +446,7 @@ function OfflineReadyBadge({
       : "Downloading audio…";
 
   return (
-    <div
-      aria-live="polite"
-      aria-label={progressText}
-      className="mt-4 flex items-center justify-center gap-1.5"
-    >
+    <div className="mt-4 flex items-center justify-center gap-1.5">
       {/* Minimal animated dot to signal activity without being distracting */}
       <span
         className="block h-1.5 w-1.5 animate-pulse rounded-full bg-cream/30"

@@ -7,7 +7,7 @@
 // Design constraints enforced here:
 //   - NEVER fetches the 201 MB full library. Only the athlete's reachable set
 //     (~single-digit MB: typically 1 opener + 1 cell + 3–5 personalization
-//     clips, each with a sidecar JSON).
+//     clips).
 //   - Uses the SAME cache name (fv-audio-<AUDIO_CACHE_BUST>) as the SW, so
 //     cache.put() from the window-side is read by the SW's cache-first handler.
 //     Window and SW share Cache Storage on the same origin.
@@ -19,13 +19,10 @@
 //
 // Reachable set for a pregame session:
 //   1. manifest.json (the clips catalog — needed to resolve slugs).
-//   2. opener MP3 → resolveOpenerSlug(need, sport) → audioAssetUrl(slug, "mp3")
-//   3. opener sidecar JSON → audioAssetUrl(slug, "json")
-//   4. For EACH slug in the matched template.clips (after sentinel substitution):
-//      a. slug.mp3 → audioAssetUrl(slug, "mp3")
-//      b. slug.json → audioAssetUrl(slug, "json")
-//   Sidecar JSONs are small (~1 KB) and drive section pip detection — worth
-//   caching alongside the MP3s so the whole session is truly self-contained.
+//   2. For EACH clip in the resolved playlist: its MP3 via clip.url (already
+//      cache-busted, already carries the /clips/ subpath from the manifest).
+//   Sidecar JSONs are NOT cached — the clip player works from the in-memory
+//   manifest and never fetches per-clip JSON at runtime.
 //
 // audio-playlist.ts is treated as READ-ONLY per FV-106 scope. This module
 // calls resolvePlaylist() from audio-playlist.ts without modifying it.
@@ -37,7 +34,7 @@
 //   kept in sync. When audio-engineer bumps AUDIO_CACHE_BUST in audio-mapping.ts,
 //   the sw.js constant must be updated to match in the same PR.
 
-import { AUDIO_CACHE_BUST, audioAssetUrl } from "./audio-mapping";
+import { AUDIO_CACHE_BUST } from "./audio-mapping";
 import {
   manifestUrl,
   resolvePlaylist,
@@ -153,14 +150,16 @@ async function resolveReachableUrls(
 
   if (!resolved) return null;
 
-  // Build the full URL list: manifest JSON + each clip's MP3 + sidecar JSON.
+  // Build the URL list: manifest JSON + each clip's MP3. clip.url is already
+  // cache-busted (bustUrl) and already carries the correct /clips/ subpath from
+  // the manifest catalog entry. Sidecar JSONs are intentionally NOT cached: the
+  // clip player reads clip data from the in-memory manifest and never fetches
+  // per-clip JSON at runtime, and audioAssetUrl(slug,"json") would emit
+  // /audio/pregame/<slug>.json (no /clips/) — a 404 that would inflate `total`
+  // without raising `cached`, so `done` could never become true.
   const urls: string[] = [manifestSrc];
   for (const clip of resolved) {
-    // clip.url is already cache-busted (bustUrl applied by resolvePlaylist).
-    // Add the MP3 URL as-is.
     urls.push(clip.url);
-    // Derive the JSON sidecar URL from the slug (same pattern as audioAssetUrl).
-    urls.push(audioAssetUrl(clip.slug, "json"));
   }
 
   return urls;

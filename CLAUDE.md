@@ -430,7 +430,7 @@ docs/brand.md "Voice Modes" for the full table. Default mode is Mentor.
 - **Verify — narrowest:** prefer a single test file or `tsc` on touched paths over the whole suite.
 - **Review gate (before merge):** general `/review` (issue-scoped) → qa-reviewer → kids-privacy-officer (if privacy path) → merge
 - **Privacy-sensitive paths (trigger kids-privacy-officer):** `apps/web/**`, `supabase/**`, `packages/content/**`, `.claude/agents/**`, `CLAUDE.md`, `docs/brand.md`
-- **Project-specific guards:** if any committed `*.mp3` changed, bump `AUDIO_CACHE_BUST` in `apps/web/components/pregame/audio-mapping.ts`
+- **Project-specific guards:** if any committed `*.mp3` changed, bump `AUDIO_CACHE_BUST` in `apps/web/components/pregame/audio-mapping.ts` **and** the matching `const AUDIO_CACHE_BUST` in `apps/web/public/sw.js` (the hand-rolled SW can't import the TS constant; CI's `audio-cache-bust` job enforces they match — FV-106)
 - **Agent roster:** see `## Subagents` and `## Agent Orchestration` in this file.
 
 ## Merge Authority & Risk Tiers
