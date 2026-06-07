@@ -76,7 +76,7 @@ const BB_FOCUS_SLUG = "pp-bb-focus-relentless";
 /** Build a p5 state-aware practice manifest (backward-compat shape).
  *  practiceState is keyed by state directly (no sport nesting). */
 function buildP5Manifest(
-  { includeFocus = true }: { includeFocus?: boolean } = {},
+  { includeFocus = true, includePrayer = true }: { includeFocus?: boolean; includePrayer?: boolean } = {},
 ): ClipManifest {
   const clips: ClipManifest["clips"] = {
     "pp-opener-dialed-in": catalogEntry("/audio/pregame/clips/pp-opener-dialed-in.mp3", 20),
@@ -91,6 +91,10 @@ function buildP5Manifest(
   if (includeFocus) {
     clips[FOCUS_SLUG] = catalogEntry(`/audio/pregame/clips/${FOCUS_SLUG}.mp3`, 3);
   }
+  if (includePrayer) {
+    clips["pp-prayer"] = catalogEntry("/audio/pregame/clips/pp-prayer.mp3", 30);
+    clips["pp-prayer-selfguided"] = catalogEntry("/audio/pregame/clips/pp-prayer-selfguided.mp3", 50);
+  }
   return {
     version: "p5",
     clips,
@@ -102,12 +106,15 @@ function buildP5Manifest(
   };
 }
 
-/** Catalog entries shared between hockey and basketball in a p6 manifest. */
+/** Catalog entries shared between hockey and basketball in a p6 manifest.
+ *  Includes prayer clips (sport-neutral, same slug for both sports). */
 function buildSharedCatalogEntries(): ClipManifest["clips"] {
   return {
     "pp-opener-dialed-in": catalogEntry("/audio/pregame/clips/pp-opener-dialed-in.mp3", 20),
     "pp-choose-focus-lead": catalogEntry("/audio/pregame/clips/pp-choose-focus-lead.mp3", 5),
     "pp-choose-focus-tail": catalogEntry("/audio/pregame/clips/pp-choose-focus-tail.mp3", 8),
+    "pp-prayer": catalogEntry("/audio/pregame/clips/pp-prayer.mp3", 30),
+    "pp-prayer-selfguided": catalogEntry("/audio/pregame/clips/pp-prayer-selfguided.mp3", 50),
   };
 }
 
@@ -190,7 +197,7 @@ function buildP6FullManifest(
 // ---------------------------------------------------------------------------
 
 describe("resolvePracticePlaylist — state-aware routing (p5)", () => {
-  it('"dialed-in" starts with pp-opener-dialed-in and follows the full order', () => {
+  it('"dialed-in" starts with pp-opener-dialed-in and follows the full order (guided default → pp-prayer at tail)', () => {
     const result = resolvePracticePlaylist(buildP5Manifest(), "dialed-in", FOCUS_OPTION);
     expect(result).not.toBeNull();
     expect(result!.map((c) => c.slug)).toEqual([
@@ -202,16 +209,17 @@ describe("resolvePracticePlaylist — state-aware routing (p5)", () => {
       "pp-choose-focus-tail",
       "pp-be-vocal",
       "pp-see-it-go",
+      "pp-prayer",
     ]);
   });
 
-  it('"not-feeling-it" swaps ONLY the opener (pp-opener-get-to), shared tail identical', () => {
+  it('"not-feeling-it" swaps ONLY the opener (pp-opener-get-to), shared tail identical + pp-prayer at end', () => {
     const result = resolvePracticePlaylist(buildP5Manifest(), "not-feeling-it", FOCUS_OPTION);
     expect(result).not.toBeNull();
     const slugs = result!.map((c) => c.slug);
     expect(slugs[0]).toBe("pp-opener-get-to");
     expect(slugs).not.toContain("pp-opener-dialed-in");
-    // everything after the opener is the shared tail with the focus injected
+    // everything after the opener is the shared tail with focus injected + prayer at end
     expect(slugs.slice(1)).toEqual([
       "pp-name-standard",
       "pp-goal-fusion",
@@ -220,6 +228,7 @@ describe("resolvePracticePlaylist — state-aware routing (p5)", () => {
       "pp-choose-focus-tail",
       "pp-be-vocal",
       "pp-see-it-go",
+      "pp-prayer",
     ]);
   });
 
@@ -397,7 +406,7 @@ describe("PRACTICE_FOCUS_SLUGS map", () => {
 // ---------------------------------------------------------------------------
 
 describe("resolvePracticePlaylist — p6 hockey sport-keyed manifest", () => {
-  it('"dialed-in" resolves hockey tail correctly from p6 manifest', () => {
+  it('"dialed-in" resolves hockey tail correctly from p6 manifest (guided default → pp-prayer at tail)', () => {
     const result = resolvePracticePlaylist(
       buildP6HockeyManifest(),
       "dialed-in",
@@ -414,10 +423,11 @@ describe("resolvePracticePlaylist — p6 hockey sport-keyed manifest", () => {
       "pp-choose-focus-tail",
       "pp-be-vocal",
       "pp-see-it-go",
+      "pp-prayer",
     ]);
   });
 
-  it("p6 hockey: not-feeling-it swaps only the opener", () => {
+  it("p6 hockey: not-feeling-it swaps only the opener; pp-prayer still at tail", () => {
     const result = resolvePracticePlaylist(
       buildP6HockeyManifest(),
       "not-feeling-it",
@@ -434,10 +444,11 @@ describe("resolvePracticePlaylist — p6 hockey sport-keyed manifest", () => {
       "pp-choose-focus-tail",
       "pp-be-vocal",
       "pp-see-it-go",
+      "pp-prayer",
     ]);
   });
 
-  it("p6 hockey: injects the FV-121 'Talk every shift' focus slug at the seam", () => {
+  it("p6 hockey: injects the FV-121 'Talk every shift' focus slug at the seam; pp-prayer at tail", () => {
     const manifest = buildP6HockeyManifest({ includeFocus: false });
     manifest.clips["pp-focus-talk-every-shift"] = catalogEntry(
       "/audio/pregame/clips/pp-focus-talk-every-shift.mp3",
@@ -459,6 +470,7 @@ describe("resolvePracticePlaylist — p6 hockey sport-keyed manifest", () => {
       "pp-choose-focus-tail",
       "pp-be-vocal",
       "pp-see-it-go",
+      "pp-prayer",
     ]);
   });
 
@@ -479,7 +491,7 @@ const BB_PRACTICE_FOCUS_OPTIONS = BASKETBALL_CONFIG.practiceFocusOptions;
 const BB_PRACTICE_FOCUS_SLUGS = BASKETBALL_CONFIG.practiceFocusSlugs;
 
 describe("resolvePracticePlaylist — basketball tail (p6, FV-30)", () => {
-  it('"dialed-in" starts with pp-opener-dialed-in and uses basketball tail', () => {
+  it('"dialed-in" starts with pp-opener-dialed-in and uses basketball tail (guided default → pp-prayer at tail)', () => {
     const result = resolvePracticePlaylist(
       buildP6FullManifest(),
       "dialed-in",
@@ -496,10 +508,11 @@ describe("resolvePracticePlaylist — basketball tail (p6, FV-30)", () => {
       "pp-choose-focus-tail",
       "pp-bb-be-vocal",
       "pp-bb-see-it-go",
+      "pp-prayer",
     ]);
   });
 
-  it('"not-feeling-it" uses pp-bb-opener-get-to (basketball-specific opener)', () => {
+  it('"not-feeling-it" uses pp-bb-opener-get-to (basketball-specific opener); pp-prayer at tail', () => {
     const result = resolvePracticePlaylist(
       buildP6FullManifest(),
       "not-feeling-it",
@@ -516,6 +529,7 @@ describe("resolvePracticePlaylist — basketball tail (p6, FV-30)", () => {
       "pp-choose-focus-tail",
       "pp-bb-be-vocal",
       "pp-bb-see-it-go",
+      "pp-prayer",
     ]);
   });
 
@@ -662,5 +676,80 @@ describe("BASKETBALL_CONFIG.practiceFocusSlugs map (FV-30)", () => {
     expect(Object.keys(BB_PRACTICE_FOCUS_SLUGS).sort()).toEqual(
       [...BB_PRACTICE_FOCUS_OPTIONS].sort(),
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 9. Prayer-style routing — resolvePracticePlaylist (Issue 2)
+// ---------------------------------------------------------------------------
+
+describe("resolvePracticePlaylist — prayerStyle (Issue 2)", () => {
+  it("guided (default/undefined) → tail ends with pp-prayer, not pp-prayer-selfguided", () => {
+    const result = resolvePracticePlaylist(buildP6HockeyManifest(), "dialed-in", FOCUS_OPTION, HOCKEY_CONFIG);
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    expect(slugs[slugs.length - 1]).toBe("pp-prayer");
+    expect(slugs).not.toContain("pp-prayer-selfguided");
+  });
+
+  it('guided (explicit) → tail ends with pp-prayer', () => {
+    const result = resolvePracticePlaylist(buildP6HockeyManifest(), "dialed-in", FOCUS_OPTION, HOCKEY_CONFIG, "guided");
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    expect(slugs[slugs.length - 1]).toBe("pp-prayer");
+    expect(slugs).not.toContain("pp-prayer-selfguided");
+  });
+
+  it('self-guided → tail ends with pp-prayer-selfguided, not pp-prayer', () => {
+    const result = resolvePracticePlaylist(buildP6HockeyManifest(), "dialed-in", FOCUS_OPTION, HOCKEY_CONFIG, "self-guided");
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    expect(slugs[slugs.length - 1]).toBe("pp-prayer-selfguided");
+    expect(slugs).not.toContain("pp-prayer");
+  });
+
+  it('basketball: guided → tail ends with pp-prayer (sport-neutral)', () => {
+    const result = resolvePracticePlaylist(buildP6FullManifest(), "dialed-in", BB_FOCUS_OPTION, BASKETBALL_CONFIG, "guided");
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    expect(slugs[slugs.length - 1]).toBe("pp-prayer");
+    expect(slugs).not.toContain("pp-prayer-selfguided");
+  });
+
+  it('basketball: self-guided → tail ends with pp-prayer-selfguided (sport-neutral)', () => {
+    const result = resolvePracticePlaylist(buildP6FullManifest(), "dialed-in", BB_FOCUS_OPTION, BASKETBALL_CONFIG, "self-guided");
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    expect(slugs[slugs.length - 1]).toBe("pp-prayer-selfguided");
+    expect(slugs).not.toContain("pp-prayer");
+  });
+
+  it('p5 manifest: guided → tail ends with pp-prayer', () => {
+    const result = resolvePracticePlaylist(buildP5Manifest(), "dialed-in", FOCUS_OPTION, HOCKEY_CONFIG, "guided");
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    expect(slugs[slugs.length - 1]).toBe("pp-prayer");
+  });
+
+  it('p5 manifest: self-guided → tail ends with pp-prayer-selfguided', () => {
+    const result = resolvePracticePlaylist(buildP5Manifest(), "dialed-in", FOCUS_OPTION, HOCKEY_CONFIG, "self-guided");
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    expect(slugs[slugs.length - 1]).toBe("pp-prayer-selfguided");
+  });
+
+  it('missing prayer clips → returns null (fail closed — prayer clip required in catalog)', () => {
+    const manifest = buildP6HockeyManifest();
+    // Remove the prayer clip from catalog to trigger fail-closed.
+    delete manifest.clips["pp-prayer"];
+    const result = resolvePracticePlaylist(manifest, "dialed-in", FOCUS_OPTION, HOCKEY_CONFIG, "guided");
+    expect(result).toBeNull();
+  });
+
+  it('missing selfguided prayer clip → returns null for self-guided', () => {
+    const manifest = buildP6HockeyManifest();
+    delete manifest.clips["pp-prayer-selfguided"];
+    const result = resolvePracticePlaylist(manifest, "dialed-in", FOCUS_OPTION, HOCKEY_CONFIG, "self-guided");
+    expect(result).toBeNull();
   });
 });

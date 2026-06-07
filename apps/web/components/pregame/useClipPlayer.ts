@@ -72,6 +72,7 @@ import {
 } from "./audio-playlist";
 import { assembleWavBlob } from "./audio/encode-wav";
 import { getSportConfig, type Sport } from "./sport-registry";
+import type { PrayerStyle } from "./types";
 
 // ---------------------------------------------------------------------------
 // Vendor-prefix type helper (decode-only AudioContext)
@@ -149,6 +150,14 @@ export type UseClipPlayerOptions = {
    * and focus slug maps. Defaults to "hockey" so existing call sites stay green.
    */
   sport?: Sport;
+  /**
+   * How the athlete wants to close the session.
+   * Pregame: "guided" keeps shared-prayer+sendoff; "self-guided" swaps to
+   *   shared-prayer-selfguided and drops shared-sendoff.
+   * Practice: "guided" appends pp-prayer; "self-guided" appends pp-prayer-selfguided.
+   * Defaults to "guided" (unchanged behaviour for all existing call sites).
+   */
+  prayerStyle?: PrayerStyle | null;
   /** Called once when the final clip ends. */
   onCompleted?: () => void;
 };
@@ -203,6 +212,7 @@ export function useClipPlayer({
   practiceState,
   practiceFocus,
   sport = "hockey",
+  prayerStyle,
   onCompleted,
 }: UseClipPlayerOptions): UseClipPlayerResult {
   // ── state ──
@@ -350,7 +360,7 @@ export function useClipPlayer({
       let clips: ReturnType<typeof resolvePlaylist>;
       if (practice) {
         const sportConfig = getSportConfig(sport);
-        clips = resolvePracticePlaylist(manifest, practiceState, practiceFocus, sportConfig);
+        clips = resolvePracticePlaylist(manifest, practiceState, practiceFocus, sportConfig, prayerStyle);
         if (!clips) {
           setError("no template");
           return;
@@ -368,6 +378,7 @@ export function useClipPlayer({
           selfTalk,
           cueWord,
           sport,
+          prayerStyle,
         );
         if (!clips) {
           // No template for this combination — sentinel triggers legacy path.
@@ -521,7 +532,7 @@ export function useClipPlayer({
     return () => {
       cancelled = true;
     };
-  }, [need, position, adversity, anchor, selfTalk, cueWord, practice, practiceState, practiceFocus, sport, startRaf, stopRaf, wireMediaSession]);
+  }, [need, position, adversity, anchor, selfTalk, cueWord, practice, practiceState, practiceFocus, sport, prayerStyle, startRaf, stopRaf, wireMediaSession]);
 
   // ── Lightweight visibilitychange nudge ──
   // iOS may pause the audio element when the app is briefly backgrounded (e.g.

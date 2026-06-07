@@ -447,6 +447,113 @@ describe("buildAssembledTimeline", () => {
 });
 
 // ---------------------------------------------------------------------------
+// 2b. resolvePlaylist — prayer-style transform
+// ---------------------------------------------------------------------------
+
+describe("resolvePlaylist — prayerStyle transform (Issue 2)", () => {
+  // Build a p2 manifest that includes the prayer and sendoff slugs so we can
+  // verify they are present/absent depending on the prayerStyle arg.
+  const prayerManifest: ClipManifest = {
+    version: "p2",
+    clips: {
+      [REAL_OPENER_CONFIDENCE]: catalogEntry("/audio/opener-confidence.mp3", 60),
+      "session-forward-turnover": catalogEntry("/audio/session-forward-turnover.mp3", 240),
+      "shared-prayer": catalogEntry("/audio/pregame/clips/shared-prayer.mp3", 30),
+      "shared-prayer-selfguided": catalogEntry("/audio/pregame/clips/shared-prayer-selfguided.mp3", 50),
+      "shared-sendoff": catalogEntry("/audio/pregame/clips/shared-sendoff.mp3", 10),
+    },
+    templates: [
+      {
+        position: "Forward",
+        adversity: "I turn the puck over.",
+        clips: ["session-forward-turnover", "shared-prayer", "shared-sendoff"],
+      },
+    ],
+  };
+
+  it('guided (default) → playlist contains shared-prayer and shared-sendoff, NOT shared-prayer-selfguided', () => {
+    const result = resolvePlaylist(
+      "Confidence",
+      "Forward",
+      "I turn the puck over.",
+      prayerManifest,
+      null, null, null,
+      "hockey",
+      "guided",
+    );
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    expect(slugs).toContain("shared-prayer");
+    expect(slugs).toContain("shared-sendoff");
+    expect(slugs).not.toContain("shared-prayer-selfguided");
+  });
+
+  it('omitting prayerStyle (undefined) behaves as guided — contains shared-prayer and shared-sendoff', () => {
+    const result = resolvePlaylist(
+      "Confidence",
+      "Forward",
+      "I turn the puck over.",
+      prayerManifest,
+    );
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    expect(slugs).toContain("shared-prayer");
+    expect(slugs).toContain("shared-sendoff");
+    expect(slugs).not.toContain("shared-prayer-selfguided");
+  });
+
+  it('self-guided → contains shared-prayer-selfguided, NOT shared-prayer, NOT shared-sendoff', () => {
+    const result = resolvePlaylist(
+      "Confidence",
+      "Forward",
+      "I turn the puck over.",
+      prayerManifest,
+      null, null, null,
+      "hockey",
+      "self-guided",
+    );
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    expect(slugs).toContain("shared-prayer-selfguided");
+    expect(slugs).not.toContain("shared-prayer");
+    expect(slugs).not.toContain("shared-sendoff");
+  });
+
+  it('self-guided is robust when template lacks shared-prayer or shared-sendoff (no crash, no null)', () => {
+    // Manifest where the template only has the session cell — no prayer/sendoff in template.
+    const sparseManifest: ClipManifest = {
+      version: "p2",
+      clips: {
+        [REAL_OPENER_CONFIDENCE]: catalogEntry("/audio/opener-confidence.mp3", 60),
+        "session-forward-turnover": catalogEntry("/audio/session-forward-turnover.mp3", 240),
+      },
+      templates: [
+        {
+          position: "Forward",
+          adversity: "I turn the puck over.",
+          clips: ["session-forward-turnover"],
+        },
+      ],
+    };
+    const result = resolvePlaylist(
+      "Confidence",
+      "Forward",
+      "I turn the puck over.",
+      sparseManifest,
+      null, null, null,
+      "hockey",
+      "self-guided",
+    );
+    // No prayer slugs in the template → transform is a no-op → still resolves.
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    expect(slugs).not.toContain("shared-prayer");
+    expect(slugs).not.toContain("shared-prayer-selfguided");
+    expect(slugs).not.toContain("shared-sendoff");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // 3. findActivePhase
 // ---------------------------------------------------------------------------
 

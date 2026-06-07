@@ -20,6 +20,7 @@ import {
 import {
   AudioSessionScreen,
   CueWordScreen,
+  PrayerStyleScreen,
   PregameCardScreen,
   ResetAnchorScreen,
   ReviewScreen,
@@ -206,6 +207,8 @@ function ScreenSwitch({
       return <SelfTalkScreen state={state} set={set} sportConfig={sportConfig} />;
     case "cueWord":
       return <CueWordScreen state={state} set={set} />;
+    case "prayerStyle":
+      return <PrayerStyleScreen state={state} set={set} />;
     case "review":
       return <ReviewScreen state={state} sportConfig={sportConfig} sport={sport} />;
     case "audio":
