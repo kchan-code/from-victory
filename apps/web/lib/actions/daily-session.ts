@@ -70,5 +70,10 @@ export async function completeDailySession(): Promise<void> {
     .is("completed_at", null);
   if (error) throw new Error(`completeDailySession: ${error.message}`);
 
+  // Refresh BOTH the hub (rhythm ring advances) and the daily screen itself so
+  // completing day N immediately surfaces day N+1's session. Without the
+  // /athlete/daily revalidate the screen stayed pinned to day N — there was no
+  // way to advance. Free-advance progression: no one-per-day throttle.
   revalidatePath("/athlete");
+  revalidatePath("/athlete/daily");
 }
