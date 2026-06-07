@@ -296,8 +296,12 @@ export function ReviewScreen({
         // Partial cache — most clips ready; session will likely work but may
         // need network for a small number of assets.
         setOfflineState("partial");
+      } else {
+        // cached=0 and not done: every fetch failed or was skipped (lie-fi,
+        // captive portal, cellular block). Hide the badge rather than leaving
+        // "Downloading audio…" stuck forever — no false promise to the athlete.
+        setOfflineState("idle");
       }
-      // error or cached=0: leave as "loading" state that silently fades out.
     }
 
     run().catch(() => {
@@ -738,7 +742,17 @@ export function AudioSessionScreen({
   // Probe both files. We start in audio mode (above) and only DOWNGRADE to
   // text-mode reading if a file is missing / unreachable, so the normal path
   // never flashes the reading paragraph.
+  //
+  // FV-106: skip the probe entirely when the clip player is active. The clip
+  // path owns reachability — useClipPlayer fetches the manifest + each clip
+  // ArrayBuffer and sets clipPlayer.error on failure, which the effect above
+  // converts to setAudioMode("text"). This probe hits the LEGACY root URLs
+  // (/audio/pregame/opener-*.mp3, /audio/pregame/session-*.mp3), which the SW
+  // and precache never cache — only /audio/pregame/clips/* is cached. Offline
+  // those HEAD fetches throw, so the unguarded probe was dropping a fully
+  // cached clip session to text mode at the rink (the exact case FV-106 fixes).
   useEffect(() => {
+    if (useClips) return;
     if (!openerSrc || !cellSrc) {
       setAudioMode("text");
       return;
@@ -757,7 +771,7 @@ export function AudioSessionScreen({
     return () => {
       cancelled = true;
     };
-  }, [openerSrc, cellSrc]);
+  }, [useClips, openerSrc, cellSrc]);
 
   // Load sidecar JSON timelines for pip section detection.
   // Completely separate from the HEAD probe — failures are silent, pips
