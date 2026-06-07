@@ -27,7 +27,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { type PracticeState } from "./types";
+import { type PracticeState, type PrayerStyle, PRAYER_STYLE_OPTIONS } from "./types";
 import { getSportConfig, type Sport } from "./sport-registry";
 import { useClipPlayer } from "./useClipPlayer";
 import {
@@ -36,13 +36,14 @@ import {
   PregameShell,
   SectionLabel,
   ScreenBody,
+  SelectCard,
 } from "./shared";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type PracticeView = "state-picker" | "focus-picker" | "session";
+type PracticeView = "state-picker" | "focus-picker" | "prayer-picker" | "session";
 
 // ---------------------------------------------------------------------------
 // StatePickerScreen — NEW (FRO-22)
@@ -266,6 +267,77 @@ function FocusPickerScreen({
 }
 
 // ---------------------------------------------------------------------------
+// PrayerPickerScreen — prayer-style selector for pre-practice close
+// Reuses PRAYER_STYLE_OPTIONS from types.ts; same two-card pattern as the
+// pregame PrayerStyleScreen. "guided" is pre-selected so it's one tap to continue.
+// ---------------------------------------------------------------------------
+
+function PrayerPickerScreen({
+  initialStyle,
+  onContinue,
+  onBack,
+}: {
+  initialStyle: PrayerStyle;
+  onContinue: (style: PrayerStyle) => void;
+  onBack: () => void;
+}) {
+  const [selected, setSelected] = useState<PrayerStyle>(initialStyle);
+
+  return (
+    <>
+      <ScreenBody>
+        <SectionLabel>Practice day · Close</SectionLabel>
+        <h1 className="mb-1 font-heading text-[28px] font-bold leading-[1.12] text-cream">
+          How do you want to close?
+        </h1>
+        <p className="mb-5 font-body text-[14px] leading-relaxed text-cream/50">
+          Both end in prayer. You choose how.
+        </p>
+
+        <div
+          className="flex flex-col gap-2"
+          role="radiogroup"
+          aria-label="Closing prayer style"
+        >
+          {PRAYER_STYLE_OPTIONS.map(({ value, label, sub }) => (
+            <SelectCard
+              key={value}
+              label={label}
+              sub={sub}
+              selected={selected === value}
+              onClick={() => setSelected(value)}
+            />
+          ))}
+        </div>
+      </ScreenBody>
+
+      <BottomBar
+        secondary={
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex w-full items-center justify-center gap-1.5 font-heading text-[13px] font-medium text-cream/50 py-2 transition-colors duration-fast hover:text-cream/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            aria-label="Back to focus picker"
+          >
+            <Icon name="arrowLeft" size={14} />
+            <span>Back</span>
+          </button>
+        }
+      >
+        <button
+          type="button"
+          onClick={() => onContinue(selected)}
+          data-testid="prayer-picker-next-btn"
+          className="inline-flex w-full items-center justify-center gap-2 bg-onyx text-cream border border-gold rounded-[10px] font-display font-extrabold uppercase tracking-[0.14em] text-[14px] px-[26px] py-4 transition-transform duration-fast ease-out active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+        >
+          <span>START SESSION</span>
+        </button>
+      </BottomBar>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // PracticeSessionScreen
 // ---------------------------------------------------------------------------
 
@@ -280,12 +352,14 @@ const PRACTICE_SESSION_DURATION_S = 165;
 function PracticeSessionScreen({
   focus,
   practiceState,
+  prayerStyle,
   onBack,
   onDone,
   sport = "hockey",
 }: {
   focus: string;
   practiceState: PracticeState;
+  prayerStyle: PrayerStyle;
   /** Return to the focus picker (unmounts this component, triggering full
    *  AudioContext / wake-lock / rAF / interval cleanup automatically). */
   onBack: () => void;
@@ -323,7 +397,7 @@ function PracticeSessionScreen({
     };
   }, []);
 
-  // Wire practiceState + practiceFocus into the clip player (FRO-22).
+  // Wire practiceState + practiceFocus + prayerStyle into the clip player (FRO-22).
   // These are ephemeral — never persisted anywhere; they pass through
   // to resolvePracticePlaylist inside useClipPlayer.
   const clipPlayer = useClipPlayer({
@@ -333,6 +407,7 @@ function PracticeSessionScreen({
     practice: true,
     practiceState,
     practiceFocus: focus,
+    prayerStyle,
     sport,
     onCompleted: () => {
       /* completed state is read from clipPlayer.completed */
@@ -424,7 +499,7 @@ function PracticeSessionScreen({
           "radial-gradient(80% 50% at 50% 20%, rgba(36,91,255,0.10), transparent 65%), radial-gradient(60% 40% at 50% 100%, rgba(223,175,55,0.06), transparent 70%), var(--fv-onyx)",
       }}
     >
-      {/* Escape affordance — returns to focus picker.
+      {/* Escape affordance — returns to the closing-prayer picker.
           Sits in the safe-area top-left, visually matches the picker's back
           arrow idiom. Absolutely positioned so it never shifts content layout.
           Teardown is implicit: unmounting this component closes the AudioContext,
@@ -433,7 +508,7 @@ function PracticeSessionScreen({
       <button
         type="button"
         onClick={onBack}
-        aria-label="Back to focus"
+        aria-label="Back to closing prayer"
         data-testid="practice-back-btn"
         className="absolute left-[13px] top-[14px] flex h-[44px] w-[44px] -m-[5px] items-center justify-center rounded-pill text-cream/60 transition-colors duration-fast hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx motion-safe:transition-transform active:scale-95"
       >
@@ -526,12 +601,25 @@ function PracticeSessionScreen({
         {renderCompleted && (
           <>
             <div className="mb-4 text-center">
-              <p className="font-display text-[22px] font-extrabold uppercase tracking-[0.04em] text-cream">
-                Go practice.
-              </p>
-              <p className="mt-1.5 font-body text-[13px] text-cream/50">
-                How you practice is how you play.
-              </p>
+              {prayerStyle === "self-guided" ? (
+                <>
+                  <p className="font-heading text-[20px] font-semibold leading-[1.2] text-cream">
+                    Take your time.
+                  </p>
+                  <p className="mt-1.5 font-body text-[13px] text-cream/50">
+                    Pray as long as you need. Tap done when you&rsquo;re ready.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-display text-[22px] font-extrabold uppercase tracking-[0.04em] text-cream">
+                    Go practice.
+                  </p>
+                  <p className="mt-1.5 font-body text-[13px] text-cream/50">
+                    How you practice is how you play.
+                  </p>
+                </>
+              )}
             </div>
             {/* Coach-style CTA — native button so data-testid reaches the DOM. */}
             <button
@@ -566,11 +654,12 @@ export function PracticeFlow({
   const sportConfig = getSportConfig(sport);
 
   const [view, setView] = useState<PracticeView>("state-picker");
-  // practiceState + practiceFocus are EPHEMERAL: useState only.
+  // practiceState + practiceFocus + prayerStyle are EPHEMERAL: useState only.
   // They are NEVER written to Supabase, localStorage, analytics, or any
   // network call. They pass through to useClipPlayer and die on unmount.
   const [practiceState, setPracticeState] = useState<PracticeState>("dialed-in");
   const [focus, setFocus] = useState<string>("");
+  const [prayerStyle, setPrayerStyle] = useState<PrayerStyle>("guided");
 
   const handleStateContinue = (state: PracticeState) => {
     setPracticeState(state);
@@ -579,21 +668,30 @@ export function PracticeFlow({
 
   const handleFocusStart = (chosenFocus: string) => {
     setFocus(chosenFocus);
+    setView("prayer-picker");
+  };
+
+  const handlePrayerContinue = (chosenStyle: PrayerStyle) => {
+    setPrayerStyle(chosenStyle);
     setView("session");
   };
 
-  // Returns to the focus picker from the session. The previously-selected
-  // focus is still in state so the picker re-highlights it immediately —
-  // re-start is one tap. Unmounting PracticeSessionScreen triggers
-  // useClipPlayer's cleanup (closes AudioContext, releases wake lock, cancels
-  // rAF, clears text-mode intervalRef) without any explicit teardown here.
-  const handleBackToFocus = () => {
-    setView("focus-picker");
+  // Returns to the prayer picker from the session (back arrow visible).
+  // Unmounting PracticeSessionScreen triggers useClipPlayer's cleanup (closes
+  // AudioContext, releases wake lock, cancels rAF, clears text-mode intervalRef)
+  // without any explicit teardown here.
+  const handleBackToPrayer = () => {
+    setView("prayer-picker");
   };
 
   // Returns to the state picker from the focus picker.
   const handleBackToState = () => {
     setView("state-picker");
+  };
+
+  // Returns to the focus picker from the prayer picker.
+  const handleBackFromPrayer = () => {
+    setView("focus-picker");
   };
 
   const handleDone = () => {
@@ -607,7 +705,7 @@ export function PracticeFlow({
     <PregameShell>
       {/* Minimal header — only shown on picker screens.
           Session screen is intentionally header-free (one focal element). */}
-      {(view === "state-picker" || view === "focus-picker") && (
+      {(view === "state-picker" || view === "focus-picker" || view === "prayer-picker") && (
         <div className="sticky top-0 z-10 border-b border-hairline bg-onyx/80 backdrop-blur-md">
           <div className="flex items-center gap-3 px-[18px] pb-3 pt-[58px]">
             {view === "state-picker" ? (
@@ -620,11 +718,23 @@ export function PracticeFlow({
                   <Icon name="arrowLeft" size={16} />
                 </span>
               </a>
-            ) : (
+            ) : view === "focus-picker" ? (
               <button
                 type="button"
                 onClick={handleBackToState}
                 aria-label="Back to state picker"
+                className="flex h-[44px] w-[44px] flex-none -m-[5px] items-center justify-center rounded-pill text-cream transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+              >
+                <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">
+                  <Icon name="arrowLeft" size={16} />
+                </span>
+              </button>
+            ) : (
+              /* prayer-picker */
+              <button
+                type="button"
+                onClick={handleBackFromPrayer}
+                aria-label="Back to focus picker"
                 className="flex h-[44px] w-[44px] flex-none -m-[5px] items-center justify-center rounded-pill text-cream transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
               >
                 <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">
@@ -660,11 +770,19 @@ export function PracticeFlow({
           focusOptions={sportConfig.practiceFocusOptions}
         />
       )}
+      {view === "prayer-picker" && (
+        <PrayerPickerScreen
+          initialStyle={prayerStyle}
+          onContinue={handlePrayerContinue}
+          onBack={handleBackFromPrayer}
+        />
+      )}
       {view === "session" && (
         <PracticeSessionScreen
           focus={focus}
           practiceState={practiceState}
-          onBack={handleBackToFocus}
+          prayerStyle={prayerStyle}
+          onBack={handleBackToPrayer}
           onDone={handleDone}
           sport={sport}
         />

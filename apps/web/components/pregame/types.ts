@@ -19,6 +19,33 @@ export type NeedToday =
   | "Hope"
   | "Be more Vocal";
 
+/**
+ * How the athlete wants to close the guided session:
+ * "guided"      → the narration leads a closing prayer.
+ * "self-guided" → the audio invites a moment of silence (~18-20s);
+ *                 the athlete prays at their own pace and taps when done.
+ */
+export type PrayerStyle = "guided" | "self-guided";
+
+export type PrayerStyleOption = {
+  value: PrayerStyle;
+  label: string;
+  sub: string;
+};
+
+export const PRAYER_STYLE_OPTIONS: PrayerStyleOption[] = [
+  {
+    value: "guided",
+    label: "Pray with me",
+    sub: "I'll lead us through the closing prayer together.",
+  },
+  {
+    value: "self-guided",
+    label: "I'll pray on my own",
+    sub: "I'll lead you in, then give you a quiet moment to pray.",
+  },
+];
+
 export type PregameState = {
   breathDone: boolean;
   need: NeedToday | null;
@@ -28,6 +55,7 @@ export type PregameState = {
   anchor: string | null;
   selfTalk: string | null;
   cueWord: string;
+  prayerStyle: PrayerStyle;
   audioCompleted: boolean;
 };
 
@@ -39,6 +67,7 @@ export const INITIAL_STATE: PregameState = {
   anchor: null,
   selfTalk: null,
   cueWord: "Faithful",
+  prayerStyle: "guided",
   audioCompleted: false,
 };
 
@@ -332,6 +361,11 @@ export const FLOW: FlowStep[] = [
     id: "cueWord",
     label: "Cue Word",
     required: (s) => !!s.cueWord,
+  },
+  {
+    id: "prayerStyle",
+    label: "Close",
+    required: (s) => !!s.prayerStyle,
   },
   {
     id: "review",

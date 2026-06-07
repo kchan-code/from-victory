@@ -31,6 +31,7 @@ import type { AudioScript } from "./types";
 import {
   HARD_MOMENT_NARRATION_INSTRUCTIONS,
   HARD_MOMENT_TRUTH_INSTRUCTIONS,
+  PRAYER_INSTRUCTIONS,
   SCRIPT_INSTRUCTIONS,
   VISUALIZATION_INSTRUCTIONS,
 } from "./instructions.ts";
@@ -2489,6 +2490,8 @@ export const CLIP_PP_BE_VOCAL_SCRIPT: AudioScript = {
 };
 
 // ── SHARED Beat 6 — pp-see-it-go ─────────────────────────────────────────────
+// Terminal send-off ("Helmet on. Go compete. Play from victory.") removed —
+// the pre-practice session now ends on the prayer clip that follows this beat.
 export const CLIP_PP_SEE_IT_GO_SCRIPT: AudioScript = {
   slug: "pp-see-it-go",
   voice: "ash",
@@ -2509,11 +2512,6 @@ export const CLIP_PP_SEE_IT_GO_SCRIPT: AudioScript = {
     {
       type: "speech",
       text: "You're not skating to prove who you are. You already know.",
-    },
-    { type: "silence", durationSec: 0.8 },
-    {
-      type: "speech",
-      text: "Helmet on. Go compete. Play from victory.",
     },
   ],
 };
@@ -2651,7 +2649,8 @@ export const CLIP_PP_BB_BE_VOCAL_SCRIPT: AudioScript = {
 };
 
 // ── Basketball Beat 6 — pp-bb-see-it-go ──────────────────────────────────────
-// Identical to pp-see-it-go except closer: "Lace 'em up." (was "Helmet on.")
+// Terminal send-off ("Lace 'em up. Go compete. Play from victory.") removed —
+// the pre-practice session now ends on the prayer clip that follows this beat.
 export const CLIP_PP_BB_SEE_IT_GO_SCRIPT: AudioScript = {
   slug: "pp-bb-see-it-go",
   voice: "ash",
@@ -2672,11 +2671,6 @@ export const CLIP_PP_BB_SEE_IT_GO_SCRIPT: AudioScript = {
     {
       type: "speech",
       text: "You're not playing to prove who you are. You already know.",
-    },
-    { type: "silence", durationSec: 0.8 },
-    {
-      type: "speech",
-      text: "Lace 'em up. Go compete. Play from victory.",
     },
   ],
 };
@@ -3566,6 +3560,143 @@ export const CLIP_ST_BB_01_SCRIPT: AudioScript = {
   ],
 };
 
+// ── Pre-practice prayer clips (shared / sport-neutral) ───────────────────────
+//
+// Three clips pair with the pre-practice "Lock In" sequence.
+// All use voice ash + speed 0.95 + CLIP_LOUDNORM_FILTER, matching every other
+// pre-practice clip. The 20s / 18s trailing prayer-space silences are rendered
+// as single segments — silenceMp3() passes any durationSec directly to ffmpeg
+// -t, so large single-segment silences are fully supported without chaining.
+
+// CLIP A — shared-prayer-selfguided (pregame self-guided prayer)
+// Spoken identity segments: SELFTALK_INSTRUCTIONS (local const).
+// Spoken invitation / prayer-space segments: PRAYER_INSTRUCTIONS.
+// phase mark: "prayer" on seg5 (first PRAYER_INSTRUCTIONS speech segment),
+// consistent with PRAYER_SEGMENTS in segments.ts.
+export const CLIP_SHARED_PRAYER_SELFGUIDED_SCRIPT: AudioScript = {
+  slug: "shared-prayer-selfguided",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Here's what's already true before the first whistle. Your worth was settled before this game, and it'll hold after it — win, lose, great night or rough one. There's nothing left to prove out there.",
+      instructions: SELFTALK_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "That's what frees you to leave it all out there. Full compete. No holding back, no flinching when it gets hard.",
+      instructions: SELFTALK_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "So before you go, take it to God in your own words. You don't need the right ones — he already knows what tonight holds.",
+      instructions: PRAYER_INSTRUCTIONS,
+      mark: { phase: "prayer" },
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Maybe you thank him that your worth is already settled. Maybe you ask for courage, or for help when it gets hard, or you just hand him the nerves. However it comes out is fine.",
+      instructions: PRAYER_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Now take a moment to pray.",
+      instructions: PRAYER_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 20.0 },
+  ],
+};
+
+// CLIP B — pp-prayer (pre-practice guided prayer)
+// All speech segments use PRAYER_INSTRUCTIONS.
+// phase mark: "prayer" on seg1 (first speech segment).
+export const CLIP_PP_PRAYER_SCRIPT: AudioScript = {
+  slug: "pp-prayer",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Let's pray. Father, thank you that my worth was settled before I got here, and it'll hold long after I leave.",
+      instructions: PRAYER_INSTRUCTIONS,
+      mark: { phase: "prayer" },
+    },
+    { type: "silence", durationSec: 1.5 },
+    {
+      type: "speech",
+      text: "Nobody's watching this part. You are, and that's enough. Help me work hard when it's quiet and no one's keeping score.",
+      instructions: PRAYER_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 1.5 },
+    {
+      type: "speech",
+      text: "Help me give you the full effort, not the half. When a rep goes bad, help me drop it fast and go again — for you.",
+      instructions: PRAYER_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 1.5 },
+    {
+      type: "speech",
+      text: "Good reps or rough ones, they don't change how you see me. Help me do this work for you, and to glorify you. In Jesus' name, Amen.",
+      instructions: PRAYER_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 2.5 },
+  ],
+};
+
+// CLIP C — pp-prayer-selfguided (pre-practice self-guided prayer)
+// Spoken identity segments: SELFTALK_INSTRUCTIONS (local const).
+// Spoken invitation / prayer-space segments: PRAYER_INSTRUCTIONS.
+// phase mark: "prayer" on seg5 (first PRAYER_INSTRUCTIONS speech segment).
+export const CLIP_PP_PRAYER_SELFGUIDED_SCRIPT: AudioScript = {
+  slug: "pp-prayer-selfguided",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "How you practice is how you play. The full rep now is the one you'll have when it counts.",
+      instructions: SELFTALK_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "And you're giving that effort to an audience of One. So no rep here is wasted, and no rep here defines you. The good ones and the bad ones count to him the same — did you give it everything?",
+      instructions: SELFTALK_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "So before you get to work, take a second and talk to God in your own words. No one's watching this part but him, and that's the point.",
+      instructions: PRAYER_INSTRUCTIONS,
+      mark: { phase: "prayer" },
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Maybe you thank him that your worth is already settled, before a single rep. Maybe you ask for the focus to go full when it's quiet, or you just tell him you're tired today. However it comes out is fine.",
+      instructions: PRAYER_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Now take a moment to pray.",
+      instructions: PRAYER_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 18.0 },
+  ],
+};
+
 // ── Hockey pre-practice focus — pp-focus-talk-every-shift (FV-121) ────────────
 // Mirrors pp-bb-focus-talk-every-possession exactly; only the sport vocab differs.
 export const CLIP_PP_FOCUS_TALK_EVERY_SHIFT_SCRIPT: AudioScript = {
@@ -3775,4 +3906,8 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_ST_BB_01_SCRIPT,
   // Pre-practice focus — hockey "Talk every shift" (FV-121)
   CLIP_PP_FOCUS_TALK_EVERY_SHIFT_SCRIPT,
+  // Pre-practice + pregame prayer clips (sport-neutral, Issue 1)
+  CLIP_SHARED_PRAYER_SELFGUIDED_SCRIPT,
+  CLIP_PP_PRAYER_SCRIPT,
+  CLIP_PP_PRAYER_SELFGUIDED_SCRIPT,
 ];

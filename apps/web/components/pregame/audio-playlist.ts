@@ -15,7 +15,7 @@
 // of two separate AudioTimeline sidecars.
 
 import type { Phase } from "./audio/types";
-import type { PracticeState } from "./types";
+import type { PracticeState, PrayerStyle } from "./types";
 import {
   ANCHOR_OPTION_SLUGS,
   AUDIO_CACHE_BUST,
@@ -191,6 +191,16 @@ export function resolvePlaylist(
    * gets sport-keyed openers (FV-117 / FV-116).
    */
   sport: Sport = "hockey",
+  /**
+   * How the athlete wants to close the guided session.
+   * "guided" (default) → keeps shared-prayer and shared-sendoff in the list unchanged.
+   * "self-guided" → replaces shared-prayer with shared-prayer-selfguided AND
+   *                 removes shared-sendoff (the clip already contains the send-off
+   *                 in its trailing silence; no separate clip needed).
+   * Only acts on slugs that are actually present — missing slugs are silently
+   * skipped rather than causing a hard failure.
+   */
+  prayerStyle?: PrayerStyle | null,
 ): ResolvedClip[] | null {
   let slugs: string[];
 
@@ -251,6 +261,28 @@ export function resolvePlaylist(
         slugs.push(raw);
       }
     }
+  }
+
+  // ── Prayer-style transform ────────────────────────────────────────────────
+  // Applied AFTER all sentinel substitution but BEFORE the catalog lookup.
+  // Only touches slugs that are present in the list — slugs absent from the
+  // resolved list (e.g. because they were never in the template) are silently
+  // ignored so the session still completes on partially-built manifests.
+  if (prayerStyle === "self-guided") {
+    // Replace shared-prayer with shared-prayer-selfguided.
+    // Remove shared-sendoff (the self-guided clip bakes its own trailing send-off
+    // tone / "Go play" in the ~18-20s silence block — no separate clip needed).
+    const transformed: string[] = [];
+    for (const s of slugs) {
+      if (s === "shared-prayer") {
+        transformed.push("shared-prayer-selfguided");
+      } else if (s === "shared-sendoff") {
+        // Drop — self-guided clip carries the trailing send-off moment.
+      } else {
+        transformed.push(s);
+      }
+    }
+    slugs = transformed;
   }
 
   // ── Map each slug → ResolvedClip ─────────────────────────────────────────
@@ -325,6 +357,13 @@ export function resolvePracticePlaylist(
    * stay green without changes.
    */
   sportConfig: SportConfig = HOCKEY_CONFIG,
+  /**
+   * How the athlete wants to close the pre-practice session.
+   * "guided" (default) → appends pp-prayer to the tail.
+   * "self-guided"      → appends pp-prayer-selfguided to the tail.
+   * Sport-neutral: both hockey and basketball use the same prayer clip slugs.
+   */
+  prayerStyle?: PrayerStyle | null,
 ): ResolvedClip[] | null {
   // ── p5/p6 state-aware path ───────────────────────────────────────────────
   if (manifest.practiceState) {
@@ -359,9 +398,12 @@ export function resolvePracticePlaylist(
     const focusSlug =
       focus ? (sportConfig.practiceFocusSlugs[focus] ?? null) : null;
 
-    // Assemble: opener → shared-tail with focus injected between lead/tail.
+    // Assemble: opener → shared-tail with focus injected between lead/tail,
+    // then the closing prayer clip at the very end.
     // The shared-tail array from the manifest already contains lead+tail slugs;
     // focus is injected at the pp-choose-focus-lead / pp-choose-focus-tail seam.
+    // Prayer is sport-neutral: same pp-prayer / pp-prayer-selfguided slug for
+    // both hockey and basketball.
     const slugs: string[] = [openerSlug];
     for (const s of tailSlugs) {
       slugs.push(s);
@@ -369,6 +411,12 @@ export function resolvePracticePlaylist(
         slugs.push(focusSlug);
       }
     }
+
+    // Closing prayer — appended after the see-it-go / tail close.
+    const prayerSlug = prayerStyle === "self-guided"
+      ? "pp-prayer-selfguided"
+      : "pp-prayer";
+    slugs.push(prayerSlug);
 
     return mapSlugsToClips(slugs, manifest);
   }

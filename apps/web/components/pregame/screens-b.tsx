@@ -18,11 +18,13 @@ import {
   CUE_WORDS,
   DEFAULTS,
   NEED_VERSE,
+  PRAYER_STYLE_OPTIONS,
   SCRIPTURE_REF,
   SCRIPTURE_SHORT,
   SCRIPTURE_TEXT,
   type AudioSegment,
   type NeedVerse,
+  type PrayerStyle,
   type PregameState,
 } from "./types";
 import { audioAssetUrl, cellSrcFor, cellSlugFor, openerSrcFor } from "./audio-mapping";
@@ -210,7 +212,49 @@ export function CueWordScreen({
   );
 }
 
-// ─── SCREEN 8 ─── Review / Begin Audio
+// ─── SCREEN 7b ─── Prayer Style selector
+// Lets the athlete choose how the guided session closes:
+//   "Pray with me"      → guided prayer narration (shared-prayer)
+//   "I'll pray on my own" → invitation + ~18-20s held silence (shared-prayer-selfguided)
+// Default is "guided" so it's one tap to continue for athletes who want company.
+// Self-guided is opt-in — the clip already contains the silence; no audio change needed.
+export function PrayerStyleScreen({
+  state,
+  set,
+}: {
+  state: PregameState;
+  set: SetFn;
+}) {
+  return (
+    <ScreenBody>
+      <SectionLabel>Step 08 · Closing Prayer</SectionLabel>
+      <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
+        How do you want to close?
+      </h1>
+      <p className="mb-5 font-body text-[14px] text-cream/50">
+        Both end in prayer. You choose how.
+      </p>
+
+      <div
+        className="flex flex-col gap-2"
+        role="radiogroup"
+        aria-label="Closing prayer style"
+      >
+        {PRAYER_STYLE_OPTIONS.map(({ value, label, sub }) => (
+          <SelectCard
+            key={value}
+            label={label}
+            sub={sub}
+            selected={state.prayerStyle === value}
+            onClick={() => set("prayerStyle", value as PrayerStyle)}
+          />
+        ))}
+      </div>
+    </ScreenBody>
+  );
+}
+
+// ─── SCREEN 8 (formerly 8) ─── Review / Begin Audio
 // Read-only summary before the 5-min guided session. Lets the athlete
 // confirm they like the setup or go back and edit. CTA "BEGIN GUIDED
 // SESSION" lives in the BottomBar (set via FLOW step.cta).
@@ -267,6 +311,7 @@ export function ReviewScreen({
         anchor: state.anchor ?? null,
         selfTalk: state.selfTalk ?? null,
         cueWord: state.cueWord || null,
+        prayerStyle: state.prayerStyle,
       });
 
       if (cancelled) return;
@@ -297,7 +342,12 @@ export function ReviewScreen({
     state.anchor,
     state.selfTalk,
     state.cueWord,
+    state.prayerStyle,
   ]);
+
+  const closeLabel = state.prayerStyle === "self-guided"
+    ? "Pray on my own"
+    : "Pray with me";
 
   // ── Explicit-tap download handler ─────────────────────────────────────────
   // Called when the athlete taps "Download for offline" (or the retry button).
@@ -325,6 +375,7 @@ export function ReviewScreen({
           anchor: state.anchor ?? null,
           selfTalk: state.selfTalk ?? null,
           cueWord: state.cueWord || null,
+          prayerStyle: state.prayerStyle,
         },
         (status) => {
           if (downloadCancelledRef.current) return;
@@ -370,11 +421,12 @@ export function ReviewScreen({
     { label: "Reset anchor", value: state.anchor ?? "—" },
     { label: "Self-talk", value: state.selfTalk ?? "—" },
     { label: "Cue word", value: state.cueWord || DEFAULTS.cueWord },
+    { label: "Close", value: closeLabel },
   ];
 
   return (
     <ScreenBody>
-      <SectionLabel>Step 08 · Review</SectionLabel>
+      <SectionLabel>Step 09 · Review</SectionLabel>
       <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
         Here&rsquo;s what we&rsquo;ll work with.
       </h1>
@@ -770,6 +822,7 @@ export function AudioSessionScreen({
     anchor: useClips ? state.anchor : null,
     selfTalk: useClips ? state.selfTalk : null,
     cueWord: useClips ? (state.cueWord || null) : null,
+    prayerStyle: useClips ? state.prayerStyle : undefined,
     sport,
     onCompleted: useClips
       ? () => {
@@ -1189,7 +1242,7 @@ export function AudioSessionScreen({
         className="select-none"
         style={{ touchAction: "manipulation" }}
       >
-        <SectionLabel>Step 09 · Guided Session</SectionLabel>
+        <SectionLabel>Step 10 · Guided Session</SectionLabel>
       </div>
 
       {debug && (
@@ -1407,18 +1460,38 @@ export function AudioSessionScreen({
             )}
 
             {/* VIEW: cueOnly (prayer + done phases)
-                The one word carried out the door — large, gold, nothing competing. */}
+                The one word carried out the door — large, gold, nothing competing.
+                When self-guided and in the prayer phase, a calm "Take your time."
+                affordance reassures the athlete the silence is intentional — they
+                prayed as long as they needed. No audio change; the clip already
+                carries the silence. */}
             {cardView === "cueOnly" && (
               <div className="flex flex-col items-center justify-center py-4 text-center">
-                <p className="mb-4 font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
-                  Cue Word
-                </p>
-                <p className="font-display text-[56px] font-extrabold uppercase leading-[0.9] tracking-[0.05em] text-gold">
-                  {state.cueWord || DEFAULTS.cueWord}
-                </p>
-                <p className="mt-5 font-body text-[13px] leading-[1.5] text-cream/50">
-                  Play from victory.
-                </p>
+                {state.prayerStyle === "self-guided" && activePhase === "prayer" ? (
+                  <>
+                    <p className="mb-3 font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                      Quiet moment
+                    </p>
+                    <p className="font-heading text-[32px] font-semibold leading-[1.1] text-cream">
+                      Take your time.
+                    </p>
+                    <p className="mt-4 font-body text-[13px] leading-[1.5] text-cream/45">
+                      Pray as long as you need. Tap done when you&rsquo;re ready.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="mb-4 font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                      Cue Word
+                    </p>
+                    <p className="font-display text-[56px] font-extrabold uppercase leading-[0.9] tracking-[0.05em] text-gold">
+                      {state.cueWord || DEFAULTS.cueWord}
+                    </p>
+                    <p className="mt-5 font-body text-[13px] leading-[1.5] text-cream/50">
+                      Play from victory.
+                    </p>
+                  </>
+                )}
               </div>
             )}
           </div>
