@@ -594,27 +594,36 @@ async function generateClips(flags: Flags): Promise<void> {
     process.exit(1);
   }
 
-  // ── Step 2: Loudnorm-pass all 9 opener MP3s → clips/opener-*.mp3.
-  // No re-TTS — filter-only pass to level-match at -16 LUFS.
+  // ── Step 2: Loudnorm-pass opener MP3s → clips/opener-*.mp3 (level-match -16 LUFS).
+  // Resume support (FV-123): if clips/<slug>.mp3 already exists, REUSE it and skip
+  // the re-encode — mirroring the CLIP_SCRIPTS resume skip above. Single-pass
+  // loudnorm is not guaranteed byte-identical across runs/ffmpeg versions, so
+  // re-encoding committed openers on every run produced spurious diffs (the
+  // FV-120 openers churned on every `--mode clips` render even when unchanged).
+  // The catalog entry is still computed from the on-disk file either way.
+  // To re-render an opener after changing its source, delete clips/<slug>.mp3
+  // first (same model as the TTS clips).
   const loudnormFilter = "loudnorm=I=-16:TP=-1.5:LRA=11";
-  console.log(`\n[clips] Loudnorm-passing ${OPENER_SLUGS.length} opener MP3s...`);
+  console.log(`\n[clips] Loudnorm-passing ${OPENER_SLUGS.length} opener MP3s (existing reused)...`);
 
   for (const slug of OPENER_SLUGS) {
     const openerSrc = join(baseDir, `${slug}.mp3`);
     const openerDst = join(clipsDir, `${slug}.mp3`);
 
-    if (!existsSync(openerSrc)) {
-      console.error(
-        `  ERROR: ${openerSrc} not found. Run the legacy path first to generate ${slug}.mp3.`,
-      );
-      process.exit(1);
+    if (existsSync(openerDst)) {
+      console.log(`  [skip] ${slug} already loudnorm-passed — reusing (resume).`);
+    } else {
+      if (!existsSync(openerSrc)) {
+        console.error(
+          `  ERROR: ${openerSrc} not found. Run the legacy path first to generate ${slug}.mp3.`,
+        );
+        process.exit(1);
+      }
+      console.log(`\n── ${slug} (loudnorm pass) ───────────────────`);
+      await reEncodeMp3(openerSrc, openerDst, loudnormFilter);
     }
 
-    console.log(`\n── ${slug} (loudnorm pass) ───────────────────`);
-    await reEncodeMp3(openerSrc, openerDst, loudnormFilter);
     const openerDur = await probeDurationSec(openerDst);
-    console.log(`   ✓ clips/${slug}.mp3  duration=${openerDur.toFixed(3)}s`);
-
     catalog[slug] = {
       url: `/audio/pregame/${CLIPS_SUBDIR}/${slug}.mp3`,
       durationSec: Math.round(openerDur * 1000) / 1000,
