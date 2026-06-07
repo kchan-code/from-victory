@@ -7,14 +7,11 @@
  *   Screen 1 – FocusPickerScreen: 8 presets + custom free-text input.
  *   Screen 2 – PracticeSessionScreen: guided session, focus shown prominently.
  *
- * FRO-22 TARGET (tests in "FRO-22 additions" blocks — will fail until implemented):
- *   Screen 1 – StatePickerScreen (NEW): "Dialed in" (default) or "Not feeling it".
- *   Screen 2 – FocusPickerScreen (UPDATED): 7 presets ONLY, no custom input.
- *   Screen 3 – PracticeSessionScreen: state-aware audio, focus voiced.
- *
- * Tests marked with "[FRO-22]" rely on data-testids that don't exist yet
- * (state-option-dialed-in, state-option-not-feeling-it, state-next-btn).
- * They serve as the acceptance-test spec for the frontend-engineer.
+ * FRO-22 TARGET (now fully implemented — 4 screens):
+ *   Screen 1 – StatePickerScreen: "Dialed in" (default) or "Not feeling it".
+ *   Screen 2 – FocusPickerScreen: 7 presets ONLY, no custom input.
+ *   Screen 3 – Prayer-style picker: "Pray with me" or "I'll pray on my own".
+ *   Screen 4 – PracticeSessionScreen: state-aware audio, focus voiced.
  *
  * Auth: uses signed-in parent storageState from global-setup.
  * Audience-language guard: athlete-facing route, asserts no "kid/kids/kiddo/youngster".
@@ -44,24 +41,30 @@ async function assertNoKidLanguage(
   }
 }
 
-// Navigate to the focus picker and select the first available preset option.
+// Navigate through State → Focus → Prayer-style pickers, then into the session.
 // Used in tests that need to reach the session screen.
 async function navigateToSession(
   page: import("@playwright/test").Page,
 ): Promise<void> {
   await page.goto("/athlete/practice");
 
-  // [FRO-22]: If the state picker is present, advance through it first.
+  // Screen 1: State picker — advance through it.
   const stateNextBtn = page.getByTestId("state-next-btn");
   if ((await stateNextBtn.count()) > 0 && await stateNextBtn.isVisible()) {
     await stateNextBtn.click();
   }
 
-  // Select the first preset focus option and start the session.
+  // Screen 2: Focus picker — select the first preset option and continue.
   const radioGroup = page.locator('[role="radiogroup"][aria-label="Today\'s focus"]');
   await expect(radioGroup).toBeVisible({ timeout: 10_000 });
   await radioGroup.locator('[role="radio"]').first().click();
   await page.getByTestId("start-practice-btn").click();
+
+  // Screen 3: Prayer-style picker — advance to the session.
+  await expect(page.getByTestId("prayer-picker-next-btn")).toBeVisible({ timeout: 10_000 });
+  await page.getByTestId("prayer-picker-next-btn").click();
+
+  // Screen 4: Session.
   await expect(page.getByTestId("practice-focus-display")).toBeVisible();
 }
 
@@ -71,14 +74,13 @@ async function navigateToSession(
 
 test.describe("Pre-practice flow", () => {
   // --------------------------------------------------------------------------
-  // Baseline: FocusPickerScreen (current 2-screen flow, Screen 1 on baseline)
+  // FocusPickerScreen (current baseline — Screen 2 in the 4-screen flow)
   // --------------------------------------------------------------------------
 
   test.describe("FocusPickerScreen (current baseline)", () => {
     test.beforeEach(async ({ page }) => {
       await page.goto("/athlete/practice");
-      // [FRO-22]: If the state picker is rendered, advance past it to the
-      // focus picker (the state-next-btn will be the CONTINUE button).
+      // Advance past the state picker to reach the focus picker.
       const stateNextBtn = page.getByTestId("state-next-btn");
       if ((await stateNextBtn.count()) > 0 && await stateNextBtn.isVisible()) {
         await stateNextBtn.click();
@@ -94,11 +96,11 @@ test.describe("Pre-practice flow", () => {
       await expect(radioGroup).toBeVisible();
     });
 
-    test("START SESSION button advances to the session screen", async ({ page }) => {
+    test("focus CONTINUE advances to the prayer picker", async ({ page }) => {
       const radioGroup = page.locator('[role="radiogroup"][aria-label="Today\'s focus"]');
       await radioGroup.locator('[role="radio"]').first().click();
       await page.getByTestId("start-practice-btn").click();
-      await expect(page.getByTestId("practice-focus-display")).toBeVisible();
+      await expect(page.getByTestId("prayer-picker-next-btn")).toBeVisible();
     });
 
     test("audience-language guard on focus picker", async ({ page }) => {
@@ -107,10 +109,7 @@ test.describe("Pre-practice flow", () => {
   });
 
   // --------------------------------------------------------------------------
-  // FRO-22 additions: StatePickerScreen (Screen 1 — must be implemented)
-  // Tests in this block will FAIL until the frontend-engineer adds the state
-  // picker with data-testids: state-option-dialed-in, state-option-not-feeling-it,
-  // state-next-btn.
+  // StatePickerScreen (Screen 1)
   // --------------------------------------------------------------------------
 
   test.describe("[FRO-22] StatePickerScreen — new Screen 1", () => {
@@ -157,8 +156,7 @@ test.describe("Pre-practice flow", () => {
   });
 
   // --------------------------------------------------------------------------
-  // FRO-22 additions: FocusPickerScreen updates (Screen 2 in FRO-22 flow)
-  // After the state picker is added, the focus picker becomes Screen 2.
+  // FocusPickerScreen updates (Screen 2 in FRO-22 flow)
   // --------------------------------------------------------------------------
 
   test.describe("[FRO-22] FocusPickerScreen updates", () => {
@@ -192,7 +190,6 @@ test.describe("Pre-practice flow", () => {
 
     test("Back from focus picker returns to state picker (FRO-22 back nav)", async ({ page }) => {
       // The back button on the FRO-22 focus picker returns to the state picker.
-      // This test FAILS until the state picker screen and back navigation exist.
       const backBtn = page.getByRole("button", { name: "Back to state picker" });
       await expect(backBtn).toBeVisible();
       await backBtn.click();
@@ -201,9 +198,56 @@ test.describe("Pre-practice flow", () => {
   });
 
   // --------------------------------------------------------------------------
-  // PracticeSessionScreen (current + FRO-22)
-  // These tests work against the current implementation since the session
-  // screen's data-testids are already established.
+  // Prayer-style picker (Screen 3 — new)
+  // --------------------------------------------------------------------------
+
+  test.describe("Prayer-style picker", () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto("/athlete/practice");
+
+      // Screen 1: State picker.
+      const stateNextBtn = page.getByTestId("state-next-btn");
+      if ((await stateNextBtn.count()) > 0 && await stateNextBtn.isVisible()) {
+        await stateNextBtn.click();
+      }
+
+      // Screen 2: Focus picker — select first option and continue.
+      const radioGroup = page.locator('[role="radiogroup"][aria-label="Today\'s focus"]');
+      await expect(radioGroup).toBeVisible({ timeout: 10_000 });
+      await radioGroup.locator('[role="radio"]').first().click();
+      await page.getByTestId("start-practice-btn").click();
+
+      // Screen 3: Prayer-style picker should now be visible.
+      await expect(page.getByTestId("prayer-picker-next-btn")).toBeVisible({ timeout: 10_000 });
+    });
+
+    test("renders the Closing prayer style radiogroup with exactly 2 buttons", async ({ page }) => {
+      // SelectCard renders as <button aria-pressed> — NOT role="radio".
+      // Locate buttons scoped within the radiogroup.
+      const radioGroup = page.locator('[role="radiogroup"][aria-label="Closing prayer style"]');
+      await expect(radioGroup).toBeVisible();
+      await expect(radioGroup.locator("button")).toHaveCount(2);
+    });
+
+    test("prayer-picker-next-btn advances to the session", async ({ page }) => {
+      await page.getByTestId("prayer-picker-next-btn").click();
+      await expect(page.getByTestId("practice-focus-display")).toBeVisible();
+    });
+
+    test("Back to focus picker button returns to the focus picker", async ({ page }) => {
+      const backBtn = page.getByRole("button", { name: "Back to focus picker" });
+      await expect(backBtn).toBeVisible();
+      await backBtn.click();
+      await expect(page.getByTestId("start-practice-btn")).toBeVisible();
+    });
+
+    test("audience-language guard on prayer picker", async ({ page }) => {
+      await assertNoKidLanguage(page, "body");
+    });
+  });
+
+  // --------------------------------------------------------------------------
+  // PracticeSessionScreen (Screen 4)
   // --------------------------------------------------------------------------
 
   test.describe("PracticeSessionScreen", () => {
@@ -232,9 +276,9 @@ test.describe("Pre-practice flow", () => {
       await expect(progressBar).toHaveAttribute("aria-valuemax", "100");
     });
 
-    test("back button returns to the focus picker", async ({ page }) => {
+    test("back button returns to the prayer picker", async ({ page }) => {
       await page.getByTestId("practice-back-btn").click();
-      await expect(page.getByTestId("start-practice-btn")).toBeVisible();
+      await expect(page.getByTestId("prayer-picker-next-btn")).toBeVisible();
     });
 
     test("audience-language guard on session screen", async ({ page }) => {
@@ -243,13 +287,13 @@ test.describe("Pre-practice flow", () => {
   });
 
   // --------------------------------------------------------------------------
-  // FRO-22: full 3-screen round-trip
-  // state picker → focus picker → session → back → back to state
-  // Will FAIL until the state picker is implemented.
+  // Full 4-screen round-trip
+  // state picker → focus picker → prayer picker → session
+  //   → back to prayer picker → back to focus picker → back to state
   // --------------------------------------------------------------------------
 
-  test.describe("[FRO-22] Full 3-screen round-trip", () => {
-    test("state → focus → session → back to focus → back to state", async ({ page }) => {
+  test.describe("Full 4-screen round-trip", () => {
+    test("state → focus → prayer → session → back to prayer → back to focus → back to state", async ({ page }) => {
       await page.goto("/athlete/practice");
 
       // Screen 1: State picker.
@@ -262,11 +306,19 @@ test.describe("Pre-practice flow", () => {
       await radioGroup.locator('[role="radio"]').first().click();
       await page.getByTestId("start-practice-btn").click();
 
-      // Screen 3: Session.
+      // Screen 3: Prayer-style picker.
+      await expect(page.getByTestId("prayer-picker-next-btn")).toBeVisible();
+      await page.getByTestId("prayer-picker-next-btn").click();
+
+      // Screen 4: Session.
       await expect(page.getByTestId("practice-focus-display")).toBeVisible();
 
-      // Back to focus picker.
+      // Back to prayer picker.
       await page.getByTestId("practice-back-btn").click();
+      await expect(page.getByTestId("prayer-picker-next-btn")).toBeVisible();
+
+      // Back to focus picker.
+      await page.getByRole("button", { name: "Back to focus picker" }).click();
       await expect(page.getByTestId("start-practice-btn")).toBeVisible();
 
       // Back to state picker.
