@@ -16,7 +16,6 @@ export default function OfflinePage() {
   return (
     <main
       className="min-h-[100dvh] bg-onyx flex flex-col items-center justify-center px-6 py-16 text-center"
-      aria-label="Offline"
     >
       <div className="max-w-[320px] w-full flex flex-col items-center gap-6">
         {/* Brand eyebrow */}
