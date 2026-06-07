@@ -635,7 +635,7 @@
     },
     "pp-see-it-go": {
       "url": "/audio/pregame/clips/pp-see-it-go.mp3",
-      "durationSec": 31.188,
+      "durationSec": 23.164,
       "phases": []
     },
     "pp-bb-opener-get-to": {
@@ -660,7 +660,7 @@
     },
     "pp-bb-see-it-go": {
       "url": "/audio/pregame/clips/pp-bb-see-it-go.mp3",
-      "durationSec": 31.188,
+      "durationSec": 24.196,
       "phases": []
     },
     "pp-bb-focus-relentless": {
@@ -2684,6 +2684,36 @@
       "url": "/audio/pregame/clips/pp-focus-talk-every-shift.mp3",
       "durationSec": 3.84,
       "phases": []
+    },
+    "shared-prayer-selfguided": {
+      "url": "/audio/pregame/clips/shared-prayer-selfguided.mp3",
+      "durationSec": 75.016,
+      "phases": [
+        {
+          "phase": "prayer",
+          "offsetSec": 26.392
+        }
+      ]
+    },
+    "pp-prayer": {
+      "url": "/audio/pregame/clips/pp-prayer.mp3",
+      "durationSec": 48.376,
+      "phases": [
+        {
+          "phase": "prayer",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "pp-prayer-selfguided": {
+      "url": "/audio/pregame/clips/pp-prayer-selfguided.mp3",
+      "durationSec": 78.2,
+      "phases": [
+        {
+          "phase": "prayer",
+          "offsetSec": 24.736
+        }
+      ]
     },
     "opener-confidence": {
       "url": "/audio/pregame/clips/opener-confidence.mp3",

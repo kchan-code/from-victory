@@ -47,7 +47,7 @@ const CACHE_VERSION = "fv-shell-v2";
  * When `npm run audio:generate` is run and AUDIO_CACHE_BUST is bumped in
  * audio-mapping.ts, update this string to match BEFORE deploying.
  */
-const AUDIO_CACHE_BUST = "16"; // sync with audio-mapping.ts:AUDIO_CACHE_BUST
+const AUDIO_CACHE_BUST = "17"; // sync with audio-mapping.ts:AUDIO_CACHE_BUST
 const AUDIO_CACHE = `fv-audio-${AUDIO_CACHE_BUST}`;
 
 /**

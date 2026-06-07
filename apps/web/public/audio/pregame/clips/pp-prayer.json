@@ -1,0 +1,10 @@
+{
+  "slug": "pp-prayer",
+  "durationSec": 48.376,
+  "phases": [
+    {
+      "phase": "prayer",
+      "startSec": 0
+    }
+  ]
+}

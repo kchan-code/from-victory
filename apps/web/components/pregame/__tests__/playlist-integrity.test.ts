@@ -722,14 +722,14 @@ describe("basketball opener parity (FV-120)", () => {
 
 // ---------------------------------------------------------------------------
 // 12. Catalog count (FV-124) — net zero: −2 retired mid-session be-vocal
-//     beats + 2 new Be more Vocal openers = still 183. be-vocal + bb-be-vocal
+//     beats + 2 new Be more Vocal openers = 183; +3 prayer clips = 186. be-vocal + bb-be-vocal
 //     are removed from catalog and all 60 templates; opener-be-vocal and
 //     opener-bb-be-vocal are added as catalog entries (loudnorm-passed openers).
 // ---------------------------------------------------------------------------
 
 describe("catalog count (FV-124)", () => {
-  it("catalog has exactly 183 entries (FV-124: −2 retired beats +2 new openers = net 0)", () => {
-    expect(Object.keys(catalog)).toHaveLength(183);
+  it("catalog has exactly 186 entries (FV-124: −2 retired beats +2 new openers = net 0)", () => {
+    expect(Object.keys(catalog)).toHaveLength(186);
   });
 });
 

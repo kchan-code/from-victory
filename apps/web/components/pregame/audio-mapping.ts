@@ -123,7 +123,7 @@ export const CUEWORD_OPTION_SLUGS: Record<string, string> = {
 // in the same PR. A mismatch causes the window-side precache (audio-precache.ts)
 // and the SW to open different cache instances — assets written by one will not
 // be found by the other.
-export const AUDIO_CACHE_BUST = "16";
+export const AUDIO_CACHE_BUST = "17";
 
 export function audioAssetUrl(slug: string, ext: "mp3" | "json"): string {
   return `/audio/pregame/${slug}.${ext}?v=${AUDIO_CACHE_BUST}`;
