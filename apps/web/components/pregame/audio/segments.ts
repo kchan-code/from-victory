@@ -516,34 +516,34 @@ export const GOALIE_VIZ: Segment[] = [
 // independently-leveled MP3.
 export const RESET_PLAN_SEGMENTS: Segment[] = [
 
-    // ── Reset plan (Coach)
+    // ── Reset plan (Mentor) — finalized in docs/pregame-scripts.md §4
     {
       type: "speech",
-      text: "This is the move. Every time. Whatever happens tonight.",
+      text: "When the moment hits, come back to what is true.",
       speed: 1.0,
       mark: { phase: "reset" },
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
+      text: "Breathe. Reset your body. Say the truth. Make the next play.",
       speed: 1.0,
       instructions: RESET_PLAN_INSTRUCTIONS,
     },
-    { type: "silence", durationSec: 2.5 },
+    { type: "silence", durationSec: 1.5 },
 ];
 
 export const PRAYER_SEGMENTS: Segment[] = [
 
-    // ── Prayer (Devotional guide)
+    // ── Prayer — finalized in docs/pregame-scripts.md §4
     {
       type: "speech",
-      text: "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
+      text: "Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.",
       speed: 1.0,
       instructions: PRAYER_INSTRUCTIONS,
       mark: { phase: "prayer" },
     },
-    { type: "silence", durationSec: 2.5 },
+    { type: "silence", durationSec: 2.0 },
 ];
 
 export const SENDOFF_SEGMENTS: Segment[] = [

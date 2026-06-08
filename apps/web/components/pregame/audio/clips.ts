@@ -84,6 +84,9 @@ import { SESSION_BIG_MISSED_FTS_SCRIPT } from "./session-big-missed-fts.ts";
 import { SESSION_BIG_START_SLOW_SCRIPT } from "./session-big-start-slow.ts";
 import { SESSION_BIG_FALL_BEHIND_EARLY_SCRIPT } from "./session-big-fall-behind-early.ts";
 
+// FV-136: 52 discrete positive-play viz clips (one per scenario in §1 of md)
+import { VIZ_CLIP_SCRIPTS } from "./clips-viz.ts";
+
 // The EBU R128 loudness normalization filter applied to every clip.
 // -16 LUFS integrated / -1.5 dBTP true-peak / LRA 11 LU.
 // To re-pass at a different target, change the I= value here and regenerate.
@@ -144,7 +147,6 @@ export const CLIP_HM_FORWARD_NERVOUS_SCRIPT: AudioScript = {
   speed: 0.95,
   postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
-    // ── Hard moment (Mentor → Coach) — cell-specific
     {
       type: "speech",
       text: "Now rehearse the hard moment.",
@@ -172,17 +174,16 @@ export const CLIP_HM_FORWARD_NERVOUS_SCRIPT: AudioScript = {
       speed: 1.0,
     },
     { type: "silence", durationSec: 2.0 },
-    // Canonical tactical reset — applies to every cell.
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "Come back to your breath. Come back to right now.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. Your body is awake. It is not your identity. Reset and go again.",
+      text: "Being nervous is energy, not danger. Let it sharpen you. First shift, move your feet, get to the wall, and touch the game early.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -253,14 +254,14 @@ export const CLIP_HM_FORWARD_MISSED_CHANCE_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That chance is over. The next puck is still yours.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. Your mistake is real. It is not your identity. Reset and go again.",
+      text: "Speak the truth. That shot is gone. Stay ready for the next look.",
       speed: 1.2,
       instructions: HM_FORWARD_MISSED_CHANCE_TRUTH,
     },
@@ -304,14 +305,14 @@ export const CLIP_HM_FORWARD_TURNOVER_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That turnover is over. Sprint back into this play.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. Your mistake is real. It is not your identity. Reset and go again.",
+      text: "Speak the truth. That turnover is over. Get back, get organized, and make the next simple play.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -355,7 +356,7 @@ export const CLIP_HM_FORWARD_BEATEN_WIDE_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That rush is over. Get your feet moving and take the next backcheck.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -406,21 +407,21 @@ export const CLIP_HM_FORWARD_BAD_PENALTY_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "The whistle is over. Breathe, own the next shift, and compete clean.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Don't play scared next shift. Compete the same way.",
+      text: "Play brave next shift. Compete the same way.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. You took the penalty. It is not your identity. Reset and go again.",
+      text: "The whistle happened. Learn from it, then compete the next shift clean.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -464,14 +465,14 @@ export const CLIP_HM_FORWARD_COACH_YELLS_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That correction is over. Take what helps and come back to now.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. The coach is loud. It is not your identity. Reset and go again.",
+      text: "The volume is not the verdict. Take the correction, keep your feet moving, and answer with your next shift.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -515,14 +516,14 @@ export const CLIP_HM_FORWARD_BENCHED_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "Stay in the game from here. Watch the pace, stay loud, and be ready when the door opens.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. You are sitting. It is not your identity. Reset and go again.",
+      text: "The bench has your body for a shift. It does not have your mind. Stay loud, watch the pace, and be ready to bring energy on the next shift.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -566,14 +567,14 @@ export const CLIP_HM_FORWARD_GET_HIT_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That hit is over. Breathe, get your body back, and return to the next battle.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Don't avoid the next puck battle. Get back to the wall.",
+      text: "Go get the next puck battle. Get back to the wall.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -624,7 +625,7 @@ export const CLIP_HM_FORWARD_START_SLOW_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "The slow start is over. Build the game from this next shift.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -638,7 +639,7 @@ export const CLIP_HM_FORWARD_START_SLOW_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. You started slow. It is not your identity. Reset and go again.",
+      text: "Speak the truth. You do not need to chase the game. Let it come to you. Win one wall battle, make one simple play, and build from there.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -682,14 +683,14 @@ export const CLIP_HM_FORWARD_FIRST_GOAL_AGAINST_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That goal is over. Come back to the next shift.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. They scored first. It is not your identity. Reset and go again.",
+      text: "They scored first. Come back with one strong shift.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -774,22 +775,21 @@ export const CLIP_HM_DEFENSE_BEATEN_WIDE_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
-      speed: 1.0,
-      instructions: HM_DEFENSE_BEATEN_WIDE_VIZ,
-    },
-    { type: "silence", durationSec: 2.0 },
-    // Cell-specific tactical addition (KC D-coaching note 2026-05-26).
-    {
-      type: "speech",
-      text: "Stay loose. Don't back up. Hold your gap.",
+      text: "That rush is over. Get your feet back under you and take the next matchup.",
       speed: 1.0,
       instructions: HM_DEFENSE_BEATEN_WIDE_VIZ,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. Your mistake is real. It is not your identity. Reset and go again.",
+      text: "Stay loose. Match his feet. Hold your gap.",
+      speed: 1.0,
+      instructions: HM_DEFENSE_BEATEN_WIDE_VIZ,
+    },
+    { type: "silence", durationSec: 2.0 },
+    {
+      type: "speech",
+      text: "Speak the truth. That turnover is over. Get back, get organized, and make the next simple play.",
       speed: 1.2,
       instructions: HM_DEFENSE_BEATEN_WIDE_TRUTH,
     },
@@ -833,7 +833,7 @@ export const CLIP_HM_DEFENSE_TURNOVER_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That turnover is over. Get back into structure and make the next simple play.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -847,7 +847,7 @@ export const CLIP_HM_DEFENSE_TURNOVER_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. Your mistake is real. It is not your identity. Reset and go again.",
+      text: "That turnover is over. Get back, get organized, and make the next simple play.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -891,14 +891,14 @@ export const CLIP_HM_DEFENSE_MISSED_CHANCE_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That shot is over. The next play is still yours.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. You missed the net. It is not your identity. Reset and go again.",
+      text: "That shot is gone. Stay ready for the next look.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -942,21 +942,21 @@ export const CLIP_HM_DEFENSE_BAD_PENALTY_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "The whistle is over. Breathe, own the next shift, and compete clean.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Don't ease up next shift. Play your gap the same way.",
+      text: "Play hard next shift. Play your gap the same way.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. You took the penalty. It is not your identity. Reset and go again.",
+      text: "The whistle happened. Learn from it, then compete the next shift clean.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -1000,14 +1000,14 @@ export const CLIP_HM_DEFENSE_COACH_YELLS_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That correction is over. Take what helps and come back to now.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. The coach is loud. It is not your identity. Reset and go again.",
+      text: "The volume is not the verdict. Hear the correction, leave the shame, and play the next shift steady.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -1051,14 +1051,14 @@ export const CLIP_HM_DEFENSE_BENCHED_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "Stay in the game from here. Watch, talk, and be ready when the door opens.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. You are sitting. It is not your identity. Reset and go again.",
+      text: "The bench has your body for a shift. It does not have your mind. Watch the forecheck, talk to your partner, and be ready when the door opens.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -1102,14 +1102,14 @@ export const CLIP_HM_DEFENSE_NERVOUS_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "Come back to your breath. Come back to right now.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. Your body is awake. It is not your identity. Reset and go again.",
+      text: "Being nervous is energy, not danger. Let it sharpen you. First shift, skate forward, hold your gap, and make the simple play.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -1153,7 +1153,7 @@ export const CLIP_HM_DEFENSE_GET_HIT_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That hit is over. Breathe, get your body back, and return to the next puck.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -1211,7 +1211,7 @@ export const CLIP_HM_DEFENSE_START_SLOW_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "The slow start is over. Build the game from this next shift.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -1225,7 +1225,7 @@ export const CLIP_HM_DEFENSE_START_SLOW_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. You started slow. It is not your identity. Reset and go again.",
+      text: "The first few shifts are gone. Your job is the next gap, the next pass, the next battle. Reset and play free.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -1269,7 +1269,7 @@ export const CLIP_HM_DEFENSE_FIRST_GOAL_AGAINST_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That goal is over. Come back to the next shift.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -1283,7 +1283,7 @@ export const CLIP_HM_DEFENSE_FIRST_GOAL_AGAINST_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. They scored first. It is not your identity. Reset and go again.",
+      text: "They scored first. Come back with one strong shift.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -1368,14 +1368,14 @@ export const CLIP_HM_GOALIE_COACH_YELLS_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That correction is over. Take what helps and come back to the next shot.",
       speed: 1.0,
       instructions: HM_GOALIE_COACH_YELLS_VIZ,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. The coach is loud. It is not your identity. Reset and go again.",
+      text: "The volume is not the verdict. Take what helps, let the rest pass, and meet the next shot square.",
       speed: 1.2,
       instructions: HM_GOALIE_COACH_YELLS_TRUTH,
     },
@@ -1419,21 +1419,21 @@ export const CLIP_HM_GOALIE_TURNOVER_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That turnover is over. Get set, find the puck, and make the next save.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Don't freeze next time. Play the puck strong or leave it.",
+      text: "Decide early next time. Play the puck strong or leave it.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. Your mistake is real. It is not your identity. Reset and go again.",
+      text: "Speak the truth. That turnover is over. Get back, get organized, and make the next simple play.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -1477,14 +1477,14 @@ export const CLIP_HM_GOALIE_MISSED_CHANCE_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That choice is over. Reset your depth and meet the next one.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. You went for it. It is not your identity. Reset and go again.",
+      text: "That chance is gone. Stay patient for the next one.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -1528,7 +1528,7 @@ export const CLIP_HM_GOALIE_BEATEN_WIDE_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That pass is over. Reset your edges and trust the next push.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -1586,7 +1586,7 @@ export const CLIP_HM_GOALIE_BAD_PENALTY_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "The whistle is over. Breathe, trust your reads, and meet the next puck.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -1600,7 +1600,7 @@ export const CLIP_HM_GOALIE_BAD_PENALTY_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. You took the penalty. It is not your identity. Reset and go again.",
+      text: "The whistle happened. Learn from it, then compete the next shift clean.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -1646,14 +1646,14 @@ export const CLIP_HM_GOALIE_PULLED_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "Stay in the game from here. Support your teammate and keep your mind ready.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. You got pulled. It is not your identity. Reset and go again.",
+      text: "The bench has your body, but it does not have your worth. Stay present, support your teammate, and keep your mind in the game.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -1697,14 +1697,14 @@ export const CLIP_HM_GOALIE_NERVOUS_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "Come back to your breath. Come back to right now.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. Your body is awake. It is not your identity. Reset and go again.",
+      text: "Being nervous is energy, not danger. Let it sharpen you. Set your depth, quiet your hands, and track the first puck all the way in.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -1748,14 +1748,14 @@ export const CLIP_HM_GOALIE_GET_HIT_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That contact is over. Breathe, get set, and find the puck again.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Don't flinch on the next screen. Stay big. Track the puck.",
+      text: "Stay square on the next screen. Stay big. Track the puck.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -1806,7 +1806,7 @@ export const CLIP_HM_GOALIE_START_SLOW_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "The slow start is over. Build the game from this next shot.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -1820,7 +1820,7 @@ export const CLIP_HM_GOALIE_START_SLOW_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. You started slow. It is not your identity. Reset and go again.",
+      text: "Speak the truth. You are not the last shot. You are not the last goal. Reset your depth, find the puck, and meet the next one.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -1864,7 +1864,7 @@ export const CLIP_HM_GOALIE_FIRST_GOAL_AGAINST_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "The last play is over. Reset and play the play you're in.",
+      text: "That goal is over. Come back to the next puck.",
       speed: 1.0,
       instructions: VISUALIZATION_INSTRUCTIONS,
     },
@@ -1878,7 +1878,7 @@ export const CLIP_HM_GOALIE_FIRST_GOAL_AGAINST_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 2.0 },
     {
       type: "speech",
-      text: "Speak the truth. The puck got past you. It is not your identity. Reset and go again.",
+      text: "They scored first. The game is still in front of you.",
       speed: 1.2,
       instructions: HARD_MOMENT_TRUTH_INSTRUCTIONS,
     },
@@ -3569,10 +3569,7 @@ export const CLIP_ST_BB_01_SCRIPT: AudioScript = {
 // -t, so large single-segment silences are fully supported without chaining.
 
 // CLIP A — shared-prayer-selfguided (pregame self-guided prayer)
-// Spoken identity segments: SELFTALK_INSTRUCTIONS (local const).
-// Spoken invitation / prayer-space segments: PRAYER_INSTRUCTIONS.
-// phase mark: "prayer" on seg5 (first PRAYER_INSTRUCTIONS speech segment),
-// consistent with PRAYER_SEGMENTS in segments.ts.
+// Finalized text from docs/pregame-scripts.md §4.
 export const CLIP_SHARED_PRAYER_SELFGUIDED_SCRIPT: AudioScript = {
   slug: "shared-prayer-selfguided",
   voice: "ash",
@@ -3582,35 +3579,105 @@ export const CLIP_SHARED_PRAYER_SELFGUIDED_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "Here's what's already true before the first whistle. Your worth was settled before this game, and it'll hold after it — win, lose, great night or rough one. There's nothing left to prove out there.",
-      instructions: SELFTALK_INSTRUCTIONS,
-    },
-    { type: "silence", durationSec: 1.0 },
-    {
-      type: "speech",
-      text: "That's what frees you to leave it all out there. Full compete. No holding back, no flinching when it gets hard.",
-      instructions: SELFTALK_INSTRUCTIONS,
-    },
-    { type: "silence", durationSec: 1.2 },
-    {
-      type: "speech",
-      text: "So before you go, take it to God in your own words. You don't need the right ones — he already knows what tonight holds.",
+      text: "Take a moment with God.",
       instructions: PRAYER_INSTRUCTIONS,
       mark: { phase: "prayer" },
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "Maybe you thank him that your worth is already settled. Maybe you ask for courage, or for help when it gets hard, or you just hand him the nerves. However it comes out is fine.",
+      text: "You do not need perfect words. He already knows what you are carrying.",
       instructions: PRAYER_INSTRUCTIONS,
     },
-    { type: "silence", durationSec: 1.2 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "Now take a moment to pray.",
+      text: "Thank him. Give him the pressure. Ask for courage. Ask to play free and serve your team.",
       instructions: PRAYER_INSTRUCTIONS,
     },
-    { type: "silence", durationSec: 20.0 },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Now pray in your own words.",
+      instructions: PRAYER_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 30.0 },
+  ],
+};
+
+// FV-136: Cue-word scaffold clips (shared-cue-word-intro + shared-cue-word-sendoff)
+//
+// The md's §4 has two beats that wrap the athlete's chosen cue word:
+//   shared-cue-word-intro:    "When the pressure builds." [0.5s]
+//                             "Come back to your breath and speak your cue word." [0.8s]
+//                             {insert word}. [0.6s]    ← CANNOT be rendered as TTS
+//   shared-cue-word-sendoff:  "Remember your cue word: {insert word}." [2s]
+//
+// The "{insert word}" token is the athlete's chosen cue word — a runtime selection.
+// It CANNOT be TTS'd into these clips. The existing cw-<word>-reset/sendoff clips
+// supply the word audio.
+//
+// STITCH MECHANISM (needs KC's call before playlist template changes):
+//   Current template sentinel: {{cueReset}} → expands to cw-<word>-reset
+//   To add the intro frame, the template would need to change from:
+//     [..., "{{cueReset}}", ...]
+//   to:
+//     [..., "shared-cue-word-intro-pre", "{{cueReset}}", ...]
+//   where "shared-cue-word-intro-pre" plays lines 1-2, then cw-<word>-reset delivers the word.
+//   Similarly for the sendoff: "shared-cue-word-sendoff-pre" + {{cueSendoff}}.
+//
+// These clip DEFINITIONS are authored here so they are ready for generation.
+// The PHASE2_TEMPLATES in generate-pregame-audio.ts will need a separate update
+// to insert the scaffold clips into the playlist template. That change requires
+// KC's decision on whether to ship the intro/sendoff frames in the MVP cut
+// (they are new audio not in the current live clips).
+//
+// If KC decides NOT to ship the frames: these clips are defined but never referenced
+// in any template, so they cause no harm (just won't be rendered).
+
+export const CLIP_SHARED_CUE_WORD_INTRO_PRE_SCRIPT: AudioScript = {
+  // This is the preamble to the cue word reset — plays before cw-<word>-reset.
+  // Slug: "shared-cue-word-intro-pre" (not "shared-cue-word-intro" to distinguish
+  // from any future monolithic version that somehow handles the token).
+  slug: "shared-cue-word-intro-pre",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "When the pressure builds.",
+      speed: 1.0,
+    },
+    { type: "silence", durationSec: 0.5 },
+    {
+      type: "speech",
+      text: "Come back to your breath and speak your cue word.",
+      speed: 1.0,
+    },
+    { type: "silence", durationSec: 0.8 },
+    // ← cw-<word>-reset clip plays after this in the playlist
+  ],
+};
+
+export const CLIP_SHARED_CUE_WORD_SENDOFF_PRE_SCRIPT: AudioScript = {
+  // Preamble to the cue word sendoff — plays before cw-<word>-sendoff.
+  // The md says "Remember your cue word: {insert word}." — this clip delivers
+  // "Remember your cue word:" and cw-<word>-sendoff delivers the word.
+  slug: "shared-cue-word-sendoff-pre",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 0.95,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Remember your cue word:",
+      speed: 1.0,
+    },
+    { type: "silence", durationSec: 0.3 },
+    // ← cw-<word>-sendoff clip plays after this in the playlist
   ],
 };
 
@@ -3910,4 +3977,13 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_SHARED_PRAYER_SELFGUIDED_SCRIPT,
   CLIP_PP_PRAYER_SCRIPT,
   CLIP_PP_PRAYER_SELFGUIDED_SCRIPT,
+  // FV-136: 52 discrete positive-play viz clips (one per scenario in §1 of md)
+  // These replace the 6 monolithic VIZ clips at runtime; the monolithic clips remain
+  // for backward compatibility during transition. Keep the viz library LAST in the
+  // list so the catalog count check in generate-pregame-audio.ts can reference a
+  // stable offset — update the count when regenerating.
+  ...VIZ_CLIP_SCRIPTS,
+  // FV-136: Cue-word scaffold preamble clips (audio before the {insert word} token)
+  CLIP_SHARED_CUE_WORD_INTRO_PRE_SCRIPT,
+  CLIP_SHARED_CUE_WORD_SENDOFF_PRE_SCRIPT,
 ];
