@@ -1,0 +1,783 @@
+{
+  "hm-defense-bad-penalty": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-defense-beaten-wide": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-defense-benched": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-defense-coach-yells": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-defense-first-goal-against": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-defense-get-hit": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-defense-missed-chance": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-defense-nervous": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-defense-start-slow": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-defense-turnover": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-forward-bad-penalty": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-forward-beaten-wide": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-forward-benched": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-forward-coach-yells": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-forward-first-goal-against": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-forward-get-hit": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-forward-missed-chance": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-forward-nervous": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-forward-start-slow": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-forward-turnover": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-goalie-bad-penalty": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-goalie-beaten-wide": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-goalie-coach-yells": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-goalie-first-goal-against": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-goalie-get-hit": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-goalie-missed-chance": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-goalie-nervous": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-goalie-pulled": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-goalie-start-slow": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-goalie-turnover": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-big-coach-yells": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-bb-big-fall-behind-early": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-big-foul-trouble": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-big-benched": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-bb-big-fouled-out": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-big-got-cooked": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-big-missed-fts": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-big-missed-shot": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-big-nervous": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-bb-big-start-slow": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-bb-big-turnover": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-guard-benched": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-bb-guard-coach-yells": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-bb-guard-fall-behind-early": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-guard-foul-trouble": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-guard-got-cooked": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-bb-guard-missed-fts": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-guard-missed-shot": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-guard-nervous": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-bb-guard-start-slow": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-bb-guard-turnover": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-wing-benched": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-bb-wing-coach-yells": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-bb-wing-fall-behind-early": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-wing-foul-trouble": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-wing-got-cooked": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-wing-missed-fts": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-wing-missed-shot": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "hm-bb-wing-nervous": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-bb-wing-start-slow": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+  ],
+  "hm-bb-wing-turnover": [
+    0.4,
+    1.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    1.5
+  ],
+  "shared-opening": [
+    0.8,
+    4.0,
+    6.0,
+    4.0,
+    6.0,
+    0.8,
+    1.0,
+    0.8,
+    1.0,
+    0.8,
+    1.0
+  ],
+  "shared-prayer": [
+    2.0
+  ],
+  "shared-prayer-selfguided": [
+    1.0,
+    1.0,
+    1.0,
+    30.0
+  ],
+  "shared-reset-plan": [
+    1.0,
+    1.5
+  ],
+  "shared-sendoff": [
+    0.8,
+    0.8,
+    0.8,
+    1.0
+  ],
+  "opener-be-vocal": [
+    1.0,
+    1.0,
+    1.0,
+    1.25,
+    1.0,
+    1.0
+  ],
+  "opener-calm": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-compete-level": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-confidence": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-courage": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-decisions": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-hope": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-joy": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-leadership": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-reset": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-bb-be-vocal": [
+    1.0,
+    1.0,
+    1.0,
+    1.25,
+    1.0,
+    1.0
+  ],
+  "opener-bb-compete-level": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-bb-confidence": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-bb-courage": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-bb-decisions": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-bb-hope": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-bb-joy": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-bb-leadership": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "opener-bb-reset": [
+    1.0,
+    1.0,
+    1.25,
+    1.0
+  ],
+  "anc-bounce-ball-twice": [
+    2.0
+  ],
+  "anc-long-exhale": [
+    2.0
+  ],
+  "anc-look-at-rim": [
+    2.0
+  ],
+  "anc-look-at-tape": [
+    2.0
+  ],
+  "anc-press-thumb-to-palm": [
+    2.0
+  ],
+  "anc-tap-floor": [
+    2.0
+  ],
+  "anc-tap-stick-twice": [
+    2.0
+  ],
+  "anc-touch-glove": [
+    2.0
+  ],
+  "st-01": [
+    2.0
+  ],
+  "st-02": [
+    2.0
+  ],
+  "st-03": [
+    2.0
+  ],
+  "st-04": [
+    2.0
+  ],
+  "st-05": [
+    2.0
+  ],
+  "st-06": [
+    2.0
+  ],
+  "st-07": [
+    2.0
+  ],
+  "st-bb-01": [
+    2.0
+  ],
+  "cw-attack-reset": [
+    2.0
+  ],
+  "cw-attack-sendoff": [
+    2.0
+  ],
+  "cw-compete-reset": [
+    2.0
+  ],
+  "cw-compete-sendoff": [
+    2.0
+  ],
+  "cw-courage-reset": [
+    2.0
+  ],
+  "cw-courage-sendoff": [
+    2.0
+  ],
+  "cw-faithful-reset": [
+    2.0
+  ],
+  "cw-faithful-sendoff": [
+    2.0
+  ],
+  "cw-free-reset": [
+    2.0
+  ],
+  "cw-free-sendoff": [
+    2.0
+  ],
+  "cw-next-reset": [
+    2.0
+  ],
+  "cw-next-sendoff": [
+    2.0
+  ],
+  "cw-relentless-reset": [
+    2.0
+  ],
+  "cw-relentless-sendoff": [
+    2.0
+  ],
+  "cw-serve-reset": [
+    2.0
+  ],
+  "cw-serve-sendoff": [
+    2.0
+  ],
+  "cw-simple-reset": [
+    2.0
+  ],
+  "cw-simple-sendoff": [
+    2.0
+  ],
+  "cw-steady-reset": [
+    2.0
+  ],
+  "cw-steady-sendoff": [
+    2.0
+  ]
+}
