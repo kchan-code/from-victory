@@ -1,26 +1,28 @@
 // FV-106 — per-athlete pregame audio precache.
+// FV-142 — per-clip content-addressed filenames; manifest-version cache rotation.
 //
 // Resolves the REACHABLE clip URL set for a given athlete setup (sport ×
-// position × adversity × personalizations), then warms the fv-audio-<bust>
+// position × adversity × personalizations), then warms the fv-audio-<mv>
 // Cache Storage while the athlete is online (at Review time).
 //
 // Design constraints enforced here:
-//   - NEVER fetches the 201 MB full library. Only the athlete's reachable set
+//   - NEVER fetches the full library. Only the athlete's reachable set
 //     (~single-digit MB: typically 1 opener + 1 cell + 3–5 personalization
 //     clips).
-//   - Uses the SAME cache name (fv-audio-<AUDIO_CACHE_BUST>) as the SW, so
+//   - Uses the SAME cache name (fv-audio-<MANIFEST_VERSION>) as the SW, so
 //     cache.put() from the window-side is read by the SW's cache-first handler.
 //     Window and SW share Cache Storage on the same origin.
-//   - All URLs carry ?v=AUDIO_CACHE_BUST (from audioAssetUrl / bustUrl), so
-//     a bust bump makes a new cache name AND new URLs simultaneously —
-//     there is no scenario where an old URL is served from a new cache.
+//   - Clip URLs are content-addressed (<slug>.<hash8>.mp3 — no ?v= needed).
+//     The manifest URL includes ?mv=<MANIFEST_VERSION> so CDN + browsers
+//     fetch the updated manifest when any clip changes.
+//   - A MANIFEST_VERSION bump makes a new cache name AND new manifest URL
+//     simultaneously — no scenario where old URLs are served from a new cache.
 //   - This module is pure browser code (uses `caches`, `fetch`). Never import
 //     it in Server Components or server actions.
 //
 // Reachable set for a pregame session:
-//   1. manifest.json (the clips catalog — needed to resolve slugs).
-//   2. For EACH clip in the resolved playlist: its MP3 via clip.url (already
-//      cache-busted, already carries the /clips/ subpath from the manifest).
+//   1. manifest.json?mv=<MANIFEST_VERSION> (the clips catalog).
+//   2. For EACH clip in the resolved playlist: its content-addressed MP3.
 //   Sidecar JSONs are NOT cached — the clip player works from the in-memory
 //   manifest and never fetches per-clip JSON at runtime.
 //
@@ -28,13 +30,14 @@
 // calls resolvePlaylist() from audio-playlist.ts without modifying it.
 //
 // IMPORTANT — keeping the audio cache in sync with sw.js:
-//   The cache name `fv-audio-${AUDIO_CACHE_BUST}` is constructed from
-//   AUDIO_CACHE_BUST imported from audio-mapping.ts. The sw.js has its own
-//   copy of the bust string (const AUDIO_CACHE_BUST = "16") that MUST be
-//   kept in sync. When audio-engineer bumps AUDIO_CACHE_BUST in audio-mapping.ts,
-//   the sw.js constant must be updated to match in the same PR.
+//   The cache name `fv-audio-${MANIFEST_VERSION}` is constructed from
+//   MANIFEST_VERSION imported from audio-mapping.ts. The sw.js has its own
+//   copy of the manifest version string (const MANIFEST_VERSION = "...")
+//   that MUST be kept in sync. When audio-engineer runs a clip regen and
+//   manifest.json is updated, update MANIFEST_VERSION in audio-mapping.ts
+//   AND in sw.js to match in the same PR.
 
-import { AUDIO_CACHE_BUST } from "./audio-mapping";
+import { MANIFEST_VERSION } from "./audio-mapping";
 import {
   manifestUrl,
   resolvePlaylist,
@@ -84,9 +87,9 @@ export type PrecacheStatus = {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-/** The audio cache name. Matches sw.js `fv-audio-${AUDIO_CACHE_BUST}`. */
+/** The audio cache name. Matches sw.js `fv-audio-${MANIFEST_VERSION}`. */
 function audioCacheName(): string {
-  return `fv-audio-${AUDIO_CACHE_BUST}`;
+  return `fv-audio-${MANIFEST_VERSION}`;
 }
 
 /**
@@ -157,7 +160,7 @@ async function resolveReachableUrls(
   if (!resolved) return null;
 
   // Build the URL list: manifest JSON + each clip's MP3. clip.url is already
-  // cache-busted (bustUrl) and already carries the correct /clips/ subpath from
+  // content-addressed (<slug>.<hash8>.mp3) and already carries the correct /clips/ subpath from
   // the manifest catalog entry. Sidecar JSONs are intentionally NOT cached: the
   // clip player reads clip data from the in-memory manifest and never fetches
   // per-clip JSON at runtime, and audioAssetUrl(slug,"json") would emit
@@ -176,7 +179,7 @@ async function resolveReachableUrls(
 // ---------------------------------------------------------------------------
 
 /**
- * Warm the fv-audio-<bust> cache with the athlete's reachable clip set.
+ * Warm the fv-audio-<mv> cache with the athlete's reachable clip set.
  * Fetches the manifest, resolves the clip URLs, and calls cache.addAll() on
  * any URLs not already present — no duplicate network requests.
  *
@@ -254,7 +257,7 @@ export async function precachePregameAudio(
 
 /**
  * Check how many of the athlete's reachable audio URLs are already in the
- * fv-audio-<bust> cache WITHOUT fetching anything from the network.
+ * fv-audio-<mv> cache WITHOUT fetching anything from the network.
  *
  * Used by the ReviewScreen indicator to show accurate cache state keyed to
  * actual Cache Storage contents — never navigator.onLine (which lies on lie-fi).

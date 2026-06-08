@@ -22,7 +22,8 @@
 //   --dry-run         Validate clip scripts + estimate cost, no API calls
 //   --keep-segments   Don't delete the per-segment temp files
 
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { mkdir, readFile, readdir, rename, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 
@@ -96,6 +97,52 @@ import {
 } from "./lib/ffmpeg.ts";
 import { buildTimeline, type SegmentDuration } from "./lib/timeline.ts";
 import { estimateCostUsd, synthesizeSpeech } from "./lib/tts.ts";
+
+// ──────────────────────────────────────────────────────────────────────
+// Content-hash helpers (FV-142 per-clip content-addressed filenames)
+
+/**
+ * Compute the first 8 hex chars of sha256 of a file's bytes.
+ * Used to produce content-addressed filenames: <slug>.<hash8>.mp3
+ */
+async function hash8OfFile(filePath: string): Promise<string> {
+  const bytes = await readFile(filePath);
+  return createHash("sha256").update(bytes).digest("hex").slice(0, 8);
+}
+
+/**
+ * Compute the manifest version hash: sha256 of the JSON-serialised
+ * { slug: hash8 } map (keys sorted) → first 8 hex chars.
+ * This changes if ANY clip changes, so the manifest URL is also busted.
+ */
+function computeManifestVersion(slugHashMap: Record<string, string>): string {
+  const sorted = JSON.stringify(
+    Object.fromEntries(
+      Object.entries(slugHashMap).sort(([a], [b]) => a.localeCompare(b)),
+    ),
+    null,
+    0,
+  );
+  return createHash("sha256").update(sorted).digest("hex").slice(0, 8);
+}
+
+/**
+ * Find the content-addressed filename for a slug in a directory.
+ * Looks for any file matching `<slug>.<8hexchars>.mp3` — used by the
+ * resume path to locate an already-rendered hashed clip without re-hashing.
+ * Returns null when no hashed file is found.
+ */
+async function findHashedMp3(dir: string, slug: string): Promise<string | null> {
+  let entries: string[];
+  try {
+    entries = await readdir(dir);
+  } catch {
+    return null;
+  }
+  const pattern = new RegExp(`^${slug}\\.[0-9a-f]{8}\\.mp3$`);
+  const match = entries.find((f) => pattern.test(f));
+  return match ? join(dir, match) : null;
+}
 
 const SCRIPTS: AudioScript[] = [
   BREATH_THRESHOLD_SCRIPT,
@@ -229,7 +276,18 @@ function speechSegmentCount(script: AudioScript): number {
   return script.segments.filter((s) => s.type === "speech").length;
 }
 
-async function generateOne(script: AudioScript, flags: Flags): Promise<void> {
+/**
+ * Render one AudioScript. In clip mode (flags.mode === "clips") the MP3 is
+ * content-addressed: after render the file is renamed from <slug>.mp3 to
+ * <slug>.<hash8>.mp3 and the hash8 is returned.
+ *
+ * In legacy baked-cell mode (no mode flag) no rename happens; returns null
+ * (the caller never uses the hash for legacy files).
+ */
+async function generateOne(
+  script: AudioScript,
+  flags: Flags,
+): Promise<{ hash8: string } | null> {
   const outDir = resolve(process.cwd(), flags.outDir);
   await mkdir(outDir, { recursive: true });
   const outMp3 = join(outDir, `${script.slug}.mp3`);
@@ -285,16 +343,44 @@ async function generateOne(script: AudioScript, flags: Flags): Promise<void> {
   timeline.durationSec = Math.round(finalDur * 1000) / 1000;
   await writeFile(outJson, JSON.stringify(timeline, null, 2) + "\n");
 
-  console.log(
-    `   ✓ ${script.slug}.mp3  duration=${timeline.durationSec.toFixed(2)}s  phases=${timeline.phases.length}`,
-  );
+  // 4. In clip mode: rename to content-addressed filename <slug>.<hash8>.mp3.
+  //    Any stale hashed file for this slug is removed so only one copy exists.
+  let hash8: string | null = null;
+  if (flags.mode === "clips") {
+    hash8 = await hash8OfFile(outMp3);
+    const hashedPath = join(outDir, `${script.slug}.${hash8}.mp3`);
 
-  // 4. Cleanup
+    // Remove any previous hashed file for this slug (from an earlier render
+    // whose bytes differed). This prevents stale hashed files accumulating.
+    const staleHashed = await findHashedMp3(outDir, script.slug);
+    if (staleHashed && staleHashed !== hashedPath) {
+      await rm(staleHashed, { force: true });
+    }
+
+    if (staleHashed !== hashedPath) {
+      await rename(outMp3, hashedPath);
+    } else {
+      // Same hash → bytes unchanged, no rename needed; remove the plain copy.
+      await rm(outMp3, { force: true });
+    }
+
+    console.log(
+      `   ✓ ${script.slug}.${hash8}.mp3  duration=${timeline.durationSec.toFixed(2)}s  phases=${timeline.phases.length}`,
+    );
+  } else {
+    console.log(
+      `   ✓ ${script.slug}.mp3  duration=${timeline.durationSec.toFixed(2)}s  phases=${timeline.phases.length}`,
+    );
+  }
+
+  // 5. Cleanup
   if (!flags.keepSegments) {
     await rm(workDir, { recursive: true, force: true });
   } else {
     console.log(`   (kept per-segment files in ${workDir})`);
   }
+
+  return hash8 !== null ? { hash8 } : null;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -504,17 +590,20 @@ async function generateClips(flags: Flags): Promise<void> {
     console.log(`\n[clips] Batch ${batchIndex}/${batches.length}: ${batchSlugs}`);
 
     for (const script of batch) {
-      // Skip if clip already exists on disk (resume support).
-      const existingMp3 = join(clipsDir, `${script.slug}.mp3`);
-      if (existsSync(existingMp3)) {
-        console.log(`  [skip] ${script.slug} already exists — skipping (resume).`);
+      // Skip if a content-addressed clip already exists on disk (resume support).
+      // With FV-142 hashed filenames, the resume check is: does any file matching
+      // <slug>.<8hex>.mp3 exist? We no longer look for the plain <slug>.mp3.
+      const existingHashedMp3 = await findHashedMp3(clipsDir, script.slug);
+      if (existingHashedMp3) {
+        const existingHash8 = existingHashedMp3.replace(/^.*\.([0-9a-f]{8})\.mp3$/, "$1");
+        console.log(`  [skip] ${script.slug}.${existingHash8}.mp3 already exists — skipping (resume).`);
         const jsonPath = join(clipsDir, `${script.slug}.json`);
         if (existsSync(jsonPath)) {
           // Preferred path: read the sidecar timeline for exact duration + phases.
           const rawJson = await readFile(jsonPath, "utf8");
           const timeline = JSON.parse(rawJson) as AudioTimeline;
           catalog[script.slug] = {
-            url: `/audio/pregame/${CLIPS_SUBDIR}/${script.slug}.mp3`,
+            url: `/audio/pregame/${CLIPS_SUBDIR}/${script.slug}.${existingHash8}.mp3`,
             durationSec: timeline.durationSec,
             phases: timelineToClipPhases(timeline),
           };
@@ -522,7 +611,7 @@ async function generateClips(flags: Flags): Promise<void> {
           // Fallback: no sidecar (e.g. short personalization clips committed
           // before sidecar generation was added). Probe the MP3 for duration
           // and derive phases from the script's segment marks.
-          const dur = await probeDurationSec(existingMp3);
+          const dur = await probeDurationSec(existingHashedMp3);
           const phaseMarks: ClipPhaseEntry[] = [];
           let cursor = 0;
           for (const seg of script.segments) {
@@ -536,7 +625,7 @@ async function generateClips(flags: Flags): Promise<void> {
             break; // Only the first mark is at offset 0; remaining are unknown.
           }
           catalog[script.slug] = {
-            url: `/audio/pregame/${CLIPS_SUBDIR}/${script.slug}.mp3`,
+            url: `/audio/pregame/${CLIPS_SUBDIR}/${script.slug}.${existingHash8}.mp3`,
             durationSec: Math.round(dur * 1000) / 1000,
             phases: phaseMarks.length > 0 ? phaseMarks : [],
           };
@@ -546,8 +635,9 @@ async function generateClips(flags: Flags): Promise<void> {
       }
 
       clearSilenceCache();
+      let renderResult: { hash8: string } | null = null;
       try {
-        await generateOne(script, clipsFlags);
+        renderResult = await generateOne(script, clipsFlags);
       } catch (err) {
         const msg = (err as Error).message;
         const isQuota = msg.includes("429") || msg.includes("quota") || msg.includes("insufficient");
@@ -574,11 +664,16 @@ async function generateClips(flags: Flags): Promise<void> {
       }
 
       // Read back sidecar timeline to build catalog.
+      // renderResult.hash8 is the content-hash of the newly-written file.
+      // In --mode clips generateOne() always returns { hash8 } or throws, so the
+      // "00000000" fallback is unreachable here; it exists only to satisfy the
+      // type. If it ever appears in a catalog URL, treat it as a generator bug.
+      const renderedHash8 = renderResult?.hash8 ?? "00000000";
       const jsonPath = join(clipsDir, `${script.slug}.json`);
       const rawJson = await readFile(jsonPath, "utf8");
       const timeline = JSON.parse(rawJson) as AudioTimeline;
       catalog[script.slug] = {
-        url: `/audio/pregame/${CLIPS_SUBDIR}/${script.slug}.mp3`,
+        url: `/audio/pregame/${CLIPS_SUBDIR}/${script.slug}.${renderedHash8}.mp3`,
         durationSec: timeline.durationSec,
         phases: timelineToClipPhases(timeline),
       };
@@ -595,23 +690,24 @@ async function generateClips(flags: Flags): Promise<void> {
   }
 
   // ── Step 2: Loudnorm-pass opener MP3s → clips/opener-*.mp3 (level-match -16 LUFS).
-  // Resume support (FV-123): if clips/<slug>.mp3 already exists, REUSE it and skip
-  // the re-encode — mirroring the CLIP_SCRIPTS resume skip above. Single-pass
-  // loudnorm is not guaranteed byte-identical across runs/ffmpeg versions, so
-  // re-encoding committed openers on every run produced spurious diffs (the
-  // FV-120 openers churned on every `--mode clips` render even when unchanged).
-  // The catalog entry is still computed from the on-disk file either way.
-  // To re-render an opener after changing its source, delete clips/<slug>.mp3
-  // first (same model as the TTS clips).
+  // Resume support (FV-123): if clips/<slug>.<hash8>.mp3 already exists, REUSE it
+  // and skip the re-encode — mirroring the CLIP_SCRIPTS resume skip above.
+  // Single-pass loudnorm is not guaranteed byte-identical across runs/ffmpeg
+  // versions, so re-encoding committed openers on every run produced spurious
+  // diffs. The catalog entry is computed from the on-disk hashed file either way.
+  // To re-render an opener after changing its source, delete
+  // clips/<slug>.<hash8>.mp3 first (same model as the TTS clips).
   const loudnormFilter = "loudnorm=I=-16:TP=-1.5:LRA=11";
   console.log(`\n[clips] Loudnorm-passing ${OPENER_SLUGS.length} opener MP3s (existing reused)...`);
 
   for (const slug of OPENER_SLUGS) {
     const openerSrc = join(baseDir, `${slug}.mp3`);
-    const openerDst = join(clipsDir, `${slug}.mp3`);
+    const existingHashedOpener = await findHashedMp3(clipsDir, slug);
 
-    if (existsSync(openerDst)) {
+    let openerHashedPath: string;
+    if (existingHashedOpener) {
       console.log(`  [skip] ${slug} already loudnorm-passed — reusing (resume).`);
+      openerHashedPath = existingHashedOpener;
     } else {
       if (!existsSync(openerSrc)) {
         console.error(
@@ -620,12 +716,18 @@ async function generateClips(flags: Flags): Promise<void> {
         process.exit(1);
       }
       console.log(`\n── ${slug} (loudnorm pass) ───────────────────`);
-      await reEncodeMp3(openerSrc, openerDst, loudnormFilter);
+      // Encode to a temporary plain path first, then rename to hashed.
+      const tempPath = join(clipsDir, `${slug}.mp3`);
+      await reEncodeMp3(openerSrc, tempPath, loudnormFilter);
+      const openerHash8 = await hash8OfFile(tempPath);
+      openerHashedPath = join(clipsDir, `${slug}.${openerHash8}.mp3`);
+      await rename(tempPath, openerHashedPath);
     }
 
-    const openerDur = await probeDurationSec(openerDst);
+    const openerHash8ForUrl = openerHashedPath.replace(/^.*\.([0-9a-f]{8})\.mp3$/, "$1");
+    const openerDur = await probeDurationSec(openerHashedPath);
     catalog[slug] = {
-      url: `/audio/pregame/${CLIPS_SUBDIR}/${slug}.mp3`,
+      url: `/audio/pregame/${CLIPS_SUBDIR}/${slug}.${openerHash8ForUrl}.mp3`,
       durationSec: Math.round(openerDur * 1000) / 1000,
       phases: [{ phase: "intro", offsetSec: 0 }],
     };
@@ -698,8 +800,21 @@ async function generateClips(flags: Flags): Promise<void> {
     },
   };
 
+  // Compute the manifest version from the catalog slug→hash8 map.
+  // This is the stable identity of THIS set of clip bytes: if a single clip
+  // changes its hash8 changes → the catalog changes → manifestVersion changes
+  // → the manifest URL (bust param or filename) atomically invalidates.
+  const slugHashMap: Record<string, string> = {};
+  for (const [slug, entry] of Object.entries(catalog)) {
+    // Extract the hash8 from the hashed URL: /…/<slug>.<hash8>.mp3
+    const match = /\.([0-9a-f]{8})\.mp3$/.exec(entry.url);
+    slugHashMap[slug] = match ? match[1]! : "00000000";
+  }
+  const manifestVersion = computeManifestVersion(slugHashMap);
+
   const manifest: ClipManifest = {
     version: "p6",
+    manifestVersion,
     clips: catalog,
     templates,
     practiceState: practiceStatePlaylist,
@@ -707,6 +822,7 @@ async function generateClips(flags: Flags): Promise<void> {
 
   const manifestPath = join(clipsDir, "manifest.json");
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
+  console.log(`[clips] manifestVersion=${manifestVersion}`);
 
   // ── Step 4: Validate catalog count and report.
   const catalogCount = Object.keys(catalog).length;

@@ -19,6 +19,7 @@ import type { PracticeState, PrayerStyle } from "./types";
 import {
   ANCHOR_OPTION_SLUGS,
   AUDIO_CACHE_BUST,
+  MANIFEST_VERSION,
   CUEWORD_OPTION_SLUGS,
   NEED_OPENER_SLUGS,
   SELFTALK_OPTION_SLUGS,
@@ -54,6 +55,15 @@ export type PlaylistTemplate = {
 
 export type ClipManifest = {
   version: string;
+  /**
+   * FV-142 — per-clip content-addressed filenames.
+   * Hash of the full {slug → hash8} catalog map (sorted, first 8 hex of sha256).
+   * Used as the cache-rotation token: the SW audio cache is named
+   * `fv-audio-<manifestVersion>`. Also appended to the manifest URL as
+   * `?mv=<manifestVersion>` so browsers/CDN fetch the updated manifest when
+   * any clip changes. Absent in pre-FV-142 manifests (treated as legacy).
+   */
+  manifestVersion?: string;
   clips: Record<string, ClipCatalogEntry>;
   templates: PlaylistTemplate[];
   /**
@@ -113,23 +123,44 @@ export type AssembledTimeline = {
 };
 
 // ---------------------------------------------------------------------------
-// URL helper — apply the same ?v= discipline as audioAssetUrl()
+// URL helpers — content-addressed clip URLs (FV-142)
 // ---------------------------------------------------------------------------
 
 /**
- * Append the cache-bust query param to any audio asset URL.
- * If the URL already carries a query string it is appended with &; otherwise
- * with ?. This ensures CDN + browser caches are busted on asset regeneration
- * without duplicating version strings.
+ * FV-142: Per-clip content-addressed URL helper.
+ *
+ * Clip URLs from the manifest already carry the content hash in the filename
+ * (`<slug>.<hash8>.mp3`). These are immutable — same URL = same bytes always.
+ * No `?v=` cache-bust is needed or appended for content-addressed URLs.
+ *
+ * Pre-FV-142 URLs (no hash8 in filename, e.g. from a p1 manifest fixture in
+ * tests) still receive the old `?v=AUDIO_CACHE_BUST` treatment for backward
+ * compatibility with test fixtures that rely on this behaviour.
+ *
+ * Pattern for content-addressed: ends with `.<8hexchars>.mp3` (before any ?).
  */
+const CONTENT_ADDRESSED_RE = /\.[0-9a-f]{8}\.mp3$/;
+
 export function bustUrl(url: string): string {
+  // Strip any existing query string before the pattern check.
+  const pathPart = url.split("?")[0] ?? url;
+  if (CONTENT_ADDRESSED_RE.test(pathPart)) {
+    // Content-addressed URL — filename IS the version, no ?v= needed.
+    return url;
+  }
+  // Legacy or non-hashed URL — append the global bust for backward compat.
   const sep = url.includes("?") ? "&" : "?";
   return `${url}${sep}v=${AUDIO_CACHE_BUST}`;
 }
 
-/** Cache-busted URL for the clip manifest itself. */
+/**
+ * Cache-busted URL for the clip manifest itself.
+ * Uses the MANIFEST_VERSION constant (derived from the catalog content hash)
+ * so the manifest URL changes whenever any clip changes. A new URL ensures
+ * CDN + browser fetches the updated manifest — no stale-manifest risk.
+ */
 export function manifestUrl(): string {
-  return bustUrl("/audio/pregame/clips/manifest.json");
+  return `/audio/pregame/clips/manifest.json?mv=${MANIFEST_VERSION}`;
 }
 
 // ---------------------------------------------------------------------------

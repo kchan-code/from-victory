@@ -107,22 +107,42 @@ export const CUEWORD_OPTION_SLUGS: Record<string, string> = {
   "Relentless": "cw-relentless",
 };
 
-// Bumped whenever any audio binary changes. Appended as ?v= to every
-// MP3 + sidecar JSON URL so Vercel's CDN + browsers can't serve a
-// stale cached version after a regen. Bump this when you rerun
-// `npm run audio:generate`.
+// FV-142 — Per-clip content-addressed filenames.
 //
-// FV-106 — SW audio cache rotation:
-// Bumping this value ALSO rotates the Service Worker's audio cache. The SW
-// names the cache `fv-audio-${AUDIO_CACHE_BUST}` and its activate handler
-// prunes every cache not in OWNED_CACHES — so old `fv-audio-*` caches are
-// evicted automatically on the next SW activation.
+// MANIFEST_VERSION is the content-hash of the current clip catalog.
+// It is computed by the generator as the sha256 of the sorted
+// { slug → hash8 } map and embedded in the committed manifest.json.
+// It serves two purposes:
 //
-// IMPORTANT: when bumping this value, also update the matching constant in
-// apps/web/public/sw.js (const AUDIO_CACHE_BUST = "...") to the SAME string
-// in the same PR. A mismatch causes the window-side precache (audio-precache.ts)
-// and the SW to open different cache instances — assets written by one will not
-// be found by the other.
+//   1. The manifest URL includes it as ?mv=<MANIFEST_VERSION> so CDN +
+//      browsers fetch the new manifest whenever any clip changes.
+//
+//   2. The SW audio cache is named `fv-audio-<MANIFEST_VERSION>`. When
+//      any clip changes and MANIFEST_VERSION is bumped, the activate
+//      handler prunes the old `fv-audio-<old>` cache and the new cache
+//      starts warm on next precache (same mechanism as AUDIO_CACHE_BUST).
+//
+// IMPORTANT — two-file sync: when the generator rewrites manifest.json
+// with a new manifestVersion, also update the matching constant in
+// apps/web/public/sw.js (const MANIFEST_VERSION = "...") to the SAME
+// string in the same PR. A mismatch causes the window-side precache and
+// the SW to open different cache instances. The `audio-cache-bust` CI
+// job enforces this parity.
+//
+// How to update: run `npm run audio:generate -- --mode clips`, read the
+// new manifestVersion printed to stdout, and update MANIFEST_VERSION here
+// AND in sw.js to match. AUDIO_CACHE_BUST is NOT bumped for clip regens
+// (see the retirement note below).
+export const MANIFEST_VERSION = "f0ef4d6b"; // sync with sw.js:MANIFEST_VERSION
+
+// AUDIO_CACHE_BUST — RETIRED for per-clip URL versioning (FV-142).
+// Clips are now content-addressed (<slug>.<hash8>.mp3) and need no ?v=.
+// This constant is kept only for:
+//   1. Backward-compat in bustUrl() for legacy non-hashed URL fixtures in tests.
+//   2. The legacy non-clip audioAssetUrl() helper (breath-threshold, openers
+//      served from the top-level /audio/pregame/ path, not /clips/).
+// Do NOT bump this for new clip regens — bump MANIFEST_VERSION instead.
+// When all legacy top-level MP3s are retired this constant can be removed.
 export const AUDIO_CACHE_BUST = "17";
 
 export function audioAssetUrl(slug: string, ext: "mp3" | "json"): string {
