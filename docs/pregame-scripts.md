@@ -23,7 +23,7 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 
 **Clean puck retrieval**  `viz-defense-retrieval`
 
-1. See yourself as the first player back, calm under pressure.  [2s]
+1. See yourself as the first player back, on your toes and ready for it.  [2s]
 2. The puck is dumped in behind you.  [2s]
 3. You shoulder-check over your inside shoulder.  [2.5s]
 4. You turn and sprint back for it.  [2s]
@@ -32,7 +32,7 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 7. At the puck, you sell up the wall.  [3s]
 8. The forechecker leans. You cut back into space.  [3s]
 9. Clean pickup, head up.  [2s]
-10. Tape-to-tape pass to your winger.  [2.5s]
+10. Tape-to-tape pass to your winger.  [3s]
 
 
 **Walk the blue line**  `viz-defense-walk-the-line`
@@ -63,15 +63,15 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 
 **Calm breakout, D-to-D**  `viz-defense-breakout`
 
-1. See yourself below the goal line, pressure coming, but your head is clear.  [2s]
+1. See yourself below the goal line, pressure coming, eyes up and ready to move it.  [2s]
 2. You retrieve it low, under pressure from F1.  [2s]
 3. You shoulder-check — F2 is reading your first option.  [2.5s]
 4. You take it behind the net, holding the puck.  [2.5s]
 5. D-to-D, hard pass to your partner.  [2s]
 6. He's got a step now, the forecheck overcommitted.  [3s]
 7. You skate to support, an option up the wall.  [2s]
-8. He hits you in stride at the hash marks.  [2s]
-9. You chip it out, clean. Zone exit, on the tape.  [2.5s]
+8. He hits you in stride at the hash marks.  [2.5s]
+9. You chip it out, clean. Zone exit, on the tape.  [3s]
 
 
 **Long D-zone shift — dig deep, get it out, change**  `viz-defense-long-shift`
@@ -130,14 +130,14 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 
 **Defend the rush, force a bad shot, win the rebound**  `viz-defense-angle-wide-boxout`
 
-1. See the rush building, and feel yourself patient, square, and in control.  [2s]
+1. See the rush building, and feel yourself set, square, and ready to angle him off.  [2s]
 2. They come through the neutral zone with speed.  [2s]
 3. You hold the middle and match his pace.  [2.5s]
 4. You do not lunge. You do not open the inside lane.  [2s]
 5. You angle him wide toward the boards.  [3s]
 6. He shoots from outside the dot. Low danger.  [2s]
 7. Your goalie makes the save. The rebound drops in front.  [2s]
-8. You tie up his stick and take his body.  [2s]
+8. You tie up his stick and take his body.  [2.5s]
 9. Your partner collects the puck.  [2s]
 10. Middle protected. Rebound won. Job done.  [3s]
 
@@ -744,7 +744,7 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 3. Feel what your body does. Heat in your face. Tight in your chest. I just put us down a man.  [2s]
 4. Now the reset. Return to your anchor.  [2s]
 5. The whistle is over. Breathe, own the next shift, and compete clean.  [2s]
-6. Don't ease up next shift. Play your gap the same way.  [2s]
+6. Play hard next shift. Play your gap the same way.  [2s]
 7. The whistle happened. Learn from it, then compete the next shift clean.  [1.5s]
 
 
@@ -755,7 +755,7 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 3. Feel what your body does. Stomach drop. Burn in your chest. I lost my gap.  [2s]
 4. Now the reset. Return to your anchor.  [2s]
 5. That rush is over. Get your feet back under you and take the next matchup.  [2s]
-6. Stay loose. Don't back up. Hold your gap.  [2s]
+6. Stay loose. Match his feet. Hold your gap.  [2s]
 7. Speak the truth. That turnover is over. Get back, get organized, and make the next simple play.  [1.5s]
 
 
@@ -848,7 +848,7 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 3. Feel what your body does. Heat in your face. Stomach drop. I just hurt my team.  [2s]
 4. Now the reset. Return to your anchor.  [2s]
 5. The whistle is over. Breathe, own the next shift, and compete clean.  [2s]
-6. Don't play scared next shift. Compete the same way.  [2s]
+6. Play brave next shift. Compete the same way.  [2s]
 7. The whistle happened. Learn from it, then compete the next shift clean.  [1.5s]
 
 
@@ -898,7 +898,7 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 3. Feel what your body does. Wind out of your lungs. Heat in your shoulder. I should have seen him.  [2s]
 4. Now the reset. Return to your anchor.  [2s]
 5. That hit is over. Breathe, get your body back, and return to the next battle.  [2s]
-6. Don't avoid the next puck battle. Get back to the wall.  [2s]
+6. Go get the next puck battle. Get back to the wall.  [2s]
 7. Speak the truth. You got hit. It is not your identity. Reset and go again.  [1.5s]
 
 
@@ -991,7 +991,7 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 3. Feel what your body does. Wind out of your lungs. Heat in your chest. I am going to get run again.  [2s]
 4. Now the reset. Return to your anchor.  [2s]
 5. That contact is over. Breathe, get set, and find the puck again.  [2s]
-6. Don't flinch on the next screen. Stay big. Track the puck.  [2s]
+6. Stay square on the next screen. Stay big. Track the puck.  [2s]
 7. Speak the truth. You got hit. It is not your identity. Reset and go again.  [1.5s]
 
 
@@ -1042,7 +1042,7 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 3. Feel what your body does. Stomach drop. Heat in your face. I just handed them a goal.  [2s]
 4. Now the reset. Return to your anchor.  [2s]
 5. That turnover is over. Get set, find the puck, and make the next save.  [2s]
-6. Don't freeze next time. Play the puck strong or leave it.  [2s]
+6. Decide early next time. Play the puck strong or leave it.  [2s]
 7. Speak the truth. That turnover is over. Get back, get organized, and make the next simple play.  [1.5s]
 
 
@@ -1119,8 +1119,8 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 3. Feel what your body does. The hush of the gym presses on you. Your hands go heavy at the line. They fouled me on purpose because I'm the weak link.  [2s]
 4. Now the reset. Return to your anchor.  [2s]
 5. Those free throws are over. Get back, protect the rim, and stay aggressive.  [2s]
-6. You make them pay the other way. Get back, protect the rim, then seal deep and demand the ball. Make being fouled cost them.  [2s]
-7. Those shots are gone. Trust your routine on the next ones.  [1.5s]
+6. You go right back in. Get back, protect the rim, then seal deep and demand the ball. Compete because it's your job, not to get even.  [2s]
+7. Speak the truth. Two misses are real. They are not the weak-link verdict, and they are not who you are. Reset and go again.  [1.5s]
 
 
 **Big Missed Shot**  `hm-bb-big-missed-shot`
@@ -1131,7 +1131,7 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 4. Now the reset. Return to your anchor.  [2s]
 5. That finish is over. Run the floor and get back to the glass.  [2s]
 6. You go right back at it. Run the rim, demand the ball deep, and crash the offensive glass on the next miss.  [2s]
-7. That shot is gone. Stay ready for the next look.  [1.5s]
+7. Speak the truth. The miss is real. Finishing is your job, not your worth, and it is not who you are. Reset and go again.  [1.5s]
 
 
 **Big Nervous**  `hm-bb-big-nervous`
@@ -1160,7 +1160,7 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 3. Feel what your body does. Shoulders curl inward. A heavy thud of frustration in your chest. Keep it out of my hands.  [2s]
 4. Now the reset. Return to your anchor.  [2s]
 5. That turnover is over. Sprint back, protect the paint, and ask for it again.  [2s]
-6. You want the ball again. Seal your man, call for it, roll hard, and finish strong through contact.  [2s]
+6. You want the ball again. Seal your man, call for it, and roll hard into the next play.  [2s]
 7. Speak the truth. The turnover is real. It is not your identity. Reset and go again.  [1.5s]
 
 
