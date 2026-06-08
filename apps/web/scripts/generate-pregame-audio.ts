@@ -446,72 +446,74 @@ const PHASE2_TEMPLATES: Array<{
   vizSlug: string;
   hmSlug: string;
 }> = [
-  // Forward × 10 adversities
-  { position: "Forward", adversity: "I feel nervous.",          vizSlug: "viz-forward", hmSlug: "hm-forward-nervous" },
-  { position: "Forward", adversity: "I miss a scoring chance.", vizSlug: "viz-forward", hmSlug: "hm-forward-missed-chance" },
-  { position: "Forward", adversity: "I turn the puck over.",    vizSlug: "viz-forward", hmSlug: "hm-forward-turnover" },
-  { position: "Forward", adversity: "I get beaten wide.",       vizSlug: "viz-forward", hmSlug: "hm-forward-beaten-wide" },
-  { position: "Forward", adversity: "I take a bad penalty.",    vizSlug: "viz-forward", hmSlug: "hm-forward-bad-penalty" },
-  { position: "Forward", adversity: "Coach yells.",             vizSlug: "viz-forward", hmSlug: "hm-forward-coach-yells" },
-  { position: "Forward", adversity: "I get benched.",           vizSlug: "viz-forward", hmSlug: "hm-forward-benched" },
-  { position: "Forward", adversity: "I get hit.",               vizSlug: "viz-forward", hmSlug: "hm-forward-get-hit" },
-  { position: "Forward", adversity: "I start slow.",            vizSlug: "viz-forward", hmSlug: "hm-forward-start-slow" },
-  { position: "Forward", adversity: "We give up the first goal.", vizSlug: "viz-forward", hmSlug: "hm-forward-first-goal-against" },
+  // Forward × 10 adversities.
+  // vizSlug = default positive-play scenario (FV-136). FV-144 (v2) will let
+  // the athlete select. Until then, one representative scenario per position.
+  { position: "Forward", adversity: "I feel nervous.",          vizSlug: "viz-forward-win-the-wall",     hmSlug: "hm-forward-nervous" },
+  { position: "Forward", adversity: "I miss a scoring chance.", vizSlug: "viz-forward-give-and-go",      hmSlug: "hm-forward-missed-chance" },
+  { position: "Forward", adversity: "I turn the puck over.",    vizSlug: "viz-forward-backcheck-strip",  hmSlug: "hm-forward-turnover" },
+  { position: "Forward", adversity: "I get beaten wide.",       vizSlug: "viz-forward-backcheck-strip",  hmSlug: "hm-forward-beaten-wide" },
+  { position: "Forward", adversity: "I take a bad penalty.",    vizSlug: "viz-forward-net-front",        hmSlug: "hm-forward-bad-penalty" },
+  { position: "Forward", adversity: "Coach yells.",             vizSlug: "viz-forward-faceoff-win-shot", hmSlug: "hm-forward-coach-yells" },
+  { position: "Forward", adversity: "I get benched.",           vizSlug: "viz-forward-forecheck-strip",  hmSlug: "hm-forward-benched" },
+  { position: "Forward", adversity: "I get hit.",               vizSlug: "viz-forward-win-the-wall",     hmSlug: "hm-forward-get-hit" },
+  { position: "Forward", adversity: "I start slow.",            vizSlug: "viz-forward-cycle-low-high",   hmSlug: "hm-forward-start-slow" },
+  { position: "Forward", adversity: "We give up the first goal.", vizSlug: "viz-forward-3on2-middle-drive", hmSlug: "hm-forward-first-goal-against" },
   // Defense × 10 adversities
-  { position: "Defense", adversity: "I get beaten wide.",       vizSlug: "viz-defense", hmSlug: "hm-defense-beaten-wide" },
-  { position: "Defense", adversity: "I turn the puck over.",    vizSlug: "viz-defense", hmSlug: "hm-defense-turnover" },
-  { position: "Defense", adversity: "I miss a scoring chance.", vizSlug: "viz-defense", hmSlug: "hm-defense-missed-chance" },
-  { position: "Defense", adversity: "I take a bad penalty.",    vizSlug: "viz-defense", hmSlug: "hm-defense-bad-penalty" },
-  { position: "Defense", adversity: "Coach yells.",             vizSlug: "viz-defense", hmSlug: "hm-defense-coach-yells" },
-  { position: "Defense", adversity: "I get benched.",           vizSlug: "viz-defense", hmSlug: "hm-defense-benched" },
-  { position: "Defense", adversity: "I feel nervous.",          vizSlug: "viz-defense", hmSlug: "hm-defense-nervous" },
-  { position: "Defense", adversity: "I get hit.",               vizSlug: "viz-defense", hmSlug: "hm-defense-get-hit" },
-  { position: "Defense", adversity: "I start slow.",            vizSlug: "viz-defense", hmSlug: "hm-defense-start-slow" },
-  { position: "Defense", adversity: "We give up the first goal.", vizSlug: "viz-defense", hmSlug: "hm-defense-first-goal-against" },
+  { position: "Defense", adversity: "I get beaten wide.",       vizSlug: "viz-defense-gap-up",           hmSlug: "hm-defense-beaten-wide" },
+  { position: "Defense", adversity: "I turn the puck over.",    vizSlug: "viz-defense-breakout",         hmSlug: "hm-defense-turnover" },
+  { position: "Defense", adversity: "I miss a scoring chance.", vizSlug: "viz-defense-walk-the-line",    hmSlug: "hm-defense-missed-chance" },
+  { position: "Defense", adversity: "I take a bad penalty.",    vizSlug: "viz-defense-penalty-kill-clear", hmSlug: "hm-defense-bad-penalty" },
+  { position: "Defense", adversity: "Coach yells.",             vizSlug: "viz-defense-vocal-breakout",   hmSlug: "hm-defense-coach-yells" },
+  { position: "Defense", adversity: "I get benched.",           vizSlug: "viz-defense-long-shift",       hmSlug: "hm-defense-benched" },
+  { position: "Defense", adversity: "I feel nervous.",          vizSlug: "viz-defense-retrieval",        hmSlug: "hm-defense-nervous" },
+  { position: "Defense", adversity: "I get hit.",               vizSlug: "viz-defense-angle-wide-boxout", hmSlug: "hm-defense-get-hit" },
+  { position: "Defense", adversity: "I start slow.",            vizSlug: "viz-defense-retrieval",        hmSlug: "hm-defense-start-slow" },
+  { position: "Defense", adversity: "We give up the first goal.", vizSlug: "viz-defense-pinch-score",   hmSlug: "hm-defense-first-goal-against" },
   // Goalie × 10 adversities (benched → pulled special case)
-  { position: "Goalie", adversity: "Coach yells.",              vizSlug: "viz-goalie", hmSlug: "hm-goalie-coach-yells" },
-  { position: "Goalie", adversity: "I turn the puck over.",     vizSlug: "viz-goalie", hmSlug: "hm-goalie-turnover" },
-  { position: "Goalie", adversity: "I miss a scoring chance.",  vizSlug: "viz-goalie", hmSlug: "hm-goalie-missed-chance" },
-  { position: "Goalie", adversity: "I get beaten wide.",        vizSlug: "viz-goalie", hmSlug: "hm-goalie-beaten-wide" },
-  { position: "Goalie", adversity: "I take a bad penalty.",     vizSlug: "viz-goalie", hmSlug: "hm-goalie-bad-penalty" },
-  { position: "Goalie", adversity: "I get benched.",            vizSlug: "viz-goalie", hmSlug: "hm-goalie-pulled" },
-  { position: "Goalie", adversity: "I feel nervous.",           vizSlug: "viz-goalie", hmSlug: "hm-goalie-nervous" },
-  { position: "Goalie", adversity: "I get hit.",                vizSlug: "viz-goalie", hmSlug: "hm-goalie-get-hit" },
-  { position: "Goalie", adversity: "I start slow.",             vizSlug: "viz-goalie", hmSlug: "hm-goalie-start-slow" },
-  { position: "Goalie", adversity: "We give up the first goal.", vizSlug: "viz-goalie", hmSlug: "hm-goalie-first-goal-against" },
-  // Basketball — Guard × 10 adversities (FV-113)
-  { position: "Guard", adversity: "I turn the ball over.",      vizSlug: "viz-guard", hmSlug: "hm-bb-guard-turnover" },
-  { position: "Guard", adversity: "I miss an open shot.",       vizSlug: "viz-guard", hmSlug: "hm-bb-guard-missed-shot" },
-  { position: "Guard", adversity: "I get cooked off the dribble.", vizSlug: "viz-guard", hmSlug: "hm-bb-guard-got-cooked" },
-  { position: "Guard", adversity: "I get into foul trouble.",   vizSlug: "viz-guard", hmSlug: "hm-bb-guard-foul-trouble" },
-  { position: "Guard", adversity: "Coach yells.",               vizSlug: "viz-guard", hmSlug: "hm-bb-guard-coach-yells" },
-  { position: "Guard", adversity: "I get benched.",             vizSlug: "viz-guard", hmSlug: "hm-bb-guard-benched" },
-  { position: "Guard", adversity: "I feel nervous.",            vizSlug: "viz-guard", hmSlug: "hm-bb-guard-nervous" },
-  { position: "Guard", adversity: "I miss two free throws.",    vizSlug: "viz-guard", hmSlug: "hm-bb-guard-missed-fts" },
-  { position: "Guard", adversity: "I start slow.",              vizSlug: "viz-guard", hmSlug: "hm-bb-guard-start-slow" },
-  { position: "Guard", adversity: "We fall behind early.",      vizSlug: "viz-guard", hmSlug: "hm-bb-guard-fall-behind-early" },
-  // Basketball — Wing × 10 adversities (FV-113)
-  { position: "Wing", adversity: "I turn the ball over.",       vizSlug: "viz-wing", hmSlug: "hm-bb-wing-turnover" },
-  { position: "Wing", adversity: "I miss an open shot.",        vizSlug: "viz-wing", hmSlug: "hm-bb-wing-missed-shot" },
-  { position: "Wing", adversity: "I get cooked off the dribble.", vizSlug: "viz-wing", hmSlug: "hm-bb-wing-got-cooked" },
-  { position: "Wing", adversity: "I get into foul trouble.",    vizSlug: "viz-wing", hmSlug: "hm-bb-wing-foul-trouble" },
-  { position: "Wing", adversity: "Coach yells.",                vizSlug: "viz-wing", hmSlug: "hm-bb-wing-coach-yells" },
-  { position: "Wing", adversity: "I get benched.",              vizSlug: "viz-wing", hmSlug: "hm-bb-wing-benched" },
-  { position: "Wing", adversity: "I feel nervous.",             vizSlug: "viz-wing", hmSlug: "hm-bb-wing-nervous" },
-  { position: "Wing", adversity: "I miss two free throws.",     vizSlug: "viz-wing", hmSlug: "hm-bb-wing-missed-fts" },
-  { position: "Wing", adversity: "I start slow.",               vizSlug: "viz-wing", hmSlug: "hm-bb-wing-start-slow" },
-  { position: "Wing", adversity: "We fall behind early.",       vizSlug: "viz-wing", hmSlug: "hm-bb-wing-fall-behind-early" },
-  // Basketball — Big × 10 adversities (FV-113); benched → fouled-out special case
-  { position: "Big", adversity: "I turn the ball over.",        vizSlug: "viz-big", hmSlug: "hm-bb-big-turnover" },
-  { position: "Big", adversity: "I miss an open shot.",         vizSlug: "viz-big", hmSlug: "hm-bb-big-missed-shot" },
-  { position: "Big", adversity: "I get cooked off the dribble.", vizSlug: "viz-big", hmSlug: "hm-bb-big-got-cooked" },
-  { position: "Big", adversity: "I get into foul trouble.",     vizSlug: "viz-big", hmSlug: "hm-bb-big-foul-trouble" },
-  { position: "Big", adversity: "Coach yells.",                 vizSlug: "viz-big", hmSlug: "hm-bb-big-coach-yells" },
-  { position: "Big", adversity: "I get benched.",               vizSlug: "viz-big", hmSlug: "hm-bb-big-fouled-out" },
-  { position: "Big", adversity: "I feel nervous.",              vizSlug: "viz-big", hmSlug: "hm-bb-big-nervous" },
-  { position: "Big", adversity: "I miss two free throws.",      vizSlug: "viz-big", hmSlug: "hm-bb-big-missed-fts" },
-  { position: "Big", adversity: "I start slow.",                vizSlug: "viz-big", hmSlug: "hm-bb-big-start-slow" },
-  { position: "Big", adversity: "We fall behind early.",        vizSlug: "viz-big", hmSlug: "hm-bb-big-fall-behind-early" },
+  { position: "Goalie", adversity: "Coach yells.",              vizSlug: "viz-goalie-track-and-save",    hmSlug: "hm-goalie-coach-yells" },
+  { position: "Goalie", adversity: "I turn the puck over.",     vizSlug: "viz-goalie-play-puck-breakout", hmSlug: "hm-goalie-turnover" },
+  { position: "Goalie", adversity: "I miss a scoring chance.",  vizSlug: "viz-goalie-breakaway",         hmSlug: "hm-goalie-missed-chance" },
+  { position: "Goalie", adversity: "I get beaten wide.",        vizSlug: "viz-goalie-post-to-post",      hmSlug: "hm-goalie-beaten-wide" },
+  { position: "Goalie", adversity: "I take a bad penalty.",     vizSlug: "viz-goalie-pk-seam-save",      hmSlug: "hm-goalie-bad-penalty" },
+  { position: "Goalie", adversity: "I get benched.",            vizSlug: "viz-goalie-scramble-save",     hmSlug: "hm-goalie-pulled" },
+  { position: "Goalie", adversity: "I feel nervous.",           vizSlug: "viz-goalie-track-and-save",    hmSlug: "hm-goalie-nervous" },
+  { position: "Goalie", adversity: "I get hit.",                vizSlug: "viz-goalie-screen-traffic",    hmSlug: "hm-goalie-get-hit" },
+  { position: "Goalie", adversity: "I start slow.",             vizSlug: "viz-goalie-rebound-control",   hmSlug: "hm-goalie-start-slow" },
+  { position: "Goalie", adversity: "We give up the first goal.", vizSlug: "viz-goalie-glove-freeze",    hmSlug: "hm-goalie-first-goal-against" },
+  // Basketball — Guard × 10 adversities (FV-113/FV-136)
+  { position: "Guard", adversity: "I turn the ball over.",      vizSlug: "viz-guard-pick-and-roll",      hmSlug: "hm-bb-guard-turnover" },
+  { position: "Guard", adversity: "I miss an open shot.",       vizSlug: "viz-guard-clutch-free-throws", hmSlug: "hm-bb-guard-missed-shot" },
+  { position: "Guard", adversity: "I get cooked off the dribble.", vizSlug: "viz-guard-live-steal",     hmSlug: "hm-bb-guard-got-cooked" },
+  { position: "Guard", adversity: "I get into foul trouble.",   vizSlug: "viz-guard-press-break",        hmSlug: "hm-bb-guard-foul-trouble" },
+  { position: "Guard", adversity: "Coach yells.",               vizSlug: "viz-guard-run-the-set",        hmSlug: "hm-bb-guard-coach-yells" },
+  { position: "Guard", adversity: "I get benched.",             vizSlug: "viz-guard-drive-and-kick",     hmSlug: "hm-bb-guard-benched" },
+  { position: "Guard", adversity: "I feel nervous.",            vizSlug: "viz-guard-transition-pullup",  hmSlug: "hm-bb-guard-nervous" },
+  { position: "Guard", adversity: "I miss two free throws.",    vizSlug: "viz-guard-clutch-free-throws", hmSlug: "hm-bb-guard-missed-fts" },
+  { position: "Guard", adversity: "I start slow.",              vizSlug: "viz-guard-pick-and-roll",      hmSlug: "hm-bb-guard-start-slow" },
+  { position: "Guard", adversity: "We fall behind early.",      vizSlug: "viz-guard-ices-it-late",       hmSlug: "hm-bb-guard-fall-behind-early" },
+  // Basketball — Wing × 10 adversities (FV-113/FV-136)
+  { position: "Wing", adversity: "I turn the ball over.",       vizSlug: "viz-wing-catch-and-shoot",     hmSlug: "hm-bb-wing-turnover" },
+  { position: "Wing", adversity: "I miss an open shot.",        vizSlug: "viz-wing-late-jumper",         hmSlug: "hm-bb-wing-missed-shot" },
+  { position: "Wing", adversity: "I get cooked off the dribble.", vizSlug: "viz-wing-denial-deflection", hmSlug: "hm-bb-wing-got-cooked" },
+  { position: "Wing", adversity: "I get into foul trouble.",    vizSlug: "viz-wing-closeout-contain",    hmSlug: "hm-bb-wing-foul-trouble" },
+  { position: "Wing", adversity: "Coach yells.",                vizSlug: "viz-wing-relocate-catch-shoot", hmSlug: "hm-bb-wing-coach-yells" },
+  { position: "Wing", adversity: "I get benched.",              vizSlug: "viz-wing-attack-closeout",     hmSlug: "hm-bb-wing-benched" },
+  { position: "Wing", adversity: "I feel nervous.",             vizSlug: "viz-wing-catch-and-shoot",     hmSlug: "hm-bb-wing-nervous" },
+  { position: "Wing", adversity: "I miss two free throws.",     vizSlug: "viz-wing-clutch-free-throws",  hmSlug: "hm-bb-wing-missed-fts" },
+  { position: "Wing", adversity: "I start slow.",               vizSlug: "viz-wing-backdoor-cut",        hmSlug: "hm-bb-wing-start-slow" },
+  { position: "Wing", adversity: "We fall behind early.",       vizSlug: "viz-wing-late-jumper",         hmSlug: "hm-bb-wing-fall-behind-early" },
+  // Basketball — Big × 10 adversities (FV-113/FV-136); benched → fouled-out special case
+  { position: "Big", adversity: "I turn the ball over.",        vizSlug: "viz-big-roll-and-finish",      hmSlug: "hm-bb-big-turnover" },
+  { position: "Big", adversity: "I miss an open shot.",         vizSlug: "viz-big-clutch-free-throws",   hmSlug: "hm-bb-big-missed-shot" },
+  { position: "Big", adversity: "I get cooked off the dribble.", vizSlug: "viz-big-rim-protect-and-go", hmSlug: "hm-bb-big-got-cooked" },
+  { position: "Big", adversity: "I get into foul trouble.",     vizSlug: "viz-big-boxout-outlet",        hmSlug: "hm-bb-big-foul-trouble" },
+  { position: "Big", adversity: "Coach yells.",                 vizSlug: "viz-big-rescreen-roll",        hmSlug: "hm-bb-big-coach-yells" },
+  { position: "Big", adversity: "I get benched.",               vizSlug: "viz-big-game-sealing-block",   hmSlug: "hm-bb-big-fouled-out" },
+  { position: "Big", adversity: "I feel nervous.",              vizSlug: "viz-big-post-seal-dropstep",   hmSlug: "hm-bb-big-nervous" },
+  { position: "Big", adversity: "I miss two free throws.",      vizSlug: "viz-big-clutch-free-throws",   hmSlug: "hm-bb-big-missed-fts" },
+  { position: "Big", adversity: "I start slow.",                vizSlug: "viz-big-roll-and-finish",      hmSlug: "hm-bb-big-start-slow" },
+  { position: "Big", adversity: "We fall behind early.",        vizSlug: "viz-big-short-roll-read",      hmSlug: "hm-bb-big-fall-behind-early" },
 ];
 
 async function generateClips(flags: Flags): Promise<void> {
@@ -545,7 +547,7 @@ async function generateClips(flags: Flags): Promise<void> {
     console.log(`\n[clips] Templates: ${PHASE2_TEMPLATES.length}`);
     console.log(
       `[clips] Catalog will have: ${CLIP_SCRIPTS.length} TTS + ${OPENER_SLUGS.length} openers = ` +
-      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (186 expected: 183 + 3 prayer clips, templates: 60)`,
+      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (240 expected: 186 existing + 52 viz + 2 cue-word, templates: 60)`,
     );
     return;
   }
@@ -733,14 +735,26 @@ async function generateClips(flags: Flags): Promise<void> {
     };
   }
 
-  // ── Step 3: Write Phase 3 manifest.json (version "p3").
-  // Templates: 30 entries keyed by (position × adversity) ONLY — no `need`,
+  // ── Step 3: Write manifest.json (version "p6").
+  // Templates: 60 entries keyed by (position × adversity) ONLY — no `need`,
   // no opener in clips list. Opener is prepended by resolver per-need.
-  // Phase 3b adds personalization sentinels at lean-structure positions:
-  //   {{anchor}} {{selfTalk}} {{cueReset}} after the hm clip;
-  //   {{cueSendoff}} between shared-prayer and shared-sendoff.
-  // The resolver in audio-playlist.ts substitutes these with the athlete's
-  // chosen anchor/self-talk/cue-word slugs, dropping them gracefully if absent.
+  //
+  // FV-136 session order:
+  //   opener → shared-opening → <viz positive-play> → <hm adversity>
+  //   → {{anchor}} → {{selfTalk}}
+  //   → shared-cue-word-intro → {{cueReset}}
+  //   → shared-reset-plan → shared-prayer
+  //   → shared-sendoff → shared-cue-word-sendoff → {{cueSendoff}}
+  //
+  // shared-cue-word-intro frames the reset-cue delivery ("When the pressure
+  // builds / Come back to your breath and speak your cue word"), then
+  // {{cueReset}} delivers the bare word clip. shared-cue-word-sendoff frames
+  // the very-last-beat delivery ("Remember your cue word:"), then {{cueSendoff}}
+  // delivers the bare word clip in forward/send-off register.
+  //
+  // The resolver in audio-playlist.ts substitutes {{...}} sentinels with the
+  // athlete's chosen anchor/self-talk/cue-word slugs, dropping them gracefully
+  // if absent (e.g. "Say cue word" anchor has no clip → silently skipped).
   const templates = PHASE2_TEMPLATES.map((t) => {
     return {
       position: t.position,
@@ -751,11 +765,13 @@ async function generateClips(flags: Flags): Promise<void> {
         t.hmSlug,
         "{{anchor}}",
         "{{selfTalk}}",
+        "shared-cue-word-intro",
         "{{cueReset}}",
         "shared-reset-plan",
         "shared-prayer",
-        "{{cueSendoff}}",
         "shared-sendoff",
+        "shared-cue-word-sendoff",
+        "{{cueSendoff}}",
       ],
     };
   });
@@ -829,7 +845,7 @@ async function generateClips(flags: Flags): Promise<void> {
   const templateCount = templates.length;
   console.log(`\n[clips] manifest.json written: ${catalogCount} catalog entries, ${templateCount} templates.`);
 
-  // p6 (FV-124): catalog breakdown:
+  // p6 (FV-136): catalog breakdown:
   //   46 structural (shared + hockey viz/hm + closing)
   //   32 personalization (hockey anc/st/cw)
   //   16 hockey-practice (pp-*) — +1 pp-focus-talk-every-shift (FV-121)
@@ -840,9 +856,12 @@ async function generateClips(flags: Flags): Promise<void> {
   //   − 2 retired mid-session be-vocal beats (FV-124: be-vocal + bb-be-vocal removed from templates)
   //   + 2 new Be more Vocal openers (FV-124: opener-be-vocal + opener-bb-be-vocal)
   //   = 183 total (net 0: −2 retired beats +2 new openers)
-  //   + 3 prayer clips (shared-prayer-selfguided, pp-prayer, pp-prayer-selfguided) = 186 total
-  if (catalogCount !== 186) {
-    console.warn(`  WARNING: expected 186 catalog entries, got ${catalogCount}.`);
+  //   + 3 prayer clips (shared-prayer-selfguided, pp-prayer, pp-prayer-selfguided) = 186 existing
+  //   + 52 viz positive-play scenarios (FV-136: 9 defense + 10 forward + 9 goalie + 8 guard + 8 wing + 8 big)
+  //   + 2 cue-word framing clips (FV-136: shared-cue-word-intro + shared-cue-word-sendoff)
+  //   = 240 total
+  if (catalogCount !== 240) {
+    console.warn(`  WARNING: expected 240 catalog entries, got ${catalogCount}.`);
   }
   if (templateCount !== 60) {
     console.warn(`  WARNING: expected 60 templates (6 positions × 10 adversities — 3 hockey + 3 basketball), got ${templateCount}.`);
