@@ -1698,6 +1698,68 @@ export function PregameCardScreen({
           DONE
         </Button>
       </div>
+
+      {/* ─── Crisis resource footer ─────────────────────────────────────────
+          Shown on every completion card. Display-only. No logging, no
+          keyword detection, no parent alert. A quiet door — not a signal.
+          Copy replicates the exact strings from ResourceScreen.tsx so the
+          privacy review stays clean. (Future: extract shared constant.) */}
+      <div
+        className="mt-8 border-t border-hairline pt-6"
+        role="complementary"
+        aria-label="Crisis resources"
+      >
+        <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.16em] text-cream/40">
+          You&rsquo;re not alone
+        </p>
+
+        <ul className="flex flex-col gap-3" role="list">
+          <li>
+            <p className="font-heading text-[13px] font-semibold text-cream/70">
+              988 Suicide &amp; Crisis Lifeline
+            </p>
+            <p className="mt-0.5 font-body text-[12px] text-cream/40">
+              Free, confidential support for anyone in crisis. 24/7.
+            </p>
+            <a
+              href="tel:988"
+              className="mt-1.5 inline-block font-heading text-[13px] font-medium text-gold/80 underline underline-offset-2 active:opacity-70"
+            >
+              Call or text 988
+            </a>
+          </li>
+
+          <li>
+            <p className="font-heading text-[13px] font-semibold text-cream/70">
+              Crisis Text Line
+            </p>
+            <p className="mt-0.5 font-body text-[12px] text-cream/40">
+              Free, 24/7, text-based crisis support.
+            </p>
+            <a
+              href="sms:741741?body=HOME"
+              className="mt-1.5 inline-block font-heading text-[13px] font-medium text-gold/80 underline underline-offset-2 active:opacity-70"
+            >
+              Text HOME to 741741
+            </a>
+          </li>
+
+          <li>
+            <p className="font-heading text-[13px] font-semibold text-cream/70">
+              Talk to a trusted adult
+            </p>
+            <p className="mt-0.5 font-body text-[12px] text-cream/40">
+              A parent, coach, teacher, pastor, or counselor. You don&rsquo;t
+              have to carry this alone.
+            </p>
+          </li>
+        </ul>
+
+        <p className="mt-5 font-body text-[11px] leading-relaxed text-cream/30">
+          Nothing here is shared with your parent. From Victory is not a
+          mental-health service. In an immediate emergency, call 911.
+        </p>
+      </div>
     </div>
   );
 }
