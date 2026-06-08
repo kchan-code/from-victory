@@ -25,8 +25,9 @@
  * to cache. Cache is device-local only (no sync/share surface).
  *
  * Bump CACHE_VERSION any time the shell layout or offline page changes.
- * Bump AUDIO_CACHE_BUST (below) any time pregame audio binaries change —
- * it also rotates the SW audio cache so stale clips are evicted at activate.
+ * Update MANIFEST_VERSION (below) whenever pregame clips change — the
+ * generator derives it from the catalog content-hash, and it rotates the
+ * SW audio cache so stale clips are evicted at activate.
  */
 
 const CACHE_VERSION = "fv-shell-v2";

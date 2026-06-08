@@ -130,9 +130,9 @@ export const CUEWORD_OPTION_SLUGS: Record<string, string> = {
 // job enforces this parity.
 //
 // How to update: run `npm run audio:generate -- --mode clips`, read the
-// new manifestVersion printed to stdout, update MANIFEST_VERSION here
-// AND in sw.js. Then bump AUDIO_CACHE_BUST once more (for one last
-// regen) — after that, only MANIFEST_VERSION needs updating.
+// new manifestVersion printed to stdout, and update MANIFEST_VERSION here
+// AND in sw.js to match. AUDIO_CACHE_BUST is NOT bumped for clip regens
+// (see the retirement note below).
 export const MANIFEST_VERSION = "f0ef4d6b"; // sync with sw.js:MANIFEST_VERSION
 
 // AUDIO_CACHE_BUST — RETIRED for per-clip URL versioning (FV-142).

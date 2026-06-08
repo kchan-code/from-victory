@@ -160,7 +160,7 @@ async function resolveReachableUrls(
   if (!resolved) return null;
 
   // Build the URL list: manifest JSON + each clip's MP3. clip.url is already
-  // cache-busted (bustUrl) and already carries the correct /clips/ subpath from
+  // content-addressed (<slug>.<hash8>.mp3) and already carries the correct /clips/ subpath from
   // the manifest catalog entry. Sidecar JSONs are intentionally NOT cached: the
   // clip player reads clip data from the in-memory manifest and never fetches
   // per-clip JSON at runtime, and audioAssetUrl(slug,"json") would emit
@@ -179,7 +179,7 @@ async function resolveReachableUrls(
 // ---------------------------------------------------------------------------
 
 /**
- * Warm the fv-audio-<bust> cache with the athlete's reachable clip set.
+ * Warm the fv-audio-<mv> cache with the athlete's reachable clip set.
  * Fetches the manifest, resolves the clip URLs, and calls cache.addAll() on
  * any URLs not already present — no duplicate network requests.
  *
@@ -257,7 +257,7 @@ export async function precachePregameAudio(
 
 /**
  * Check how many of the athlete's reachable audio URLs are already in the
- * fv-audio-<bust> cache WITHOUT fetching anything from the network.
+ * fv-audio-<mv> cache WITHOUT fetching anything from the network.
  *
  * Used by the ReviewScreen indicator to show accurate cache state keyed to
  * actual Cache Storage contents — never navigator.onLine (which lies on lie-fi).

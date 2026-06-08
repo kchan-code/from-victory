@@ -665,6 +665,9 @@ async function generateClips(flags: Flags): Promise<void> {
 
       // Read back sidecar timeline to build catalog.
       // renderResult.hash8 is the content-hash of the newly-written file.
+      // In --mode clips generateOne() always returns { hash8 } or throws, so the
+      // "00000000" fallback is unreachable here; it exists only to satisfy the
+      // type. If it ever appears in a catalog URL, treat it as a generator bug.
       const renderedHash8 = renderResult?.hash8 ?? "00000000";
       const jsonPath = join(clipsDir, `${script.slug}.json`);
       const rawJson = await readFile(jsonPath, "utf8");
