@@ -779,5 +779,13 @@
   ],
   "cw-steady-sendoff": [
     2.0
+  ],
+  "shared-cue-word-intro": [
+    0.5,
+    0.8,
+    0.6
+  ],
+  "shared-cue-word-sendoff": [
+    2.0
   ]
 }

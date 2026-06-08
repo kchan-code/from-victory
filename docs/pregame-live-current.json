@@ -2168,5 +2168,13 @@
     "Now the reset. Return to your anchor.",
     "Stay in the game from here. Watch the glass, talk the coverage, and be ready.",
     "The bench has your body for a stretch. It does not have your mind. Watch the glass, talk the coverage, and be ready to bring physicality when you go back in."
+  ],
+  "shared-cue-word-intro": [
+    "When the pressure builds.",
+    "Come back to your breath and speak your cue word.",
+    "{insert word}."
+  ],
+  "shared-cue-word-sendoff": [
+    "Remember your cue word: {insert word}."
   ]
 }

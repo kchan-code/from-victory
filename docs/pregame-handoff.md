@@ -73,6 +73,11 @@ This is the "re-record everything" pass. Convert the finalized md → clip scrip
 - **Structural gap:** no guided breath *between* the adversity rehearsal and the hype send-off — a single guided exhale after the worst image would close the loop (confirm against the actual clip stitch order in the audio pipeline).
 - **KEEP:** nerves-as-energy framing, the 4-in/6-out breath, clutch-FT routines, and the "Now rehearse the hard moment / Now the reset" scaffolding labels.
 
+**Content additions (KC) — DEFINED, in `docs/pregame-scripts.md` §4. Two new shared clips, `{insert word}` = the athlete's selected cue word (runtime substitution):**
+- `shared-cue-word-intro` (at the reset, first use): _"When the pressure builds. [0.5s] / Come back to your breath and speak your cue word. [0.8s] / {insert word}. [0.6s]"_
+- `shared-cue-word-sendoff` (**the very last beat — after the prayer/send-off**): _"Remember your cue word: {insert word}. [2s]"_
+- Build both as new shared clips in `clips.ts`; slot the intro at the reset and the sendoff as the final beat in the playlist assembly (`audio-mapping.ts`); map `{insert word}` to the existing cue-word substitution sentinel. These replace the bare `cw-*` reset/sendoff word as the *framed* delivery (the word still substitutes in via the sentinel).
+
 **Routed to other desks:**
 - **Clinical advisor (FV-119):** depth-of-induction on `hm-bb-big-fouled-out` + `hm-bb-big-fall-behind-early` (most intense authored distress, youngest cohort). Paired with FV-146.
 - **kids-privacy-officer (FV-146):** crisis footer — **decided** (see §2 Step 2).
