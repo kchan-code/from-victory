@@ -32,23 +32,28 @@
 const CACHE_VERSION = "fv-shell-v2";
 
 /**
- * Audio cache bust token — MUST stay in sync with AUDIO_CACHE_BUST in
+ * FV-142 — per-clip content-addressed filenames.
+ *
+ * MANIFEST_VERSION is the content-hash of the clip catalog (first 8 hex of
+ * sha256 of the sorted slug→hash8 map). It is written into manifest.json by
+ * the generator and must be kept in sync with MANIFEST_VERSION in
  * apps/web/components/pregame/audio-mapping.ts.
  *
- * Bumping this value:
+ * How it rotates the audio cache:
  *   1. Creates a new cache named fv-audio-<new-value>.
  *   2. The activate handler prunes all fv-audio-<old-value> caches.
- *   3. audio-precache.ts uses the same constant (imported from audio-mapping.ts)
- *      to open the same named cache — so both sides always agree.
+ *   3. audio-precache.ts uses MANIFEST_VERSION (imported from audio-mapping.ts)
+ *      to open the same named cache — both sides always agree.
  *
- * CRITICAL: keep these in sync or cache open/read will disagree and audio
- * will refetch on every session instead of serving from cache.
+ * CRITICAL: keep these in sync or cache open/read will disagree.
  *
- * When `npm run audio:generate` is run and AUDIO_CACHE_BUST is bumped in
- * audio-mapping.ts, update this string to match BEFORE deploying.
+ * How to update: after running `npm run audio:generate -- --mode clips`,
+ * read the new manifestVersion from stdout or from manifest.json, and
+ * update this string AND MANIFEST_VERSION in audio-mapping.ts in the same PR.
+ * The `audio-cache-bust` CI job enforces this parity.
  */
-const AUDIO_CACHE_BUST = "17"; // sync with audio-mapping.ts:AUDIO_CACHE_BUST
-const AUDIO_CACHE = `fv-audio-${AUDIO_CACHE_BUST}`;
+const MANIFEST_VERSION = "f0ef4d6b"; // sync with audio-mapping.ts:MANIFEST_VERSION
+const AUDIO_CACHE = `fv-audio-${MANIFEST_VERSION}`;
 
 /**
  * Caches we own and are allowed to keep alive.

@@ -84,14 +84,15 @@ jobs:
   audio-cache-bust:
     name: Audio cache-bust guard
     runs-on: ubuntu-latest
-    # PR-only: the rule is "a PR that changes *.mp3 must also bump the cache
-    # bust." On a direct push to main there is no base branch to diff against.
+    # PR-only: the rule is "a PR that changes *.mp3 must also update the
+    # manifest version." On a direct push to main there is no base branch to
+    # diff against.
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Require AUDIO_CACHE_BUST bump when committed *.mp3 files change
+      - name: Require MANIFEST_VERSION bump when committed *.mp3 files change (FV-142)
         run: |
           set -euo pipefail
           BASE_REF="${{ github.event.pull_request.base.ref }}"
@@ -100,58 +101,56 @@ jobs:
 
           MP3_CHANGED=$(git diff --name-only "$RANGE" | grep -E '\.mp3$' || true)
           if [ -z "$MP3_CHANGED" ]; then
-            echo "No *.mp3 changes in this PR — cache-bust guard not applicable."
+            echo "No *.mp3 changes in this PR — manifest-version guard not applicable."
             exit 0
           fi
 
           echo "Changed *.mp3 files:"
           echo "$MP3_CHANGED"
 
-          # A bump = a newly-added AUDIO_CACHE_BUST assignment with a quoted
-          # value, e.g.  +export const AUDIO_CACHE_BUST = "12";
-          # The [^/]* guard + required `= "` exclude comment lines that merely
-          # mention AUDIO_CACHE_BUST (a false-pass the looser pattern allowed).
+          # FV-142: clip files are content-addressed (<slug>.<hash8>.mp3).
+          # A new regen always produces a new hash8 in the filename AND updates
+          # MANIFEST_VERSION in audio-mapping.ts (the catalog content-hash).
+          # A bump = a newly-added MANIFEST_VERSION assignment with a quoted value.
+          # The [^/]* guard + required `= "` exclude comment lines.
           MAPPING="apps/web/components/pregame/audio-mapping.ts"
-          if git diff "$RANGE" -- "$MAPPING" | grep -qE '^\+[^/]*AUDIO_CACHE_BUST[[:space:]]*=[[:space:]]*"'; then
-            echo "✓ AUDIO_CACHE_BUST was bumped in $MAPPING."
+          if git diff "$RANGE" -- "$MAPPING" | grep -qE '^\+[^/]*MANIFEST_VERSION[[:space:]]*=[[:space:]]*"'; then
+            echo "✓ MANIFEST_VERSION was updated in $MAPPING."
             exit 0
           fi
 
-          echo "::error file=${MAPPING}::This PR changes *.mp3 files but does not bump AUDIO_CACHE_BUST. Any committed *.mp3 change requires an AUDIO_CACHE_BUST bump (CLAUDE.md → Project Workflow Config)."
+          echo "::error file=${MAPPING}::This PR changes *.mp3 files but does not update MANIFEST_VERSION. Any committed *.mp3 change requires a MANIFEST_VERSION update in audio-mapping.ts and sw.js (CLAUDE.md → Project Workflow Config)."
           exit 1
 
-      - name: Require AUDIO_CACHE_BUST to match between audio-mapping.ts and sw.js
+      - name: Require MANIFEST_VERSION to match between audio-mapping.ts and sw.js (FV-142)
         run: |
           set -euo pipefail
           # The hand-rolled service worker (public/sw.js) can't import the TS
           # constant, so it keeps its own copy. They MUST match or the window-side
           # precache and the SW open different caches and offline audio silently
-          # breaks (FV-106). Runs on every PR, not just *.mp3 changes.
+          # breaks (FV-106 / FV-142). Runs on every PR.
           MAPPING="apps/web/components/pregame/audio-mapping.ts"
           SW="apps/web/public/sw.js"
-          # Extract the AUDIO_CACHE_BUST string from a TS/JS file. Anchored to an
+          # Extract the MANIFEST_VERSION string from a TS/JS file. Anchored to an
           # actual `const` / `export const` declaration (leading indentation OK),
-          # so it never matches the decoy mention inside the audio-mapping.ts
-          # comment block: `// ...(const AUDIO_CACHE_BUST = "...")...` sits ABOVE
-          # the real declaration, and a bare grep would grab "..." from it.
-          # Do NOT loosen this to `grep AUDIO_CACHE_BUST`.
-          extract_bust() {
-            grep -oE '^[[:space:]]*(export[[:space:]]+)?const[[:space:]]+AUDIO_CACHE_BUST[[:space:]]*=[[:space:]]*"[^"]*"' "$1" \
+          # so it never matches comment lines that merely mention MANIFEST_VERSION.
+          extract_mv() {
+            grep -oE '^[[:space:]]*(export[[:space:]]+)?const[[:space:]]+MANIFEST_VERSION[[:space:]]*=[[:space:]]*"[^"]*"' "$1" \
               | grep -oE '"[^"]*"' | head -1 || true
           }
-          TS_BUST=$(extract_bust "$MAPPING")
-          SW_BUST=$(extract_bust "$SW")
-          echo "audio-mapping.ts AUDIO_CACHE_BUST = ${TS_BUST:-<none>}"
-          echo "sw.js            AUDIO_CACHE_BUST = ${SW_BUST:-<none>}"
-          if [ -z "$TS_BUST" ] || [ -z "$SW_BUST" ]; then
-            echo "::error::Could not find AUDIO_CACHE_BUST in both $MAPPING and $SW."
+          TS_MV=$(extract_mv "$MAPPING")
+          SW_MV=$(extract_mv "$SW")
+          echo "audio-mapping.ts MANIFEST_VERSION = ${TS_MV:-<none>}"
+          echo "sw.js            MANIFEST_VERSION = ${SW_MV:-<none>}"
+          if [ -z "$TS_MV" ] || [ -z "$SW_MV" ]; then
+            echo "::error::Could not find MANIFEST_VERSION in both $MAPPING and $SW."
             exit 1
           fi
-          if [ "$TS_BUST" != "$SW_BUST" ]; then
-            echo "::error file=${SW}::AUDIO_CACHE_BUST mismatch — $MAPPING has ${TS_BUST}, $SW has ${SW_BUST}. Bump both in the same PR (CLAUDE.md → Project Workflow Config)."
+          if [ "$TS_MV" != "$SW_MV" ]; then
+            echo "::error file=${SW}::MANIFEST_VERSION mismatch — $MAPPING has ${TS_MV}, $SW has ${SW_MV}. Update both in the same PR (CLAUDE.md → Project Workflow Config)."
             exit 1
           fi
-          echo "✓ AUDIO_CACHE_BUST is in sync ($TS_BUST)."
+          echo "✓ MANIFEST_VERSION is in sync ($TS_MV)."
 
 # NOTE: The automated kids-privacy-officer CI gate was removed while the
 # repo is pre-MVP (no schema, no auth, no journal code — nothing for the

@@ -124,7 +124,7 @@ from-victory/
 | product-strategist | MVP scope, scope-creep killer |
 | frontend-engineer | Next.js, Tailwind, mobile-first UI, PWA shell, brand visual application |
 | backend-engineer | Supabase schema, RLS, auth, Stripe webhooks |
-| audio-engineer | Pregame guided-audio pipeline: TTS generation, ffmpeg/EQ mastering, AudioScript.postFilter, regeneration, AUDIO_CACHE_BUST, spectral QA |
+| audio-engineer | Pregame guided-audio pipeline: TTS generation, ffmpeg/EQ mastering, AudioScript.postFilter, regeneration, MANIFEST_VERSION, spectral QA |
 | content-curator | Orchestrates training content; integrates sports-psychologist + youth-pastor outputs into one voice across the four voice modes |
 | sports-psychologist | Mental skills content (Dweck, Gallwey, Loehr, etc.). Co-author. |
 | youth-pastor | Scripture and theological framing (Keller, Lewis). Co-author. |
@@ -160,7 +160,7 @@ Standing invocation policy — apply these by default, not by memory:
 | New feature, scope expansion, new dependency, or tech-stack deviation | product-strategist (has veto) — BEFORE building |
 | UI / Next.js / Tailwind / PWA / accessibility work in `apps/web` | frontend-engineer (athlete-UX lens + build-note checklist) |
 | Supabase schema / RLS / migration / auth / Stripe / server action | backend-engineer |
-| Pregame audio pipeline / TTS / ffmpeg / EQ / `AUDIO_CACHE_BUST` | audio-engineer |
+| Pregame audio pipeline / TTS / ffmpeg / EQ / `MANIFEST_VERSION` | audio-engineer |
 | Athlete-facing training, journal, or scripture content | content-curator (orchestrates sports-psychologist + youth-pastor) |
 | Sport-specific content (hockey/basketball scenarios, positions, examples, pregame scripts) | content-curator + the relevant sport-expert (hockey-expert / basketball-expert) for authenticity |
 | Any PR touching runtime or tested code — before privacy + merge | qa-reviewer |
@@ -430,7 +430,7 @@ docs/brand.md "Voice Modes" for the full table. Default mode is Mentor.
 - **Verify — narrowest:** prefer a single test file or `tsc` on touched paths over the whole suite.
 - **Review gate (before merge):** general `/review` (issue-scoped) → qa-reviewer → kids-privacy-officer (if privacy path) → merge
 - **Privacy-sensitive paths (trigger kids-privacy-officer):** `apps/web/**`, `supabase/**`, `packages/content/**`, `.claude/agents/**`, `CLAUDE.md`, `docs/brand.md`
-- **Project-specific guards:** if any committed `*.mp3` changed, bump `AUDIO_CACHE_BUST` in `apps/web/components/pregame/audio-mapping.ts` **and** the matching `const AUDIO_CACHE_BUST` in `apps/web/public/sw.js` (the hand-rolled SW can't import the TS constant; CI's `audio-cache-bust` job enforces they match — FV-106)
+- **Project-specific guards (FV-142):** if any committed `*.mp3` changed, update `MANIFEST_VERSION` in `apps/web/components/pregame/audio-mapping.ts` **and** the matching `const MANIFEST_VERSION` in `apps/web/public/sw.js` to the new `manifestVersion` value from `manifest.json` (the hand-rolled SW can't import the TS constant; CI's `audio-cache-bust` job enforces they match). Clip filenames are content-addressed (`<slug>.<hash8>.mp3`) so the generator derives `MANIFEST_VERSION` automatically — it is printed to stdout after `npm run audio:generate -- --mode clips`.
 - **Agent roster:** see `## Subagents` and `## Agent Orchestration` in this file.
 
 ## Merge Authority & Risk Tiers
