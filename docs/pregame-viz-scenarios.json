@@ -1,0 +1,1438 @@
+[
+  {
+    "sport": "Hockey",
+    "position": "Defense",
+    "scenarios": [
+      {
+        "title": "Clean puck retrieval",
+        "slug": "viz-defense-retrieval",
+        "lines": [
+          "See yourself as the first player back, calm under pressure.",
+          "The puck is dumped in behind you.",
+          "You shoulder-check over your inside shoulder.",
+          "You turn and sprint back for it.",
+          "You shoulder-check again — you know where the forecheck is.",
+          "You feel him coming, but you are not rushed.",
+          "At the puck, you sell up the wall.",
+          "The forechecker leans. You cut back into space.",
+          "Clean pickup, head up.",
+          "Tape-to-tape pass to your winger."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          3.0,
+          2.5,
+          3.0,
+          3.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Walk the blue line",
+        "slug": "viz-defense-walk-the-line",
+        "lines": [
+          "See the puck come to you at the blue line, with the whole play in front of you.",
+          "The puck rims around the wall to you at the point.",
+          "It's bouncing — you settle it down.",
+          "You pull it off the wall, along the blue line.",
+          "You open up, eyes on the lane.",
+          "A teammate ties up the net-front.",
+          "You walk the line one more step, into the seam.",
+          "You fire it through — a hard shot, on net, low.",
+          "Stick on the ice for the rebound."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.5,
+          2.0,
+          3.0,
+          3.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Gap up and stand him up",
+        "slug": "viz-defense-gap-up",
+        "lines": [
+          "See the rush coming at you, and feel yourself ready to control the space.",
+          "They break out, you swing back.",
+          "You skate it backward, eyes on the puck carrier's chest.",
+          "You close your gap — one stick-length, then tighter.",
+          "He tries to beat you wide.",
+          "You match his speed, angle him to the wall.",
+          "You stand him up at the line. No entry.",
+          "The puck dies in the corner.",
+          "Your partner is there. You win it back."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          3.0,
+          2.0,
+          3.0,
+          3.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Calm breakout, D-to-D",
+        "slug": "viz-defense-breakout",
+        "lines": [
+          "See yourself below the goal line, pressure coming, but your head is clear.",
+          "You retrieve it low, under pressure from F1.",
+          "You shoulder-check — F2 is reading your first option.",
+          "You take it behind the net, holding the puck.",
+          "D-to-D, hard pass to your partner.",
+          "He's got a step now, the forecheck overcommitted.",
+          "You skate to support, an option up the wall.",
+          "He hits you in stride at the hash marks.",
+          "You chip it out, clean. Zone exit, on the tape."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.5,
+          2.0,
+          3.0,
+          2.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Long D-zone shift — dig deep, get it out, change",
+        "slug": "viz-defense-long-shift",
+        "lines": [
+          "See yourself late in a hard shift, tired but still responsible.",
+          "They keep it in at your line — you can't get the clear.",
+          "The shift gets long. They cycle low and you're pinned in your zone.",
+          "Your legs are burning. You want the change. It's not there yet.",
+          "You stay above your check. Box out. Battle for body position.",
+          "You don't cheat for offense — you defend, take away the next pass.",
+          "The puck squirts loose to your corner.",
+          "You get to it, shoulder-check, and chip it hard off the glass and out.",
+          "Clean clear. You're first to the bench.",
+          "Fresh legs jump on. Long shift, no goal against.",
+          "You did your job. That's the change you earned."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          3.0,
+          2.0,
+          2.0,
+          3.0,
+          2.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Step up, pinch, and finish",
+        "slug": "viz-defense-pinch-score",
+        "lines": [
+          "See the puck near the wall and know this is your chance to keep the play alive.",
+          "The puck's chipped up the wall, trying to leave the zone.",
+          "You're the D at the blue line. You read it early.",
+          "You shoulder-check — your center is high, covering for you.",
+          "You step down and pinch, pin it on the wall.",
+          "You win the battle and knock it to the middle.",
+          "You walk off the wall into the slot.",
+          "You snap a low shot through the traffic.",
+          "It tips in. You kept it alive and buried it."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.5,
+          3.0,
+          3.0,
+          2.0,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Kill a penalty shift",
+        "slug": "viz-defense-penalty-kill-clear",
+        "lines": [
+          "See yourself on the penalty kill, locked into your lane and your job.",
+          "You are on the penalty kill. They set up high.",
+          "You stay in the shot lane, stick out front.",
+          "The puck moves to the half wall. You do not chase.",
+          "You keep the box tight and protect the middle.",
+          "The shot comes from the point. You get in the lane.",
+          "It hits your shin pad and drops loose.",
+          "You win the race and chip it hard down the ice.",
+          "Your bench taps their sticks. Kill the next one."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.5,
+          3.0,
+          2.0,
+          3.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Communicate and quarterback the breakout",
+        "slug": "viz-defense-vocal-breakout",
+        "lines": [
+          "See yourself as the calm voice on the ice, helping everyone play faster.",
+          "Your partner goes back for the puck.",
+          "You shoulder-check and read the forecheck.",
+          "You call it early: “Reverse.”",
+          "He hears you and banks it behind the net.",
+          "You collect it in stride, head up.",
+          "The winger is posted on the wall. Your center is low.",
+          "You call “wall” and put it on the tape.",
+          "Clean exit. Your voice made the game slower."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          3.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Defend the rush, force a bad shot, win the rebound",
+        "slug": "viz-defense-angle-wide-boxout",
+        "lines": [
+          "See the rush building, and feel yourself patient, square, and in control.",
+          "They come through the neutral zone with speed.",
+          "You hold the middle and match his pace.",
+          "You do not lunge. You do not open the inside lane.",
+          "You angle him wide toward the boards.",
+          "He shoots from outside the dot. Low danger.",
+          "Your goalie makes the save. The rebound drops in front.",
+          "You tie up his stick and take his body.",
+          "Your partner collects the puck.",
+          "Middle protected. Rebound won. Job done."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          3.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          3.0
+        ]
+      }
+    ]
+  },
+  {
+    "sport": "Hockey",
+    "position": "Forward",
+    "scenarios": [
+      {
+        "title": "Win the wall and bury it",
+        "slug": "viz-forward-win-the-wall",
+        "lines": [
+          "See the puck go into your corner and know you are going to win the race.",
+          "The puck's chipped into your corner.",
+          "You get there first, low and strong.",
+          "You take the body, pin your check, protect the puck.",
+          "You pull it off the wall to the middle.",
+          "You drive the net, hard, inside hand.",
+          "You go to the backhand, around the goalie's pad.",
+          "The puck crosses the line.",
+          "The puck is in. You earned that one."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          3.0,
+          2.0,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Give-and-go through the seam",
+        "slug": "viz-forward-give-and-go",
+        "lines": [
+          "See open ice ahead of you and feel your speed starting to build.",
+          "You carry it through the neutral zone, speed building.",
+          "You shoulder-check — your winger is filling the lane.",
+          "You give it to him and accelerate.",
+          "You hit the soft spot in the D, between the two defenders.",
+          "His return pass is on your tape, flat.",
+          "One touch to settle it, the goalie sliding.",
+          "You roof it over the blocker.",
+          "Top corner. Bar down."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          3.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Backcheck and strip",
+        "slug": "viz-forward-backcheck-strip",
+        "lines": [
+          "See the turnover happen and feel yourself commit to getting back hard.",
+          "The puck turns over at their blue line.",
+          "They're on the rush, you're the high forward.",
+          "You turn and skate, full speed, back through center.",
+          "You track the puck-carrier on his inside hand.",
+          "You catch him at the top of the circle.",
+          "Active stick — you lift his, then poke the puck free.",
+          "You knock it to the corner, kill the rush.",
+          "You jump back to the bench. Clean change."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          3.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Net-front tip and bury the rebound",
+        "slug": "viz-forward-net-front",
+        "lines": [
+          "See yourself at the net-front, ready to make a hard play in traffic.",
+          "The point man winds up for the shot.",
+          "You set up at the net-front, stick on the ice.",
+          "You find a lane, body between the D and the goalie.",
+          "The shot comes — you get a piece, tip it down.",
+          "The goalie kicks out a rebound.",
+          "You're already on it, hands quick.",
+          "You bang it home before he resets.",
+          "The puck is in. Net-front work paid off."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          3.0,
+          2.0,
+          2.5,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Clean faceoff win to a shot",
+        "slug": "viz-forward-faceoff-win-shot",
+        "lines": [
+          "See yourself over the dot, set, calm, and ready for the puck drop.",
+          "You're at the dot in the O-zone. You set your grip.",
+          "You read the linesman's hand. You win it clean back to your D.",
+          "You release off the dot and find the soft ice in the slot.",
+          "Your D walks the line and the lane opens.",
+          "The puck comes down to the tape in the middle.",
+          "One touch, you bury it bar-down."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.5,
+          2.5,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "2-on-1 read, pass and finish",
+        "slug": "viz-forward-2on1-pass-finish",
+        "lines": [
+          "See the odd-man rush opening up, with space and speed in front of you.",
+          "You jump the gap and it's a 2-on-1 the other way.",
+          "You read the D — he sinks to take the pass.",
+          "You're patient. You drive the soft ice and hold the puck.",
+          "He commits to you. The lane to your winger opens.",
+          "You slide it flat across, right onto his tape.",
+          "He one-times it home. You made that play."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.5,
+          2.0,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "title": "F1 forecheck, angle and strip",
+        "slug": "viz-forward-forecheck-strip",
+        "lines": [
+          "See yourself as F1, first into the zone, setting the pressure.",
+          "You're F1, first man in on the forecheck.",
+          "You take the right angle and cut off his strong-side option.",
+          "You close hard and pin him to the wall.",
+          "You lift his stick and steal the puck off the boards.",
+          "You spin off pressure, low to the net.",
+          "You tuck it short side. Forecheck to goal."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Offensive-zone cycle and low-to-high play",
+        "slug": "viz-forward-cycle-low-high",
+        "lines": [
+          "See the puck below the goal line and feel your line ready to build pressure.",
+          "The puck is below the goal line. You get there first.",
+          "You protect it with your body, shoulder into pressure.",
+          "You hear your teammate call for the cycle.",
+          "You leave it soft off the wall and roll high.",
+          "The puck moves low to high to your D.",
+          "You drive through the defender’s hands to the net-front.",
+          "The shot comes through traffic.",
+          "You screen the goalie and hunt the rebound.",
+          "Possession kept. Pressure built. That is winning hockey."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          3.0,
+          3.0,
+          3.0
+        ]
+      },
+      {
+        "title": "3-on-2 rush with a smart middle-lane drive",
+        "slug": "viz-forward-3on2-middle-drive",
+        "lines": [
+          "See the rush forming, and know your middle-lane drive can open everything.",
+          "You cross the red line with speed. It is a 3-on-2.",
+          "Your winger has the puck wide. You read the gap.",
+          "You drive the middle lane hard, stick on the ice.",
+          "Both defenders feel you coming through the slot.",
+          "The far winger delays into open ice.",
+          "The pass goes across. The shot comes.",
+          "You stop at the net-front, ready for the rebound.",
+          "The puck kicks loose. You bury it from the top of the crease."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.5,
+          2.0,
+          3.0,
+          2.5,
+          2.5
+        ]
+      },
+      {
+        "title": "Win a defensive-zone faceoff responsibility",
+        "slug": "viz-forward-dzone-faceoff-win",
+        "lines": [
+          "See the defensive-zone draw and feel the importance of doing your job.",
+          "Defensive-zone draw. Late in the period.",
+          "You set your feet and know your job.",
+          "The puck drops. You tie up hard.",
+          "Your winger jumps through and wins the loose puck.",
+          "You support low and protect the middle.",
+          "The puck goes wall-side, then out.",
+          "You clear the zone and get fresh legs on.",
+          "Small play. Big moment. You did your job."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          2.5
+        ]
+      }
+    ]
+  },
+  {
+    "sport": "Hockey",
+    "position": "Goalie",
+    "scenarios": [
+      {
+        "title": "Track and save",
+        "slug": "viz-goalie-track-and-save",
+        "lines": [
+          "See the play enter your zone and feel yourself settled in your crease.",
+          "The puck comes up the wall into the zone.",
+          "You set your depth, square to the puck.",
+          "You stay big, hands out front, weight on the balls of your feet.",
+          "The shooter loads up from the top of the circle.",
+          "You track it off his blade, all the way in.",
+          "You take it in the chest, smother it.",
+          "The whistle blows. You've got it.",
+          "You're calm. Set for the next one."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.5,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Rebound control to the corner",
+        "slug": "viz-goalie-rebound-control",
+        "lines": [
+          "See the shooter on the wing and feel yourself ready to control the puck.",
+          "Shot from the wing, low and hard.",
+          "You drop into your butterfly, sealed to the ice.",
+          "You take it off the pad.",
+          "You angle the pad, steer the rebound to the corner.",
+          "No second chance — the puck dies in the boards.",
+          "You push back to your feet.",
+          "You re-center on your post, depth set.",
+          "Eyes back on the puck. Next shot only."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.5
+        ]
+      },
+      {
+        "title": "Save your ground, post to post",
+        "slug": "viz-goalie-post-to-post",
+        "lines": [
+          "See the puck below the goal line and feel yourself sealed and patient.",
+          "The puck swings low, below the goal line.",
+          "You seal the near post, leak nothing short side.",
+          "The pass goes cross-ice, backdoor.",
+          "You push post to post, square on arrival.",
+          "You're set before the shot — not sliding through it.",
+          "You take it on the blocker, controlled.",
+          "You direct it high glass, out of danger.",
+          "You reset to center. You held your ground."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          3.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Read the breakaway",
+        "slug": "viz-goalie-breakaway",
+        "lines": [
+          "See the player coming in alone and feel your body stay big and quiet.",
+          "He's behind the D, in alone, gathering speed.",
+          "You set your depth at the top of the crease.",
+          "You match his pace as he comes, staying patient.",
+          "Stay big. Hands out front. Don't bite on the first move.",
+          "He pulls it to his forehand, tries to go five-hole.",
+          "You stay on your feet, then close the seal.",
+          "The puck hits your pads and dies.",
+          "You cover it up. You won that one-on-one."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.5,
+          3.0,
+          2.0,
+          2.5,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Clean glove save and freeze",
+        "slug": "viz-goalie-glove-freeze",
+        "lines": [
+          "See the shot developing through traffic and feel your glove ready out front.",
+          "Puck's in the corner, they're working it for a shot.",
+          "You're square, gloves out front, tracking it through.",
+          "The shot comes hard, glove side, high.",
+          "You catch it clean. The leather snaps shut.",
+          "You hold it. The whistle goes.",
+          "You stayed square. You held it. Faceoff."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          3.0,
+          2.0,
+          2.5,
+          3.0
+        ]
+      },
+      {
+        "title": "Scramble, desperation post save",
+        "slug": "viz-goalie-scramble-save",
+        "lines": [
+          "See the crease get messy and know you are going to keep fighting for the puck.",
+          "It's a scramble in your crease. The puck's loose.",
+          "The first shot beats you and you're down and out.",
+          "You don't quit on it. You drive to your post.",
+          "You throw the pad across and seal the ice.",
+          "The puck hits you and stays out.",
+          "You found it, you covered it. Whistle. Breathe."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.5
+        ]
+      },
+      {
+        "title": "Track the shot through traffic",
+        "slug": "viz-goalie-screen-traffic",
+        "lines": [
+          "See bodies in front of you and feel yourself working to find the puck.",
+          "There's a shot coming and a body in your sightline.",
+          "You don't fight the screen. You move to find the puck.",
+          "You drop and look around the hip, eyes on the release.",
+          "You see it late and get a piece — it's off your chest.",
+          "You smother the rebound before a stick can find it.",
+          "You read it through the traffic. Save and freeze."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          3.0,
+          2.5,
+          2.5,
+          2.5,
+          2.5
+        ]
+      },
+      {
+        "title": "Play the puck and start the breakout",
+        "slug": "viz-goalie-play-puck-breakout",
+        "lines": [
+          "See the dump-in coming and know you can help your team before pressure arrives.",
+          "The puck is dumped in hard around the glass.",
+          "You leave your crease and get behind it early.",
+          "You stop it clean behind the net.",
+          "You shoulder-check. F1 is coming.",
+          "You make the simple play to your defenseman’s forehand.",
+          "He collects it with time. The forecheck slows down.",
+          "You get back to your crease, square and ready.",
+          "You helped your team break out before the pressure arrived."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          3.0,
+          2.5,
+          2.5
+        ]
+      },
+      {
+        "title": "Penalty kill lateral read through seam",
+        "slug": "viz-goalie-pk-seam-save",
+        "lines": [
+          "See the power play moving the puck and feel yourself patient through the seam.",
+          "They are on the power play, moving the puck around the outside.",
+          "You stay patient, square to the puck.",
+          "The pass goes across the seam.",
+          "You push hard, eyes arriving before your body.",
+          "You get set on your edge before the release.",
+          "The one-timer comes. You take it in the chest.",
+          "No rebound. Whistle.",
+          "You stayed patient. You beat the pass."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.5,
+          2.0,
+          3.0,
+          2.0,
+          2.5
+        ]
+      }
+    ]
+  },
+  {
+    "sport": "Basketball",
+    "position": "Guard",
+    "scenarios": [
+      {
+        "title": "Pick-and-roll downhill",
+        "slug": "viz-guard-pick-and-roll",
+        "lines": [
+          "See yourself bringing the ball up, calm, with the floor spread in front of you.",
+          "You bring it up, eyes on the floor.",
+          "You call for the screen. Your big climbs up to set it.",
+          "You wait for the screen to hit. You do not leave early.",
+          "You snake off the pick, shoulder past his man.",
+          "The big drops back in coverage.",
+          "You see the gap open in the lane.",
+          "You get downhill, two feet in the paint.",
+          "The low defender steps toward you.",
+          "You read it calmly — finish if he stays, pass if he commits.",
+          "Tonight, he stays. You lay it in soft off the glass.",
+          "Good read. Good pace. Next possession."
+        ],
+        "beats": [
+          2.0,
+          2.5,
+          3.0,
+          3.0,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          3.0,
+          2.5,
+          3.0
+        ]
+      },
+      {
+        "title": "Pull-up in transition",
+        "slug": "viz-guard-transition-pullup",
+        "lines": [
+          "See the rebound hit your hands and feel the floor open in transition.",
+          "You snatch the rebound and push.",
+          "You see numbers, and the defense is backpedaling.",
+          "One dribble, two, eating up the floor.",
+          "The defender keeps giving ground.",
+          "You feel your feet hit the spot just inside the line.",
+          "You rise up, balanced, eyes on the rim.",
+          "Clean release.",
+          "It drops.",
+          "You sprint back, already talking on defense."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          2.5,
+          2.5,
+          2.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "On-ball pressure, live-ball steal",
+        "slug": "viz-guard-live-steal",
+        "lines": [
+          "See yourself picking up full court, low, active, and ready to pressure.",
+          "You pick up your man full court.",
+          "You're in a stance, chest in front, feet active.",
+          "He tries to turn the corner.",
+          "You cut him off with your chest, not your hands.",
+          "He puts his head down to dribble.",
+          "You time the bounce, dig down once, and knock it loose.",
+          "You scoop it on the run, no one between you and the rim.",
+          "You finish it strong on the other end.",
+          "Feet first. Hands second. Clean defense."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Drive and kick",
+        "slug": "viz-guard-drive-and-kick",
+        "lines": [
+          "See the closeout coming and know you are ready to attack the advantage.",
+          "You catch it at the top, your man closes out hard.",
+          "You rip through and attack his front foot.",
+          "You turn the corner, downhill into the paint.",
+          "The low man slides over to stop the drive.",
+          "You see your shooter spot up in the corner.",
+          "You hang, draw the second defender.",
+          "You whip the kick-out on a rope.",
+          "He catches it in rhythm and buries it.",
+          "You created the shot by making the right read."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          3.0,
+          2.5,
+          2.0,
+          2.0,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Press break — calm, simple, advance",
+        "slug": "viz-guard-press-break",
+        "lines": [
+          "See the press coming at you, and feel yourself calm with the ball.",
+          "They pick you up full court.",
+          "You come back to the ball, low and strong.",
+          "Two defenders start to shade you toward the sideline.",
+          "You do not panic.",
+          "You retreat dribble once and create space.",
+          "Your teammate flashes to the middle.",
+          "You hit him on time, away from pressure.",
+          "The ball moves ahead. The press is broken.",
+          "You sprint into spacing and get the team organized.",
+          "Calm with the ball. Simple play. Pressure handled."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          3.0,
+          2.0,
+          2.0,
+          3.0,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Settle the team and run the set",
+        "slug": "viz-guard-run-the-set",
+        "lines": [
+          "See the game speeding up and feel yourself ready to settle the team.",
+          "The game is speeding up. Your team needs a good possession.",
+          "You bring it across half court under control.",
+          "You raise your hand and call the set.",
+          "You move the ball early and cut through.",
+          "The ball reverses. The defense shifts.",
+          "You get it back and make the simple read.",
+          "Your teammate gets a clean look in rhythm.",
+          "Good possession. You led without forcing."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Clutch free throws — split a tie",
+        "slug": "viz-guard-clutch-free-throws",
+        "lines": [
+          "See yourself at the line in a tight game, with your routine ready.",
+          "Tie game, under ten seconds, you drive hard and the whistle blows.",
+          "Two shots. The other gym is loud behind the rim.",
+          "You step to the line and the ref hands you the ball.",
+          "Three dribbles, spin it, breath out — your routine, the same every time.",
+          "Legs are tired, but you bend your knees and use them anyway.",
+          "Eyes on the back of the rim.",
+          "First one is pure.",
+          "Same breath, same hold.",
+          "Second one drops through.",
+          "You backpedal on defense, calm and ready for the next stop."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.5,
+          2.0,
+          2.5,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Ice the game from the line, off the press",
+        "slug": "viz-guard-ices-it-late",
+        "lines": [
+          "See the trap coming late, and feel yourself strong with the ball.",
+          "Up two, final seconds, and they trap you full-court to take the ball.",
+          "Two defenders come hard — you stay low, protect the ball, and do not panic.",
+          "You keep your dribble alive and get fouled.",
+          "They have to put you on the line to stop the clock.",
+          "Bonus, two shots. You walk up calm.",
+          "Routine, breath, eyes up.",
+          "First one is good.",
+          "Same rhythm. Second one through.",
+          "Game is not over because you celebrated. Game is over because you took care of the ball."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          2.5
+        ]
+      }
+    ]
+  },
+  {
+    "sport": "Basketball",
+    "position": "Wing",
+    "scenarios": [
+      {
+        "title": "Catch-and-shoot off the closeout",
+        "slug": "viz-wing-catch-and-shoot",
+        "lines": [
+          "See yourself spaced on the wing, ready before the ball arrives.",
+          "You space to the wing, ready.",
+          "The ball swings around the horn.",
+          "Your feet are ready before the ball arrives. Hands up, knees loaded.",
+          "The pass hits your hands.",
+          "The closeout flies at you a beat too late.",
+          "You go straight up into your shot.",
+          "Smooth release over the contest.",
+          "You hold your follow-through.",
+          "It drops, and you sprint back on defense."
+        ],
+        "beats": [
+          2.0,
+          2.5,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.5
+        ]
+      },
+      {
+        "title": "Attack the closeout",
+        "slug": "viz-wing-attack-closeout",
+        "lines": [
+          "See the skip pass coming and feel the closeout flying at you.",
+          "The skip pass finds you on the wing.",
+          "You shot-fake. Your man flies by, out of control.",
+          "You rip through and put it on the floor, downhill.",
+          "Two dribbles into the gap, into the paint.",
+          "The big steps up off your roller.",
+          "You read his chest. If he stays back, you finish. If he steps up, you drop it off.",
+          "Tonight, he is late.",
+          "You gather under the rim.",
+          "You finish high off the glass through contact.",
+          "Strong attack. Right read."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          3.0,
+          2.0,
+          2.0,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Wing denial, deflection, get-out",
+        "slug": "viz-wing-denial-deflection",
+        "lines": [
+          "See your matchup trying to get open, and feel yourself locked into the lane.",
+          "Your man wants the ball on the wing.",
+          "You're in the passing lane, hand in, denying.",
+          "You feel him cut, and you stay attached — ball, you, man.",
+          "The pass comes anyway, lazy, into the gap.",
+          "You jump the lane and deflect it loose.",
+          "You corral it and turn upcourt.",
+          "You push it ahead.",
+          "Your team gets a clean finish on the break.",
+          "Defense created offense."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Backdoor cut and finish",
+        "slug": "viz-wing-backdoor-cut",
+        "lines": [
+          "See your defender overplaying, and feel the backdoor lane open.",
+          "You're on the wing, and your man overplays the pass.",
+          "You feel him cheat, top hand in the lane.",
+          "You plant hard and cut backdoor behind him.",
+          "You flash open down the lane, hand ready.",
+          "The bounce pass leads you to the rim.",
+          "You catch it in stride.",
+          "One step, eyes up.",
+          "You finish at the rim before the help arrives.",
+          "You did not stand. You cut with purpose."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          3.0,
+          2.5,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Closeout, contain, contest",
+        "slug": "viz-wing-closeout-contain",
+        "lines": [
+          "See the ball skip to the corner and feel yourself ready to close out under control.",
+          "The ball skips to your man in the corner.",
+          "You sprint the first steps, then chop your feet.",
+          "High hand. No fly-by.",
+          "He shot-fakes. You stay down.",
+          "He drives baseline.",
+          "You slide and cut him off.",
+          "He picks up the ball with nowhere to go.",
+          "You contest the pass and your team resets the defense.",
+          "Disciplined closeout. No foul. No blow-by."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          3.0,
+          2.0,
+          3.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Pass, relocate, catch ready",
+        "slug": "viz-wing-relocate-catch-shoot",
+        "lines": [
+          "See yourself move after the pass, staying active and ready.",
+          "You catch on the wing and the closeout comes hard.",
+          "You make the simple pass to the top.",
+          "You do not stand and watch.",
+          "You slide to the corner.",
+          "Your hands are ready. Your feet are already set.",
+          "The ball swings back to you.",
+          "You catch in rhythm, eyes on the rim.",
+          "Smooth release.",
+          "It drops, and you sprint back on defense.",
+          "Pass. Move. Be ready."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Clutch free throws — and-1 on the road",
+        "slug": "viz-wing-clutch-free-throws",
+        "lines": [
+          "See yourself at the line on the road, with the gym trying to shake you.",
+          "Late in a road game, you catch on the wing and rise into your jumper.",
+          "It falls, and the contact comes — and-1.",
+          "The home crowd gets loud, trying to pull you out of your routine.",
+          "You step up, settle your feet, and let the noise wash past you.",
+          "One dribble, deep breath, the same stroke you shoot in an empty gym.",
+          "Elbow in, follow through, hold it.",
+          "Bottom of the net.",
+          "You turn and sprint back, calm and locked in."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.5,
+          2.0,
+          2.5,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Pull-up late-game shot over the closeout",
+        "slug": "viz-wing-late-jumper",
+        "lines": [
+          "See the ball find you late, with space to rise into your shot.",
+          "Under thirty seconds, a one-possession game, the ball finds you on the wing.",
+          "Your man flies at the closeout, hand up, trying to run you off the line.",
+          "One hard jab.",
+          "You rise up clean over the contest.",
+          "Elbow in, eyes on the rim, the same shot you have practiced over and over.",
+          "It leaves your hand soft, perfect rotation.",
+          "It drops clean.",
+          "You turn and sprint back, already onto the next stop."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          2.5
+        ]
+      }
+    ]
+  },
+  {
+    "sport": "Basketball",
+    "position": "Big",
+    "scenarios": [
+      {
+        "title": "Roll to the rim and finish",
+        "slug": "viz-big-roll-and-finish",
+        "lines": [
+          "See yourself sprinting into the screen, ready to create contact and roll hard.",
+          "You climb up and set a wall of a screen.",
+          "Your guard rubs his man off you.",
+          "You feel the hit, then you roll hard to the rim.",
+          "The low man tags you, then recovers out.",
+          "You're open, sealing down the middle.",
+          "The pocket pass hits you on the roll.",
+          "You catch it on the move.",
+          "Two feet. Strong base.",
+          "You go up strong through the contact.",
+          "The ball drops. Strong finish."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          3.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Deep post seal and drop step",
+        "slug": "viz-big-post-seal-dropstep",
+        "lines": [
+          "See yourself beating your man down the floor and earning deep position.",
+          "You sprint the floor and beat your man down.",
+          "You did the work before the catch.",
+          "You sit him on your back, seal deep, hands high.",
+          "Your guard hits you on the block.",
+          "You feel where he is playing you — high side.",
+          "You drop step baseline into the open lane.",
+          "One strong dribble, into your body.",
+          "You go up off two feet and finish over him.",
+          "Early work. Deep catch. Strong finish."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          2.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Box out, rebound, outlet",
+        "slug": "viz-big-boxout-outlet",
+        "lines": [
+          "See the shot go up and feel yourself ready to own the glass.",
+          "The shot goes up from the wing.",
+          "You find your man, put a body on him, and hit him first.",
+          "You feel him try to slip around.",
+          "You stay attached.",
+          "The ball comes off long to your side.",
+          "You go get it at its highest point, two hands.",
+          "You land, chin it, and pivot away from pressure.",
+          "You see your guard leaking out.",
+          "You hit the outlet ahead and start the break.",
+          "The possession ends because you did your work on the glass."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.5,
+          2.5,
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Rim protection, contest, start the break",
+        "slug": "viz-big-rim-protect-and-go",
+        "lines": [
+          "See the guard coming downhill and feel yourself ready to protect the rim.",
+          "Their guard turns the corner, downhill at you.",
+          "You're in drop coverage, walling up the paint.",
+          "You hold your ground, feet set, chest square.",
+          "He gathers and goes up at the rim.",
+          "You meet him vertical, hands high, no reach.",
+          "He has to finish over length.",
+          "The shot comes off.",
+          "You secure it with two hands.",
+          "Outlet ahead. Your stop started the break."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          3.0,
+          2.0,
+          3.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Set the screen, re-screen, create the advantage",
+        "slug": "viz-big-rescreen-roll",
+        "lines": [
+          "See yourself coming into the screen with purpose, ready to create an advantage.",
+          "You sprint into the screen, feet set, wide base.",
+          "Your guard waits until you make contact.",
+          "The defender fights over the top.",
+          "You turn and re-screen, changing the angle.",
+          "Now your guard gets downhill.",
+          "You roll hard into the open lane.",
+          "The help steps up.",
+          "Your teammate gets the corner three.",
+          "Your screen created the shot. That is winning basketball."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          3.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Short roll — catch, read, pass",
+        "slug": "viz-big-short-roll-read",
+        "lines": [
+          "See the defense step toward your guard and feel the pocket open for you.",
+          "You set the screen high. Your guard turns the corner.",
+          "Both defenders step toward him.",
+          "You slip into the pocket, hands ready.",
+          "The pass hits you at the free-throw line.",
+          "You land on two feet and read the low man.",
+          "He steps up to stop you.",
+          "You drop the pass to your teammate under the rim.",
+          "Easy finish.",
+          "You made the right read."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.0,
+          3.0,
+          2.0,
+          2.0,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "title": "Clutch free throws — the hack didn't work",
+        "slug": "viz-big-clutch-free-throws",
+        "lines": [
+          "See yourself at the line late, with everyone expecting the miss.",
+          "They put you on the line on purpose, late, hoping you'll miss.",
+          "The whole gym knows the plan.",
+          "You step up slow, set your feet wide, and breathe it all the way down.",
+          "Spin the ball, find your line, same routine you grind after every practice.",
+          "You shot these when no one was watching.",
+          "Push it soft off the fingertips.",
+          "First one drops.",
+          "Same motion, no rush.",
+          "Second one falls clean.",
+          "You did your job. Now get back and protect the paint."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.5,
+          2.5,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.5
+        ]
+      },
+      {
+        "title": "Late rim protection — wall up, no foul",
+        "slug": "viz-big-game-sealing-block",
+        "lines": [
+          "See the final possession coming at the rim, and feel yourself ready to wall up.",
+          "Final possession, you're guarding the rim, protecting a two-point lead.",
+          "Their guard turns the corner and comes downhill at you full speed.",
+          "You slide over, feet set, hands straight up.",
+          "Vertical. No reach.",
+          "He goes up to finish.",
+          "You wall up, stay vertical, and take away the finish.",
+          "All contest. No whistle.",
+          "The rebound falls to your hands.",
+          "You rip it down strong.",
+          "Outlet it ahead, and the game is yours."
+        ],
+        "beats": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          3.0,
+          2.0,
+          3.0,
+          2.0,
+          2.0,
+          2.0,
+          3.0
+        ]
+      }
+    ]
+  }
+]
