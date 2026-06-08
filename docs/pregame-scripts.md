@@ -1405,12 +1405,25 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 2. Breathe. Reset your body. Say the truth. Make the next play.  [1.5s]
 
 
+**Cue Word Intro**  `shared-cue-word-intro`
+
+1. When the pressure builds.  [0.5s]
+2. Come back to your breath and speak your cue word.  [0.8s]
+3. {insert word}.  [0.6s]
+
+
 **Shared Sendoff**  `shared-sendoff`
 
 1. You are secure.  [0.8s]
 2. Play free. Play brave.  [0.8s]
 3. Give everything.  [0.8s]
 4. Now play from victory.  [1s]
+
+
+**Cue Word Sendoff**  `shared-cue-word-sendoff`
+_(the very last beat — after the prayer / send-off)_
+
+1. Remember your cue word: {insert word}.  [2s]
 
 
 ## 5 · Openers — Hockey
