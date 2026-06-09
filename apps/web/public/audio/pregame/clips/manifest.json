@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "824fc8f9",
+  "manifestVersion": "a267c01b",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.db113b94.mp3",
@@ -75,8 +75,8 @@
       ]
     },
     "hm-forward-nervous": {
-      "url": "/audio/pregame/clips/hm-forward-nervous.d585d2bd.mp3",
-      "durationSec": 46.864,
+      "url": "/audio/pregame/clips/hm-forward-nervous.3a6d223b.mp3",
+      "durationSec": 49.888,
       "phases": [
         {
           "phase": "hardMoment",
