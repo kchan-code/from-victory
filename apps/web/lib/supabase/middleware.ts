@@ -48,7 +48,39 @@ export async function updateSession(request: NextRequest) {
   // Do not put code between createServerClient and getUser. getUser()
   // validates the session against the Supabase Auth server and refreshes
   // the access token cookie when needed.
-  await supabase.auth.getUser();
+  //
+  // FV-107 offline tolerance: wrap getUser() in a try/catch so a network
+  // outage at the rink (no connectivity) does NOT hard-fail middleware and
+  // produce a 500. On a network error we pass the request through unchanged
+  // (no token refresh, but the existing cookies survive). The route's own
+  // client-side auth logic (PregameClientShell) handles the offline case.
+  //
+  // SECURITY: this does NOT allow unauthenticated access online.
+  //   - Supabase getUser() only throws a network-level error when it cannot
+  //     reach auth.supabase.co (TypeError / "Failed to fetch"). An invalid or
+  //     expired token causes an AuthError, NOT a thrown exception, so the
+  //     catch block is never reached for bad credentials — they still fail
+  //     through the normal getUser() result handling in the server component.
+  //   - The middleware's job is session-cookie refresh, not an authorization
+  //     gate. Authorization is enforced by requireAthlete() (now moved to the
+  //     client component for the pregame route) and by RLS on every DB call.
+  //   - Other routes that use requireAthlete() / requireParent() in Server
+  //     Components still call getUser() themselves; if they fail offline the
+  //     server will error as before (the offline path is narrowly for pregame,
+  //     which is the only route with the PII-free client shell).
+  try {
+    await supabase.auth.getUser();
+  } catch (err) {
+    // Log the offline occurrence (rare — a true network-level failure in
+    // middleware). Kept in production too: Vercel captures console.warn and
+    // these are infrequent enough not to be noisy. Do not re-throw — pass the
+    // request through unchanged.
+    console.warn(
+      "[supabase/middleware] getUser() threw (likely offline):",
+      err instanceof Error ? err.message : String(err),
+    );
+    // Fall through: return the unmodified response.
+  }
 
   return response;
 }

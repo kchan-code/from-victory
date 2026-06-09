@@ -1,28 +1,37 @@
 /**
- * From Victory — App Shell Service Worker (FV-105, revised FV-105-v2; FV-106 audio cache)
+ * From Victory — App Shell Service Worker (FV-105, revised FV-105-v2; FV-106 audio cache;
+ * FV-107 offline-tolerant pregame auth)
  *
  * Strategy matrix:
  *   SAFELIST navigations (/, /offline, /privacy, /terms) → network-first,
  *       response also written to cache (these pages contain NO user data)
- *   ALL other navigations → network-first, offline fallback, NO cache write
- *       (authenticated/minor HTML — first_name, sport, rhythm — must never
- *        persist in Cache Storage past sign-out or on shared devices)
+ *   /athlete/pregame navigation → network-first, cache the PII-free shell
+ *       response, serve from cache when offline (FV-107). Also caches the
+ *       RSC payload so client-side navigation works offline.
+ *       Contract: pregame/page.tsx MUST remain a PII-free static shell —
+ *       no server-side user data. Enforced by the server component returning
+ *       only <PregameClientShell />.
+ *   ALL other /athlete/* navigations → network-first, offline fallback, NO
+ *       cache write (authenticated/minor HTML — first_name, sport, rhythm —
+ *       must never persist in Cache Storage past sign-out or on shared devices)
  *   /_next/static/* + icon/font assets  → cache-first (populated as-fetched)
  *   /audio/pregame/* (mp3 + json + manifest) → cache-first in AUDIO_CACHE
  *       (FV-106). Per-athlete set is warmed at Review time by audio-precache.ts.
  *   BYPASS list (always network, never cached):
- *       /api, /auth, /athlete, /dashboard, /pair,
- *       signin/signup/forgot/reset, /subscribe
+ *       /api, /auth, /athlete (except /athlete/pregame — see above), /dashboard,
+ *       /pair, signin/signup/forgot/reset, /subscribe
  *       Note: /audio/* was here in FV-105 stub; FV-106 now owns /audio/pregame/*
  *       (cache-first in AUDIO_CACHE). All other /audio/* still fall through.
  *   cross-origin → fall through, never intercepted
  *
  * No build-time manifest injection. No Workbox. Hand-written and auditable.
  * kids-privacy-officer: cache stores ONLY static build assets, the offline
- * fallback HTML, the four safelisted public pages (none contain PII), and
- * pregame audio clip files (public static assets, zero PII). Authenticated
- * athlete pages (/athlete/*) and the pairing flow (/pair) are NEVER written
- * to cache. Cache is device-local only (no sync/share surface).
+ * fallback HTML, the four safelisted public pages (none contain PII), the
+ * PII-free pregame shell (FV-107 — page contains no server-side user data;
+ * auth + profile resolved entirely client-side), and pregame audio clip files
+ * (public static assets, zero PII). All other authenticated /athlete/* pages
+ * and the pairing flow (/pair) are NEVER written to cache. Cache is device-local
+ * only (no sync/share surface).
  *
  * Bump CACHE_VERSION any time the shell layout or offline page changes.
  * Update MANIFEST_VERSION (below) whenever pregame clips change — the
@@ -30,7 +39,7 @@
  * SW audio cache so stale clips are evicted at activate.
  */
 
-const CACHE_VERSION = "fv-shell-v2";
+const CACHE_VERSION = "fv-shell-v3"; // bumped: FV-107 adds pregame shell caching
 
 /**
  * FV-142 — per-clip content-addressed filenames.
@@ -79,6 +88,35 @@ const OFFLINE_URL = "/offline";
  */
 const NAVIGATION_CACHE_SAFELIST = ["/", "/offline", "/privacy", "/terms"];
 
+/**
+ * FV-107 — pregame offline shell path.
+ *
+ * /athlete/pregame is excluded from the all-network bypass and gets its own
+ * strategy: network-first with cache-write and offline cache-serve.
+ *
+ * PRIVACY CONTRACT (must be maintained):
+ *   pregame/page.tsx must remain a PII-free static server shell that renders
+ *   ONLY <PregameClientShell /> — a client component that handles auth and
+ *   profile loading entirely client-side after mount. The server component must
+ *   never call requireAthlete() or embed any user data (name, sport, birthdate)
+ *   in the server-rendered HTML or RSC payload. If this contract is broken, the
+ *   cached pregame shell will contain minor PII and this strategy MUST be reverted
+ *   to the all-network bypass.
+ *
+ * What gets cached:
+ *   - Navigation (mode: "navigate") responses: the server-rendered HTML shell.
+ *     This HTML references /_next/static/* bundles but contains no user data.
+ *   - RSC fetch responses (Next-Router prefetch/client navigation requests):
+ *     the RSC JSON payload for the PregameClientShell component tree. Also
+ *     contains no user data.
+ *   Both are keyed by exact URL (pathname + query) in CACHE_VERSION.
+ *
+ * What does NOT get cached (unchanged):
+ *   All other /athlete/* pages, /dashboard, auth flows, etc. continue to use
+ *   the all-network bypass below.
+ */
+const PREGAME_PATH = "/athlete/pregame";
+
 // ---------------------------------------------------------------------------
 // INSTALL — precache the offline fallback; skip waiting so we activate fast.
 // ---------------------------------------------------------------------------
@@ -102,7 +140,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
       // Delete every cache this origin owns that isn't in our current list.
-      // This also purges any fv-shell-v1 caches that may have stored
+      // This also purges any fv-shell-v1/v2 caches that may have stored
       // authenticated /athlete/* HTML from the pre-safelist implementation.
       const keys = await caches.keys();
       await Promise.all(
@@ -145,11 +183,29 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // ---- 1b. NEVER cache — always network (pass straight through) ----
+  // ---- 1b. FV-107: Pregame shell — network-first, cache the PII-free shell ----
+  //
+  // /athlete/pregame is the ONLY /athlete/* path excluded from the all-network
+  // bypass below. Its server component renders no user data (PII-free static
+  // shell); the cached HTML + RSC payloads are safe to serve offline.
+  //
+  // Both navigation (mode:"navigate") and RSC data fetches (client-side
+  // Next.js router) are handled here. The RSC fetch appears as a regular GET
+  // with Next-Router-State-Tree or Next-Url headers — not mode:"navigate".
+  //
+  // INVARIANT: if pregame/page.tsx is ever changed to call requireAthlete()
+  // or render server-side user data, revert this branch to the bypass below.
+  if (url.pathname === PREGAME_PATH || url.pathname === PREGAME_PATH + "/") {
+    event.respondWith(pregameShellNetworkFirst(request));
+    return;
+  }
+
+  // ---- 1c. NEVER cache — always network (pass straight through) ----
   //
   // /api/*          — server actions, webhooks, data endpoints
   // /auth/*         — Supabase auth callbacks (contains redirect tokens)
   // /athlete/*      — authenticated pages (minor PII: name, sport, rhythm)
+  //                   NOTE: /athlete/pregame is handled above (FV-107)
   // /dashboard/*    — parent dashboard (server-rendered, needs fresh auth)
   // /pair           — one-time device pairing token, must not be cached
   // /signin*        — auth flow pages
@@ -294,6 +350,73 @@ async function audioCacheFirst(request) {
   } catch {
     // Network failure on a cache miss: nothing we can do.
     return new Response("Audio unavailable offline", { status: 503 });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Strategy: pregame shell network-first (FV-107)
+//
+// /athlete/pregame only. The page is a PII-free static server shell (renders
+// <PregameClientShell />, no user data). We cache the response — both the
+// navigation HTML and RSC data fetches — so offline visits can mount the
+// client component and run the pregame flow.
+//
+// Network success: serve + cache (keyed by full URL).
+// Network failure: serve from cache if available, else serve the offline page.
+//
+// Cache invalidation: CACHE_VERSION is bumped on every deploy that changes the
+// app shell. Activation pruning removes the old version. Stale pregame shell
+// cache entries (from a prior deployment) are swept away automatically when
+// the SW activates on the next online visit after a deploy.
+//
+// PRIVACY: only responses from /athlete/pregame are written here. The Set-Cookie
+// guard below ensures that if the response ever carries auth token cookies (which
+// it won't given the static shell contract), we do not cache it — this is a
+// backstop, not the primary guarantee.
+// ---------------------------------------------------------------------------
+async function pregameShellNetworkFirst(request) {
+  // Try network first.
+  try {
+    const networkResponse = await fetch(request);
+
+    // Only cache 200 OK responses. 3xx (redirect to /signin if offline auth
+    // somehow runs server-side) or error responses must not be cached.
+    if (
+      networkResponse.ok &&
+      networkResponse.status === 200 &&
+      networkResponse.type !== "opaque"
+    ) {
+      // Guard: if the response carries a Set-Cookie header (auth token),
+      // it's NOT PII-free. Do not cache it — fall through and serve the
+      // network response uncached. This is a backstop; in normal operation
+      // the static shell page never sets cookies.
+      const hasCookies = networkResponse.headers.has("set-cookie");
+      if (!hasCookies) {
+        const cache = await caches.open(CACHE_VERSION);
+        // clone() before consuming body in the cache.put() call.
+        cache.put(request, networkResponse.clone());
+      }
+    }
+
+    return networkResponse;
+  } catch {
+    // Network failure — serve from cache if available.
+    const cached = await caches.match(request, { ignoreSearch: false });
+    if (cached) return cached;
+
+    // No cache: serve the offline fallback.
+    // The client (PregameClientShell) detects the offline state via the
+    // network error on getUser() and shows "Connect first" if no localStorage
+    // cache exists. If the user got here via client-side navigation within the
+    // React app (the normal PWA flow), the React app is still alive — only
+    // hard/direct navigations to /athlete/pregame land here.
+    const offlineFallback = await caches.match(OFFLINE_URL);
+    if (offlineFallback) return offlineFallback;
+
+    return new Response(
+      '<!doctype html><html lang="en"><head><title>Offline</title></head><body style="background:#050505;color:#F7F7F7;font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;padding:24px"><div><p style="color:#DFAF37;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:16px">From Victory</p><h1 style="font-size:28px;margin-bottom:12px">You\'re offline</h1><p style="opacity:0.6;font-size:15px">Open the pregame session once with a connection so it\'s ready at the rink.</p></div></body></html>',
+      { headers: { "Content-Type": "text/html" } }
+    );
   }
 }
 
