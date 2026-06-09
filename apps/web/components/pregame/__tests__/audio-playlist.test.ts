@@ -537,6 +537,44 @@ describe("resolvePlaylist — cue-word scaffold lead-ins (FV-153)", () => {
     expect(slugs).toContain(`${REAL_CW_STEADY}-reset`);
     expect(slugs).toContain(`${REAL_CW_STEADY}-sendoff`);
   });
+
+  it("self-guided close keeps the sendoff lead-in + cw-sendoff and only drops shared-sendoff", () => {
+    // Guards the interaction with the prayer-style transform: it must drop
+    // shared-sendoff by EXACT match, never the longer shared-cue-word-sendoff-pre.
+    const selfGuidedCueManifest: ClipManifest = {
+      version: "p3",
+      clips: {
+        [REAL_OPENER_CONFIDENCE]: catalogEntry("/audio/opener-confidence.mp3", 60),
+        "session-forward-turnover": catalogEntry("/audio/session-forward-turnover.mp3", 240),
+        "shared-cue-word-sendoff-pre": catalogEntry("/audio/pregame/clips/shared-cue-word-sendoff-pre.fcc06aec.mp3", 3.6),
+        [`${REAL_CW_STEADY}-sendoff`]: catalogEntry(`/audio/${REAL_CW_STEADY}-sendoff.mp3`, 3),
+        "shared-prayer": catalogEntry("/audio/pregame/clips/shared-prayer.mp3", 30),
+        "shared-prayer-selfguided": catalogEntry("/audio/pregame/clips/shared-prayer-selfguided.mp3", 50),
+        "shared-sendoff": catalogEntry("/audio/pregame/clips/shared-sendoff.mp3", 10),
+      },
+      templates: [
+        {
+          position: "Forward",
+          adversity: "I turn the puck over.",
+          clips: ["session-forward-turnover", "shared-prayer", "{{cueSendoff}}", "shared-sendoff"],
+        },
+      ],
+    };
+    const result = resolvePlaylist(
+      "Confidence", "Forward", "I turn the puck over.",
+      selfGuidedCueManifest, null, null, "Steady", "hockey", "self-guided",
+    );
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    // Self-guided swaps prayer and drops the plain sendoff…
+    expect(slugs).toContain("shared-prayer-selfguided");
+    expect(slugs).not.toContain("shared-prayer");
+    expect(slugs).not.toContain("shared-sendoff");
+    // …but the cue-word sendoff lead-in + word clip survive, still adjacent.
+    const k = slugs.indexOf("shared-cue-word-sendoff-pre");
+    expect(k).toBeGreaterThanOrEqual(0);
+    expect(slugs[k + 1]).toBe(`${REAL_CW_STEADY}-sendoff`);
+  });
 });
 
 describe("resolvePlaylist — prayerStyle transform (Issue 2)", () => {
