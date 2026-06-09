@@ -125,6 +125,12 @@ export type UseClipPlayerOptions = {
   /** Athlete's chosen cue word (p3 personalization). */
   cueWord?: string | null;
   /**
+   * FV-144 — athlete-picked positive-play viz slugs, in order. Non-empty swaps
+   * the template's flagship viz for these clips; empty/undefined keeps the
+   * flagship. Pregame-only (ignored when practice=true).
+   */
+  positivePlays?: string[] | null;
+  /**
    * When true, resolve via resolvePracticePlaylist(manifest) instead of the
    * pregame resolvePlaylist(...). The need/position/adversity fields are
    * ignored — the practice playlist is state+focus-driven. All other playback
@@ -208,6 +214,7 @@ export function useClipPlayer({
   anchor,
   selfTalk,
   cueWord,
+  positivePlays,
   practice = false,
   practiceState,
   practiceFocus,
@@ -379,6 +386,7 @@ export function useClipPlayer({
           cueWord,
           sport,
           prayerStyle,
+          positivePlays,
         );
         if (!clips) {
           // No template for this combination — sentinel triggers legacy path.
@@ -532,7 +540,7 @@ export function useClipPlayer({
     return () => {
       cancelled = true;
     };
-  }, [need, position, adversity, anchor, selfTalk, cueWord, practice, practiceState, practiceFocus, sport, prayerStyle, startRaf, stopRaf, wireMediaSession]);
+  }, [need, position, adversity, anchor, selfTalk, cueWord, positivePlays, practice, practiceState, practiceFocus, sport, prayerStyle, startRaf, stopRaf, wireMediaSession]);
 
   // ── Lightweight visibilitychange nudge ──
   // iOS may pause the audio element when the app is briefly backgrounded (e.g.

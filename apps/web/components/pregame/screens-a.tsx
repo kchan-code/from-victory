@@ -22,6 +22,11 @@ import {
   type PregameState,
 } from "./types";
 import { adversityOptionsFor, type SportConfig } from "./sport-registry";
+import {
+  positivePlaysFor,
+  MAX_POSITIVE_PLAYS,
+  POSITIVE_PLAY_EST_SEC,
+} from "./positive-plays";
 
 type SetFn = <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
 
@@ -362,6 +367,92 @@ export function PositionScreen({
   );
 }
 
+// ─── SCREEN 4b ─── Positive Plays (multi-select)
+// FV-144 — the athlete sees every positive-play visualization for their
+// position (by title) and picks 1–MAX_POSITIVE_PLAYS to rehearse. The guided
+// session plays each picked clip in sequence in place of the position flagship.
+// "None pre-picked, must choose ≥1" (KC, 2026-06-09): the flow's bottom-bar
+// Continue stays disabled until at least one is selected (FLOW.required), and a
+// hard cap of MAX_POSITIVE_PLAYS keeps the ~5-min session from ballooning —
+// unselected chips dim once the cap is reached; selected chips always toggle off.
+export function PositivePlaysScreen({
+  state,
+  set,
+  sportConfig,
+}: {
+  state: PregameState;
+  set: SetFn;
+  sportConfig: SportConfig;
+}) {
+  const plays = positivePlaysFor(state.role);
+  const picked = state.positivePlays;
+  const atCap = picked.length >= MAX_POSITIVE_PLAYS;
+
+  const toggle = (slug: string) => {
+    if (picked.includes(slug)) {
+      set("positivePlays", picked.filter((s) => s !== slug));
+    } else if (!atCap) {
+      set("positivePlays", [...picked, slug]);
+    }
+  };
+
+  // Coarse session-length hint (≈1 min per play). Honest enough to signal the
+  // trade-off without pretending to know the exact runtime (see positive-plays).
+  const estMin = Math.max(1, Math.round((picked.length * POSITIVE_PLAY_EST_SEC) / 60));
+
+  return (
+    <ScreenBody>
+      <SectionLabel>Step 04 · Positive Plays</SectionLabel>
+      <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
+        Picture the plays you&rsquo;ll make.
+      </h1>
+      <p className="mb-4 font-body text-[14px] text-cream/50">
+        Pick up to {MAX_POSITIVE_PLAYS} you want to see yourself nail today.
+        We&rsquo;ll rehearse each one in the guided session.
+      </p>
+
+      <div className="flex flex-wrap gap-2">
+        {plays.map(({ slug, title }) => {
+          const selected = picked.includes(slug);
+          return (
+            <SelectChip
+              key={slug}
+              label={title}
+              selected={selected}
+              disabled={!selected && atCap}
+              onClick={() => toggle(slug)}
+            />
+          );
+        })}
+      </div>
+
+      {/* Live selection status — counter + coarse length hint, or a nudge to
+          pick when empty (the bottom-bar Continue is disabled until ≥1). */}
+      <div className="mt-5 rounded-[12px] border border-gold/30 bg-gold/[0.05] px-4 py-3.5">
+        {picked.length === 0 ? (
+          <>
+            <Eyebrow className="!text-gold">Pick at least one</Eyebrow>
+            <p className="mt-1.5 font-heading text-[14px] font-medium leading-[1.4] text-cream">
+              Choose 1 to {MAX_POSITIVE_PLAYS} plays to rehearse before we step on.
+            </p>
+          </>
+        ) : (
+          <>
+            <Eyebrow className="!text-gold">
+              {picked.length} of {MAX_POSITIVE_PLAYS} selected · ≈{estMin} min
+            </Eyebrow>
+            <p className="mt-1.5 font-heading text-[14px] font-medium leading-[1.4] text-cream">
+              {atCap
+                ? "That’s your max for one session. Tap a play to swap it."
+                : "Add another, or keep going — we’ll rehearse these in order."}
+            </p>
+          </>
+        )}
+      </div>
+    </ScreenBody>
+  );
+}
+
 // ─── SCREEN 5 ─── Hard Moment (selection only)
 // Setup screen just captures the adversity; the 5-step response plan
 // ("See it. Feel it. Breathe. Speak truth. Take the next faithful action.")
@@ -382,7 +473,7 @@ export function HardMomentScreen({
     !!state.adversity && !options.some((o) => o.key === state.adversity);
   return (
     <ScreenBody>
-      <SectionLabel>Step 04 · Hard Moment</SectionLabel>
+      <SectionLabel>Step 05 · Hard Moment</SectionLabel>
       <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
         Rehearse the hard moment.
       </h1>

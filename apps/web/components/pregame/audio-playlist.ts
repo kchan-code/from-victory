@@ -232,6 +232,15 @@ export function resolvePlaylist(
    * skipped rather than causing a hard failure.
    */
   prayerStyle?: PrayerStyle | null,
+  /**
+   * FV-144 — athlete-picked positive-play viz slugs, in the order to rehearse
+   * them. When non-empty, the single baked-in flagship viz slug in the matched
+   * template is replaced by these slugs. Empty/undefined keeps the flagship
+   * (the pre-FV-144 fallback, so every existing call site is unchanged). Picks
+   * that are not `viz-*` slugs present in the catalog are dropped; if none
+   * survive, the flagship is kept rather than producing a viz-less session.
+   */
+  positivePlays?: string[] | null,
 ): ResolvedClip[] | null {
   let slugs: string[];
 
@@ -290,6 +299,30 @@ export function resolvePlaylist(
         if (base) slugs.push(`${base}-sendoff`);
       } else {
         slugs.push(raw);
+      }
+    }
+  }
+
+  // ── FV-144: positive-play swap ────────────────────────────────────────────
+  // The matched template carries exactly one baked-in flagship viz slug (the
+  // FV-136 default for the position). When the athlete has picked one or more
+  // positive plays, replace that single `viz-*` entry with the picked slugs, in
+  // order, so the session rehearses each chosen play in place of the flagship.
+  // No picks → leave the flagship untouched (pre-FV-144 behaviour). Only `viz-*`
+  // slugs present in the catalog are injected; if a malformed pick list leaves
+  // nothing valid, the flagship is kept rather than yielding a viz-less session.
+  if (positivePlays && positivePlays.length > 0) {
+    const vizIndex = slugs.findIndex((s) => s.startsWith("viz-"));
+    if (vizIndex !== -1) {
+      const validPicks = positivePlays.filter(
+        (s) => s.startsWith("viz-") && manifest.clips[s],
+      );
+      if (validPicks.length > 0) {
+        slugs = [
+          ...slugs.slice(0, vizIndex),
+          ...validPicks,
+          ...slugs.slice(vizIndex + 1),
+        ];
       }
     }
   }

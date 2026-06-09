@@ -553,6 +553,101 @@ describe("resolvePlaylist — prayerStyle transform (Issue 2)", () => {
   });
 });
 
+describe("resolvePlaylist — positive-play swap (FV-144)", () => {
+  // The matched template carries exactly ONE flagship viz slug
+  // (viz-forward-win-the-wall here). The catalog also holds alternative viz
+  // clips the athlete can pick, plus a non-viz cell and a non-viz catalog slug
+  // used to prove only viz-* picks are ever injected.
+  const vizManifest: ClipManifest = {
+    version: "p2",
+    clips: {
+      [REAL_OPENER_CONFIDENCE]: catalogEntry("/audio/opener-confidence.mp3", 60),
+      "viz-forward-win-the-wall": catalogEntry("/audio/pregame/clips/viz-forward-win-the-wall.aaaa1111.mp3", 60),
+      "viz-forward-give-and-go": catalogEntry("/audio/pregame/clips/viz-forward-give-and-go.bbbb2222.mp3", 62),
+      "viz-forward-net-front": catalogEntry("/audio/pregame/clips/viz-forward-net-front.cccc3333.mp3", 64),
+      "hm-forward-turnover": catalogEntry("/audio/pregame/clips/hm-forward-turnover.dddd4444.mp3", 90),
+      "shared-prayer": catalogEntry("/audio/pregame/clips/shared-prayer.eeee5555.mp3", 30),
+    },
+    templates: [
+      {
+        position: "Forward",
+        adversity: "I turn the puck over.",
+        clips: ["viz-forward-win-the-wall", "hm-forward-turnover", "shared-prayer"],
+      },
+    ],
+  };
+
+  const resolveWithPicks = (positivePlays: string[] | null | undefined) =>
+    resolvePlaylist(
+      "Confidence",
+      "Forward",
+      "I turn the puck over.",
+      vizManifest,
+      null, null, null,
+      "hockey",
+      "guided",
+      positivePlays,
+    );
+
+  it("replaces the flagship viz with the picked plays, in order, at the viz position", () => {
+    const result = resolveWithPicks(["viz-forward-give-and-go", "viz-forward-net-front"]);
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    // Flagship gone; both picks present.
+    expect(slugs).not.toContain("viz-forward-win-the-wall");
+    expect(slugs).toContain("viz-forward-give-and-go");
+    expect(slugs).toContain("viz-forward-net-front");
+    // Picks sit where the flagship was — before the hard-moment cell — in order.
+    expect(slugs.indexOf("viz-forward-give-and-go")).toBeLessThan(slugs.indexOf("viz-forward-net-front"));
+    expect(slugs.indexOf("viz-forward-net-front")).toBeLessThan(slugs.indexOf("hm-forward-turnover"));
+    // Surrounding clips intact: [opener, give-and-go, net-front, hm, prayer].
+    expect(slugs).toEqual([
+      REAL_OPENER_CONFIDENCE,
+      "viz-forward-give-and-go",
+      "viz-forward-net-front",
+      "hm-forward-turnover",
+      "shared-prayer",
+    ]);
+  });
+
+  it("keeps the flagship when no plays are picked (empty array)", () => {
+    const result = resolveWithPicks([]);
+    expect(result).not.toBeNull();
+    expect(result!.map((c) => c.slug)).toContain("viz-forward-win-the-wall");
+  });
+
+  it("keeps the flagship when positivePlays is undefined (pre-FV-144 call sites unchanged)", () => {
+    const result = resolveWithPicks(undefined);
+    expect(result).not.toBeNull();
+    expect(result!.map((c) => c.slug)).toContain("viz-forward-win-the-wall");
+  });
+
+  it("drops picks absent from the catalog and injects only the valid ones", () => {
+    const result = resolveWithPicks(["viz-forward-give-and-go", "viz-forward-not-real"]);
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    expect(slugs).toContain("viz-forward-give-and-go");
+    expect(slugs).not.toContain("viz-forward-not-real");
+    expect(slugs).not.toContain("viz-forward-win-the-wall");
+  });
+
+  it("keeps the flagship (no viz-less session) when every pick is invalid", () => {
+    const result = resolveWithPicks(["viz-forward-not-real", "viz-also-fake"]);
+    expect(result).not.toBeNull();
+    expect(result!.map((c) => c.slug)).toContain("viz-forward-win-the-wall");
+  });
+
+  it("never injects a non-viz slug even if it exists in the catalog", () => {
+    // "hm-forward-turnover" is a real catalog slug but not a positive play.
+    const result = resolveWithPicks(["hm-forward-turnover"]);
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    // Flagship retained (no valid viz pick); hm cell appears exactly once.
+    expect(slugs).toContain("viz-forward-win-the-wall");
+    expect(slugs.filter((s) => s === "hm-forward-turnover")).toHaveLength(1);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // 3. findActivePhase
 // ---------------------------------------------------------------------------

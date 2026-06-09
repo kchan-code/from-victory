@@ -30,6 +30,7 @@ import {
 import { audioAssetUrl, cellSrcFor, cellSlugFor, openerSrcFor } from "./audio-mapping";
 import type { Sport, SportConfig } from "./sport-registry";
 import { HOCKEY_CONFIG, adversityLabelFor } from "./sport-registry";
+import { positivePlayTitle } from "./positive-plays";
 import type { AudioTimeline, Phase } from "./audio/types";
 import { findActivePhase, type AssembledTimeline } from "./audio-playlist";
 import { useClipPlayer } from "./useClipPlayer";
@@ -54,7 +55,7 @@ export function ResetAnchorScreen({
 
   return (
     <ScreenBody>
-      <SectionLabel>Step 05 · Reset Anchor</SectionLabel>
+      <SectionLabel>Step 06 · Reset Anchor</SectionLabel>
       <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
         Choose your reset anchor.
       </h1>
@@ -113,7 +114,7 @@ export function SelfTalkScreen({
 
   return (
     <ScreenBody>
-      <SectionLabel>Step 06 · Self-Talk</SectionLabel>
+      <SectionLabel>Step 07 · Self-Talk</SectionLabel>
       <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
         Coach yourself like someone you trust would coach you.
       </h1>
@@ -170,7 +171,7 @@ export function CueWordScreen({
 }) {
   return (
     <ScreenBody>
-      <SectionLabel>Step 07 · Cue Word</SectionLabel>
+      <SectionLabel>Step 08 · Cue Word</SectionLabel>
       <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
         Choose your cue word.
       </h1>
@@ -227,7 +228,7 @@ export function PrayerStyleScreen({
 }) {
   return (
     <ScreenBody>
-      <SectionLabel>Step 08 · Closing Prayer</SectionLabel>
+      <SectionLabel>Step 09 · Closing Prayer</SectionLabel>
       <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
         How do you want to close?
       </h1>
@@ -312,6 +313,7 @@ export function ReviewScreen({
         selfTalk: state.selfTalk ?? null,
         cueWord: state.cueWord || null,
         prayerStyle: state.prayerStyle,
+        positivePlays: state.positivePlays,
       });
 
       if (cancelled) return;
@@ -338,6 +340,7 @@ export function ReviewScreen({
     sport,
     state.need,
     state.role,
+    state.positivePlays,
     state.adversity,
     state.anchor,
     state.selfTalk,
@@ -376,6 +379,7 @@ export function ReviewScreen({
           selfTalk: state.selfTalk ?? null,
           cueWord: state.cueWord || null,
           prayerStyle: state.prayerStyle,
+          positivePlays: state.positivePlays,
         },
         (status) => {
           if (downloadCancelledRef.current) return;
@@ -415,6 +419,14 @@ export function ReviewScreen({
     { label: "Today's focus", value: state.need ?? "—" },
     { label: "Position", value: state.role ?? "—" },
     {
+      // FV-144 — the picked positive plays, by title, in rehearsal order.
+      label: "Positive plays",
+      value:
+        state.positivePlays.length > 0
+          ? state.positivePlays.map(positivePlayTitle).join(" · ")
+          : "—",
+    },
+    {
       label: "Hard moment",
       value: adversityLabelFor(sportConfig, state.role, state.adversity) ?? "—",
     },
@@ -426,7 +438,7 @@ export function ReviewScreen({
 
   return (
     <ScreenBody>
-      <SectionLabel>Step 09 · Review</SectionLabel>
+      <SectionLabel>Step 10 · Review</SectionLabel>
       <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
         Here&rsquo;s what we&rsquo;ll work with.
       </h1>
@@ -822,6 +834,7 @@ export function AudioSessionScreen({
     anchor: useClips ? state.anchor : null,
     selfTalk: useClips ? state.selfTalk : null,
     cueWord: useClips ? (state.cueWord || null) : null,
+    positivePlays: useClips ? state.positivePlays : null,
     prayerStyle: useClips ? state.prayerStyle : undefined,
     sport,
     onCompleted: useClips
@@ -1242,7 +1255,7 @@ export function AudioSessionScreen({
         className="select-none"
         style={{ touchAction: "manipulation" }}
       >
-        <SectionLabel>Step 10 · Guided Session</SectionLabel>
+        <SectionLabel>Step 11 · Guided Session</SectionLabel>
       </div>
 
       {debug && (

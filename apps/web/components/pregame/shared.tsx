@@ -338,21 +338,29 @@ export function SelectChip({
   label,
   selected,
   onClick,
+  disabled,
 }: {
   label: string;
   selected?: boolean;
   onClick: () => void;
+  /**
+   * When true, the chip is dimmed and non-interactive — used by multi-select
+   * pickers to enforce a cap (unselected chips disable once the cap is hit;
+   * selected chips are never disabled so they can always be removed). FV-144.
+   */
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-pressed={!!selected}
       className={`rounded-pill border px-3.5 py-2.5 font-heading text-[13px] font-medium transition-colors duration-fast ${
         selected
           ? "border-gold/55 bg-gold/[0.08] text-gold"
           : "border-hairline bg-charcoal text-cream/70"
-      }`}
+      } ${disabled ? "cursor-not-allowed opacity-35" : ""}`}
     >
       {label}
     </button>

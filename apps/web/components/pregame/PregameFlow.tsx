@@ -14,6 +14,7 @@ import {
   BreathScreen,
   HardMomentScreen,
   PositionScreen,
+  PositivePlaysScreen,
   PregameStart,
   TodaysFocusScreen,
 } from "./screens-a";
@@ -63,8 +64,13 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   // Build the active flow: remove the "position" step for no-ask sports
   // (i.e. sports that declare no roles). Hockey keeps its position step;
   // future no-ask sports (tennis, swimming) skip it entirely and role stays null.
+  // The "positivePlays" picker is role-scoped (plays are per-position), so it is
+  // dropped alongside "position" for no-ask sports — otherwise the picker would
+  // render an empty list the athlete could never satisfy (FV-144).
   const hasRoles = (sportConfig.roles?.length ?? 0) > 0;
-  const activeFlow = hasRoles ? FLOW : FLOW.filter((s) => s.id !== "position");
+  const activeFlow = hasRoles
+    ? FLOW
+    : FLOW.filter((s) => s.id !== "position" && s.id !== "positivePlays");
 
   const [view, setView] = useState<View>({ kind: "start" });
   const [data, setData] = useState<PregameState>(INITIAL_STATE);
@@ -197,6 +203,8 @@ function ScreenSwitch({
       return <TodaysFocusScreen state={state} set={set} sportConfig={sportConfig} />;
     case "position":
       return <PositionScreen state={state} set={set} sportConfig={sportConfig} />;
+    case "positivePlays":
+      return <PositivePlaysScreen state={state} set={set} sportConfig={sportConfig} />;
     case "hardMoment":
       return <HardMomentScreen state={state} set={set} sportConfig={sportConfig} />;
     case "resetAnchor":
