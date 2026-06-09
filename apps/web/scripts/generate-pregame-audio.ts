@@ -855,9 +855,10 @@ async function generateClips(flags: Flags): Promise<void> {
   //   − 2 retired mid-session be-vocal beats (FV-124: be-vocal + bb-be-vocal removed from templates)
   //   + 2 new Be more Vocal openers (FV-124: opener-be-vocal + opener-bb-be-vocal)
   //   = 183 total (net 0: −2 retired beats +2 new openers)
-  //   + 3 prayer clips (shared-prayer-selfguided, pp-prayer, pp-prayer-selfguided) = 186 total
-  if (catalogCount !== 186) {
-    console.warn(`  WARNING: expected 186 catalog entries, got ${catalogCount}.`);
+  //   + 3 prayer clips (shared-prayer-selfguided, pp-prayer, pp-prayer-selfguided) = 186
+  //   + 52 viz positive-play clips (FV-136) + 2 cue-word pre clips = 240 total
+  if (catalogCount !== 240) {
+    console.warn(`  WARNING: expected 240 catalog entries, got ${catalogCount}.`);
   }
   if (templateCount !== 60) {
     console.warn(`  WARNING: expected 60 templates (6 positions × 10 adversities — 3 hockey + 3 basketball), got ${templateCount}.`);

@@ -1,0 +1,10 @@
+{
+  "slug": "viz-goalie-rebound-control",
+  "durationSec": 60.04,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    }
+  ]
+}

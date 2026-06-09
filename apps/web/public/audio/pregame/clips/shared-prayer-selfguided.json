@@ -1,10 +1,10 @@
 {
   "slug": "shared-prayer-selfguided",
-  "durationSec": 75.016,
+  "durationSec": 54.48,
   "phases": [
     {
       "phase": "prayer",
-      "startSec": 26.392
+      "startSec": 0
     }
   ]
 }

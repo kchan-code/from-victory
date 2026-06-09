@@ -1,0 +1,10 @@
+{
+  "slug": "viz-goalie-screen-traffic",
+  "durationSec": 53.168,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    }
+  ]
+}

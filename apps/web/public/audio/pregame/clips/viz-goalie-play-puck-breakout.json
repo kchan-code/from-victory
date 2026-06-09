@@ -1,0 +1,10 @@
+{
+  "slug": "viz-goalie-play-puck-breakout",
+  "durationSec": 63.724,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    }
+  ]
+}
