@@ -10,7 +10,8 @@
  *   2. If no session → router.replace("/signin").
  *   3. If session → loads the athlete's profile row (RLS-gated) to get sport.
  *   4. Writes { sport, firstName } to localStorage under fv_athlete_cache
- *      (non-PII: sport is "hockey"/"basketball", firstName is a first name).
+ *      (minimal athlete PII: sport is "hockey"/"basketball"; firstName is a
+ *      first name).
  *   5. Applies the first-run gate: no sport_selected_at → redirect to onboarding.
  *   6. Renders PregameFlow.
  *
@@ -34,10 +35,11 @@
  * PII POLICY:
  *   fv_athlete_cache is written to localStorage, not Cache Storage. It is
  *   device-local, never traverses the network, never lands in any SW cache, and
- *   should be cleared on sign-out (lib/actions/auth.ts — wire clearAthleteCache
- *   there if not already done; see exported helper below). sport + first_name are
- *   low-sensitivity fields. No email, no birthdate, no parent link, no location,
- *   no journal content.
+ *   is cleared on sign-out + device re-pair by SignOutButton / ClearCacheOnMount
+ *   (FV-154; clearAthleteCache lives in lib/pregame/athlete-cache.ts — calling it
+ *   from a server action would be a no-op since window is undefined there).
+ *   sport + first_name are minimal athlete PII. No email, no birthdate, no
+ *   parent link, no location, no journal content.
  *
  * RLS INVARIANT:
  *   Every real data read/write (journal, sessions, safety events) still goes
