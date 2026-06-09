@@ -293,10 +293,26 @@ export function resolvePlaylist(
         if (resolved) slugs.push(resolved);
       } else if (raw === "{{cueReset}}") {
         const base = cueWord ? (CUEWORD_OPTION_SLUGS[cueWord] ?? null) : null;
-        if (base) slugs.push(`${base}-reset`);
+        if (base) {
+          // FV-153: the scaffold clip introduces the cue word ("Your cue word
+          // is…") right before cw-<word>-reset speaks it. Only injected when the
+          // cue word resolves AND the pre-clip is in the catalog — older
+          // manifests/test fixtures that lack it just skip the lead-in cleanly.
+          if (manifest.clips["shared-cue-word-intro-pre"]) {
+            slugs.push("shared-cue-word-intro-pre");
+          }
+          slugs.push(`${base}-reset`);
+        }
       } else if (raw === "{{cueSendoff}}") {
         const base = cueWord ? (CUEWORD_OPTION_SLUGS[cueWord] ?? null) : null;
-        if (base) slugs.push(`${base}-sendoff`);
+        if (base) {
+          // FV-153: send-off lead-in before cw-<word>-sendoff. Same guard as the
+          // reset above — present in the prod catalog, absent in old fixtures.
+          if (manifest.clips["shared-cue-word-sendoff-pre"]) {
+            slugs.push("shared-cue-word-sendoff-pre");
+          }
+          slugs.push(`${base}-sendoff`);
+        }
       } else {
         slugs.push(raw);
       }
