@@ -1,0 +1,10 @@
+{
+  "slug": "viz-defense-breakout",
+  "durationSec": 65.324,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    }
+  ]
+}
