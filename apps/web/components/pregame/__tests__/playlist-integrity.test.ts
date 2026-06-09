@@ -32,6 +32,7 @@ import {
   SPORT_REGISTRY,
   type Sport,
 } from "../sport-registry";
+import { POSITIVE_PLAYS, positivePlaysFor } from "../positive-plays";
 
 // ---------------------------------------------------------------------------
 // Load committed manifest (real file, not a fixture)
@@ -857,5 +858,78 @@ describe("hockey focus parity — pp-focus-talk-every-shift (FV-121)", () => {
 
   it("HOCKEY_CONFIG.practiceFocusOptions includes 'Talk every shift'", () => {
     expect(HOCKEY_CONFIG.practiceFocusOptions).toContain("Talk every shift");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 13. Positive-play picker library (FV-144) — every selectable play maps to a
+//     real, playable clip, and picking plays swaps the flagship for real audio.
+// ---------------------------------------------------------------------------
+
+describe("positive-play library integrity (FV-144)", () => {
+  it("all 52 selectable positive plays are in the catalog with real non-zero files", () => {
+    const broken: string[] = [];
+    for (const { slug } of POSITIVE_PLAYS) {
+      const err = catalogFileErr(slug);
+      if (err) broken.push(`${slug}: ${err}`);
+    }
+    expect(broken).toEqual([]);
+  });
+
+  it("every play's declared role matches its slug prefix (viz-<role>-…)", () => {
+    const mismatches: string[] = [];
+    for (const { slug, role } of POSITIVE_PLAYS) {
+      const expectedPrefix = `viz-${role.toLowerCase()}-`;
+      if (!slug.startsWith(expectedPrefix)) {
+        mismatches.push(`${slug} declares role "${role}" but is not "${expectedPrefix}…"`);
+      }
+    }
+    expect(mismatches).toEqual([]);
+  });
+
+  it("each role with positions exposes a non-empty play list", () => {
+    const empty: string[] = [];
+    for (const config of [HOCKEY_CONFIG, BASKETBALL_CONFIG]) {
+      for (const role of config.roles ?? []) {
+        if (positivePlaysFor(role).length === 0) empty.push(`${config.sportKey}/${role}`);
+      }
+    }
+    expect(empty).toEqual([]);
+  });
+
+  it("picking plays for a real session swaps the flagship for the picked clips (every role, both sports)", () => {
+    const failures: string[] = [];
+    for (const config of [HOCKEY_CONFIG, BASKETBALL_CONFIG]) {
+      const need = config.needs[0]!; // "Confidence" — has an opener in both sports
+      const adversity = config.adversities[0]!;
+      for (const role of config.roles ?? []) {
+        const plays = positivePlaysFor(role);
+        const picks = plays.slice(0, 2).map((p) => p.slug);
+
+        const resolved = resolvePlaylist(
+          need,
+          role,
+          adversity,
+          manifest,
+          null, null, null,
+          config.sportKey,
+          "guided",
+          picks,
+        );
+        if (!resolved) {
+          failures.push(`${config.sportKey}/${role}: resolvePlaylist returned null`);
+          continue;
+        }
+        const slugs = resolved.map((c) => c.slug);
+        for (const pick of picks) {
+          if (!slugs.includes(pick)) failures.push(`${config.sportKey}/${role}: missing pick ${pick}`);
+        }
+        // The picked plays must appear in the order chosen.
+        if (picks.length === 2 && slugs.indexOf(picks[0]!) >= slugs.indexOf(picks[1]!)) {
+          failures.push(`${config.sportKey}/${role}: picks out of order`);
+        }
+      }
+    }
+    expect(failures).toEqual([]);
   });
 });

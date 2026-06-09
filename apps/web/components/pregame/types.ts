@@ -51,6 +51,14 @@ export type PregameState = {
   need: NeedToday | null;
   /** Sport-specific role/position string, or null for no-ask sports. */
   role: string | null;
+  /**
+   * Athlete-picked positive-play viz slugs for this session (FV-144), in the
+   * order they'll be rehearsed. 1–MAX_POSITIVE_PLAYS entries once the picker is
+   * complete; [] means "use the position flagship" (the no-pick fallback that
+   * preserves pre-FV-144 behaviour for any non-picker call site). See
+   * positive-plays.ts.
+   */
+  positivePlays: string[];
   adversity: string | null;
   anchor: string | null;
   selfTalk: string | null;
@@ -63,6 +71,7 @@ export const INITIAL_STATE: PregameState = {
   breathDone: false,
   need: null,
   role: null,
+  positivePlays: [],
   adversity: null,
   anchor: null,
   selfTalk: null,
@@ -341,6 +350,15 @@ export const FLOW: FlowStep[] = [
     id: "position",
     label: "Position",
     required: (s) => !!s.role,
+  },
+  {
+    // FV-144 — multi-select positive-play picker. Slotted after Position
+    // (the plays are role-scoped) and before Hard Moment, mirroring the audio
+    // order (viz rehearsal plays before the adversity rehearsal). "None
+    // pre-picked, must choose ≥1" per KC, so required gates on a non-empty list.
+    id: "positivePlays",
+    label: "Positive Plays",
+    required: (s) => s.positivePlays.length > 0,
   },
   {
     id: "hardMoment",

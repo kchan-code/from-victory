@@ -69,6 +69,10 @@ export type PrecacheParams = {
    *  self-guided swaps shared-prayer → shared-prayer-selfguided and drops
    *  shared-sendoff, so the warmed set must match. Defaults to guided. */
   prayerStyle?: PrayerStyle | null;
+  /** FV-144 — athlete-picked positive-play viz slugs. Changes which viz clips
+   *  are reachable (the picks replace the flagship), so the warmed set must
+   *  match what the session will actually play. Empty/undefined = flagship. */
+  positivePlays?: string[] | null;
 };
 
 /** Live status returned by precache + check functions. */
@@ -155,6 +159,7 @@ async function resolveReachableUrls(
     params.cueWord ?? null,
     params.sport,
     params.prayerStyle ?? null,
+    params.positivePlays ?? null,
   );
 
   if (!resolved) return null;
