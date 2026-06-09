@@ -897,6 +897,35 @@ describe("positive-play library integrity (FV-144)", () => {
     expect(empty).toEqual([]);
   });
 
+  it("the cue-word scaffold lead-in clips are in the catalog with real non-zero files (FV-153)", () => {
+    const broken: string[] = [];
+    for (const slug of ["shared-cue-word-intro-pre", "shared-cue-word-sendoff-pre"]) {
+      const err = catalogFileErr(slug);
+      if (err) broken.push(`${slug}: ${err}`);
+    }
+    expect(broken).toEqual([]);
+  });
+
+  it("a real cue-word session leads each cw clip with its scaffold lead-in (FV-153)", () => {
+    // Resolve a real hockey template with a known cue word; assert the lead-in
+    // clip immediately precedes the resolved cw-<word>-reset / -sendoff.
+    const resolved = resolvePlaylist(
+      "Confidence",
+      "Forward",
+      HOCKEY_CONFIG.adversities[0]!,
+      manifest,
+      null, null, "Steady",
+    );
+    expect(resolved).not.toBeNull();
+    const slugs = resolved!.map((c) => c.slug);
+    const intro = slugs.indexOf("shared-cue-word-intro-pre");
+    expect(intro).toBeGreaterThanOrEqual(0);
+    expect(slugs[intro + 1]).toBe("cw-steady-reset");
+    const sendoff = slugs.indexOf("shared-cue-word-sendoff-pre");
+    expect(sendoff).toBeGreaterThanOrEqual(0);
+    expect(slugs[sendoff + 1]).toBe("cw-steady-sendoff");
+  });
+
   it("picking plays for a real session swaps the flagship for the picked clips (every role, both sports)", () => {
     const failures: string[] = [];
     for (const config of [HOCKEY_CONFIG, BASKETBALL_CONFIG]) {
