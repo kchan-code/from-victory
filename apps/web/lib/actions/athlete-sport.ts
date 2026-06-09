@@ -84,3 +84,63 @@ export async function selectSport(
   revalidatePath("/athlete");
   redirect("/athlete");
 }
+
+// ---------------------------------------------------------------------------
+// changeSport — athlete changes their sport from Settings (FV-159 / FV-56 §2).
+//
+// Same persistence as selectSport (writes sport + sport_selected_at under the
+// athlete's own RLS session) but returns to /athlete/settings with a confirm
+// toast instead of the first-run /athlete redirect. Kept as a sibling action
+// rather than parameterizing selectSport so the onboarding gate's redirect
+// contract stays untouched.
+//
+// Data rule (FV-56 §2.4 — non-negotiable): this re-keys the sport-scoped daily
+// content + pregame and resets NOTHING. day_number and rhythm live on separate,
+// sport-agnostic rows (athlete_sessions) that this update never touches, so
+// place-in-the-arc and participation history carry over by construction. Do not
+// add any progress/rhythm mutation here.
+// ---------------------------------------------------------------------------
+
+export async function changeSport(
+  _prev: SelectSportState,
+  formData: FormData,
+): Promise<SelectSportState> {
+  const parsed = SelectSportSchema.safeParse({
+    sport: formData.get("sport"),
+  });
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Pick a sport to continue.",
+    };
+  }
+
+  const { userId } = await requireAthlete();
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      sport: parsed.data.sport,
+      sport_selected_at: new Date().toISOString(),
+    })
+    .eq("id", userId);
+
+  if (error) {
+    console.error(
+      "[athlete-sport.changeSport] update failed:",
+      error.message,
+    );
+    return {
+      ok: false,
+      error: "Couldn't save your sport — try again.",
+    };
+  }
+
+  // Re-read sport everywhere it drives content. The hub and daily/pregame all
+  // read profile.sport at request time, but revalidate the cached segments so
+  // nothing stale survives the switch.
+  revalidatePath("/athlete");
+  revalidatePath("/athlete/settings");
+  redirect(`/athlete/settings?switched=${parsed.data.sport}`);
+}
