@@ -57,7 +57,18 @@ export default async function AthleteHomePage() {
           className="h-[64px] w-auto"
           priority
         />
-        <SignOutButton className="font-heading font-semibold text-[14px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-5 py-2.5 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx" />
+        <div className="flex items-center gap-2">
+          <Link
+            href="/athlete/settings"
+            aria-label="Settings"
+            className="flex h-[44px] w-[44px] items-center justify-center rounded-pill text-cream/70 transition-colors duration-fast ease-out hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+          >
+            <span className="flex h-[40px] w-[40px] items-center justify-center rounded-pill bg-charcoal border border-hairline">
+              <Icon name="settings" size={19} />
+            </span>
+          </Link>
+          <SignOutButton className="font-heading font-semibold text-[14px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-5 py-2.5 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx" />
+        </div>
       </header>
 
       <div className="px-5 sm:px-8 max-w-[640px] mx-auto">
