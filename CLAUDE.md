@@ -341,7 +341,7 @@ The privacy veto is never suppressed to satisfy "issue-scoped only."
 Out of scope for MVP: video, daily training session audio (text-only
 for MVP — only the pregame session has narration), community feed, coach
 view, team mode, native app wrap, sports beyond hockey + basketball
-(v2 — FRO-21), AI-personalized content, free tier, social sign-in,
+(v2 — FV-21), AI-personalized content, free tier, social sign-in,
 progressive training plans (that's v2), leaderboards (never), 18+
 self-onboard/self-pay fork (post-MVP).
 
