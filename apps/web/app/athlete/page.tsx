@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { AthleteBottomNav } from "@/components/athlete/BottomNav";
 import { Icon, RhythmRing } from "@/components/ui";
-import { signOut } from "@/lib/actions/auth";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireAthlete } from "@/lib/auth/guards";
 import { getDailySession } from "@/lib/daily/session";
 import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
@@ -57,14 +57,7 @@ export default async function AthleteHomePage() {
           className="h-[64px] w-auto"
           priority
         />
-        <form action={signOut}>
-          <button
-            type="submit"
-            className="font-heading font-semibold text-[14px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-5 py-2.5 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-          >
-            Sign out
-          </button>
-        </form>
+        <SignOutButton className="font-heading font-semibold text-[14px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-5 py-2.5 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx" />
       </header>
 
       <div className="px-5 sm:px-8 max-w-[640px] mx-auto">

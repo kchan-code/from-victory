@@ -7,6 +7,7 @@ import {
   forgetDevice,
   type AthleteSignInState,
 } from "@/lib/actions/pairings";
+import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
 
 import { Field } from "./Field";
 import { SubmitButton } from "./SubmitButton";
@@ -55,10 +56,12 @@ export function AthleteSignInForm({ firstName }: Props) {
       </p>
       <form
         action={forgetDevice}
+        onSubmit={clearAthleteCache}
         className="mt-4 font-body text-[14px] text-cream/60 text-center"
       >
         <button
           type="submit"
+          data-testid="forget-device-btn"
           className="text-cream/60 hover:text-cream underline decoration-cream/30 hover:decoration-cream bg-transparent border-0 p-0 cursor-pointer"
         >
           Not {firstName}? Sign in as someone else

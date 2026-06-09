@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { signOut } from "@/lib/actions/auth";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
@@ -49,14 +49,7 @@ export default async function DashboardPage() {
             className="h-14 w-auto"
             priority
           />
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="font-heading font-semibold text-[14px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-5 py-2.5 transition-colors duration-fast ease-out"
-            >
-              Sign out
-            </button>
-          </form>
+          <SignOutButton className="font-heading font-semibold text-[14px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-5 py-2.5 transition-colors duration-fast ease-out" />
         </header>
 
         <section className="mb-12">

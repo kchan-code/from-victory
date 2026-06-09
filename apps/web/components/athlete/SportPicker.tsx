@@ -10,6 +10,7 @@ import { useFormState, useFormStatus } from "react-dom";
 
 import { selectSport } from "@/lib/actions/athlete-sport";
 import { signOut } from "@/lib/actions/auth";
+import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
 import { SUPPORTED_SPORTS, type Sport } from "@/lib/sports";
 
 interface SportOption {
@@ -112,10 +113,11 @@ export default function SportPicker({ currentSport }: { currentSport: Sport }) {
   return (
     <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[480px] flex-col bg-onyx text-cream">
       <div className="flex items-center px-5 pb-3 pt-[58px]">
-        <form action={signOut}>
+        <form action={signOut} onSubmit={clearAthleteCache}>
           <button
             type="submit"
             aria-label="Sign out"
+            data-testid="sport-picker-sign-out-btn"
             className="flex h-[44px] w-[44px] -m-[5px] items-center justify-center rounded-pill text-cream/70 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx hover:text-cream"
           >
             <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">

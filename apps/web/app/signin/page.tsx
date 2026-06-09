@@ -1,5 +1,6 @@
 import { AthleteSignInForm } from "@/components/auth/AthleteSignInForm";
 import { AuthShell } from "@/components/auth/AuthShell";
+import { ClearCacheOnMount } from "@/components/auth/ClearCacheOnMount";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { getDeviceAthleteId } from "@/lib/auth/device";
 import { redirectIfAuthed } from "@/lib/auth/guards";
@@ -32,6 +33,11 @@ export default async function SignInPage({ searchParams }: Props) {
     if (athlete && athlete.role === "athlete") {
       return (
         <AuthShell title={`Welcome back, ${athlete.first_name}.`}>
+          {/* FV-154: clear offline cache on mount — covers the case where
+              the athlete lands here while the device is still paired but
+              not yet signed in (e.g. session expired). forgetDevice's own
+              onSubmit handler also clears it, so this is belt-and-suspenders. */}
+          <ClearCacheOnMount />
           <AthleteSignInForm firstName={athlete.first_name} />
         </AuthShell>
       );
@@ -44,6 +50,11 @@ export default async function SignInPage({ searchParams }: Props) {
 
   return (
     <AuthShell title="Welcome back" subtitle="Sign in to your parent account.">
+      {/* FV-154: clear offline athlete cache on mount — covers forgetDevice
+          and /auth/signout escape hatch, both of which redirect here after
+          signing out server-side. An authenticated athlete is never on this
+          path (redirectIfAuthed() guards the page). */}
+      <ClearCacheOnMount />
       {resetInvalid ? (
         <div
           role="alert"
