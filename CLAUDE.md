@@ -334,9 +334,11 @@ The privacy veto is never suppressed to satisfy "issue-scoped only."
   selections, then a real audio narration delivers the visualization,
   coping plan, and send-off. Sport-aware (hockey + basketball), resolved
   from a per-sport config registry. Added to MVP 2026-05-24 in response to
-  direct beta-tester feedback. Production model (single generic file vs.
-  per-position vs. TTS) is a separate open decision; until the audio
-  ships, the AudioSessionScreen falls back to a text-mode timer.
+  direct beta-tester feedback. Shipped as a compositional clip playlist —
+  per-position/adversity personalization, ash voice via OpenAI TTS,
+  runtime-stitched and content-addressed (see MANIFEST_VERSION). A
+  text-mode timer remains as the fallback when the clip player can't load
+  audio.
 
 Out of scope for MVP: video, daily training session audio (text-only
 for MVP — only the pregame session has narration), community feed, coach
