@@ -6,7 +6,7 @@ import { AthleteBottomNav } from "@/components/athlete/BottomNav";
 import { CompleteSessionButton } from "@/components/daily/CompleteSessionButton";
 import { SessionBody } from "@/components/daily/SessionBody";
 import { Icon, RhythmRing } from "@/components/ui";
-import { signOut } from "@/lib/actions/auth";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 import { completeDailySession } from "@/lib/actions/daily-session";
 import { requireAthlete } from "@/lib/auth/guards";
 import { getDailySession } from "@/lib/daily/session";
@@ -63,14 +63,7 @@ export default async function DailyPage() {
           priority
         />
 
-        <form action={signOut}>
-          <button
-            type="submit"
-            className="font-heading font-semibold text-[13px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-4 py-2 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-          >
-            Sign out
-          </button>
-        </form>
+        <SignOutButton className="font-heading font-semibold text-[13px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-4 py-2 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx" />
       </header>
 
       {/* ── Content ── */}

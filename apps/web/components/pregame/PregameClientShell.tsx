@@ -10,7 +10,8 @@
  *   2. If no session → router.replace("/signin").
  *   3. If session → loads the athlete's profile row (RLS-gated) to get sport.
  *   4. Writes { sport, firstName } to localStorage under fv_athlete_cache
- *      (non-PII: sport is "hockey"/"basketball", firstName is a first name).
+ *      (minimal athlete PII: sport is "hockey"/"basketball"; firstName is a
+ *      first name).
  *   5. Applies the first-run gate: no sport_selected_at → redirect to onboarding.
  *   6. Renders PregameFlow.
  *
@@ -34,10 +35,11 @@
  * PII POLICY:
  *   fv_athlete_cache is written to localStorage, not Cache Storage. It is
  *   device-local, never traverses the network, never lands in any SW cache, and
- *   should be cleared on sign-out (lib/actions/auth.ts — wire clearAthleteCache
- *   there if not already done; see exported helper below). sport + first_name are
- *   low-sensitivity fields. No email, no birthdate, no parent link, no location,
- *   no journal content.
+ *   is cleared on sign-out + device re-pair by SignOutButton / ClearCacheOnMount
+ *   (FV-154; clearAthleteCache lives in lib/pregame/athlete-cache.ts — calling it
+ *   from a server action would be a no-op since window is undefined there).
+ *   sport + first_name are minimal athlete PII. No email, no birthdate, no
+ *   parent link, no location, no journal content.
  *
  * RLS INVARIANT:
  *   Every real data read/write (journal, sessions, safety events) still goes
@@ -50,72 +52,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/client";
+import {
+  readAthleteCache,
+  writeAthleteCache,
+} from "@/lib/pregame/athlete-cache";
 import { PregameFlow } from "./PregameFlow";
 import type { Sport } from "./sport-registry";
 
-// ---------------------------------------------------------------------------
-// localStorage cache key + shape
-// ---------------------------------------------------------------------------
-
-const CACHE_KEY = "fv_athlete_cache";
-
-type AthleteCache = {
-  sport: Sport;
-  firstName: string;
-};
-
-function readAthleteCache(): AthleteCache | null {
-  try {
-    const raw = window.localStorage.getItem(CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as unknown;
-    if (
-      typeof parsed !== "object" ||
-      parsed === null ||
-      typeof (parsed as Record<string, unknown>).sport !== "string" ||
-      typeof (parsed as Record<string, unknown>).firstName !== "string"
-    ) {
-      return null;
-    }
-    const sport = (parsed as Record<string, unknown>).sport as string;
-    // Only accept the known sport values we support — this prevents any cached
-    // garbage from propagating into the sport registry and causing a crash.
-    if (sport !== "hockey" && sport !== "basketball") return null;
-    return {
-      sport: sport as Sport,
-      firstName: (parsed as Record<string, unknown>).firstName as string,
-    };
-  } catch {
-    return null;
-  }
-}
-
-function writeAthleteCache(cache: AthleteCache): void {
-  try {
-    window.localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-  } catch {
-    // Private browsing or storage quota — non-fatal. The online path still
-    // works; the offline path simply won't have a cache on this device.
-  }
-}
-
-/**
- * Remove the athlete cache on sign-out.
- * Called by the signOut action to clear cached credentials from localStorage.
- * Exported so lib/actions/auth.ts can import and call clearAthleteCache() on
- * sign-out to avoid stale sport/name surviving a device-account switch.
- *
- * NOTE: This is a client-side function (uses window.localStorage). It must
- * be called from a client context (e.g. a "use client" component or a browser
- * callback) or imported in a client bundle. Do not call it from server actions.
- */
-export function clearAthleteCache(): void {
-  try {
-    window.localStorage.removeItem(CACHE_KEY);
-  } catch {
-    // ignore
-  }
-}
+// clearAthleteCache is re-exported from lib/pregame/athlete-cache.
+// It is no longer defined here — import it from there for sign-out / re-pair
+// use. The re-export keeps any existing callers of the old path working.
+export { clearAthleteCache } from "@/lib/pregame/athlete-cache";
 
 // ---------------------------------------------------------------------------
 // Type guard: is this a network-level failure (offline) vs an auth failure?
