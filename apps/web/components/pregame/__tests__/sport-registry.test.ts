@@ -355,11 +355,23 @@ describe("adversityOptionsFor — Hard Moment options", () => {
     expect(opts.map((o) => o.key)).toEqual([...HOCKEY_CONFIG.adversities]);
   });
 
-  it("basketball (no roleAdversities) returns the flat list for every role", () => {
-    for (const role of BASKETBALL_CONFIG.roles ?? []) {
+  it("basketball: Guard/Wing return the flat 10; Big is FV-119-gated to 8", () => {
+    // Guard + Wing have no override → the shared flat list of 10.
+    for (const role of ["Guard", "Wing"] as const) {
       const opts = adversityOptionsFor(BASKETBALL_CONFIG, role);
       expect(opts.map((o) => o.key)).toEqual([...BASKETBALL_CONFIG.adversities]);
       expect(opts.every((o) => o.key === o.label)).toBe(true);
+    }
+    // Big is FV-119-gated: the two most intense distress cells are withheld
+    // until clinical sign-off — "I get benched." (→ hm-bb-big-fouled-out) and
+    // "We fall behind early." (→ hm-bb-big-fall-behind-early).
+    const bigOpts = adversityOptionsFor(BASKETBALL_CONFIG, "Big").map((o) => o.key);
+    expect(bigOpts).toHaveLength(8);
+    expect(bigOpts).not.toContain("I get benched.");
+    expect(bigOpts).not.toContain("We fall behind early.");
+    for (const a of BASKETBALL_CONFIG.adversities) {
+      if (a === "I get benched." || a === "We fall behind early.") continue;
+      expect(bigOpts).toContain(a);
     }
   });
 });
