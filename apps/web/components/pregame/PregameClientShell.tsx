@@ -21,13 +21,15 @@
  *      visited the pregame page while online on this device).
  *
  * AUTH BYPASS PROTECTION:
- *   The offline path is only triggered when supabase.auth.getUser() throws a
- *   genuine network error (TypeError / "Failed to fetch") — NOT on a 401/403
- *   or a Supabase AuthError. If the error is an AuthError or the user field is
- *   null on a successful response, we treat it as "not authenticated" and
- *   redirect to /signin, same as the online path. A cookie-stuffing attacker
- *   who is online but supplies fake session cookies gets an AuthError (token
- *   invalid) or null user → redirect to /signin, not bypass.
+ *   The single try/catch wraps BOTH getUser() and the subsequent profile fetch.
+ *   The offline (cache) path is only taken when one of them throws a genuine
+ *   network error (matched by message — see isNetworkError; NOT a bare
+ *   TypeError, and NOT a 401/403 or a Supabase AuthError). A network throw from
+ *   either call is safe to serve from cache: the cache was written earlier by a
+ *   successfully-authenticated user on this device. The online failure modes —
+ *   an AuthError result or a null user — instead redirect to /signin. A
+ *   cookie-stuffing attacker online with fake session cookies gets an AuthError
+ *   / null user → redirect to /signin, never the cache.
  *
  * PII POLICY:
  *   fv_athlete_cache is written to localStorage, not Cache Storage. It is
@@ -258,7 +260,12 @@ export function PregameClientShell() {
   // ── Loading skeleton ──
   if (state.kind === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-onyx">
+      <div
+        className="flex min-h-screen items-center justify-center bg-onyx"
+        role="status"
+        aria-live="polite"
+      >
+        <h1 className="sr-only">Loading pregame</h1>
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 rounded-full border border-gold/30 animate-pulse" />
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-cream/40">
@@ -291,8 +298,14 @@ export function PregameClientShell() {
   if (state.kind === "error") {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-onyx px-8 text-center">
-        <p className="mb-3 font-body text-[14px] text-cream/60">
-          Something went wrong. Please reload.
+        <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.20em] text-gold">
+          From Victory
+        </p>
+        <h1 className="mb-3 font-display text-[28px] font-extrabold uppercase leading-[1.05] tracking-[0.03em] text-cream">
+          Something went wrong
+        </h1>
+        <p className="font-body text-[14px] leading-[1.55] text-cream/60">
+          Please reload the page to try again.
         </p>
       </div>
     );

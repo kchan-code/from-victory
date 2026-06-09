@@ -71,14 +71,14 @@ export async function updateSession(request: NextRequest) {
   try {
     await supabase.auth.getUser();
   } catch (err) {
-    // Log once per request so we can see offline occurrences in server logs
-    // without drowning them out. Do not re-throw — pass the request through.
-    if (process.env.NODE_ENV !== "production") {
-      console.warn(
-        "[supabase/middleware] getUser() threw (likely offline):",
-        err instanceof Error ? err.message : String(err),
-      );
-    }
+    // Log the offline occurrence (rare — a true network-level failure in
+    // middleware). Kept in production too: Vercel captures console.warn and
+    // these are infrequent enough not to be noisy. Do not re-throw — pass the
+    // request through unchanged.
+    console.warn(
+      "[supabase/middleware] getUser() threw (likely offline):",
+      err instanceof Error ? err.message : String(err),
+    );
     // Fall through: return the unmodified response.
   }
 
