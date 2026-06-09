@@ -369,6 +369,26 @@ export const BASKETBALL_CONFIG: SportConfig = {
     "We fall behind early.",
   ],
 
+  // FV-119 GATE (interim): the two most intense Big distress cells —
+  // hm-bb-big-fouled-out (reached via "I get benched") and
+  // hm-bb-big-fall-behind-early — are withheld from the Big athlete's
+  // selectable adversities until clinical sign-off (FV-119). Guard/Wing keep
+  // all 10 (their benched / fall-behind cells were not flagged as intense).
+  // To re-enable after a clinician clears them, delete this Big override
+  // (Big then falls back to the shared 10-adversity list above).
+  roleAdversities: {
+    Big: [
+      { key: "I turn the ball over.", label: "I turn the ball over." },
+      { key: "I miss an open shot.", label: "I miss an open shot." },
+      { key: "I get cooked off the dribble.", label: "I get cooked off the dribble." },
+      { key: "I get into foul trouble.", label: "I get into foul trouble." },
+      { key: "Coach yells.", label: "Coach yells." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I miss two free throws.", label: "I miss two free throws." },
+      { key: "I start slow.", label: "I start slow." },
+    ],
+  },
+
   adversitySlugFragments: BASKETBALL_ADVERSITY_SLUG_FRAGMENTS,
 
   cellSlugFor(adversity: string, role?: string | null): string {
