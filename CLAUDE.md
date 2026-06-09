@@ -2,7 +2,8 @@
 
 ## Mission
 A daily mental toughness training app with faith built in, for athletes
-ages 13-21 launching with hockey. The parent buys (for MVP), the athlete
+ages 13-21 launching with hockey and basketball. The parent buys (for
+MVP), the athlete
 trains: one daily training session combining a mental skill, a scripture
 foundation, and a private journal reflection. Built on the brand spine
 that identity precedes performance — we operate FROM Christ's victory,
@@ -64,7 +65,7 @@ Evangelical / non-denominational Protestant lean. Buys the subscription,
 reads the parent dashboard. Not the primary user. (Future fork: 18+
 athletes self-onboard and self-pay. Not MVP scope.)
 
-### Influencers: coaches, team chaplains, hockey associations
+### Influencers: coaches, team chaplains, hockey + basketball associations
 Distribution channel. Not direct users in MVP.
 
 ## Audience language (CRITICAL — applies to ALL agents)
@@ -142,9 +143,9 @@ For sport-specific content, content-curator also pulls in the relevant
 authenticity — realistic positions, adversities, vocabulary, and
 age/level fit. The sport-expert advises and verifies; it does NOT write
 the mental skill (sports-psychologist) or the scripture (youth-pastor),
-and it is not a clinician. One sport-expert per launch sport. (Hockey is
-live; basketball is being brought into MVP scope — scope-lock text
-reconciled in FRO-26.) Sports beyond the launch sports are v2.
+and it is not a clinician. One sport-expert per launch sport. Hockey and
+basketball are the launch sports — the pregame engine resolves each from a
+per-sport config registry (see MVP Scope). Sports beyond them are v2.
 
 ## Agent Orchestration
 The lead agent is the **sole orchestrator**. Subagents are leaf workers — they
@@ -317,9 +318,9 @@ The privacy veto is never suppressed to satisfy "issue-scoped only."
 ## MVP Scope (locked — kill scope creep ruthlessly)
 - Parent signup + Stripe subscription ($8.99/mo or $79/yr)
 - Parent creates athlete account (no email for the athlete)
-- One daily training session, hockey-themed, faith-foundational (30 days
-  of content seeded at launch). Structure: mental skill + scripture
-  foundation + journal prompt.
+- One daily training session, hockey- and basketball-themed, faith-
+  foundational (30 days of content per sport, seeded at launch).
+  Structure: mental skill + scripture foundation + journal prompt.
 - Athlete-private journal entry per session
 - **Rhythm visualization** (not a streak counter). Visualizes
   participation and return, never punishes missed days. Internal data
@@ -331,16 +332,18 @@ The privacy veto is never suppressed to satisfy "issue-scoped only."
 - Crisis-resource keyword detection (Option C — see below)
 - **Pregame guided audio session** (~5 min). Athlete makes setup
   selections, then a real audio narration delivers the visualization,
-  coping plan, and send-off. Added to MVP 2026-05-24 in response to
+  coping plan, and send-off. Sport-aware (hockey + basketball), resolved
+  from a per-sport config registry. Added to MVP 2026-05-24 in response to
   direct beta-tester feedback. Production model (single generic file vs.
   per-position vs. TTS) is a separate open decision; until the audio
   ships, the AudioSessionScreen falls back to a text-mode timer.
 
 Out of scope for MVP: video, daily training session audio (text-only
 for MVP — only the pregame session has narration), community feed, coach
-view, team mode, native app wrap, multi-sport expansion, AI-personalized
-content, free tier, social sign-in, progressive training plans (that's
-v2), leaderboards (never), 18+ self-onboard/self-pay fork (post-MVP).
+view, team mode, native app wrap, sports beyond hockey + basketball
+(v2 — FV-21), AI-personalized content, free tier, social sign-in,
+progressive training plans (that's v2), leaderboards (never), 18+
+self-onboard/self-pay fork (post-MVP).
 
 ## Non-Negotiable Constraints
 
@@ -399,8 +402,8 @@ docs/brand.md "Voice Modes" for the full table. Default mode is Mentor.
   prose. Calibrate by age — simpler and more concrete for 13-15, more
   depth and nuance for 16-21. Never down-talk any age.
 - Athlete-facing content uses "athlete" or "you," never "kid."
-- Hockey examples for MVP. Underlying content structure is sport-agnostic
-  so swapping examples per sport in v2 is trivial.
+- Hockey and basketball examples for MVP. Underlying content structure is
+  sport-agnostic so adding more sports in v2 is trivial.
 
 ### Visual Design
 - Dark-mode-first across all athlete-facing surfaces. Light mode is
