@@ -45,7 +45,11 @@ This is a **runtime/UI-only** feature.
   (`apps/web/scripts/generate-pregame-audio.ts`). Current flagships:
   D→`viz-defense-retrieval`, F→`viz-forward-win-the-wall`,
   G→`viz-goalie-track-and-save`, Guard→`viz-guard-pick-and-roll`,
-  Wing→`viz-wing-catch-and-shoot`, Big→`viz-big-roll-and-finish`.
+  Wing→`viz-wing-catch-and-shoot`, Big→`viz-big-roll-and-finish`. **This
+  flagship plays in the audio but is NOT shown on the Review screen
+  (Step 09/10) and is NOT athlete-selectable** — KC flagged this on prod
+  (2026-06-09): the Review lists Today's Focus / Position / Hard Moment /
+  Reset Anchor / Self-Talk / Cue Word / Close, but has **no positive-play row**.
 - **The runtime already supports multi-clip playlists** — the compositional
   clip-playlist scales; adding more viz clips to a session is purely additive
   (memory: `project_pregame-scaling-architecture.md`). `resolvePlaylist()` in
@@ -74,6 +78,12 @@ This is a **runtime/UI-only** feature.
 5. **Fallback.** If nothing is picked, keep the flagship default (don't break
    the existing path). Pre-selecting the flagship by default is a reasonable UX.
 6. **Mobile-first, dark-mode-first, accessible** (`docs/brand.md`).
+7. **Review-screen row (don't miss this).** Add a `POSITIVE PLAY(S)` row to the
+   Review screen (Step 09/10, in `screens-b.tsx`) showing the picked play
+   title(s), alongside Position / Hard Moment / Reset Anchor / etc. KC confirmed
+   on prod (2026-06-09) the row is missing today — the positive play plays but is
+   invisible + unchosen. This is the one place `screens-b.tsx` legitimately needs
+   a (small) edit.
 
 ### The one real design decision → KC by-ear
 **Session length.** Each viz play ≈ 60-75s, so multi-select can balloon the
