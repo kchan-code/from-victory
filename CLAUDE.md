@@ -515,3 +515,4 @@ that conversion, not the tracker, is what raises the parallelism ceiling.
 - Supabase types generated and committed: `supabase gen types typescript --local`
 - Conventional commits enforced
 - No `any` type without a `// reason:` comment
+<!-- fv-4-gate-test-delete -->
