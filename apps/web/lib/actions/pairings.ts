@@ -10,6 +10,7 @@ import {
   setDeviceAthleteId,
 } from "@/lib/auth/device";
 import { requireParent } from "@/lib/auth/guards";
+import { rateLimitGate, getRequestIp } from "@/lib/actions/rate-limit-store";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -61,6 +62,18 @@ export async function generatePairingCode(
   }
 
   const { userId: parentId } = await requireParent();
+
+  // Rate limiting (FV-13): keyed on parentId (non-spoofable — derived from
+  // the verified session by requireParent()). Threat: a compromised parent
+  // session spinning up an unlimited number of pairing codes.
+  const { limited } = await rateLimitGate("generate_pairing_code", parentId);
+  if (limited) {
+    return {
+      ok: false,
+      error: "Too many attempts. Please wait a few minutes and try again.",
+    };
+  }
+
   const service = createServiceClient();
 
   // App-layer link check (DB trigger is the backstop).
@@ -121,6 +134,20 @@ export async function claimPairing(
       ok: false,
       error: issue?.message ?? "Invalid input.",
       field: issue?.path[0]?.toString(),
+    };
+  }
+
+  // Rate limiting (FV-13): keyed on request IP. Place BEFORE the atomic
+  // consume so we don't burn the single-use code on a rate-limited request.
+  // Threat: DoS / timing attack on the pairing endpoint (the code itself is
+  // 192-bit entropy so brute-force guessing is impractical; this is DoS
+  // protection, not a secret-guessing defence).
+  const ip = await getRequestIp();
+  const { limited } = await rateLimitGate("claim_pairing", ip);
+  if (limited) {
+    return {
+      ok: false,
+      error: "Too many tries. Give it a few minutes, then try again.",
     };
   }
 
@@ -231,6 +258,17 @@ export async function athleteSignIn(
       ok: false,
       error: issue?.message ?? "Invalid input.",
       field: issue?.path[0]?.toString(),
+    };
+  }
+
+  // Rate limiting (FV-13): keyed on the device athlete ID (UUID from cookie —
+  // already verified above as non-null). Threat: password brute-force against
+  // a stolen device cookie.
+  const { limited } = await rateLimitGate("athlete_sign_in", athleteId);
+  if (limited) {
+    return {
+      ok: false,
+      error: "Too many tries. Give it a few minutes, then try again.",
     };
   }
 

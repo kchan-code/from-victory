@@ -39,6 +39,31 @@ export type Database = {
   }
   public: {
     Tables: {
+      // FV-13: hand-added. Confirm shape via `supabase gen types typescript
+      // --linked` after `supabase db push` applies
+      // 20260611000000_auth_rate_limit_events.sql to the linked project.
+      // Content-free; bucket column holds HMAC digests only (never raw PII).
+      auth_rate_limit_events: {
+        Row: {
+          id: string
+          bucket: string
+          action: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          bucket: string
+          action: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          bucket?: string
+          action?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       // FV-14: hand-added. Confirm shape via `supabase gen types typescript
       // --linked` after `supabase db push` applies
       // 20260607000000_account_deletion_audit.sql to the linked project.
