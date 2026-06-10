@@ -1,6 +1,6 @@
 {
   "slug": "bb-guard-start-slow",
-  "durationSec": 269.304,
+  "durationSec": 265.728,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 5.288,
+      "startSec": 6.008,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 11.544,
+      "startSec": 12.264,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 19.488,
+      "startSec": 21.048,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 25.384,
+      "startSec": 26.104,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 52.096
+      "startSec": 50.488
     },
     {
       "phase": "firstShift",
-      "startSec": 94.706
+      "startSec": 89.906
     },
     {
       "phase": "hardMoment",
-      "startSec": 164.848
+      "startSec": 158.32
     },
     {
       "phase": "reset",
-      "startSec": 223.672
+      "startSec": 216.376
     },
     {
       "phase": "prayer",
-      "startSec": 239.004
+      "startSec": 230.876
     },
     {
       "phase": "done",
-      "startSec": 263.272
+      "startSec": 260.38
     }
   ]
 }

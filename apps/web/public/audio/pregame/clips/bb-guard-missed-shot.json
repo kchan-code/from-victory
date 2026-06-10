@@ -1,6 +1,6 @@
 {
   "slug": "bb-guard-missed-shot",
-  "durationSec": 270.888,
+  "durationSec": 265.32,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.8,
+      "startSec": 5.552,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 13.728,
+      "startSec": 11.832,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 22.728,
+      "startSec": 19.296,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 28.72,
+      "startSec": 26.032,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 55.696
+      "startSec": 49.84
     },
     {
       "phase": "firstShift",
-      "startSec": 99.554
+      "startSec": 91.682
     },
     {
       "phase": "hardMoment",
-      "startSec": 168.76
+      "startSec": 158.488
     },
     {
       "phase": "reset",
-      "startSec": 224.68
+      "startSec": 218.152
     },
     {
       "phase": "prayer",
-      "startSec": 241.644
+      "startSec": 231.452
     },
     {
       "phase": "done",
-      "startSec": 265.048
+      "startSec": 259.66
     }
   ]
 }

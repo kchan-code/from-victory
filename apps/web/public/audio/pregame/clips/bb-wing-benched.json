@@ -1,6 +1,6 @@
 {
   "slug": "bb-wing-benched",
-  "durationSec": 275.832,
+  "durationSec": 271.992,
   "phases": [
     {
       "phase": "settle",
@@ -8,17 +8,17 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.368,
+      "startSec": 5.912,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 12.408,
+      "startSec": 11.88,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 21.048,
+      "startSec": 20.136,
       "round": 1
     },
     {
@@ -28,27 +28,27 @@
     },
     {
       "phase": "rink",
-      "startSec": 53.656
+      "startSec": 53.32
     },
     {
       "phase": "firstShift",
-      "startSec": 94.826
+      "startSec": 91.082
     },
     {
       "phase": "hardMoment",
-      "startSec": 163.912
+      "startSec": 159.28
     },
     {
       "phase": "reset",
-      "startSec": 229.696
+      "startSec": 224.56
     },
     {
       "phase": "prayer",
-      "startSec": 246.108
+      "startSec": 237.308
     },
     {
       "phase": "done",
-      "startSec": 270.208
+      "startSec": 265.684
     }
   ]
 }

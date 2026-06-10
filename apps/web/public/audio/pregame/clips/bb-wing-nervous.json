@@ -1,6 +1,6 @@
 {
   "slug": "bb-wing-nervous",
-  "durationSec": 277.512,
+  "durationSec": 259.368,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 7.544,
+      "startSec": 5.648,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 13.632,
+      "startSec": 11.52,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 22.464,
+      "startSec": 20.088,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 28.984,
+      "startSec": 25.84,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 56.152
+      "startSec": 53.008
     },
     {
       "phase": "firstShift",
-      "startSec": 99.074
+      "startSec": 92.378
     },
     {
       "phase": "hardMoment",
-      "startSec": 170.536
+      "startSec": 156.952
     },
     {
       "phase": "reset",
-      "startSec": 230.32
+      "startSec": 213.304
     },
     {
       "phase": "prayer",
-      "startSec": 246.588
+      "startSec": 226.412
     },
     {
       "phase": "done",
-      "startSec": 270.688
+      "startSec": 252.7
     }
   ]
 }

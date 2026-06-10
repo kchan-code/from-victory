@@ -1,6 +1,6 @@
 {
   "slug": "bb-big-missed-fts",
-  "durationSec": 274.056,
+  "durationSec": 267.504,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 5.84,
+      "startSec": 5.312,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 11.688,
+      "startSec": 11.328,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 20.376,
+      "startSec": 19.248,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 26.464,
+      "startSec": 26.032,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 52.456
+      "startSec": 51.016
     },
     {
       "phase": "firstShift",
-      "startSec": 95.714
+      "startSec": 92.426
     },
     {
       "phase": "hardMoment",
-      "startSec": 165.448
+      "startSec": 160.288
     },
     {
       "phase": "reset",
-      "startSec": 226.96
+      "startSec": 221.344
     },
     {
       "phase": "prayer",
-      "startSec": 243.732
+      "startSec": 233.852
     },
     {
       "phase": "done",
-      "startSec": 267.184
+      "startSec": 261.244
     }
   ]
 }

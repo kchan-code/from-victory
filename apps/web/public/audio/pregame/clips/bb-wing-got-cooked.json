@@ -1,6 +1,6 @@
 {
   "slug": "bb-wing-got-cooked",
-  "durationSec": 275.016,
+  "durationSec": 262.8,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.056,
+      "startSec": 6.272,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 11.736,
+      "startSec": 11.328,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 19.896,
+      "startSec": 18.936,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 25.408,
+      "startSec": 24.856,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 51.904
+      "startSec": 51.64
     },
     {
       "phase": "firstShift",
-      "startSec": 94.37
+      "startSec": 91.442
     },
     {
       "phase": "hardMoment",
-      "startSec": 166.072
+      "startSec": 157.432
     },
     {
       "phase": "reset",
-      "startSec": 228.208
+      "startSec": 218.824
     },
     {
       "phase": "prayer",
-      "startSec": 245.676
+      "startSec": 230.66
     },
     {
       "phase": "done",
-      "startSec": 269.08
+      "startSec": 257.716
     }
   ]
 }

@@ -1,10 +1,10 @@
 {
   "version": "p6",
-  "manifestVersion": "a267c01b",
+  "manifestVersion": "7a58d7ec",
   "clips": {
     "shared-opening": {
-      "url": "/audio/pregame/clips/shared-opening.db113b94.mp3",
-      "durationSec": 53.56,
+      "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
+      "durationSec": 48.568,
       "phases": [
         {
           "phase": "settle",
@@ -12,29 +12,29 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 5.528,
+          "offsetSec": 5.36,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 11.16,
+          "offsetSec": 11.736,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 20.088,
+          "offsetSec": 19.2,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 26.44,
+          "offsetSec": 24.544,
           "round": 1
         }
       ]
     },
     "viz-forward": {
-      "url": "/audio/pregame/clips/viz-forward.7efe496d.mp3",
-      "durationSec": 110.37,
+      "url": "/audio/pregame/clips/viz-forward.9e8d7eb1.mp3",
+      "durationSec": 109.362,
       "phases": [
         {
           "phase": "rink",
@@ -42,13 +42,13 @@
         },
         {
           "phase": "firstShift",
-          "offsetSec": 39.586
+          "offsetSec": 39.682
         }
       ]
     },
     "viz-defense": {
-      "url": "/audio/pregame/clips/viz-defense.12f6308e.mp3",
-      "durationSec": 104.524,
+      "url": "/audio/pregame/clips/viz-defense.82bd9782.mp3",
+      "durationSec": 99.82,
       "phases": [
         {
           "phase": "rink",
@@ -56,13 +56,13 @@
         },
         {
           "phase": "firstShift",
-          "offsetSec": 37.114
+          "offsetSec": 36.73
         }
       ]
     },
     "viz-goalie": {
-      "url": "/audio/pregame/clips/viz-goalie.75a9245b.mp3",
-      "durationSec": 98.578,
+      "url": "/audio/pregame/clips/viz-goalie.7bd03ab6.mp3",
+      "durationSec": 94.066,
       "phases": [
         {
           "phase": "rink",
@@ -70,13 +70,13 @@
         },
         {
           "phase": "firstShift",
-          "offsetSec": 40.218
+          "offsetSec": 36.354
         }
       ]
     },
     "hm-forward-nervous": {
-      "url": "/audio/pregame/clips/hm-forward-nervous.3a6d223b.mp3",
-      "durationSec": 49.888,
+      "url": "/audio/pregame/clips/hm-forward-nervous.3b581933.mp3",
+      "durationSec": 48.832,
       "phases": [
         {
           "phase": "hardMoment",
@@ -85,8 +85,8 @@
       ]
     },
     "hm-forward-missed-chance": {
-      "url": "/audio/pregame/clips/hm-forward-missed-chance.2d55b0c8.mp3",
-      "durationSec": 40.504,
+      "url": "/audio/pregame/clips/hm-forward-missed-chance.e83f61ac.mp3",
+      "durationSec": 40.288,
       "phases": [
         {
           "phase": "hardMoment",
@@ -95,8 +95,8 @@
       ]
     },
     "hm-forward-turnover": {
-      "url": "/audio/pregame/clips/hm-forward-turnover.3f2caa74.mp3",
-      "durationSec": 45.88,
+      "url": "/audio/pregame/clips/hm-forward-turnover.110f4696.mp3",
+      "durationSec": 45.712,
       "phases": [
         {
           "phase": "hardMoment",
@@ -105,8 +105,8 @@
       ]
     },
     "hm-forward-beaten-wide": {
-      "url": "/audio/pregame/clips/hm-forward-beaten-wide.79f3b14a.mp3",
-      "durationSec": 47.008,
+      "url": "/audio/pregame/clips/hm-forward-beaten-wide.6b2b0a3d.mp3",
+      "durationSec": 47.344,
       "phases": [
         {
           "phase": "hardMoment",
@@ -115,8 +115,8 @@
       ]
     },
     "hm-forward-bad-penalty": {
-      "url": "/audio/pregame/clips/hm-forward-bad-penalty.d24a649c.mp3",
-      "durationSec": 51.624,
+      "url": "/audio/pregame/clips/hm-forward-bad-penalty.05c0cbea.mp3",
+      "durationSec": 50.76,
       "phases": [
         {
           "phase": "hardMoment",
@@ -125,8 +125,8 @@
       ]
     },
     "hm-forward-coach-yells": {
-      "url": "/audio/pregame/clips/hm-forward-coach-yells.260fdb33.mp3",
-      "durationSec": 46.384,
+      "url": "/audio/pregame/clips/hm-forward-coach-yells.8309016a.mp3",
+      "durationSec": 49.6,
       "phases": [
         {
           "phase": "hardMoment",
@@ -135,8 +135,8 @@
       ]
     },
     "hm-forward-benched": {
-      "url": "/audio/pregame/clips/hm-forward-benched.0dc5c26d.mp3",
-      "durationSec": 52.192,
+      "url": "/audio/pregame/clips/hm-forward-benched.901989e8.mp3",
+      "durationSec": 52.528,
       "phases": [
         {
           "phase": "hardMoment",
@@ -145,8 +145,8 @@
       ]
     },
     "hm-forward-get-hit": {
-      "url": "/audio/pregame/clips/hm-forward-get-hit.cbe2d550.mp3",
-      "durationSec": 53.28,
+      "url": "/audio/pregame/clips/hm-forward-get-hit.c52771e1.mp3",
+      "durationSec": 51.696,
       "phases": [
         {
           "phase": "hardMoment",
@@ -155,8 +155,8 @@
       ]
     },
     "hm-forward-start-slow": {
-      "url": "/audio/pregame/clips/hm-forward-start-slow.4b8f38d6.mp3",
-      "durationSec": 56.568,
+      "url": "/audio/pregame/clips/hm-forward-start-slow.d835082a.mp3",
+      "durationSec": 52.224,
       "phases": [
         {
           "phase": "hardMoment",
@@ -165,8 +165,8 @@
       ]
     },
     "hm-forward-first-goal-against": {
-      "url": "/audio/pregame/clips/hm-forward-first-goal-against.25fa8e16.mp3",
-      "durationSec": 39.232,
+      "url": "/audio/pregame/clips/hm-forward-first-goal-against.b8a9b3d4.mp3",
+      "durationSec": 39.952,
       "phases": [
         {
           "phase": "hardMoment",
@@ -175,8 +175,8 @@
       ]
     },
     "hm-defense-beaten-wide": {
-      "url": "/audio/pregame/clips/hm-defense-beaten-wide.54415a65.mp3",
-      "durationSec": 54.456,
+      "url": "/audio/pregame/clips/hm-defense-beaten-wide.0a66ced7.mp3",
+      "durationSec": 50.784,
       "phases": [
         {
           "phase": "hardMoment",
@@ -185,8 +185,8 @@
       ]
     },
     "hm-defense-turnover": {
-      "url": "/audio/pregame/clips/hm-defense-turnover.c9910b8e.mp3",
-      "durationSec": 53.064,
+      "url": "/audio/pregame/clips/hm-defense-turnover.18584d8f.mp3",
+      "durationSec": 53.304,
       "phases": [
         {
           "phase": "hardMoment",
@@ -195,8 +195,8 @@
       ]
     },
     "hm-defense-missed-chance": {
-      "url": "/audio/pregame/clips/hm-defense-missed-chance.0324621c.mp3",
-      "durationSec": 40.72,
+      "url": "/audio/pregame/clips/hm-defense-missed-chance.e8d076d6.mp3",
+      "durationSec": 39.928,
       "phases": [
         {
           "phase": "hardMoment",
@@ -205,8 +205,8 @@
       ]
     },
     "hm-defense-bad-penalty": {
-      "url": "/audio/pregame/clips/hm-defense-bad-penalty.fbca070d.mp3",
-      "durationSec": 52.8,
+      "url": "/audio/pregame/clips/hm-defense-bad-penalty.3b36434b.mp3",
+      "durationSec": 50.664,
       "phases": [
         {
           "phase": "hardMoment",
@@ -215,8 +215,8 @@
       ]
     },
     "hm-defense-coach-yells": {
-      "url": "/audio/pregame/clips/hm-defense-coach-yells.5530e7fb.mp3",
-      "durationSec": 45.472,
+      "url": "/audio/pregame/clips/hm-defense-coach-yells.bf4bc6aa.mp3",
+      "durationSec": 44.632,
       "phases": [
         {
           "phase": "hardMoment",
@@ -225,8 +225,8 @@
       ]
     },
     "hm-defense-benched": {
-      "url": "/audio/pregame/clips/hm-defense-benched.dfa6be8b.mp3",
-      "durationSec": 47.896,
+      "url": "/audio/pregame/clips/hm-defense-benched.e1a0fccd.mp3",
+      "durationSec": 48.016,
       "phases": [
         {
           "phase": "hardMoment",
@@ -235,8 +235,8 @@
       ]
     },
     "hm-defense-nervous": {
-      "url": "/audio/pregame/clips/hm-defense-nervous.0a509c44.mp3",
-      "durationSec": 48.352,
+      "url": "/audio/pregame/clips/hm-defense-nervous.b5569046.mp3",
+      "durationSec": 49.84,
       "phases": [
         {
           "phase": "hardMoment",
@@ -245,8 +245,8 @@
       ]
     },
     "hm-defense-get-hit": {
-      "url": "/audio/pregame/clips/hm-defense-get-hit.5b584581.mp3",
-      "durationSec": 54.384,
+      "url": "/audio/pregame/clips/hm-defense-get-hit.1d366837.mp3",
+      "durationSec": 52.176,
       "phases": [
         {
           "phase": "hardMoment",
@@ -255,8 +255,8 @@
       ]
     },
     "hm-defense-start-slow": {
-      "url": "/audio/pregame/clips/hm-defense-start-slow.a7cc928d.mp3",
-      "durationSec": 53.184,
+      "url": "/audio/pregame/clips/hm-defense-start-slow.24efeed1.mp3",
+      "durationSec": 51.72,
       "phases": [
         {
           "phase": "hardMoment",
@@ -265,8 +265,8 @@
       ]
     },
     "hm-defense-first-goal-against": {
-      "url": "/audio/pregame/clips/hm-defense-first-goal-against.02e753b1.mp3",
-      "durationSec": 50.64,
+      "url": "/audio/pregame/clips/hm-defense-first-goal-against.c22d7eb5.mp3",
+      "durationSec": 47.424,
       "phases": [
         {
           "phase": "hardMoment",
@@ -275,8 +275,8 @@
       ]
     },
     "hm-goalie-coach-yells": {
-      "url": "/audio/pregame/clips/hm-goalie-coach-yells.3413da8c.mp3",
-      "durationSec": 47.56,
+      "url": "/audio/pregame/clips/hm-goalie-coach-yells.a1c9da6b.mp3",
+      "durationSec": 47.752,
       "phases": [
         {
           "phase": "hardMoment",
@@ -285,8 +285,8 @@
       ]
     },
     "hm-goalie-turnover": {
-      "url": "/audio/pregame/clips/hm-goalie-turnover.8eb2564c.mp3",
-      "durationSec": 53.28,
+      "url": "/audio/pregame/clips/hm-goalie-turnover.195a03d0.mp3",
+      "durationSec": 54.24,
       "phases": [
         {
           "phase": "hardMoment",
@@ -295,8 +295,8 @@
       ]
     },
     "hm-goalie-missed-chance": {
-      "url": "/audio/pregame/clips/hm-goalie-missed-chance.75eb7623.mp3",
-      "durationSec": 41.176,
+      "url": "/audio/pregame/clips/hm-goalie-missed-chance.f315615e.mp3",
+      "durationSec": 43.768,
       "phases": [
         {
           "phase": "hardMoment",
@@ -305,8 +305,8 @@
       ]
     },
     "hm-goalie-beaten-wide": {
-      "url": "/audio/pregame/clips/hm-goalie-beaten-wide.312d3d80.mp3",
-      "durationSec": 56.448,
+      "url": "/audio/pregame/clips/hm-goalie-beaten-wide.9bdd1ceb.mp3",
+      "durationSec": 52.584,
       "phases": [
         {
           "phase": "hardMoment",
@@ -315,8 +315,8 @@
       ]
     },
     "hm-goalie-bad-penalty": {
-      "url": "/audio/pregame/clips/hm-goalie-bad-penalty.36600e6d.mp3",
-      "durationSec": 52.08,
+      "url": "/audio/pregame/clips/hm-goalie-bad-penalty.889c3237.mp3",
+      "durationSec": 51.792,
       "phases": [
         {
           "phase": "hardMoment",
@@ -325,8 +325,8 @@
       ]
     },
     "hm-goalie-pulled": {
-      "url": "/audio/pregame/clips/hm-goalie-pulled.c703dd34.mp3",
-      "durationSec": 44.896,
+      "url": "/audio/pregame/clips/hm-goalie-pulled.346cd355.mp3",
+      "durationSec": 45.136,
       "phases": [
         {
           "phase": "hardMoment",
@@ -335,8 +335,8 @@
       ]
     },
     "hm-goalie-nervous": {
-      "url": "/audio/pregame/clips/hm-goalie-nervous.b1e00a9a.mp3",
-      "durationSec": 47.2,
+      "url": "/audio/pregame/clips/hm-goalie-nervous.98d0e468.mp3",
+      "durationSec": 49.48,
       "phases": [
         {
           "phase": "hardMoment",
@@ -345,8 +345,8 @@
       ]
     },
     "hm-goalie-get-hit": {
-      "url": "/audio/pregame/clips/hm-goalie-get-hit.04375518.mp3",
-      "durationSec": 52.896,
+      "url": "/audio/pregame/clips/hm-goalie-get-hit.f5394a4c.mp3",
+      "durationSec": 51.744,
       "phases": [
         {
           "phase": "hardMoment",
@@ -355,8 +355,8 @@
       ]
     },
     "hm-goalie-start-slow": {
-      "url": "/audio/pregame/clips/hm-goalie-start-slow.392f6c7b.mp3",
-      "durationSec": 57.648,
+      "url": "/audio/pregame/clips/hm-goalie-start-slow.7a7d2629.mp3",
+      "durationSec": 54.624,
       "phases": [
         {
           "phase": "hardMoment",
@@ -365,8 +365,8 @@
       ]
     },
     "hm-goalie-first-goal-against": {
-      "url": "/audio/pregame/clips/hm-goalie-first-goal-against.89230de9.mp3",
-      "durationSec": 49.848,
+      "url": "/audio/pregame/clips/hm-goalie-first-goal-against.1080685d.mp3",
+      "durationSec": 48.408,
       "phases": [
         {
           "phase": "hardMoment",
@@ -375,8 +375,8 @@
       ]
     },
     "shared-reset-plan": {
-      "url": "/audio/pregame/clips/shared-reset-plan.2a02681f.mp3",
-      "durationSec": 15.148,
+      "url": "/audio/pregame/clips/shared-reset-plan.e78f6fd8.mp3",
+      "durationSec": 12.892,
       "phases": [
         {
           "phase": "reset",
@@ -385,8 +385,8 @@
       ]
     },
     "shared-prayer": {
-      "url": "/audio/pregame/clips/shared-prayer.5a40ba44.mp3",
-      "durationSec": 30.416,
+      "url": "/audio/pregame/clips/shared-prayer.33dbbb36.mp3",
+      "durationSec": 27.92,
       "phases": [
         {
           "phase": "prayer",
@@ -395,8 +395,8 @@
       ]
     },
     "shared-sendoff": {
-      "url": "/audio/pregame/clips/shared-sendoff.97d31efc.mp3",
-      "durationSec": 4.848,
+      "url": "/audio/pregame/clips/shared-sendoff.101654c1.mp3",
+      "durationSec": 4.464,
       "phases": [
         {
           "phase": "done",
@@ -405,303 +405,303 @@
       ]
     },
     "anc-long-exhale": {
-      "url": "/audio/pregame/clips/anc-long-exhale.721d44c3.mp3",
-      "durationSec": 2.988,
+      "url": "/audio/pregame/clips/anc-long-exhale.f108fc7b.mp3",
+      "durationSec": 2.784,
       "phases": []
     },
     "anc-tap-stick-twice": {
-      "url": "/audio/pregame/clips/anc-tap-stick-twice.ba3a85d9.mp3",
-      "durationSec": 3.228,
+      "url": "/audio/pregame/clips/anc-tap-stick-twice.5fcce089.mp3",
+      "durationSec": 2.16,
       "phases": []
     },
     "anc-touch-glove": {
-      "url": "/audio/pregame/clips/anc-touch-glove.49e1d1c5.mp3",
-      "durationSec": 2.94,
+      "url": "/audio/pregame/clips/anc-touch-glove.7eaeeb21.mp3",
+      "durationSec": 2.016,
       "phases": []
     },
     "anc-press-thumb-to-palm": {
-      "url": "/audio/pregame/clips/anc-press-thumb-to-palm.15e43d33.mp3",
-      "durationSec": 2.94,
+      "url": "/audio/pregame/clips/anc-press-thumb-to-palm.cbabd2b1.mp3",
+      "durationSec": 3.24,
       "phases": []
     },
     "anc-look-at-tape": {
-      "url": "/audio/pregame/clips/anc-look-at-tape.332396dc.mp3",
-      "durationSec": 2.196,
+      "url": "/audio/pregame/clips/anc-look-at-tape.213335a5.mp3",
+      "durationSec": 2.472,
       "phases": []
     },
     "st-01": {
-      "url": "/audio/pregame/clips/st-01.865f63a8.mp3",
-      "durationSec": 3.996,
+      "url": "/audio/pregame/clips/st-01.5a9b2adf.mp3",
+      "durationSec": 2.424,
       "phases": []
     },
     "st-02": {
-      "url": "/audio/pregame/clips/st-02.0b5ea43c.mp3",
-      "durationSec": 3.228,
+      "url": "/audio/pregame/clips/st-02.8baf5295.mp3",
+      "durationSec": 3.336,
       "phases": []
     },
     "st-03": {
-      "url": "/audio/pregame/clips/st-03.178d7ed7.mp3",
-      "durationSec": 3.564,
+      "url": "/audio/pregame/clips/st-03.b95817cb.mp3",
+      "durationSec": 3.024,
       "phases": []
     },
     "st-04": {
-      "url": "/audio/pregame/clips/st-04.9ec0d771.mp3",
-      "durationSec": 3.228,
+      "url": "/audio/pregame/clips/st-04.f29e4e7f.mp3",
+      "durationSec": 2.376,
       "phases": []
     },
     "st-05": {
-      "url": "/audio/pregame/clips/st-05.7db19d47.mp3",
-      "durationSec": 4.404,
+      "url": "/audio/pregame/clips/st-05.455ec170.mp3",
+      "durationSec": 3.336,
       "phases": []
     },
     "st-06": {
-      "url": "/audio/pregame/clips/st-06.73d9e4e3.mp3",
-      "durationSec": 6.396,
+      "url": "/audio/pregame/clips/st-06.79c82160.mp3",
+      "durationSec": 4.2,
       "phases": []
     },
     "st-07": {
-      "url": "/audio/pregame/clips/st-07.263cb615.mp3",
-      "durationSec": 5.772,
+      "url": "/audio/pregame/clips/st-07.87ea550c.mp3",
+      "durationSec": 4.248,
       "phases": []
     },
     "cw-steady-reset": {
-      "url": "/audio/pregame/clips/cw-steady-reset.25700d53.mp3",
-      "durationSec": 1.452,
+      "url": "/audio/pregame/clips/cw-steady-reset.7e67ae4e.mp3",
+      "durationSec": 1.656,
       "phases": []
     },
     "cw-steady-sendoff": {
-      "url": "/audio/pregame/clips/cw-steady-sendoff.0247309d.mp3",
-      "durationSec": 2.916,
+      "url": "/audio/pregame/clips/cw-steady-sendoff.47db765f.mp3",
+      "durationSec": 2.112,
       "phases": []
     },
     "cw-courage-reset": {
-      "url": "/audio/pregame/clips/cw-courage-reset.d2a38c44.mp3",
-      "durationSec": 1.956,
+      "url": "/audio/pregame/clips/cw-courage-reset.3602ec3a.mp3",
+      "durationSec": 1.512,
       "phases": []
     },
     "cw-courage-sendoff": {
-      "url": "/audio/pregame/clips/cw-courage-sendoff.fbbc36db.mp3",
-      "durationSec": 2.364,
+      "url": "/audio/pregame/clips/cw-courage-sendoff.4ed7d02f.mp3",
+      "durationSec": 2.256,
       "phases": []
     },
     "cw-simple-reset": {
-      "url": "/audio/pregame/clips/cw-simple-reset.c4e8111e.mp3",
-      "durationSec": 2.196,
+      "url": "/audio/pregame/clips/cw-simple-reset.d9dbf474.mp3",
+      "durationSec": 2.568,
       "phases": []
     },
     "cw-simple-sendoff": {
-      "url": "/audio/pregame/clips/cw-simple-sendoff.e0be3881.mp3",
-      "durationSec": 2.004,
-      "phases": []
-    },
-    "cw-attack-reset": {
-      "url": "/audio/pregame/clips/cw-attack-reset.272fb4cc.mp3",
-      "durationSec": 2.412,
-      "phases": []
-    },
-    "cw-attack-sendoff": {
-      "url": "/audio/pregame/clips/cw-attack-sendoff.ee3fc4bd.mp3",
-      "durationSec": 1.956,
-      "phases": []
-    },
-    "cw-next-reset": {
-      "url": "/audio/pregame/clips/cw-next-reset.4c5f044d.mp3",
-      "durationSec": 2.676,
-      "phases": []
-    },
-    "cw-next-sendoff": {
-      "url": "/audio/pregame/clips/cw-next-sendoff.b5b99e75.mp3",
-      "durationSec": 1.572,
-      "phases": []
-    },
-    "cw-serve-reset": {
-      "url": "/audio/pregame/clips/cw-serve-reset.ad54e951.mp3",
-      "durationSec": 2.964,
-      "phases": []
-    },
-    "cw-serve-sendoff": {
-      "url": "/audio/pregame/clips/cw-serve-sendoff.622962c5.mp3",
-      "durationSec": 2.076,
-      "phases": []
-    },
-    "cw-compete-reset": {
-      "url": "/audio/pregame/clips/cw-compete-reset.4e063a84.mp3",
-      "durationSec": 1.692,
-      "phases": []
-    },
-    "cw-compete-sendoff": {
-      "url": "/audio/pregame/clips/cw-compete-sendoff.4bdcb1e9.mp3",
-      "durationSec": 2.244,
-      "phases": []
-    },
-    "cw-faithful-reset": {
-      "url": "/audio/pregame/clips/cw-faithful-reset.05bff22f.mp3",
-      "durationSec": 2.46,
-      "phases": []
-    },
-    "cw-faithful-sendoff": {
-      "url": "/audio/pregame/clips/cw-faithful-sendoff.ded11c62.mp3",
-      "durationSec": 2.844,
-      "phases": []
-    },
-    "cw-free-reset": {
-      "url": "/audio/pregame/clips/cw-free-reset.4c216caf.mp3",
-      "durationSec": 1.836,
-      "phases": []
-    },
-    "cw-free-sendoff": {
-      "url": "/audio/pregame/clips/cw-free-sendoff.fb86d24e.mp3",
-      "durationSec": 2.076,
-      "phases": []
-    },
-    "cw-relentless-reset": {
-      "url": "/audio/pregame/clips/cw-relentless-reset.72e9d34f.mp3",
-      "durationSec": 2.004,
-      "phases": []
-    },
-    "cw-relentless-sendoff": {
-      "url": "/audio/pregame/clips/cw-relentless-sendoff.a4abe2d9.mp3",
-      "durationSec": 2.844,
-      "phases": []
-    },
-    "pp-opener-dialed-in": {
-      "url": "/audio/pregame/clips/pp-opener-dialed-in.fda45d0e.mp3",
-      "durationSec": 46.336,
-      "phases": []
-    },
-    "pp-opener-get-to": {
-      "url": "/audio/pregame/clips/pp-opener-get-to.4f6e9303.mp3",
-      "durationSec": 69.904,
-      "phases": []
-    },
-    "pp-name-standard": {
-      "url": "/audio/pregame/clips/pp-name-standard.372d1bd4.mp3",
-      "durationSec": 20.272,
-      "phases": []
-    },
-    "pp-goal-fusion": {
-      "url": "/audio/pregame/clips/pp-goal-fusion.988f2bca.mp3",
-      "durationSec": 36.032,
-      "phases": []
-    },
-    "pp-choose-focus-lead": {
-      "url": "/audio/pregame/clips/pp-choose-focus-lead.d2994bda.mp3",
-      "durationSec": 4.652,
-      "phases": []
-    },
-    "pp-choose-focus-tail": {
-      "url": "/audio/pregame/clips/pp-choose-focus-tail.7eceafab.mp3",
-      "durationSec": 10.988,
-      "phases": []
-    },
-    "pp-focus-relentless": {
-      "url": "/audio/pregame/clips/pp-focus-relentless.b85dfee5.mp3",
-      "durationSec": 1.416,
-      "phases": []
-    },
-    "pp-focus-hungry": {
-      "url": "/audio/pregame/clips/pp-focus-hungry.4a841dc4.mp3",
-      "durationSec": 1.296,
-      "phases": []
-    },
-    "pp-focus-head-up-every-breakout": {
-      "url": "/audio/pregame/clips/pp-focus-head-up-every-breakout.a530c89c.mp3",
-      "durationSec": 2.928,
-      "phases": []
-    },
-    "pp-focus-feet-always-moving": {
-      "url": "/audio/pregame/clips/pp-focus-feet-always-moving.5fe504ec.mp3",
-      "durationSec": 2.928,
-      "phases": []
-    },
-    "pp-focus-hard-first-pass": {
-      "url": "/audio/pregame/clips/pp-focus-hard-first-pass.23831eab.mp3",
-      "durationSec": 3.528,
-      "phases": []
-    },
-    "pp-focus-win-every-race-to-the-puck": {
-      "url": "/audio/pregame/clips/pp-focus-win-every-race-to-the-puck.2d3bfffe.mp3",
-      "durationSec": 3.576,
-      "phases": []
-    },
-    "pp-focus-full-reps-no-glide": {
-      "url": "/audio/pregame/clips/pp-focus-full-reps-no-glide.1aa52d8e.mp3",
-      "durationSec": 3,
-      "phases": []
-    },
-    "pp-be-vocal": {
-      "url": "/audio/pregame/clips/pp-be-vocal.c45f6856.mp3",
-      "durationSec": 58.96,
-      "phases": []
-    },
-    "pp-see-it-go": {
-      "url": "/audio/pregame/clips/pp-see-it-go.48ab5656.mp3",
-      "durationSec": 23.164,
-      "phases": []
-    },
-    "pp-bb-opener-get-to": {
-      "url": "/audio/pregame/clips/pp-bb-opener-get-to.644d1857.mp3",
-      "durationSec": 65.632,
-      "phases": []
-    },
-    "pp-bb-name-standard": {
-      "url": "/audio/pregame/clips/pp-bb-name-standard.1d9e1a79.mp3",
-      "durationSec": 19.624,
-      "phases": []
-    },
-    "pp-bb-goal-fusion": {
-      "url": "/audio/pregame/clips/pp-bb-goal-fusion.e6776dc5.mp3",
-      "durationSec": 38.84,
-      "phases": []
-    },
-    "pp-bb-be-vocal": {
-      "url": "/audio/pregame/clips/pp-bb-be-vocal.868f0b4a.mp3",
-      "durationSec": 64.96,
-      "phases": []
-    },
-    "pp-bb-see-it-go": {
-      "url": "/audio/pregame/clips/pp-bb-see-it-go.1bb52d54.mp3",
-      "durationSec": 24.196,
-      "phases": []
-    },
-    "pp-bb-focus-relentless": {
-      "url": "/audio/pregame/clips/pp-bb-focus-relentless.0d70b5d9.mp3",
-      "durationSec": 1.992,
-      "phases": []
-    },
-    "pp-bb-focus-hungry": {
-      "url": "/audio/pregame/clips/pp-bb-focus-hungry.9c130ad7.mp3",
-      "durationSec": 2.832,
-      "phases": []
-    },
-    "pp-bb-focus-talk-every-possession": {
-      "url": "/audio/pregame/clips/pp-bb-focus-talk-every-possession.d4060371.mp3",
-      "durationSec": 2.928,
-      "phases": []
-    },
-    "pp-bb-focus-guard-your-yard": {
-      "url": "/audio/pregame/clips/pp-bb-focus-guard-your-yard.52ad64bf.mp3",
-      "durationSec": 2.304,
-      "phases": []
-    },
-    "pp-bb-focus-hit-the-glass": {
-      "url": "/audio/pregame/clips/pp-bb-focus-hit-the-glass.de4461e1.mp3",
-      "durationSec": 1.68,
-      "phases": []
-    },
-    "pp-bb-focus-sprint-every-transition": {
-      "url": "/audio/pregame/clips/pp-bb-focus-sprint-every-transition.61612430.mp3",
+      "url": "/audio/pregame/clips/cw-simple-sendoff.d1bad0dc.mp3",
       "durationSec": 3.048,
       "phases": []
     },
+    "cw-attack-reset": {
+      "url": "/audio/pregame/clips/cw-attack-reset.35aaac80.mp3",
+      "durationSec": 1.512,
+      "phases": []
+    },
+    "cw-attack-sendoff": {
+      "url": "/audio/pregame/clips/cw-attack-sendoff.635ad908.mp3",
+      "durationSec": 1.608,
+      "phases": []
+    },
+    "cw-next-reset": {
+      "url": "/audio/pregame/clips/cw-next-reset.6599117c.mp3",
+      "durationSec": 1.152,
+      "phases": []
+    },
+    "cw-next-sendoff": {
+      "url": "/audio/pregame/clips/cw-next-sendoff.6ac4a36d.mp3",
+      "durationSec": 1.608,
+      "phases": []
+    },
+    "cw-serve-reset": {
+      "url": "/audio/pregame/clips/cw-serve-reset.e6944890.mp3",
+      "durationSec": 1.2,
+      "phases": []
+    },
+    "cw-serve-sendoff": {
+      "url": "/audio/pregame/clips/cw-serve-sendoff.26cfb0d8.mp3",
+      "durationSec": 1.056,
+      "phases": []
+    },
+    "cw-compete-reset": {
+      "url": "/audio/pregame/clips/cw-compete-reset.01f7d435.mp3",
+      "durationSec": 1.2,
+      "phases": []
+    },
+    "cw-compete-sendoff": {
+      "url": "/audio/pregame/clips/cw-compete-sendoff.e6bbf398.mp3",
+      "durationSec": 1.152,
+      "phases": []
+    },
+    "cw-faithful-reset": {
+      "url": "/audio/pregame/clips/cw-faithful-reset.5ce503cb.mp3",
+      "durationSec": 1.752,
+      "phases": []
+    },
+    "cw-faithful-sendoff": {
+      "url": "/audio/pregame/clips/cw-faithful-sendoff.2889702b.mp3",
+      "durationSec": 2.016,
+      "phases": []
+    },
+    "cw-free-reset": {
+      "url": "/audio/pregame/clips/cw-free-reset.2f181ce7.mp3",
+      "durationSec": 1.416,
+      "phases": []
+    },
+    "cw-free-sendoff": {
+      "url": "/audio/pregame/clips/cw-free-sendoff.bff095ca.mp3",
+      "durationSec": 1.056,
+      "phases": []
+    },
+    "cw-relentless-reset": {
+      "url": "/audio/pregame/clips/cw-relentless-reset.aecbfff3.mp3",
+      "durationSec": 2.256,
+      "phases": []
+    },
+    "cw-relentless-sendoff": {
+      "url": "/audio/pregame/clips/cw-relentless-sendoff.5d695aa6.mp3",
+      "durationSec": 1.392,
+      "phases": []
+    },
+    "pp-opener-dialed-in": {
+      "url": "/audio/pregame/clips/pp-opener-dialed-in.cc88ff7d.mp3",
+      "durationSec": 40.744,
+      "phases": []
+    },
+    "pp-opener-get-to": {
+      "url": "/audio/pregame/clips/pp-opener-get-to.8b5a94bb.mp3",
+      "durationSec": 56.152,
+      "phases": []
+    },
+    "pp-name-standard": {
+      "url": "/audio/pregame/clips/pp-name-standard.1786529e.mp3",
+      "durationSec": 19.84,
+      "phases": []
+    },
+    "pp-goal-fusion": {
+      "url": "/audio/pregame/clips/pp-goal-fusion.9d5f8dcb.mp3",
+      "durationSec": 30.2,
+      "phases": []
+    },
+    "pp-choose-focus-lead": {
+      "url": "/audio/pregame/clips/pp-choose-focus-lead.046c7876.mp3",
+      "durationSec": 4.868,
+      "phases": []
+    },
+    "pp-choose-focus-tail": {
+      "url": "/audio/pregame/clips/pp-choose-focus-tail.7c0c8bfd.mp3",
+      "durationSec": 9.332,
+      "phases": []
+    },
+    "pp-focus-relentless": {
+      "url": "/audio/pregame/clips/pp-focus-relentless.efb09c84.mp3",
+      "durationSec": 1.752,
+      "phases": []
+    },
+    "pp-focus-hungry": {
+      "url": "/audio/pregame/clips/pp-focus-hungry.5bf98589.mp3",
+      "durationSec": 1.104,
+      "phases": []
+    },
+    "pp-focus-head-up-every-breakout": {
+      "url": "/audio/pregame/clips/pp-focus-head-up-every-breakout.062be0aa.mp3",
+      "durationSec": 2.52,
+      "phases": []
+    },
+    "pp-focus-feet-always-moving": {
+      "url": "/audio/pregame/clips/pp-focus-feet-always-moving.36719df0.mp3",
+      "durationSec": 2.28,
+      "phases": []
+    },
+    "pp-focus-hard-first-pass": {
+      "url": "/audio/pregame/clips/pp-focus-hard-first-pass.b335ca0c.mp3",
+      "durationSec": 3.192,
+      "phases": []
+    },
+    "pp-focus-win-every-race-to-the-puck": {
+      "url": "/audio/pregame/clips/pp-focus-win-every-race-to-the-puck.2824cfa7.mp3",
+      "durationSec": 2.784,
+      "phases": []
+    },
+    "pp-focus-full-reps-no-glide": {
+      "url": "/audio/pregame/clips/pp-focus-full-reps-no-glide.68e25104.mp3",
+      "durationSec": 3.12,
+      "phases": []
+    },
+    "pp-be-vocal": {
+      "url": "/audio/pregame/clips/pp-be-vocal.7f4387be.mp3",
+      "durationSec": 52.504,
+      "phases": []
+    },
+    "pp-see-it-go": {
+      "url": "/audio/pregame/clips/pp-see-it-go.d6410f4a.mp3",
+      "durationSec": 21.796,
+      "phases": []
+    },
+    "pp-bb-opener-get-to": {
+      "url": "/audio/pregame/clips/pp-bb-opener-get-to.1b8f02e6.mp3",
+      "durationSec": 57.112,
+      "phases": []
+    },
+    "pp-bb-name-standard": {
+      "url": "/audio/pregame/clips/pp-bb-name-standard.beffab58.mp3",
+      "durationSec": 19.216,
+      "phases": []
+    },
+    "pp-bb-goal-fusion": {
+      "url": "/audio/pregame/clips/pp-bb-goal-fusion.ebbfc8a7.mp3",
+      "durationSec": 34.136,
+      "phases": []
+    },
+    "pp-bb-be-vocal": {
+      "url": "/audio/pregame/clips/pp-bb-be-vocal.a9a5c1c4.mp3",
+      "durationSec": 57.112,
+      "phases": []
+    },
+    "pp-bb-see-it-go": {
+      "url": "/audio/pregame/clips/pp-bb-see-it-go.3c5640fd.mp3",
+      "durationSec": 22.18,
+      "phases": []
+    },
+    "pp-bb-focus-relentless": {
+      "url": "/audio/pregame/clips/pp-bb-focus-relentless.d774348a.mp3",
+      "durationSec": 1.56,
+      "phases": []
+    },
+    "pp-bb-focus-hungry": {
+      "url": "/audio/pregame/clips/pp-bb-focus-hungry.936a1d35.mp3",
+      "durationSec": 1.248,
+      "phases": []
+    },
+    "pp-bb-focus-talk-every-possession": {
+      "url": "/audio/pregame/clips/pp-bb-focus-talk-every-possession.c7de1b07.mp3",
+      "durationSec": 2.472,
+      "phases": []
+    },
+    "pp-bb-focus-guard-your-yard": {
+      "url": "/audio/pregame/clips/pp-bb-focus-guard-your-yard.277cd888.mp3",
+      "durationSec": 1.968,
+      "phases": []
+    },
+    "pp-bb-focus-hit-the-glass": {
+      "url": "/audio/pregame/clips/pp-bb-focus-hit-the-glass.833f3a6e.mp3",
+      "durationSec": 1.656,
+      "phases": []
+    },
+    "pp-bb-focus-sprint-every-transition": {
+      "url": "/audio/pregame/clips/pp-bb-focus-sprint-every-transition.badfcf27.mp3",
+      "durationSec": 3.552,
+      "phases": []
+    },
     "pp-bb-focus-box-out-every-shot": {
-      "url": "/audio/pregame/clips/pp-bb-focus-box-out-every-shot.f981d75f.mp3",
-      "durationSec": 2.904,
+      "url": "/audio/pregame/clips/pp-bb-focus-box-out-every-shot.557f9a6b.mp3",
+      "durationSec": 2.52,
       "phases": []
     },
     "bb-guard-turnover": {
-      "url": "/audio/pregame/clips/bb-guard-turnover.a9deddd7.mp3",
-      "durationSec": 268.584,
+      "url": "/audio/pregame/clips/bb-guard-turnover.e72bb4d7.mp3",
+      "durationSec": 260.16,
       "phases": [
         {
           "phase": "settle",
@@ -709,449 +709,17 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 6.536,
+          "offsetSec": 5.312,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 12.624,
+          "offsetSec": 11.472,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 20.352,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 26.92,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 53.488
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 98.21
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 167.872
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 222.352
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 238.692
-        },
-        {
-          "phase": "done",
-          "offsetSec": 262.696
-        }
-      ]
-    },
-    "bb-guard-missed-shot": {
-      "url": "/audio/pregame/clips/bb-guard-missed-shot.a4936371.mp3",
-      "durationSec": 270.888,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 6.8,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 13.728,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 22.728,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 28.72,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 55.696
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 99.554
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 168.76
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 224.68
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 241.644
-        },
-        {
-          "phase": "done",
-          "offsetSec": 265.048
-        }
-      ]
-    },
-    "bb-guard-got-cooked": {
-      "url": "/audio/pregame/clips/bb-guard-got-cooked.e85ad774.mp3",
-      "durationSec": 271.392,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 6.536,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 13.368,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 20.736,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 26.632,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 54.472
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 98.402
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 166.336
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 222.952
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 241.404
-        },
-        {
-          "phase": "done",
-          "offsetSec": 265.072
-        }
-      ]
-    },
-    "bb-guard-foul-trouble": {
-      "url": "/audio/pregame/clips/bb-guard-foul-trouble.f419d416.mp3",
-      "durationSec": 270.024,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 6.272,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 11.904,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 20.736,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 26.032,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 52
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 95.498
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 165.304
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 224.032
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 240.492
-        },
-        {
-          "phase": "done",
-          "offsetSec": 264.448
-        }
-      ]
-    },
-    "bb-guard-coach-yells": {
-      "url": "/audio/pregame/clips/bb-guard-coach-yells.cae6ca21.mp3",
-      "durationSec": 268.128,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 6.704,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 12.744,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 21.672,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 27.4,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 54.376
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 95.618
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 165.928
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 221.848
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 238.788
-        },
-        {
-          "phase": "done",
-          "offsetSec": 262
-        }
-      ]
-    },
-    "bb-guard-benched": {
-      "url": "/audio/pregame/clips/bb-guard-benched.c20b41b4.mp3",
-      "durationSec": 272.856,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 5.792,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 12.096,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 20.184,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 25.648,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 53.608
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 97.25
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 166
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 225.136
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 242.004
-        },
-        {
-          "phase": "done",
-          "offsetSec": 265.72
-        }
-      ]
-    },
-    "bb-guard-nervous": {
-      "url": "/audio/pregame/clips/bb-guard-nervous.9ce46563.mp3",
-      "durationSec": 281.136,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 6.752,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 13.536,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 20.952,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 27.64,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 53.152
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 97.994
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 168.736
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 234.28
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 250.836
-        },
-        {
-          "phase": "done",
-          "offsetSec": 274.552
-        }
-      ]
-    },
-    "bb-guard-missed-fts": {
-      "url": "/audio/pregame/clips/bb-guard-missed-fts.68059ea9.mp3",
-      "durationSec": 278.208,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 6.848,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 13.68,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 20.928,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 28.504,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 55.168
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 95.234
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 167.128
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 229.192
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 245.364
-        },
-        {
-          "phase": "done",
-          "offsetSec": 271.768
-        }
-      ]
-    },
-    "bb-guard-start-slow": {
-      "url": "/audio/pregame/clips/bb-guard-start-slow.3cf3da23.mp3",
-      "durationSec": 269.304,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 5.288,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 11.544,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 19.488,
+          "offsetSec": 19.632,
           "round": 1
         },
         {
@@ -1161,33 +729,627 @@
         },
         {
           "phase": "rink",
-          "offsetSec": 52.096
+          "offsetSec": 51.088
         },
         {
           "phase": "firstShift",
-          "offsetSec": 94.706
+          "offsetSec": 93.17
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 164.848
+          "offsetSec": 161.08
         },
         {
           "phase": "reset",
-          "offsetSec": 223.672
+          "offsetSec": 213.544
         },
         {
           "phase": "prayer",
-          "offsetSec": 239.004
+          "offsetSec": 226.004
         },
         {
           "phase": "done",
-          "offsetSec": 263.272
+          "offsetSec": 254.164
+        }
+      ]
+    },
+    "bb-guard-missed-shot": {
+      "url": "/audio/pregame/clips/bb-guard-missed-shot.64908fe4.mp3",
+      "durationSec": 265.32,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 5.552,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 11.832,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 19.296,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 26.032,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 49.84
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 91.682
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 158.488
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 218.152
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 231.452
+        },
+        {
+          "phase": "done",
+          "offsetSec": 259.66
+        }
+      ]
+    },
+    "bb-guard-got-cooked": {
+      "url": "/audio/pregame/clips/bb-guard-got-cooked.cf5c433e.mp3",
+      "durationSec": 260.928,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 5.504,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 11.472,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 19.728,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 24.832,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 48.808
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 88.01
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 155.584
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 209.968
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 223.052
+        },
+        {
+          "phase": "done",
+          "offsetSec": 252.748
+        }
+      ]
+    },
+    "bb-guard-foul-trouble": {
+      "url": "/audio/pregame/clips/bb-guard-foul-trouble.cf6bdb86.mp3",
+      "durationSec": 264.024,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 5.672,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 11.016,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 18.792,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 24.952,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 51.736
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 92.354
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 159.232
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 218.464
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 230.948
+        },
+        {
+          "phase": "done",
+          "offsetSec": 257.932
+        }
+      ]
+    },
+    "bb-guard-coach-yells": {
+      "url": "/audio/pregame/clips/bb-guard-coach-yells.aabe6534.mp3",
+      "durationSec": 263.4,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 5.648,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 11.976,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 19.128,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 25.504,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 53.032
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 91.034
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 158.632
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 217.552
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 229.82
+        },
+        {
+          "phase": "done",
+          "offsetSec": 257.74
+        }
+      ]
+    },
+    "bb-guard-benched": {
+      "url": "/audio/pregame/clips/bb-guard-benched.21ecfb8d.mp3",
+      "durationSec": 271.728,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 5.552,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 12.336,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 20.448,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 26.56,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 53.656
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 96.602
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 163.264
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 222.856
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 235.988
+        },
+        {
+          "phase": "done",
+          "offsetSec": 264.964
+        }
+      ]
+    },
+    "bb-guard-nervous": {
+      "url": "/audio/pregame/clips/bb-guard-nervous.0aab6d3f.mp3",
+      "durationSec": 267.408,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 5.264,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 11.592,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 19.848,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 25.864,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 52.12
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 91.106
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 158.464
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 222.04
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 234.908
+        },
+        {
+          "phase": "done",
+          "offsetSec": 260.596
+        }
+      ]
+    },
+    "bb-guard-missed-fts": {
+      "url": "/audio/pregame/clips/bb-guard-missed-fts.c0a859dd.mp3",
+      "durationSec": 272.52,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 5.312,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 10.512,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 18.888,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 24.664,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 50.464
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 91.634
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 158.464
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 222.976
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 234.884
+        },
+        {
+          "phase": "done",
+          "offsetSec": 266.26
+        }
+      ]
+    },
+    "bb-guard-start-slow": {
+      "url": "/audio/pregame/clips/bb-guard-start-slow.457cce9b.mp3",
+      "durationSec": 265.728,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 6.008,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 12.264,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 21.048,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 26.104,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 50.488
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 89.906
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 158.32
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 216.376
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 230.876
+        },
+        {
+          "phase": "done",
+          "offsetSec": 260.38
         }
       ]
     },
     "bb-guard-fall-behind-early": {
-      "url": "/audio/pregame/clips/bb-guard-fall-behind-early.6ad76489.mp3",
-      "durationSec": 279.912,
+      "url": "/audio/pregame/clips/bb-guard-fall-behind-early.9b33d54f.mp3",
+      "durationSec": 268.272,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 5.36,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 11.184,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 19.656,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 25.72,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 52.432
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 91.586
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 160.72
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 220.432
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 233.252
+        },
+        {
+          "phase": "done",
+          "offsetSec": 261.004
+        }
+      ]
+    },
+    "bb-wing-turnover": {
+      "url": "/audio/pregame/clips/bb-wing-turnover.95e9bf78.mp3",
+      "durationSec": 263.76,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 6.872,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 13.248,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 21.576,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 28.36,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 51.376
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 90.458
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 157.552
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 214.312
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 226.796
+        },
+        {
+          "phase": "done",
+          "offsetSec": 257.5
+        }
+      ]
+    },
+    "bb-wing-missed-shot": {
+      "url": "/audio/pregame/clips/bb-wing-missed-shot.97c5fb1b.mp3",
+      "durationSec": 266.064,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 5.504,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 11.616,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 20.04,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 27.016,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 50.848
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 93.698
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 159.688
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 220.888
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 233.156
+        },
+        {
+          "phase": "done",
+          "offsetSec": 259.9
+        }
+      ]
+    },
+    "bb-wing-got-cooked": {
+      "url": "/audio/pregame/clips/bb-wing-got-cooked.3cc81418.mp3",
+      "durationSec": 262.8,
       "phases": [
         {
           "phase": "settle",
@@ -1200,210 +1362,48 @@
         },
         {
           "phase": "exhale",
-          "offsetSec": 13.32,
+          "offsetSec": 11.328,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 21,
+          "offsetSec": 18.936,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 27.784,
+          "offsetSec": 24.856,
           "round": 1
         },
         {
           "phase": "rink",
-          "offsetSec": 54.664
+          "offsetSec": 51.64
         },
         {
           "phase": "firstShift",
-          "offsetSec": 96.242
+          "offsetSec": 91.442
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 169.648
+          "offsetSec": 157.432
         },
         {
           "phase": "reset",
-          "offsetSec": 232.408
+          "offsetSec": 218.824
         },
         {
           "phase": "prayer",
-          "offsetSec": 249.036
+          "offsetSec": 230.66
         },
         {
           "phase": "done",
-          "offsetSec": 273.136
-        }
-      ]
-    },
-    "bb-wing-turnover": {
-      "url": "/audio/pregame/clips/bb-wing-turnover.b87f0a8f.mp3",
-      "durationSec": 264.24,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 7.064,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 12.792,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 21.048,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 27.352,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 52.528
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 93.194
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 161.488
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 216.28
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 233.796
-        },
-        {
-          "phase": "done",
-          "offsetSec": 258.304
-        }
-      ]
-    },
-    "bb-wing-missed-shot": {
-      "url": "/audio/pregame/clips/bb-wing-missed-shot.a9cd6570.mp3",
-      "durationSec": 275.4,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 7.448,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 13.488,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 21.96,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 28.696,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 55.744
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 95.906
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 163.576
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 226.072
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 243.396
-        },
-        {
-          "phase": "done",
-          "offsetSec": 268.264
-        }
-      ]
-    },
-    "bb-wing-got-cooked": {
-      "url": "/audio/pregame/clips/bb-wing-got-cooked.208aae6c.mp3",
-      "durationSec": 275.016,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 6.056,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 11.736,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 19.896,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 25.408,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 51.904
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 94.37
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 166.072
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 228.208
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 245.676
-        },
-        {
-          "phase": "done",
-          "offsetSec": 269.08
+          "offsetSec": 257.716
         }
       ]
     },
     "bb-wing-foul-trouble": {
-      "url": "/audio/pregame/clips/bb-wing-foul-trouble.c8531e9b.mp3",
-      "durationSec": 271.344,
+      "url": "/audio/pregame/clips/bb-wing-foul-trouble.e12834be.mp3",
+      "durationSec": 259.056,
       "phases": [
         {
           "phase": "settle",
@@ -1411,53 +1411,53 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 6.128,
+          "offsetSec": 5.96,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 12.696,
+          "offsetSec": 11.664,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 20.208,
+          "offsetSec": 19.632,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 25.576,
+          "offsetSec": 25.24,
           "round": 1
         },
         {
           "phase": "rink",
-          "offsetSec": 52.096
+          "offsetSec": 50.128
         },
         {
           "phase": "firstShift",
-          "offsetSec": 95.018
+          "offsetSec": 92.714
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 162.592
+          "offsetSec": 157.864
         },
         {
           "phase": "reset",
-          "offsetSec": 221.992
+          "offsetSec": 215.344
         },
         {
           "phase": "prayer",
-          "offsetSec": 239.82
+          "offsetSec": 227.276
         },
         {
           "phase": "done",
-          "offsetSec": 264.472
+          "offsetSec": 252.388
         }
       ]
     },
     "bb-wing-coach-yells": {
-      "url": "/audio/pregame/clips/bb-wing-coach-yells.a61c90d0.mp3",
-      "durationSec": 274.464,
+      "url": "/audio/pregame/clips/bb-wing-coach-yells.c603b185.mp3",
+      "durationSec": 263.136,
       "phases": [
         {
           "phase": "settle",
@@ -1465,53 +1465,53 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 6.536,
+          "offsetSec": 5.216,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 12.264,
+          "offsetSec": 10.968,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 21.792,
+          "offsetSec": 18.12,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 27.16,
+          "offsetSec": 24.232,
           "round": 1
         },
         {
           "phase": "rink",
-          "offsetSec": 55.264
+          "offsetSec": 50.152
         },
         {
           "phase": "firstShift",
-          "offsetSec": 97.538
+          "offsetSec": 90.386
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 168.28
+          "offsetSec": 158.416
         },
         {
           "phase": "reset",
-          "offsetSec": 227.248
+          "offsetSec": 217.624
         },
         {
           "phase": "prayer",
-          "offsetSec": 243.468
+          "offsetSec": 229.484
         },
         {
           "phase": "done",
-          "offsetSec": 267.688
+          "offsetSec": 257.74
         }
       ]
     },
     "bb-wing-benched": {
-      "url": "/audio/pregame/clips/bb-wing-benched.c43ad25e.mp3",
-      "durationSec": 275.832,
+      "url": "/audio/pregame/clips/bb-wing-benched.e8d66392.mp3",
+      "durationSec": 271.992,
       "phases": [
         {
           "phase": "settle",
@@ -1519,17 +1519,17 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 6.368,
+          "offsetSec": 5.912,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 12.408,
+          "offsetSec": 11.88,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 21.048,
+          "offsetSec": 20.136,
           "round": 1
         },
         {
@@ -1539,231 +1539,15 @@
         },
         {
           "phase": "rink",
-          "offsetSec": 53.656
+          "offsetSec": 53.32
         },
         {
           "phase": "firstShift",
-          "offsetSec": 94.826
+          "offsetSec": 91.082
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 163.912
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 229.696
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 246.108
-        },
-        {
-          "phase": "done",
-          "offsetSec": 270.208
-        }
-      ]
-    },
-    "bb-wing-nervous": {
-      "url": "/audio/pregame/clips/bb-wing-nervous.f71a086d.mp3",
-      "durationSec": 277.512,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 7.544,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 13.632,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 22.464,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 28.984,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 56.152
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 99.074
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 170.536
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 230.32
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 246.588
-        },
-        {
-          "phase": "done",
-          "offsetSec": 270.688
-        }
-      ]
-    },
-    "bb-wing-missed-fts": {
-      "url": "/audio/pregame/clips/bb-wing-missed-fts.3c42afc3.mp3",
-      "durationSec": 275.88,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 5.84,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 12.48,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 20.784,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 27.472,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 53.944
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 96.026
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 167.032
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 225.76
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 243.492
-        },
-        {
-          "phase": "done",
-          "offsetSec": 268.744
-        }
-      ]
-    },
-    "bb-wing-start-slow": {
-      "url": "/audio/pregame/clips/bb-wing-start-slow.30d99919.mp3",
-      "durationSec": 274.992,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 6.896,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 13.152,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 21.792,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 27.568,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 55.528
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 98.234
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 169.24
-        },
-        {
-          "phase": "reset",
-          "offsetSec": 227.104
-        },
-        {
-          "phase": "prayer",
-          "offsetSec": 245.22
-        },
-        {
-          "phase": "done",
-          "offsetSec": 268.072
-        }
-      ]
-    },
-    "bb-wing-fall-behind-early": {
-      "url": "/audio/pregame/clips/bb-wing-fall-behind-early.f60cd74a.mp3",
-      "durationSec": 271.272,
-      "phases": [
-        {
-          "phase": "settle",
-          "offsetSec": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 7.376,
-          "round": 0
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 13.32,
-          "round": 0
-        },
-        {
-          "phase": "inhale",
-          "offsetSec": 21.312,
-          "round": 1
-        },
-        {
-          "phase": "exhale",
-          "offsetSec": 27.784,
-          "round": 1
-        },
-        {
-          "phase": "rink",
-          "offsetSec": 52.984
-        },
-        {
-          "phase": "firstShift",
-          "offsetSec": 94.826
-        },
-        {
-          "phase": "hardMoment",
-          "offsetSec": 164.656
+          "offsetSec": 159.28
         },
         {
           "phase": "reset",
@@ -1771,17 +1555,125 @@
         },
         {
           "phase": "prayer",
-          "offsetSec": 239.532
+          "offsetSec": 237.308
         },
         {
           "phase": "done",
-          "offsetSec": 264.352
+          "offsetSec": 265.684
         }
       ]
     },
-    "bb-big-turnover": {
-      "url": "/audio/pregame/clips/bb-big-turnover.c159d495.mp3",
-      "durationSec": 275.76,
+    "bb-wing-nervous": {
+      "url": "/audio/pregame/clips/bb-wing-nervous.2a2436a1.mp3",
+      "durationSec": 259.368,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 5.648,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 11.52,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 20.088,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 25.84,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 53.008
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 92.378
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 156.952
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 213.304
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 226.412
+        },
+        {
+          "phase": "done",
+          "offsetSec": 252.7
+        }
+      ]
+    },
+    "bb-wing-missed-fts": {
+      "url": "/audio/pregame/clips/bb-wing-missed-fts.883fc739.mp3",
+      "durationSec": 268.44,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 6.44,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 12.36,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 19.464,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 25.072,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 49.312
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 88.61
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 154.36
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 220.072
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 232.556
+        },
+        {
+          "phase": "done",
+          "offsetSec": 262.444
+        }
+      ]
+    },
+    "bb-wing-start-slow": {
+      "url": "/audio/pregame/clips/bb-wing-start-slow.48b0927e.mp3",
+      "durationSec": 264.408,
       "phases": [
         {
           "phase": "settle",
@@ -1794,48 +1686,156 @@
         },
         {
           "phase": "exhale",
-          "offsetSec": 11.52,
+          "offsetSec": 11.664,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 18.816,
+          "offsetSec": 19.944,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 24.328,
+          "offsetSec": 25.36,
           "round": 1
         },
         {
           "phase": "rink",
-          "offsetSec": 51.376
+          "offsetSec": 50.344
         },
         {
           "phase": "firstShift",
-          "offsetSec": 97.154
+          "offsetSec": 89.906
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 167.824
+          "offsetSec": 158.2
         },
         {
           "phase": "reset",
-          "offsetSec": 228.472
+          "offsetSec": 217.984
         },
         {
           "phase": "prayer",
-          "offsetSec": 245.58
+          "offsetSec": 231.356
         },
         {
           "phase": "done",
-          "offsetSec": 269.632
+          "offsetSec": 258.868
+        }
+      ]
+    },
+    "bb-wing-fall-behind-early": {
+      "url": "/audio/pregame/clips/bb-wing-fall-behind-early.a3ce6b75.mp3",
+      "durationSec": 266.232,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 6.056,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 12.264,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 19.32,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 25.792,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 50.296
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 88.442
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 157.312
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 219.016
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 232.052
+        },
+        {
+          "phase": "done",
+          "offsetSec": 259.828
+        }
+      ]
+    },
+    "bb-big-turnover": {
+      "url": "/audio/pregame/clips/bb-big-turnover.9114f6a1.mp3",
+      "durationSec": 262.272,
+      "phases": [
+        {
+          "phase": "settle",
+          "offsetSec": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 5.816,
+          "round": 0
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 12.288,
+          "round": 0
+        },
+        {
+          "phase": "inhale",
+          "offsetSec": 19.536,
+          "round": 1
+        },
+        {
+          "phase": "exhale",
+          "offsetSec": 25.456,
+          "round": 1
+        },
+        {
+          "phase": "rink",
+          "offsetSec": 51.472
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 90.65
+        },
+        {
+          "phase": "hardMoment",
+          "offsetSec": 158.272
+        },
+        {
+          "phase": "reset",
+          "offsetSec": 214.744
+        },
+        {
+          "phase": "prayer",
+          "offsetSec": 228.596
+        },
+        {
+          "phase": "done",
+          "offsetSec": 255.604
         }
       ]
     },
     "bb-big-missed-shot": {
-      "url": "/audio/pregame/clips/bb-big-missed-shot.b7eee739.mp3",
-      "durationSec": 269.472,
+      "url": "/audio/pregame/clips/bb-big-missed-shot.75615a68.mp3",
+      "durationSec": 260.16,
       "phases": [
         {
           "phase": "settle",
@@ -1843,53 +1843,53 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 5.84,
+          "offsetSec": 5.264,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 11.736,
+          "offsetSec": 11.04,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 19.896,
+          "offsetSec": 18.384,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 26.248,
+          "offsetSec": 24.352,
           "round": 1
         },
         {
           "phase": "rink",
-          "offsetSec": 51.28
+          "offsetSec": 49.024
         },
         {
           "phase": "firstShift",
-          "offsetSec": 94.514
+          "offsetSec": 90.674
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 166.912
+          "offsetSec": 157.984
         },
         {
           "phase": "reset",
-          "offsetSec": 222.04
+          "offsetSec": 214.336
         },
         {
           "phase": "prayer",
-          "offsetSec": 239.388
+          "offsetSec": 226.964
         },
         {
           "phase": "done",
-          "offsetSec": 262.744
+          "offsetSec": 254.308
         }
       ]
     },
     "bb-big-got-cooked": {
-      "url": "/audio/pregame/clips/bb-big-got-cooked.3a091548.mp3",
-      "durationSec": 270.696,
+      "url": "/audio/pregame/clips/bb-big-got-cooked.3e1098fa.mp3",
+      "durationSec": 264.696,
       "phases": [
         {
           "phase": "settle",
@@ -1897,53 +1897,53 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 6.968,
+          "offsetSec": 5.048,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 12.912,
+          "offsetSec": 10.296,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 20.856,
+          "offsetSec": 17.496,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 27.016,
+          "offsetSec": 23.2,
           "round": 1
         },
         {
           "phase": "rink",
-          "offsetSec": 53.848
+          "offsetSec": 49.504
         },
         {
           "phase": "firstShift",
-          "offsetSec": 96.386
+          "offsetSec": 89.282
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 164.32
+          "offsetSec": 156.928
         },
         {
           "phase": "reset",
-          "offsetSec": 222.184
+          "offsetSec": 215.32
         },
         {
           "phase": "prayer",
-          "offsetSec": 240.564
+          "offsetSec": 229.052
         },
         {
           "phase": "done",
-          "offsetSec": 264.976
+          "offsetSec": 258.388
         }
       ]
     },
     "bb-big-foul-trouble": {
-      "url": "/audio/pregame/clips/bb-big-foul-trouble.03a4c845.mp3",
-      "durationSec": 290.112,
+      "url": "/audio/pregame/clips/bb-big-foul-trouble.6fd0e71f.mp3",
+      "durationSec": 269.376,
       "phases": [
         {
           "phase": "settle",
@@ -1951,53 +1951,53 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 7.184,
+          "offsetSec": 5.504,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 13.44,
+          "offsetSec": 11.784,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 22.128,
+          "offsetSec": 19.752,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 27.592,
+          "offsetSec": 25.816,
           "round": 1
         },
         {
           "phase": "rink",
-          "offsetSec": 55.984
+          "offsetSec": 49.576
         },
         {
           "phase": "firstShift",
-          "offsetSec": 99.602
+          "offsetSec": 90.17
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 172.336
+          "offsetSec": 159.472
         },
         {
           "phase": "reset",
-          "offsetSec": 243.616
+          "offsetSec": 225.16
         },
         {
           "phase": "prayer",
-          "offsetSec": 259.476
+          "offsetSec": 236.468
         },
         {
           "phase": "done",
-          "offsetSec": 283.192
+          "offsetSec": 262.9
         }
       ]
     },
     "bb-big-coach-yells": {
-      "url": "/audio/pregame/clips/bb-big-coach-yells.7e00e6aa.mp3",
-      "durationSec": 275.592,
+      "url": "/audio/pregame/clips/bb-big-coach-yells.ed41c5a6.mp3",
+      "durationSec": 274.896,
       "phases": [
         {
           "phase": "settle",
@@ -2005,53 +2005,53 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 7.112,
+          "offsetSec": 5.168,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 14.376,
+          "offsetSec": 10.728,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 22.944,
+          "offsetSec": 18.072,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 28.84,
+          "offsetSec": 24.184,
           "round": 1
         },
         {
           "phase": "rink",
-          "offsetSec": 55.864
+          "offsetSec": 49.432
         },
         {
           "phase": "firstShift",
-          "offsetSec": 96.962
+          "offsetSec": 90.53
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 169.12
+          "offsetSec": 160.648
         },
         {
           "phase": "reset",
-          "offsetSec": 230.728
+          "offsetSec": 225.16
         },
         {
           "phase": "prayer",
-          "offsetSec": 246.636
+          "offsetSec": 237.548
         },
         {
           "phase": "done",
-          "offsetSec": 269.104
+          "offsetSec": 268.012
         }
       ]
     },
     "bb-big-fouled-out": {
-      "url": "/audio/pregame/clips/bb-big-fouled-out.624cc6fb.mp3",
-      "durationSec": 286.488,
+      "url": "/audio/pregame/clips/bb-big-fouled-out.0ba2baa9.mp3",
+      "durationSec": 272.904,
       "phases": [
         {
           "phase": "settle",
@@ -2059,53 +2059,53 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 6.536,
+          "offsetSec": 5.456,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 12.048,
+          "offsetSec": 11.472,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 21.528,
+          "offsetSec": 19.632,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 28.456,
+          "offsetSec": 26.104,
           "round": 1
         },
         {
           "phase": "rink",
-          "offsetSec": 52.288
+          "offsetSec": 51.568
         },
         {
           "phase": "firstShift",
-          "offsetSec": 94.274
+          "offsetSec": 91.874
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 167.056
+          "offsetSec": 160.552
         },
         {
           "phase": "reset",
-          "offsetSec": 238
+          "offsetSec": 226.888
         },
         {
           "phase": "prayer",
-          "offsetSec": 255.612
+          "offsetSec": 238.676
         },
         {
           "phase": "done",
-          "offsetSec": 279.712
+          "offsetSec": 266.332
         }
       ]
     },
     "bb-big-nervous": {
-      "url": "/audio/pregame/clips/bb-big-nervous.813441a0.mp3",
-      "durationSec": 282.648,
+      "url": "/audio/pregame/clips/bb-big-nervous.d2eabc94.mp3",
+      "durationSec": 272.184,
       "phases": [
         {
           "phase": "settle",
@@ -2113,53 +2113,53 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 6.368,
+          "offsetSec": 5.36,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 12.216,
+          "offsetSec": 11.616,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 20.856,
+          "offsetSec": 19.584,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 26.368,
+          "offsetSec": 26.776,
           "round": 1
         },
         {
           "phase": "rink",
-          "offsetSec": 54.136
+          "offsetSec": 52.912
         },
         {
           "phase": "firstShift",
-          "offsetSec": 97.634
+          "offsetSec": 91.802
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 168.496
+          "offsetSec": 161.776
         },
         {
           "phase": "reset",
-          "offsetSec": 233.992
+          "offsetSec": 224.008
         },
         {
           "phase": "prayer",
-          "offsetSec": 250.86
+          "offsetSec": 237.212
         },
         {
           "phase": "done",
-          "offsetSec": 275.68
+          "offsetSec": 266.596
         }
       ]
     },
     "bb-big-missed-fts": {
-      "url": "/audio/pregame/clips/bb-big-missed-fts.99d00b9c.mp3",
-      "durationSec": 274.056,
+      "url": "/audio/pregame/clips/bb-big-missed-fts.56371d32.mp3",
+      "durationSec": 267.504,
       "phases": [
         {
           "phase": "settle",
@@ -2167,53 +2167,53 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 5.84,
+          "offsetSec": 5.312,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 11.688,
+          "offsetSec": 11.328,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 20.376,
+          "offsetSec": 19.248,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 26.464,
+          "offsetSec": 26.032,
           "round": 1
         },
         {
           "phase": "rink",
-          "offsetSec": 52.456
+          "offsetSec": 51.016
         },
         {
           "phase": "firstShift",
-          "offsetSec": 95.714
+          "offsetSec": 92.426
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 165.448
+          "offsetSec": 160.288
         },
         {
           "phase": "reset",
-          "offsetSec": 226.96
+          "offsetSec": 221.344
         },
         {
           "phase": "prayer",
-          "offsetSec": 243.732
+          "offsetSec": 233.852
         },
         {
           "phase": "done",
-          "offsetSec": 267.184
+          "offsetSec": 261.244
         }
       ]
     },
     "bb-big-start-slow": {
-      "url": "/audio/pregame/clips/bb-big-start-slow.a204ab35.mp3",
-      "durationSec": 274.752,
+      "url": "/audio/pregame/clips/bb-big-start-slow.b744ab3b.mp3",
+      "durationSec": 266.136,
       "phases": [
         {
           "phase": "settle",
@@ -2221,53 +2221,53 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 6.32,
+          "offsetSec": 5.408,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 13.056,
+          "offsetSec": 11.88,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 22.104,
+          "offsetSec": 19.752,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 28.888,
+          "offsetSec": 25.36,
           "round": 1
         },
         {
           "phase": "rink",
-          "offsetSec": 55.168
+          "offsetSec": 49.528
         },
         {
           "phase": "firstShift",
-          "offsetSec": 96.602
+          "offsetSec": 90.098
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 163.888
+          "offsetSec": 158.104
         },
         {
           "phase": "reset",
-          "offsetSec": 227.536
+          "offsetSec": 217.456
         },
         {
           "phase": "prayer",
-          "offsetSec": 244.5
+          "offsetSec": 230.9
         },
         {
           "phase": "done",
-          "offsetSec": 267.712
+          "offsetSec": 260.38
         }
       ]
     },
     "bb-big-fall-behind-early": {
-      "url": "/audio/pregame/clips/bb-big-fall-behind-early.1f70b165.mp3",
-      "durationSec": 283.68,
+      "url": "/audio/pregame/clips/bb-big-fall-behind-early.656af391.mp3",
+      "durationSec": 274.272,
       "phases": [
         {
           "phase": "settle",
@@ -2275,53 +2275,53 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 5.792,
+          "offsetSec": 6.272,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 12.84,
+          "offsetSec": 11.88,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 21.768,
+          "offsetSec": 20.136,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 28.552,
+          "offsetSec": 25.384,
           "round": 1
         },
         {
           "phase": "rink",
-          "offsetSec": 54.712
+          "offsetSec": 50.416
         },
         {
           "phase": "firstShift",
-          "offsetSec": 96.218
+          "offsetSec": 89.858
         },
         {
           "phase": "hardMoment",
-          "offsetSec": 168.16
+          "offsetSec": 160.192
         },
         {
           "phase": "reset",
-          "offsetSec": 233.56
+          "offsetSec": 227.56
         },
         {
           "phase": "prayer",
-          "offsetSec": 248.94
+          "offsetSec": 240.092
         },
         {
           "phase": "done",
-          "offsetSec": 276.04
+          "offsetSec": 268.66
         }
       ]
     },
     "viz-guard": {
-      "url": "/audio/pregame/clips/viz-guard.45e6ac2b.mp3",
-      "durationSec": 109.176,
+      "url": "/audio/pregame/clips/viz-guard.194d5d28.mp3",
+      "durationSec": 106.104,
       "phases": [
         {
           "phase": "rink",
@@ -2329,13 +2329,13 @@
         },
         {
           "phase": "firstShift",
-          "offsetSec": 38.866
+          "offsetSec": 41.794
         }
       ]
     },
     "viz-wing": {
-      "url": "/audio/pregame/clips/viz-wing.c64dc8b9.mp3",
-      "durationSec": 112.056,
+      "url": "/audio/pregame/clips/viz-wing.9f92d128.mp3",
+      "durationSec": 107.304,
       "phases": [
         {
           "phase": "rink",
@@ -2343,13 +2343,13 @@
         },
         {
           "phase": "firstShift",
-          "offsetSec": 40.57
+          "offsetSec": 41.746
         }
       ]
     },
     "viz-big": {
-      "url": "/audio/pregame/clips/viz-big.bc11ab7e.mp3",
-      "durationSec": 111.216,
+      "url": "/audio/pregame/clips/viz-big.c2f3b84c.mp3",
+      "durationSec": 107.28,
       "phases": [
         {
           "phase": "rink",
@@ -2357,13 +2357,13 @@
         },
         {
           "phase": "firstShift",
-          "offsetSec": 41.554
+          "offsetSec": 41.818
         }
       ]
     },
     "hm-bb-guard-turnover": {
-      "url": "/audio/pregame/clips/hm-bb-guard-turnover.9179fe09.mp3",
-      "durationSec": 53.952,
+      "url": "/audio/pregame/clips/hm-bb-guard-turnover.e57e4b67.mp3",
+      "durationSec": 53.544,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2372,8 +2372,8 @@
       ]
     },
     "hm-bb-guard-missed-shot": {
-      "url": "/audio/pregame/clips/hm-bb-guard-missed-shot.98b7dcd6.mp3",
-      "durationSec": 54.36,
+      "url": "/audio/pregame/clips/hm-bb-guard-missed-shot.d3fe4509.mp3",
+      "durationSec": 54.72,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2382,8 +2382,8 @@
       ]
     },
     "hm-bb-guard-got-cooked": {
-      "url": "/audio/pregame/clips/hm-bb-guard-got-cooked.5f315456.mp3",
-      "durationSec": 52.248,
+      "url": "/audio/pregame/clips/hm-bb-guard-got-cooked.807ac11e.mp3",
+      "durationSec": 53.64,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2392,8 +2392,8 @@
       ]
     },
     "hm-bb-guard-foul-trouble": {
-      "url": "/audio/pregame/clips/hm-bb-guard-foul-trouble.5df71dfb.mp3",
-      "durationSec": 57.528,
+      "url": "/audio/pregame/clips/hm-bb-guard-foul-trouble.810b889c.mp3",
+      "durationSec": 58.8,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2402,147 +2402,7 @@
       ]
     },
     "hm-bb-guard-coach-yells": {
-      "url": "/audio/pregame/clips/hm-bb-guard-coach-yells.87419231.mp3",
-      "durationSec": 49.5,
-      "phases": [
-        {
-          "phase": "hardMoment",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "hm-bb-guard-benched": {
-      "url": "/audio/pregame/clips/hm-bb-guard-benched.f1f64d6a.mp3",
-      "durationSec": 54.108,
-      "phases": [
-        {
-          "phase": "hardMoment",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "hm-bb-guard-nervous": {
-      "url": "/audio/pregame/clips/hm-bb-guard-nervous.0be798bf.mp3",
-      "durationSec": 49.524,
-      "phases": [
-        {
-          "phase": "hardMoment",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "hm-bb-guard-missed-fts": {
-      "url": "/audio/pregame/clips/hm-bb-guard-missed-fts.cb62c930.mp3",
-      "durationSec": 58.632,
-      "phases": [
-        {
-          "phase": "hardMoment",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "hm-bb-guard-start-slow": {
-      "url": "/audio/pregame/clips/hm-bb-guard-start-slow.07b68117.mp3",
-      "durationSec": 51.108,
-      "phases": [
-        {
-          "phase": "hardMoment",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "hm-bb-guard-fall-behind-early": {
-      "url": "/audio/pregame/clips/hm-bb-guard-fall-behind-early.fb975d8e.mp3",
-      "durationSec": 60.624,
-      "phases": [
-        {
-          "phase": "hardMoment",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "hm-bb-wing-turnover": {
-      "url": "/audio/pregame/clips/hm-bb-wing-turnover.2a82e8d1.mp3",
-      "durationSec": 61.272,
-      "phases": [
-        {
-          "phase": "hardMoment",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "hm-bb-wing-missed-shot": {
-      "url": "/audio/pregame/clips/hm-bb-wing-missed-shot.19b98b90.mp3",
-      "durationSec": 58.632,
-      "phases": [
-        {
-          "phase": "hardMoment",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "hm-bb-wing-got-cooked": {
-      "url": "/audio/pregame/clips/hm-bb-wing-got-cooked.59e0eb7d.mp3",
-      "durationSec": 59.712,
-      "phases": [
-        {
-          "phase": "hardMoment",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "hm-bb-wing-foul-trouble": {
-      "url": "/audio/pregame/clips/hm-bb-wing-foul-trouble.f411f0fc.mp3",
-      "durationSec": 57.6,
-      "phases": [
-        {
-          "phase": "hardMoment",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "hm-bb-wing-coach-yells": {
-      "url": "/audio/pregame/clips/hm-bb-wing-coach-yells.836d9cf9.mp3",
-      "durationSec": 48.828,
-      "phases": [
-        {
-          "phase": "hardMoment",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "hm-bb-wing-benched": {
-      "url": "/audio/pregame/clips/hm-bb-wing-benched.b57699cd.mp3",
-      "durationSec": 56.58,
-      "phases": [
-        {
-          "phase": "hardMoment",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "hm-bb-wing-nervous": {
-      "url": "/audio/pregame/clips/hm-bb-wing-nervous.5cd70a99.mp3",
-      "durationSec": 50.748,
-      "phases": [
-        {
-          "phase": "hardMoment",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "hm-bb-wing-missed-fts": {
-      "url": "/audio/pregame/clips/hm-bb-wing-missed-fts.27a23658.mp3",
-      "durationSec": 58.104,
-      "phases": [
-        {
-          "phase": "hardMoment",
-          "offsetSec": 0
-        }
-      ]
-    },
-    "hm-bb-wing-start-slow": {
-      "url": "/audio/pregame/clips/hm-bb-wing-start-slow.9511c280.mp3",
+      "url": "/audio/pregame/clips/hm-bb-guard-coach-yells.27a102d0.mp3",
       "durationSec": 49.596,
       "phases": [
         {
@@ -2551,9 +2411,149 @@
         }
       ]
     },
+    "hm-bb-guard-benched": {
+      "url": "/audio/pregame/clips/hm-bb-guard-benched.54d9101a.mp3",
+      "durationSec": 53.244,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-guard-nervous": {
+      "url": "/audio/pregame/clips/hm-bb-guard-nervous.f0736d0e.mp3",
+      "durationSec": 51.204,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-guard-missed-fts": {
+      "url": "/audio/pregame/clips/hm-bb-guard-missed-fts.8c50110d.mp3",
+      "durationSec": 60,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-guard-start-slow": {
+      "url": "/audio/pregame/clips/hm-bb-guard-start-slow.2828069b.mp3",
+      "durationSec": 51.636,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-guard-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-bb-guard-fall-behind-early.9dbdd662.mp3",
+      "durationSec": 58.008,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-turnover": {
+      "url": "/audio/pregame/clips/hm-bb-wing-turnover.329e78f9.mp3",
+      "durationSec": 56.04,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-missed-shot": {
+      "url": "/audio/pregame/clips/hm-bb-wing-missed-shot.12f70447.mp3",
+      "durationSec": 55.32,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-got-cooked": {
+      "url": "/audio/pregame/clips/hm-bb-wing-got-cooked.02007b16.mp3",
+      "durationSec": 58.2,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-foul-trouble": {
+      "url": "/audio/pregame/clips/hm-bb-wing-foul-trouble.c1b30b50.mp3",
+      "durationSec": 56.184,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-coach-yells": {
+      "url": "/audio/pregame/clips/hm-bb-wing-coach-yells.a14d28df.mp3",
+      "durationSec": 46.092,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-benched": {
+      "url": "/audio/pregame/clips/hm-bb-wing-benched.93945f66.mp3",
+      "durationSec": 53.604,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-nervous": {
+      "url": "/audio/pregame/clips/hm-bb-wing-nervous.8be7b74b.mp3",
+      "durationSec": 49.572,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-missed-fts": {
+      "url": "/audio/pregame/clips/hm-bb-wing-missed-fts.d7751f54.mp3",
+      "durationSec": 58.872,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bb-wing-start-slow": {
+      "url": "/audio/pregame/clips/hm-bb-wing-start-slow.9371d060.mp3",
+      "durationSec": 48.492,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
     "hm-bb-wing-fall-behind-early": {
-      "url": "/audio/pregame/clips/hm-bb-wing-fall-behind-early.a842f100.mp3",
-      "durationSec": 61.344,
+      "url": "/audio/pregame/clips/hm-bb-wing-fall-behind-early.8adec4b4.mp3",
+      "durationSec": 60.864,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2562,8 +2562,8 @@
       ]
     },
     "hm-bb-big-turnover": {
-      "url": "/audio/pregame/clips/hm-bb-big-turnover.a1b1cfd0.mp3",
-      "durationSec": 61.32,
+      "url": "/audio/pregame/clips/hm-bb-big-turnover.11805c95.mp3",
+      "durationSec": 56.904,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2572,8 +2572,8 @@
       ]
     },
     "hm-bb-big-missed-shot": {
-      "url": "/audio/pregame/clips/hm-bb-big-missed-shot.678a3381.mp3",
-      "durationSec": 59.496,
+      "url": "/audio/pregame/clips/hm-bb-big-missed-shot.350e6342.mp3",
+      "durationSec": 56.736,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2582,8 +2582,8 @@
       ]
     },
     "hm-bb-big-got-cooked": {
-      "url": "/audio/pregame/clips/hm-bb-big-got-cooked.d99dc010.mp3",
-      "durationSec": 62.016,
+      "url": "/audio/pregame/clips/hm-bb-big-got-cooked.f29b2449.mp3",
+      "durationSec": 59.28,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2592,8 +2592,8 @@
       ]
     },
     "hm-bb-big-foul-trouble": {
-      "url": "/audio/pregame/clips/hm-bb-big-foul-trouble.57fb8098.mp3",
-      "durationSec": 64.104,
+      "url": "/audio/pregame/clips/hm-bb-big-foul-trouble.59eddf33.mp3",
+      "durationSec": 63.72,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2602,8 +2602,8 @@
       ]
     },
     "hm-bb-big-coach-yells": {
-      "url": "/audio/pregame/clips/hm-bb-big-coach-yells.74169e9b.mp3",
-      "durationSec": 51.132,
+      "url": "/audio/pregame/clips/hm-bb-big-coach-yells.e2f07158.mp3",
+      "durationSec": 48.084,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2612,8 +2612,8 @@
       ]
     },
     "hm-bb-big-fouled-out": {
-      "url": "/audio/pregame/clips/hm-bb-big-fouled-out.57dd6901.mp3",
-      "durationSec": 64.992,
+      "url": "/audio/pregame/clips/hm-bb-big-fouled-out.232b5cfd.mp3",
+      "durationSec": 65.856,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2622,8 +2622,8 @@
       ]
     },
     "hm-bb-big-nervous": {
-      "url": "/audio/pregame/clips/hm-bb-big-nervous.4138202f.mp3",
-      "durationSec": 66.428,
+      "url": "/audio/pregame/clips/hm-bb-big-nervous.8c8d83c4.mp3",
+      "durationSec": 65.18,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2632,8 +2632,8 @@
       ]
     },
     "hm-bb-big-missed-fts": {
-      "url": "/audio/pregame/clips/hm-bb-big-missed-fts.a1b4761b.mp3",
-      "durationSec": 64.32,
+      "url": "/audio/pregame/clips/hm-bb-big-missed-fts.4d4d2649.mp3",
+      "durationSec": 62.208,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2642,8 +2642,8 @@
       ]
     },
     "hm-bb-big-start-slow": {
-      "url": "/audio/pregame/clips/hm-bb-big-start-slow.2f9e61f0.mp3",
-      "durationSec": 51.324,
+      "url": "/audio/pregame/clips/hm-bb-big-start-slow.81120387.mp3",
+      "durationSec": 51.972,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2652,8 +2652,8 @@
       ]
     },
     "hm-bb-big-fall-behind-early": {
-      "url": "/audio/pregame/clips/hm-bb-big-fall-behind-early.be9f82d5.mp3",
-      "durationSec": 66.024,
+      "url": "/audio/pregame/clips/hm-bb-big-fall-behind-early.5c058cd4.mp3",
+      "durationSec": 63.36,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2662,33 +2662,33 @@
       ]
     },
     "anc-bounce-ball-twice": {
-      "url": "/audio/pregame/clips/anc-bounce-ball-twice.93824a34.mp3",
-      "durationSec": 2.688,
+      "url": "/audio/pregame/clips/anc-bounce-ball-twice.47535240.mp3",
+      "durationSec": 2.328,
       "phases": []
     },
     "anc-tap-floor": {
-      "url": "/audio/pregame/clips/anc-tap-floor.f5b06594.mp3",
-      "durationSec": 1.848,
+      "url": "/audio/pregame/clips/anc-tap-floor.ae358255.mp3",
+      "durationSec": 2.52,
       "phases": []
     },
     "anc-look-at-rim": {
-      "url": "/audio/pregame/clips/anc-look-at-rim.14ab1807.mp3",
-      "durationSec": 2.04,
+      "url": "/audio/pregame/clips/anc-look-at-rim.5d1f4ec5.mp3",
+      "durationSec": 1.92,
       "phases": []
     },
     "st-bb-01": {
-      "url": "/audio/pregame/clips/st-bb-01.40b7ef18.mp3",
-      "durationSec": 3.048,
+      "url": "/audio/pregame/clips/st-bb-01.c011171c.mp3",
+      "durationSec": 2.928,
       "phases": []
     },
     "pp-focus-talk-every-shift": {
-      "url": "/audio/pregame/clips/pp-focus-talk-every-shift.2d65a589.mp3",
-      "durationSec": 3.84,
+      "url": "/audio/pregame/clips/pp-focus-talk-every-shift.5abfd5cf.mp3",
+      "durationSec": 3.192,
       "phases": []
     },
     "shared-prayer-selfguided": {
-      "url": "/audio/pregame/clips/shared-prayer-selfguided.c796391d.mp3",
-      "durationSec": 54.48,
+      "url": "/audio/pregame/clips/shared-prayer-selfguided.e976aa33.mp3",
+      "durationSec": 52.44,
       "phases": [
         {
           "phase": "prayer",
@@ -2697,8 +2697,8 @@
       ]
     },
     "pp-prayer": {
-      "url": "/audio/pregame/clips/pp-prayer.34988238.mp3",
-      "durationSec": 48.376,
+      "url": "/audio/pregame/clips/pp-prayer.b5dbf240.mp3",
+      "durationSec": 44.536,
       "phases": [
         {
           "phase": "prayer",
@@ -2707,18 +2707,18 @@
       ]
     },
     "pp-prayer-selfguided": {
-      "url": "/audio/pregame/clips/pp-prayer-selfguided.56f880fa.mp3",
-      "durationSec": 78.2,
+      "url": "/audio/pregame/clips/pp-prayer-selfguided.0aedc135.mp3",
+      "durationSec": 68.72,
       "phases": [
         {
           "phase": "prayer",
-          "offsetSec": 24.736
+          "offsetSec": 21.832
         }
       ]
     },
     "viz-defense-retrieval": {
-      "url": "/audio/pregame/clips/viz-defense-retrieval.3773da8d.mp3",
-      "durationSec": 67.408,
+      "url": "/audio/pregame/clips/viz-defense-retrieval.2c7b4c21.mp3",
+      "durationSec": 62.752,
       "phases": [
         {
           "phase": "rink",
@@ -2727,8 +2727,8 @@
       ]
     },
     "viz-defense-walk-the-line": {
-      "url": "/audio/pregame/clips/viz-defense-walk-the-line.621e098a.mp3",
-      "durationSec": 60.812,
+      "url": "/audio/pregame/clips/viz-defense-walk-the-line.79036e39.mp3",
+      "durationSec": 58.916,
       "phases": [
         {
           "phase": "rink",
@@ -2737,8 +2737,8 @@
       ]
     },
     "viz-defense-gap-up": {
-      "url": "/audio/pregame/clips/viz-defense-gap-up.dbd7bbcc.mp3",
-      "durationSec": 62.32,
+      "url": "/audio/pregame/clips/viz-defense-gap-up.c08a84f6.mp3",
+      "durationSec": 55.264,
       "phases": [
         {
           "phase": "rink",
@@ -2747,8 +2747,8 @@
       ]
     },
     "viz-defense-breakout": {
-      "url": "/audio/pregame/clips/viz-defense-breakout.9a2aad8b.mp3",
-      "durationSec": 65.324,
+      "url": "/audio/pregame/clips/viz-defense-breakout.c3d553b1.mp3",
+      "durationSec": 60.836,
       "phases": [
         {
           "phase": "rink",
@@ -2757,8 +2757,8 @@
       ]
     },
     "viz-defense-long-shift": {
-      "url": "/audio/pregame/clips/viz-defense-long-shift.a2a47584.mp3",
-      "durationSec": 87.788,
+      "url": "/audio/pregame/clips/viz-defense-long-shift.683a2d16.mp3",
+      "durationSec": 78.356,
       "phases": [
         {
           "phase": "rink",
@@ -2767,8 +2767,8 @@
       ]
     },
     "viz-defense-pinch-score": {
-      "url": "/audio/pregame/clips/viz-defense-pinch-score.99da1a16.mp3",
-      "durationSec": 64.528,
+      "url": "/audio/pregame/clips/viz-defense-pinch-score.3770abc2.mp3",
+      "durationSec": 60.952,
       "phases": [
         {
           "phase": "rink",
@@ -2777,8 +2777,8 @@
       ]
     },
     "viz-defense-penalty-kill-clear": {
-      "url": "/audio/pregame/clips/viz-defense-penalty-kill-clear.e7075fc6.mp3",
-      "durationSec": 66.88,
+      "url": "/audio/pregame/clips/viz-defense-penalty-kill-clear.2c365aa9.mp3",
+      "durationSec": 61.288,
       "phases": [
         {
           "phase": "rink",
@@ -2787,8 +2787,8 @@
       ]
     },
     "viz-defense-vocal-breakout": {
-      "url": "/audio/pregame/clips/viz-defense-vocal-breakout.bdbcf56c.mp3",
-      "durationSec": 57.948,
+      "url": "/audio/pregame/clips/viz-defense-vocal-breakout.3faca205.mp3",
+      "durationSec": 56.004,
       "phases": [
         {
           "phase": "rink",
@@ -2797,8 +2797,8 @@
       ]
     },
     "viz-defense-angle-wide-boxout": {
-      "url": "/audio/pregame/clips/viz-defense-angle-wide-boxout.261c801e.mp3",
-      "durationSec": 72.848,
+      "url": "/audio/pregame/clips/viz-defense-angle-wide-boxout.9f698c31.mp3",
+      "durationSec": 65.816,
       "phases": [
         {
           "phase": "rink",
@@ -2807,8 +2807,8 @@
       ]
     },
     "viz-forward-win-the-wall": {
-      "url": "/audio/pregame/clips/viz-forward-win-the-wall.c2f1dc87.mp3",
-      "durationSec": 60.724,
+      "url": "/audio/pregame/clips/viz-forward-win-the-wall.f8b4c286.mp3",
+      "durationSec": 57.1,
       "phases": [
         {
           "phase": "rink",
@@ -2817,8 +2817,8 @@
       ]
     },
     "viz-forward-give-and-go": {
-      "url": "/audio/pregame/clips/viz-forward-give-and-go.a2e30f86.mp3",
-      "durationSec": 63.672,
+      "url": "/audio/pregame/clips/viz-forward-give-and-go.52901df4.mp3",
+      "durationSec": 56.832,
       "phases": [
         {
           "phase": "rink",
@@ -2827,8 +2827,8 @@
       ]
     },
     "viz-forward-backcheck-strip": {
-      "url": "/audio/pregame/clips/viz-forward-backcheck-strip.395b7fe5.mp3",
-      "durationSec": 63.032,
+      "url": "/audio/pregame/clips/viz-forward-backcheck-strip.1e93c634.mp3",
+      "durationSec": 56.312,
       "phases": [
         {
           "phase": "rink",
@@ -2837,8 +2837,8 @@
       ]
     },
     "viz-forward-net-front": {
-      "url": "/audio/pregame/clips/viz-forward-net-front.c1a01529.mp3",
-      "durationSec": 60.888,
+      "url": "/audio/pregame/clips/viz-forward-net-front.79a54c58.mp3",
+      "durationSec": 57.6,
       "phases": [
         {
           "phase": "rink",
@@ -2847,8 +2847,8 @@
       ]
     },
     "viz-forward-faceoff-win-shot": {
-      "url": "/audio/pregame/clips/viz-forward-faceoff-win-shot.81474e43.mp3",
-      "durationSec": 51.952,
+      "url": "/audio/pregame/clips/viz-forward-faceoff-win-shot.66a62124.mp3",
+      "durationSec": 46.264,
       "phases": [
         {
           "phase": "rink",
@@ -2857,8 +2857,8 @@
       ]
     },
     "viz-forward-2on1-pass-finish": {
-      "url": "/audio/pregame/clips/viz-forward-2on1-pass-finish.6e28bd21.mp3",
-      "durationSec": 50.944,
+      "url": "/audio/pregame/clips/viz-forward-2on1-pass-finish.31186505.mp3",
+      "durationSec": 46.552,
       "phases": [
         {
           "phase": "rink",
@@ -2867,8 +2867,8 @@
       ]
     },
     "viz-forward-forecheck-strip": {
-      "url": "/audio/pregame/clips/viz-forward-forecheck-strip.b9b69acd.mp3",
-      "durationSec": 51.576,
+      "url": "/audio/pregame/clips/viz-forward-forecheck-strip.7bcf4818.mp3",
+      "durationSec": 46.872,
       "phases": [
         {
           "phase": "rink",
@@ -2877,8 +2877,8 @@
       ]
     },
     "viz-forward-cycle-low-high": {
-      "url": "/audio/pregame/clips/viz-forward-cycle-low-high.d0c7fe42.mp3",
-      "durationSec": 74.068,
+      "url": "/audio/pregame/clips/viz-forward-cycle-low-high.8e2fab83.mp3",
+      "durationSec": 66.82,
       "phases": [
         {
           "phase": "rink",
@@ -2887,8 +2887,8 @@
       ]
     },
     "viz-forward-3on2-middle-drive": {
-      "url": "/audio/pregame/clips/viz-forward-3on2-middle-drive.ca156f9d.mp3",
-      "durationSec": 69.72,
+      "url": "/audio/pregame/clips/viz-forward-3on2-middle-drive.d4bb49f3.mp3",
+      "durationSec": 64.68,
       "phases": [
         {
           "phase": "rink",
@@ -2897,8 +2897,8 @@
       ]
     },
     "viz-forward-dzone-faceoff-win": {
-      "url": "/audio/pregame/clips/viz-forward-dzone-faceoff-win.b7a96acb.mp3",
-      "durationSec": 61.212,
+      "url": "/audio/pregame/clips/viz-forward-dzone-faceoff-win.acae1dcc.mp3",
+      "durationSec": 56.316,
       "phases": [
         {
           "phase": "rink",
@@ -2907,8 +2907,8 @@
       ]
     },
     "viz-goalie-track-and-save": {
-      "url": "/audio/pregame/clips/viz-goalie-track-and-save.08b7f8e3.mp3",
-      "durationSec": 62.14,
+      "url": "/audio/pregame/clips/viz-goalie-track-and-save.ca5a5d2a.mp3",
+      "durationSec": 57.388,
       "phases": [
         {
           "phase": "rink",
@@ -2917,8 +2917,8 @@
       ]
     },
     "viz-goalie-rebound-control": {
-      "url": "/audio/pregame/clips/viz-goalie-rebound-control.febe8cb1.mp3",
-      "durationSec": 60.04,
+      "url": "/audio/pregame/clips/viz-goalie-rebound-control.ef2a70a2.mp3",
+      "durationSec": 53.344,
       "phases": [
         {
           "phase": "rink",
@@ -2927,8 +2927,8 @@
       ]
     },
     "viz-goalie-post-to-post": {
-      "url": "/audio/pregame/clips/viz-goalie-post-to-post.af1dc158.mp3",
-      "durationSec": 63.396,
+      "url": "/audio/pregame/clips/viz-goalie-post-to-post.e16d7907.mp3",
+      "durationSec": 58.62,
       "phases": [
         {
           "phase": "rink",
@@ -2937,8 +2937,8 @@
       ]
     },
     "viz-goalie-breakaway": {
-      "url": "/audio/pregame/clips/viz-goalie-breakaway.1f43d756.mp3",
-      "durationSec": 67.436,
+      "url": "/audio/pregame/clips/viz-goalie-breakaway.59ea48f9.mp3",
+      "durationSec": 60.164,
       "phases": [
         {
           "phase": "rink",
@@ -2947,8 +2947,8 @@
       ]
     },
     "viz-goalie-glove-freeze": {
-      "url": "/audio/pregame/clips/viz-goalie-glove-freeze.1b19d520.mp3",
-      "durationSec": 52.976,
+      "url": "/audio/pregame/clips/viz-goalie-glove-freeze.ac451739.mp3",
+      "durationSec": 48.776,
       "phases": [
         {
           "phase": "rink",
@@ -2957,8 +2957,8 @@
       ]
     },
     "viz-goalie-scramble-save": {
-      "url": "/audio/pregame/clips/viz-goalie-scramble-save.a0b9608a.mp3",
-      "durationSec": 48.48,
+      "url": "/audio/pregame/clips/viz-goalie-scramble-save.4f468936.mp3",
+      "durationSec": 45.384,
       "phases": [
         {
           "phase": "rink",
@@ -2967,8 +2967,8 @@
       ]
     },
     "viz-goalie-screen-traffic": {
-      "url": "/audio/pregame/clips/viz-goalie-screen-traffic.f5a603f5.mp3",
-      "durationSec": 53.168,
+      "url": "/audio/pregame/clips/viz-goalie-screen-traffic.c95cf44d.mp3",
+      "durationSec": 50.696,
       "phases": [
         {
           "phase": "rink",
@@ -2977,8 +2977,8 @@
       ]
     },
     "viz-goalie-play-puck-breakout": {
-      "url": "/audio/pregame/clips/viz-goalie-play-puck-breakout.2120dd8a.mp3",
-      "durationSec": 63.724,
+      "url": "/audio/pregame/clips/viz-goalie-play-puck-breakout.deb74e02.mp3",
+      "durationSec": 59.668,
       "phases": [
         {
           "phase": "rink",
@@ -2987,8 +2987,8 @@
       ]
     },
     "viz-goalie-pk-seam-save": {
-      "url": "/audio/pregame/clips/viz-goalie-pk-seam-save.906c02d3.mp3",
-      "durationSec": 62.404,
+      "url": "/audio/pregame/clips/viz-goalie-pk-seam-save.ddd2d08f.mp3",
+      "durationSec": 56.092,
       "phases": [
         {
           "phase": "rink",
@@ -2997,8 +2997,8 @@
       ]
     },
     "viz-guard-pick-and-roll": {
-      "url": "/audio/pregame/clips/viz-guard-pick-and-roll.92779b04.mp3",
-      "durationSec": 89.356,
+      "url": "/audio/pregame/clips/viz-guard-pick-and-roll.af647e40.mp3",
+      "durationSec": 81.772,
       "phases": [
         {
           "phase": "rink",
@@ -3007,8 +3007,8 @@
       ]
     },
     "viz-guard-transition-pullup": {
-      "url": "/audio/pregame/clips/viz-guard-transition-pullup.2348efbd.mp3",
-      "durationSec": 63.88,
+      "url": "/audio/pregame/clips/viz-guard-transition-pullup.0e3f50d9.mp3",
+      "durationSec": 59.32,
       "phases": [
         {
           "phase": "rink",
@@ -3017,8 +3017,8 @@
       ]
     },
     "viz-guard-live-steal": {
-      "url": "/audio/pregame/clips/viz-guard-live-steal.1304c295.mp3",
-      "durationSec": 69.504,
+      "url": "/audio/pregame/clips/viz-guard-live-steal.e3b02461.mp3",
+      "durationSec": 61.608,
       "phases": [
         {
           "phase": "rink",
@@ -3027,8 +3027,8 @@
       ]
     },
     "viz-guard-drive-and-kick": {
-      "url": "/audio/pregame/clips/viz-guard-drive-and-kick.092037f8.mp3",
-      "durationSec": 70.044,
+      "url": "/audio/pregame/clips/viz-guard-drive-and-kick.db0ac8e2.mp3",
+      "durationSec": 62.556,
       "phases": [
         {
           "phase": "rink",
@@ -3037,8 +3037,8 @@
       ]
     },
     "viz-guard-press-break": {
-      "url": "/audio/pregame/clips/viz-guard-press-break.94742ea3.mp3",
-      "durationSec": 76.936,
+      "url": "/audio/pregame/clips/viz-guard-press-break.a41449ce.mp3",
+      "durationSec": 69.064,
       "phases": [
         {
           "phase": "rink",
@@ -3047,8 +3047,8 @@
       ]
     },
     "viz-guard-run-the-set": {
-      "url": "/audio/pregame/clips/viz-guard-run-the-set.c677b967.mp3",
-      "durationSec": 59.344,
+      "url": "/audio/pregame/clips/viz-guard-run-the-set.129322bf.mp3",
+      "durationSec": 57.232,
       "phases": [
         {
           "phase": "rink",
@@ -3057,8 +3057,8 @@
       ]
     },
     "viz-guard-clutch-free-throws": {
-      "url": "/audio/pregame/clips/viz-guard-clutch-free-throws.383f243f.mp3",
-      "durationSec": 78.432,
+      "url": "/audio/pregame/clips/viz-guard-clutch-free-throws.512e569c.mp3",
+      "durationSec": 72.936,
       "phases": [
         {
           "phase": "rink",
@@ -3067,8 +3067,8 @@
       ]
     },
     "viz-guard-ices-it-late": {
-      "url": "/audio/pregame/clips/viz-guard-ices-it-late.dc3a3681.mp3",
-      "durationSec": 72.98,
+      "url": "/audio/pregame/clips/viz-guard-ices-it-late.893c3e02.mp3",
+      "durationSec": 65.924,
       "phases": [
         {
           "phase": "rink",
@@ -3077,8 +3077,8 @@
       ]
     },
     "viz-wing-catch-and-shoot": {
-      "url": "/audio/pregame/clips/viz-wing-catch-and-shoot.21092197.mp3",
-      "durationSec": 64.888,
+      "url": "/audio/pregame/clips/viz-wing-catch-and-shoot.099c8e1e.mp3",
+      "durationSec": 60.64,
       "phases": [
         {
           "phase": "rink",
@@ -3087,8 +3087,8 @@
       ]
     },
     "viz-wing-attack-closeout": {
-      "url": "/audio/pregame/clips/viz-wing-attack-closeout.c4052b2a.mp3",
-      "durationSec": 73.008,
+      "url": "/audio/pregame/clips/viz-wing-attack-closeout.8da02b1a.mp3",
+      "durationSec": 69.84,
       "phases": [
         {
           "phase": "rink",
@@ -3097,8 +3097,8 @@
       ]
     },
     "viz-wing-denial-deflection": {
-      "url": "/audio/pregame/clips/viz-wing-denial-deflection.8e6ebca5.mp3",
-      "durationSec": 70.748,
+      "url": "/audio/pregame/clips/viz-wing-denial-deflection.7aa8d55c.mp3",
+      "durationSec": 62.228,
       "phases": [
         {
           "phase": "rink",
@@ -3107,8 +3107,8 @@
       ]
     },
     "viz-wing-backdoor-cut": {
-      "url": "/audio/pregame/clips/viz-wing-backdoor-cut.ce80686a.mp3",
-      "durationSec": 64.808,
+      "url": "/audio/pregame/clips/viz-wing-backdoor-cut.130d35f9.mp3",
+      "durationSec": 60.608,
       "phases": [
         {
           "phase": "rink",
@@ -3117,8 +3117,8 @@
       ]
     },
     "viz-wing-closeout-contain": {
-      "url": "/audio/pregame/clips/viz-wing-closeout-contain.5ee7281f.mp3",
-      "durationSec": 63.708,
+      "url": "/audio/pregame/clips/viz-wing-closeout-contain.6fd0cc6e.mp3",
+      "durationSec": 62.004,
       "phases": [
         {
           "phase": "rink",
@@ -3127,8 +3127,8 @@
       ]
     },
     "viz-wing-relocate-catch-shoot": {
-      "url": "/audio/pregame/clips/viz-wing-relocate-catch-shoot.5edc1469.mp3",
-      "durationSec": 65.932,
+      "url": "/audio/pregame/clips/viz-wing-relocate-catch-shoot.80609a48.mp3",
+      "durationSec": 63.94,
       "phases": [
         {
           "phase": "rink",
@@ -3137,8 +3137,8 @@
       ]
     },
     "viz-wing-clutch-free-throws": {
-      "url": "/audio/pregame/clips/viz-wing-clutch-free-throws.da580a6f.mp3",
-      "durationSec": 68.624,
+      "url": "/audio/pregame/clips/viz-wing-clutch-free-throws.5f1b8f46.mp3",
+      "durationSec": 64.304,
       "phases": [
         {
           "phase": "rink",
@@ -3147,8 +3147,8 @@
       ]
     },
     "viz-wing-late-jumper": {
-      "url": "/audio/pregame/clips/viz-wing-late-jumper.dde89c6c.mp3",
-      "durationSec": 67.696,
+      "url": "/audio/pregame/clips/viz-wing-late-jumper.d334d3a8.mp3",
+      "durationSec": 59.632,
       "phases": [
         {
           "phase": "rink",
@@ -3157,8 +3157,8 @@
       ]
     },
     "viz-big-roll-and-finish": {
-      "url": "/audio/pregame/clips/viz-big-roll-and-finish.49447a4f.mp3",
-      "durationSec": 68.304,
+      "url": "/audio/pregame/clips/viz-big-roll-and-finish.625dfb7b.mp3",
+      "durationSec": 63.72,
       "phases": [
         {
           "phase": "rink",
@@ -3167,8 +3167,8 @@
       ]
     },
     "viz-big-post-seal-dropstep": {
-      "url": "/audio/pregame/clips/viz-big-post-seal-dropstep.eea94dd0.mp3",
-      "durationSec": 66.816,
+      "url": "/audio/pregame/clips/viz-big-post-seal-dropstep.80ac71ba.mp3",
+      "durationSec": 59.664,
       "phases": [
         {
           "phase": "rink",
@@ -3177,8 +3177,8 @@
       ]
     },
     "viz-big-boxout-outlet": {
-      "url": "/audio/pregame/clips/viz-big-boxout-outlet.7d4252e9.mp3",
-      "durationSec": 73,
+      "url": "/audio/pregame/clips/viz-big-boxout-outlet.a56ee399.mp3",
+      "durationSec": 66.544,
       "phases": [
         {
           "phase": "rink",
@@ -3187,8 +3187,8 @@
       ]
     },
     "viz-big-rim-protect-and-go": {
-      "url": "/audio/pregame/clips/viz-big-rim-protect-and-go.771e91f3.mp3",
-      "durationSec": 63.944,
+      "url": "/audio/pregame/clips/viz-big-rim-protect-and-go.d806945a.mp3",
+      "durationSec": 62.384,
       "phases": [
         {
           "phase": "rink",
@@ -3197,8 +3197,8 @@
       ]
     },
     "viz-big-rescreen-roll": {
-      "url": "/audio/pregame/clips/viz-big-rescreen-roll.e26906e6.mp3",
-      "durationSec": 67.692,
+      "url": "/audio/pregame/clips/viz-big-rescreen-roll.125b4a13.mp3",
+      "durationSec": 61.452,
       "phases": [
         {
           "phase": "rink",
@@ -3207,8 +3207,8 @@
       ]
     },
     "viz-big-short-roll-read": {
-      "url": "/audio/pregame/clips/viz-big-short-roll-read.1a140ade.mp3",
-      "durationSec": 66.492,
+      "url": "/audio/pregame/clips/viz-big-short-roll-read.56d319ef.mp3",
+      "durationSec": 56.868,
       "phases": [
         {
           "phase": "rink",
@@ -3217,8 +3217,8 @@
       ]
     },
     "viz-big-clutch-free-throws": {
-      "url": "/audio/pregame/clips/viz-big-clutch-free-throws.205d0def.mp3",
-      "durationSec": 76.18,
+      "url": "/audio/pregame/clips/viz-big-clutch-free-throws.12404d3a.mp3",
+      "durationSec": 71.932,
       "phases": [
         {
           "phase": "rink",
@@ -3227,8 +3227,8 @@
       ]
     },
     "viz-big-game-sealing-block": {
-      "url": "/audio/pregame/clips/viz-big-game-sealing-block.90f2ffe5.mp3",
-      "durationSec": 73.936,
+      "url": "/audio/pregame/clips/viz-big-game-sealing-block.e1672512.mp3",
+      "durationSec": 67.768,
       "phases": [
         {
           "phase": "rink",
@@ -3237,18 +3237,18 @@
       ]
     },
     "shared-cue-word-intro-pre": {
-      "url": "/audio/pregame/clips/shared-cue-word-intro-pre.7c3029b8.mp3",
-      "durationSec": 7.564,
+      "url": "/audio/pregame/clips/shared-cue-word-intro-pre.1200ed7d.mp3",
+      "durationSec": 7.996,
       "phases": []
     },
     "shared-cue-word-sendoff-pre": {
-      "url": "/audio/pregame/clips/shared-cue-word-sendoff-pre.fcc06aec.mp3",
-      "durationSec": 3.66,
+      "url": "/audio/pregame/clips/shared-cue-word-sendoff-pre.39756aa4.mp3",
+      "durationSec": 3.084,
       "phases": []
     },
     "opener-confidence": {
-      "url": "/audio/pregame/clips/opener-confidence.8d1ab26d.mp3",
-      "durationSec": 48.112,
+      "url": "/audio/pregame/clips/opener-confidence.5307daf0.mp3",
+      "durationSec": 41.368,
       "phases": [
         {
           "phase": "intro",
@@ -3257,8 +3257,8 @@
       ]
     },
     "opener-calm": {
-      "url": "/audio/pregame/clips/opener-calm.68917c5c.mp3",
-      "durationSec": 59.728,
+      "url": "/audio/pregame/clips/opener-calm.b1eb843f.mp3",
+      "durationSec": 54.832,
       "phases": [
         {
           "phase": "intro",
@@ -3267,8 +3267,8 @@
       ]
     },
     "opener-compete-level": {
-      "url": "/audio/pregame/clips/opener-compete-level.56bc410f.mp3",
-      "durationSec": 56.056,
+      "url": "/audio/pregame/clips/opener-compete-level.320d80f0.mp3",
+      "durationSec": 54.904,
       "phases": [
         {
           "phase": "intro",
@@ -3277,8 +3277,8 @@
       ]
     },
     "opener-reset": {
-      "url": "/audio/pregame/clips/opener-reset.079458f9.mp3",
-      "durationSec": 50.32,
+      "url": "/audio/pregame/clips/opener-reset.965fdfb7.mp3",
+      "durationSec": 45.856,
       "phases": [
         {
           "phase": "intro",
@@ -3287,8 +3287,8 @@
       ]
     },
     "opener-courage": {
-      "url": "/audio/pregame/clips/opener-courage.1fdb8f87.mp3",
-      "durationSec": 57.808,
+      "url": "/audio/pregame/clips/opener-courage.d86c2ec1.mp3",
+      "durationSec": 52.192,
       "phases": [
         {
           "phase": "intro",
@@ -3297,8 +3297,8 @@
       ]
     },
     "opener-decisions": {
-      "url": "/audio/pregame/clips/opener-decisions.e7e715b1.mp3",
-      "durationSec": 54.976,
+      "url": "/audio/pregame/clips/opener-decisions.1918a904.mp3",
+      "durationSec": 46.168,
       "phases": [
         {
           "phase": "intro",
@@ -3307,8 +3307,8 @@
       ]
     },
     "opener-leadership": {
-      "url": "/audio/pregame/clips/opener-leadership.cad7f42a.mp3",
-      "durationSec": 68.752,
+      "url": "/audio/pregame/clips/opener-leadership.5bed1d28.mp3",
+      "durationSec": 60.352,
       "phases": [
         {
           "phase": "intro",
@@ -3317,8 +3317,8 @@
       ]
     },
     "opener-joy": {
-      "url": "/audio/pregame/clips/opener-joy.b58d3067.mp3",
-      "durationSec": 64.912,
+      "url": "/audio/pregame/clips/opener-joy.a81bcba8.mp3",
+      "durationSec": 61.096,
       "phases": [
         {
           "phase": "intro",
@@ -3327,8 +3327,8 @@
       ]
     },
     "opener-hope": {
-      "url": "/audio/pregame/clips/opener-hope.cd0cb509.mp3",
-      "durationSec": 64.12,
+      "url": "/audio/pregame/clips/opener-hope.26acca4e.mp3",
+      "durationSec": 57.04,
       "phases": [
         {
           "phase": "intro",
@@ -3337,8 +3337,8 @@
       ]
     },
     "opener-bb-courage": {
-      "url": "/audio/pregame/clips/opener-bb-courage.ca693f71.mp3",
-      "durationSec": 59.272,
+      "url": "/audio/pregame/clips/opener-bb-courage.350ea960.mp3",
+      "durationSec": 57.352,
       "phases": [
         {
           "phase": "intro",
@@ -3347,8 +3347,8 @@
       ]
     },
     "opener-bb-decisions": {
-      "url": "/audio/pregame/clips/opener-bb-decisions.fbde84ad.mp3",
-      "durationSec": 51.784,
+      "url": "/audio/pregame/clips/opener-bb-decisions.ce4e51b3.mp3",
+      "durationSec": 48.76,
       "phases": [
         {
           "phase": "intro",
@@ -3357,8 +3357,8 @@
       ]
     },
     "opener-bb-confidence": {
-      "url": "/audio/pregame/clips/opener-bb-confidence.1b7c6546.mp3",
-      "durationSec": 46.408,
+      "url": "/audio/pregame/clips/opener-bb-confidence.d8a1ed1c.mp3",
+      "durationSec": 45.472,
       "phases": [
         {
           "phase": "intro",
@@ -3367,8 +3367,8 @@
       ]
     },
     "opener-bb-compete-level": {
-      "url": "/audio/pregame/clips/opener-bb-compete-level.acc02c38.mp3",
-      "durationSec": 64.48,
+      "url": "/audio/pregame/clips/opener-bb-compete-level.f2c8d7e0.mp3",
+      "durationSec": 56.944,
       "phases": [
         {
           "phase": "intro",
@@ -3377,8 +3377,8 @@
       ]
     },
     "opener-bb-reset": {
-      "url": "/audio/pregame/clips/opener-bb-reset.1f610ad4.mp3",
-      "durationSec": 50.416,
+      "url": "/audio/pregame/clips/opener-bb-reset.5e285f80.mp3",
+      "durationSec": 44.68,
       "phases": [
         {
           "phase": "intro",
@@ -3387,8 +3387,8 @@
       ]
     },
     "opener-bb-leadership": {
-      "url": "/audio/pregame/clips/opener-bb-leadership.3c4d7598.mp3",
-      "durationSec": 67.12,
+      "url": "/audio/pregame/clips/opener-bb-leadership.5d6fbba6.mp3",
+      "durationSec": 62.296,
       "phases": [
         {
           "phase": "intro",
@@ -3397,8 +3397,8 @@
       ]
     },
     "opener-bb-joy": {
-      "url": "/audio/pregame/clips/opener-bb-joy.b832126f.mp3",
-      "durationSec": 66.016,
+      "url": "/audio/pregame/clips/opener-bb-joy.166b8d04.mp3",
+      "durationSec": 59.344,
       "phases": [
         {
           "phase": "intro",
@@ -3407,8 +3407,8 @@
       ]
     },
     "opener-bb-hope": {
-      "url": "/audio/pregame/clips/opener-bb-hope.f5917121.mp3",
-      "durationSec": 68.176,
+      "url": "/audio/pregame/clips/opener-bb-hope.6df698ff.mp3",
+      "durationSec": 62.08,
       "phases": [
         {
           "phase": "intro",
@@ -3417,8 +3417,8 @@
       ]
     },
     "opener-be-vocal": {
-      "url": "/audio/pregame/clips/opener-be-vocal.6b06dcc3.mp3",
-      "durationSec": 76.912,
+      "url": "/audio/pregame/clips/opener-be-vocal.0fba3b6c.mp3",
+      "durationSec": 71.824,
       "phases": [
         {
           "phase": "intro",
@@ -3427,8 +3427,8 @@
       ]
     },
     "opener-bb-be-vocal": {
-      "url": "/audio/pregame/clips/opener-bb-be-vocal.1165eaae.mp3",
-      "durationSec": 74.464,
+      "url": "/audio/pregame/clips/opener-bb-be-vocal.8544f63b.mp3",
+      "durationSec": 67.528,
       "phases": [
         {
           "phase": "intro",

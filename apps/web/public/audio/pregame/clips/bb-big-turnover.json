@@ -1,6 +1,6 @@
 {
   "slug": "bb-big-turnover",
-  "durationSec": 275.76,
+  "durationSec": 262.272,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.056,
+      "startSec": 5.816,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 11.52,
+      "startSec": 12.288,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 18.816,
+      "startSec": 19.536,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 24.328,
+      "startSec": 25.456,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 51.376
+      "startSec": 51.472
     },
     {
       "phase": "firstShift",
-      "startSec": 97.154
+      "startSec": 90.65
     },
     {
       "phase": "hardMoment",
-      "startSec": 167.824
+      "startSec": 158.272
     },
     {
       "phase": "reset",
-      "startSec": 228.472
+      "startSec": 214.744
     },
     {
       "phase": "prayer",
-      "startSec": 245.58
+      "startSec": 228.596
     },
     {
       "phase": "done",
-      "startSec": 269.632
+      "startSec": 255.604
     }
   ]
 }

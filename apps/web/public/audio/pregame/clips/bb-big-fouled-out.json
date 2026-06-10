@@ -1,6 +1,6 @@
 {
   "slug": "bb-big-fouled-out",
-  "durationSec": 286.488,
+  "durationSec": 272.904,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.536,
+      "startSec": 5.456,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 12.048,
+      "startSec": 11.472,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 21.528,
+      "startSec": 19.632,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 28.456,
+      "startSec": 26.104,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 52.288
+      "startSec": 51.568
     },
     {
       "phase": "firstShift",
-      "startSec": 94.274
+      "startSec": 91.874
     },
     {
       "phase": "hardMoment",
-      "startSec": 167.056
+      "startSec": 160.552
     },
     {
       "phase": "reset",
-      "startSec": 238
+      "startSec": 226.888
     },
     {
       "phase": "prayer",
-      "startSec": 255.612
+      "startSec": 238.676
     },
     {
       "phase": "done",
-      "startSec": 279.712
+      "startSec": 266.332
     }
   ]
 }

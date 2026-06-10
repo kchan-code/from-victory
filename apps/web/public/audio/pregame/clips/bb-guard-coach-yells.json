@@ -1,6 +1,6 @@
 {
   "slug": "bb-guard-coach-yells",
-  "durationSec": 268.128,
+  "durationSec": 263.4,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.704,
+      "startSec": 5.648,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 12.744,
+      "startSec": 11.976,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 21.672,
+      "startSec": 19.128,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 27.4,
+      "startSec": 25.504,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 54.376
+      "startSec": 53.032
     },
     {
       "phase": "firstShift",
-      "startSec": 95.618
+      "startSec": 91.034
     },
     {
       "phase": "hardMoment",
-      "startSec": 165.928
+      "startSec": 158.632
     },
     {
       "phase": "reset",
-      "startSec": 221.848
+      "startSec": 217.552
     },
     {
       "phase": "prayer",
-      "startSec": 238.788
+      "startSec": 229.82
     },
     {
       "phase": "done",
-      "startSec": 262
+      "startSec": 257.74
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "slug": "viz-big",
-  "durationSec": 111.216,
+  "durationSec": 107.28,
   "phases": [
     {
       "phase": "rink",
@@ -8,7 +8,7 @@
     },
     {
       "phase": "firstShift",
-      "startSec": 41.554
+      "startSec": 41.818
     }
   ]
 }

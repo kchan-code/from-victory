@@ -25,7 +25,7 @@ Emotion: Quiet care. The athlete has their eyes closed; speak as if you know it.
 Pronunciation: Clear and gentle. Land "Inhale" and "Exhale" cleanly — fully voiced, never sharp, never rushed.
 
 Pauses: The script's typed silence segments carry structural pauses. Let your sentence ends breathe naturally into them. A brief beat after each cue is enough.`,
-  speed: 0.95,
+  speed: 1.1,
   // Warming EQ — this render came out thin/tinny. Matching it to the other
   // files' spectral balance wasn't enough (they read thin too), so this goes
   // further per KC's by-ear pick: restore low body (bass + 350 Hz lift), tame
@@ -99,7 +99,7 @@ Pauses: The script's typed silence segments carry structural pauses. Let your se
     {
       type: "speech",
       text: "Ready. Now set your focus.",
-      speed: 1.0,
+      speed: 1.1,
       mark: { phase: "done" },
     },
   ],

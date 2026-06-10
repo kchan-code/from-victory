@@ -1,6 +1,6 @@
 {
   "slug": "bb-guard-nervous",
-  "durationSec": 281.136,
+  "durationSec": 267.408,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.752,
+      "startSec": 5.264,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 13.536,
+      "startSec": 11.592,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 20.952,
+      "startSec": 19.848,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 27.64,
+      "startSec": 25.864,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 53.152
+      "startSec": 52.12
     },
     {
       "phase": "firstShift",
-      "startSec": 97.994
+      "startSec": 91.106
     },
     {
       "phase": "hardMoment",
-      "startSec": 168.736
+      "startSec": 158.464
     },
     {
       "phase": "reset",
-      "startSec": 234.28
+      "startSec": 222.04
     },
     {
       "phase": "prayer",
-      "startSec": 250.836
+      "startSec": 234.908
     },
     {
       "phase": "done",
-      "startSec": 274.552
+      "startSec": 260.596
     }
   ]
 }

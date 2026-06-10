@@ -1,6 +1,6 @@
 {
   "slug": "viz-forward",
-  "durationSec": 110.37,
+  "durationSec": 109.362,
   "phases": [
     {
       "phase": "rink",
@@ -8,7 +8,7 @@
     },
     {
       "phase": "firstShift",
-      "startSec": 39.586
+      "startSec": 39.682
     }
   ]
 }
