@@ -1,6 +1,6 @@
 {
   "slug": "viz-guard",
-  "durationSec": 109.176,
+  "durationSec": 106.104,
   "phases": [
     {
       "phase": "rink",
@@ -8,7 +8,7 @@
     },
     {
       "phase": "firstShift",
-      "startSec": 38.866
+      "startSec": 41.794
     }
   ]
 }

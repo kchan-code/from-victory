@@ -1,6 +1,6 @@
 {
   "slug": "bb-guard-benched",
-  "durationSec": 272.856,
+  "durationSec": 271.728,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 5.792,
+      "startSec": 5.552,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 12.096,
+      "startSec": 12.336,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 20.184,
+      "startSec": 20.448,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 25.648,
+      "startSec": 26.56,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 53.608
+      "startSec": 53.656
     },
     {
       "phase": "firstShift",
-      "startSec": 97.25
+      "startSec": 96.602
     },
     {
       "phase": "hardMoment",
-      "startSec": 166
+      "startSec": 163.264
     },
     {
       "phase": "reset",
-      "startSec": 225.136
+      "startSec": 222.856
     },
     {
       "phase": "prayer",
-      "startSec": 242.004
+      "startSec": 235.988
     },
     {
       "phase": "done",
-      "startSec": 265.72
+      "startSec": 264.964
     }
   ]
 }

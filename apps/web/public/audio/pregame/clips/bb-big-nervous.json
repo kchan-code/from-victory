@@ -1,6 +1,6 @@
 {
   "slug": "bb-big-nervous",
-  "durationSec": 282.648,
+  "durationSec": 272.184,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.368,
+      "startSec": 5.36,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 12.216,
+      "startSec": 11.616,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 20.856,
+      "startSec": 19.584,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 26.368,
+      "startSec": 26.776,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 54.136
+      "startSec": 52.912
     },
     {
       "phase": "firstShift",
-      "startSec": 97.634
+      "startSec": 91.802
     },
     {
       "phase": "hardMoment",
-      "startSec": 168.496
+      "startSec": 161.776
     },
     {
       "phase": "reset",
-      "startSec": 233.992
+      "startSec": 224.008
     },
     {
       "phase": "prayer",
-      "startSec": 250.86
+      "startSec": 237.212
     },
     {
       "phase": "done",
-      "startSec": 275.68
+      "startSec": 266.596
     }
   ]
 }

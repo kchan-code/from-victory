@@ -1,6 +1,6 @@
 {
   "slug": "bb-guard-fall-behind-early",
-  "durationSec": 279.912,
+  "durationSec": 268.272,
   "phases": [
     {
       "phase": "settle",
@@ -8,47 +8,47 @@
     },
     {
       "phase": "inhale",
-      "startSec": 6.272,
+      "startSec": 5.36,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 13.32,
+      "startSec": 11.184,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 21,
+      "startSec": 19.656,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 27.784,
+      "startSec": 25.72,
       "round": 1
     },
     {
       "phase": "rink",
-      "startSec": 54.664
+      "startSec": 52.432
     },
     {
       "phase": "firstShift",
-      "startSec": 96.242
+      "startSec": 91.586
     },
     {
       "phase": "hardMoment",
-      "startSec": 169.648
+      "startSec": 160.72
     },
     {
       "phase": "reset",
-      "startSec": 232.408
+      "startSec": 220.432
     },
     {
       "phase": "prayer",
-      "startSec": 249.036
+      "startSec": 233.252
     },
     {
       "phase": "done",
-      "startSec": 273.136
+      "startSec": 261.004
     }
   ]
 }
