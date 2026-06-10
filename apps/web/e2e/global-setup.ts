@@ -6,17 +6,20 @@
  *   2. Create a confirmed test parent account (service-role, bypasses email
  *      verification) and persist its storageState so specs start already
  *      signed in.
- *   3. Register a teardown that deletes the parent + all child athletes
+ *   3. Create a test athlete account linked to the parent, claim it through
+ *      the /pair browser flow, and persist athlete.storageState.json.
+ *   4. Register a teardown that deletes the parent + all child athletes
  *      created during the run so the run is idempotent.
  *
  * All data created here is prefixed with "e2e-" so stray rows are
  * identifiable if cleanup ever fails mid-run.
  */
 
+import { randomBytes } from "crypto";
 import fs from "fs";
 import path from "path";
 
-import { chromium, type FullConfig } from "@playwright/test";
+import { chromium, type Browser, type FullConfig } from "@playwright/test";
 import {
   createClient,
   type SupabaseClient as _SupabaseClient,
@@ -94,6 +97,24 @@ export const STORAGE_STATE_PATH = path.join(
 );
 
 // ---------------------------------------------------------------------------
+// Test-athlete credentials  (linked to the test parent)
+// ---------------------------------------------------------------------------
+
+// Synthetic email domain matches what lib/auth/athlete-email.ts defines so
+// cleanup helpers that filter by domain work correctly.
+export const TEST_ATHLETE_EMAIL =
+  "e2e-athlete@athletes.fromvictory.app";
+export const TEST_ATHLETE_PASSWORD = "e2e-TestAthlete-2024!";
+export const TEST_ATHLETE_FIRST_NAME = "E2E-Athlete";
+const TEST_ATHLETE_BIRTHDATE = "2007-06-15"; // ~18 y/o — safely above 13+ floor
+
+export const ATHLETE_STORAGE_STATE_PATH = path.join(
+  __dirname,
+  ".auth",
+  "athlete.storageState.json",
+);
+
+// ---------------------------------------------------------------------------
 // Global setup entry point
 // ---------------------------------------------------------------------------
 
@@ -117,8 +138,9 @@ async function globalSetup(_config: FullConfig): Promise<void> {
   });
 
   // ------------------------------------------------------------------
-  // 1. Clean up any leftover e2e parent from a previous interrupted run.
+  // 1. Clean up any leftover e2e data from a previous interrupted run.
   // ------------------------------------------------------------------
+  await cleanupExistingTestAthlete(service);
   await cleanupExistingTestParent(service);
 
   // ------------------------------------------------------------------
@@ -156,35 +178,165 @@ async function globalSetup(_config: FullConfig): Promise<void> {
   }
 
   // ------------------------------------------------------------------
-  // 3. Sign in through the app UI and save storageState.
+  // 3. Sign in through the app UI and save parent storageState.
   //    Using the UI (not a direct Supabase token call) so the SSR cookie
   //    session is wired exactly as the app expects it.
   // ------------------------------------------------------------------
   fs.mkdirSync(path.dirname(STORAGE_STATE_PATH), { recursive: true });
 
   const browser = await chromium.launch();
-  const page = await browser.newPage();
 
-  await page.goto(`${baseUrl}/signin`);
+  try {
+    const parentPage = await browser.newPage();
 
-  // Wait for the sign-in form.
-  await page.waitForSelector('input[name="email"]');
+    await parentPage.goto(`${baseUrl}/signin`);
+    await parentPage.waitForSelector('input[name="email"]');
 
-  await page.fill('input[name="email"]', TEST_PARENT_EMAIL);
-  await page.fill('input[name="password"]', TEST_PARENT_PASSWORD);
-  await page.click('button[type="submit"]');
+    await parentPage.fill('input[name="email"]', TEST_PARENT_EMAIL);
+    await parentPage.fill('input[name="password"]', TEST_PARENT_PASSWORD);
+    await parentPage.click('button[type="submit"]');
 
-  // After sign-in the app redirects parents to /dashboard.
-  await page.waitForURL("**/dashboard", { timeout: 15_000 });
+    // After sign-in the app redirects parents to /dashboard.
+    await parentPage.waitForURL("**/dashboard", { timeout: 15_000 });
 
-  await page.context().storageState({ path: STORAGE_STATE_PATH });
-  await browser.close();
+    await parentPage.context().storageState({ path: STORAGE_STATE_PATH });
+    await parentPage.close();
 
-  console.log("[global-setup] Test parent created and session saved.");
+    console.log("[global-setup] Test parent created and session saved.");
+
+    // ------------------------------------------------------------------
+    // 4. Provision test athlete and save athlete storageState.
+    // ------------------------------------------------------------------
+    await provisionTestAthlete(service, parentId, browser, baseUrl);
+  } finally {
+    await browser.close();
+  }
 }
 
 // ---------------------------------------------------------------------------
-// Cleanup helper (also exported for use in global-teardown)
+// Athlete provisioner
+//
+// Creates the athlete auth user + profile + parent link, generates a
+// one-time pairing code, then drives the /pair browser flow so the SSR
+// session cookies and device cookie are written correctly — mirroring the
+// real user path rather than bypassing it with direct token injection.
+// ---------------------------------------------------------------------------
+
+async function provisionTestAthlete(
+  service: ServiceClient,
+  parentId: string,
+  browser: Browser,
+  baseUrl: string,
+): Promise<void> {
+  // 1. Create athlete auth user (email pre-confirmed; initial password is a
+  //    throwaway — claimPairing overwrites it with TEST_ATHLETE_PASSWORD).
+  const tempPassword = randomBytes(24).toString("base64url");
+  const { data: created, error: createError } =
+    await service.auth.admin.createUser({
+      email: TEST_ATHLETE_EMAIL,
+      password: tempPassword,
+      email_confirm: true,
+    });
+
+  if (createError || !created.user) {
+    throw new Error(
+      `[global-setup] Failed to create test athlete: ${createError?.message ?? "unknown error"}`,
+    );
+  }
+  const athleteId = created.user.id;
+
+  // 2. Insert athlete profile (mirrors createAthlete server action).
+  const { error: profileError } = await service.from("profiles").insert({
+    id: athleteId,
+    role: "athlete",
+    first_name: TEST_ATHLETE_FIRST_NAME,
+    birthdate: TEST_ATHLETE_BIRTHDATE,
+    sport: "hockey",
+    // Required: practice page (and /athlete) guard on sport_selected_at IS NULL
+    // and redirects to /athlete/onboarding/sport if not set.
+    sport_selected_at: new Date().toISOString(),
+  });
+
+  if (profileError) {
+    await service.auth.admin.deleteUser(athleteId);
+    throw new Error(
+      `[global-setup] Failed to insert athlete profile: ${profileError.message}`,
+    );
+  }
+
+  // 3. Link athlete to the test parent (required before device_pairings
+  //    insert — the trigger checks created_by → parent_athlete_links).
+  const { error: linkError } = await service
+    .from("parent_athlete_links")
+    .insert({ parent_id: parentId, athlete_id: athleteId });
+
+  if (linkError) {
+    await service.from("profiles").delete().eq("id", athleteId);
+    await service.auth.admin.deleteUser(athleteId);
+    throw new Error(
+      `[global-setup] Failed to link test athlete to parent: ${linkError.message}`,
+    );
+  }
+
+  // 4. Insert a one-time pairing code (24-hour TTL matches production default).
+  const code = randomBytes(24).toString("base64url");
+  const expiresAt = new Date(
+    Date.now() + 24 * 60 * 60 * 1000,
+  ).toISOString();
+
+  const { error: pairingError } = await service
+    .from("device_pairings")
+    .insert({
+      code,
+      athlete_id: athleteId,
+      created_by: parentId,
+      expires_at: expiresAt,
+    });
+
+  if (pairingError) {
+    await service.from("profiles").delete().eq("id", athleteId);
+    await service.auth.admin.deleteUser(athleteId);
+    throw new Error(
+      `[global-setup] Failed to insert test pairing code: ${pairingError.message}`,
+    );
+  }
+
+  // 5. Claim the pairing code through the real browser flow.
+  //    This runs the full claimPairing server action, which:
+  //      - atomically consumes the code
+  //      - updates the athlete's password to TEST_ATHLETE_PASSWORD
+  //      - sets the fv_device_athlete_id cookie
+  //      - calls signInWithPassword → sets Supabase session cookies
+  //      - redirects to /athlete
+  //
+  //    A fresh context keeps the athlete session isolated from the parent.
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  try {
+    await page.goto(`${baseUrl}/pair?code=${code}`);
+
+    // Wait for the claim form to be interactive.
+    await page.waitForSelector('input[name="password"]', { timeout: 15_000 });
+
+    await page.fill('input[name="password"]', TEST_ATHLETE_PASSWORD);
+    await page.fill('input[name="password_confirm"]', TEST_ATHLETE_PASSWORD);
+    await page.click('button[type="submit"]');
+
+    // claimPairing redirects to /athlete on success (may further redirect to
+    // /athlete/today or similar — the regex matches any /athlete* URL).
+    await page.waitForURL(/\/athlete/, { timeout: 15_000 });
+
+    await context.storageState({ path: ATHLETE_STORAGE_STATE_PATH });
+
+    console.log("[global-setup] Test athlete created and session saved.");
+  } finally {
+    await context.close();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Cleanup helpers (also exported for use in global-teardown)
 // ---------------------------------------------------------------------------
 
 export async function cleanupExistingTestParent(
@@ -207,7 +359,9 @@ export async function cleanupExistingTestParent(
   const links = (linksRaw ?? []) as Array<{ athlete_id: string }>;
   const athleteIds = links.map((l) => l.athlete_id);
 
-  // Delete each athlete's profile + auth user (cascade deletes the link).
+  // Delete each athlete's profile + auth user.
+  // device_pairings rows cascade-delete via the ON DELETE CASCADE FK on
+  // athlete_id, so no explicit cleanup needed there.
   for (const athleteId of athleteIds) {
     await service.from("profiles").delete().eq("id", athleteId);
     await service.auth.admin.deleteUser(athleteId);
@@ -220,6 +374,27 @@ export async function cleanupExistingTestParent(
   console.log(
     `[global-setup] Cleaned up test parent ${parentId} + ${athleteIds.length} athlete(s).`,
   );
+}
+
+/**
+ * Standalone cleanup for the test athlete by email.
+ *
+ * Handles the edge case where the athlete was created but the parent
+ * creation or link step failed, leaving an orphaned athlete row that
+ * cleanupExistingTestParent would miss (it finds athletes via parent_athlete_links).
+ */
+export async function cleanupExistingTestAthlete(
+  service: ServiceClient,
+): Promise<void> {
+  const { data: users } = await service.auth.admin.listUsers();
+  const existing = users?.users?.find((u) => u.email === TEST_ATHLETE_EMAIL);
+  if (!existing) return;
+
+  const athleteId = existing.id;
+  await service.from("profiles").delete().eq("id", athleteId);
+  await service.auth.admin.deleteUser(athleteId);
+
+  console.log(`[global-setup] Cleaned up orphaned test athlete ${athleteId}.`);
 }
 
 export default globalSetup;

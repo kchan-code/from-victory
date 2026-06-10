@@ -13,7 +13,7 @@
  *   Screen 3 – Prayer-style picker: "Pray with me" or "I'll pray on my own".
  *   Screen 4 – PracticeSessionScreen: state-aware audio, focus voiced.
  *
- * Auth: uses signed-in parent storageState from global-setup.
+ * Auth: uses signed-in athlete storageState from global-setup (chromium-mobile-athlete project).
  * Audience-language guard: athlete-facing route, asserts no "kid/kids/kiddo/youngster".
  *
  * NOTE: Playwright specs require a running Next.js server.
