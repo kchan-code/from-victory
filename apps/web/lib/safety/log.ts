@@ -1,5 +1,6 @@
 import "server-only";
 
+import { notifyError } from "@/lib/monitoring/notify";
 import { createServiceClient } from "@/lib/supabase/service";
 
 /**
@@ -33,6 +34,14 @@ export async function logSafetyEvent(
   if (error) {
     console.error(
       `[safety.logSafetyEvent] insert failed (athleteId=${athleteId} athleteSessionId=${athleteSessionId} category=${category}): ${error.message} (code=${error.code ?? "n/a"})`,
+    );
+    // PII RULE: do NOT include category here — it is a behavioral health
+    // derivative from a minor's detection event. Only the Postgres error code
+    // (an opaque infra identifier) leaves the platform boundary.
+    void notifyError(
+      "[safety] logSafetyEvent insert failed",
+      `insert failed (code=${error.code ?? "n/a"})`,
+      { pg_code: error.code ?? "n/a" },
     );
   }
 }

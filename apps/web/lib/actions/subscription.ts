@@ -34,6 +34,7 @@ import type Stripe from "stripe";
 import { z } from "zod";
 
 import { requireParent } from "@/lib/auth/guards";
+import { notifyError } from "@/lib/monitoring/notify";
 import { getStripe } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
 import { planToPriceEnvVar } from "@/lib/subscriptions/plans";
@@ -86,6 +87,11 @@ export async function createCheckoutSession(
       `[subscription.createCheckoutSession] ${envVar} is not set. ` +
         "Populate this env var before accepting subscriptions. " +
         "See .env.example for the full list of required Stripe vars.",
+    );
+    void notifyError(
+      "[subscription] Stripe price env var missing",
+      `${envVar} is not set — checkout is broken`,
+      { env_var: envVar, plan },
     );
     return {
       ok: false,
@@ -145,6 +151,11 @@ export async function createCheckoutSession(
         "[subscription.createCheckoutSession] Stripe returned a session with no URL. " +
           `session_id="${session.id}"`,
       );
+      void notifyError(
+        "[subscription] Stripe checkout session missing URL",
+        "Stripe returned a checkout session with no URL",
+        { session_id: session.id, plan },
+      );
       return {
         ok: false,
         error: "We couldn't start checkout. Please try again.",
@@ -157,6 +168,11 @@ export async function createCheckoutSession(
     const message = err instanceof Error ? err.message : String(err);
     console.error(
       `[subscription.createCheckoutSession] Stripe API call failed: ${message}`,
+    );
+    void notifyError(
+      "[subscription] Stripe API call failed",
+      message,
+      { plan },
     );
     return {
       ok: false,
