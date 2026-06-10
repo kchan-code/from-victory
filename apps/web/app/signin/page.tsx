@@ -24,6 +24,9 @@ export default async function SignInPage({ searchParams }: Props) {
 
   if (deviceAthleteId) {
     const service = createServiceClient();
+    // deviceAthleteId is HMAC-verified by getDeviceAthleteId() (FV-13) — this
+    // service-role lookup only runs for a cryptographically-signed cookie value.
+    // A forged or unsigned legacy cookie is rejected upstream and returns null.
     const { data: athlete } = await service
       .from("profiles")
       .select("first_name, role")
