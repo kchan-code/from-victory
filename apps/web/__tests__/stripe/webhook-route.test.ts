@@ -427,4 +427,114 @@ describe("POST /api/webhooks/stripe", () => {
       new Date(3000 * 1000).toISOString(),
     );
   });
+
+  // -------------------------------------------------------------------------
+  // 10c. Watermark boundary — equal timestamp (created == watermark) APPLIES
+  //      (idempotent same-second redelivery; guards against `<` → `<=` drift)
+  // -------------------------------------------------------------------------
+  it("applies upsert when subscription.updated event timestamp equals the watermark", async () => {
+    serviceMockImpl = makeServiceMock({
+      existingRow: {
+        parent_id: "parent-uuid-007",
+        last_stripe_event_at: new Date(2000 * 1000).toISOString(),
+      },
+    });
+
+    const sub = makeSubscription({ status: "active", customer: "cus_equal" });
+    // Equal event: created=2000 == stored watermark at 2000 → must still apply.
+    const event = makeEvent("customer.subscription.updated", sub, 2000);
+    constructEventMock.mockReturnValueOnce(event);
+
+    const req = makeRequest("raw_body", { "stripe-signature": "sig_valid" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(upsertCalls).toHaveLength(1);
+  });
+
+  // -------------------------------------------------------------------------
+  // 11. Dispatch coverage — customer.subscription.created → 200, upsert called
+  //     (the created/updated case-fallthrough is exercised explicitly)
+  // -------------------------------------------------------------------------
+  it("returns 200 and upserts on customer.subscription.created", async () => {
+    serviceMockImpl = makeServiceMock({
+      existingRow: { parent_id: "parent-uuid-008", last_stripe_event_at: null },
+    });
+
+    const sub = makeSubscription({ customer: "cus_created", status: "active" });
+    const event = makeEvent("customer.subscription.created", sub, 2000);
+    constructEventMock.mockReturnValueOnce(event);
+
+    const req = makeRequest("raw_body", { "stripe-signature": "sig_valid" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(upsertCalls).toHaveLength(1);
+    const upsertedRow = upsertCalls[0] as Record<string, unknown>;
+    expect(upsertedRow.parent_id).toBe("parent-uuid-008");
+  });
+
+  // -------------------------------------------------------------------------
+  // 12. Dispatch coverage — customer.subscription.deleted → 200, upsert called
+  //     (delegates to the upsert path; eventCreated threading is exercised)
+  // -------------------------------------------------------------------------
+  it("returns 200 and upserts on customer.subscription.deleted", async () => {
+    serviceMockImpl = makeServiceMock({
+      existingRow: { parent_id: "parent-uuid-009", last_stripe_event_at: null },
+    });
+
+    const sub = makeSubscription({ customer: "cus_deleted", status: "canceled" });
+    const event = makeEvent("customer.subscription.deleted", sub, 2000);
+    constructEventMock.mockReturnValueOnce(event);
+
+    const req = makeRequest("raw_body", { "stripe-signature": "sig_valid" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(upsertCalls).toHaveLength(1);
+    const upsertedRow = upsertCalls[0] as Record<string, unknown>;
+    expect(upsertedRow.parent_id).toBe("parent-uuid-009");
+    expect(upsertedRow.last_stripe_event_at).toBe(
+      new Date(2000 * 1000).toISOString(),
+    );
+  });
+
+  // -------------------------------------------------------------------------
+  // 13. Retry contract — lookup failure on the subscription path → 500
+  // -------------------------------------------------------------------------
+  it("returns 500 when the parent_id lookup fails (subscription.updated)", async () => {
+    serviceMockImpl = makeServiceMock({
+      lookupError: { message: "db timeout" },
+    });
+
+    const sub = makeSubscription({ customer: "cus_lookupfail" });
+    const event = makeEvent("customer.subscription.updated", sub, 2000);
+    constructEventMock.mockReturnValueOnce(event);
+
+    const req = makeRequest("raw_body", { "stripe-signature": "sig_valid" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(500);
+    expect(upsertCalls).toHaveLength(0);
+  });
+
+  // -------------------------------------------------------------------------
+  // 14. Retry contract — upsert failure on the subscription path → 500
+  //     (distinct from test 6, which covers the checkout path)
+  // -------------------------------------------------------------------------
+  it("returns 500 when the upsert fails on the subscription path", async () => {
+    serviceMockImpl = makeServiceMock({
+      existingRow: { parent_id: "parent-uuid-010", last_stripe_event_at: null },
+      upsertError: { message: "boom" },
+    });
+
+    const sub = makeSubscription({ customer: "cus_subupsertfail" });
+    const event = makeEvent("customer.subscription.updated", sub, 2000);
+    constructEventMock.mockReturnValueOnce(event);
+
+    const req = makeRequest("raw_body", { "stripe-signature": "sig_valid" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(500);
+  });
 });
