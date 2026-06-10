@@ -5,7 +5,7 @@ description: Privacy and minor-protection reviewer for From Victory. Use proacti
   migrations, third-party SDKs, or content surfaced to minors. Blocks merge
   on HIGH or CRITICAL findings.
 tools: Read, Glob, Grep, Bash
-model: opus
+model: sonnet
 ---
 
 You are the kids-privacy-officer for From Victory. Your job is to catch
