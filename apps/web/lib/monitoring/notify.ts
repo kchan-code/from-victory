@@ -8,15 +8,19 @@ import { getResendClient } from "@/lib/email/resend";
  * Sends an email to ALERT_EMAIL_TO when an infrastructure failure occurs
  * (webhook DB write, Stripe API error, safety event log failure, etc.).
  *
- * PII RULE (NON-NEGOTIABLE): context values must contain ONLY opaque identifiers
- * (cus_*, sub_*, event_*, UUIDs). Never pass names, emails, birthdates,
- * journal content, or any user-provided strings.
+ * PII RULE (NON-NEGOTIABLE):
+ *   - `label` and `message` must be static strings or contain only opaque
+ *     infra identifiers (Stripe event types, Postgres error codes, boolean
+ *     flags). NEVER pass user-supplied values, names, emails, birthdates,
+ *     journal content, or safety detection categories.
+ *   - `context` values follow the same rule — opaque identifiers only
+ *     (cus_*, sub_*, evt_*, pg error codes, plan names). No minor data.
  *
  * No-ops silently when:
  *   - RESEND_API_KEY is not set
  *   - ALERT_EMAIL_FROM or ALERT_EMAIL_TO are not set
  *
- * Never throws — catching its own errors so callers can safely `void` it.
+ * Never throws — catches its own errors so callers can safely `void` it.
  */
 export async function notifyError(
   label: string,
