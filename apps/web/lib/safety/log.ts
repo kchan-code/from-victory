@@ -1,5 +1,6 @@
 import "server-only";
 
+import { notifyError } from "@/lib/monitoring/notify";
 import { createServiceClient } from "@/lib/supabase/service";
 
 /**
@@ -33,6 +34,11 @@ export async function logSafetyEvent(
   if (error) {
     console.error(
       `[safety.logSafetyEvent] insert failed (athleteId=${athleteId} athleteSessionId=${athleteSessionId} category=${category}): ${error.message} (code=${error.code ?? "n/a"})`,
+    );
+    void notifyError(
+      "[safety] logSafetyEvent insert failed",
+      `${error.message} (code=${error.code ?? "n/a"})`,
+      { category, pg_code: error.code ?? "n/a" },
     );
   }
 }

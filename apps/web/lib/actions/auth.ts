@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { isSyntheticAthleteEmail } from "@/lib/auth/athlete-email";
+import { notifyError } from "@/lib/monitoring/notify";
 import { createServiceClient } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
 
@@ -98,6 +99,11 @@ export async function signUp(
       `[auth.signUp] profile insert failed (userId=${userId}); rolled back auth.users (rollback_ok=${!rollbackError}): ${profileError.message}${
         rollbackError ? ` | rollback error: ${rollbackError.message}` : ""
       }`,
+    );
+    void notifyError(
+      "[auth] signUp profile insert failed",
+      profileError.message,
+      { rollback_ok: String(!rollbackError) },
     );
     return {
       ok: false,
