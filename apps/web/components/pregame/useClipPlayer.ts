@@ -192,10 +192,28 @@ export type UseClipPlayerResult = {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-/** Fetch a URL as ArrayBuffer. Returns null on network/HTTP failure. */
-async function fetchArrayBuffer(url: string): Promise<ArrayBuffer | null> {
+/**
+ * Deadline (ms) bounding the NETWORK-bound init work — the manifest fetch plus
+ * the parallel clip fetches. On the rink ("lie-fi": connected but no
+ * throughput — the exact environment pregame was built for) fetch() can hang
+ * indefinitely; without this guard `ready` never flips, the play button stays
+ * disabled on "Preparing your session…", and the text-mode fallback never
+ * fires. When the deadline elapses the in-flight fetches are aborted, init()
+ * calls setError(), and screens-b converts to text mode. The deadline is
+ * CLEARED the instant all fetches settle, so the CPU-bound decode that follows
+ * — and cache-served offline sessions that resolve fast — are never subject to
+ * a spurious timeout. (FV-172)
+ */
+const NETWORK_DEADLINE_MS = 15_000;
+
+/**
+ * Fetch a URL as ArrayBuffer. Returns null on network/HTTP failure — including
+ * an AbortError when the optional `signal` is aborted (e.g. the lie-fi
+ * deadline), which the caller treats as a fetch miss and falls back from.
+ */
+async function fetchArrayBuffer(url: string, signal?: AbortSignal): Promise<ArrayBuffer | null> {
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, signal ? { signal } : undefined);
     if (!res.ok) return null;
     return res.arrayBuffer();
   } catch {
@@ -344,11 +362,41 @@ export function useClipPlayer({
 
     let cancelled = false;
 
+    // Lie-fi guard (FV-172): bound ONLY the network-bound work (manifest + clip
+    // fetches) with an AbortController + deadline. A hung load aborts → init()
+    // calls setError() → screens-b converts to the text-mode fallback, instead
+    // of leaving the play button stuck on "Preparing your session…". The
+    // deadline is cleared the moment all fetches settle (see clearDeadline
+    // after the clip Promise.all), so the CPU-bound decode below and fast
+    // cache-served offline sessions are never timed out spuriously.
+    const controller = new AbortController();
+    let timedOut = false;
+    let deadlineId: ReturnType<typeof setTimeout> | null = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, NETWORK_DEADLINE_MS);
+    const clearDeadline = () => {
+      if (deadlineId !== null) {
+        clearTimeout(deadlineId);
+        deadlineId = null;
+      }
+    };
+
     async function init() {
-      // 1. Fetch manifest.
-      const manifestRes = await fetch(manifestUrl());
+      // 1. Fetch manifest (network-bound — covered by the deadline).
+      let manifestRes: Response;
+      try {
+        manifestRes = await fetch(manifestUrl(), { signal: controller.signal });
+      } catch {
+        // Network failure or a deadline abort. Either way, fall back.
+        clearDeadline();
+        if (cancelled) return;
+        setError(timedOut ? "session preparation timed out" : "manifest fetch failed");
+        return;
+      }
       if (cancelled) return;
       if (!manifestRes.ok) {
+        clearDeadline();
         setError(`manifest fetch failed: ${manifestRes.status}`);
         return;
       }
@@ -356,6 +404,10 @@ export function useClipPlayer({
       try {
         manifest = (await manifestRes.json()) as ClipManifest;
       } catch {
+        // Mirror the manifest-fetch catch above: clear the deadline and skip
+        // the setState if we were unmounted/aborted mid-parse.
+        clearDeadline();
+        if (cancelled) return;
         setError("manifest parse failed");
         return;
       }
@@ -369,6 +421,7 @@ export function useClipPlayer({
         const sportConfig = getSportConfig(sport);
         clips = resolvePracticePlaylist(manifest, practiceState, practiceFocus, sportConfig, prayerStyle);
         if (!clips) {
+          clearDeadline();
           setError("no template");
           return;
         }
@@ -390,6 +443,7 @@ export function useClipPlayer({
         );
         if (!clips) {
           // No template for this combination — sentinel triggers legacy path.
+          clearDeadline();
           setError("no template");
           return;
         }
@@ -405,14 +459,23 @@ export function useClipPlayer({
       setTimeline(assembled);
       setTotalSec(assembled.totalDurationSec);
 
-      // 4. Fetch all clip ArrayBuffers in parallel.
+      // 4. Fetch all clip ArrayBuffers in parallel (network-bound — covered by
+      // the deadline; an aborted fetch resolves to null below).
       const bufferResults = await Promise.all(
-        clips.map((clip) => fetchArrayBuffer(clip.url)),
+        clips.map((clip) => fetchArrayBuffer(clip.url, controller.signal)),
       );
+      // All network-bound work is done — clear the deadline so the CPU-bound
+      // decode below is never aborted or timed out. Cache-served offline
+      // sessions reach this point fast and clear the deadline well before it
+      // would fire, so they are never subject to a spurious timeout.
+      clearDeadline();
       if (cancelled) return;
 
       if (bufferResults.some((b) => b === null)) {
-        setError("clip fetch failed");
+        // A null can be a genuine 404 OR an aborted fetch on a hung network;
+        // surface the timeout cause when the deadline fired so the fallback
+        // reason is accurate.
+        setError(timedOut ? "session preparation timed out" : "clip fetch failed");
         return;
       }
 
@@ -539,6 +602,12 @@ export function useClipPlayer({
 
     return () => {
       cancelled = true;
+      // Clear the deadline and abort any in-flight manifest/clip fetch so an
+      // unmounted or re-keyed session doesn't hold the connection open or fire
+      // a stray timeout. cancelled=true is set first, so the abort-driven
+      // fetch rejection short-circuits before any setState.
+      clearDeadline();
+      controller.abort();
     };
   }, [need, position, adversity, anchor, selfTalk, cueWord, positivePlays, practice, practiceState, practiceFocus, sport, prayerStyle, startRaf, stopRaf, wireMediaSession]);
 
