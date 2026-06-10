@@ -152,17 +152,10 @@ jobs:
           fi
           echo "✓ MANIFEST_VERSION is in sync ($TS_MV)."
 
-# NOTE: The automated kids-privacy-officer CI gate was removed while the
-# repo is pre-MVP (no schema, no auth, no journal code — nothing for the
-# officer to find on any current PR). Privacy review is now invoked
-# manually from a Claude Code session before merging any PR that touches
-# privacy-relevant paths:
-#   apps/web/**, supabase/**, packages/content/**, .claude/agents/**,
-#   CLAUDE.md, docs/brand.md
-#
-# When schema / auth / journal code starts landing, re-enable a privacy
-# review job here. The previous implementation (path filter + `tee`
-# output streaming + skip-notice comment) is preserved in git history on
-# the abandoned `hotfix/ci-privacy-review-resilience` branch and is the
-# right starting point for re-enabling. Pin a cheap model when you do —
-# claude-haiku-4-5-20251001 is sufficient for rule-checklist work.
+# FV-4: The privacy gate lives in .github/workflows/privacy-verdict.yml.
+# It publishes a `Require privacy VERDICT` commit status on every PR that
+# touches a privacy-sensitive path, and flips to green only when the
+# kids-privacy-officer posts `VERDICT: APPROVED`. The check is a required
+# status check in the `main` branch ruleset (id 16564177), so a privacy-path
+# PR cannot merge without an explicit APPROVED verdict — converting the
+# CLAUDE.md "Privacy override (HARD RULE)" from prose into mechanism.
