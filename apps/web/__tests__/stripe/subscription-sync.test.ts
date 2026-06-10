@@ -251,4 +251,12 @@ describe("rowFromCheckoutSession", () => {
     expect(row!.price_id).toBeNull();
     expect(row!.current_period_end).toBeNull();
   });
+
+  it("maps payment_status='no_payment_required' to status='incomplete'", () => {
+    const session = makeCheckoutSession({
+      payment_status: "no_payment_required" as Stripe.Checkout.Session.PaymentStatus,
+    });
+    const row = rowFromCheckoutSession(session);
+    expect(row!.status).toBe("incomplete");
+  });
 });

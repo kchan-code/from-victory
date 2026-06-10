@@ -55,3 +55,12 @@ export function getStripe(): Stripe {
 
   return _stripe;
 }
+
+/**
+ * Test-only: clear the cached singleton so the next getStripe() rebuilds.
+ * Lets route/integration tests exercise the lazy-init path deterministically.
+ * Never call from production code.
+ */
+export function __resetStripeForTests(): void {
+  _stripe = null;
+}
