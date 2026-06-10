@@ -19,7 +19,6 @@ test('isPrivacyPath matches every CLAUDE.md privacy path', () => {
   for (const f of [
     'apps/web/app/page.tsx',
     'supabase/migrations/001_init.sql',
-    'packages/content/safety-keywords.json',
     '.claude/agents/kids-privacy-officer.md',
     'CLAUDE.md',
     'docs/brand.md',
@@ -36,6 +35,7 @@ test('isPrivacyPath rejects non-privacy paths (incl. lookalikes)', () => {
     'docs/handoff-2026-05-31.md', // docs/* is NOT sensitive — only docs/brand.md
     'apps/web', // directory name, no trailing slash
     'apps/webhooks/x.ts', // prefix lookalike must not match apps/web/
+    'packages/content/safety-keywords.json', // packages/content/ no longer a privacy prefix (FV-173)
     'packages/contentful/x.ts', // prefix lookalike
     'CLAUDE.md.bak',
     'docs/brand.md.bak',

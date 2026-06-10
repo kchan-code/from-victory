@@ -65,7 +65,7 @@ Linear's `area:` labels are the routing system: different area = different files
 | Area | Touches | Example |
 |---|---|---|
 | `area:backend` | `supabase/**`, `lib/actions`, `lib/supabase` | FV-7 Stripe |
-| `area:content` | `packages/content/**` (JSON) | FV-9 days 11–30 |
+| `area:content` | `supabase/migrations/**` (SQL seed) | FV-9 days 11–30 |
 | `area:frontend` | `apps/web/components`, routes | FV-17 pregame timer |
 
 Three areas, no shared files → three sessions, zero collisions.

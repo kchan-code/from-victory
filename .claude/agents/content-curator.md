@@ -805,4 +805,4 @@ enough to integrate — the fix isn't editorial, it's a re-commission.
 - .claude/agents/sports-psychologist.md (mental skills specialist)
 - .claude/agents/youth-pastor.md (scripture and theology specialist)
 - .claude/agents/kids-privacy-officer.md (privacy + safety reviewer)
-- packages/content/ (where finalized training sessions live as JSON)
+- supabase/migrations/ (where finalized training sessions are seeded as SQL)

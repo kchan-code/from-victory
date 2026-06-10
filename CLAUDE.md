@@ -111,12 +111,14 @@ from-victory/
 │   ├── agents/             # subagent definitions
 │   ├── commands/           # slash commands
 │   └── settings.json       # tool permissions
-├── .github/workflows/      # CI gates
+├── .github/
+│   ├── workflows/          # CI gates
+│   └── scripts/            # CI helper scripts (privacy-verdict.cjs)
 ├── apps/web/               # Next.js app
-├── packages/content/       # training content (sport-agnostic JSON)
+├── bin/                    # repo helper scripts (new-fv.sh)
 ├── supabase/
-│   ├── migrations/
-│   └── seed.sql
+│   └── migrations/
+├── vercel.json
 └── README.md
 
 ## Subagents
@@ -165,7 +167,7 @@ Standing invocation policy — apply these by default, not by memory:
 | Athlete-facing training, journal, or scripture content | content-curator (orchestrates sports-psychologist + youth-pastor) |
 | Sport-specific content (hockey/basketball scenarios, positions, examples, pregame scripts) | content-curator + the relevant sport-expert (hockey-expert / basketball-expert) for authenticity |
 | Any PR touching runtime or tested code — before privacy + merge | qa-reviewer |
-| Any PR touching `apps/web/**`, `supabase/**`, `packages/content/**`, `.claude/agents/**`, `CLAUDE.md`, `docs/brand.md` | kids-privacy-officer (also nudged by the privacy-review hook) |
+| Any PR touching `apps/web/**`, `supabase/**`, `.claude/agents/**`, `CLAUDE.md`, `docs/brand.md` | kids-privacy-officer (also nudged by the privacy-review hook) |
 
 Rules of the road:
 - **Reviewer order:** qa-reviewer → kids-privacy-officer → merge (via GitHub UI).
@@ -222,13 +224,13 @@ Recovery playbooks (for when it still happens):
 3. Open a PR for every change. Never merge locally and push. Merge through GitHub UI.
 4. CI must pass before merge. Build, typecheck, tests, lint.
 5. Hotfixes get a hotfix/<name> branch, same flow. No exceptions.
-6. Privacy review is manual while pre-MVP. Before merging any PR that
-   touches `apps/web/**`, `supabase/**`, `packages/content/**`,
+6. Before merging any PR that touches `apps/web/**`, `supabase/**`,
    `.claude/agents/**`, `CLAUDE.md`, or `docs/brand.md`, invoke the
    kids-privacy-officer subagent from a Claude Code session against the
-   PR diff. Findings posted as a PR comment for audit trail.
-   The automated CI gate will return when schema/auth/journal code lands
-   (see `.github/workflows/ci.yml` note for re-enabling reference).
+   PR diff. Findings posted as a PR comment for audit trail. The
+   `privacy-verdict` CI check (`.github/workflows/privacy-verdict.yml`)
+   is a required status check in the `main` ruleset and enforces
+   `VERDICT: APPROVED` before merge — live as of FV-4 (2026-06-10).
 7. Every PR fills `.github/pull_request_template.md` completely. The Linear-issue
    field uses a magic word (`Closes FV-###`); the branch name contains the issue
    id so Linear auto-links and auto-transitions In Review → Done.
@@ -320,8 +322,11 @@ The privacy veto is never suppressed to satisfy "issue-scoped only."
 - Parent creates athlete account (no email for the athlete)
 - One daily training session, hockey- and basketball-themed, faith-
   foundational (30 days of content per sport, seeded at launch).
-  Structure: mental skill + scripture foundation + journal prompt.
-- Athlete-private journal entry per session
+  Structure: mental skill + scripture foundation. (Journal prompt was
+  shipped and then descoped per FV-135 — do not re-wire without KC.)
+- Athlete-private journal — **built, dormant, descoped** (FV-135).
+  Infrastructure exists in `apps/web/lib/safety/`; no production
+  callers. Do not wire without KC.
 - **Rhythm visualization** (not a streak counter). Visualizes
   participation and return, never punishes missed days. Internal data
   can track streaks; user-facing concept is rhythm.
@@ -375,9 +380,12 @@ self-onboard/self-pay fork (post-MVP).
   30 days of request.
 
 ### Journal Safety Architecture (Option C)
+> **STATUS: BUILT, DORMANT, DESCOPED (FV-135).** `apps/web/lib/safety/`
+> has zero production callers. Do not wire without KC.
+
 - Athlete writes privately. Default: nobody else reads it. Ever.
 - Server-side keyword detection runs on entry submission. Detection
-  vocabulary is in `packages/content/safety-keywords.json`. Reviewed
+  vocabulary is in `apps/web/lib/safety/safety-keywords.json`. Reviewed
   quarterly with a clinical advisor (TBD).
 - If detected, the athlete sees an in-line resource screen: 988 Suicide
   & Crisis Lifeline, Crisis Text Line, "talk to a trusted adult" prompt.
@@ -434,7 +442,7 @@ docs/brand.md "Voice Modes" for the full table. Default mode is Mentor.
 - **Verify — full (runtime / routing / server-action / schema changes):** `npm run build` (+ `npm test` when tests cover the path)
 - **Verify — narrowest:** prefer a single test file or `tsc` on touched paths over the whole suite.
 - **Review gate (before merge):** general `/review` (issue-scoped) → qa-reviewer → kids-privacy-officer (if privacy path) → merge
-- **Privacy-sensitive paths (trigger kids-privacy-officer):** `apps/web/**`, `supabase/**`, `packages/content/**`, `.claude/agents/**`, `CLAUDE.md`, `docs/brand.md`
+- **Privacy-sensitive paths (trigger kids-privacy-officer):** `apps/web/**`, `supabase/**`, `.claude/agents/**`, `CLAUDE.md`, `docs/brand.md`
 - **Project-specific guards (FV-142):** if any committed `*.mp3` changed, update `MANIFEST_VERSION` in `apps/web/components/pregame/audio-mapping.ts` **and** the matching `const MANIFEST_VERSION` in `apps/web/public/sw.js` to the new `manifestVersion` value from `manifest.json` (the hand-rolled SW can't import the TS constant; CI's `audio-cache-bust` job enforces they match). Clip filenames are content-addressed (`<slug>.<hash8>.mp3`) so the generator derives `MANIFEST_VERSION` automatically — it is printed to stdout after `npm run audio:generate -- --mode clips`.
 - **Agent roster:** see `## Subagents` and `## Agent Orchestration` in this file.
 
@@ -455,13 +463,13 @@ fully verify and that can't quietly harm a user:
 
 **Privacy override (HARD RULE).** A PR whose diff touches any Privacy-sensitive
 path (see Project Workflow Config) is NEVER Tier-1 and NEVER auto-merges until
-the kids-privacy-officer has posted `VERDICT: APPROVED` on it (or a CI check
-enforces that verdict). Tier shorthand never demotes a privacy review: a "docs,"
-"chore," "dependency bump," or "content-DATA" diff that ALSO touches a privacy
-path is Tier-2 until privacy is APPROVED. Until a CI gate parses the `VERDICT:`
-line, `gh pr merge --auto` MUST NOT be issued on a privacy-path PR — the lead
-holds the merge until the verdict is APPROVED. A privacy `VERDICT: BLOCKED` /
-`CHANGES_REQUESTED` halts the merge regardless of tier or green CI.
+the kids-privacy-officer has posted `VERDICT: APPROVED`. The `privacy-verdict`
+required status check (live as of FV-4 / 2026-06-10) enforces this
+mechanically — `gh pr merge --auto` is safe because auto-merge cannot complete
+until the check turns green. Tier shorthand never demotes a privacy review: a
+"docs," "chore," "dependency bump," or "content-DATA" diff that ALSO touches a
+privacy path is Tier-2 until privacy is APPROVED. A privacy `VERDICT: BLOCKED`
+/ `CHANGES_REQUESTED` halts the merge regardless of tier or green CI.
 
 **Tier 2 — KC-gated (explicit approval before merge).** Waits for KC:
   - payments/Stripe, auth, RLS, DB migrations (`supabase/**`)
@@ -470,9 +478,10 @@ holds the merge until the verdict is APPROVED. A privacy `VERDICT: BLOCKED` /
   - any privacy/clinical finding ≥ HIGH, or a public/marketing surface
   - anything labeled `kc-gate`
 
-**Prerequisite:** Tier-1 auto-merge requires GitHub Settings → "Allow auto-merge"
-enabled + the `main` ruleset's required status checks set, so auto-merge waits
-for CI. Until then, all merges stay manual (KC remains the funnel).
+**Prerequisite:** GitHub "Allow auto-merge" is enabled and the `main` ruleset
+requires `privacy-verdict` and `Audio cache-bust guard` as status checks (active
+as of FV-4 / 2026-06-10). Auto-merge waits for all required checks before
+completing.
 
 ## Stream Boundaries & Parallel Work
 
@@ -484,7 +493,7 @@ Parallel streams only go faster if they don't fight over the same files.
 > `docs/parallel-sessions.md`. The rules below are the file-collision summary it
 > builds on.
 
-**Independent areas — safe to run concurrent streams:** `packages/content/**`;
+**Independent areas — safe to run concurrent streams:**
 audio clip generation + `components/pregame/audio/clips.ts` + clip assets;
 `supabase/migrations/**`; `.github/**` + CI; `docs/**`.
 

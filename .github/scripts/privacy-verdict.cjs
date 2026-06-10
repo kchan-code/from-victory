@@ -17,7 +17,6 @@
 const PRIVACY_PREFIXES = [
   'apps/web/',
   'supabase/',
-  'packages/content/',
   '.claude/agents/',
 ];
 const PRIVACY_EXACT = ['CLAUDE.md', 'docs/brand.md'];

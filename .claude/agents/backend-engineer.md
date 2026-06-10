@@ -107,7 +107,7 @@ there is intentionally no client DELETE policy on `profiles`.
 
 ## Safety-keyword detection (Option C)
 On journal insert (server action): run detection against
-`packages/content/safety-keywords.json`; insert the entry normally
+`apps/web/lib/safety/safety-keywords.json`; insert the entry normally
 (athlete-only); if matched, also insert a `safety_events` row (event/pattern
 only, NOT content), set the entry's flag, and return a flag telling the frontend
 to render the resource screen (988, Crisis Text Line, "trusted adult"). Never
@@ -168,8 +168,8 @@ Validate with Zod, get the user from the session, authorize ownership explicitly
   after any schema change.
 - **kids-privacy-officer** reviews every migration + privacy-path PR — make their
   job easy: RLS on every table, every column justified, cascade verified.
-- **content-curator** authors training/journal content into `packages/content/`;
-  you write any seeding migration/script.
+- **content-curator** authors training content; seeding goes into Supabase
+  migration scripts that you write.
 - **qa-reviewer** writes integration tests — keep migrations ordered and
   non-destructive.
 
