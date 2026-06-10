@@ -20,6 +20,17 @@
  *   Stripe may re-deliver the same event; re-processing overwrites the row
  *   with identical data, which is safe.
  *
+ *   Ordering / out-of-order protection:
+ *   Stripe does NOT guarantee delivery order. A redelivered stale
+ *   `customer.subscription.*` event (older `event.created`) could overwrite a
+ *   newer status with an older one. To prevent this, the `subscriptions` table
+ *   stores a `last_stripe_event_at` watermark (added in migration
+ *   20260610120000). The `handleSubscriptionUpsert` path reads the watermark
+ *   and skips any event whose `event.created` (ms) is older than the stored
+ *   value. `checkout.session.completed` is intentionally excluded from this
+ *   check — it must never advance the watermark, so a legitimately-redelivered
+ *   `subscription.created` (carrying `price_id`) is never wrongly skipped.
+ *
  * Retry semantics:
  *   - 200: event processed successfully, OR event type ignored intentionally.
  *     Stripe will NOT retry.
@@ -137,12 +148,14 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
       await handleSubscriptionUpsert(
         event.data.object as Stripe.Subscription,
         event.type,
+        event.created,
       );
       break;
 
     case "customer.subscription.deleted":
       await handleSubscriptionDeleted(
         event.data.object as Stripe.Subscription,
+        event.created,
       );
       break;
 
@@ -153,6 +166,7 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
       // embedded in the invoice when available.
       await handleInvoicePaymentFailed(
         event.data.object as Stripe.Invoice,
+        event.created,
       );
       break;
 
@@ -234,18 +248,23 @@ async function handleCheckoutSessionCompleted(
  * Resolves `parent_id` from the existing row by `stripe_customer_id`.
  * If no row exists yet, we cannot safely create one (no `parent_id`).
  * In practice `checkout.session.completed` fires first and creates the row.
+ *
+ * `eventCreated` is the Unix-seconds timestamp from the Stripe event. It is
+ * written to `last_stripe_event_at` and used as a watermark to skip stale
+ * redeliveries — see file-level comment on ordering / out-of-order protection.
  */
 async function handleSubscriptionUpsert(
   sub: Stripe.Subscription,
   eventType: string,
+  eventCreated: number,
 ): Promise<void> {
   const row = rowFromSubscription(sub);
   const service = createServiceClient();
 
-  // Resolve parent_id by looking up the existing row for this customer.
+  // Resolve parent_id and the existing watermark for this customer.
   const { data: existing, error: lookupError } = await service
     .from("subscriptions")
-    .select("parent_id")
+    .select("parent_id, last_stripe_event_at")
     .eq("stripe_customer_id", row.stripe_customer_id)
     .maybeSingle();
 
@@ -267,6 +286,20 @@ async function handleSubscriptionUpsert(
     return;
   }
 
+  // Out-of-order protection: skip events older than the watermark.
+  const incomingMs = eventCreated * 1000;
+  const storedMs = existing.last_stripe_event_at
+    ? Date.parse(existing.last_stripe_event_at)
+    : NaN;
+  if (Number.isFinite(storedMs) && incomingMs < storedMs) {
+    console.warn(
+      `[stripe/webhook] ${eventType}: skipping stale event (created=${eventCreated}) ` +
+        `for sub="${row.stripe_subscription_id}" — newer state already applied. ` +
+        `No write.`,
+    );
+    return;
+  }
+
   const { error } = await service.from("subscriptions").upsert(
     {
       parent_id: existing.parent_id,
@@ -276,6 +309,7 @@ async function handleSubscriptionUpsert(
       price_id: row.price_id,
       current_period_end: row.current_period_end,
       cancel_at_period_end: row.cancel_at_period_end,
+      last_stripe_event_at: new Date(eventCreated * 1000).toISOString(),
     },
     { onConflict: "parent_id" },
   );
@@ -303,9 +337,10 @@ async function handleSubscriptionUpsert(
  */
 async function handleSubscriptionDeleted(
   sub: Stripe.Subscription,
+  eventCreated: number,
 ): Promise<void> {
   // Reuse the upsert path — the status will be 'canceled'.
-  await handleSubscriptionUpsert(sub, "customer.subscription.deleted");
+  await handleSubscriptionUpsert(sub, "customer.subscription.deleted", eventCreated);
 }
 
 /**
@@ -318,6 +353,7 @@ async function handleSubscriptionDeleted(
  */
 async function handleInvoicePaymentFailed(
   invoice: Stripe.Invoice,
+  eventCreated: number,
 ): Promise<void> {
   // The subscription object may be expanded on the invoice or may be an ID.
   // If it's an object, sync it directly. If it's just an ID, the accompanying
@@ -328,6 +364,7 @@ async function handleInvoicePaymentFailed(
     await handleSubscriptionUpsert(
       subData as Stripe.Subscription,
       "invoice.payment_failed",
+      eventCreated,
     );
     return;
   }

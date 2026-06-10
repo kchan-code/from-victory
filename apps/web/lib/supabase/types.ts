@@ -319,6 +319,7 @@ export type Database = {
           cancel_at_period_end: boolean
           created_at: string
           current_period_end: string | null
+          last_stripe_event_at: string | null
           parent_id: string
           price_id: string | null
           status: string
@@ -330,6 +331,7 @@ export type Database = {
           cancel_at_period_end?: boolean
           created_at?: string
           current_period_end?: string | null
+          last_stripe_event_at?: string | null
           parent_id: string
           price_id?: string | null
           status: string
@@ -341,6 +343,7 @@ export type Database = {
           cancel_at_period_end?: boolean
           created_at?: string
           current_period_end?: string | null
+          last_stripe_event_at?: string | null
           parent_id?: string
           price_id?: string | null
           status?: string
