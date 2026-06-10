@@ -1,5 +1,13 @@
 # Frontend Backlog
 
+> **STALE — 2026-06-10.** This file reflects the frontend-engineer
+> holistic review of 2026-05-30. It predates basketball-in-MVP (FV-26),
+> the compositional pregame re-arch (FV-113–FV-120), and the journal
+> descope (FV-135). Many P1/P2 items below may already be resolved or
+> superseded. Verify against Linear before acting on these items.
+
+
+
 Deferred frontend improvements from the **frontend-engineer holistic review of
 `apps/web` (2026-05-30)**. The **P0** tier shipped in
 [PR #66](https://github.com/kchan-code/from-victory/pull/66); the P1/P2 items

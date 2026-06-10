@@ -1,5 +1,14 @@
 # Feature Roadmap
 
+> **STALE — 2026-06-10.** This file predates basketball-in-MVP (FV-26),
+> the compositional pregame re-arch (FV-113–FV-120), and the journal
+> descope (FV-135). Items below may be out of date. For current deferred
+> scope see Linear (M0–M4 + V2/Post-MVP projects) and memory/MEMORY.md.
+> Do not use this file as an authoritative backlog without verifying
+> against Linear first.
+
+
+
 Curated list of features and improvements deferred from the MVP build.
 Authoritative day-to-day deferred-item tracking lives in memory and in
 the open-items section of `CLAUDE.md`; this file holds the larger

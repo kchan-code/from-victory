@@ -251,7 +251,7 @@ groups. The privacy veto is never suppressed to satisfy "issue-scoped only."
 - **Verify — full (runtime / routing / server-action / schema changes):** `npm run build` (+ `npm test` when tests cover the path)
 - **Verify — narrowest:** prefer a single test file or `tsc` on touched paths over the whole suite.
 - **Review gate (before merge):** general `/review` (issue-scoped) → qa-reviewer → kids-privacy-officer (if privacy path) → merge via GitHub UI
-- **Privacy-sensitive paths (trigger kids-privacy-officer):** `apps/web/**`, `supabase/**`, `packages/content/**`, `.claude/agents/**`, `CLAUDE.md`, `docs/brand.md`
+- **Privacy-sensitive paths (trigger kids-privacy-officer):** `apps/web/**`, `supabase/**`, `.claude/agents/**`, `CLAUDE.md`, `docs/brand.md`
 - **Project-specific guards:** if any committed `*.mp3` changed, bump `AUDIO_CACHE_BUST` in `apps/web/components/pregame/audio-mapping.ts`
 - **Agent roster:** see `## Subagents` and `## Agent Orchestration` in this file.
 ```
@@ -297,7 +297,6 @@ Parallel streams only go faster if they don't fight over the same files. Route
 concurrent work accordingly.
 
 **Independent areas — safe to run concurrent streams:**
-  - `packages/content/**` (content authoring)
   - audio clip generation + `components/pregame/audio/clips.ts` + clip assets
   - `supabase/migrations/**` (backend/schema)
   - `.github/**` + CI (infra)

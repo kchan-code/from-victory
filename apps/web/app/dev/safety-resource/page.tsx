@@ -21,7 +21,7 @@ export default function SafetyResourcePreviewPage() {
         <p className="font-body text-cream/70 text-[15px] leading-relaxed mb-10">
           One render per category from{" "}
           <code className="text-gold font-mono text-[13px]">
-            packages/content/safety-keywords.json
+            apps/web/lib/safety/safety-keywords.json
           </code>
           . Focused resource changes per the category&rsquo;s
           <code className="text-gold font-mono text-[13px]">

@@ -29,11 +29,11 @@ base="main"
 git -C "$repo" rev-parse --verify --quiet main >/dev/null 2>&1 || base="origin/main"
 files="$(git -C "$repo" diff --name-only "${base}...HEAD" 2>/dev/null || true)"
 
-if printf '%s\n' "$files" | grep -qE '^(apps/web/|supabase/|packages/content/|\.claude/agents/|CLAUDE\.md|docs/brand\.md)'; then
+if printf '%s\n' "$files" | grep -qE '^(apps/web/|supabase/|\.claude/agents/|CLAUDE\.md|docs/brand\.md)'; then
   python3 -c '
 import json
 msg = ("PRIVACY GATE (CLAUDE.md rule #6): this PR touches privacy-sensitive "
-       "paths (apps/web, supabase, packages/content, .claude/agents, CLAUDE.md, "
+       "paths (apps/web, supabase, .claude/agents, CLAUDE.md, "
        "or docs/brand.md). Before merge, invoke the kids-privacy-officer subagent "
        "against the branch diff and post its verdict as a PR comment for the audit "
        "trail.")

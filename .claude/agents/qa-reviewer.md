@@ -38,7 +38,7 @@ work around it.)
    - Athlete logs in → reads daily devotional → writes journal entry → sees streak
    - Athlete writes content that triggers safety keyword → resource screen
      surfaces (verifies Option C end-to-end without testing the actual
-     crisis content, which lives in `packages/content/safety-keywords.json`)
+     crisis content, which lives in `apps/web/lib/safety/safety-keywords.json`)
    - Parent dashboard shows streak + entry count, NEVER content
    - Parent cancels subscription → access degrades appropriately
 
