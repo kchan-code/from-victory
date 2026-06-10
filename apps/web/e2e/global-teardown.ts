@@ -11,7 +11,11 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { createClient } from "@supabase/supabase-js";
 
-import { assertNotProd, cleanupExistingTestParent } from "./global-setup";
+import {
+  assertNotProd,
+  cleanupExistingTestAthlete,
+  cleanupExistingTestParent,
+} from "./global-setup";
 
 async function globalTeardown(): Promise<void> {
   const supabaseUrl = process.env.E2E_SUPABASE_URL;
@@ -37,6 +41,8 @@ async function globalTeardown(): Promise<void> {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
+  // Orphan guard: cleans up the athlete if provisionTestAthlete failed mid-run.
+  await cleanupExistingTestAthlete(service);
   await cleanupExistingTestParent(service);
   console.log("[global-teardown] Cleanup complete.");
 }

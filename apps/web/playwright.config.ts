@@ -5,14 +5,13 @@
  * Secondary viewport: Pixel 7 is wired as a second project below but
  *   excluded from the default run; enable via `--project=pixel7`.
  *
- * webServer: spins up `next dev` pointed at the test Supabase project.
- *   Env vars (NEXT_PUBLIC_SUPABASE_URL etc.) are injected by global-setup
- *   before Next.js starts. For CI, swap to `next build && next start` to
- *   catch SSR build errors rather than letting them surface at runtime.
+ * Auth projects:
+ *   chromium-mobile-parent  — parent storageState (multi-athlete.e2e.ts)
+ *   chromium-mobile-athlete — athlete storageState (practice-flow.e2e.ts)
  *
- * Auth: global-setup creates a test parent and writes storageState to
- *   e2e/.auth/parent.storageState.json. Each spec that needs a signed-in
- *   parent points its `use.storageState` at that file.
+ * webServer: spins up `next dev` locally or `next build && next start` on CI.
+ *   Env vars (NEXT_PUBLIC_SUPABASE_URL etc.) are injected by global-setup
+ *   before Next.js starts, and also forwarded explicitly via the env block.
  */
 
 import path from "path";
@@ -73,14 +72,11 @@ export default defineConfig({
     },
 
     // ------------------------------------------------------------------
-    // Primary: iPhone 14 (mobile-first)
+    // Parent-auth specs — signed in as the test parent.
     // ------------------------------------------------------------------
     {
-      name: "chromium-mobile",
-      // Spec files use the `.e2e.ts` suffix (NOT `.spec.ts`) so that Vitest's
-      // default `**/*.{test,spec}.*` glob never picks them up once the two
-      // test stacks coexist on main. Playwright must opt into the suffix.
-      testMatch: /\.e2e\.ts$/,
+      name: "chromium-mobile-parent",
+      testMatch: /multi-athlete\.e2e\.ts$/,
       use: {
         ...devices["iPhone 14"],
         storageState: path.join(__dirname, "e2e", ".auth", "parent.storageState.json"),
@@ -89,11 +85,27 @@ export default defineConfig({
     },
 
     // ------------------------------------------------------------------
+    // Athlete-auth specs — signed in as the test athlete.
+    // practice-flow targets /athlete/practice which calls requireAthlete()
+    // and redirects non-athletes, so it must use the athlete session.
+    // ------------------------------------------------------------------
+    {
+      name: "chromium-mobile-athlete",
+      testMatch: /practice-flow\.e2e\.ts$/,
+      use: {
+        ...devices["iPhone 14"],
+        storageState: path.join(__dirname, "e2e", ".auth", "athlete.storageState.json"),
+      },
+      dependencies: ["setup"],
+    },
+
+    // ------------------------------------------------------------------
     // Secondary: Pixel 7 — run explicitly with --project=pixel7
+    // Parent-auth only (multi-athlete). Add pixel7-athlete if needed.
     // ------------------------------------------------------------------
     {
       name: "pixel7",
-      testMatch: /\.e2e\.ts$/,
+      testMatch: /multi-athlete\.e2e\.ts$/,
       use: {
         ...devices["Pixel 7"],
         storageState: path.join(__dirname, "e2e", ".auth", "parent.storageState.json"),
@@ -102,23 +114,23 @@ export default defineConfig({
     },
   ],
 
-  // Spin up the Next.js dev server before tests start.
-  // global-setup sets the NEXT_PUBLIC_* and service-role env vars on
-  // process.env before this server starts, so the app targets the test
-  // Supabase instance.
+  // Spin up Next.js before tests start.
   //
-  // For CI with `next build && next start`, replace `command` with:
-  //   "npm run build && npm run start"
-  // and set `reuseExistingServer: false`.
+  // Local: `next dev` for fast iteration (reuseExistingServer lets you pre-start it).
+  // CI:    `next build && next start` catches SSR build errors before they
+  //        surface at runtime, and avoids the webpack overhead of dev mode.
+  //
+  // The env block forwards test-specific env vars to the Next.js process.
+  // global-setup also sets these on process.env, but the webServer may start
+  // before global-setup in some configurations, so explicit forwarding is safer.
   webServer: {
-    command: "npm run dev",
+    command: process.env.CI
+      ? "npm run build && npm run start"
+      : "npm run dev",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: process.env.CI ? 300_000 : 120_000,
     env: {
-      // Forward test-specific env vars to the Next.js process.
-      // These are also set in global-setup via process.env, but webServer
-      // may start in a different order, so explicit forwarding is safer.
       NEXT_PUBLIC_SUPABASE_URL: process.env.E2E_SUPABASE_URL ?? "",
       NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.E2E_SUPABASE_ANON_KEY ?? "",
       SUPABASE_SERVICE_ROLE_KEY:
