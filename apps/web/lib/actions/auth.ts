@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { isSyntheticAthleteEmail } from "@/lib/auth/athlete-email";
+import { rateLimitGate, getRequestIp } from "@/lib/actions/rate-limit-store";
 import { notifyError } from "@/lib/monitoring/notify";
 import { createServiceClient } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
@@ -51,6 +52,17 @@ export async function signUp(
       ok: false,
       error: issue?.message ?? "Invalid input.",
       field: issue?.path[0]?.toString(),
+    };
+  }
+
+  // Rate limiting (FV-13): keyed on request IP — no stable identity at signup
+  // yet. Threat: mass-account creation / email-send-quota exhaustion.
+  const ip = await getRequestIp();
+  const { limited } = await rateLimitGate("sign_up", ip);
+  if (limited) {
+    return {
+      ok: false,
+      error: "Too many attempts. Please wait a few minutes and try again.",
     };
   }
 
@@ -128,6 +140,16 @@ export async function signIn(
       ok: false,
       error: issue?.message ?? "Invalid input.",
       field: issue?.path[0]?.toString(),
+    };
+  }
+
+  // Rate limiting (FV-13): keyed on normalized email (already lowercased/trimmed
+  // by the Zod schema). Threat: credential stuffing / password spray.
+  const { limited } = await rateLimitGate("sign_in", parsed.data.email);
+  if (limited) {
+    return {
+      ok: false,
+      error: "Too many attempts. Please wait a few minutes and try again.",
     };
   }
 
