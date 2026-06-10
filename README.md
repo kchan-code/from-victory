@@ -85,3 +85,4 @@ These are non-negotiable. See [CLAUDE.md](./CLAUDE.md) for the full version.
 This product serves minors (13-17). Journal entries are athlete-only readable, enforced at the database level via Supabase RLS. The parent dashboard reads metadata only. No third-party analytics or ad SDKs on minor accounts, ever (California AADC / GDPR-K compliance floor). Every PR touching user data, auth, journal, migrations, or third-party SDKs is reviewed by the `kids-privacy-officer` subagent; the `privacy-verdict` required CI check enforces an explicit `VERDICT: APPROVED` before merge.
 
 If you're contributing: read the relevant sections of [CLAUDE.md](./CLAUDE.md) before opening a PR.
+
