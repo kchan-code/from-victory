@@ -281,3 +281,51 @@ jobs:
         with:
           name: playwright-report
           path: apps/web/playwright-report/
+
+  # ---------------------------------------------------------------------------
+  # FV-166: RLS verification harness (NON-REQUIRED)
+  #
+  # Machine-verifies the minor-data privacy boundaries (journal_entries,
+  # athlete_session_metadata, subscriptions, device_pairings, safety_events)
+  # against a real Postgres with RLS on. Role-scoped via `request.jwt.claims`
+  # + `set role authenticated|anon` — the same session state PostgREST
+  # establishes after verifying a JWT (see supabase/tests/rls/README.md).
+  #
+  # Deliberately a SEPARATE job from `e2e`: a flaky browser test must never be
+  # able to mask an RLS regression. No node/app build — just the DB + psql.
+  #
+  # Reuses the FV-168 supabase-start plumbing (supabase start + db push).
+  # Promote to required after ≥1 week of observed stability (edit the `main`
+  # branch ruleset in GitHub Settings → Branches).
+  # ---------------------------------------------------------------------------
+  rls:
+    name: RLS Harness (non-required)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify psql is available
+        run: psql --version
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase local stack
+        run: supabase start
+
+      - name: Apply migrations to local stack
+        run: supabase db push --local
+
+      - name: Run RLS harness
+        run: |
+          # DB_URL comes from the machine-readable status output so a future
+          # CLI label change can't silently produce an empty connection string.
+          eval "$(supabase status -o env)"
+          if [ -z "${DB_URL:-}" ]; then
+            echo "::error::Could not resolve DB_URL from 'supabase status -o env'"
+            exit 1
+          fi
+          bash supabase/tests/rls/run.sh "$DB_URL"
