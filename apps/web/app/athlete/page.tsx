@@ -217,6 +217,39 @@ export default async function AthleteHomePage() {
               </span>
             </div>
           </Link>
+
+          {/* 4. Journey — FV-190 */}
+          <Link
+            href="/athlete/journey"
+            className="group block rounded-2xl border border-[rgba(223,175,55,0.12)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.28)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            style={{
+              background:
+                "linear-gradient(180deg,rgba(223,175,55,0.03),rgba(223,175,55,0)),var(--bg-elev-1)",
+            }}
+          >
+            <div className="px-5 py-4 flex items-center gap-4">
+              <span
+                className="flex-none flex items-center justify-center w-10 h-10 rounded-xl bg-gold/[0.04] border border-gold/[0.08]"
+                aria-hidden="true"
+              >
+                <Icon name="map" size={20} color="var(--fv-gold)" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold/50 mb-0.5">
+                  History
+                </p>
+                <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[18px] leading-[1.15]">
+                  Your Journey
+                </p>
+                <p className="font-body text-cream/55 text-[13px] leading-snug mt-0.5">
+                  Every session you&apos;ve completed &mdash; re-read, revisit, remember.
+                </p>
+              </div>
+              <span aria-hidden="true" className="flex-none text-gold/50 text-[20px] font-display">
+                →
+              </span>
+            </div>
+          </Link>
         </section>
       </div>
 
