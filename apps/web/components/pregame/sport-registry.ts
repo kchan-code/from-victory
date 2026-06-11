@@ -790,6 +790,14 @@ export const BASEBALL_CONFIG: SportConfig = {
     // follow-up; declared here for registry completeness).
     "not-feeling-it": "pp-baseball-opener-get-to",
   },
+
+  // Baseball audio clips are v2 (not yet generated). Use the shared AUDIO_SCRIPT
+  // structure as a placeholder so the type is satisfied; a dedicated baseball
+  // audio pass will replace this before the sport goes live.
+  audioScript: AUDIO_SCRIPT,
+
+  cueWordHelper: "The one you'd step up to the plate with.",
+  cardShareHint: "Screenshot it. Open it before first pitch.",
 };
 
 // ---------------------------------------------------------------------------
