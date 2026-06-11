@@ -20,7 +20,9 @@ import { getResendClient } from "@/lib/email/resend";
  *   - RESEND_API_KEY is not set
  *   - ALERT_EMAIL_FROM or ALERT_EMAIL_TO are not set
  *
- * Never throws — catches its own errors so callers can safely `void` it.
+ * Never throws — catches its own errors. Callers must wrap calls with
+ * deliverInBackground() (lib/monitoring/deliver) so the send survives the
+ * Vercel function freeze after the HTTP response is sent.
  */
 export async function notifyError(
   label: string,

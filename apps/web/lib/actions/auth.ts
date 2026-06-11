@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { isSyntheticAthleteEmail } from "@/lib/auth/athlete-email";
 import { rateLimitGate, getRequestIp } from "@/lib/actions/rate-limit-store";
+import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { createServiceClient } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
@@ -112,11 +113,11 @@ export async function signUp(
         rollbackError ? ` | rollback error: ${rollbackError.message}` : ""
       }`,
     );
-    void notifyError(
+    deliverInBackground(notifyError(
       "[auth] signUp profile insert failed",
       profileError.message,
       { rollback_ok: String(!rollbackError) },
-    );
+    ));
     return {
       ok: false,
       error: "Could not create your profile. Please try again.",

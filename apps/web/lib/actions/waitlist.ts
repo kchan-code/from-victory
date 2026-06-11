@@ -3,6 +3,7 @@
 import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
+import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { sendWaitlistNotification } from "@/lib/email/waitlist-notification";
 
 const WaitlistSchema = z.object({
@@ -101,19 +102,22 @@ export async function submitWaitlist(
     };
   }
 
-  // Admin notification — fire-and-forget. Failure here must not break the
-  // user-facing success state (the DB save is the source of truth).
-  void sendWaitlistNotification({
-    email: data.email,
-    name: data.name,
-    role: data.role,
-    sport: data.sport,
-    note: data.note ?? null,
-  }).then((result) => {
-    if (!result.ok) {
-      console.warn("[waitlist] notification not sent:", result.reason);
-    }
-  });
+  // Admin notification — must not break the user-facing success state.
+  // deliverInBackground registers the send with the Vercel platform so it
+  // completes even after the server action response is returned.
+  deliverInBackground(
+    sendWaitlistNotification({
+      email: data.email,
+      name: data.name,
+      role: data.role,
+      sport: data.sport,
+      note: data.note ?? null,
+    }).then((result) => {
+      if (!result.ok) {
+        console.warn("[waitlist] notification not sent:", result.reason);
+      }
+    }),
+  );
 
   return { ok: true, alreadyOnList: false };
 }

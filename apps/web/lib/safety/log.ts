@@ -1,5 +1,6 @@
 import "server-only";
 
+import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -38,10 +39,10 @@ export async function logSafetyEvent(
     // PII RULE: do NOT include category here — it is a behavioral health
     // derivative from a minor's detection event. Only the Postgres error code
     // (an opaque infra identifier) leaves the platform boundary.
-    void notifyError(
+    deliverInBackground(notifyError(
       "[safety] logSafetyEvent insert failed",
       `insert failed (code=${error.code ?? "n/a"})`,
       { pg_code: error.code ?? "n/a" },
-    );
+    ));
   }
 }
