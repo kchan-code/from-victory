@@ -49,7 +49,17 @@ export default async function DashboardPage() {
             className="h-14 w-auto"
             priority
           />
-          <SignOutButton className="font-heading font-semibold text-[14px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-5 py-2.5 transition-colors duration-fast ease-out" />
+          <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard/settings"
+              data-testid="dashboard-settings-link"
+              aria-label="Account settings"
+              className="font-heading font-semibold text-[14px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-5 py-2.5 no-underline transition-colors duration-fast ease-out"
+            >
+              Settings
+            </Link>
+            <SignOutButton className="font-heading font-semibold text-[14px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-5 py-2.5 transition-colors duration-fast ease-out" />
+          </div>
         </header>
 
         <section className="mb-12">
