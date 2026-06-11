@@ -1,8 +1,14 @@
 /**
- * Cron route: POST /api/cron/weekly-digest
+ * Cron route: GET/POST /api/cron/weekly-digest
  *
  * Invoked by Vercel Cron on a weekly schedule (vercel.json). Sends the
  * weekly rhythm digest email to all eligible parents.
+ *
+ * NOTE: Vercel Cron invokes the path with HTTP GET (with
+ * `Authorization: Bearer <CRON_SECRET>` attached automatically when the
+ * env var is set) — a POST-only export would 405 every scheduled run
+ * (PR #192 review finding 2). GET is the cron entrypoint; POST is kept for
+ * manual/ops triggering with the same secret.
  *
  * Security:
  *   - Authorization header must carry `Bearer <CRON_SECRET>` — the same
@@ -36,7 +42,7 @@ import type { NextRequest } from "next/server";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { runWeeklyDigest } from "@/lib/email/weekly-digest";
 
-export async function POST(req: NextRequest) {
+async function handleCronRequest(req: NextRequest) {
   // 1. Verify the CRON_SECRET is configured.
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
@@ -67,4 +73,13 @@ export async function POST(req: NextRequest) {
   );
 
   return NextResponse.json({ accepted: true }, { status: 202 });
+}
+
+// Vercel Cron invokes with GET; POST kept for manual ops triggering.
+export async function GET(req: NextRequest) {
+  return handleCronRequest(req);
+}
+
+export async function POST(req: NextRequest) {
+  return handleCronRequest(req);
 }

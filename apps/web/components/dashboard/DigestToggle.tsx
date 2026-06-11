@@ -11,7 +11,6 @@
  * Privacy: only sends "optOut=true/false" to the server action. No PII.
  */
 
-import { useRef } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
 import { setDigestOptOut, type DigestPrefState } from "@/lib/actions/digest-preferences";
@@ -86,11 +85,18 @@ export function DigestToggle({ initialOptOut }: Props) {
           <p
             className="font-body text-[12px] text-red-400 mt-1"
             role="alert"
-            aria-live="polite"
           >
             {state.error}
           </p>
         ) : null}
+        {/* Screen-reader announcement on successful toggle — the visual
+            switch moves, but without this a SR user whose focus has left the
+            button gets no feedback. Visually hidden, polite. */}
+        <p aria-live="polite" className="sr-only">
+          {state?.ok === true
+            ? `Weekly rhythm email ${state.optOut ? "off" : "on"}.`
+            : ""}
+        </p>
       </div>
 
       <form action={formAction}>

@@ -92,7 +92,7 @@ function renderDigestHtml(
         <!-- Footer -->
         <tr><td style="padding:24px 0 0 0;border-top:1px solid #2a2a2a">
           <p style="margin:0 0 8px 0;font-size:12px;color:#666;line-height:1.5">
-            You're receiving this because you have an active From Victory subscription.
+            You're receiving this because you have an active or trial From Victory subscription.
           </p>
           <p style="margin:0;font-size:12px;color:#666">
             <a href="${escHtml(unsubscribeUrl)}" style="color:#888;text-decoration:underline">Unsubscribe from weekly emails</a>
@@ -138,7 +138,7 @@ function renderDigestText(
     `View Dashboard: ${siteUrl}/dashboard`,
     ``,
     `---`,
-    `You're receiving this because you have an active From Victory subscription.`,
+    `You're receiving this because you have an active or trial From Victory subscription.`,
     `Unsubscribe: ${unsubscribeUrl}`,
     `Manage in Settings: ${siteUrl}/dashboard/settings`,
   ].join("\n");
@@ -219,22 +219,49 @@ export async function runWeeklyDigest(): Promise<DigestRunResult> {
     return result;
   }
 
-  // 3. Window: Monday 00:00:00 UTC of current week.
+  // 3. Lazily stamp unsubscribe tokens for parents created after the
+  //    migration backfill (their token is null until first toggle). Every
+  //    email MUST carry a working unsubscribe link, so a parent whose token
+  //    cannot be stored is skipped rather than emailed without one.
+  for (const p of eligibleParents) {
+    if (p.digest_unsubscribe_token) continue;
+    const token = crypto.randomUUID();
+    const { error: tokenError } = await service
+      .from("profiles")
+      .update({ digest_unsubscribe_token: token })
+      .eq("id", p.id)
+      .eq("role", "parent");
+    if (tokenError) {
+      console.error(
+        `[weekly-digest] token stamp failed parent=${p.id}: ${tokenError.message}`,
+      );
+      continue; // left null — filtered out below, counted as skipped
+    }
+    p.digest_unsubscribe_token = token;
+  }
+
+  // 4. Window: the PREVIOUS full week — Monday 00:00 UTC last week
+  //    (inclusive) through Monday 00:00 UTC this week (exclusive). The cron
+  //    fires Monday 13:00 UTC, so "this past week" is the completed Mon–Sun
+  //    block; counting the current week here would report a ~13-hour window
+  //    and tell every engaged family "no sessions this week" (PR #192
+  //    review finding 3).
   const now = new Date();
   const dayOfWeek = now.getUTCDay(); // 0=Sun, 1=Mon, ...
   const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  const weekStart = new Date(Date.UTC(
+  const windowEnd = new Date(Date.UTC(
     now.getUTCFullYear(),
     now.getUTCMonth(),
     now.getUTCDate() - daysToMonday,
   ));
+  const windowStart = new Date(windowEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  // 4. Fetch all athlete data for all eligible parents in one batch.
+  // 5. Fetch all athlete data for all eligible parents in one batch.
   const eligibleIds = eligibleParents.map((p) => p.id);
   const { athleteMeta, weeklyRows, athleteNames, parentLinks } =
-    await loadAthleteDataForParents(service, eligibleIds, weekStart);
+    await loadAthleteDataForParents(service, eligibleIds, windowStart, windowEnd);
 
-  // 5. Fetch parent emails from Supabase Auth admin.
+  // 6. Fetch parent emails from Supabase Auth admin.
   // The admin.listUsers API paginates — for MVP we handle up to 1000 parents
   // (more than sufficient). This is service-role only; parent emails never
   // reach athlete-accessible code paths.
@@ -259,10 +286,16 @@ export async function runWeeklyDigest(): Promise<DigestRunResult> {
     }
   }
 
-  // 6. Send one email per parent.
+  // 7. Send one email per parent.
   for (const parent of eligibleParents) {
     const email = emailMap.get(parent.id);
     if (!email) continue; // already counted as skipped above
+
+    if (!parent.digest_unsubscribe_token) {
+      // Token stamp failed above — never send without an unsubscribe link.
+      result.skipped++;
+      continue;
+    }
 
     const payload = buildParentDigestPayload({
       parent,
@@ -271,7 +304,8 @@ export async function runWeeklyDigest(): Promise<DigestRunResult> {
       athleteMeta,
       weeklyRows,
       athleteNames,
-      weekStart,
+      windowStart,
+      windowEnd,
     });
 
     const html = renderDigestHtml(payload, siteUrl);

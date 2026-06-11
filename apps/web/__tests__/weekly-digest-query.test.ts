@@ -28,7 +28,9 @@ import {
 // ---------------------------------------------------------------------------
 
 describe("countSessionsInWindow", () => {
+  // The PREVIOUS full week: Mon 00:00 UTC → next Mon 00:00 UTC (exclusive).
   const windowStart = new Date("2026-06-09T00:00:00Z"); // Mon week start
+  const windowEnd = new Date("2026-06-16T00:00:00Z"); // next Mon (exclusive)
 
   it("counts only sessions for the given athlete within the window", () => {
     const rows = [
@@ -37,18 +39,18 @@ describe("countSessionsInWindow", () => {
       { athlete_id: "a1", completed_at: "2026-06-07T08:00:00Z" }, // before window
       { athlete_id: "a2", completed_at: "2026-06-10T08:00:00Z" }, // different athlete
     ];
-    expect(countSessionsInWindow(rows, "a1", windowStart)).toBe(2);
+    expect(countSessionsInWindow(rows, "a1", windowStart, windowEnd)).toBe(2);
   });
 
   it("returns 0 when no sessions in window", () => {
     const rows = [
       { athlete_id: "a1", completed_at: "2026-06-07T08:00:00Z" },
     ];
-    expect(countSessionsInWindow(rows, "a1", windowStart)).toBe(0);
+    expect(countSessionsInWindow(rows, "a1", windowStart, windowEnd)).toBe(0);
   });
 
   it("returns 0 when athlete has no rows", () => {
-    expect(countSessionsInWindow([], "a1", windowStart)).toBe(0);
+    expect(countSessionsInWindow([], "a1", windowStart, windowEnd)).toBe(0);
   });
 
   it("skips rows with null completed_at", () => {
@@ -56,14 +58,22 @@ describe("countSessionsInWindow", () => {
       { athlete_id: "a1", completed_at: null },
       { athlete_id: "a1", completed_at: "2026-06-10T08:00:00Z" },
     ];
-    expect(countSessionsInWindow(rows, "a1", windowStart)).toBe(1);
+    expect(countSessionsInWindow(rows, "a1", windowStart, windowEnd)).toBe(1);
   });
 
-  it("treats the window boundary as inclusive", () => {
+  it("treats the start boundary as inclusive", () => {
     const rows = [
       { athlete_id: "a1", completed_at: "2026-06-09T00:00:00Z" }, // exactly at start
     ];
-    expect(countSessionsInWindow(rows, "a1", windowStart)).toBe(1);
+    expect(countSessionsInWindow(rows, "a1", windowStart, windowEnd)).toBe(1);
+  });
+
+  it("treats the end boundary as EXCLUSIVE (a Monday-morning session belongs to the next digest)", () => {
+    const rows = [
+      { athlete_id: "a1", completed_at: "2026-06-16T00:00:00Z" }, // exactly at end
+      { athlete_id: "a1", completed_at: "2026-06-15T23:59:59Z" }, // last second in window
+    ];
+    expect(countSessionsInWindow(rows, "a1", windowStart, windowEnd)).toBe(1);
   });
 });
 
@@ -133,7 +143,8 @@ describe("rhythmSummaryLine", () => {
 // ---------------------------------------------------------------------------
 
 describe("buildParentDigestPayload", () => {
-  const weekStart = new Date("2026-06-09T00:00:00Z");
+  const windowStart = new Date("2026-06-09T00:00:00Z");
+  const windowEnd = new Date("2026-06-16T00:00:00Z");
 
   const parent = {
     id: "p1",
@@ -180,7 +191,8 @@ describe("buildParentDigestPayload", () => {
       athleteMeta,
       weeklyRows,
       athleteNames,
-      weekStart,
+      windowStart,
+      windowEnd,
     });
 
     expect(payload.parentId).toBe("p1");
@@ -190,16 +202,18 @@ describe("buildParentDigestPayload", () => {
 
     expect(payload.athletes).toHaveLength(2);
 
+    // Canonical day rule (lib/daily/progression.ts): completed + 1, capped
+    // at 30 — the email must agree with the athlete's home ring.
     const a1 = payload.athletes.find((a) => a.firstName === "Alex");
     expect(a1).toBeDefined();
     expect(a1?.sessionsCompleted).toBe(10);
     expect(a1?.sessionsThisWeek).toBe(2);
-    expect(a1?.dayPosition).toBe(10);
+    expect(a1?.dayPosition).toBe(11);
 
     const a2 = payload.athletes.find((a) => a.firstName === "Sam");
     expect(a2?.sessionsCompleted).toBe(0);
     expect(a2?.sessionsThisWeek).toBe(0);
-    expect(a2?.dayPosition).toBe(0);
+    expect(a2?.dayPosition).toBe(1);
   });
 
   it("dayPosition is capped at 30", () => {
@@ -222,7 +236,8 @@ describe("buildParentDigestPayload", () => {
       athleteMeta,
       weeklyRows: [],
       athleteNames: new Map([["a1", "Alex"]]),
-      weekStart,
+      windowStart,
+      windowEnd,
     });
     expect(payload.athletes[0]?.dayPosition).toBe(30);
   });
@@ -235,7 +250,8 @@ describe("buildParentDigestPayload", () => {
       athleteMeta: new Map(),
       weeklyRows: [],
       athleteNames: new Map(),
-      weekStart,
+      windowStart,
+      windowEnd,
     });
     expect(payload.athletes).toHaveLength(0);
   });
@@ -269,7 +285,9 @@ function makeFakeServiceClient(tableResults: Map<string, ChainResult>) {
       eq: (_col: string, _val: unknown) => chain,
       in: (_col: string, _vals: unknown[]) => chain,
       not: (_col: string, _op: string, _val: unknown) => chain,
+      or: (_filters: string) => chain,
       gte: (_col: string, _val: unknown) => chain,
+      lt: (_col: string, _val: unknown) => chain,
       then: (onFulfilled: (v: ChainResult) => unknown) => {
         const result = tableResults.get(table) ?? { data: [], error: null };
         return Promise.resolve(result).then(onFulfilled);
@@ -293,7 +311,8 @@ function makeFakeServiceClient(tableResults: Map<string, ChainResult>) {
 // ---------------------------------------------------------------------------
 
 describe("loadAthleteDataForParents", () => {
-  const weekStart = new Date("2026-06-09T00:00:00Z");
+  const windowStart = new Date("2026-06-09T00:00:00Z");
+  const windowEnd = new Date("2026-06-16T00:00:00Z");
 
   it("HARD PRIVACY: selected columns never include journal content, mental_skill_md, scripture, pregame selections", async () => {
     const tableResults = new Map<string, ChainResult>([
@@ -335,7 +354,7 @@ describe("loadAthleteDataForParents", () => {
     ]);
 
     const fakeClient = makeFakeServiceClient(tableResults);
-    await loadAthleteDataForParents(fakeClient, ["p1"], weekStart);
+    await loadAthleteDataForParents(fakeClient, ["p1"], windowStart, windowEnd);
 
     // Check every captured SELECT for forbidden fields.
     const forbidden = [
@@ -371,7 +390,7 @@ describe("loadAthleteDataForParents", () => {
     ]);
 
     const fakeClient = makeFakeServiceClient(tableResults);
-    await loadAthleteDataForParents(fakeClient, ["p1"], weekStart);
+    await loadAthleteDataForParents(fakeClient, ["p1"], windowStart, windowEnd);
 
     const profileSelect = fakeClient._capturedSelects.get("profiles") ?? "";
     expect(profileSelect).toContain("first_name");
@@ -392,7 +411,7 @@ describe("loadAthleteDataForParents", () => {
     ]);
 
     const fakeClient = makeFakeServiceClient(tableResults);
-    await loadAthleteDataForParents(fakeClient, ["p1"], weekStart);
+    await loadAthleteDataForParents(fakeClient, ["p1"], windowStart, windowEnd);
 
     const sessionSelect = fakeClient._capturedSelects.get("athlete_sessions") ?? "";
     expect(sessionSelect).toContain("athlete_id");
@@ -404,7 +423,7 @@ describe("loadAthleteDataForParents", () => {
 
   it("returns empty maps when parentIds is empty (no DB calls needed)", async () => {
     const fakeClient = makeFakeServiceClient(new Map());
-    const result = await loadAthleteDataForParents(fakeClient, [], weekStart);
+    const result = await loadAthleteDataForParents(fakeClient, [], windowStart, windowEnd);
     expect(result.athleteMeta.size).toBe(0);
     expect(result.weeklyRows).toHaveLength(0);
     expect(result.athleteNames.size).toBe(0);
@@ -417,16 +436,20 @@ describe("loadAthleteDataForParents", () => {
 // ---------------------------------------------------------------------------
 
 describe("loadEligibleParents", () => {
-  it("only returns parents where digest_opt_out = false and token is not null", async () => {
-    // The fake client just validates the filter structure.
-    // We check that the query includes the right eq/not filters by intercepting
-    // the chain calls.
+  it("includes null-opt-out parents (opted in by default) and does NOT filter on token", async () => {
+    // PR #192 review findings: null digest_opt_out = opted IN (post-migration
+    // signups), and token-less parents must NOT be excluded here — the caller
+    // lazily stamps tokens before sending.
     const capturedFilters: string[] = [];
 
     const chain: Record<string, unknown> = {
       select: (_cols: string) => chain,
       eq: (col: string, val: unknown) => {
         capturedFilters.push(`eq:${col}=${String(val)}`);
+        return chain;
+      },
+      or: (filters: string) => {
+        capturedFilters.push(`or:${filters}`);
         return chain;
       },
       not: (col: string, op: string, val: unknown) => {
@@ -444,20 +467,24 @@ describe("loadEligibleParents", () => {
 
     await loadEligibleParents(fakeClient);
 
-    // Verify the opt-out filter is applied.
     expect(capturedFilters).toContain("eq:role=parent");
-    expect(capturedFilters).toContain("eq:digest_opt_out=false");
-    // Verify token null guard.
-    const hasTokenGuard = capturedFilters.some(
-      (f) => f.includes("digest_unsubscribe_token") && f.includes("not"),
+    // Opt-out filter: null OR false both count as opted in.
+    const optOutFilter = capturedFilters.find((f) => f.startsWith("or:"));
+    expect(optOutFilter).toBeDefined();
+    expect(optOutFilter).toContain("digest_opt_out.is.null");
+    expect(optOutFilter).toContain("digest_opt_out.eq.false");
+    // No token filter — token-less parents stay in (lazy stamping).
+    const hasTokenFilter = capturedFilters.some((f) =>
+      f.includes("digest_unsubscribe_token"),
     );
-    expect(hasTokenGuard).toBe(true);
+    expect(hasTokenFilter).toBe(false);
   });
 
   it("returns empty array on DB error (non-fatal)", async () => {
     const chain: Record<string, unknown> = {
       select: () => chain,
       eq: () => chain,
+      or: () => chain,
       not: () => chain,
       then: (onFulfilled: (v: ChainResult) => unknown) => {
         return Promise.resolve({ data: null, error: { message: "permission denied" } }).then(onFulfilled);

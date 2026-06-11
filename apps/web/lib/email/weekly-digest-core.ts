@@ -30,9 +30,12 @@ export type AthleteDigestData = {
   firstName: string;
   /** Total sessions completed across all 30 days. */
   sessionsCompleted: number;
-  /** Sessions completed in the past 7 days (Mon 00:00 UTC → now). */
+  /** Sessions completed in the digest window — the PREVIOUS full week,
+   *  Mon 00:00 UTC (inclusive) → Mon 00:00 UTC (exclusive). */
   sessionsThisWeek: number;
-  /** Position in the 30-day program: max(sessions_completed, 0). */
+  /** Position in the 30-day program. Matches the app's canonical rule
+   *  (lib/daily/progression.ts): completedCount + 1, capped at 30 — the
+   *  parent email must agree with the athlete's home ring. */
   dayPosition: number;
 };
 
@@ -75,16 +78,20 @@ type SessionRow = {
 // Pure helpers
 // ---------------------------------------------------------------------------
 
-/** Count sessions from rows where completed_at >= windowStart. */
+/** Count sessions where windowStart <= completed_at < windowEnd. The upper
+ *  bound is EXCLUSIVE — without it, a Monday-morning session would count in
+ *  both last week's digest and next week's (PR #192 review finding 3). */
 export function countSessionsInWindow(
   rows: SessionRow[],
   athleteId: string,
   windowStart: Date,
+  windowEnd: Date,
 ): number {
   return rows.filter((r) => {
     if (r.athlete_id !== athleteId) return false;
     if (!r.completed_at) return false;
-    return new Date(r.completed_at) >= windowStart;
+    const t = new Date(r.completed_at);
+    return t >= windowStart && t < windowEnd;
   }).length;
 }
 
@@ -94,10 +101,10 @@ export function rhythmSummaryLine(data: AthleteDigestData): string {
     return "Your athlete hasn't started yet — the rhythm begins whenever they're ready.";
   }
   if (data.sessionsThisWeek === 0) {
-    return `Your athlete is on day ${data.dayPosition} of 30. No sessions this week — that's okay. The rhythm continues.`;
+    return `Your athlete is on day ${data.dayPosition} of 30. No sessions this past week — that's okay. The rhythm continues.`;
   }
   const plural = data.sessionsThisWeek === 1 ? "session" : "sessions";
-  return `Your athlete completed ${data.sessionsThisWeek} ${plural} this week and is on day ${data.dayPosition} of 30.`;
+  return `Your athlete completed ${data.sessionsThisWeek} ${plural} this past week and is on day ${data.dayPosition} of 30.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -105,12 +112,19 @@ export function rhythmSummaryLine(data: AthleteDigestData): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Load all parent rows that should receive a digest this week.
+ * Load all parent rows that have not opted out of the digest.
  *
- * Filters out:
- *   - Parents with digest_opt_out = true
- *   - Parents with no unsubscribe token (shouldn't happen post-migration)
- *   - Parents without an active/trialing subscription
+ * Filters out ONLY:
+ *   - Parents with digest_opt_out = true (null counts as opted-IN — parents
+ *     created after the migration have null until they touch the toggle)
+ *
+ * Deliberately does NOT filter:
+ *   - Subscription status — that is the CALLER's responsibility
+ *     (runWeeklyDigest filters to active/trialing). Calling this function
+ *     directly does NOT give you a sendable list.
+ *   - Missing unsubscribe token — the caller lazily generates and stores a
+ *     token for token-less parents before sending (PR #192 review finding 4;
+ *     filtering them out here silently excluded every post-migration signup).
  *
  * NOTE: The returned ParentRow list does NOT include the email address —
  * the caller (weekly-digest.ts) fetches emails via service-role Auth admin.
@@ -120,7 +134,6 @@ export function rhythmSummaryLine(data: AthleteDigestData): string {
 export async function loadEligibleParents(
   service: ServiceClient,
 ): Promise<ParentRow[]> {
-  // Join to subscriptions to filter active/trialing only.
   // Service role bypasses RLS — this is intentional for cron use.
   const { data, error } = await service
     .from("profiles")
@@ -128,8 +141,7 @@ export async function loadEligibleParents(
       "id, first_name, digest_opt_out, digest_unsubscribe_token",
     )
     .eq("role", "parent")
-    .eq("digest_opt_out", false)
-    .not("digest_unsubscribe_token", "is", null);
+    .or("digest_opt_out.is.null,digest_opt_out.eq.false");
 
   if (error) {
     console.error("[weekly-digest] loadEligibleParents failed:", error.message);
@@ -154,7 +166,8 @@ export async function loadEligibleParents(
 export async function loadAthleteDataForParents(
   service: ServiceClient,
   parentIds: string[],
-  weekStart: Date,
+  windowStart: Date,
+  windowEnd: Date,
 ): Promise<{
   athleteMeta: Map<string, MetaRow>;
   weeklyRows: SessionRow[];
@@ -247,7 +260,8 @@ export async function loadAthleteDataForParents(
     .from("athlete_sessions")
     .select("athlete_id, completed_at")
     .in("athlete_id", allAthleteIds)
-    .gte("completed_at", weekStart.toISOString())
+    .gte("completed_at", windowStart.toISOString())
+    .lt("completed_at", windowEnd.toISOString())
     .not("completed_at", "is", null);
 
   if (sessionError) {
@@ -276,7 +290,8 @@ export function buildParentDigestPayload(opts: {
   athleteMeta: Map<string, MetaRow>;
   weeklyRows: SessionRow[];
   athleteNames: Map<string, string>;
-  weekStart: Date;
+  windowStart: Date;
+  windowEnd: Date;
 }): ParentDigestPayload {
   const {
     parent,
@@ -285,7 +300,8 @@ export function buildParentDigestPayload(opts: {
     athleteMeta,
     weeklyRows,
     athleteNames,
-    weekStart,
+    windowStart,
+    windowEnd,
   } = opts;
 
   const athleteIds = parentLinks.get(parent.id) ?? [];
@@ -294,8 +310,15 @@ export function buildParentDigestPayload(opts: {
     const meta = athleteMeta.get(aid);
     const firstName = athleteNames.get(aid) ?? "Your athlete";
     const sessionsCompleted = meta?.sessions_completed ?? 0;
-    const sessionsThisWeek = countSessionsInWindow(weeklyRows, aid, weekStart);
-    const dayPosition = Math.min(30, Math.max(0, sessionsCompleted));
+    const sessionsThisWeek = countSessionsInWindow(
+      weeklyRows,
+      aid,
+      windowStart,
+      windowEnd,
+    );
+    // Canonical day rule (lib/daily/progression.ts): completed + 1, capped at
+    // 30 — must match the athlete's home ring or the email erodes trust.
+    const dayPosition = Math.min(30, Math.max(0, sessionsCompleted) + 1);
 
     return {
       firstName,

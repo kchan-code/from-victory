@@ -5,9 +5,8 @@
  * token is a UUID stored in profiles.digest_unsubscribe_token — it is
  * opaque, not derivable from public data, and treated as a secret.
  *
- * On success: redirects to /dashboard/settings?unsubscribed=1 if the
- * parent is signed in; otherwise renders a minimal HTML confirmation page
- * (the parent clicked an email link and may not be signed in).
+ * On success: renders a minimal HTML confirmation page (the parent clicked
+ * an email link and may not be signed in; no redirect, no session needed).
  *
  * On failure: redirects / renders an error message — never leaks the
  * reason beyond "link is invalid or expired."
@@ -48,8 +47,10 @@ export async function GET(req: NextRequest) {
     return htmlResponse(msg, 400);
   }
 
+  // NOTE: pass the RAW first name — htmlResponse escapes the whole message
+  // exactly once (escaping here too double-escapes "&" etc., PR #192 review).
   return htmlResponse(
-    `You've been unsubscribed from weekly emails, ${escHtml(result.firstName)}. You can re-enable them any time in your account settings.`,
+    `You've been unsubscribed from weekly emails, ${result.firstName}. You can re-enable them any time in your account settings.`,
     200,
     true,
   );
