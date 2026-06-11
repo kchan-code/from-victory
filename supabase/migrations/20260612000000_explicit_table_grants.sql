@@ -19,10 +19,13 @@
 --   PostgreSQL.
 --
 -- Design (grant layer = door; RLS layer = lock):
---   authenticated receives SELECT, INSERT, UPDATE on every public table so
---   that the RLS harness (and the app) can reach the RLS check on every table.
+--   authenticated receives SELECT on every public table. INSERT/UPDATE are
+--   granted only where the app actually writes (profiles, athlete_sessions,
+--   journal_entries). subscriptions is SELECT-only: all writes are service-role
+--   (Stripe webhook handler). The two-layer denial model (no grant + no policy)
+--   is preserved for service-role-only write paths.
 --   For service-role-only tables (device_pairings, safety_events, etc.) RLS is
---   enabled with NO policies — the authenticated / anon roles will see 0 rows.
+--   enabled with NO policies — authenticated / anon will see 0 rows.
 --   This is intentional: "0 rows returned" is the correct RLS-mediated
 --   rejection. "permission denied" would also deny access but prevents the
 --   harness from verifying the RLS boundary.
@@ -39,9 +42,8 @@ grant usage on schema public to authenticated, anon;
 -- ---------------------------------------------------------------------------
 -- authenticated — all public tables
 --   SELECT on all: needed to query any table (RLS filters rows from there).
---   INSERT / UPDATE where relevant: needed for the harness to prove RLS
---   blocks writes (an INSERT hitting no INSERT policy raises insufficient_privilege;
---   an UPDATE hitting no UPDATE policy affects 0 rows — both correct).
+--   INSERT / UPDATE on app-write tables only (profiles, athlete_sessions,
+--   journal_entries). subscriptions is SELECT-only — two-layer denial model.
 -- ---------------------------------------------------------------------------
 grant select, insert, update on public.profiles                  to authenticated;
 grant select                   on public.parent_athlete_links     to authenticated;
