@@ -261,6 +261,12 @@ export type Database = {
         Row: {
           birthdate: string | null
           created_at: string
+          // FV-226: parent rows only. null on athlete rows (constraint).
+          // When true, parent is excluded from the weekly digest send.
+          digest_opt_out: boolean | null
+          // FV-226: parent rows only. null on athlete rows (constraint).
+          // UUID used as the unsubscribe link token in digest emails.
+          digest_unsubscribe_token: string | null
           first_name: string
           id: string
           role: string
@@ -277,6 +283,10 @@ export type Database = {
         Insert: {
           birthdate?: string | null
           created_at?: string
+          // FV-226: see Row comment above.
+          digest_opt_out?: boolean | null
+          // FV-226: see Row comment above.
+          digest_unsubscribe_token?: string | null
           first_name: string
           id: string
           role: string
@@ -289,6 +299,10 @@ export type Database = {
         Update: {
           birthdate?: string | null
           created_at?: string
+          // FV-226: see Row comment above.
+          digest_opt_out?: boolean | null
+          // FV-226: see Row comment above.
+          digest_unsubscribe_token?: string | null
           first_name?: string
           id?: string
           role?: string
