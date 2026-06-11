@@ -144,13 +144,12 @@ export function SessionBody({ markdown }: SessionBodyProps) {
         if (block.type === "blockquote") {
           const content = block.lines.join(" ");
           return (
-            <blockquote
-              key={idx}
-              className="border-l-2 border-gold/50 pl-4 my-6"
-            >
-              <p className="font-scripture text-cream text-[17px] leading-relaxed italic text-center">
+            <blockquote key={idx} className="my-7">
+              <div className="border-t border-gold/25 mb-5" />
+              <p className="font-scripture text-cream text-[23px] leading-[1.55] italic text-center px-2">
                 {parseInline(content)}
               </p>
+              <div className="border-t border-gold/25 mt-5" />
             </blockquote>
           );
         }

@@ -566,6 +566,39 @@ a:hover { color: var(--accent-hot); }
     .animate-card-fade-in { animation: none; }
   }
 
+  /* ── Completion moment animations (FV-221) ──────────────────────────────── */
+
+  /* Gold radial glow bloom: opacity + scale in over ~800ms, ease-out. */
+  @keyframes fv-glow-bloom {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1);    }
+  }
+  .animate-glow-bloom {
+    animation: fv-glow-bloom 800ms var(--ease-out) both;
+  }
+
+  /* Single ring pulse on milestone completion: one scale pop then settle. */
+  @keyframes fv-ring-pulse {
+    0%   { transform: scale(1);    }
+    40%  { transform: scale(1.07); }
+    100% { transform: scale(1);    }
+  }
+  .animate-ring-pulse {
+    animation: fv-ring-pulse 600ms var(--ease-out) both;
+  }
+
+  /* Milestone card gold gradient background. */
+  .fv-milestone-bg {
+    background:
+      radial-gradient(70% 55% at 50% 0%, rgba(223,175,55,0.14), transparent 65%),
+      var(--fv-charcoal);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-glow-bloom { animation: none; opacity: 1; transform: none; }
+    .animate-ring-pulse { animation: none; }
+  }
+
   /* Sticky nav blur */
   .fv-nav-wrap {
     position: fixed;
