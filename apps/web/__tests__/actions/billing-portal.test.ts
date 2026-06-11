@@ -232,7 +232,7 @@ describe("openBillingPortal", () => {
   // -------------------------------------------------------------------------
   // Return URL uses NEXT_PUBLIC_SITE_URL fallback
   // -------------------------------------------------------------------------
-  it("falls back to localhost:3000 return_url when NEXT_PUBLIC_SITE_URL is unset", async () => {
+  it("falls back to the canonical production return_url when NEXT_PUBLIC_SITE_URL is unset", async () => {
     const original = process.env.NEXT_PUBLIC_SITE_URL;
     delete process.env.NEXT_PUBLIC_SITE_URL;
 
@@ -245,7 +245,7 @@ describe("openBillingPortal", () => {
 
     expect(billingPortalCreateMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        return_url: "http://localhost:3000/dashboard/settings",
+        return_url: "https://www.fromvictoryapp.com/dashboard/settings",
       }),
     );
 

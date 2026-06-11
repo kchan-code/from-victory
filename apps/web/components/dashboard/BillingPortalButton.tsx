@@ -36,8 +36,10 @@ export function BillingPortalButton() {
   const [state, formAction] = useFormState(openBillingPortal, INITIAL_STATE);
 
   const errorMessage =
-    state?.ok === false && state.code === "portal_unavailable"
-      ? "Billing management is temporarily unavailable — contact support."
+    state?.ok === false
+      ? state.code === "portal_unavailable"
+        ? "Billing management is temporarily unavailable — contact support."
+        : "No active subscription found. Refresh the page to update your plan details."
       : null;
 
   return (

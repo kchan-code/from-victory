@@ -4,30 +4,21 @@
  * SendResetLinkButton
  *
  * Sends a password-reset email to the signed-in parent's own account email
- * by calling the existing `requestPasswordReset` server action. The email
- * address is passed from the Server Component (derived from auth.getUser()
- * server-side) — we never accept it from user input here.
+ * via the dedicated `sendOwnPasswordReset` server action. The email address
+ * is derived server-side from the authenticated session — nothing is passed
+ * from this component, so the form body carries no tamperable target.
  *
  * On success, renders a confirmation message. On error, renders the returned
- * error string. Rate limiting of requestPasswordReset is tracked in FV-185
- * and is NOT built here.
+ * error string. Rate limiting of reset sends is tracked in FV-185 and is NOT
+ * built here.
  */
 
-import { useRef } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
-import { requestPasswordReset } from "@/lib/actions/auth";
+import { sendOwnPasswordReset } from "@/lib/actions/account-settings";
 import type { AuthActionState } from "@/lib/actions/auth";
 
 const INITIAL_STATE: AuthActionState = null;
-
-interface SendResetLinkButtonProps {
-  /** The parent's own account email — passed from the Server Component, never
-   *  accepted from client input here. Hidden as a form field so the existing
-   *  requestPasswordReset action (which expects an "email" FormData field) can
-   *  be reused without modification. */
-  email: string;
-}
 
 function SubmitButton({ succeeded }: { succeeded: boolean }) {
   const { pending } = useFormStatus();
@@ -43,9 +34,8 @@ function SubmitButton({ succeeded }: { succeeded: boolean }) {
   );
 }
 
-export function SendResetLinkButton({ email }: SendResetLinkButtonProps) {
-  const formRef = useRef<HTMLFormElement>(null);
-  const [state, formAction] = useFormState(requestPasswordReset, INITIAL_STATE);
+export function SendResetLinkButton() {
+  const [state, formAction] = useFormState(sendOwnPasswordReset, INITIAL_STATE);
 
   const succeeded = state?.ok === true;
   const errorMessage =
@@ -53,11 +43,7 @@ export function SendResetLinkButton({ email }: SendResetLinkButtonProps) {
 
   return (
     <div className="flex-shrink-0">
-      <form ref={formRef} action={formAction}>
-        {/* The email is pre-populated server-side. It is not shown to the user
-            as an editable input — this is an intentional UX choice: the parent
-            is sending a reset to their own known email. */}
-        <input type="hidden" name="email" value={email} />
+      <form action={formAction}>
         <SubmitButton succeeded={succeeded} />
       </form>
 

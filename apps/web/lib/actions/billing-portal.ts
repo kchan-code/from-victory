@@ -91,9 +91,12 @@ export async function openBillingPortal(
   }
 
   // 3. Build return_url. The parent lands back on the settings page after
-  //    managing their subscription in the portal.
+  //    managing their subscription in the portal. The fallback is the
+  //    canonical production URL (same pattern as lib/actions/auth.ts) so a
+  //    missing env var never strands a parent on localhost after a billing
+  //    action.
   const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.fromvictoryapp.com";
   const returnUrl = `${siteUrl}/dashboard/settings`;
 
   // 4. Create the Stripe Billing Portal session. Capture the URL before the

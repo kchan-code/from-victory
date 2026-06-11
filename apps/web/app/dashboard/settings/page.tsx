@@ -193,7 +193,7 @@ export default async function DashboardSettingsPage() {
                 Send a reset link to your account email.
               </p>
             </div>
-            <SendResetLinkButton email={accountEmail} />
+            <SendResetLinkButton />
           </div>
         </section>
 
