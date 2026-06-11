@@ -101,6 +101,11 @@ import {
   claimPairing,
   athleteSignIn,
 } from "@/lib/actions/pairings";
+// FV-13b added HMAC signing to device cookies; verifyDeviceValue rejects plain
+// UUIDs. Use signDeviceValue with the well-known dev-fallback secret so the
+// test helper stores a value the real verifyDeviceValue accepts in non-prod.
+import { signDeviceValue } from "@/lib/auth/device-cookie";
+const DEV_COOKIE_SECRET = "dev-only-device-cookie-hmac-secret-not-for-prod";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -419,7 +424,7 @@ describe("athleteSignIn — rate limiting", () => {
   const ATHLETE_ID = "athlete-cookie-uuid";
 
   function setAthleteCookie(id: string = ATHLETE_ID) {
-    cookieStore["fv_device_athlete_id"] = id;
+    cookieStore["fv_device_athlete_id"] = signDeviceValue(id, DEV_COOKIE_SECRET);
   }
 
   function makeFormData(password = "mypassword") {
