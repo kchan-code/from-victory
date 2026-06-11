@@ -13,7 +13,6 @@ import {
   VerseRef,
 } from "./shared";
 import {
-  AUDIO_SCRIPT,
   AUDIO_SESSION_DURATION_S,
   CUE_WORDS,
   DEFAULTS,
@@ -162,12 +161,16 @@ export function SelfTalkScreen({
 }
 
 // ─── SCREEN 7 ─── Cue Word (split from old Reset)
+// FV-175: sportConfig.cueWordHelper replaces the hockey-specific literal so
+// basketball athletes see "at the line" instead of "between shifts".
 export function CueWordScreen({
   state,
   set,
+  sportConfig = HOCKEY_CONFIG,
 }: {
   state: PregameState;
   set: SetFn;
+  sportConfig?: SportConfig;
 }) {
   return (
     <ScreenBody>
@@ -176,7 +179,7 @@ export function CueWordScreen({
         Choose your cue word.
       </h1>
       <p className="mb-4 font-body text-[14px] text-cream/50">
-        One word. The one you&rsquo;d say to yourself between shifts.{" "}
+        One word. {sportConfig.cueWordHelper}{" "}
         <span className="text-cream/70">Default: Faithful.</span>
       </p>
 
@@ -1171,7 +1174,9 @@ export function AudioSessionScreen({
       body: sessionVerse.displayText,
     };
   } else {
-    const segments = AUDIO_SCRIPT;
+    // FV-175: use sport-specific audio script so basketball text-mode shows
+    // "See the gym" / "Your first possession" instead of hockey equivalents.
+    const segments = sportConfig.audioScript;
     let currentIdx = 0;
     for (let i = 0; i < segments.length; i++) {
       const seg = segments[i];
@@ -1616,8 +1621,9 @@ export function PregameCardScreen({
         <Eyebrow className="!tracking-[0.26em] !text-gold">
           Your Pre-Game Card
         </Eyebrow>
+        {/* FV-175: sport-specific share hint from sportConfig.cardShareHint */}
         <p className="mt-1.5 font-body text-[13px] text-cream/50">
-          Screenshot it. Open it before puck drop.
+          {sportConfig.cardShareHint}
         </p>
       </div>
 

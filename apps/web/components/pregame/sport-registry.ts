@@ -17,7 +17,12 @@
 //     sport-specific options so hockey-worded chips are never shown to a
 //     basketball athlete.
 
-import type { NeedToday } from "./types";
+import {
+  AUDIO_SCRIPT,
+  SCRIPTURE_REF,
+  SCRIPTURE_TEXT,
+} from "./types";
+import type { AudioSegment, NeedToday } from "./types";
 
 // ---------------------------------------------------------------------------
 // Sport type
@@ -128,6 +133,32 @@ export type SportConfig = {
     "dialed-in": string;
     "not-feeling-it": string;
   };
+
+  // ── Text-mode audio script (FV-175) ──────────────────────────────────────
+  /**
+   * Script segments used by the text-mode fallback timer in AudioSessionScreen.
+   * Hockey keeps AUDIO_SCRIPT verbatim; basketball gets sport-correct segments
+   * (same startSec/structure, sport-specific body for segments 80/120/165).
+   * Tokens ({{role}}, {{roleScenes}}, {{adversity}}, {{anchor}}, {{selfTalk}},
+   * {{cueWord}}) are substituted at render time by substituteSegment(); the
+   * renderer is unchanged — only the source array moves into the config.
+   */
+  audioScript: AudioSegment[];
+
+  /**
+   * Hint shown below the cue-word picker describing when the athlete uses it.
+   * Hockey: "The one you'd say to yourself between shifts."
+   * Basketball: "The one you'd say to yourself at the line."
+   */
+  cueWordHelper: string;
+
+  /**
+   * Secondary hint shown below the Pre-Game Card header nudging the athlete
+   * to screenshot and open it before competition starts.
+   * Hockey: "Screenshot it. Open it before puck drop."
+   * Basketball: "Screenshot it. Open it before tip-off."
+   */
+  cardShareHint: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -297,6 +328,13 @@ export const HOCKEY_CONFIG: SportConfig = {
     "dialed-in": "pp-opener-dialed-in",
     "not-feeling-it": "pp-opener-get-to",
   },
+
+  // FV-175: hockey keeps the existing AUDIO_SCRIPT verbatim — zero behavior change.
+  audioScript: AUDIO_SCRIPT,
+
+  // FV-175: sport-specific copy for the cue-word picker and the pregame card.
+  cueWordHelper: "The one you’d say to yourself between shifts.",
+  cardShareHint: "Screenshot it. Open it before puck drop.",
 };
 
 // ---------------------------------------------------------------------------
@@ -315,6 +353,56 @@ const BASKETBALL_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
   "I start slow.": "start-slow",
   "We fall behind early.": "fall-behind-early",
 };
+
+// FV-175: basketball text-mode audio script.
+// Segments 0/35/210/250/275 are sport-neutral — byte-identical to the hockey
+// AUDIO_SCRIPT (same eyebrow, body, startSec). Segments 80/120/165 are
+// basketball-specific (gym/possession/role scenes). The {{roleScenes}} token
+// in segment 165 is substituted at render time via substituteSegment(), which
+// reads sportConfig.roleContent — Guard/Wing/Big strings come from the registry,
+// not duplicated here. This is the same mechanism hockey uses for Forward/Defense/Goalie.
+const BASKETBALL_AUDIO_SCRIPT: AudioSegment[] = [
+  {
+    startSec: 0,
+    eyebrow: "Identity",
+    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+  },
+  {
+    startSec: 35,
+    eyebrow: "Settle",
+    body: "Sit tall. Long exhale. Lead your body back to ready. Four counts in. Six counts out. Let your shoulders drop.",
+  },
+  {
+    startSec: 80,
+    eyebrow: "See the gym",
+    body: "See the floor. Hear the squeak, the bounce, the rim. Feel the ball in your hands, your shoes on the hardwood. You belong here. You are ready.",
+  },
+  {
+    startSec: 120,
+    eyebrow: "Your first possession",
+    body: "You check in at the scorer's table. Sprint the lane. Eyes up. Find the open man. Simple, strong play. Recover. Next action.",
+  },
+  {
+    startSec: 165,
+    eyebrow: "Play your role · {{role}}",
+    body: "{{roleScenes}}",
+  },
+  {
+    startSec: 210,
+    eyebrow: "If this happens",
+    body: "{{adversity}} See it. Feel it. Breathe. Speak truth. Take the next faithful action. Your mistake is real. It is not your identity.",
+  },
+  {
+    startSec: 250,
+    eyebrow: "Coach yourself",
+    body: "{{selfTalk}} When pressure hits, return here. Your anchor: {{anchor}}. Your cue word: {{cueWord}}.",
+  },
+  {
+    startSec: 275,
+    eyebrow: "Send-off",
+    body: "Lord, help me compete with courage, humility, and joy. Help me serve my team, respond well to mistakes, and remember that my worth is secure in You. Amen. Play from victory.",
+  },
+];
 
 export const BASKETBALL_CONFIG: SportConfig = {
   displayName: "Basketball",
@@ -471,6 +559,13 @@ export const BASKETBALL_CONFIG: SportConfig = {
     // Basketball-specific not-feeling-it opener (FV-30).
     "not-feeling-it": "pp-bb-opener-get-to",
   },
+
+  // FV-175: basketball text-mode audio script (sport-correct body for segs 80/120/165).
+  audioScript: BASKETBALL_AUDIO_SCRIPT,
+
+  // FV-175: sport-specific copy for the cue-word picker and the pregame card.
+  cueWordHelper: "The one you'd say to yourself at the line.",
+  cardShareHint: "Screenshot it. Open it before tip-off.",
 };
 
 // ---------------------------------------------------------------------------

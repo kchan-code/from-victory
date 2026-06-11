@@ -214,7 +214,8 @@ function ScreenSwitch({
       // sportConfig.selfTalkOptions is sport-keyed (FV-117).
       return <SelfTalkScreen state={state} set={set} sportConfig={sportConfig} />;
     case "cueWord":
-      return <CueWordScreen state={state} set={set} />;
+      // FV-175: sportConfig threads cueWordHelper so basketball sees "at the line".
+      return <CueWordScreen state={state} set={set} sportConfig={sportConfig} />;
     case "prayerStyle":
       return <PrayerStyleScreen state={state} set={set} />;
     case "review":
