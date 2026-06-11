@@ -22,6 +22,8 @@ const ICONS = {
   edit: "M12 19l7-7-3-3-7 7v3h3z M14 7l3 3",
   flame: "M12 3c-2 4-5 6-5 10a5 5 0 1 0 10 0c0-2-1.5-3.5-3-5 .5 2.5-1 4-1 4s-2-1-1-9z",
   whistle: "M14 6l8-4-2 6-6 1z M9 10a6 6 0 1 0 6 6",
+  // journey / road-traveled (FV-190)
+  map: "M9 4v16l6-3 6 3V7l-6-3-6 3z M9 4L3 7v16l6-3",
 } as const;
 
 export type IconName = keyof typeof ICONS;
