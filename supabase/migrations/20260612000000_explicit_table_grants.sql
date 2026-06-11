@@ -45,7 +45,7 @@ grant usage on schema public to authenticated, anon;
 -- ---------------------------------------------------------------------------
 grant select, insert, update on public.profiles                  to authenticated;
 grant select                   on public.parent_athlete_links     to authenticated;
-grant select, insert, update   on public.subscriptions            to authenticated;
+grant select                   on public.subscriptions            to authenticated;
 grant select                   on public.training_sessions_catalog to authenticated;
 grant select, insert, update   on public.athlete_sessions         to authenticated;
 grant select, insert, update   on public.journal_entries          to authenticated;

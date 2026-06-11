@@ -4,13 +4,10 @@
 -- (d) client roles cannot INSERT or UPDATE subscriptions.
 --     Only the parent-own SELECT policy exists; all writes are service-role.
 --
--- Note the two distinct denial shapes RLS produces, and why each assertion
--- checks what it checks:
---   - INSERT with NO insert policy  → hard error, SQLSTATE 42501
---     (insufficient_privilege). We expect and catch exactly that.
---   - UPDATE with NO update policy   → NO error; 0 rows match the (absent)
---     USING clause, so the statement silently affects 0 rows. We assert
---     ROW_COUNT = 0 and that the value is unchanged.
+-- Both INSERT and UPDATE produce hard SQLSTATE 42501 (insufficient_privilege)
+-- because the authenticated role has no INSERT or UPDATE grant on this table
+-- (the two-layer model: no grant + no policy). The harness catches both with
+-- the same `when insufficient_privilege` handler.
 -- =============================================================================
 
 -- ---------------------------------------------------------------------------
@@ -20,9 +17,6 @@ begin;
   set local request.jwt.claims to '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated"}';
   set local role authenticated;
   do $$
-  declare
-    affected int;
-    cur_status text;
   begin
     -- INSERT must be hard-denied by RLS. parent_id points at athlete B's id
     -- (a valid profile with NO existing subscription) so that, IF the row
@@ -37,19 +31,17 @@ begin;
         null;  -- expected: RLS blocked the insert (42501)
     end;
 
-    -- UPDATE must affect 0 rows (no UPDATE policy), leaving status intact.
-    update public.subscriptions
-      set status = 'canceled'
-      where parent_id = '10000000-0000-4000-8000-000000000001';
-    get diagnostics affected = row_count;
-    assert affected = 0,
-      format('AC(d) FAIL: subscriptions UPDATE by client affected %s rows (must be 0)', affected);
-
-    select status into cur_status
-      from public.subscriptions
-      where parent_id = '10000000-0000-4000-8000-000000000001';
-    assert cur_status = 'active',
-      format('AC(d) FAIL: subscription status mutated by client to %s (must remain active)', cur_status);
+    -- UPDATE must be hard-denied by permission (no UPDATE grant). Catches the
+    -- same 42501 shape as INSERT — the two-layer denial model is symmetric.
+    begin
+      update public.subscriptions
+        set status = 'canceled'
+        where parent_id = '10000000-0000-4000-8000-000000000001';
+      raise exception 'AC(d) FAIL: subscriptions UPDATE by client unexpectedly SUCCEEDED';
+    exception
+      when insufficient_privilege then
+        null;  -- expected: permission denied (no UPDATE grant)
+    end;
   end $$;
 rollback;
 
