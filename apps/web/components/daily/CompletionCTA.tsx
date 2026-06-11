@@ -7,10 +7,11 @@ import { completeDailySession } from "@/lib/actions/daily-session";
 import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
 
 // Rhythm-framing only — no streak language per brand non-negotiable.
+// Day-30 copy is intentionally brief — the all-complete banner carries the full closure.
 const MILESTONE_COPY: Record<number, string> = {
   7: "One week in. You're building something real.",
   14: "Two weeks strong. Your rhythm is taking shape.",
-  30: "You finished all 30 sessions. The work you put in is yours — keep showing up.",
+  30: "All 30. The work is yours — keep showing up.",
 };
 
 interface Props {
@@ -21,6 +22,7 @@ interface Props {
 export function CompletionCTA({ dayNumber, completedCount }: Props) {
   const [isPending, startTransition] = useTransition();
   const [justCompleted, setJustCompleted] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
 
   const newCompletedCount = completedCount + 1;
   const prevPct = Math.round((completedCount / TOTAL_TRAINING_DAYS) * 100);
@@ -31,9 +33,16 @@ export function CompletionCTA({ dayNumber, completedCount }: Props) {
     if (typeof navigator !== "undefined" && "vibrate" in navigator) {
       navigator.vibrate([100, 30, 60]);
     }
+    setSaveFailed(false);
     setJustCompleted(true);
     startTransition(async () => {
-      await completeDailySession();
+      try {
+        await completeDailySession();
+      } catch {
+        // Roll back the optimistic overlay so the athlete can retry.
+        setJustCompleted(false);
+        setSaveFailed(true);
+      }
     });
   }
 
@@ -53,9 +62,16 @@ export function CompletionCTA({ dayNumber, completedCount }: Props) {
 
   return (
     <div className="mb-6">
-      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/40 text-center mb-3">
-        Ready to move forward?
-      </p>
+      {saveFailed && (
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-danger text-center mb-3">
+          Couldn&apos;t save — tap to try again
+        </p>
+      )}
+      {!saveFailed && (
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/40 text-center mb-3">
+          Ready to move forward?
+        </p>
+      )}
       <button
         type="button"
         onClick={handleComplete}
@@ -63,7 +79,7 @@ export function CompletionCTA({ dayNumber, completedCount }: Props) {
         data-testid="complete-session-btn"
         className="w-full min-h-[56px] font-heading font-semibold text-[16px] text-onyx bg-gold rounded-pill px-6 py-4 transition-colors duration-fast ease-out hover:bg-gold-bright active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx disabled:opacity-60 disabled:scale-100 disabled:cursor-not-allowed"
       >
-        Complete Day {dayNumber}
+        {saveFailed ? `Retry Day ${dayNumber}` : `Complete Day ${dayNumber}`}
       </button>
     </div>
   );

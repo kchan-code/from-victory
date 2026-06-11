@@ -31,8 +31,18 @@ export function RhythmRingAnimated({
   const [displayPct, setDisplayPct] = useState(from);
 
   useEffect(() => {
-    const id = requestAnimationFrame(() => setDisplayPct(pct));
-    return () => cancelAnimationFrame(id);
+    // Double-rAF: the outer frame lets React commit the initial `from` state to
+    // the DOM; the inner frame fires after the browser has painted that state,
+    // giving the CSS transition a real before/after to animate across.
+    // A single rAF can be batched into the same paint on iOS Safari under load.
+    let id2: number;
+    const id = requestAnimationFrame(() => {
+      id2 = requestAnimationFrame(() => setDisplayPct(pct));
+    });
+    return () => {
+      cancelAnimationFrame(id);
+      cancelAnimationFrame(id2);
+    };
   }, [pct]);
 
   return <RhythmRing pct={displayPct} {...rest} />;
