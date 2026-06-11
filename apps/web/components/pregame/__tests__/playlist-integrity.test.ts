@@ -151,10 +151,12 @@ const SPORT_CELL_EXPECTATIONS: Record<
       forbiddenSlug: "bb-big-benched",
     },
   },
-  // Baseball (FV-94 scripts; audio render = FV-95). 4 positions × ~10 = 39 cells
-  // (Pitcher ships 9). Excluded from the registry-parameterized loops below until
-  // its audio is rendered (see RENDERED_SPORT_CONFIGS); FV-99 turns the full grid
-  // assertions on once the baseball clips land in the catalog.
+  // Baseball (FV-94 scripts; audio render = FV-95). 4 positions × 10 = 40 combos,
+  // but Pitcher ships 9 — its "I make an error." redirects to bsb-pitcher-strikeout
+  // in cellSlugFor (never shown in the picker), so the matrix dedups to 39 distinct
+  // cells. (The 2 throwing-yips cells are authored but withheld from the picker.)
+  // Excluded from the registry-parameterized loops below until its audio is rendered
+  // (see RENDERED_SPORT_CONFIGS); FV-99 turns the full grid on once the clips land.
   baseball: {
     cellCount: 39,
     slugPrefix: "bsb-",

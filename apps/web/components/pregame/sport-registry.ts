@@ -608,9 +608,19 @@ export const BASEBALL_CONFIG: SportConfig = {
     if (role === "Pitcher" && frag === "benched") return "bsb-pitcher-pulled";
     // Pitcher × hbp → hit-batter (a pitcher throws it, he doesn't wear it).
     if (role === "Pitcher" && frag === "hbp") return "bsb-pitcher-hit-batter";
+    // Pitcher × error → strikeout: Pitcher ships 9 — the thin fielding-error cell
+    // is dropped (FV-93). "I make an error." is omitted from the Pitcher picker
+    // (roleAdversities), so this never fires at runtime; the redirect keeps the
+    // exhaustive (roles × adversities) integrity matrix resolving to a real clip
+    // (Pitcher stays at 9 distinct cells; the goalie-bad-penalty parallel).
+    if (role === "Pitcher" && frag === "error") return "bsb-pitcher-strikeout";
     // Catcher × hbp → foul-tip (a catcher wears foul tips / gets crossed up).
     if (role === "Catcher" && frag === "hbp") return "bsb-catcher-foul-tip";
     const roleStr = role ? role.toLowerCase() : "pitcher";
+    // Returns the bsb-* cell key (NOT hm-bsb-*), mirroring basketball's bb-*.
+    // FV-95 renders BOTH hm-bsb-{pos}-{frag} (the hard-moment clip referenced by
+    // the manifest templates) AND bsb-{pos}-{frag} (the full composite =
+    // OPENING + {POSITION}_VIZ + hm-bsb-* + CLOSING) that this slug targets.
     return `bsb-${roleStr}-${frag}`;
   },
 

@@ -159,7 +159,7 @@ describe("BASKETBALL_CONFIG.cellSlugFor", () => {
 
 describe("BASEBALL_CONFIG.cellSlugFor", () => {
   const roles = ["Pitcher", "Catcher", "Infield", "Outfield"] as const;
-  const special = new Set(["Pitcher|benched", "Pitcher|hbp", "Catcher|hbp"]);
+  const special = new Set(["Pitcher|benched", "Pitcher|hbp", "Pitcher|error", "Catcher|hbp"]);
 
   it("produces bsb-{role.toLowerCase()}-{frag} for every role × adversity (minus special cases)", () => {
     const unexpected: string[] = [];
@@ -181,9 +181,12 @@ describe("BASEBALL_CONFIG.cellSlugFor", () => {
     expect(unexpected).toEqual([]);
   });
 
-  it("Pitcher special cases: benched → bsb-pitcher-pulled, hbp → bsb-pitcher-hit-batter", () => {
+  it("Pitcher special cases: benched → pulled, hbp → hit-batter, error → strikeout (9-cell)", () => {
     expect(BASEBALL_CONFIG.cellSlugFor("I get benched.", "Pitcher")).toBe("bsb-pitcher-pulled");
     expect(BASEBALL_CONFIG.cellSlugFor("I get hit by a pitch.", "Pitcher")).toBe("bsb-pitcher-hit-batter");
+    // Pitcher drops the fielding-error cell (ships 9); the never-shown combo
+    // redirects to an existing clip so the exhaustive matrix stays 39 distinct.
+    expect(BASEBALL_CONFIG.cellSlugFor("I make an error.", "Pitcher")).toBe("bsb-pitcher-strikeout");
   });
 
   it("Catcher × 'I get hit by a pitch.' → bsb-catcher-foul-tip", () => {
