@@ -59,6 +59,7 @@ import {
   rowFromCheckoutSession,
   rowFromSubscription,
 } from "@/lib/stripe/subscription-sync";
+import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { createServiceClient } from "@/lib/supabase/service";
 import type Stripe from "stripe";
@@ -124,10 +125,10 @@ export async function POST(req: NextRequest) {
     console.error(
       `[stripe/webhook] Error processing event type="${event.type}" id="${event.id}": ${message}`,
     );
-    void notifyError("[stripe/webhook] handleEvent failed", message, {
+    deliverInBackground(notifyError("[stripe/webhook] handleEvent failed", message, {
       event_type: event.type,
       event_id: event.id,
-    });
+    }));
     // 500 tells Stripe to retry — appropriate for transient DB/infra failures.
     return NextResponse.json(
       { error: "Internal error processing webhook." },

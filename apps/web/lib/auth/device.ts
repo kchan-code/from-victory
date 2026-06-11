@@ -2,6 +2,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 
+import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { signDeviceValue, verifyDeviceValue } from "./device-cookie";
 
@@ -71,11 +72,11 @@ function resolveSecret(): string | null {
       "Device-pairing cookies cannot be signed or verified. " +
       "Athletes will see the generic parent sign-in form until this is configured.",
   );
-  void notifyError(
+  deliverInBackground(notifyError(
     "device-cookie.missing-secret",
     "DEVICE_COOKIE_HMAC_SECRET is not set in production",
     { node_env: process.env.NODE_ENV ?? "unknown" },
-  );
+  ));
   return null;
 }
 

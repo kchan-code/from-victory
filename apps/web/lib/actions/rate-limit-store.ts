@@ -3,6 +3,7 @@ import "server-only";
 import { createHmac } from "crypto";
 import { headers } from "next/headers";
 
+import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { createServiceClient } from "@/lib/supabase/service";
 import {
@@ -81,11 +82,11 @@ export async function rateLimitGate(
       console.error(
         "[rate-limit-store.rateLimitGate] RATE_LIMIT_HASH_SECRET is not set in production — rate limiting is DISABLED (failing open). Set this env var immediately.",
       );
-      void notifyError(
+      deliverInBackground(notifyError(
         "[rate-limit] RATE_LIMIT_HASH_SECRET not set in production",
         "Rate limiting is disabled. All auth actions are failing open. Set RATE_LIMIT_HASH_SECRET in Vercel env vars.",
         { action },
-      );
+      ));
       return { limited: false };
     }
     // Non-production (local dev, test): use documented fallback — not secret.
