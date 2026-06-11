@@ -277,6 +277,104 @@ self.addEventListener("fetch", (event) => {
 });
 
 // ---------------------------------------------------------------------------
+// PUSH — FV-164 daily training reminder
+//
+// Receives a push message from the cron and shows a visible notification.
+// Payload shape: { title: string, body: string, url: string }
+//
+// Privacy: the payload content is NEVER logged and is not cached anywhere in
+// Cache Storage. We only read it to populate the transient notification.
+// `userVisibleOnly` is implicitly satisfied — every push call here results
+// in a showNotification() call. No silent pushes.
+//
+// Tag "fv-daily-reminder" collapses duplicate notifications (e.g. if the
+// cron fires twice) so the athlete never sees duplicate banners.
+// ---------------------------------------------------------------------------
+self.addEventListener("push", (event) => {
+  let title = "Time to train";
+  let body = "A few minutes for your mind today. Your training is ready when you are.";
+  let url = "/athlete";
+
+  // Parse the push payload. If it's missing or malformed, fall back to the
+  // hardcoded defaults above — the notification must always show something.
+  if (event.data) {
+    try {
+      const data = event.data.json();
+      if (typeof data.title === "string" && data.title.length > 0) {
+        title = data.title;
+      }
+      if (typeof data.body === "string" && data.body.length > 0) {
+        body = data.body;
+      }
+      if (typeof data.url === "string" && data.url.length > 0) {
+        url = data.url;
+      }
+    } catch {
+      // Malformed JSON — use defaults. Do NOT log the raw payload (privacy).
+    }
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      data: { url },
+      tag: "fv-daily-reminder",
+    })
+  );
+});
+
+// ---------------------------------------------------------------------------
+// NOTIFICATIONCLICK — FV-164 daily training reminder
+//
+// When the athlete taps the notification:
+//   1. Close the notification.
+//   2. If an /athlete tab is already open, bring it into focus.
+//   3. Otherwise open /athlete in a new tab.
+//
+// Privacy: we only inspect window URLs to find an existing tab — we do not
+// log them or send them anywhere.
+// ---------------------------------------------------------------------------
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const targetUrl =
+    typeof event.notification.data?.url === "string"
+      ? event.notification.data.url
+      : "/athlete";
+
+  event.waitUntil(
+    (async () => {
+      const allClients = await self.clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      });
+
+      // Look for an existing window on this origin that is already open.
+      for (const client of allClients) {
+        try {
+          const clientUrl = new URL(client.url);
+          // Prefer a window already at /athlete or any /athlete/* path.
+          if (
+            clientUrl.origin === self.location.origin &&
+            clientUrl.pathname.startsWith("/athlete")
+          ) {
+            await client.focus();
+            return;
+          }
+        } catch {
+          // Malformed client URL — skip.
+        }
+      }
+
+      // No matching window found — open a new one.
+      await self.clients.openWindow(targetUrl);
+    })()
+  );
+});
+
+// ---------------------------------------------------------------------------
 // Strategy: audio cache-first (FV-106)
 // Serves /audio/pregame/* from AUDIO_CACHE.
 //
