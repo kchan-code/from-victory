@@ -37,9 +37,9 @@ export function HowItWorks() {
               A daily rhythm for the athlete&apos;s mind and spirit.
             </h2>
             <p className="fv-lede">
-              Breathe. Receive truth. Respond in prayer and reflection. Then
-              carry one cue into practice or game day. The same shape every day,
-              so it becomes a rhythm — not a reaction.
+              Breathe. Receive truth. Respond in prayer. Then carry one cue
+              into practice or game day. The same shape every day, so it
+              becomes a rhythm — not a reaction.
             </p>
           </div>
         </Reveal>
