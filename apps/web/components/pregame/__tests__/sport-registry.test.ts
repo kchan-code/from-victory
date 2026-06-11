@@ -17,6 +17,7 @@ import { describe, it, expect } from "vitest";
 import {
   HOCKEY_CONFIG,
   BASKETBALL_CONFIG,
+  BASEBALL_CONFIG,
   getSportConfig,
   adversityOptionsFor,
   adversityLabelFor,
@@ -146,6 +147,59 @@ describe("BASKETBALL_CONFIG.cellSlugFor", () => {
       }
     }
     expect(missing).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// B-baseball. BASEBALL_CONFIG.cellSlugFor — positional (Pitcher/Catcher/Infield/
+// Outfield), FV-94. Special cases: Pitcher × benched → pulled, Pitcher × hbp →
+// hit-batter, Catcher × hbp → foul-tip. (Pitcher ships 9 — no fielding-error
+// cell; the two throwing-yips cells are authored but withheld from the picker.)
+// ---------------------------------------------------------------------------
+
+describe("BASEBALL_CONFIG.cellSlugFor", () => {
+  const roles = ["Pitcher", "Catcher", "Infield", "Outfield"] as const;
+  const special = new Set(["Pitcher|benched", "Pitcher|hbp", "Catcher|hbp"]);
+
+  it("produces bsb-{role.toLowerCase()}-{frag} for every role × adversity (minus special cases)", () => {
+    const unexpected: string[] = [];
+    for (const role of roles) {
+      for (const adversity of BASEBALL_CONFIG.adversities) {
+        const frag = BASEBALL_CONFIG.adversitySlugFragments[adversity];
+        if (frag === undefined) {
+          unexpected.push(`adversity "${adversity}" has no slug fragment in BASEBALL_CONFIG`);
+          continue;
+        }
+        if (special.has(`${role}|${frag}`)) continue; // covered separately below
+        const expected = `bsb-${role.toLowerCase()}-${frag}`;
+        const actual = BASEBALL_CONFIG.cellSlugFor(adversity, role);
+        if (actual !== expected) {
+          unexpected.push(`[${role} × "${adversity}"] expected "${expected}" but got "${actual}"`);
+        }
+      }
+    }
+    expect(unexpected).toEqual([]);
+  });
+
+  it("Pitcher special cases: benched → bsb-pitcher-pulled, hbp → bsb-pitcher-hit-batter", () => {
+    expect(BASEBALL_CONFIG.cellSlugFor("I get benched.", "Pitcher")).toBe("bsb-pitcher-pulled");
+    expect(BASEBALL_CONFIG.cellSlugFor("I get hit by a pitch.", "Pitcher")).toBe("bsb-pitcher-hit-batter");
+  });
+
+  it("Catcher × 'I get hit by a pitch.' → bsb-catcher-foul-tip", () => {
+    expect(BASEBALL_CONFIG.cellSlugFor("I get hit by a pitch.", "Catcher")).toBe("bsb-catcher-foul-tip");
+  });
+
+  it("all 10 adversity strings have a fragment in adversitySlugFragments", () => {
+    const missing: string[] = [];
+    for (const adversity of BASEBALL_CONFIG.adversities) {
+      if (!(adversity in BASEBALL_CONFIG.adversitySlugFragments)) missing.push(adversity);
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it("getSportConfig('baseball') returns BASEBALL_CONFIG", () => {
+    expect(getSportConfig("baseball")).toBe(BASEBALL_CONFIG);
   });
 });
 

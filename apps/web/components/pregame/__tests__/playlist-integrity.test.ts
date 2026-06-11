@@ -151,7 +151,32 @@ const SPORT_CELL_EXPECTATIONS: Record<
       forbiddenSlug: "bb-big-benched",
     },
   },
+  // Baseball (FV-94 scripts; audio render = FV-95). 4 positions × ~10 = 39 cells
+  // (Pitcher ships 9). Excluded from the registry-parameterized loops below until
+  // its audio is rendered (see RENDERED_SPORT_CONFIGS); FV-99 turns the full grid
+  // assertions on once the baseball clips land in the catalog.
+  baseball: {
+    cellCount: 39,
+    slugPrefix: "bsb-",
+    cellLayout: "catalog",
+    specialCase: {
+      role: "Pitcher",
+      adversity: "I get benched.",
+      expectedSlug: "bsb-pitcher-pulled",
+      forbiddenSlug: "bsb-pitcher-benched",
+    },
+  },
 };
+
+// FV-94/FV-99: the registry-parameterized integrity suites (sections 5 & 7) run
+// only over sports whose audio is actually RENDERED into the manifest. Baseball
+// ships its SCRIPTS (FV-94) before its audio render (FV-95); until then its cells
+// and practiceState tails aren't in the catalog, so it is excluded here. This
+// auto-includes baseball the moment FV-95 lands its tail in manifest.practiceState
+// (FV-99 then asserts the full grid). Hockey + basketball are always covered.
+const RENDERED_SPORT_CONFIGS = Object.values(SPORT_REGISTRY).filter(
+  (c) => manifest.practiceState?.[c.sportKey] != null,
+);
 
 // ---------------------------------------------------------------------------
 // 1. Every catalog clip has a real, non-zero file on disk
@@ -308,7 +333,7 @@ describe("UI option coverage — CUE_WORDS", () => {
 //    over the registry (FV-34) so a new sport is covered with no test edit.
 // ---------------------------------------------------------------------------
 
-describe.each(Object.values(SPORT_REGISTRY))(
+describe.each(RENDERED_SPORT_CONFIGS)(
   "practice playlist integrity — $displayName",
   (config) => {
     const sportKey = config.sportKey;
@@ -432,7 +457,7 @@ describe("hockey compositional template matrix", () => {
 //    (session-*). Replaces the FV-67 basketball-only block.
 // ---------------------------------------------------------------------------
 
-describe.each(Object.values(SPORT_REGISTRY))(
+describe.each(RENDERED_SPORT_CONFIGS)(
   "cell slug → file integrity — $displayName",
   (config) => {
     const expectations = SPORT_CELL_EXPECTATIONS[config.sportKey];
