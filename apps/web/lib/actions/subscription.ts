@@ -194,9 +194,11 @@ export async function createCheckoutSession(
     // Checkout links to the existing record; otherwise let Checkout create one.
     if (existingCustomerId) {
       sessionParams.customer = existingCustomerId;
-    } else {
-      sessionParams.customer_creation = "always";
     }
+    // No `else`: in subscription mode Checkout ALWAYS creates a Customer, and
+    // Stripe rejects the `customer_creation` param outright ("only valid in
+    // payment mode") — the first live API call failed on it (hotfix, FV-217).
+    // The webhook binds the created Customer to the parent via metadata.
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 

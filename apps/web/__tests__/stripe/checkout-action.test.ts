@@ -219,15 +219,18 @@ describe("createCheckoutSession — 14-day trial logic (FV-217)", () => {
   });
 
   // -------------------------------------------------------------------------
-  // No-row path also uses customer_creation: "always" (first checkout)
+  // No-row path: NO customer params at all. Stripe rejects `customer_creation`
+  // in subscription mode ("only valid in payment mode") — regression test for
+  // the live-checkout hotfix. Checkout auto-creates the Customer; the webhook
+  // binds it via metadata.parent_id.
   // -------------------------------------------------------------------------
-  it("uses customer_creation:'always' when no row exists (no existing customer)", async () => {
+  it("sends neither customer nor customer_creation when no row exists", async () => {
     supabaseMockImpl = makeSubMock(null);
 
     await createCheckoutSession(null, makeFormData("monthly"));
 
     const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
-    expect(params.customer_creation).toBe("always");
+    expect(params.customer_creation).toBeUndefined();
     expect(params.customer).toBeUndefined();
   });
 
