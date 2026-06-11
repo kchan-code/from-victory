@@ -57,6 +57,9 @@ export function BreathingSphere({
   const [roundInternal, setRoundInternal] = useState(0);
   const [tInternal, setTInternal] = useState(0);
   const rafRef = useRef<number | null>(null);
+  // Holds the setTimeout id for the ~600ms "done" state hold before calling
+  // onComplete. Cancelled on cleanup so it never fires after unmount.
+  const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startRef = useRef(0);
   const onCompleteRef = useRef(onComplete);
   useEffect(() => {
@@ -90,7 +93,12 @@ export function BreathingSphere({
         if (next >= rounds) {
           setPhaseInternal("done");
           setRunning(false);
-          onCompleteRef.current?.();
+          // ~600ms hold on the gold "Ready." state before calling onComplete.
+          // Lets the athlete see the completion before auto-advance. The
+          // holdTimeoutRef is cancelled in the cleanup return below on unmount.
+          holdTimeoutRef.current = setTimeout(() => {
+            onCompleteRef.current?.();
+          }, 600);
         } else {
           setRoundInternal(next);
           setPhaseInternal("inhale");
@@ -100,6 +108,10 @@ export function BreathingSphere({
     rafRef.current = requestAnimationFrame(tick);
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (holdTimeoutRef.current) {
+        clearTimeout(holdTimeoutRef.current);
+        holdTimeoutRef.current = null;
+      }
     };
   }, [phaseInternal, running, roundInternal, inhale, exhale, rounds, isControlled]);
 

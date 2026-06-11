@@ -1245,13 +1245,27 @@ export function AudioSessionScreen({
 
   return (
     <div
-      className="flex flex-1 flex-col overflow-y-auto px-6 pb-6 pt-5"
+      className="relative flex flex-1 flex-col overflow-y-auto px-6 pb-6 pt-5"
       aria-busy={clipLoading}
       style={{
         background:
           "radial-gradient(80% 50% at 50% 20%, rgba(36,91,255,0.12), transparent 65%), radial-gradient(60% 40% at 50% 100%, rgba(223,175,55,0.08), transparent 70%), var(--fv-onyx)",
       }}
     >
+      {/* FV-222: Ambient cobalt radial-gradient overlay that pulses while audio
+          plays. Absolutely positioned so it never shifts content. The keyframe
+          breathes the overlay's opacity 12%→18%→12% on a 6s cycle, giving the
+          background a slow, calm "breathing" feel during the guided session.
+          Conditional on renderPlaying so it stops when paused or completed. */}
+      {renderPlaying && (
+        <div
+          aria-hidden="true"
+          className="animate-audio-pulse pointer-events-none absolute inset-0"
+          style={{
+            background: "radial-gradient(80% 50% at 50% 20%, rgba(36,91,255,1), transparent 65%)",
+          }}
+        />
+      )}
       {/* FV-112: tap 5× to toggle the debug overlay (installed-PWA-usable).
           touch-action:manipulation stops iOS double-tap-zoom from eating the
           rapid taps; select-none avoids a text-selection on multi-tap. */}
@@ -1616,7 +1630,8 @@ export function PregameCardScreen({
       : { reference: SCRIPTURE_REF, displayText: SCRIPTURE_SHORT };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-onyx px-5 pb-8 pt-5">
+    // FV-222: animate-card-bloom fades + scales the card from 0.98→1 on mount (~400ms).
+    <div className="animate-card-bloom flex-1 overflow-y-auto bg-onyx px-5 pb-8 pt-5">
       <div className="mb-4 text-center">
         <Eyebrow className="!tracking-[0.26em] !text-gold">
           Your Pre-Game Card

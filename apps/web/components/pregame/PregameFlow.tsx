@@ -155,14 +155,20 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
         onBack={goBack}
         onClose={goStart}
       />
-      <ScreenSwitch
-        stepId={step.id}
-        state={data}
-        set={set}
-        onContinue={goNext}
-        sportConfig={sportConfig}
-        sport={sport}
-      />
+      {/* key={view.index} remounts this wrapper on every step advance so the
+          fv-step-in keyframe fires fresh on each new screen. flex-1 is required
+          so ScreenBody's own flex-1 fills the remaining shell height correctly.
+          The animation is CSS-only and respects prefers-reduced-motion. */}
+      <div key={view.index} className="animate-step-in flex flex-1 flex-col">
+        <ScreenSwitch
+          stepId={step.id}
+          state={data}
+          set={set}
+          onContinue={goNext}
+          sportConfig={sportConfig}
+          sport={sport}
+        />
+      </div>
       {!step.hideBottomBar && (
         <BottomBar>
           <Button
