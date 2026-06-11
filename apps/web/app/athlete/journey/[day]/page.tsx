@@ -158,7 +158,7 @@ export default async function JourneyDayPage({ params }: JourneyDayPageProps) {
               {entry.dayNumber > 1 ? (
                 <Link
                   href={`/athlete/journey/${entry.dayNumber - 1}`}
-                  className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-cream/50 hover:text-cream/90 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx rounded-md py-1"
+                  className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-cream/50 hover:text-cream/90 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx rounded-md py-3 px-2"
                   aria-label={`Go to day ${entry.dayNumber - 1}`}
                 >
                   <Icon name="arrowLeft" size={15} color="currentColor" />
@@ -171,7 +171,7 @@ export default async function JourneyDayPage({ params }: JourneyDayPageProps) {
               {entry.dayNumber < TOTAL_TRAINING_DAYS ? (
                 <Link
                   href={`/athlete/journey/${entry.dayNumber + 1}`}
-                  className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-cream/50 hover:text-cream/90 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx rounded-md py-1"
+                  className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-cream/50 hover:text-cream/90 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx rounded-md py-3 px-2"
                   aria-label={`Go to day ${entry.dayNumber + 1}`}
                 >
                   Day {entry.dayNumber + 1}

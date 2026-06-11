@@ -108,10 +108,13 @@ export default async function AthleteHomePage() {
           </div>
         </section>
 
-        {/* ── 3-card hub ──
-            All three cards must be visible near the top of a 375px viewport
-            without scrolling. Cards are compact (no paragraph body copy
-            eating vertical space) so they all land above the fold.
+        {/* ── 4-card hub ──
+            The three training CTAs (Daily, Pregame, Pre-Practice) must be
+            visible near the top of a 375px viewport without scrolling. Cards
+            are compact (no paragraph body copy eating vertical space) so they
+            land above the fold. The 4th card (Journey — history, not a daily
+            action) is deliberately last and may fall below the fold on short
+            viewports; scrolling to it is an accepted trade (FV-190).
             Trade: less description copy vs. "athlete in the moment" wins.
             a11y: card titles are intentionally <p>, not headings — each card is
             a full <Link> so AT users navigate them by link, and the page's single

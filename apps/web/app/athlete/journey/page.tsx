@@ -131,52 +131,73 @@ export default async function JourneyPage() {
             data-testid="journey-list"
           >
             {entries.map((entry) => {
-              const dayLabel = entry.dayNumber > 0 ? `Day ${entry.dayNumber}` : "Session";
+              // A missing catalog row (dayNumber 0) has no detail page to open —
+              // render it as a quiet non-link row instead of a tappable 404.
+              const isLinkable = entry.dayNumber > 0;
+              const dayLabel = isLinkable ? `Day ${entry.dayNumber}` : "Session";
               const title = entry.content?.title ?? "Session";
               const scriptureRef = entry.content?.scriptureRef;
               const dateLabel = formatDate(entry.completedAt);
 
-              return (
-                <li key={entry.sessionId}>
-                  <Link
-                    href={`/athlete/journey/${entry.dayNumber}`}
-                    className="group flex items-center gap-4 rounded-2xl border border-hairline bg-charcoal px-5 py-4 no-underline transition-[border-color,transform] duration-fast ease-out hover:border-[rgba(223,175,55,0.35)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-                    aria-label={`${dayLabel}: ${title}, completed ${dateLabel}`}
-                    data-testid={`journey-entry-day-${entry.dayNumber}`}
+              const rowInner = (
+                <>
+                  {/* Day badge */}
+                  <span
+                    className="flex-none flex items-center justify-center w-10 h-10 rounded-xl bg-gold/10 border border-gold/20"
+                    aria-hidden="true"
                   >
-                    {/* Day badge */}
-                    <span
-                      className="flex-none flex items-center justify-center w-10 h-10 rounded-xl bg-gold/10 border border-gold/20"
-                      aria-hidden="true"
-                    >
-                      <span className="font-mono font-bold text-[12px] text-gold leading-none">
-                        {entry.dayNumber > 0 ? entry.dayNumber : "—"}
-                      </span>
+                    <span className="font-mono font-bold text-[12px] text-gold leading-none">
+                      {isLinkable ? entry.dayNumber : "—"}
                     </span>
+                  </span>
 
-                    {/* Session info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.16em] text-gold/70 mb-0.5">
-                        {dayLabel} &middot; {dateLabel}
+                  {/* Session info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.16em] text-gold/70 mb-0.5">
+                      {dayLabel} &middot; {dateLabel}
+                    </p>
+                    <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[16px] leading-[1.2] truncate">
+                      {title}
+                    </p>
+                    {scriptureRef && (
+                      <p className="font-mono text-[11px] text-cream/45 mt-0.5 truncate">
+                        {scriptureRef}
                       </p>
-                      <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[16px] leading-[1.2] truncate">
-                        {title}
-                      </p>
-                      {scriptureRef && (
-                        <p className="font-mono text-[11px] text-cream/45 mt-0.5 truncate">
-                          {scriptureRef}
-                        </p>
-                      )}
-                    </div>
+                    )}
+                  </div>
 
-                    {/* Chevron */}
+                  {/* Chevron — linkable rows only */}
+                  {isLinkable && (
                     <span
                       aria-hidden="true"
                       className="flex-none text-gold/50 group-hover:text-gold/80 transition-colors duration-fast ease-out"
                     >
                       <Icon name="arrowRight" size={18} color="currentColor" />
                     </span>
-                  </Link>
+                  )}
+                </>
+              );
+
+              return (
+                <li key={entry.sessionId}>
+                  {isLinkable ? (
+                    <Link
+                      href={`/athlete/journey/${entry.dayNumber}`}
+                      className="group flex items-center gap-4 rounded-2xl border border-hairline bg-charcoal px-5 py-4 no-underline transition-[border-color,transform] duration-fast ease-out hover:border-[rgba(223,175,55,0.35)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+                      aria-label={`${dayLabel}: ${title}, completed ${dateLabel}`}
+                      data-testid={`journey-entry-day-${entry.dayNumber}`}
+                    >
+                      {rowInner}
+                    </Link>
+                  ) : (
+                    <div
+                      className="flex items-center gap-4 rounded-2xl border border-hairline bg-charcoal px-5 py-4"
+                      aria-label={`${dayLabel}: ${title}, completed ${dateLabel}`}
+                      data-testid="journey-entry-no-detail"
+                    >
+                      {rowInner}
+                    </div>
+                  )}
                 </li>
               );
             })}
