@@ -14,8 +14,8 @@ const steps = [
   },
   {
     num: "03 · RESPOND",
-    name: "Pray and reflect.",
-    body: "A guided prayer, then honest journaling on pressure, mistakes, confidence, and discipline. Private to you.",
+    name: "Pray.",
+    body: "A guided prayer to close the session — spoken or silent, your choice. Bring what's on your mind.",
   },
   {
     num: "04 · CARRY",
