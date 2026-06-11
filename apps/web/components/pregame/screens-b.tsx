@@ -1245,7 +1245,7 @@ export function AudioSessionScreen({
 
   return (
     <div
-      className="relative flex flex-1 flex-col overflow-y-auto px-6 pb-6 pt-5"
+      className="isolate relative flex flex-1 flex-col overflow-y-auto px-6 pb-6 pt-5"
       aria-busy={clipLoading}
       style={{
         background:
@@ -1253,19 +1253,20 @@ export function AudioSessionScreen({
       }}
     >
       {/* FV-222: Ambient cobalt radial-gradient overlay that pulses while audio
-          plays. Absolutely positioned so it never shifts content. The keyframe
-          breathes the overlay's opacity 12%→18%→12% on a 6s cycle, giving the
-          background a slow, calm "breathing" feel during the guided session.
-          Conditional on renderPlaying so it stops when paused or completed. */}
-      {renderPlaying && (
-        <div
-          aria-hidden="true"
-          className="animate-audio-pulse pointer-events-none absolute inset-0"
-          style={{
-            background: "radial-gradient(80% 50% at 50% 20%, rgba(36,91,255,1), transparent 65%)",
-          }}
-        />
-      )}
+          plays. Always mounted so play↔pause is a smooth opacity fade, not a
+          hard cut; the keyframe breathes opacity 12%→18%→12% on a 6s cycle
+          while playing. `isolate` on the container + -z-10 here keep the wash
+          BEHIND the in-flow content (heading, timer, verse card) but above the
+          container's own background. */}
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-0 -z-10 transition-opacity duration-700 ${
+          renderPlaying ? "animate-audio-pulse" : "opacity-0"
+        }`}
+        style={{
+          background: "radial-gradient(80% 50% at 50% 20%, rgba(36,91,255,1), transparent 65%)",
+        }}
+      />
       {/* FV-112: tap 5× to toggle the debug overlay (installed-PWA-usable).
           touch-action:manipulation stops iOS double-tap-zoom from eating the
           rapid taps; select-none avoids a text-selection on multi-tap. */}

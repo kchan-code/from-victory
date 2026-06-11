@@ -58,13 +58,26 @@ export function BreathingSphere({
   const [tInternal, setTInternal] = useState(0);
   const rafRef = useRef<number | null>(null);
   // Holds the setTimeout id for the ~600ms "done" state hold before calling
-  // onComplete. Cancelled on cleanup so it never fires after unmount.
+  // onComplete. Cleared ONLY by the unmount effect below.
   const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startRef = useRef(0);
   const onCompleteRef = useRef(onComplete);
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
+
+  // Unmount-only cleanup for the hold timeout. Deliberately separate from the
+  // rAF effect: that effect re-runs on the "done"/running state transition
+  // itself, so clearing the hold in its cleanup would cancel the timeout the
+  // moment it is set and onComplete would never fire.
+  useEffect(() => {
+    return () => {
+      if (holdTimeoutRef.current) {
+        clearTimeout(holdTimeoutRef.current);
+        holdTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (isControlled) return;
@@ -95,7 +108,7 @@ export function BreathingSphere({
           setRunning(false);
           // ~600ms hold on the gold "Ready." state before calling onComplete.
           // Lets the athlete see the completion before auto-advance. The
-          // holdTimeoutRef is cancelled in the cleanup return below on unmount.
+          // holdTimeoutRef is cancelled by the unmount-only effect above.
           holdTimeoutRef.current = setTimeout(() => {
             onCompleteRef.current?.();
           }, 600);
@@ -108,10 +121,6 @@ export function BreathingSphere({
     rafRef.current = requestAnimationFrame(tick);
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (holdTimeoutRef.current) {
-        clearTimeout(holdTimeoutRef.current);
-        holdTimeoutRef.current = null;
-      }
     };
   }, [phaseInternal, running, roundInternal, inhale, exhale, rounds, isControlled]);
 

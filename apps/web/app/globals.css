@@ -601,9 +601,13 @@ a:hover { color: var(--accent-hot); }
   }
   .animate-audio-pulse {
     animation: fv-audio-pulse 6s ease-in-out infinite;
+    /* Fallback while the animation is not applied (first paint). */
+    opacity: 0.12;
   }
   @media (prefers-reduced-motion: reduce) {
-    .animate-audio-pulse { animation: none; opacity: 0.14; }
+    /* The overlay's only purpose is the animated effect — reduced-motion
+       users get nothing, not a static tint. */
+    .animate-audio-pulse { animation: none; opacity: 0; }
   }
 
   /* Completion card bloom: enter with fade + scale(0.98)→1, 400ms.
