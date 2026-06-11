@@ -127,8 +127,12 @@ export default async function DashboardPage() {
                   >
                     {/* Top row: name + actions */}
                     <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <p className="font-display font-bold text-cream text-[18px] leading-tight">
+                      <Link
+                        href={`/dashboard/athletes/${a.id}`}
+                        data-testid={`athlete-card-link-${a.id}`}
+                        className="min-w-0 no-underline group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal rounded-sm"
+                      >
+                        <p className="font-display font-bold text-cream text-[18px] leading-tight group-hover:text-gold transition-colors duration-fast ease-out">
                           {a.first_name}
                         </p>
                         {age !== null ? (
@@ -136,7 +140,7 @@ export default async function DashboardPage() {
                             Age {age}
                           </p>
                         ) : null}
-                      </div>
+                      </Link>
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/dashboard/athletes/${a.id}/pair`}
