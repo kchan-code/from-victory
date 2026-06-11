@@ -205,15 +205,24 @@ export function SubscribeForm({ trialEligible }: SubscribeFormProps) {
         ))}
       </div>
 
-      {/* 14-day free trial banner — shown ONLY for first-time subscribers */}
+      {/* 14-day free trial banner — shown ONLY for first-time subscribers.
+          The auto-charge line is a consumer-protection disclosure (FTC
+          negative-option guidance; kids-privacy-officer finding on PR #185) —
+          do not remove without privacy review. */}
       {trialEligible ? (
-        <p
-          data-testid="trial-eligible-banner"
-          className="font-body text-gold text-[14px] leading-relaxed mb-4 text-center"
-        >
-          14-day free trial &middot; cancel any time &middot; then{" "}
-          {selected === "annual" ? "$49/year" : "$5/month"}
-        </p>
+        <div data-testid="trial-eligible-banner" className="mb-4 text-center">
+          <p className="font-body text-gold text-[14px] leading-relaxed">
+            14-day free trial &middot; cancel any time &middot; then{" "}
+            {selected === "annual" ? "$49/year" : "$5/month"}
+          </p>
+          <p
+            data-testid="trial-autocharge-disclosure"
+            className="font-body text-cream/50 text-[12px] leading-relaxed mt-1"
+          >
+            Card required — it will be charged automatically when the trial
+            ends unless you cancel first.
+          </p>
+        </div>
       ) : null}
 
       {/* Value prop reminder */}

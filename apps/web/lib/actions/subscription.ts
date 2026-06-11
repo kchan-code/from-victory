@@ -121,11 +121,31 @@ export async function createCheckoutSession(
   //    (a) customer reuse: pass the existing Stripe customer ID if present.
   //    (b) trial eligibility: no row → first-time subscriber → trial offered.
   const supabase = createClient();
-  const { data: existingSub } = await supabase
+  const { data: existingSub, error: subReadError } = await supabase
     .from("subscriptions")
     .select("stripe_customer_id")
     .eq("parent_id", userId)
     .maybeSingle();
+
+  if (subReadError) {
+    // Fail CLOSED: a transient read error must never grant a trial the
+    // parent shouldn't have (qa finding, PR #185). Mirrors billing-portal's
+    // handling — log + alert with opaque ids only, return a calm error.
+    console.error(
+      `[subscription.createCheckoutSession] subscriptions read failed (parent=${userId}): ${subReadError.message}`,
+    );
+    deliverInBackground(
+      notifyError(
+        "[checkout] subscriptions read failed",
+        subReadError.message,
+        { parent_id: userId },
+      ),
+    );
+    return {
+      ok: false,
+      error: "Couldn't start checkout right now. Try again in a moment.",
+    };
+  }
 
   const existingCustomerId = existingSub?.stripe_customer_id ?? null;
   // Trial is ONLY offered when there is no existing row. If ANY row exists

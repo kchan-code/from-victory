@@ -21,12 +21,14 @@ export default async function SubscribePage({ searchParams }: Props) {
   // as the checkout action. We only need to know whether the row exists — we
   // don't need any column values — so select a minimal field.
   const supabase = createClient();
-  const { data: existingSub } = await supabase
+  const { data: existingSub, error: subReadError } = await supabase
     .from("subscriptions")
     .select("stripe_customer_id")
     .eq("parent_id", userId)
     .maybeSingle();
-  const trialEligible = existingSub === null;
+  // Fail closed on a read error: never promise a trial the action (the
+  // authoritative gate) might not grant.
+  const trialEligible = subReadError === null && existingSub === null;
 
   const wasCanceled = searchParams.status === "canceled";
 

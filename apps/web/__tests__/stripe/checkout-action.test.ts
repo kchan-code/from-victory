@@ -291,6 +291,30 @@ describe("createCheckoutSession — 14-day trial logic (FV-217)", () => {
     expect(redirectMock).not.toHaveBeenCalled();
   });
 
+  it("fails CLOSED when the subscriptions read errors — no trial granted, no Stripe call", async () => {
+    // qa finding (PR #185): a transient DB error must not be treated as
+    // "no row" — that would hand a returning parent a second trial.
+    const chain = {
+      select: () => chain,
+      eq: () => chain,
+      maybeSingle: async () => ({
+        data: null,
+        error: { message: "connection timeout" },
+      }),
+    };
+    // reason: the stub intentionally diverges from makeSubMock's shape
+    // (error non-null) — cast through unknown for the error-path fixture.
+    supabaseMockImpl = { from: (_table: string) => chain } as unknown as ReturnType<
+      typeof makeSubMock
+    >;
+
+    const result = await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(result?.ok).toBe(false);
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+
   it("returns a validation error for an invalid plan value", async () => {
     supabaseMockImpl = makeSubMock(null);
     const fd = new FormData();
