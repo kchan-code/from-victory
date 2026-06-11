@@ -566,6 +566,65 @@ a:hover { color: var(--accent-hot); }
     .animate-card-fade-in { animation: none; }
   }
 
+  /* ── FV-222: Pregame motion polish ──────────────────────────────────────
+     All keyframes below are wrapped in prefers-reduced-motion: no-preference
+     so they are a no-op for users who have reduced motion enabled. The
+     utility classes (.animate-step-in, .animate-audio-pulse, .animate-card-bloom)
+     still apply but the animation is stripped. */
+
+  /* Step-to-step slide: opacity 0→1 + translateX(20px)→0, 250ms ease-out.
+     Applied via key={stepIndex} on the step content wrapper so each new step
+     enters fresh from the right. */
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes fv-step-in {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+  }
+  .animate-step-in {
+    animation: fv-step-in 250ms var(--ease-out) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-step-in { animation: none; }
+  }
+
+  /* Ambient audio pulse: a slow cobalt radial-gradient overlay that breathes
+     opacity ~12%→18%→12% on a 6s cycle while audio is playing. Applied to
+     an absolutely-positioned overlay div inside the AudioSessionScreen so the
+     inline background-gradient is unchanged. */
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes fv-audio-pulse {
+      0%   { opacity: 0.12; }
+      50%  { opacity: 0.18; }
+      100% { opacity: 0.12; }
+    }
+  }
+  .animate-audio-pulse {
+    animation: fv-audio-pulse 6s ease-in-out infinite;
+    /* Fallback while the animation is not applied (first paint). */
+    opacity: 0.12;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* The overlay's only purpose is the animated effect — reduced-motion
+       users get nothing, not a static tint. */
+    .animate-audio-pulse { animation: none; opacity: 0; }
+  }
+
+  /* Completion card bloom: enter with fade + scale(0.98)→1, 400ms.
+     Applied on mount of the PregameCardScreen content card. */
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes fv-card-bloom {
+      from { opacity: 0; transform: scale(0.98); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+  }
+  .animate-card-bloom {
+    animation: fv-card-bloom 400ms var(--ease-out) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-card-bloom { animation: none; }
+  }
+
   /* Sticky nav blur */
   .fv-nav-wrap {
     position: fixed;
