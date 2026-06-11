@@ -23,7 +23,7 @@ import type { NeedToday } from "./types";
 // Sport type
 // ---------------------------------------------------------------------------
 
-export type Sport = "hockey" | "basketball"; // extend as more sports land
+export type Sport = "hockey" | "basketball" | "baseball"; // extend as more sports land
 
 /**
  * A Hard Moment option: the canonical `key` (drives `cellSlugFor` + the stored
@@ -474,12 +474,237 @@ export const BASKETBALL_CONFIG: SportConfig = {
 };
 
 // ---------------------------------------------------------------------------
+// Baseball config (FV-94 — v2 sport; taxonomy = docs/baseball-taxonomy-FV-93.md)
+// ---------------------------------------------------------------------------
+
+const BASEBALL_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
+  "I strike out.": "strikeout",
+  "I'm in a slump.": "slump",
+  "I make an error.": "error",
+  "I give up the big hit.": "big-hit",
+  "I lose my command.": "lose-command",
+  "I get benched.": "benched",
+  "I feel nervous.": "nervous",
+  "I get hit by a pitch.": "hbp",
+  "I start slow.": "start-slow",
+  "We fall behind early.": "fall-behind-early",
+};
+
+export const BASEBALL_CONFIG: SportConfig = {
+  displayName: "Baseball",
+  sportKey: "baseball",
+
+  roles: ["Pitcher", "Catcher", "Infield", "Outfield"] as const,
+  roleLabel: "Position",
+
+  roleContent: {
+    Pitcher: {
+      title: "Own the mound.",
+      scenes: [
+        "Win the first pitch.",
+        "Trust your catcher.",
+        "One pitch at a time.",
+        "Attack the zone.",
+        "Next pitch, next out.",
+      ],
+    },
+    Catcher: {
+      title: "Run the game back there.",
+      scenes: [
+        "Frame the borderline.",
+        "Block everything.",
+        "Call it with conviction.",
+        "Control the run game.",
+        "Lead the staff.",
+      ],
+    },
+    Infield: {
+      title: "Quiet hands, sure feet.",
+      scenes: [
+        "Get a good hop.",
+        "Field it clean.",
+        "Make the routine play.",
+        "Turn two.",
+        "Throw with intent.",
+      ],
+    },
+    Outfield: {
+      title: "Track it, run it down.",
+      scenes: [
+        "Read it off the bat.",
+        "Take the right route.",
+        "Catch it at full speed.",
+        "Hit the cutoff.",
+        "Stay loud, stay ready.",
+      ],
+    },
+  },
+
+  adversities: [
+    "I strike out.",
+    "I'm in a slump.",
+    "I make an error.",
+    "I give up the big hit.",
+    "I lose my command.",
+    "I get benched.",
+    "I feel nervous.",
+    "I get hit by a pitch.",
+    "I start slow.",
+    "We fall behind early.",
+  ],
+
+  // FV-93 §5/§6 per-position overrides + the clinical withholds.
+  //  - Pitcher ships 9: drops "I make an error." (the thinnest cell, goalie-bad-
+  //    penalty precedent), and relabels to pitcher-true language (pulled / lose
+  //    the zone / hit a batter). Special-case slugs handled in cellSlugFor.
+  //  - Catcher + Infield: "I lose my command." (the throwing YIPS) is authored
+  //    (hm-bsb-{catcher,infield}-lose-command exist) but WITHHELD from the picker
+  //    until clinical sign-off (FV-119 pattern). To re-enable, add it back here.
+  //    Catcher also relabels "I get hit by a pitch." → "I take a foul tip.".
+  //  - Outfield keeps the full flat 10 (its "I lose my command." is a bad throw,
+  //    not the clinical yips) — no override entry needed.
+  roleAdversities: {
+    Pitcher: [
+      { key: "I strike out.", label: "I strike out." },
+      { key: "I'm in a slump.", label: "I'm in a slump." },
+      { key: "I give up the big hit.", label: "I give up the big hit." },
+      { key: "I lose my command.", label: "I lose the zone." },
+      { key: "I get benched.", label: "I get pulled." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I get hit by a pitch.", label: "I hit a batter." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+    ],
+    Catcher: [
+      { key: "I strike out.", label: "I strike out." },
+      { key: "I'm in a slump.", label: "I'm in a slump." },
+      { key: "I make an error.", label: "I make an error." },
+      { key: "I give up the big hit.", label: "I give up the big hit." },
+      { key: "I get benched.", label: "I get benched." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I get hit by a pitch.", label: "I take a foul tip." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+    ],
+    Infield: [
+      { key: "I strike out.", label: "I strike out." },
+      { key: "I'm in a slump.", label: "I'm in a slump." },
+      { key: "I make an error.", label: "I make an error." },
+      { key: "I give up the big hit.", label: "I give up the big hit." },
+      { key: "I get benched.", label: "I get benched." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I get hit by a pitch.", label: "I get hit by a pitch." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+    ],
+  },
+
+  adversitySlugFragments: BASEBALL_ADVERSITY_SLUG_FRAGMENTS,
+
+  cellSlugFor(adversity: string, role?: string | null): string {
+    const frag =
+      BASEBALL_ADVERSITY_SLUG_FRAGMENTS[adversity] ?? "strikeout";
+    // Pitcher × benched → pulled (a pitcher is pulled, not benched).
+    if (role === "Pitcher" && frag === "benched") return "bsb-pitcher-pulled";
+    // Pitcher × hbp → hit-batter (a pitcher throws it, he doesn't wear it).
+    if (role === "Pitcher" && frag === "hbp") return "bsb-pitcher-hit-batter";
+    // Pitcher × error → strikeout: Pitcher ships 9 — the thin fielding-error cell
+    // is dropped (FV-93). "I make an error." is omitted from the Pitcher picker
+    // (roleAdversities), so this never fires at runtime; the redirect keeps the
+    // exhaustive (roles × adversities) integrity matrix resolving to a real clip
+    // (Pitcher stays at 9 distinct cells; the goalie-bad-penalty parallel).
+    if (role === "Pitcher" && frag === "error") return "bsb-pitcher-strikeout";
+    // Catcher × hbp → foul-tip (a catcher wears foul tips / gets crossed up).
+    if (role === "Catcher" && frag === "hbp") return "bsb-catcher-foul-tip";
+    const roleStr = role ? role.toLowerCase() : "pitcher";
+    // Returns the bsb-* cell key (NOT hm-bsb-*), mirroring basketball's bb-*.
+    // FV-95 renders BOTH hm-bsb-{pos}-{frag} (the hard-moment clip referenced by
+    // the manifest templates) AND bsb-{pos}-{frag} (the full composite =
+    // OPENING + {POSITION}_VIZ + hm-bsb-* + CLOSING) that this slug targets.
+    return `bsb-${roleStr}-${frag}`;
+  },
+
+  // Pre-practice focus presets (FV-94). Audio render + the rest of the
+  // pre-practice "Lock In" session (opener + Beats 2-6 tail + manifest
+  // practiceState.baseball) land with the audio render (FV-95) / pre-practice
+  // follow-up; these slugs are declared now so the registry is complete.
+  practiceFocusOptions: [
+    "Relentless",
+    "Hungry",
+    "Stay in the box",
+    "Read the pitch",
+    "Soft hands",
+    "Quick feet",
+    "One pitch at a time",
+  ] as const,
+
+  practiceFocusSlugs: {
+    "Relentless": "pp-baseball-focus-relentless",
+    "Hungry": "pp-baseball-focus-hungry",
+    "Stay in the box": "pp-baseball-focus-stay-in-the-box",
+    "Read the pitch": "pp-baseball-focus-read-the-pitch",
+    "Soft hands": "pp-baseball-focus-soft-hands",
+    "Quick feet": "pp-baseball-focus-quick-feet",
+    "One pitch at a time": "pp-baseball-focus-one-pitch-at-a-time",
+  },
+
+  // FV-117 per-sport picker lists. "Better puck decisions" → "Better decisions
+  // at the plate"; all other 8 needs are sport-neutral and shared. The baseball
+  // need-openers REUSE the shared opener clips (resolveOpenerSlug falls back to
+  // NEED_OPENER_SLUGS for non-basketball sports — no baseball opener clips).
+  needs: [
+    "Confidence",
+    "Calm",
+    "Compete level",
+    "Reset after mistakes",
+    "Physical courage",
+    "Better decisions at the plate",
+    "Leadership",
+    "Joy",
+    "Hope",
+    "Be more Vocal",
+  ] as const satisfies readonly NeedToday[],
+
+  // "Long exhale", "Press thumb to palm", "Say cue word" are shared; "Tap bat
+  // twice" and "Look at the pitcher" are baseball-specific (clips + slugs land
+  // with the audio render — they drop cleanly until then).
+  anchors: [
+    "Long exhale",
+    "Press thumb to palm",
+    "Tap bat twice",
+    "Look at the pitcher",
+    "Say cue word",
+  ] as const,
+
+  // "You're okay. Next shift." → "You're okay. Next at-bat." for baseball; the
+  // other 6 phrases are sport-neutral and shared.
+  selfTalkOptions: [
+    "You're okay. Next at-bat.",
+    "Breathe. Do your job.",
+    "Stay steady. Make the next play.",
+    "You don't need to do too much.",
+    "Compete, recover, go again.",
+    "Your identity is secure. Play free.",
+    "You are secure. Take the next faithful action.",
+  ] as const,
+
+  practiceOpenerSlugs: {
+    // pp-opener-dialed-in is sport-neutral and reused across all sports.
+    "dialed-in": "pp-opener-dialed-in",
+    // Baseball-specific not-feeling-it opener (authored with the pre-practice
+    // follow-up; declared here for registry completeness).
+    "not-feeling-it": "pp-baseball-opener-get-to",
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Registry + accessor
 // ---------------------------------------------------------------------------
 
 export const SPORT_REGISTRY: Record<Sport, SportConfig> = {
   hockey: HOCKEY_CONFIG,
   basketball: BASKETBALL_CONFIG,
+  baseball: BASEBALL_CONFIG,
 };
 
 /**

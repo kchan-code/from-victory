@@ -14,6 +14,7 @@ export type NeedToday =
   | "Physical courage"
   | "Better puck decisions"
   | "Better decisions with the ball"
+  | "Better decisions at the plate"
   | "Leadership"
   | "Joy"
   | "Hope"
@@ -203,6 +204,12 @@ export const NEED_VERSE: Record<NeedToday, NeedVerse> = {
   },
   // Basketball variant — same sport-neutral scripture, different need label. (FV-117)
   "Better decisions with the ball": {
+    reference: "Proverbs 3:5-6",
+    displayText:
+      "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him.",
+  },
+  // Baseball variant — same sport-neutral scripture, different need label. (FV-94)
+  "Better decisions at the plate": {
     reference: "Proverbs 3:5-6",
     displayText:
       "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him.",

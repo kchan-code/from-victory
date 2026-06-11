@@ -162,6 +162,8 @@ export const NEED_OPENER_SLUGS: Record<NeedToday, string> = {
   "Physical courage": "opener-courage",
   "Better puck decisions": "opener-decisions",
   "Better decisions with the ball": "opener-decisions",
+  // Baseball (FV-94) — reuses the sport-neutral decisions opener.
+  "Better decisions at the plate": "opener-decisions",
   Leadership: "opener-leadership",
   Joy: "opener-joy",
   Hope: "opener-hope",
