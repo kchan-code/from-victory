@@ -33,15 +33,15 @@ const PLANS: PlanOption[] = [
   {
     id: "annual",
     label: "Annual",
-    price: "$79",
+    price: "$49",
     period: "per year",
     badge: "Best value",
-    detail: "Save 27% vs monthly — about $6.58/mo",
+    detail: "Save 18% vs monthly — about $4.08/mo",
   },
   {
     id: "monthly",
     label: "Monthly",
-    price: "$8.99",
+    price: "$5",
     period: "per month",
     detail: "Flexible — cancel any time",
   },
@@ -149,7 +149,17 @@ function PlanCard({ plan, selected, onSelect }: PlanCardProps) {
 // ---------------------------------------------------------------------------
 // Main form
 // ---------------------------------------------------------------------------
-export function SubscribeForm() {
+
+interface SubscribeFormProps {
+  /**
+   * Whether this parent is eligible for the 14-day free trial.
+   * Derived server-side from the subscriptions row; passed as a prop so the
+   * trial banner is server-rendered and never shown to returning subscribers.
+   */
+  trialEligible: boolean;
+}
+
+export function SubscribeForm({ trialEligible }: SubscribeFormProps) {
   const [selected, setSelected] = useState<Plan>("annual");
   const [actionState, formAction] = useFormState(
     createCheckoutSession,
@@ -194,6 +204,17 @@ export function SubscribeForm() {
           />
         ))}
       </div>
+
+      {/* 14-day free trial banner — shown ONLY for first-time subscribers */}
+      {trialEligible ? (
+        <p
+          data-testid="trial-eligible-banner"
+          className="font-body text-gold text-[14px] leading-relaxed mb-4 text-center"
+        >
+          14-day free trial &middot; cancel any time &middot; then{" "}
+          {selected === "annual" ? "$49/year" : "$5/month"}
+        </p>
+      ) : null}
 
       {/* Value prop reminder */}
       <p className="font-body text-cream/50 text-[13px] leading-relaxed mb-7">

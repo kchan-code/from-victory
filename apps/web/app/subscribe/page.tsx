@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { requireParent } from "@/lib/auth/guards";
+import { createClient } from "@/lib/supabase/server";
 import { SubscribeForm } from "@/components/subscribe/SubscribeForm";
 
 export const metadata = {
@@ -13,7 +14,19 @@ type Props = {
 };
 
 export default async function SubscribePage({ searchParams }: Props) {
-  await requireParent();
+  const { userId } = await requireParent();
+
+  // Derive trial eligibility server-side: no existing subscriptions row →
+  // first-time subscriber → eligible. Reuses the same RLS-scoped client pattern
+  // as the checkout action. We only need to know whether the row exists — we
+  // don't need any column values — so select a minimal field.
+  const supabase = createClient();
+  const { data: existingSub } = await supabase
+    .from("subscriptions")
+    .select("stripe_customer_id")
+    .eq("parent_id", userId)
+    .maybeSingle();
+  const trialEligible = existingSub === null;
 
   const wasCanceled = searchParams.status === "canceled";
 
@@ -69,8 +82,8 @@ export default async function SubscribePage({ searchParams }: Props) {
           </p>
         </section>
 
-        {/* Plan selector form */}
-        <SubscribeForm />
+        {/* Plan selector form — trialEligible controls the trial banner */}
+        <SubscribeForm trialEligible={trialEligible} />
 
         {/* Footer trust note */}
         <p className="mt-8 font-body text-cream/40 text-[13px] text-center leading-relaxed">
