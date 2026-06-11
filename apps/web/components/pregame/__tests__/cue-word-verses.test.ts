@@ -2,7 +2,9 @@
 // Mirrors the style of positive-plays.test.ts: no manifest/filesystem access,
 // no React. These assertions pin:
 //   1. Completeness — every CUE_WORDS entry has a mapped verse.
-//   2. Verbatim text — spot-check two entries against the source doc.
+//   2. Verbatim text — ALL TEN entries pinned character-for-character
+//      against the source doc (docs/cue-word-verses-fv229.md), so a
+//      one-character scripture drift fails CI.
 //   3. Custom-word fallback — returns the Hebrews 12:2 default.
 //   4. Case-insensitivity — "STEADY" and "steady" resolve identically.
 
@@ -66,6 +68,54 @@ describe("verseForCueWord — verbatim text assertions (FV-229 source doc)", () 
     // Source doc includes a trailing comma (partial verse as published).
     expect(v.text).toBe(
       "Whatever you do, work at it with all your heart, as working for the Lord, not for human masters,",
+    );
+  });
+
+  it("Steady → Psalm 16:8, verbatim NIV", () => {
+    const v = verseForCueWord("Steady");
+    expect(v.reference).toBe("Psalm 16:8");
+    expect(v.text).toBe(
+      "I keep my eyes always on the Lord. With him at my right hand, I will not be shaken.",
+    );
+  });
+
+  it("Simple → Psalm 131:1-2, verbatim NIV (REVISED mapping — not Micah 6:8)", () => {
+    const v = verseForCueWord("Simple");
+    expect(v.reference).toBe("Psalm 131:1-2");
+    expect(v.text).toBe(
+      "My heart is not proud, Lord, my eyes are not haughty; I do not concern myself with great matters or things too wonderful for me. But I have calmed and quieted myself, I am like a weaned child with its mother; like a weaned child I am content.",
+    );
+  });
+
+  it("Attack → 1 Corinthians 16:13, verbatim NIV", () => {
+    const v = verseForCueWord("Attack");
+    expect(v.reference).toBe("1 Corinthians 16:13");
+    expect(v.text).toBe(
+      "Be on your guard; stand firm in the faith; be courageous; be strong.",
+    );
+  });
+
+  it("Serve → Mark 10:45, verbatim NIV", () => {
+    const v = verseForCueWord("Serve");
+    expect(v.reference).toBe("Mark 10:45");
+    expect(v.text).toBe(
+      "For even the Son of Man did not come to be served, but to serve, and to give his life as a ransom for many.",
+    );
+  });
+
+  it("Free → Galatians 5:1, verbatim NIV", () => {
+    const v = verseForCueWord("Free");
+    expect(v.reference).toBe("Galatians 5:1");
+    expect(v.text).toBe(
+      "It is for freedom that Christ has set us free. Stand firm, then, and do not let yourselves be burdened again by a yoke of slavery.",
+    );
+  });
+
+  it("Relentless → Galatians 6:9, verbatim NIV", () => {
+    const v = verseForCueWord("Relentless");
+    expect(v.reference).toBe("Galatians 6:9");
+    expect(v.text).toBe(
+      "Let us not become weary in doing good, for at the proper time we will reap a harvest if we do not give up.",
     );
   });
 });

@@ -1625,6 +1625,14 @@ function CueWordVerseRow({ cueWord }: { cueWord: string }) {
   const [revealed, setReveal] = useState(false);
   const verse = verseForCueWord(cueWord);
 
+  // When the reveal button unmounts, focus would drop to <body> and the
+  // verse would never be announced (PR #195 qa + review finding). Move
+  // focus to the revealed container so SR/keyboard users land on the verse.
+  const revealedRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (revealed) revealedRef.current?.focus();
+  }, [revealed]);
+
   return (
     <div
       className="mt-5 border-t border-hairline pt-4"
@@ -1658,7 +1666,9 @@ function CueWordVerseRow({ cueWord }: { cueWord: string }) {
         /* After-reveal: reference + verbatim text + follow-through line.
            motion:safe cross-fade; prefers-reduced-motion gets instant show. */
         <div
-          className="motion-safe:animate-card-fade-in rounded-[12px] border border-gold/20 bg-charcoal px-4 py-4"
+          ref={revealedRef}
+          tabIndex={-1}
+          className="motion-safe:animate-card-fade-in rounded-[12px] border border-gold/20 bg-charcoal px-4 py-4 outline-none"
           data-testid="verse-revealed"
         >
           {/* Reference — gold mono, matching VerseRef pattern */}

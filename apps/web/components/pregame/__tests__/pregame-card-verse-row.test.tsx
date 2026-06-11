@@ -3,8 +3,8 @@
  */
 // FV-229 — RTL test for the cue-word verse row on PregameCardScreen.
 // Verifies the hidden → tap → revealed state machine, exact copy, and
-// confirms zero tracking side-effects (no localStorage writes, no
-// window.fetch calls during the reveal transition).
+// confirms zero tracking side-effects (a localStorage.setItem spy asserts
+// nothing persists, and unmount/remount proves the reveal is stateless).
 
 import "@testing-library/jest-dom/vitest";
 
@@ -85,12 +85,31 @@ describe("CueWordVerseRow — after tap reveal", () => {
 
     fireEvent.click(screen.getByTestId("verse-reveal-btn"));
 
-    // JSX uses &rsquo; (U+2019 ' ) so we match with a flexible regex.
+    // Function matcher keeps the assertion robust to inline markup splits.
     expect(
       screen.getByText((text) =>
         text.includes("you ran the rep") && text.includes("tomorrow"),
       ),
     ).toBeInTheDocument();
+  });
+
+  it("writes nothing to localStorage during the full reveal sequence", () => {
+    // This jsdom setup ships no window.localStorage — install a spy stub so
+    // any persistence attempt during the reveal is observable.
+    const setItem = vi.fn();
+    Object.defineProperty(window, "localStorage", {
+      value: { getItem: () => null, setItem, removeItem: vi.fn() },
+      writable: true,
+      configurable: true,
+    });
+
+    render(<PregameCardScreen state={makeState()} onQuick={noop} onDone={noop} sportConfig={HOCKEY_CONFIG} />);
+
+    fireEvent.click(screen.getByTestId("verse-reveal-btn"));
+    expect(screen.getByTestId("verse-revealed")).toBeInTheDocument();
+
+    // The reveal must be a pure UI state change — no persistence of any kind.
+    expect(setItem).not.toHaveBeenCalled();
   });
 
   it("hides the before-reveal button after tap", () => {
