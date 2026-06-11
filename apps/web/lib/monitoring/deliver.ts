@@ -17,6 +17,6 @@ export function deliverInBackground(promise: Promise<unknown>): void {
   if (typeof fn === "function") {
     fn(promise);
   } else {
-    void promise;
+    void promise.catch(() => {});
   }
 }

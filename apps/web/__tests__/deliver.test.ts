@@ -53,4 +53,12 @@ describe("deliverInBackground — waitUntil unavailable", () => {
     expect(result).toBeUndefined();
     expect(mockWaitUntil).not.toHaveBeenCalled();
   });
+
+  it("does not produce an unhandled rejection when the promise rejects", () => {
+    waitUntilImpl = undefined;
+    // .catch(() => {}) on the void branch absorbs the rejection.
+    expect(() =>
+      deliverInBackground(Promise.reject(new Error("boom"))),
+    ).not.toThrow();
+  });
 });
