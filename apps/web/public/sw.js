@@ -339,10 +339,22 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const targetUrl =
-    typeof event.notification.data?.url === "string"
-      ? event.notification.data.url
-      : "/athlete";
+  // Resolve the target to a SAME-ORIGIN path before handing it to openWindow.
+  // Defense-in-depth: today's payloads are first-party (cron sends "/athlete"),
+  // but never pass an unvalidated URL to openWindow — a cross-origin value would
+  // be an open redirect launched from a trusted notification.
+  let targetUrl = "/athlete";
+  const rawUrl = event.notification.data?.url;
+  if (typeof rawUrl === "string" && rawUrl.length > 0) {
+    try {
+      const resolved = new URL(rawUrl, self.location.origin);
+      if (resolved.origin === self.location.origin) {
+        targetUrl = resolved.pathname + resolved.search;
+      }
+    } catch {
+      // Malformed — keep the default.
+    }
+  }
 
   event.waitUntil(
     (async () => {

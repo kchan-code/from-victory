@@ -160,6 +160,9 @@ export default function ReminderSettings({
     | null
   >(null);
   const [isPending, startTransition] = useTransition();
+  // Tracks which action is in flight, so the aria-live hint announces the
+  // correct verb (enabling vs disabling vs changing time).
+  const [pendingLabel, setPendingLabel] = useState("Saving…");
 
   const pushSupported = isPushSupported();
   const iosGate = isIosNotInstalled();
@@ -169,6 +172,7 @@ export default function ReminderSettings({
 
   async function handleToggle(next: boolean) {
     setFeedback(null);
+    setPendingLabel(next ? "Turning on reminders…" : "Turning off reminders…");
 
     if (next) {
       // --- Enable: request permission → subscribe → save ---
@@ -271,6 +275,7 @@ export default function ReminderSettings({
   async function handleHourChange(newHour: number) {
     setHour(newHour);
     setFeedback(null);
+    setPendingLabel("Updating time…");
     if (!enabled) return; // only persist if already subscribed
 
     startTransition(async () => {
@@ -380,7 +385,6 @@ export default function ReminderSettings({
               "transition-colors duration-fast",
               "disabled:opacity-50 disabled:cursor-not-allowed",
             ].join(" ")}
-            aria-label="Select reminder time"
           >
             {HOUR_OPTIONS.map((h) => (
               <option key={h} value={h}>
@@ -437,7 +441,7 @@ export default function ReminderSettings({
           aria-live="polite"
           className="mb-4 font-body text-[13px] text-cream/40"
         >
-          {enabled ? "Saving…" : "Updating…"}
+          {pendingLabel}
         </p>
       )}
     </div>
