@@ -1,8 +1,10 @@
 "use client";
-// client: calls clearAthleteCache() (localStorage) in the submit handler
-// before the signOut server action fires. Cannot do this server-side.
+// client: calls clearAthleteCache() + clearPregameSession() (localStorage)
+// in the submit handler before the signOut server action fires. Cannot do
+// this server-side.
 
 import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
+import { clearPregameSession } from "@/lib/pregame/session-cache";
 import { signOut } from "@/lib/actions/auth";
 
 interface SignOutButtonProps {
@@ -31,10 +33,11 @@ interface SignOutButtonProps {
  */
 export function SignOutButton({ className, children = "Sign out" }: SignOutButtonProps) {
   function handleSubmit() {
-    // Clear offline cache synchronously on submit, before the server action
-    // redirects. If localStorage is unavailable (private browsing, SSR guard
-    // hit somehow) clearAthleteCache() silently no-ops.
+    // Clear offline caches synchronously on submit, before the server action
+    // redirects. Both are no-ops if localStorage is unavailable (private
+    // browsing, SSR guard hit somehow).
     clearAthleteCache();
+    clearPregameSession();
   }
 
   return (

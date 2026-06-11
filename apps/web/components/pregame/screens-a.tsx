@@ -27,6 +27,7 @@ import {
   MAX_POSITIVE_PLAYS,
   POSITIVE_PLAY_EST_SEC,
 } from "./positive-plays";
+import type { PregameSessionCache } from "@/lib/pregame/session-cache";
 
 type SetFn = <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
 
@@ -35,11 +36,34 @@ export function PregameStart({
   onBegin,
   onQuick,
   onClose,
+  savedSession,
+  onBeginFromSaved,
 }: {
   onBegin: () => void;
   onQuick: () => void;
   onClose?: () => void;
+  /**
+   * FV-223: if a valid saved session exists for the current sport, the
+   * start screen shows a secondary "Run it like last time" entry. When
+   * null, only the full-setup path is shown.
+   */
+  savedSession?: PregameSessionCache | null;
+  /** FV-223: called when the athlete taps "Run it like last time". */
+  onBeginFromSaved?: (saved: PregameSessionCache) => void;
 }) {
+  // FV-223: one-line summary for the "Run it like last time" entry.
+  // Shows the three most salient choices — need (focus), cue word, and
+  // prayer style — in a compact glanceable line. All three are always
+  // populated in a valid saved session. Kept short: the athlete is
+  // confirming a recall, not re-reading their setup.
+  const savedSummary =
+    savedSession
+      ? [
+          savedSession.need,
+          savedSession.cueWord,
+          savedSession.prayerStyle === "guided" ? "pray with me" : "self prayer",
+        ].join(" · ")
+      : null;
   return (
     <div
       className="relative flex flex-1 flex-col"
@@ -100,6 +124,29 @@ export function PregameStart({
           <Button variant="coach" full onClick={onBegin}>
             BEGIN
           </Button>
+
+          {/* FV-223: "Run it like last time" — secondary entry, shown only
+              when a valid saved session exists for the current sport.
+              Visually secondary (ghost style, smaller font, no bold CTA
+              treatment) so the primary "BEGIN" path stays dominant. The
+              one-line summary gives the athlete enough to confirm it's the
+              right setup without having to re-read every choice. */}
+          {savedSession && savedSummary && onBeginFromSaved && (
+            <button
+              type="button"
+              data-testid="run-last-time-btn"
+              onClick={() => onBeginFromSaved(savedSession)}
+              className="flex flex-col items-center gap-1 rounded-[14px] border border-hairline bg-cream/[0.03] px-4 py-3.5 text-center transition-colors duration-fast hover:bg-cream/[0.06] active:scale-[0.98] active:bg-cream/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            >
+              <span className="font-heading text-[14px] font-semibold text-cream/90">
+                Run it like last time
+              </span>
+              <span className="font-mono text-[11px] lowercase tracking-[0.04em] text-cream/45">
+                {savedSummary}
+              </span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onQuick}

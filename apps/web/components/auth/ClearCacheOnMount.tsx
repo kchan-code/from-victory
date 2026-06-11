@@ -1,8 +1,10 @@
 "use client";
-// client: calls clearAthleteCache() in useEffect (localStorage access).
+// client: calls clearAthleteCache() + clearPregameSession() in useEffect
+// (localStorage access).
 
 import { useEffect } from "react";
 import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
+import { clearPregameSession } from "@/lib/pregame/session-cache";
 
 /**
  * ClearCacheOnMount (FV-154)
@@ -31,6 +33,7 @@ import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
 export function ClearCacheOnMount() {
   useEffect(() => {
     clearAthleteCache();
+    clearPregameSession();
   }, []);
 
   return null;

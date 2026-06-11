@@ -5,9 +5,14 @@
 // Setup phase (steps 0-7): tap-through choices. Step 8 is the audio session
 // (Identity scripture + visualization + coping + prayer fold into the
 // transcript). Card lives outside FLOW and renders after audio completes.
-// No persistence — see docs/feature-roadmap.md.
+//
+// FV-223: on completion the session setup is persisted to localStorage under
+// `fv_pregame_session` (writePregameSession). On the start screen, if a saved
+// setup exists for the current sport, the athlete sees a secondary "Run it like
+// last time" entry that skips all setup steps and jumps straight to the breath
+// threshold (first FLOW step).
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { QuickReset } from "./QuickReset";
 import {
@@ -36,9 +41,15 @@ import {
 import {
   FLOW,
   INITIAL_STATE,
+  NEED_VERSE,
   type PregameState,
 } from "./types";
 import { getSportConfig, type Sport, type SportConfig } from "./sport-registry";
+import {
+  readPregameSession,
+  writePregameSession,
+  type PregameSessionCache,
+} from "@/lib/pregame/session-cache";
 
 type Props = {
   athleteFirstName: string;
@@ -75,15 +86,117 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   const [view, setView] = useState<View>({ kind: "start" });
   const [data, setData] = useState<PregameState>(INITIAL_STATE);
 
+  // FV-223: load saved session for the "Run it like last time" entry.
+  // Null means no saved session, sport mismatch, unknown need, or invalid
+  // shape — start screen shows only the full-setup path in that case.
+  const [savedSession, setSavedSession] = useState<PregameSessionCache | null>(null);
+
+  // True between "Run it like last time" and the post-breath jump. A ref,
+  // not state: it only steers the next goNext, never renders.
+  const fromSavedRef = useRef(false);
+
+  // A saved session is restorable only when it was built for this sport AND
+  // its need still resolves to a known verse — NEED_VERSE[need] is
+  // dereferenced unguarded on the audio + card screens, so a stale need
+  // (renamed since the save) or poisoned localStorage must fall back to the
+  // full-setup path silently, never crash (PR #194 review 1b).
+  const restorableSession = (
+    cached: PregameSessionCache | null,
+  ): PregameSessionCache | null =>
+    cached && cached.sport === sport && cached.need in NEED_VERSE
+      ? cached
+      : null;
+
+  useEffect(() => {
+    setSavedSession(restorableSession(readPregameSession()));
+    // restorableSession is stable per sport — re-validate on sport change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sport]);
+
   const set = <K extends keyof PregameState>(k: K, v: PregameState[K]) =>
     setData((d) => ({ ...d, [k]: v }));
 
-  const beginFull = () => setView({ kind: "flow", index: 0 });
-  const beginQuick = () => setView({ kind: "quick" });
-  const goStart = () => setView({ kind: "start" });
+  const beginFull = () => {
+    fromSavedRef.current = false;
+    setView({ kind: "flow", index: 0 });
+  };
+  const beginQuick = () => {
+    fromSavedRef.current = false;
+    setView({ kind: "quick" });
+  };
+  const goStart = () => {
+    fromSavedRef.current = false;
+    setView({ kind: "start" });
+    // Refresh saved session in case a just-completed run wrote a new one —
+    // and clear it when the read fails/invalidates, so the button never
+    // shows stale state the store no longer backs (PR #194 review).
+    setSavedSession(restorableSession(readPregameSession()));
+  };
+
+  // FV-223: "Run it like last time" — restore saved state, run the breath
+  // threshold, then jump STRAIGHT to the audio session (goNext intercept
+  // below). Setup screens are skipped, not just pre-filled.
+  const beginFromSaved = (saved: PregameSessionCache) => {
+    setData({
+      breathDone: false,
+      need: saved.need as PregameState["need"],
+      role: saved.role,
+      positivePlays: saved.positivePlays,
+      adversity: saved.adversity,
+      anchor: saved.anchor,
+      selfTalk: saved.selfTalk,
+      cueWord: saved.cueWord,
+      prayerStyle: saved.prayerStyle,
+      audioCompleted: false,
+    });
+    fromSavedRef.current = true;
+    // Start at breath (index 0) — the threshold step that's always first.
+    setView({ kind: "flow", index: 0 });
+  };
+
+  // FV-223: persist content choices when the athlete reaches the completion
+  // card. Guard: all required fields must be non-null. A session that somehow
+  // reached the card without full setup (dev shortcut) should not overwrite
+  // a valid prior save with nulls. The effect is declared here — before any
+  // early returns — so the rules-of-hooks ordering invariant is respected.
+  useEffect(() => {
+    if (view.kind !== "card") return;
+    if (
+      data.need !== null &&
+      data.adversity !== null &&
+      data.anchor !== null &&
+      data.selfTalk !== null
+    ) {
+      writePregameSession({
+        sport,
+        need: data.need,
+        role: data.role,
+        positivePlays: data.positivePlays,
+        adversity: data.adversity,
+        anchor: data.anchor,
+        selfTalk: data.selfTalk,
+        cueWord: data.cueWord,
+        prayerStyle: data.prayerStyle,
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view.kind]); // only re-run when we transition to the card view
 
   const goNext = () => {
     if (view.kind !== "flow") return;
+    // FV-223: in a saved-session run, breath advances straight to the audio
+    // step — every setup screen between them is skipped (that's the "one
+    // tap" promise). goBack from audio still walks back sequentially, which
+    // deliberately lands on Review pre-filled so the athlete can inspect or
+    // edit the restored choices.
+    if (fromSavedRef.current && activeFlow[view.index]?.id === "breath") {
+      fromSavedRef.current = false;
+      const audioIndex = activeFlow.findIndex((s) => s.id === "audio");
+      if (audioIndex !== -1) {
+        setView({ kind: "flow", index: audioIndex });
+        return;
+      }
+    }
     if (view.index >= activeFlow.length - 1) {
       setView({ kind: "card" });
     } else {
@@ -102,7 +215,12 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   if (view.kind === "start") {
     return (
       <PregameShell>
-        <PregameStart onBegin={beginFull} onQuick={beginQuick} />
+        <PregameStart
+          onBegin={beginFull}
+          onQuick={beginQuick}
+          savedSession={savedSession}
+          onBeginFromSaved={beginFromSaved}
+        />
       </PregameShell>
     );
   }
