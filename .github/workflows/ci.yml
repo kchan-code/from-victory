@@ -321,11 +321,16 @@ jobs:
 
       - name: Run RLS harness
         run: |
-          # DB_URL comes from the machine-readable status output so a future
-          # CLI label change can't silently produce an empty connection string.
-          eval "$(supabase status -o env)"
+          # Resolve DB_URL from the machine-readable status output.
+          # Old CLI (v1.x) exports DB_URL; newer CLI (v2.x) exports
+          # SUPABASE_DB_URL. If neither is set (e.g. output format changed
+          # again), fall back to the known local default from
+          # supabase/config.toml (db.port = 54322). The local stack is
+          # already running from the prior step, so the fallback will work.
+          eval "$(supabase status -o env 2>/dev/null || true)"
+          DB_URL="${DB_URL:-${SUPABASE_DB_URL:-}}"
           if [ -z "${DB_URL:-}" ]; then
-            echo "::error::Could not resolve DB_URL from 'supabase status -o env'"
-            exit 1
+            DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+            echo "::notice::DB_URL not exported by 'supabase status -o env'; using known local default (port 54322)"
           fi
           bash supabase/tests/rls/run.sh "$DB_URL"
