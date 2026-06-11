@@ -20,6 +20,20 @@
  *   webhook upserts the row on checkout.session.completed. We do NOT create a
  *   Customer ourselves here — Checkout does it, the webhook records it.
  *
+ * 14-day free trial strategy:
+ *   The trial is applied conditionally in code — NOT baked into the Stripe Price
+ *   object — so we can enforce a one-trial-per-parent rule. A parent is
+ *   trial-eligible if and only if they have NO `subscriptions` row at checkout
+ *   time. The webhook writes the row when checkout.session.completed fires, so
+ *   any subsequent checkout attempt (cancel-and-resubscribe, plan change) finds
+ *   an existing row and receives no trial. We reuse the `existingSub` read
+ *   (step 4) — no second DB query.
+ *
+ *   When trial-eligible:
+ *     subscription_data.trial_period_days: 14
+ *     payment_method_collection: "always"   ← card collected up front; auto-charges on day 14.
+ *   When not eligible (row exists, any status): no trial fields emitted.
+ *
  * redirect() position:
  *   `redirect()` from next/navigation throws a NEXT_REDIRECT error internally.
  *   It must NOT be called inside a try/catch block that could swallow it. The
@@ -101,16 +115,42 @@ export async function createCheckoutSession(
     };
   }
 
-  // 4. Check for an existing Stripe customer on this parent's subscription row.
+  // 4. Check for an existing subscription row on this parent.
   //    Uses the RLS-scoped client — the parent can only read their own row.
+  //    This single read serves two purposes:
+  //    (a) customer reuse: pass the existing Stripe customer ID if present.
+  //    (b) trial eligibility: no row → first-time subscriber → trial offered.
   const supabase = createClient();
-  const { data: existingSub } = await supabase
+  const { data: existingSub, error: subReadError } = await supabase
     .from("subscriptions")
     .select("stripe_customer_id")
     .eq("parent_id", userId)
     .maybeSingle();
 
+  if (subReadError) {
+    // Fail CLOSED: a transient read error must never grant a trial the
+    // parent shouldn't have (qa finding, PR #185). Mirrors billing-portal's
+    // handling — log + alert with opaque ids only, return a calm error.
+    console.error(
+      `[subscription.createCheckoutSession] subscriptions read failed (parent=${userId}): ${subReadError.message}`,
+    );
+    deliverInBackground(
+      notifyError(
+        "[checkout] subscriptions read failed",
+        subReadError.message,
+        { parent_id: userId },
+      ),
+    );
+    return {
+      ok: false,
+      error: "Couldn't start checkout right now. Try again in a moment.",
+    };
+  }
+
   const existingCustomerId = existingSub?.stripe_customer_id ?? null;
+  // Trial is ONLY offered when there is no existing row. If ANY row exists
+  // (any status — active, canceled, trialing) the parent has already had a trial.
+  const isTrialEligible = existingSub === null;
 
   // 5. Build site URL for success/cancel redirects.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -136,6 +176,19 @@ export async function createCheckoutSession(
       // Convenience for Stripe dashboard filtering / audit.
       client_reference_id: userId,
     };
+
+    // 14-day free trial — first-time subscribers only.
+    // No row exists → isTrialEligible → add trial fields.
+    // Row exists (any status) → no trial (prevents repeat trials on
+    // cancel-and-resubscribe flows).
+    if (isTrialEligible) {
+      sessionParams.subscription_data = {
+        ...sessionParams.subscription_data,
+        trial_period_days: 14,
+      };
+      // Collect card up front so it auto-charges on day 14.
+      sessionParams.payment_method_collection = "always";
+    }
 
     // Customer reuse: pass the existing Stripe customer ID if present so
     // Checkout links to the existing record; otherwise let Checkout create one.
