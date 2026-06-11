@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { RhythmRing } from "@/components/ui";
-import { DeleteAthleteButton } from "@/components/dashboard/DeleteAthleteButton";
 import { requireParent } from "@/lib/auth/guards";
 import { getAthleteDetail } from "@/lib/dashboard/athlete-detail";
 import { shapeAthleteRhythm } from "@/lib/dashboard/rhythm-core";
@@ -193,11 +192,9 @@ export default async function AthleteDetailPage({ params }: Props) {
                   <div
                     key={day}
                     role="listitem"
-                    aria-label={
-                      done
-                        ? `Day ${day} — trained`
-                        : `Day ${day} — not yet`
-                    }
+                    // Rhythm framing: completed days are announced as trained;
+                    // other days stay neutral — absence is never called out.
+                    aria-label={done ? `Day ${day} — trained` : `Day ${day}`}
                     className={[
                       "flex flex-col items-center justify-center rounded-lg aspect-square",
                       done
@@ -230,9 +227,9 @@ export default async function AthleteDetailPage({ params }: Props) {
           </p>
           <p className="font-body text-cream/70 text-[14px] leading-relaxed">
             You see rhythm and dates — how often {detail.firstName} trains and
-            when they last showed up. What {detail.firstName} writes or reflects
-            on in their sessions stays private to them. That&rsquo;s by design:
-            the journal is a space they own.
+            when they last showed up. The training itself is{" "}
+            {detail.firstName}&rsquo;s space: what they work through in a
+            session stays theirs. That&rsquo;s by design.
           </p>
         </section>
 
@@ -265,16 +262,21 @@ export default async function AthleteDetailPage({ params }: Props) {
               </Link>
             </div>
 
-            {/* Delete — reuses the existing component; no duplication of logic */}
+            {/* Removal happens on the dashboard, where the list re-renders
+                after the action — running it here would leave the parent on a
+                deleted athlete's URL (qa finding FV-191-A). */}
             <div className="pt-4 border-t border-hairline">
-              <p className="font-body text-cream/50 text-[12px] leading-snug mb-3">
-                Permanently remove {detail.firstName}&rsquo;s account and all
-                training data. This cannot be undone.
+              <p className="font-body text-cream/50 text-[12px] leading-snug">
+                To remove {detail.firstName}&rsquo;s account and training data,
+                use the{" "}
+                <Link
+                  href="/dashboard"
+                  className="text-cream/80 underline underline-offset-2 hover:text-cream transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal rounded-sm"
+                >
+                  dashboard
+                </Link>
+                .
               </p>
-              <DeleteAthleteButton
-                athleteId={detail.athleteId}
-                firstName={detail.firstName}
-              />
             </div>
           </div>
         </section>

@@ -143,7 +143,9 @@ export function shapeAthleteDetail(
  * calling parent's linked athletes. An unlinked athlete_id returns no row on
  * the profiles query (via "profiles_parent_select_linked_athlete").
  *
- * Returns null if the athlete profile is not found (unlinked or wrong id).
+ * Returns null if the athlete profile is not found (unlinked or wrong id) —
+ * the caller renders notFound(). Throws on a profile DB error so the route's
+ * error boundary handles it (a transient failure must not present as a 404).
  * Returns AthleteDetailData with empty completedDays if the athlete has no
  * sessions yet.
  *
@@ -165,11 +167,12 @@ export async function loadAthleteDetail(
     .maybeSingle();
 
   if (profileError) {
-    console.error(
-      "athlete-detail: profile fetch failed —",
-      profileError.message,
+    // A DB failure is NOT "athlete not found" — throw so the route's error
+    // boundary renders a recoverable error instead of a misleading 404
+    // (qa finding FV-191-B).
+    throw new Error(
+      `athlete-detail: profile fetch failed — ${profileError.message}`,
     );
-    return null;
   }
   if (!profile) return null; // unlinked or nonexistent
 

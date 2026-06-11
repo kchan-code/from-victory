@@ -280,12 +280,13 @@ describe("loadAthleteDetail", () => {
     expect(result).toBeNull();
   });
 
-  it("returns null when profile fetch errors", async () => {
+  it("throws when profile fetch errors (DB failure is not a 404)", async () => {
     const client = makeFakeDetailClient({
       profileError: { message: "permission denied" },
     });
-    const result = await loadAthleteDetail(client, "any-id");
-    expect(result).toBeNull();
+    await expect(loadAthleteDetail(client, "any-id")).rejects.toThrow(
+      "profile fetch failed",
+    );
   });
 
   it("returns shaped detail with empty sessions on session-fetch error (non-fatal)", async () => {
