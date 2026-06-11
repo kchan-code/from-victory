@@ -47,6 +47,16 @@ export const PREGAME_SESSION_CACHE_KEY = "fv_pregame_session";
 type CachedSport = "hockey" | "basketball" | "baseball";
 type CachedPrayerStyle = "guided" | "self-guided";
 
+// Hard ceiling on any stored string field. localStorage is attacker-adjacent
+// input on a shared device — a poisoned multi-megabyte value must invalidate
+// the whole cache, not reach the DOM. Generous vs. the longest real preset.
+const MAX_FIELD_LENGTH = 200;
+
+// Mirrors MAX_POSITIVE_PLAYS in components/pregame/positive-plays.ts —
+// duplicated (not imported) to keep this module dependency-free per the
+// header. Restored sessions are clamped, never rejected, on over-cap arrays.
+const MAX_RESTORED_POSITIVE_PLAYS = 3;
+
 /**
  * The persisted setup. Every field was chosen by the athlete in the flow;
  * none are PII. Null values mean the field was not set (e.g. role = null
@@ -135,37 +145,45 @@ export function validatePregameSession(
   const sport = r["sport"];
   if (sport !== "hockey" && sport !== "basketball" && sport !== "baseball") return null;
 
-  // need — non-empty string
+  // Shared string-field check: non-empty after trim, bounded length.
+  const validField = (v: unknown): v is string =>
+    typeof v === "string" &&
+    v.trim().length > 0 &&
+    v.length <= MAX_FIELD_LENGTH;
+
+  // need — non-empty bounded string. NOTE: semantic validation (is this a
+  // known NeedToday with a NEED_VERSE entry?) happens at the restore site in
+  // PregameFlow, which owns that domain data — this module stays generic.
   const need = r["need"];
-  if (typeof need !== "string" || need.trim().length === 0) return null;
+  if (!validField(need)) return null;
 
-  // role — string or null (no-ask sports)
+  // role — bounded string or null (no-ask sports)
   const role = r["role"];
-  if (typeof role !== "string" && role !== null) return null;
+  if (role !== null && (typeof role !== "string" || role.length > MAX_FIELD_LENGTH)) {
+    return null;
+  }
 
-  // positivePlays — array of strings (may be empty for legacy — accept it;
-  // the flow's required guard will catch it during validation)
+  // positivePlays — array of non-empty bounded strings (may be empty for
+  // legacy — accept it; the flow's required guard catches it). Over-cap
+  // arrays are CLAMPED below, not rejected.
   const positivePlays = r["positivePlays"];
   if (!Array.isArray(positivePlays)) return null;
   for (const p of positivePlays) {
-    if (typeof p !== "string") return null;
+    if (!validField(p)) return null;
   }
 
-  // adversity — non-empty string
+  // adversity / anchor / selfTalk / cueWord — non-empty bounded strings
   const adversity = r["adversity"];
-  if (typeof adversity !== "string" || adversity.trim().length === 0) return null;
+  if (!validField(adversity)) return null;
 
-  // anchor — non-empty string
   const anchor = r["anchor"];
-  if (typeof anchor !== "string" || anchor.trim().length === 0) return null;
+  if (!validField(anchor)) return null;
 
-  // selfTalk — non-empty string
   const selfTalk = r["selfTalk"];
-  if (typeof selfTalk !== "string" || selfTalk.trim().length === 0) return null;
+  if (!validField(selfTalk)) return null;
 
-  // cueWord — non-empty string
   const cueWord = r["cueWord"];
-  if (typeof cueWord !== "string" || cueWord.trim().length === 0) return null;
+  if (!validField(cueWord)) return null;
 
   // prayerStyle — "guided" | "self-guided"
   const prayerStyle = r["prayerStyle"];
@@ -175,7 +193,7 @@ export function validatePregameSession(
     sport: sport as CachedSport,
     need,
     role: role as string | null,
-    positivePlays: positivePlays as string[],
+    positivePlays: (positivePlays as string[]).slice(0, MAX_RESTORED_POSITIVE_PLAYS),
     adversity,
     anchor,
     selfTalk,

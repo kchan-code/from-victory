@@ -183,6 +183,43 @@ describe("validatePregameSession — shape violations return null", () => {
 });
 
 // ---------------------------------------------------------------------------
+// A2. Hardening — poisoned-store cases from the PR #194 review
+// ---------------------------------------------------------------------------
+
+describe("validatePregameSession — hardening (PR #194 review)", () => {
+  it("returns null when a positivePlays entry is an empty string", () => {
+    expect(
+      validatePregameSession({ ...hockeySession(), positivePlays: [""] }),
+    ).toBeNull();
+  });
+
+  it("returns null when a positivePlays entry is whitespace-only", () => {
+    expect(
+      validatePregameSession({ ...hockeySession(), positivePlays: ["   "] }),
+    ).toBeNull();
+  });
+
+  it("CLAMPS over-cap positivePlays to 3 instead of rejecting", () => {
+    const result = validatePregameSession({
+      ...hockeySession(),
+      positivePlays: ["viz-a", "viz-b", "viz-c", "viz-d", "viz-e"],
+    });
+    expect(result).not.toBeNull();
+    expect(result?.positivePlays).toEqual(["viz-a", "viz-b", "viz-c"]);
+  });
+
+  it("returns null when any string field exceeds the length ceiling", () => {
+    const huge = "x".repeat(10_000);
+    expect(validatePregameSession({ ...hockeySession(), cueWord: huge })).toBeNull();
+    expect(validatePregameSession({ ...hockeySession(), selfTalk: huge })).toBeNull();
+    expect(validatePregameSession({ ...hockeySession(), role: huge })).toBeNull();
+    expect(
+      validatePregameSession({ ...hockeySession(), positivePlays: [huge] }),
+    ).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // B. readPregameSession / writePregameSession — round-trip
 // ---------------------------------------------------------------------------
 

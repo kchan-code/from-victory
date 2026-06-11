@@ -11,6 +11,7 @@ import { useFormState, useFormStatus } from "react-dom";
 import { selectSport } from "@/lib/actions/athlete-sport";
 import { signOut } from "@/lib/actions/auth";
 import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
+import { clearPregameSession } from "@/lib/pregame/session-cache";
 import { SUPPORTED_SPORTS, type Sport } from "@/lib/sports";
 
 interface SportOption {
@@ -113,7 +114,15 @@ export default function SportPicker({ currentSport }: { currentSport: Sport }) {
   return (
     <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[480px] flex-col bg-onyx text-cream">
       <div className="flex items-center px-5 pb-3 pt-[58px]">
-        <form action={signOut} onSubmit={clearAthleteCache}>
+        <form
+          action={signOut}
+          onSubmit={() => {
+            // signOut redirects to "/", which never mounts ClearCacheOnMount —
+            // both caches must clear synchronously here (FV-223 parity).
+            clearAthleteCache();
+            clearPregameSession();
+          }}
+        >
           <button
             type="submit"
             aria-label="Sign out"
