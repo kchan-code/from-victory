@@ -144,9 +144,11 @@ export default async function PostgameModulePage({
 
         {/* ── Forward-action zone ──
             One quiet affordance area at the foot of every module.
-            Per FV-225 spec: "When you're ready: tomorrow's reset" + "Talk
-            to someone". Converts consolation library → recovery tool.
-            No urgency, no pressure — "when you're ready" is the key phrase.
+            Per FV-225 spec: "When you're ready: tomorrow's reset". Converts
+            consolation library → recovery tool. The crisis path is NOT
+            duplicated here — it lives in the always-present CrisisFooter
+            below. No urgency, no pressure — "when you're ready" is the key
+            phrase.
         ── */}
         <section
           className="bg-charcoal border border-hairline rounded-2xl p-7 mb-6"
@@ -160,7 +162,7 @@ export default async function PostgameModulePage({
           {/* Tomorrow's reset — daily session link */}
           <Link
             href="/athlete/daily"
-            className="group flex items-center gap-3 rounded-xl border border-hairline bg-onyx px-4 py-3.5 no-underline transition-[border-color,transform] duration-fast ease-out motion-reduce:transition-none hover:border-[rgba(223,175,55,0.35)] motion-safe:active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal mb-3"
+            className="group flex items-center gap-3 rounded-xl border border-hairline bg-onyx px-4 py-3.5 no-underline transition-[border-color,transform] duration-fast ease-out motion-reduce:transition-none hover:border-[rgba(223,175,55,0.35)] motion-safe:active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
             data-testid="postgame-daily-link"
           >
             <span
@@ -184,30 +186,6 @@ export default async function PostgameModulePage({
               <Icon name="arrowRight" size={16} color="currentColor" />
             </span>
           </Link>
-
-          {/* Talk to someone — jumps to the crisis-resource footer below
-              (988 call/text + Crisis Text Line); a direct tel: link would
-              dead-end on non-phone devices. */}
-          <a
-            href="#crisis-footer"
-            className="group flex items-center gap-3 rounded-xl border border-hairline bg-onyx px-4 py-3.5 no-underline transition-[border-color,transform] duration-fast ease-out motion-reduce:transition-none hover:border-[rgba(223,175,55,0.20)] motion-safe:active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
-            data-testid="postgame-talk-link"
-          >
-            <span
-              className="flex-none flex items-center justify-center w-9 h-9 rounded-lg bg-cream/[0.04] border border-cream/[0.08]"
-              aria-hidden="true"
-            >
-              <Icon name="bell" size={17} color="currentColor" />
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="font-heading font-semibold text-[14px] text-cream/80 leading-snug">
-                Talk to someone
-              </p>
-              <p className="font-body text-[12px] text-cream/55 leading-snug mt-0.5">
-                988 &mdash; free, confidential, 24/7.
-              </p>
-            </div>
-          </a>
         </section>
 
         {/* ── Crisis footer — passive, always-present ── */}
