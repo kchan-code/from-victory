@@ -272,12 +272,16 @@ export type Database = {
           // 20260603120000_athlete_sport_selected_at.sql is applied to prod.
           // First-run signal: NULL until the athlete affirmatively picks a sport.
           sport_selected_at: string | null
-          // FV-240: coarse self-reported next-game date for athlete rows.
+// FV-240: coarse self-reported next-game date for athlete rows.
           // NULL when "not sure" or cleared by the cron after a game-day send.
           // NEVER surfaced in parent-facing queries (explicit column selects there).
           // Regenerate via 'supabase gen types --linked' after migration
           // 20260612140000_next_game_on.sql is applied to prod.
           next_game_on: string | null
+          // FV-228: athlete personalization quiz. Nullable — skipped or not yet set.
+          // Never surfaced on the parent dashboard.
+          position: string | null
+          focus_area: string | null
           updated_at: string
         }
         Insert: {
@@ -290,8 +294,11 @@ export type Database = {
           sport?: string | null
           // FV-33: see Row comment above.
           sport_selected_at?: string | null
-          // FV-240: see Row comment above. (migration 20260612140000)
+// FV-240: see Row comment above. (migration 20260612140000)
           next_game_on?: string | null
+          // FV-228: see Row comment above.
+          position?: string | null
+          focus_area?: string | null
           updated_at?: string
         }
         Update: {
@@ -304,8 +311,11 @@ export type Database = {
           sport?: string | null
           // FV-33: see Row comment above.
           sport_selected_at?: string | null
-          // FV-240: see Row comment above. (migration 20260612140000)
+// FV-240: see Row comment above. (migration 20260612140000)
           next_game_on?: string | null
+          // FV-228: see Row comment above.
+          position?: string | null
+          focus_area?: string | null
           updated_at?: string
         }
         Relationships: []

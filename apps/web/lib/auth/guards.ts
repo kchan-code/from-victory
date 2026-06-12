@@ -15,6 +15,10 @@ type AthleteProfile = {
   first_name: string;
   sport: Sport;
   sport_selected_at: string | null;
+  // FV-228: personalization quiz fields. Nullable — athlete may have skipped.
+  // These are athlete-private; never exposed to parent queries.
+  position: string | null;
+  focus_area: string | null;
 };
 
 export async function requireParent(): Promise<{
@@ -54,7 +58,7 @@ export async function requireAthlete(): Promise<{
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, role, first_name, sport, sport_selected_at")
+    .select("id, role, first_name, sport, sport_selected_at, position, focus_area")
     .eq("id", user.id)
     .single();
 

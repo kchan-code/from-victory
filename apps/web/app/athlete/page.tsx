@@ -8,6 +8,7 @@ import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireAthlete } from "@/lib/auth/guards";
 import { getDailySession } from "@/lib/daily/session";
 import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
+import { dailyCardSubtitle } from "@/lib/quiz-config";
 
 export const metadata = {
   title: "Today · From Victory",
@@ -146,7 +147,7 @@ export default async function AthleteHomePage() {
                   Daily Training
                 </p>
                 <p className="font-body text-cream/55 text-[13px] leading-snug mt-0.5">
-                  Read today&apos;s session &mdash; reset your mind.
+                  {dailyCardSubtitle(profile.focus_area)}
                 </p>
               </div>
               <span aria-hidden="true" className="flex-none text-gold text-[20px] font-display">
