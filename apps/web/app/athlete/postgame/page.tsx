@@ -26,6 +26,7 @@ const SCENARIO_EYEBROW: Record<PostgameScenario, string> = {
   loss: "The Loss",
   benching: "The Bench",
   "bad-game": "The Bad Game",
+  praise: "The Hard Night",
 };
 
 export default async function PostgamePickerPage() {

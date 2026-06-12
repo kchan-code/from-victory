@@ -1,7 +1,7 @@
 // FV-225 — Post-game debrief module registry tests.
 //
 // Pins:
-//   1. All 8 modules present: 4 scenarios × 2 sports; slugs unique; every
+//   1. All 10 modules present: 5 scenarios × 2 sports; slugs unique; every
 //      module has title/ref/text/body.
 //   2. Scripture byte-pins: each SCRIPTURE_TEXT matches exact expected NIV
 //      strings (mirrors the FV-229 cue-word-verses.test.ts pattern).
@@ -9,8 +9,10 @@
 //   4. No "kid"/"kiddo"/"youngster"/"young person" in any module copy
 //      (registry fields; page-level copy is reviewed, not scanned here).
 //   5. Protect-lines verbatim: "not impressed by the ones who shrug it off"
-//      (loss modules), "Don't fake being fine".
-//   6. modulesForSport: hockey athlete gets 4 modules; basketball athlete gets 4;
+//      (loss modules), "Don't fake being fine"; plus the praise-on-a-hard-night
+//      protect-lines + anti-prosperity banned-pattern scan (highest-drift
+//      module — praise must never read as a lever for a better outcome).
+//   6. modulesForSport: hockey athlete gets 5 modules; basketball athlete gets 5;
 //      unknown sport gets 0.
 //   7. moduleBySlug: returns correct module; undefined for unknown slug.
 //   8. Sport guard: modules are strictly scoped per sport.
@@ -29,8 +31,8 @@ import {
 // ---------------------------------------------------------------------------
 
 describe("POSTGAME_MODULES registry completeness", () => {
-  it("contains exactly 8 modules", () => {
-    expect(POSTGAME_MODULES).toHaveLength(8);
+  it("contains exactly 10 modules", () => {
+    expect(POSTGAME_MODULES).toHaveLength(10);
   });
 
   it("all slugs are unique", () => {
@@ -48,8 +50,14 @@ describe("POSTGAME_MODULES registry completeness", () => {
     }
   });
 
-  it("covers all 4 scenarios × 2 sports", () => {
-    const scenarios: PostgameScenario[] = ["win", "loss", "benching", "bad-game"];
+  it("covers all 5 scenarios × 2 sports", () => {
+    const scenarios: PostgameScenario[] = [
+      "win",
+      "loss",
+      "benching",
+      "bad-game",
+      "praise",
+    ];
     const sports = ["hockey", "basketball"] as const;
 
     for (const sport of sports) {
@@ -142,6 +150,28 @@ describe("Scripture verbatim NIV byte-pins", () => {
     expect(mod!.scriptureRef).toBe("James 1:17");
     expect(mod!.scriptureText).toBe(
       "Every good and perfect gift is from above, coming down from the Father of the heavenly lights, who does not change like shifting shadows.",
+    );
+  });
+
+  // Habakkuk 3:17-18 — the praise-on-a-hard-night anchor. Pinned FULL (v17 +
+  // v18): the long list of failures is the theological engine — the "yet" only
+  // works because every loss is named first. Do not abridge. NIV renders the
+  // divine name "Lord" (house style), not the small-caps "LORD".
+  it("Habakkuk 3:17-18 — exact NIV text (hockey praise)", () => {
+    const mod = moduleBySlug("hockey-praise-anyway");
+    expect(mod).toBeDefined();
+    expect(mod!.scriptureRef).toBe("Habakkuk 3:17-18");
+    expect(mod!.scriptureText).toBe(
+      "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
+    );
+  });
+
+  it("Habakkuk 3:17-18 — same exact text on basketball praise", () => {
+    const mod = moduleBySlug("basketball-praise-anyway");
+    expect(mod).toBeDefined();
+    expect(mod!.scriptureRef).toBe("Habakkuk 3:17-18");
+    expect(mod!.scriptureText).toBe(
+      "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
     );
   });
 });
@@ -257,36 +287,133 @@ describe("Youth-pastor protect-lines", () => {
 });
 
 // ---------------------------------------------------------------------------
+// 5b. Praise-on-a-hard-night modules ("The Hard Night" / "Praise Anyway")
+//     The mirror of The Win. Highest anti-prosperity drift risk in the app:
+//     praising God on a hard night must NEVER read as a lever for a better
+//     outcome, a mood-fix, or God owing a turnaround. Protect-lines hold the
+//     ache-first sequencing + the praise/outcome severance; the banned-pattern
+//     scan guards future edits (full trio cycle + both sport experts).
+// ---------------------------------------------------------------------------
+
+describe("Praise-on-a-hard-night modules (The Hard Night)", () => {
+  const PRAISE_SLUGS = ["hockey-praise-anyway", "basketball-praise-anyway"];
+
+  // Bodies are hard-wrapped at ~70 chars, so normalize whitespace before
+  // substring-matching protect-lines that span a wrap.
+  const normalize = (s: string) => s.replace(/\s+/g, " ").trim();
+
+  // Must survive any future copy-edit. Each does load-bearing guardrail /
+  // mirror / theology work (youth-pastor + sports-psychologist).
+  const PROTECT_LINES = [
+    // anti-prosperity spine — praise is not a trade (the reset blockquote)
+    "Praise on a hard night is real. It is not a trade for a better one.",
+    // sports-psych spine — praise IN the loss, never FOR it
+    "You're not praising because the night was good. You're praising because He's good — and those were never the same thing.",
+    // anti-rumination — the ache is permitted to remain (no promised mood-lift)
+    "you might still feel bad tonight, and that's okay",
+    // the mirror seam to The Win ("Only the scoreboard did" → "Only the night did")
+    "He didn't change. Only the night did.",
+    // the Habakkuk "yet" engine
+    "yet I will rejoice",
+    // the closing line — Habakkuk's bare fields made athletic
+    "Say the thank-you with empty hands — and mean it.",
+  ];
+
+  for (const slug of PRAISE_SLUGS) {
+    it(`${slug}: scenario "praise", title "Praise Anyway", Habakkuk anchor`, () => {
+      const mod = moduleBySlug(slug)!;
+      expect(mod.scenario).toBe("praise");
+      expect(mod.title).toBe("Praise Anyway");
+      expect(mod.scriptureRef).toBe("Habakkuk 3:17-18");
+    });
+
+    it(`${slug}: all protect-lines present (whitespace-normalized)`, () => {
+      const body = normalize(moduleBySlug(slug)!.bodyMd);
+      for (const line of PROTECT_LINES) {
+        expect(body, `${slug}: missing protect-line "${line}"`).toContain(
+          normalize(line),
+        );
+      }
+    });
+
+    it(`${slug}: ache is named before the praise turn (anti-bypassing sequencing)`, () => {
+      // The "What's true" praise turn must come AFTER the ache is named in
+      // "What happened" — collapsing them is the spiritual-bypassing failure
+      // the sports-psychologist flagged. Normalize: the "yet" phrase spans a
+      // hard-wrap in the source body.
+      const body = normalize(moduleBySlug(slug)!.bodyMd);
+      const acheIdx = body.indexOf("Name the ache");
+      const yetIdx = body.indexOf("yet I will rejoice");
+      expect(acheIdx).toBeGreaterThan(-1);
+      expect(yetIdx).toBeGreaterThan(acheIdx);
+    });
+
+    it(`${slug}: no prosperity-gospel / bypassing patterns`, () => {
+      // These patterns turn worship into a lever / a mood-fix / God owing a
+      // reversal. Extends the win-module guardrail with the turnaround cluster.
+      const banned = [
+        /turn(ed|s)? it around/i,
+        /turnaround/i,
+        /bounce back/i,
+        /next (game|night|time)\b.{0,40}\b(will|better|yours)/i,
+        /claim it/i,
+        /speak it/i,
+        /declare (victory|it)/i,
+        /God('s)? (will )?(bless|reward|repay)/i,
+        /God('s)? favor/i,
+        /God (is |was )?on (your|our) side/i,
+        /everything happens for a reason/i,
+        /silver lining/i,
+        /look (on )?the bright side/i,
+        /at least\b/i,
+        /just be (thankful|grateful|positive)/i,
+        /feel better/i,
+        /lift your mood/i,
+        /if you (just )?(praise|believe)/i,
+      ];
+      const body = moduleBySlug(slug)!.bodyMd;
+      for (const re of banned) {
+        expect(re.test(body), `${slug}: matches banned pattern ${re}`).toBe(
+          false,
+        );
+      }
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // 6. modulesForSport sport filtering
 // ---------------------------------------------------------------------------
 
 describe("modulesForSport", () => {
-  it("returns 4 modules for hockey", () => {
+  it("returns 5 modules for hockey", () => {
     const mods = modulesForSport("hockey");
-    expect(mods).toHaveLength(4);
+    expect(mods).toHaveLength(5);
     expect(mods.every((m) => m.sport === "hockey")).toBe(true);
   });
 
-  it("returns 4 modules for basketball", () => {
+  it("returns 5 modules for basketball", () => {
     const mods = modulesForSport("basketball");
-    expect(mods).toHaveLength(4);
+    expect(mods).toHaveLength(5);
     expect(mods.every((m) => m.sport === "basketball")).toBe(true);
   });
 
-  it("hockey modules cover all 4 scenarios", () => {
+  it("hockey modules cover all 5 scenarios", () => {
     const scenarios = new Set(modulesForSport("hockey").map((m) => m.scenario));
     expect(scenarios.has("win")).toBe(true);
     expect(scenarios.has("loss")).toBe(true);
     expect(scenarios.has("benching")).toBe(true);
     expect(scenarios.has("bad-game")).toBe(true);
+    expect(scenarios.has("praise")).toBe(true);
   });
 
-  it("basketball modules cover all 4 scenarios", () => {
+  it("basketball modules cover all 5 scenarios", () => {
     const scenarios = new Set(modulesForSport("basketball").map((m) => m.scenario));
     expect(scenarios.has("win")).toBe(true);
     expect(scenarios.has("loss")).toBe(true);
     expect(scenarios.has("benching")).toBe(true);
     expect(scenarios.has("bad-game")).toBe(true);
+    expect(scenarios.has("praise")).toBe(true);
   });
 });
 

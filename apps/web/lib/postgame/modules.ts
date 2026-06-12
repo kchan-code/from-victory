@@ -1,9 +1,10 @@
 // Post-game debrief module registry — FV-225.
 //
-// Code-resident content: eight on-demand, re-openable modules for the
-// car-ride-home moment (The Loss / The Benching / The Bad Game / The Win,
-// hockey + basketball). Mirrors the pregame/pre-practice precedent: on-demand
-// content lives in code; only the sequenced daily catalog is DB.
+// Code-resident content: ten on-demand, re-openable modules for the
+// car-ride-home moment (The Loss / The Benching / The Bad Game / The Win /
+// The Hard Night, hockey + basketball). Mirrors the pregame/pre-practice
+// precedent: on-demand content lives in code; only the sequenced daily
+// catalog is DB.
 //
 // Architecture contract:
 //   - Zero DB reads. Zero athlete-data writes. No "opened" events, no
@@ -12,13 +13,23 @@
 //     specialist-approved copy. Do not edit, trim, or reflow any module body.
 //   - Sport resolution: caller filters by profile.sport. If a sport has no
 //     modules (future sports), the picker page 404s/redirects gracefully.
-//   - Scenario types: 'loss' | 'benching' | 'bad-game' | 'win'
+//   - Scenario types: 'loss' | 'benching' | 'bad-game' | 'win' | 'praise'
 //     ('win' added 2026-06-12 per KC: "Someone may want to praise even in
 //     good or bad times." Praise-as-posture across outcomes; James 1:17.)
+//     ('praise' added 2026-06-12 per KC: "praise on a hard night" — the
+//     deliberate mirror of The Win. The athlete still choosing to thank God
+//     on a HARD night; Habakkuk 3:17-18, "yet I will rejoice." Full trio
+//     cycle + both sport experts; highest anti-prosperity guardrail load
+//     in the app — see the banned-pattern scan in the FV-225 tests.)
 
 import type { Sport } from "@/lib/sports";
 
-export type PostgameScenario = "loss" | "benching" | "bad-game" | "win";
+export type PostgameScenario =
+  | "loss"
+  | "benching"
+  | "bad-game"
+  | "win"
+  | "praise";
 
 export interface PostgameModule {
   /** URL slug — unique across all modules */
@@ -347,21 +358,113 @@ might've had their worst night.
 Take the win — and let the thank-you travel past the scoreboard.`,
 };
 
+// ---------------------------------------------------------------------------
+// Module 1e — Hockey · The Hard Night / Praise Anyway (KC scope addition
+// 2026-06-12: "praise on a hard night" — the deliberate MIRROR of The Win.
+// Full trio cycle: youth-pastor (Habakkuk 3:17-18 — the "yet" engine; praise
+// severed from outcome; same God good night or bad; anti-prosperity
+// guardrails) + sports-psychologist (ache named FIRST, then the chosen lift;
+// anti-bypassing; permit the ache to remain) + content-curator integration;
+// hockey-expert texture (car-or-bus / wet gear / dark window). The reset
+// blockquote and the "Only the night did" seam deliberately echo The Win.)
+// ---------------------------------------------------------------------------
+const HOCKEY_PRAISE: PostgameModule = {
+  slug: "hockey-praise-anyway",
+  sport: "hockey",
+  scenario: "praise",
+  title: "Praise Anyway",
+  scriptureRef: "Habakkuk 3:17-18",
+  scriptureText:
+    "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
+  bodyMd: `### What happened
+
+The win never came. You're in the car — or the back of the bus — gear
+still wet, the window dark, the loss sitting heavy in your chest.
+
+And you might still feel bad tonight, and that's okay. Name the ache
+first. Don't talk yourself out of it.
+
+### What's true
+
+Habakkuk looked at empty fields and ruined vines and said *yet I will
+rejoice* — not because the harvest came, but because his God hadn't moved.
+
+> Praise on a hard night is real. It is not a trade for a better one.
+
+That's the whole thing. You're not praising because the night was good.
+You're praising because He's good — and those were never the same thing.
+
+Nothing on the scoreboard changes when you say it. The same God you'd
+thank after a win is the same God in this dark car. He didn't change.
+Only the night did.
+
+So lean on Him, not on yourself. The thank-you isn't gritted teeth — it's
+weight handed over.
+
+Say the thank-you with empty hands — and mean it.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module 2e — Basketball · The Hard Night / Praise Anyway (same trio cycle as
+// 1e; basketball-expert texture — gym bag heavier / lot clearing / the score
+// still behind your eyes; "the floor" not "the court").
+// ---------------------------------------------------------------------------
+const BASKETBALL_PRAISE: PostgameModule = {
+  slug: "basketball-praise-anyway",
+  sport: "basketball",
+  scenario: "praise",
+  title: "Praise Anyway",
+  scriptureRef: "Habakkuk 3:17-18",
+  scriptureText:
+    "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
+  bodyMd: `### What happened
+
+The win never came. You're in the car, the gym bag heavier than it
+should be, the lot clearing out, the score still sitting behind your eyes.
+
+And you might still feel bad tonight, and that's okay. Name the ache
+first. Don't talk yourself out of it.
+
+### What's true
+
+Habakkuk looked at empty fields and ruined vines and said *yet I will
+rejoice* — not because the harvest came, but because his God hadn't moved.
+
+> Praise on a hard night is real. It is not a trade for a better one.
+
+That's the whole thing. You're not praising because the night was good.
+You're praising because He's good — and those were never the same thing.
+
+Nothing on the scoreboard changes when you say it. The same God you'd
+thank after a win is the same God in this quiet car. He didn't change.
+Only the night did.
+
+So lean on Him, not on yourself. The thank-you isn't gritted teeth — it's
+weight handed over.
+
+Say the thank-you with empty hands — and mean it.`,
+};
+
 export const POSTGAME_MODULES: PostgameModule[] = [
   HOCKEY_WIN,
   HOCKEY_LOSS,
   HOCKEY_BENCHING,
   HOCKEY_BAD_GAME,
+  HOCKEY_PRAISE,
   BASKETBALL_WIN,
   BASKETBALL_LOSS,
   BASKETBALL_BENCHING,
   BASKETBALL_BAD_GAME,
+  BASKETBALL_PRAISE,
 ];
 
 /**
  * All modules for a given sport, in scenario order (win → loss → benching →
- * bad-game). The win leads: an athlete opening this on a good night should
- * not have to scroll past three hard nights to find theirs.
+ * bad-game → praise). The win leads: an athlete opening this on a good night
+ * should not have to scroll past hard nights to find theirs. "Praise Anyway"
+ * (praise on a hard night) trails deliberately — it is the chosen-posture
+ * capstone an athlete grows into after the raw consolation modules, not the
+ * first thing a gutted athlete sees.
  * Returns an empty array for sports with no modules — caller handles the 404.
  */
 export function modulesForSport(sport: Sport): PostgameModule[] {
