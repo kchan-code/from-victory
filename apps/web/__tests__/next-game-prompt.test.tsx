@@ -6,9 +6,11 @@
  * Cases:
  *   1. Renders four answer buttons with correct labels
  *   2. Tapping an answer calls saveNextGame with the correct value
- *   3. After tap, collapses to a quiet confirmation — buttons are gone
- *   4. If the athlete does NOT tap, the prompt remains visible (skip = no store)
- *   5. Buttons have accessible labels (data-testid present; min-height in CSS)
+ *   3. After tap (stored answer), collapses to "Got it — we'll remind you."
+ *   4. After tapping "Not sure", shows "All good — ask me again anytime."
+ *      (no reminder promised because nothing is stored)
+ *   5. If the athlete does NOT tap, the prompt remains visible (skip = no store)
+ *   6. Buttons have accessible labels (data-testid present; min-height in CSS)
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
@@ -27,6 +29,12 @@ const { saveNextGameMock } = vi.hoisted(() => ({
 
 vi.mock("@/lib/actions/next-game", () => ({
   saveNextGame: saveNextGameMock,
+}));
+
+// The component imports NEXT_GAME_ANSWERS and NextGameAnswer from the shared
+// module — mock that too so RTL doesn't try to evaluate the plain TS module
+// via the jsdom transform pipeline.
+vi.mock("@/lib/daily/next-game-shared", () => ({
   NEXT_GAME_ANSWERS: ["tonight", "tomorrow", "this_weekend", "not_sure"],
 }));
 
@@ -89,14 +97,18 @@ describe("NextGamePrompt", () => {
     ).toBe("Not sure");
   });
 
-  it("calls saveNextGame with 'tonight' when Tonight is tapped", async () => {
+  it("calls saveNextGame with 'tonight' and timezone when Tonight is tapped", async () => {
     render(<NextGamePrompt />);
 
     fireEvent.click(screen.getByTestId("next-game-option-tonight"));
 
     await waitFor(() => {
       expect(saveNextGameMock).toHaveBeenCalledOnce();
-      expect(saveNextGameMock).toHaveBeenCalledWith("tonight");
+      // First arg is the answer; second is the IANA timezone string from the browser.
+      expect(saveNextGameMock).toHaveBeenCalledWith(
+        "tonight",
+        expect.any(String),
+      );
     });
   });
 
@@ -106,11 +118,14 @@ describe("NextGamePrompt", () => {
     fireEvent.click(screen.getByTestId("next-game-option-not_sure"));
 
     await waitFor(() => {
-      expect(saveNextGameMock).toHaveBeenCalledWith("not_sure");
+      expect(saveNextGameMock).toHaveBeenCalledWith(
+        "not_sure",
+        expect.any(String),
+      );
     });
   });
 
-  it("collapses to confirmation message after a tap", async () => {
+  it("collapses to 'Got it' confirmation after a stored-answer tap", async () => {
     render(<NextGamePrompt />);
 
     fireEvent.click(screen.getByTestId("next-game-option-tomorrow"));
@@ -122,9 +137,30 @@ describe("NextGamePrompt", () => {
       ).not.toBeInTheDocument();
     });
 
-    // Confirmation text is shown
-    expect(screen.getByRole("status")).toBeInTheDocument();
-    expect(screen.getByRole("status").textContent).toMatch(/remind you/i);
+    // Confirmation text is shown for a stored answer (not "not_sure").
+    // Use a regex that doesn't depend on straight vs curly apostrophe.
+    const status = screen.getByRole("status");
+    expect(status).toBeInTheDocument();
+    expect(status.textContent).toMatch(/remind you/i);
+    // Must NOT claim a reminder for a not_sure tap
+    expect(status.textContent).not.toMatch(/ask me again/i);
+  });
+
+  it("collapses to 'ask me again' confirmation after 'Not sure' tap", async () => {
+    render(<NextGamePrompt />);
+
+    fireEvent.click(screen.getByTestId("next-game-option-not_sure"));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId("next-game-option-tonight"),
+      ).not.toBeInTheDocument();
+    });
+
+    // For not_sure: no reminder is stored, so we must NOT promise one.
+    const status = screen.getByRole("status");
+    expect(status.textContent).toMatch(/ask me again/i);
+    expect(status.textContent).not.toMatch(/we'll remind you/i);
   });
 
   it("does not call saveNextGame if the athlete never taps (skip scenario)", () => {

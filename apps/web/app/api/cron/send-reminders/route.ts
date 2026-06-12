@@ -11,13 +11,15 @@
  *
  * 2. Game-day nudge (FV-240) — fetches push_subscriptions rows whose athlete
  *    has next_game_on = today in their local timezone AND the local hour is
- *    between 15–16 (3–4 PM) AND have not been notified today. Sends a
- *    "Big game tonight" push instead of the daily reminder for that day.
- *    Dedupe: an athlete only receives ONE push per day — if the game-day nudge
- *    fires (local hour 15-16, game day), the daily reminder is skipped by the
- *    shared last_sent_on dedup gate. After a successful game-day send, the
- *    next_game_on column is nulled opportunistically to prevent re-sends in
- *    later hours of the same day.
+ *    between 15–16 (3–4 PM). Sends a "Big game tonight" push.
+ *    Dedupe across cron runs: next_game_on is cleared to NULL after a successful
+ *    game-day send, so subsequent hourly runs don't re-match.
+ *    Dedupe within a run: app-layer exclusion set prevents double-sending to an
+ *    athlete that appears in both game-day and daily batches.
+ *    last_sent_on is stamped after the game-day send so the daily evening
+ *    reminder is replaced on game day for evening-hour athletes.
+ *    Morning-reminder athletes receive BOTH their daily (AM) and the game-day
+ *    nudge (PM) — the game-day function does not gate on last_sent_on.
  *
  * Security:
  *   - CRON_SECRET Bearer token must match. Vercel injects this header when
@@ -113,40 +115,31 @@ export async function GET(req: NextRequest) {
 
   const service = createServiceClient();
 
-  // 4a. Fetch game-day rows (FV-240).
-  //     due_game_day_reminders() returns opted-in athletes whose next_game_on
-  //     is today AND local hour is 15–16 AND not yet notified today.
-  //     These are processed FIRST so their last_sent_on stamp dedupes them
-  //     from the daily reminder query that follows.
-  const { data: gameDayRows, error: gameDayFetchError } = await service.rpc(
-    "due_game_day_reminders",
-  );
+  // 4a + 4b. Fetch both batches concurrently. Both fetches must complete
+  //          before we decide what to send — game-day sends must not be blocked
+  //          by a daily-reminder RPC failure, and vice versa.
+  const [
+    { data: gameDayRows, error: gameDayFetchError },
+    { data: dueRows, error: fetchError },
+  ] = await Promise.all([
+    service.rpc("due_game_day_reminders"),
+    service.rpc("due_push_reminders"),
+  ]);
 
+  // 4a errors are non-fatal: log and continue.
   if (gameDayFetchError) {
-    // Non-fatal: log and continue to the daily reminder pass.
     console.error(
       "[cron/send-reminders] due_game_day_reminders() RPC failed:",
       gameDayFetchError.message,
     );
   }
 
-  // 4b. Fetch daily-reminder rows.
-  //     due_push_reminders() returns rows where local hour = reminder_hour AND
-  //     last_sent_on ≠ today in their tz. Execute is revoked from client roles.
-  //     Athletes who already received a game-day nudge this hour will be
-  //     excluded naturally by the last_sent_on check once we stamp them below.
-  const { data: dueRows, error: fetchError } = await service.rpc(
-    "due_push_reminders",
-  );
-
+  // 4b errors are also non-fatal: we still want to send any game-day rows
+  // we already fetched. Log and treat as an empty daily batch.
   if (fetchError) {
     console.error(
       "[cron/send-reminders] due_push_reminders() RPC failed:",
       fetchError.message,
-    );
-    return NextResponse.json(
-      { error: "Failed to fetch due reminders." },
-      { status: 500 },
     );
   }
 
@@ -301,6 +294,39 @@ export async function GET(req: NextRequest) {
     } else {
       failed++;
     }
+  }
+
+  // 6. Opportunistic stale-date hygiene (FV-240).
+  //    Clear next_game_on rows that are in the past — any date strictly before
+  //    UTC-today-minus-1 is guaranteed past in every timezone on Earth
+  //    (UTC-12 being the latest offset). This catches rows for athletes who
+  //    never received a game-day nudge (e.g. no push subscription, no reminder
+  //    hour in the 15–16 window) so they don't accumulate indefinitely.
+  //    Non-fatal on error: if this fails, stale rows remain harmless (the
+  //    due_game_day_reminders WHERE clause will simply not match them next day).
+  try {
+    const staleBeforeDate = new Date();
+    staleBeforeDate.setUTCDate(staleBeforeDate.getUTCDate() - 1);
+    const staleCutoff = staleBeforeDate.toISOString().slice(0, 10); // YYYY-MM-DD
+
+    const { error: staleError } = await service
+      .from("profiles")
+      .update({ next_game_on: null })
+      .lt("next_game_on", staleCutoff);
+
+    if (staleError) {
+      console.error(
+        "[cron/send-reminders] stale next_game_on cleanup failed:",
+        staleError.message,
+      );
+    }
+  } catch (staleErr) {
+    // Non-fatal: log and continue.
+    const msg = staleErr instanceof Error ? staleErr.message : String(staleErr);
+    console.error(
+      "[cron/send-reminders] stale next_game_on cleanup threw:",
+      msg,
+    );
   }
 
   console.info(

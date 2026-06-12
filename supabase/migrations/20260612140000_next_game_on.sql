@@ -1,7 +1,11 @@
 -- =============================================================================
--- Migration: 20260612030000_next_game_on.sql
+-- Migration: 20260612140000_next_game_on.sql
 --
 -- Purpose: FV-240 — "When's your next game?" coarse game-day push timing.
+--
+-- Sorts AFTER 20260612130000_push_subscriptions.sql so the
+-- due_game_day_reminders() function can JOIN public.push_subscriptions
+-- (which is created in the preceding migration).
 --
 -- Adds next_game_on (date, nullable) to profiles for athlete rows only.
 -- The athlete self-reports their next game with a one-tap question on the
@@ -48,17 +52,30 @@ comment on column public.profiles.next_game_on is
 -- SECURITY DEFINER function: due_game_day_reminders()
 --
 -- Returns push_subscriptions rows for athletes whose next_game_on is TODAY
--- in the athlete''s local timezone AND who have not yet received any
--- notification today (last_sent_on ≠ today in their tz).
+-- in the athlete''s local timezone AND the local hour is in the game-day send
+-- window (15–16 local, i.e. 3–4 PM).
+--
+-- Dedupe note (deduplication strategy):
+--   This function does NOT gate on last_sent_on. The reason: an athlete whose
+--   daily reminder fires in the morning would already have last_sent_on = today
+--   by 3 PM, causing the game-day nudge to be permanently suppressed — the
+--   lower-value push wins. Instead, deduplication across cron runs relies on
+--   next_game_on being cleared (set to NULL) after a successful game-day send
+--   (the cron route does this). Stamping last_sent_on after the game-day send
+--   still happens so the evening daily is replaced on game day.
+--
+--   Net behavior:
+--     - Morning-reminder athletes: daily (AM) + game-day nudge (3–4 PM)
+--     - Evening-reminder athletes: game-day only that day
+--     - next_game_on cleared after game-day send → no re-send on subsequent
+--       hourly cron runs.
 --
 -- Called by the cron route in the 15:00–16:00 local-hour window to send
 -- "Big game tonight" nudges before an evening game.
 --
 -- SECURITY DEFINER runs as the function owner (service role), so the cron
 -- can call it via .rpc() without holding the service-role key in RLS context.
--- REVOKE execute from anon and authenticated: only the cron uses this.
---
--- Returns only the columns needed: same shape as due_push_reminders().
+-- REVOKE execute from public/anon/authenticated: only the cron uses this.
 -- ---------------------------------------------------------------------------
 
 create or replace function public.due_game_day_reminders()
@@ -85,19 +102,52 @@ as $$
   where
     -- Athlete's next_game_on is today in their local timezone
     p.next_game_on = (now() at time zone ps.timezone)::date
-    -- Not yet sent today (same dedup gate as the daily reminder)
-    and ps.last_sent_on is distinct from (now() at time zone ps.timezone)::date
-    -- Only the game-day send window: local hour 15 or 16 (3 PM–4 PM)
+    -- Only the game-day send window: local hour 15 or 16 (3 PM–4 PM).
     -- Hourly cron fires at the top of the hour; we check the current hour.
     and extract(hour from (now() at time zone ps.timezone))::smallint
         between 15 and 16;
+    -- NOTE: no last_sent_on gate here. Deduplication is handled by:
+    --   1. Clearing next_game_on to NULL after a successful game-day send
+    --      (the cron route does this immediately after each successful push).
+    --   2. The app-layer athlete_id exclusion set in the cron route.
+    -- This ensures morning-reminder athletes can receive BOTH their daily
+    -- reminder (AM) and the game-day nudge (3–4 PM) on the same day.
+    -- last_sent_on IS still stamped after game-day sends so the evening daily
+    -- is replaced on game day.
 $$;
 
 comment on function public.due_game_day_reminders() is
   'Returns push_subscriptions rows whose athlete has a game today (next_game_on = '
-  'today in their timezone) AND has not been notified today AND the local hour is '
-  '15 or 16 (3–4 PM). SECURITY DEFINER so the cron route can call it without RLS '
-  'bypass in application code. Execute revoked from anon + authenticated.';
+  'today in their timezone) AND the local hour is 15 or 16 (3–4 PM). '
+  'Does NOT gate on last_sent_on — deduplication relies on next_game_on being '
+  'cleared after a successful game-day send (see cron route). This allows morning- '
+  'reminder athletes to receive both their daily AM reminder and the game-day nudge. '
+  'SECURITY DEFINER so the cron route can call it without RLS bypass in application code. '
+  'Execute revoked from public, anon, and authenticated.';
 
+-- Revoke execute from all public roles.
+-- Postgres grants EXECUTE to PUBLIC by default when a function is created.
+-- We must revoke from PUBLIC (which covers anon + authenticated) to prevent
+-- the anon key from calling this RPC and harvesting push endpoint/key data
+-- for minors. Revoking from the named roles is belt-and-suspenders.
+revoke execute on function public.due_game_day_reminders() from public;
 revoke execute on function public.due_game_day_reminders() from anon;
 revoke execute on function public.due_game_day_reminders() from authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Harden due_push_reminders() (FV-164, shipped in 20260612130000)
+--
+-- due_push_reminders() has the same SECURITY DEFINER gap: Postgres grants
+-- EXECUTE to PUBLIC by default, so the anon key could call it and harvest
+-- push endpoint/p256dh/auth keys for minors. Revoke from PUBLIC here so
+-- both functions are hardened in a single db push.
+--
+-- The named-role revokes in the FV-164 migration (revoke from anon; revoke
+-- from authenticated) are correct but insufficient — revoking from the roles
+-- does not revoke the PUBLIC grant. Adding the PUBLIC revoke here closes the gap.
+-- ---------------------------------------------------------------------------
+revoke execute on function public.due_push_reminders() from public;
+-- belt-and-suspenders: named roles already revoked in FV-164 migration,
+-- repeating here is harmless and makes the intent explicit.
+revoke execute on function public.due_push_reminders() from anon;
+revoke execute on function public.due_push_reminders() from authenticated;

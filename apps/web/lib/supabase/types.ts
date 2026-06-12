@@ -276,7 +276,7 @@ export type Database = {
           // NULL when "not sure" or cleared by the cron after a game-day send.
           // NEVER surfaced in parent-facing queries (explicit column selects there).
           // Regenerate via 'supabase gen types --linked' after migration
-          // 20260612030000_next_game_on.sql is applied to prod.
+          // 20260612140000_next_game_on.sql is applied to prod.
           next_game_on: string | null
           updated_at: string
         }
@@ -290,7 +290,7 @@ export type Database = {
           sport?: string | null
           // FV-33: see Row comment above.
           sport_selected_at?: string | null
-          // FV-240: see Row comment above.
+          // FV-240: see Row comment above. (migration 20260612140000)
           next_game_on?: string | null
           updated_at?: string
         }
@@ -304,7 +304,7 @@ export type Database = {
           sport?: string | null
           // FV-33: see Row comment above.
           sport_selected_at?: string | null
-          // FV-240: see Row comment above.
+          // FV-240: see Row comment above. (migration 20260612140000)
           next_game_on?: string | null
           updated_at?: string
         }
@@ -548,10 +548,11 @@ export type Database = {
         }[]
       }
       // FV-240: SECURITY DEFINER RPC called by the cron route (service-role only).
-      // Returns opted-in athletes whose next_game_on = today AND local hour 15-16
-      // AND not yet notified today. Execute is revoked from anon + authenticated.
+      // Returns opted-in athletes whose next_game_on = today AND local hour 15-16.
+      // No last_sent_on gate (dedupe via next_game_on clear after send).
+      // Execute revoked from public, anon, and authenticated.
       // Regenerate via 'supabase gen types --linked' after migration
-      // 20260612030000_next_game_on.sql is applied to prod.
+      // 20260612140000_next_game_on.sql is applied to prod.
       due_game_day_reminders: {
         Args: Record<string, never>
         Returns: {

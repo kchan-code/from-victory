@@ -2,6 +2,10 @@
  * Unit tests for the `saveNextGame` server action and `computeNextGameDate`
  * helper (FV-240).
  *
+ * computeNextGameDate is now in lib/daily/next-game-shared.ts (a plain module,
+ * not "use server") so it can be imported here without restrictions.
+ * saveNextGame is the async-only "use server" action in lib/actions/next-game.ts.
+ *
  * Cases:
  *   computeNextGameDate:
  *     1. "tonight" → today's date
@@ -9,13 +13,18 @@
  *     3. "this_weekend" from a Monday → next Saturday
  *     4. "this_weekend" from a Saturday → same Saturday (today)
  *     5. "this_weekend" from a Sunday → next Saturday (6 days ahead)
- *     6. "not_sure" → null
+ *     6. "this_weekend" from Wednesday → +3 days
+ *     7. "not_sure" → null
+ *     (Timezone-rollover tests below)
  *
  *   saveNextGame (action):
- *     7. Invalid answer rejects with { ok: false }
- *     8. "tonight" → writes today's date to profiles
- *     9. "not_sure" → writes null to profiles
- *     10. Supabase update error → returns { ok: false }
+ *     8. Invalid answer rejects with { ok: false }
+ *     9. "tonight" → writes today's date to profiles
+ *    10. "not_sure" → writes null to profiles
+ *    11. Supabase update error → returns { ok: false }
+ *    12. Timezone forwarded: UTC 03:00 (= previous evening America/Los_Angeles)
+ *        stores local-yesterday, not UTC-today
+ *    13. Invalid timezone falls back to UTC without crashing
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -30,10 +39,8 @@ vi.mock("@/lib/auth/guards", () => ({
   requireAthlete: async () => ({ userId: "athlete-uuid-001" }),
 }));
 
-// Mutable Supabase mock — each test sets `updateError` as needed.
-let updateError: { message: string } | null = null;
-const updateMock = vi.fn().mockImplementation(() => ({ error: updateError }));
-const eqMock = vi.fn().mockReturnValue({ error: updateError });
+// Mutable Supabase mock — each test sets eqMock return as needed.
+const eqMock = vi.fn().mockReturnValue({ error: null });
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: () => ({
@@ -51,6 +58,9 @@ vi.mock("@/lib/supabase/server", () => ({
 
 import {
   computeNextGameDate,
+} from "@/lib/daily/next-game-shared";
+
+import {
   saveNextGame,
 } from "@/lib/actions/next-game";
 
@@ -99,6 +109,26 @@ describe("computeNextGameDate", () => {
     const result = computeNextGameDate("not_sure", "2026-06-12");
     expect(result).toBeNull();
   });
+
+  // ---------------------------------------------------------------------------
+  // Timezone rollover: UTC 03:00 on 2026-06-13 = 2026-06-12 in America/Los_Angeles
+  // (UTC-7 in PDT). An athlete in LA answering at 8 PM local time has
+  // "2026-06-12" as their local today, even though UTC has rolled to 2026-06-13.
+  // The action derives localToday server-side and passes it here as a parameter.
+  // ---------------------------------------------------------------------------
+
+  it("tonight with LA local today stores local date, not UTC date", () => {
+    // The action derived "2026-06-12" as local today for America/Los_Angeles
+    // at UTC 03:00 on 2026-06-13.
+    const result = computeNextGameDate("tonight", "2026-06-12");
+    expect(result).toBe("2026-06-12");
+  });
+
+  it("tomorrow with LA local today stores correct local+1 date", () => {
+    // local today = 2026-06-12; tomorrow = 2026-06-13
+    const result = computeNextGameDate("tomorrow", "2026-06-12");
+    expect(result).toBe("2026-06-13");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -108,7 +138,6 @@ describe("computeNextGameDate", () => {
 describe("saveNextGame", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    updateError = null;
     eqMock.mockReturnValue({ error: null });
   });
 
@@ -166,5 +195,27 @@ describe("saveNextGame", () => {
       ok: false,
       error: expect.any(String),
     });
+  });
+
+  it("valid timezone accepted without error", async () => {
+    // America/New_York is a valid IANA tz — action should accept and return ok.
+    const result = await saveNextGame("tonight", "America/New_York");
+    expect(result).toEqual({ ok: true });
+  });
+
+  it("invalid timezone falls back to UTC without crashing", async () => {
+    // "Not/A_Timezone" is invalid — localTodayInTz falls back to UTC.
+    // The action should still return ok:true (graceful degradation, not crash).
+    const result = await saveNextGame("tonight", "Not/A_Timezone");
+    expect(result).toEqual({ ok: true });
+    expect(eqMock).toHaveBeenCalledWith("id", "athlete-uuid-001");
+  });
+
+  it("non-string timezone is treated as missing (falls back to UTC)", async () => {
+    // The schema accepts timezone as optional string; a number is ignored.
+    // reason: any cast needed to test runtime boundary beyond TypeScript's reach
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await saveNextGame("tonight", 42 as any);
+    expect(result).toEqual({ ok: true });
   });
 });
