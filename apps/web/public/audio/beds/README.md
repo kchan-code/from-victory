@@ -1,19 +1,25 @@
-# Pregame Music Beds — FV-227 Phase 1
+# Pregame Music Beds — FV-227
 
-Three original synthesized ambient beds for the pregame guided session.
+Six original synthesized ambient beds for the pregame guided session.
 Athletes choose one (or silence) before starting; the chosen bed is
 looped client-side for the full session duration (~5 min) at a constant
 gain under the voice clips.
+
+Phase 1 (Still, Pulse, Rise): synthesized pads.
+Phase 1b (Rain, Stream, Amazing Grace): natural/hymn textures added 2026-06-12.
 
 ## Assets
 
 | File | Loop duration | Size | Hash |
 |---|---|---|---|
-| `bed-still.04f1b7b9.mp3` | 68 s | 346 KB | `04f1b7b9` |
-| `bed-pulse.153b2ff8.mp3` | 71 s | 370 KB | `153b2ff8` |
-| `bed-rise.6af32fd2.mp3`  | 70 s | 322 KB | `6af32fd2` |
+| `bed-still.04f1b7b9.mp3`  | 68 s  | 346 KB  | `04f1b7b9` |
+| `bed-pulse.153b2ff8.mp3`  | 71 s  | 370 KB  | `153b2ff8` |
+| `bed-rise.6af32fd2.mp3`   | 70 s  | 322 KB  | `6af32fd2` |
+| `bed-rain.46ab1a7d.mp3`   | 90 s  | 1.17 MB | `46ab1a7d` |
+| `bed-stream.d146d7d6.mp3` | 80 s  | 561 KB  | `d146d7d6` |
+| `bed-grace.13c87e8b.mp3`  | 88 s  | 343 KB  | `13c87e8b` |
 
-All three are stereo, 44.1 kHz, VBR ~42 kbps (libmp3lame q5). Pure
+Phase 1 beds are stereo, 44.1 kHz, VBR ~42 kbps (libmp3lame q5). Pure
 low-frequency pad material — fundamentals 90–360 Hz, filtered noise
 wash up to 700 Hz, zero content above ~800 Hz. 42 kbps VBR is
 completely transparent for this spectrum.
@@ -95,110 +101,68 @@ with no harsh presence content, consistent with the warm athletic brief.
 
 ### Recommended client-side gain
 
-**`BED_MIX_GAIN = 0.35`** (linear; apply to a Web Audio `GainNode`).
-
-```js
-gainNode.gain.value = 0.35; // −9.1 dB
-```
+**`BED_MIX_GAIN = 0.35`** (linear; applied in `mixBedIntoPcm`).
 
 At this gain:
-- Bed effective level: −29.0 − 9.1 = −38.1 dBFS mean
-- Voice clips: −20.5 dBFS mean
-- Gap: **≈ 17.6 dB (RMS)**
+- Mastered bed mean: ≈−29 dBFS; after 0.35 gain (−9.1 dB): ≈−38.1 dBFS
+- Voice clips mean: ≈−20.5 dBFS
+- Effective gap: **≈ 17.6 dB (RMS)** — bed is barely perceptible during
+  speech, clearly audible in breathing pauses.
 
-Wait — that's too wide. Re-check: the gain is applied to the bed
-_before_ mixing with voice, so the mixed bed sits 9.1 dB below its
-mastered level. The voice clips play at their native level.
+The 0.35 gain is a conservative starting point. If KC wants it more
+present, try 0.50 (≈ 8.5 dB under voice) or 0.65 (≈ 5 dB under voice).
+All values remain within the 8–10 dB intelligibility safety margin.
 
-Measured gap (mastered bed vs voice): −29.0 − (−20.5) = 8.5 dB (RMS).
-After the 0.35 gain reduction of 9.1 dB: effective bed sits **17.6 dB
-below voice mean**.
+**Flagged for KC's ear:** by-ear call on gain level is Tier-2 (KC-gated).
+Propose A/B at 0.35 vs 0.50 vs 0.65.
 
-At 17.6 dB under voice the bed will be barely perceptible during speech.
-If KC wants it more present, the gain can be raised — try 0.50 (−6 dB)
-for approximately 8.5 dB under voice mean, or 0.60 (−4.4 dB) for
-closer to 5 dB under voice. These are all within the 8–10 dB intelligibility
-safety margin from the brief.
-
-**Flagged for KC's ear:** the 0.35 gain is a conservative starting
-point. The by-ear call on how present the bed should be during speech is
-Tier-2 (KC-gated). Propose A/B at 0.35 vs 0.50 vs 0.65.
-
-### No MANIFEST_VERSION bump required for these assets
+### No MANIFEST_VERSION bump required for bed assets
 
 These beds are NOT clips. They live under `/audio/beds/` not
 `/audio/pregame/clips/`. The `audio-cache-bust` CI guard (ci.yml)
-watches for `*.mp3` changes and requires a `MANIFEST_VERSION` bump.
+scopes the MANIFEST_VERSION requirement to clip MP3s via a beds-path
+exemption — see the guard script for the `grep -v '^apps/web/public/audio/beds/'`
+filter that was added in FV-227.
 
-**This PR will trip the CI guard.** The CI guard checks `audio-mapping.ts`
-for a `MANIFEST_VERSION` change when any `*.mp3` is in the PR diff.
-These beds are NOT part of the clips catalog, so bumping `MANIFEST_VERSION`
-would be semantically wrong (it rotates the clips cache, not the beds
-cache). See Phase 2 instructions below.
+## Phase 2 implementation notes
 
-## Phase 2 instructions for the frontend agent
+The following changes were made in FV-227 to give beds offline coverage
+and to make CI pass with the new `.mp3` assets.
 
-The CI guard and SW/precache must be updated before these beds can be
-served offline and before CI passes with this PR's new `*.mp3` files.
+### (a) CI guard exemption for bed MP3s
 
-### (a) Make CI pass with the new committed MP3s
-
-The `audio-cache-bust` CI job (`ci.yml` lines 84–153) fails when a PR
-adds `*.mp3` files without updating `MANIFEST_VERSION` in `audio-mapping.ts`.
-These beds are not clips, so `MANIFEST_VERSION` must NOT be bumped.
-
-**Required fix:** add an exemption in the CI guard so mp3s under
-`apps/web/public/audio/beds/` do not trigger the manifest-version
-requirement. The simplest approach is to filter the `MP3_CHANGED` list
-before the guard check:
+The `audio-cache-bust` CI job (`ci.yml`) was updated to filter out beds-
+path MP3s before the `MANIFEST_VERSION` check:
 
 ```bash
-# In the audio-cache-bust step, after computing MP3_CHANGED:
 MP3_CHANGED=$(echo "$MP3_CHANGED" | grep -v '^apps/web/public/audio/beds/' || true)
 ```
 
-This scopes the MANIFEST_VERSION requirement to clip mp3s only, which
-is the correct semantic.
+This scopes the MANIFEST_VERSION requirement to clip MP3s only, which is
+the correct semantic — bumping it for a bed change would rotate the entire
+clip cache, which is wrong.
 
-### (b) Add beds to the SW audio cache and precache
+### (b) SW audio cache rule for /audio/beds/
 
-**SW (`apps/web/public/sw.js`):**
-The current audio cache path in `sw.js` is:
-```js
-if (url.pathname.startsWith("/audio/pregame/")) {
-  event.respondWith(audioCacheFirst(request));
-  return;
-}
-```
-Add a sibling rule for `/audio/beds/`:
+`apps/web/public/sw.js` has a sibling `audioCacheFirst` rule added for
+`/audio/beds/` alongside the existing `/audio/pregame/` rule:
+
 ```js
 if (url.pathname.startsWith("/audio/beds/")) {
   event.respondWith(audioCacheFirst(request));
   return;
 }
 ```
-This uses the same `AUDIO_CACHE` named cache (`fv-audio-<MANIFEST_VERSION>`)
-so bed files are co-located with clip files in offline storage. No new
-cache name needed.
 
-**`audio-precache.ts`:**
-The precache currently only resolves the clip playlist. For offline bed
-support, when the athlete has selected a bed id, add the bed's MP3 URL to
-the `urls` array before the `for (const clip of resolved)` loop. The
-bed URL is not in the manifest — resolve it from the `BEDS` registry:
-```ts
-import { getBed } from "./audio/beds";
-// …
-if (params.bedId) {
-  const bed = getBed(params.bedId);
-  if (bed) urls.push(bed.path);
-}
-```
-Add `bedId?: string | null` to `PrecacheParams`.
+This co-locates bed files with clip files in the `fv-audio-<MANIFEST_VERSION>`
+cache. No new cache name was needed.
 
-**No SW MANIFEST_VERSION bump required for this phase-2 change.** The SW
-change is a routing rule addition (not a cache version change). Bump
-`CACHE_VERSION` only if the app shell changes — this doesn't.
+### (c) Precache integration
+
+`audio-precache.ts` was updated to add the athlete's selected bed URL
+to the precache set when a bed preference is present. The bed URL is
+resolved from the BEDS registry (not the clip manifest). This happens
+before the clip loop so the bed is warmed alongside the clip files.
 
 ## Loop seam verification
 
@@ -284,3 +248,20 @@ of the fragmentary arrangement.
 6. **Amazing Grace fragment spacing** — phrases vs. rests balance: present
    enough to recognize, sparse enough to stay underneath. If it pulls your
    attention during a spoken line, the spacing widens (one constant).
+
+---
+
+# KC by-ear ruling (2026-06-12) — final catalog
+
+1. **Amazing Grace REMOVED** ("too distracting"). The fragmentary
+   arrangement did not defuse the recognized-melody attention pull — the
+   risk flagged at synthesis time. The asset is deleted; the provenance
+   section above is retained as the decision record. Do not re-add a
+   melodic bed without a fresh KC by-ear pass.
+2. **Plain white-noise naming.** Rain/Stream read as white noise, not
+   water — KC: "Just call them 5 options of white noise." The five
+   remaining beds are labeled **White noise 1–5** in the picker (ids/files
+   unchanged: still, pulse, rise, rain, stream).
+3. **"Very low in volume": BED_MIX_GAIN = 0.25** (= −12 dB applied), bed
+   ≈ 20 dB under voice — felt more than heard. Snapshot-pinned in
+   beds-registry.test.ts.

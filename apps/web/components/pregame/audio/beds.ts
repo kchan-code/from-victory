@@ -1,8 +1,10 @@
 // FV-227 — Music bed registry for the pregame session.
 //
-// Three synthesized ambient beds, each a seamless loop mastered to match
-// each other in level. Athletes can choose one or none (silence) from a
-// picker before the session starts.
+// Five synthesized white-noise/ambient beds (phase 1: Still, Pulse, Rise; phase 1b: Rain,
+// Stream — labeled plainly as White noise 1-5 per KC), each a seamless loop
+// mastered to match each other
+// in level. Athletes can choose one or none (silence) from a picker before
+// the session starts.
 //
 // Architecture decisions (lead-binding per FV-227 brief):
 //   - Beds are mixed into the runtime WAV blob client-side at a constant
@@ -35,12 +37,12 @@
 // Types
 // ---------------------------------------------------------------------------
 
-export type BedId = "still" | "pulse" | "rise" | "rain" | "stream" | "grace";
+export type BedId = "still" | "pulse" | "rise" | "rain" | "stream";
 
 export type Bed = {
   /** Internal id used for resolving the asset URL and serializing state. */
   readonly id: BedId;
-  /** Short athlete-facing label for the picker (≤ 10 chars, calm register). */
+  /** Short athlete-facing label for the picker (≤ 16 chars). */
   readonly label: string;
   /** One-sentence description for the picker tooltip / accessibility label. */
   readonly description: string;
@@ -63,10 +65,12 @@ export type Bed = {
 // Voice clips are ≈ -20.5 dBFS mean / -16.8 LUFS integrated.
 // Gap ≈ 8.5 dB (RMS) / ~10.5 dB (LUFS).
 //
-// At client-side gain 0.35 (= -9.1 dB), the summed bed sits ≈ 9 dB under
-// voice — firmly in "ambience, not distraction" territory.
+// KC by-ear ruling (2026-06-12): "very low in volume." Gain 0.25 (= -12 dB)
+// puts the summed bed ≈ 20 dB under voice — felt more than heard. Earlier
+// candidates for reference: 0.35 (≈17.6 dB under), 0.50, 0.65. Changing this
+// constant requires updating the snapshot test in beds-registry.test.ts.
 // ---------------------------------------------------------------------------
-export const BED_MIX_GAIN = 0.35;
+export const BED_MIX_GAIN = 0.25;
 
 // ---------------------------------------------------------------------------
 // Bed catalog
@@ -77,8 +81,8 @@ export const BED_MIX_GAIN = 0.35;
 export const BEDS: readonly Bed[] = [
   {
     id: "still",
-    // COPY CANDIDATE (KC review): "Still" — calm, single word, no spiritual freight
-    label: "Still",
+    // KC ruling 2026-06-12: plain white-noise naming — no evocative labels.
+    label: "White noise 1",
     description: "Warm sustained tone — near-static, for calm focus.",
     path: "/audio/beds/bed-still.04f1b7b9.mp3",
     loopDurationSec: 68,
@@ -86,8 +90,7 @@ export const BEDS: readonly Bed[] = [
   },
   {
     id: "pulse",
-    // COPY CANDIDATE (KC review): "Pulse" — implies the rhythmic heartbeat element
-    label: "Pulse",
+    label: "White noise 2",
     description: "Same warmth with a slow rhythmic element, like a settled heartbeat.",
     path: "/audio/beds/bed-pulse.153b2ff8.mp3",
     loopDurationSec: 71,
@@ -95,8 +98,7 @@ export const BEDS: readonly Bed[] = [
   },
   {
     id: "rise",
-    // COPY CANDIDATE (KC review): "Rise" — implies the gradual build
-    label: "Rise",
+    label: "White noise 3",
     description: "Starts sparse and gradually layers in — builds through the opening.",
     path: "/audio/beds/bed-rise.6af32fd2.mp3",
     loopDurationSec: 70,
@@ -104,8 +106,7 @@ export const BEDS: readonly Bed[] = [
   },
   {
     id: "rain",
-    // COPY CANDIDATE (KC review): "Rain" — clear sensory label, natural/calming
-    label: "Rain",
+    label: "White noise 4",
     description: "Soft rainfall — warm noise bed with the speech band carved out.",
     path: "/audio/beds/bed-rain.46ab1a7d.mp3",
     loopDurationSec: 90,
@@ -113,22 +114,10 @@ export const BEDS: readonly Bed[] = [
   },
   {
     id: "stream",
-    // COPY CANDIDATE (KC review): "Stream" — evokes flowing water, peaceful
-    label: "Stream",
+    label: "White noise 5",
     description: "Burbling water — drifting resonant peaks, like a rocky stream.",
     path: "/audio/beds/bed-stream.d146d7d6.mp3",
     loopDurationSec: 80,
-    recommendedGain: BED_MIX_GAIN,
-  },
-  {
-    id: "grace",
-    // COPY CANDIDATE (KC review): "Amazing Grace" — explicit hymn title is the right
-    // athlete-facing label here; the tune is recognizable and the faith connection is
-    // intentional. Keep it explicit rather than euphemistic.
-    label: "Amazing Grace",
-    description: "Fragmentary hymn phrases on a warm pad — widely spaced so the melody rests between lines.",
-    path: "/audio/beds/bed-grace.13c87e8b.mp3",
-    loopDurationSec: 88,
     recommendedGain: BED_MIX_GAIN,
   },
 ] as const;

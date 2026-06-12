@@ -75,8 +75,9 @@ export type PrecacheParams = {
    *  match what the session will actually play. Empty/undefined = flagship. */
   positivePlays?: string[] | null;
   /**
-   * FV-227 — athlete-chosen music bed id ("still" | "pulse" | "rise"), or null
-   * for silence. When non-null, the bed's content-addressed MP3 is added to the
+   * FV-227 — athlete-chosen music bed id (see BedId in audio/beds.ts for the
+   * full six-option catalog), or null for silence. When non-null, the bed's
+   * content-addressed MP3 is added to the
    * reachable URL set so it is warmed alongside the clip files. Silence → no
    * extra URL, no change to existing behaviour.
    */

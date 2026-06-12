@@ -51,6 +51,7 @@ import {
   writePregameSession,
   type PregameSessionCache,
 } from "@/lib/pregame/session-cache";
+import { readBedPreference } from "./audio/bed-preference";
 
 type Props = {
   athleteFirstName: string;
@@ -148,14 +149,12 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
       selfTalk: saved.selfTalk,
       cueWord: saved.cueWord,
       prayerStyle: saved.prayerStyle,
-      // bedId is a device-level preference, not part of the session cache.
-      // Restore to null here; SoundBedScreen (if visited) will load from
-      // localStorage on its own mount. For "Run it like last time" the
-      // sound screen is skipped, so we use the current state.bedId if set,
-      // otherwise default to null — useClipPlayer reads it from the state
-      // that's passed in, so the bed is still applied via what AudioSessionScreen
-      // receives.
-      bedId: data.bedId,
+      // bedId is a device-level preference stored in localStorage, not part
+      // of the session cache. "Run it like last time" skips the SoundBedScreen
+      // entirely (the Sound step is not in the rerun path), so SoundBedScreen's
+      // mount effect never fires. Read the preference directly here so the
+      // athlete's sound choice is honoured even when the screen is skipped.
+      bedId: readBedPreference(),
       audioCompleted: false,
     });
     fromSavedRef.current = true;

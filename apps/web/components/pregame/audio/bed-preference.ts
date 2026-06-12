@@ -9,6 +9,22 @@
 // "silence" so the key's presence signals an explicit choice; key absence
 // restores the default seamlessly.
 //
+// PERSISTENCE DECISION — why `fv_pregame_bed` survives signout/account-switch:
+//   This key is intentionally NOT cleared by the five auth surfaces that wipe
+//   other device state (signout, account-switch, athlete-cache clear, pair
+//   reset, and the session cache clear). Rationale: a sound preference is
+//   zero-PII device-level ambient taste — the same as a browser font-size
+//   preference. Clearing it on signout would silently reset a choice the
+//   athlete made (e.g. "Always use Rain") every time their parent logs back
+//   in, which is hostile UX. Compare with `fv_athlete_cache` and
+//   `fv_pregame_session`, which DO contain identity-adjacent data (profile
+//   name, session choices) and ARE cleared on auth transitions.
+//
+//   kids-privacy-officer adjudicates this decision in the PR's privacy pass
+//   (FV-227). If the review determines the device sound preference must be
+//   cleared on signout, add `BED_PREF_KEY` to the clear list in
+//   `lib/auth/clear-device-state.ts` (or wherever auth cleanup lives).
+//
 // All functions are window-guarded and try/catch-wrapped so they're safe to
 // import from any Next.js context (Server Component, client component, SSR).
 

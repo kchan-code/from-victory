@@ -67,8 +67,9 @@ export type PregameState = {
   cueWord: string;
   prayerStyle: PrayerStyle;
   /**
-   * FV-227 — athlete-chosen music bed id ("still" | "pulse" | "rise"), or null
-   * for silence. Persisted to localStorage at the device level (fv_pregame_bed),
+   * FV-227 — athlete-chosen music bed id (see BedId in audio/beds.ts for the
+   * full six-option catalog), or null for silence. Persisted to localStorage
+   * at the device level (fv_pregame_bed),
    * independent of the session cache. Default is null (silence).
    */
   bedId: string | null;

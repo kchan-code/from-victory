@@ -31,8 +31,8 @@ function bedFileExists(bedPath: string): boolean {
 // ---------------------------------------------------------------------------
 
 describe("BEDS registry (FV-227)", () => {
-  it("contains exactly 6 beds", () => {
-    expect(BEDS).toHaveLength(6);
+  it("contains exactly 5 beds", () => {
+    expect(BEDS).toHaveLength(5);
   });
 
   it("every bed has a unique id", () => {
@@ -41,15 +41,14 @@ describe("BEDS registry (FV-227)", () => {
   });
 
   it("every bed id is one of the expected values", () => {
-    const expected = new Set(["still", "pulse", "rise", "rain", "stream", "grace"]);
+    const expected = new Set(["still", "pulse", "rise", "rain", "stream"]);
     for (const { id } of BEDS) {
       expect(expected.has(id)).toBe(true);
     }
   });
 
   it("every bed has a non-empty label (≤ 16 chars)", () => {
-    // 16 accommodates "Amazing Grace" (13) — the explicit hymn title is the
-    // right label per the registry's copy note; picker rows wrap fine at 375px.
+    // 16 accommodates "White noise N" (13); picker rows wrap fine at 375px.
     for (const { id, label } of BEDS) {
       expect(label.trim().length, `bed "${id}" label is empty`).toBeGreaterThan(0);
       expect(label.length, `bed "${id}" label exceeds 16 chars`).toBeLessThanOrEqual(16);
@@ -107,7 +106,8 @@ describe("BED_MIX_GAIN constant", () => {
     // This is intentionally a snapshot assertion so a future audio-engineer
     // gain change is a visible, deliberate edit here rather than a silent value
     // drift. If KC's by-ear call changes the gain, update this test in the same PR.
-    expect(BED_MIX_GAIN).toBe(0.35);
+    // KC by-ear ruling 2026-06-12: "very low in volume" → 0.25 (≈20 dB under voice).
+    expect(BED_MIX_GAIN).toBe(0.25);
   });
 });
 

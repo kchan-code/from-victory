@@ -4,7 +4,7 @@
 // sound-bed-screen.test.tsx — FV-227
 //
 // Unit tests for the SoundBedScreen component (screens-b.tsx):
-//   - renders all 3 bed options plus Silence
+//   - renders all 5 bed options plus Silence
 //   - default selection is Silence (null bedId in INITIAL_STATE)
 //   - tapping a bed calls set("bedId", id) AND writes to localStorage
 //   - tapping Silence calls set("bedId", null)
@@ -68,7 +68,7 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 
 describe("SoundBedScreen (FV-227)", () => {
-  it("renders all 3 beds by label", () => {
+  it("renders all 5 beds by label", () => {
     render(<SoundBedScreen state={makeState()} set={vi.fn()} />);
     for (const { label } of BEDS) {
       expect(screen.getByRole("button", { name: new RegExp(label, "i") })).toBeInTheDocument();
@@ -94,15 +94,15 @@ describe("SoundBedScreen (FV-227)", () => {
 
   it("the selected bed shows aria-pressed=true, others false", () => {
     render(<SoundBedScreen state={makeState({ bedId: "still" })} set={vi.fn()} />);
-    expect(screen.getByRole("button", { name: /still/i })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /white noise 1/i })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
-    expect(screen.getByRole("button", { name: /pulse/i })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /white noise 2/i })).toHaveAttribute(
       "aria-pressed",
       "false",
     );
-    expect(screen.getByRole("button", { name: /rise/i })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /white noise 3/i })).toHaveAttribute(
       "aria-pressed",
       "false",
     );
@@ -115,7 +115,7 @@ describe("SoundBedScreen (FV-227)", () => {
   it("tapping a bed calls set('bedId', bedId) and writes to localStorage", () => {
     const set = vi.fn();
     render(<SoundBedScreen state={makeState({ bedId: null })} set={set} />);
-    fireEvent.click(screen.getByRole("button", { name: /pulse/i }));
+    fireEvent.click(screen.getByRole("button", { name: /white noise 2/i }));
     expect(set).toHaveBeenCalledWith("bedId", "pulse");
     expect(localStorageMock.setItem).toHaveBeenCalledWith(BED_PREF_KEY, "pulse");
   });
@@ -170,8 +170,8 @@ describe("SoundBedScreen (FV-227)", () => {
     render(<SoundBedScreen state={makeState()} set={vi.fn()} />);
     // All selectables should be <button> elements.
     const buttons = screen.getAllByRole("button");
-    // 3 beds + 1 silence = 4 minimum.
-    expect(buttons.length).toBeGreaterThanOrEqual(4);
+    // 5 beds + 1 silence = 6 minimum.
+    expect(buttons.length).toBeGreaterThanOrEqual(6);
   });
 
   it("the radiogroup has an accessible label", () => {

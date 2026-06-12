@@ -221,10 +221,12 @@ export function CueWordScreen({
 
 // ─── SCREEN 7a ─── Sound bed picker (FV-227)
 // Lets the athlete choose an ambient music bed to play under the guided session:
-//   Still  — warm sustained tone, near-static, for calm focus.
-//   Pulse  — same warmth with a slow rhythmic element, like a settled heartbeat.
-//   Rise   — starts sparse and gradually layers in.
-//   Silence — default, no music (same behaviour as before FV-227).
+//   Still         — warm sustained tone, near-static, for calm focus.
+//   Pulse         — same warmth with a slow rhythmic element, like a settled heartbeat.
+//   Rise          — starts sparse and gradually layers in.
+//   Rain          — soft rainfall, warm noise bed with the speech band carved out.
+//   Stream        — burbling water, drifting resonant peaks.
+//   Silence       — default, no music (same behaviour as before FV-227).
 //
 // Design decisions:
 //   - "Silence" is the default and is pre-selected — one tap to change, one
@@ -283,7 +285,7 @@ export function SoundBedScreen({
         What do you want to hear?
       </h1>
       <p className="mb-5 font-body text-[14px] text-cream/50">
-        A low ambient bed under the voice, or nothing at all. Your call.
+        A very low layer of white noise under the voice, or nothing at all. Your call.
       </p>
 
       {/* Music bed options */}
@@ -1386,7 +1388,7 @@ export function AudioSessionScreen({
         className="select-none"
         style={{ touchAction: "manipulation" }}
       >
-        <SectionLabel>Step 11 · Guided Session</SectionLabel>
+        <SectionLabel>Step 12 · Guided Session</SectionLabel>
       </div>
 
       {debug && (

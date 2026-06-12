@@ -33,14 +33,16 @@
  * @returns A Blob with MIME type "audio/wav" ready to feed to
  *   URL.createObjectURL → HTMLAudioElement.src.
  */
-export function assembleWavBlob(buffers: AudioBuffer[]): Blob {
-  if (buffers.length === 0) {
-    throw new RangeError("assembleWavBlob: buffers array must not be empty");
-  }
-
+/**
+ * Build the full WAV ArrayBuffer (44-byte header + 16-bit PCM body) from a
+ * sequence of AudioBuffers. This is the shared inner implementation used by
+ * both `assembleWavBlob` (silence path) and `assembleWavBlobWithBed` (mix
+ * path), so neither path has to allocate or encode the PCM twice.
+ *
+ * @internal Not exported — callers use assembleWavBlob / assembleWavBlobWithBed.
+ */
+function buildWavArrayBuffer(buffers: AudioBuffer[]): ArrayBuffer {
   // ── 1. Measure total sample count ───────────────────────────────────────────
-  // Sum the length (sample frames) of each buffer's channel 0.
-  // AudioBuffer.length is the number of sample frames (not bytes).
   let totalSamples = 0;
   for (const buf of buffers) {
     totalSamples += buf.length;
@@ -51,12 +53,12 @@ export function assembleWavBlob(buffers: AudioBuffer[]): Blob {
   // silently corrupt the header. Hard-coding 24000 would break if, e.g., the
   // TTS ceiling changes and clips are re-rendered at 48 kHz.
   // reason: noUncheckedIndexedAccess widens to AudioBuffer|undefined; the
-  // length === 0 guard above guarantees buffers[0] is defined here.
+  // length === 0 guard in the public callers guarantees buffers[0] is defined.
   const sampleRate = buffers[0]!.sampleRate;
   const numChannels = 1; // mono output — see channel policy above
   const bitsPerSample = 16;
-  const byteRate = (sampleRate * numChannels * bitsPerSample) / 8; // bytes/sec
-  const blockAlign = (numChannels * bitsPerSample) / 8; // bytes per sample frame
+  const byteRate = (sampleRate * numChannels * bitsPerSample) / 8;
+  const blockAlign = (numChannels * bitsPerSample) / 8;
 
   // Standard 44-byte RIFF/WAVE/fmt/data header layout:
   //   Offset  Size  Content
@@ -76,14 +78,13 @@ export function assembleWavBlob(buffers: AudioBuffer[]): Blob {
   //     44  …data…
 
   const HEADER_BYTES = 44;
-  const dataByteLength = totalSamples * blockAlign; // totalSamples * 2
+  const dataByteLength = totalSamples * blockAlign;
   const totalByteLength = HEADER_BYTES + dataByteLength;
 
   // ── 3. Allocate buffer and write header ──────────────────────────────────────
   const arrayBuffer = new ArrayBuffer(totalByteLength);
   const view = new DataView(arrayBuffer);
 
-  // Helper: write a 4-char ASCII tag at a byte offset.
   const writeTag = (offset: number, tag: string) => {
     for (let i = 0; i < 4; i++) {
       view.setUint8(offset + i, tag.charCodeAt(i));
@@ -91,18 +92,18 @@ export function assembleWavBlob(buffers: AudioBuffer[]): Blob {
   };
 
   writeTag(0, "RIFF");
-  view.setUint32(4, 36 + dataByteLength, true);   // chunkSize (LE)
+  view.setUint32(4, 36 + dataByteLength, true);
   writeTag(8, "WAVE");
   writeTag(12, "fmt ");
-  view.setUint32(16, 16, true);                    // subchunk1Size: 16 for PCM
-  view.setUint16(20, 1, true);                     // audioFormat: 1 = PCM
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
   view.setUint16(22, numChannels, true);
   view.setUint32(24, sampleRate, true);
   view.setUint32(28, byteRate, true);
   view.setUint16(32, blockAlign, true);
   view.setUint16(34, bitsPerSample, true);
   writeTag(36, "data");
-  view.setUint32(40, dataByteLength, true);        // subchunk2Size
+  view.setUint32(40, dataByteLength, true);
 
   // ── 4. Write PCM samples ─────────────────────────────────────────────────────
   // Each float32 sample from channel 0 is clamped to [-1, 1] then scaled to
@@ -111,27 +112,29 @@ export function assembleWavBlob(buffers: AudioBuffer[]): Blob {
   //   +1.0 * 32767 =  32767  → fits in int16 max  (+32767)
   //   -1.0 * 32767 = -32767  → fits in int16 min  (-32768, well within range)
   // Scaling by 32768 would map +1.0 → +32768, which overflows int16.
-  // The clamp is present even though the -1.5 dBTP loudnorm headroom means
-  // clipping should be very rare; codec decode and concatenation arithmetic
-  // can still produce transient values slightly outside [-1, 1].
   const SCALE = 0x7fff; // 32767
   let writeOffset = HEADER_BYTES;
 
   for (const buf of buffers) {
-    const channel = buf.getChannelData(0); // Float32Array, channel 0
+    const channel = buf.getChannelData(0);
     const len = channel.length;
     for (let i = 0; i < len; i++) {
-      // Clamp to [-1, 1], scale to int16, round to nearest integer.
       // reason: noUncheckedIndexedAccess widens to number|undefined; `i` is
       // bounded by channel.length so the value is always defined at runtime.
       const clamped = Math.max(-1, Math.min(1, channel[i] ?? 0));
-      const int16 = Math.round(clamped * SCALE);
-      view.setInt16(writeOffset, int16, true); // little-endian
+      view.setInt16(writeOffset, Math.round(clamped * SCALE), true);
       writeOffset += 2;
     }
   }
 
-  return new Blob([arrayBuffer], { type: "audio/wav" });
+  return arrayBuffer;
+}
+
+export function assembleWavBlob(buffers: AudioBuffer[]): Blob {
+  if (buffers.length === 0) {
+    throw new RangeError("assembleWavBlob: buffers array must not be empty");
+  }
+  return new Blob([buildWavArrayBuffer(buffers)], { type: "audio/wav" });
 }
 
 // ---------------------------------------------------------------------------
@@ -155,8 +158,9 @@ export function assembleWavBlob(buffers: AudioBuffer[]): Blob {
  *   - A linear fade-out of `fadeOutSamples` at the end smoothly returns the
  *     bed to silence (avoids a hard cutoff click at session end).
  *   - The gain at each sample is: BED_MIX_GAIN × fade_envelope.
- *   - Summed peaks remain safe: beds are mastered ≤ −17 dBTP; at 0.35 gain
- *     the effective peak is −17 − 9.1 = −26.1 dBTP. Added to voice peaks of
+ *   - Summed peaks remain safe: beds are mastered ≤ −12 dBTP (worst case
+ *     Rain/Stream; summing headroom verified in review). At 0.35 gain the
+ *     effective peak is −12 − 9.1 = −21.1 dBTP. Added to voice peaks of
  *     ≤ −1.8 dBTP the sum is still safely below 0 dBFS.
  *
  * @param voicePcm     DataView over the raw 16-bit PCM body (after the 44-byte
@@ -255,76 +259,20 @@ export function assembleWavBlobWithBed(
   fadeInSec = 1.5,
   fadeOutSec = 2.0,
 ): Blob {
-  // Build the base WAV blob from voice clips.
-  const blob = assembleWavBlob(buffers);
+  // Build the WAV ArrayBuffer once via the shared helper.
+  const arrayBuffer = buildWavArrayBuffer(buffers);
 
-  // Silence path — return the unmodified voice blob immediately.
+  // Silence path — return the unmodified voice blob immediately. No second
+  // allocation needed; the ArrayBuffer from buildWavArrayBuffer is all we need.
   if (bedChannel0 === null || bedChannel0.length === 0) {
-    return blob;
+    return new Blob([arrayBuffer], { type: "audio/wav" });
   }
 
-  // To mix in-place we need the ArrayBuffer. Blob.arrayBuffer() is async, but
-  // assembleWavBlob builds an ArrayBuffer internally and wraps it in a Blob.
-  // We can't unwrap it synchronously — instead we rebuild the ArrayBuffer from
-  // the same inputs, mix in-place, and return a new Blob. This is the minimal
-  // synchronous design that keeps the mixing pure and avoids async boundary
-  // changes in the hook.
-  //
-  // In practice the arraybuffer is ~14 MB for a 5-min session; rebuilding it
-  // once is fine for this use case (the bed decode is the async boundary).
-
-  // Re-encode to get a mutable ArrayBuffer.
-  // (assembleWavBlob is pure and cheap relative to the decode cost.)
+  // Mix bed into the PCM body in-place. buildWavArrayBuffer wrote the voice
+  // PCM into arrayBuffer at offset 44 (HEADER_BYTES); we get a DataView over
+  // that region and pass it to mixBedIntoPcm. No second encode pass — the
+  // voice PCM is written exactly once, and the mix modifies it in-place.
   const HEADER_BYTES = 44;
-
-  let totalSamples = 0;
-  for (const buf of buffers) {
-    totalSamples += buf.length;
-  }
-
-  const byteRate = (sampleRate * 1 * 16) / 8;
-  const blockAlign = (1 * 16) / 8;
-  const dataByteLength = totalSamples * blockAlign;
-  const totalByteLength = HEADER_BYTES + dataByteLength;
-
-  const arrayBuffer = new ArrayBuffer(totalByteLength);
-  const view = new DataView(arrayBuffer);
-
-  // Write WAV header (duplicated from assembleWavBlob — kept explicit here
-  // so this function stays self-contained and the helper stays pure).
-  const writeTag = (offset: number, tag: string) => {
-    for (let i = 0; i < 4; i++) {
-      view.setUint8(offset + i, tag.charCodeAt(i));
-    }
-  };
-  writeTag(0, "RIFF");
-  view.setUint32(4, 36 + dataByteLength, true);
-  writeTag(8, "WAVE");
-  writeTag(12, "fmt ");
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, 1, true);          // numChannels
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, byteRate, true);
-  view.setUint16(32, blockAlign, true);
-  view.setUint16(34, 16, true);         // bitsPerSample
-  writeTag(36, "data");
-  view.setUint32(40, dataByteLength, true);
-
-  // Write voice PCM.
-  const SCALE = 0x7fff;
-  let writeOffset = HEADER_BYTES;
-  for (const buf of buffers) {
-    const channel = buf.getChannelData(0);
-    const len = channel.length;
-    for (let i = 0; i < len; i++) {
-      const clamped = Math.max(-1, Math.min(1, channel[i] ?? 0));
-      view.setInt16(writeOffset, Math.round(clamped * SCALE), true);
-      writeOffset += 2;
-    }
-  }
-
-  // Mix bed into the PCM body in-place.
   const pcmBody = new DataView(arrayBuffer, HEADER_BYTES);
   const fadeInSamples = Math.round(fadeInSec * sampleRate);
   const fadeOutSamples = Math.round(fadeOutSec * sampleRate);
