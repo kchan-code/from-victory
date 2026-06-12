@@ -86,12 +86,13 @@ export default defineConfig({
 
     // ------------------------------------------------------------------
     // Athlete-auth specs — signed in as the test athlete.
-    // practice-flow targets /athlete/practice which calls requireAthlete()
-    // and redirects non-athletes, so it must use the athlete session.
+    // These target /athlete/* routes which call requireAthlete() and redirect
+    // non-athletes, so they must use the athlete session. The seeded athlete
+    // is sport: "hockey" (see global-setup), which postgame-module relies on.
     // ------------------------------------------------------------------
     {
       name: "chromium-mobile-athlete",
-      testMatch: /practice-flow\.e2e\.ts$/,
+      testMatch: [/practice-flow\.e2e\.ts$/, /postgame-module\.e2e\.ts$/],
       use: {
         ...devices["iPhone 14"],
         storageState: path.join(__dirname, "e2e", ".auth", "athlete.storageState.json"),
