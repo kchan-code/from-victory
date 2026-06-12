@@ -19,7 +19,7 @@ export function CrisisFooter() {
       aria-label="Crisis resources"
       data-testid="crisis-footer"
     >
-      <p className="mb-1 font-body text-[13px] leading-snug text-cream/50">
+      <p className="mb-1 font-body text-[13px] leading-snug text-cream/55">
         Carrying something heavier than the game? You don&rsquo;t have to hold
         it alone &mdash;
       </p>
@@ -66,7 +66,7 @@ export function CrisisFooter() {
         </li>
       </ul>
 
-      <p className="mt-5 font-body text-[11px] leading-relaxed text-cream/50">
+      <p className="mt-5 font-body text-[11px] leading-relaxed text-cream/55">
         Nothing here is shared with your parent. From Victory is not a
         mental-health service. In an immediate emergency, call 911.
       </p>
