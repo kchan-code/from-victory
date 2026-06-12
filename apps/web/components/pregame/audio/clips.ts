@@ -2974,6 +2974,235 @@ export const CLIP_PP_BASEBALL_FOCUS_ONE_PITCH_AT_A_TIME_SCRIPT: AudioScript = {
   segments: [{ type: "speech", text: "One pitch at a time." }],
 };
 
+// ── Golf pre-practice "Lock In" clips (FV-267) ───────────────────────────────
+//
+// 1:1 vocab swaps onto the approved hockey/basketball/baseball pre-practice
+// structure (per the basketball FV-30 precedent: no new reframe — sports-psych
+// gate not needed). Golf is INDIVIDUAL: no teammates, no calling plays, no
+// "talk every rep" — so baseball's "be-vocal" communication beat is replaced by
+// a routine-discipline beat (pp-golf-full-routine), the cleaner practice-room →
+// competition transfer for a self-accountable sport. Swaps: cage / ground ball /
+// at-bat → range / bucket / shot; the bottom of the seventh → the 18th tee with
+// a number on the line; "I got it" / "two" / "back" → the full pre-shot routine
+// on every ball. No yips / shank language (clinically gated, withheld). Audio
+// rendering + manifest.practiceState.golf tail = FV-266. Until then the golf
+// practice tail fails open to the text timer in resolvePracticePlaylist.
+
+// ── Golf OPENER B — pp-golf-opener-get-to ────────────────────────────────────
+export const CLIP_PP_GOLF_OPENER_GET_TO_SCRIPT: AudioScript = {
+  slug: "pp-golf-opener-get-to",
+  voice: "ash",
+  instructions: PRACTICE_GET_TO_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Be honest — you're not really feeling it today. That's allowed. You showed up anyway. That already counts.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Here's the thing nobody tells you: the feeling shows up after you move, not before. You don't wait to want it. You commit to the first ball, full routine, and let the rest catch up.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Whatever you do, you do it with everything — for the Lord, not for a mood. The flat day counts to him exactly as much as the good one. He's not grading how you feel.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "And somewhere under the drag — a body that works, a game you actually love. That's real. Let it pull you. Not guilt. Just true.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "So don't try to fix the whole session. Just win the first ten minutes on the range. First bucket, full routine on every ball — pick a target, commit, hit it.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "First shot. Go.",
+    },
+  ],
+};
+
+// ── Golf Beat 2 — pp-golf-name-standard ──────────────────────────────────────
+export const CLIP_PP_GOLF_NAME_STANDARD_SCRIPT: AudioScript = {
+  slug: "pp-golf-name-standard",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Whatever you do here is what shows up when it's tight. The rep you give now is the shot you'll hit with the round on the line. Your hands don't know the difference between a range ball and the 18th tee with a number you have to sign for.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "So the bar today is simple. Full reps. Full routine. No coasting.",
+    },
+  ],
+};
+
+// ── Golf Beat 3 — pp-golf-goal-fusion (Duckworth goal-fusion) ────────────────
+export const CLIP_PP_GOLF_GOAL_FUSION_SCRIPT: AudioScript = {
+  slug: "pp-golf-goal-fusion",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "That drill you've run a thousand times — the boring one, nobody watching — you're not getting it over with. You're rehearsing the shot you actually want, early, while it's quiet.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "The up-and-down from the bunker, the slick six-footer, the awkward half-wedge you'd rather skip — that's the one that decides a round. Win it now, on the practice green, full every time, and the one with the round on the line is just one you've already hit.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Not the perfect rep. The full one. That's all today asks.",
+    },
+  ],
+};
+
+// ── Golf Beat 5 — pp-golf-full-routine (routine discipline; golf-true) ────────
+// Replaces baseball's "be-vocal." Golf is individual — no cutoff to call, no
+// teammate to talk to. The transferable practice-room habit is the full
+// pre-shot routine on every rep: it's what holds on the first tee when the
+// hands go cold. The "easy hide" inverts from going quiet → raking balls with
+// no routine. Character/discipline beat, not a mental-skill reframe.
+export const CLIP_PP_GOLF_FULL_ROUTINE_SCRIPT: AudioScript = {
+  slug: "pp-golf-full-routine",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "One more thing nobody says out loud. Out here, your routine is the whole game — pick the target, see the shot, set up, pull the trigger, same every time. That's what holds when the first tee shakes your hands. But most players rake ball after ball on the range with no routine at all — not because they don't know it. Because doing the full thing on a throwaway range ball feels slow, feels like overkill, feels like wasted effort nobody sees.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "That's the trap. The shortcut feels like efficiency — but it's just skipping the rep that matters. And the player who skips it has nothing to fall back on when the round's on the line.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "So give every ball the routine. Target, commit, swing. The player who runs the full routine on the boring range ball is the one whose swing still shows up on the first tee in front of strangers — not because they're tougher, but because they already grooved the thing that holds. The routine you build now is the only thing that travels.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "The no-routine rake is the easy hide. Don't take it.",
+    },
+  ],
+};
+
+// ── Golf Beat 6 — pp-golf-see-it-go ──────────────────────────────────────────
+// Terminal send-off removed — the pre-practice session ends on the prayer clip
+// that follows this beat (mirrors hockey/basketball/baseball).
+export const CLIP_PP_GOLF_SEE_IT_GO_SCRIPT: AudioScript = {
+  slug: "pp-golf-see-it-go",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "See one shot. You, full commit, full routine, locked in — nothing rushed, nothing saved.",
+    },
+    { type: "silence", durationSec: 1.5 },
+    {
+      type: "speech",
+      text: "A shot's going to go bad. Some will. That's information, not a verdict — read it, drop it, next shot.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "You're not out here to prove who you are. You already know.",
+    },
+  ],
+};
+
+// ── Golf pre-practice focus presets — pp-golf-focus-* ─────────────────────────
+// Single-phrase clips; slugs match GOLF_CONFIG.practiceFocusSlugs (FV-265).
+
+export const CLIP_PP_GOLF_FOCUS_COMMITTED_TO_EVERY_SHOT_SCRIPT: AudioScript = {
+  slug: "pp-golf-focus-committed-to-every-shot",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [{ type: "speech", text: "Committed to every shot." }],
+};
+
+export const CLIP_PP_GOLF_FOCUS_ONE_SHOT_AT_A_TIME_SCRIPT: AudioScript = {
+  slug: "pp-golf-focus-one-shot-at-a-time",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [{ type: "speech", text: "One shot at a time." }],
+};
+
+export const CLIP_PP_GOLF_FOCUS_PICK_A_SMALL_TARGET_SCRIPT: AudioScript = {
+  slug: "pp-golf-focus-pick-a-small-target",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [{ type: "speech", text: "Pick a small target." }],
+};
+
+export const CLIP_PP_GOLF_FOCUS_FULL_ROUTINE_EVERY_BALL_SCRIPT: AudioScript = {
+  slug: "pp-golf-focus-full-routine-every-ball",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [{ type: "speech", text: "Full routine, every ball." }],
+};
+
+export const CLIP_PP_GOLF_FOCUS_TAKE_MY_MEDICINE_SCRIPT: AudioScript = {
+  slug: "pp-golf-focus-take-my-medicine",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  // Spoken label verbatim (matches the other 6 focus clips + the
+  // GOLF_CONFIG.practiceFocusOptions "Take my medicine" label).
+  segments: [{ type: "speech", text: "Take my medicine." }],
+};
+
+export const CLIP_PP_GOLF_FOCUS_SPEED_ON_EVERY_PUTT_SCRIPT: AudioScript = {
+  slug: "pp-golf-focus-speed-on-every-putt",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [{ type: "speech", text: "Speed on every putt." }],
+};
+
+export const CLIP_PP_GOLF_FOCUS_RESET_BETWEEN_SHOTS_SCRIPT: AudioScript = {
+  slug: "pp-golf-focus-reset-between-shots",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [{ type: "speech", text: "Reset between shots." }],
+};
+
 // ── Basketball VIZ clips — one per position (FV-115) ────────────────────────
 
 export const CLIP_VIZ_GUARD_SCRIPT: AudioScript = {
@@ -4104,6 +4333,19 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_PP_BASEBALL_FOCUS_SOFT_HANDS_SCRIPT,
   CLIP_PP_BASEBALL_FOCUS_QUICK_FEET_SCRIPT,
   CLIP_PP_BASEBALL_FOCUS_ONE_PITCH_AT_A_TIME_SCRIPT,
+  // Golf pre-practice "Lock In" clips (FV-267). Render = FV-266.
+  CLIP_PP_GOLF_OPENER_GET_TO_SCRIPT,
+  CLIP_PP_GOLF_NAME_STANDARD_SCRIPT,
+  CLIP_PP_GOLF_GOAL_FUSION_SCRIPT,
+  CLIP_PP_GOLF_FULL_ROUTINE_SCRIPT,
+  CLIP_PP_GOLF_SEE_IT_GO_SCRIPT,
+  CLIP_PP_GOLF_FOCUS_COMMITTED_TO_EVERY_SHOT_SCRIPT,
+  CLIP_PP_GOLF_FOCUS_ONE_SHOT_AT_A_TIME_SCRIPT,
+  CLIP_PP_GOLF_FOCUS_PICK_A_SMALL_TARGET_SCRIPT,
+  CLIP_PP_GOLF_FOCUS_FULL_ROUTINE_EVERY_BALL_SCRIPT,
+  CLIP_PP_GOLF_FOCUS_TAKE_MY_MEDICINE_SCRIPT,
+  CLIP_PP_GOLF_FOCUS_SPEED_ON_EVERY_PUTT_SCRIPT,
+  CLIP_PP_GOLF_FOCUS_RESET_BETWEEN_SHOTS_SCRIPT,
   // Basketball pregame hard-moment cells (FV-30) — Guard (10)
   // NOTE: these full-session scripts remain in CLIP_SCRIPTS for the legacy
   // baked-cell render path. The FV-115 decomposed hm-bb-* clips (below) are
