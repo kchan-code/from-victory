@@ -68,7 +68,7 @@ describe("Faq — verbatim answer spot-pins", () => {
     render(<Faq />);
     // Use getAllByText with regex to avoid issues with multiple matches
     const els = screen.getAllByText(
-      /It never shows what they reflected on, selected, or worked through inside a session\./,
+      /It never shows what they selected or worked through inside a session\./,
     );
     expect(els.length).toBeGreaterThan(0);
   });

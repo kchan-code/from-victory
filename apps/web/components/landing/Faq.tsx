@@ -11,7 +11,7 @@ export interface FaqEntry {
 export const FAQ_ITEMS: FaqEntry[] = [
   {
     q: "Can I read what my athlete does inside a session?",
-    a: "No — and that’s by design. Your athlete trains privately. Your dashboard shows their rhythm and participation: which days they trained, how consistently they show up. It never shows what they reflected on, selected, or worked through inside a session. An athlete who knows no one is reading is free to be honest with God and with themselves. That honesty is where the real training happens.",
+    a: "No — and that’s by design. Your athlete trains privately. Your dashboard shows their rhythm and participation: which days they trained, how consistently they show up. It never shows what they selected or worked through inside a session. An athlete who knows no one is reading is free to be honest with God and with themselves. That honesty is where the real training happens.",
   },
   {
     q: "Is this therapy or counseling?",
