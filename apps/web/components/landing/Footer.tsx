@@ -1,17 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
 
+// Absolute /# form so these resolve to the homepage anchors from the
+// sub-pages (/parents, /pricing, /teams) that also render this footer.
 const productLinks = [
-  { href: "#how", label: "How it works" },
-  { href: "#app", label: "The app" },
-  { href: "#waitlist", label: "Join waitlist" },
+  { href: "/#how", label: "How it works" },
+  { href: "/#app", label: "The app" },
+  { href: "/#waitlist", label: "Join waitlist" },
 ];
 
 const forLinks = [
-  { href: "#audiences", label: "Athletes" },
-  { href: "#audiences", label: "Parents" },
-  { href: "#audiences", label: "Coaches" },
-  { href: "#faith", label: "Faith foundation" },
+  { href: "/#how", label: "For the Athlete" },
+  { href: "/parents", label: "For Parents" },
+  { href: "/teams", label: "For Teams & Churches" },
+  { href: "/pricing", label: "Pricing" },
 ];
 
 const companyLinks = [
