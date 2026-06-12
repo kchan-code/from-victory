@@ -77,10 +77,10 @@ export default async function SubscribePage({ searchParams }: Props) {
             Train every day.
           </h1>
           <p className="font-body text-cream/70 text-[15px] leading-relaxed max-w-[42ch]">
-            One subscription covers all your athletes. Daily mental-toughness
-            training with faith built in&nbsp;&mdash; one session per day
-            combining a mental skill, scripture, and a private journal
-            reflection.
+            $5/mo or $49/yr for your first athlete; $3/mo or $29/yr for each
+            additional athlete. Daily mental-toughness training with faith built
+            in&nbsp;&mdash; one session per day combining a mental skill and a
+            scripture foundation.
           </p>
         </section>
 

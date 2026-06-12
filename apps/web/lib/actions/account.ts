@@ -11,6 +11,7 @@ import {
 } from "@/lib/actions/deletion-rate-limit";
 import { isBenignCancelError } from "@/lib/stripe/cancel-errors";
 import { getStripe } from "@/lib/stripe/server";
+import { syncAthleteQuantity } from "@/lib/stripe/sync-athlete-quantity";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -123,6 +124,11 @@ export async function deleteAthlete(
   console.log(
     `[account.deleteAthlete] parent=${parentId} deleted athlete=${athleteId}`,
   );
+
+  // Sync Stripe subscription quantity to reflect the reduced athlete count.
+  // Non-blocking: a Stripe failure here must never prevent the deletion from
+  // completing. syncAthleteQuantity catches all errors internally.
+  void syncAthleteQuantity(parentId);
 
   // ---------------------------------------------------------------------------
   // Durable audit write (FV-14): best-effort. If this insert fails we log

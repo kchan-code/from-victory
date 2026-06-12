@@ -88,6 +88,25 @@ describe("Faq — verbatim answer spot-pins", () => {
     );
     expect(els.length).toBeGreaterThan(0);
   });
+
+  it("pricing answer (Q6) contains the sibling-discount sentence verbatim (FV-283)", () => {
+    render(<Faq />);
+    // Curator-final copy: first-athlete + additional-athlete pricing line.
+    const els = screen.getAllByText(
+      /\$5 a month, or \$49 a year for your first athlete — and \$3 a month, or \$29 a year, for each additional athlete in your household\./,
+    );
+    expect(els.length).toBeGreaterThan(0);
+  });
+
+  it("pricing answer (Q6) contains the household-generosity sentence verbatim (FV-283)", () => {
+    render(<Faq />);
+    // The FAQ copy uses a curly apostrophe (U+2019) in "that's"; match with a
+    // character class that accepts both straight and curly apostrophes.
+    const els = screen.getAllByText(
+      /A household with more athletes pays less per athlete: that['’]s by design, because the same training serves your whole family\./,
+    );
+    expect(els.length).toBeGreaterThan(0);
+  });
 });
 
 // ── 3. JSON-LD parses and its questions array length === rendered list ───────

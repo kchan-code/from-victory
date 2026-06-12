@@ -8,6 +8,7 @@ import { ageFromBirthdate } from "@/lib/age";
 import { ATHLETE_SYNTHETIC_EMAIL_DOMAIN } from "@/lib/auth/athlete-email";
 import { requireParent } from "@/lib/auth/guards";
 import { SUPPORTED_SPORTS } from "@/lib/sports";
+import { syncAthleteQuantity } from "@/lib/stripe/sync-athlete-quantity";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const MIN_ATHLETE_AGE = 13;
@@ -130,6 +131,11 @@ export async function createAthlete(
       error: "Could not link the athlete to your account. Please try again.",
     };
   }
+
+  // Sync Stripe subscription quantity to reflect the new athlete count.
+  // Non-blocking: a Stripe failure here must never prevent the athlete from
+  // being created. syncAthleteQuantity catches all errors internally.
+  void syncAthleteQuantity(parentId);
 
   redirect("/dashboard");
 }

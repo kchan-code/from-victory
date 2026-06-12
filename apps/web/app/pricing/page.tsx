@@ -13,14 +13,14 @@ const siteUrl = "https://www.fromvictoryapp.com";
 export const metadata: Metadata = {
   title: "Pricing · From Victory",
   description:
-    "14 days free, then $49 per year or $5 per month. One subscription covers your athlete. No ads, no data sold, cancel anytime.",
+    "14 days free, then $49/yr or $5/mo for your first athlete — $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
   openGraph: {
     type: "website",
     url: `${siteUrl}/pricing`,
     siteName: "From Victory",
     title: "Pricing · From Victory",
     description:
-      "14 days free, then $49 per year or $5 per month. No ads, no data sold, cancel anytime.",
+      "14 days free, then $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
     images: [
       {
         url: `${siteUrl}/from-victory-social-preview.jpg`,
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Pricing · From Victory",
     description:
-      "14 days free, then $49 per year or $5 per month. No ads, no data sold, cancel anytime.",
+      "14 days free, then $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
     images: [`${siteUrl}/from-victory-social-preview.jpg`],
   },
 };
@@ -52,7 +52,7 @@ const annualFeatures = [
 const faq: { q: string; a: string }[] = [
   {
     q: "What happens after the 14-day trial?",
-    a: "If you do nothing, your subscription starts at the rate you selected — $49/yr or $5/mo. We will not charge you before the trial period ends. You can cancel any time in your account settings before the trial ends and you will not be billed. The free trial applies to first-time subscribers.",
+    a: "If you do nothing, your subscription starts at the rate you selected — $49/yr or $5/mo for your first athlete — $29/yr or $3/mo for each additional. We will not charge you before the trial period ends. You can cancel any time in your account settings before the trial ends and you will not be billed. The free trial applies to first-time subscribers.",
   },
   {
     q: "What sports are available right now?",
@@ -145,8 +145,11 @@ export default function PricingPage() {
                     / year
                   </span>
                 </div>
-                <div className="font-body text-[13px] text-cream/50 mb-2">
-                  That&apos;s about $4 per month
+                <div className="font-body text-[13px] text-cream/50 mb-1">
+                  About $4/mo for your first athlete &mdash; $29/yr (~$2.40/mo) each additional
+                </div>
+                <div className="font-body text-[13px] text-cream/55 mb-2">
+                  $29/yr each additional athlete
                 </div>
                 <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-gold font-semibold mb-7">
                   14-day free trial
@@ -203,8 +206,11 @@ export default function PricingPage() {
                     / month
                   </span>
                 </div>
-                <div className="font-body text-[13px] text-cream/50 mb-2">
+                <div className="font-body text-[13px] text-cream/50 mb-1">
                   Billed monthly, $60 per year
+                </div>
+                <div className="font-body text-[13px] text-cream/55 mb-2">
+                  $3/mo each additional athlete
                 </div>
                 <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/50 font-semibold mb-7">
                   14-day free trial
