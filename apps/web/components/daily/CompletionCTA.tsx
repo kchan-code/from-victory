@@ -3,6 +3,7 @@
 import { useTransition, useState } from "react";
 
 import { RhythmRingAnimated } from "@/components/ui/RhythmRingAnimated";
+import { NextGamePrompt } from "@/components/daily/NextGamePrompt";
 import { completeDailySession } from "@/lib/actions/daily-session";
 import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
 
@@ -161,6 +162,15 @@ function CompletionMoment({
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-4 relative z-10">
           Saving…
         </p>
+      )}
+
+      {/* FV-240: optional one-tap "next game" prompt.
+          Shown once per completion moment; disappears on answer or if ignored.
+          Skippable — rendered as a quiet secondary block, not a wall. */}
+      {!isPending && (
+        <div className="relative z-10">
+          <NextGamePrompt />
+        </div>
       )}
     </div>
   );

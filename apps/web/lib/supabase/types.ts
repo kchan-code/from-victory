@@ -272,6 +272,12 @@ export type Database = {
           // 20260603120000_athlete_sport_selected_at.sql is applied to prod.
           // First-run signal: NULL until the athlete affirmatively picks a sport.
           sport_selected_at: string | null
+          // FV-240: coarse self-reported next-game date for athlete rows.
+          // NULL when "not sure" or cleared by the cron after a game-day send.
+          // NEVER surfaced in parent-facing queries (explicit column selects there).
+          // Regenerate via 'supabase gen types --linked' after migration
+          // 20260612030000_next_game_on.sql is applied to prod.
+          next_game_on: string | null
           updated_at: string
         }
         Insert: {
@@ -284,6 +290,8 @@ export type Database = {
           sport?: string | null
           // FV-33: see Row comment above.
           sport_selected_at?: string | null
+          // FV-240: see Row comment above.
+          next_game_on?: string | null
           updated_at?: string
         }
         Update: {
@@ -296,6 +304,8 @@ export type Database = {
           sport?: string | null
           // FV-33: see Row comment above.
           sport_selected_at?: string | null
+          // FV-240: see Row comment above.
+          next_game_on?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -528,6 +538,21 @@ export type Database = {
       // FV-164: SECURITY DEFINER RPC called by the cron route (service-role only).
       // Execute is revoked from anon + authenticated in the migration.
       due_push_reminders: {
+        Args: Record<string, never>
+        Returns: {
+          athlete_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          timezone: string
+        }[]
+      }
+      // FV-240: SECURITY DEFINER RPC called by the cron route (service-role only).
+      // Returns opted-in athletes whose next_game_on = today AND local hour 15-16
+      // AND not yet notified today. Execute is revoked from anon + authenticated.
+      // Regenerate via 'supabase gen types --linked' after migration
+      // 20260612030000_next_game_on.sql is applied to prod.
+      due_game_day_reminders: {
         Args: Record<string, never>
         Returns: {
           athlete_id: string
