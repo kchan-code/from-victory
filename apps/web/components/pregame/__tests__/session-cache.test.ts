@@ -107,6 +107,11 @@ describe("validatePregameSession — happy paths", () => {
     expect(result).toEqual(basketballNoRoleSession());
   });
 
+  it("accepts a valid golf session (FV-265 — sport in the runtime allowlist)", () => {
+    const session = { ...hockeySession(), sport: "golf" as const, role: "Ball-Striker" };
+    expect(validatePregameSession(session)).toEqual(session);
+  });
+
   it("accepts self-guided prayerStyle", () => {
     const session = { ...hockeySession(), prayerStyle: "self-guided" as const };
     expect(validatePregameSession(session)).toEqual(session);
