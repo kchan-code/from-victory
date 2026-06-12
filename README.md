@@ -45,6 +45,14 @@ supabase db push                  # apply all migrations
 supabase gen types typescript --local > apps/web/lib/supabase/database.types.ts
 ```
 
+**Production migrations are applied automatically:** merging a PR that touches
+`supabase/migrations/**` triggers the `db-migrate` workflow, which runs
+`supabase db push` against the linked project (FV-259 — closes the
+code-ahead-of-schema gap that caused the 2026-06-12 login outage). It needs the
+`SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD` repo secrets; if they are
+missing the job fails loudly and the push must be run manually. Regenerating
+types (`supabase gen types --linked`) remains a manual follow-up.
+
 For local Stripe webhook testing ([Stripe CLI](https://docs.stripe.com/stripe-cli) required):
 
 ```bash
