@@ -1707,10 +1707,10 @@ function CueWordVerseRow({ cueWord }: { cueWord: string }) {
 //   - anchor, self-talk, need/focus choices (private session personalisation)
 //   - age, team, location, any account metadata
 //
-// Feature-detection: navigator.share is checked at tap time (not on mount)
-// to avoid a false "not supported" on early render. Where navigator.share is
-// unavailable the affordance collapses to a quiet "Screenshot to share" hint
-// using sportConfig.cardShareHint — the existing sport-specific copy — so
+// Feature-detection: navigator.share is checked at render (the file is
+// "use client", so navigator is always defined post-hydration). Where
+// navigator.share is unavailable the affordance collapses to the quiet
+// sport-specific cardShareHint — the SINGLE place that copy renders — so
 // the athlete never sees a broken or disabled button.
 //
 // prefers-reduced-motion: the toggle uses a CSS transition (opacity + scale);
@@ -1758,16 +1758,15 @@ function ShareCardRow({
   }
 
   async function handleShare() {
+    // Inert during the brief "Shared" feedback window — aria-disabled keeps
+    // focus on the button (a disabled swap drops SR/keyboard focus to body).
+    if (shareState === "shared") return;
     const text = buildShareText(nameIncluded);
     try {
-      if (typeof navigator !== "undefined" && navigator.share) {
-        await navigator.share({ text });
-        setShareState("shared");
-      } else {
-        // navigator.share absent: the screenshot-hint row is already visible
-        // below; nothing to do here except surface a gentle fallback message.
-        setShareState("idle");
-      }
+      // The button only renders when navigator.share exists (supportsShare
+      // gates it below), so this call is always within the user gesture.
+      await navigator.share({ text });
+      setShareState("shared");
     } catch (err) {
       // AbortError = athlete dismissed the share sheet — not a real error.
       if (err instanceof Error && err.name === "AbortError") {
@@ -1788,9 +1787,10 @@ function ShareCardRow({
       {/* ── First-name toggle ────────────────────────────────────────────────
           Default OFF so no personal data is shared without explicit opt-in.
           Uses a <button> toggle (aria-pressed) so keyboard users can activate
-          it without reaching for a checkbox. Touch target is ≥44px via py-2.5. */}
+          it without reaching for a checkbox. The button itself is the 44px
+          tap zone; the visible 24px pill is a styled inner span. */}
       {firstName && (
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-1.5 flex items-center justify-between">
           <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.22em] text-cream/50">
             Include my name
           </span>
@@ -1800,33 +1800,47 @@ function ShareCardRow({
             aria-label={nameIncluded ? "Remove name from share" : "Add name to share"}
             data-testid="share-name-toggle"
             onClick={() => setNameIncluded((v) => !v)}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full border transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx ${
-              nameIncluded
-                ? "border-gold/60 bg-gold/20"
-                : "border-hairline bg-transparent"
-            }`}
+            className="flex min-h-[44px] min-w-[44px] items-center justify-end rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
           >
             <span
               aria-hidden="true"
-              className={`inline-block h-4 w-4 rounded-full transition-[transform,background-color] duration-fast motion-safe:transition-all ${
+              className={`relative inline-flex h-6 w-11 items-center rounded-full border transition-colors duration-fast ${
                 nameIncluded
-                  ? "translate-x-6 bg-gold"
-                  : "translate-x-1 bg-cream/30"
+                  ? "border-gold/60 bg-gold/20"
+                  : "border-hairline bg-transparent"
               }`}
-            />
+            >
+              <span
+                className={`inline-block h-4 w-4 rounded-full transition-[transform,background-color] duration-fast motion-safe:transition-all ${
+                  nameIncluded
+                    ? "translate-x-6 bg-gold"
+                    : "translate-x-1 bg-cream/30"
+                }`}
+              />
+            </span>
           </button>
         </div>
       )}
+
+      {/* SR-only share-state announcements — the visual label swap on the
+          (aria-disabled) button is never announced on its own (WCAG 4.1.3). */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {shareState === "shared"
+          ? "Card shared."
+          : shareState === "error"
+            ? "Share failed — try a screenshot instead."
+            : ""}
+      </div>
 
       {supportsShare ? (
         /* navigator.share available — show the share button */
         <button
           type="button"
           onClick={handleShare}
-          disabled={shareState === "shared"}
+          aria-disabled={shareState === "shared"}
           aria-label="Share your pre-game card"
           data-testid="share-card-btn"
-          className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] border border-gold/30 bg-gold/[0.06] px-4 py-3 font-mono text-[11px] uppercase tracking-[0.14em] text-gold transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.98] disabled:opacity-60"
+          className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] border border-gold/30 bg-gold/[0.06] px-4 py-3 font-mono text-[11px] uppercase tracking-[0.14em] text-gold transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.98] aria-disabled:opacity-60"
         >
           {/* Inline share icon — no external dep */}
           {shareState !== "shared" && (
@@ -1902,10 +1916,10 @@ export function PregameCardScreen({
         <Eyebrow className="!tracking-[0.26em] !text-gold">
           Your Pre-Game Card
         </Eyebrow>
-        {/* FV-175: sport-specific share hint from sportConfig.cardShareHint */}
-        <p className="mt-1.5 font-body text-[13px] text-cream/50">
-          {sportConfig.cardShareHint}
-        </p>
+        {/* The FV-175 sport-specific share hint now renders ONCE, inside the
+            card via ShareCardRow's no-native-share fallback — a duplicate
+            here broke the FV-175 verbatim tests and repeated the same line
+            twice on every non-share browser (PR #201 review 1a). */}
       </div>
 
       <div
@@ -1917,36 +1931,6 @@ export function PregameCardScreen({
             "0 30px 80px -20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(247,247,247,0.04)",
         }}
       >
-        {/* FV-239: Brand watermark — flame icon + "From Victory" wordmark.
-            Positioned bottom-right of the card, low opacity so it doesn't
-            compete with the cue word or verse. Visible in a screenshot
-            without dominating the composition. aria-hidden — purely
-            decorative; the "From Victory" text elsewhere on the card is
-            the accessible label. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute bottom-4 right-4 flex items-center gap-1.5 opacity-[0.18]"
-          data-testid="card-brand-watermark"
-        >
-          {/* Inline flame path extracted from public/mark-flame.svg.
-              viewBox shifted to crop just the flame shape. */}
-          <svg
-            width="16"
-            height="22"
-            viewBox="175 20 80 146"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M211.5,120c.68.86.9-.29,1.12-.64.73-1.13,1.21-2.77,1.98-4.01,9.42-15.33,27.5-24,32.41-42.35.67.09.88.68.97,1.27,1.88,11.35-.33,23.21-5.72,33.24-8.92,16.59-24.1,23.85-22.75,45.73.06,1.04,1.2,6.01.99,6.25-.72.84-.95-.42-1.14-.64-17.72-19.95-39.65-40.78-24.95-69.7,9.8-19.27,37-33.7,36.62-57.42-.02-1.17-1.28-6.04-1.03-6.24s1.09-.06,1.52.33c.71.64,3.91,6.11,4.56,7.33,7.21,13.59,7.32,27.02-.18,40.49-5.64,10.12-24.4,25.44-24.4,36.6,0,1.39-.3,9.37,0,9.75Z"
-              fill="#DFAF37"
-            />
-          </svg>
-          <span className="font-display text-[10px] font-extrabold uppercase tracking-[0.18em] text-gold">
-            From Victory
-          </span>
-        </div>
-
         <div className="mb-5 flex items-center justify-between">
           <div>
             <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.22em] text-cream/50">
@@ -2011,19 +1995,42 @@ export function PregameCardScreen({
             italic
           />
           {state.role && <CardRow label="Position" value={state.role} />}
-          {state.adversity && (
-            <CardRow
-              label="If it gets hard"
-              value={adversityLabelFor(sportConfig, state.role, state.adversity) ?? state.adversity}
-              bold
-            />
-          )}
+          {/* FV-239 AC: the adversity/hard-moment selection NEVER renders on
+              this card — the sanctioned share path is a screenshot of this
+              exact surface, and the hard moment is the athlete's private
+              mental-prep detail. The reset plan (anchor + self-talk) stays;
+              the named adversity does not (PR #201 review 1b). */}
         </div>
 
         <div className="mt-5 border-t border-hairline pt-3.5 text-center">
           <p className="m-0 font-display text-[22px] font-extrabold uppercase tracking-[0.06em] text-cream">
             Play From <span className="text-gold">Victory</span>.
           </p>
+        </div>
+
+        {/* FV-239: Brand watermark — flame + wordmark, IN FLOW under the
+            closing line (an absolute bottom-right placement collided with
+            the centered closing line at 375px). aria-hidden — decorative. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none mt-2.5 flex items-center justify-end gap-1.5 opacity-[0.18]"
+          data-testid="card-brand-watermark"
+        >
+          <svg
+            width="16"
+            height="22"
+            viewBox="175 20 80 146"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M211.5,120c.68.86.9-.29,1.12-.64.73-1.13,1.21-2.77,1.98-4.01,9.42-15.33,27.5-24,32.41-42.35.67.09.88.68.97,1.27,1.88,11.35-.33,23.21-5.72,33.24-8.92,16.59-24.1,23.85-22.75,45.73.06,1.04,1.2,6.01.99,6.25-.72.84-.95-.42-1.14-.64-17.72-19.95-39.65-40.78-24.95-69.7,9.8-19.27,37-33.7,36.62-57.42-.02-1.17-1.28-6.04-1.03-6.24s1.09-.06,1.52.33c.71.64,3.91,6.11,4.56,7.33,7.21,13.59,7.32,27.02-.18,40.49-5.64,10.12-24.4,25.44-24.4,36.6,0,1.39-.3,9.37,0,9.75Z"
+              fill="#DFAF37"
+            />
+          </svg>
+          <span className="font-display text-[10px] font-extrabold uppercase tracking-[0.18em] text-gold">
+            From Victory
+          </span>
         </div>
       </div>
 

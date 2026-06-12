@@ -309,6 +309,63 @@ describe("C. Privacy boundary — adversity never in the share composition", () 
     expect(payload?.text).not.toContain("bad penalty");
   });
 
+  it("adversity is NOT RENDERED anywhere on the card (the screenshot IS a share path — PR #201 review 1b)", () => {
+    render(
+      <PregameCardScreen
+        state={makeState({ adversity: "I take a bad penalty." })}
+        onQuick={noop}
+        onDone={noop}
+        sportConfig={HOCKEY_CONFIG}
+        athleteFirstName="Jordan"
+      />,
+    );
+    // The AC governs the rendered surface, not just the navigator.share
+    // payload: the sanctioned fallback share is a screenshot of this card.
+    expect(screen.queryByText(/bad penalty/i)).toBeNull();
+    expect(screen.queryByText(/if it gets hard/i)).toBeNull();
+  });
+
+  it("positivePlays slug is NOT in the share payload", async () => {
+    const shareSpy = vi.fn().mockResolvedValue(undefined);
+    installShare(shareSpy);
+
+    render(
+      <PregameCardScreen
+        state={makeState({ positivePlays: ["viz-forward-win-the-wall"] })}
+        onQuick={noop}
+        onDone={noop}
+        sportConfig={HOCKEY_CONFIG}
+        athleteFirstName="Jordan"
+      />,
+    );
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("share-card-btn"));
+    });
+
+    const payload = shareSpy.mock.calls[0]?.[0] as ShareData | undefined;
+    expect(payload?.text).not.toContain("viz-forward-win-the-wall");
+    expect(payload?.text).not.toContain("win-the-wall");
+  });
+
+  it("announces share success via the live region (WCAG 4.1.3)", async () => {
+    const shareSpy = vi.fn().mockResolvedValue(undefined);
+    installShare(shareSpy);
+
+    render(
+      <PregameCardScreen
+        state={makeState()}
+        onQuick={noop}
+        onDone={noop}
+        sportConfig={HOCKEY_CONFIG}
+        athleteFirstName="Jordan"
+      />,
+    );
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("share-card-btn"));
+    });
+    expect(screen.getByText("Card shared.")).toBeInTheDocument();
+  });
+
   it("anchor (reset anchor) is NOT in the share payload", async () => {
     const shareSpy = vi.fn().mockResolvedValue(undefined);
     installShare(shareSpy);
