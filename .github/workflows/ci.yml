@@ -105,7 +105,18 @@ jobs:
             exit 0
           fi
 
-          echo "Changed *.mp3 files:"
+          # FV-227: beds are NOT clips. MP3s under apps/web/public/audio/beds/
+          # do not require a MANIFEST_VERSION bump — they have their own path and
+          # cache route (/audio/beds/*) separate from the clips catalog. Strip them
+          # from the list before the guard check so the guard remains scoped to
+          # clip MP3s only (the correct semantic).
+          MP3_CHANGED=$(echo "$MP3_CHANGED" | grep -v '^apps/web/public/audio/beds/' || true)
+          if [ -z "$MP3_CHANGED" ]; then
+            echo "Only beds MP3s changed — manifest-version guard not applicable (beds are not clips)."
+            exit 0
+          fi
+
+          echo "Changed clip *.mp3 files:"
           echo "$MP3_CHANGED"
 
           # FV-142: clip files are content-addressed (<slug>.<hash8>.mp3).

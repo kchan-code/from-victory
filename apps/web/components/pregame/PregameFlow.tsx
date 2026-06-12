@@ -31,6 +31,7 @@ import {
   ResetAnchorScreen,
   ReviewScreen,
   SelfTalkScreen,
+  SoundBedScreen,
 } from "./screens-b";
 import {
   BottomBar,
@@ -50,6 +51,7 @@ import {
   writePregameSession,
   type PregameSessionCache,
 } from "@/lib/pregame/session-cache";
+import { readBedPreference } from "./audio/bed-preference";
 
 type Props = {
   athleteFirstName: string;
@@ -147,6 +149,12 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
       selfTalk: saved.selfTalk,
       cueWord: saved.cueWord,
       prayerStyle: saved.prayerStyle,
+      // bedId is a device-level preference stored in localStorage, not part
+      // of the session cache. "Run it like last time" skips the SoundBedScreen
+      // entirely (the Sound step is not in the rerun path), so SoundBedScreen's
+      // mount effect never fires. Read the preference directly here so the
+      // athlete's sound choice is honoured even when the screen is skipped.
+      bedId: readBedPreference(),
       audioCompleted: false,
     });
     fromSavedRef.current = true;
@@ -343,6 +351,8 @@ function ScreenSwitch({
       return <CueWordScreen state={state} set={set} sportConfig={sportConfig} />;
     case "prayerStyle":
       return <PrayerStyleScreen state={state} set={set} />;
+    case "soundBed":
+      return <SoundBedScreen state={state} set={set} />;
     case "review":
       return <ReviewScreen state={state} sportConfig={sportConfig} sport={sport} />;
     case "audio":

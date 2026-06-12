@@ -39,6 +39,20 @@ vi.mock("@/components/pregame/audio-playlist", () => ({
 
 vi.mock("@/components/pregame/audio/encode-wav", () => ({
   assembleWavBlob: () => new Blob(["wav"], { type: "audio/wav" }),
+  // FV-227: useClipPlayer now calls assembleWavBlobWithBed instead of
+  // assembleWavBlob. Stub it to return a minimal WAV Blob (same as above).
+  assembleWavBlobWithBed: () => new Blob(["wav"], { type: "audio/wav" }),
+}));
+
+// FV-227: mock the beds registry so getBed("still") returns a stable path
+// the fetch stub can intercept. Without this mock the test would need to know
+// the real content-addressed filename.
+vi.mock("@/components/pregame/audio/beds", () => ({
+  getBed: (id: string) =>
+    id === "still"
+      ? { id: "still", path: "/audio/beds/bed-still.test.mp3" }
+      : undefined,
+  BED_MIX_GAIN: 0.35,
 }));
 
 // A pregame combination that exercises the non-practice resolve branch.
@@ -46,6 +60,12 @@ const PREGAME_OPTS = {
   need: "Confidence",
   position: "Forward",
   adversity: "Benched in the third",
+} as const;
+
+// Same combination but with a bed selected (FV-227).
+const PREGAME_OPTS_WITH_BED = {
+  ...PREGAME_OPTS,
+  bedId: "still",
 } as const;
 
 // Drain the microtask queue so init()'s awaited (fake-timer-independent)
@@ -169,6 +189,55 @@ describe("useClipPlayer lie-fi timeout (FV-172)", () => {
     expect(result.current.ready).toBe(false);
     expect(result.current.error).toBeTruthy();
     expect(result.current.error).not.toBe("no template");
+  });
+
+  it("bed fetch that never resolves → ready still flips, session is voice-only (FV-227 regression)", async () => {
+    // Regression: before the BED_DEADLINE_MS guard, a connected-but-stalled
+    // bed fetch after the clip deadline had cleared would hang "Preparing your
+    // session…" forever, blocking setReady(true).
+    //
+    // Setup: clips resolve fast (manifest + arrayBuffer immediate), but the
+    // bed URL hangs until aborted. The 5 s bed deadline must abort the bed
+    // fetch and allow init() to fall through to setReady(true) (voice-only).
+    const fetchMock = vi.fn((url: string, init?: { signal?: AbortSignal }) => {
+      if (url.includes("manifest")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ clips: {} }),
+        } as unknown as Response);
+      }
+      if (url.includes("bed-still")) {
+        // Bed fetch hangs until aborted.
+        return hangingFetchUntilAbort(init);
+      }
+      // Clip fetch resolves immediately.
+      return Promise.resolve({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      } as unknown as Response);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { result } = renderHook(() => useClipPlayer(PREGAME_OPTS_WITH_BED));
+
+    // Drain microtasks so the clip path completes (manifest + clips fast).
+    await act(async () => {
+      await flushMicrotasks(30);
+    });
+
+    // Clips are done but the bed fetch is still hanging — not yet ready.
+    expect(result.current.error).toBeNull();
+    expect(result.current.ready).toBe(false);
+
+    // Advance past the ~5 s bed deadline → abort → voice-only fall-through.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5_000);
+      await flushMicrotasks(30);
+    });
+
+    // Session must be ready (voice-only); no error.
+    expect(result.current.error).toBeNull();
+    expect(result.current.ready).toBe(true);
   });
 
   it("does NOT spuriously time out a fast (cache-served) load: reaches ready and stays ready past the deadline", async () => {

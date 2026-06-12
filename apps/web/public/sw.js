@@ -183,6 +183,20 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // ---- 1a-ii. Music beds — cache-first in the SAME audio cache (FV-227) ----
+  //
+  // /audio/beds/*  — content-addressed ambient bed MP3s.
+  // These are public static assets (zero PII), same as clip files. They use
+  // the same AUDIO_CACHE (fv-audio-<MANIFEST_VERSION>) so offline bed files
+  // are co-located with clip files. No separate cache name or version bump
+  // needed — beds are not part of the clips catalog, so MANIFEST_VERSION is
+  // not incremented when beds change. The bed path exemption in ci.yml
+  // (audio-cache-bust job) enforces this separation.
+  if (url.pathname.startsWith("/audio/beds/")) {
+    event.respondWith(audioCacheFirst(request));
+    return;
+  }
+
   // ---- 1b. FV-107: Pregame shell — network-first, cache the PII-free shell ----
   //
   // /athlete/pregame is the ONLY /athlete/* path excluded from the all-network
@@ -213,9 +227,10 @@ self.addEventListener("fetch", (event) => {
   // /forgot-*       — auth flow pages
   // /reset-*        — auth flow pages
   // /subscribe*     — Stripe checkout / subscription flow
-  // /audio/*        — non-pregame audio, or audio paths that haven't been
-  //                   cached yet (the /audio/pregame/* branch above catches
-  //                   pregame; anything else falls through here).
+  // /audio/*        — non-pregame, non-beds audio paths fall through here.
+  //                   /audio/pregame/* is caught by branch 1a above.
+  //                   /audio/beds/* is caught by branch 1a-ii above.
+  //                   Anything else (future audio directories) falls through.
   if (
     url.pathname.startsWith("/api/") ||
     url.pathname.startsWith("/auth/") ||

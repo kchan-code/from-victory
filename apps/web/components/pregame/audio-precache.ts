@@ -43,6 +43,7 @@ import {
   resolvePlaylist,
   type ClipManifest,
 } from "./audio-playlist";
+import { getBed } from "./audio/beds";
 import type { Sport } from "./sport-registry";
 import type { PrayerStyle } from "./types";
 
@@ -73,6 +74,14 @@ export type PrecacheParams = {
    *  are reachable (the picks replace the flagship), so the warmed set must
    *  match what the session will actually play. Empty/undefined = flagship. */
   positivePlays?: string[] | null;
+  /**
+   * FV-227 — athlete-chosen music bed id (see BedId in audio/beds.ts for the
+   * full six-option catalog), or null for silence. When non-null, the bed's
+   * content-addressed MP3 is added to the
+   * reachable URL set so it is warmed alongside the clip files. Silence → no
+   * extra URL, no change to existing behaviour.
+   */
+  bedId?: string | null;
 };
 
 /** Live status returned by precache + check functions. */
@@ -174,6 +183,13 @@ async function resolveReachableUrls(
   const urls: string[] = [manifestSrc];
   for (const clip of resolved) {
     urls.push(clip.url);
+  }
+
+  // FV-227: if the athlete chose a bed, add its URL so it is warmed offline
+  // alongside the clip files. Silence (null/undefined) → no extra URL.
+  if (params.bedId) {
+    const bed = getBed(params.bedId);
+    if (bed) urls.push(bed.path);
   }
 
   return urls;
