@@ -93,7 +93,7 @@ export default async function PostgameModulePage({
           data-testid="postgame-module-article"
         >
           {/* Eyebrow */}
-          <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold/60 mb-4">
+          <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold/70 mb-4">
             {SCENARIO_EYEBROW[mod.scenario]}
           </p>
 
@@ -129,7 +129,7 @@ export default async function PostgameModulePage({
                 href={scriptureLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-5 flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-gold/60 hover:text-gold transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+                className="mt-5 flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-gold/70 hover:text-gold transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
                 data-testid="postgame-youversion-link"
               >
                 Read the full passage ↗
@@ -151,14 +151,14 @@ export default async function PostgameModulePage({
           aria-label="When you're ready"
           data-testid="postgame-forward-action"
         >
-          <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-cream/40 mb-4">
+          <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-cream/55 mb-4">
             When you&rsquo;re ready
           </p>
 
           {/* Tomorrow's reset — daily session link */}
           <Link
             href="/athlete/daily"
-            className="group flex items-center gap-3 rounded-xl border border-hairline bg-onyx px-4 py-3.5 no-underline transition-[border-color,transform] duration-fast ease-out hover:border-[rgba(223,175,55,0.35)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal mb-3"
+            className="group flex items-center gap-3 rounded-xl border border-hairline bg-onyx px-4 py-3.5 no-underline transition-[border-color,transform] duration-fast ease-out motion-reduce:transition-none hover:border-[rgba(223,175,55,0.35)] motion-safe:active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal mb-3"
             data-testid="postgame-daily-link"
           >
             <span
@@ -171,7 +171,7 @@ export default async function PostgameModulePage({
               <p className="font-heading font-semibold text-[14px] text-cream leading-snug">
                 Tomorrow&rsquo;s reset
               </p>
-              <p className="font-body text-[12px] text-cream/45 leading-snug mt-0.5">
+              <p className="font-body text-[12px] text-cream/55 leading-snug mt-0.5">
                 Daily training — read today&rsquo;s session.
               </p>
             </div>
@@ -188,7 +188,7 @@ export default async function PostgameModulePage({
               dead-end on non-phone devices. */}
           <a
             href="#crisis-footer"
-            className="group flex items-center gap-3 rounded-xl border border-hairline bg-onyx px-4 py-3.5 no-underline transition-[border-color,transform] duration-fast ease-out hover:border-[rgba(223,175,55,0.20)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+            className="group flex items-center gap-3 rounded-xl border border-hairline bg-onyx px-4 py-3.5 no-underline transition-[border-color,transform] duration-fast ease-out motion-reduce:transition-none hover:border-[rgba(223,175,55,0.20)] motion-safe:active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
             data-testid="postgame-talk-link"
           >
             <span
@@ -201,7 +201,7 @@ export default async function PostgameModulePage({
               <p className="font-heading font-semibold text-[14px] text-cream/80 leading-snug">
                 Talk to someone
               </p>
-              <p className="font-body text-[12px] text-cream/40 leading-snug mt-0.5">
+              <p className="font-body text-[12px] text-cream/55 leading-snug mt-0.5">
                 988 &mdash; free, confidential, 24/7.
               </p>
             </div>

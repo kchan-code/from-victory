@@ -5,7 +5,8 @@
 // tap-target cards. No sequencing, no gating, no tracking.
 //
 // If the athlete's sport has no modules (future sports not yet in the
-// registry), redirects to /athlete rather than rendering an empty page.
+// registry), 404s rather than rendering an empty page — the hub card is
+// hidden for those sports, so there is no in-app path here.
 
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -35,7 +36,7 @@ export default async function PostgamePickerPage() {
 
   const modules = modulesForSport(profile.sport);
 
-  // Future sport with no modules yet — redirect to hub rather than blank page.
+  // Future sport with no modules yet — 404 rather than a blank page.
   if (modules.length === 0) {
     notFound();
   }
@@ -88,7 +89,7 @@ export default async function PostgamePickerPage() {
               <li key={mod.slug}>
                 <Link
                   href={`/athlete/postgame/${mod.slug}`}
-                  className="group block rounded-2xl border border-hairline bg-charcoal no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.35)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+                  className="group block rounded-2xl border border-hairline bg-charcoal no-underline transition-[border-color,transform] duration-base ease-out motion-reduce:transition-none hover:border-[rgba(223,175,55,0.35)] motion-safe:active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
                   data-testid={`postgame-module-card-${mod.slug}`}
                 >
                   <div className="px-5 py-4 flex items-center gap-4">
@@ -99,13 +100,13 @@ export default async function PostgamePickerPage() {
                       <Icon name="book" size={20} color="var(--fv-gold)" />
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.16em] text-gold/55 mb-0.5">
+                      <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.16em] text-gold/70 mb-0.5">
                         {SCENARIO_EYEBROW[mod.scenario]}
                       </p>
                       <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[18px] leading-[1.15]">
                         {mod.title}
                       </p>
-                      <p className="font-mono text-[11px] text-cream/35 mt-0.5">
+                      <p className="font-mono text-[11px] text-cream/50 mt-0.5">
                         {mod.scriptureRef}
                       </p>
                     </div>

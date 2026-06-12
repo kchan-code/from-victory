@@ -267,7 +267,7 @@ export default async function AthleteHomePage() {
           {hasPostgameModules && (
             <Link
               href="/athlete/postgame"
-              className="group block rounded-2xl border border-[rgba(223,175,55,0.09)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.22)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+              className="group block rounded-2xl border border-[rgba(223,175,55,0.09)] no-underline transition-[border-color,transform] duration-base ease-out motion-reduce:transition-none hover:border-[rgba(223,175,55,0.22)] motion-safe:active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
               style={{
                 background:
                   "linear-gradient(180deg,rgba(223,175,55,0.02),rgba(223,175,55,0)),var(--bg-elev-1)",
@@ -282,7 +282,7 @@ export default async function AthleteHomePage() {
                   <Icon name="journal" size={20} color="var(--fv-gold)" />
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold/40 mb-0.5">
+                  <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold/70 mb-0.5">
                     After the game
                   </p>
                   <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[18px] leading-[1.15]">

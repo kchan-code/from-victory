@@ -29,7 +29,7 @@ export function CrisisFooter() {
           <p className="font-heading text-[13px] font-semibold text-cream/70">
             988 Suicide &amp; Crisis Lifeline
           </p>
-          <p className="mt-0.5 font-body text-[12px] text-cream/40">
+          <p className="mt-0.5 font-body text-[12px] text-cream/55">
             Free, confidential support for anyone in crisis. 24/7.
           </p>
           <a
@@ -44,7 +44,7 @@ export function CrisisFooter() {
           <p className="font-heading text-[13px] font-semibold text-cream/70">
             Crisis Text Line
           </p>
-          <p className="mt-0.5 font-body text-[12px] text-cream/40">
+          <p className="mt-0.5 font-body text-[12px] text-cream/55">
             Free, 24/7, text-based crisis support.
           </p>
           <a
@@ -59,14 +59,14 @@ export function CrisisFooter() {
           <p className="font-heading text-[13px] font-semibold text-cream/70">
             Talk to a trusted adult
           </p>
-          <p className="mt-0.5 font-body text-[12px] text-cream/40">
+          <p className="mt-0.5 font-body text-[12px] text-cream/55">
             A parent, coach, teacher, pastor, or counselor. You don&rsquo;t
             have to carry this alone.
           </p>
         </li>
       </ul>
 
-      <p className="mt-5 font-body text-[11px] leading-relaxed text-cream/30">
+      <p className="mt-5 font-body text-[11px] leading-relaxed text-cream/50">
         Nothing here is shared with your parent. From Victory is not a
         mental-health service. In an immediate emergency, call 911.
       </p>

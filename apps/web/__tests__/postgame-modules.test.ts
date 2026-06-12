@@ -6,7 +6,8 @@
 //   2. Scripture byte-pins: each SCRIPTURE_TEXT matches exact expected NIV
 //      strings (mirrors the FV-229 cue-word-verses.test.ts pattern).
 //   3. Body word-count ceiling ≤190 words per module (the format lock).
-//   4. No "kid"/"kiddo"/"youngster"/"young person" in any module or picker copy.
+//   4. No "kid"/"kiddo"/"youngster"/"young person" in any module copy
+//      (registry fields; page-level copy is reviewed, not scanned here).
 //   5. Protect-lines verbatim: "not impressed by the ones who shrug it off"
 //      (loss modules), "Don't fake being fine".
 //   6. modulesForSport: hockey athlete gets 3 modules; basketball athlete gets 3;
@@ -205,9 +206,9 @@ describe("Youth-pastor protect-lines", () => {
     expect(mod!.bodyMd).toContain("Don't fake being\nfine");
   });
 
-  it('hockey bad night contains "Then let it go" is NOT required — only the sports-psych exit rewrite is', () => {
+  it('hockey LOSS module keeps the sports-psych exit rewrite ("not asked to feel it forever")', () => {
     // sports-psychologist mandated the exit rewrite: "feel it tonight / not asked to feel it forever"
-    // This is in the LOSS modules, not the bad-night modules. Verify it:
+    // It lives in the LOSS modules (not the bad-night modules):
     const hockeyLoss = moduleBySlug("hockey-the-loss");
     expect(hockeyLoss!.bodyMd).toContain("You're not asked to feel it forever");
   });
