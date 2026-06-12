@@ -11,18 +11,20 @@ import { SvgIcon } from "./SvgIcon";
 import { submitWaitlist, type WaitlistActionState } from "@/lib/actions/waitlist";
 
 const ROLES = ["Athlete", "Parent", "Coach", "Other"] as const;
+// Hockey and Basketball are the two live sports (MVP). All others join a
+// per-sport waitlist. The display labels make this clear in the dropdown.
 const SPORTS = [
-  "Hockey",
-  "Soccer",
-  "Lacrosse",
-  "Football",
-  "Baseball",
-  "Basketball",
-  "Wrestling",
-  "Volleyball",
-  "Track & field",
-  "Tennis",
-  "Other",
+  { value: "Hockey", label: "Hockey — available now" },
+  { value: "Basketball", label: "Basketball — available now" },
+  { value: "Soccer", label: "Soccer — coming soon" },
+  { value: "Football", label: "Football — coming soon" },
+  { value: "Baseball", label: "Baseball — coming soon" },
+  { value: "Lacrosse", label: "Lacrosse — coming soon" },
+  { value: "Wrestling", label: "Wrestling — coming soon" },
+  { value: "Volleyball", label: "Volleyball — coming soon" },
+  { value: "Track & field", label: "Track & field — coming soon" },
+  { value: "Tennis", label: "Tennis — coming soon" },
+  { value: "Other", label: "Other" },
 ] as const;
 
 export function WaitlistForm() {
@@ -154,8 +156,8 @@ export function WaitlistForm() {
           className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[15px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18]"
         >
           {SPORTS.map((s) => (
-            <option key={s} value={s}>
-              {s}
+            <option key={s.value} value={s.value}>
+              {s.label}
             </option>
           ))}
         </select>

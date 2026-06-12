@@ -178,15 +178,15 @@ export function Hero() {
                     </div>
 
                     <div className="bg-charcoal border border-hairline rounded-[14px] px-3.5 py-3 flex items-center gap-3 mb-[18px]">
-                      <div className="w-9 h-9 rounded-[10px] bg-cobalt/[0.18] flex items-center justify-center text-cobalt-bright">
-                        <SvgIcon name="zap" size={16} />
+                      <div className="w-9 h-9 rounded-[10px] bg-gold/[0.08] flex items-center justify-center text-gold">
+                        <SvgIcon name="wind" size={16} />
                       </div>
                       <div className="flex-1">
                         <div className="font-heading font-semibold text-[13px] text-cream">
-                          Three-minute check-in
+                          Pre-practice lock in
                         </div>
                         <div className="font-body text-[11px] text-cream/50">
-                          Mood, one truth, one step.
+                          How you practice is how you play.
                         </div>
                       </div>
                       <SvgIcon

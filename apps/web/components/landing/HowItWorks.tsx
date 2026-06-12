@@ -14,8 +14,8 @@ const steps = [
   },
   {
     num: "03 · RESPOND",
-    name: "Pray and reflect.",
-    body: "A guided prayer, then honest journaling on pressure, mistakes, confidence, and discipline. Private to you.",
+    name: "Pray.",
+    body: "A guided prayer to close the session — spoken or silent, your choice. Bring what's on your mind.",
   },
   {
     num: "04 · CARRY",
@@ -37,9 +37,9 @@ export function HowItWorks() {
               A daily rhythm for the athlete&apos;s mind and spirit.
             </h2>
             <p className="fv-lede">
-              Breathe. Receive truth. Respond in prayer and reflection. Then
-              carry one cue into practice or game day. The same shape every day,
-              so it becomes a rhythm — not a reaction.
+              Breathe. Receive truth. Respond in prayer. Then carry one cue
+              into practice or game day. The same shape every day, so it
+              becomes a rhythm — not a reaction.
             </p>
           </div>
         </Reveal>
