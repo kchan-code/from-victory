@@ -147,18 +147,18 @@ export default async function ArticlePage({
           <div className="mx-auto max-w-[800px] px-5 sm:px-8">
             <Reveal>
               <div className="flex items-center gap-4 mb-7">
-                {/* Back link — AUTHORED label: */}
+                {/* Back link — AUTHORED label: cream/55 base meets WCAG AA; hover stays cream/70+ */}
                 <Link
                   href="/resources"
-                  className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/40 hover:text-cream/70 transition-colors duration-fast no-underline"
+                  className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 hover:text-cream/70 transition-colors duration-fast no-underline"
                 >
                   ← Resources
                 </Link>
                 <span className="text-cream/20" aria-hidden="true">
                   /
                 </span>
-                {/* Audience tag */}
-                <span className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/40">
+                {/* Audience tag — cream/55 matches back-link base */}
+                <span className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55">
                   {audienceLabel(article.audience)}
                 </span>
               </div>
@@ -202,10 +202,12 @@ export default async function ArticlePage({
         {others.length > 0 && (
           <section className="py-14 sm:py-20 border-t border-hairline">
             <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
-              {/* AUTHORED section label: */}
-              <p className="font-mono text-[10px] tracking-[0.20em] uppercase text-cream/40 font-semibold mb-7">
+              {/* AUTHORED section label: real <h2> for correct heading hierarchy
+                  (h1 article title → h2 "More resources" → h3 card titles).
+                  Visual styling kept identical to the old <p> label. */}
+              <h2 className="font-mono text-[10px] tracking-[0.20em] uppercase text-cream/55 font-semibold mb-7">
                 More resources
-              </p>
+              </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {others.map((rel) => (
                   <Reveal key={rel.slug}>
@@ -213,7 +215,8 @@ export default async function ArticlePage({
                       href={`/resources/${rel.slug}`}
                       className="group block bg-charcoal border border-hairline rounded-lg p-6 no-underline transition-colors duration-base ease-out hover:border-hairline-strong"
                     >
-                      <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-cream/35 font-semibold mb-3">
+                      {/* Eyebrow: cream/50 meets WCAG AA on charcoal at 10px bold */}
+                      <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-cream/50 font-semibold mb-3">
                         {audienceLabel(rel.audience)}
                       </div>
                       <h3 className="font-heading font-semibold text-[17px] leading-[1.3] text-cream tracking-[-0.005em] group-hover:text-gold transition-colors duration-fast">

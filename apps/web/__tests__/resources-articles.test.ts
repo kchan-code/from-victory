@@ -4,9 +4,11 @@
 //  - registry has exactly 5 slugs, all unique
 //  - every article has title / metaDescription (≤155 chars) / bodyMd
 //  - scripture byte-pins: exact NIV strings present in the right articles
-//  - "kid" scan: article 4 is parent-facing; flag if it appears in athlete-facing
+//  - "kid/kids/kiddo/youngster" scan: article 4 is parent-facing; flag if it appears in athlete-facing
+//  - whole-body sha256 fidelity pins (byte-verbatim curator copy)
 //  - not-therapy pins in article 5
 
+import { createHash } from "node:crypto";
 import { describe, it, expect } from "vitest";
 import {
   getAllArticles,
@@ -144,32 +146,74 @@ describe("scripture byte-pins", () => {
 // "kid" audience-language scan
 // ---------------------------------------------------------------------------
 
-describe('"kid" audience-language scan', () => {
-  it('athlete-facing articles (audience="athlete") do not contain \\bkid\\b', () => {
+// "kid/kids/kiddo/youngster" audience-language guard.
+// Regex catches singular "kid", plural "kids", "kiddo", and "youngster".
+const KID_RE = /\bkids?\b|kiddo|youngster/gi;
+
+describe('"kid/kids/kiddo/youngster" audience-language scan', () => {
+  it('athlete-facing articles (audience="athlete") do not contain kid/kids/kiddo/youngster', () => {
     const athleteArticles = getAllArticles().filter(
       (a) => a.audience === "athlete",
     );
     for (const a of athleteArticles) {
-      const matches = a.bodyMd.match(/\bkid\b/gi);
+      const matches = a.bodyMd.match(KID_RE);
       expect(
         matches,
-        `"kid" found in athlete-facing article "${a.slug}": ${JSON.stringify(matches)}`,
+        `kid/kids/kiddo/youngster found in athlete-facing article "${a.slug}": ${JSON.stringify(matches)}`,
       ).toBeNull();
     }
   });
 
   // Article 4 is parent-facing. "Most kids who get cut" appears in the body.
   // Per the audience table, parent-facing copy may use "kids" BUT the preferred
-  // terms are "your child"/"your athlete". This test documents the occurrence
-  // rather than blocking — see flag in build notes for KC's call.
-  it('article 4 (parent-facing) "kid" occurrence count — documents for KC review', () => {
+  // terms are "your child"/"your athlete". This test documents the 1 occurrence
+  // rather than blocking — flag for KC / content-curator to rewrite.
+  it('article 4 (parent-facing) "kids" occurrence count === 1 — documents for KC review', () => {
     const body = getArticleBySlug("when-your-athlete-gets-cut-a-parents-guide")!
       .bodyMd;
-    const matches = body.match(/\bkid\b/gi);
-    // Currently 1 occurrence: "Most kids who get cut" — flag but do not fail.
-    // If the curator rewrites this to "Most athletes who get cut", count becomes 0.
-    expect(matches?.length ?? 0).toBeLessThanOrEqual(2);
+    const matches = body.match(KID_RE);
+    // Currently exactly 1: "Most kids who get cut" — flag but do not fail.
+    // KC: ask content-curator to rewrite to "Most athletes who get cut" (count → 0).
+    expect(matches?.length ?? 0).toBe(1);
   });
+});
+
+// ---------------------------------------------------------------------------
+// Whole-body SHA-256 fidelity pins
+// ---------------------------------------------------------------------------
+//
+// These hashes pin the exact byte sequence of each article's bodyMd as
+// delivered by content review (2026-06-12).
+//
+// DO NOT edit the hash values without going back through content review.
+// Any bodyMd edit — even whitespace — is a regression against curator copy.
+//
+// byte-verbatim curator copy — any edit must go back through content review.
+
+describe("whole-body sha256 fidelity pins", () => {
+  const PINS: Record<string, string> = {
+    "bible-verses-for-athletes-before-a-game":
+      "394b9a6696fd9ea2e2bd8396bce990dd57943c527460f864b0fc4bca73539a84",
+    "pre-game-nerves-christian-athlete-routine":
+      "6503de4d9d38477b53d7846c846db789f2452f1f942336db2385a3b9f3ecf1c9",
+    "how-to-bounce-back-after-a-bad-game":
+      "ecec2b1ca13457c4457d674a08d3bfb5c367455a373fee2ff0de12b724488288",
+    "when-your-athlete-gets-cut-a-parents-guide":
+      "c7a9bc8238fbd09a9db83b6031c5164755fabc5102afc3c32cae9389245054b9",
+    "sports-psychology-and-faith-do-they-mix":
+      "f555804b7274d38308b5780a8969c802703be7bc8001f72ad575d14c1f88d8d7",
+  };
+
+  for (const [slug, expectedHash] of Object.entries(PINS)) {
+    it(`bodyMd sha256 matches pin for "${slug}"`, () => {
+      const body = getArticleBySlug(slug)!.bodyMd;
+      const actual = createHash("sha256").update(body).digest("hex");
+      expect(
+        actual,
+        `bodyMd for "${slug}" has been edited — hash mismatch. Any change must go back through content review.`,
+      ).toBe(expectedHash);
+    });
+  }
 });
 
 // ---------------------------------------------------------------------------

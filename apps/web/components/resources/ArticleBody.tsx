@@ -5,7 +5,7 @@
 // the curator-vetted source file. Never pass user-generated input.
 //
 // Handles exactly the constructs that appear in FV-238 article bodies:
-//   ### heading        → <h3>
+//   ### heading        → <h2> (visually styled like h3; axe heading-order fix)
 //   blank-line paragraphs → <p>
 //   > blockquote       → <blockquote>
 //   **bold**           → <strong>
@@ -26,6 +26,8 @@ import Link from "next/link";
 // Inline parser: bold, italic, links — left-to-right, non-overlapping.
 // ---------------------------------------------------------------------------
 
+// NOTE: ***bold-italic*** is unsupported — the regex matches bold first,
+// leaving a dangling leading/trailing *.
 export function parseInline(text: string): ReactNode[] {
   const nodes: ReactNode[] = [];
   // Match: **bold**, *italic*, [label](href)
@@ -93,7 +95,7 @@ export function parseInline(text: string): ReactNode[] {
 type ListItem = { text: string };
 
 type Block =
-  | { type: "heading"; level: 3; text: string }
+  | { type: "heading"; level: 2; text: string }
   | { type: "blockquote"; lines: string[] }
   | { type: "ul"; items: ListItem[] }
   | { type: "ol"; items: ListItem[] }
@@ -114,7 +116,7 @@ export function parseBlocks(markdown: string): Block[] {
 
     // ### heading
     if (line.startsWith("### ")) {
-      blocks.push({ type: "heading", level: 3, text: line.slice(4).trim() });
+      blocks.push({ type: "heading", level: 2, text: line.slice(4).trim() });
       i++;
       continue;
     }
@@ -188,13 +190,15 @@ export function ArticleBody({ markdown }: ArticleBodyProps) {
     <div className="space-y-6">
       {blocks.map((block, idx) => {
         if (block.type === "heading") {
+          // Emits <h2> so heading-order is h1→h2 (axe: heading-order).
+          // Visual styling is identical to the old <h3> — classes unchanged.
           return (
-            <h3
+            <h2
               key={idx}
               className="font-heading font-semibold text-cream text-[22px] sm:text-[24px] leading-snug tracking-[-0.01em] pt-4"
             >
               {parseInline(block.text)}
-            </h3>
+            </h2>
           );
         }
 

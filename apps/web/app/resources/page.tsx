@@ -100,8 +100,8 @@ export default function ResourcesPage() {
                   href={`/resources/${article.slug}`}
                   className="group block bg-onyx border border-hairline rounded-lg p-7 h-full no-underline transition-colors duration-base ease-out hover:border-hairline-strong"
                 >
-                  {/* Audience tag */}
-                  <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-cream/40 font-semibold mb-4">
+                  {/* Audience tag — cream/55 meets WCAG AA at 10px bold on onyx */}
+                  <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-cream/55 font-semibold mb-4">
                     {audienceLabel(article.audience)}
                   </div>
                   <h2 className="font-heading font-semibold text-[18px] leading-[1.25] text-cream tracking-[-0.005em] mb-3 group-hover:text-gold transition-colors duration-fast">
