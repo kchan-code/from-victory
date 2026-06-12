@@ -8,10 +8,10 @@ const productLinks = [
 ];
 
 const forLinks = [
-  { href: "#audiences", label: "Athletes" },
-  { href: "#audiences", label: "Parents" },
-  { href: "#audiences", label: "Coaches" },
-  { href: "#faith", label: "Faith foundation" },
+  { href: "/#how", label: "For the Athlete" },
+  { href: "/parents", label: "For Parents" },
+  { href: "/teams", label: "For Teams & Churches" },
+  { href: "/pricing", label: "Pricing" },
 ];
 
 const companyLinks = [
