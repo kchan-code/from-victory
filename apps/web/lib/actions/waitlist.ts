@@ -35,6 +35,21 @@ const WaitlistSchema = z.object({
   consent: z.literal("on", {
     message: "You need to agree to the Terms of Use and acknowledge the Privacy Policy.",
   }),
+  // Optional metadata from /teams page CTA — captured in the admin
+  // notification email so group-pricing requests are distinguishable.
+  // Not written to the DB; no schema migration needed.
+  source: z
+    .string()
+    .trim()
+    .max(50)
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : undefined)),
+  intent: z
+    .string()
+    .trim()
+    .max(50)
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : undefined)),
   // Honeypot. Real users leave this blank; bots fill every field.
   // Submissions with a non-empty value are silently accepted (no DB write,
   // no error surfaced) so bots get no feedback signal.
@@ -57,6 +72,8 @@ export async function submitWaitlist(
     sport: formData.get("sport"),
     note: formData.get("note") ?? undefined,
     consent: formData.get("consent") ?? undefined,
+    source: formData.get("source") ?? undefined,
+    intent: formData.get("intent") ?? undefined,
     website: formData.get("website") ?? "",
   };
 
@@ -112,6 +129,8 @@ export async function submitWaitlist(
       role: data.role,
       sport: data.sport,
       note: data.note ?? null,
+      source: data.source ?? null,
+      intent: data.intent ?? null,
     }).then((result) => {
       if (!result.ok) {
         console.warn("[waitlist] notification not sent:", result.reason);

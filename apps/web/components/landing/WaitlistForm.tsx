@@ -1,16 +1,28 @@
 // client: waitlist form. Submits to a Supabase-backed server action,
 // fires an admin notification email, and renders an idempotent success
 // state on duplicate submissions.
+//
+// Supports URL params for pre-filling from /teams CTA:
+//   ?role=coach&source=teams&intent=group-pricing
 "use client";
 
 import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FlameMark } from "@/components/ui";
 import { SvgIcon } from "./SvgIcon";
 import { submitWaitlist, type WaitlistActionState } from "@/lib/actions/waitlist";
 
 const ROLES = ["Athlete", "Parent", "Coach", "Other"] as const;
+
+// Display labels shown to the user — value submitted stays lowercase via the action.
+const ROLE_LABELS: Record<(typeof ROLES)[number], string> = {
+  Athlete: "Athlete",
+  Parent: "Parent",
+  Coach: "Coach / Ministry Leader",
+  Other: "Other",
+};
+
 // Hockey and Basketball are the two live sports (MVP). All others join a
 // per-sport waitlist. The display labels make this clear in the dropdown.
 const SPORTS = [
@@ -29,12 +41,50 @@ const SPORTS = [
   { value: "Other", label: "Other" },
 ] as const;
 
+const TEAMS_DEFAULT_NOTE =
+  "Interested in group pricing for a team, church, or sports ministry.";
+
+const TEAMS_NOTE_PLACEHOLDER =
+  "Example: I coach a 14U soccer team with 22 families, or I lead a church youth group with 40 sports families.";
+
 export function WaitlistForm() {
   const [state, formAction] = useFormState<WaitlistActionState, FormData>(
     submitWaitlist,
     null,
   );
   const [role, setRole] = useState<(typeof ROLES)[number]>("Athlete");
+  const [noteValue, setNoteValue] = useState("");
+  const [isTeamsSource, setIsTeamsSource] = useState(false);
+  const [hiddenSource, setHiddenSource] = useState("");
+  const [hiddenIntent, setHiddenIntent] = useState("");
+  const noteUserEdited = useRef(false);
+
+  // Read URL params after mount — avoids SSR/hydration mismatch
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paramRole = params.get("role");
+    const paramSource = params.get("source");
+    const paramIntent = params.get("intent");
+    const paramNote = params.get("note");
+
+    if (paramRole === "coach") setRole("Coach");
+
+    if (paramSource) setHiddenSource(paramSource);
+    if (paramIntent) setHiddenIntent(paramIntent);
+
+    if (paramSource === "teams") {
+      setIsTeamsSource(true);
+      if (!noteUserEdited.current) {
+        setNoteValue(paramNote ?? TEAMS_DEFAULT_NOTE);
+      }
+    } else if (paramNote && !noteUserEdited.current) {
+      setNoteValue(paramNote);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Reset note pre-fill when form resets (e.g. after a failed submit)
+  // The noteUserEdited ref prevents overwriting what the user typed.
 
   if (state?.ok) {
     return (
@@ -74,6 +124,24 @@ export function WaitlistForm() {
       noValidate
       className="bg-charcoal border border-hairline rounded-[24px] p-8"
     >
+      {/* Teams-source contextual banner */}
+      {isTeamsSource && (
+        <div
+          className="mb-5 rounded-[12px] px-4 py-3 flex items-start gap-3"
+          style={{
+            background: "rgba(223,175,55,0.07)",
+            border: "1px solid rgba(223,175,55,0.28)",
+          }}
+        >
+          <SvgIcon name="zap" size={14} className="text-gold flex-none mt-0.5" />
+          <p className="font-body text-[13px] leading-[1.5] text-cream/80 m-0">
+            <span className="text-gold font-semibold">Group pricing request.</span>{" "}
+            Submit the form and we&rsquo;ll follow up with options for your
+            team, church, or sports community.
+          </p>
+        </div>
+      )}
+
       <div className="flex items-center gap-2.5 mb-[22px]">
         <FlameMark size={16} />
         <span className="fv-eyebrow gold">Waitlist · Early access</span>
@@ -143,7 +211,7 @@ export function WaitlistForm() {
                   onChange={() => setRole(r)}
                   className="sr-only"
                 />
-                {r}
+                {ROLE_LABELS[r]}
               </label>
             );
           })}
@@ -165,15 +233,40 @@ export function WaitlistForm() {
         </select>
       </Field>
 
-      <Field id="w-note" label="Optional note">
+      <Field
+        id="w-note"
+        label="Optional note"
+        helper={
+          isTeamsSource
+            ? "You’re requesting group pricing. Tell us your organization, sport/community, and approximate number of athletes or families."
+            : undefined
+        }
+      >
         <textarea
           id="w-note"
           name="note"
-          placeholder="What are you hoping this helps with?"
+          placeholder={
+            isTeamsSource
+              ? TEAMS_NOTE_PLACEHOLDER
+              : "What are you hoping this helps with?"
+          }
           maxLength={1000}
+          value={noteValue}
+          onChange={(e) => {
+            noteUserEdited.current = true;
+            setNoteValue(e.target.value);
+          }}
           className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[15px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18] resize-y min-h-20"
         />
       </Field>
+
+      {/* Hidden metadata — captured in admin email notification */}
+      {hiddenSource && (
+        <input type="hidden" name="source" value={hiddenSource} />
+      )}
+      {hiddenIntent && (
+        <input type="hidden" name="intent" value={hiddenIntent} />
+      )}
 
       {/* Honeypot — hidden from sighted users + assistive tech.
           Real users leave it blank; bots fill it. */}
@@ -265,10 +358,12 @@ function SubmitButton() {
 function Field({
   id,
   label,
+  helper,
   children,
 }: {
   id: string;
   label: string;
+  helper?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -279,6 +374,11 @@ function Field({
       >
         {label}
       </label>
+      {helper && (
+        <p className="font-body text-[12px] text-cream/55 leading-snug m-0">
+          {helper}
+        </p>
+      )}
       {children}
     </div>
   );
