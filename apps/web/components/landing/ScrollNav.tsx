@@ -26,7 +26,7 @@ export function ScrollNav() {
           <a
             href="/"
             aria-label="From Victory home"
-            className="flex items-center gap-3 text-cream no-underline"
+            className="flex items-center gap-3 text-cream no-underline shrink-0"
           >
             <Image
               src="/logo-icon.svg"
@@ -36,16 +36,18 @@ export function ScrollNav() {
               className="block h-9 w-auto"
               priority
             />
+            {/* Wordmark hidden below sm — the icon mark alone at phone width
+                avoids crowding when both CTA pills must remain visible. */}
             <Image
               src="/logo-wordmark.svg"
               alt="From Victory"
               width={100}
               height={32}
-              className="block h-8 w-auto"
+              className="hidden sm:block h-8 w-auto"
               priority
             />
           </a>
-          <div className="flex-1 min-w-8 sm:min-w-12 md:min-w-16" aria-hidden />
+          <div className="flex-1 min-w-2 sm:min-w-12 md:min-w-16" aria-hidden />
           <div className="flex items-center gap-1.5 font-heading text-[14px]">
             <a
               href="/#how"
@@ -73,16 +75,16 @@ export function ScrollNav() {
             </Link>
             <Link
               href="/signin"
-              className="inline-flex items-center bg-transparent text-cream border border-hairline-strong hover:border-cream/50 font-heading font-semibold text-[13px] rounded-pill px-[18px] py-[11px] no-underline transition-colors duration-base ease-out"
+              className="inline-flex items-center whitespace-nowrap bg-transparent text-cream border border-hairline-strong hover:border-cream/50 font-heading font-semibold text-[13px] rounded-pill px-[14px] sm:px-[18px] py-[11px] no-underline transition-colors duration-base ease-out"
             >
               Sign in
             </Link>
             <a
               href="/#waitlist"
-              className="ml-2 inline-flex items-center gap-2 bg-gold text-onyx border border-gold font-heading font-semibold text-[13px] rounded-pill px-[18px] py-[11px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright"
+              className="ml-1.5 sm:ml-2 inline-flex items-center gap-1.5 sm:gap-2 whitespace-nowrap bg-gold text-onyx border border-gold font-heading font-semibold text-[13px] rounded-pill px-[12px] sm:px-[18px] py-[11px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright"
             >
               Join the waitlist
-              <SvgIcon name="arrow" size={14} />
+              <SvgIcon name="arrow" size={14} className="hidden sm:block" />
             </a>
           </div>
         </nav>

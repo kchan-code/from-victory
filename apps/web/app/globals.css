@@ -459,6 +459,67 @@ a:hover { color: var(--accent-hot); }
   .fv-ptier-formation  { top: 50%; width: 54%; }
   .fv-ptier-expression { top: 22%; width: 33%; }
 
+  /* ── Mobile pyramid: stacked blocks below sm (< 640px) ───────────────────
+     The SVG-overlay geometry doesn't work at phone width (~280px container):
+     trapezoids are too small and the absolutely-positioned tier labels
+     collide. Below sm we abandon the overlay and render tiers as normal-flow
+     stacked blocks with tapered widths to preserve the pyramid silhouette.
+     At sm+ the original absolute-overlay layout is fully restored. */
+  @media (max-width: 639px) {
+    .fv-pyramid {
+      aspect-ratio: unset;
+      display: flex;
+      /* DOM order is foundation → formation → expression (screen readers get
+         the foundation first); column-reverse puts EXPRESSION on top visually
+         so the silhouette tapers down to the widest gold Foundation block —
+         the pyramid metaphor, not an inverted one. */
+      flex-direction: column-reverse;
+      align-items: center;
+      gap: 0;
+      padding: 0;
+    }
+    /* Hide the decorative SVG — it's too small to read or add value at mobile.
+       aria-hidden is already set on the element in the component. */
+    .fv-pyramid-svg {
+      display: none;
+    }
+    /* Each tier becomes a full-width static block, centered. */
+    .fv-ptier {
+      position: static;
+      left: unset;
+      transform: none;
+      text-align: center;
+      pointer-events: auto;
+      padding: 16px 20px;
+      border-radius: 12px;
+    }
+    /* Tapered widths: expression (narrowest/top) → formation → foundation (full).
+       This recreates the pyramid silhouette in normal flow. */
+    .fv-ptier-expression {
+      width: 78%;
+      /* Subtle top border to echo the SVG polygon edge; no fill for the top tier */
+      border: 1px solid rgba(247,247,247,0.14);
+      border-bottom: none;
+      border-radius: 12px 12px 0 0;
+    }
+    .fv-ptier-formation {
+      width: 90%;
+      border: 1px solid rgba(247,247,247,0.20);
+      border-top: none;
+      border-bottom: none;
+    }
+    .fv-ptier-foundation {
+      width: 100%;
+      padding: 18px 20px;
+      /* Reuse the gold gradient feel from the SVG foundationFill */
+      background:
+        linear-gradient(180deg, rgba(223,175,55,0.12), rgba(223,175,55,0.04));
+      border: 1px solid rgba(223,175,55,0.50);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+    }
+  }
+
   /* App-preview horizontal scroll with snap */
   .fv-preview-scroll {
     display: flex;
