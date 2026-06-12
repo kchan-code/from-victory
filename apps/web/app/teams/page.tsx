@@ -13,7 +13,7 @@ const siteUrl = "https://www.fromvictoryapp.com";
 export const metadata: Metadata = {
   title: "For Teams & Churches · From Victory",
   description:
-    "Bring From Victory to your club, team, FCA chapter, or church youth group. Volume pricing via invoice — families redeem codes and onboard privately. No coach dashboards. No roster data.",
+    "Bring From Victory to your club, team, FCA chapter, or church youth group. Volume pricing via invoice — families onboard privately with their own accounts. No coach dashboards. No roster data.",
   openGraph: {
     type: "website",
     url: `${siteUrl}/teams`,
@@ -48,12 +48,12 @@ const howItWorks = [
   {
     num: "02",
     title: "Receive redemption codes",
-    body: "You get a set of single-use codes to distribute — one per family. You are handing out access, not managing accounts.",
+    body: "We'll set you up with codes to distribute as part of the pricing conversation. You are handing out access, not managing accounts.",
   },
   {
     num: "03",
     title: "Families onboard independently",
-    body: "Each parent redeems a code and creates their own account. From that point on, the family owns their setup, their data, and their athlete's privacy.",
+    body: "Each parent will redeem their code and create their own account. From that point on, the family owns their setup, their data, and their athlete's privacy.",
   },
   {
     num: "04",
@@ -68,8 +68,8 @@ const audiences = [
     icon: "zap" as const,
     label: "Club & AAA teams · Coaches",
     heading: "Give your players a mental-skills edge without taking on their data.",
-    body: "You invest in skating coaches, strength programs, and video review. Mental toughness is the layer that holds all of it together. From Victory gives athletes a daily practice for identity, focus, and resilience — without you ever touching a single athlete's account or training record. You hand out codes. They train.",
-    note: "No roster. No coach dashboard. No liability for athlete data.",
+    body: "You invest in skills coaches, strength programs, and video review. Mental toughness is the layer that holds all of it together. From Victory gives athletes a daily practice for identity, focus, and resilience — without you ever touching a single athlete's account or training record. You hand out access. They train.",
+    note: "No roster. No coach dashboard. No athlete data passing through you.",
   },
   {
     icon: "anchor" as const,
@@ -81,8 +81,8 @@ const audiences = [
   {
     icon: "book" as const,
     label: "Church youth groups · Youth pastors",
-    heading: "30 families, zero data liability on your end.",
-    body: "Offer this as a resource through your student ministry without becoming a data custodian for every athlete in your group. Each family creates their own account through their redemption code. Their athlete's training data — what they reflect on, what they name as a hard moment — stays entirely between them and the app. You gave them the tool. You don't hold their information.",
+    heading: "30 families — and their athletes' data never touches your systems.",
+    body: "Offer this as a resource through your student ministry without becoming a data custodian for every athlete in your group. Each family creates their own account. Their athlete's training data — what they train on, what they name as a hard moment — stays entirely between them and the app. You gave them the tool. You don't hold their information.",
     note: "Parents create accounts. Athletes train privately. No church database involved.",
   },
 ];
@@ -115,11 +115,11 @@ const athleteGets = [
 const privacyPoints = [
   {
     heading: "You distribute access. You don't see training.",
-    body: "Redemption codes give families a door in. Once they create their account, everything that happens inside it belongs to them — not to you, not to us.",
+    body: "Each family gets their own door in. Once they create their account, everything that happens inside it belongs to them — not to you, not to us.",
   },
   {
     heading: "No coach view. By design, not by accident.",
-    body: "There is no coach dashboard. There is no 'view team activity' screen. The architecture does not support reading another athlete's session, and it never will.",
+    body: "There is no coach dashboard. There is no 'view team activity' screen. The architecture does not support reading another athlete's session — by design, not by policy.",
   },
   {
     heading: "Athlete-first data model, full stop.",
@@ -150,10 +150,10 @@ export default function TeamsPage() {
             </h1>
             <p className="max-w-[52ch] mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
               Volume pricing for clubs, AAA teams, FCA chapters, and church
-              youth groups. You pay the invoice, distribute redemption codes,
-              and step back. Families onboard independently. Athletes train
-              privately. No roster. No coach dashboard. No liability for their
-              data.
+              youth groups. You pay one invoice, hand each family their own
+              way in, and step back. Families onboard independently. Athletes
+              train privately. No roster. No coach dashboard. Nothing of
+              theirs for you to hold.
             </p>
             <div className="flex flex-wrap gap-3">
               {/*
@@ -165,6 +165,7 @@ export default function TeamsPage() {
                */}
               <a
                 href="/#waitlist"
+                data-testid="teams-request-pricing-hero"
                 className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
               >
                 Request team pricing
@@ -177,7 +178,7 @@ export default function TeamsPage() {
                 See individual pricing
               </Link>
             </div>
-            <p className="mt-6 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/35 font-semibold">
+            <p className="mt-6 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/60 font-semibold">
               Select &ldquo;Coach&rdquo; role on the form &rarr; we&apos;ll follow up with volume options
             </p>
           </Reveal>
@@ -199,7 +200,7 @@ export default function TeamsPage() {
               <p className="fv-lede">
                 Most team-focused tools make you the data custodian for every
                 athlete in your program. From Victory works the other way: you
-                purchase seats and distribute codes, then the families own
+                cover the seats and hand families their own way in, then the families own
                 everything from there — accounts, data, deletion.
               </p>
             </div>
@@ -390,8 +391,8 @@ export default function TeamsPage() {
                   Team and group pricing is not self-serve yet — we size each
                   arrangement individually. There are no published per-seat
                   numbers here on purpose: the right structure depends on your
-                  group size and context. Use the form below to start a
-                  conversation.
+                  group size and context. Family access codes are issued as
+                  part of that conversation. Use the form below to start it.
                 </p>
               </div>
               <a
@@ -524,12 +525,13 @@ export default function TeamsPage() {
              */}
             <a
               href="/#waitlist"
+              data-testid="teams-request-pricing-final"
               className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-8 py-[20px] text-[17px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
             >
               Request team pricing
               <SvgIcon name="arrow" size={17} />
             </a>
-            <p className="mt-4 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/35 font-semibold">
+            <p className="mt-4 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/60 font-semibold">
               Select &ldquo;Coach&rdquo; role &rarr; we&apos;ll follow up with options
             </p>
           </Reveal>
