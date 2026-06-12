@@ -14,6 +14,7 @@ const forLinks = [
   { href: "/parents", label: "For Parents" },
   { href: "/teams", label: "For Teams & Churches" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/resources", label: "Resources" },
 ];
 
 const companyLinks = [
