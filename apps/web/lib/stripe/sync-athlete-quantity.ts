@@ -182,6 +182,28 @@ async function _syncAthleteQuantityInner(parentId: string): Promise<void> {
     return;
   }
 
+  // The MVP contract is exactly one item per subscription. If a second item
+  // ever appears, quantity would silently land on whichever item Stripe
+  // returns first — alert loudly instead of guessing.
+  if (stripeSub.items.data.length > 1) {
+    console.error(
+      `[stripe/sync-athlete-quantity] subscription has ${stripeSub.items.data.length} items, expected 1 (parent=${parentId} sub=${sub.stripe_subscription_id}) — updating item ${item.id} only`,
+    );
+    deliverInBackground(
+      notifyError(
+        "[stripe] syncAthleteQuantity multi-item subscription",
+        `expected 1 item, found ${stripeSub.items.data.length}; updated first item only`,
+        { parent_id: parentId, stripe_subscription_id: sub.stripe_subscription_id },
+      ),
+    );
+  }
+
+  // Same quantity → nothing to do. Skipping saves a Stripe write and the
+  // webhook noise of a no-op subscription.updated event.
+  if (item.quantity === quantity) {
+    return;
+  }
+
   // 4. Update the subscription item quantity.
   try {
     await stripe.subscriptionItems.update(item.id, { quantity });

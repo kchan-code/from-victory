@@ -97,8 +97,9 @@ export default async function DashboardPage() {
                 Start training today.
               </p>
               <p className="font-body text-cream/60 text-[13px] leading-relaxed">
-                Daily mental-toughness training with faith built in. One
-                subscription covers all your athletes.
+                Daily mental-toughness training with faith built in. From
+                $5/mo for your first athlete &mdash; each additional at a
+                discount.
               </p>
             </div>
             <Link

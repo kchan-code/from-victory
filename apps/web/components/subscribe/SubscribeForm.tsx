@@ -227,7 +227,8 @@ export function SubscribeForm({ trialEligible }: SubscribeFormProps) {
 
       {/* Value prop reminder */}
       <p className="font-body text-cream/50 text-[13px] leading-relaxed mb-7">
-        One subscription covers all your athletes.
+        Your first athlete is $5/mo or $49/yr &mdash; each additional
+        athlete is $3/mo or $29/yr.
       </p>
 
       {/* Inline error */}
