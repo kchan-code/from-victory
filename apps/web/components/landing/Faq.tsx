@@ -27,7 +27,7 @@ export const FAQ_ITEMS: FaqEntry[] = [
   },
   {
     q: "How much screen time is this?",
-    a: "Very little — and that’s intentional. The core is one daily training session, about five minutes. On game days, there’s an optional pregame audio session, also around five minutes. Some athletes add a short pre-practice or post-game read. That’s it. From Victory is built to be picked up, used, and put down — not scrolled. We’re after a daily rhythm, not another feed competing for your athlete’s attention.",
+    a: "Very little — and that’s intentional. The core is one daily training session, about five minutes. On game days, there’s an optional pregame audio session, also around five minutes. Some athletes add a short pre-practice read on practice days. That’s it. From Victory is built to be picked up, used, and put down — not scrolled. We’re after a daily rhythm, not another feed competing for your athlete’s attention.",
   },
   {
     q: "What does it cost, and can I cancel?",
@@ -67,7 +67,7 @@ export function Faq() {
 
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         <Reveal>
-          <SectionMeta num="07" label="Common questions" />
+          <SectionMeta num="06" label="Common questions" />
         </Reveal>
 
         <Reveal>
@@ -90,6 +90,7 @@ export function Faq() {
                     className="
                       flex items-center justify-between gap-4
                       py-[14px] cursor-pointer list-none
+                      [&::-webkit-details-marker]:hidden
                       font-heading font-semibold text-[17px] leading-[1.3]
                       text-cream tracking-[-0.005em]
                       focus-visible:outline-none focus-visible:ring-2

@@ -10,9 +10,9 @@ export function Founder() {
         <Reveal>
           <div className="max-w-[620px]">
             {/* Eyebrow */}
-            <div className="font-mono text-[11px] tracking-[0.20em] uppercase font-semibold text-gold mb-6">
+            <h2 className="font-mono text-[11px] tracking-[0.20em] uppercase font-semibold text-gold mb-6">
               Built by a hockey dad
-            </div>
+            </h2>
 
             {/* Body copy — verbatim from content-curator, DRAFT FOR KC */}
             <p

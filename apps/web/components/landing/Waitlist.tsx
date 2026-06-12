@@ -30,7 +30,7 @@ export function Waitlist() {
       <div className="fv-final-bg absolute inset-0 pointer-events-none" />
       <div className="relative mx-auto max-w-[1240px] px-5 sm:px-8">
         <Reveal>
-          <SectionMeta num="06" label="Join the early access list" />
+          <SectionMeta num="07" label="Join the early access list" />
         </Reveal>
 
         <div className="grid gap-12 lg:gap-16 items-center grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
