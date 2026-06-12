@@ -525,6 +525,18 @@ export default function PricingPage() {
                     </p>
                   </div>
                 ))}
+                {/* Cross-link to full FAQ on home page */}
+                <div className="pt-7">
+                  <p className="font-body text-[13.5px] text-cream/50 m-0">
+                    More questions about privacy, faith, and how the app works?{" "}
+                    <Link
+                      href="/#faq"
+                      className="text-cream/70 hover:text-cream underline underline-offset-2 transition-colors duration-fast ease-out"
+                    >
+                      See the full FAQ
+                    </Link>
+                  </p>
+                </div>
               </div>
             </div>
           </Reveal>

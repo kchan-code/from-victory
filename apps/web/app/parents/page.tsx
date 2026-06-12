@@ -356,6 +356,15 @@ export default function ParentsPage() {
                     See full pricing details
                   </Link>
                 </div>
+                <p className="mt-5 font-body text-[13.5px] text-cream/50 m-0">
+                  More questions?{" "}
+                  <Link
+                    href="/#faq"
+                    className="text-cream/70 hover:text-cream underline underline-offset-2 transition-colors duration-fast ease-out"
+                  >
+                    See our FAQ
+                  </Link>
+                </p>
               </div>
 
               <div
