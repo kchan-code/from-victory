@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
 import { useFormState } from "react-dom";
 
 import { claimPairing, type ClaimState } from "@/lib/actions/pairings";
+import { clearPregameSession } from "@/lib/pregame/session-cache";
 
 import { Field } from "./Field";
 import { SubmitButton } from "./SubmitButton";
@@ -15,6 +17,17 @@ type Props = {
 
 export function AthleteClaimForm({ code }: Props) {
   const [state, formAction] = useFormState(claimPairing, initialState);
+
+  // A pairing claim re-assigns this device to a (possibly different)
+  // athlete, and the claim redirect goes straight to /athlete — it never
+  // passes a ClearCacheOnMount surface. Clear the prior athlete's saved
+  // pregame setup here so their choices (adversity, self-talk) can't be
+  // shown to or restored by the new athlete (FV-223 privacy parity).
+  // fv_athlete_cache needs no equivalent: PregameClientShell overwrites it
+  // on the next visit.
+  useEffect(() => {
+    clearPregameSession();
+  }, []);
   const fieldError = (name: string) =>
     state && !state.ok && state.field === name ? state.error : undefined;
   const formError =

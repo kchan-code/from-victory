@@ -8,6 +8,7 @@ import {
   type AthleteSignInState,
 } from "@/lib/actions/pairings";
 import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
+import { clearPregameSession } from "@/lib/pregame/session-cache";
 
 import { Field } from "./Field";
 import { SubmitButton } from "./SubmitButton";
@@ -56,7 +57,12 @@ export function AthleteSignInForm({ firstName }: Props) {
       </p>
       <form
         action={forgetDevice}
-        onSubmit={clearAthleteCache}
+        onSubmit={() => {
+          // Synchronous belt-and-braces alongside the post-redirect
+          // ClearCacheOnMount clear — same treatment for both caches.
+          clearAthleteCache();
+          clearPregameSession();
+        }}
         className="mt-4 font-body text-[14px] text-cream/60 text-center"
       >
         <button

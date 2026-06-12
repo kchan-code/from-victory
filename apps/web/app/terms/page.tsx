@@ -560,6 +560,15 @@ export default function TermsPage() {
           Privacy →
         </Link>
       </div>
+
+      {/* NIV attribution — required by Biblica gratis-use terms as a gating
+          condition for the cue-word verse registry (FV-229). /55 keeps the
+          legally required notice above WCAG AA contrast at this size. */}
+      <p className="mt-6 pb-4 font-body text-[11px] leading-relaxed text-cream/55">
+        Scripture quotations taken from the Holy Bible, New International
+        Version®, NIV®. Copyright © 1973, 1978, 1984, 2011 by Biblica,
+        Inc.® Used by permission. All rights reserved worldwide.
+      </p>
     </main>
   );
 }

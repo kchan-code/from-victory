@@ -756,37 +756,43 @@ export function PracticeFlow({
         </div>
       )}
 
-      {view === "state-picker" && (
-        <StatePickerScreen
-          initialState={practiceState}
-          onContinue={handleStateContinue}
-        />
-      )}
-      {view === "focus-picker" && (
-        <FocusPickerScreen
-          initialFocus={focus}
-          onStart={handleFocusStart}
-          onBack={handleBackToState}
-          focusOptions={sportConfig.practiceFocusOptions}
-        />
-      )}
-      {view === "prayer-picker" && (
-        <PrayerPickerScreen
-          initialStyle={prayerStyle}
-          onContinue={handlePrayerContinue}
-          onBack={handleBackFromPrayer}
-        />
-      )}
-      {view === "session" && (
-        <PracticeSessionScreen
-          focus={focus}
-          practiceState={practiceState}
-          prayerStyle={prayerStyle}
-          onBack={handleBackToPrayer}
-          onDone={handleDone}
-          sport={sport}
-        />
-      )}
+      {/* key={view} remounts this wrapper on every screen transition so the
+          fv-step-in keyframe fires fresh on each new screen. flex-1 + flex-col
+          preserve the PregameShell flex layout. CSS-only; respects
+          prefers-reduced-motion (see globals.css). */}
+      <div key={view} className="animate-step-in flex flex-1 flex-col">
+        {view === "state-picker" && (
+          <StatePickerScreen
+            initialState={practiceState}
+            onContinue={handleStateContinue}
+          />
+        )}
+        {view === "focus-picker" && (
+          <FocusPickerScreen
+            initialFocus={focus}
+            onStart={handleFocusStart}
+            onBack={handleBackToState}
+            focusOptions={sportConfig.practiceFocusOptions}
+          />
+        )}
+        {view === "prayer-picker" && (
+          <PrayerPickerScreen
+            initialStyle={prayerStyle}
+            onContinue={handlePrayerContinue}
+            onBack={handleBackFromPrayer}
+          />
+        )}
+        {view === "session" && (
+          <PracticeSessionScreen
+            focus={focus}
+            practiceState={practiceState}
+            prayerStyle={prayerStyle}
+            onBack={handleBackToPrayer}
+            onDone={handleDone}
+            sport={sport}
+          />
+        )}
+      </div>
     </PregameShell>
   );
 }

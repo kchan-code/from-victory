@@ -6,13 +6,13 @@ import { WaitlistForm } from "./WaitlistForm";
 const bullets = [
   {
     icon: "flame" as const,
-    title: "First in line for early access",
-    body: "Invitations roll out as we open the app by sport.",
+    title: "Hockey and basketball — available now",
+    body: "The full app — daily training, pregame audio, pre-practice lock in — is live for hockey and basketball athletes.",
   },
   {
     icon: "book" as const,
-    title: "Shape the daily rhythm",
-    body: "Beta testers help us tune prompts, pacing, and pre-game flow.",
+    title: "Other sports — join the waitlist",
+    body: "Soccer, football, baseball, and more are coming sport-by-sport. Select your sport and we'll notify you when it's ready.",
   },
   {
     icon: "shield" as const,
@@ -39,9 +39,10 @@ export function Waitlist() {
               Start training from <em>secure identity.</em>
             </h2>
             <p className="fv-lede mb-8">
-              Join the early access list for From Victory and help shape the
-              first Christian athlete mindset training app built around daily
-              rhythm, Scripture, reflection, and game-day resilience.
+              Hockey and basketball are live now. If your sport isn&apos;t on
+              the list yet, join the waitlist and we&rsquo;ll reach out when it
+              launches. One app — built around daily rhythm, Scripture, and
+              game-day resilience.
             </p>
             <div className="flex flex-col gap-3.5">
               {bullets.map((b) => (

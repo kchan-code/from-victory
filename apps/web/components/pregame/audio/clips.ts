@@ -2755,6 +2755,224 @@ export const CLIP_PP_BB_FOCUS_BOX_OUT_EVERY_SHOT_SCRIPT: AudioScript = {
   ],
 };
 
+// ── Baseball pre-practice "Lock In" clips (FV-220) ───────────────────────────
+//
+// 1:1 vocab swaps onto the approved hockey/basketball pre-practice structure
+// (per the basketball FV-30 precedent: no new reframe — sports-psych gate not
+// needed). Swaps: shift/possession → at-bat/rep/inning; loose ball/contested
+// rebound/closeout → the ground ball in the hole / the backhand pick / the
+// two-strike at-bat; on-court calls → "I got it"/"two"/"cut two"/"back".
+// Audio rendering + manifest.practiceState.baseball tail = FV-95. Until then the
+// baseball practice tail fails open to the text timer in resolvePracticePlaylist.
+
+// ── Baseball OPENER B — pp-baseball-opener-get-to ────────────────────────────
+export const CLIP_PP_BASEBALL_OPENER_GET_TO_SCRIPT: AudioScript = {
+  slug: "pp-baseball-opener-get-to",
+  voice: "ash",
+  instructions: PRACTICE_GET_TO_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Be honest — you're not really feeling it today. That's allowed. You showed up anyway. That already counts.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Here's the thing nobody tells you: the feeling shows up after you move, not before. You don't wait to want it. You commit to the first rep, go full, and let the rest catch up.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Whatever you do, you do it with everything — for the Lord, not for a mood. The flat day counts to him exactly as much as the good one. He's not grading how you feel.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "And somewhere under the drag — a body that works, a game you actually love. That's real. Let it pull you. Not guilt. Just true.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "So don't try to fix the whole practice. Just win the first round in the cage. First ten minutes, full — feet moving, first to every ground ball.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "First rep. Go.",
+    },
+  ],
+};
+
+// ── Baseball Beat 2 — pp-baseball-name-standard ──────────────────────────────
+export const CLIP_PP_BASEBALL_NAME_STANDARD_SCRIPT: AudioScript = {
+  slug: "pp-baseball-name-standard",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Whatever you do here is what shows up when it's tight. The rep you give now is the at-bat you'll have with the game on the line. Your hands don't know the difference between a drill and the bottom of the seventh.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "So the bar today is simple. Full reps. Full compete. No coasting.",
+    },
+  ],
+};
+
+// ── Baseball Beat 3 — pp-baseball-goal-fusion (Duckworth goal-fusion) ─────────
+export const CLIP_PP_BASEBALL_GOAL_FUSION_SCRIPT: AudioScript = {
+  slug: "pp-baseball-goal-fusion",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "That drill you've run a thousand times — the boring one, nobody watching — you're not getting it over with. You're rehearsing the at-bat you actually want, early, while it's quiet.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "That ground ball in the hole, that backhand pick, that two-strike at-bat you'd rather skip — that's the one that decides a playoff game. Win it now, at practice, full every time, and the one with everything on the line is just one you've already done.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Not the perfect rep. The full one. That's all today asks.",
+    },
+  ],
+};
+
+// ── Baseball Beat 5 — pp-baseball-be-vocal ───────────────────────────────────
+export const CLIP_PP_BASEBALL_BE_VOCAL_SCRIPT: AudioScript = {
+  slug: "pp-baseball-be-vocal",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "One more thing nobody says out loud. Out there, talking is competing — calling for the ball, 'I got it,' 'two,' 'four's the play,' 'back' on the runner. Coaches notice who talks. But most players go quiet — not because they don't know the call. Because being loud feels like drawing eyes, sounding dumb, looking like you're trying too hard.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "That's the same trap. Going quiet is protecting how you look — and you already settled that. What they think of you isn't the scoreboard you're playing to.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "So talk. 'I'm here.' 'One out.' 'I got it.' Be the loud one. The players who run the field with their voice — call the cutoff, call the situation, talk every pitch — they're the ones coaches build around and hand the team to. Not because they asked for it. Because they were already doing the job.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "Quiet's the easy hide. Don't take it.",
+    },
+  ],
+};
+
+// ── Baseball Beat 6 — pp-baseball-see-it-go ──────────────────────────────────
+// Terminal send-off removed — the pre-practice session ends on the prayer clip
+// that follows this beat (mirrors hockey/basketball).
+export const CLIP_PP_BASEBALL_SEE_IT_GO_SCRIPT: AudioScript = {
+  slug: "pp-baseball-see-it-go",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "See one rep. You, full compete, that focus locked in, nothing saved for the bench.",
+    },
+    { type: "silence", durationSec: 1.5 },
+    {
+      type: "speech",
+      text: "A rep's going to go bad. Some will. That's information, not a verdict — read it, drop it, next rep.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "You're not out here to prove who you are. You already know.",
+    },
+  ],
+};
+
+// ── Baseball pre-practice focus presets — pp-baseball-focus-* ─────────────────
+// Single-phrase clips; slugs match BASEBALL_CONFIG.practiceFocusSlugs (FV-94).
+
+export const CLIP_PP_BASEBALL_FOCUS_RELENTLESS_SCRIPT: AudioScript = {
+  slug: "pp-baseball-focus-relentless",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [{ type: "speech", text: "Relentless." }],
+};
+
+export const CLIP_PP_BASEBALL_FOCUS_HUNGRY_SCRIPT: AudioScript = {
+  slug: "pp-baseball-focus-hungry",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [{ type: "speech", text: "Hungry." }],
+};
+
+export const CLIP_PP_BASEBALL_FOCUS_STAY_IN_THE_BOX_SCRIPT: AudioScript = {
+  slug: "pp-baseball-focus-stay-in-the-box",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [{ type: "speech", text: "Stay in the box." }],
+};
+
+export const CLIP_PP_BASEBALL_FOCUS_READ_THE_PITCH_SCRIPT: AudioScript = {
+  slug: "pp-baseball-focus-read-the-pitch",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [{ type: "speech", text: "Read the pitch." }],
+};
+
+export const CLIP_PP_BASEBALL_FOCUS_SOFT_HANDS_SCRIPT: AudioScript = {
+  slug: "pp-baseball-focus-soft-hands",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [{ type: "speech", text: "Soft hands." }],
+};
+
+export const CLIP_PP_BASEBALL_FOCUS_QUICK_FEET_SCRIPT: AudioScript = {
+  slug: "pp-baseball-focus-quick-feet",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [{ type: "speech", text: "Quick feet." }],
+};
+
+export const CLIP_PP_BASEBALL_FOCUS_ONE_PITCH_AT_A_TIME_SCRIPT: AudioScript = {
+  slug: "pp-baseball-focus-one-pitch-at-a-time",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [{ type: "speech", text: "One pitch at a time." }],
+};
+
 // ── Basketball VIZ clips — one per position (FV-115) ────────────────────────
 
 export const CLIP_VIZ_GUARD_SCRIPT: AudioScript = {
@@ -3872,6 +4090,19 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_PP_BB_FOCUS_HIT_THE_GLASS_SCRIPT,
   CLIP_PP_BB_FOCUS_SPRINT_EVERY_TRANSITION_SCRIPT,
   CLIP_PP_BB_FOCUS_BOX_OUT_EVERY_SHOT_SCRIPT,
+  // Baseball pre-practice "Lock In" clips (FV-220). Render = FV-95.
+  CLIP_PP_BASEBALL_OPENER_GET_TO_SCRIPT,
+  CLIP_PP_BASEBALL_NAME_STANDARD_SCRIPT,
+  CLIP_PP_BASEBALL_GOAL_FUSION_SCRIPT,
+  CLIP_PP_BASEBALL_BE_VOCAL_SCRIPT,
+  CLIP_PP_BASEBALL_SEE_IT_GO_SCRIPT,
+  CLIP_PP_BASEBALL_FOCUS_RELENTLESS_SCRIPT,
+  CLIP_PP_BASEBALL_FOCUS_HUNGRY_SCRIPT,
+  CLIP_PP_BASEBALL_FOCUS_STAY_IN_THE_BOX_SCRIPT,
+  CLIP_PP_BASEBALL_FOCUS_READ_THE_PITCH_SCRIPT,
+  CLIP_PP_BASEBALL_FOCUS_SOFT_HANDS_SCRIPT,
+  CLIP_PP_BASEBALL_FOCUS_QUICK_FEET_SCRIPT,
+  CLIP_PP_BASEBALL_FOCUS_ONE_PITCH_AT_A_TIME_SCRIPT,
   // Basketball pregame hard-moment cells (FV-30) — Guard (10)
   // NOTE: these full-session scripts remain in CLIP_SCRIPTS for the legacy
   // baked-cell render path. The FV-115 decomposed hm-bb-* clips (below) are

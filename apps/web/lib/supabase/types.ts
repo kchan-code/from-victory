@@ -425,6 +425,55 @@ export type Database = {
         }
         Relationships: []
       }
+      // FV-164: hand-added. Run `supabase db push` then
+      // `supabase gen types typescript --linked > apps/web/lib/supabase/types.ts`
+      // after the migration 20260612130000_push_subscriptions.sql is applied.
+      // One row per athlete (athlete_id PK); endpoint/p256dh/auth are device
+      // push keys — never log or expose to the client outside of the save action.
+      push_subscriptions: {
+        Row: {
+          athlete_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          reminder_hour: number
+          timezone: string
+          last_sent_on: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          reminder_hour: number
+          timezone: string
+          last_sent_on?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          endpoint?: string
+          p256dh?: string
+          auth?: string
+          reminder_hour?: number
+          timezone?: string
+          last_sent_on?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       waitlist_signups: {
         Row: {
           created_at: string
@@ -476,7 +525,18 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      // FV-164: SECURITY DEFINER RPC called by the cron route (service-role only).
+      // Execute is revoked from anon + authenticated in the migration.
+      due_push_reminders: {
+        Args: Record<string, never>
+        Returns: {
+          athlete_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          timezone: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

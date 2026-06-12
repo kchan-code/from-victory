@@ -2,6 +2,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { SvgIcon } from "./SvgIcon";
 
@@ -23,7 +24,7 @@ export function ScrollNav() {
           aria-label="Primary"
         >
           <a
-            href="#top"
+            href="/"
             aria-label="From Victory home"
             className="flex items-center gap-3 text-cream no-underline"
           >
@@ -47,31 +48,37 @@ export function ScrollNav() {
           <div className="flex-1 min-w-8 sm:min-w-12 md:min-w-16" aria-hidden />
           <div className="flex items-center gap-1.5 font-heading text-[14px]">
             <a
-              href="#how"
-              className="hidden sm:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
-            >
-              How it works
-            </a>
-            <a
-              href="#app"
-              className="hidden sm:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
-            >
-              The app
-            </a>
-            <a
-              href="#faith"
+              href="/#how"
               className="hidden md:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
             >
-              Faith
+              For the Athlete
             </a>
-            <a
+            <Link
+              href="/parents"
+              className="hidden md:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
+            >
+              For Parents
+            </Link>
+            <Link
+              href="/teams"
+              className="hidden lg:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
+            >
+              For Teams &amp; Churches
+            </Link>
+            <Link
+              href="/pricing"
+              className="hidden sm:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
+            >
+              Pricing
+            </Link>
+            <Link
               href="/signin"
               className="inline-flex items-center bg-transparent text-cream border border-hairline-strong hover:border-cream/50 font-heading font-semibold text-[13px] rounded-pill px-[18px] py-[11px] no-underline transition-colors duration-base ease-out"
             >
               Sign in
-            </a>
+            </Link>
             <a
-              href="#waitlist"
+              href="/#waitlist"
               className="ml-2 inline-flex items-center gap-2 bg-gold text-onyx border border-gold font-heading font-semibold text-[13px] rounded-pill px-[18px] py-[11px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright"
             >
               Join the waitlist
