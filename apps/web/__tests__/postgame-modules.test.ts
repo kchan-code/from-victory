@@ -415,6 +415,19 @@ describe("modulesForSport", () => {
     expect(scenarios.has("bad-game")).toBe(true);
     expect(scenarios.has("praise")).toBe(true);
   });
+
+  // Pins the picker-order UX contract from the modulesForSport JSDoc:
+  // the win LEADS (a good-night athlete finds theirs first) and "Praise
+  // Anyway" (praise on a hard night) TRAILS as the chosen-posture capstone.
+  // Membership/count tests alone would pass if a future edit reordered them.
+  it.each(["hockey", "basketball"] as const)(
+    "%s modules keep win-first, praise-last order",
+    (sport) => {
+      const mods = modulesForSport(sport);
+      expect(mods[0]!.scenario).toBe("win");
+      expect(mods[mods.length - 1]!.scenario).toBe("praise");
+    },
+  );
 });
 
 // ---------------------------------------------------------------------------
@@ -422,7 +435,7 @@ describe("modulesForSport", () => {
 // ---------------------------------------------------------------------------
 
 describe("moduleBySlug", () => {
-  it("resolves each of the 8 known slugs", () => {
+  it("resolves every known slug", () => {
     const slugs = POSTGAME_MODULES.map((m) => m.slug);
     for (const slug of slugs) {
       expect(
