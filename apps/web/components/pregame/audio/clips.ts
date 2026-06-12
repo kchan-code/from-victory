@@ -3180,7 +3180,9 @@ export const CLIP_PP_GOLF_FOCUS_TAKE_MY_MEDICINE_SCRIPT: AudioScript = {
   instructions: PP_COACH_INSTRUCTIONS,
   speed: 1.1,
   postFilter: CLIP_LOUDNORM_FILTER,
-  segments: [{ type: "speech", text: "Take your medicine." }],
+  // Spoken label verbatim (matches the other 6 focus clips + the
+  // GOLF_CONFIG.practiceFocusOptions "Take my medicine" label).
+  segments: [{ type: "speech", text: "Take my medicine." }],
 };
 
 export const CLIP_PP_GOLF_FOCUS_SPEED_ON_EVERY_PUTT_SCRIPT: AudioScript = {
