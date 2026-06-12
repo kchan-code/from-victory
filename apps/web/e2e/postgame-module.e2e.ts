@@ -79,7 +79,7 @@ test.describe("Post-game debrief module", () => {
         footer.getByText("988 Suicide & Crisis Lifeline"),
       ).toBeVisible();
       await expect(footer.locator('a[href="tel:988"]')).toBeVisible();
-      await expect(footer.locator('a[href^="sms:741741"]')).toBeVisible();
+      await expect(footer.locator('a[href="sms:741741?body=HOME"]')).toBeVisible();
     });
 
     test('the "When you\'re ready" box holds only the Tomorrow\'s reset link', async ({
