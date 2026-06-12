@@ -4,11 +4,12 @@
 // React 18 / Next 14 — uses react-dom's useFormState / useFormStatus,
 // NOT React 19's useActionState (undefined at runtime here).
 
+import Link from "next/link";
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
 import type { QuizActionState } from "@/lib/actions/athlete-quiz";
-import { FOCUS_AREA_KEYS, focusAreaLabelForSport } from "@/lib/quiz-config";
+import { FOCUS_AREA_KEYS, focusAreaLabel } from "@/lib/quiz-config";
 import type { FocusAreaKey } from "@/lib/quiz-config";
 import type { Sport } from "@/lib/sports";
 
@@ -17,7 +18,7 @@ import type { Sport } from "@/lib/sports";
 // ---------------------------------------------------------------------------
 
 interface PersonalizationQuizProps {
-  /** Sport of the athlete — drives position options and sport-specific labels. */
+  /** Sport of the athlete — drives position options. */
   sport: Sport;
   /** Roles for the sport from SPORT_REGISTRY.roles — undefined means no picker. */
   roles?: readonly string[];
@@ -36,8 +37,22 @@ interface PersonalizationQuizProps {
   ) => Promise<QuizActionState>;
   /** Label for the submit CTA button (default: "DONE"). */
   submitLabel?: string;
-  /** Called when the athlete taps back on the first step. */
-  onBack?: () => void;
+  /**
+   * href for the back navigation affordance rendered on the first step.
+   * Server pages pass a string (e.g. "/athlete/settings"); onboarding omits it.
+   * Renders a Next.js Link when present; renders nothing when absent.
+   * (Replaces the defunct onBack function prop — server components cannot pass
+   * callbacks; use href-based navigation instead.)
+   */
+  backHref?: string;
+  /**
+   * When true, the "skip" secondary CTA is labelled destructively
+   * ("Clear my answers" / "Clear position") rather than the onboarding
+   * "Skip for now" — so the athlete understands the action will null
+   * previously saved answers.
+   * Settings page passes isEditMode={true}; onboarding omits/passes false.
+   */
+  isEditMode?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -107,7 +122,7 @@ function OptionCard({
       onClick={onClick}
       className={[
         "flex min-h-[64px] w-full items-center gap-3 rounded-[12px] border px-4 py-3.5 text-left transition-colors duration-fast",
-        "active:scale-[0.98]",
+        "motion-safe:active:scale-[0.98]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx",
         active
           ? "border-gold/55 bg-gold/[0.06]"
@@ -134,10 +149,23 @@ function OptionCard({
 }
 
 // ---------------------------------------------------------------------------
-// BackButton
+// BackButton — renders as a Link (href) or button (onClick)
 // ---------------------------------------------------------------------------
 
-function BackButton({
+const BACK_BUTTON_CLASS =
+  "flex h-[44px] w-[44px] -m-[5px] items-center justify-center rounded-pill text-cream/70 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx hover:text-cream";
+
+function BackButtonLink({ label, href }: { label: string; href: string }) {
+  return (
+    <Link href={href} aria-label={label} className={BACK_BUTTON_CLASS}>
+      <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">
+        <ArrowLeftIcon />
+      </span>
+    </Link>
+  );
+}
+
+function BackButtonPress({
   label,
   onClick,
 }: {
@@ -149,7 +177,7 @@ function BackButton({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="flex h-[44px] w-[44px] -m-[5px] items-center justify-center rounded-pill text-cream/70 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx hover:text-cream"
+      className={BACK_BUTTON_CLASS}
     >
       <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">
         <ArrowLeftIcon />
@@ -175,7 +203,7 @@ function SubmitButton({ label = "DONE" }: { label?: string }) {
         "font-display font-extrabold uppercase tracking-[0.14em] text-[14px]",
         "px-[26px] py-4",
         "transition-transform duration-fast ease-out",
-        "active:scale-[0.97]",
+        "motion-safe:active:scale-[0.97]",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx",
         "disabled:opacity-70 disabled:cursor-not-allowed",
       ].join(" ")}
@@ -201,7 +229,7 @@ function ContinueButton({ onClick }: { onClick: () => void }) {
         "font-display font-extrabold uppercase tracking-[0.14em] text-[14px]",
         "px-[26px] py-4",
         "transition-transform duration-fast ease-out",
-        "active:scale-[0.97]",
+        "motion-safe:active:scale-[0.97]",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx",
       ].join(" ")}
     >
@@ -234,7 +262,8 @@ export default function PersonalizationQuiz({
   initialFocusArea = null,
   action,
   submitLabel = "DONE",
-  onBack,
+  backHref,
+  isEditMode = false,
 }: PersonalizationQuizProps) {
   const hasPositionStep = roles !== undefined && roles.length > 0;
 
@@ -261,7 +290,7 @@ export default function PersonalizationQuiz({
     return (
       <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[480px] flex-col bg-onyx text-cream">
         <div className="flex items-center px-5 pb-3 pt-[58px]">
-          {onBack && <BackButton label="Back" onClick={onBack} />}
+          {backHref && <BackButtonLink label="Back" href={backHref} />}
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 pb-[180px] pt-6">
@@ -306,7 +335,7 @@ export default function PersonalizationQuiz({
             }}
             className="mt-3 inline-flex w-full items-center justify-center rounded-[10px] border border-hairline bg-transparent px-[26px] py-3.5 font-heading text-[14px] font-semibold text-cream/40 transition-colors duration-fast ease-out hover:text-cream/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
           >
-            Skip for now
+            {isEditMode ? "Clear position" : "Skip for now"}
           </button>
         </div>
       </div>
@@ -319,12 +348,12 @@ export default function PersonalizationQuiz({
     <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[480px] flex-col bg-onyx text-cream">
       <div className="flex items-center px-5 pb-3 pt-[58px]">
         {hasPositionStep ? (
-          <BackButton
+          <BackButtonPress
             label="Back to position"
             onClick={() => setStep("position")}
           />
         ) : (
-          onBack && <BackButton label="Back" onClick={onBack} />
+          backHref && <BackButtonLink label="Back" href={backHref} />
         )}
       </div>
 
@@ -350,7 +379,7 @@ export default function PersonalizationQuiz({
             <OptionCard
               key={key}
               value={key}
-              label={focusAreaLabelForSport(key, sport)}
+              label={focusAreaLabel(key)}
               active={focusArea === key}
               testId={`quiz-focus-${key}`}
               onClick={() => setFocusArea(key)}
@@ -377,9 +406,12 @@ export default function PersonalizationQuiz({
         </form>
 
         {/*
-         * Skip form — submits with null focus_area (and whatever position was
-         * captured). A separate <form> keeps the skip path independent of the
-         * primary form's state and avoids JS timing issues with setFocusArea.
+         * Secondary CTA: in onboarding this is "Skip for now" (the fields are
+         * blank anyway). In edit/settings mode it is labelled "Clear my answers"
+         * to make the destructive intent explicit — the athlete understands this
+         * will null previously saved answers, not just skip a blank step.
+         * A separate <form> keeps this path independent of the primary form's
+         * state and avoids JS timing issues with setFocusArea.
          * Both forms target the same formAction — the server action receives
          * focus_area="" which it normalises to null.
          */}
@@ -391,7 +423,7 @@ export default function PersonalizationQuiz({
             data-testid="quiz-skip-focus-btn"
             className="mt-3 inline-flex w-full items-center justify-center rounded-[10px] border border-hairline bg-transparent px-[26px] py-3.5 font-heading text-[14px] font-semibold text-cream/40 transition-colors duration-fast ease-out hover:text-cream/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
           >
-            Skip for now
+            {isEditMode ? "Clear my answers" : "Skip for now"}
           </button>
         </form>
       </div>

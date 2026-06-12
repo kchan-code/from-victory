@@ -1,21 +1,16 @@
 /**
  * FV-228 — Athlete personalization quiz configuration.
  *
- * Defines the 5 focus-area options, their DB-stored keys, sport-aware display
- * labels, and the Daily hub card subtitle variants shown after the quiz is set.
+ * Defines the 5 focus-area options, their DB-stored keys, and the Daily hub
+ * card subtitle variants shown after the quiz is set.
  *
  * Design principles:
  *   - Enum keys stored in DB (CHECK constraint in 20260613010000 migration).
- *   - Sport-aware labels: "nerves" reads differently before a game vs. before a
- *     practice — but the stored key is always the same, so sport-switches don't
- *     invalidate stored data.
  *   - Subtitles are Mentor voice: affirming participation, never shame.
  *     They describe what the app is built FOR, not what is broken IN the athlete.
  *   - No gamification framing — no streaks, no scores, no identity statements
  *     beyond the brand spine.
  */
-
-import type { Sport } from "@/lib/sports";
 
 // ---------------------------------------------------------------------------
 // Focus area enum
@@ -36,7 +31,7 @@ export function isFocusAreaKey(value: string | null | undefined): value is Focus
 }
 
 // ---------------------------------------------------------------------------
-// Display labels — sport-neutral for settings; the quiz uses sport-specific labels.
+// Display labels — sport-neutral; all sports use the same quiz labels.
 // ---------------------------------------------------------------------------
 
 export const FOCUS_AREA_LABELS: Record<FocusAreaKey, string> = {
@@ -48,25 +43,13 @@ export const FOCUS_AREA_LABELS: Record<FocusAreaKey, string> = {
 };
 
 /**
- * Sport-specific display labels for the quiz screen. Most labels are
- * sport-neutral; "nerves" and "bouncing-back" get sport-specific wording
- * so hockey and basketball athletes see their own language.
+ * Returns the display label for a focus area key.
+ * All labels are sport-neutral — the quiz reads correctly across hockey,
+ * basketball, and future sports without per-sport branching.
+ * (FV-228 review: the original per-sport switch returned identical strings
+ * for every branch — the scaffolding was dead code and has been removed.)
  */
-export function focusAreaLabelForSport(key: FocusAreaKey, sport: Sport): string {
-  if (key === "nerves") {
-    switch (sport) {
-      case "hockey":     return "Nerves before games";
-      case "basketball": return "Nerves before games";
-      default:           return "Nerves before games";
-    }
-  }
-  if (key === "bouncing-back") {
-    switch (sport) {
-      case "hockey":     return "Bouncing back from mistakes";
-      case "basketball": return "Bouncing back from mistakes";
-      default:           return "Bouncing back from mistakes";
-    }
-  }
+export function focusAreaLabel(key: FocusAreaKey): string {
   return FOCUS_AREA_LABELS[key];
 }
 
@@ -122,6 +105,9 @@ export const FOCUS_AREA_TO_NEED: Record<FocusAreaKey, string> = {
 /**
  * Returns the pregame NeedToday default for a given focus_area, or null
  * (no pre-selection) if the focus area is not set or not mappable.
+ *
+ * TODO FV-253: consumed by the pregame Today's Focus default — wire this into
+ * the pregame setup flow to pre-select the athlete's mapped need on first open.
  */
 export function pregameNeedDefault(focusArea: string | null | undefined): string | null {
   if (!focusArea || !isFocusAreaKey(focusArea)) return null;

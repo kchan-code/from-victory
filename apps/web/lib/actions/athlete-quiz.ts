@@ -7,16 +7,27 @@ import { z } from "zod";
 import { requireAthlete } from "@/lib/auth/guards";
 import { FOCUS_AREA_KEYS } from "@/lib/quiz-config";
 import { createClient } from "@/lib/supabase/server";
+import {
+  getSportConfig,
+} from "@/components/pregame/sport-registry";
+import type { Sport as RegistrySport } from "@/components/pregame/sport-registry";
+import type { Sport } from "@/lib/sports";
 
 // ---------------------------------------------------------------------------
 // Shared validation
 //
-// position: optional text — checked against allowed DB values. NULL / undefined
-// is accepted (athlete skipped position step or sport has no roles).
-// focus_area: enum of the 5 quiz values, optional (skippable).
+// position: validated against the athlete's OWN sport's roles (from
+// SPORT_REGISTRY via getSportConfig). This prevents a hockey athlete from
+// persisting "Guard" via a crafted request. The sport is read from the
+// athlete's own authenticated session (requireAthlete returns it) — no
+// client-supplied sport value is trusted.
 //
-// Source-of-truth: the DB CHECK constraint in migration 20260613010000.
-// The Zod schema mirrors it so validation is caught before any DB write.
+// DB CHECK constraint (migration 20260613010000) is the cross-sport union
+// backstop: it must duplicate all literal role names (SQL cannot reference
+// TS constants), but the application-layer narrowing here prevents cross-sport
+// writes before the DB ever sees them.
+//
+// focus_area: enum of the 5 quiz values, optional (skippable).
 //
 // SECURITY NOTE: both fields are derived from the athlete's own session via
 // requireAthlete() — we never accept an explicit user ID from client input.
@@ -24,25 +35,31 @@ import { createClient } from "@/lib/supabase/server";
 // only UPDATE their own row. No service-client bypass needed here.
 // ---------------------------------------------------------------------------
 
-const ALLOWED_POSITIONS = [
-  // Hockey
-  "Forward", "Defense", "Goalie",
-  // Basketball
-  "Guard", "Wing", "Big",
-  // Baseball (v2)
-  "Pitcher", "Catcher", "Infield", "Outfield",
-] as const;
+/**
+ * Build a per-sport QuizSchema that validates position against the sport's own
+ * roles. If the sport has no roles (roles is undefined/empty), position is
+ * accepted as null/undefined only.
+ */
+function buildQuizSchema(sport: Sport) {
+  const config = getSportConfig(sport as RegistrySport);
+  const sportRoles = config.roles;
 
-const QuizSchema = z.object({
-  position: z
-    .enum(ALLOWED_POSITIONS, { error: "Invalid position." })
-    .nullable()
-    .optional(),
-  focus_area: z
-    .enum(FOCUS_AREA_KEYS, { error: "Invalid focus area." })
-    .nullable()
-    .optional(),
-});
+  const positionSchema =
+    sportRoles && sportRoles.length > 0
+      ? z
+          .enum(sportRoles as [string, ...string[]], { error: "Invalid position." })
+          .nullable()
+          .optional()
+      : z.null().optional();
+
+  return z.object({
+    position: positionSchema,
+    focus_area: z
+      .enum(FOCUS_AREA_KEYS, { error: "Invalid focus area." })
+      .nullable()
+      .optional(),
+  });
+}
 
 // ---------------------------------------------------------------------------
 // State type
@@ -69,9 +86,13 @@ export async function savePersonalizationQuiz(
   _prev: QuizActionState,
   formData: FormData,
 ): Promise<QuizActionState> {
+  // requireAthlete first: sport drives per-sport position validation.
+  const { userId, profile } = await requireAthlete();
+
   const rawPosition   = formData.get("position");
   const rawFocusArea  = formData.get("focus_area");
 
+  const QuizSchema = buildQuizSchema(profile.sport);
   const parsed = QuizSchema.safeParse({
     // formData.get() returns null when field absent — normalize to undefined
     // so Zod's optional() treats it as skipped rather than an invalid value.
@@ -86,7 +107,6 @@ export async function savePersonalizationQuiz(
     };
   }
 
-  const { userId } = await requireAthlete();
   const supabase = createClient();
 
   // Both forms (primary submit + skip) always include both hidden inputs.
@@ -120,9 +140,13 @@ export async function updatePersonalizationQuiz(
   _prev: QuizActionState,
   formData: FormData,
 ): Promise<QuizActionState> {
+  // requireAthlete first: sport drives per-sport position validation.
+  const { userId, profile } = await requireAthlete();
+
   const rawPosition  = formData.get("position");
   const rawFocusArea = formData.get("focus_area");
 
+  const QuizSchema = buildQuizSchema(profile.sport);
   const parsed = QuizSchema.safeParse({
     position:   rawPosition  === null ? undefined : rawPosition  || null,
     focus_area: rawFocusArea === null ? undefined : rawFocusArea || null,
@@ -135,7 +159,6 @@ export async function updatePersonalizationQuiz(
     };
   }
 
-  const { userId } = await requireAthlete();
   const supabase = createClient();
 
   const { error } = await supabase

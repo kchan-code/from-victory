@@ -39,6 +39,8 @@ export default async function TrainingFocusSettingsPage() {
       initialFocusArea={profile.focus_area}
       action={updatePersonalizationQuiz}
       submitLabel="SAVE"
+      backHref="/athlete/settings"
+      isEditMode
     />
   );
 }

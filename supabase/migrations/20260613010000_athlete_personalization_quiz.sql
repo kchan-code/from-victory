@@ -95,11 +95,15 @@ comment on column public.profiles.position is
   'Athlete self-identified sport position (role), e.g. "Forward", "Guard", "Pitcher". '
   'NULL when the athlete skipped the onboarding quiz or plays a sport with no role picker. '
   'Constrained to the union of all MVP sport roles via CHECK. '
-  'NEVER surfaced on the parent dashboard — athlete-private framing of their own training.';
+  'Athlete-private by application convention: no parent-facing query selects this column. '
+  'Row-level access via profiles_parent_select_linked_athlete still permits a parent JWT '
+  'to reach it via direct PostgREST; FV-251 tracks DB-level column hardening.';
 
 comment on column public.profiles.focus_area is
   'Athlete self-identified mental training focus from the onboarding quiz. '
   'One of: nerves | bouncing-back | confidence | focus | faith. '
   'NULL when skipped. Used to personalise the Daily hub card subtitle and the '
   'pregame "Today''s Focus" default. '
-  'NEVER surfaced on the parent dashboard — athlete-private framing of their own training.';
+  'Athlete-private by application convention: no parent-facing query selects this column. '
+  'Row-level access via profiles_parent_select_linked_athlete still permits a parent JWT '
+  'to reach it via direct PostgREST; FV-251 tracks DB-level column hardening.';

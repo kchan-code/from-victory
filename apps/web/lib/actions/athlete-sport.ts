@@ -102,6 +102,11 @@ export async function selectSport(
 // sport-agnostic rows (athlete_sessions) that this update never touches, so
 // place-in-the-arc and participation history carry over by construction. Do not
 // add any progress/rhythm mutation here.
+//
+// EXCEPTION (FV-228): position is sport-specific — "Forward" (hockey) is not a
+// valid position in basketball. After a sport switch, position is nulled so the
+// pregame personalization default (FV-253) does not pre-seed a stale cross-sport
+// role. focus_area is sport-agnostic and is intentionally preserved.
 // ---------------------------------------------------------------------------
 
 export async function changeSport(
@@ -126,6 +131,9 @@ export async function changeSport(
     .update({
       sport: parsed.data.sport,
       sport_selected_at: new Date().toISOString(),
+      // Null out position on sport switch — position is sport-specific.
+      // focus_area is sport-agnostic and preserved (FV-228).
+      position: null,
     })
     .eq("id", userId);
 
