@@ -248,6 +248,7 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
           onQuick={() => setView({ kind: "quick" })}
           onDone={goStart}
           sportConfig={sportConfig}
+          athleteFirstName={athleteFirstName || undefined}
         />
         {athleteFirstName && (
           <p className="px-5 pb-2 pt-1 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-cream/50">

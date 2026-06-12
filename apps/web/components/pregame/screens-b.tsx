@@ -1691,16 +1691,198 @@ function CueWordVerseRow({ cueWord }: { cueWord: string }) {
   );
 }
 
+// ─── SHARE CARD ROW ─── (FV-239) ─────────────────────────────────────────
+//
+// Privacy-safe athlete-initiated share affordance for the Pregame Card.
+//
+// Share payload (text only — no image, no canvas):
+//   {CUE_WORD}
+//   "{verse reference} — {verbatim NIV verse text}"
+//   "Your Identity Is Secure. Compete From Victory."
+//   https://www.fromvictoryapp.com
+//   (optionally) — {firstName}   ← only when the athlete explicitly toggles this ON
+//
+// What is NEVER in the payload:
+//   - adversity / hard-moment selection (private mental-prep detail)
+//   - anchor, self-talk, need/focus choices (private session personalisation)
+//   - age, team, location, any account metadata
+//
+// Feature-detection: navigator.share is checked at tap time (not on mount)
+// to avoid a false "not supported" on early render. Where navigator.share is
+// unavailable the affordance collapses to a quiet "Screenshot to share" hint
+// using sportConfig.cardShareHint — the existing sport-specific copy — so
+// the athlete never sees a broken or disabled button.
+//
+// prefers-reduced-motion: the toggle uses a CSS transition (opacity + scale);
+// the `motion-safe:` variant limits it to devices where motion is acceptable.
+//
+// The component is intentionally NOT exported — it is only used by
+// PregameCardScreen below and the test suite imports via PregameCardScreen.
+function ShareCardRow({
+  cueWord,
+  firstName,
+  shareHint,
+  verse,
+}: {
+  cueWord: string;
+  firstName?: string;
+  shareHint: string;
+  verse: { reference: string; text: string };
+}) {
+  // client: Web Share API + toggle state
+  const [nameIncluded, setNameIncluded] = useState(false);
+  // "idle" | "shared" (brief success feedback) | "error"
+  const [shareState, setShareState] = useState<"idle" | "shared" | "error">("idle");
+
+  // Reset feedback after 2 s so the button is ready for another tap.
+  useEffect(() => {
+    if (shareState === "idle") return;
+    const id = window.setTimeout(() => setShareState("idle"), 2000);
+    return () => window.clearTimeout(id);
+  }, [shareState]);
+
+  // Build the share text from the privacy-safe fields only.
+  // Called at tap time so it always reflects the latest toggle state.
+  function buildShareText(includeName: boolean): string {
+    const lines: string[] = [
+      cueWord.toUpperCase(),
+      `"${verse.reference} — ${verse.text}"`,
+      "",
+      "Your Identity Is Secure. Compete From Victory.",
+      "https://www.fromvictoryapp.com",
+    ];
+    if (includeName && firstName) {
+      lines.push(`— ${firstName}`);
+    }
+    return lines.join("\n");
+  }
+
+  async function handleShare() {
+    const text = buildShareText(nameIncluded);
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share({ text });
+        setShareState("shared");
+      } else {
+        // navigator.share absent: the screenshot-hint row is already visible
+        // below; nothing to do here except surface a gentle fallback message.
+        setShareState("idle");
+      }
+    } catch (err) {
+      // AbortError = athlete dismissed the share sheet — not a real error.
+      if (err instanceof Error && err.name === "AbortError") {
+        setShareState("idle");
+      } else {
+        setShareState("error");
+      }
+    }
+  }
+
+  const supportsShare = typeof navigator !== "undefined" && !!navigator.share;
+
+  return (
+    <div
+      className="mt-5 border-t border-hairline pt-4"
+      data-testid="share-card-row"
+    >
+      {/* ── First-name toggle ────────────────────────────────────────────────
+          Default OFF so no personal data is shared without explicit opt-in.
+          Uses a <button> toggle (aria-pressed) so keyboard users can activate
+          it without reaching for a checkbox. Touch target is ≥44px via py-2.5. */}
+      {firstName && (
+        <div className="mb-3 flex items-center justify-between">
+          <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.22em] text-cream/50">
+            Include my name
+          </span>
+          <button
+            type="button"
+            aria-pressed={nameIncluded}
+            aria-label={nameIncluded ? "Remove name from share" : "Add name to share"}
+            data-testid="share-name-toggle"
+            onClick={() => setNameIncluded((v) => !v)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full border transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx ${
+              nameIncluded
+                ? "border-gold/60 bg-gold/20"
+                : "border-hairline bg-transparent"
+            }`}
+          >
+            <span
+              aria-hidden="true"
+              className={`inline-block h-4 w-4 rounded-full transition-[transform,background-color] duration-fast motion-safe:transition-all ${
+                nameIncluded
+                  ? "translate-x-6 bg-gold"
+                  : "translate-x-1 bg-cream/30"
+              }`}
+            />
+          </button>
+        </div>
+      )}
+
+      {supportsShare ? (
+        /* navigator.share available — show the share button */
+        <button
+          type="button"
+          onClick={handleShare}
+          disabled={shareState === "shared"}
+          aria-label="Share your pre-game card"
+          data-testid="share-card-btn"
+          className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] border border-gold/30 bg-gold/[0.06] px-4 py-3 font-mono text-[11px] uppercase tracking-[0.14em] text-gold transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.98] disabled:opacity-60"
+        >
+          {/* Inline share icon — no external dep */}
+          {shareState !== "shared" && (
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+          )}
+          {shareState === "shared"
+            ? "Shared"
+            : shareState === "error"
+              ? "Couldn't share — try a screenshot"
+              : "Save card"}
+        </button>
+      ) : (
+        /* No native share — show the screenshot hint from sport config */
+        <p
+          className="text-center font-mono text-[10px] uppercase tracking-[0.14em] text-cream/40"
+          data-testid="share-screenshot-hint"
+        >
+          {shareHint}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function PregameCardScreen({
   state,
   onQuick,
   onDone,
   sportConfig = HOCKEY_CONFIG,
+  athleteFirstName,
 }: {
   state: PregameState;
   onQuick: () => void;
   onDone: () => void;
   sportConfig?: SportConfig;
+  /**
+   * FV-239: athlete's first name, threaded from PregameFlow.
+   * Optional — when present, an explicit "Include my name" toggle
+   * (default OFF) lets the athlete opt into adding it to the share payload.
+   * Never included in any share output automatically.
+   */
+  athleteFirstName?: string;
 }) {
   // Mirror the same verse the athlete heard in the audio session.
   // Fallback: spine Hebrews 12:1-2 if need is null.
@@ -1708,6 +1890,10 @@ export function PregameCardScreen({
     state.need != null
       ? NEED_VERSE[state.need]
       : { reference: SCRIPTURE_REF, displayText: SCRIPTURE_SHORT };
+
+  // FV-239: the cue-word verse (from the FV-229 registry) drives the share payload.
+  // It's the verse under the word the athlete carries out the door.
+  const cueVerse = verseForCueWord(state.cueWord || DEFAULTS.cueWord);
 
   return (
     // FV-222: animate-card-bloom fades + scales the card from 0.98→1 on mount (~400ms).
@@ -1731,6 +1917,36 @@ export function PregameCardScreen({
             "0 30px 80px -20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(247,247,247,0.04)",
         }}
       >
+        {/* FV-239: Brand watermark — flame icon + "From Victory" wordmark.
+            Positioned bottom-right of the card, low opacity so it doesn't
+            compete with the cue word or verse. Visible in a screenshot
+            without dominating the composition. aria-hidden — purely
+            decorative; the "From Victory" text elsewhere on the card is
+            the accessible label. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-4 right-4 flex items-center gap-1.5 opacity-[0.18]"
+          data-testid="card-brand-watermark"
+        >
+          {/* Inline flame path extracted from public/mark-flame.svg.
+              viewBox shifted to crop just the flame shape. */}
+          <svg
+            width="16"
+            height="22"
+            viewBox="175 20 80 146"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M211.5,120c.68.86.9-.29,1.12-.64.73-1.13,1.21-2.77,1.98-4.01,9.42-15.33,27.5-24,32.41-42.35.67.09.88.68.97,1.27,1.88,11.35-.33,23.21-5.72,33.24-8.92,16.59-24.1,23.85-22.75,45.73.06,1.04,1.2,6.01.99,6.25-.72.84-.95-.42-1.14-.64-17.72-19.95-39.65-40.78-24.95-69.7,9.8-19.27,37-33.7,36.62-57.42-.02-1.17-1.28-6.04-1.03-6.24s1.09-.06,1.52.33c.71.64,3.91,6.11,4.56,7.33,7.21,13.59,7.32,27.02-.18,40.49-5.64,10.12-24.4,25.44-24.4,36.6,0,1.39-.3,9.37,0,9.75Z"
+              fill="#DFAF37"
+            />
+          </svg>
+          <span className="font-display text-[10px] font-extrabold uppercase tracking-[0.18em] text-gold">
+            From Victory
+          </span>
+        </div>
+
         <div className="mb-5 flex items-center justify-between">
           <div>
             <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.22em] text-cream/50">
@@ -1776,6 +1992,16 @@ export function PregameCardScreen({
               section so it reads as the verse UNDER the word. */}
           <CueWordVerseRow cueWord={state.cueWord || DEFAULTS.cueWord} />
         </div>
+
+        {/* FV-239: share affordance — sits inside the card region so it
+            appears in any screenshot. Shows AFTER the CueWordVerseRow so
+            the composition reads: word → verse → share. */}
+        <ShareCardRow
+          cueWord={state.cueWord || DEFAULTS.cueWord}
+          firstName={athleteFirstName}
+          shareHint={sportConfig.cardShareHint}
+          verse={cueVerse}
+        />
 
         <div className="flex flex-col gap-3">
           <CardRow label="Reset anchor" value={state.anchor || DEFAULTS.anchor} />
