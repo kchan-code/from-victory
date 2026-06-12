@@ -181,11 +181,15 @@ jobs:
       - name: Detect lockfile
         id: lockfile
         run: |
-          if [ -f apps/web/package-lock.json ]; then
+          # Root-lockfile workspace (workspaces: ["apps/*"]) — the lockfile and
+          # `npm ci` live at the repo root, matching the build/test/lint jobs.
+          # The old apps/web/package-lock.json path never existed, so every E2E
+          # step silently skipped and the job reported a false-green (FV-168).
+          if [ -f package-lock.json ]; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "No apps/web/package-lock.json — skipping E2E."
+            echo "No package-lock.json — repo not yet bootstrapped. Skipping E2E."
           fi
 
       - uses: actions/setup-node@v4
@@ -193,12 +197,11 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         if: steps.lockfile.outputs.exists == 'true'
         run: npm ci
-        working-directory: apps/web
 
       # ------------------------------------------------------------------
       # Supabase local stack
@@ -237,7 +240,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('apps/web/package-lock.json') }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright browsers
         if: steps.lockfile.outputs.exists == 'true' && steps.pw-cache.outputs.cache-hit != 'true'
