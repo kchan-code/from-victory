@@ -26,14 +26,14 @@ export function ScrollNav() {
           <a
             href="/"
             aria-label="From Victory home"
-            className="flex items-center gap-3 text-cream no-underline shrink-0"
+            className="flex items-center gap-3 md:gap-4 text-cream no-underline shrink-0"
           >
             <Image
               src="/logo-icon.svg"
               alt=""
               width={64}
               height={36}
-              className="block h-9 w-auto"
+              className="block h-9 md:h-12 w-auto"
               priority
             />
             {/* Wordmark hidden below sm — the icon mark alone at phone width
@@ -43,7 +43,7 @@ export function ScrollNav() {
               alt="From Victory"
               width={100}
               height={32}
-              className="hidden sm:block h-8 w-auto"
+              className="hidden sm:block h-8 md:h-11 w-auto"
               priority
             />
           </a>
