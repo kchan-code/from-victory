@@ -93,10 +93,14 @@ export function PairingPanel({ athleteId, athleteFirstName }: Props) {
   return (
     <form action={formAction}>
       <input type="hidden" name="athlete_id" value={athleteId} />
-      <p className="font-body text-cream/80 text-[15px] leading-relaxed mb-5">
+      <p className="font-body text-cream/80 text-[15px] leading-relaxed mb-3">
         Generate a one-time link for {athleteFirstName}. Open it on their
         phone to set their password and pair the device. Links expire in
         24 hours.
+      </p>
+      <p className="font-body text-cream/55 text-[13px] leading-relaxed mb-5">
+        Have your athlete add From Victory to their Home Screen — reminders
+        on iPhone need it.
       </p>
       {errorMsg ? (
         <p

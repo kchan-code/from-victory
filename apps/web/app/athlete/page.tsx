@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AthleteBottomNav } from "@/components/athlete/BottomNav";
+import InstallPrompt from "@/components/athlete/InstallPrompt";
 import { Icon, RhythmRing } from "@/components/ui";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireAthlete } from "@/lib/auth/guards";
@@ -255,6 +256,12 @@ export default async function AthleteHomePage() {
             </div>
           </Link>
         </section>
+
+        {/* ── Install nudge (FV-258) — below cards so the Daily/Pregame/
+            Pre-Practice CTAs are never displaced from the 375px fold.
+            The mb-4 gap lives on the card's own root, so dismissed/installed
+            users see no phantom whitespace here. ── */}
+        <InstallPrompt />
       </div>
 
       {/* ── Bottom nav (no tab active on the hub) ── */}
