@@ -68,6 +68,14 @@ function isIos(): boolean {
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
+/** Returns true when the device is Android. Desktop Chrome/Edge also fires
+ *  beforeinstallprompt but we only want to show the card on actual Android
+ *  handsets — desktop users have no "Home Screen" concept. */
+function isAndroid(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Android/i.test(navigator.userAgent);
+}
+
 /** Returns true when the dismiss flag is set in localStorage. */
 function isDismissed(): boolean {
   try {
@@ -112,7 +120,11 @@ export default function InstallPrompt() {
     }
 
     // Android / Chromium: wait for the browser's beforeinstallprompt event.
-    // If it never fires (already installed / not eligible), variant stays "none".
+    // Gate on Android UA — desktop Chrome/Edge also fires this event but those
+    // users have no Home Screen. If the event never fires (already installed /
+    // not eligible / non-Android), variant stays "none".
+    if (!isAndroid()) return;
+
     function handleBeforeInstallPrompt(e: Event) {
       e.preventDefault();
       setInstallEvent(e as BeforeInstallPromptEvent);
@@ -149,13 +161,19 @@ export default function InstallPrompt() {
   // ---- Render ---------------------------------------------------------------
 
   return (
+    // mb-4 lives here (not in the page wrapper) so the gap only exists when
+    // the card is actually rendered — zero CLS/gap for installed/dismissed users.
     <div
       data-testid="install-prompt-card"
-      role="status"
-      className="rounded-[14px] border border-hairline bg-charcoal px-4 py-4"
+      role="region"
+      aria-label="Add to Home Screen setup"
+      className="mb-4 rounded-[14px] border border-hairline bg-charcoal px-4 py-4"
     >
       {/* Eyebrow */}
-      <p className="mb-1 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-gold/70">
+      <p
+        aria-live="polite"
+        className="mb-1 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-gold/70"
+      >
         Quick setup
       </p>
 
@@ -205,7 +223,7 @@ export default function InstallPrompt() {
           type="button"
           onClick={handleDismiss}
           className={[
-            "min-h-[44px] font-body text-[13px] text-cream/45",
+            "min-h-[44px] font-body text-[13px] text-cream/55",
             "hover:text-cream/70 transition-colors duration-fast ease-out",
             "focus-visible:outline-none focus-visible:ring-2",
             "focus-visible:ring-gold/40 focus-visible:ring-offset-2",

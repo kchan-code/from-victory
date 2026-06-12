@@ -326,6 +326,109 @@ describe("InstallPrompt — Not now dismiss", () => {
 });
 
 // ---------------------------------------------------------------------------
+// 6. Desktop Chrome — beforeinstallprompt fires but card must NOT render
+// (AC: Android gate; desktop Chrome/Edge fire the event but variant → "none")
+// ---------------------------------------------------------------------------
+
+describe("InstallPrompt — desktop Chrome (no Android token)", () => {
+  it("renders nothing on Macintosh Chrome even when beforeinstallprompt fires", async () => {
+    // UA: desktop Chrome on macOS — no "Android" token.
+    setUserAgent(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    );
+    stubMatchMedia(false);
+
+    const { container } = render(<InstallPrompt />);
+
+    const mockPrompt = vi.fn().mockResolvedValue(undefined);
+    const mockEvent = new Event("beforeinstallprompt") as BeforeInstallPromptEvent & {
+      prompt: MockInstance;
+      userChoice: Promise<{ outcome: "accepted" }>;
+    };
+    mockEvent.prompt = mockPrompt;
+    mockEvent.userChoice = Promise.resolve({ outcome: "accepted" });
+
+    await act(async () => {
+      window.dispatchEvent(mockEvent);
+    });
+
+    // Desktop Chrome fired beforeinstallprompt — but the Android UA gate
+    // means we never registered the listener, so the card must not appear.
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it("renders nothing on Windows Chrome even when beforeinstallprompt fires", async () => {
+    setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    );
+    stubMatchMedia(false);
+
+    const { container } = render(<InstallPrompt />);
+
+    const mockEvent = Object.assign(new Event("beforeinstallprompt"), {
+      prompt: vi.fn().mockResolvedValue(undefined),
+      userChoice: Promise.resolve({ outcome: "accepted" as const }),
+    }) as BeforeInstallPromptEvent;
+
+    await act(async () => {
+      window.dispatchEvent(mockEvent);
+    });
+
+    expect(container).toBeEmptyDOMElement();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 7. Listener cleanup — beforeinstallprompt listener removed on unmount
+// ---------------------------------------------------------------------------
+
+describe("InstallPrompt — Android listener cleanup on unmount", () => {
+  it("removes the beforeinstallprompt listener when unmounted", () => {
+    setUserAgent(
+      "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
+    );
+    stubMatchMedia(false);
+
+    const removeEventListenerSpy = vi.spyOn(window, "removeEventListener");
+
+    const { unmount } = render(<InstallPrompt />);
+    unmount();
+
+    // The useEffect cleanup must have called window.removeEventListener for
+    // the "beforeinstallprompt" event.
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      "beforeinstallprompt",
+      expect.any(Function),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 8. iPadOS desktop-mode (Macintosh UA) → renders nothing today.
+//    NOTE: A Mac UA with maxTouchPoints > 1 is the real iPadOS desktop-mode
+//    signal, but jsdom always reports maxTouchPoints = 0, making it
+//    indistinguishable from a real Mac in unit tests. This test documents
+//    the CURRENT behaviour (Mac UA → "none") and serves as a regression
+//    anchor. Proper iPadOS detection (check maxTouchPoints at runtime) is
+//    tracked in FV-260.
+// ---------------------------------------------------------------------------
+
+describe("InstallPrompt — iPadOS desktop-mode UA (Mac UA, jsdom)", () => {
+  it("renders nothing for a Macintosh UA (current behaviour — see FV-260)", () => {
+    // iPadOS in desktop mode sends "Macintosh" in the UA; jsdom can't
+    // distinguish it from a real Mac (maxTouchPoints unavailable).
+    // Until FV-260 adds the touch-point check, both map to variant "none".
+    setUserAgent(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/604.1",
+    );
+    stubMatchMedia(false);
+
+    const { container } = render(<InstallPrompt />);
+    expect(container).toBeEmptyDOMElement();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Type alias for the BeforeInstallPromptEvent (mirrors component internal)
 // ---------------------------------------------------------------------------
 

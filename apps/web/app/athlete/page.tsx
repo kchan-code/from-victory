@@ -110,11 +110,6 @@ export default async function AthleteHomePage() {
           </div>
         </section>
 
-        {/* ── Install nudge (FV-258) — setup signal before content cards ── */}
-        <div className="mb-4">
-          <InstallPrompt />
-        </div>
-
         {/* ── 4-card hub ──
             The three training CTAs (Daily, Pregame, Pre-Practice) must be
             visible near the top of a 375px viewport without scrolling. Cards
@@ -261,6 +256,12 @@ export default async function AthleteHomePage() {
             </div>
           </Link>
         </section>
+
+        {/* ── Install nudge (FV-258) — below cards so the Daily/Pregame/
+            Pre-Practice CTAs are never displaced from the 375px fold.
+            The mb-4 gap lives on the card's own root, so dismissed/installed
+            users see no phantom whitespace here. ── */}
+        <InstallPrompt />
       </div>
 
       {/* ── Bottom nav (no tab active on the hub) ── */}
