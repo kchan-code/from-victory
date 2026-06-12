@@ -195,7 +195,12 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.lockfile.outputs.exists == 'true'
         with:
-          node-version: '20'
+          # Node 22, not 20: @supabase/supabase-js eagerly builds a Realtime
+          # client in global-setup/teardown's createClient(), which needs a
+          # native global WebSocket — stabilized in Node 22, absent in 20.
+          # On 20 the suite dies at setup before any test runs. 22 also matches
+          # the prod/Vercel runtime (≥22), where createClient already works.
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
