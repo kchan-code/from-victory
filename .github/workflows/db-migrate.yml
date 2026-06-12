@@ -1,0 +1,70 @@
+# FV-259 — auto-apply Supabase migrations on merge to main.
+#
+# Born from the 2026-06-12 production login outage: merging a supabase/** PR
+# deploys the CODE instantly (Vercel auto-deploy) but the SCHEMA waited on a
+# manual `supabase db push`. Prod ran 6 migrations behind the deployed code
+# and requireAthlete()'s new column selects crashed every athlete login.
+#
+# This job pushes pending migrations the moment a migration lands on main.
+#
+# Known v1 limitation (documented, accepted): Vercel deploys in parallel with
+# this job, so a seconds-to-minutes code-before-schema race window remains —
+# vs. the hours-to-days gap of the manual process. v2 (not built): gate the
+# Vercel promotion on this job via a deploy hook / ignored-build-step.
+#
+# Required repo secrets (KC sets these — the job fails LOUDLY without them):
+#   SUPABASE_ACCESS_TOKEN — personal access token (supabase.com/dashboard/account/tokens)
+#   SUPABASE_DB_PASSWORD  — the project's database password
+# Project ref is not a secret; it is pinned below.
+
+name: db-migrate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+
+concurrency:
+  group: db-migrate-prod
+  cancel-in-progress: false
+
+jobs:
+  push-migrations:
+    name: Apply migrations to production
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Fail loudly if secrets are missing
+        env:
+          HAS_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' && 'yes' || '' }}
+          HAS_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD != '' && 'yes' || '' }}
+        run: |
+          missing=0
+          [ -z "$HAS_ACCESS_TOKEN" ] && echo "::error::SUPABASE_ACCESS_TOKEN secret is not set — migrations NOT applied. Prod code may now be ahead of prod schema (the FV-259 outage class). Run 'supabase db push' manually and set the secret." && missing=1
+          [ -z "$HAS_DB_PASSWORD" ] && echo "::error::SUPABASE_DB_PASSWORD secret is not set — migrations NOT applied. Run 'supabase db push' manually and set the secret." && missing=1
+          exit $missing
+
+      - name: Link project
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase link --project-ref kumrgeosgzdlxgljbyju
+
+      - name: Push migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase db push --include-all
+
+      - name: List remote migration state (audit trail)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase migration list --linked
