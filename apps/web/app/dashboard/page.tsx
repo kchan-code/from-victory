@@ -41,14 +41,24 @@ export default async function DashboardPage() {
     <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
       <div className="mx-auto max-w-[960px]">
         <header className="flex items-center justify-between mb-12">
-          <Image
-            src="/logo-stacked.svg"
-            alt="From Victory"
-            width={105}
-            height={60}
-            className="h-14 w-auto"
-            priority
-          />
+          <div className="flex items-center gap-2.5 md:gap-3">
+            <Image
+              src="/logo-icon.svg"
+              alt=""
+              width={64}
+              height={36}
+              className="block h-9 md:h-12 w-auto"
+              priority
+            />
+            <Image
+              src="/logo-wordmark.svg"
+              alt="From Victory"
+              width={100}
+              height={32}
+              className="block h-8 md:h-11 w-auto"
+              priority
+            />
+          </div>
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard/settings"
