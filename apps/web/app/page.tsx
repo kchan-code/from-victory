@@ -5,6 +5,7 @@ import { Framework } from "@/components/landing/Framework";
 import { Hero } from "@/components/landing/Hero";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { LandingIconDefs } from "@/components/landing/icons";
+import { PregameSample } from "@/components/landing/PregameSample";
 import { Problem } from "@/components/landing/Problem";
 import { ScrollNav } from "@/components/landing/ScrollNav";
 import { Waitlist } from "@/components/landing/Waitlist";
@@ -16,6 +17,7 @@ export default function LandingPage() {
       <ScrollNav />
       <a id="top" />
       <Hero />
+      <PregameSample />
       <Problem />
       <Framework />
       <HowItWorks />
