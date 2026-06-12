@@ -110,7 +110,7 @@ When you catch a voice naming you, take it back in one line:
 
 A coach can change your spot in the lineup. A recruiter can close the laptop. None of it moves the Father.
 
-A program recruits you for the number you can already post. You were chosen before you'd done anything. No one moved you in by your scoring average, and no one can move you out the same way.$session$,
+A program offers you for the number you can already post. You were chosen before you'd posted anything. No average earned your way in, and no card can sign you out.$session$,
   'Ephesians 1:4-5',
   'For he chose us in him before the creation of the world to be holy and blameless in his sight. In love he predestined us to be adopted to sonship through Jesus Christ, in accordance with his pleasure and will.',
   $prompt$Which voice have you been letting name you lately, and what changes if you treat it as information instead of a verdict?$prompt$
@@ -143,7 +143,7 @@ A bad round can't lower your standing — it was never yours to lose. A great ro
 (
   4,
   'golf',
-  'Trained on the Empty Range',
+  'Trained Where No One''s Watching',
   $session$### The truth
 
 Most of your training happens with no one watching. That isn't lesser work. That's the work that actually forms you.
@@ -152,7 +152,7 @@ Paul writes this to people whose effort would never be seen or rewarded by anyon
 
 ### What you face
 
-So when the range empties out and the only sound is contact, a drift starts: *does this rep even count if no one sees it?* That question sounds like motivation. It's really about location. Slide toward "not really," and the work has quietly become an audition.
+So late on the putting green, everyone gone home, the only sound the ball dropping in the cup, a drift starts: *does this rep even count if no one sees it?* That question sounds like motivation. It's really about location. Slide toward "not really," and the work has quietly become an audition.
 
 ### The reset
 
@@ -165,7 +165,7 @@ Not as pressure. As release. Two seconds, then start.
 The unseen rep is where competing from victory gets built. Your standing came first. The work is what flows from it.$session$,
   'Colossians 3:23-24',
   'Whatever you do, work at it with all your heart, as working for the Lord, not for human masters, since you know that you will receive an inheritance from the Lord as a reward. It is the Lord Christ you are serving.',
-  $prompt$What does your effort on the empty range become when you stop treating it as an audition?$prompt$
+  $prompt$What does your effort when no one is watching become when you stop treating it as an audition?$prompt$
 ),
 (
   5,
@@ -179,7 +179,7 @@ Watch how Jesus handles it. Peter — just restored after denying him three time
 
 ### What you face
 
-It runs every direction at once — up at the player with the lower index, sideways at the one tied with you on the leaderboard, down at the kid chasing your spot in the lineup. Your brain will keep generating the question. You decide whether to answer it. You've been named, restored, and called in Christ. The player ahead of you can't add to that. The one chasing you can't subtract from it.
+It runs every direction at once — up at the player with the lower index, sideways at the one tied with you on the leaderboard, down at the one chasing your spot in the lineup. Your brain will keep generating the question. You decide whether to answer it. You've been named, restored, and called in Christ. The player ahead of you can't add to that. The one chasing you can't subtract from it.
 
 ### The reset
 
@@ -588,7 +588,7 @@ Before the rep, give the swing a job — a real target, a shot shape, one thing 
 
 Pick one thing to sharpen. Aim there.
 
-Reps aren't the goal. Reps pointed at something are. Don't beat the air — strike a blow that lands.$session$,
+Reps aren't the goal. Reps pointed at something are. Don't just beat balls — hit a shot.$session$,
   '1 Corinthians 9:26-27',
   'Therefore I do not run like someone running aimlessly; I do not fight like a boxer beating the air. No, I strike a blow to my body and make it my slave so that after I have preached to others I myself will not be disqualified for the prize.',
   $prompt$Where do you grind without a target — and what one specific thing could each ball on the range actually aim at?$prompt$
