@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui";
 import { requireAthlete } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
 import { SUPPORTED_SPORTS, sportLabel, type Sport } from "@/lib/sports";
+import { FOCUS_AREA_LABELS, isFocusAreaKey } from "@/lib/quiz-config";
 
 export const metadata = {
   title: "Settings · From Victory",
@@ -20,7 +21,7 @@ function isSport(value: string | undefined): value is Sport {
 export default async function AthleteSettingsPage({
   searchParams,
 }: {
-  searchParams?: { switched?: string };
+  searchParams?: { switched?: string; updated?: string };
 }) {
   const { profile, userId } = await requireAthlete();
   const supabase = createClient();
@@ -42,6 +43,9 @@ export default async function AthleteSettingsPage({
   // Calm confirmation after a switch (FV-56 §2.3). Only trust a valid sport
   // value so the toast can never echo arbitrary query text.
   const switched = isSport(searchParams?.switched) ? searchParams.switched : null;
+
+  // FV-228: training focus update confirmation.
+  const trainingUpdated = searchParams?.updated === "training";
 
   return (
     <main className="min-h-screen bg-onyx pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
@@ -75,6 +79,15 @@ export default async function AthleteSettingsPage({
           </div>
         )}
 
+        {trainingUpdated && (
+          <div
+            role="status"
+            className="mb-6 rounded-[10px] border border-gold/35 bg-gold/[0.06] px-4 py-3 font-body text-[13px] leading-snug text-cream/80"
+          >
+            Training focus updated.
+          </div>
+        )}
+
         {/* ── SPORT ── */}
         <section aria-labelledby="settings-sport-heading" className="mb-9">
           <h2
@@ -101,6 +114,39 @@ export default async function AthleteSettingsPage({
             </span>
             <span className="flex flex-none items-center gap-1 font-heading text-[13px] font-semibold text-gold">
               Change
+              <Icon name="arrowRight" size={16} color="var(--fv-gold)" />
+            </span>
+          </Link>
+        </section>
+
+        {/* ── TRAINING FOCUS (FV-228) ── */}
+        <section aria-labelledby="settings-training-heading" className="mb-9">
+          <h2
+            id="settings-training-heading"
+            className="mb-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/40"
+          >
+            Training
+          </h2>
+          <Link
+            href="/athlete/settings/training"
+            data-testid="settings-training-focus-btn"
+            className="flex min-h-[60px] w-full items-center gap-4 rounded-[12px] border border-hairline bg-charcoal px-4 py-3.5 no-underline transition-colors duration-fast ease-out hover:border-gold/40 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+          >
+            <span className="flex-1 min-w-0">
+              <span className="block font-heading text-[16px] font-semibold leading-tight text-cream">
+                Training focus
+              </span>
+              <span className="mt-0.5 block font-body text-[13px] leading-snug text-cream/50">
+                Your position and what you&apos;re working through.
+              </span>
+            </span>
+            <span className="flex-none font-heading text-[14px] font-semibold text-cream/70">
+              {isFocusAreaKey(profile.focus_area)
+                ? FOCUS_AREA_LABELS[profile.focus_area]
+                : "Not set"}
+            </span>
+            <span className="flex flex-none items-center gap-1 font-heading text-[13px] font-semibold text-gold">
+              Edit
               <Icon name="arrowRight" size={16} color="var(--fv-gold)" />
             </span>
           </Link>

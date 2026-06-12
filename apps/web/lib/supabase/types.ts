@@ -272,6 +272,10 @@ export type Database = {
           // 20260603120000_athlete_sport_selected_at.sql is applied to prod.
           // First-run signal: NULL until the athlete affirmatively picks a sport.
           sport_selected_at: string | null
+          // FV-228: athlete personalization quiz. Nullable — skipped or not yet set.
+          // Never surfaced on the parent dashboard.
+          position: string | null
+          focus_area: string | null
           updated_at: string
         }
         Insert: {
@@ -284,6 +288,9 @@ export type Database = {
           sport?: string | null
           // FV-33: see Row comment above.
           sport_selected_at?: string | null
+          // FV-228: see Row comment above.
+          position?: string | null
+          focus_area?: string | null
           updated_at?: string
         }
         Update: {
@@ -296,6 +303,9 @@ export type Database = {
           sport?: string | null
           // FV-33: see Row comment above.
           sport_selected_at?: string | null
+          // FV-228: see Row comment above.
+          position?: string | null
+          focus_area?: string | null
           updated_at?: string
         }
         Relationships: []
