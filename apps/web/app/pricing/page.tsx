@@ -103,7 +103,8 @@ export default function PricingPage() {
               Then <em>$49 per year.</em>
             </h1>
             <p className="max-w-[44ch] mx-auto mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
-              One simple subscription. No ads, no data sold, cancel anytime.
+              $49/yr or $5/mo for your first athlete &mdash; $29/yr or $3/mo
+              for each additional. No ads, no data sold, cancel anytime.
               First-time subscribers train free for the first two weeks.
             </p>
           </Reveal>
@@ -145,11 +146,9 @@ export default function PricingPage() {
                     / year
                   </span>
                 </div>
-                <div className="font-body text-[13px] text-cream/50 mb-1">
-                  About $4/mo for your first athlete &mdash; $29/yr (~$2.40/mo) each additional
-                </div>
                 <div className="font-body text-[13px] text-cream/55 mb-2">
-                  $29/yr each additional athlete
+                  About $4/mo for your first athlete &mdash; $29/yr each
+                  additional athlete
                 </div>
                 <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-gold font-semibold mb-7">
                   14-day free trial
