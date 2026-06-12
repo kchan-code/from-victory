@@ -1,8 +1,16 @@
 import type { MetadataRoute } from "next";
+import { getAllSlugs } from "@/lib/resources/articles";
 
 const siteUrl = "https://www.fromvictoryapp.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const articleEntries: MetadataRoute.Sitemap = getAllSlugs().map((slug) => ({
+    url: `${siteUrl}/resources/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
   return [
     {
       url: siteUrl,
@@ -28,6 +36,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.6,
     },
+    {
+      url: `${siteUrl}/resources`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    ...articleEntries,
     {
       url: `${siteUrl}/privacy`,
       lastModified: new Date(),
