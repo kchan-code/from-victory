@@ -116,19 +116,27 @@ const athleteGets = [
   },
 ];
 
-// ── Privacy model explanation ─────────────────────────────────────────────
-const privacyPoints = [
+// ── FAQ: How group pricing works ──────────────────────────────────────────
+const groupFaq = [
   {
-    heading: "You distribute access. Families keep ownership.",
-    body: "Each family receives its own path into the app. Once they create an account, the athlete's training experience remains private to the family account — not the coach, club, church, or ministry.",
+    q: "Who owns the athlete accounts?",
+    a: "Families do. Each parent creates and controls their own account. From the moment they onboard, everything — accounts, data, deletion rights — belongs to them. Your organization distributed the access; it does not hold any of it.",
   },
   {
-    heading: "No coach dashboard. By design.",
-    body: "There is no team activity feed, no roster view, and no way for a coach or ministry leader to read an athlete's private sessions. From Victory is designed for athlete formation, not surveillance.",
+    q: "Can I see how athletes are training?",
+    a: "No, and that's intentional. There is no coach dashboard and no team activity feed. The architecture does not support reading another athlete's session — by design, not by policy. What an athlete trains on and how they prepare is between them and their family account.",
   },
   {
-    heading: "Athlete-first data model.",
-    body: "Athlete accounts are intentionally limited. The purchasing organization does not receive athlete training records, journal-style responses, progress history, or private preparation details.",
+    q: "What athlete data does our organization hold?",
+    a: "None. Each athlete account holds only a first name and birthdate. No email address, no phone number, no photos, no behavioral analytics. The purchasing organization — your team, chapter, or church — has no access to any of it. Full deletion on the parent's request within 30 days.",
+  },
+  {
+    q: "Is there ongoing admin work after we distribute codes?",
+    a: "No. Once families have their codes, they onboard independently. There is no roster to update, no dashboard to check, and no reporting obligations on your end. You funded the access; families manage their experience from there.",
+  },
+  {
+    q: "What happens if a family leaves the program?",
+    a: "Their account belongs to the family, not the organization. If your group arrangement ends, families can continue with their own subscription at the standard rate. Nothing in the athlete's account changes — just who's paying.",
   },
 ];
 
@@ -162,9 +170,6 @@ export default function TeamsPage() {
               without becoming another system to manage. You fund access.
               Families create their own accounts. Athletes train privately.
             </p>
-            <p className="max-w-[52ch] mb-9 font-mono text-[12px] tracking-[0.14em] uppercase text-cream/55 font-semibold">
-              No roster.&nbsp;&nbsp;No coach dashboard.&nbsp;&nbsp;No team activity feed.&nbsp;&nbsp;No athlete training data for your organization to hold.
-            </p>
             <div className="flex flex-wrap gap-3">
               {/*
                * TODO FV-249: when hello@ email routing is live, replace the
@@ -194,96 +199,11 @@ export default function TeamsPage() {
         </div>
       </section>
 
-      {/* ── The privacy pitch — the actual differentiator ─────────────── */}
-      <section className="py-20 sm:py-24 md:py-32 bg-charcoal border-y border-hairline">
-        <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
-          <Reveal>
-            <SectionMeta num="01" label="How ownership works" />
-          </Reveal>
-          <Reveal>
-            <div className="grid gap-x-16 gap-y-10 items-end mb-14 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
-              <h2 className="fv-h-section">
-                You provide the resource.{" "}
-                <span className="text-cream/50">Families keep ownership.</span>
-              </h2>
-              <p className="fv-lede">
-                Most team and youth sports tools put the organization in the
-                middle of athlete information. From Victory works differently.
-                Your team, church, or ministry can fund access while each
-                family owns its account, its setup, and its data.
-              </p>
-            </div>
-          </Reveal>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 border-t border-b border-hairline">
-            {privacyPoints.map((item, i) => (
-              <Reveal key={item.heading}>
-                <div
-                  className={`px-7 py-9 transition-colors duration-base ease-out hover:bg-onyx ${
-                    i < privacyPoints.length - 1
-                      ? "sm:border-r border-hairline max-sm:border-b max-sm:border-hairline"
-                      : ""
-                  }`}
-                >
-                  <h3 className="font-heading font-semibold text-[20px] tracking-[-0.01em] text-cream mb-2.5 leading-[1.2]">
-                    {item.heading}
-                  </h3>
-                  <p className="font-body text-[14px] leading-[1.55] text-cream/70 m-0">
-                    {item.body}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-
-          {/* Privacy callout */}
-          <Reveal>
-            <div
-              className="mt-10 rounded-[20px] px-8 py-8 max-w-[640px]"
-              style={{
-                background:
-                  "linear-gradient(180deg,rgba(223,175,55,0.06),rgba(223,175,55,0)),var(--bg-elev-2)",
-                border: "1px solid rgba(223,175,55,0.22)",
-              }}
-            >
-              <div className="flex items-start gap-4">
-                <div
-                  className="w-9 h-9 rounded-md flex items-center justify-center text-gold flex-none mt-0.5"
-                  style={{
-                    background: "var(--fv-gold-soft)",
-                    border: "1px solid rgba(223,175,55,0.28)",
-                  }}
-                >
-                  <SvgIcon name="shield" size={18} />
-                </div>
-                <div>
-                  <div className="font-mono text-[11px] tracking-[0.18em] uppercase text-gold font-semibold mb-2">
-                    How athlete data actually works
-                  </div>
-                  <p className="font-body text-[14px] leading-[1.55] text-cream/70 m-0">
-                    Each athlete account holds only a first name and birthdate.
-                    No email address. No phone number. No photos. No behavioral
-                    analytics. The purchasing organization — your team, chapter,
-                    or church — has no access to any of it. Full deletion on
-                    parent request within 30 days.
-                  </p>
-                  <p className="font-body text-[13px] leading-[1.55] text-cream/55 mt-3 m-0">
-                    From Victory is a mindset training app, not a mental health
-                    service. It does not provide therapy, clinical care, or
-                    crisis intervention.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
       {/* ── Who this is for: three audiences ─────────────────────────── */}
       <section className="py-20 sm:py-24 md:py-32">
         <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
           <Reveal>
-            <SectionMeta num="02" label="Who this is built for" />
+            <SectionMeta num="01" label="Who this is built for" />
           </Reveal>
           <Reveal>
             <div className="mb-14">
@@ -360,7 +280,7 @@ export default function TeamsPage() {
       <section className="py-20 sm:py-24 md:py-32 bg-charcoal border-y border-hairline">
         <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
           <Reveal>
-            <SectionMeta num="03" label="How it works" />
+            <SectionMeta num="02" label="How it works" />
           </Reveal>
           <Reveal>
             <div className="grid gap-x-16 gap-y-10 items-end mb-14 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
@@ -431,7 +351,7 @@ export default function TeamsPage() {
       <section className="py-20 sm:py-24 md:py-32">
         <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
           <Reveal>
-            <SectionMeta num="04" label="What athletes get" />
+            <SectionMeta num="03" label="What athletes get" />
           </Reveal>
           <Reveal>
             <div className="grid gap-x-16 gap-y-10 items-end mb-14 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
@@ -480,7 +400,7 @@ export default function TeamsPage() {
               <div className="mb-8">
                 <FlameMark size={48} />
               </div>
-              <SectionMeta num="05" label="Faith foundation" />
+              <SectionMeta num="04" label="Faith foundation" />
               <h2 className="fv-h-section mb-6 max-w-[22ch]">
                 Built from identity in Christ, not performance pressure.
               </h2>
@@ -512,6 +432,37 @@ export default function TeamsPage() {
               </div>
             </div>
           </Reveal>
+        </div>
+      </section>
+
+      {/* ── FAQ: How group pricing works ──────────────────────────────── */}
+      <section className="py-20 sm:py-24 md:py-32 bg-charcoal border-y border-hairline">
+        <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
+          <Reveal>
+            <SectionMeta num="05" label="How group pricing works" />
+          </Reveal>
+          <Reveal>
+            <div className="mb-14">
+              <h2 className="fv-h-section">
+                Common questions from coaches and ministries.
+              </h2>
+            </div>
+          </Reveal>
+
+          <div className="max-w-[800px] divide-y divide-hairline border-t border-hairline">
+            {groupFaq.map(({ q, a }) => (
+              <Reveal key={q}>
+                <div className="py-8">
+                  <h3 className="font-heading font-semibold text-[19px] leading-[1.2] text-cream tracking-[-0.005em] mb-3">
+                    {q}
+                  </h3>
+                  <p className="font-body text-[14.5px] leading-[1.6] text-cream/70 m-0">
+                    {a}
+                  </p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
