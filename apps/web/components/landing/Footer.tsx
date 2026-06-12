@@ -1,10 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 
+// Absolute /# form so these resolve to the homepage anchors from the
+// sub-pages (/parents, /pricing, /teams) that also render this footer.
 const productLinks = [
-  { href: "#how", label: "How it works" },
-  { href: "#app", label: "The app" },
-  { href: "#waitlist", label: "Join waitlist" },
+  { href: "/#how", label: "How it works" },
+  { href: "/#app", label: "The app" },
+  { href: "/#waitlist", label: "Join waitlist" },
 ];
 
 const forLinks = [

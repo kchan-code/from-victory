@@ -48,7 +48,7 @@ const athleteGets = [
   {
     icon: "zap" as const,
     title: "Pregame guided audio",
-    body: "A ~5-minute guided audio session before a game: breathing, focus visualization, one controllable, and a send-off. Built for the locker room, earbuds in.",
+    body: "A ~5-minute guided audio session before a game: breathing, focus visualization, a plan for the hard moment, and a send-off. Built for the locker room, earbuds in.",
   },
   {
     icon: "target" as const,
@@ -75,17 +75,17 @@ const parentSees = [
   },
   {
     title: "Session count",
-    body: "A running count of completed sessions. Not what they wrote or prayed. Just that they showed up.",
+    body: "A running count of completed sessions. Not the choices they made inside them. Just that they showed up.",
   },
   {
-    title: "Never their private words",
-    body: "The journal and reflection content is athlete-private. Not because we want to hide it from you — but because athletes need a space they genuinely own. Privacy is a feature, not a loophole.",
+    title: "Never their private space",
+    body: "What happens inside a session stays your athlete's — the focus they pick, the hard moment they name, the prayer they bring. Not because we want to hide it from you, but because athletes need a space they genuinely own. Privacy is a feature, not a loophole.",
   },
 ];
 
 // ── Pricing summary ──────────────────────────────────────────────────────
 const pricingPoints = [
-  "14 days free — no charge until trial ends",
+  "14 days free for first-time subscribers — no charge until the trial ends",
   "$49 per year, or $5 per month",
   "Cancel anytime from your account settings",
   "One subscription covers your athlete's account",
@@ -197,9 +197,10 @@ export default function ParentsPage() {
               </h2>
               <p className="fv-lede">
                 Your dashboard shows you whether your athlete is building the
-                habit — not what they prayed, wrote, or reflected on. Privacy is
-                a feature, not a limitation. Serious athletes share more when
-                they know their space is genuinely theirs.
+                habit — not what they prayed about or worked through inside a
+                session. Privacy is a feature, not a limitation. Serious
+                athletes go deeper when they know their space is genuinely
+                theirs.
               </p>
             </div>
           </Reveal>

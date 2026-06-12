@@ -63,8 +63,12 @@ export default function TeamsPage() {
             </p>
 
             <div className="flex flex-wrap gap-3">
+              {/* Routes to the waitlist form (which has a Coach role option)
+                  rather than a mailto — hello@ has no verified email route
+                  yet (only privacy@ is routed), and a bouncing mailto loses
+                  the lead. FV-234 builds the real intake. */}
               <a
-                href="mailto:hello@fromvictoryapp.com?subject=Team%20Pricing%20Interest"
+                href="/#waitlist"
                 className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
               >
                 Request team pricing

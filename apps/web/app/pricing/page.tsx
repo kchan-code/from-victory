@@ -52,15 +52,15 @@ const annualFeatures = [
 const faq: { q: string; a: string }[] = [
   {
     q: "What happens after the 14-day trial?",
-    a: "If you do nothing, your subscription starts at the rate you selected — $49/yr or $5/mo. We will not charge you before the trial period ends. You can cancel any time in your account settings before the trial ends and you will not be billed.",
+    a: "If you do nothing, your subscription starts at the rate you selected — $49/yr or $5/mo. We will not charge you before the trial period ends. You can cancel any time in your account settings before the trial ends and you will not be billed. The free trial applies to first-time subscribers.",
   },
   {
     q: "What sports are available right now?",
     a: "Hockey and basketball are live at launch. More sports are planned for a future release — all 30-day training content is sport-specific, so we build each one fully before releasing it.",
   },
   {
-    q: "Does the parent see what the athlete writes?",
-    a: "No. The parent dashboard shows rhythm data — how often your athlete trained and total sessions completed. It never shows private reflection content. That is athlete-only, by design.",
+    q: "Can I see what my athlete does inside their sessions?",
+    a: "No. The parent dashboard shows rhythm data — how often your athlete trained and total sessions completed. The choices they make inside a session, and anything they bring to prayer, stay theirs by design.",
   },
   {
     q: "Can I cancel before the trial ends?",
@@ -75,7 +75,7 @@ const faq: { q: string; a: string }[] = [
     a: "We collect the minimum necessary: your athlete's first name and birthdate. No email, no phone number. No behavioral analytics. No ads. No third-party tracking. Full privacy policy is linked below.",
   },
   {
-    q: "Is From Victory appropriate for athletes 13 and under?",
+    q: "Can athletes under 13 use From Victory?",
     a: "From Victory is designed for athletes ages 13–21. Accounts require a parent or guardian to set them up, and athletes 13–17 receive additional data protections. The app is not available for users under 13.",
   },
 ];
@@ -103,9 +103,8 @@ export default function PricingPage() {
               Then <em>$49 per year.</em>
             </h1>
             <p className="max-w-[44ch] mx-auto mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
-              One subscription. One athlete. No ads, no data sold, cancel
-              anytime. Start training — we charge nothing for the first two
-              weeks.
+              One simple subscription. No ads, no data sold, cancel anytime.
+              First-time subscribers train free for the first two weeks.
             </p>
           </Reveal>
         </div>
@@ -384,7 +383,7 @@ export default function PricingPage() {
                     {
                       collected: false,
                       label: "Behavioral analytics / tracking",
-                      note: "Not used on any account age 13–17.",
+                      note: "Not used on any account.",
                     },
                     {
                       collected: false,
@@ -459,7 +458,7 @@ export default function PricingPage() {
                   <p className="font-body text-[14px] text-cream/70 leading-[1.55] m-0">
                     Parents control deletion. Requesting account deletion
                     triggers a cascading delete of all athlete data within
-                    30 days. No remnants in backup systems beyond that window.
+                    30 days, as described in our Privacy Policy.
                   </p>
                 </div>
 
