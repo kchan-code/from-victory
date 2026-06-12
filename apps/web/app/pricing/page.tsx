@@ -175,7 +175,7 @@ export default function PricingPage() {
                   href="/#waitlist"
                   className="w-full inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
                 >
-                  Start free trial
+                  Join the waitlist
                   <SvgIcon name="arrow" size={16} />
                 </a>
                 <p className="text-center font-mono text-[10px] tracking-[0.12em] uppercase text-cream/35 font-semibold mt-3">
@@ -233,7 +233,7 @@ export default function PricingPage() {
                   href="/#waitlist"
                   className="w-full inline-flex items-center justify-center gap-2.5 bg-transparent text-cream border border-hairline-strong font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-surface-1 active:scale-[0.97]"
                 >
-                  Start free trial
+                  Join the waitlist
                   <SvgIcon name="arrow" size={16} />
                 </a>
                 <p className="text-center font-mono text-[10px] tracking-[0.12em] uppercase text-cream/35 font-semibold mt-3">
@@ -458,7 +458,7 @@ export default function PricingPage() {
                   <p className="font-body text-[14px] text-cream/70 leading-[1.55] m-0">
                     Parents control deletion. Requesting account deletion
                     triggers a cascading delete of all athlete data within
-                    30 days, as described in our Privacy Policy.
+                    30 days.
                   </p>
                 </div>
 

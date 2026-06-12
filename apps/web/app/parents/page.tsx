@@ -263,6 +263,11 @@ export default function ParentsPage() {
                     athlete&apos;s training data is yours to delete, on request,
                     within 30 days.
                   </p>
+                  <p className="font-body text-[13px] leading-[1.55] text-cream/55 mt-3 m-0">
+                    From Victory is a mindset training app, not a mental
+                    health service. It does not provide therapy, clinical
+                    care, or crisis intervention.
+                  </p>
                 </div>
               </div>
             </div>
