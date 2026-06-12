@@ -8,6 +8,7 @@ import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireAthlete } from "@/lib/auth/guards";
 import { getDailySession } from "@/lib/daily/session";
 import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
+import { modulesForSport } from "@/lib/postgame/modules";
 
 export const metadata = {
   title: "Today · From Victory",
@@ -44,6 +45,10 @@ export default async function AthleteHomePage() {
   const progressPct = sessionLoaded
     ? Math.round((completedCount / TOTAL_TRAINING_DAYS) * 100)
     : 0;
+
+  // "After the game" hub card — only show when the athlete's sport has
+  // postgame modules in the registry. Pure code check, no DB call.
+  const hasPostgameModules = modulesForSport(profile.sport).length > 0;
 
   return (
     <main className="min-h-screen bg-onyx pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
@@ -253,6 +258,47 @@ export default async function AthleteHomePage() {
               </span>
             </div>
           </Link>
+
+          {/* 5. After the game — FV-225. Shown only when the athlete's sport
+              has postgame modules. Deliberately muted — this is a low-moment
+              surface, not a daily CTA. Sits below Journey (always a scroll,
+              never a fold — see comment on card 4).
+              AUTHOR: hub card subtitle line is frontend-engineer copy. */}
+          {hasPostgameModules && (
+            <Link
+              href="/athlete/postgame"
+              className="group block rounded-2xl border border-[rgba(223,175,55,0.09)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.22)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+              style={{
+                background:
+                  "linear-gradient(180deg,rgba(223,175,55,0.02),rgba(223,175,55,0)),var(--bg-elev-1)",
+              }}
+              data-testid="hub-postgame-card"
+            >
+              <div className="px-5 py-4 flex items-center gap-4">
+                <span
+                  className="flex-none flex items-center justify-center w-10 h-10 rounded-xl bg-gold/[0.03] border border-gold/[0.07]"
+                  aria-hidden="true"
+                >
+                  <Icon name="journal" size={20} color="var(--fv-gold)" />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold/40 mb-0.5">
+                    After the game
+                  </p>
+                  <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[18px] leading-[1.15]">
+                    For the Ride Home
+                  </p>
+                  {/* AUTHOR: frontend-engineer — subtitle line */}
+                  <p className="font-body text-cream/50 text-[13px] leading-snug mt-0.5">
+                    The loss, the bench, the bad night &mdash; read when you need it.
+                  </p>
+                </div>
+                <span aria-hidden="true" className="flex-none text-gold/40 text-[20px] font-display">
+                  →
+                </span>
+              </div>
+            </Link>
+          )}
         </section>
       </div>
 
