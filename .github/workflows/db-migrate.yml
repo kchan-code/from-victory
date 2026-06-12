@@ -42,10 +42,13 @@ jobs:
           version: latest
 
       - name: Fail loudly if secrets are missing
+        env:
+          HAS_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' && 'yes' || '' }}
+          HAS_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD != '' && 'yes' || '' }}
         run: |
           missing=0
-          [ -z "${{ secrets.SUPABASE_ACCESS_TOKEN }}" ] && echo "::error::SUPABASE_ACCESS_TOKEN secret is not set — migrations NOT applied. Prod code may now be ahead of prod schema (the FV-259 outage class). Run 'supabase db push' manually and set the secret." && missing=1
-          [ -z "${{ secrets.SUPABASE_DB_PASSWORD }}" ] && echo "::error::SUPABASE_DB_PASSWORD secret is not set — migrations NOT applied. Run 'supabase db push' manually and set the secret." && missing=1
+          [ -z "$HAS_ACCESS_TOKEN" ] && echo "::error::SUPABASE_ACCESS_TOKEN secret is not set — migrations NOT applied. Prod code may now be ahead of prod schema (the FV-259 outage class). Run 'supabase db push' manually and set the secret." && missing=1
+          [ -z "$HAS_DB_PASSWORD" ] && echo "::error::SUPABASE_DB_PASSWORD secret is not set — migrations NOT applied. Run 'supabase db push' manually and set the secret." && missing=1
           exit $missing
 
       - name: Link project
