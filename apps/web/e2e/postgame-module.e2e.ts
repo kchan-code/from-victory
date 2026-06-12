@@ -105,6 +105,11 @@ test.describe("Post-game debrief module", () => {
   });
 
   test.describe("sport guard + unknown slug", () => {
+    // NOTE: these assert a true HTTP 404 from `notFound()`. That requires the
+    // production server (`next build && next start`) — which is how CI and the
+    // Playwright `webServer` run on CI. Under `next dev` the status can come
+    // back 200 with the not-found UI rendered; run locally with CI=true (prod
+    // build) to reproduce the CI behavior.
     test("404s a valid slug for a different sport", async ({ page }) => {
       const res = await page.goto(`/athlete/postgame/${CROSS_SPORT_SLUG}`, {
         waitUntil: "domcontentloaded",
