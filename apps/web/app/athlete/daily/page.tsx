@@ -3,12 +3,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AthleteBottomNav } from "@/components/athlete/BottomNav";
-import { CompleteSessionButton } from "@/components/daily/CompleteSessionButton";
+import { CompletionCTA } from "@/components/daily/CompletionCTA";
 import { SessionBody } from "@/components/daily/SessionBody";
-import { Icon, RhythmRing } from "@/components/ui";
+import { Icon, RhythmRingAnimated } from "@/components/ui";
 import { SignOutButton } from "@/components/auth/SignOutButton";
-import { completeDailySession } from "@/lib/actions/daily-session";
 import { requireAthlete } from "@/lib/auth/guards";
+import { bibleLink } from "@/lib/daily/bible-link";
 import { getDailySession } from "@/lib/daily/session";
 import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
 
@@ -37,6 +37,10 @@ export default async function DailyPage() {
   const progressPct = sessionData
     ? Math.round((sessionData.completedCount / TOTAL_TRAINING_DAYS) * 100)
     : 0;
+
+  const scriptureLink = sessionData?.session.scripture_ref
+    ? bibleLink(sessionData.session.scripture_ref)
+    : null;
 
   return (
     <main className="min-h-screen bg-onyx pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
@@ -85,7 +89,8 @@ export default async function DailyPage() {
           <>
             {/* ── Rhythm ring + day label ── */}
             <div className="flex items-center gap-5 mb-8 mt-2">
-              <RhythmRing
+              {/* Animated on every page mount — arc sweeps from 0 to current pct */}
+              <RhythmRingAnimated
                 pct={progressPct}
                 size={80}
                 stroke={6}
@@ -124,23 +129,42 @@ export default async function DailyPage() {
                 </div>
               )}
 
-              {/* Scripture block — mb-0: article padding handles trailing space */}
+              {/* ── Scripture block — full-width centered verse with YouVersion link ── */}
               {sessionData.session.scripture_text && (
-                <div className="border-l-2 border-gold/50 pl-4 mb-0">
-                  <p className="font-scripture text-cream text-[18px] leading-relaxed italic">
-                    &ldquo;{sessionData.session.scripture_text}&rdquo;
-                  </p>
-                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gold mt-2">
+                <div data-testid="scripture-block">
+                  <div className="border-t border-gold/25 mb-5" />
+
+                  {/* Reference above — font-mono gold, per AC */}
+                  <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold text-center mb-4">
                     {sessionData.session.scripture_ref} · NIV
                   </p>
+
+                  {/* Verse text — 22–24px font-scripture, centered */}
+                  <p className="font-scripture text-cream text-[23px] leading-[1.55] italic text-center px-2">
+                    &ldquo;{sessionData.session.scripture_text}&rdquo;
+                  </p>
+
+                  {/* YouVersion deep-link — plain URL, new tab, no SDK */}
+                  {scriptureLink && (
+                    <a
+                      href={scriptureLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-5 flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-gold/60 hover:text-gold transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+                    >
+                      Read the full passage ↗
+                    </a>
+                  )}
+
+                  <div className="border-t border-gold/25 mt-5" />
                 </div>
               )}
             </article>
 
             {/* ── Complete CTA / All-complete state ── */}
             {sessionData.allComplete ? (
-              /* All 30 days done — calm closing, no trophy blast */
-              <div className="bg-charcoal border border-hairline rounded-2xl p-7 text-center mb-6">
+              /* All 30 days done — closure copy, now with milestone celebration */
+              <div className="fv-milestone-bg border border-gold/30 rounded-2xl p-7 text-center mb-6">
                 <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold mb-3">
                   30 Days Complete
                 </p>
@@ -153,15 +177,11 @@ export default async function DailyPage() {
                 </p>
               </div>
             ) : (
-              /* Normal state — primary CTA in the thumb zone */
-              <div className="mb-6">
-                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/40 text-center mb-3">
-                  Ready to move forward?
-                </p>
-                <form action={completeDailySession}>
-                  <CompleteSessionButton dayNumber={sessionData.dayNumber} />
-                </form>
-              </div>
+              /* Normal state — client completion moment handles the overlay */
+              <CompletionCTA
+                dayNumber={sessionData.dayNumber}
+                completedCount={sessionData.completedCount}
+              />
             )}
           </>
         )}
