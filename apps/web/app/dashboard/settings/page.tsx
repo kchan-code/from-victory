@@ -24,9 +24,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { BillingPortalButton } from "@/components/dashboard/BillingPortalButton";
+import { DigestToggle } from "@/components/dashboard/DigestToggle";
 import { SendResetLinkButton } from "@/components/dashboard/SendResetLinkButton";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireParent } from "@/lib/auth/guards";
+import { getDigestOptOut } from "@/lib/actions/digest-preferences";
 import { createClient } from "@/lib/supabase/server";
 import { priceIdToLabel } from "@/lib/subscriptions/plans";
 
@@ -110,6 +112,9 @@ export default async function DashboardSettingsPage() {
   const hasSubscription = !!sub;
   const isCanceling = sub?.cancel_at_period_end === true;
   const periodEndDate = formatDate(sub?.current_period_end);
+
+  // Digest opt-out preference (FV-226).
+  const digestOptOut = await getDigestOptOut();
 
   return (
     <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
@@ -275,6 +280,23 @@ export default async function DashboardSettingsPage() {
               </Link>
             </div>
           )}
+        </section>
+
+        {/* ------------------------------------------------------------------ */}
+        {/* Notifications section (FV-226)                                     */}
+        {/* ------------------------------------------------------------------ */}
+        <section
+          aria-labelledby="notifications-heading"
+          className="mb-8 bg-charcoal border border-hairline rounded-2xl px-5 py-6"
+        >
+          <h2
+            id="notifications-heading"
+            className="font-mono font-semibold uppercase tracking-[0.18em] text-[10px] text-gold mb-5"
+          >
+            Emails
+          </h2>
+
+          <DigestToggle initialOptOut={digestOptOut} />
         </section>
 
         {/* ------------------------------------------------------------------ */}
