@@ -44,7 +44,7 @@ export const PREGAME_SESSION_CACHE_KEY = "fv_pregame_session";
 
 // Mirrors the Sport union in sport-registry.ts. Extended as new sports land
 // so the session cache accepts every sport the pregame engine supports.
-type CachedSport = "hockey" | "basketball" | "baseball";
+type CachedSport = "hockey" | "basketball" | "baseball" | "golf";
 type CachedPrayerStyle = "guided" | "self-guided";
 
 // Hard ceiling on any stored string field. localStorage is attacker-adjacent

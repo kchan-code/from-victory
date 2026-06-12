@@ -173,6 +173,11 @@ describe("Registry roles vs DB CHECK union", () => {
     "Guard", "Wing", "Big",
     // Baseball (v2)
     "Pitcher", "Catcher", "Infield", "Outfield",
+    // Golf (v2) — non-positional; the "position" column stores the player
+    // profile. The real profiles_position_values CHECK migration extending the
+    // constraint to these three lands with golf's DB enablement (FV-269),
+    // bundled with the sport-enum migration; this mirror tracks the registry.
+    "Bomber", "Ball-Striker", "Scrambler",
   ];
 
   it("every registry role is in the DB CHECK union", () => {

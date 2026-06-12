@@ -15,6 +15,7 @@ export type NeedToday =
   | "Better puck decisions"
   | "Better decisions with the ball"
   | "Better decisions at the plate"
+  | "Better course management"
   | "Leadership"
   | "Joy"
   | "Hope"
@@ -210,6 +211,12 @@ export const NEED_VERSE: Record<NeedToday, NeedVerse> = {
   },
   // Baseball variant — same sport-neutral scripture, different need label. (FV-94)
   "Better decisions at the plate": {
+    reference: "Proverbs 3:5-6",
+    displayText:
+      "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him.",
+  },
+  // Golf variant — same sport-neutral scripture, different need label. (FV-265)
+  "Better course management": {
     reference: "Proverbs 3:5-6",
     displayText:
       "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him.",
