@@ -25,12 +25,15 @@ import { Reveal } from "./Reveal";
 //      dramatic opener. Good alternative if KC prefers the "courage under
 //      pressure" angle (closer to the Problem section framing).
 //
-// Swap the SAMPLE_SRC constant to use B or C per KC's by-ear call.
+// Swap is genuinely two constants: SAMPLE_SRC + SAMPLE_DURATION_SEC (the
+// pre-load placeholder derives from the constant). A unit test asserts the
+// SAMPLE_SRC file exists on disk so a clip regen that re-hashes the filename
+// fails CI instead of silently 404ing the play button on prod.
 // ---------------------------------------------------------------------------
 
-const SAMPLE_SRC =
+export const SAMPLE_SRC =
   "/audio/pregame/clips/opener-confidence.5307daf0.mp3"; // candidate A — defaulted
-const SAMPLE_DURATION_SEC = 41.368;
+export const SAMPLE_DURATION_SEC = 41.368;
 
 function formatTime(sec: number): string {
   const m = Math.floor(sec / 60);
@@ -44,7 +47,24 @@ export function PregameSample() {
   const [progress, setProgress] = useState(0); // 0–1
   const [currentSec, setCurrentSec] = useState(0);
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
   const rafRef = useRef<number | null>(null);
+  // True between a play-tap and play() resolving. A second tap during that
+  // window is a pause request — without this guard, both continuations used
+  // to schedule rAF loops and the orphan ran at 60fps forever (PR #199
+  // review must-fix).
+  const pendingPlayRef = useRef(false);
+  // Screen-reader announcements fire ONLY on state changes (play / pause /
+  // finished) — never per-second. The visible countdown deliberately has no
+  // aria-live: 41 polite announcements per playthrough is SR chatter.
+  const [announce, setAnnounce] = useState("");
+
+  function stopRaf() {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }
 
   // Lazy-wire the audio element only on first interaction, not on mount.
   // preload="none" keeps landing LCP untouched.
@@ -54,14 +74,19 @@ export function PregameSample() {
     audio.preload = "none";
     audio.src = SAMPLE_SRC;
     audio.addEventListener("canplaythrough", () => setLoaded(true));
+    audio.addEventListener("error", () => {
+      // Network/decode failure — most likely a stale content hash after a
+      // clip regen. Fail visibly instead of leaving a dead play button.
+      setFailed(true);
+      setPlaying(false);
+      stopRaf();
+    });
     audio.addEventListener("ended", () => {
       setPlaying(false);
       setProgress(0);
       setCurrentSec(0);
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
+      stopRaf();
+      setAnnounce("Sample finished.");
     });
     audioRef.current = audio;
     return audio;
@@ -69,30 +94,56 @@ export function PregameSample() {
 
   function tick() {
     const audio = audioRef.current;
-    if (!audio) return;
+    // Self-terminate when the audio is no longer playing — this is the
+    // backstop that guarantees no orphaned 60fps loop can survive a
+    // pause/ended race, regardless of how it was scheduled.
+    if (!audio || audio.paused) {
+      rafRef.current = null;
+      return;
+    }
     const dur = audio.duration || SAMPLE_DURATION_SEC;
     setCurrentSec(audio.currentTime);
     setProgress(audio.currentTime / dur);
     rafRef.current = requestAnimationFrame(tick);
   }
 
+  function startRaf() {
+    stopRaf(); // never two concurrent loops
+    rafRef.current = requestAnimationFrame(tick);
+  }
+
   async function handleToggle() {
+    if (failed) return;
     const audio = ensureAudio();
-    if (playing) {
+    if (playing || pendingPlayRef.current) {
+      // Pause — including a tap that lands while play() is still pending
+      // (pausing rejects the pending play() with AbortError; caught below).
+      pendingPlayRef.current = false;
       audio.pause();
       setPlaying(false);
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
+      stopRaf();
+      setAnnounce(`Paused at ${formatTime(audio.currentTime)}.`);
+      return;
+    }
+    try {
+      pendingPlayRef.current = true;
+      await audio.play();
+      if (!pendingPlayRef.current) {
+        // A pause-tap raced the pending play() and won — honor it.
+        audio.pause();
+        return;
       }
-    } else {
-      try {
-        await audio.play();
-        setPlaying(true);
-        rafRef.current = requestAnimationFrame(tick);
-      } catch {
-        // Autoplay policy rejected — no-op (user tapped, so this shouldn't fire)
-      }
+      pendingPlayRef.current = false;
+      setPlaying(true);
+      setAnnounce(
+        `Playing — ${Math.round(audio.duration || SAMPLE_DURATION_SEC)} second sample.`,
+      );
+      startRaf();
+    } catch {
+      // play() rejects on AbortError (paused while pending) and on
+      // network/decode failures — real failures also fire the "error"
+      // listener above, which surfaces the unavailable state.
+      pendingPlayRef.current = false;
     }
   }
 
@@ -106,29 +157,39 @@ export function PregameSample() {
     setCurrentSec(audio.currentTime);
   }
 
-  // Keyboard: Space / Enter on progress bar container (handled via input range natively).
-  // Cleanup on unmount.
+  // Cleanup on unmount + bfcache: iOS Safari restores the page from bfcache
+  // without unmounting, so a pagehide listener stops ghost audio when the
+  // visitor navigates away mid-sample.
   useEffect(() => {
+    const onPageHide = () => {
+      const audio = audioRef.current;
+      if (audio && !audio.paused) {
+        audio.pause();
+        setPlaying(false);
+      }
+      stopRaf();
+    };
+    window.addEventListener("pagehide", onPageHide);
     return () => {
+      window.removeEventListener("pagehide", onPageHide);
       const audio = audioRef.current;
       if (audio) {
         audio.pause();
-        audio.src = "";
+        audio.removeAttribute("src");
+        audio.load();
       }
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-      }
+      stopRaf();
     };
   }, []);
 
+  const duration = audioRef.current?.duration ?? SAMPLE_DURATION_SEC;
   const elapsed = formatTime(currentSec);
-  const remaining = formatTime(
-    Math.max(0, (audioRef.current?.duration ?? SAMPLE_DURATION_SEC) - currentSec),
-  );
+  const remaining = formatTime(Math.max(0, duration - currentSec));
+  const scrubReady = loaded || playing;
 
   return (
     <section
-      aria-label="Hear a pregame session"
+      aria-labelledby="pregame-sample-heading"
       className="py-10 sm:py-12 border-b border-hairline"
     >
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
@@ -147,9 +208,14 @@ export function PregameSample() {
                 </span>
               </div>
 
+              {/* SR-only state announcements — play/pause/finished only. */}
+              <span className="sr-only" role="status">
+                {announce}
+              </span>
+
               {/* Player card */}
               <div
-                className="rounded-[14px] p-4 sm:p-5 flex flex-col gap-3"
+                className="rounded-[14px] p-4 sm:p-5 flex flex-col gap-2"
                 style={{
                   background:
                     "linear-gradient(160deg,rgba(223,175,55,0.07),rgba(223,175,55,0.02))",
@@ -161,9 +227,14 @@ export function PregameSample() {
                   <button
                     type="button"
                     onClick={handleToggle}
-                    aria-label={playing ? "Pause pregame session sample" : "Play pregame session sample"}
+                    aria-label={
+                      playing
+                        ? "Pause pregame session sample"
+                        : "Play pregame session sample"
+                    }
+                    aria-disabled={failed}
                     data-testid="pregame-sample-play-btn"
-                    className="w-12 h-12 flex-none flex items-center justify-center rounded-full transition-transform duration-[140ms] ease-out active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+                    className="w-12 h-12 flex-none flex items-center justify-center rounded-full transition-transform duration-[140ms] ease-out active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx aria-disabled:opacity-50"
                     style={{
                       background: "var(--fv-gold)",
                     }}
@@ -200,61 +271,69 @@ export function PregameSample() {
                   </button>
 
                   <div className="flex-1 min-w-0">
-                    <div className="font-heading font-semibold text-[15px] sm:text-[16px] text-cream tracking-[-0.005em] truncate">
+                    <h2
+                      id="pregame-sample-heading"
+                      className="font-heading font-semibold text-[15px] sm:text-[16px] text-cream tracking-[-0.005em] truncate m-0"
+                    >
                       Hear a pregame session
-                    </div>
+                    </h2>
                     <div className="font-body text-[12px] text-cream/50 mt-0.5">
-                      {loaded || playing ? (
+                      {failed ? (
+                        "Sample unavailable right now — try again later."
+                      ) : scrubReady ? (
                         <span>
                           {elapsed}
                           <span aria-hidden> / </span>
                           <span className="sr-only">&nbsp;of&nbsp;</span>
-                          {formatTime(SAMPLE_DURATION_SEC)}
+                          {formatTime(duration)}
                         </span>
                       ) : (
-                        "~41 seconds"
+                        `~${Math.round(SAMPLE_DURATION_SEC)} seconds`
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Progress bar */}
-                <div className="relative flex items-center gap-3">
-                  {/* Track + fill */}
-                  <div
-                    className="relative flex-1 h-1 rounded-full overflow-hidden"
-                    style={{ background: "rgba(247,247,247,0.10)" }}
-                    aria-hidden="true"
-                  >
+                {/* Progress bar — the row reserves a 44px touch target; the
+                    range fills it (the 4px visual track is decorative). */}
+                <div className="relative flex items-center gap-3 min-h-[44px]">
+                  <div className="relative flex-1 self-stretch flex items-center rounded-full focus-within:ring-2 focus-within:ring-gold/60 focus-within:ring-offset-2 focus-within:ring-offset-onyx">
+                    {/* Track + fill (decorative duplicate of the range) */}
                     <div
-                      className="absolute inset-y-0 left-0 rounded-full transition-none"
-                      style={{
-                        width: `${progress * 100}%`,
-                        background: "var(--fv-gold)",
-                      }}
+                      className="relative flex-1 h-1 rounded-full overflow-hidden"
+                      style={{ background: "rgba(247,247,247,0.10)" }}
+                      aria-hidden="true"
+                    >
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-full transition-none"
+                        style={{
+                          width: `${progress * 100}%`,
+                          background: "var(--fv-gold)",
+                        }}
+                      />
+                    </div>
+
+                    {/* Accessible range input filling the 44px row */}
+                    <input
+                      type="range"
+                      min={0}
+                      max={1000}
+                      step={1}
+                      value={Math.round(progress * 1000)}
+                      onChange={handleScrub}
+                      aria-label="Seek pregame sample"
+                      aria-valuetext={`${elapsed} of ${formatTime(duration)}`}
+                      aria-disabled={!scrubReady}
+                      data-testid="pregame-sample-progress"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      style={{ margin: 0 }}
                     />
                   </div>
 
-                  {/* Accessible range input overlaid on the visual track */}
-                  <input
-                    type="range"
-                    min={0}
-                    max={1000}
-                    step={1}
-                    value={Math.round(progress * 1000)}
-                    onChange={handleScrub}
-                    aria-label="Seek pregame sample"
-                    data-testid="pregame-sample-progress"
-                    className="absolute inset-0 w-full opacity-0 cursor-pointer h-full"
-                    style={{ margin: 0 }}
-                  />
-
-                  {/* Time remaining */}
-                  <div
-                    className="flex-none font-mono text-[10px] tracking-[0.10em] text-cream/40 tabular-nums"
-                    aria-live="polite"
-                    aria-atomic="true"
-                  >
+                  {/* Time remaining — visible countdown, deliberately NOT a
+                      live region (see the announce state above). /65 clears
+                      WCAG AA at this size on the card background. */}
+                  <div className="flex-none font-mono text-[10px] tracking-[0.10em] text-cream/65 tabular-nums">
                     -{remaining}
                   </div>
                 </div>
@@ -272,7 +351,7 @@ export function PregameSample() {
               <p className="font-body text-[14px] leading-[1.6] text-cream/60">
                 Before every game, athletes choose their need, their reset
                 anchor, and a cue word. The session builds around those
-                choices — narrated by Ash, ~5 minutes.
+                choices — guided narration, about five minutes.
               </p>
             </div>
           </div>
