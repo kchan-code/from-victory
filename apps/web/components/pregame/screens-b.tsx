@@ -30,6 +30,7 @@ import { audioAssetUrl, cellSrcFor, cellSlugFor, openerSrcFor } from "./audio-ma
 import type { Sport, SportConfig } from "./sport-registry";
 import { HOCKEY_CONFIG, adversityLabelFor } from "./sport-registry";
 import { positivePlayTitle } from "./positive-plays";
+import { verseForCueWord } from "./cue-word-verses";
 import type { AudioTimeline, Phase } from "./audio/types";
 import { findActivePhase, type AssembledTimeline } from "./audio-playlist";
 import { useClipPlayer } from "./useClipPlayer";
@@ -1612,6 +1613,84 @@ function CardRow({
   );
 }
 
+// ─── CUE-WORD VERSE ROW ─── (FV-229) ─────────────────────────────────────
+// Say-it-then-reveal memory loop: verse starts hidden behind the prompt;
+// one tap reveals the reference and verbatim NIV text. No scoring, no
+// tracking, no localStorage write — stateless tap-reveal only. The athlete
+// carries this verse every time they use this cue word.
+//
+// prefers-reduced-motion: the reveal drops the cross-fade and applies an
+// instant show so the transition never causes discomfort.
+function CueWordVerseRow({ cueWord }: { cueWord: string }) {
+  const [revealed, setReveal] = useState(false);
+  const verse = verseForCueWord(cueWord);
+
+  // When the reveal button unmounts, focus would drop to <body> and the
+  // verse would never be announced (PR #195 qa + review finding). Move
+  // focus to the revealed container so SR/keyboard users land on the verse.
+  const revealedRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (revealed) revealedRef.current?.focus();
+  }, [revealed]);
+
+  return (
+    <div
+      className="mt-5 border-t border-hairline pt-4"
+      data-testid="cue-word-verse-row"
+    >
+      {/* Row label */}
+      <div className="mb-3 font-mono text-[9px] font-semibold uppercase tracking-[0.22em] text-cream/50">
+        Your word, and the verse under it.
+      </div>
+
+      {!revealed ? (
+        /* Before-reveal: training prompt + tap-to-reveal button */
+        <button
+          type="button"
+          onClick={() => setReveal(true)}
+          data-testid="verse-reveal-btn"
+          aria-label="Reveal verse"
+          className="w-full rounded-[12px] border border-hairline bg-charcoal px-4 py-4 text-left transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.98]"
+        >
+          {/* Two-context prompt (sports-psych REVISE): recall is the calm-
+              context behavior; the pre-walkout moment stays read-and-go —
+              never a quiz seconds before competing. */}
+          <p className="font-body text-[13px] leading-[1.55] text-cream/60">
+            Walking out now? Read it and go. Reviewing later? Try saying it first, then reveal.
+          </p>
+          <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-gold/70">
+            Tap to reveal
+          </p>
+        </button>
+      ) : (
+        /* After-reveal: reference + verbatim text + follow-through line.
+           motion:safe cross-fade; prefers-reduced-motion gets instant show. */
+        <div
+          ref={revealedRef}
+          tabIndex={-1}
+          className="motion-safe:animate-card-fade-in rounded-[12px] border border-gold/20 bg-charcoal px-4 py-4 outline-none"
+          data-testid="verse-revealed"
+        >
+          {/* Reference — gold mono, matching VerseRef pattern */}
+          <div className="mb-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-gold">
+            {verse.reference}
+          </div>
+          {/* Verbatim NIV text — scripture serif, italic */}
+          <p className="font-scripture text-[15px] italic leading-[1.55] text-cream">
+            {verse.text}
+          </p>
+          {/* After-reveal coaching line — outcome-NEUTRAL by design (sports-
+              psych REVISE): never presupposes a miss; rewards the return,
+              not the recall. */}
+          <p className="mt-3.5 font-body text-[12px] leading-[1.5] text-cream/50">
+            Said it or read it, you ran the rep. The Word goes in by repetition — come back to it tomorrow.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function PregameCardScreen({
   state,
   onQuick,
@@ -1686,13 +1765,16 @@ export function PregameCardScreen({
           </p>
         </div>
 
-        <div className="mb-5 border-y border-hairline py-4">
+        <div className="mb-5 border-t border-hairline pt-4">
           <div className="mb-1.5 font-mono text-[9px] font-semibold uppercase tracking-[0.22em] text-cream/50">
             Cue Word
           </div>
           <div className="font-display text-[52px] font-extrabold uppercase leading-[0.95] tracking-[0.04em] text-gold">
             {state.cueWord || DEFAULTS.cueWord}
           </div>
+          {/* FV-229: say-it-then-reveal verse loop, nested inside the cue-word
+              section so it reads as the verse UNDER the word. */}
+          <CueWordVerseRow cueWord={state.cueWord || DEFAULTS.cueWord} />
         </div>
 
         <div className="flex flex-col gap-3">
