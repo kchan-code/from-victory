@@ -31,6 +31,7 @@ import {
   ResetAnchorScreen,
   ReviewScreen,
   SelfTalkScreen,
+  SoundBedScreen,
 } from "./screens-b";
 import {
   BottomBar,
@@ -147,6 +148,14 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
       selfTalk: saved.selfTalk,
       cueWord: saved.cueWord,
       prayerStyle: saved.prayerStyle,
+      // bedId is a device-level preference, not part of the session cache.
+      // Restore to null here; SoundBedScreen (if visited) will load from
+      // localStorage on its own mount. For "Run it like last time" the
+      // sound screen is skipped, so we use the current state.bedId if set,
+      // otherwise default to null — useClipPlayer reads it from the state
+      // that's passed in, so the bed is still applied via what AudioSessionScreen
+      // receives.
+      bedId: data.bedId,
       audioCompleted: false,
     });
     fromSavedRef.current = true;
@@ -343,6 +352,8 @@ function ScreenSwitch({
       return <CueWordScreen state={state} set={set} sportConfig={sportConfig} />;
     case "prayerStyle":
       return <PrayerStyleScreen state={state} set={set} />;
+    case "soundBed":
+      return <SoundBedScreen state={state} set={set} />;
     case "review":
       return <ReviewScreen state={state} sportConfig={sportConfig} sport={sport} />;
     case "audio":

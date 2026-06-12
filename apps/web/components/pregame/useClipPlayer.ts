@@ -70,7 +70,8 @@ import {
   resolvePlaylist,
   resolvePracticePlaylist,
 } from "./audio-playlist";
-import { assembleWavBlob } from "./audio/encode-wav";
+import { assembleWavBlobWithBed } from "./audio/encode-wav";
+import { getBed, BED_MIX_GAIN } from "./audio/beds";
 import { getSportConfig, type Sport } from "./sport-registry";
 import type { PrayerStyle } from "./types";
 
@@ -164,6 +165,14 @@ export type UseClipPlayerOptions = {
    * Defaults to "guided" (unchanged behaviour for all existing call sites).
    */
   prayerStyle?: PrayerStyle | null;
+  /**
+   * FV-227 — athlete-chosen music bed id ("still" | "pulse" | "rise"), or null
+   * for silence. When non-null, the bed MP3 is fetched and decoded once, then
+   * mixed under the stitched voice PCM at BED_MIX_GAIN with 1.5 s fade-in and
+   * 2 s fade-out. On bed fetch/decode failure the session falls through to
+   * voice-only (never blocks or delays playback). Defaults to null (silence).
+   */
+  bedId?: string | null;
   /** Called once when the final clip ends. */
   onCompleted?: () => void;
 };
@@ -238,6 +247,7 @@ export function useClipPlayer({
   practiceFocus,
   sport = "hockey",
   prayerStyle,
+  bedId = null,
   onCompleted,
 }: UseClipPlayerOptions): UseClipPlayerResult {
   // ── state ──
@@ -526,16 +536,69 @@ export function useClipPlayer({
         }
       }
 
-      // Decode complete — close the AudioContext. It is no longer needed.
-      // HTMLAudioElement takes over from here.
+      // Decode complete — but we may still need the AudioContext to decode
+      // the bed MP3. Defer closing until after the optional bed decode below.
+
+      if (cancelled) {
+        decodeCtx.close().catch(() => {/* ignore */});
+        return;
+      }
+
+      // 6. Optionally fetch + decode the music bed (FV-227).
+      //
+      // Design:
+      //   - Bed fetch happens AFTER all clip decodes (network deadline is
+      //     already cleared, so this is purely async + CPU-bound work).
+      //   - On ANY failure (fetch, decode, cancelled) fall back to voice-only.
+      //     Never block or delay the session on a bed failure.
+      //   - The decoded bed buffer is used immediately in step 7 and then
+      //     released — no ref is held past blob construction.
+      let bedChannel0: Float32Array | null = null;
+      if (bedId) {
+        const bed = getBed(bedId);
+        if (bed) {
+          const bedBuffer = await fetchArrayBuffer(bed.path);
+          if (cancelled) {
+            decodeCtx.close().catch(() => {/* ignore */});
+            return;
+          }
+          if (bedBuffer) {
+            try {
+              const decoded = await decodeCtx.decodeAudioData(bedBuffer.slice(0));
+              if (!cancelled) {
+                // Beds are stereo (44.1 kHz, 2 ch) — take channel 0 (left).
+                bedChannel0 = decoded.getChannelData(0);
+              }
+            } catch {
+              // Bed decode failed — fall back to voice-only (console.warn only).
+              if (!cancelled) {
+                console.warn("[useClipPlayer] bed decode failed, continuing voice-only");
+              }
+            }
+          } else {
+            console.warn("[useClipPlayer] bed fetch failed, continuing voice-only");
+          }
+        }
+      }
+
+      // Close the AudioContext now that all decoding (clips + bed) is done.
       decodeCtx.close().catch(() => {/* ignore */});
 
       if (cancelled) return;
 
-      // 6. Assemble all decoded buffers into a single WAV blob.
+      // 7. Assemble all decoded buffers into a single WAV blob, mixing the bed
+      //    under the voice PCM if the athlete chose one (FV-227).
+      //    Silence path (bedChannel0 === null) → assembleWavBlobWithBed falls
+      //    through to assembleWavBlob behaviour unchanged.
+      const voiceSampleRate = decodedBuffers[0]?.sampleRate ?? 24000;
       let blob: Blob;
       try {
-        blob = assembleWavBlob(decodedBuffers);
+        blob = assembleWavBlobWithBed(
+          decodedBuffers,
+          bedChannel0,
+          BED_MIX_GAIN,
+          voiceSampleRate,
+        );
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "WAV assembly failed");
         return;
@@ -609,7 +672,7 @@ export function useClipPlayer({
       clearDeadline();
       controller.abort();
     };
-  }, [need, position, adversity, anchor, selfTalk, cueWord, positivePlays, practice, practiceState, practiceFocus, sport, prayerStyle, startRaf, stopRaf, wireMediaSession]);
+  }, [need, position, adversity, anchor, selfTalk, cueWord, positivePlays, practice, practiceState, practiceFocus, sport, prayerStyle, bedId, startRaf, stopRaf, wireMediaSession]);
 
   // ── Lightweight visibilitychange nudge ──
   // iOS may pause the audio element when the app is briefly backgrounded (e.g.

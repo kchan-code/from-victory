@@ -39,6 +39,9 @@ vi.mock("@/components/pregame/audio-playlist", () => ({
 
 vi.mock("@/components/pregame/audio/encode-wav", () => ({
   assembleWavBlob: () => new Blob(["wav"], { type: "audio/wav" }),
+  // FV-227: useClipPlayer now calls assembleWavBlobWithBed instead of
+  // assembleWavBlob. Stub it to return a minimal WAV Blob (same as above).
+  assembleWavBlobWithBed: () => new Blob(["wav"], { type: "audio/wav" }),
 }));
 
 // A pregame combination that exercises the non-practice resolve branch.
