@@ -44,8 +44,20 @@ export const PREGAME_SESSION_CACHE_KEY = "fv_pregame_session";
 
 // Mirrors the Sport union in sport-registry.ts. Extended as new sports land
 // so the session cache accepts every sport the pregame engine supports.
-type CachedSport = "hockey" | "basketball" | "baseball";
+type CachedSport = "hockey" | "basketball" | "baseball" | "golf";
 type CachedPrayerStyle = "guided" | "self-guided";
+
+// Runtime allowlist mirroring the CachedSport union. A Set (not an inline
+// `!==` chain) so adding a sport is a single edit that the type-checker keeps in
+// sync — the prior `sport !== "hockey" && …` guard silently dropped new sports
+// (golf was rejected at runtime despite the type update). Keep in lockstep with
+// CachedSport above.
+const VALID_CACHED_SPORTS = new Set<CachedSport>([
+  "hockey",
+  "basketball",
+  "baseball",
+  "golf",
+]);
 
 // Hard ceiling on any stored string field. localStorage is attacker-adjacent
 // input on a shared device — a poisoned multi-megabyte value must invalidate
@@ -143,7 +155,8 @@ export function validatePregameSession(
 
   // sport — must be a supported CachedSport value
   const sport = r["sport"];
-  if (sport !== "hockey" && sport !== "basketball" && sport !== "baseball") return null;
+  if (typeof sport !== "string" || !VALID_CACHED_SPORTS.has(sport as CachedSport))
+    return null;
 
   // Shared string-field check: non-empty after trim, bounded length.
   const validField = (v: unknown): v is string =>

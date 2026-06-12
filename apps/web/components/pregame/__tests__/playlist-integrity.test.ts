@@ -168,6 +168,25 @@ const SPORT_CELL_EXPECTATIONS: Record<
       forbiddenSlug: "bsb-pitcher-benched",
     },
   },
+  // Golf (FV-265 scripts; audio render = FV-266). 3 profiles × 10 = 30 distinct
+  // cells — golf has NO canonical-key reroute (every profile plays every hole),
+  // so the matrix does not dedup. The 3 first-tee (shank/putting-yips) cells are
+  // authored but withheld from the picker via roleAdversities. Excluded from the
+  // registry-parameterized loops below until its audio is rendered (see
+  // RENDERED_SPORT_CONFIGS); FV-266/FV-271 turn the full grid on once clips land.
+  // "specialCase" here asserts the no-reroute property: a profile relabel
+  // ("I hit it OB." → "I hit the big miss" for Bomber) does NOT fork the slug.
+  golf: {
+    cellCount: 30,
+    slugPrefix: "glf-",
+    cellLayout: "catalog",
+    specialCase: {
+      role: "Bomber",
+      adversity: "I hit it OB.",
+      expectedSlug: "glf-bomber-ob",
+      forbiddenSlug: "glf-bomber-big-miss",
+    },
+  },
 };
 
 // FV-94/FV-99: the registry-parameterized integrity suites (sections 5 & 7) run

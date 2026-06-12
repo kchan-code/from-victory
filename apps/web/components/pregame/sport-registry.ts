@@ -28,7 +28,7 @@ import type { AudioSegment, NeedToday } from "./types";
 // Sport type
 // ---------------------------------------------------------------------------
 
-export type Sport = "hockey" | "basketball" | "baseball"; // extend as more sports land
+export type Sport = "hockey" | "basketball" | "baseball" | "golf"; // extend as more sports land
 
 /**
  * A Hard Moment option: the canonical `key` (drives `cellSlugFor` + the stored
@@ -801,6 +801,274 @@ export const BASEBALL_CONFIG: SportConfig = {
 };
 
 // ---------------------------------------------------------------------------
+// Golf config (FV-265 — v2 sport; taxonomy = docs/golf-module-map.md)
+// ---------------------------------------------------------------------------
+
+const GOLF_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
+  "I three-putt.": "three-putt",
+  "I have a blow-up hole.": "blow-up",
+  "I hit it OB.": "ob",
+  "I duff a short-game shot.": "duff-chip",
+  "I miss a short putt.": "short-putt",
+  "My swing leaves me on the first tee.": "first-tee",
+  "I get outplayed in my group.": "outplayed",
+  "I feel nervous.": "nervous",
+  "I start slow.": "start-slow",
+  "I fall behind the number.": "fall-behind",
+};
+
+// FV-265: golf text-mode audio script (sport-correct body for segs 80/120/165).
+// Segments 0/35/210/250/275 are sport-neutral — byte-identical structure to the
+// hockey AUDIO_SCRIPT (same eyebrow, body, startSec). Segments 80/120/165 are
+// golf-specific (course/first-tee/profile scenes). {{roleScenes}} in segment 165
+// is substituted at render time via substituteSegment() reading
+// sportConfig.roleContent — Bomber/Ball-Striker/Scrambler strings come from the
+// registry, not duplicated here.
+const GOLF_AUDIO_SCRIPT: AudioSegment[] = [
+  {
+    startSec: 0,
+    eyebrow: "Identity",
+    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+  },
+  {
+    startSec: 35,
+    eyebrow: "Settle",
+    body: "Sit tall. Long exhale. Lead your body back to ready. Four counts in. Six counts out. Let your shoulders drop.",
+  },
+  {
+    startSec: 80,
+    eyebrow: "See the course",
+    body: "See the first tee. Hear the quiet of the morning, the strike of a ball on the range. Feel the grip in your hands, your spikes settling into the turf. You belong here. You are ready.",
+  },
+  {
+    startSec: 120,
+    eyebrow: "Your first tee shot",
+    body: "You step onto the first tee. Slow breath. Pick your target, commit to the number, and make one free, committed swing. The ball finds the short grass. You walk after it, in control. Next shot.",
+  },
+  {
+    startSec: 165,
+    eyebrow: "Play your game · {{role}}",
+    body: "{{roleScenes}}",
+  },
+  {
+    startSec: 210,
+    eyebrow: "If this happens",
+    body: "{{adversity}} See it. Feel it. Breathe. Speak truth. Take the next faithful action. Your mistake is real. It is not your identity.",
+  },
+  {
+    startSec: 250,
+    eyebrow: "Coach yourself",
+    body: "{{selfTalk}} When pressure hits, return here. Your anchor: {{anchor}}. Your cue word: {{cueWord}}.",
+  },
+  {
+    startSec: 275,
+    eyebrow: "Send-off",
+    body: "Lord, help me compete with courage, humility, and joy. Help me play the shot in front of me, respond well to a bad one, and remember that my worth is secure in You. Amen. Play from victory.",
+  },
+];
+
+export const GOLF_CONFIG: SportConfig = {
+  displayName: "Golf",
+  sportKey: "golf",
+
+  // Golf is non-positional — the role dimension maps to PLAYER PROFILE
+  // (FV-264). Slug tokens: bomber / ballstriker / scrambler.
+  roles: ["Bomber", "Ball-Striker", "Scrambler"] as const,
+  roleLabel: "Player type",
+
+  roleContent: {
+    Bomber: {
+      title: "Step up and trust it.",
+      scenes: [
+        "Pick your line.",
+        "Commit to the number.",
+        "Free, full release.",
+        "Take your medicine when you miss.",
+        "Next tee, next swing.",
+      ],
+    },
+    "Ball-Striker": {
+      title: "Flush it, hole to hole.",
+      scenes: [
+        "Pick a small target.",
+        "One smooth swing.",
+        "Hit your number.",
+        "Stripe it, walk, repeat.",
+        "Loose swing, let it go.",
+      ],
+    },
+    Scrambler: {
+      title: "Always a way to par.",
+      scenes: [
+        "See the shot, feel the shot.",
+        "Soft hands, good speed.",
+        "Get it up and down.",
+        "Roll the next one pure.",
+        "Grind out the number.",
+      ],
+    },
+  },
+
+  adversities: [
+    "I three-putt.",
+    "I have a blow-up hole.",
+    "I hit it OB.",
+    "I duff a short-game shot.",
+    "I miss a short putt.",
+    "My swing leaves me on the first tee.",
+    "I get outplayed in my group.",
+    "I feel nervous.",
+    "I start slow.",
+    "I fall behind the number.",
+  ],
+
+  // FV-264 §5/§6 per-profile overrides + the clinical withhold.
+  //  - All three profiles WITHHOLD "My swing leaves me on the first tee." (the
+  //    shank / putting-yips / feel-deserting umbrella). The clip is authored
+  //    (hm-glf-{profile}-first-tee) but omitted from the picker here until
+  //    clinical-advisor sign-off (FV-119 / baseball-yips precedent). To
+  //    re-enable, add it back to each profile's array. This yields 27 selectable
+  //    cells of 30 authored.
+  //  - Profile-true relabels (label-only; the `key` is unchanged so cellSlugFor +
+  //    state.adversity still resolve the same glf-* cell — the FV-101 mechanism):
+  //    Bomber: OB → "I hit the big miss", outplayed → "Someone outdrives me".
+  //    Ball-Striker: three-putt → "I three-putt a green I striped",
+  //      outplayed → "A scrambler beats me".
+  //    Scrambler: duff → "I miss the up-and-down", outplayed → "I get out-struck all day".
+  roleAdversities: {
+    Bomber: [
+      { key: "I three-putt.", label: "I three-putt." },
+      { key: "I have a blow-up hole.", label: "I have a blow-up hole." },
+      { key: "I hit it OB.", label: "I hit the big miss." },
+      { key: "I duff a short-game shot.", label: "I duff a short-game shot." },
+      { key: "I miss a short putt.", label: "I miss a short putt." },
+      { key: "I get outplayed in my group.", label: "Someone outdrives me." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "I fall behind the number.", label: "I fall behind the number." },
+    ],
+    "Ball-Striker": [
+      { key: "I three-putt.", label: "I three-putt a green I striped." },
+      { key: "I have a blow-up hole.", label: "I have a blow-up hole." },
+      { key: "I hit it OB.", label: "I hit it OB." },
+      { key: "I duff a short-game shot.", label: "I duff a short-game shot." },
+      { key: "I miss a short putt.", label: "I miss a short putt." },
+      { key: "I get outplayed in my group.", label: "A scrambler beats me." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "I fall behind the number.", label: "I fall behind the number." },
+    ],
+    Scrambler: [
+      { key: "I three-putt.", label: "I three-putt." },
+      { key: "I have a blow-up hole.", label: "I have a blow-up hole." },
+      { key: "I hit it OB.", label: "I hit it OB." },
+      { key: "I duff a short-game shot.", label: "I miss the up-and-down." },
+      { key: "I miss a short putt.", label: "I miss a short putt." },
+      { key: "I get outplayed in my group.", label: "I get out-struck all day." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "I fall behind the number.", label: "I fall behind the number." },
+    ],
+  },
+
+  adversitySlugFragments: GOLF_ADVERSITY_SLUG_FRAGMENTS,
+
+  cellSlugFor(adversity: string, role?: string | null): string {
+    const frag = GOLF_ADVERSITY_SLUG_FRAGMENTS[adversity] ?? "three-putt";
+    // No canonical-key reroutes — every profile plays every hole, so unlike a
+    // pitcher (no fielding error) or a Big (fouls out vs benched) there is no
+    // cell that doesn't exist for a profile. "Ball-Striker" → "ballstriker"
+    // (hyphen stripped) so the slug token matches the authored hm-glf-* clips.
+    const roleStr = role ? role.toLowerCase().replace(/-/g, "") : "bomber";
+    // Returns the glf-* composite key (NOT hm-glf-*), mirroring baseball's bsb-*.
+    // FV-266 renders BOTH hm-glf-{profile}-{frag} (the hard-moment clip the
+    // manifest templates reference) AND the glf-{profile}-{frag} composite this
+    // slug targets (the legacy two-<audio> fallback path).
+    return `glf-${roleStr}-${frag}`;
+  },
+
+  // Pre-practice focus presets (FV-264 Appendix). Audio render + the rest of the
+  // pre-practice "Lock In" session (opener + Beats 2-6 tail + manifest
+  // practiceState.golf) land with FV-267 / FV-266; these slugs are declared now
+  // so the registry is complete.
+  practiceFocusOptions: [
+    "Committed to every shot",
+    "One shot at a time",
+    "Pick a small target",
+    "Full routine, every ball",
+    "Take my medicine",
+    "Speed on every putt",
+    "Reset between shots",
+  ] as const,
+
+  practiceFocusSlugs: {
+    "Committed to every shot": "pp-golf-focus-committed-to-every-shot",
+    "One shot at a time": "pp-golf-focus-one-shot-at-a-time",
+    "Pick a small target": "pp-golf-focus-pick-a-small-target",
+    "Full routine, every ball": "pp-golf-focus-full-routine-every-ball",
+    "Take my medicine": "pp-golf-focus-take-my-medicine",
+    "Speed on every putt": "pp-golf-focus-speed-on-every-putt",
+    "Reset between shots": "pp-golf-focus-reset-between-shots",
+  },
+
+  // FV-117 per-sport picker lists. "Better puck decisions" → "Better course
+  // management"; all other 9 needs are sport-neutral and shared. The golf
+  // need-openers REUSE the shared opener clips (resolveOpenerSlug falls back to
+  // NEED_OPENER_SLUGS for non-basketball sports — no golf-specific opener clips).
+  needs: [
+    "Confidence",
+    "Calm",
+    "Compete level",
+    "Reset after mistakes",
+    "Physical courage",
+    "Better course management",
+    "Leadership",
+    "Joy",
+    "Hope",
+    "Be more Vocal",
+  ] as const satisfies readonly NeedToday[],
+
+  // "Long exhale", "Press thumb to palm", "Say cue word" are shared; "Re-grip the
+  // club", "Glove tap", "Step back, then step in" are golf-specific (clips +
+  // slugs land with the audio render — they drop cleanly until then, the
+  // baseball-anchor precedent).
+  anchors: [
+    "Long exhale",
+    "Press thumb to palm",
+    "Re-grip the club",
+    "Glove tap",
+    "Step back, then step in",
+    "Say cue word",
+  ] as const,
+
+  // "You're okay. Next shift." → "You're okay. Next shot." for golf; the other 6
+  // phrases are sport-neutral and shared.
+  selfTalkOptions: [
+    "You're okay. Next shot.",
+    "Breathe. Do your job.",
+    "Stay steady. Make the next play.",
+    "You don't need to do too much.",
+    "Compete, recover, go again.",
+    "Your identity is secure. Play free.",
+    "You are secure. Take the next faithful action.",
+  ] as const,
+
+  practiceOpenerSlugs: {
+    // pp-opener-dialed-in is sport-neutral and reused across all sports.
+    "dialed-in": "pp-opener-dialed-in",
+    // Golf-specific not-feeling-it opener (authored with FV-267; declared here
+    // for registry completeness).
+    "not-feeling-it": "pp-golf-opener-get-to",
+  },
+
+  // FV-265: golf text-mode audio script (sport-correct body for segs 80/120/165).
+  audioScript: GOLF_AUDIO_SCRIPT,
+
+  cueWordHelper: "The one you'd say to yourself on the walk to the next shot.",
+  cardShareHint: "Screenshot it. Open it before your tee time.",
+};
+
+// ---------------------------------------------------------------------------
 // Registry + accessor
 // ---------------------------------------------------------------------------
 
@@ -808,6 +1076,7 @@ export const SPORT_REGISTRY: Record<Sport, SportConfig> = {
   hockey: HOCKEY_CONFIG,
   basketball: BASKETBALL_CONFIG,
   baseball: BASEBALL_CONFIG,
+  golf: GOLF_CONFIG,
 };
 
 /**
