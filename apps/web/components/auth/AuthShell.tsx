@@ -22,7 +22,7 @@ export function AuthShell({ title, subtitle, children, footer }: Props) {
           alt="From Victory"
           width={140}
           height={80}
-          className="h-20 w-auto"
+          className="h-20 md:h-28 w-auto"
           priority
         />
       </Link>
