@@ -22,6 +22,7 @@ export const metadata = {
 };
 
 const SCENARIO_EYEBROW: Record<PostgameScenario, string> = {
+  win: "The Win",
   loss: "The Loss",
   benching: "The Bench",
   "bad-game": "The Bad Game",

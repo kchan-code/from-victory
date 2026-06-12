@@ -291,7 +291,7 @@ export default async function AthleteHomePage() {
                   </p>
                   {/* AUTHOR: frontend-engineer — subtitle line */}
                   <p className="font-body text-cream/50 text-[13px] leading-snug mt-0.5">
-                    The loss, the bench, the bad night &mdash; read when you need it.
+                    The win, the loss, the bad night &mdash; read when you need it.
                   </p>
                 </div>
                 <span aria-hidden="true" className="flex-none text-gold/40 text-[20px] font-display">
