@@ -78,16 +78,39 @@ import { createCheckoutSession } from "@/lib/actions/subscription";
 type SubRow = { stripe_customer_id: string } | null;
 
 /**
- * Builds a minimal chainable Supabase client stub that returns `row` for
- * any .from("subscriptions").select(...).eq(...).maybeSingle() chain.
+ * Builds a minimal chainable Supabase client stub.
+ *
+ * @param row         - Row returned by subscriptions.maybeSingle()
+ * @param athleteCount - Count returned by parent_athlete_links count query
+ *                       (default 1; null simulates a count-read error → falls
+ *                       back to 1 in the action)
  */
-function makeSubMock(row: SubRow) {
-  const chain = {
-    select: () => chain,
-    eq: () => chain,
+function makeSubMock(row: SubRow, athleteCount: number | null = 1) {
+  const subChain = {
+    select: () => subChain,
+    eq: () => subChain,
     maybeSingle: async () => ({ data: row, error: null }),
   };
-  return { from: (_table: string) => chain };
+
+  // The athlete-count query uses { count: "exact", head: true } — the chain
+  // resolves to { count, error: null } (or { count: null, error: {...} }).
+  const countResult =
+    athleteCount === null
+      ? { count: null, error: { message: "count error" } }
+      : { count: athleteCount, error: null };
+  const countChain = {
+    select: () => ({
+      eq: () => Promise.resolve(countResult),
+    }),
+  };
+
+  return {
+    from: (table: string) => {
+      if (table === "subscriptions") return subChain;
+      // parent_athlete_links
+      return countChain;
+    },
+  };
 }
 
 /** FormData with a valid plan value. */
@@ -327,5 +350,65 @@ describe("createCheckoutSession — 14-day trial logic (FV-217)", () => {
 
     expect(result?.ok).toBe(false);
     expect(sessionsCreateMock).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-283: quantity = athlete count
+// ---------------------------------------------------------------------------
+
+describe("createCheckoutSession — quantity from athlete count (FV-283)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
+    process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
+    process.env.STRIPE_PRICE_ID_MONTHLY = "price_monthly_500";
+    process.env.STRIPE_PRICE_ID_ANNUAL = "price_annual_4900";
+
+    sessionsCreateMock.mockResolvedValue({
+      url: "https://checkout.stripe.com/pay/cs_test",
+    });
+  });
+
+  it("passes quantity=3 when the parent has 3 linked athletes", async () => {
+    supabaseMockImpl = makeSubMock(null, 3); // 3 athletes, no existing sub
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    const lineItems = params.line_items as Array<{ price: string; quantity: number }>;
+    expect(lineItems[0]?.quantity).toBe(3);
+  });
+
+  it("passes quantity=1 when the parent has 0 linked athletes (floor)", async () => {
+    supabaseMockImpl = makeSubMock(null, 0); // 0 athletes → floor at 1
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    const lineItems = params.line_items as Array<{ price: string; quantity: number }>;
+    expect(lineItems[0]?.quantity).toBe(1);
+  });
+
+  it("defaults quantity to 1 when the athlete count query fails", async () => {
+    supabaseMockImpl = makeSubMock(null, null); // count query errors
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    // Session is still created (count error is non-fatal).
+    expect(sessionsCreateMock).toHaveBeenCalledOnce();
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    const lineItems = params.line_items as Array<{ price: string; quantity: number }>;
+    expect(lineItems[0]?.quantity).toBe(1);
+  });
+
+  it("passes quantity=1 when the parent has exactly 1 athlete", async () => {
+    supabaseMockImpl = makeSubMock({ stripe_customer_id: "cus_existing" }, 1);
+
+    await createCheckoutSession(null, makeFormData("annual"));
+
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    const lineItems = params.line_items as Array<{ price: string; quantity: number }>;
+    expect(lineItems[0]?.quantity).toBe(1);
   });
 });

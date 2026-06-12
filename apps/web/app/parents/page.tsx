@@ -86,9 +86,8 @@ const parentSees = [
 // ── Pricing summary ──────────────────────────────────────────────────────
 const pricingPoints = [
   "14 days free for first-time subscribers — no charge until the trial ends",
-  "$49 per year, or $5 per month",
+  "$5/mo or $49/yr for your first athlete, $3/mo or $29/yr for each additional",
   "Cancel anytime from your account settings",
-  "One subscription covers your athlete's account",
   "No ads, no third-party tracking, no data sold",
 ];
 

@@ -6,6 +6,8 @@ import { ageFromBirthdate } from "@/lib/age";
 import { requireAdminParent, isAdminEmail } from "@/lib/auth/admin";
 import { isSyntheticAthleteEmail } from "@/lib/auth/athlete-email";
 import { SUPPORTED_SPORTS } from "@/lib/sports";
+import { syncAthleteQuantity } from "@/lib/stripe/sync-athlete-quantity";
+import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -179,6 +181,14 @@ export async function createAthleteDirect(
       error: "Could not link the athlete to your account. Please try again.",
     };
   }
+
+  // Sync Stripe subscription quantity to reflect the new athlete count.
+  // Non-blocking: a Stripe failure here must never prevent the athlete from
+  // being created. syncAthleteQuantity catches all errors internally.
+  // deliverInBackground registers the promise with waitUntil so the
+  // serverless runtime can't freeze the instance mid-Stripe-write — a
+  // dropped sync is silent under-/over-billing, not a caught error.
+  deliverInBackground(syncAthleteQuantity(parentId));
 
   return {
     ok: true,

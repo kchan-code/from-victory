@@ -115,17 +115,33 @@ export async function createCheckoutSession(
     };
   }
 
-  // 4. Check for an existing subscription row on this parent.
-  //    Uses the RLS-scoped client — the parent can only read their own row.
-  //    This single read serves two purposes:
+  // 4. Check for an existing subscription row on this parent AND count their
+  //    linked athletes in parallel.
+  //
+  //    Uses the RLS-scoped client — the parent can only read their own rows.
+  //    The subscription read serves two purposes:
   //    (a) customer reuse: pass the existing Stripe customer ID if present.
   //    (b) trial eligibility: no row → first-time subscriber → trial offered.
+  //
+  //    The athlete count drives checkout `quantity` for graduated tiered pricing:
+  //      quantity 1  → first-athlete price tier ($5/mo | $49/yr)
+  //      quantity 2+ → additional athletes at the graduated tier ($3/mo | $29/yr)
+  //    Floor at 1: a parent with 0 linked athletes still buys at least 1 seat.
   const supabase = createClient();
-  const { data: existingSub, error: subReadError } = await supabase
-    .from("subscriptions")
-    .select("stripe_customer_id")
-    .eq("parent_id", userId)
-    .maybeSingle();
+
+  const [subResult, athleteCountResult] = await Promise.all([
+    supabase
+      .from("subscriptions")
+      .select("stripe_customer_id")
+      .eq("parent_id", userId)
+      .maybeSingle(),
+    supabase
+      .from("parent_athlete_links")
+      .select("athlete_id", { count: "exact", head: true })
+      .eq("parent_id", userId),
+  ]);
+
+  const { data: existingSub, error: subReadError } = subResult;
 
   if (subReadError) {
     // Fail CLOSED: a transient read error must never grant a trial the
@@ -147,6 +163,19 @@ export async function createCheckoutSession(
     };
   }
 
+  // Athlete count — non-fatal if it fails: fall back to 1 (the minimum valid
+  // quantity). The parent can always add athletes after subscribing and the
+  // quantity will be corrected by syncAthleteQuantity on the next mutation.
+  const athleteCount = athleteCountResult.error
+    ? 1
+    : Math.max(athleteCountResult.count ?? 0, 1);
+
+  if (athleteCountResult.error) {
+    console.warn(
+      `[subscription.createCheckoutSession] athlete count read failed (parent=${userId}): ${athleteCountResult.error.message} — defaulting quantity to 1`,
+    );
+  }
+
   const existingCustomerId = existingSub?.stripe_customer_id ?? null;
   // Trial is ONLY offered when there is no existing row. If ANY row exists
   // (any status — active, canceled, trialing) the parent has already had a trial.
@@ -163,7 +192,7 @@ export async function createCheckoutSession(
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: "subscription",
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: athleteCount }],
       // Required: the webhook reads session.metadata.parent_id to bind the
       // Stripe Customer to the parent row on checkout.session.completed.
       metadata: { parent_id: userId },
