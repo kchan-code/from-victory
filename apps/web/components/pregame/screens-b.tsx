@@ -1691,6 +1691,410 @@ function CueWordVerseRow({ cueWord }: { cueWord: string }) {
   );
 }
 
+// ─── PREGAME CARD IMAGE BUILDER ──────────────────────────────────────────
+//
+// Renders a faithful recreation of the Pregame Card to a PNG Blob using the
+// Canvas 2D API. No new npm dependencies — built-in browser API only.
+//
+// Privacy: mirrors exactly what the visible card shows (cue word, verse,
+// anchor, self-talk, role). adversity / hard-moment NEVER included.
+//
+// Two-pass approach:
+//   Pass 1 — draw on a 1×1px scratch canvas to measure final Y
+//   Pass 2 — draw on a properly-sized canvas at 2× scale (retina)
+
+interface CardImageData {
+  cueWord: string;
+  cueVerse: { reference: string; text: string };
+  cardVerse: { reference: string; displayText: string; eyebrow?: string };
+  anchor: string;
+  selfTalk: string;
+  need: string | null | undefined;
+  role?: string | null;
+}
+
+/** Wraps text onto multiple lines within maxWidth, returns array of lines. */
+function wrapText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+): string[] {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (ctx.measureText(candidate).width > maxWidth && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = candidate;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+/**
+ * Builds a PNG Blob of the pregame card at 390×(dynamic)px, 2× DPR.
+ * Resolves font families from CSS custom properties so Next.js font-variable
+ * names are used (not hardcoded strings that get mangled).
+ */
+async function buildPregameCardPng(data: CardImageData): Promise<Blob> {
+  await document.fonts.ready;
+
+  // ── Resolve font families from CSS custom properties ──────────────────
+  const cs = getComputedStyle(document.documentElement);
+  const displayFont =
+    cs.getPropertyValue("--font-big-shoulders").trim() ||
+    "'Saira Condensed', Impact, sans-serif";
+  const monoFont =
+    cs.getPropertyValue("--font-jetbrains-mono").trim() ||
+    "ui-monospace, monospace";
+  const serifFont =
+    cs.getPropertyValue("--font-source-serif").trim() || "Georgia, serif";
+
+  // ── Card layout constants ──────────────────────────────────────────────
+  const CARD_W = 390;
+  const PAD = 22;
+  const CONTENT_W = CARD_W - PAD * 2;
+  const HAIRLINE = "rgba(247,247,247,0.08)";
+  const GOLD = "#DFAF37";
+  const CREAM = "#f7f7f7";
+  const CREAM_50 = "rgba(247,247,247,0.50)";
+  const CREAM_40 = "rgba(247,247,247,0.40)";
+  const CREAM_70 = "rgba(247,247,247,0.70)";
+
+  /**
+   * Core draw routine. When `measure` is true we draw on a 1px scratch
+   * canvas and return the final Y without producing a real image. When
+   * false we draw at 2× DPR onto `targetCanvas`.
+   */
+  function draw(
+    ctx: CanvasRenderingContext2D,
+    dpr: number,
+    measure: boolean,
+  ): number {
+    const s = dpr; // scale factor
+    ctx.scale(s, s);
+
+    // ── Background ────────────────────────────────────────────────────
+    if (!measure) {
+      // Dark linear gradient base
+      const linGrad = ctx.createLinearGradient(0, 0, 0, 1000);
+      linGrad.addColorStop(0, "#0d0d0d");
+      linGrad.addColorStop(1, "#060606");
+      ctx.fillStyle = linGrad;
+      ctx.roundRect(0, 0, CARD_W, 2000, 22);
+      ctx.fill();
+
+      // Gold radial top
+      const goldRad = ctx.createRadialGradient(
+        CARD_W / 2, 0, 0,
+        CARD_W / 2, 0, CARD_W * 0.6,
+      );
+      goldRad.addColorStop(0, "rgba(223,175,55,0.10)");
+      goldRad.addColorStop(1, "transparent");
+      ctx.fillStyle = goldRad;
+      ctx.roundRect(0, 0, CARD_W, 2000, 22);
+      ctx.fill();
+
+      // Cobalt radial bottom
+      const cobaltRad = ctx.createRadialGradient(
+        CARD_W / 2, 1000, 0,
+        CARD_W / 2, 1000, CARD_W * 0.55,
+      );
+      cobaltRad.addColorStop(0, "rgba(36,91,255,0.08)");
+      cobaltRad.addColorStop(1, "transparent");
+      ctx.fillStyle = cobaltRad;
+      ctx.roundRect(0, 0, CARD_W, 2000, 22);
+      ctx.fill();
+    }
+
+    let y = PAD;
+
+    // ── "FROM VICTORY" eyebrow ────────────────────────────────────────
+    y += 22;
+    if (!measure) {
+      ctx.font = `600 8px ${monoFont}`;
+      ctx.letterSpacing = "2px";
+      ctx.fillStyle = CREAM_40;
+      ctx.fillText("FROM VICTORY", PAD, y);
+      ctx.letterSpacing = "0px";
+    }
+
+    // ── PRE-GAME heading + TODAY/need ─────────────────────────────────
+    y += 13;
+    if (!measure) {
+      ctx.font = `800 15px ${displayFont}`;
+      ctx.fillStyle = CREAM;
+      ctx.fillText("PRE-GAME", PAD, y);
+
+      if (data.need) {
+        ctx.font = `600 10px ${monoFont}`;
+        ctx.letterSpacing = "1px";
+        ctx.fillStyle = CREAM_50;
+        const todayW = ctx.measureText("TODAY").width;
+        ctx.fillText("TODAY", CARD_W - PAD - todayW, y - 9);
+        ctx.letterSpacing = "0px";
+
+        ctx.font = `600 10px ${monoFont}`;
+        ctx.fillStyle = GOLD;
+        const needW = ctx.measureText(data.need).width;
+        ctx.fillText(data.need, CARD_W - PAD - needW, y + 4);
+      }
+    }
+
+    // ── Hairline ──────────────────────────────────────────────────────
+    y += 22;
+    if (!measure) {
+      ctx.fillStyle = HAIRLINE;
+      ctx.fillRect(PAD, y, CONTENT_W, 1);
+    }
+
+    // ── Card verse reference ───────────────────────────────────────────
+    y += 16;
+    if (!measure) {
+      ctx.font = `600 9px ${monoFont}`;
+      ctx.letterSpacing = "1px";
+      ctx.fillStyle = CREAM_50;
+      ctx.fillText(data.cardVerse.reference.toUpperCase(), PAD, y);
+      ctx.letterSpacing = "0px";
+    }
+
+    // Optional eyebrow
+    if (data.cardVerse.eyebrow) {
+      y += 14;
+      if (!measure) {
+        ctx.font = `600 9px ${monoFont}`;
+        ctx.fillStyle = "rgba(223,175,55,0.70)";
+        ctx.fillText(data.cardVerse.eyebrow, PAD, y);
+      }
+    }
+
+    // Card verse text (wrapped)
+    y += 14;
+    if (!measure) {
+      ctx.font = `italic 400 14px ${serifFont}`;
+    } else {
+      ctx.font = `italic 400 14px Georgia, serif`;
+    }
+    const verseLines = wrapText(ctx, data.cardVerse.displayText, CONTENT_W);
+    const LINE_H_VERSE = 20;
+    for (const line of verseLines) {
+      if (!measure) {
+        ctx.fillStyle = CREAM_70;
+        ctx.fillText(line, PAD, y);
+      }
+      y += LINE_H_VERSE;
+    }
+    // Back off one extra line advance (last line already moved y down)
+    y -= LINE_H_VERSE;
+
+    // ── Hairline ──────────────────────────────────────────────────────
+    y += 6;
+    if (!measure) {
+      ctx.fillStyle = HAIRLINE;
+      ctx.fillRect(PAD, y, CONTENT_W, 1);
+    }
+
+    // ── CUE WORD label ────────────────────────────────────────────────
+    y += 14;
+    if (!measure) {
+      ctx.font = `600 9px ${monoFont}`;
+      ctx.letterSpacing = "1px";
+      ctx.fillStyle = CREAM_50;
+      ctx.fillText("CUE WORD", PAD, y);
+      ctx.letterSpacing = "0px";
+    }
+
+    // ── Cue word (big) ────────────────────────────────────────────────
+    y += 16;
+    if (!measure) {
+      ctx.font = `800 52px ${displayFont}`;
+      ctx.fillStyle = GOLD;
+      ctx.fillText(data.cueWord.toUpperCase(), PAD, y);
+    }
+
+    // ── Cue verse reference ───────────────────────────────────────────
+    y += 56;
+    if (!measure) {
+      ctx.font = `600 9px ${monoFont}`;
+      ctx.letterSpacing = "1px";
+      ctx.fillStyle = CREAM_50;
+      ctx.fillText(data.cueVerse.reference.toUpperCase(), PAD, y);
+      ctx.letterSpacing = "0px";
+    }
+
+    // Cue verse text (wrapped)
+    y += 14;
+    if (!measure) {
+      ctx.font = `italic 400 12px ${serifFont}`;
+    } else {
+      ctx.font = `italic 400 12px Georgia, serif`;
+    }
+    const cueLines = wrapText(ctx, data.cueVerse.text, CONTENT_W);
+    const LINE_H_CUE = 18;
+    for (const line of cueLines) {
+      if (!measure) {
+        ctx.fillStyle = CREAM_50;
+        ctx.fillText(line, PAD, y);
+      }
+      y += LINE_H_CUE;
+    }
+    y -= LINE_H_CUE;
+
+    // ── Hairline ──────────────────────────────────────────────────────
+    y += 8;
+    if (!measure) {
+      ctx.fillStyle = HAIRLINE;
+      ctx.fillRect(PAD, y, CONTENT_W, 1);
+    }
+
+    // ── RESET ANCHOR ─────────────────────────────────────────────────
+    y += 14;
+    if (!measure) {
+      ctx.font = `600 9px ${monoFont}`;
+      ctx.letterSpacing = "1px";
+      ctx.fillStyle = CREAM_50;
+      ctx.fillText("RESET ANCHOR", PAD, y);
+      ctx.letterSpacing = "0px";
+
+      ctx.font = `600 13px ${monoFont}`;
+      ctx.fillStyle = CREAM;
+      ctx.fillText(data.anchor, CARD_W / 2, y);
+    }
+
+    // ── SELF-TALK ─────────────────────────────────────────────────────
+    y += 22;
+    if (!measure) {
+      ctx.font = `600 9px ${monoFont}`;
+      ctx.letterSpacing = "1px";
+      ctx.fillStyle = CREAM_50;
+      ctx.fillText("SELF-TALK", PAD, y);
+      ctx.letterSpacing = "0px";
+    }
+
+    y += 4;
+    if (!measure) {
+      ctx.font = `italic 14px ${serifFont}`;
+    } else {
+      ctx.font = `italic 14px Georgia, serif`;
+    }
+    const selfTalkLines = wrapText(ctx, data.selfTalk, CONTENT_W);
+    const LINE_H_ST = 20;
+    for (const line of selfTalkLines) {
+      if (!measure) {
+        ctx.fillStyle = CREAM_70;
+        ctx.fillText(line, PAD, y);
+      }
+      y += LINE_H_ST;
+    }
+    y -= LINE_H_ST;
+
+    // ── POSITION (optional) ───────────────────────────────────────────
+    if (data.role) {
+      y += 14;
+      if (!measure) {
+        ctx.font = `600 9px ${monoFont}`;
+        ctx.letterSpacing = "1px";
+        ctx.fillStyle = CREAM_50;
+        ctx.fillText("POSITION", PAD, y);
+        ctx.letterSpacing = "0px";
+
+        ctx.font = `600 13px ${monoFont}`;
+        ctx.fillStyle = CREAM;
+        ctx.fillText(data.role, CARD_W / 2, y);
+      }
+    }
+
+    // ── Hairline ──────────────────────────────────────────────────────
+    y += 4;
+    if (!measure) {
+      ctx.fillStyle = HAIRLINE;
+      ctx.fillRect(PAD, y, CONTENT_W, 1);
+    }
+
+    // ── "PLAY FROM VICTORY." close line ───────────────────────────────
+    y += 16;
+    if (!measure) {
+      ctx.font = `800 22px ${displayFont}`;
+      const closeText = "PLAY FROM VICTORY.";
+      const totalW = ctx.measureText(closeText).width;
+      const startX = (CARD_W - totalW) / 2;
+      const playFromW = ctx.measureText("PLAY FROM ").width;
+      ctx.fillStyle = CREAM;
+      ctx.fillText("PLAY FROM ", startX, y);
+      ctx.fillStyle = GOLD;
+      ctx.fillText("VICTORY.", startX + playFromW, y);
+    }
+
+    // ── Watermark ─────────────────────────────────────────────────────
+    y += 30;
+    if (!measure) {
+      ctx.save();
+      ctx.globalAlpha = 0.18;
+      ctx.font = `600 8px ${monoFont}`;
+      ctx.letterSpacing = "1px";
+      ctx.fillStyle = CREAM_40;
+      const wmText = "FROM VICTORY";
+      const wmW = ctx.measureText(wmText).width;
+      ctx.fillText(wmText, CARD_W - PAD - wmW, y);
+      ctx.letterSpacing = "0px";
+      ctx.restore();
+    }
+
+    y += 20;
+    return y; // final height
+  }
+
+  // ── Pass 1: measure ───────────────────────────────────────────────────────
+  const scratch = document.createElement("canvas");
+  scratch.width = 1;
+  scratch.height = 1;
+  const scratchCtx = scratch.getContext("2d");
+  if (!scratchCtx) throw new Error("Canvas 2D not available");
+  const finalH = draw(scratchCtx, 1, true);
+
+  // ── Pass 2: render at 2× DPR ─────────────────────────────────────────────
+  const DPR = 2;
+  const canvas = document.createElement("canvas");
+  canvas.width = CARD_W * DPR;
+  canvas.height = finalH * DPR;
+  const ctx2 = canvas.getContext("2d");
+  if (!ctx2) throw new Error("Canvas 2D not available");
+
+  // Draw border/clipping path so roundRect masks the background fills
+  ctx2.save();
+  ctx2.scale(DPR, DPR);
+  ctx2.beginPath();
+  ctx2.roundRect(0, 0, CARD_W, finalH, 22);
+  ctx2.clip();
+  ctx2.restore();
+
+  draw(ctx2, DPR, false);
+
+  // Draw the border overlay (inset 1px, gold/30)
+  ctx2.save();
+  ctx2.scale(DPR, DPR);
+  ctx2.strokeStyle = "rgba(223,175,55,0.30)";
+  ctx2.lineWidth = 1;
+  ctx2.beginPath();
+  ctx2.roundRect(0.5, 0.5, CARD_W - 1, finalH - 1, 21.5);
+  ctx2.stroke();
+  ctx2.restore();
+
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error("toBlob returned null"));
+      },
+      "image/png",
+    );
+  });
+}
+
 // ─── SHARE CARD ROW ─── (FV-239) ─────────────────────────────────────────
 //
 // Privacy-safe athlete-initiated share affordance for the Pregame Card.
@@ -1723,23 +2127,37 @@ function ShareCardRow({
   firstName,
   shareHint,
   verse,
+  saveImageData,
 }: {
   cueWord: string;
   firstName?: string;
   shareHint: string;
   verse: { reference: string; text: string };
+  /** When present, renders the "Save to Photos" button. adversity never included. */
+  saveImageData?: CardImageData;
 }) {
   // client: Web Share API + toggle state
   const [nameIncluded, setNameIncluded] = useState(false);
   // "idle" | "shared" (brief success feedback) | "error"
   const [shareState, setShareState] = useState<"idle" | "shared" | "error">("idle");
+  // "idle" | "saving" | "saved" | "error"
+  const [savePhotoState, setSavePhotoState] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
 
-  // Reset feedback after 2 s so the button is ready for another tap.
+  // Reset share feedback after 2 s so the button is ready for another tap.
   useEffect(() => {
     if (shareState === "idle") return;
     const id = window.setTimeout(() => setShareState("idle"), 2000);
     return () => window.clearTimeout(id);
   }, [shareState]);
+
+  // Reset save-photo feedback after 2 s.
+  useEffect(() => {
+    if (savePhotoState !== "saved" && savePhotoState !== "error") return;
+    const id = window.setTimeout(() => setSavePhotoState("idle"), 2000);
+    return () => window.clearTimeout(id);
+  }, [savePhotoState]);
 
   // Build the share text from the privacy-safe fields only.
   // Called at tap time so it always reflects the latest toggle state.
@@ -1773,6 +2191,51 @@ function ShareCardRow({
         setShareState("idle");
       } else {
         setShareState("error");
+      }
+    }
+  }
+
+  async function handleSavePhoto() {
+    // Guard: inert while saving or already confirmed saved.
+    if (savePhotoState === "saving" || savePhotoState === "saved") return;
+    setSavePhotoState("saving");
+    try {
+      const blob = await buildPregameCardPng(saveImageData!);
+      const file = new File([blob], "pregame-card.png", { type: "image/png" });
+
+      // navigator.canShare is not in the TypeScript DOM lib yet — cast carefully.
+      type NavWithCanShare = Navigator & {
+        canShare: (data: ShareData) => boolean;
+      };
+      const nav = navigator as NavWithCanShare;
+      if (
+        typeof navigator !== "undefined" &&
+        "canShare" in navigator &&
+        typeof nav.canShare === "function" &&
+        nav.canShare({ files: [file] })
+      ) {
+        // Mobile path: OS share sheet surfaces "Save Image" to photo library.
+        await navigator.share({ files: [file] } as ShareData);
+      } else {
+        // Desktop / no-file-share fallback: trigger a download.
+        const url = URL.createObjectURL(blob);
+        const a = Object.assign(document.createElement("a"), {
+          href: url,
+          download: "pregame-card.png",
+          style: "display:none",
+        });
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+      setSavePhotoState("saved");
+    } catch (err) {
+      // AbortError = athlete dismissed the share sheet — not a failure.
+      if (err instanceof Error && err.name === "AbortError") {
+        setSavePhotoState("idle");
+      } else {
+        setSavePhotoState("error");
       }
     }
   }
@@ -1874,6 +2337,56 @@ function ShareCardRow({
         >
           {shareHint}
         </p>
+      )}
+
+      {/* SR-only photo-save state announcements (WCAG 4.1.3 live region). */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {savePhotoState === "saved"
+          ? "Card saved to photos."
+          : savePhotoState === "error"
+            ? "Couldn't save — try a screenshot instead."
+            : ""}
+      </div>
+
+      {/* ── Save to Photos button ─────────────────────────────────────────────
+          Only rendered when the caller passes saveImageData. Tap → Canvas PNG
+          → Web Share (files) on mobile → OS "Save Image"; download fallback
+          on desktop. adversity is never in the image — same fields as the
+          visible card. */}
+      {saveImageData && (
+        <button
+          type="button"
+          onClick={handleSavePhoto}
+          aria-disabled={savePhotoState === "saving" || savePhotoState === "saved"}
+          aria-label="Save your pre-game card as a photo"
+          data-testid="save-photo-btn"
+          className="mt-2.5 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] border border-gold/30 bg-gold/[0.06] px-4 py-3 font-mono text-[11px] uppercase tracking-[0.14em] text-gold transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.98] aria-disabled:opacity-60"
+        >
+          {savePhotoState !== "saved" && savePhotoState !== "saving" && (
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+          )}
+          {savePhotoState === "saving"
+            ? "Saving…"
+            : savePhotoState === "saved"
+              ? "Saved"
+              : savePhotoState === "error"
+                ? "Couldn’t save — try a screenshot"
+                : "Save to Photos"}
+        </button>
       )}
     </div>
   );
@@ -1979,12 +2492,23 @@ export function PregameCardScreen({
 
         {/* FV-239: share affordance — sits inside the card region so it
             appears in any screenshot. Shows AFTER the CueWordVerseRow so
-            the composition reads: word → verse → share. */}
+            the composition reads: word → verse → share.
+            saveImageData drives the "Save to Photos" PNG button. adversity
+            is intentionally excluded here and in buildPregameCardPng. */}
         <ShareCardRow
           cueWord={state.cueWord || DEFAULTS.cueWord}
           firstName={athleteFirstName}
           shareHint={sportConfig.cardShareHint}
           verse={cueVerse}
+          saveImageData={{
+            cueWord: state.cueWord || DEFAULTS.cueWord,
+            cueVerse,
+            cardVerse,
+            anchor: state.anchor || DEFAULTS.anchor,
+            selfTalk: state.selfTalk || DEFAULTS.selfTalk,
+            need: state.need,
+            role: state.role,
+          }}
         />
 
         <div className="flex flex-col gap-3">
