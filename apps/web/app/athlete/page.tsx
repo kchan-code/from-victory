@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AthleteBottomNav } from "@/components/athlete/BottomNav";
+import InstallPrompt from "@/components/athlete/InstallPrompt";
 import { Icon, RhythmRing } from "@/components/ui";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireAthlete } from "@/lib/auth/guards";
@@ -108,6 +109,11 @@ export default async function AthleteHomePage() {
             )}
           </div>
         </section>
+
+        {/* ── Install nudge (FV-258) — setup signal before content cards ── */}
+        <div className="mb-4">
+          <InstallPrompt />
+        </div>
 
         {/* ── 4-card hub ──
             The three training CTAs (Daily, Pregame, Pre-Practice) must be
