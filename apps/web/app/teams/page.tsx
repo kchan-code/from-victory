@@ -82,7 +82,7 @@ const audiences = [
     icon: "book" as const,
     label: "Church youth groups · Youth pastors",
     heading: "30 families — and their athletes' data never touches your systems.",
-    body: "Offer this as a resource through your student ministry without becoming a data custodian for every athlete in your group. Each family creates their own account. Their athlete's training data — what they train on, what they name as a hard moment — stays entirely between them and the app. You gave them the tool. You don't hold their information.",
+    body: "Offer this as a resource through your student ministry without becoming a data custodian for every athlete in your group. Each family creates their own account. Their athlete's training data — what they train on, what adversity they prepare for — stays entirely between them and the app. You gave them the tool. You don't hold their information.",
     note: "Parents create accounts. Athletes train privately. No church database involved.",
   },
 ];
@@ -397,6 +397,7 @@ export default function TeamsPage() {
               </div>
               <a
                 href="/#waitlist"
+                data-testid="teams-request-pricing-mid"
                 className="flex-none inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-6 py-[16px] text-[15px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97] whitespace-nowrap"
               >
                 Request pricing
