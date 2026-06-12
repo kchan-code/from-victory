@@ -11,16 +11,16 @@ import { SvgIcon } from "@/components/landing/SvgIcon";
 const siteUrl = "https://www.fromvictoryapp.com";
 
 export const metadata: Metadata = {
-  title: "For Teams & Churches · From Victory",
+  title: "For Teams, Churches & Sports Ministries · From Victory",
   description:
-    "Bring From Victory to your club, team, FCA chapter, or church youth group. Volume pricing via invoice — families onboard privately with their own accounts. No coach dashboards. No roster data.",
+    "From Victory gives teams, clubs, FCA chapters, chaplains, and church youth groups a simple way to provide Scripture-rooted athlete mindset training to families — without managing accounts, monitoring athletes, or holding private data.",
   openGraph: {
     type: "website",
     url: `${siteUrl}/teams`,
     siteName: "From Victory",
-    title: "For Teams & Churches · From Victory",
+    title: "For Teams, Churches & Sports Ministries · From Victory",
     description:
-      "Volume pricing for clubs, teams, FCA chapters, and church youth groups. Families get access; athletes train privately. No roster data, no coach dashboards.",
+      "Equip athletes across every sport to compete from a secure identity in Christ. You fund access. Families create accounts. Athletes train privately.",
     images: [
       {
         url: `${siteUrl}/from-victory-social-preview.jpg`,
@@ -31,9 +31,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "For Teams & Churches · From Victory",
+    title: "For Teams, Churches & Sports Ministries · From Victory",
     description:
-      "Volume pricing for clubs, teams, FCA chapters, and church youth groups. Families get access; athletes train privately. No roster data, no coach dashboards.",
+      "Equip athletes across every sport to compete from a secure identity in Christ. You fund access. Families create accounts. Athletes train privately.",
     images: [`${siteUrl}/from-victory-social-preview.jpg`],
   },
 };
@@ -42,23 +42,23 @@ export const metadata: Metadata = {
 const howItWorks = [
   {
     num: "01",
-    title: "Request volume pricing",
-    body: "Tell us how many athletes you want to cover. We send you an invoice — no self-serve checkout required.",
+    title: "Request group pricing",
+    body: "Tell us how many families or athletes you want to cover. We'll help size the right group option.",
   },
   {
     num: "02",
-    title: "Receive redemption codes",
-    body: "We'll set you up with codes to distribute as part of the pricing conversation. You are handing out access, not managing accounts.",
+    title: "Receive access codes",
+    body: "You receive codes to distribute to families. You are giving access, not managing accounts.",
   },
   {
     num: "03",
     title: "Families onboard independently",
-    body: "Each parent will redeem their code and create their own account. From that point on, the family owns their setup, their data, and their athlete's privacy.",
+    body: "Each parent or family creates its own account and controls the athlete's setup.",
   },
   {
     num: "04",
     title: "Athletes train privately",
-    body: "Every athlete trains in their own account. You see nothing — no roster, no activity feed, no individual progress. That's not a limitation. It's the architecture.",
+    body: "Athletes complete training in their own account. Your organization does not see rosters, activity, responses, or progress history.",
   },
 ];
 
@@ -66,24 +66,24 @@ const howItWorks = [
 const audiences = [
   {
     icon: "zap" as const,
-    label: "Club & AAA teams · Coaches",
-    heading: "Give your players a mental-skills edge without taking on their data.",
-    body: "You invest in skills coaches, strength programs, and video review. Mental toughness is the layer that holds all of it together. From Victory gives athletes a daily practice for identity, focus, and resilience — without you ever touching a single athlete's account or training record. You hand out access. They train.",
-    note: "No roster. No coach dashboard. No athlete data passing through you.",
+    label: "Teams, clubs, and academies",
+    heading: "Give athletes a daily mental-skills rhythm rooted in Christ.",
+    body: "You already invest in coaching, practices, strength work, film, and competition. From Victory helps athletes train the inner layer that carries into every sport: identity, focus, resilience, reset, and preparation.\n\nYou provide access. Families create accounts. Athletes train privately.",
+    note: null,
   },
   {
     icon: "anchor" as const,
-    label: "FCA chapters · Team chaplains",
-    heading: "Faith-grounded mental skills training — daily, not just Thursdays.",
-    body: "A huddle happens once a week. The hard moments — the cut, the slump, the pressure game — happen every day. From Victory puts a daily mental and spiritual practice in your athletes' hands that runs between your meetings, not instead of them. Scripture foundation, mental skill, pregame preparation. Built for serious athletes.",
-    note: "Non-denominational Protestant. NIV. Not a devotional app with sports language.",
+    label: "FCA chapters, chaplains, and sports ministries",
+    heading: "Help athletes carry faith into the daily pressure of competition.",
+    body: "A huddle, talk, or chapel can be powerful. But pressure shows up every day: tryouts, slumps, injuries, mistakes, rivalry games, and the fear of disappointing people. From Victory gives athletes a daily practice that connects Scripture, identity, and mental preparation between gatherings.",
+    note: "Non-denominational Protestant. Scripture-centered. Built as mindset training with faith at the foundation — not sports language added onto a generic devotional.",
   },
   {
     icon: "book" as const,
-    label: "Church youth groups · Youth pastors",
-    heading: "30 families — and their athletes' data never touches your systems.",
-    body: "Offer this as a resource through your student ministry without becoming a data custodian for every athlete in your group. Each family creates their own account. Their athlete's training data — what they train on, what adversity they prepare for — stays entirely between them and the app. You gave them the tool. You don't hold their information.",
-    note: "Parents create accounts. Athletes train privately. No church database involved.",
+    label: "Church youth groups and family ministries",
+    heading: "Serve sports families without becoming the system of record.",
+    body: "Many families in your church are navigating the pressure, identity questions, and time demands of youth sports. From Victory gives you a practical resource to place in their hands while keeping the family — not the church — in control of the account and data.",
+    note: null,
   },
 ];
 
@@ -91,41 +91,49 @@ const audiences = [
 const athleteGets = [
   {
     icon: "flame" as const,
-    title: "Daily training session",
-    body: "30 days of sport-specific content — mental skill plus Scripture foundation — for hockey and basketball. Builds identity, discipline, and resilience session by session.",
+    title: "Daily mindset training",
+    body: "Short daily sessions that connect Scripture, identity in Christ, and practical mental skills athletes can carry into practice, games, tryouts, and setbacks.",
   },
   {
     icon: "zap" as const,
     title: "Pregame guided audio",
-    body: "A ~5-minute guided audio session before a game: breathing, visualization, a plan for the hard moment, and a send-off. Built for the locker room, earbuds in.",
+    body: "A guided preparation session before competition: breath, focus, visualization, reset plan, and a Christ-centered send-off.",
   },
   {
     icon: "target" as const,
     title: "Pre-practice lock-in",
-    body: "A short mental warm-up before every practice — not just game days. One focus cue, full-effort frame, reset mindset.",
+    body: "A quick mental warm-up before training: one focus cue, one effort frame, and one way to respond when practice gets hard.",
   },
   {
     icon: "wind" as const,
-    title: "Rhythm visualization",
-    body: "Athletes see their training participation as a rhythm — not a streak counter. Returning after a gap is encouraged, never shamed.",
+    title: "Reset and resilience rhythm",
+    body: "Athletes learn how to return after a mistake, a bad game, a missed day, or a hard stretch without shame.",
+  },
+  {
+    icon: "anchor" as const,
+    title: "Sport-specific tracks",
+    body: "The core training is built for Christian athletes across sports. Hockey and basketball are the first sport-specific tracks available at launch, with additional sports in development.",
   },
 ];
 
 // ── Privacy model explanation ─────────────────────────────────────────────
 const privacyPoints = [
   {
-    heading: "You distribute access. You don't see training.",
-    body: "Each family gets their own door in. Once they create their account, everything that happens inside it belongs to them — not to you, not to us.",
+    heading: "You distribute access. Families keep ownership.",
+    body: "Each family receives its own path into the app. Once they create an account, the athlete's training experience remains private to the family account — not the coach, club, church, or ministry.",
   },
   {
-    heading: "No coach view. By design, not by accident.",
-    body: "There is no coach dashboard. There is no 'view team activity' screen. The architecture does not support reading another athlete's session — by design, not by policy.",
+    heading: "No coach dashboard. By design.",
+    body: "There is no team activity feed, no roster view, and no way for a coach or ministry leader to read an athlete's private sessions. From Victory is designed for athlete formation, not surveillance.",
   },
   {
-    heading: "Athlete-first data model, full stop.",
-    body: "Each athlete account holds only a first name and birthdate. No email, no phone number, no behavioral analytics. Data belongs to the family. Deletion cascades completely within 30 days of request.",
+    heading: "Athlete-first data model.",
+    body: "Athlete accounts are intentionally limited. The purchasing organization does not receive athlete training records, journal-style responses, progress history, or private preparation details.",
   },
 ];
+
+// ── Group pricing CTA URL ────────────────────────────────────────────────
+const groupPricingUrl = "/?role=coach&source=teams&intent=group-pricing#waitlist";
 
 export default function TeamsPage() {
   return (
@@ -142,33 +150,34 @@ export default function TeamsPage() {
           <Reveal>
             <div className="inline-flex items-center gap-3 mb-7">
               <span className="fv-pulse-dot" />
-              <span className="fv-eyebrow">For Teams &amp; Churches</span>
+              <span className="fv-eyebrow">For Teams, Churches &amp; Sports Ministries</span>
             </div>
             <h1 className="fv-h-hero mb-[26px] max-w-[22ch]">
-              Give 30 families access.{" "}
-              <em>Take on zero of their data.</em>
+              Equip athletes across every sport to compete from a{" "}
+              <em>secure identity in Christ.</em>
             </h1>
-            <p className="max-w-[52ch] mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
-              Volume pricing for clubs, AAA teams, FCA chapters, and church
-              youth groups. You pay one invoice, hand each family their own
-              way in, and step back. Families onboard independently. Athletes
-              train privately. No roster. No coach dashboard. Nothing of
-              theirs for you to hold.
+            <p className="max-w-[54ch] mb-5 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
+              From Victory is built for teams, clubs, academies, FCA chapters,
+              chaplains, and church youth groups that want to support athletes
+              without becoming another system to manage. You fund access.
+              Families create their own accounts. Athletes train privately.
+            </p>
+            <p className="max-w-[52ch] mb-9 font-mono text-[12px] tracking-[0.14em] uppercase text-cream/55 font-semibold">
+              No roster.&nbsp;&nbsp;No coach dashboard.&nbsp;&nbsp;No team activity feed.&nbsp;&nbsp;No athlete training data for your organization to hold.
             </p>
             <div className="flex flex-wrap gap-3">
               {/*
                * TODO FV-249: when hello@ email routing is live, replace the
-               * /#waitlist href with a mailto:hello@fromvictoryapp.com link
+               * groupPricingUrl href with a mailto:hello@fromvictoryapp.com link
                * (or a dedicated /teams/contact form). Until then, the waitlist
-               * form's "Coach" role option captures this intent cleanly without
-               * risking a bounce on an unrouted address.
+               * form with pre-filled coach role captures this intent cleanly.
                */}
               <a
-                href="/#waitlist"
+                href={groupPricingUrl}
                 data-testid="teams-request-pricing-hero"
                 className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
               >
-                Request team pricing
+                Request group pricing
                 <SvgIcon name="arrow" size={16} />
               </a>
               <Link
@@ -179,7 +188,7 @@ export default function TeamsPage() {
               </Link>
             </div>
             <p className="mt-6 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/60 font-semibold">
-              Select &ldquo;Coach&rdquo; role on the form &rarr; we&apos;ll follow up with volume options
+              Select &ldquo;Coach / Ministry Leader&rdquo; on the form &rarr; we&apos;ll follow up with group options
             </p>
           </Reveal>
         </div>
@@ -189,19 +198,19 @@ export default function TeamsPage() {
       <section className="py-20 sm:py-24 md:py-32 bg-charcoal border-y border-hairline">
         <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
           <Reveal>
-            <SectionMeta num="01" label="No data liability" />
+            <SectionMeta num="01" label="How ownership works" />
           </Reveal>
           <Reveal>
             <div className="grid gap-x-16 gap-y-10 items-end mb-14 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
               <h2 className="fv-h-section">
-                You give out access.{" "}
-                <span className="text-cream/50">You don&apos;t hold their training.</span>
+                You provide the resource.{" "}
+                <span className="text-cream/50">Families keep ownership.</span>
               </h2>
               <p className="fv-lede">
-                Most team-focused tools make you the data custodian for every
-                athlete in your program. From Victory works the other way: you
-                cover the seats and hand families their own way in, then the families own
-                everything from there — accounts, data, deletion.
+                Most team and youth sports tools put the organization in the
+                middle of athlete information. From Victory works differently.
+                Your team, church, or ministry can fund access while each
+                family owns its account, its setup, and its data.
               </p>
             </div>
           </Reveal>
@@ -227,7 +236,7 @@ export default function TeamsPage() {
             ))}
           </div>
 
-          {/* Privacy callout — mirrors /parents pattern */}
+          {/* Privacy callout */}
           <Reveal>
             <div
               className="mt-10 rounded-[20px] px-8 py-8 max-w-[640px]"
@@ -279,11 +288,13 @@ export default function TeamsPage() {
           <Reveal>
             <div className="mb-14">
               <h2 className="fv-h-section wide">
-                Three groups. One shared premise.
+                Built for the adults already investing in athletes.
               </h2>
               <p className="fv-lede max-w-[52ch]">
-                The tool is the same. What you bring to it is different. Here
-                is how it fits each context.
+                The tool is the same. The context changes. From Victory can
+                support a team, a ministry, a chaplaincy program, or a church
+                sports initiative without requiring your organization to manage
+                athlete data.
               </p>
             </div>
           </Reveal>
@@ -314,21 +325,28 @@ export default function TeamsPage() {
                       <h3 className="font-heading font-semibold text-[22px] leading-[1.2] text-cream tracking-[-0.01em] mb-3">
                         {aud.heading}
                       </h3>
-                      <p className="font-body text-[15px] leading-[1.6] text-cream/70 mb-5 m-0 max-w-[64ch]">
-                        {aud.body}
-                      </p>
-                      <div
-                        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-md"
-                        style={{
-                          background: "rgba(247,247,247,0.04)",
-                          border: "1px solid rgba(247,247,247,0.08)",
-                        }}
-                      >
-                        <SvgIcon name="check" size={11} className="text-gold flex-none" />
-                        <span className="font-mono text-[11px] tracking-[0.14em] uppercase text-cream/50 font-semibold">
-                          {aud.note}
-                        </span>
-                      </div>
+                      {aud.body.split("\n\n").map((paragraph, i) => (
+                        <p
+                          key={i}
+                          className="font-body text-[15px] leading-[1.6] text-cream/70 mb-4 m-0 max-w-[64ch]"
+                        >
+                          {paragraph}
+                        </p>
+                      ))}
+                      {aud.note && (
+                        <div
+                          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-md mt-1"
+                          style={{
+                            background: "rgba(247,247,247,0.04)",
+                            border: "1px solid rgba(247,247,247,0.08)",
+                          }}
+                        >
+                          <SvgIcon name="check" size={11} className="text-gold flex-none" />
+                          <span className="font-mono text-[11px] tracking-[0.14em] uppercase text-cream/50 font-semibold">
+                            {aud.note}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </article>
@@ -347,11 +365,12 @@ export default function TeamsPage() {
           <Reveal>
             <div className="grid gap-x-16 gap-y-10 items-end mb-14 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
               <h2 className="fv-h-section">
-                Invoice. Codes. Done.
+                Simple to offer.{" "}
+                <span className="text-cream/50">Private for families.</span>
               </h2>
               <p className="fv-lede">
-                We keep this simple on purpose. No team portal to manage, no
-                admin dashboard to maintain, no ongoing roster updates from you.
+                No team portal. No admin dashboard. No roster maintenance. Your
+                organization funds access; families use it independently.
               </p>
             </div>
           </Reveal>
@@ -385,22 +404,22 @@ export default function TeamsPage() {
             >
               <div className="flex-1">
                 <div className="font-mono text-[11px] tracking-[0.18em] uppercase text-cream/50 font-semibold mb-1.5">
-                  Volume pricing
+                  Group pricing
                 </div>
                 <p className="font-body text-[14px] leading-[1.55] text-cream/70 m-0">
                   Team and group pricing is not self-serve yet — we size each
                   arrangement individually. There are no published per-seat
                   numbers here on purpose: the right structure depends on your
-                  group size and context. Family access codes are issued as
-                  part of that conversation. Use the form below to start it.
+                  group size and context. Access codes are issued as part of
+                  that conversation. Use the form below to start it.
                 </p>
               </div>
               <a
-                href="/#waitlist"
+                href={groupPricingUrl}
                 data-testid="teams-request-pricing-mid"
                 className="flex-none inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-6 py-[16px] text-[15px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97] whitespace-nowrap"
               >
-                Request pricing
+                Request group pricing
                 <SvgIcon name="arrow" size={15} />
               </a>
             </div>
@@ -417,17 +436,17 @@ export default function TeamsPage() {
           <Reveal>
             <div className="grid gap-x-16 gap-y-10 items-end mb-14 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
               <h2 className="fv-h-section">
-                The same training every individual subscriber gets.
+                The same full training experience every athlete receives.
               </h2>
               <p className="fv-lede">
-                No feature differences between a direct subscription and a team
-                code. Every athlete has full access. The only difference is how
-                the subscription was funded.
+                No reduced team version. No watered-down group plan. Every
+                athlete receives the full From Victory experience. The only
+                difference is how access is funded.
               </p>
             </div>
           </Reveal>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
             {athleteGets.map((item) => (
               <Reveal key={item.title}>
                 <article className="bg-charcoal border border-hairline rounded-lg p-7 transition-colors duration-base ease-out hover:border-hairline-strong h-full">
@@ -450,19 +469,6 @@ export default function TeamsPage() {
               </Reveal>
             ))}
           </div>
-
-          <Reveal>
-            <p className="mt-8 font-body text-[14px] text-cream/40 max-w-[52ch]">
-              Hockey and basketball are live at launch. More sports are in
-              development.{" "}
-              <Link
-                href="/pricing"
-                className="text-cream/60 hover:text-cream underline underline-offset-2 transition-colors duration-fast ease-out"
-              >
-                See individual pricing details.
-              </Link>
-            </p>
-          </Reveal>
         </div>
       </section>
 
@@ -476,15 +482,21 @@ export default function TeamsPage() {
               </div>
               <SectionMeta num="05" label="Faith foundation" />
               <h2 className="fv-h-section mb-6 max-w-[22ch]">
-                Mental toughness training — with the Word underneath.
+                Built from identity in Christ, not performance pressure.
               </h2>
-              <p className="fv-lede mb-8 max-w-[52ch]">
-                From Victory is not a devotional app with sports language added.
-                It is a mental toughness training app with faith as the
-                foundation. Every session starts from the truth that an
-                athlete&apos;s identity in Christ is already secure — then
-                trains from there. Non-denominational Protestant. NIV. Built to
-                work alongside your program, not compete with it.
+              <p className="fv-lede mb-6 max-w-[56ch]">
+                From Victory begins where Christian athlete formation should
+                begin: an athlete&apos;s identity is secure in Christ before
+                the scoreboard, stat sheet, depth chart, or coach&apos;s
+                opinion says anything.
+              </p>
+              <p className="fv-lede mb-8 max-w-[56ch]">
+                The app then trains from that foundation: focus, discipline,
+                resilience, preparation, and the ability to reset after
+                mistakes. It is not therapy, clinical care, or crisis
+                intervention. It is Scripture-rooted mindset training designed
+                to work alongside families, coaches, churches, and sports
+                ministries.
               </p>
               <div
                 className="fv-faith-callout border border-hairline rounded-[20px] px-8 sm:px-9 py-8 max-w-[560px]"
@@ -511,29 +523,30 @@ export default function TeamsPage() {
             <div className="mx-auto mb-6 inline-block">
               <FlameMark size={48} />
             </div>
-            <h2 className="fv-final-headline max-w-[22ch] mx-auto">
-              Ready to bring this to your{" "}
-              <em>team or community?</em>
+            <h2 className="fv-final-headline max-w-[24ch] mx-auto">
+              Ready to equip the athletes and{" "}
+              <em>families you serve?</em>
             </h2>
-            <p className="fv-lede max-w-[46ch] mx-auto mb-8">
-              Fill out the waitlist form and select the Coach role. We&apos;ll
-              follow up with volume pricing options sized for your group.
+            <p className="fv-lede max-w-[52ch] mx-auto mb-8">
+              Give them a private, Scripture-rooted training rhythm they can
+              carry into practices, games, tryouts, pressure, and setbacks —
+              without adding another dashboard for your organization to manage.
             </p>
             {/*
              * TODO FV-249: swap this href for mailto:hello@fromvictoryapp.com
              * (or a /teams/contact route) once hello@ email routing is live.
-             * For now the Coach role on the waitlist form captures org intent.
+             * The form with pre-filled Coach role captures org intent cleanly.
              */}
             <a
-              href="/#waitlist"
+              href={groupPricingUrl}
               data-testid="teams-request-pricing-final"
               className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-8 py-[20px] text-[17px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
             >
-              Request team pricing
+              Request group pricing
               <SvgIcon name="arrow" size={17} />
             </a>
             <p className="mt-4 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/60 font-semibold">
-              Select &ldquo;Coach&rdquo; role &rarr; we&apos;ll follow up with options
+              Select &ldquo;Coach / Ministry Leader&rdquo; &rarr; we&apos;ll follow up with options for your team, church, or sports community
             </p>
           </Reveal>
         </div>
