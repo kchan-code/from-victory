@@ -47,7 +47,7 @@ export default async function DashboardPage() {
               alt=""
               width={64}
               height={36}
-              className="block h-9 md:h-12 w-auto"
+              className="block h-9 md:h-14 w-auto"
               priority
             />
             <Image
@@ -55,7 +55,7 @@ export default async function DashboardPage() {
               alt="From Victory"
               width={100}
               height={32}
-              className="block h-8 md:h-11 w-auto"
+              className="block h-8 md:h-12 w-auto translate-y-[3px] md:translate-y-[5px]"
               priority
             />
           </div>

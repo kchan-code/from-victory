@@ -20,7 +20,7 @@ export function ScrollNav() {
     <div className="fv-nav-wrap" data-scrolled={scrolled}>
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         <nav
-          className="flex items-center h-[72px]"
+          className="flex items-center h-[72px] md:h-[80px]"
           aria-label="Primary"
         >
           <a
@@ -33,7 +33,7 @@ export function ScrollNav() {
               alt=""
               width={64}
               height={36}
-              className="block h-9 md:h-12 w-auto"
+              className="block h-9 md:h-14 w-auto"
               priority
             />
             {/* Wordmark hidden below sm — the icon mark alone at phone width
@@ -43,7 +43,7 @@ export function ScrollNav() {
               alt="From Victory"
               width={100}
               height={32}
-              className="hidden sm:block h-8 md:h-11 w-auto"
+              className="hidden sm:block h-8 md:h-12 w-auto translate-y-[3px] md:translate-y-[5px]"
               priority
             />
           </a>
