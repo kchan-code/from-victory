@@ -82,7 +82,10 @@ export async function selectSport(
   // Revalidate the athlete dashboard so it re-reads sport_selected_at on the
   // next request and skips the first-run picker without a hard reload.
   revalidatePath("/athlete");
-  redirect("/athlete");
+  // FV-228: after the athlete picks their sport for the first time, route them
+  // to the personalization quiz rather than directly to the hub. The quiz is
+  // always skippable and redirects to /athlete on any submit path.
+  redirect("/athlete/onboarding/quiz");
 }
 
 // ---------------------------------------------------------------------------
