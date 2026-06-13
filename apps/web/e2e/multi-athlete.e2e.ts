@@ -96,7 +96,10 @@ test.describe("Multi-athlete flow", () => {
     await expect(page).toHaveURL(/\/dashboard\/athletes\/new$/);
 
     // No error alerts on the form page yet.
-    await expect(page.getByRole("alert")).not.toBeVisible();
+    // Exclude #__next-route-announcer__ which always has role="alert" in Next.js.
+    await expect(
+      page.locator('[role="alert"]:not(#__next-route-announcer__)'),
+    ).toHaveCount(0);
 
     // Fill the form fields.
     await page.fill('input[name="first_name"]', "E2E Alpha");
@@ -125,7 +128,9 @@ test.describe("Multi-athlete flow", () => {
     await addAthleteLinkAfterOne.click();
     await expect(page).toHaveURL(/\/dashboard\/athletes\/new$/);
 
-    await expect(page.getByRole("alert")).not.toBeVisible();
+    await expect(
+      page.locator('[role="alert"]:not(#__next-route-announcer__)'),
+    ).toHaveCount(0);
 
     await page.fill('input[name="first_name"]', "E2E Bravo");
     await page.fill('input[name="birthdate"]', BIRTHDATE_BRAVO);
@@ -141,13 +146,14 @@ test.describe("Multi-athlete flow", () => {
     await expect(page.getByText("E2E Alpha")).toBeVisible();
     await expect(page.getByText("E2E Bravo")).toBeVisible();
 
-    // The athlete list uses <ul> with <li> items. Assert exactly two items
-    // matching our test athletes are present.
+    // The athlete list uses <ul> with <li> items. global-setup seeds an
+    // E2E-Athlete linked to this same parent, so the count is ≥3, not 2.
+    // Check that both newly created athletes appear; don't hard-code total.
     const athleteList = page.locator("ul").filter({
       has: page.getByText("E2E Alpha"),
     });
     const listItems = athleteList.locator("li");
-    await expect(listItems).toHaveCount(2);
+    expect(await listItems.count()).toBeGreaterThanOrEqual(2);
 
     // ------------------------------------------------------------------
     // Step 5: "Add athlete" affordance must still be present — no limit.
@@ -159,7 +165,9 @@ test.describe("Multi-athlete flow", () => {
     // ------------------------------------------------------------------
     // Step 6: No error alerts anywhere on the final dashboard state.
     // ------------------------------------------------------------------
-    await expect(page.getByRole("alert")).not.toBeVisible();
+    await expect(
+      page.locator('[role="alert"]:not(#__next-route-announcer__)'),
+    ).toHaveCount(0);
 
     // ------------------------------------------------------------------
     // Step 7: Audience-language guard.

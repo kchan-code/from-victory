@@ -52,8 +52,13 @@ export default defineConfig({
   use: {
     baseURL,
 
-    // iPhone 14 — mobile-first per qa-reviewer spec.
+    // iPhone 14 viewport/UA — mobile-first per qa-reviewer spec.
+    // browserName is explicitly 'chromium' because devices["iPhone 14"] sets
+    // defaultBrowserType: 'webkit', but the projects are named chromium-mobile-*
+    // and CI only installs chromium. The device preset is used for the viewport
+    // dimensions and touch/mobile UA; the engine is deliberately Chromium.
     ...devices["iPhone 14"],
+    browserName: "chromium",
 
     // Capture traces on first retry so failures are diagnosable in CI.
     trace: "on-first-retry",
