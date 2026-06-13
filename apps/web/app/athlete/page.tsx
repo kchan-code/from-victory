@@ -7,6 +7,7 @@ import InstallPrompt from "@/components/athlete/InstallPrompt";
 import { Icon, RhythmRing } from "@/components/ui";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireAthlete } from "@/lib/auth/guards";
+import { requireActiveAccess } from "@/lib/subscriptions/enforce";
 import { getDailySession } from "@/lib/daily/session";
 import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
 import { modulesForSport } from "@/lib/postgame/modules";
@@ -18,6 +19,10 @@ export const metadata = {
 
 export default async function AthleteHomePage() {
   const { profile } = await requireAthlete();
+
+  // Subscription enforcement gate (FV-62). No-op when flag is off.
+  // Must run after requireAthlete() so the role is confirmed server-side.
+  await requireActiveAccess({ role: "athlete" });
 
   // First-run gate: athlete has not yet affirmatively chosen their sport.
   // (sport_selected_at is NULL until the picker writes it — see FV-33 spec §1.)

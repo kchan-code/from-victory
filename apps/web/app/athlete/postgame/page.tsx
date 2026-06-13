@@ -15,6 +15,7 @@ import { AthleteBottomNav } from "@/components/athlete/BottomNav";
 import { CrisisFooter } from "@/components/postgame/CrisisFooter";
 import { Icon } from "@/components/ui";
 import { requireAthlete } from "@/lib/auth/guards";
+import { requireActiveAccess } from "@/lib/subscriptions/enforce";
 import { modulesForSport, type PostgameScenario } from "@/lib/postgame/modules";
 
 export const metadata = {
@@ -31,6 +32,9 @@ const SCENARIO_EYEBROW: Record<PostgameScenario, string> = {
 
 export default async function PostgamePickerPage() {
   const { profile } = await requireAthlete();
+
+  // Subscription enforcement gate (FV-62). No-op when flag is off.
+  await requireActiveAccess({ role: "athlete" });
 
   if (!profile.sport_selected_at) {
     redirect("/athlete/onboarding/sport");
