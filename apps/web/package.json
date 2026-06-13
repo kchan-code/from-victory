@@ -10,6 +10,8 @@
     "lint": "next lint",
     "audio:generate": "node --experimental-strip-types scripts/generate-pregame-audio.ts",
     "audio:qa": "node --experimental-strip-types scripts/qa-audio-levels.ts",
+    "scripts:export": "node --experimental-strip-types scripts/export-scripts.ts",
+    "scripts:apply": "node --experimental-strip-types scripts/apply-scripts.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "dotenv -e .env.test -- playwright test",
