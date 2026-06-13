@@ -4320,6 +4320,49 @@ export const CLIP_ST_BB_01_SCRIPT: AudioScript = {
   ],
 };
 
+// ── Baseball personalization clips (FV-94 follow-up; render = FV-95) ─────────
+// 2 baseball-specific anchor clips + 1 self-talk clip (bsb-token to avoid
+// collision with st-01 / st-bb-01). These complete the baseball pregame option
+// set declared in BASEBALL_CONFIG.anchors / .selfTalkOptions. Their slug-map
+// wiring in audio-mapping.ts (ANCHOR_OPTION_SLUGS / SELFTALK_OPTION_SLUGS) is
+// intentionally deferred to FV-95: adding a map value before the clip is in the
+// rendered manifest catalog would fail the playlist-integrity §3 check. Until
+// then a baseball athlete who picks one of these just gets no anchor/self-talk
+// clip (the resolver drops the sentinel) — baseball pregame isn't live pre-FV-95.
+
+export const CLIP_ANC_TAP_BAT_TWICE_SCRIPT: AudioScript = {
+  slug: "anc-tap-bat-twice",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Tap your bat twice." },
+  ],
+};
+
+export const CLIP_ANC_LOOK_AT_THE_PITCHER_SCRIPT: AudioScript = {
+  slug: "anc-look-at-the-pitcher",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Look at the pitcher." },
+  ],
+};
+
+export const CLIP_ST_BSB_01_SCRIPT: AudioScript = {
+  slug: "st-bsb-01",
+  voice: "ash",
+  instructions: SELFTALK_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "You're okay. Next at-bat." },
+  ],
+};
+
 // ── Pre-practice prayer clips (shared / sport-neutral) ───────────────────────
 //
 // Three clips pair with the pre-practice "Lock In" sequence.
@@ -4850,6 +4893,10 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_ANC_TAP_FLOOR_SCRIPT,
   CLIP_ANC_LOOK_AT_RIM_SCRIPT,
   CLIP_ST_BB_01_SCRIPT,
+  // Baseball personalization clips (FV-94 follow-up; render = FV-95).
+  CLIP_ANC_TAP_BAT_TWICE_SCRIPT,
+  CLIP_ANC_LOOK_AT_THE_PITCHER_SCRIPT,
+  CLIP_ST_BSB_01_SCRIPT,
   // Pre-practice focus — hockey "Talk every shift" (FV-121)
   CLIP_PP_FOCUS_TALK_EVERY_SHIFT_SCRIPT,
   // Pre-practice + pregame prayer clips (sport-neutral, Issue 1)
