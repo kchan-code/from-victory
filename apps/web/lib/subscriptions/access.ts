@@ -10,23 +10,28 @@
  *   3. `getAccessForCurrentUser()` — server-side, resolves the signed-in user
  *      (parent or athlete) to a parent row, then returns the level.
  *
- * ENFORCEMENT:
- *   These helpers return a level; they do NOT redirect or throw by themselves.
- *   Enforcement (locking routes, degrading the UI) is a SEPARATE sub-issue
- *   (FV-8 or a designated access-enforcement issue). Do NOT wire enforcement
- *   here before Stripe is live — it would lock out all current users who have
- *   no subscription row yet.
+ * COMP GRANTS (FV-69):
+ *   An active row in `access_grants` (revoked_at IS NULL AND not expired) grants
+ *   full access regardless of the Stripe subscription status. The grant check
+ *   runs first; if no active grant exists, the call falls through to the
+ *   subscription-status path as before. The `subscriptions` table is never
+ *   modified by the grants feature — it remains a pure Stripe mirror.
  *
- *   When enforcement lands, the recommended pattern is:
- *     - Check the level in the relevant Server Component or server action.
- *     - Redirect to `/subscribe` or render a paywall component as appropriate.
- *     - Never rely on client-side checks for access decisions.
+ * ENFORCEMENT (FV-62):
+ *   These helpers return a level; they do NOT redirect or throw by themselves.
+ *   Enforcement (locking routes) lives in `./enforce`. When the flag
+ *   `ENFORCE_SUBSCRIPTION_GATING` is not set to "true", every enforcement guard
+ *   is a no-op and current behavior is preserved.
+ *
+ *   Never rely on client-side checks for access decisions.
  *
  * Allowed callers: server actions, Server Components, route handlers. No client imports.
  */
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
+import { hasActiveCompGrant } from "./grants";
 import {
   subscriptionAccessLevel,
   type AccessLevel,
@@ -42,20 +47,38 @@ export type { AccessLevel, SubscriptionStatus };
 // ---------------------------------------------------------------------------
 
 /**
- * Reads the subscription row for a known parent UUID and returns the access
- * level. Uses the RLS-scoped server client — the parent's own row is readable
- * under the `subscriptions_select_own_parent` policy.
+ * Returns the effective access level for a known parent UUID.
  *
- * Returns `blocked` if no row exists (pre-Stripe state).
+ * Resolution order:
+ *   1. If the parent has an active comp grant → "full" (bypasses Stripe check).
+ *   2. Otherwise: read the subscription row and derive the level from status.
+ *
+ * Uses the service-role client for the grant check (the grant table has a
+ * parent-own SELECT policy, but this function is called from both parent and
+ * athlete paths — the athlete path does not hold a parent session).
+ *
+ * Returns `blocked` if no row exists in either table (pre-Stripe, no grant).
  *
  * @param parentId UUID of the parent's profile row.
  */
 export async function getParentAccessLevel(
   parentId: string,
 ): Promise<AccessLevel> {
-  const supabase = createClient();
+  const service = createServiceClient();
 
-  const { data, error } = await supabase
+  // Step 1: comp grant short-circuit (FV-69).
+  // Fail-closed inside hasActiveCompGrant — on DB error it returns false and
+  // we fall through to the subscription check rather than granting access.
+  const hasGrant = await hasActiveCompGrant(service, parentId);
+  if (hasGrant) {
+    return "full";
+  }
+
+  // Step 2: subscription-status path (unchanged from before FV-69).
+  // Use the service client here too — this function is called from the athlete
+  // path (via getAccessForCurrentUser) where the session belongs to the athlete,
+  // not the parent, so the RLS-scoped client would return 0 rows.
+  const { data, error } = await service
     .from("subscriptions")
     .select("status, cancel_at_period_end, current_period_end")
     .eq("parent_id", parentId)
@@ -71,7 +94,7 @@ export async function getParentAccessLevel(
   }
 
   if (!data) {
-    // No subscription row — parent hasn't subscribed yet (pre-Stripe state).
+    // No subscription row — parent hasn't subscribed yet (and has no comp grant).
     return "blocked";
   }
 
@@ -89,23 +112,19 @@ export async function getParentAccessLevel(
 /**
  * Derives the access level for the currently signed-in user.
  *
- *   - If the current user is a `parent`: reads their own subscription row.
+ *   - If the current user is a `parent`: calls getParentAccessLevel(userId).
  *   - If the current user is an `athlete`: resolves their parent via
- *     `parent_athlete_links`, then reads the parent's subscription row.
+ *     `parent_athlete_links` (athlete may read their own link row via RLS),
+ *     then calls getParentAccessLevel(parent_id).
  *
- * Returns `blocked` if there is no session, no subscription row, or if the
- * parent chain cannot be resolved (e.g. athlete not yet linked).
+ * PRIVACY (athlete path):
+ *   The athlete never receives the parent's subscription row, billing
+ *   identifiers, or grant details. This function returns ONLY the AccessLevel
+ *   enum ("full" | "degraded" | "blocked"). The service-role entitlement
+ *   computation in getParentAccessLevel is opaque to the athlete.
  *
- * KNOWN LIMITATION (athlete path): this uses the RLS-scoped client, and the
- * `subscriptions_select_own_parent` policy is `parent_id = auth.uid()`. For an
- * athlete, `auth.uid()` is the athlete's id, so reading the *parent's* row
- * returns zero rows → this currently ALWAYS returns `blocked` for athletes.
- * That is privacy-correct (an athlete must never read parent billing data) but
- * means this helper cannot yet OPEN the gate for an athlete. Before access
- * enforcement is wired, the athlete path must derive the level via a
- * service-role-mediated reader that returns ONLY the `AccessLevel` enum (never
- * the subscription row). Tracked as a follow-up — do NOT wire enforcement on
- * this helper for athletes until that lands.
+ * Returns `blocked` if there is no session, no subscription row, no active
+ * comp grant, or if the parent chain cannot be resolved.
  */
 export async function getAccessForCurrentUser(): Promise<AccessLevel> {
   const supabase = createClient();
@@ -145,6 +164,8 @@ export async function getAccessForCurrentUser(): Promise<AccessLevel> {
       return "blocked";
     }
 
+    // getParentAccessLevel uses the service client internally — returns ONLY
+    // the AccessLevel enum. No billing data is reachable from this call path.
     return getParentAccessLevel(link.parent_id);
   }
 

@@ -95,6 +95,57 @@ export type Database = {
         }
         Relationships: []
       }
+      // FV-69: hand-added. Confirm shape via `supabase gen types typescript
+      // --linked` after `supabase db push` applies
+      // 20260613060000_access_grants.sql to the linked project.
+      access_grants: {
+        Row: {
+          id: string
+          parent_id: string
+          granted_by: string | null
+          reason: string | null
+          expires_at: string | null
+          revoked_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          parent_id: string
+          granted_by?: string | null
+          reason?: string | null
+          expires_at?: string | null
+          revoked_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          parent_id?: string
+          granted_by?: string | null
+          reason?: string | null
+          expires_at?: string | null
+          revoked_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_grants_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_grants_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       athlete_sessions: {
         Row: {
           athlete_id: string

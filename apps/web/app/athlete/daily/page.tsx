@@ -8,6 +8,7 @@ import { SessionBody } from "@/components/daily/SessionBody";
 import { Icon, RhythmRingAnimated } from "@/components/ui";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireAthlete } from "@/lib/auth/guards";
+import { requireActiveAccess } from "@/lib/subscriptions/enforce";
 import { bibleLink } from "@/lib/daily/bible-link";
 import { getDailySession } from "@/lib/daily/session";
 import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
@@ -18,6 +19,9 @@ export const metadata = {
 
 export default async function DailyPage() {
   const { profile } = await requireAthlete();
+
+  // Subscription enforcement gate (FV-62). No-op when flag is off.
+  await requireActiveAccess({ role: "athlete" });
 
   if (!profile.sport_selected_at) {
     redirect("/athlete/onboarding/sport");
