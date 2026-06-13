@@ -28,7 +28,7 @@ import type { AudioSegment, NeedToday } from "./types";
 // Sport type
 // ---------------------------------------------------------------------------
 
-export type Sport = "hockey" | "basketball" | "baseball" | "golf" | "football"; // extend as more sports land
+export type Sport = "hockey" | "basketball" | "baseball" | "golf" | "football" | "swimming"; // extend as more sports land
 
 /**
  * A Hard Moment option: the canonical `key` (drives `cellSlugFor` + the stored
@@ -1457,6 +1457,299 @@ export const FOOTBALL_CONFIG: SportConfig = {
 };
 
 // ---------------------------------------------------------------------------
+// Swimming config (v2 — DORMANT; taxonomy = docs/swimming-module-map.md,
+// swimming-expert ratified. Content authored, NOT athlete-selectable — absent
+// from SUPPORTED_SPORTS + the DB sport CHECK, like baseball/football. Swimming
+// is non-positional: the "position" dimension maps to EVENT SPECIALTY.
+//
+// TWO HARD SAFETY RAILS (swimming-expert): (1) breath/reset cues must NEVER
+// resemble breath-hold/hypoxic/underwater training — all breath language is
+// dry-land calm-down; (2) body-composition/suit/weight is flag-and-route, never
+// a cell. Both held in the scripts (clips-swimming.ts) and the daily content.)
+// ---------------------------------------------------------------------------
+
+const SWIMMING_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
+  "I get touched out.": "touched-out",
+  "I false start.": "false-start",
+  "I get DQ'd.": "dq",
+  "I'm stuck on the same time.": "plateau",
+  "I blow a turn.": "bad-turn",
+  "My mind wanders mid-race.": "mind-wanders",
+  "My goggles fail.": "goggles",
+  "I'm seeded in a slow heat.": "slow-heat",
+  "I feel nervous in the ready room.": "ready-room",
+  "I go out too slow.": "go-out-slow",
+};
+
+// Swimming text-mode audio script (sport-correct body for segs 80/120/165).
+// Segments 0/35/210/250/275 are sport-neutral. 80/120/165 are swimming-specific.
+// SAFETY: every breath cue here is DRY-LAND, behind-the-blocks calm-down
+// breathing (the breath rail) — never breath-hold / underwater / hypoxic.
+const SWIMMING_AUDIO_SCRIPT: AudioSegment[] = [
+  {
+    startSec: 0,
+    eyebrow: "Identity",
+    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+  },
+  {
+    startSec: 35,
+    eyebrow: "Settle",
+    body: "Sit tall on the deck. Long exhale. Lead your body back to ready. Four counts in. Six counts out. Let your shoulders drop.",
+  },
+  {
+    startSec: 80,
+    eyebrow: "See the pool",
+    body: "See the pool. Hear the natatorium echo, a whistle, water lapping the gutters. Smell the chlorine. Feel your cap and goggles seated, the cool air on your shoulders behind the blocks. You belong here. You are ready.",
+  },
+  {
+    startSec: 120,
+    eyebrow: "Your first race",
+    body: "They call your heat. Step up behind the blocks. Slow breath on the deck. Take your mark. Explode off the start, find your stroke, hold your form all the way to the wall. One race. Recover. Next race.",
+  },
+  {
+    startSec: 165,
+    eyebrow: "Swim your race · {{role}}",
+    body: "{{roleScenes}}",
+  },
+  {
+    startSec: 210,
+    eyebrow: "If this happens",
+    body: "{{adversity}} See it. Feel it. Breathe. Speak truth. Take the next faithful action. Your mistake is real. It is not your identity.",
+  },
+  {
+    startSec: 250,
+    eyebrow: "Coach yourself",
+    body: "{{selfTalk}} When pressure hits, return here. Your anchor: {{anchor}}. Your cue word: {{cueWord}}.",
+  },
+  {
+    startSec: 275,
+    eyebrow: "Send-off",
+    body: "Lord, help me compete with courage, humility, and joy. Help me swim the race in front of me, respond well to a bad one, and remember that my worth is secure in You. Amen. Play from victory.",
+  },
+];
+
+export const SWIMMING_CONFIG: SportConfig = {
+  displayName: "Swimming",
+  sportKey: "swimming",
+
+  // Non-positional — the role dimension maps to EVENT SPECIALTY (swimming-expert
+  // FV-274). Slug tokens: sprint / dist / stroke / im.
+  roles: ["Sprinter", "Distance", "Stroke", "IM"] as const,
+  roleLabel: "Event",
+
+  roleContent: {
+    Sprinter: {
+      title: "Explode and hold the touch.",
+      scenes: [
+        "Quick to the blocks.",
+        "Rip the start, clean break.",
+        "Hold your stroke, no spin.",
+        "Drive through the finish.",
+        "Reach for the wall.",
+      ],
+    },
+    Distance: {
+      title: "Settle in, hold the pace.",
+      scenes: [
+        "Find your rhythm early.",
+        "Lock the pace, breathe easy.",
+        "Stay on the line.",
+        "Build through the back half.",
+        "Bring it home strong.",
+      ],
+    },
+    Stroke: {
+      title: "Trust the stroke you own.",
+      scenes: [
+        "Feel the water, long and clean.",
+        "Hold your tempo.",
+        "Legal turn, sharp breakout.",
+        "Finish the stroke, full and strong.",
+        "Two hands, clean touch.",
+      ],
+    },
+    IM: {
+      title: "Master the whole race.",
+      scenes: [
+        "Fly out controlled.",
+        "Smooth into the back.",
+        "Own your breast leg.",
+        "Bring it home freestyle.",
+        "Clean every transition.",
+      ],
+    },
+  },
+
+  adversities: [
+    "I get touched out.",
+    "I false start.",
+    "I get DQ'd.",
+    "I'm stuck on the same time.",
+    "I blow a turn.",
+    "My mind wanders mid-race.",
+    "My goggles fail.",
+    "I'm seeded in a slow heat.",
+    "I feel nervous in the ready room.",
+    "I go out too slow.",
+  ],
+
+  // Per-specialty relabels + drops/withholds (swimming-expert §4). Every `key`
+  // is canonical so cellSlugFor + state.adversity resolve the same cell.
+  //  - "I'm stuck on the same time." (the season-long plateau) is WITHHELD from
+  //    ALL FOUR specialties until clinical sign-off — swimming's lose-command /
+  //    first-tee analog (the cell is authored; omitted here).
+  //  - Sprinter drops "My mind wanders mid-race." (no lonely middle in a sub-
+  //    minute sprint) → cellSlugFor reroutes to touched-out.
+  //  - Distance drops "I get touched out." (the mile isn't decided at the wall by
+  //    hundredths) → cellSlugFor reroutes to go-out-slow.
+  //  NO team-sport relabels (no bench/shifts/minutes — swim team moments are
+  //  relays + champs scoring, surfaced as script texture, never a cell).
+  roleAdversities: {
+    Sprinter: [
+      { key: "I get touched out.", label: "I get touched out." },
+      { key: "I false start.", label: "I false start." },
+      { key: "I get DQ'd.", label: "I get DQ'd." },
+      { key: "I blow a turn.", label: "I blow my turn." },
+      { key: "My goggles fail.", label: "My goggles fill on the dive." },
+      { key: "I'm seeded in a slow heat.", label: "I'm seeded outside." },
+      { key: "I feel nervous in the ready room.", label: "I feel nervous in the ready room." },
+      { key: "I go out too slow.", label: "I have a bad start." },
+    ],
+    Distance: [
+      { key: "I false start.", label: "I false start." },
+      { key: "I get DQ'd.", label: "I get DQ'd." },
+      { key: "I blow a turn.", label: "I blow a flip turn." },
+      { key: "My mind wanders mid-race.", label: "My mind wanders at the 300." },
+      { key: "My goggles fail.", label: "My goggles fog up." },
+      { key: "I'm seeded in a slow heat.", label: "I'm in the early slow heat." },
+      { key: "I feel nervous in the ready room.", label: "I feel nervous before the long one." },
+      { key: "I go out too slow.", label: "My pace slips early." },
+    ],
+    Stroke: [
+      { key: "I get touched out.", label: "I get touched out." },
+      { key: "I false start.", label: "I false start." },
+      { key: "I get DQ'd.", label: "I get DQ'd on a touch." },
+      { key: "I blow a turn.", label: "I miss my turn." },
+      { key: "My mind wanders mid-race.", label: "My stroke falls apart late." },
+      { key: "My goggles fail.", label: "My goggles slip." },
+      { key: "I'm seeded in a slow heat.", label: "I'm seeded in a slow heat." },
+      { key: "I feel nervous in the ready room.", label: "I feel nervous in the ready room." },
+      { key: "I go out too slow.", label: "My stroke isn't there in warm-up." },
+    ],
+    IM: [
+      { key: "I get touched out.", label: "I get touched out." },
+      { key: "I false start.", label: "I false start." },
+      { key: "I get DQ'd.", label: "I get DQ'd on a transition." },
+      { key: "I blow a turn.", label: "I blow a stroke transition." },
+      { key: "My mind wanders mid-race.", label: "I lose focus between strokes." },
+      { key: "My goggles fail.", label: "My goggles fail mid-race." },
+      { key: "I'm seeded in a slow heat.", label: "I'm seeded in a slow heat." },
+      { key: "I feel nervous in the ready room.", label: "I feel nervous in the ready room." },
+      { key: "I go out too slow.", label: "My weak leg costs me." },
+    ],
+  },
+
+  adversitySlugFragments: SWIMMING_ADVERSITY_SLUG_FRAGMENTS,
+
+  cellSlugFor(adversity: string, role?: string | null): string {
+    const frag = SWIMMING_ADVERSITY_SLUG_FRAGMENTS[adversity] ?? "touched-out";
+    const tokenMap: Record<string, string> = {
+      Sprinter: "sprint",
+      Distance: "dist",
+      Stroke: "stroke",
+      IM: "im",
+    };
+    const token = role ? (tokenMap[role] ?? "sprint") : "sprint";
+
+    // Sprinter × mind-wanders → touched-out: no lonely middle in a sub-minute
+    // sprint. Dropped from the picker; reroute keeps the integrity grid whole.
+    if (token === "sprint" && frag === "mind-wanders") return "hm-swm-sprint-touched-out";
+    // Distance × touched-out → go-out-slow: the mile isn't decided at the wall by
+    // hundredths. Dropped from the picker; reroute keeps the grid resolving.
+    if (token === "dist" && frag === "touched-out") return "hm-swm-dist-go-out-slow";
+
+    // Swimming is COMPOSITIONAL-ONLY (golf model): cellSlugFor returns the
+    // hm-swm-* hard-moment clip directly.
+    return `hm-swm-${token}-${frag}`;
+  },
+
+  // Pre-practice focus presets. "Sharp breakouts" (NOT "Underwaters strong") is
+  // the deliberate breath-rail-safe choice — same skill, zero breath-hold framing.
+  practiceFocusOptions: [
+    "Best average",
+    "Hold my pace",
+    "Streamline off every wall",
+    "Race-pace turns",
+    "Finish every length",
+    "Sharp breakouts",
+    "One length at a time",
+  ] as const,
+
+  practiceFocusSlugs: {
+    "Best average": "pp-swimming-focus-best-average",
+    "Hold my pace": "pp-swimming-focus-hold-my-pace",
+    "Streamline off every wall": "pp-swimming-focus-streamline-off-every-wall",
+    "Race-pace turns": "pp-swimming-focus-race-pace-turns",
+    "Finish every length": "pp-swimming-focus-finish-every-length",
+    "Sharp breakouts": "pp-swimming-focus-sharp-breakouts",
+    "One length at a time": "pp-swimming-focus-one-length-at-a-time",
+  },
+
+  // FV-117 per-sport picker lists. "Better puck decisions" → "Better race
+  // execution" (pacing / turn / finish execution — "swim your race, not theirs");
+  // all other 9 needs are sport-neutral and shared. Swimming reuses the shared
+  // opener clips (resolveOpenerSlug falls back to NEED_OPENER_SLUGS).
+  needs: [
+    "Confidence",
+    "Calm",
+    "Compete level",
+    "Reset after mistakes",
+    "Physical courage",
+    "Better race execution",
+    "Leadership",
+    "Joy",
+    "Hope",
+    "Be more Vocal",
+  ] as const satisfies readonly NeedToday[],
+
+  // "Long exhale", "Press thumb to palm", "Say cue word" shared; the 3 middle
+  // ones are swim-specific DRY-LAND deck gestures (clips + slugs land with the
+  // audio render — they drop cleanly until then). None involve breath manipulation
+  // (the breath rail): arm shake, arm swings, seating cap/goggles.
+  anchors: [
+    "Long exhale",
+    "Press thumb to palm",
+    "Shake out my arms",
+    "Two arm swings",
+    "Cap and goggles set",
+    "Say cue word",
+  ] as const,
+
+  // "You're okay. Next shift." → "You're okay. Next race." (a swimmer races
+  // multiple events per session — the between-events reset); the other 6 are
+  // sport-neutral and shared.
+  selfTalkOptions: [
+    "You're okay. Next race.",
+    "Breathe. Do your job.",
+    "Stay steady. Make the next play.",
+    "You don't need to do too much.",
+    "Compete, recover, go again.",
+    "Your identity is secure. Play free.",
+    "You are secure. Take the next faithful action.",
+  ] as const,
+
+  practiceOpenerSlugs: {
+    "dialed-in": "pp-opener-dialed-in",
+    "not-feeling-it": "pp-swimming-opener-get-to",
+  },
+
+  audioScript: SWIMMING_AUDIO_SCRIPT,
+
+  cueWordHelper: "The one you'd say behind the blocks.",
+  cardShareHint: "Screenshot it. Open it before they call your heat.",
+};
+
+// ---------------------------------------------------------------------------
 // Registry + accessor
 // ---------------------------------------------------------------------------
 
@@ -1466,6 +1759,7 @@ export const SPORT_REGISTRY: Record<Sport, SportConfig> = {
   baseball: BASEBALL_CONFIG,
   golf: GOLF_CONFIG,
   football: FOOTBALL_CONFIG,
+  swimming: SWIMMING_CONFIG,
 };
 
 /**

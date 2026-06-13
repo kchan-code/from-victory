@@ -209,6 +209,24 @@ const SPORT_CELL_EXPECTATIONS: Record<
       forbiddenSlug: "hm-ftb-qb-benched",
     },
   },
+  // Swimming (v2 DORMANT — scripts authored, audio render deferred). 4 event
+  // specialties × 10 adversities, but Sprinter drops mind-wanders
+  // (reroute→sprint-touched-out) and Distance drops touched-out
+  // (reroute→dist-go-out-slow), so the matrix dedups to 38 distinct cells (incl.
+  // the 4 clinically-withheld plateau cells, which are authored). Compositional-
+  // only (golf model). EXCLUDED from RENDERED_SPORT_CONFIGS until the audio
+  // render — this entry only satisfies the Record<Sport, …> type until then.
+  swimming: {
+    cellCount: 38,
+    slugPrefix: "hm-swm-",
+    cellLayout: "catalog",
+    specialCase: {
+      role: "Distance",
+      adversity: "I get touched out.",
+      expectedSlug: "hm-swm-dist-go-out-slow",
+      forbiddenSlug: "hm-swm-dist-touched-out",
+    },
+  },
 };
 
 // FV-94/FV-99: the registry-parameterized integrity suites (sections 5 & 7) run
