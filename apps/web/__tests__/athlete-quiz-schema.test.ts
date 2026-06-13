@@ -178,6 +178,15 @@ describe("Registry roles vs DB CHECK union", () => {
     // constraint to these three lands with golf's DB enablement (FV-269),
     // bundled with the sport-enum migration; this mirror tracks the registry.
     "Bomber", "Ball-Striker", "Scrambler",
+    // Football (v2 — dormant; position groups). Added to the CHECK by
+    // 20260613100000_v2_dormant_sport_positions.sql (sport stays gated).
+    "QB", "Running Back", "Receiver", "Offensive Line",
+    "Defensive Line", "Linebacker", "Defensive Back",
+    // Swimming (v2 — dormant; event specialties).
+    "Sprinter", "Distance", "Stroke", "IM",
+    // Track & Field (v2 — dormant; event groups; Sprinter + Distance shared
+    // with swimming, listed once above).
+    "Hurdler", "Jumper", "Thrower",
   ];
 
   it("every registry role is in the DB CHECK union", () => {
