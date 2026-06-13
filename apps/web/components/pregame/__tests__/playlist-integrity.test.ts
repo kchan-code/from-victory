@@ -227,6 +227,24 @@ const SPORT_CELL_EXPECTATIONS: Record<
       forbiddenSlug: "hm-swm-dist-touched-out",
     },
   },
+  // Track & Field (v2 DORMANT — scripts authored, audio render deferred). 5 event
+  // groups × 10 adversities, with heavy per-group drops/reroutes (field groups
+  // have no gun/relay/rigging; gun groups have no field foul/bar) + the 2
+  // clinically-withheld no-height cells (Jumper/Thrower, authored) → matrix dedups
+  // to 38 distinct cells. Compositional-only (golf model). EXCLUDED from
+  // RENDERED_SPORT_CONFIGS until the audio render — this entry only satisfies the
+  // Record<Sport, …> type until then.
+  "track-field": {
+    cellCount: 38,
+    slugPrefix: "hm-trf-",
+    cellLayout: "catalog",
+    specialCase: {
+      role: "Sprinter",
+      adversity: "I foul.",
+      expectedSlug: "hm-trf-sprint-false-start",
+      forbiddenSlug: "hm-trf-sprint-foul",
+    },
+  },
 };
 
 // FV-94/FV-99: the registry-parameterized integrity suites (sections 5 & 7) run

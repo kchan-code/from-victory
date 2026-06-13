@@ -28,7 +28,7 @@ import type { AudioSegment, NeedToday } from "./types";
 // Sport type
 // ---------------------------------------------------------------------------
 
-export type Sport = "hockey" | "basketball" | "baseball" | "golf" | "football" | "swimming"; // extend as more sports land
+export type Sport = "hockey" | "basketball" | "baseball" | "golf" | "football" | "swimming" | "track-field"; // extend as more sports land
 
 /**
  * A Hard Moment option: the canonical `key` (drives `cellSlugFor` + the stored
@@ -1750,6 +1750,332 @@ export const SWIMMING_CONFIG: SportConfig = {
 };
 
 // ---------------------------------------------------------------------------
+// Track & Field config (v2 — DORMANT; taxonomy = docs/track-field-module-map.md,
+// authored by a standing track coach + content trio (no dedicated expert agent
+// yet — recommend recruiting one before go-live). Content authored, NOT athlete-
+// selectable — absent from SUPPORTED_SPORTS + the DB sport CHECK. Non-positional:
+// the "position" dimension maps to EVENT GROUP. Sport slug is hyphenated
+// ("track-field") — keep the daily seed sport column + registry key in lockstep.
+//
+// CLINICAL: the "no-height" cells (Jumper + Thrower) are WITHHELD until clinical
+// sign-off (golf-first-tee precedent — never name the yips/balk; route mechanics
+// to the coach). Body-composition / RED-S (distance + jumps) is flag-and-route,
+// NEVER a cell.)
+// ---------------------------------------------------------------------------
+
+const TRACKFIELD_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
+  "I false start.": "false-start",
+  "I blow the handoff.": "handoff",
+  "I get out-leaned at the line.": "out-leaned",
+  "I foul.": "foul",
+  "I no-height.": "no-height",
+  "I draw a bad heat or lane.": "bad-heat",
+  "I hit the wall.": "hit-wall",
+  "I feel nervous in the blocks.": "nervous",
+  "I start slow.": "start-slow",
+  "I fall off the pace.": "off-pace",
+};
+
+// Track & Field text-mode audio script (sport-correct body for segs 80/120/165).
+// Segments 0/35/210/250/275 are sport-neutral. 80/120/165 are track-specific and
+// event-group-neutral (work for the gun events + the field events).
+const TRACKFIELD_AUDIO_SCRIPT: AudioSegment[] = [
+  {
+    startSec: 0,
+    eyebrow: "Identity",
+    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+  },
+  {
+    startSec: 35,
+    eyebrow: "Settle",
+    body: "Sit tall. Long exhale. Lead your body back to ready. Four counts in. Six counts out. Let your shoulders drop.",
+  },
+  {
+    startSec: 80,
+    eyebrow: "See the track",
+    body: "See the track. Hear the meet PA echo, a starter's whistle in the distance, spikes on the apron. Smell the infield. Feel your spikes bite, the chalk on your hands, the moment before you go. You belong here. You are ready.",
+  },
+  {
+    startSec: 120,
+    eyebrow: "Your first rep",
+    body: "The starter raises the gun, or the official calls your name. Settle. Slow breath. Then go — explode, commit, finish all the way through. One rep. Recover. Next rep.",
+  },
+  {
+    startSec: 165,
+    eyebrow: "Compete in your event · {{role}}",
+    body: "{{roleScenes}}",
+  },
+  {
+    startSec: 210,
+    eyebrow: "If this happens",
+    body: "{{adversity}} See it. Feel it. Breathe. Speak truth. Take the next faithful action. Your mistake is real. It is not your identity.",
+  },
+  {
+    startSec: 250,
+    eyebrow: "Coach yourself",
+    body: "{{selfTalk}} When pressure hits, return here. Your anchor: {{anchor}}. Your cue word: {{cueWord}}.",
+  },
+  {
+    startSec: 275,
+    eyebrow: "Send-off",
+    body: "Lord, help me compete with courage, humility, and joy. Help me run the race in front of me, respond well to a bad one, and remember that my worth is secure in You. Amen. Play from victory.",
+  },
+];
+
+export const TRACKFIELD_CONFIG: SportConfig = {
+  displayName: "Track & Field",
+  sportKey: "track-field",
+
+  // Non-positional — the role dimension maps to EVENT GROUP. Slug tokens:
+  // sprint / dist / hurdle / jump / throw.
+  roles: ["Sprinter", "Distance", "Hurdler", "Jumper", "Thrower"] as const,
+  roleLabel: "Event",
+
+  roleContent: {
+    Sprinter: {
+      title: "Explode and stay relaxed.",
+      scenes: [
+        "Set in the blocks.",
+        "React, drive, rise up.",
+        "Fast hands, loose face.",
+        "Run through the line.",
+        "Lean, don't reach.",
+      ],
+    },
+    Distance: {
+      title: "Run your race, your way.",
+      scenes: [
+        "Settle into your pace.",
+        "Relax the shoulders, breathe.",
+        "Stay in contact, stay patient.",
+        "Make your move on time.",
+        "Empty the tank at the bell.",
+      ],
+    },
+    Hurdler: {
+      title: "Trust your steps.",
+      scenes: [
+        "Attack the first hurdle.",
+        "Lead leg snaps down.",
+        "Trail leg comes through.",
+        "Run between the barriers.",
+        "Sprint off the last one.",
+      ],
+    },
+    Jumper: {
+      title: "Commit down the runway.",
+      scenes: [
+        "Find your mark.",
+        "Build the approach, stay tall.",
+        "Hit the board, full speed.",
+        "Commit and explode up.",
+        "Next attempt, fresh start.",
+      ],
+    },
+    Thrower: {
+      title: "Big and explosive.",
+      scenes: [
+        "Settle in the ring.",
+        "Slow, then violent.",
+        "Stay back, then rip it.",
+        "Finish tall and through.",
+        "Next throw, let it go.",
+      ],
+    },
+  },
+
+  adversities: [
+    "I false start.",
+    "I blow the handoff.",
+    "I get out-leaned at the line.",
+    "I foul.",
+    "I no-height.",
+    "I draw a bad heat or lane.",
+    "I hit the wall.",
+    "I feel nervous in the blocks.",
+    "I start slow.",
+    "I fall off the pace.",
+  ],
+
+  // Per-event-group relabels + drops/withholds. Every `key` is canonical so
+  // cellSlugFor + state.adversity resolve the same cell. Several adversities
+  // don't exist in literal form for some groups — handled by relabel → withhold
+  // → drop+reroute (priority). NO team-sport relabels (track team moments =
+  // relays + meet scoring, surfaced as texture, never a cell).
+  //  - "I no-height." is WITHHELD for Jumper + Thrower (clinical gate — the
+  //    fouling-out / runway-balk spiral; authored, omitted here until sign-off).
+  //  - Sprinter drops foul + no-height (no field implement/bar) → reroute.
+  //  - Distance drops false-start + foul + no-height (arc start, no field) → reroute.
+  //  - Hurdler drops no-height (no bar) → reroute; foul relabels to the hit-hurdle.
+  //  - Jumper + Thrower drop false-start + handoff + hit-wall (no gun/relay-leg/
+  //    rigging) → reroute to the group foul cell.
+  roleAdversities: {
+    Sprinter: [
+      { key: "I false start.", label: "I false start." },
+      { key: "I blow the handoff.", label: "I blow the handoff." },
+      { key: "I get out-leaned at the line.", label: "I get out-leaned at the line." },
+      { key: "I draw a bad heat or lane.", label: "I draw a bad lane." },
+      { key: "I hit the wall.", label: "I tie up in the last 50." },
+      { key: "I feel nervous in the blocks.", label: "I feel nervous in the blocks." },
+      { key: "I start slow.", label: "I get a slow start." },
+      { key: "I fall off the pace.", label: "I fade down the stretch." },
+    ],
+    Distance: [
+      { key: "I get out-leaned at the line.", label: "I get out-kicked at the line." },
+      { key: "I blow the handoff.", label: "I blow the handoff." },
+      { key: "I draw a bad heat or lane.", label: "I get boxed in." },
+      { key: "I hit the wall.", label: "I hit the wall." },
+      { key: "I feel nervous in the blocks.", label: "I feel nervous on the line." },
+      { key: "I start slow.", label: "I go out too slow." },
+      { key: "I fall off the pace.", label: "I fall off the pace." },
+    ],
+    Hurdler: [
+      { key: "I false start.", label: "I false start." },
+      { key: "I blow the handoff.", label: "I blow the handoff." },
+      { key: "I get out-leaned at the line.", label: "I get out-leaned at the line." },
+      { key: "I foul.", label: "I hit a hurdle." },
+      { key: "I draw a bad heat or lane.", label: "I draw a bad lane." },
+      { key: "I hit the wall.", label: "I die in the 400 hurdles." },
+      { key: "I feel nervous in the blocks.", label: "I feel nervous in the blocks." },
+      { key: "I start slow.", label: "I'm off my steps early." },
+      { key: "I fall off the pace.", label: "I lose my rhythm." },
+    ],
+    Jumper: [
+      { key: "I foul.", label: "I scratch the jump." },
+      { key: "I get out-leaned at the line.", label: "I get jumped on my last attempt." },
+      { key: "I draw a bad heat or lane.", label: "I draw an early flight." },
+      { key: "I feel nervous in the blocks.", label: "I feel nervous on the runway." },
+      { key: "I start slow.", label: "I open with a bad jump." },
+      { key: "I fall off the pace.", label: "I'm not hitting my marks." },
+    ],
+    Thrower: [
+      { key: "I foul.", label: "I scratch the throw." },
+      { key: "I get out-leaned at the line.", label: "I get out-thrown on the last throw." },
+      { key: "I draw a bad heat or lane.", label: "I throw early in the order." },
+      { key: "I feel nervous in the blocks.", label: "I feel nervous in the ring." },
+      { key: "I start slow.", label: "I open with a weak throw." },
+      { key: "I fall off the pace.", label: "I can't find a big throw." },
+    ],
+  },
+
+  adversitySlugFragments: TRACKFIELD_ADVERSITY_SLUG_FRAGMENTS,
+
+  cellSlugFor(adversity: string, role?: string | null): string {
+    const frag = TRACKFIELD_ADVERSITY_SLUG_FRAGMENTS[adversity] ?? "nervous";
+    const tokenMap: Record<string, string> = {
+      Sprinter: "sprint",
+      Distance: "dist",
+      Hurdler: "hurdle",
+      Jumper: "jump",
+      Thrower: "throw",
+    };
+    const token = role ? (tokenMap[role] ?? "sprint") : "sprint";
+
+    // Field groups (jump/throw): no gun, no relay leg, no rigging — these
+    // adversities don't exist; reroute to the group's core foul cell.
+    if (
+      (token === "jump" || token === "throw") &&
+      (frag === "false-start" || frag === "handoff" || frag === "hit-wall")
+    ) {
+      return `hm-trf-${token}-foul`;
+    }
+    // Sprinter: no field foul, no bar/height → reroute to the core rulebook-
+    // erasure cell (false-start).
+    if (token === "sprint" && (frag === "foul" || frag === "no-height")) {
+      return "hm-trf-sprint-false-start";
+    }
+    // Distance: arc/waterfall start (block false-start is a sprint reality) +
+    // field cells don't apply → reroute to the core distance failure (the wall).
+    if (token === "dist" && (frag === "false-start" || frag === "foul" || frag === "no-height")) {
+      return "hm-trf-dist-hit-wall";
+    }
+    // Hurdler: no bar/height → reroute to the hit-a-hurdle foul cell.
+    if (token === "hurdle" && frag === "no-height") {
+      return "hm-trf-hurdle-foul";
+    }
+
+    // Compositional-only (golf model): cellSlugFor returns the hm-trf-* clip.
+    return `hm-trf-${token}-${frag}`;
+  },
+
+  // Pre-practice focus presets. "Relaxed speed" (the relax-to-sprint paradox)
+  // and "Reset between attempts" (the field-event multi-round reset) are the
+  // track-distinct ones.
+  practiceFocusOptions: [
+    "Compete every rep",
+    "One rep at a time",
+    "Trust my technique",
+    "Relaxed speed",
+    "Finish through the line",
+    "Attack the moment",
+    "Reset between attempts",
+  ] as const,
+
+  practiceFocusSlugs: {
+    "Compete every rep": "pp-trackfield-focus-compete-every-rep",
+    "One rep at a time": "pp-trackfield-focus-one-rep-at-a-time",
+    "Trust my technique": "pp-trackfield-focus-trust-my-technique",
+    "Relaxed speed": "pp-trackfield-focus-relaxed-speed",
+    "Finish through the line": "pp-trackfield-focus-finish-through-the-line",
+    "Attack the moment": "pp-trackfield-focus-attack-the-moment",
+    "Reset between attempts": "pp-trackfield-focus-reset-between-attempts",
+  },
+
+  // FV-117 per-sport picker lists. "Better puck decisions" → "Better race
+  // execution" (shared with swimming — the race-plan / pacing / approach
+  // execution need); all other 9 needs are sport-neutral and shared. Track
+  // reuses the shared opener clips (resolveOpenerSlug falls back).
+  needs: [
+    "Confidence",
+    "Calm",
+    "Compete level",
+    "Reset after mistakes",
+    "Physical courage",
+    "Better race execution",
+    "Leadership",
+    "Joy",
+    "Hope",
+    "Be more Vocal",
+  ] as const satisfies readonly NeedToday[],
+
+  // "Long exhale", "Press thumb to palm", "Say cue word" shared; the 3 middle
+  // ones are track-specific (clips + slugs land with the audio render — they
+  // drop cleanly until then): the pre-race limb shake-out, the step-back-and-
+  // re-set behind the line/runway, and settling the blocks/ring/board stance.
+  anchors: [
+    "Long exhale",
+    "Press thumb to palm",
+    "Shake out the legs",
+    "Reset on the line",
+    "Set your feet",
+    "Say cue word",
+  ] as const,
+
+  // "You're okay. Next shift." → "You're okay. Next rep." ("rep" holds across a
+  // sprinter's next round, a jumper's next attempt, a thrower's next throw); the
+  // other 6 are sport-neutral and shared.
+  selfTalkOptions: [
+    "You're okay. Next rep.",
+    "Breathe. Do your job.",
+    "Stay steady. Make the next play.",
+    "You don't need to do too much.",
+    "Compete, recover, go again.",
+    "Your identity is secure. Play free.",
+    "You are secure. Take the next faithful action.",
+  ] as const,
+
+  practiceOpenerSlugs: {
+    "dialed-in": "pp-opener-dialed-in",
+    "not-feeling-it": "pp-trackfield-opener-get-to",
+  },
+
+  audioScript: TRACKFIELD_AUDIO_SCRIPT,
+
+  cueWordHelper: "The one you'd say to yourself in the blocks.",
+  cardShareHint: "Screenshot it. Open it before they call your heat.",
+};
+
+// ---------------------------------------------------------------------------
 // Registry + accessor
 // ---------------------------------------------------------------------------
 
@@ -1760,6 +2086,7 @@ export const SPORT_REGISTRY: Record<Sport, SportConfig> = {
   golf: GOLF_CONFIG,
   football: FOOTBALL_CONFIG,
   swimming: SWIMMING_CONFIG,
+  "track-field": TRACKFIELD_CONFIG,
 };
 
 /**
