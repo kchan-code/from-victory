@@ -141,6 +141,10 @@ test.describe("Pre-practice flow", () => {
     });
 
     test('"Not feeling it" can be selected', async ({ page }) => {
+      // In production builds (CI: next build && next start) React hydration may
+      // not be complete immediately after page load. networkidle ensures the JS
+      // bundle has executed and onClick handlers are attached before we click.
+      await page.waitForLoadState("networkidle");
       await page.getByTestId("state-option-not-feeling-it").click();
       await expect(
         page.getByTestId("state-option-not-feeling-it"),
