@@ -107,7 +107,7 @@ export default async function PostgamePickerPage() {
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.16em] text-gold/70 mb-0.5">
-                        {SCENARIO_EYEBROW[mod.scenario]}
+                        {mod.eyebrow ?? SCENARIO_EYEBROW[mod.scenario]}
                       </p>
                       <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[18px] leading-[1.15]">
                         {mod.title}

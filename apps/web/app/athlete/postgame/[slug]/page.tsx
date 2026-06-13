@@ -96,7 +96,7 @@ export default async function PostgameModulePage({
         >
           {/* Eyebrow */}
           <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold/70 mb-4">
-            {SCENARIO_EYEBROW[mod.scenario]}
+            {mod.eyebrow ?? SCENARIO_EYEBROW[mod.scenario]}
           </p>
 
           {/* Module title — h2 under sr-only h1 */}
