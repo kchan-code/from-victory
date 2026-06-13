@@ -56,14 +56,24 @@ export default async function AthleteHomePage() {
     <main className="min-h-screen bg-onyx pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
       {/* ── Header ── */}
       <header className="flex items-center justify-between px-5 pt-10 pb-8 sm:px-8 max-w-[640px] mx-auto">
-        <Image
-          src="/logo-stacked.svg"
-          alt="From Victory"
-          width={105}
-          height={60}
-          className="h-[64px] w-auto"
-          priority
-        />
+        <div className="flex items-center gap-2">
+          <Image
+            src="/logo-icon.svg"
+            alt=""
+            width={64}
+            height={36}
+            className="block h-9 w-auto"
+            priority
+          />
+          <Image
+            src="/logo-wordmark.svg"
+            alt="From Victory"
+            width={100}
+            height={32}
+            className="block h-7 w-auto translate-y-[2px]"
+            priority
+          />
+        </div>
         <div className="flex items-center gap-2">
           <Link
             href="/athlete/settings"
