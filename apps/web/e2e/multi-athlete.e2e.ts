@@ -96,7 +96,10 @@ test.describe("Multi-athlete flow", () => {
     await expect(page).toHaveURL(/\/dashboard\/athletes\/new$/);
 
     // No error alerts on the form page yet.
-    await expect(page.getByRole("alert")).not.toBeVisible();
+    // Exclude #__next-route-announcer__ which always has role="alert" in Next.js.
+    await expect(
+      page.locator('[role="alert"]:not(#__next-route-announcer__)'),
+    ).toHaveCount(0);
 
     // Fill the form fields.
     await page.fill('input[name="first_name"]', "E2E Alpha");
@@ -125,7 +128,9 @@ test.describe("Multi-athlete flow", () => {
     await addAthleteLinkAfterOne.click();
     await expect(page).toHaveURL(/\/dashboard\/athletes\/new$/);
 
-    await expect(page.getByRole("alert")).not.toBeVisible();
+    await expect(
+      page.locator('[role="alert"]:not(#__next-route-announcer__)'),
+    ).toHaveCount(0);
 
     await page.fill('input[name="first_name"]', "E2E Bravo");
     await page.fill('input[name="birthdate"]', BIRTHDATE_BRAVO);
@@ -159,7 +164,9 @@ test.describe("Multi-athlete flow", () => {
     // ------------------------------------------------------------------
     // Step 6: No error alerts anywhere on the final dashboard state.
     // ------------------------------------------------------------------
-    await expect(page.getByRole("alert")).not.toBeVisible();
+    await expect(
+      page.locator('[role="alert"]:not(#__next-route-announcer__)'),
+    ).toHaveCount(0);
 
     // ------------------------------------------------------------------
     // Step 7: Audience-language guard.
