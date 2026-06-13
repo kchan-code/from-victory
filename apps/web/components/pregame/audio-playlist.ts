@@ -295,7 +295,12 @@ export function resolvePlaylist(
         // else: drop the sentinel — "Say cue word" and unknowns produce no clip
       } else if (raw === "{{selfTalk}}") {
         const resolved = selfTalk ? (SELFTALK_OPTION_SLUGS[selfTalk] ?? null) : null;
-        if (resolved) slugs.push(resolved);
+        if (resolved) {
+          if (manifest.clips["shared-selftalk-intro"]) {
+            slugs.push("shared-selftalk-intro");
+          }
+          slugs.push(resolved);
+        }
       } else if (raw === "{{cueReset}}") {
         const base = cueWord ? (CUEWORD_OPTION_SLUGS[cueWord] ?? null) : null;
         if (base) {
