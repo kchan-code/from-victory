@@ -4209,6 +4209,54 @@ export const CLIP_PP_FOCUS_TALK_EVERY_SHIFT_SCRIPT: AudioScript = {
 //
 // Phase 2 ordering: shared structural → VIZ × 3 positions → HM × 30 cells
 // (hm-forward-nervous first for backward compatibility with P1) → CLOSING.
+// ── Shared structural intro clips ────────────────────────────────────────────
+//
+// shared-viz-intro   — plays immediately before the first viz-* clip. Delivers
+//                      "Now, visualize this scenario." in VISUALIZATION_INSTRUCTIONS
+//                      register to prime the athlete for the imagery sequence.
+//                      Injected at runtime in audio-playlist.ts after the FV-144
+//                      positive-play swap so it precedes whichever viz clip(s) are
+//                      active. Guarded by manifest.clips["shared-viz-intro"] so
+//                      older manifests/test fixtures skip it cleanly.
+//
+// shared-anchor-intro — plays immediately before the resolved anchor clip.
+//                       Delivers "Remember your anchor." Injected in the
+//                       {{anchor}} sentinel branch in audio-playlist.ts, same
+//                       guard pattern as the FV-153 cue-word scaffold clips.
+
+export const CLIP_SHARED_VIZ_INTRO_SCRIPT: AudioScript = {
+  slug: "shared-viz-intro",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Now, visualize this scenario.",
+      speed: 1.1,
+      instructions: VISUALIZATION_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 0.6 },
+  ],
+};
+
+export const CLIP_SHARED_ANCHOR_INTRO_SCRIPT: AudioScript = {
+  slug: "shared-anchor-intro",
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Remember your anchor.",
+      speed: 1.1,
+    },
+    { type: "silence", durationSec: 0.6 },
+  ],
+};
+
 export const CLIP_SCRIPTS: AudioScript[] = [
   // Shared structural
   CLIP_SHARED_OPENING_SCRIPT,
@@ -4444,4 +4492,8 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   // FV-136: Cue-word scaffold preamble clips (audio before the {insert word} token)
   CLIP_SHARED_CUE_WORD_INTRO_PRE_SCRIPT,
   CLIP_SHARED_CUE_WORD_SENDOFF_PRE_SCRIPT,
+  // Shared structural intro clips — viz lead-in + anchor lead-in.
+  // Injected at runtime in audio-playlist.ts (guarded by manifest.clips[slug]).
+  CLIP_SHARED_VIZ_INTRO_SCRIPT,
+  CLIP_SHARED_ANCHOR_INTRO_SCRIPT,
 ];
