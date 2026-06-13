@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { PracticeFlow } from "@/components/pregame/PracticeFlow";
 import { requireAthlete } from "@/lib/auth/guards";
+import { requireActiveAccess } from "@/lib/subscriptions/enforce";
 
 export const metadata = {
   title: "Pre-Practice · From Victory",
@@ -9,6 +10,9 @@ export const metadata = {
 
 export default async function PracticePage() {
   const { profile } = await requireAthlete();
+
+  // Subscription enforcement gate (FV-62). No-op when flag is off.
+  await requireActiveAccess({ role: "athlete" });
 
   // First-run gate: an athlete must choose their sport before reaching
   // sport-keyed pre-practice content. Mirrors the /athlete dashboard gate
