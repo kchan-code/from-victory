@@ -57,7 +57,7 @@ import {
   writeAthleteCache,
 } from "@/lib/pregame/athlete-cache";
 import { PregameFlow } from "./PregameFlow";
-import type { Sport } from "./sport-registry";
+import { SUPPORTED_SPORTS, type Sport } from "@/lib/sports";
 
 // clearAthleteCache is re-exported from lib/pregame/athlete-cache.
 // It is no longer defined here — import it from there for sign-out / re-pair
@@ -158,11 +158,16 @@ export function PregameClientShell() {
           return;
         }
 
-        // Resolve the sport — fall back to hockey if the DB value is unknown.
-        // profile.sport is string | null in the generated types; we narrow to
-        // the Sport union before passing to PregameFlow + writing the cache.
-        const sport: Sport =
-          profile.sport === "basketball" ? "basketball" : "hockey";
+        // Resolve the sport — validate against SUPPORTED_SPORTS (the selectable
+        // set) and fall back to hockey if the DB value is unknown/null. Using
+        // the allowlist (not a hardcoded hockey/basketball branch) means every
+        // launched sport — golf included (FV-270) — routes to its own content
+        // instead of silently collapsing to hockey.
+        const sport: Sport = (SUPPORTED_SPORTS as readonly string[]).includes(
+          profile.sport ?? "",
+        )
+          ? (profile.sport as Sport)
+          : "hockey";
         const firstName = profile.first_name ?? "";
 
         // Cache for future offline use (device-local, non-network).

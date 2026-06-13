@@ -35,6 +35,7 @@ export default async function TrainingFocusSettingsPage() {
     <PersonalizationQuiz
       sport={sport}
       roles={sportConfig.roles}
+      roleLabel={sportConfig.roleLabel}
       initialPosition={profile.position}
       initialFocusArea={profile.focus_area}
       action={updatePersonalizationQuiz}

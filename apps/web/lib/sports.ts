@@ -1,12 +1,19 @@
 // Supported sports — the single source of truth for the athlete `sport`
 // dimension. Must match the `sport_valid_values` CHECK constraint in
-// supabase/migrations/20260602000000_athlete_sport.sql AND
-// training_sessions_catalog.sport. To add a sport (e.g. tennis, v2): add it
-// here and extend the DB CHECK in a migration — keep the two in lockstep.
+// supabase/migrations/20260602000000_athlete_sport.sql (widened for golf in
+// 20260613020000_golf_db_enablement.sql) AND training_sessions_catalog.sport.
+// To add a sport: add it here and extend the DB CHECK in a migration — keep the
+// two in lockstep. Adding a sport here forces a typecheck failure on every
+// `Record<Sport, …>` (SportPicker / ChangeSportFlow meta) until it gets an
+// entry — that exhaustiveness is the safety net.
+//
+// Golf goes live at launch (KC directive 2026-06-12, overriding the FV-272
+// founder gate). Baseball + football stay DORMANT — content authored, not
+// athlete-selectable — so they are intentionally absent here.
 //
 // Plain module (no "use server"): safe to import from server actions and
 // client components alike (e.g. the FV-33 onboarding sport selector).
-export const SUPPORTED_SPORTS = ["hockey", "basketball"] as const;
+export const SUPPORTED_SPORTS = ["hockey", "basketball", "golf"] as const;
 export type Sport = (typeof SUPPORTED_SPORTS)[number];
 
 // The interim default until the FV-33 onboarding selector ships. Hockey is the
