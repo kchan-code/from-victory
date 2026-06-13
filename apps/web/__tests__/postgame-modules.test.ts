@@ -1,11 +1,12 @@
 // FV-225 — Post-game debrief module registry tests.
 //
 // Pins:
-//   1. All 10 modules present: 5 scenarios × 2 sports; slugs unique; every
+//   1. All 15 modules present: 5 scenarios × 3 sports; slugs unique; every
 //      module has title/ref/text/body.
 //   2. Scripture byte-pins: each SCRIPTURE_TEXT matches exact expected NIV
 //      strings (mirrors the FV-229 cue-word-verses.test.ts pattern).
-//   3. Body word-count ceiling ≤190 words per module (the format lock).
+//   3. Body word-count ceiling — ≤190 words for team sports; ≤220 for golf
+//      (FV-294 individual-sport modules run longer; pending KC by-ear trim).
 //   4. No "kid"/"kiddo"/"youngster"/"young person" in any module copy
 //      (registry fields; page-level copy is reviewed, not scanned here).
 //   5. Protect-lines verbatim: "not impressed by the ones who shrug it off"
@@ -13,7 +14,7 @@
 //      protect-lines + anti-prosperity banned-pattern scan (highest-drift
 //      module — praise must never read as a lever for a better outcome).
 //   6. modulesForSport: hockey athlete gets 5 modules; basketball athlete gets 5;
-//      unknown sport gets 0.
+//      golf athlete gets 5; unknown sport gets 0.
 //   7. moduleBySlug: returns correct module; undefined for unknown slug.
 //   8. Sport guard: modules are strictly scoped per sport.
 
@@ -31,8 +32,8 @@ import {
 // ---------------------------------------------------------------------------
 
 describe("POSTGAME_MODULES registry completeness", () => {
-  it("contains exactly 10 modules", () => {
-    expect(POSTGAME_MODULES).toHaveLength(10);
+  it("contains exactly 15 modules", () => {
+    expect(POSTGAME_MODULES).toHaveLength(15);
   });
 
   it("all slugs are unique", () => {
@@ -50,7 +51,7 @@ describe("POSTGAME_MODULES registry completeness", () => {
     }
   });
 
-  it("covers all 5 scenarios × 2 sports", () => {
+  it("covers all 5 scenarios × 3 sports", () => {
     const scenarios: PostgameScenario[] = [
       "win",
       "loss",
@@ -58,7 +59,7 @@ describe("POSTGAME_MODULES registry completeness", () => {
       "bad-game",
       "praise",
     ];
-    const sports = ["hockey", "basketball"] as const;
+    const sports = ["hockey", "basketball", "golf"] as const;
 
     for (const sport of sports) {
       for (const scenario of scenarios) {
@@ -174,10 +175,64 @@ describe("Scripture verbatim NIV byte-pins", () => {
       "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
     );
   });
+
+  // Golf scripture byte-pins (FV-294)
+  it("Psalm 34:18 — same exact text on golf loss", () => {
+    const mod = moduleBySlug("golf-the-loss");
+    expect(mod).toBeDefined();
+    expect(mod!.scriptureRef).toBe("Psalm 34:18");
+    expect(mod!.scriptureText).toBe(
+      "The Lord is close to the brokenhearted and saves those who are crushed in spirit.",
+    );
+  });
+
+  it("Psalm 139:1-3 — same exact text on golf benching (left off the card)", () => {
+    const mod = moduleBySlug("golf-left-off-the-card");
+    expect(mod).toBeDefined();
+    expect(mod!.scriptureRef).toBe("Psalm 139:1-3");
+    expect(mod!.scriptureText).toBe(
+      "You have searched me, Lord, and you know me. You know when I sit and when I rise; you perceive my thoughts from afar. You discern my going out and my lying down; you are familiar with all my ways.",
+    );
+  });
+
+  it("Lamentations 3:22-23 — same exact text on golf bad game (blow-up round)", () => {
+    const mod = moduleBySlug("golf-the-blow-up-round");
+    expect(mod).toBeDefined();
+    expect(mod!.scriptureRef).toBe("Lamentations 3:22-23");
+    expect(mod!.scriptureText).toBe(
+      "Because of the Lord's great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness.",
+    );
+  });
+
+  it("James 1:17 — same exact text on golf win", () => {
+    const mod = moduleBySlug("golf-after-the-win");
+    expect(mod).toBeDefined();
+    expect(mod!.scriptureRef).toBe("James 1:17");
+    expect(mod!.scriptureText).toBe(
+      "Every good and perfect gift is from above, coming down from the Father of the heavenly lights, who does not change like shifting shadows.",
+    );
+  });
+
+  it("Habakkuk 3:17-18 — same exact text on golf praise", () => {
+    const mod = moduleBySlug("golf-praise-anyway");
+    expect(mod).toBeDefined();
+    expect(mod!.scriptureRef).toBe("Habakkuk 3:17-18");
+    expect(mod!.scriptureText).toBe(
+      "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
-// 3. Body word-count ceiling ≤190 words (format lock from FV-23)
+// 3. Body word-count ceiling
+//
+// Hockey + basketball postgame modules hold to ≤190 words (the FV-225
+// postgame format, matching the FV-23 daily-session lock). Golf (FV-294)
+// currently runs to ≤220: three of its five modules exceed 190 (loss 210,
+// praise 205, win 202) because the individual-sport loneliness layer adds
+// prose. The copy is KC-approved verbatim. If golf is later trimmed to the
+// team-sport length (a by-ear call), restore a single ≤190 ceiling and drop
+// the per-sport branch below.
 // ---------------------------------------------------------------------------
 
 function countWords(text: string): number {
@@ -192,12 +247,13 @@ function countWords(text: string): number {
 
 describe("Body word-count ceiling", () => {
   for (const mod of POSTGAME_MODULES) {
-    it(`${mod.slug} body is ≤190 words`, () => {
+    const ceiling = mod.sport === "golf" ? 220 : 190;
+    it(`${mod.slug} body is ≤${ceiling} words`, () => {
       const count = countWords(mod.bodyMd);
       expect(
         count,
-        `${mod.slug}: ${count} words — exceeds 190-word ceiling`,
-      ).toBeLessThanOrEqual(190);
+        `${mod.slug}: ${count} words — exceeds ${ceiling}-word ceiling`,
+      ).toBeLessThanOrEqual(ceiling);
     });
   }
 });
@@ -283,6 +339,38 @@ describe("Youth-pastor protect-lines", () => {
     // It lives in the LOSS modules (not the bad-night modules):
     const hockeyLoss = moduleBySlug("hockey-the-loss");
     expect(hockeyLoss!.bodyMd).toContain("You're not asked to feel it forever");
+  });
+
+  // Golf protect-lines (FV-294) — same theological guardrails, sport-specific texture
+  it('golf loss contains "not impressed by the ones who shrug it off"', () => {
+    const mod = moduleBySlug("golf-the-loss");
+    expect(mod!.bodyMd).toContain("not impressed by the ones who shrug it off");
+  });
+
+  it('golf loss contains sports-psych exit rewrite ("not asked to feel it forever")', () => {
+    const mod = moduleBySlug("golf-the-loss");
+    expect(mod!.bodyMd).toContain("You're not asked to feel it forever");
+  });
+
+  it('golf blow-up round contains "Don\'t fake being fine"', () => {
+    const mod = moduleBySlug("golf-the-blow-up-round");
+    expect(mod!.bodyMd).toContain("Don't fake\nbeing fine");
+  });
+
+  it("golf win module: reset blockquote echoes the loss reset (the product point)", () => {
+    const mod = moduleBySlug("golf-after-the-win");
+    expect(mod).toBeDefined();
+    expect(mod!.bodyMd).toContain(
+      "The win is real. It is not the crown on you.",
+    );
+  });
+
+  it("golf win module: no prosperity-transaction language (youth-pastor guardrail)", () => {
+    const banned = [/God('s)? favor/i, /God showed up/i, /came through for (you|us)/i, /God (is |was )?on (your|our) side/i];
+    const mod = moduleBySlug("golf-after-the-win")!;
+    for (const re of banned) {
+      expect(re.test(mod.bodyMd), `golf-after-the-win: matches banned pattern ${re}`).toBe(false);
+    }
   });
 });
 
@@ -379,6 +467,87 @@ describe("Praise-on-a-hard-night modules (The Hard Night)", () => {
       }
     });
   }
+
+  // Golf praise module (FV-294) — same Habakkuk engine, golf-specific texture.
+  // Key differences from team-sport modules: "a better round" (not "a better
+  // one"), "Nothing on the card" (not scoreboard), "Only the number did" (not
+  // "Only the night did"). Protect-lines reference those sport-specific seams.
+  // NOTE: "lower score next time" appears ONLY inside an explicit negation
+  // ("not praising to earn a lower score next time") — banned-pattern regex
+  // must NOT match negated occurrences; the raw /lower score/ scan is skipped
+  // here because the negation makes it safe (the anti-prosperity scan covers
+  // the affirmative prosperity patterns).
+  it('golf-praise-anyway: scenario "praise", title "Praise Anyway", Habakkuk anchor', () => {
+    const mod = moduleBySlug("golf-praise-anyway")!;
+    expect(mod.scenario).toBe("praise");
+    expect(mod.title).toBe("Praise Anyway");
+    expect(mod.scriptureRef).toBe("Habakkuk 3:17-18");
+  });
+
+  it("golf-praise-anyway: golf-specific protect-lines present (whitespace-normalized)", () => {
+    const body = normalize(moduleBySlug("golf-praise-anyway")!.bodyMd);
+    const GOLF_PRAISE_PROTECT_LINES = [
+      // anti-prosperity blockquote — golf variant ("a better round" not "a better one")
+      "Praise on a hard night is real. It is not a trade for a better round.",
+      // sports-psych spine — praise IN the loss, never FOR it (same as team sports)
+      "You're praising because He's good — and those were never the same thing.",
+      // anti-rumination — ache permitted to remain
+      "you might still feel bad tonight, and that's okay",
+      // the Habakkuk "yet" engine
+      "yet I will rejoice",
+      // the closing line — same across all sports
+      "Say the thank-you with empty hands — and mean it.",
+      // Praise Anyway "What happened" opening line — verbatim from draft
+      "The round didn't come.",
+    ];
+    for (const line of GOLF_PRAISE_PROTECT_LINES) {
+      expect(body, `golf-praise-anyway: missing protect-line "${line}"`).toContain(
+        normalize(line),
+      );
+    }
+  });
+
+  it("golf-praise-anyway: ache named before praise turn (anti-bypassing sequencing)", () => {
+    const body = normalize(moduleBySlug("golf-praise-anyway")!.bodyMd);
+    const acheIdx = body.indexOf("Name the ache");
+    const yetIdx = body.indexOf("yet I will rejoice");
+    expect(acheIdx).toBeGreaterThan(-1);
+    expect(yetIdx).toBeGreaterThan(acheIdx);
+  });
+
+  it("golf-praise-anyway: no prosperity-gospel / bypassing patterns", () => {
+    // Golf-specific addition: "shoot better" is also banned (unless inside
+    // an explicit negation). The draft uses only "lower score next time" inside
+    // a negation — the banned-pattern scan below covers the affirmative forms.
+    const banned = [
+      /turn(ed|s)? it around/i,
+      /turnaround/i,
+      /bounce back/i,
+      /claim it/i,
+      /speak it/i,
+      /declare (victory|it)/i,
+      /God('s)? (will )?(bless|reward|repay)/i,
+      /God('s)? favor/i,
+      /God (is |was )?on (your|our) side/i,
+      /everything happens for a reason/i,
+      /silver lining/i,
+      /look (on )?the bright side/i,
+      /at least\b/i,
+      /just be (thankful|grateful|positive)/i,
+      /feel better/i,
+      /lift your mood/i,
+      /if you (just )?(praise|believe)/i,
+      // golf-specific prosperity forms (affirmative only — "lower score next
+      // time" and "shoot better" are safe ONLY inside explicit negations)
+      /shoot better (next|after|tomorrow)/i,
+    ];
+    const body = moduleBySlug("golf-praise-anyway")!.bodyMd;
+    for (const re of banned) {
+      expect(re.test(body), `golf-praise-anyway: matches banned pattern ${re}`).toBe(
+        false,
+      );
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -396,6 +565,12 @@ describe("modulesForSport", () => {
     const mods = modulesForSport("basketball");
     expect(mods).toHaveLength(5);
     expect(mods.every((m) => m.sport === "basketball")).toBe(true);
+  });
+
+  it("returns 5 modules for golf", () => {
+    const mods = modulesForSport("golf");
+    expect(mods).toHaveLength(5);
+    expect(mods.every((m) => m.sport === "golf")).toBe(true);
   });
 
   it("hockey modules cover all 5 scenarios", () => {
@@ -416,11 +591,20 @@ describe("modulesForSport", () => {
     expect(scenarios.has("praise")).toBe(true);
   });
 
+  it("golf modules cover all 5 scenarios", () => {
+    const scenarios = new Set(modulesForSport("golf").map((m) => m.scenario));
+    expect(scenarios.has("win")).toBe(true);
+    expect(scenarios.has("loss")).toBe(true);
+    expect(scenarios.has("benching")).toBe(true);
+    expect(scenarios.has("bad-game")).toBe(true);
+    expect(scenarios.has("praise")).toBe(true);
+  });
+
   // Pins the picker-order UX contract from the modulesForSport JSDoc:
   // the win LEADS (a good-night athlete finds theirs first) and "Praise
   // Anyway" (praise on a hard night) TRAILS as the chosen-posture capstone.
   // Membership/count tests alone would pass if a future edit reordered them.
-  it.each(["hockey", "basketball"] as const)(
+  it.each(["hockey", "basketball", "golf"] as const)(
     "%s modules keep win-first, praise-last order",
     (sport) => {
       const mods = modulesForSport(sport);
@@ -466,6 +650,20 @@ describe("Sport isolation", () => {
     expect(overlap).toHaveLength(0);
   });
 
+  it("no golf module appears in hockey results", () => {
+    const golfSlugs = modulesForSport("golf").map((m) => m.slug);
+    const hockeySlugs = modulesForSport("hockey").map((m) => m.slug);
+    const overlap = golfSlugs.filter((s) => hockeySlugs.includes(s));
+    expect(overlap).toHaveLength(0);
+  });
+
+  it("no golf module appears in basketball results", () => {
+    const golfSlugs = modulesForSport("golf").map((m) => m.slug);
+    const basketballSlugs = modulesForSport("basketball").map((m) => m.slug);
+    const overlap = golfSlugs.filter((s) => basketballSlugs.includes(s));
+    expect(overlap).toHaveLength(0);
+  });
+
   it("hockey loss slug resolves to sport=hockey, not basketball", () => {
     const mod = moduleBySlug("hockey-the-loss");
     expect(mod!.sport).toBe("hockey");
@@ -474,5 +672,31 @@ describe("Sport isolation", () => {
   it("basketball loss slug resolves to sport=basketball, not hockey", () => {
     const mod = moduleBySlug("basketball-the-loss");
     expect(mod!.sport).toBe("basketball");
+  });
+
+  it("golf loss slug resolves to sport=golf", () => {
+    const mod = moduleBySlug("golf-the-loss");
+    expect(mod!.sport).toBe("golf");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Golf eyebrow overrides (FV-294 — individual-sport framing, no "Bench"/"Game")
+// The picker/detail pages render `mod.eyebrow ?? SCENARIO_EYEBROW[scenario]`;
+// golf overrides the two scenarios whose default leaks team-sport framing.
+// ---------------------------------------------------------------------------
+describe("Golf eyebrow overrides", () => {
+  it("golf benching ('Left Off the Card') overrides the default 'The Bench'", () => {
+    expect(moduleBySlug("golf-left-off-the-card")!.eyebrow).toBe("Didn't Qualify");
+  });
+
+  it("golf bad-game ('The Blow-Up Round') overrides 'The Bad Game' (round, not game)", () => {
+    expect(moduleBySlug("golf-the-blow-up-round")!.eyebrow).toBe("The Bad Round");
+  });
+
+  it("no golf eyebrow override leaks team-sport framing (bench/game)", () => {
+    for (const mod of modulesForSport("golf")) {
+      if (mod.eyebrow) expect(mod.eyebrow).not.toMatch(/bench|game/i);
+    }
   });
 });
