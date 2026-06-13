@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "7a58d7ec",
+  "manifestVersion": "e9e880bc",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -696,6 +696,66 @@
     },
     "pp-bb-focus-box-out-every-shot": {
       "url": "/audio/pregame/clips/pp-bb-focus-box-out-every-shot.557f9a6b.mp3",
+      "durationSec": 2.52,
+      "phases": []
+    },
+    "pp-baseball-opener-get-to": {
+      "url": "/audio/pregame/clips/pp-baseball-opener-get-to.d5556c36.mp3",
+      "durationSec": 58.48,
+      "phases": []
+    },
+    "pp-baseball-name-standard": {
+      "url": "/audio/pregame/clips/pp-baseball-name-standard.efacdadc.mp3",
+      "durationSec": 21.64,
+      "phases": []
+    },
+    "pp-baseball-goal-fusion": {
+      "url": "/audio/pregame/clips/pp-baseball-goal-fusion.f94a8220.mp3",
+      "durationSec": 35.432,
+      "phases": []
+    },
+    "pp-baseball-be-vocal": {
+      "url": "/audio/pregame/clips/pp-baseball-be-vocal.210a4f97.mp3",
+      "durationSec": 59.56,
+      "phases": []
+    },
+    "pp-baseball-see-it-go": {
+      "url": "/audio/pregame/clips/pp-baseball-see-it-go.31dc9873.mp3",
+      "durationSec": 22.324,
+      "phases": []
+    },
+    "pp-baseball-focus-relentless": {
+      "url": "/audio/pregame/clips/pp-baseball-focus-relentless.6d0e985a.mp3",
+      "durationSec": 1.344,
+      "phases": []
+    },
+    "pp-baseball-focus-hungry": {
+      "url": "/audio/pregame/clips/pp-baseball-focus-hungry.c5874367.mp3",
+      "durationSec": 1.392,
+      "phases": []
+    },
+    "pp-baseball-focus-stay-in-the-box": {
+      "url": "/audio/pregame/clips/pp-baseball-focus-stay-in-the-box.dab0fa28.mp3",
+      "durationSec": 1.608,
+      "phases": []
+    },
+    "pp-baseball-focus-read-the-pitch": {
+      "url": "/audio/pregame/clips/pp-baseball-focus-read-the-pitch.efca1933.mp3",
+      "durationSec": 1.344,
+      "phases": []
+    },
+    "pp-baseball-focus-soft-hands": {
+      "url": "/audio/pregame/clips/pp-baseball-focus-soft-hands.dcc1aff4.mp3",
+      "durationSec": 1.824,
+      "phases": []
+    },
+    "pp-baseball-focus-quick-feet": {
+      "url": "/audio/pregame/clips/pp-baseball-focus-quick-feet.94639409.mp3",
+      "durationSec": 1.656,
+      "phases": []
+    },
+    "pp-baseball-focus-one-pitch-at-a-time": {
+      "url": "/audio/pregame/clips/pp-baseball-focus-one-pitch-at-a-time.e1ebeb80.mp3",
       "durationSec": 2.52,
       "phases": []
     },
@@ -3236,6 +3296,794 @@
         }
       ]
     },
+    "viz-pitcher": {
+      "url": "/audio/pregame/clips/viz-pitcher.4d7a4487.mp3",
+      "durationSec": 142.036,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 39.394
+        }
+      ]
+    },
+    "viz-catcher": {
+      "url": "/audio/pregame/clips/viz-catcher.875bd91e.mp3",
+      "durationSec": 127.42,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 39.562
+        }
+      ]
+    },
+    "viz-infield": {
+      "url": "/audio/pregame/clips/viz-infield.89aa12c8.mp3",
+      "durationSec": 126.028,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 39.01
+        }
+      ]
+    },
+    "viz-outfield": {
+      "url": "/audio/pregame/clips/viz-outfield.bbe2a68e.mp3",
+      "durationSec": 120.46,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 41.41
+        }
+      ]
+    },
+    "hm-bsb-pitcher-strikeout": {
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-strikeout.6f1bda0f.mp3",
+      "durationSec": 58.824,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-pitcher-slump": {
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-slump.ca803a5f.mp3",
+      "durationSec": 85.176,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-pitcher-big-hit": {
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-big-hit.f5e2b9b0.mp3",
+      "durationSec": 74.16,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-pitcher-lose-command": {
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-lose-command.7223e371.mp3",
+      "durationSec": 90.624,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-pitcher-pulled": {
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-pulled.c9c3418f.mp3",
+      "durationSec": 76.632,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-pitcher-nervous": {
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-nervous.f1b91acd.mp3",
+      "durationSec": 63.84,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-pitcher-hit-batter": {
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-hit-batter.8f828a2b.mp3",
+      "durationSec": 69.096,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-pitcher-start-slow": {
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-start-slow.6254330a.mp3",
+      "durationSec": 62.808,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-pitcher-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-fall-behind-early.b17cd2d2.mp3",
+      "durationSec": 62.208,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-catcher-strikeout": {
+      "url": "/audio/pregame/clips/hm-bsb-catcher-strikeout.d91ae348.mp3",
+      "durationSec": 64.728,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-catcher-slump": {
+      "url": "/audio/pregame/clips/hm-bsb-catcher-slump.4678b041.mp3",
+      "durationSec": 79.056,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-catcher-error": {
+      "url": "/audio/pregame/clips/hm-bsb-catcher-error.702346d4.mp3",
+      "durationSec": 56.328,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-catcher-big-hit": {
+      "url": "/audio/pregame/clips/hm-bsb-catcher-big-hit.fea228fe.mp3",
+      "durationSec": 57.816,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-catcher-lose-command": {
+      "url": "/audio/pregame/clips/hm-bsb-catcher-lose-command.16598d14.mp3",
+      "durationSec": 80.616,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-catcher-benched": {
+      "url": "/audio/pregame/clips/hm-bsb-catcher-benched.b3f864d2.mp3",
+      "durationSec": 63.696,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-catcher-nervous": {
+      "url": "/audio/pregame/clips/hm-bsb-catcher-nervous.75578193.mp3",
+      "durationSec": 61.68,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-catcher-foul-tip": {
+      "url": "/audio/pregame/clips/hm-bsb-catcher-foul-tip.5fbc95f8.mp3",
+      "durationSec": 60.384,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-catcher-start-slow": {
+      "url": "/audio/pregame/clips/hm-bsb-catcher-start-slow.eb6ce360.mp3",
+      "durationSec": 66.288,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-catcher-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-bsb-catcher-fall-behind-early.e8a9b7aa.mp3",
+      "durationSec": 73.68,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-infield-strikeout": {
+      "url": "/audio/pregame/clips/hm-bsb-infield-strikeout.7da5a07b.mp3",
+      "durationSec": 67.176,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-infield-slump": {
+      "url": "/audio/pregame/clips/hm-bsb-infield-slump.d3d3933b.mp3",
+      "durationSec": 85.32,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-infield-error": {
+      "url": "/audio/pregame/clips/hm-bsb-infield-error.3891fc8e.mp3",
+      "durationSec": 59.544,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-infield-big-hit": {
+      "url": "/audio/pregame/clips/hm-bsb-infield-big-hit.2e8a501c.mp3",
+      "durationSec": 64.152,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-infield-lose-command": {
+      "url": "/audio/pregame/clips/hm-bsb-infield-lose-command.58780241.mp3",
+      "durationSec": 74.448,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-infield-benched": {
+      "url": "/audio/pregame/clips/hm-bsb-infield-benched.c8aaf40e.mp3",
+      "durationSec": 90.816,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-infield-nervous": {
+      "url": "/audio/pregame/clips/hm-bsb-infield-nervous.60c1f660.mp3",
+      "durationSec": 67.296,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-infield-hbp": {
+      "url": "/audio/pregame/clips/hm-bsb-infield-hbp.15d42eba.mp3",
+      "durationSec": 64.368,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-infield-start-slow": {
+      "url": "/audio/pregame/clips/hm-bsb-infield-start-slow.5f4238a7.mp3",
+      "durationSec": 62.952,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-infield-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-bsb-infield-fall-behind-early.51c8576e.mp3",
+      "durationSec": 69.288,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-outfield-strikeout": {
+      "url": "/audio/pregame/clips/hm-bsb-outfield-strikeout.c882092b.mp3",
+      "durationSec": 62.28,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-outfield-slump": {
+      "url": "/audio/pregame/clips/hm-bsb-outfield-slump.45e862f8.mp3",
+      "durationSec": 74.856,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-outfield-error": {
+      "url": "/audio/pregame/clips/hm-bsb-outfield-error.3352990e.mp3",
+      "durationSec": 62.64,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-outfield-big-hit": {
+      "url": "/audio/pregame/clips/hm-bsb-outfield-big-hit.16728727.mp3",
+      "durationSec": 64.776,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-outfield-lose-command": {
+      "url": "/audio/pregame/clips/hm-bsb-outfield-lose-command.698dddbb.mp3",
+      "durationSec": 60.384,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-outfield-benched": {
+      "url": "/audio/pregame/clips/hm-bsb-outfield-benched.8220a7a9.mp3",
+      "durationSec": 69.024,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-outfield-nervous": {
+      "url": "/audio/pregame/clips/hm-bsb-outfield-nervous.51b28b04.mp3",
+      "durationSec": 57,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-outfield-hbp": {
+      "url": "/audio/pregame/clips/hm-bsb-outfield-hbp.0045d5a6.mp3",
+      "durationSec": 63.312,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-outfield-start-slow": {
+      "url": "/audio/pregame/clips/hm-bsb-outfield-start-slow.58cba3c3.mp3",
+      "durationSec": 59.16,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-bsb-outfield-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-bsb-outfield-fall-behind-early.13a75101.mp3",
+      "durationSec": 67.752,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bomber": {
+      "url": "/audio/pregame/clips/viz-bomber.ba5e205e.mp3",
+      "durationSec": 146.66,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 50.41
+        }
+      ]
+    },
+    "viz-ballstriker": {
+      "url": "/audio/pregame/clips/viz-ballstriker.cc208ef2.mp3",
+      "durationSec": 139.508,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 48.274
+        }
+      ]
+    },
+    "viz-scrambler": {
+      "url": "/audio/pregame/clips/viz-scrambler.6e7483bf.mp3",
+      "durationSec": 138.596,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 46.762
+        }
+      ]
+    },
+    "hm-glf-bomber-three-putt": {
+      "url": "/audio/pregame/clips/hm-glf-bomber-three-putt.6732f2f2.mp3",
+      "durationSec": 79.968,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-bomber-blow-up": {
+      "url": "/audio/pregame/clips/hm-glf-bomber-blow-up.82eb298e.mp3",
+      "durationSec": 98.648,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-bomber-ob": {
+      "url": "/audio/pregame/clips/hm-glf-bomber-ob.a287eaef.mp3",
+      "durationSec": 89.832,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-bomber-duff-chip": {
+      "url": "/audio/pregame/clips/hm-glf-bomber-duff-chip.0f636da8.mp3",
+      "durationSec": 78.936,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-bomber-short-putt": {
+      "url": "/audio/pregame/clips/hm-glf-bomber-short-putt.98b39ec2.mp3",
+      "durationSec": 78.648,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-bomber-first-tee": {
+      "url": "/audio/pregame/clips/hm-glf-bomber-first-tee.facb26c7.mp3",
+      "durationSec": 99.24,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-bomber-outplayed": {
+      "url": "/audio/pregame/clips/hm-glf-bomber-outplayed.4d964779.mp3",
+      "durationSec": 80.712,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-bomber-nervous": {
+      "url": "/audio/pregame/clips/hm-glf-bomber-nervous.e8595c5d.mp3",
+      "durationSec": 80.112,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-bomber-start-slow": {
+      "url": "/audio/pregame/clips/hm-glf-bomber-start-slow.f131203c.mp3",
+      "durationSec": 80.832,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-bomber-fall-behind": {
+      "url": "/audio/pregame/clips/hm-glf-bomber-fall-behind.476ac1ef.mp3",
+      "durationSec": 81.576,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-ballstriker-three-putt": {
+      "url": "/audio/pregame/clips/hm-glf-ballstriker-three-putt.7cdf1a81.mp3",
+      "durationSec": 79.368,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-ballstriker-blow-up": {
+      "url": "/audio/pregame/clips/hm-glf-ballstriker-blow-up.855f6f91.mp3",
+      "durationSec": 102.608,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-ballstriker-ob": {
+      "url": "/audio/pregame/clips/hm-glf-ballstriker-ob.fa9a911d.mp3",
+      "durationSec": 76.416,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-ballstriker-duff-chip": {
+      "url": "/audio/pregame/clips/hm-glf-ballstriker-duff-chip.e1183334.mp3",
+      "durationSec": 81.312,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-ballstriker-short-putt": {
+      "url": "/audio/pregame/clips/hm-glf-ballstriker-short-putt.ce9feed1.mp3",
+      "durationSec": 79.536,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-ballstriker-first-tee": {
+      "url": "/audio/pregame/clips/hm-glf-ballstriker-first-tee.a284a4a9.mp3",
+      "durationSec": 93.12,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-ballstriker-outplayed": {
+      "url": "/audio/pregame/clips/hm-glf-ballstriker-outplayed.893159f6.mp3",
+      "durationSec": 85.728,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-ballstriker-nervous": {
+      "url": "/audio/pregame/clips/hm-glf-ballstriker-nervous.69196a37.mp3",
+      "durationSec": 79.56,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-ballstriker-start-slow": {
+      "url": "/audio/pregame/clips/hm-glf-ballstriker-start-slow.67afd6ca.mp3",
+      "durationSec": 80.088,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-ballstriker-fall-behind": {
+      "url": "/audio/pregame/clips/hm-glf-ballstriker-fall-behind.407d0c60.mp3",
+      "durationSec": 83.76,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-scrambler-three-putt": {
+      "url": "/audio/pregame/clips/hm-glf-scrambler-three-putt.ed7b9756.mp3",
+      "durationSec": 84.384,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-scrambler-blow-up": {
+      "url": "/audio/pregame/clips/hm-glf-scrambler-blow-up.589020ad.mp3",
+      "durationSec": 94.608,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-scrambler-ob": {
+      "url": "/audio/pregame/clips/hm-glf-scrambler-ob.f116145f.mp3",
+      "durationSec": 87.792,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-scrambler-duff-chip": {
+      "url": "/audio/pregame/clips/hm-glf-scrambler-duff-chip.cfb572f9.mp3",
+      "durationSec": 96,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-scrambler-short-putt": {
+      "url": "/audio/pregame/clips/hm-glf-scrambler-short-putt.d974e706.mp3",
+      "durationSec": 79.296,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-scrambler-first-tee": {
+      "url": "/audio/pregame/clips/hm-glf-scrambler-first-tee.f36c40cf.mp3",
+      "durationSec": 91.536,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-scrambler-outplayed": {
+      "url": "/audio/pregame/clips/hm-glf-scrambler-outplayed.69b656f0.mp3",
+      "durationSec": 89.448,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-scrambler-nervous": {
+      "url": "/audio/pregame/clips/hm-glf-scrambler-nervous.80b96b90.mp3",
+      "durationSec": 86.616,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-scrambler-start-slow": {
+      "url": "/audio/pregame/clips/hm-glf-scrambler-start-slow.facfe75e.mp3",
+      "durationSec": 77.472,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-glf-scrambler-fall-behind": {
+      "url": "/audio/pregame/clips/hm-glf-scrambler-fall-behind.af88f177.mp3",
+      "durationSec": 88.344,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
     "shared-cue-word-intro-pre": {
       "url": "/audio/pregame/clips/shared-cue-word-intro-pre.1200ed7d.mp3",
       "durationSec": 7.996,
@@ -3244,6 +4092,21 @@
     "shared-cue-word-sendoff-pre": {
       "url": "/audio/pregame/clips/shared-cue-word-sendoff-pre.39756aa4.mp3",
       "durationSec": 3.084,
+      "phases": []
+    },
+    "shared-viz-intro": {
+      "url": "/audio/pregame/clips/shared-viz-intro.e17667b6.mp3",
+      "durationSec": 4.152,
+      "phases": []
+    },
+    "shared-anchor-intro": {
+      "url": "/audio/pregame/clips/shared-anchor-intro.9f5ce48b.mp3",
+      "durationSec": 3.12,
+      "phases": []
+    },
+    "shared-selftalk-intro": {
+      "url": "/audio/pregame/clips/shared-selftalk-intro.3cd3602e.mp3",
+      "durationSec": 2.976,
       "phases": []
     },
     "opener-confidence": {
