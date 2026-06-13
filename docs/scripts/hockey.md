@@ -3,21 +3,28 @@
 
 ## HOW TO EDIT
 
+**This file IS the script.** Edit the numbered prose lines — those words are exactly what gets spoken.
+
 1. Edit **only** the numbered prose lines (e.g. `1. Your sentence here.`).
 2. Do NOT change `### titles`, `<!-- slug ... -->` comments, `_(pause)_` markers, or line numbers.
 3. One numbered line = one complete sentence (no line breaks within a numbered item).
 4. For text-mode fallback lines, same rules apply to the numbered body lines.
-5. When done editing, run from `apps/web/`:
-   ```
-   npm run scripts:apply            # dry-run — shows what will change
-   npm run scripts:apply -- --write # write the changes into the TS source
-   ```
-6. For LIVE sports (hockey, basketball, golf) also run:
-   ```
-   npm run audio:generate -- --mode clips
-   ```
-   Then bump `MANIFEST_VERSION` per the FV-142 rule (the generator prints the new value).
-7. DORMANT sports (football, swimming, track-field): just apply and wait for the audio render pass.
+5. That's it for editing. The generator reads your prose directly from this file at render time — no separate apply step. Works for EVERY clip type (inline, visualization/viz-*, and shared-* clips).
+6. When you're ready to render audio, run from `apps/web/`:
+   - **LIVE sports** (hockey, basketball, golf, baseball):
+     ```
+     npm run audio:generate -- --mode clips
+     ```
+     Then bump `MANIFEST_VERSION` per the FV-142 rule (the generator prints the new value).
+   - **DORMANT sports** (football, swimming, track-field): edit freely. The first
+     audio render is the go-live pass.
+   - To preview which clips will render with your edits (no TTS budget spent):
+     ```
+     npm run audio:check
+     ```
+
+> Note: daily-training sessions (Supabase seed SQL) and postgame modules
+> (`lib/postgame/modules.ts`) are NOT in these books — edit those directly.
 
 ---
 
@@ -52,6 +59,122 @@ These lines appear on-screen in text mode (no audio). Tokens like `{{role}}`, `{
 
 ## Audio Clips
 
+## Need Openers (hockey)
+
+### Hockey Opener · be-vocal
+<!-- slug: opener-be-vocal | file: components/pregame/audio/opener-be-vocal.ts -->
+
+1. Close your eyes. Drop your shoulders.
+_(pause)_
+2. Out there, talking is competing. The loud player moves the puck before it even arrives. Tonight, that's the job — be the one who talks.
+_(pause)_
+3. And here is what Paul wrote in Romans 8. For everyone in Christ, there is now no condemnation. None. The verdict on you was settled at the cross — before you ever stepped on the ice.
+_(pause)_
+4. So when that voice tells you to stay quiet — don't risk it, don't be the one who's wrong out loud — hear it for what it is. That is not you. That is the part of you that has to look good. And that part is already settled.
+_(pause)_
+5. So tonight, be the loud one. Man on. Time. Heads up. D to D on the breakout. Free to be wrong, free to speak, free to move the play before it even happens.
+_(pause)_
+6. What anyone out there thinks of you is not the verdict on you. You have nothing left to protect. You are free to speak.
+_(pause)_
+### Hockey Opener · hope
+<!-- slug: opener-hope | file: components/pregame/audio/opener-hope.ts -->
+
+1. Close your eyes. Take one full breath.
+_(pause)_
+2. Listen to what Isaiah wrote in chapter 40. He was speaking to a people in exile, out of strength, far from home. Even youths grow tired and weary, and young men stumble and fall. But those who hope in the LORD will renew their strength. They will soar on wings like eagles. They will run and not grow weary. They will walk and not be faint.
+_(pause)_
+3. Soar on wings like eagles does not mean you will never feel tired in your shift. It does not mean prayer is a performance hack. Look at what Isaiah just said — even young men stumble and fall. The source of endurance is not your willpower. It is the God who renews you when you depend on him.
+_(pause)_
+4. Hope is not believing in yourself. It is waiting on the God who is bigger than what you face.
+_(pause)_
+### Hockey Opener · joy
+<!-- slug: opener-joy | file: components/pregame/audio/opener-joy.ts -->
+
+1. Close your eyes. Let your face soften.
+_(pause)_
+2. Listen to what Paul wrote in 1 Thessalonians 5. He was writing to a young church facing real hardship. Be joyful always, pray continually, give thanks in all circumstances. For this is God's will for you in Christ Jesus.
+_(pause)_
+3. Be joyful always does not mean fake a smile or pretend the loss did not hurt. Look at how Paul ties it together. Joy, prayer, thanksgiving. The athlete who prays continually and gives thanks even after a tough shift is the athlete who can carry joy into the next one. Joy is not the absence of hardship. It is what you have when you stay connected to God in the middle of it.
+_(pause)_
+4. Joy is not a mood that changes with the scoreboard. It is a posture you take toward the God who is always with you.
+_(pause)_
+### Hockey Opener · leadership
+<!-- slug: opener-leadership | file: components/pregame/audio/opener-leadership.ts -->
+
+1. Close your eyes. Take a long breath.
+_(pause)_
+2. Listen to what Jesus said in Mark 10. His disciples were arguing about who would be greatest. Jesus called them over and said this. Whoever wants to become great among you must be your servant, and whoever wants to be first must be slave of all. For even the Son of Man did not come to be served, but to serve, and to give his life as a ransom for many.
+_(pause)_
+3. To serve does not mean to be soft. Jesus was not weak. It means using whatever you have been given — the C, the A, a top-line spot, a loud voice — to lift the player next to you, not to stand above them. The fourth-line winger is not ordinary. The backup goalie is not ordinary. Lead like that is true.
+_(pause)_
+4. Real leadership is not standing above your team. It is standing under them — the way Christ stood under you.
+_(pause)_
+### Hockey Opener · decisions
+<!-- slug: opener-decisions | file: components/pregame/audio/opener-decisions.ts -->
+
+1. Close your eyes. Soften your jaw.
+_(pause)_
+2. Listen to what Solomon wrote in Proverbs 3. Trust in the Lord with all your heart and lean not on your own understanding. In all your ways submit to him, and he will make your paths straight.
+_(pause)_
+3. He will make your paths straight does not mean God promises you the right read on every shift. It means you can stop white-knuckling the game. The athlete who has to control every decision plays tight. The athlete who trusts God can release the death grip on outcome and actually see the ice.
+_(pause)_
+4. Trust does not mean knowing every play before it happens. It means leaning on God instead of leaning on yourself.
+_(pause)_
+### Hockey Opener · courage
+<!-- slug: opener-courage | file: components/pregame/audio/opener-courage.ts -->
+
+1. Close your eyes. Plant both feet on the floor.
+_(pause)_
+2. Listen to what God said through Isaiah 41 to a people in exile, facing real enemies, real loss. So do not fear, for I am with you. Do not be dismayed, for I am your God. I will strengthen you and help you. I will uphold you with my righteous right hand.
+_(pause)_
+3. Do not fear does not mean stop feeling nervous. The hit is still coming. The net is still crowded. It means you are not alone in the moment. The God who upheld Israel in exile upholds you in the corner, on the puck race, into the slot.
+_(pause)_
+4. Courage is not the absence of fear. It is moving forward because the One with you is bigger than what is in front of you.
+_(pause)_
+### Hockey Opener · reset
+<!-- slug: opener-reset | file: components/pregame/audio/opener-reset.ts -->
+
+1. Close your eyes. Let your hands rest open.
+_(pause)_
+2. Listen to what Paul wrote at the start of Romans 8. He has just spent a whole chapter naming his own failure. Then he opens chapter 8 with this. Therefore, there is now no condemnation for those who are in Christ Jesus.
+_(pause)_
+3. No condemnation does not mean no consequences. The puck still goes the other way when you turn it over. It means the verdict on you was already settled at the cross. The mistake you make tonight cannot reopen a case God has already closed.
+_(pause)_
+4. Your mistakes are real. The verdict is not. Reset and go again.
+_(pause)_
+### Hockey Opener · compete-level
+<!-- slug: opener-compete-level | file: components/pregame/audio/opener-compete-level.ts -->
+
+1. Close your eyes. Sit forward.
+_(pause)_
+2. Listen to what Paul wrote in Colossians 3. Whatever you do, work at it with all your heart, as working for the Lord, not for human masters, since you know that you will receive an inheritance from the Lord as a reward. It is the Lord Christ you are serving.
+_(pause)_
+3. Working for the Lord does not mean playing harder to earn his love. You already have it. It means every battle on the wall, every backcheck, every shift is offered up to the One who gave you the body to play. Effort becomes worship. The coach is not your final audience. God is.
+_(pause)_
+4. You are not competing for an audience. You are competing for an Audience of One who already calls you His.
+_(pause)_
+### Hockey Opener · calm
+<!-- slug: opener-calm | file: components/pregame/audio/opener-calm.ts -->
+
+1. Close your eyes. Let your shoulders drop.
+_(pause)_
+2. Listen to what Paul wrote in Philippians 4. Not from a quiet life. From a Roman prison. Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.
+_(pause)_
+3. Peace that transcends understanding does not mean you stop feeling nerves. It means a peace that does not match what is in front of you can guard you while you compete. The pressure is still real. So is the One holding you steady inside it.
+_(pause)_
+4. Peace is not the absence of pressure. It is the presence of Christ when pressure comes.
+_(pause)_
+### Hockey Opener · confidence
+<!-- slug: opener-confidence | file: components/pregame/audio/opener-confidence.ts -->
+
+1. Close your eyes. Sit tall.
+_(pause)_
+2. Listen to what the writer of Hebrews said to a group of believers worn down by hardship. Hebrews 12. Let us run with perseverance the race marked out for us, fixing our eyes on Jesus, the pioneer and perfecter of faith.
+_(pause)_
+3. Fix your eyes on Jesus does not mean think positive thoughts about Jesus while you play. It means your confidence is not built on your last shift or your stat line. It is built on the one who already ran his race for you.
+_(pause)_
+4. Your confidence is not in what you can do. It is in who already loves you.
+_(pause)_
 ## VIZ Clips — Flagship (position)
 
 ### Hockey · Forward · VIZ (flagship)
@@ -1237,3 +1360,2235 @@ _(pause)_
 _(pause)_
 7. They scored first. The game is still in front of you.
 _(pause)_
+## Full-Session Cells (legacy, not used in compositional path)
+
+### Hockey · Forward · missed-chance (full session)
+<!-- slug: session-forward-missed-chance | file: components/pregame/audio/session-forward-missed-chance.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale. 
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. You see the play.
+_(pause)_
+17. Three hard strides into the play.
+_(pause)_
+18. Your eyes are up. You shoulder check.
+_(pause)_
+19. Take the puck and make the simple, strong play.
+_(pause)_
+20. Get back hard on the change.
+_(pause)_
+21. See yourself win a puck race along the wall.
+_(pause)_
+22. You get there first, get low, take the body.
+_(pause)_
+23. You make a play. Drive inside, hard to the net. Shoot, and score.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. Your teammate has the puck. It turns over. You backcheck harder than everyone else and stop the goal.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. You are alone in the slot. The pass finds your tape. You shoot. It rings off the post.
+_(pause)_
+28. Feel what your body does. Stomach drop. Heat in your face. I should have buried that.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Speak the truth. Your mistake is real. It is not your identity. Reset and go again.
+_(pause)_
+32. When the moment hits, come back to what is true.
+_(pause)_
+33. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+35. You are secure. Now play from victory.
+### Hockey · Forward · turnover (full session)
+<!-- slug: session-forward-turnover | file: components/pregame/audio/session-forward-turnover.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. You see the play.
+_(pause)_
+17. Three hard strides into the play.
+_(pause)_
+18. Your eyes are up. You shoulder check.
+_(pause)_
+19. Take the puck and make the simple, strong play.
+_(pause)_
+20. Get back hard on the change.
+_(pause)_
+21. See yourself win a puck race along the wall.
+_(pause)_
+22. You get there first, get low, take the body.
+_(pause)_
+23. You make a play. Drive inside, hard to the net. Shoot, and score.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. Your teammate has the puck. It turns over. You backcheck harder than everyone else and stop the goal.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. You have the puck at the offensive blue line. You try to force it through a stick. It pops loose and goes the other way. They are on the rush.
+_(pause)_
+28. Feel what your body does. Stomach drop. Heat in your face. I just gave them that.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Speak the truth. Your mistake is real. It is not your identity. Reset and go again.
+_(pause)_
+32. When the moment hits, come back to what is true.
+_(pause)_
+33. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+35. You are secure. Now play from victory.
+### Hockey · Forward · beaten-wide (full session)
+<!-- slug: session-forward-beaten-wide | file: components/pregame/audio/session-forward-beaten-wide.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. You see the play.
+_(pause)_
+17. Three hard strides into the play.
+_(pause)_
+18. Your eyes are up. You shoulder check.
+_(pause)_
+19. Take the puck and make the simple, strong play.
+_(pause)_
+20. Get back hard on the change.
+_(pause)_
+21. See yourself win a puck race along the wall.
+_(pause)_
+22. You get there first, get low, take the body.
+_(pause)_
+23. You make a play. Drive inside, hard to the net. Shoot, and score.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. Your teammate has the puck. It turns over. You backcheck harder than everyone else and stop the goal.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. You are backchecking through the neutral zone. The winger has the puck and a step. You reach. He goes by you on the outside.
+_(pause)_
+28. Feel what your body does. Lungs burn. Legs heavy. I am a step slow tonight.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Speak the truth. He had a step. It is not your identity. Reset and go again.
+_(pause)_
+32. When the moment hits, come back to what is true.
+_(pause)_
+33. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+35. You are secure. Now play from victory.
+### Hockey · Forward · bad-penalty (full session)
+<!-- slug: session-forward-bad-penalty | file: components/pregame/audio/session-forward-bad-penalty.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. You see the play.
+_(pause)_
+17. Three hard strides into the play.
+_(pause)_
+18. Your eyes are up. You shoulder check.
+_(pause)_
+19. Take the puck and make the simple, strong play.
+_(pause)_
+20. Get back hard on the change.
+_(pause)_
+21. See yourself win a puck race along the wall.
+_(pause)_
+22. You get there first, get low, take the body.
+_(pause)_
+23. You make a play. Drive inside, hard to the net. Shoot, and score.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. Your teammate has the puck. It turns over. You backcheck harder than everyone else and stop the goal.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. You are chasing the play. You reach with your stick. The whistle blows. The ref points at you. Two minutes.
+_(pause)_
+28. Feel what your body does. Heat in your face. Stomach drop. I just hurt my team.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Don't play scared next shift. Compete the same way.
+_(pause)_
+32. Speak the truth. You took the penalty. It is not your identity. Reset and go again.
+_(pause)_
+33. When the moment hits, come back to what is true.
+_(pause)_
+34. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+36. You are secure. Now play from victory.
+### Hockey · Forward · coach-yells (full session)
+<!-- slug: session-forward-coach-yells | file: components/pregame/audio/session-forward-coach-yells.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. You see the play.
+_(pause)_
+17. Three hard strides into the play.
+_(pause)_
+18. Your eyes are up. You shoulder check.
+_(pause)_
+19. Take the puck and make the simple, strong play.
+_(pause)_
+20. Get back hard on the change.
+_(pause)_
+21. See yourself win a puck race along the wall.
+_(pause)_
+22. You get there first, get low, take the body.
+_(pause)_
+23. You make a play. Drive inside, hard to the net. Shoot, and score.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. Your teammate has the puck. It turns over. You backcheck harder than everyone else and stop the goal.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. You come back to the bench. The coach is loud. Sharp. Maybe your name. Maybe not. The whole bench can hear it.
+_(pause)_
+28. Feel what your body does. Tight jaw. Heat in your chest. He is going to bury me.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Speak the truth. The coach is loud. It is not your identity. Reset and go again.
+_(pause)_
+32. When the moment hits, come back to what is true.
+_(pause)_
+33. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+35. You are secure. Now play from victory.
+### Hockey · Forward · benched (full session)
+<!-- slug: session-forward-benched | file: components/pregame/audio/session-forward-benched.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. You see the play.
+_(pause)_
+17. Three hard strides into the play.
+_(pause)_
+18. Your eyes are up. You shoulder check.
+_(pause)_
+19. Take the puck and make the simple, strong play.
+_(pause)_
+20. Get back hard on the change.
+_(pause)_
+21. See yourself win a puck race along the wall.
+_(pause)_
+22. You get there first, get low, take the body.
+_(pause)_
+23. You make a play. Drive inside, hard to the net. Shoot, and score.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. Your teammate has the puck. It turns over. You backcheck harder than everyone else and stop the goal.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. Two shifts go by. Then three. The line goes out without you. You sit on the bench. The door does not open.
+_(pause)_
+28. Feel what your body does. Heat in your chest. Tight in your throat. He doesn't trust me.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Speak the truth. You are sitting. It is not your identity. Reset and go again.
+_(pause)_
+32. When the moment hits, come back to what is true.
+_(pause)_
+33. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+35. You are secure. Now play from victory.
+### Hockey · Forward · nervous (full session)
+<!-- slug: session-forward-nervous | file: components/pregame/audio/session-forward-nervous.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. You see the play.
+_(pause)_
+17. Three hard strides into the play.
+_(pause)_
+18. Your eyes are up. You shoulder check.
+_(pause)_
+19. Take the puck and make the simple, strong play.
+_(pause)_
+20. Get back hard on the change.
+_(pause)_
+21. See yourself win a puck race along the wall.
+_(pause)_
+22. You get there first, get low, take the body.
+_(pause)_
+23. You make a play. Drive inside, hard to the net. Shoot, and score.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. Your teammate has the puck. It turns over. You backcheck harder than everyone else and stop the goal.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. You are on the bench before the first shift. Your hands feel light. Your legs feel shaky. Your heart is up in your throat.
+_(pause)_
+28. Feel what your body does. Shallow breath. Stomach tight. I am not ready for this.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Speak the truth. Your body is awake. It is not your identity. Reset and go again.
+_(pause)_
+32. When the moment hits, come back to what is true.
+_(pause)_
+33. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+35. You are secure. Now play from victory.
+### Hockey · Forward · get-hit (full session)
+<!-- slug: session-forward-get-hit | file: components/pregame/audio/session-forward-get-hit.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. You see the play.
+_(pause)_
+17. Three hard strides into the play.
+_(pause)_
+18. Your eyes are up. You shoulder check.
+_(pause)_
+19. Take the puck and make the simple, strong play.
+_(pause)_
+20. Get back hard on the change.
+_(pause)_
+21. See yourself win a puck race along the wall.
+_(pause)_
+22. You get there first, get low, take the body.
+_(pause)_
+23. You make a play. Drive inside, hard to the net. Shoot, and score.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. Your teammate has the puck. It turns over. You backcheck harder than everyone else and stop the goal.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. You are on the wall. You don't see him coming. He finishes his check. You hit the boards hard. The puck is gone.
+_(pause)_
+28. Feel what your body does. Wind out of your lungs. Heat in your shoulder. I should have seen him.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Don't avoid the next puck battle. Get back to the wall.
+_(pause)_
+32. Speak the truth. You got hit. It is not your identity. Reset and go again.
+_(pause)_
+33. When the moment hits, come back to what is true.
+_(pause)_
+34. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+36. You are secure. Now play from victory.
+### Hockey · Forward · start-slow (full session)
+<!-- slug: session-forward-start-slow | file: components/pregame/audio/session-forward-start-slow.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. You see the play.
+_(pause)_
+17. Three hard strides into the play.
+_(pause)_
+18. Your eyes are up. You shoulder check.
+_(pause)_
+19. Take the puck and make the simple, strong play.
+_(pause)_
+20. Get back hard on the change.
+_(pause)_
+21. See yourself win a puck race along the wall.
+_(pause)_
+22. You get there first, get low, take the body.
+_(pause)_
+23. You make a play. Drive inside, hard to the net. Shoot, and score.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. Your teammate has the puck. It turns over. You backcheck harder than everyone else and stop the goal.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. First period is half over. You have not touched the puck cleanly. Your legs feel a step behind. Nothing is coming easy.
+_(pause)_
+28. Feel what your body does. Tight grip on the stick. Shoulders up. I am not in this game.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Loose hands. Simple plays. Let the game come to you.
+_(pause)_
+32. Speak the truth. You started slow. It is not your identity. Reset and go again.
+_(pause)_
+33. When the moment hits, come back to what is true.
+_(pause)_
+34. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+36. You are secure. Now play from victory.
+### Hockey · Forward · first-goal-against (full session)
+<!-- slug: session-forward-first-goal-against | file: components/pregame/audio/session-forward-first-goal-against.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. You see the play.
+_(pause)_
+17. Three hard strides into the play.
+_(pause)_
+18. Your eyes are up. You shoulder check.
+_(pause)_
+19. Take the puck and make the simple, strong play.
+_(pause)_
+20. Get back hard on the change.
+_(pause)_
+21. See yourself win a puck race along the wall.
+_(pause)_
+22. You get there first, get low, take the body.
+_(pause)_
+23. You make a play. Drive inside, hard to the net. Shoot, and score.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. Your teammate has the puck. It turns over. You backcheck harder than everyone else and stop the goal.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. The puck goes in behind your goalie. The other bench celebrates. The horn sounds. You skate back to center ice.
+_(pause)_
+28. Feel what your body does. Stomach drop. Heat in your chest. Here we go again.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Speak the truth. They scored first. It is not your identity. Reset and go again.
+_(pause)_
+32. When the moment hits, come back to what is true.
+_(pause)_
+33. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+35. You are secure. Now play from victory.
+### Hockey · Defense · beaten-wide (full session)
+<!-- slug: session-defense-beaten-wide | file: components/pregame/audio/session-defense-beaten-wide.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. Get to your gap.
+_(pause)_
+17. Shoulder check before the puck arrives.
+_(pause)_
+18. See the play develop.
+_(pause)_
+19. Hold your line. Make a simple first pass.
+_(pause)_
+20. Box out at the net front. Go again.
+_(pause)_
+21. See yourself shoulder check before you pick up the puck.
+_(pause)_
+22. You retrieve the puck, calm and strong.
+_(pause)_
+23. You make the first pass, clean and on the tape.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. You hold your gap, you stay between the man and the net, and you box out in front.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. You are back in your zone. The puck carrier comes wide. He has speed. You lose the angle. He has a step on you.
+_(pause)_
+28. Feel what your body does. Stomach drop. Burn in your chest. I lost my gap.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Stay loose. Don't back up. Hold your gap.
+_(pause)_
+32. Speak the truth. Your mistake is real. It is not your identity. Reset and go again.
+_(pause)_
+33. When the moment hits, come back to what is true.
+_(pause)_
+34. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+36. You are secure. Now play from victory.
+### Hockey · Defense · turnover (full session)
+<!-- slug: session-defense-turnover | file: components/pregame/audio/session-defense-turnover.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. Get to your gap.
+_(pause)_
+17. Shoulder check before the puck arrives.
+_(pause)_
+18. See the play develop.
+_(pause)_
+19. Hold your line. Make a simple first pass.
+_(pause)_
+20. Box out at the net front. Go again.
+_(pause)_
+21. See yourself shoulder check before you pick up the puck.
+_(pause)_
+22. You retrieve the puck, calm and strong.
+_(pause)_
+23. You make the first pass, clean and on the tape.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. You hold your gap, you stay between the man and the net, and you box out in front.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. You retrieve the puck behind your net. You try to make the pass through the slot. It hits a stick. The other team has it in front.
+_(pause)_
+28. Feel what your body does. Stomach drop. Heat in your face. I just put my goalie in a bad spot.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Next breakout, simple and strong. Off the glass if it's there.
+_(pause)_
+32. Speak the truth. Your mistake is real. It is not your identity. Reset and go again.
+_(pause)_
+33. When the moment hits, come back to what is true.
+_(pause)_
+34. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+36. You are secure. Now play from victory.
+### Hockey · Defense · missed-chance (full session)
+<!-- slug: session-defense-missed-chance | file: components/pregame/audio/session-defense-missed-chance.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. Get to your gap.
+_(pause)_
+17. Shoulder check before the puck arrives.
+_(pause)_
+18. See the play develop.
+_(pause)_
+19. Hold your line. Make a simple first pass.
+_(pause)_
+20. Box out at the net front. Go again.
+_(pause)_
+21. See yourself shoulder check before you pick up the puck.
+_(pause)_
+22. You retrieve the puck, calm and strong.
+_(pause)_
+23. You make the first pass, clean and on the tape.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. You hold your gap, you stay between the man and the net, and you box out in front.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. You walk the blue line. The lane opens. You step in and shoot. It misses the net wide.
+_(pause)_
+28. Feel what your body does. Stomach drop. Heat in your face. I should have hit the net.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Speak the truth. You missed the net. It is not your identity. Reset and go again.
+_(pause)_
+32. When the moment hits, come back to what is true.
+_(pause)_
+33. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+35. You are secure. Now play from victory.
+### Hockey · Defense · bad-penalty (full session)
+<!-- slug: session-defense-bad-penalty | file: components/pregame/audio/session-defense-bad-penalty.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. Get to your gap.
+_(pause)_
+17. Shoulder check before the puck arrives.
+_(pause)_
+18. See the play develop.
+_(pause)_
+19. Hold your line. Make a simple first pass.
+_(pause)_
+20. Box out at the net front. Go again.
+_(pause)_
+21. See yourself shoulder check before you pick up the puck.
+_(pause)_
+22. You retrieve the puck, calm and strong.
+_(pause)_
+23. You make the first pass, clean and on the tape.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. You hold your gap, you stay between the man and the net, and you box out in front.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. The puck carrier cuts inside. You bring your stick up. The whistle blows. The ref points at you. Two minutes.
+_(pause)_
+28. Feel what your body does. Heat in your face. Tight in your chest. I just put us down a man.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Don't ease up next shift. Play your gap the same way.
+_(pause)_
+32. Speak the truth. You took the penalty. It is not your identity. Reset and go again.
+_(pause)_
+33. When the moment hits, come back to what is true.
+_(pause)_
+34. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+36. You are secure. Now play from victory.
+### Hockey · Defense · coach-yells (full session)
+<!-- slug: session-defense-coach-yells | file: components/pregame/audio/session-defense-coach-yells.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. Get to your gap.
+_(pause)_
+17. Shoulder check before the puck arrives.
+_(pause)_
+18. See the play develop.
+_(pause)_
+19. Hold your line. Make a simple first pass.
+_(pause)_
+20. Box out at the net front. Go again.
+_(pause)_
+21. See yourself shoulder check before you pick up the puck.
+_(pause)_
+22. You retrieve the puck, calm and strong.
+_(pause)_
+23. You make the first pass, clean and on the tape.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. You hold your gap, you stay between the man and the net, and you box out in front.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. You come off the ice. The coach is loud. Sharp. Maybe your name. Maybe not. The whole bench can hear it.
+_(pause)_
+28. Feel what your body does. Tight jaw. Heat in your chest. He doesn't trust me back there.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Speak the truth. The coach is loud. It is not your identity. Reset and go again.
+_(pause)_
+32. When the moment hits, come back to what is true.
+_(pause)_
+33. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+35. You are secure. Now play from victory.
+### Hockey · Defense · benched (full session)
+<!-- slug: session-defense-benched | file: components/pregame/audio/session-defense-benched.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. Get to your gap.
+_(pause)_
+17. Shoulder check before the puck arrives.
+_(pause)_
+18. See the play develop.
+_(pause)_
+19. Hold your line. Make a simple first pass.
+_(pause)_
+20. Box out at the net front. Go again.
+_(pause)_
+21. See yourself shoulder check before you pick up the puck.
+_(pause)_
+22. You retrieve the puck, calm and strong.
+_(pause)_
+23. You make the first pass, clean and on the tape.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. You hold your gap, you stay between the man and the net, and you box out in front.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. Your partner goes out with someone else. Then again. You sit on the bench. The door does not open.
+_(pause)_
+28. Feel what your body does. Heat in your chest. Tight in your throat. He doesn't trust me.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Speak the truth. You are sitting. It is not your identity. Reset and go again.
+_(pause)_
+32. When the moment hits, come back to what is true.
+_(pause)_
+33. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+35. You are secure. Now play from victory.
+### Hockey · Defense · nervous (full session)
+<!-- slug: session-defense-nervous | file: components/pregame/audio/session-defense-nervous.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. Get to your gap.
+_(pause)_
+17. Shoulder check before the puck arrives.
+_(pause)_
+18. See the play develop.
+_(pause)_
+19. Hold your line. Make a simple first pass.
+_(pause)_
+20. Box out at the net front. Go again.
+_(pause)_
+21. See yourself shoulder check before you pick up the puck.
+_(pause)_
+22. You retrieve the puck, calm and strong.
+_(pause)_
+23. You make the first pass, clean and on the tape.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. You hold your gap, you stay between the man and the net, and you box out in front.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. You are on the bench before the first shift. Your legs feel heavy. Your hands feel light. Your heart is up in your throat.
+_(pause)_
+28. Feel what your body does. Shallow breath. Stomach tight. I am going to get exposed out there.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Speak the truth. Your body is awake. It is not your identity. Reset and go again.
+_(pause)_
+32. When the moment hits, come back to what is true.
+_(pause)_
+33. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+35. You are secure. Now play from victory.
+### Hockey · Defense · get-hit (full session)
+<!-- slug: session-defense-get-hit | file: components/pregame/audio/session-defense-get-hit.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. Get to your gap.
+_(pause)_
+17. Shoulder check before the puck arrives.
+_(pause)_
+18. See the play develop.
+_(pause)_
+19. Hold your line. Make a simple first pass.
+_(pause)_
+20. Box out at the net front. Go again.
+_(pause)_
+21. See yourself shoulder check before you pick up the puck.
+_(pause)_
+22. You retrieve the puck, calm and strong.
+_(pause)_
+23. You make the first pass, clean and on the tape.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. You hold your gap, you stay between the man and the net, and you box out in front.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. You are back for the puck. You don't see him coming. He finishes his check. You hit the boards hard. The puck is gone.
+_(pause)_
+28. Feel what your body does. Wind out of your lungs. Heat in your shoulder. I should have shoulder checked.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Don't rim it soft next time. Make the strong play.
+_(pause)_
+32. Speak the truth. You got hit. It is not your identity. Reset and go again.
+_(pause)_
+33. When the moment hits, come back to what is true.
+_(pause)_
+34. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+36. You are secure. Now play from victory.
+### Hockey · Defense · start-slow (full session)
+<!-- slug: session-defense-start-slow | file: components/pregame/audio/session-defense-start-slow.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. Get to your gap.
+_(pause)_
+17. Shoulder check before the puck arrives.
+_(pause)_
+18. See the play develop.
+_(pause)_
+19. Hold your line. Make a simple first pass.
+_(pause)_
+20. Box out at the net front. Go again.
+_(pause)_
+21. See yourself shoulder check before you pick up the puck.
+_(pause)_
+22. You retrieve the puck, calm and strong.
+_(pause)_
+23. You make the first pass, clean and on the tape.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. You hold your gap, you stay between the man and the net, and you box out in front.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. First period is half over. Your gap has been late. Your passes have been off. Nothing is coming easy.
+_(pause)_
+28. Feel what your body does. Tight grip on the stick. Shoulders up. I am behind out there.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Skate first. Stick on the puck. Simple breakouts.
+_(pause)_
+32. Speak the truth. You started slow. It is not your identity. Reset and go again.
+_(pause)_
+33. When the moment hits, come back to what is true.
+_(pause)_
+34. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+36. You are secure. Now play from victory.
+### Hockey · Defense · first-goal-against (full session)
+<!-- slug: session-defense-first-goal-against | file: components/pregame/audio/session-defense-first-goal-against.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. Keep your eyes closed. See yourself running onto the ice.
+_(pause)_
+9. You smell the ice, the zamboni.
+_(pause)_
+10. Hear the skates carving in warmup.
+_(pause)_
+11. You feel your edges. Feel your gloves.
+_(pause)_
+12. Feel your stick.
+_(pause)_
+13. Feel the weight of your helmet.
+_(pause)_
+14. You tell yourself, You belong here.
+_(pause)_
+15. Now visualize that your line is called.
+_(pause)_
+16. You hop the boards. Get to your gap.
+_(pause)_
+17. Shoulder check before the puck arrives.
+_(pause)_
+18. See the play develop.
+_(pause)_
+19. Hold your line. Make a simple first pass.
+_(pause)_
+20. Box out at the net front. Go again.
+_(pause)_
+21. See yourself shoulder check before you pick up the puck.
+_(pause)_
+22. You retrieve the puck, calm and strong.
+_(pause)_
+23. You make the first pass, clean and on the tape.
+_(pause)_
+24. Now visualize the next play.
+_(pause)_
+25. You hold your gap, you stay between the man and the net, and you box out in front.
+_(pause)_
+26. Now rehearse the hard moment.
+_(pause)_
+27. The puck goes in behind your goalie. The other bench celebrates. The horn sounds. You skate back to center ice.
+_(pause)_
+28. Feel what your body does. Stomach drop. Heat in your chest. We couldn't hold them.
+_(pause)_
+29. Now the reset. Return to your anchor.
+_(pause)_
+30. The last play is over. Reset and play the play you're in.
+_(pause)_
+31. Stay loose. Hold your gap. Play the next shift, not the last one.
+_(pause)_
+32. Speak the truth. They scored first. It is not your identity. Reset and go again.
+_(pause)_
+33. When the moment hits, come back to what is true.
+_(pause)_
+34. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+36. You are secure. Now play from victory.
+### Hockey · Goalie · coach-yells (full session)
+<!-- slug: session-goalie-coach-yells | file: components/pregame/audio/session-goalie-coach-yells.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. See the crease.
+_(pause)_
+9. The blue paint under your skates.
+_(pause)_
+10. The crossbar behind your head.
+_(pause)_
+11. Hear the anthem fade out.
+_(pause)_
+12. Feel your glove.
+_(pause)_
+13. Feel your blocker.
+_(pause)_
+14. Feel the weight of your pads, settled and ready.
+_(pause)_
+15. You belong here.
+_(pause)_
+16. Puck drops.
+_(pause)_
+17. Set your feet in the crease.
+_(pause)_
+18. Square to the shooter.
+_(pause)_
+19. Track the puck all the way in.
+_(pause)_
+20. Make the first save, calm and big.
+_(pause)_
+21. Control the rebound. Cover, or steer it to the corner.
+_(pause)_
+22. Reset. Eyes back to the puck.
+_(pause)_
+23. Set your feet.
+_(pause)_
+24. Track the puck.
+_(pause)_
+25. Control the rebound.
+_(pause)_
+26. Reset after traffic.
+_(pause)_
+27. Next shot only.
+_(pause)_
+28. Now rehearse the hard moment.
+_(pause)_
+29. A goal goes in. The whistle blows. You hear your coach from the bench. Loud. Sharp. Maybe your name. Maybe not. The whole rink can hear it.
+_(pause)_
+30. Feel what your body does. Tight jaw. Heat in your chest. He does not trust me.
+_(pause)_
+31. Now the reset. Return to your anchor.
+_(pause)_
+32. The last play is over. Reset and play the play you're in.
+_(pause)_
+33. Speak the truth. The coach is loud. It is not your identity. Reset and go again.
+_(pause)_
+34. When the moment hits, come back to what is true.
+_(pause)_
+35. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+36. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+37. You are secure. Now play from victory.
+### Hockey · Goalie · turnover (full session)
+<!-- slug: session-goalie-turnover | file: components/pregame/audio/session-goalie-turnover.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. See the crease.
+_(pause)_
+9. The blue paint under your skates.
+_(pause)_
+10. The crossbar behind your head.
+_(pause)_
+11. Hear the anthem fade out.
+_(pause)_
+12. Feel your glove.
+_(pause)_
+13. Feel your blocker.
+_(pause)_
+14. Feel the weight of your pads, settled and ready.
+_(pause)_
+15. You belong here.
+_(pause)_
+16. Puck drops.
+_(pause)_
+17. Set your feet in the crease.
+_(pause)_
+18. Square to the shooter.
+_(pause)_
+19. Track the puck all the way in.
+_(pause)_
+20. Make the first save, calm and big.
+_(pause)_
+21. Control the rebound. Cover, or steer it to the corner.
+_(pause)_
+22. Reset. Eyes back to the puck.
+_(pause)_
+23. Set your feet.
+_(pause)_
+24. Track the puck.
+_(pause)_
+25. Control the rebound.
+_(pause)_
+26. Reset after traffic.
+_(pause)_
+27. Next shot only.
+_(pause)_
+28. Now rehearse the hard moment.
+_(pause)_
+29. You are behind the net with the puck. You try to move it up the wall. It hits a forechecker's stick. The other team has it on top of your crease.
+_(pause)_
+30. Feel what your body does. Stomach drop. Heat in your face. I just handed them a goal.
+_(pause)_
+31. Now the reset. Return to your anchor.
+_(pause)_
+32. The last play is over. Reset and play the play you're in.
+_(pause)_
+33. Don't freeze next time. Play the puck strong or leave it.
+_(pause)_
+34. Speak the truth. Your mistake is real. It is not your identity. Reset and go again.
+_(pause)_
+35. When the moment hits, come back to what is true.
+_(pause)_
+36. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+37. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+38. You are secure. Now play from victory.
+### Hockey · Goalie · missed-chance (full session)
+<!-- slug: session-goalie-missed-chance | file: components/pregame/audio/session-goalie-missed-chance.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. See the crease.
+_(pause)_
+9. The blue paint under your skates.
+_(pause)_
+10. The crossbar behind your head.
+_(pause)_
+11. Hear the anthem fade out.
+_(pause)_
+12. Feel your glove.
+_(pause)_
+13. Feel your blocker.
+_(pause)_
+14. Feel the weight of your pads, settled and ready.
+_(pause)_
+15. You belong here.
+_(pause)_
+16. Puck drops.
+_(pause)_
+17. Set your feet in the crease.
+_(pause)_
+18. Square to the shooter.
+_(pause)_
+19. Track the puck all the way in.
+_(pause)_
+20. Make the first save, calm and big.
+_(pause)_
+21. Control the rebound. Cover, or steer it to the corner.
+_(pause)_
+22. Reset. Eyes back to the puck.
+_(pause)_
+23. Set your feet.
+_(pause)_
+24. Track the puck.
+_(pause)_
+25. Control the rebound.
+_(pause)_
+26. Reset after traffic.
+_(pause)_
+27. Next shot only.
+_(pause)_
+28. Now rehearse the hard moment.
+_(pause)_
+29. The puck carrier comes in alone. You step out for the poke check. Your stick catches nothing. He walks around you.
+_(pause)_
+30. Feel what your body does. Stomach drop. Heat in your face. I should have stayed in my net.
+_(pause)_
+31. Now the reset. Return to your anchor.
+_(pause)_
+32. The last play is over. Reset and play the play you're in.
+_(pause)_
+33. Speak the truth. You missed the puck. It is not your identity. Reset and go again.
+_(pause)_
+34. When the moment hits, come back to what is true.
+_(pause)_
+35. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+36. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+37. You are secure. Now play from victory.
+### Hockey · Goalie · beaten-wide (full session)
+<!-- slug: session-goalie-beaten-wide | file: components/pregame/audio/session-goalie-beaten-wide.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. See the crease.
+_(pause)_
+9. The blue paint under your skates.
+_(pause)_
+10. The crossbar behind your head.
+_(pause)_
+11. Hear the anthem fade out.
+_(pause)_
+12. Feel your glove.
+_(pause)_
+13. Feel your blocker.
+_(pause)_
+14. Feel the weight of your pads, settled and ready.
+_(pause)_
+15. You belong here.
+_(pause)_
+16. Puck drops.
+_(pause)_
+17. Set your feet in the crease.
+_(pause)_
+18. Square to the shooter.
+_(pause)_
+19. Track the puck all the way in.
+_(pause)_
+20. Make the first save, calm and big.
+_(pause)_
+21. Control the rebound. Cover, or steer it to the corner.
+_(pause)_
+22. Reset. Eyes back to the puck.
+_(pause)_
+23. Set your feet.
+_(pause)_
+24. Track the puck.
+_(pause)_
+25. Control the rebound.
+_(pause)_
+26. Reset after traffic.
+_(pause)_
+27. Next shot only.
+_(pause)_
+28. Now rehearse the hard moment.
+_(pause)_
+29. The pass goes from one side of the crease to the other. You push across. You are late. The puck is in the back of the net before you set.
+_(pause)_
+30. Feel what your body does. Stomach drop. Heat in your chest. I was too slow across.
+_(pause)_
+31. Now the reset. Return to your anchor.
+_(pause)_
+32. The last play is over. Reset and play the play you're in.
+_(pause)_
+33. Don't cheat the next pass. Stay square. Trust your push.
+_(pause)_
+34. Speak the truth. He beat you across. It is not your identity. Reset and go again.
+_(pause)_
+35. When the moment hits, come back to what is true.
+_(pause)_
+36. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+37. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+38. You are secure. Now play from victory.
+### Hockey · Goalie · bad-penalty (full session)
+<!-- slug: session-goalie-bad-penalty | file: components/pregame/audio/session-goalie-bad-penalty.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. See the crease.
+_(pause)_
+9. The blue paint under your skates.
+_(pause)_
+10. The crossbar behind your head.
+_(pause)_
+11. Hear the anthem fade out.
+_(pause)_
+12. Feel your glove.
+_(pause)_
+13. Feel your blocker.
+_(pause)_
+14. Feel the weight of your pads, settled and ready.
+_(pause)_
+15. You belong here.
+_(pause)_
+16. Puck drops.
+_(pause)_
+17. Set your feet in the crease.
+_(pause)_
+18. Square to the shooter.
+_(pause)_
+19. Track the puck all the way in.
+_(pause)_
+20. Make the first save, calm and big.
+_(pause)_
+21. Control the rebound. Cover, or steer it to the corner.
+_(pause)_
+22. Reset. Eyes back to the puck.
+_(pause)_
+23. Set your feet.
+_(pause)_
+24. Track the puck.
+_(pause)_
+25. Control the rebound.
+_(pause)_
+26. Reset after traffic.
+_(pause)_
+27. Next shot only.
+_(pause)_
+28. Now rehearse the hard moment.
+_(pause)_
+29. The puck is in your feet. You flip it over the glass. The whistle blows. The ref points at you. Two minutes for delay of game.
+_(pause)_
+30. Feel what your body does. Heat in your face. Tight in your chest. I just hurt my team.
+_(pause)_
+31. Now the reset. Return to your anchor.
+_(pause)_
+32. The last play is over. Reset and play the play you're in.
+_(pause)_
+33. Don't play tight on the PK. Trust your reads.
+_(pause)_
+34. Speak the truth. You took the penalty. It is not your identity. Reset and go again.
+_(pause)_
+35. When the moment hits, come back to what is true.
+_(pause)_
+36. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+37. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+38. You are secure. Now play from victory.
+### Hockey · Goalie · pulled (full session)
+<!-- slug: session-goalie-pulled | file: components/pregame/audio/session-goalie-pulled.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. See the crease.
+_(pause)_
+9. The blue paint under your skates.
+_(pause)_
+10. The crossbar behind your head.
+_(pause)_
+11. Hear the anthem fade out.
+_(pause)_
+12. Feel your glove.
+_(pause)_
+13. Feel your blocker.
+_(pause)_
+14. Feel the weight of your pads, settled and ready.
+_(pause)_
+15. You belong here.
+_(pause)_
+16. Puck drops.
+_(pause)_
+17. Set your feet in the crease.
+_(pause)_
+18. Square to the shooter.
+_(pause)_
+19. Track the puck all the way in.
+_(pause)_
+20. Make the first save, calm and big.
+_(pause)_
+21. Control the rebound. Cover, or steer it to the corner.
+_(pause)_
+22. Reset. Eyes back to the puck.
+_(pause)_
+23. Set your feet.
+_(pause)_
+24. Track the puck.
+_(pause)_
+25. Control the rebound.
+_(pause)_
+26. Reset after traffic.
+_(pause)_
+27. Next shot only.
+_(pause)_
+28. Now rehearse the hard moment.
+_(pause)_
+29. The coach taps your backup. You skate to the bench. You sit at the end. The game keeps going without you.
+_(pause)_
+30. Feel what your body does. Heat in your chest. Tight in your throat. He gave up on me.
+_(pause)_
+31. Now the reset. Return to your anchor.
+_(pause)_
+32. The last play is over. Reset and play the play you're in.
+_(pause)_
+33. Speak the truth. You got pulled. It is not your identity. Reset and go again.
+_(pause)_
+34. When the moment hits, come back to what is true.
+_(pause)_
+35. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+36. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+37. You are secure. Now play from victory.
+### Hockey · Goalie · nervous (full session)
+<!-- slug: session-goalie-nervous | file: components/pregame/audio/session-goalie-nervous.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. See the crease.
+_(pause)_
+9. The blue paint under your skates.
+_(pause)_
+10. The crossbar behind your head.
+_(pause)_
+11. Hear the anthem fade out.
+_(pause)_
+12. Feel your glove.
+_(pause)_
+13. Feel your blocker.
+_(pause)_
+14. Feel the weight of your pads, settled and ready.
+_(pause)_
+15. You belong here.
+_(pause)_
+16. Puck drops.
+_(pause)_
+17. Set your feet in the crease.
+_(pause)_
+18. Square to the shooter.
+_(pause)_
+19. Track the puck all the way in.
+_(pause)_
+20. Make the first save, calm and big.
+_(pause)_
+21. Control the rebound. Cover, or steer it to the corner.
+_(pause)_
+22. Reset. Eyes back to the puck.
+_(pause)_
+23. Set your feet.
+_(pause)_
+24. Track the puck.
+_(pause)_
+25. Control the rebound.
+_(pause)_
+26. Reset after traffic.
+_(pause)_
+27. Next shot only.
+_(pause)_
+28. Now rehearse the hard moment.
+_(pause)_
+29. You are in your crease before the puck drops. Your hands feel light. Your chest feels tight. Your heart is up in your throat.
+_(pause)_
+30. Feel what your body does. Shallow breath. Tight shoulders. I am not ready for this.
+_(pause)_
+31. Now the reset. Return to your anchor.
+_(pause)_
+32. The last play is over. Reset and play the play you're in.
+_(pause)_
+33. Speak the truth. Your body is awake. It is not your identity. Reset and go again.
+_(pause)_
+34. When the moment hits, come back to what is true.
+_(pause)_
+35. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+36. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+37. You are secure. Now play from victory.
+### Hockey · Goalie · get-hit (full session)
+<!-- slug: session-goalie-get-hit | file: components/pregame/audio/session-goalie-get-hit.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. See the crease.
+_(pause)_
+9. The blue paint under your skates.
+_(pause)_
+10. The crossbar behind your head.
+_(pause)_
+11. Hear the anthem fade out.
+_(pause)_
+12. Feel your glove.
+_(pause)_
+13. Feel your blocker.
+_(pause)_
+14. Feel the weight of your pads, settled and ready.
+_(pause)_
+15. You belong here.
+_(pause)_
+16. Puck drops.
+_(pause)_
+17. Set your feet in the crease.
+_(pause)_
+18. Square to the shooter.
+_(pause)_
+19. Track the puck all the way in.
+_(pause)_
+20. Make the first save, calm and big.
+_(pause)_
+21. Control the rebound. Cover, or steer it to the corner.
+_(pause)_
+22. Reset. Eyes back to the puck.
+_(pause)_
+23. Set your feet.
+_(pause)_
+24. Track the puck.
+_(pause)_
+25. Control the rebound.
+_(pause)_
+26. Reset after traffic.
+_(pause)_
+27. Next shot only.
+_(pause)_
+28. Now rehearse the hard moment.
+_(pause)_
+29. There is traffic in your crease. A body comes through. You take the contact. You lose the puck.
+_(pause)_
+30. Feel what your body does. Wind out of your lungs. Heat in your chest. I am going to get run again.
+_(pause)_
+31. Now the reset. Return to your anchor.
+_(pause)_
+32. The last play is over. Reset and play the play you're in.
+_(pause)_
+33. Don't flinch on the next screen. Stay big. Track the puck.
+_(pause)_
+34. Speak the truth. You got hit. It is not your identity. Reset and go again.
+_(pause)_
+35. When the moment hits, come back to what is true.
+_(pause)_
+36. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+37. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+38. You are secure. Now play from victory.
+### Hockey · Goalie · start-slow (full session)
+<!-- slug: session-goalie-start-slow | file: components/pregame/audio/session-goalie-start-slow.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. See the crease.
+_(pause)_
+9. The blue paint under your skates.
+_(pause)_
+10. The crossbar behind your head.
+_(pause)_
+11. Hear the anthem fade out.
+_(pause)_
+12. Feel your glove.
+_(pause)_
+13. Feel your blocker.
+_(pause)_
+14. Feel the weight of your pads, settled and ready.
+_(pause)_
+15. You belong here.
+_(pause)_
+16. Puck drops.
+_(pause)_
+17. Set your feet in the crease.
+_(pause)_
+18. Square to the shooter.
+_(pause)_
+19. Track the puck all the way in.
+_(pause)_
+20. Make the first save, calm and big.
+_(pause)_
+21. Control the rebound. Cover, or steer it to the corner.
+_(pause)_
+22. Reset. Eyes back to the puck.
+_(pause)_
+23. Set your feet.
+_(pause)_
+24. Track the puck.
+_(pause)_
+25. Control the rebound.
+_(pause)_
+26. Reset after traffic.
+_(pause)_
+27. Next shot only.
+_(pause)_
+28. Now rehearse the hard moment.
+_(pause)_
+29. First period is half over. The puck has felt small. You have been late on a shot or two. Nothing is coming easy.
+_(pause)_
+30. Feel what your body does. Tight grip on the stick. Shoulders up. I am not in this game.
+_(pause)_
+31. Now the reset. Return to your anchor.
+_(pause)_
+32. The last play is over. Reset and play the play you're in.
+_(pause)_
+33. Active feet. Stay big. Track the puck all the way in.
+_(pause)_
+34. Speak the truth. You started slow. It is not your identity. Reset and go again.
+_(pause)_
+35. When the moment hits, come back to what is true.
+_(pause)_
+36. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+37. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+38. You are secure. Now play from victory.
+### Hockey · Goalie · first-goal-against (full session)
+<!-- slug: session-goalie-first-goal-against | file: components/pregame/audio/session-goalie-first-goal-against.ts -->
+
+1. Now, take two breaths. Four in. Six out.
+_(pause)_
+2. Inhale.
+_(pause)_
+3. Exhale.
+_(pause)_
+4. Inhale.
+_(pause)_
+5. Exhale.
+_(pause)_
+6. Remember what is true.
+_(pause)_
+7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+_(pause)_
+8. See the crease.
+_(pause)_
+9. The blue paint under your skates.
+_(pause)_
+10. The crossbar behind your head.
+_(pause)_
+11. Hear the anthem fade out.
+_(pause)_
+12. Feel your glove.
+_(pause)_
+13. Feel your blocker.
+_(pause)_
+14. Feel the weight of your pads, settled and ready.
+_(pause)_
+15. You belong here.
+_(pause)_
+16. Puck drops.
+_(pause)_
+17. Set your feet in the crease.
+_(pause)_
+18. Square to the shooter.
+_(pause)_
+19. Track the puck all the way in.
+_(pause)_
+20. Make the first save, calm and big.
+_(pause)_
+21. Control the rebound. Cover, or steer it to the corner.
+_(pause)_
+22. Reset. Eyes back to the puck.
+_(pause)_
+23. Set your feet.
+_(pause)_
+24. Track the puck.
+_(pause)_
+25. Control the rebound.
+_(pause)_
+26. Reset after traffic.
+_(pause)_
+27. Next shot only.
+_(pause)_
+28. Now rehearse the hard moment.
+_(pause)_
+29. The puck is in the back of your net. The other team celebrates behind you. You fish it out of the mesh. You skate to the top of your crease.
+_(pause)_
+30. Feel what your body does. Stomach drop. Heat in your chest. I should have had that.
+_(pause)_
+31. Now the reset. Return to your anchor.
+_(pause)_
+32. The last play is over. Reset and play the play you're in.
+_(pause)_
+33. Don't over-commit on the next shot. Stay patient. Let it come to you.
+_(pause)_
+34. Speak the truth. The puck got past you. It is not your identity. Reset and go again.
+_(pause)_
+35. When the moment hits, come back to what is true.
+_(pause)_
+36. Breathe. Reset your body. Say the truth. Make the next play.
+_(pause)_
+37. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
+_(pause)_
+38. You are secure. Now play from victory.

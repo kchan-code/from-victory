@@ -3,21 +3,28 @@
 
 ## HOW TO EDIT
 
+**This file IS the script.** Edit the numbered prose lines — those words are exactly what gets spoken.
+
 1. Edit **only** the numbered prose lines (e.g. `1. Your sentence here.`).
 2. Do NOT change `### titles`, `<!-- slug ... -->` comments, `_(pause)_` markers, or line numbers.
 3. One numbered line = one complete sentence (no line breaks within a numbered item).
 4. For text-mode fallback lines, same rules apply to the numbered body lines.
-5. When done editing, run from `apps/web/`:
-   ```
-   npm run scripts:apply            # dry-run — shows what will change
-   npm run scripts:apply -- --write # write the changes into the TS source
-   ```
-6. For LIVE sports (hockey, basketball, golf) also run:
-   ```
-   npm run audio:generate -- --mode clips
-   ```
-   Then bump `MANIFEST_VERSION` per the FV-142 rule (the generator prints the new value).
-7. DORMANT sports (football, swimming, track-field): just apply and wait for the audio render pass.
+5. That's it for editing. The generator reads your prose directly from this file at render time — no separate apply step. Works for EVERY clip type (inline, visualization/viz-*, and shared-* clips).
+6. When you're ready to render audio, run from `apps/web/`:
+   - **LIVE sports** (hockey, basketball, golf, baseball):
+     ```
+     npm run audio:generate -- --mode clips
+     ```
+     Then bump `MANIFEST_VERSION` per the FV-142 rule (the generator prints the new value).
+   - **DORMANT sports** (football, swimming, track-field): edit freely. The first
+     audio render is the go-live pass.
+   - To preview which clips will render with your edits (no TTS budget spent):
+     ```
+     npm run audio:check
+     ```
+
+> Note: daily-training sessions (Supabase seed SQL) and postgame modules
+> (`lib/postgame/modules.ts`) are NOT in these books — edit those directly.
 
 ---
 
@@ -52,6 +59,111 @@ These lines appear on-screen in text mode (no audio). Tokens like `{{role}}`, `{
 
 ## Audio Clips
 
+## Need Openers (basketball)
+
+### Basketball Opener · be-vocal
+<!-- slug: opener-bb-be-vocal | file: components/pregame/audio/opener-bb-be-vocal.ts -->
+
+1. Close your eyes. Drop your shoulders.
+_(pause)_
+2. Out there, talking is competing. The loud player moves the defense a half-second before the offense does. Tonight, that's the job — be the one who talks.
+_(pause)_
+3. And here is what Paul wrote in Romans 8. For everyone in Christ, there is now no condemnation. None. The verdict on you was settled at the cross — before you ever stepped on the floor.
+_(pause)_
+4. So when that voice tells you to stay quiet — don't risk it, don't be the one who's wrong out loud — hear it for what it is. That is not you. That is the part of you that has to look good. And that part is already settled.
+_(pause)_
+5. So tonight, be the loud one. I got ball. Screen left. Shot. Free to be wrong, free to speak, free to make the play before it happens.
+_(pause)_
+6. What anyone out there thinks of you is not the verdict on you. You have nothing left to protect. You are free to speak.
+_(pause)_
+### Basketball Opener · hope
+<!-- slug: opener-bb-hope | file: components/pregame/audio/opener-bb-hope.ts -->
+
+1. Close your eyes. Take one full breath.
+_(pause)_
+2. Listen to what Isaiah wrote in chapter 40. He was speaking to a people in exile, out of strength, far from home. Even youths grow tired and weary, and young men stumble and fall. But those who hope in the LORD will renew their strength. They will soar on wings like eagles. They will run and not grow weary. They will walk and not be faint.
+_(pause)_
+3. Soar on wings like eagles does not mean you will never feel your legs go late in the game. It does not mean prayer is a performance hack. Look at what Isaiah just said — even young men stumble and fall. The source of endurance is not your willpower. It is the God who renews you when you depend on him.
+_(pause)_
+4. Hope is not believing in yourself. It is waiting on the God who is bigger than what you face.
+_(pause)_
+### Basketball Opener · joy
+<!-- slug: opener-bb-joy | file: components/pregame/audio/opener-bb-joy.ts -->
+
+1. Close your eyes. Let your face soften.
+_(pause)_
+2. Listen to what Paul wrote in 1 Thessalonians 5. He was writing to a young church facing real hardship. Be joyful always, pray continually, give thanks in all circumstances. For this is God's will for you in Christ Jesus.
+_(pause)_
+3. Be joyful always does not mean fake a smile or pretend the loss did not hurt. Look at how Paul ties it together. Joy, prayer, thanksgiving. The athlete who prays continually and gives thanks even after a bad possession is the athlete who can carry joy into the next one. Joy is not the absence of hardship. It is what you have when you stay connected to God in the middle of it.
+_(pause)_
+4. Joy is not a mood that changes with the scoreboard. It is a posture you take toward the God who is always with you.
+_(pause)_
+### Basketball Opener · leadership
+<!-- slug: opener-bb-leadership | file: components/pregame/audio/opener-bb-leadership.ts -->
+
+1. Close your eyes. Take a long breath.
+_(pause)_
+2. Listen to what Jesus said in Mark 10. His disciples were arguing about who would be greatest. Jesus called them over and said this. Whoever wants to become great among you must be your servant, and whoever wants to be first must be slave of all. For even the Son of Man did not come to be served, but to serve, and to give his life as a ransom for many.
+_(pause)_
+3. To serve does not mean to be soft. Jesus was not weak. It means using whatever you have been given — the captain's role, a starting spot, a loud voice — to lift the player next to you, not to stand above them. The last one off the bench is not ordinary. The practice player is not ordinary. Lead like that is true.
+_(pause)_
+4. Real leadership is not standing above your team. It is standing under them — the way Christ stood under you.
+_(pause)_
+### Basketball Opener · reset
+<!-- slug: opener-bb-reset | file: components/pregame/audio/opener-bb-reset.ts -->
+
+1. Close your eyes. Let your hands rest open.
+_(pause)_
+2. Listen to what Paul wrote at the start of Romans 8. He has just spent a whole chapter naming his own failure. Then he opens chapter 8 with this. Therefore, there is now no condemnation for those who are in Christ Jesus.
+_(pause)_
+3. No condemnation does not mean no consequences. The ball still goes the other way when you turn it over. It means the verdict on you was already settled at the cross. The mistake you make tonight cannot reopen a case God has already closed.
+_(pause)_
+4. Your mistakes are real. The verdict is not. Reset and go again.
+_(pause)_
+### Basketball Opener · compete-level
+<!-- slug: opener-bb-compete-level | file: components/pregame/audio/opener-bb-compete-level.ts -->
+
+1. Close your eyes. Sit forward.
+_(pause)_
+2. Listen to what Paul wrote in Colossians 3. Whatever you do, work at it with all your heart, as working for the Lord, not for human masters, since you know that you will receive an inheritance from the Lord as a reward. It is the Lord Christ you are serving.
+_(pause)_
+3. Working for the Lord does not mean playing harder to earn his love. You already have it. It means every possession you guard, every sprint back on defense, every loose ball you dive for is offered up to the One who gave you the body to play. Effort becomes worship. The coach is not your final audience. God is.
+_(pause)_
+4. You are not competing for an audience. You are competing for an Audience of One who already calls you His.
+_(pause)_
+### Basketball Opener · confidence
+<!-- slug: opener-bb-confidence | file: components/pregame/audio/opener-bb-confidence.ts -->
+
+1. Close your eyes. Sit tall.
+_(pause)_
+2. Listen to what the writer of Hebrews said to a group of believers worn down by hardship. Hebrews 12. Let us run with perseverance the race marked out for us, fixing our eyes on Jesus, the pioneer and perfecter of faith.
+_(pause)_
+3. Fix your eyes on Jesus does not mean think positive thoughts about Jesus while you play. It means your confidence is not built on your last possession or your stat line. It is built on the one who already ran his race for you.
+_(pause)_
+4. Your confidence is not in what you can do. It is in who already loves you.
+_(pause)_
+### Basketball Opener · decisions
+<!-- slug: opener-bb-decisions | file: components/pregame/audio/opener-bb-decisions.ts -->
+
+1. Close your eyes. Soften your jaw.
+_(pause)_
+2. Listen to what Solomon wrote in Proverbs 3. Trust in the Lord with all your heart and lean not on your own understanding. In all your ways submit to him, and he will make your paths straight.
+_(pause)_
+3. He will make your paths straight does not mean God promises you the right read on every possession. It means you can stop white-knuckling the game. The athlete who has to control every decision plays tight. The athlete who trusts God can release the death grip on outcome and actually see the floor.
+_(pause)_
+4. Trust does not mean knowing every play before it happens. It means leaning on God instead of leaning on yourself.
+_(pause)_
+### Basketball Opener · courage
+<!-- slug: opener-bb-courage | file: components/pregame/audio/opener-bb-courage.ts -->
+
+1. Close your eyes. Plant both feet on the floor.
+_(pause)_
+2. Listen to what God said through Isaiah 41 to a people in exile, facing real enemies, real loss. So do not fear, for I am with you. Do not be dismayed, for I am your God. I will strengthen you and help you. I will uphold you with my righteous right hand.
+_(pause)_
+3. Do not fear does not mean stop feeling nervous. The contact is still coming. The lane is still crowded. It means you are not alone in the moment. The God who upheld Israel in exile upholds you taking the charge, driving into the trees, going up strong with a body on you.
+_(pause)_
+4. Courage is not the absence of fear. It is moving forward because the One with you is bigger than what is in front of you.
+_(pause)_
 ## VIZ Clips — Flagship (position)
 
 ### Basketball · Guard · VIZ (flagship)

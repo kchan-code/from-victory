@@ -4,21 +4,28 @@
 
 ## HOW TO EDIT
 
+**This file IS the script.** Edit the numbered prose lines — those words are exactly what gets spoken.
+
 1. Edit **only** the numbered prose lines (e.g. `1. Your sentence here.`).
 2. Do NOT change `### titles`, `<!-- slug ... -->` comments, `_(pause)_` markers, or line numbers.
 3. One numbered line = one complete sentence (no line breaks within a numbered item).
 4. For text-mode fallback lines, same rules apply to the numbered body lines.
-5. When done editing, run from `apps/web/`:
-   ```
-   npm run scripts:apply            # dry-run — shows what will change
-   npm run scripts:apply -- --write # write the changes into the TS source
-   ```
-6. For LIVE sports (hockey, basketball, golf) also run:
-   ```
-   npm run audio:generate -- --mode clips
-   ```
-   Then bump `MANIFEST_VERSION` per the FV-142 rule (the generator prints the new value).
-7. DORMANT sports (football, swimming, track-field): just apply and wait for the audio render pass.
+5. That's it for editing. The generator reads your prose directly from this file at render time — no separate apply step. Works for EVERY clip type (inline, visualization/viz-*, and shared-* clips).
+6. When you're ready to render audio, run from `apps/web/`:
+   - **LIVE sports** (hockey, basketball, golf, baseball):
+     ```
+     npm run audio:generate -- --mode clips
+     ```
+     Then bump `MANIFEST_VERSION` per the FV-142 rule (the generator prints the new value).
+   - **DORMANT sports** (football, swimming, track-field): edit freely. The first
+     audio render is the go-live pass.
+   - To preview which clips will render with your edits (no TTS budget spent):
+     ```
+     npm run audio:check
+     ```
+
+> Note: daily-training sessions (Supabase seed SQL) and postgame modules
+> (`lib/postgame/modules.ts`) are NOT in these books — edit those directly.
 
 ---
 

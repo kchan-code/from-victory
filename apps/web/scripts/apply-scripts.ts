@@ -6,11 +6,25 @@
 //
 // Safety guards:
 //   (a) If the edited numbered-line COUNT for a clip != its current speech-segment
-//       count, the clip is REFUSED and reported. Do not partially apply.
+//       count, the clip is REFUSED and the run fails with a clear message.
 //   (b) Silence segments and audio-engineering metadata (instructions, mark, speed,
 //       postFilter, voice) are never touched.
 //   (c) A unified-diff-style preview is always printed; --write is required to apply.
 //   (d) Apply is idempotent: if export→apply with no edits, diff is empty.
+//   (e) Template-literal bodies containing ${...} expressions are refused; they
+//       must be edited directly in the TS source.
+//
+// NOTE ON CLIP PROSE (VIZ / shared / spread clips):
+//   Clip-prose edits (text: lines in CLIP_SCRIPTS) are NO LONGER applied to TS
+//   source files by this tool. The generator reads clip prose directly from the
+//   .md books at render time (render-time override via loadBookProse). This is
+//   the authoritative mechanism for ALL clip types — inline, spread, shared, and
+//   viz clips. This tool now only syncs audioScript fallback body text (the
+//   text-mode RUNTIME strings in sport-registry.ts / types.ts), which remain
+//   inline TS strings that must be written back.
+//
+// The core logic is exported as syncFromBooks({ write }) so generate-pregame-audio.ts
+// can call it at startup (auto-sync .md edits before TTS rendering).
 
 import { readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
@@ -18,7 +32,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { CLIP_SCRIPTS } from "../components/pregame/audio/clips.ts";
-import type { AudioScript, Segment } from "../components/pregame/audio/types";
+import type { Segment } from "../components/pregame/audio/types";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -28,8 +42,6 @@ const REPO_ROOT = join(WEB_ROOT, "..", "..");
 const DOCS_SCRIPTS_DIR = join(REPO_ROOT, "docs", "scripts");
 const SPORT_REGISTRY_PATH = join(WEB_ROOT, "components/pregame/sport-registry.ts");
 const PREGAME_TYPES_PATH = join(WEB_ROOT, "components/pregame/types.ts");
-
-const WRITE_MODE = process.argv.includes("--write");
 
 // ── Parse audioScript fallback current bodies from sport-registry.ts as text ─
 // We avoid importing sport-registry.ts (it has extensionless value imports).
@@ -195,7 +207,7 @@ type ParsedBook = {
   fallbackLines: ParsedFallback[];
 };
 
-function parseBook(content: string): ParsedBook {
+export function parseBook(content: string): ParsedBook {
   const clips: ParsedClip[] = [];
   const fallbackLines: ParsedFallback[] = [];
 
@@ -333,9 +345,65 @@ function showBodyDiff(sportLabel: string, idx: number, oldBody: string, newBody:
   console.log(`    + ${newBody}`);
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// ── loadBookProse: parse all docs/scripts/*.md into a prose override map ──────
+//
+// Returns a Map<slug, string[]> where the value is the ordered list of speech
+// segment texts for that clip, as parsed from the .md books. Used by the
+// generator to override clip prose at render time — works uniformly for all
+// clip types (inline, spread, shared, viz) because it operates on the assembled
+// AudioScript's segments array, not the TS source file text.
+//
+// This is the authoritative runtime text source for all clip rendering.
 
-async function main() {
+const BOOK_FILES = [
+  "hockey.md", "basketball.md", "baseball.md", "golf.md",
+  "football.md", "swimming.md", "track-field.md",
+  "pre-practice.md", "shared.md",
+];
+
+export async function loadBookProse(): Promise<Map<string, string[]>> {
+  const result = new Map<string, string[]>();
+  for (const bookFile of BOOK_FILES) {
+    const bookPath = join(DOCS_SCRIPTS_DIR, bookFile);
+    if (!existsSync(bookPath)) continue;
+    const content = await readFile(bookPath, "utf8");
+    const { clips } = parseBook(content);
+    for (const parsed of clips) {
+      result.set(parsed.slug, parsed.lines);
+    }
+  }
+  return result;
+}
+
+// ── syncFromBooks: core md→TS sync logic (exported for generate-pregame-audio) ─
+//
+// Reads every docs/scripts/*.md book and syncs ONLY the audioScript fallback
+// body text (the inline body: strings in sport-registry.ts / types.ts that the
+// RUNTIME text-mode path reads). Clip-prose (text: lines in CLIP_SCRIPTS) is
+// NO LONGER synced to TS here — the generator reads clip prose directly from
+// the .md books at render time via loadBookProse(). That mechanism handles all
+// clip types uniformly (inline, spread, shared, viz).
+//
+// Returns a summary object so the caller can log or act on the result.
+// Throws (process.exit(1)) on fallback refusals (count mismatch / ${...}).
+// Clip-prose count mismatches are still detected here as a GUARD (to surface
+// structure drift early) but are reported as warnings, not fatal errors, since
+// the generator's render-time guard will catch them at render time.
+
+export type SyncSummary = {
+  clipsChanged: number;     // unused (clip prose no longer synced to TS)
+  linesChanged: number;     // unused (clip prose no longer synced to TS)
+  fallbackChanged: number;
+  refused: number;
+  refusedDetails: Array<{ slug: string; reason: string }>;
+  filesWritten: number;
+  // Clip-prose count mismatches detected (informational, not fatal here;
+  // the generator's render-time guard will catch them per-slug at render time).
+  clipCountMismatches: number;
+};
+
+export async function syncFromBooks({ write }: { write: boolean }): Promise<SyncSummary> {
+  // Clip-prose is no longer synced to TS. Only fallback bodies are written.
   const currentIndex = buildCurrentIndex();
   const fallbackCurrents = await parseFallbackBodiesFromRegistry();
   const fallbackByLabel = new Map<string, FallbackCurrent>();
@@ -354,24 +422,9 @@ async function main() {
     "Track & Field": "track-field.md",
   };
 
-  const bookFiles = [
-    "hockey.md", "basketball.md", "baseball.md", "golf.md",
-    "football.md", "swimming.md", "track-field.md",
-    "pre-practice.md", "shared.md",
-  ];
-
-  let totalClipsChanged = 0;
-  let totalLinesChanged = 0;
   let totalFallbackChanged = 0;
   let totalRefused = 0;
-
-  type PendingEdit = {
-    sourceFile: string; // absolute path
-    slug: string;
-    lineNum: number;
-    oldText: string;
-    newText: string;
-  };
+  let totalClipCountMismatches = 0;
 
   type PendingBodyEdit = {
     sportLabel: string;
@@ -381,11 +434,10 @@ async function main() {
     newBody: string;
   };
 
-  const pendingEdits: PendingEdit[] = [];
   const pendingBodyEdits: PendingBodyEdit[] = [];
   const refusedClips: Array<{ slug: string; reason: string }> = [];
 
-  for (const bookFile of bookFiles) {
+  for (const bookFile of BOOK_FILES) {
     const bookPath = join(DOCS_SCRIPTS_DIR, bookFile);
     if (!existsSync(bookPath)) {
       console.warn(`WARN: ${bookFile} not found — run npm run scripts:export first.`);
@@ -415,7 +467,7 @@ async function main() {
         if (oldBody.includes("${")) {
           refusedClips.push({
             slug: `${sportLabel} audioScript#${fb.index}`,
-            reason: "body contains a template literal expression (\${...}) — cannot safely rewrite. Edit sport-registry.ts directly.",
+            reason: "body contains a template literal expression (\\${...}) — cannot safely rewrite. Edit sport-registry.ts directly.",
           });
           totalRefused++;
           continue;
@@ -427,122 +479,72 @@ async function main() {
       }
     }
 
-    // Process clip edits
+    // Clip-prose: detect count mismatches (structural drift) as informational warnings.
+    // Text differences are intentionally not applied here — the generator reads
+    // clip prose directly from the .md books at render time via loadBookProse().
     for (const parsed of clips) {
       const current = currentIndex.get(parsed.slug);
-      if (!current) {
-        refusedClips.push({ slug: parsed.slug, reason: "slug not found in CLIP_SCRIPTS" });
-        totalRefused++;
-        continue;
-      }
+      if (!current) continue; // unknown slug — generator will handle/warn
 
-      // Guard (a): count mismatch
       if (parsed.lines.length !== current.speechTexts.length) {
-        refusedClips.push({
-          slug: parsed.slug,
-          reason: `line count mismatch: md has ${parsed.lines.length} numbered lines, source has ${current.speechTexts.length} speech segments`,
-        });
-        totalRefused++;
-        continue;
+        console.warn(
+          `WARN: clip "${parsed.slug}" — .md has ${parsed.lines.length} numbered lines, ` +
+          `TS source has ${current.speechTexts.length} speech segments. ` +
+          `The generator will fail fast on this mismatch at render time.`,
+        );
+        totalClipCountMismatches++;
       }
-
-      let clipChanged = false;
-      for (let i = 0; i < current.speechTexts.length; i++) {
-        const oldText = current.speechTexts[i] ?? "";
-        const newText = parsed.lines[i] ?? "";
-        if (oldText === newText) continue;
-
-        pendingEdits.push({
-          sourceFile: join(WEB_ROOT, current.sourceFile),
-          slug: parsed.slug,
-          lineNum: i + 1,
-          oldText,
-          newText,
-        });
-        if (!clipChanged) {
-          totalClipsChanged++;
-          clipChanged = true;
-        }
-        totalLinesChanged++;
-      }
-
-      if (clipChanged) {
-        showDiff(parsed.slug, current.speechTexts, parsed.lines);
-      }
+      // Text diffs are fine — the generator will use the .md prose at render time.
     }
   }
 
   // ── Summary ──────────────────────────────────────────────────────────────────
   console.log("\n─────────────────────────────────────────────────────");
-  console.log(`Clips changed:          ${totalClipsChanged}`);
-  console.log(`Speech lines changed:   ${totalLinesChanged}`);
   console.log(`Fallback lines changed: ${totalFallbackChanged}`);
-  console.log(`Clips refused:          ${totalRefused}`);
+  console.log(`Fallback lines refused: ${totalRefused}`);
+  if (totalClipCountMismatches > 0) {
+    console.log(`Clip count mismatches:  ${totalClipCountMismatches} (generator will guard these at render time)`);
+  }
 
   if (refusedClips.length > 0) {
-    console.log("\nREFUSED (will NOT be applied):");
+    console.log("\nREFUSED fallback lines (will NOT be applied):");
     for (const r of refusedClips) {
       console.log(`  ${r.slug}: ${r.reason}`);
     }
+    // Fail fast on fallback refusals so the caller (generate) stops before TTS.
+    console.error(
+      `\nFATAL: ${totalRefused} fallback line(s) refused. Fix the issues above before rendering.`,
+    );
+    process.exit(1);
   }
 
-  if (!WRITE_MODE) {
+  if (!write) {
     console.log("\nDRY-RUN — no files changed. Run with --write to apply.");
-    return;
+    return {
+      clipsChanged: 0,
+      linesChanged: 0,
+      fallbackChanged: totalFallbackChanged,
+      refused: totalRefused,
+      refusedDetails: refusedClips,
+      filesWritten: 0,
+      clipCountMismatches: totalClipCountMismatches,
+    };
   }
 
-  if (pendingEdits.length === 0 && pendingBodyEdits.length === 0) {
-    console.log("\nNothing to write.");
-    return;
-  }
-
-  // ── Apply clip text edits, grouped by source file ────────────────────────────
-  const editsByFile = new Map<string, PendingEdit[]>();
-  for (const edit of pendingEdits) {
-    if (!editsByFile.has(edit.sourceFile)) editsByFile.set(edit.sourceFile, []);
-    editsByFile.get(edit.sourceFile)!.push(edit);
+  if (pendingBodyEdits.length === 0) {
+    console.log("\nNothing to write — fallback bodies already match .md books.");
+    return {
+      clipsChanged: 0,
+      linesChanged: 0,
+      fallbackChanged: 0,
+      refused: 0,
+      refusedDetails: [],
+      filesWritten: 0,
+      clipCountMismatches: totalClipCountMismatches,
+    };
   }
 
   let filesWritten = 0;
-
-  for (const [absPath, edits] of editsByFile) {
-    if (!existsSync(absPath)) {
-      console.error(`ERROR: source file not found: ${absPath}`);
-      continue;
-    }
-
-    let fileContent = await readFile(absPath, "utf8");
-
-    for (const edit of edits) {
-      // Scope search to this clip's block using the slug anchor
-      const slugAnchor = `slug: "${edit.slug}"`;
-      const slugPos = fileContent.indexOf(slugAnchor);
-      if (slugPos === -1) {
-        console.error(`ERROR: slug anchor "${edit.slug}" not found in ${absPath}`);
-        continue;
-      }
-
-      // Bound: next slug declaration
-      const nextSlugPos = fileContent.indexOf('slug: "', slugPos + slugAnchor.length);
-      const searchEnd = nextSlugPos === -1 ? fileContent.length : nextSlugPos;
-
-      const blockContent = fileContent.slice(slugPos, searchEnd);
-      const result = replaceTextInBlock(blockContent, edit.oldText, edit.newText, 0);
-
-      if (!result) {
-        console.error(`ERROR: could not find text in clip "${edit.slug}" (speech[${edit.lineNum}])`);
-        console.error(`  Expected: "${edit.oldText}"`);
-        continue;
-      }
-
-      fileContent = fileContent.slice(0, slugPos) + result.result + fileContent.slice(searchEnd);
-      console.log(`  APPLIED: ${edit.slug} speech[${edit.lineNum}]`);
-    }
-
-    await writeFile(absPath, fileContent, "utf8");
-    filesWritten++;
-    console.log(`  WROTE: ${absPath}`);
-  }
 
   // ── Apply fallback body edits (types.ts for AUDIO_SCRIPT, sport-registry.ts for others) ──
   if (pendingBodyEdits.length > 0) {
@@ -585,59 +587,95 @@ async function main() {
     }
 
     if (registryEdits.length > 0) {
-    if (!existsSync(SPORT_REGISTRY_PATH)) {
-      console.error(`ERROR: sport-registry.ts not found at ${SPORT_REGISTRY_PATH}`);
-    } else {
-      let regContent = await readFile(SPORT_REGISTRY_PATH, "utf8");
+      if (!existsSync(SPORT_REGISTRY_PATH)) {
+        console.error(`ERROR: sport-registry.ts not found at ${SPORT_REGISTRY_PATH}`);
+      } else {
+        let regContent = await readFile(SPORT_REGISTRY_PATH, "utf8");
 
-      for (const edit of registryEdits) {
-        const constAnchor = edit.constName === "AUDIO_SCRIPT"
-          ? "export const AUDIO_SCRIPT: AudioSegment[] = ["
-          : `const ${edit.constName}: AudioSegment[] = [`;
+        for (const edit of registryEdits) {
+          const constAnchor = edit.constName === "AUDIO_SCRIPT"
+            ? "export const AUDIO_SCRIPT: AudioSegment[] = ["
+            : `const ${edit.constName}: AudioSegment[] = [`;
 
-        const constPos = regContent.indexOf(constAnchor);
-        if (constPos === -1) {
-          console.error(`ERROR: const anchor "${constAnchor}" not found in sport-registry.ts for ${edit.sportLabel} #${edit.idx}`);
-          continue;
-        }
-
-        // Find the end of this const's array block
-        let depth = 0;
-        let pos = constPos + constAnchor.length - 1; // position of the "["
-        while (pos < regContent.length) {
-          if (regContent[pos] === "[") depth++;
-          else if (regContent[pos] === "]") {
-            depth--;
-            if (depth === 0) { pos++; break; }
+          const constPos = regContent.indexOf(constAnchor);
+          if (constPos === -1) {
+            console.error(`ERROR: const anchor "${constAnchor}" not found in sport-registry.ts for ${edit.sportLabel} #${edit.idx}`);
+            continue;
           }
-          pos++;
+
+          // Find the end of this const's array block
+          let depth = 0;
+          let pos = constPos + constAnchor.length - 1; // position of the "["
+          while (pos < regContent.length) {
+            if (regContent[pos] === "[") depth++;
+            else if (regContent[pos] === "]") {
+              depth--;
+              if (depth === 0) { pos++; break; }
+            }
+            pos++;
+          }
+          const searchEnd = pos;
+
+          const blockContent = regContent.slice(constPos, searchEnd);
+          const result = replaceBodyInBlock(blockContent, edit.oldBody, edit.newBody, 0);
+
+          if (!result) {
+            console.error(`ERROR: could not find body text for ${edit.sportLabel} audioScript#${edit.idx}`);
+            console.error(`  Body: "${edit.oldBody}"`);
+            continue;
+          }
+
+          regContent = regContent.slice(0, constPos) + result.result + regContent.slice(searchEnd);
+          console.log(`  APPLIED: ${edit.sportLabel} audioScript#${edit.idx} body`);
         }
-        const searchEnd = pos;
 
-        const blockContent = regContent.slice(constPos, searchEnd);
-        const result = replaceBodyInBlock(blockContent, edit.oldBody, edit.newBody, 0);
-
-        if (!result) {
-          console.error(`ERROR: could not find body text for ${edit.sportLabel} audioScript#${edit.idx}`);
-          console.error(`  Body: "${edit.oldBody}"`);
-          continue;
-        }
-
-        regContent = regContent.slice(0, constPos) + result.result + regContent.slice(searchEnd);
-        console.log(`  APPLIED: ${edit.sportLabel} audioScript#${edit.idx} body`);
+        await writeFile(SPORT_REGISTRY_PATH, regContent, "utf8");
+        filesWritten++;
+        console.log(`  WROTE: ${SPORT_REGISTRY_PATH}`);
       }
-
-      await writeFile(SPORT_REGISTRY_PATH, regContent, "utf8");
-      filesWritten++;
-      console.log(`  WROTE: ${SPORT_REGISTRY_PATH}`);
     }
-    } // end if (registryEdits.length > 0)
-  } // end if (pendingBodyEdits.length > 0)
+  }
 
   console.log(`\n${filesWritten} file(s) written.`);
+
+  return {
+    clipsChanged: 0,
+    linesChanged: 0,
+    fallbackChanged: totalFallbackChanged,
+    refused: totalRefused,
+    refusedDetails: refusedClips,
+    filesWritten,
+    clipCountMismatches: totalClipCountMismatches,
+  };
 }
 
-main().catch((err) => {
-  console.error("apply-scripts failed:", err);
-  process.exit(1);
-});
+// ── Standalone CLI entrypoint ─────────────────────────────────────────────────
+// Invoked by `npm run scripts:apply` (maintenance / optional preview).
+// KC's primary workflow is to run `npm run audio:generate`, which calls
+// syncFromBooks automatically at startup.
+//
+// Guard: only run main() when this file is the direct entry point, not when
+// it is imported as a module by generate-pregame-audio.ts. Node sets
+// process.argv[1] to the entry-point file path; compare against __filename.
+
+async function main() {
+  const write = process.argv.includes("--write");
+  const summary = await syncFromBooks({ write });
+
+  if (!write && summary.fallbackChanged === 0) {
+    console.log("\nFallback bodies already match .md books — nothing to apply.");
+    console.log("(Clip prose is read directly from .md at generator render time — no apply step needed.)");
+  }
+}
+
+// Only run the CLI when this file is the direct entry point.
+// When imported by generate-pregame-audio.ts, process.argv[1] will point
+// to the generator, not this file — so main() is skipped.
+const isEntryPoint = process.argv[1] != null &&
+  (process.argv[1].endsWith("apply-scripts.ts") || process.argv[1].endsWith("apply-scripts.js"));
+if (isEntryPoint) {
+  main().catch((err) => {
+    console.error("apply-scripts failed:", err);
+    process.exit(1);
+  });
+}

@@ -36,6 +36,7 @@ import type {
 import {
   CLIP_SCRIPTS,
 } from "../components/pregame/audio/clips.ts";
+import { syncFromBooks, loadBookProse } from "./apply-scripts.ts";
 import type { ClipManifest, ClipPhaseEntry } from "../components/pregame/audio-playlist.ts";
 import { BREATH_THRESHOLD_SCRIPT } from "../components/pregame/audio/breath-threshold.ts";
 import { SESSION_FORWARD_MISSED_CHANCE_SCRIPT } from "../components/pregame/audio/session-forward-missed-chance.ts";
@@ -218,6 +219,13 @@ type Flags = {
   // Clip-playlist generation mode. Renders CLIP_SCRIPTS into clips/
   // subdirectory, loudnorm-passes the opener, writes manifest.json.
   mode?: "clips";
+  // --sync-only: run syncFromBooks (md→TS fallback sync) then exit without TTS/ffmpeg.
+  // Useful for CI validation ("do the fallback bodies match the .md books?").
+  syncOnly: boolean;
+  // --check: load all scripts + book prose, report per-clip differences between
+  // the .md books and the TS seed text (which clips will render with edited prose),
+  // run count-mismatch guard, then exit without TTS/ffmpeg.
+  check: boolean;
 };
 
 function parseFlags(argv: string[]): Flags {
@@ -225,11 +233,15 @@ function parseFlags(argv: string[]): Flags {
     dryRun: false,
     keepSegments: false,
     outDir: DEFAULT_OUT_DIR,
+    syncOnly: false,
+    check: false,
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--dry-run") out.dryRun = true;
     else if (a === "--keep-segments") out.keepSegments = true;
+    else if (a === "--sync-only") out.syncOnly = true;
+    else if (a === "--check") out.check = true;
     else if (a === "--mode" && argv[i + 1] === "clips") {
       out.mode = "clips";
       i++;
@@ -277,16 +289,70 @@ function speechSegmentCount(script: AudioScript): number {
 }
 
 /**
+ * Apply book-prose overrides to a script's segments.
+ *
+ * For each speech segment in `script.segments`, if `bookProse[slug]` has an
+ * entry, replace that segment's text with the corresponding book-prose line.
+ * Returns the assembled (overridden) segments as a new array — the original
+ * AudioScript is not mutated.
+ *
+ * GUARD: if the book has a different number of speech-segment lines than the
+ * assembled script, throws with a clear message (KC changed structure). The
+ * guard runs even if the text is identical (ensures book and TS stay in sync
+ * structurally).
+ */
+function applyBookProseOverrides(
+  script: AudioScript,
+  bookProse: Map<string, string[]>,
+): Segment[] {
+  const bookLines = bookProse.get(script.slug);
+  if (!bookLines) return script.segments; // no book entry → use TS text as-is
+
+  // Count speech segments in the assembled script
+  const speechCount = script.segments.filter((s) => s.type === "speech").length;
+  if (bookLines.length !== speechCount) {
+    throw new Error(
+      `[book-prose] MISMATCH for "${script.slug}": .md book has ${bookLines.length} speech lines, ` +
+      `assembled TS script has ${speechCount} speech segments. ` +
+      `Restore the correct number of numbered lines in the .md book to match, ` +
+      `or update the TS script structure to match the book.`,
+    );
+  }
+
+  let speechIdx = 0;
+  const overridden: Segment[] = [];
+  for (const seg of script.segments) {
+    if (seg.type === "speech") {
+      const bookText = bookLines[speechIdx++];
+      if (bookText !== undefined && bookText !== seg.text) {
+        overridden.push({ ...seg, text: bookText });
+      } else {
+        overridden.push(seg);
+      }
+    } else {
+      overridden.push(seg);
+    }
+  }
+  return overridden;
+}
+
+/**
  * Render one AudioScript. In clip mode (flags.mode === "clips") the MP3 is
  * content-addressed: after render the file is renamed from <slug>.mp3 to
  * <slug>.<hash8>.mp3 and the hash8 is returned.
  *
  * In legacy baked-cell mode (no mode flag) no rename happens; returns null
  * (the caller never uses the hash for legacy files).
+ *
+ * `bookProse` — the render-time prose override map (slug → ordered speech texts
+ * from the .md books). If the slug has an entry, its speech texts override the
+ * TS seed text for TTS. This is the authoritative prose source for ALL clip
+ * types (inline, spread, shared, viz).
  */
 async function generateOne(
   script: AudioScript,
   flags: Flags,
+  bookProse: Map<string, string[]>,
 ): Promise<{ hash8: string } | null> {
   const outDir = resolve(process.cwd(), flags.outDir);
   await mkdir(outDir, { recursive: true });
@@ -296,17 +362,39 @@ async function generateOne(
   const workDir = join(outDir, `.work-${script.slug}`);
   await mkdir(workDir, { recursive: true });
 
+  // Apply book-prose overrides. This replaces speech text for any clip whose
+  // slug appears in the .md books, regardless of whether the TS source uses
+  // inline text or spread imports. GUARD: count mismatch fails fast here.
+  const effectiveSegments = applyBookProseOverrides(script, bookProse);
+  // Wrap in a minimal script-like object for the render loop.
+  const effectiveScript: AudioScript = { ...script, segments: effectiveSegments };
+
   console.log(`\n── ${script.slug} ─────────────────────────────────────`);
   console.log(
-    `   voice=${script.voice}  segments=${script.segments.length}  speech=${speechSegmentCount(script)}  chars=${totalSpeechChars(script)}`,
+    `   voice=${effectiveScript.voice}  segments=${effectiveScript.segments.length}  speech=${speechSegmentCount(effectiveScript)}  chars=${totalSpeechChars(effectiveScript)}`,
   );
+  if (bookProse.has(script.slug)) {
+    // Check if any speech segment text changed (comparing effective vs original).
+    let hasOverride = false;
+    for (let i = 0; i < script.segments.length; i++) {
+      const orig = script.segments[i];
+      const eff = effectiveSegments[i];
+      if (orig?.type === "speech" && eff?.type === "speech" && orig.text !== eff.text) {
+        hasOverride = true;
+        break;
+      }
+    }
+    if (hasOverride) {
+      console.log(`   [book-prose] rendering with .md prose (${bookProse.get(script.slug)!.length} speech lines)`);
+    }
+  }
 
   // 1. Generate per-segment files (speech → TTS, silence → cached silence)
   const concatInputs: ConcatInput[] = [];
   const durations: SegmentDuration[] = [];
 
-  for (let i = 0; i < script.segments.length; i++) {
-    const seg = script.segments[i];
+  for (let i = 0; i < effectiveScript.segments.length; i++) {
+    const seg = effectiveScript.segments[i];
     if (!seg) continue;
     if (seg.type === "silence") {
       const silPath = await silenceMp3(seg.durationSec, workDir);
@@ -318,10 +406,10 @@ async function generateOne(
     const segPath = join(workDir, `${String(i).padStart(3, "0")}.mp3`);
     await synthesizeSpeech({
       text: seg.text,
-      voice: script.voice,
-      instructions: seg.instructions ?? script.instructions,
+      voice: effectiveScript.voice,
+      instructions: seg.instructions ?? effectiveScript.instructions,
       // Per-segment speed wins; falls back to script-level default.
-      speed: seg.speed ?? script.speed,
+      speed: seg.speed ?? effectiveScript.speed,
       outPath: segPath,
     });
     const dur = await probeDurationSec(segPath);
@@ -333,11 +421,11 @@ async function generateOne(
 
   // 2. Concat into one MP3 (re-encode through postFilter if the script
   // declares one — e.g. breath-threshold's warming EQ).
-  await concatMp3s(concatInputs, outMp3, workDir, script.postFilter);
+  await concatMp3s(concatInputs, outMp3, workDir, effectiveScript.postFilter);
   const finalDur = await probeDurationSec(outMp3);
 
   // 3. Build + write sidecar timeline
-  const timeline = buildTimeline(script, durations);
+  const timeline = buildTimeline(effectiveScript, durations);
   // The probed final duration is the authoritative total; replace the
   // accumulator value (they should match within rounding).
   timeline.durationSec = Math.round(finalDur * 1000) / 1000;
@@ -565,7 +653,7 @@ const PHASE2_TEMPLATES: Array<{
   { position: "Scrambler", adversity: "I fall behind the number.",    vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-fall-behind" },
 ];
 
-async function generateClips(flags: Flags): Promise<void> {
+async function generateClips(flags: Flags, bookProse: Map<string, string[]>): Promise<void> {
   const baseDir = resolve(process.cwd(), DEFAULT_OUT_DIR);
   const clipsDir = join(baseDir, CLIPS_SUBDIR);
   await mkdir(clipsDir, { recursive: true });
@@ -688,7 +776,7 @@ async function generateClips(flags: Flags): Promise<void> {
       clearSilenceCache();
       let renderResult: { hash8: string } | null = null;
       try {
-        renderResult = await generateOne(script, clipsFlags);
+        renderResult = await generateOne(script, clipsFlags, bookProse);
       } catch (err) {
         const msg = (err as Error).message;
         const isQuota = msg.includes("429") || msg.includes("quota") || msg.includes("insufficient");
@@ -740,26 +828,89 @@ async function generateClips(flags: Flags): Promise<void> {
     process.exit(1);
   }
 
-  // ── Step 2: Loudnorm-pass opener MP3s → clips/opener-*.mp3 (level-match -16 LUFS).
-  // Resume support (FV-123): if clips/<slug>.<hash8>.mp3 already exists, REUSE it
-  // and skip the re-encode — mirroring the CLIP_SCRIPTS resume skip above.
-  // Single-pass loudnorm is not guaranteed byte-identical across runs/ffmpeg
-  // versions, so re-encoding committed openers on every run produced spurious
-  // diffs. The catalog entry is computed from the on-disk hashed file either way.
-  // To re-render an opener after changing its source, delete
-  // clips/<slug>.<hash8>.mp3 first (same model as the TTS clips).
+  // ── Step 2: Opener MP3s → clips/opener-*.mp3 (level-match -16 LUFS).
+  //
+  // Each opener is processed by comparing its book prose (from .md books, already
+  // loaded in `bookProse`) to the source AudioScript's speech texts (from SCRIPTS):
+  //
+  //   - MATCHES source prose → fast loudnorm-pass of the existing top-level
+  //     opener-*.mp3 (no re-TTS, no churn). Same resume behavior as before.
+  //   - DIFFERS from source prose (KC edited the .md book) → re-TTS that opener
+  //     from the book prose (same pipeline as CLIP_SCRIPTS), then apply loudnorm.
+  //     The stale clips/<slug>.<hash8>.mp3 is removed so the updated one takes over.
+  //
+  // This means unedited openers are byte-stable (no MANIFEST_VERSION churn) and
+  // edited openers actually change. The count-mismatch guard runs for edited openers.
+  //
+  // Resume support (FV-123): if a hashed clips/<slug>.<hash8>.mp3 already exists AND
+  // the opener has NOT been edited in the books, REUSE it (skip re-encode). If the
+  // opener HAS been edited, the existing hashed file is stale and is deleted so the
+  // new re-TTS render replaces it.
   const loudnormFilter = "loudnorm=I=-16:TP=-1.5:LRA=11";
-  console.log(`\n[clips] Loudnorm-passing ${OPENER_SLUGS.length} opener MP3s (existing reused)...`);
+
+  // Build a slug→AudioScript map for the openers (for prose comparison).
+  const openerScriptMap = new Map<string, AudioScript>();
+  for (const s of SCRIPTS) {
+    if (s.slug.startsWith("opener-")) {
+      openerScriptMap.set(s.slug, s);
+    }
+  }
+
+  console.log(`\n[clips] Processing ${OPENER_SLUGS.length} opener MP3s (loudnorm or re-TTS if edited)...`);
 
   for (const slug of OPENER_SLUGS) {
     const openerSrc = join(baseDir, `${slug}.mp3`);
     const existingHashedOpener = await findHashedMp3(clipsDir, slug);
 
+    // Check if book prose differs from source (edit detection).
+    const openerScript = openerScriptMap.get(slug);
+    const bookLines = bookProse.get(slug);
+    let bookEdited = false;
+    if (openerScript && bookLines) {
+      const sourceSpeechTexts = openerScript.segments
+        .filter((s): s is Extract<Segment, { type: "speech" }> => s.type === "speech")
+        .map((s) => s.text);
+      // Count-mismatch guard: same as applyBookProseOverrides
+      if (bookLines.length !== sourceSpeechTexts.length) {
+        console.error(
+          `[opener] MISMATCH for "${slug}": .md book has ${bookLines.length} speech lines, ` +
+          `source has ${sourceSpeechTexts.length} speech segments. Fix before rendering.`,
+        );
+        process.exit(1);
+      }
+      bookEdited = bookLines.some((line, i) => line !== sourceSpeechTexts[i]);
+    }
+
     let openerHashedPath: string;
-    if (existingHashedOpener) {
-      console.log(`  [skip] ${slug} already loudnorm-passed — reusing (resume).`);
+
+    if (existingHashedOpener && !bookEdited) {
+      // Unedited + already loudnorm-passed → reuse.
+      console.log(`  [skip] ${slug} unedited + already loudnorm-passed — reusing (resume).`);
       openerHashedPath = existingHashedOpener;
+    } else if (bookEdited) {
+      // Book prose differs → re-TTS, then loudnorm.
+      console.log(`\n── ${slug} (book edited → re-TTS + loudnorm) ──────────────────`);
+      if (!openerScript) {
+        console.error(`  ERROR: no AudioScript found for edited opener "${slug}".`);
+        process.exit(1);
+      }
+      // Remove stale hashed file (if any) so the new render replaces it.
+      if (existingHashedOpener) {
+        await rm(existingHashedOpener, { force: true });
+        console.log(`  Removed stale ${existingHashedOpener}`);
+      }
+      // Re-TTS into top-level opener-*.mp3 (same location as legacy TTS render).
+      clearSilenceCache();
+      const ttsFlags: Flags = { ...flags, outDir: DEFAULT_OUT_DIR, mode: undefined };
+      await generateOne(openerScript, ttsFlags, bookProse);
+      // Now loudnorm-pass the freshly-TTS'd file to clips/.
+      const tempPath = join(clipsDir, `${slug}.mp3`);
+      await reEncodeMp3(openerSrc, tempPath, loudnormFilter);
+      const openerHash8 = await hash8OfFile(tempPath);
+      openerHashedPath = join(clipsDir, `${slug}.${openerHash8}.mp3`);
+      await rename(tempPath, openerHashedPath);
     } else {
+      // Unedited + no existing clip → loudnorm-pass from top-level source.
       if (!existsSync(openerSrc)) {
         console.error(
           `  ERROR: ${openerSrc} not found. Run the legacy path first to generate ${slug}.mp3.`,
@@ -767,7 +918,6 @@ async function generateClips(flags: Flags): Promise<void> {
         process.exit(1);
       }
       console.log(`\n── ${slug} (loudnorm pass) ───────────────────`);
-      // Encode to a temporary plain path first, then rename to hashed.
       const tempPath = join(clipsDir, `${slug}.mp3`);
       await reEncodeMp3(openerSrc, tempPath, loudnormFilter);
       const openerHash8 = await hash8OfFile(tempPath);
@@ -931,9 +1081,151 @@ async function main(): Promise<void> {
   const flags = parseFlags(process.argv.slice(2));
   await tryLoadEnvLocal();
 
+  // ── Step 0a: Sync audioScript fallback body text (md → TS inline strings).
+  // These are the text-mode RUNTIME strings in sport-registry.ts / types.ts
+  // that the app reads at runtime. They remain inline TS strings so they must
+  // be written back when KC edits them in the .md books.
+  //
+  // In --dry-run / --check mode we run the sync in dry-run mode (no writes).
+  // In --sync-only mode we exit after this sync.
+  console.log("[sync] Syncing text-mode fallback bodies from .md books to TS sources...");
+  const syncSummary = await syncFromBooks({ write: !flags.dryRun && !flags.check });
+  if (syncSummary.fallbackChanged > 0) {
+    console.log(`[sync] Applied: ${syncSummary.fallbackChanged} fallback body line(s).`);
+  } else {
+    console.log("[sync] Fallback bodies already match .md books — nothing synced.");
+  }
+
+  if (flags.syncOnly) {
+    console.log("[sync] --sync-only: exiting before TTS/ffmpeg.");
+    return;
+  }
+
+  // ── Step 0b: Load book prose for render-time override (all clip types).
+  // KC edits docs/scripts/*.md; the generator reads speech-segment texts
+  // from those books at render time and substitutes them into the assembled
+  // AudioScript just before TTS. Works uniformly for inline, spread, shared,
+  // and viz clips — no TS source file rewrite needed.
+  console.log("[book-prose] Loading .md book prose for render-time clip override...");
+  let bookProse: Map<string, string[]>;
+  try {
+    bookProse = await loadBookProse();
+  } catch (err) {
+    console.error(`[book-prose] Failed to load book prose: ${(err as Error).message}`);
+    process.exit(1);
+  }
+  console.log(`[book-prose] Loaded prose for ${bookProse.size} clip slug(s).`);
+
+  // ── --check mode: report which clips will render with edited .md prose ────
+  // Runs the count-mismatch guard per clip. Prints a report. No TTS/ffmpeg.
+  // For openers: reports whether book matches source (→ loudnorm pass) or differs
+  // (→ will re-TTS). For wordless audio (none currently exist, but future-proof):
+  // lists them explicitly as intentionally excluded from books.
+  if (flags.check) {
+    console.log("\n[check] Comparing .md book prose to TS seed text per clip...\n");
+    const allScripts = [...SCRIPTS, ...CLIP_SCRIPTS];
+    const openerSlugSet = new Set<string>(OPENER_SLUGS);
+    let editedCount = 0;
+    let mismatchCount = 0;
+    const noBookSpoken: string[] = [];  // spoken clips with no book entry (gap)
+    const noBookWordless: string[] = []; // wordless audio, intentionally no entry
+    for (const script of allScripts) {
+      const bookLines = bookProse.get(script.slug);
+      if (!bookLines) {
+        // Determine if this is a spoken clip or a wordless audio target.
+        const hasSpokenWords = script.segments.some((s) => s.type === "speech");
+        if (hasSpokenWords) {
+          noBookSpoken.push(script.slug);
+        } else {
+          noBookWordless.push(script.slug);
+        }
+        continue;
+      }
+      // Count-mismatch guard
+      const speechCount = script.segments.filter((s) => s.type === "speech").length;
+      if (bookLines.length !== speechCount) {
+        console.error(
+          `[check] MISMATCH "${script.slug}": .md has ${bookLines.length} lines, TS has ${speechCount} speech segments. Fix before rendering.`,
+        );
+        mismatchCount++;
+        continue;
+      }
+      // Diff check
+      let speechIdx = 0;
+      const diffs: Array<{ lineNum: number; ts: string; md: string }> = [];
+      for (const seg of script.segments) {
+        if (seg.type !== "speech") continue;
+        const mdText = bookLines[speechIdx];
+        if (mdText !== undefined && mdText !== seg.text) {
+          diffs.push({ lineNum: speechIdx + 1, ts: seg.text, md: mdText });
+        }
+        speechIdx++;
+      }
+      if (diffs.length > 0) {
+        editedCount++;
+        // For openers: annotate with the render path (re-TTS vs loudnorm-pass).
+        if (openerSlugSet.has(script.slug)) {
+          console.log(`  [edited] ${script.slug} — ${diffs.length} line(s) differ → will RE-TTS (book differs from source)`);
+        } else {
+          console.log(`  [edited] ${script.slug} — ${diffs.length} line(s) differ (will render with .md prose)`);
+        }
+        for (const d of diffs) {
+          console.log(`    speech[${d.lineNum}]:`);
+          console.log(`      TS:  ${d.ts}`);
+          console.log(`      .md: ${d.md}`);
+        }
+      } else if (openerSlugSet.has(script.slug)) {
+        // Opener matches source → loudnorm-pass only (informational, only shown if verbose needed)
+        // Suppress per-opener "matches" lines to keep output clean; summary covers it.
+      }
+    }
+    console.log(`\n[check] Summary:`);
+    console.log(`  Clips with .md edits (will render with .md prose): ${editedCount}`);
+    const openerEdits = [...openerSlugSet].filter((slug) => {
+      const bookLines = bookProse.get(slug);
+      if (!bookLines) return false;
+      const script = SCRIPTS.find((s) => s.slug === slug);
+      if (!script) return false;
+      const speechTexts = script.segments
+        .filter((s): s is Extract<Segment, { type: "speech" }> => s.type === "speech")
+        .map((s) => s.text);
+      return bookLines.some((line, i) => line !== speechTexts[i]);
+    });
+    const openerMatches = [...openerSlugSet].filter((slug) => !openerEdits.includes(slug) && bookProse.has(slug));
+    if (openerEdits.length > 0) {
+      console.log(`    Of which openers (will RE-TTS):                  ${openerEdits.length} — ${openerEdits.join(", ")}`);
+    }
+    if (openerMatches.length > 0) {
+      console.log(`  Openers matching source (loudnorm pass, no re-TTS): ${openerMatches.length}`);
+    }
+    if (mismatchCount > 0) {
+      console.error(`  Count mismatches (must fix before rendering):       ${mismatchCount}`);
+    } else {
+      console.log(`  Count mismatches:                                   0`);
+    }
+    if (noBookSpoken.length > 0) {
+      console.error(`  Spoken clips with NO book entry (gap — add to books): ${noBookSpoken.length} — ${noBookSpoken.join(", ")}`);
+    } else {
+      console.log(`  Spoken clips with no book entry:                    0  (all spoken clips are in books)`);
+    }
+    if (noBookWordless.length > 0) {
+      console.log(`  Wordless audio targets — no script, intentionally not in books: ${noBookWordless.length} — ${noBookWordless.join(", ")}`);
+    }
+    if (mismatchCount > 0) {
+      console.error("\n[check] FAIL: fix count mismatches before rendering.");
+      process.exit(1);
+    }
+    if (noBookSpoken.length > 0) {
+      console.error("\n[check] FAIL: spoken clips with no book entry — run npm run scripts:export -- --force to seed them.");
+      process.exit(1);
+    }
+    console.log("\n[check] OK — exiting before TTS/ffmpeg.");
+    return;
+  }
+
   // Clip-playlist generation path.
   if (flags.mode === "clips") {
-    await generateClips(flags);
+    await generateClips(flags, bookProse);
     return;
   }
 
@@ -974,7 +1266,7 @@ async function main(): Promise<void> {
   clearSilenceCache();
   for (const s of scripts) {
     try {
-      await generateOne(s, flags);
+      await generateOne(s, flags, bookProse);
     } catch (err) {
       console.error(`\nFailed on ${s.slug}: ${(err as Error).message}`);
       process.exit(1);

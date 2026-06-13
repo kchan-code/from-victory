@@ -2,11 +2,17 @@
 // Export all pregame + pre-practice AudioScript spoken text to human-readable
 // Markdown "script books" under docs/scripts/.
 //
-// Run: npm run scripts:export   (from apps/web/)
+// Run: npm run scripts:export            (safe default — seeds new books only,
+//                                         NEVER overwrites existing .md files)
+//      npm run scripts:export -- --force  (regenerates ALL books from TS source)
 //
-// Each .md file is one "sport bucket" (plus shared + pre-practice). KC edits
-// the numbered prose lines; then runs `npm run scripts:apply` to push edits
-// back into the TypeScript source.
+// Safe default: if a book file already exists, it is left untouched. Only new
+// book files (new sport, first run) are written. This prevents overwriting
+// KC's edited .md prose — the .md files are the SOURCE OF TRUTH.
+//
+// --force: regenerates all books from the current TS source. Use this when
+// adding a new clip slug, changing a segment structure, or seeding a new sport.
+// After --force, check the git diff to confirm only intended lines changed.
 //
 // Files written:
 //   docs/scripts/hockey.md
@@ -21,11 +27,94 @@
 //   docs/scripts/README.md
 
 import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { CLIP_SCRIPTS } from "../components/pregame/audio/clips.ts";
 import type { AudioScript, Segment } from "../components/pregame/audio/types";
+import { BREATH_THRESHOLD_SCRIPT } from "../components/pregame/audio/breath-threshold.ts";
+import { OPENER_CONFIDENCE_SCRIPT } from "../components/pregame/audio/opener-confidence.ts";
+import { OPENER_CALM_SCRIPT } from "../components/pregame/audio/opener-calm.ts";
+import { OPENER_COMPETE_LEVEL_SCRIPT } from "../components/pregame/audio/opener-compete-level.ts";
+import { OPENER_RESET_SCRIPT } from "../components/pregame/audio/opener-reset.ts";
+import { OPENER_COURAGE_SCRIPT } from "../components/pregame/audio/opener-courage.ts";
+import { OPENER_DECISIONS_SCRIPT } from "../components/pregame/audio/opener-decisions.ts";
+import { OPENER_LEADERSHIP_SCRIPT } from "../components/pregame/audio/opener-leadership.ts";
+import { OPENER_JOY_SCRIPT } from "../components/pregame/audio/opener-joy.ts";
+import { OPENER_HOPE_SCRIPT } from "../components/pregame/audio/opener-hope.ts";
+import { OPENER_BB_COURAGE_SCRIPT } from "../components/pregame/audio/opener-bb-courage.ts";
+import { OPENER_BB_DECISIONS_SCRIPT } from "../components/pregame/audio/opener-bb-decisions.ts";
+import { OPENER_BB_CONFIDENCE_SCRIPT } from "../components/pregame/audio/opener-bb-confidence.ts";
+import { OPENER_BB_COMPETE_LEVEL_SCRIPT } from "../components/pregame/audio/opener-bb-compete-level.ts";
+import { OPENER_BB_RESET_SCRIPT } from "../components/pregame/audio/opener-bb-reset.ts";
+import { OPENER_BB_LEADERSHIP_SCRIPT } from "../components/pregame/audio/opener-bb-leadership.ts";
+import { OPENER_BB_JOY_SCRIPT } from "../components/pregame/audio/opener-bb-joy.ts";
+import { OPENER_BB_HOPE_SCRIPT } from "../components/pregame/audio/opener-bb-hope.ts";
+import { OPENER_BE_VOCAL_SCRIPT } from "../components/pregame/audio/opener-be-vocal.ts";
+import { OPENER_BB_BE_VOCAL_SCRIPT } from "../components/pregame/audio/opener-bb-be-vocal.ts";
+import { SESSION_FORWARD_MISSED_CHANCE_SCRIPT } from "../components/pregame/audio/session-forward-missed-chance.ts";
+import { SESSION_FORWARD_TURNOVER_SCRIPT } from "../components/pregame/audio/session-forward-turnover.ts";
+import { SESSION_FORWARD_BEATEN_WIDE_SCRIPT } from "../components/pregame/audio/session-forward-beaten-wide.ts";
+import { SESSION_FORWARD_BAD_PENALTY_SCRIPT } from "../components/pregame/audio/session-forward-bad-penalty.ts";
+import { SESSION_FORWARD_COACH_YELLS_SCRIPT } from "../components/pregame/audio/session-forward-coach-yells.ts";
+import { SESSION_FORWARD_BENCHED_SCRIPT } from "../components/pregame/audio/session-forward-benched.ts";
+import { SESSION_FORWARD_NERVOUS_SCRIPT } from "../components/pregame/audio/session-forward-nervous.ts";
+import { SESSION_FORWARD_GET_HIT_SCRIPT } from "../components/pregame/audio/session-forward-get-hit.ts";
+import { SESSION_FORWARD_START_SLOW_SCRIPT } from "../components/pregame/audio/session-forward-start-slow.ts";
+import { SESSION_FORWARD_FIRST_GOAL_AGAINST_SCRIPT } from "../components/pregame/audio/session-forward-first-goal-against.ts";
+import { SESSION_DEFENSE_BEATEN_WIDE_SCRIPT } from "../components/pregame/audio/session-defense-beaten-wide.ts";
+import { SESSION_DEFENSE_TURNOVER_SCRIPT } from "../components/pregame/audio/session-defense-turnover.ts";
+import { SESSION_DEFENSE_MISSED_CHANCE_SCRIPT } from "../components/pregame/audio/session-defense-missed-chance.ts";
+import { SESSION_DEFENSE_BAD_PENALTY_SCRIPT } from "../components/pregame/audio/session-defense-bad-penalty.ts";
+import { SESSION_DEFENSE_COACH_YELLS_SCRIPT } from "../components/pregame/audio/session-defense-coach-yells.ts";
+import { SESSION_DEFENSE_BENCHED_SCRIPT } from "../components/pregame/audio/session-defense-benched.ts";
+import { SESSION_DEFENSE_NERVOUS_SCRIPT } from "../components/pregame/audio/session-defense-nervous.ts";
+import { SESSION_DEFENSE_GET_HIT_SCRIPT } from "../components/pregame/audio/session-defense-get-hit.ts";
+import { SESSION_DEFENSE_START_SLOW_SCRIPT } from "../components/pregame/audio/session-defense-start-slow.ts";
+import { SESSION_DEFENSE_FIRST_GOAL_AGAINST_SCRIPT } from "../components/pregame/audio/session-defense-first-goal-against.ts";
+import { SESSION_GOALIE_COACH_YELLS_SCRIPT } from "../components/pregame/audio/session-goalie-coach-yells.ts";
+import { SESSION_GOALIE_TURNOVER_SCRIPT } from "../components/pregame/audio/session-goalie-turnover.ts";
+import { SESSION_GOALIE_MISSED_CHANCE_SCRIPT } from "../components/pregame/audio/session-goalie-missed-chance.ts";
+import { SESSION_GOALIE_BEATEN_WIDE_SCRIPT } from "../components/pregame/audio/session-goalie-beaten-wide.ts";
+import { SESSION_GOALIE_BAD_PENALTY_SCRIPT } from "../components/pregame/audio/session-goalie-bad-penalty.ts";
+import { SESSION_GOALIE_PULLED_SCRIPT } from "../components/pregame/audio/session-goalie-pulled.ts";
+import { SESSION_GOALIE_NERVOUS_SCRIPT } from "../components/pregame/audio/session-goalie-nervous.ts";
+import { SESSION_GOALIE_GET_HIT_SCRIPT } from "../components/pregame/audio/session-goalie-get-hit.ts";
+import { SESSION_GOALIE_START_SLOW_SCRIPT } from "../components/pregame/audio/session-goalie-start-slow.ts";
+import { SESSION_GOALIE_FIRST_GOAL_AGAINST_SCRIPT } from "../components/pregame/audio/session-goalie-first-goal-against.ts";
+
+// All AudioScript objects outside CLIP_SCRIPTS that have spoken words.
+// These are the SCRIPTS array from generate-pregame-audio.ts — openers,
+// breath-threshold, and legacy full-session cells.
+const HOCKEY_OPENERS: AudioScript[] = [
+  OPENER_CONFIDENCE_SCRIPT, OPENER_CALM_SCRIPT, OPENER_COMPETE_LEVEL_SCRIPT,
+  OPENER_RESET_SCRIPT, OPENER_COURAGE_SCRIPT, OPENER_DECISIONS_SCRIPT,
+  OPENER_LEADERSHIP_SCRIPT, OPENER_JOY_SCRIPT, OPENER_HOPE_SCRIPT,
+  OPENER_BE_VOCAL_SCRIPT,
+];
+const BB_OPENERS: AudioScript[] = [
+  OPENER_BB_COURAGE_SCRIPT, OPENER_BB_DECISIONS_SCRIPT, OPENER_BB_CONFIDENCE_SCRIPT,
+  OPENER_BB_COMPETE_LEVEL_SCRIPT, OPENER_BB_RESET_SCRIPT, OPENER_BB_LEADERSHIP_SCRIPT,
+  OPENER_BB_JOY_SCRIPT, OPENER_BB_HOPE_SCRIPT, OPENER_BB_BE_VOCAL_SCRIPT,
+];
+const SESSION_SCRIPTS: AudioScript[] = [
+  SESSION_FORWARD_MISSED_CHANCE_SCRIPT, SESSION_FORWARD_TURNOVER_SCRIPT,
+  SESSION_FORWARD_BEATEN_WIDE_SCRIPT, SESSION_FORWARD_BAD_PENALTY_SCRIPT,
+  SESSION_FORWARD_COACH_YELLS_SCRIPT, SESSION_FORWARD_BENCHED_SCRIPT,
+  SESSION_FORWARD_NERVOUS_SCRIPT, SESSION_FORWARD_GET_HIT_SCRIPT,
+  SESSION_FORWARD_START_SLOW_SCRIPT, SESSION_FORWARD_FIRST_GOAL_AGAINST_SCRIPT,
+  SESSION_DEFENSE_BEATEN_WIDE_SCRIPT, SESSION_DEFENSE_TURNOVER_SCRIPT,
+  SESSION_DEFENSE_MISSED_CHANCE_SCRIPT, SESSION_DEFENSE_BAD_PENALTY_SCRIPT,
+  SESSION_DEFENSE_COACH_YELLS_SCRIPT, SESSION_DEFENSE_BENCHED_SCRIPT,
+  SESSION_DEFENSE_NERVOUS_SCRIPT, SESSION_DEFENSE_GET_HIT_SCRIPT,
+  SESSION_DEFENSE_START_SLOW_SCRIPT, SESSION_DEFENSE_FIRST_GOAL_AGAINST_SCRIPT,
+  SESSION_GOALIE_COACH_YELLS_SCRIPT, SESSION_GOALIE_TURNOVER_SCRIPT,
+  SESSION_GOALIE_MISSED_CHANCE_SCRIPT, SESSION_GOALIE_BEATEN_WIDE_SCRIPT,
+  SESSION_GOALIE_BAD_PENALTY_SCRIPT, SESSION_GOALIE_PULLED_SCRIPT,
+  SESSION_GOALIE_NERVOUS_SCRIPT, SESSION_GOALIE_GET_HIT_SCRIPT,
+  SESSION_GOALIE_START_SLOW_SCRIPT, SESSION_GOALIE_FIRST_GOAL_AGAINST_SCRIPT,
+];
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -36,6 +125,10 @@ const REPO_ROOT = join(WEB_ROOT, "..", "..");
 const DOCS_SCRIPTS_DIR = join(REPO_ROOT, "docs", "scripts");
 const SPORT_REGISTRY_PATH = join(WEB_ROOT, "components/pregame/sport-registry.ts");
 const PREGAME_TYPES_PATH = join(WEB_ROOT, "components/pregame/types.ts");
+
+// Safe default: do NOT overwrite existing books.
+// --force regenerates all books from current TS source.
+const FORCE = process.argv.includes("--force");
 
 // ── Parse audioScript fallback bodies from sport-registry.ts as text ─────────
 // We avoid importing sport-registry.ts (it has extensionless value imports that
@@ -407,21 +500,28 @@ ${dormantNote}
 
 ## HOW TO EDIT
 
+**This file IS the script.** Edit the numbered prose lines — those words are exactly what gets spoken.
+
 1. Edit **only** the numbered prose lines (e.g. \`1. Your sentence here.\`).
 2. Do NOT change \`### titles\`, \`<!-- slug ... -->\` comments, \`_(pause)_\` markers, or line numbers.
 3. One numbered line = one complete sentence (no line breaks within a numbered item).
 4. For text-mode fallback lines, same rules apply to the numbered body lines.
-5. When done editing, run from \`apps/web/\`:
-   \`\`\`
-   npm run scripts:apply            # dry-run — shows what will change
-   npm run scripts:apply -- --write # write the changes into the TS source
-   \`\`\`
-6. For LIVE sports (hockey, basketball, golf) also run:
-   \`\`\`
-   npm run audio:generate -- --mode clips
-   \`\`\`
-   Then bump \`MANIFEST_VERSION\` per the FV-142 rule (the generator prints the new value).
-7. DORMANT sports (football, swimming, track-field): just apply and wait for the audio render pass.
+5. That's it for editing. The generator reads your prose directly from this file at render time — no separate apply step. Works for EVERY clip type (inline, visualization/viz-*, and shared-* clips).
+6. When you're ready to render audio, run from \`apps/web/\`:
+   - **LIVE sports** (hockey, basketball, golf, baseball):
+     \`\`\`
+     npm run audio:generate -- --mode clips
+     \`\`\`
+     Then bump \`MANIFEST_VERSION\` per the FV-142 rule (the generator prints the new value).
+   - **DORMANT sports** (football, swimming, track-field): edit freely. The first
+     audio render is the go-live pass.
+   - To preview which clips will render with your edits (no TTS budget spent):
+     \`\`\`
+     npm run audio:check
+     \`\`\`
+
+> Note: daily-training sessions (Supabase seed SQL) and postgame modules
+> (\`lib/postgame/modules.ts\`) are NOT in these books — edit those directly.
 
 ---
 
@@ -468,6 +568,14 @@ async function main() {
     }
   }
 
+  // Also bucket the SCRIPTS-array items: openers, breath-threshold, session-*.
+  // These are spoken clips outside CLIP_SCRIPTS that KC needs to read + edit.
+  // breath-threshold → shared; openers → hockey/basketball; session-* → hockey.
+  buckets.get("shared")!.unshift(BREATH_THRESHOLD_SCRIPT);
+  for (const s of HOCKEY_OPENERS) buckets.get("hockey")!.unshift(s);
+  for (const s of BB_OPENERS) buckets.get("basketball")!.unshift(s);
+  for (const s of SESSION_SCRIPTS) buckets.get("hockey")!.push(s);
+
   const totalClips = CLIP_SCRIPTS.length;
   let totalLines = 0;
 
@@ -477,7 +585,25 @@ async function main() {
     dormant: boolean,
     sections: Array<{ header: string; scripts: AudioScript[] }>,
     fallbackSportLabel?: string,
-  ): Promise<{ clipCount: number; lineCount: number }> {
+  ): Promise<{ clipCount: number; lineCount: number; skipped: boolean }> {
+    const destPath = join(DOCS_SCRIPTS_DIR, filename);
+
+    // Safe default: if the book already exists and --force is not set, skip it.
+    // This preserves KC's edited prose — the .md is the source of truth.
+    if (!FORCE && existsSync(destPath)) {
+      // We still need to count clips/lines for the summary, even though we skip.
+      let clipCount = 0;
+      let lineCount = 0;
+      for (const { scripts } of sections) {
+        for (const s of scripts) {
+          clipCount++;
+          lineCount += s.segments.filter((seg) => seg.type === "speech").length;
+        }
+      }
+      console.log(`  SKIP (exists): ${filename}`);
+      return { clipCount, lineCount, skipped: true };
+    }
+
     const parts: string[] = [fileHeader(label, dormant)];
 
     if (fallbackSportLabel) {
@@ -504,8 +630,9 @@ async function main() {
     }
 
     const content = parts.join("");
-    await writeFile(join(DOCS_SCRIPTS_DIR, filename), content, "utf8");
-    return { clipCount, lineCount };
+    await writeFile(destPath, content, "utf8");
+    console.log(`  WROTE: ${filename}`);
+    return { clipCount, lineCount, skipped: false };
   }
 
   // ── Hockey ──────────────────────────────────────────────────────────────────
@@ -513,7 +640,7 @@ async function main() {
   const hkStats = await writeBook(
     "hockey.md", "Hockey", false,
     [
-      { header: "Openers (need-specific)", scripts: hockeyScripts.filter((s) => s.slug.startsWith("opener-") && !s.slug.startsWith("opener-bb-")) },
+      { header: "Need Openers (hockey)", scripts: hockeyScripts.filter((s) => s.slug.startsWith("opener-") && !s.slug.startsWith("opener-bb-")) },
       { header: "VIZ Clips — Flagship (position)", scripts: hockeyScripts.filter((s) => ["viz-forward", "viz-defense", "viz-goalie"].includes(s.slug)) },
       { header: "VIZ Clips — Positive Plays", scripts: hockeyScripts.filter((s) => s.slug.startsWith("viz-forward-") || s.slug.startsWith("viz-defense-") || s.slug.startsWith("viz-goalie-")) },
       { header: "Hard Moment Clips — Forward", scripts: hockeyScripts.filter((s) => s.slug.startsWith("hm-forward-")) },
@@ -529,7 +656,7 @@ async function main() {
   const bbStats = await writeBook(
     "basketball.md", "Basketball", false,
     [
-      { header: "Openers (need-specific)", scripts: bbScripts.filter((s) => s.slug.startsWith("opener-bb-")) },
+      { header: "Need Openers (basketball)", scripts: bbScripts.filter((s) => s.slug.startsWith("opener-bb-")) },
       { header: "VIZ Clips — Flagship (position)", scripts: bbScripts.filter((s) => ["viz-guard", "viz-wing", "viz-big"].includes(s.slug)) },
       { header: "VIZ Clips — Positive Plays", scripts: bbScripts.filter((s) => s.slug.startsWith("viz-guard-") || s.slug.startsWith("viz-wing-") || s.slug.startsWith("viz-big-")) },
       { header: "Hard Moment Clips — Guard", scripts: bbScripts.filter((s) => s.slug.startsWith("hm-bb-guard-")) },
@@ -617,54 +744,89 @@ async function main() {
   const sharedStats = await writeBook(
     "shared.md", "Shared (cross-sport)", false,
     [
-      { header: "Shared Structural Clips", scripts: sharedScripts },
+      { header: "Breath Threshold", scripts: sharedScripts.filter((s) => s.slug === "breath-threshold") },
+      { header: "Shared Structural Clips", scripts: sharedScripts.filter((s) => s.slug !== "breath-threshold") },
     ],
   );
 
   // ── README ──────────────────────────────────────────────────────────────────
   const readmeContent = `# From Victory · Script Books
 
-Human-readable Markdown views of every pregame and pre-practice audio narration script.
-Generated by \`npm run scripts:export\`. Updated by editing and running \`npm run scripts:apply\`.
+These Markdown files ARE the audio scripts. KC edits them; audio generation reads
+them automatically. No separate "apply" command needed in the normal editing workflow.
 
 ## Files
 
 | File | Sport / Category | Status |
 |---|---|---|
-| [hockey.md](./hockey.md) | Hockey openers, VIZ plays, hard-moment clips | LIVE |
-| [basketball.md](./basketball.md) | Basketball openers, VIZ plays, hard-moment clips | LIVE |
+| [hockey.md](./hockey.md) | Hockey need-openers (editable), VIZ plays, hard-moment clips, legacy full-session cells | LIVE |
+| [basketball.md](./basketball.md) | Basketball need-openers (editable), VIZ plays, hard-moment clips | LIVE |
 | [baseball.md](./baseball.md) | Baseball VIZ + hard-moment clips | LIVE (audio = FV-95) |
 | [golf.md](./golf.md) | Golf VIZ + hard-moment clips | LIVE |
 | [football.md](./football.md) | Football VIZ + hard-moment clips | DORMANT (no audio yet) |
 | [swimming.md](./swimming.md) | Swimming VIZ + hard-moment clips | DORMANT (no audio yet) |
 | [track-field.md](./track-field.md) | Track & Field VIZ + hard-moment clips | DORMANT (no audio yet) |
 | [pre-practice.md](./pre-practice.md) | All pre-practice "Lock In" clips | LIVE (hockey/bb/golf) |
-| [shared.md](./shared.md) | Shared structural + anchor/self-talk/cue-word clips | LIVE |
+| [shared.md](./shared.md) | Breath threshold + shared structural + anchor/self-talk/cue-word clips | LIVE |
 
-## Workflow
+## Workflow (KC's editing flow)
 
 \`\`\`
-# 1. Read the script books
-open docs/scripts/hockey.md   # or any other sport
+# 1. Open the script book for the sport you want to edit
+open docs/scripts/hockey.md   # or basketball.md, golf.md, etc.
 
-# 2. Edit numbered prose lines only
+# 2. Edit the numbered prose lines — that's it.
 #    DO NOT change ### titles, <!-- slug ... --> comments,
 #    _(pause)_ markers, or line numbers.
+#    The words you write are the words that get spoken.
+#    This works for EVERY clip type — including viz-* and shared-* clips.
 
-# 3. Preview the diff (dry-run, no files changed)
+# 3. Render audio (reads your .md edits directly at render time — no separate apply step)
 cd apps/web
+
+#    For LIVE sports (hockey, basketball, golf, baseball):
+npm run audio:generate -- --mode clips
+#    Then bump MANIFEST_VERSION per the FV-142 rule (the generator prints the new value).
+
+#    For DORMANT sports (football, swimming, track-field):
+#    Edit freely. The first audio render is the go-live pass.
+\`\`\`
+
+## Maintenance commands (engineers / content leads)
+
+\`\`\`
+# Check which clips will render with .md prose (reports diffs, no TTS/ffmpeg)
+cd apps/web
+npm run audio:check
+
+# Validate fallback bodies without spending TTS budget (text-mode fallback sync only)
+npm run audio:generate -- --sync-only
+
+# Sync text-mode fallback bodies from .md to TS (dry-run preview)
 npm run scripts:apply
 
-# 4. Write the changes into the TS source
+# Sync text-mode fallback bodies from .md to TS (write)
 npm run scripts:apply -- --write
 
-# 5. For LIVE sports — regenerate audio
-npm run audio:generate -- --mode clips
-# (Then bump MANIFEST_VERSION per the FV-142 rule — the generator prints the new value)
+# Seed new book files (only writes files that do NOT already exist)
+npm run scripts:export
 
-# 6. For DORMANT sports (football/swimming/track-field)
-#    Just apply; the first render is the go-live audio pass.
+# Regenerate ALL books from TS source (engineers only — overwrites existing prose)
+npm run scripts:export -- --force
 \`\`\`
+
+## Editing openers
+
+The need-openers (identity scripture monologues that precede the session) are in
+\`hockey.md\` ("Need Openers" section) and \`basketball.md\` ("Need Openers" section).
+Edit them exactly like any other numbered prose line. The generator will detect
+the change and re-TTS that opener; openers whose book prose matches the TS source
+are passed through with a loudnorm normalization pass only (no re-TTS, no churn).
+
+The breath-threshold script is in \`shared.md\` under "Breath Threshold".
+
+Wordless audio (music beds, wordless breath tones) is intentionally NOT in these
+books — it has no spoken words to edit.
 
 ## Out of scope for these script books
 
@@ -693,9 +855,11 @@ Total CLIP_SCRIPTS registered: ${totalClips}
     { label: "shared", ...sharedStats },
   ];
 
-  console.log("\nScript books written to docs/scripts/:\n");
+  const mode = FORCE ? "(--force: all books regenerated)" : "(safe default: existing books preserved)";
+  console.log(`\nScript books in docs/scripts/ ${mode}:\n`);
   for (const s of allStats) {
-    console.log(`  ${s.label.padEnd(16)} ${String(s.clipCount).padStart(4)} clips  ${String(s.lineCount).padStart(5)} speech lines`);
+    const status = s.skipped ? "SKIP" : "WROTE";
+    console.log(`  [${status}] ${s.label.padEnd(16)} ${String(s.clipCount).padStart(4)} clips  ${String(s.lineCount).padStart(5)} speech lines`);
     totalLines += s.lineCount;
   }
   console.log(`\n  ${"TOTAL".padEnd(16)} ${String(totalClips).padStart(4)} clips  ${String(totalLines).padStart(5)} speech lines`);
