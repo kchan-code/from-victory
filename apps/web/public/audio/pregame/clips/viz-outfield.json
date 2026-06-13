@@ -1,0 +1,14 @@
+{
+  "slug": "viz-outfield",
+  "durationSec": 119.764,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 40.906
+    }
+  ]
+}

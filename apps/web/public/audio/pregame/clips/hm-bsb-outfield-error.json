@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-outfield-error",
+  "durationSec": 60.576,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

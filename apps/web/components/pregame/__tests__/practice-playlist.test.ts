@@ -21,6 +21,7 @@ import { describe, it, expect } from "vitest";
 
 import {
   resolvePracticePlaylist,
+  DIALED_IN_OPENER_VARIATIONS,
   type ClipManifest,
 } from "../audio-playlist";
 
@@ -751,5 +752,73 @@ describe("resolvePracticePlaylist — prayerStyle (Issue 2)", () => {
     delete manifest.clips["pp-prayer-selfguided"];
     const result = resolvePracticePlaylist(manifest, "dialed-in", FOCUS_OPTION, HOCKEY_CONFIG, "self-guided");
     expect(result).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 10. Dialed-in opener variation rotation (FV-266)
+// ---------------------------------------------------------------------------
+//
+// "dialed-in" rotates its opener across DIALED_IN_OPENER_VARIATIONS. The
+// resolver takes the variation index as its 6th param (default 0 — the
+// original pp-opener-dialed-in, so all prior call sites are unchanged). The
+// caller (useClipPlayer) supplies a per-session random index. "not-feeling-it"
+// ignores the index entirely (sport-specific single opener).
+
+/** Augment a manifest with the 2 extra dialed-in opener variation clips. */
+function withOpenerVariations(manifest: ClipManifest): ClipManifest {
+  manifest.clips["pp-opener-dialed-in-2"] = catalogEntry(
+    "/audio/pregame/clips/pp-opener-dialed-in-2.mp3",
+    72,
+  );
+  manifest.clips["pp-opener-dialed-in-3"] = catalogEntry(
+    "/audio/pregame/clips/pp-opener-dialed-in-3.mp3",
+    80,
+  );
+  return manifest;
+}
+
+describe("resolvePracticePlaylist — dialed-in opener rotation (FV-266)", () => {
+  it("DIALED_IN_OPENER_VARIATIONS lists exactly 3, original first (backward compat)", () => {
+    expect(DIALED_IN_OPENER_VARIATIONS).toEqual([
+      "pp-opener-dialed-in",
+      "pp-opener-dialed-in-2",
+      "pp-opener-dialed-in-3",
+    ]);
+  });
+
+  it("default (no index) → variation 0 = pp-opener-dialed-in (unchanged behaviour)", () => {
+    const result = resolvePracticePlaylist(buildP6HockeyManifest(), "dialed-in", FOCUS_OPTION, HOCKEY_CONFIG);
+    expect(result![0]!.slug).toBe("pp-opener-dialed-in");
+  });
+
+  it("index 1 → pp-opener-dialed-in-2; index 2 → pp-opener-dialed-in-3", () => {
+    const r1 = resolvePracticePlaylist(withOpenerVariations(buildP6HockeyManifest()), "dialed-in", FOCUS_OPTION, HOCKEY_CONFIG, "guided", 1);
+    expect(r1![0]!.slug).toBe("pp-opener-dialed-in-2");
+    const r2 = resolvePracticePlaylist(withOpenerVariations(buildP6HockeyManifest()), "dialed-in", FOCUS_OPTION, HOCKEY_CONFIG, "guided", 2);
+    expect(r2![0]!.slug).toBe("pp-opener-dialed-in-3");
+  });
+
+  it("index wraps modulo the variation count (3 → 0, 4 → 1)", () => {
+    const r3 = resolvePracticePlaylist(withOpenerVariations(buildP6HockeyManifest()), "dialed-in", FOCUS_OPTION, HOCKEY_CONFIG, "guided", 3);
+    expect(r3![0]!.slug).toBe("pp-opener-dialed-in");
+    const r4 = resolvePracticePlaylist(withOpenerVariations(buildP6HockeyManifest()), "dialed-in", FOCUS_OPTION, HOCKEY_CONFIG, "guided", 4);
+    expect(r4![0]!.slug).toBe("pp-opener-dialed-in-2");
+  });
+
+  it("negative index wraps safely (no crash, no undefined slug)", () => {
+    const rNeg = resolvePracticePlaylist(withOpenerVariations(buildP6HockeyManifest()), "dialed-in", FOCUS_OPTION, HOCKEY_CONFIG, "guided", -1);
+    expect(rNeg).not.toBeNull();
+    expect(rNeg![0]!.slug).toBe("pp-opener-dialed-in-3"); // -1 wraps to last
+  });
+
+  it("not-feeling-it ignores the variation index (always pp-opener-get-to)", () => {
+    const result = resolvePracticePlaylist(withOpenerVariations(buildP6HockeyManifest()), "not-feeling-it", FOCUS_OPTION, HOCKEY_CONFIG, "guided", 2);
+    expect(result![0]!.slug).toBe("pp-opener-get-to");
+  });
+
+  it("variation applies to basketball too (sport-neutral opener)", () => {
+    const result = resolvePracticePlaylist(withOpenerVariations(buildP6FullManifest()), "dialed-in", BB_FOCUS_OPTION, BASKETBALL_CONFIG, "guided", 1);
+    expect(result![0]!.slug).toBe("pp-opener-dialed-in-2");
   });
 });

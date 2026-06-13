@@ -527,6 +527,42 @@ const PHASE2_TEMPLATES: Array<{
   { position: "Big", adversity: "I miss two free throws.",      vizSlug: "viz-big-roll-and-finish", hmSlug: "hm-bb-big-missed-fts" },
   { position: "Big", adversity: "I start slow.",                vizSlug: "viz-big-roll-and-finish", hmSlug: "hm-bb-big-start-slow" },
   { position: "Big", adversity: "We fall behind early.",        vizSlug: "viz-big-roll-and-finish", hmSlug: "hm-bb-big-fall-behind-early" },
+  // Golf — compositional-only (no baked composite): viz-{profile} + hm-glf-{profile}-{frag} (FV-266).
+  // All 30 cells rendered for grid parity; the 3 first-tee cells are withheld
+  // from the athlete picker via GOLF_CONFIG.roleAdversities (clinical gate).
+  // Bomber × 10
+  { position: "Bomber", adversity: "I three-putt.",                   vizSlug: "viz-bomber", hmSlug: "hm-glf-bomber-three-putt" },
+  { position: "Bomber", adversity: "I have a blow-up hole.",          vizSlug: "viz-bomber", hmSlug: "hm-glf-bomber-blow-up" },
+  { position: "Bomber", adversity: "I hit it OB.",                    vizSlug: "viz-bomber", hmSlug: "hm-glf-bomber-ob" },
+  { position: "Bomber", adversity: "I duff a short-game shot.",       vizSlug: "viz-bomber", hmSlug: "hm-glf-bomber-duff-chip" },
+  { position: "Bomber", adversity: "I miss a short putt.",            vizSlug: "viz-bomber", hmSlug: "hm-glf-bomber-short-putt" },
+  { position: "Bomber", adversity: "My swing leaves me on the first tee.", vizSlug: "viz-bomber", hmSlug: "hm-glf-bomber-first-tee" },
+  { position: "Bomber", adversity: "I get outplayed in my group.",    vizSlug: "viz-bomber", hmSlug: "hm-glf-bomber-outplayed" },
+  { position: "Bomber", adversity: "I feel nervous.",                 vizSlug: "viz-bomber", hmSlug: "hm-glf-bomber-nervous" },
+  { position: "Bomber", adversity: "I start slow.",                   vizSlug: "viz-bomber", hmSlug: "hm-glf-bomber-start-slow" },
+  { position: "Bomber", adversity: "I fall behind the number.",       vizSlug: "viz-bomber", hmSlug: "hm-glf-bomber-fall-behind" },
+  // Ball-Striker × 10
+  { position: "Ball-Striker", adversity: "I three-putt.",             vizSlug: "viz-ballstriker", hmSlug: "hm-glf-ballstriker-three-putt" },
+  { position: "Ball-Striker", adversity: "I have a blow-up hole.",    vizSlug: "viz-ballstriker", hmSlug: "hm-glf-ballstriker-blow-up" },
+  { position: "Ball-Striker", adversity: "I hit it OB.",              vizSlug: "viz-ballstriker", hmSlug: "hm-glf-ballstriker-ob" },
+  { position: "Ball-Striker", adversity: "I duff a short-game shot.", vizSlug: "viz-ballstriker", hmSlug: "hm-glf-ballstriker-duff-chip" },
+  { position: "Ball-Striker", adversity: "I miss a short putt.",      vizSlug: "viz-ballstriker", hmSlug: "hm-glf-ballstriker-short-putt" },
+  { position: "Ball-Striker", adversity: "My swing leaves me on the first tee.", vizSlug: "viz-ballstriker", hmSlug: "hm-glf-ballstriker-first-tee" },
+  { position: "Ball-Striker", adversity: "I get outplayed in my group.", vizSlug: "viz-ballstriker", hmSlug: "hm-glf-ballstriker-outplayed" },
+  { position: "Ball-Striker", adversity: "I feel nervous.",           vizSlug: "viz-ballstriker", hmSlug: "hm-glf-ballstriker-nervous" },
+  { position: "Ball-Striker", adversity: "I start slow.",             vizSlug: "viz-ballstriker", hmSlug: "hm-glf-ballstriker-start-slow" },
+  { position: "Ball-Striker", adversity: "I fall behind the number.", vizSlug: "viz-ballstriker", hmSlug: "hm-glf-ballstriker-fall-behind" },
+  // Scrambler × 10
+  { position: "Scrambler", adversity: "I three-putt.",                vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-three-putt" },
+  { position: "Scrambler", adversity: "I have a blow-up hole.",       vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-blow-up" },
+  { position: "Scrambler", adversity: "I hit it OB.",                 vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-ob" },
+  { position: "Scrambler", adversity: "I duff a short-game shot.",    vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-duff-chip" },
+  { position: "Scrambler", adversity: "I miss a short putt.",         vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-short-putt" },
+  { position: "Scrambler", adversity: "My swing leaves me on the first tee.", vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-first-tee" },
+  { position: "Scrambler", adversity: "I get outplayed in my group.", vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-outplayed" },
+  { position: "Scrambler", adversity: "I feel nervous.",              vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-nervous" },
+  { position: "Scrambler", adversity: "I start slow.",                vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-start-slow" },
+  { position: "Scrambler", adversity: "I fall behind the number.",    vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-fall-behind" },
 ];
 
 async function generateClips(flags: Flags): Promise<void> {
@@ -804,6 +840,18 @@ async function generateClips(flags: Flags): Promise<void> {
     "pp-bb-see-it-go",
   ];
 
+  // Golf Beats 2/3/5/6 — Beat 5 is pp-golf-full-routine (routine-discipline;
+  // golf is individual so baseball's team "be-vocal" doesn't transfer). FV-267.
+  const golfSharedTail = [
+    "pp-golf-name-standard",
+    "pp-golf-goal-fusion",
+    "pp-choose-focus-lead",
+    // focus clip injected by resolver between lead and tail
+    "pp-choose-focus-tail",
+    "pp-golf-full-routine",
+    "pp-golf-see-it-go",
+  ];
+
   const practiceStatePlaylist = {
     hockey: {
       "dialed-in": hockeySharedTail,
@@ -812,6 +860,10 @@ async function generateClips(flags: Flags): Promise<void> {
     basketball: {
       "dialed-in": basketballSharedTail,
       "not-feeling-it": basketballSharedTail,
+    },
+    golf: {
+      "dialed-in": golfSharedTail,
+      "not-feeling-it": golfSharedTail,
     },
   };
 

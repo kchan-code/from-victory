@@ -1,0 +1,14 @@
+{
+  "slug": "viz-scrambler",
+  "durationSec": 141.812,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 47.674
+    }
+  ]
+}

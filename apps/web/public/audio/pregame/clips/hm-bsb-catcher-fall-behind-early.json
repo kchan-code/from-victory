@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-catcher-fall-behind-early",
+  "durationSec": 70.944,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-infield-big-hit",
+  "durationSec": 68.544,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

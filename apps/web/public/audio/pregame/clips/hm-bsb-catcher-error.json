@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-catcher-error",
+  "durationSec": 58.992,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

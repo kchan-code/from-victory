@@ -1,0 +1,14 @@
+{
+  "slug": "viz-pitcher",
+  "durationSec": 142.948,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 40.522
+    }
+  ]
+}

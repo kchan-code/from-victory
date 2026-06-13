@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-infield-hbp",
+  "durationSec": 64.944,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

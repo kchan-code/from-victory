@@ -1,10 +1,10 @@
 {
   "slug": "pp-prayer-selfguided",
-  "durationSec": 68.72,
+  "durationSec": 51.328,
   "phases": [
     {
       "phase": "prayer",
-      "startSec": 21.832
+      "startSec": 14.384
     }
   ]
 }

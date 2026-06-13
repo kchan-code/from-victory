@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-catcher-lose-command",
+  "durationSec": 78.216,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}
