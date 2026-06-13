@@ -37,6 +37,14 @@ export interface PostgameModule {
   sport: Sport;
   scenario: PostgameScenario;
   title: string;
+  /**
+   * Optional per-module card eyebrow override. When absent the picker/detail
+   * pages fall back to the team-sport-default SCENARIO_EYEBROW map. Individual
+   * sports set this where the default leaks team-sport framing — e.g. golf's
+   * `benching` module is "Didn't Qualify", not "The Bench". Generalizes to any
+   * non-team sport (swimming/tennis) without a per-sport eyebrow map.
+   */
+  eyebrow?: string;
   scriptureRef: string;
   scriptureText: string;
   /** Verbatim markdown body from specialist-approved copy */
@@ -234,6 +242,124 @@ all the way down since long before tonight.
 
 Tomorrow you can ask him what he wants to see. Tonight, you're already
 seen.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module 3a — Golf · After the Loss
+// ---------------------------------------------------------------------------
+const GOLF_LOSS: PostgameModule = {
+  slug: "golf-the-loss",
+  sport: "golf",
+  scenario: "loss",
+  title: "After the Loss",
+  scriptureRef: "Psalm 34:18",
+  scriptureText:
+    "The Lord is close to the brokenhearted and saves those who are crushed in spirit.",
+  bodyMd: `### What happened
+
+You got beat. Maybe the match slipped on the back nine, maybe the playoff
+went the other way, maybe you signed for a number that wasn't enough. Now
+it's just you, the car, and a quiet you can't talk your way out of.
+
+Let it be what it is. A loss is allowed to hurt. Out here there's no bench
+to hide on and no line to share it with — it was your card, your round, and
+that's a lonely kind of sting. It mattered. That's why it aches.
+
+### What's true
+
+Here's what the round doesn't get to do: it doesn't get to tell you who you
+are. The card reports what happened on the course. It can't reach the part
+of you that's settled in Christ.
+
+The Psalms don't rush you past this. David wrote that God is *close* to the
+brokenhearted — not impressed by the ones who shrug it off, close to the
+ones who feel it. He's near you tonight, in the car, in the quiet.
+
+So feel it tonight. You're not asked to feel it forever.
+
+> The loss is real. It is not the verdict on you.
+
+Tomorrow the range is waiting and so is the next round. Tonight, you're
+already held.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module 3b — Golf · Left Off the Card (benching analog — didn't qualify)
+// ---------------------------------------------------------------------------
+const GOLF_BENCHING: PostgameModule = {
+  slug: "golf-left-off-the-card",
+  sport: "golf",
+  scenario: "benching",
+  title: "Left Off the Card",
+  eyebrow: "Didn't Qualify", // golf has no bench — overrides the default "The Bench"
+  scriptureRef: "Psalm 139:1-3",
+  scriptureText:
+    "You have searched me, Lord, and you know me. You know when I sit and when I rise; you perceive my thoughts from afar. You discern my going out and my lying down; you are familiar with all my ways.",
+  bodyMd: `### What happened
+
+Your number wasn't good enough. Qualifying came and went, the lineup got
+posted, and your name wasn't on it — beaten by a stroke or two, left home
+while the travel five tees off without you. Now you're in the car and the
+question won't quit: *am I even good enough for this?*
+
+That's a real question, and it's a hard seat. You're allowed to be
+frustrated. Doing the work and missing the cut by one is its own kind of
+loud.
+
+### What's true
+
+But hear the trap in it. The qualifying sheet can decide your spot this
+week. It cannot decide your worth. Those are two different things, and the
+night keeps trying to blur them.
+
+David wrote Psalm 139 about a God who already knows him completely —
+sitting, rising, every honest corner. Your number got read. *You* didn't.
+The One who matters most has known you all the way down since long before
+this week's scores.
+
+> A coach reads your card. He doesn't write who you are.
+
+Tomorrow you can ask what it takes to make it next time. Tonight, you're
+already known.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module 3c — Golf · The Blow-Up Round (bad-game analog)
+// ---------------------------------------------------------------------------
+const GOLF_BAD_GAME: PostgameModule = {
+  slug: "golf-the-blow-up-round",
+  sport: "golf",
+  scenario: "bad-game",
+  title: "The Blow-Up Round",
+  eyebrow: "The Bad Round", // golf plays rounds, not games — overrides "The Bad Game"
+  scriptureRef: "Lamentations 3:22-23",
+  scriptureText:
+    "Because of the Lord's great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness.",
+  bodyMd: `### What happened
+
+You couldn't find it today. The one bad hole that turned into a snowman, the
+swing that left somewhere on the front nine, the number that ran away from
+you and wouldn't stop. You replayed it walking up the last fairway, and
+you're replaying it now, and your head only keeps the worst holes.
+
+That loop is normal. A round like that earns a little ache. Don't fake
+being fine.
+
+### What's true
+
+But watch what the loop is doing. It's taking what *happened* and quietly
+turning it into who you *are*. *I'm a choker. I can't play.* That's the lie
+under the replay, and it's louder at night.
+
+Lamentations was written from real wreckage — a city in ruins, no spin on
+it. And right in the middle, the writer says God's mercies are *new every
+morning.* Not earned by a better round. New tomorrow because He is faithful,
+not because you were.
+
+> A blow-up round is information. It is not your identity.
+
+Hit the range tomorrow with clear eyes. Tonight, the morning's already
+coming.`,
 };
 
 // ---------------------------------------------------------------------------
@@ -445,6 +571,99 @@ weight handed over.
 Say the thank-you with empty hands — and mean it.`,
 };
 
+// ---------------------------------------------------------------------------
+// Module 3d — Golf · After the Win (same trio cycle; golf-expert texture —
+// scorecard / closed-out the match / best ever; individual-sport no-room
+// framing mirrors the loss module's loneliness layer)
+// ---------------------------------------------------------------------------
+const GOLF_WIN: PostgameModule = {
+  slug: "golf-after-the-win",
+  sport: "golf",
+  scenario: "win",
+  title: "After the Win",
+  scriptureRef: "James 1:17",
+  scriptureText:
+    "Every good and perfect gift is from above, coming down from the Father of the heavenly lights, who does not change like shifting shadows.",
+  bodyMd: `### What happened
+
+You won. Maybe you closed out the match, shot your best ever, or your
+number finally cleared the cut. The body's still buzzing.
+
+Good. Sit in it. Name what actually went right — the reps that built it,
+the up-and-down that saved the round, the practice nobody saw.
+
+### What's true
+
+The scorecard couldn't drop you after a blow-up round, and it can't crown
+you after this. That's the freedom.
+
+Every good gift comes down from a Father who doesn't change like shifting
+shadows. The round, the swing, this whole day — gift, not wages. God didn't
+reward your faith with a lower score; the good round and your standing with
+Him were never on the same scorecard. The Father you'd thank tonight is the
+same One who was close in the car after the last bad round. He didn't
+change. Only the number did.
+
+Enjoy it tonight, then let it rest — the round doesn't owe you a sequel.
+And win like someone who's blown up before, who knows the next card can go
+the other way.
+
+> The win is real. It is not the crown on you.
+
+Take the round — and let the thank-you travel past the scorecard.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module 3e — Golf · Praise Anyway (highest anti-prosperity risk; same Habakkuk
+// engine as hockey/basketball; golf-expert texture — four hours alone with your
+// card / clubs in the trunk / back nine / individual-sport loneliness)
+//
+// CLINICAL_SIGN_OFF_REQUIRED: this module (and its hockey/basketball mirrors)
+// reaches a minor at a night-time, post-loss low point. It must NOT roll out to
+// a broad athlete base before the pending clinical-advisor sign-off (CLAUDE.md
+// Open Items; tracked in FV-296). The content itself names the ache, permits it,
+// and never forces a bypass — but the clinical gate is a standing requirement,
+// not satisfied by this code. grep CLINICAL_SIGN_OFF_REQUIRED for all such modules.
+// ---------------------------------------------------------------------------
+const GOLF_PRAISE: PostgameModule = {
+  slug: "golf-praise-anyway",
+  sport: "golf",
+  scenario: "praise",
+  title: "Praise Anyway",
+  scriptureRef: "Habakkuk 3:17-18",
+  scriptureText:
+    "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
+  bodyMd: `### What happened
+
+The round didn't come. You're in the car, clubs in the trunk, the bad
+number still sitting behind your eyes — the round that got away from you
+on the back nine, or the cut you missed by one. Four hours alone with your
+own card, and it didn't go your way.
+
+And you might still feel bad tonight, and that's okay. Name the ache
+first. Don't talk yourself out of it.
+
+### What's true
+
+Habakkuk looked at empty fields and ruined vines and said *yet I will
+rejoice* — not because the harvest came, but because his God hadn't moved.
+
+> Praise on a hard night is real. It is not a trade for a better round.
+
+That's the whole thing. You're not praising to earn a lower score next
+time. You're praising because He's good — and those were never the same
+thing.
+
+Nothing on the card changes when you say it. The same God you'd thank
+after your best round is the same God in this quiet car. He didn't change.
+Only the number did.
+
+So lean on Him, not on yourself. The thank-you isn't gritted teeth — it's
+weight handed over.
+
+Say the thank-you with empty hands — and mean it.`,
+};
+
 export const POSTGAME_MODULES: PostgameModule[] = [
   HOCKEY_WIN,
   HOCKEY_LOSS,
@@ -456,6 +675,11 @@ export const POSTGAME_MODULES: PostgameModule[] = [
   BASKETBALL_BENCHING,
   BASKETBALL_BAD_GAME,
   BASKETBALL_PRAISE,
+  GOLF_WIN,
+  GOLF_LOSS,
+  GOLF_BENCHING,
+  GOLF_BAD_GAME,
+  GOLF_PRAISE,
 ];
 
 /**
