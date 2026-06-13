@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-catcher-foul-tip",
+  "durationSec": 60.696,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

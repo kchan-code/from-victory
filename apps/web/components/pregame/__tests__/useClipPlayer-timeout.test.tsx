@@ -35,6 +35,13 @@ vi.mock("@/components/pregame/audio-playlist", () => ({
   resolvePlaylist: () => [{ slug: "clip-a", url: "/audio/pregame/clip-a.mp3" }],
   resolvePracticePlaylist: () => null,
   buildAssembledTimeline: () => ({ totalDurationSec: 1, phases: [] }),
+  // FV-266: the hook lazy-inits a per-session dialed-in opener variation index
+  // from this array's length; the mock must provide it or `.length` throws.
+  DIALED_IN_OPENER_VARIATIONS: [
+    "pp-opener-dialed-in",
+    "pp-opener-dialed-in-2",
+    "pp-opener-dialed-in-3",
+  ],
 }));
 
 vi.mock("@/components/pregame/audio/encode-wav", () => ({

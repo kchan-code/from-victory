@@ -980,11 +980,14 @@ export const GOLF_CONFIG: SportConfig = {
     // cell that doesn't exist for a profile. "Ball-Striker" → "ballstriker"
     // (hyphen stripped) so the slug token matches the authored hm-glf-* clips.
     const roleStr = role ? role.toLowerCase().replace(/-/g, "") : "bomber";
-    // Returns the glf-* composite key (NOT hm-glf-*), mirroring baseball's bsb-*.
-    // FV-266 renders BOTH hm-glf-{profile}-{frag} (the hard-moment clip the
-    // manifest templates reference) AND the glf-{profile}-{frag} composite this
-    // slug targets (the legacy two-<audio> fallback path).
-    return `glf-${roleStr}-${frag}`;
+    // Golf is COMPOSITIONAL-ONLY — there is no baked glf-* composite session
+    // clip (unlike basketball's bb-*). The "cell" IS the hard-moment clip, so
+    // cellSlugFor returns hm-glf-* directly — exactly what the manifest
+    // templates and the FV-271 integrity grid reference (FV-266). The legacy
+    // two-<audio> fallback is dead for golf anyway (no baked top-level MP3s;
+    // golf clips live content-addressed under /clips/), so resolution only ever
+    // goes through the compositional manifest path.
+    return `hm-glf-${roleStr}-${frag}`;
   },
 
   // Pre-practice focus presets (FV-264 Appendix). Audio render + the rest of the

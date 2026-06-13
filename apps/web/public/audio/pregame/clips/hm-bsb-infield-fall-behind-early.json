@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-infield-fall-behind-early",
+  "durationSec": 70.104,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

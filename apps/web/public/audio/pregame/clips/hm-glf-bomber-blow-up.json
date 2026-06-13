@@ -1,0 +1,10 @@
+{
+  "slug": "hm-glf-bomber-blow-up",
+  "durationSec": 100.736,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

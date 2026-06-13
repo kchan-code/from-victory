@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-outfield-start-slow",
+  "durationSec": 59.52,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

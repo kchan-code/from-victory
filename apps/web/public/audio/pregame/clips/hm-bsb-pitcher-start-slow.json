@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-pitcher-start-slow",
+  "durationSec": 58.344,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

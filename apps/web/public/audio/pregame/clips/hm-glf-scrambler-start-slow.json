@@ -1,0 +1,10 @@
+{
+  "slug": "hm-glf-scrambler-start-slow",
+  "durationSec": 78.744,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

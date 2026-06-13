@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-pitcher-hit-batter",
+  "durationSec": 70.2,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

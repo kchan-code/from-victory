@@ -1,0 +1,10 @@
+{
+  "slug": "hm-glf-bomber-start-slow",
+  "durationSec": 82.92,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-infield-error",
+  "durationSec": 61.272,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

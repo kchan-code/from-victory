@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-infield-benched",
+  "durationSec": 90.408,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

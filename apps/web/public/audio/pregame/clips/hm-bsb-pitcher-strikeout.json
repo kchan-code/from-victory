@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-pitcher-strikeout",
+  "durationSec": 61.152,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

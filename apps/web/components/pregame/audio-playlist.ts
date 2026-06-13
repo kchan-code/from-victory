@@ -410,6 +410,22 @@ export function resolvePlaylist(
 }
 
 // ---------------------------------------------------------------------------
+// Pre-practice opener variations (opener rotation)
+// ---------------------------------------------------------------------------
+// The "dialed-in" opener is sport-neutral (shared across all sports) and has
+// multiple variations so the athlete doesn't hear the same words every session.
+// resolvePracticePlaylist picks one BY INDEX; the caller (useClipPlayer) holds a
+// per-session random index in a ref so it's stable for the whole session.
+// Default index 0 = the original pp-opener-dialed-in (existing call sites + tests
+// unchanged). "not-feeling-it" stays the sport-specific single opener (no
+// variations). Every slug here must exist in the rendered clip catalog.
+export const DIALED_IN_OPENER_VARIATIONS = [
+  "pp-opener-dialed-in",
+  "pp-opener-dialed-in-2",
+  "pp-opener-dialed-in-3",
+] as const;
+
+// ---------------------------------------------------------------------------
 // resolvePracticePlaylist
 // ---------------------------------------------------------------------------
 
@@ -469,6 +485,15 @@ export function resolvePracticePlaylist(
    * Sport-neutral: both hockey and basketball use the same prayer clip slugs.
    */
   prayerStyle?: PrayerStyle | null,
+  /**
+   * Opener variation rotation — which of DIALED_IN_OPENER_VARIATIONS to play for
+   * the "dialed-in" state. The caller picks one at random per session (stable in
+   * a ref); this resolver stays pure/deterministic given the index. Default 0 =
+   * the original opener, so existing call sites + tests are unchanged. Wrapped
+   * mod the variation count, so any int (incl. negative/out-of-range) is safe.
+   * Ignored for "not-feeling-it" (sport-specific opener, no variations).
+   */
+  dialedInVariationIndex: number = 0,
 ): ResolvedClip[] | null {
   // ── p5/p6 state-aware path ───────────────────────────────────────────────
   if (manifest.practiceState) {
@@ -476,7 +501,16 @@ export function resolvePracticePlaylist(
     const resolvedState: PracticeState =
       state === "not-feeling-it" ? "not-feeling-it" : "dialed-in";
 
-    const openerSlug = sportConfig.practiceOpenerSlugs[resolvedState];
+    // "dialed-in" rotates among the shared opener variations; "not-feeling-it"
+    // uses the sport-specific single opener from the config.
+    const openerSlug =
+      resolvedState === "dialed-in"
+        ? DIALED_IN_OPENER_VARIATIONS[
+            ((dialedInVariationIndex % DIALED_IN_OPENER_VARIATIONS.length) +
+              DIALED_IN_OPENER_VARIATIONS.length) %
+              DIALED_IN_OPENER_VARIATIONS.length
+          ]!
+        : sportConfig.practiceOpenerSlugs[resolvedState];
 
     // ── Tail resolution: p6 sport-keyed vs p5 legacy ─────────────────────
     // p5 manifest: practiceState["dialed-in"] is a string[] (tail directly).

@@ -1,0 +1,14 @@
+{
+  "slug": "viz-catcher",
+  "durationSec": 126.82,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 38.578
+    }
+  ]
+}

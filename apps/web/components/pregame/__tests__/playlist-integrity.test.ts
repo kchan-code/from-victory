@@ -171,20 +171,23 @@ const SPORT_CELL_EXPECTATIONS: Record<
   // Golf (FV-265 scripts; audio render = FV-266). 3 profiles × 10 = 30 distinct
   // cells — golf has NO canonical-key reroute (every profile plays every hole),
   // so the matrix does not dedup. The 3 first-tee (shank/putting-yips) cells are
-  // authored but withheld from the picker via roleAdversities. Excluded from the
-  // registry-parameterized loops below until its audio is rendered (see
-  // RENDERED_SPORT_CONFIGS); FV-266/FV-271 turn the full grid on once clips land.
-  // "specialCase" here asserts the no-reroute property: a profile relabel
+  // authored + rendered for grid parity but withheld from the picker via
+  // roleAdversities. Golf is COMPOSITIONAL-ONLY: no baked glf-* composite
+  // (unlike basketball's bb-*), so cellSlugFor returns the hm-glf-* hard-moment
+  // clip directly — the slug the manifest templates reference and this grid
+  // asserts. "specialCase" asserts the no-reroute property: a profile relabel
   // ("I hit it OB." → "I hit the big miss" for Bomber) does NOT fork the slug.
+  // Activated in the rendered-grid loops once FV-266 lands golf in
+  // manifest.practiceState (RENDERED_SPORT_CONFIGS).
   golf: {
     cellCount: 30,
-    slugPrefix: "glf-",
+    slugPrefix: "hm-glf-",
     cellLayout: "catalog",
     specialCase: {
       role: "Bomber",
       adversity: "I hit it OB.",
-      expectedSlug: "glf-bomber-ob",
-      forbiddenSlug: "glf-bomber-big-miss",
+      expectedSlug: "hm-glf-bomber-ob",
+      forbiddenSlug: "hm-glf-bomber-big-miss",
     },
   },
 };
@@ -421,10 +424,13 @@ describe("hockey compositional template matrix", () => {
   const POSITIONS = HOCKEY_CONFIG.roles ?? [];
   const ADVERSITIES = HOCKEY_CONFIG.adversities;
 
-  it("manifest has exactly 60 templates (3 hockey + 3 basketball positions × 10 adversities each)", () => {
-    // 30 hockey (Forward/Defense/Goalie) + 30 basketball (Guard/Wing/Big) = 60.
-    // FV-113 added the basketball arm; FV-116 had established the 30-hockey baseline.
-    expect(manifest.templates).toHaveLength(60);
+  it("manifest has exactly 90 templates (3 compositional sports × 3 positions × 10 adversities)", () => {
+    // 30 hockey (Forward/Defense/Goalie) + 30 basketball (Guard/Wing/Big)
+    // + 30 golf (Bomber/Ballstriker/Scrambler) = 90.
+    // FV-113 added the basketball arm; FV-266 added the golf arm.
+    // NOTE: baseball is live but resolves cells directly (cellSlugFor → catalog),
+    // NOT via the compositional templates array, so it contributes 0 templates here.
+    expect(manifest.templates).toHaveLength(90);
   });
 
   it("every (position × adversity) combination has exactly one template", () => {
@@ -768,16 +774,41 @@ describe("basketball opener parity (FV-120)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 12. Catalog count (FV-124) — net zero: −2 retired mid-session be-vocal
-//     beats + 2 new Be more Vocal openers = 183; +3 prayer clips = 186;
-//     +52 viz positive-play clips + 2 cue-word pre clips (FV-136) = 240. be-vocal + bb-be-vocal
-//     are removed from catalog and all 60 templates; opener-be-vocal and
-//     opener-bb-be-vocal are added as catalog entries (loudnorm-passed openers).
+// 12. Catalog count — multi-sport (FV-124 → FV-266)
+//     The single-sport FV-124 baseline was 240 (hockey + basketball + the
+//     FV-136 viz/cue-word additions). The catalog now spans four sports, so a
+//     bare magic number would be both brittle and opaque. Instead assert a
+//     documented per-category breakdown whose sum must equal the catalog size —
+//     this catches orphaned/dropped clips (the sum diverges) AND stays legible.
+//     Counts verified against manifest b5585589 (FV-266 golf render + #232 intros).
 // ---------------------------------------------------------------------------
 
-describe("catalog count (FV-124)", () => {
-  it("catalog has exactly 243 entries (186 + FV-136: 52 viz positive-play clips + 2 cue-word pre clips + 3 section intro clips)", () => {
-    expect(Object.keys(catalog)).toHaveLength(243);
+describe("catalog count (multi-sport, FV-266)", () => {
+  it("catalog is fully categorized (no orphans) and totals 345 entries", () => {
+    const keys = Object.keys(catalog);
+    const n = (re: RegExp) => keys.filter((k) => re.test(k)).length;
+    const breakdown = {
+      viz: n(/^viz-/), //                          65 — profile + positive-play viz (all sports)
+      hmHockey: n(/^hm-(forward|defense|goalie)-/), // 30 — hockey hard-moment cells
+      hmBball: n(/^hm-bb-/), //                     30 — basketball compositional cells
+      bbalBaked: n(/^bb-/), //                      30 — legacy baked basketball composites
+      hmBaseball: n(/^hm-bsb-/), //                 39 — baseball cells (FV-94)
+      hmGolf: n(/^hm-glf-/), //                     30 — golf cells (FV-266)
+      practice: n(/^pp-/), //                       56 — pre-practice clips (all sports + variations)
+      openers: n(/^opener-/), //                    19 — need openers (incl. basketball variants)
+      cueWord: n(/^cw-/), //                        20 — cue-word reset/sendoff
+      anchor: n(/^anc-/), //                         8 — reset-anchor clips
+      selfTalk: n(/^st-/), //                        8 — self-talk clips
+      shared: n(/^shared-/), //                     10 — shared scaffold clips (+3 section intros, #232)
+    };
+    const sum = Object.values(breakdown).reduce((a, b) => a + b, 0);
+    const uncategorized = keys.filter(
+      (k) => !/^(viz-|hm-|bb-|pp-|opener-|cw-|anc-|st-|shared-)/.test(k),
+    );
+    // Every catalog key falls into exactly one bucket — catches typos/orphans.
+    expect(uncategorized, `uncategorized clips: ${uncategorized.join(", ")}`).toEqual([]);
+    expect(sum).toBe(keys.length);
+    expect(keys).toHaveLength(345);
   });
 });
 

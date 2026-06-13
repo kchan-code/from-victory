@@ -1,0 +1,14 @@
+{
+  "slug": "viz-infield",
+  "durationSec": 129.316,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 39.202
+    }
+  ]
+}

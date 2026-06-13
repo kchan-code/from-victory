@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-infield-start-slow",
+  "durationSec": 60.168,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

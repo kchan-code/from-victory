@@ -65,6 +65,7 @@ import {
   type AssembledTimeline,
   type ClipManifest,
   type ResolvedClip,
+  DIALED_IN_OPENER_VARIATIONS,
   buildAssembledTimeline,
   manifestUrl,
   resolvePlaylist,
@@ -299,6 +300,17 @@ export function useClipPlayer({
   // clipsRef retained (unused in playback but consistent with original structure).
   const clipsRef = useRef<ResolvedClip[]>([]);
 
+  // FV-266 — per-session dialed-in pre-practice opener variation. Picked once
+  // per hook mount (lazy-init) so a session that re-resolves the playlist
+  // doesn't re-randomize its opener mid-flow. Rotates the "dialed-in" opener
+  // across DIALED_IN_OPENER_VARIATIONS; ignored for the "not-feeling-it" state.
+  const dialedInVariationRef = useRef<number>(-1);
+  if (dialedInVariationRef.current < 0) {
+    dialedInVariationRef.current = Math.floor(
+      Math.random() * DIALED_IN_OPENER_VARIATIONS.length,
+    );
+  }
+
   // ── rAF loop ──
   // Reads audio.currentTime ~60fps. HTMLMediaElement.currentTime is the
   // authoritative position; we don't need the suspend-offset arithmetic that
@@ -439,7 +451,14 @@ export function useClipPlayer({
       let clips: ReturnType<typeof resolvePlaylist>;
       if (practice) {
         const sportConfig = getSportConfig(sport);
-        clips = resolvePracticePlaylist(manifest, practiceState, practiceFocus, sportConfig, prayerStyle);
+        clips = resolvePracticePlaylist(
+          manifest,
+          practiceState,
+          practiceFocus,
+          sportConfig,
+          prayerStyle,
+          dialedInVariationRef.current,
+        );
         if (!clips) {
           clearDeadline();
           setError("no template");

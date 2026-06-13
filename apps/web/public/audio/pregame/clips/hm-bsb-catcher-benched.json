@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-catcher-benched",
+  "durationSec": 60.36,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

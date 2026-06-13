@@ -1,0 +1,10 @@
+{
+  "slug": "hm-glf-ballstriker-start-slow",
+  "durationSec": 85.176,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

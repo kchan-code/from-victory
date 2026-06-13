@@ -1,0 +1,10 @@
+{
+  "slug": "hm-bsb-catcher-start-slow",
+  "durationSec": 70.368,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

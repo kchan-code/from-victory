@@ -1,0 +1,10 @@
+{
+  "slug": "hm-glf-bomber-fall-behind",
+  "durationSec": 80.04,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

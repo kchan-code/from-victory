@@ -2233,27 +2233,207 @@ export const CLIP_PP_OPENER_DIALED_IN_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "Who you are is already settled. Christ ran his race for you — the verdict's in, and it's love. Nothing out here changes that.",
+      text: "Before you step in, remember where you stand. Christ has already spoken for you.",
     },
     { type: "silence", durationSec: 1.2 },
     {
       type: "speech",
-      text: "So you're not playing for the coaches, or the guys, or whoever's watching. One audience. And what you give him is all of it — not half.",
+      text: "You are loved, held, and sent — before the first whistle, before the first touch, before anything goes right or wrong.",
     },
-    { type: "silence", durationSec: 1.0 },
+    { type: "silence", durationSec: 1.2 },
     {
       type: "speech",
-      text: "That means you're free. Go all out. Let it be ugly. Fail in front of all of them — their read on you doesn't count.",
+      text: "So compete like someone who has been set free.",
     },
-    { type: "silence", durationSec: 0.8 },
+    { type: "silence", durationSec: 1.2 },
     {
       type: "speech",
-      text: "Coasting isn't chill. It's holding back from the One you're actually out here for.",
+      text: "Not reckless. Not careless. Free.",
     },
-    { type: "silence", durationSec: 1.0 },
+    { type: "silence", durationSec: 1.2 },
     {
       type: "speech",
-      text: "So empty the tank. Now go.",
+      text: "Free to play hard. Free to take the open chance. Free to recover when something breaks down. Free to give your whole effort without handing your worth to the result.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Step in with courage.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Play the game in front of you.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Christ has already won the victory you needed most.",
+    },
+  ],
+};
+
+// ── OPENER A Variation 2 — pp-opener-dialed-in-2 ─────────────────────────────
+export const CLIP_PP_OPENER_DIALED_IN_2_SCRIPT: AudioScript = {
+  slug: "pp-opener-dialed-in-2",
+  voice: "ash",
+  instructions: PRACTICE_SETTLE_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Before you start, settle this.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "You do not have to earn anyone's approval today.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Not the coach's. Not the crowd's. Not your teammates'. Not even your own.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "In Christ, your worth is already secure. Not because you performed. Not because you proved yourself. Because Jesus has already won what you could never earn.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "So put down the weight of proving who you are.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Play for Him — not to make Him love you, but because He already does.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "That is what makes you free.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Free to compete with courage. Free to make a mistake and come back. Free to give everything without fear deciding how far you go.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "So step in.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "No holding back. No playing small. No carrying the last play.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Give everything you have.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Play from victory.",
+    },
+  ],
+};
+
+// ── OPENER A Variation 3 — pp-opener-dialed-in-3 ─────────────────────────────
+export const CLIP_PP_OPENER_DIALED_IN_3_SCRIPT: AudioScript = {
+  slug: "pp-opener-dialed-in-3",
+  voice: "ash",
+  instructions: PRACTICE_SETTLE_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Take a breath.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "You get to do this today.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "A body that can move. A game you love. A chance to compete, serve, and lay it all down.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "That is a gift.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Do not spend it protecting comfort.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Bring the whole thing to God — your effort, your nerves, your joy, your edge. He already knows what you are worth. He already called you loved before you laced up.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "So you are not performing for approval.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "You are free.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "And free does not mean casual.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Free means full.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Full speed. Full heart. Full compete.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Not half-speed to avoid a mistake. Not playing small to look composed. Not holding something back so failure hurts less.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Step in grateful.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Compete with courage.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Empty the tank.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "First rep, all of it.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Now go.",
     },
   ],
 };
@@ -2268,32 +2448,67 @@ export const CLIP_PP_OPENER_GET_TO_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "Be honest — you're not really feeling it today. That's allowed. You showed up anyway. That already counts.",
-    },
-    { type: "silence", durationSec: 1.2 },
-    {
-      type: "speech",
-      text: "Here's the thing nobody tells you: the feeling shows up after you move, not before. You don't wait to want it. You commit to the first rep, go full, and let the rest catch up.",
+      text: "You showed up on a day you did not feel like it.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "Whatever you do, you do it with everything — for the Lord, not for a mood. The flat day counts to him exactly as much as the good one. He's not grading how you feel.",
-    },
-    { type: "silence", durationSec: 1.2 },
-    {
-      type: "speech",
-      text: "And somewhere under the drag — a body that works, a game you actually love. That's real. Let it pull you. Not guilt. Just true.",
+      text: "That matters.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "So don't try to fix the whole hour. Just win the first drill. First ten minutes, full — feet moving, first to the puck.",
+      text: "Do not wait for the feeling to lead.",
     },
-    { type: "silence", durationSec: 0.8 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "First rep. Go.",
+      text: "Move first.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "First stride. First battle. First puck.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Let your body wake up while you work.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "God is not asking you to fake energy. Bring faithful effort with what you have today.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "A body that can move. A game you love. A chance to get better.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Start small.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Win the first drill.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Feet moving. Stick down. First to the puck.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "First rep.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Go.",
     },
   ],
 };
@@ -2308,12 +2523,17 @@ export const CLIP_PP_NAME_STANDARD_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "Whatever you do here is what shows up when it's tight. The rep you give now is the shift you'll have in overtime. Your hands don't know the difference between a drill and a final.",
+      text: "Today, every rep has a purpose.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "So the bar today is simple. Full reps. Full compete. No coasting.",
+      text: "Skate it like it matters. Handle the puck like it matters. Make the habit real.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "No wasted reps.",
     },
   ],
 };
@@ -2328,17 +2548,12 @@ export const CLIP_PP_GOAL_FUSION_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "That drill you've run a thousand times — the boring one, nobody watching — you're not getting it over with. You're rehearsing the shift you actually want, early, while it's quiet.",
+      text: "The standard today is simple.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "That battle in the corner — that's the one that decides a playoff game. Win it now, at practice, full every time, and the one with everything on the line is just one you've already done.",
-    },
-    { type: "silence", durationSec: 1.0 },
-    {
-      type: "speech",
-      text: "Not the perfect rep. The full one. That's all today asks.",
+      text: "Game-speed reps. Clean habits. No coasting.",
     },
   ],
 };
@@ -2354,7 +2569,7 @@ export const CLIP_PP_CHOOSE_FOCUS_LEAD_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "You picked one thing to drive today. Here it is.",
+      text: "You chose the word you want to carry into this practice. Let it set the tone.",
     },
     { type: "silence", durationSec: 0.5 },
   ],
@@ -2370,7 +2585,7 @@ export const CLIP_PP_CHOOSE_FOCUS_TAIL_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 0.5 },
     {
       type: "speech",
-      text: "That's the throttle. Not something to fix when it breaks — something you bring from the first whistle. Every drill, every rep, you go get it.",
+      text: "Bring it from the start. Let that word shape the way you compete.",
     },
   ],
 };
@@ -2458,10 +2673,7 @@ export const CLIP_PP_FOCUS_FULL_REPS_NO_GLIDE_SCRIPT: AudioScript = {
   ],
 };
 
-// ── SHARED Beat 5 — pp-be-vocal (NEW) ────────────────────────────────────────
-// By-ear note: the on-ice calls ('man on','time','heads up','D to D','I'm here',
-// 'Help') must be read flat/listed, NOT yelled or brightened. "Be the loud one"
-// is plain instruction, not a rally cry.
+// ── SHARED Beat 5 — pp-be-vocal ───────────────────────────────────────────────
 export const CLIP_PP_BE_VOCAL_SCRIPT: AudioScript = {
   slug: "pp-be-vocal",
   voice: "ash",
@@ -2471,29 +2683,29 @@ export const CLIP_PP_BE_VOCAL_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "One more thing nobody says out loud. Out there, talking is competing — calling for the puck, 'man on,' 'time,' 'heads up,' 'D to D' on the breakout. Coaches notice who talks. But most players go quiet — not because they don't know the call. Because being loud feels like drawing eyes, sounding dumb, looking like you're trying too hard.",
+      text: "Talking is part of competing.",
     },
-    { type: "silence", durationSec: 1.2 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "That's the same trap. Going quiet is protecting how you look — and you already settled that. What they think of you isn't the scoreboard you're playing to.",
+      text: "Call \"man on.\" Call \"time.\" Call support.",
     },
-    { type: "silence", durationSec: 0.8 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "So talk. 'I'm here.' 'Heads up.' 'Help.' Be the loud one. The players who talk the zone, call support, run their mouth the right way — they end up wearing a letter. Not because they asked for it. Because they were already doing the job.",
+      text: "You are free to speak.",
     },
-    { type: "silence", durationSec: 0.8 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "Quiet's the easy hide. Don't take it.",
+      text: "Be loud early. Help your team play faster.",
     },
   ],
 };
 
 // ── SHARED Beat 6 — pp-see-it-go ─────────────────────────────────────────────
-// Terminal send-off ("Helmet on. Go compete. Play from victory.") removed —
-// the pre-practice session now ends on the prayer clip that follows this beat.
+// Terminal send-off removed — the pre-practice session ends on the prayer clip
+// that follows this beat.
 export const CLIP_PP_SEE_IT_GO_SCRIPT: AudioScript = {
   slug: "pp-see-it-go",
   voice: "ash",
@@ -2503,17 +2715,22 @@ export const CLIP_PP_SEE_IT_GO_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "See one rep. You, full compete, that focus locked in, nothing saved for the bench.",
-    },
-    { type: "silence", durationSec: 1.5 },
-    {
-      type: "speech",
-      text: "A rep's going to go bad. Some will. That's information, not a verdict — read it, drop it, next rep.",
+      text: "See one rep.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "You're not skating to prove who you are. You already know.",
+      text: "First stride. Stick down. Finish through the puck.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "If it goes bad, read it, drop it, and go again.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Next rep.",
     },
   ],
 };
@@ -2527,7 +2744,6 @@ export const CLIP_PP_SEE_IT_GO_SCRIPT: AudioScript = {
 // basketball practice tail silently fails open in resolvePracticePlaylist.
 
 // ── Basketball OPENER B — pp-bb-opener-get-to ─────────────────────────────────
-// Identical to pp-opener-get-to except foothold close: "first to every loose ball."
 export const CLIP_PP_BB_OPENER_GET_TO_SCRIPT: AudioScript = {
   slug: "pp-bb-opener-get-to",
   voice: "ash",
@@ -2537,38 +2753,67 @@ export const CLIP_PP_BB_OPENER_GET_TO_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "Be honest — you're not really feeling it today. That's allowed. You showed up anyway. That already counts.",
-    },
-    { type: "silence", durationSec: 1.2 },
-    {
-      type: "speech",
-      text: "Here's the thing nobody tells you: the feeling shows up after you move, not before. You don't wait to want it. You commit to the first rep, go full, and let the rest catch up.",
+      text: "You showed up on a day you did not feel like it.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "Whatever you do, you do it with everything — for the Lord, not for a mood. The flat day counts to him exactly as much as the good one. He's not grading how you feel.",
-    },
-    { type: "silence", durationSec: 1.2 },
-    {
-      type: "speech",
-      text: "And somewhere under the drag — a body that works, a game you actually love. That's real. Let it pull you. Not guilt. Just true.",
+      text: "That matters.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "So don't try to fix the whole practice. Just win the first drill. First ten minutes, full — feet moving, first to every loose ball.",
+      text: "Do not wait for the feeling to lead.",
     },
-    { type: "silence", durationSec: 0.8 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "First rep. Go.",
+      text: "Move first.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Talk on defense. Sprint through the rep. Let your body wake up while you work.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Whatever you do, do it with everything — for the Lord, not for a mood.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "God is not asking you to fake energy. Bring faithful effort with what you have today.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "A body that can move. A ball in your hands. A game you love. A chance to get better.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Start small.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Win the first drill.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "First rep.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Go.",
     },
   ],
 };
 
 // ── Basketball Beat 2 — pp-bb-name-standard ───────────────────────────────────
-// Swap: "shift you'll have in overtime" → "possession you'll have in crunch time."
 export const CLIP_PP_BB_NAME_STANDARD_SCRIPT: AudioScript = {
   slug: "pp-bb-name-standard",
   voice: "ash",
@@ -2578,19 +2823,17 @@ export const CLIP_PP_BB_NAME_STANDARD_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "Whatever you do here is what shows up when it's tight. The rep you give now is the possession you'll have in crunch time. Your hands don't know the difference between a drill and a final.",
+      text: "The standard today is simple.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "So the bar today is simple. Full reps. Full compete. No coasting.",
+      text: "Game-speed reps. Clean footwork. No drifting.",
     },
   ],
 };
 
 // ── Basketball Beat 3 — pp-bb-goal-fusion ─────────────────────────────────────
-// Swaps: "shift" → "possession"; "battle in the corner" → "loose ball on the
-// floor, that contested rebound, that closeout you'd rather skip."
 export const CLIP_PP_BB_GOAL_FUSION_SCRIPT: AudioScript = {
   slug: "pp-bb-goal-fusion",
   voice: "ash",
@@ -2600,27 +2843,22 @@ export const CLIP_PP_BB_GOAL_FUSION_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "That drill you've run a thousand times — the boring one, nobody watching — you're not getting it over with. You're rehearsing the possession you actually want, early, while it's quiet.",
+      text: "The simple reps are not filler.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "That loose ball on the floor, that contested rebound, that closeout you'd rather skip — that's the one that decides a playoff game. Win it now, at practice, full every time, and the one with everything on the line is just one you've already done.",
+      text: "Closeouts. Loose balls. Footwork. Finishes.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "Not the perfect rep. The full one. That's all today asks.",
+      text: "Do them full now, so they are there when it counts.",
     },
   ],
 };
 
 // ── Basketball Beat 5 — pp-bb-be-vocal ────────────────────────────────────────
-// Swaps: on-court calls (screen left / shot / I got ball / help on the drive);
-// "wearing a letter" → "hand the team to."
-// By-ear note (FV-31): the listed calls read with the same flat/listed discipline
-// as the hockey version. Decide at render whether to generalize the shared
-// PP_COACH_INSTRUCTIONS example list.
 export const CLIP_PP_BB_BE_VOCAL_SCRIPT: AudioScript = {
   slug: "pp-bb-be-vocal",
   voice: "ash",
@@ -2630,29 +2868,39 @@ export const CLIP_PP_BB_BE_VOCAL_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "One more thing nobody says out loud. Out there, talking is competing — calling for the ball, 'screen left,' 'shot,' 'I got ball,' 'help' on the drive. Coaches notice who talks. But most players go quiet — not because they don't know the call. Because being loud feels like drawing eyes, sounding dumb, looking like you're trying too hard.",
+      text: "Talking is part of competing.",
     },
-    { type: "silence", durationSec: 1.2 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "That's the same trap. Going quiet is protecting how you look — and you already settled that. What they think of you isn't the scoreboard you're playing to.",
+      text: "Call the ball. Call the screen. Call the help.",
     },
-    { type: "silence", durationSec: 0.8 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "So talk. 'I'm here.' 'Box out.' 'Help.' Be the loud one. The players who run the floor with their voice — call the coverage, call the help, talk every possession — they're the ones coaches build around and hand the team to. Not because they asked for it. Because they were already doing the job.",
+      text: "You do not have to stay quiet to protect how you look.",
     },
-    { type: "silence", durationSec: 0.8 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "Quiet's the easy hide. Don't take it.",
+      text: "You are free to speak.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "So be loud early.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Let your voice bring energy, clarity, and confidence to the floor.",
     },
   ],
 };
 
 // ── Basketball Beat 6 — pp-bb-see-it-go ──────────────────────────────────────
-// Terminal send-off ("Lace 'em up. Go compete. Play from victory.") removed —
-// the pre-practice session now ends on the prayer clip that follows this beat.
+// Terminal send-off removed — the pre-practice session ends on the prayer clip
+// that follows this beat.
 export const CLIP_PP_BB_SEE_IT_GO_SCRIPT: AudioScript = {
   slug: "pp-bb-see-it-go",
   voice: "ash",
@@ -2662,17 +2910,22 @@ export const CLIP_PP_BB_SEE_IT_GO_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "See one rep. You, full compete, that focus locked in, nothing saved for the bench.",
-    },
-    { type: "silence", durationSec: 1.5 },
-    {
-      type: "speech",
-      text: "A rep's going to go bad. Some will. That's information, not a verdict — read it, drop it, next rep.",
+      text: "See one rep.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "You're not playing to prove who you are. You already know.",
+      text: "Game speed. Clean feet. Full focus.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "If it goes bad, learn fast and drop it.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Next rep.",
     },
   ],
 };
@@ -2998,32 +3251,87 @@ export const CLIP_PP_GOLF_OPENER_GET_TO_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "Be honest — you're not really feeling it today. That's allowed. You showed up anyway. That already counts.",
-    },
-    { type: "silence", durationSec: 1.2 },
-    {
-      type: "speech",
-      text: "Here's the thing nobody tells you: the feeling shows up after you move, not before. You don't wait to want it. You commit to the first ball, full routine, and let the rest catch up.",
+      text: "You showed up on a day you did not feel like it.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "Whatever you do, you do it with everything — for the Lord, not for a mood. The flat day counts to him exactly as much as the good one. He's not grading how you feel.",
-    },
-    { type: "silence", durationSec: 1.2 },
-    {
-      type: "speech",
-      text: "And somewhere under the drag — a body that works, a game you actually love. That's real. Let it pull you. Not guilt. Just true.",
+      text: "That matters.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "So don't try to fix the whole session. Just win the first ten minutes on the range. First bucket, full routine on every ball — pick a target, commit, hit it.",
+      text: "Do not wait for the feeling to lead.",
     },
-    { type: "silence", durationSec: 0.8 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "First shot. Go.",
+      text: "Start with one clear target.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Go through the routine.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Make one committed swing.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Let your body and mind wake up while you work.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Whatever you do, do it with everything — for the Lord, not for a mood.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "God is not asking you to fake energy. Bring faithful effort with what you have today.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "A body that can move. A game you love. A chance to get better.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Let that pull you.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Not guilt. Just truth.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Do not try to fix the whole session.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Win the first ten minutes.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Pick a target. Commit to the swing. Learn from the result.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "First ball.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Begin.",
     },
   ],
 };
@@ -3038,17 +3346,22 @@ export const CLIP_PP_GOLF_NAME_STANDARD_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "Whatever you do here is what shows up when it's tight. The rep you give now is the shot you'll hit with the round on the line. Your hands don't know the difference between a range ball and the 18th tee with a number you have to sign for.",
+      text: "The standard today is simple.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "So the bar today is simple. Full reps. Full routine. No coasting.",
+      text: "Every ball gets a target. Every swing gets commitment.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "No rushing. No chasing.",
     },
   ],
 };
 
-// ── Golf Beat 3 — pp-golf-goal-fusion (Duckworth goal-fusion) ────────────────
+// ── Golf Beat 3 — pp-golf-goal-fusion ────────────────────────────────────────
 export const CLIP_PP_GOLF_GOAL_FUSION_SCRIPT: AudioScript = {
   slug: "pp-golf-goal-fusion",
   voice: "ash",
@@ -3058,17 +3371,22 @@ export const CLIP_PP_GOLF_GOAL_FUSION_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "That drill you've run a thousand times — the boring one, nobody watching — you're not getting it over with. You're rehearsing the shot you actually want, early, while it's quiet.",
+      text: "The simple reps are not filler.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "The up-and-down from the bunker, the slick six-footer, the awkward half-wedge you'd rather skip — that's the one that decides a round. Win it now, on the practice green, full every time, and the one with the round on the line is just one you've already hit.",
+      text: "Short putts. Half-wedges. Bunker shots. Alignment.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "Not the perfect rep. The full one. That's all today asks.",
+      text: "Do them with a target and a routine.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "That is how practice shows up on the course.",
     },
   ],
 };
@@ -3077,8 +3395,7 @@ export const CLIP_PP_GOLF_GOAL_FUSION_SCRIPT: AudioScript = {
 // Replaces baseball's "be-vocal." Golf is individual — no cutoff to call, no
 // teammate to talk to. The transferable practice-room habit is the full
 // pre-shot routine on every rep: it's what holds on the first tee when the
-// hands go cold. The "easy hide" inverts from going quiet → raking balls with
-// no routine. Character/discipline beat, not a mental-skill reframe.
+// hands go cold.
 export const CLIP_PP_GOLF_FULL_ROUTINE_SCRIPT: AudioScript = {
   slug: "pp-golf-full-routine",
   voice: "ash",
@@ -3088,22 +3405,27 @@ export const CLIP_PP_GOLF_FULL_ROUTINE_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "One more thing nobody says out loud. Out here, your routine is the whole game — pick the target, see the shot, set up, pull the trigger, same every time. That's what holds when the first tee shakes your hands. But most players rake ball after ball on the range with no routine at all — not because they don't know it. Because doing the full thing on a throwaway range ball feels slow, feels like overkill, feels like wasted effort nobody sees.",
+      text: "Do not waste the range by raking and swinging.",
     },
-    { type: "silence", durationSec: 1.2 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "That's the trap. The shortcut feels like efficiency — but it's just skipping the rep that matters. And the player who skips it has nothing to fall back on when the round's on the line.",
+      text: "Pick a target. Set your body. Commit to the shot.",
     },
-    { type: "silence", durationSec: 0.8 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "So give every ball the routine. Target, commit, swing. The player who runs the full routine on the boring range ball is the one whose swing still shows up on the first tee in front of strangers — not because they're tougher, but because they already grooved the thing that holds. The routine you build now is the only thing that travels.",
+      text: "Some balls get the full routine. Every ball gets attention.",
     },
-    { type: "silence", durationSec: 0.8 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "The no-routine rake is the easy hide. Don't take it.",
+      text: "That is what holds on the first tee.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Build it now.",
     },
   ],
 };
@@ -3120,17 +3442,27 @@ export const CLIP_PP_GOLF_SEE_IT_GO_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "See one shot. You, full commit, full routine, locked in — nothing rushed, nothing saved.",
-    },
-    { type: "silence", durationSec: 1.5 },
-    {
-      type: "speech",
-      text: "A shot's going to go bad. Some will. That's information, not a verdict — read it, drop it, next shot.",
+      text: "See one shot.",
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "You're not out here to prove who you are. You already know.",
+      text: "Pick the target. Feel the setup. Commit to the swing.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Watch the ball honestly. Take the feedback without chasing it.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Good shot or bad shot, it does not define you.",
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Next ball.",
     },
   ],
 };
@@ -4121,36 +4453,59 @@ export const CLIP_PP_PRAYER_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "Let's pray. Father, thank you that my worth was settled before I got here, and it'll hold long after I leave.",
+      text: "Let's pray. Father, thank you that my worth was settled before I got here, and it will hold long after I leave.",
       instructions: PRAYER_INSTRUCTIONS,
       mark: { phase: "prayer" },
     },
-    { type: "silence", durationSec: 1.5 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "Nobody's watching this part. You are, and that's enough. Help me work hard when it's quiet and no one's keeping score.",
+      text: "Thank you for this work — the quiet reps, the hidden effort, the chances to get better when no one is keeping score.",
       instructions: PRAYER_INSTRUCTIONS,
     },
-    { type: "silence", durationSec: 1.5 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "Help me give you the full effort, not the half. When a rep goes bad, help me drop it fast and go again — for you.",
+      text: "Help me bring full effort today. Not to prove myself, but because this body, this sport, and this opportunity are gifts from you.",
       instructions: PRAYER_INSTRUCTIONS,
     },
-    { type: "silence", durationSec: 1.5 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "Good reps or rough ones, they don't change how you see me. Help me do this work for you, and to glorify you. In Jesus' name, Amen.",
+      text: "When a rep goes bad, help me drop it fast, learn from it, and go again.",
       instructions: PRAYER_INSTRUCTIONS,
     },
-    { type: "silence", durationSec: 2.5 },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Good reps or rough ones, nothing changes how you see me in Christ.",
+      instructions: PRAYER_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Help me train with courage, discipline, and joy.",
+      instructions: PRAYER_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "Let this effort honor you.",
+      instructions: PRAYER_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 1.0 },
+    {
+      type: "speech",
+      text: "In Jesus' name, Amen.",
+      instructions: PRAYER_INSTRUCTIONS,
+    },
   ],
 };
 
 // CLIP C — pp-prayer-selfguided (pre-practice self-guided prayer)
 // Spoken identity segments: SELFTALK_INSTRUCTIONS (local const).
 // Spoken invitation / prayer-space segments: PRAYER_INSTRUCTIONS.
-// phase mark: "prayer" on seg5 (first PRAYER_INSTRUCTIONS speech segment).
+// phase mark: "prayer" on the first PRAYER_INSTRUCTIONS speech segment.
 export const CLIP_PP_PRAYER_SELFGUIDED_SCRIPT: AudioScript = {
   slug: "pp-prayer-selfguided",
   voice: "ash",
@@ -4160,32 +4515,32 @@ export const CLIP_PP_PRAYER_SELFGUIDED_SCRIPT: AudioScript = {
   segments: [
     {
       type: "speech",
-      text: "How you practice is how you play. The full rep now is the one you'll have when it counts.",
+      text: "How you practice is how you play.",
       instructions: SELFTALK_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "And you're giving that effort to an audience of One. So no rep here is wasted, and no rep here defines you. The good ones and the bad ones count to him the same — did you give it everything?",
+      text: "This work matters, even when no one is keeping score. The clean reps build you. The rough reps teach you. None of them define you.",
       instructions: SELFTALK_INSTRUCTIONS,
     },
-    { type: "silence", durationSec: 1.2 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "So before you get to work, take a second and talk to God in your own words. No one's watching this part but him, and that's the point.",
+      text: "So take a moment with God.",
       instructions: PRAYER_INSTRUCTIONS,
       mark: { phase: "prayer" },
     },
     { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "Maybe you thank him that your worth is already settled, before a single rep. Maybe you ask for the focus to go full when it's quiet, or you just tell him you're tired today. However it comes out is fine.",
+      text: "Thank him that your worth is already settled in Christ. Ask for focus, discipline, and full effort. Give him whatever you are carrying today.",
       instructions: PRAYER_INSTRUCTIONS,
     },
-    { type: "silence", durationSec: 1.2 },
+    { type: "silence", durationSec: 1.0 },
     {
       type: "speech",
-      text: "Now take a moment to pray.",
+      text: "Then pray in your own words.",
       instructions: PRAYER_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 18.0 },
@@ -4360,6 +4715,8 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   // Resume-safe: existing files in clips/ are skipped.
   // Retired: pp-settle-receive, pp-choose-focus (replaced below).
   CLIP_PP_OPENER_DIALED_IN_SCRIPT,
+  CLIP_PP_OPENER_DIALED_IN_2_SCRIPT,
+  CLIP_PP_OPENER_DIALED_IN_3_SCRIPT,
   CLIP_PP_OPENER_GET_TO_SCRIPT,
   CLIP_PP_NAME_STANDARD_SCRIPT,
   CLIP_PP_GOAL_FUSION_SCRIPT,
@@ -4505,7 +4862,7 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   // list so the catalog count check in generate-pregame-audio.ts can reference a
   // stable offset — update the count when regenerating.
   ...VIZ_CLIP_SCRIPTS,
-  // Baseball pregame clips (FV-94) — 4 VIZ + 39 hard-moment cells (render = FV-95).
+  // Baseball pregame clips (FV-94) — 4 VIZ + 39 hard-moment cells.
   ...BASEBALL_PREGAME_CLIP_SCRIPTS,
   // Golf pregame clips (FV-265) — 3 profile VIZ + 30 hard-moment cells (render = FV-266).
   ...GOLF_PREGAME_CLIP_SCRIPTS,
