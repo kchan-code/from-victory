@@ -517,7 +517,7 @@ function PracticeSessionScreen({
         </span>
       </button>
 
-      <SectionLabel>Pre-practice · Guided Session</SectionLabel>
+      <SectionLabel className="pl-10">Pre-practice · Guided Session</SectionLabel>
 
       <div className="mb-4 flex items-baseline justify-between">
         <h1 className="font-heading text-[24px] font-bold leading-[1.15] text-cream">
@@ -549,7 +549,7 @@ function PracticeSessionScreen({
           The focus is ALSO voiced in the audio (FRO-22), so the card
           and the narration agree. */}
       <div
-        className="mb-6 flex-1 rounded-[18px] border border-hairline px-6 py-8"
+        className="mb-6 flex flex-1 flex-col justify-center rounded-[18px] border border-hairline px-6 py-8"
         style={{
           background:
             "radial-gradient(120% 80% at 30% 0%, rgba(223,175,55,0.07), transparent 60%), var(--fv-charcoal)",
