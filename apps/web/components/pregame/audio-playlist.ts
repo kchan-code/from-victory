@@ -286,7 +286,12 @@ export function resolvePlaylist(
     for (const raw of rawSlugs) {
       if (raw === "{{anchor}}") {
         const resolved = anchor ? (ANCHOR_OPTION_SLUGS[anchor] ?? null) : null;
-        if (resolved) slugs.push(resolved);
+        if (resolved) {
+          if (manifest.clips["shared-anchor-intro"]) {
+            slugs.push("shared-anchor-intro");
+          }
+          slugs.push(resolved);
+        }
         // else: drop the sentinel — "Say cue word" and unknowns produce no clip
       } else if (raw === "{{selfTalk}}") {
         const resolved = selfTalk ? (SELFTALK_OPTION_SLUGS[selfTalk] ?? null) : null;
@@ -341,6 +346,21 @@ export function resolvePlaylist(
         ];
       }
     }
+  }
+
+  // ── Viz intro injection ───────────────────────────────────────────────────
+  // Inject shared-viz-intro before the first viz-* slug if the clip is present
+  // in the catalog. Runs after the FV-144 positive-play swap so it precedes
+  // whichever viz clip(s) are active (flagship or athlete-picked). Matches the
+  // FV-153 cue-word scaffold guard pattern — older manifests/test fixtures that
+  // lack the clip skip it cleanly and the session still completes.
+  const vizIntroIdx = slugs.findIndex((s) => s.startsWith("viz-"));
+  if (vizIntroIdx !== -1 && manifest.clips["shared-viz-intro"]) {
+    slugs = [
+      ...slugs.slice(0, vizIntroIdx),
+      "shared-viz-intro",
+      ...slugs.slice(vizIntroIdx),
+    ];
   }
 
   // ── Prayer-style transform ────────────────────────────────────────────────
