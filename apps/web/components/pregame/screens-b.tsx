@@ -1723,11 +1723,13 @@ function ShareCardRow({
   firstName,
   shareHint,
   verse,
+  cardRef,
 }: {
   cueWord: string;
   firstName?: string;
   shareHint: string;
   verse: { reference: string; text: string };
+  cardRef?: React.RefObject<HTMLDivElement>;
 }) {
   // client: Web Share API + toggle state
   const [nameIncluded, setNameIncluded] = useState(false);
@@ -1761,6 +1763,36 @@ function ShareCardRow({
     // Inert during the brief "Shared" feedback window — aria-disabled keeps
     // focus on the button (a disabled swap drops SR/keyboard focus to body).
     if (shareState === "shared") return;
+
+    // Attempt image share first so iOS presents a proper "Save to Photos" option.
+    // html2canvas is loaded dynamically to keep the initial bundle unaffected.
+    if (cardRef?.current && typeof navigator !== "undefined" && navigator.canShare) {
+      try {
+        const { default: html2canvas } = await import("html2canvas");
+        const canvas = await html2canvas(cardRef.current, {
+          scale: 2,
+          // Dark fill so the rounded-corner transparent areas match the app background.
+          backgroundColor: "#0d0d0d",
+          useCORS: true,
+          logging: false,
+        });
+        const blob = await new Promise<Blob>((resolve, reject) =>
+          canvas.toBlob(
+            (b) => (b ? resolve(b) : reject(new Error("toBlob failed"))),
+            "image/png",
+          ),
+        );
+        const file = new File([blob], "from-victory-pregame.png", { type: "image/png" });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file] });
+          setShareState("shared");
+          return;
+        }
+      } catch {
+        // Image capture failed — fall through to text share.
+      }
+    }
+
     const text = buildShareText(nameIncluded);
     try {
       // The button only renders when navigator.share exists (supportsShare
@@ -1898,6 +1930,9 @@ export function PregameCardScreen({
    */
   athleteFirstName?: string;
 }) {
+  // Ref on the inner card div — used by ShareCardRow to capture a PNG for "Save to Photos".
+  const cardRef = useRef<HTMLDivElement>(null);
+
   // Mirror the same verse the athlete heard in the audio session.
   // Fallback: spine Hebrews 12:1-2 if need is null.
   const cardVerse: NeedVerse =
@@ -1923,6 +1958,7 @@ export function PregameCardScreen({
       </div>
 
       <div
+        ref={cardRef}
         className="relative overflow-hidden rounded-[22px] border border-gold/30 px-5 pb-5 pt-6"
         style={{
           background:
@@ -1985,6 +2021,7 @@ export function PregameCardScreen({
           firstName={athleteFirstName}
           shareHint={sportConfig.cardShareHint}
           verse={cueVerse}
+          cardRef={cardRef}
         />
 
         <div className="flex flex-col gap-3">
