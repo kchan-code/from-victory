@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "7a58d7ec",
+  "manifestVersion": "fe788899",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -3435,6 +3435,21 @@
           "offsetSec": 0
         }
       ]
+    },
+    "shared-viz-intro": {
+      "url": "/audio/pregame/clips/shared-viz-intro.e17667b6.mp3",
+      "durationSec": 4.152,
+      "phases": []
+    },
+    "shared-anchor-intro": {
+      "url": "/audio/pregame/clips/shared-anchor-intro.9f5ce48b.mp3",
+      "durationSec": 3.12,
+      "phases": []
+    },
+    "shared-selftalk-intro": {
+      "url": "/audio/pregame/clips/shared-selftalk-intro.3cd3602e.mp3",
+      "durationSec": 2.976,
+      "phases": []
     }
   },
   "templates": [

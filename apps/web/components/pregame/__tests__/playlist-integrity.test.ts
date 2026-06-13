@@ -776,8 +776,8 @@ describe("basketball opener parity (FV-120)", () => {
 // ---------------------------------------------------------------------------
 
 describe("catalog count (FV-124)", () => {
-  it("catalog has exactly 240 entries (186 + FV-136: 52 viz positive-play clips + 2 cue-word pre clips)", () => {
-    expect(Object.keys(catalog)).toHaveLength(240);
+  it("catalog has exactly 243 entries (186 + FV-136: 52 viz positive-play clips + 2 cue-word pre clips + 3 section intro clips)", () => {
+    expect(Object.keys(catalog)).toHaveLength(243);
   });
 });
 
