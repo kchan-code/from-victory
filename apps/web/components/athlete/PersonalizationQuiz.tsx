@@ -22,6 +22,13 @@ interface PersonalizationQuizProps {
   sport: Sport;
   /** Roles for the sport from SPORT_REGISTRY.roles — undefined means no picker. */
   roles?: readonly string[];
+  /**
+   * What the sport calls its role dimension (SPORT_REGISTRY.roleLabel) — e.g.
+   * "Position" (hockey/basketball) or "Player type" (golf). Drives the
+   * position-step copy so golf athletes don't see "position". Defaults to
+   * "Position".
+   */
+  roleLabel?: string;
   /** Pre-existing position value (for settings edit mode). */
   initialPosition?: string | null;
   /** Pre-existing focus_area value (for settings edit mode). */
@@ -258,6 +265,7 @@ function ContinueButton({ onClick }: { onClick: () => void }) {
 export default function PersonalizationQuiz({
   sport,
   roles,
+  roleLabel = "Position",
   initialPosition = null,
   initialFocusArea = null,
   action,
@@ -266,6 +274,8 @@ export default function PersonalizationQuiz({
   isEditMode = false,
 }: PersonalizationQuizProps) {
   const hasPositionStep = roles !== undefined && roles.length > 0;
+  // Lower-cased for in-sentence copy ("What's your player type?").
+  const roleLabelLower = roleLabel.toLowerCase();
 
   // Initialise to stored values so settings-edit mode pre-selects them.
   const [position, setPosition] = useState<string | null>(initialPosition ?? null);
@@ -295,11 +305,11 @@ export default function PersonalizationQuiz({
 
         <div className="flex-1 overflow-y-auto px-5 pb-[180px] pt-6">
           <p className="mb-4 font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">
-            Your Position
+            Your {roleLabel}
           </p>
 
           <h1 className="mb-2 font-heading text-[28px] font-semibold leading-[1.1] tracking-[-0.01em] text-cream">
-            What position do you play?
+            What&rsquo;s your {roleLabelLower}?
           </h1>
 
           <p className="mb-8 font-body text-[15px] leading-[1.55] text-cream/70">
@@ -309,7 +319,7 @@ export default function PersonalizationQuiz({
           <div
             className="flex flex-col gap-2"
             role="radiogroup"
-            aria-label="Select your position"
+            aria-label={`Select your ${roleLabelLower}`}
           >
             {(roles ?? []).map((role) => (
               <OptionCard
@@ -335,7 +345,7 @@ export default function PersonalizationQuiz({
             }}
             className="mt-3 inline-flex w-full items-center justify-center rounded-[10px] border border-hairline bg-transparent px-[26px] py-3.5 font-heading text-[14px] font-semibold text-cream/40 transition-colors duration-fast ease-out hover:text-cream/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
           >
-            {isEditMode ? "Clear position" : "Skip for now"}
+            {isEditMode ? `Clear ${roleLabelLower}` : "Skip for now"}
           </button>
         </div>
       </div>
@@ -349,7 +359,7 @@ export default function PersonalizationQuiz({
       <div className="flex items-center px-5 pb-3 pt-[58px]">
         {hasPositionStep ? (
           <BackButtonPress
-            label="Back to position"
+            label={`Back to ${roleLabelLower}`}
             onClick={() => setStep("position")}
           />
         ) : (

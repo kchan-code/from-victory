@@ -39,6 +39,7 @@ export default async function OnboardingQuizPage() {
     <PersonalizationQuiz
       sport={sport}
       roles={sportConfig.roles}
+      roleLabel={sportConfig.roleLabel}
       action={savePersonalizationQuiz}
       submitLabel="GET STARTED"
     />

@@ -17,6 +17,7 @@ import { SUPPORTED_SPORTS, sportLabel, type Sport } from "@/lib/sports";
 const SPORT_SUB: Record<Sport, string> = {
   hockey: "Ice, skates, the full shift.",
   basketball: "The court, your game, your role.",
+  golf: "The course, your swing, your score.",
 };
 
 function CheckIcon() {

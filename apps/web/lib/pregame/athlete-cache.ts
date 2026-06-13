@@ -27,10 +27,14 @@
  * On the server the functions are no-ops.
  */
 
+import { SUPPORTED_SPORTS, type Sport } from "@/lib/sports";
+
 export const ATHLETE_CACHE_KEY = "fv_athlete_cache";
 
-/** Sport values the cache accepts. Must stay in sync with the Sport union. */
-type CachedSport = "hockey" | "basketball";
+// Sport values the cache accepts = the athlete-selectable set (SUPPORTED_SPORTS,
+// the single source of truth). `import type Sport` is erased at runtime, so this
+// module stays lean (no React/Supabase pulled in).
+type CachedSport = Sport;
 
 export type AthleteCache = {
   sport: CachedSport;
@@ -55,7 +59,7 @@ export function readAthleteCache(): AthleteCache | null {
       return null;
     }
     const sport = (parsed as Record<string, unknown>).sport as string;
-    if (sport !== "hockey" && sport !== "basketball") return null;
+    if (!(SUPPORTED_SPORTS as readonly string[]).includes(sport)) return null;
     return {
       sport: sport as CachedSport,
       firstName: (parsed as Record<string, unknown>).firstName as string,

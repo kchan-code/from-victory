@@ -353,7 +353,8 @@ export function PositionScreen({
     <ScreenBody>
       <SectionLabel>Step 03 · {sportConfig.roleLabel ?? "Position"}</SectionLabel>
       <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
-        What position are you playing today?
+        What&rsquo;s your {(sportConfig.roleLabel ?? "Position").toLowerCase()}{" "}
+        today?
       </h1>
       <p className="mb-4 font-body text-[14px] text-cream/50">
         We&rsquo;ll rehearse the job that&rsquo;s actually yours during the
