@@ -190,6 +190,25 @@ const SPORT_CELL_EXPECTATIONS: Record<
       forbiddenSlug: "hm-glf-bomber-big-miss",
     },
   },
+  // Football (v2 DORMANT — scripts authored, audio render deferred). 7 roles ×
+  // 10 adversities, but QB drops trench-battle (reroute→qb-pick) and OL + DL
+  // drop turnover (reroute→{ol,dl}-trench-battle), so the matrix dedups to 67
+  // distinct cells. Compositional-only (golf model): cellSlugFor returns the
+  // hm-ftb-* hard-moment clip directly. EXCLUDED from the registry-parameterized
+  // file-existence loops (RENDERED_SPORT_CONFIGS) until the audio render lands
+  // football in manifest.practiceState — this entry only satisfies the
+  // Record<Sport, …> exhaustiveness type until then.
+  football: {
+    cellCount: 67,
+    slugPrefix: "hm-ftb-",
+    cellLayout: "catalog",
+    specialCase: {
+      role: "QB",
+      adversity: "I get benched.",
+      expectedSlug: "hm-ftb-qb-pulled",
+      forbiddenSlug: "hm-ftb-qb-benched",
+    },
+  },
 };
 
 // FV-94/FV-99: the registry-parameterized integrity suites (sections 5 & 7) run

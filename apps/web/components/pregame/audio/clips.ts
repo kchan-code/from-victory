@@ -88,6 +88,7 @@ import { SESSION_BIG_FALL_BEHIND_EARLY_SCRIPT } from "./session-big-fall-behind-
 import { VIZ_CLIP_SCRIPTS } from "./clips-viz.ts";
 import { BASEBALL_PREGAME_CLIP_SCRIPTS } from "./clips-baseball.ts";
 import { GOLF_PREGAME_CLIP_SCRIPTS } from "./clips-golf.ts";
+import { FOOTBALL_PREGAME_CLIP_SCRIPTS } from "./clips-football.ts";
 
 // The EBU R128 loudness normalization filter applied to every clip.
 // -16 LUFS integrated / -1.5 dBTP true-peak / LRA 11 LU.
@@ -4913,6 +4914,10 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   ...BASEBALL_PREGAME_CLIP_SCRIPTS,
   // Golf pregame clips (FV-265) — 3 profile VIZ + 30 hard-moment cells (render = FV-266).
   ...GOLF_PREGAME_CLIP_SCRIPTS,
+  // Football pregame clips (FV-202, v2 DORMANT) — 7 role VIZ + 67 hard-moment
+  // cells. Registered so the generator renders them at the (deferred) audio
+  // pass; the committed manifest.json does not yet contain them.
+  ...FOOTBALL_PREGAME_CLIP_SCRIPTS,
   // FV-136: Cue-word scaffold preamble clips (audio before the {insert word} token)
   CLIP_SHARED_CUE_WORD_INTRO_PRE_SCRIPT,
   CLIP_SHARED_CUE_WORD_SENDOFF_PRE_SCRIPT,
