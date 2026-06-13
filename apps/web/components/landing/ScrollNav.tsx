@@ -36,14 +36,12 @@ export function ScrollNav() {
               className="block h-9 md:h-14 w-auto"
               priority
             />
-            {/* Wordmark hidden below sm — the icon mark alone at phone width
-                avoids crowding when both CTA pills must remain visible. */}
             <Image
               src="/logo-wordmark.svg"
               alt="From Victory"
               width={100}
               height={32}
-              className="hidden sm:block h-8 md:h-12 w-auto translate-y-[3px] md:translate-y-[5px]"
+              className="block h-8 md:h-12 w-auto translate-y-[3px] md:translate-y-[5px]"
               priority
             />
           </a>
@@ -81,7 +79,7 @@ export function ScrollNav() {
             </Link>
             <a
               href="/#waitlist"
-              className="ml-1.5 sm:ml-2 inline-flex items-center gap-1.5 sm:gap-2 whitespace-nowrap bg-gold text-onyx border border-gold font-heading font-semibold text-[13px] rounded-pill px-[12px] sm:px-[18px] py-[11px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright"
+              className="ml-1.5 sm:ml-2 hidden sm:inline-flex items-center gap-1.5 sm:gap-2 whitespace-nowrap bg-gold text-onyx border border-gold font-heading font-semibold text-[13px] rounded-pill px-[12px] sm:px-[18px] py-[11px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright"
             >
               Join the waitlist
               <SvgIcon name="arrow" size={14} className="hidden sm:block" />
