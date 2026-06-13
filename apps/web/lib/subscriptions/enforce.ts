@@ -21,7 +21,10 @@
  *     can render a "fix your payment" banner if desired.
  *
  * SCOPE:
- *   Wire only onto VALUE surfaces (daily, pregame, practice). NEVER gate:
+ *   Wired onto athlete VALUE surfaces: hub (/athlete), daily, practice,
+ *   postgame, journey. /athlete/pregame is intentionally NOT gated here — it
+ *   is a static, offline-tolerant shell (FV-107) with no server-side
+ *   requireAthlete(); gate it client-side if ever required. NEVER gate:
  *     /subscribe, /signin, /signup, /billing, /auth/*, legal pages,
  *     crisis-resource displays, or the athlete settings/signout paths.
  *

@@ -26,7 +26,7 @@ type ServiceClient = SupabaseClient<Database>;
  *   - `revoked_at IS NULL` (not revoked), AND
  *   - `expires_at IS NULL OR expires_at > now()` (not expired)
  *
- * Expiry is evaluated in DB time via a two-query approach to avoid Supabase JS
+ * Expiry is evaluated in app time (JS) via a two-step approach to avoid Supabase JS
  * `.or()` filter type complexity: first fetch active (not revoked) grants for
  * the parent, then evaluate expiry in JS against the current time. The volume
  * of grant rows per parent is tiny (typically 0–3) so the in-process check is

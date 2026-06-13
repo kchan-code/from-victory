@@ -108,7 +108,7 @@ async function resolveParentId(
   parentEmail: string,
 ): Promise<string | null> {
   // Look up the auth user by email via admin API, then confirm a parent profile.
-  const { data, error } = await service.auth.admin.listUsers();
+  const { data, error } = await service.auth.admin.listUsers({ perPage: 1000 });
   if (error) {
     console.error("[grants] auth.admin.listUsers failed:", error.message);
     return null;
@@ -301,12 +301,19 @@ export async function listCompGrants(): Promise<ListGrantsState> {
     return { ok: false, error: "Failed to load grants." };
   }
 
-  if (!grants || grants.length === 0) {
+  // Drop expired-but-not-revoked grants so the console shows only truly-active
+  // grants (matches the entitlement logic in hasActiveCompGrant).
+  const now = Date.now();
+  const activeGrants = (grants ?? []).filter(
+    (g) => g.expires_at === null || new Date(g.expires_at).getTime() > now,
+  );
+
+  if (activeGrants.length === 0) {
     return { ok: true, grants: [] };
   }
 
   // 2. Fetch parent first_names for the grant parent_ids.
-  const parentIds = [...new Set(grants.map((g) => g.parent_id))];
+  const parentIds = [...new Set(activeGrants.map((g) => g.parent_id))];
   const { data: profiles, error: profilesError } = await service
     .from("profiles")
     .select("id, first_name")
@@ -318,7 +325,7 @@ export async function listCompGrants(): Promise<ListGrantsState> {
   }
 
   // 3. Fetch auth user emails via admin API.
-  const { data: authUsers, error: authError } = await service.auth.admin.listUsers();
+  const { data: authUsers, error: authError } = await service.auth.admin.listUsers({ perPage: 1000 });
   if (authError) {
     console.error("[grants.listCompGrants] listUsers failed:", authError.message);
     return { ok: false, error: "Failed to load parent emails." };
@@ -331,7 +338,7 @@ export async function listCompGrants(): Promise<ListGrantsState> {
     authUsers.users.map((u) => [u.id, u.email ?? null]),
   );
 
-  const rows: CompGrantRow[] = grants.map((g) => ({
+  const rows: CompGrantRow[] = activeGrants.map((g) => ({
     id: g.id,
     parent_id: g.parent_id,
     parent_first_name: firstNameById.get(g.parent_id) ?? "(unknown)",

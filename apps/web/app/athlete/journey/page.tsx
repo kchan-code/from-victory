@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 import { AthleteBottomNav } from "@/components/athlete/BottomNav";
 import { Icon } from "@/components/ui";
 import { requireAthlete } from "@/lib/auth/guards";
+import { requireActiveAccess } from "@/lib/subscriptions/enforce";
 import { getJourney } from "@/lib/athlete/journey-entry";
 
 export const metadata = {
@@ -29,6 +30,9 @@ function formatDate(iso: string): string {
 export default async function JourneyPage() {
   // Auth guard — redirects to /signin if not authenticated or not an athlete.
   const { profile } = await requireAthlete();
+
+  // Subscription enforcement gate (FV-62). No-op when flag is off.
+  await requireActiveAccess({ role: "athlete" });
 
   if (!profile.sport_selected_at) {
     redirect("/athlete/onboarding/sport");
