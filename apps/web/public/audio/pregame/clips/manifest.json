@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "b5585589",
+  "manifestVersion": "bd02b799",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -427,6 +427,11 @@
     "anc-look-at-tape": {
       "url": "/audio/pregame/clips/anc-look-at-tape.213335a5.mp3",
       "durationSec": 2.472,
+      "phases": []
+    },
+    "anc-take-a-drink": {
+      "url": "/audio/pregame/clips/anc-take-a-drink.4484aa81.mp3",
+      "durationSec": 2.16,
       "phases": []
     },
     "st-01": {

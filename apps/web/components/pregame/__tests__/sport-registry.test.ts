@@ -561,11 +561,11 @@ describe("FV-117: sport-keyed anchors picker", () => {
     }
   });
 
-  it("hockey has 6 anchors (unchanged)", () => {
-    expect(HOCKEY_CONFIG.anchors).toHaveLength(6);
+  it("hockey has 7 anchors (added 'Take a drink')", () => {
+    expect(HOCKEY_CONFIG.anchors).toHaveLength(7);
   });
 
-  it("basketball has 6 anchors (same count as hockey)", () => {
+  it("basketball has 6 anchors (unchanged)", () => {
     expect(BASKETBALL_CONFIG.anchors).toHaveLength(6);
   });
 
