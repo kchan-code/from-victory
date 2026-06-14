@@ -57,6 +57,26 @@ code-ahead-of-schema gap that caused the 2026-06-12 login outage). It needs the
 missing the job fails loudly and the push must be run manually. Regenerating
 types (`supabase gen types --linked`) remains a manual follow-up.
 
+**A daily drift detector backstops both halves of the deploy** (FV-188 —
+`infra-drift` workflow, scheduled + `workflow_dispatch`). It is strictly
+read-only — it never applies migrations or changes secrets — and emails KC
+through the existing Resend alert channel (`ALERT_EMAIL_TO`) when it finds a gap:
+(1) any local `supabase/migrations/**` file missing on the linked project, or
+(2) any **required** env var from `apps/web/.env.example` absent in the GitHub
+`production` environment. The env check reports by **name only** and never reads,
+logs, or emails a value. Mark a var optional with a `# fv-env-check: optional`
+comment above it in `.env.example`. Required secrets/config for the job are
+documented at the top of `.github/workflows/infra-drift.yml`. The two checks run
+locally too:
+
+```bash
+# from apps/web/
+node --experimental-strip-types scripts/check-env-presence.ts --no-alert
+supabase migration list --linked \
+  | node --experimental-strip-types scripts/check-migration-drift.ts \
+      --migrations-dir ../../supabase/migrations
+```
+
 For local Stripe webhook testing ([Stripe CLI](https://docs.stripe.com/stripe-cli) required):
 
 ```bash

@@ -1,0 +1,139 @@
+# FV-188 — scheduled infra drift + env-presence detector.
+#
+# Born from the 2026-06-10 incident: three migrations were merged but never
+# `db push`ed to prod, and RESEND_API_KEY / WAITLIST_NOTIFICATION_TO/FROM were
+# never set in prod. Both sat SILENTLY inert — no failure, no page. This job is
+# the loud, daily detector that the silent state was missing.
+#
+# This is the COMPLEMENT to `db-migrate` (FV-259), which AUTO-APPLIES migrations
+# on merge. This job NEVER applies anything and NEVER changes secrets — it is
+# strictly READ-ONLY:
+#   1. Migration drift — `supabase migration list --linked` vs the local
+#      supabase/migrations/ files; fails + alerts if any local migration is
+#      missing on the linked/remote project.
+#   2. Env presence — every REQUIRED var documented in apps/web/.env.example is
+#      checked for PRESENCE in the GitHub `production` environment; fails + alerts
+#      on any gap. NAMES ONLY are ever logged or emailed — never values.
+# Both alert through the existing Resend channel (same recipient/format as the
+# in-app notifyError) so a gap pages KC within a day.
+#
+# ----------------------------------------------------------------------------
+# Required repo secrets / environment config (KC sets these — see report):
+#   Repo secrets:
+#     SUPABASE_ACCESS_TOKEN — personal access token (account/tokens). Already
+#                             used by db-migrate.
+#     RESEND_API_KEY        — Resend API key, so this job can send the alert.
+#     ALERT_EMAIL_TO        — alert recipient (same var notifyError uses).
+#     ALERT_EMAIL_FROM      — Resend-verified sender (same var notifyError uses).
+#   GitHub `production` environment:
+#     To make check #2 meaningful, mirror the PROD runtime env-var NAMES (the
+#     required ones from .env.example) into this GitHub Environment as
+#     Environment secrets/variables. CI cannot read Vercel's runtime env, so the
+#     GitHub `production` environment is the source it checks. (Values are never
+#     read — only presence. See report for the names-only guarantee + the
+#     "verify Vercel directly" follow-up.)
+#   Project ref is NOT a secret; it is pinned below (matches db-migrate).
+# ----------------------------------------------------------------------------
+
+name: infra-drift
+
+on:
+  schedule:
+    # Daily at 13:00 UTC (~06:00 PT / ~09:00 ET) — a gap pages KC well within a day.
+    - cron: "0 13 * * *"
+  # Manual trigger for on-demand verification (e.g. right after a deploy).
+  workflow_dispatch:
+
+concurrency:
+  group: infra-drift
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    name: Migration + env drift check
+    runs-on: ubuntu-latest
+    # Inject the GitHub `production` environment so check #2 sees the prod var set.
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22' # node --experimental-strip-types (.ts scripts) needs >= 22.6
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # ----------------------------------------------------------------------
+      # Check 1 — migration drift (READ-ONLY; never applies)
+      # ----------------------------------------------------------------------
+      - name: Fail loudly if SUPABASE_ACCESS_TOKEN is missing
+        env:
+          HAS_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' && 'yes' || '' }}
+        run: |
+          if [ -z "$HAS_ACCESS_TOKEN" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN secret is not set — cannot check migration drift. Set it (same token db-migrate uses)."
+            exit 1
+          fi
+
+      - name: Link project (read-only)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase link --project-ref kumrgeosgzdlxgljbyju
+
+      - name: Check migration drift (local vs linked)
+        id: drift
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          ALERT_EMAIL_FROM: ${{ secrets.ALERT_EMAIL_FROM }}
+        run: |
+          set -o pipefail
+          # `migration list --linked` exits 0 even when drift exists, so the
+          # detector script (not the CLI exit code) decides pass/fail. It alerts
+          # via Resend on drift and exits non-zero. `set -o pipefail` ensures a
+          # CLI/link failure (empty output) is caught by the script's empty check.
+          supabase migration list --linked \
+            | node --experimental-strip-types apps/web/scripts/check-migration-drift.ts \
+                --migrations-dir supabase/migrations
+
+      # ----------------------------------------------------------------------
+      # Check 2 — env presence (NAMES ONLY; never reads values)
+      #
+      # Runs even if the migration check failed, so a single run surfaces BOTH
+      # gaps rather than hiding the second behind the first.
+      # ----------------------------------------------------------------------
+      - name: Check required env-var presence (names only)
+        if: always()
+        env:
+          # Alerting channel (so this check can page on a gap).
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          ALERT_EMAIL_FROM: ${{ secrets.ALERT_EMAIL_FROM }}
+          # The vars under test. Map each required name from .env.example to the
+          # matching GitHub `production` Environment secret/variable. The script
+          # only checks PRESENCE (non-empty) — it never logs or emails a value.
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DEVICE_COOKIE_HMAC_SECRET: ${{ secrets.DEVICE_COOKIE_HMAC_SECRET }}
+          RATE_LIMIT_HASH_SECRET: ${{ secrets.RATE_LIMIT_HASH_SECRET }}
+          WAITLIST_NOTIFICATION_TO: ${{ secrets.WAITLIST_NOTIFICATION_TO }}
+          WAITLIST_NOTIFICATION_FROM: ${{ secrets.WAITLIST_NOTIFICATION_FROM }}
+          NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ vars.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          # ALERT_EMAIL_TO / ALERT_EMAIL_FROM are checked too (set above).
+        run: |
+          node --experimental-strip-types apps/web/scripts/check-env-presence.ts
