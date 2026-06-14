@@ -23,7 +23,11 @@ from-victory/
 
 ## Prerequisites
 
-- **Node.js 20+** (see `.nvmrc`)
+- **Node.js 20+** for the app — build, dev, test (see `.nvmrc`)
+- **Node.js 22.6+** _only_ for the dev-time `audio:*` and `scripts:*` tooling,
+  which executes `.ts` files directly via `node --experimental-strip-types`
+  (added in Node 22.6). The deployed app and CI still run on Node 20+; this
+  requirement applies to local audio generation / script export only.
 - **npm 10+** (ships with Node 20)
 
 ## Setup
