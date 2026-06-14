@@ -62,3 +62,41 @@ describe("getStripe singleton", () => {
     expect(() => getStripe()).toThrow(/STRIPE_SECRET_KEY is not set/);
   });
 });
+
+describe("__resetStripeForTests environment guard (FV-183)", () => {
+  let originalNodeEnv: string | undefined;
+  let originalVitest: string | undefined;
+
+  beforeEach(() => {
+    originalNodeEnv = process.env.NODE_ENV;
+    originalVitest = process.env.VITEST;
+  });
+
+  afterEach(() => {
+    if (originalNodeEnv !== undefined) {
+      process.env.NODE_ENV = originalNodeEnv;
+    } else {
+      delete process.env.NODE_ENV;
+    }
+    if (originalVitest !== undefined) {
+      process.env.VITEST = originalVitest;
+    } else {
+      delete process.env.VITEST;
+    }
+  });
+
+  it("throws when invoked outside the test environment", () => {
+    // Simulate a stray production import: neither NODE_ENV=test nor VITEST set.
+    process.env.NODE_ENV = "production";
+    delete process.env.VITEST;
+
+    expect(() => __resetStripeForTests()).toThrow(/test-only hook/);
+  });
+
+  it("is a no-op (does not throw) under NODE_ENV=test even without VITEST", () => {
+    process.env.NODE_ENV = "test";
+    delete process.env.VITEST;
+
+    expect(() => __resetStripeForTests()).not.toThrow();
+  });
+});
