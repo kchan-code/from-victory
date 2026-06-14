@@ -20,11 +20,21 @@ export default async function DashboardPage() {
 
   const supabase = createClient();
   // RLS scopes this to athletes linked to the calling parent.
-  const { data: athletes } = await supabase
+  const { data: athletes, error: athletesError } = await supabase
     .from("profiles")
     .select("id, first_name, birthdate")
     .eq("role", "athlete")
     .order("first_name", { ascending: true });
+
+  // A DB/RLS error here means the query itself failed — NOT "no athletes yet".
+  // Re-throw so it surfaces to the nearest error boundary (app/error.tsx) and
+  // is observable, rather than silently showing "No athletes yet" to a paying
+  // parent whose linked athletes appear to have vanished.
+  if (athletesError) {
+    throw new Error(
+      `dashboard: athletes query failed — ${athletesError.message}`,
+    );
+  }
 
   const linkedAthletes = athletes ?? [];
 

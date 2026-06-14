@@ -8,8 +8,8 @@ import { Icon, RhythmRing } from "@/components/ui";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireAthlete } from "@/lib/auth/guards";
 import { requireActiveAccess } from "@/lib/subscriptions/enforce";
-import { getDailySession } from "@/lib/daily/session";
-import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
+import { createClient } from "@/lib/supabase/server";
+import { loadDailySession, TOTAL_TRAINING_DAYS, DailySessionNotFoundError } from "@/lib/daily/progression";
 import { modulesForSport } from "@/lib/postgame/modules";
 import { dailyCardSubtitle } from "@/lib/quiz-config";
 
@@ -18,7 +18,7 @@ export const metadata = {
 };
 
 export default async function AthleteHomePage() {
-  const { profile } = await requireAthlete();
+  const { userId, profile } = await requireAthlete();
 
   // Subscription enforcement gate (FV-62). No-op when flag is off.
   // Must run after requireAthlete() so the role is confirmed server-side.
@@ -30,23 +30,32 @@ export default async function AthleteHomePage() {
     redirect("/athlete/onboarding/sport");
   }
 
-  // Load session data for the rhythm ring. Wrap in try/catch: basketball
-  // athletes (pre-FV-32 content) have no catalog rows and should NOT crash
-  // the hub. On failure we render ring at 0 and still show the nav cards.
-  // Note: this is a second getDailySession call vs the daily screen — FV-104
-  // will dedupe the data layer. Do not refactor here.
+  // Load session data for the rhythm ring. requireAthlete() already ran above,
+  // so we call loadDailySession directly — no redundant auth round-trip and
+  // no risk of swallowing a redirect() control-flow error.
+  //
+  // Catch ONLY DailySessionNotFoundError (content not yet seeded — expected for
+  // new sports). Any other error is an infra failure; re-throw so it surfaces to
+  // app/athlete/error.tsx (observable). Do NOT widen the catch.
   let dayNumber = 1;
   let completedCount = 0;
   let sessionLoaded = false;
 
   try {
-    const data = await getDailySession();
+    const supabase = createClient();
+    const data = await loadDailySession(supabase, userId, profile.sport);
     dayNumber = data.dayNumber;
     completedCount = data.completedCount;
     sessionLoaded = true;
-  } catch {
-    // No catalog row for this athlete's (day, sport) — degrade gracefully.
-    sessionLoaded = false;
+  } catch (err) {
+    if (err instanceof DailySessionNotFoundError) {
+      // No catalog row for this athlete's (day, sport) — degrade gracefully.
+      sessionLoaded = false;
+    } else {
+      // Infra failure (DB down, RLS misconfig, network error) — surface to the
+      // error boundary, not silently swallowed as "content coming soon".
+      throw err;
+    }
   }
 
   const progressPct = sessionLoaded

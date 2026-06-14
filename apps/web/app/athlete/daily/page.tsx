@@ -10,15 +10,20 @@ import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireAthlete } from "@/lib/auth/guards";
 import { requireActiveAccess } from "@/lib/subscriptions/enforce";
 import { bibleLink } from "@/lib/daily/bible-link";
-import { getDailySession } from "@/lib/daily/session";
-import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
+import { createClient } from "@/lib/supabase/server";
+import {
+  loadDailySession,
+  TOTAL_TRAINING_DAYS,
+  DailySessionNotFoundError,
+  type DailySessionView,
+} from "@/lib/daily/progression";
 
 export const metadata = {
   title: "Today's Training · From Victory",
 };
 
 export default async function DailyPage() {
-  const { profile } = await requireAthlete();
+  const { userId, profile } = await requireAthlete();
 
   // Subscription enforcement gate (FV-62). No-op when flag is off.
   await requireActiveAccess({ role: "athlete" });
@@ -27,15 +32,25 @@ export default async function DailyPage() {
     redirect("/athlete/onboarding/sport");
   }
 
-  // Load the session — throws if no catalog row for this athlete's (day, sport).
-  // The try/catch below catches that and renders a calm fallback instead of a 500.
-  let sessionData: Awaited<ReturnType<typeof getDailySession>> | null = null;
+  // Load the session. requireAthlete() already ran above, so we call
+  // loadDailySession directly — no redundant auth round-trip and no risk of
+  // swallowing a redirect() control-flow error.
+  //
+  // Catch ONLY DailySessionNotFoundError (content not yet seeded — the expected
+  // "coming soon" case). Any other error is an infra failure; re-throw so it
+  // surfaces to app/athlete/error.tsx (observable, not silently "coming soon").
+  let sessionData: DailySessionView | null = null;
   let sessionError = false;
 
   try {
-    sessionData = await getDailySession();
-  } catch {
-    sessionError = true;
+    const supabase = createClient();
+    sessionData = await loadDailySession(supabase, userId, profile.sport);
+  } catch (err) {
+    if (err instanceof DailySessionNotFoundError) {
+      sessionError = true;
+    } else {
+      throw err;
+    }
   }
 
   const progressPct = sessionData

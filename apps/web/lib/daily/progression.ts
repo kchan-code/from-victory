@@ -19,6 +19,29 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Sport } from "@/lib/sports";
 import type { Database } from "@/lib/supabase/types";
 
+/**
+ * Thrown when no catalog row exists for the resolved (day_number, sport) pair.
+ * This is the EXPECTED "content not yet seeded" case, distinct from infra
+ * failures (DB down, RLS misconfig) which throw a plain Error.
+ *
+ * Callers that want to degrade gracefully (show a "coming soon" fallback) catch
+ * ONLY this class. Any other error is an infra failure and must re-throw so it
+ * surfaces to the error boundary.
+ */
+export class DailySessionNotFoundError extends Error {
+  readonly dayNumber: number;
+  readonly sport: string;
+
+  constructor(dayNumber: number, sport: string, cause?: string) {
+    super(
+      `daily session: no catalog row for day ${dayNumber} sport "${sport}"${cause ? ` — ${cause}` : ""}`,
+    );
+    this.name = "DailySessionNotFoundError";
+    this.dayNumber = dayNumber;
+    this.sport = sport;
+  }
+}
+
 type ServerClient = SupabaseClient<Database>;
 
 export const TOTAL_TRAINING_DAYS = 30;
@@ -82,9 +105,16 @@ export async function loadDailySession(
     .eq("sport", sport)
     .single();
 
-  if (error || !session) {
+  if (!session) {
+    // PGRST116 = "no rows returned" — this is the expected content-not-yet-seeded
+    // case. Throw the typed sentinel so callers can distinguish it from infra errors.
+    if (!error || error.code === "PGRST116") {
+      throw new DailySessionNotFoundError(dayNumber, sport);
+    }
+    // Any other DB/RLS error is an infra failure — throw a plain Error so it
+    // propagates to the error boundary (not silently treated as "coming soon").
     throw new Error(
-      `daily session: no catalog row for day ${dayNumber} sport "${sport}" — ${error?.message ?? "not found"}`,
+      `daily session: catalog fetch failed for day ${dayNumber} sport "${sport}" — ${error.message}`,
     );
   }
 
@@ -115,9 +145,12 @@ export async function resolveCurrentCatalogId(
     .eq("sport", sport)
     .single();
 
-  if (error || !data) {
+  if (!data) {
+    if (!error || error.code === "PGRST116") {
+      throw new DailySessionNotFoundError(dayNumber, sport);
+    }
     throw new Error(
-      `daily session: no catalog row for day ${dayNumber} sport "${sport}" — ${error?.message ?? "not found"}`,
+      `daily session: catalog fetch failed for day ${dayNumber} sport "${sport}" — ${error.message}`,
     );
   }
 

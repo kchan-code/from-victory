@@ -12,6 +12,7 @@ import {
   currentDayNumber,
   loadDailySession,
   resolveCurrentCatalogId,
+  DailySessionNotFoundError,
 } from "@/lib/daily/progression";
 
 // ---------------------------------------------------------------------------
@@ -50,6 +51,11 @@ type FakeOpts = {
   catalogRow?: Record<string, unknown> | null;
   /** Force the completed-count query to error (covers the throw branch). */
   countError?: { message: string };
+  /**
+   * Force the catalog .single() to return a real infra error (non-PGRST116).
+   * When set, catalogRow is ignored.
+   */
+  catalogError?: { code: string; message: string };
 };
 
 function makeFakeSupabase(opts: FakeOpts) {
@@ -77,10 +83,15 @@ function makeFakeSupabase(opts: FakeOpts) {
       // The catalog query ends in .single().
       single: () => {
         captured.push({ table, filters });
+        // Simulate a real infra error (not a not-found).
+        if (opts.catalogError) {
+          return Promise.resolve({ data: null, error: opts.catalogError });
+        }
         const row = opts.catalogRow ?? null;
         return Promise.resolve({
           data: row,
-          error: row ? null : { message: "no rows" },
+          // Real Supabase .single() returns PGRST116 when no rows match.
+          error: row ? null : { code: "PGRST116", message: "no rows returned" },
         });
       },
       // The count query is awaited directly (no .single()) — make the chain
@@ -193,11 +204,30 @@ describe("loadDailySession — sport-keyed fetch", () => {
     expect(view.allComplete).toBe(false);
   });
 
-  it("throws a clear error when no catalog row exists for (day, sport)", async () => {
+  it("throws DailySessionNotFoundError (typed sentinel) when no catalog row exists for (day, sport)", async () => {
     const supabase = makeFakeSupabase({ completedCount: 0, catalogRow: null });
-    await expect(
-      loadDailySession(supabase, "athlete-4", "basketball"),
-    ).rejects.toThrow(/no catalog row for day 1 sport "basketball"/);
+    const err = await loadDailySession(supabase, "athlete-4", "basketball").catch(
+      (e: unknown) => e,
+    );
+    expect(err).toBeInstanceOf(DailySessionNotFoundError);
+    expect((err as DailySessionNotFoundError).message).toMatch(
+      /no catalog row for day 1 sport "basketball"/,
+    );
+    expect((err as DailySessionNotFoundError).dayNumber).toBe(1);
+    expect((err as DailySessionNotFoundError).sport).toBe("basketball");
+  });
+
+  it("throws a plain Error (not DailySessionNotFoundError) on a real infra error", async () => {
+    const supabase = makeFakeSupabase({
+      completedCount: 0,
+      catalogError: { code: "42501", message: "permission denied" },
+    });
+    const err = await loadDailySession(supabase, "athlete-infra", "hockey").catch(
+      (e: unknown) => e,
+    );
+    expect(err).toBeInstanceOf(Error);
+    expect(err).not.toBeInstanceOf(DailySessionNotFoundError);
+    expect((err as Error).message).toMatch(/catalog fetch failed.*permission denied/);
   });
 
   it("throws when the completed-count query fails", async () => {
@@ -235,5 +265,17 @@ describe("resolveCurrentCatalogId", () => {
     );
     expect(catalogQuery?.filters.sport).toBe("basketball");
     expect(catalogQuery?.filters.day_number).toBe(3);
+  });
+
+  it("throws DailySessionNotFoundError when no catalog row exists", async () => {
+    const supabase = makeFakeSupabase({ completedCount: 0, catalogRow: null });
+    const err = await resolveCurrentCatalogId(
+      supabase,
+      "athlete-notfound",
+      "hockey",
+    ).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(DailySessionNotFoundError);
+    expect((err as DailySessionNotFoundError).dayNumber).toBe(1);
+    expect((err as DailySessionNotFoundError).sport).toBe("hockey");
   });
 });
