@@ -398,6 +398,7 @@ export function AppPreview() {
                   {/* Coming soon badge */}
                   <div className="mb-3">
                     <div
+                      data-testid="postgame-coming-soon"
                       className="inline-flex items-center gap-1.5 rounded-pill px-2.5 py-1 font-mono text-[8px] tracking-[0.14em] uppercase font-semibold"
                       style={{
                         background: "rgba(36,91,255,0.12)",
@@ -618,9 +619,9 @@ function PreviewItem({
         <div className="font-mono text-[10px] tracking-[0.20em] uppercase text-gold font-semibold">
           {lbl}
         </div>
-        <h4 className="font-heading font-semibold text-[16px] text-cream tracking-[-0.005em] m-0">
+        <h3 className="font-heading font-semibold text-[16px] text-cream tracking-[-0.005em] m-0">
           {ttl}
-        </h4>
+        </h3>
         <p className="font-body text-[13px] text-cream/50 leading-[1.5] m-0">
           {sub}
         </p>
