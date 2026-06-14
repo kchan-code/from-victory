@@ -28,17 +28,11 @@ import {
   disablePushReminder,
 } from "@/lib/actions/push-reminder";
 import { urlBase64ToUint8Array } from "@/lib/push/vapid";
+import { formatHour } from "@/lib/push/format";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/** Format a 0-23 hour as "7:00 AM" / "7:00 PM". */
-function formatHour(hour: number): string {
-  const period = hour < 12 ? "AM" : "PM";
-  const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-  return `${h12}:00 ${period}`;
-}
 
 /** All 24 hours as option values. */
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => i);

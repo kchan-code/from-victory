@@ -7,6 +7,7 @@ import { requireAthlete } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
 import { SUPPORTED_SPORTS, sportLabel, type Sport } from "@/lib/sports";
 import { FOCUS_AREA_LABELS, isFocusAreaKey } from "@/lib/quiz-config";
+import { formatHour } from "@/lib/push/format";
 
 export const metadata = {
   title: "Settings · From Victory",
@@ -178,14 +179,7 @@ export default async function AthleteSettingsPage({
             </span>
             <span className="flex-none font-heading text-[14px] font-semibold text-cream/70">
               {pushSub !== null
-                ? `On · ${
-                    (() => {
-                      const h = pushSub.reminder_hour;
-                      const period = h < 12 ? "AM" : "PM";
-                      const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-                      return `${h12}:00 ${period}`;
-                    })()
-                  }`
+                ? `On · ${formatHour(pushSub.reminder_hour)}`
                 : "Off"}
             </span>
             <span className="flex flex-none items-center gap-1 font-heading text-[13px] font-semibold text-gold">
