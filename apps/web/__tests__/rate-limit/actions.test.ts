@@ -95,7 +95,12 @@ vi.mock("@/lib/supabase/server", () => ({
 // Import modules under test AFTER mocks are registered
 // ---------------------------------------------------------------------------
 
-import { signIn, signUp } from "@/lib/actions/auth";
+import {
+  signIn,
+  signUp,
+  requestPasswordReset,
+  updatePassword,
+} from "@/lib/actions/auth";
 import {
   generatePairingCode,
   claimPairing,
@@ -212,6 +217,8 @@ interface ServerMockOptions {
   signUpError?: { message: string; status?: number; code?: string } | null;
   signInError?: { message: string; status?: number; code?: string } | null;
   profileInsertError?: { message: string } | null;
+  resetPasswordError?: { message: string; status?: number; code?: string } | null;
+  updateUserError?: { message: string; status?: number; code?: string } | null;
 }
 
 function makeServerMock(opts: ServerMockOptions = {}) {
@@ -220,6 +227,8 @@ function makeServerMock(opts: ServerMockOptions = {}) {
     signUpError = null,
     signInError = null,
     profileInsertError = null,
+    resetPasswordError = null,
+    updateUserError = null,
   } = opts;
 
   return {
@@ -230,6 +239,12 @@ function makeServerMock(opts: ServerMockOptions = {}) {
       })),
       signInWithPassword: vi.fn(async (_opts: unknown) => ({
         error: signInError,
+      })),
+      resetPasswordForEmail: vi.fn(async (_email: string, _opts?: unknown) => ({
+        error: resetPasswordError,
+      })),
+      updateUser: vi.fn(async (_opts: unknown) => ({
+        error: updateUserError,
       })),
     },
     from: (_table: string) => ({
@@ -693,5 +708,130 @@ describe("generatePairingCode — rate limiting", () => {
       "generate_pairing_code",
       "parent-uuid-001",
     );
+  });
+});
+
+// ===========================================================================
+// 6. requestPasswordReset (FV-185)
+// ===========================================================================
+
+describe("requestPasswordReset — rate limiting (FV-185)", () => {
+  function makeFormData(email = "parent@example.com") {
+    const fields: Record<string, string> = { email };
+    return { get: (key: string) => fields[key] ?? null } as FormData;
+  }
+
+  it("over-limit: returns throttle error WITHOUT calling resetPasswordForEmail", async () => {
+    rateLimitGateMock.mockResolvedValue({ limited: true });
+
+    const result = await requestPasswordReset(null, makeFormData());
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: expect.stringMatching(/too many attempts/i),
+    });
+    expect(serverMockImpl.auth.resetPasswordForEmail).not.toHaveBeenCalled();
+  });
+
+  it("under-limit: proceeds — resetPasswordForEmail IS called, returns ok:true", async () => {
+    rateLimitGateMock.mockResolvedValue({ limited: false });
+
+    const result = await requestPasswordReset(null, makeFormData());
+
+    expect(result).toMatchObject({ ok: true });
+    expect(serverMockImpl.auth.resetPasswordForEmail).toHaveBeenCalledOnce();
+  });
+
+  it("keys on the normalized (lowercased/trimmed) email", async () => {
+    rateLimitGateMock.mockResolvedValue({ limited: true });
+
+    await requestPasswordReset(null, makeFormData("  MixedCase@Example.COM  "));
+
+    expect(rateLimitGateMock).toHaveBeenCalledWith(
+      "password_reset",
+      "mixedcase@example.com",
+    );
+  });
+
+  it("synthetic athlete email short-circuits BEFORE the gate (no send, no gate call)", async () => {
+    rateLimitGateMock.mockResolvedValue({ limited: false });
+
+    const result = await requestPasswordReset(
+      null,
+      makeFormData("someone@athletes.fromvictory.app"),
+    );
+
+    expect(result).toMatchObject({ ok: true });
+    expect(rateLimitGateMock).not.toHaveBeenCalled();
+    expect(serverMockImpl.auth.resetPasswordForEmail).not.toHaveBeenCalled();
+  });
+
+  it("fail-open: rateLimitGate not-limited — resetPasswordForEmail IS called", async () => {
+    rateLimitGateMock.mockResolvedValue({ limited: false });
+    serverMockImpl = makeServerMock({
+      resetPasswordError: { message: "smtp down" },
+    });
+
+    const result = await requestPasswordReset(null, makeFormData());
+
+    // Anti-enumeration: still ok:true even on a downstream send error.
+    expect(result).toMatchObject({ ok: true });
+    expect(serverMockImpl.auth.resetPasswordForEmail).toHaveBeenCalledOnce();
+  });
+});
+
+// ===========================================================================
+// 7. updatePassword (FV-185)
+// ===========================================================================
+
+describe("updatePassword — rate limiting (FV-185)", () => {
+  function makeFormData(password = "newpassword123") {
+    const fields: Record<string, string> = { password };
+    return { get: (key: string) => fields[key] ?? null } as FormData;
+  }
+
+  it("over-limit: returns throttle error WITHOUT calling updateUser", async () => {
+    rateLimitGateMock.mockResolvedValue({ limited: true });
+
+    const result = await updatePassword(null, makeFormData());
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: expect.stringMatching(/too many attempts/i),
+    });
+    expect(serverMockImpl.auth.updateUser).not.toHaveBeenCalled();
+  });
+
+  it("under-limit happy path: updateUser IS called and redirect fires", async () => {
+    rateLimitGateMock.mockResolvedValue({ limited: false });
+
+    let threw: Error | null = null;
+    try {
+      await updatePassword(null, makeFormData());
+    } catch (e) {
+      threw = e as Error;
+    }
+
+    expect(serverMockImpl.auth.updateUser).toHaveBeenCalledOnce();
+    expect(threw).toBe(REDIRECT_SENTINEL);
+  });
+
+  it("keys on request IP", async () => {
+    rateLimitGateMock.mockResolvedValue({ limited: true });
+    getRequestIpMock.mockResolvedValue("9.9.9.9");
+
+    await updatePassword(null, makeFormData());
+
+    expect(rateLimitGateMock).toHaveBeenCalledWith("password_update", "9.9.9.9");
+  });
+
+  it("fails open when IP is null — gate invoked with (password_update, null), then proceeds", async () => {
+    getRequestIpMock.mockResolvedValue(null);
+    rateLimitGateMock.mockResolvedValue({ limited: false });
+
+    await updatePassword(null, makeFormData()).catch(() => {});
+
+    expect(rateLimitGateMock).toHaveBeenCalledWith("password_update", null);
+    expect(serverMockImpl.auth.updateUser).toHaveBeenCalledOnce();
   });
 });

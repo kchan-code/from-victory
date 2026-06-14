@@ -31,6 +31,8 @@ export const RATE_LIMIT_ACTIONS = [
   "athlete_sign_in",
   "claim_pairing",
   "generate_pairing_code",
+  "password_reset",
+  "password_update",
 ] as const;
 
 export type RateLimitAction = (typeof RATE_LIMIT_ACTIONS)[number];
@@ -98,6 +100,27 @@ export const RATE_LIMIT_CONFIG: Record<RateLimitAction, RateLimitConfig> = {
    * devices in a session. Well above any realistic use case.
    */
   generate_pairing_code: { limit: 30, windowMinutes: 60 },
+
+  /**
+   * password_reset: keyed on normalized email (FV-185).
+   * Threat: resetPasswordForEmail sends a real email on every call and the
+   * action returns ok:true regardless (anti-enumeration), so without a gate a
+   * bot can spam a known parent's inbox and drain Supabase's outbound email
+   * quota — the same family as sign_up. 8 / 60 min is generous for a human who
+   * mistypes or doesn't receive the first email (and stays above the project's
+   * "a normal user retrying 5 times is never locked out" floor — see
+   * is-rate-limited.test.ts), while blunting automated loops. Keying on the
+   * submitted email (not on account existence) leaks nothing.
+   */
+  password_reset: { limit: 8, windowMinutes: 60 },
+
+  /**
+   * password_update: keyed on request IP (FV-185).
+   * Lower-risk than the reset path — a valid recovery session is required — but
+   * gated for completeness against a session-replay/abuse loop. 10 / 15 min is
+   * well above any human password-change use case.
+   */
+  password_update: { limit: 10, windowMinutes: 15 },
 };
 
 // ---------------------------------------------------------------------------
