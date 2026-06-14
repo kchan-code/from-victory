@@ -154,35 +154,16 @@ export async function updateReminderTime(hour: number): Promise<ReminderResult> 
   const { userId } = await requireAthlete();
   const supabase = createClient();
 
-  // Check row existence first, then update — two queries, both RLS-scoped.
-  // The select is a lightweight HEAD-style check; the update only proceeds if
-  // the row exists under the athlete's own session.
-  const { data: existing, error: selectError } = await supabase
-    .from("push_subscriptions")
-    .select("athlete_id")
-    .eq("athlete_id", userId)
-    .maybeSingle();
-
-  if (selectError) {
-    console.error(
-      "[push-reminder.updateReminderTime] select failed:",
-      selectError.message,
-    );
-    return { ok: false, error: "Couldn't update your reminder time — try again." };
-  }
-
-  if (!existing) {
-    return {
-      ok: false,
-      error:
-        "No active reminder found. Enable reminders first, then update the time.",
-    };
-  }
-
-  const { error } = await supabase
+  // Single atomic update keyed on the athlete's own row (RLS-scoped). Using
+  // .select() to return the affected rows lets us detect the "no subscription
+  // row" case from the rows-affected count — instead of a select-then-update
+  // pair, where the row could be deleted between the two queries and the update
+  // would still report ok:true (the FV-244 TOCTOU).
+  const { data: updated, error } = await supabase
     .from("push_subscriptions")
     .update({ reminder_hour: parsed.data.hour })
-    .eq("athlete_id", userId);
+    .eq("athlete_id", userId)
+    .select("athlete_id");
 
   if (error) {
     console.error(
@@ -190,6 +171,16 @@ export async function updateReminderTime(hour: number): Promise<ReminderResult> 
       error.message,
     );
     return { ok: false, error: "Couldn't update your reminder time — try again." };
+  }
+
+  if (!updated || updated.length === 0) {
+    // No row matched — the athlete isn't subscribed (or the row was just
+    // deleted). Prompt them to enable reminders first.
+    return {
+      ok: false,
+      error:
+        "No active reminder found. Enable reminders first, then update the time.",
+    };
   }
 
   return { ok: true };
