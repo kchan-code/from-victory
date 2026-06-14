@@ -64,38 +64,24 @@ describe("getStripe singleton", () => {
 });
 
 describe("__resetStripeForTests environment guard (FV-183)", () => {
-  let originalNodeEnv: string | undefined;
-  let originalVitest: string | undefined;
-
-  beforeEach(() => {
-    originalNodeEnv = process.env.NODE_ENV;
-    originalVitest = process.env.VITEST;
-  });
-
+  // Use vi.stubEnv so NODE_ENV / VITEST are mutated type-safely (process.env
+  // NODE_ENV is a readonly property under the project's TS config) and restored
+  // automatically by vi.unstubAllEnvs().
   afterEach(() => {
-    if (originalNodeEnv !== undefined) {
-      process.env.NODE_ENV = originalNodeEnv;
-    } else {
-      delete process.env.NODE_ENV;
-    }
-    if (originalVitest !== undefined) {
-      process.env.VITEST = originalVitest;
-    } else {
-      delete process.env.VITEST;
-    }
+    vi.unstubAllEnvs();
   });
 
   it("throws when invoked outside the test environment", () => {
     // Simulate a stray production import: neither NODE_ENV=test nor VITEST set.
-    process.env.NODE_ENV = "production";
-    delete process.env.VITEST;
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VITEST", undefined);
 
     expect(() => __resetStripeForTests()).toThrow(/test-only hook/);
   });
 
   it("is a no-op (does not throw) under NODE_ENV=test even without VITEST", () => {
-    process.env.NODE_ENV = "test";
-    delete process.env.VITEST;
+    vi.stubEnv("NODE_ENV", "test");
+    vi.stubEnv("VITEST", undefined);
 
     expect(() => __resetStripeForTests()).not.toThrow();
   });
