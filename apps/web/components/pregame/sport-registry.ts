@@ -311,6 +311,7 @@ export const HOCKEY_CONFIG: SportConfig = {
     "Press thumb to palm",
     "Long exhale",
     "Look at tape",
+    "Take a drink",
     "Say cue word",
   ] as const,
 

@@ -835,11 +835,12 @@ describe("basketball opener parity (FV-120)", () => {
 //     bare magic number would be both brittle and opaque. Instead assert a
 //     documented per-category breakdown whose sum must equal the catalog size —
 //     this catches orphaned/dropped clips (the sum diverges) AND stays legible.
-//     Counts verified against manifest b5585589 (FV-266 golf render + #232 intros).
+//     Counts verified against manifest bd02b799 (FV-266 golf render + #232 intros;
+//     + anc-take-a-drink, the hockey "take a drink from your bottle" anchor).
 // ---------------------------------------------------------------------------
 
 describe("catalog count (multi-sport, FV-266)", () => {
-  it("catalog is fully categorized (no orphans) and totals 345 entries", () => {
+  it("catalog is fully categorized (no orphans) and totals 346 entries", () => {
     const keys = Object.keys(catalog);
     const n = (re: RegExp) => keys.filter((k) => re.test(k)).length;
     const breakdown = {
@@ -852,7 +853,7 @@ describe("catalog count (multi-sport, FV-266)", () => {
       practice: n(/^pp-/), //                       56 — pre-practice clips (all sports + variations)
       openers: n(/^opener-/), //                    19 — need openers (incl. basketball variants)
       cueWord: n(/^cw-/), //                        20 — cue-word reset/sendoff
-      anchor: n(/^anc-/), //                         8 — reset-anchor clips
+      anchor: n(/^anc-/), //                         9 — reset-anchor clips (+anc-take-a-drink, hockey)
       selfTalk: n(/^st-/), //                        8 — self-talk clips
       shared: n(/^shared-/), //                     10 — shared scaffold clips (+3 section intros, #232)
     };
@@ -863,7 +864,7 @@ describe("catalog count (multi-sport, FV-266)", () => {
     // Every catalog key falls into exactly one bucket — catches typos/orphans.
     expect(uncategorized, `uncategorized clips: ${uncategorized.join(", ")}`).toEqual([]);
     expect(sum).toBe(keys.length);
-    expect(keys).toHaveLength(345);
+    expect(keys).toHaveLength(346);
   });
 });
 

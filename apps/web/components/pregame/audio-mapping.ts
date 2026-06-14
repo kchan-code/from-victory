@@ -73,6 +73,7 @@ export const ANCHOR_OPTION_SLUGS: Record<string, string> = {
   "Touch glove": "anc-touch-glove",
   "Press thumb to palm": "anc-press-thumb-to-palm",
   "Look at tape": "anc-look-at-tape",
+  "Take a drink": "anc-take-a-drink",
   // Basketball anchors (FV-116 — rendered + in manifest.clips)
   "Bounce ball twice": "anc-bounce-ball-twice",
   "Tap floor": "anc-tap-floor",
@@ -133,7 +134,7 @@ export const CUEWORD_OPTION_SLUGS: Record<string, string> = {
 // new manifestVersion printed to stdout, and update MANIFEST_VERSION here
 // AND in sw.js to match. AUDIO_CACHE_BUST is NOT bumped for clip regens
 // (see the retirement note below).
-export const MANIFEST_VERSION = "b5585589"; // sync with sw.js:MANIFEST_VERSION
+export const MANIFEST_VERSION = "bd02b799"; // sync with sw.js:MANIFEST_VERSION
 
 // AUDIO_CACHE_BUST — RETIRED for per-clip URL versioning (FV-142).
 // Clips are now content-addressed (<slug>.<hash8>.mp3) and need no ?v=.

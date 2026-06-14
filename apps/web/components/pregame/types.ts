@@ -145,6 +145,7 @@ export const RESET_ANCHORS: string[] = [
   "Press thumb to palm",
   "Long exhale",
   "Look at tape",
+  "Take a drink",
   "Say cue word",
 ];
 

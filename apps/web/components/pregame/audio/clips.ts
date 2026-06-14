@@ -1987,7 +1987,7 @@ Pronunciation: The word arrives cleanly with natural energy. Clear, not soft, no
 
 Pauses: A clean, brief end. Forward, not trailing.`;
 
-// ── Anchor clips (5 — "Say cue word" intentionally absent per KC's call) ───
+// ── Anchor clips (6 — "Say cue word" intentionally absent per KC's call) ───
 
 export const CLIP_ANC_LONG_EXHALE_SCRIPT: AudioScript = {
   slug: "anc-long-exhale",
@@ -2041,6 +2041,19 @@ export const CLIP_ANC_LOOK_AT_TAPE_SCRIPT: AudioScript = {
   postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Look at your tape." },
+  ],
+};
+
+// Hockey, all positions — the bench-bottle reset (KC's call). Universal across
+// forward / defense / goalie; everyone has a bottle on the bench rail or net.
+export const CLIP_ANC_TAKE_A_DRINK_SCRIPT: AudioScript = {
+  slug: "anc-take-a-drink",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Take a drink from your bottle." },
   ],
 };
 
@@ -4730,6 +4743,7 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_ANC_TOUCH_GLOVE_SCRIPT,
   CLIP_ANC_PRESS_THUMB_TO_PALM_SCRIPT,
   CLIP_ANC_LOOK_AT_TAPE_SCRIPT,
+  CLIP_ANC_TAKE_A_DRINK_SCRIPT,
   CLIP_ST_01_SCRIPT,
   CLIP_ST_02_SCRIPT,
   CLIP_ST_03_SCRIPT,

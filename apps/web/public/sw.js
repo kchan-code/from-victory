@@ -62,7 +62,7 @@ const CACHE_VERSION = "fv-shell-v3"; // bumped: FV-107 adds pregame shell cachin
  * update this string AND MANIFEST_VERSION in audio-mapping.ts in the same PR.
  * The `audio-cache-bust` CI job enforces this parity.
  */
-const MANIFEST_VERSION = "b5585589"; // sync with audio-mapping.ts:MANIFEST_VERSION
+const MANIFEST_VERSION = "bd02b799"; // sync with audio-mapping.ts:MANIFEST_VERSION
 const AUDIO_CACHE = `fv-audio-${MANIFEST_VERSION}`;
 
 /**
