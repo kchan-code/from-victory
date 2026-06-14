@@ -227,6 +227,20 @@ export async function requestPasswordReset(
     return { ok: true };
   }
 
+  // Rate limiting (FV-185): keyed on the normalized email. resetPasswordForEmail
+  // sends a real email on every call and this action returns ok:true regardless
+  // (anti-enumeration), so without a gate a bot can spam a known inbox and drain
+  // the email-send quota. The limit keys on the submitted email — not on account
+  // existence — so it leaks nothing. Placed after the synthetic short-circuit
+  // because synthetic athlete addresses never trigger a send.
+  const { limited } = await rateLimitGate("password_reset", parsed.data.email);
+  if (limited) {
+    return {
+      ok: false,
+      error: "Too many attempts. Please wait a few minutes and try again.",
+    };
+  }
+
   const supabase = createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(
     parsed.data.email,
@@ -258,6 +272,19 @@ export async function updatePassword(
       ok: false,
       error: issue?.message ?? "Invalid input.",
       field: issue?.path[0]?.toString(),
+    };
+  }
+
+  // Rate limiting (FV-185): keyed on request IP — the form carries no stable
+  // identity (the recovery session does, but we avoid a round-trip). Lower risk
+  // than the reset path since a valid recovery session is required; gated for
+  // completeness against a session-replay/abuse loop.
+  const ip = await getRequestIp();
+  const { limited } = await rateLimitGate("password_update", ip);
+  if (limited) {
+    return {
+      ok: false,
+      error: "Too many attempts. Please wait a few minutes and try again.",
     };
   }
 
