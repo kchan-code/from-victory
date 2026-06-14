@@ -2,6 +2,12 @@
 
 Dev-time tooling. Not bundled into the deployed app; runs locally only.
 
+> **Requires Node.js ≥ 22.6.** The `audio:*` and `scripts:*` npm scripts run
+> `.ts` files directly via `node --experimental-strip-types`, which only exists
+> in Node 22.6+. The repo's `.nvmrc` pins 20 (the app's runtime), so for these
+> scripts switch to a newer Node first (e.g. `nvm use 22`). Running them on
+> Node 20 fails with an unknown-flag / unsupported-syntax error.
+
 ## generate-pregame-audio.ts
 
 Generates pregame audio MP3s + sidecar JSON timelines from typed
