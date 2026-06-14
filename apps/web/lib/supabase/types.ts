@@ -194,7 +194,11 @@ export type Database = {
       device_pairings: {
         Row: {
           athlete_id: string
-          code: string
+          // FV-177: hand-edited rename code → code_sha256 (hex sha256 of the
+          // raw pairing code). Confirm shape via `supabase gen types
+          // typescript --linked` after `supabase db push` applies
+          // 20260614040000_hash_pairing_codes.sql to the linked project.
+          code_sha256: string
           consumed_at: string | null
           created_at: string
           created_by: string
@@ -202,7 +206,8 @@ export type Database = {
         }
         Insert: {
           athlete_id: string
-          code: string
+          // FV-177: see Row comment above.
+          code_sha256: string
           consumed_at?: string | null
           created_at?: string
           created_by: string
@@ -210,7 +215,8 @@ export type Database = {
         }
         Update: {
           athlete_id?: string
-          code?: string
+          // FV-177: see Row comment above.
+          code_sha256?: string
           consumed_at?: string | null
           created_at?: string
           created_by?: string
