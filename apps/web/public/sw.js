@@ -117,6 +117,103 @@ const NAVIGATION_CACHE_SAFELIST = ["/", "/offline", "/privacy", "/terms"];
  */
 const PREGAME_PATH = "/athlete/pregame";
 
+/**
+ * FV-126 — bypass list extracted as a constant so the routing DECISION can be
+ * mirrored exactly from the pure function in apps/web/lib/sw/route-strategy.ts
+ * (BYPASS_PREFIXES). Same-origin path prefixes that ALWAYS go to the network
+ * and are NEVER written to Cache Storage. See section "1c" comment below for the
+ * per-prefix privacy rationale. /athlete (no trailing slash) bypasses /athlete
+ * and every /athlete/* page EXCEPT /athlete/pregame (handled earlier, FV-107).
+ */
+const BYPASS_PREFIXES = [
+  "/api/",
+  "/auth/",
+  "/athlete",
+  "/dashboard/",
+  "/pair",
+  "/signin",
+  "/signup",
+  "/forgot-",
+  "/reset-",
+  "/subscribe",
+  "/audio/",
+];
+
+/**
+ * FV-126 — brand-asset (icon/font) extension test, mirrored from
+ * ICON_OR_FONT_RE in apps/web/lib/sw/route-strategy.ts.
+ */
+const ICON_OR_FONT_RE = /\.(png|svg|ico|webmanifest|woff2|woff|ttf|otf)$/;
+
+// ---------------------------------------------------------------------------
+// FV-126 — route → cache-strategy DECISION (pure, mirror of the TS source).
+//
+// This is a hand-mirrored copy of `decideStrategy()` in
+// apps/web/lib/sw/route-strategy.ts. The TS module is the single, unit-tested
+// source of truth; sw.js cannot import TS at runtime (static file, same reason
+// MANIFEST_VERSION is duplicated), so the logic is copied here and a sync test
+// (__tests__/sw-route-strategy.test.ts) asserts the two stay equivalent.
+//
+// Returns one of:
+//   "audio-cache-first" | "pregame-shell-network-first" | "cache-first" |
+//   "network-first-offline-fallback" | "passthrough"
+//
+// Inputs mirror what the fetch handler derives from the FetchEvent:
+//   pathname     = url.pathname
+//   isSameOrigin = url.origin === self.location.origin
+//   isNavigate   = request.mode === "navigate"
+//
+// KEEP THIS IN SYNC with route-strategy.ts — branch order and prefixes are
+// asserted by the sync test. Do not reorder branches.
+// ---------------------------------------------------------------------------
+function decideStrategy(pathname, isSameOrigin, isNavigate) {
+  // 0. cross-origin — never intercepted.
+  if (!isSameOrigin) {
+    return "passthrough";
+  }
+
+  // 1a. Pregame audio — cache-first in the audio cache (FV-106).
+  if (pathname.startsWith("/audio/pregame/")) {
+    return "audio-cache-first";
+  }
+
+  // 1a-ii. Music beds — cache-first in the SAME audio cache (FV-227).
+  if (pathname.startsWith("/audio/beds/")) {
+    return "audio-cache-first";
+  }
+
+  // 1b. Pregame shell — network-first, cache the PII-free shell (FV-107).
+  // Checked BEFORE the /athlete bypass below so pregame gets its strategy.
+  if (pathname === PREGAME_PATH || pathname === PREGAME_PATH + "/") {
+    return "pregame-shell-network-first";
+  }
+
+  // 1c. NEVER cache — always network (passthrough). Logical OR of prefixes.
+  for (const prefix of BYPASS_PREFIXES) {
+    if (pathname.startsWith(prefix)) {
+      return "passthrough";
+    }
+  }
+
+  // 2. Static build assets — cache-first (content-addressed by Next.js).
+  if (pathname.startsWith("/_next/static/")) {
+    return "cache-first";
+  }
+
+  // 3. Brand asset files (icons + fonts) — cache-first.
+  if (ICON_OR_FONT_RE.test(pathname)) {
+    return "cache-first";
+  }
+
+  // 4. Navigation requests — network-first with offline fallback.
+  if (isNavigate) {
+    return "network-first-offline-fallback";
+  }
+
+  // 5. Everything else (non-cacheable JS chunks, etc.) — passthrough.
+  return "passthrough";
+}
+
 // ---------------------------------------------------------------------------
 // INSTALL — precache the offline fallback; skip waiting so we activate fast.
 // ---------------------------------------------------------------------------
@@ -161,134 +258,57 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Only handle same-origin requests — never intercept cross-origin/CDN/Supabase.
-  if (url.origin !== self.location.origin) {
-    return; // fall through to the browser's default network fetch
-  }
+  // FV-126 — single decision point. `decideStrategy` (mirror of the pure
+  // function in apps/web/lib/sw/route-strategy.ts) classifies the request by
+  // pathname + same-origin + navigate flag. The dispatch below maps each
+  // strategy name to its handler. Behavior is identical to the previous inline
+  // branch chain — the route classification table is documented per-branch
+  // inside decideStrategy and in route-strategy.ts.
+  //
+  // Per-route rationale (unchanged):
+  //   1a.  /audio/pregame/*  — MP3s, sidecar JSON, clips manifest. Public static
+  //        (zero PII), served cache-first from AUDIO_CACHE so the guided session
+  //        plays offline once precached (audio-precache.ts). HEAD probes from
+  //        screens-b.tsx are answered from the cached GET inside audioCacheFirst.
+  //   1a-ii. /audio/beds/*   — content-addressed ambient beds, same AUDIO_CACHE.
+  //   1b.  /athlete/pregame  — the ONLY /athlete/* path with a cache strategy.
+  //        PII-free static shell; HTML + RSC payloads safe to serve offline.
+  //        INVARIANT: if pregame/page.tsx ever renders server-side user data,
+  //        remove it from route-strategy.ts (and here) so it bypasses again.
+  //   1c.  bypass list (BYPASS_PREFIXES) — /api, /auth, /athlete (minor PII:
+  //        name, sport, rhythm), /dashboard, /pair, auth flow pages, /subscribe,
+  //        and all other /audio/* — always network, NEVER cached.
+  //   2.   /_next/static/*   — content-addressed; cache-first. (/_next/image is
+  //        NOT matched — it's a query-param optimizer endpoint, must stay live.)
+  //   3.   icon/font files   — cache-first (ICON_OR_FONT_RE).
+  //   4.   navigations        — network-first + offline fallback; only the
+  //        NAVIGATION_CACHE_SAFELIST pages are written to cache.
+  //   passthrough — cross-origin + non-cacheable chunks: no respondWith, the
+  //        browser's default network fetch handles it (never cached).
+  const strategy = decideStrategy(
+    url.pathname,
+    url.origin === self.location.origin,
+    request.mode === "navigate"
+  );
 
-  // ---- 1a. Pregame audio — cache-first in the audio cache (FV-106) ----
-  //
-  // /audio/pregame/*  — MP3s, sidecar JSON, and the clips manifest.
-  // These are public static assets (zero PII). They are served cache-first
-  // from AUDIO_CACHE so the guided session plays offline once the athlete
-  // has precached their clip set (see audio-precache.ts).
-  //
-  // HEAD method handling: screens-b.tsx probes openerSrc/cellSrc with HEAD
-  // requests before the session to confirm files are reachable. A cached GET
-  // response can answer an offline HEAD probe via {ignoreMethod:true} —
-  // we synthesize a HEAD response (no body) from the cached GET response
-  // headers so the preflight succeeds offline without editing screens-b.tsx.
-  if (url.pathname.startsWith("/audio/pregame/")) {
-    event.respondWith(audioCacheFirst(request));
-    return;
+  switch (strategy) {
+    case "audio-cache-first":
+      event.respondWith(audioCacheFirst(request));
+      return;
+    case "pregame-shell-network-first":
+      event.respondWith(pregameShellNetworkFirst(request));
+      return;
+    case "cache-first":
+      event.respondWith(cacheFirst(request));
+      return;
+    case "network-first-offline-fallback":
+      event.respondWith(networkFirstWithOfflineFallback(request));
+      return;
+    case "passthrough":
+    default:
+      // Fall through — the browser handles it with no SW interception.
+      return;
   }
-
-  // ---- 1a-ii. Music beds — cache-first in the SAME audio cache (FV-227) ----
-  //
-  // /audio/beds/*  — content-addressed ambient bed MP3s.
-  // These are public static assets (zero PII), same as clip files. They use
-  // the same AUDIO_CACHE (fv-audio-<MANIFEST_VERSION>) so offline bed files
-  // are co-located with clip files. No separate cache name or version bump
-  // needed — beds are not part of the clips catalog, so MANIFEST_VERSION is
-  // not incremented when beds change. The bed path exemption in ci.yml
-  // (audio-cache-bust job) enforces this separation.
-  if (url.pathname.startsWith("/audio/beds/")) {
-    event.respondWith(audioCacheFirst(request));
-    return;
-  }
-
-  // ---- 1b. FV-107: Pregame shell — network-first, cache the PII-free shell ----
-  //
-  // /athlete/pregame is the ONLY /athlete/* path excluded from the all-network
-  // bypass below. Its server component renders no user data (PII-free static
-  // shell); the cached HTML + RSC payloads are safe to serve offline.
-  //
-  // Both navigation (mode:"navigate") and RSC data fetches (client-side
-  // Next.js router) are handled here. The RSC fetch appears as a regular GET
-  // with Next-Router-State-Tree or Next-Url headers — not mode:"navigate".
-  //
-  // INVARIANT: if pregame/page.tsx is ever changed to call requireAthlete()
-  // or render server-side user data, revert this branch to the bypass below.
-  if (url.pathname === PREGAME_PATH || url.pathname === PREGAME_PATH + "/") {
-    event.respondWith(pregameShellNetworkFirst(request));
-    return;
-  }
-
-  // ---- 1c. NEVER cache — always network (pass straight through) ----
-  //
-  // /api/*          — server actions, webhooks, data endpoints
-  // /auth/*         — Supabase auth callbacks (contains redirect tokens)
-  // /athlete/*      — authenticated pages (minor PII: name, sport, rhythm)
-  //                   NOTE: /athlete/pregame is handled above (FV-107)
-  // /dashboard/*    — parent dashboard (server-rendered, needs fresh auth)
-  // /pair           — one-time device pairing token, must not be cached
-  // /signin*        — auth flow pages
-  // /signup*        — auth flow pages
-  // /forgot-*       — auth flow pages
-  // /reset-*        — auth flow pages
-  // /subscribe*     — Stripe checkout / subscription flow
-  // /audio/*        — non-pregame, non-beds audio paths fall through here.
-  //                   /audio/pregame/* is caught by branch 1a above.
-  //                   /audio/beds/* is caught by branch 1a-ii above.
-  //                   Anything else (future audio directories) falls through.
-  if (
-    url.pathname.startsWith("/api/") ||
-    url.pathname.startsWith("/auth/") ||
-    url.pathname.startsWith("/athlete") ||
-    url.pathname.startsWith("/dashboard/") ||
-    url.pathname.startsWith("/pair") ||
-    url.pathname.startsWith("/signin") ||
-    url.pathname.startsWith("/signup") ||
-    url.pathname.startsWith("/forgot-") ||
-    url.pathname.startsWith("/reset-") ||
-    url.pathname.startsWith("/subscribe") ||
-    url.pathname.startsWith("/audio/")
-  ) {
-    return; // fall through — browser handles with no SW interception
-  }
-
-  // ---- 2. Static build assets — cache-first ----
-  //
-  // /_next/static/* is content-addressed by Next.js (hash in filename),
-  // so cache-forever is safe. Populate as the athlete visits pages.
-  //
-  // Note: /_next/image is NOT cached here — it is a query-parameterized
-  // optimizer endpoint (not content-addressed), so cache-first would pin
-  // stale dimensions/quality params. Let it pass through to the network.
-  if (url.pathname.startsWith("/_next/static/")) {
-    event.respondWith(cacheFirst(request));
-    return;
-  }
-
-  // ---- 3. Brand asset files — cache-first ----
-  //
-  // Icons and fonts accessed by their full path. The SW picks these up
-  // after first load and serves them offline on subsequent visits.
-  const isIconOrFont =
-    /\.(png|svg|ico|webmanifest|woff2|woff|ttf|otf)$/.test(url.pathname);
-  if (isIconOrFont) {
-    event.respondWith(cacheFirst(request));
-    return;
-  }
-
-  // ---- 4. Navigation requests — network-first, safelist-only cache write ----
-  //
-  // This is what makes the installed PWA launch offline. The browser's
-  // navigation request goes to the network first; if it fails (no connectivity)
-  // we serve the offline page from the install-time cache.
-  //
-  // PRIVACY: only pages on NAVIGATION_CACHE_SAFELIST (/, /offline, /privacy,
-  // /terms) are written to cache. All other navigations get network-first
-  // + offline fallback but their HTML is NEVER cached — this prevents
-  // authenticated athlete HTML (first_name, sport, rhythm metadata) from
-  // persisting in Cache Storage past sign-out or on a shared device.
-  if (request.mode === "navigate") {
-    event.respondWith(networkFirstWithOfflineFallback(request));
-    return;
-  }
-
-  // All other same-origin requests (non-cacheable JS chunks, etc.) fall
-  // through to the browser's default network fetch with no interception.
 });
 
 // ---------------------------------------------------------------------------
