@@ -25,6 +25,11 @@
  *   with no word-boundary handling (detect.ts:30-38); the substring traps below
  *   are the direct, observable consequence of that. Whether to fix the matcher
  *   or hand the trap list to the FV-12 clinical review is documented in the PR.
+ *
+ *   UPDATE (FV-187): detect.ts now normalizes whitespace runs (incl. newlines)
+ *   before matching, so the two whitespace-split cases that were pinned here as
+ *   KNOWN-BAD misses now correctly match — they have been flipped to true
+ *   positives below. Everything else stays pinned (no other behavior change).
  */
 
 // detect.ts and keywords.ts both begin with `import "server-only"`, which throws
@@ -259,7 +264,7 @@ describe("boundary cases", () => {
     });
   });
 
-  describe("phrase-across-whitespace — matcher needs the EXACT single-space phrase (KNOWN-BAD: irregular whitespace defeats it)", () => {
+  describe("phrase-across-whitespace — irregular whitespace is normalized before matching (FV-187)", () => {
     it("matches with the exact single space between words", () => {
       expect(detectSafetyConcern("kill myself")).toMatchObject({
         matched: true,
@@ -267,12 +272,46 @@ describe("boundary cases", () => {
       });
     });
 
-    it("does NOT match when a double space splits the phrase (current behavior)", () => {
-      expect(detectSafetyConcern("kill  myself")).toEqual({ matched: false });
+    it("matches when a double space splits the phrase (FV-187: was KNOWN-BAD miss)", () => {
+      expect(detectSafetyConcern("kill  myself")).toMatchObject({
+        matched: true,
+        category: { id: "crisis" },
+      });
     });
 
-    it("does NOT match when a newline splits the phrase (current behavior)", () => {
-      expect(detectSafetyConcern("kill\nmyself")).toEqual({ matched: false });
+    it("matches when a newline splits the phrase (FV-187: was KNOWN-BAD miss)", () => {
+      expect(detectSafetyConcern("kill\nmyself")).toMatchObject({
+        matched: true,
+        category: { id: "crisis" },
+      });
+    });
+
+    it("matches across a tab and across a newline + indentation", () => {
+      expect(detectSafetyConcern("end\tmy life")).toMatchObject({
+        matched: true,
+        category: { id: "crisis" },
+      });
+      // Journal-realistic: a soft-wrapped line continuing with indentation.
+      expect(
+        detectSafetyConcern("i just want to\n   die some nights"),
+      ).toMatchObject({ matched: true, category: { id: "crisis" } });
+    });
+
+    it("matches the burnout-vs-self-harm phrase even across a line break", () => {
+      // The exemplar from the FV-187 issue: "burn myself\nout" still trips the
+      // "burn myself" self_harm phrase (the broader substring trap is FV-12's
+      // clinical call, not this whitespace fix).
+      expect(detectSafetyConcern("i might burn myself\nout")).toMatchObject({
+        matched: true,
+        category: { id: "self_harm" },
+      });
+    });
+
+    it("trims leading/trailing whitespace without affecting the verdict", () => {
+      expect(detectSafetyConcern("\n  want to die  \n")).toMatchObject({
+        matched: true,
+        category: { id: "crisis" },
+      });
     });
   });
 
