@@ -15,7 +15,7 @@
  * identifiable if cleanup ever fails mid-run.
  */
 
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import fs from "fs";
 import path from "path";
 
@@ -284,10 +284,14 @@ async function provisionTestAthlete(
     Date.now() + 24 * 60 * 60 * 1000,
   ).toISOString();
 
+  // FV-177: device_pairings stores sha256(code), not the plaintext code. Mirror
+  // the app's hashPairingCode (createHash sha256 hex). The raw code still goes in
+  // the /pair URL below; the page hashes it and looks up by code_sha256.
+  const codeSha256 = createHash("sha256").update(code).digest("hex");
   const { error: pairingError } = await service
     .from("device_pairings")
     .insert({
-      code,
+      code_sha256: codeSha256,
       athlete_id: athleteId,
       created_by: parentId,
       expires_at: expiresAt,
