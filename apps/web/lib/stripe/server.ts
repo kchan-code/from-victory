@@ -59,8 +59,17 @@ export function getStripe(): Stripe {
 /**
  * Test-only: clear the cached singleton so the next getStripe() rebuilds.
  * Lets route/integration tests exercise the lazy-init path deterministically.
- * Never call from production code.
+ *
+ * Guarded so a stray import can never clear the live Stripe client singleton in
+ * a production code path: throws unless running under the test environment
+ * (`NODE_ENV === "test"` or Vitest's `VITEST` flag).
  */
 export function __resetStripeForTests(): void {
+  if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
+    throw new Error(
+      "[stripe/server] __resetStripeForTests() is a test-only hook and must " +
+        "never be invoked outside the test environment (NODE_ENV=test).",
+    );
+  }
   _stripe = null;
 }

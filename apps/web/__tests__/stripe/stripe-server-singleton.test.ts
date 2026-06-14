@@ -62,3 +62,27 @@ describe("getStripe singleton", () => {
     expect(() => getStripe()).toThrow(/STRIPE_SECRET_KEY is not set/);
   });
 });
+
+describe("__resetStripeForTests environment guard (FV-183)", () => {
+  // Use vi.stubEnv so NODE_ENV / VITEST are mutated type-safely (process.env
+  // NODE_ENV is a readonly property under the project's TS config) and restored
+  // automatically by vi.unstubAllEnvs().
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("throws when invoked outside the test environment", () => {
+    // Simulate a stray production import: neither NODE_ENV=test nor VITEST set.
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VITEST", undefined);
+
+    expect(() => __resetStripeForTests()).toThrow(/test-only hook/);
+  });
+
+  it("is a no-op (does not throw) under NODE_ENV=test even without VITEST", () => {
+    vi.stubEnv("NODE_ENV", "test");
+    vi.stubEnv("VITEST", undefined);
+
+    expect(() => __resetStripeForTests()).not.toThrow();
+  });
+});
