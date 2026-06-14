@@ -16,8 +16,11 @@ export type SafetyDetection =
  *     an event (logSafetyEvent in ./log.ts)
  *
  * Matching strategy is case-insensitive substring against multi-word
- * phrases. Categories are checked in order — the FIRST match wins.
- * Order matters: vocabulary.categories[0] is the highest urgency.
+ * phrases, with whitespace runs (incl. newlines/tabs) collapsed to a single
+ * space first so phrases still match across the line breaks and irregular
+ * spacing that real journal entries contain. Categories are checked in order —
+ * the FIRST match wins. Order matters: vocabulary.categories[0] is the highest
+ * urgency.
  *
  * Detection is best-effort. The keyword list is a stub pending clinical
  * advisor review (CLAUDE.md Open Items). False negatives are expected.
@@ -27,7 +30,12 @@ export function detectSafetyConcern(content: string): SafetyDetection {
     return { matched: false };
   }
 
-  const haystack = content.toLowerCase();
+  // Collapse whitespace runs (incl. newlines/tabs) to a single space and trim,
+  // so multi-word phrases match despite the line breaks and sloppy spacing real
+  // journal input carries ("burn myself\nout", "made  me  do"). The vocabulary
+  // is single-spaced, so this aligns the haystack to it; the vocabulary itself
+  // is untouched (FV-187).
+  const haystack = content.toLowerCase().replace(/\s+/g, " ").trim();
 
   for (const category of safetyVocabulary.categories) {
     for (const keyword of category.keywords) {
