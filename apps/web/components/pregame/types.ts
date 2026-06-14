@@ -16,6 +16,8 @@ export type NeedToday =
   | "Better decisions with the ball"
   | "Better decisions at the plate"
   | "Better course management"
+  | "Better reads"
+  | "Better race execution"
   | "Leadership"
   | "Joy"
   | "Hope"
@@ -225,6 +227,22 @@ export const NEED_VERSE: Record<NeedToday, NeedVerse> = {
   },
   // Golf variant — same sport-neutral scripture, different need label. (FV-265)
   "Better course management": {
+    reference: "Proverbs 3:5-6",
+    displayText:
+      "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him.",
+  },
+  // Football variant — same sport-neutral scripture, different need label.
+  // "Better reads" = in-play discernment (QB reads the defense, the back reads
+  // his blocks, the DB reads the route). v2 dormant track.
+  "Better reads": {
+    reference: "Proverbs 3:5-6",
+    displayText:
+      "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him.",
+  },
+  // Swimming + Track & Field variant — same sport-neutral scripture, different
+  // need label. "Better race execution" = trust the race plan / pacing / your
+  // training over panic. v2 dormant tracks.
+  "Better race execution": {
     reference: "Proverbs 3:5-6",
     displayText:
       "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him.",

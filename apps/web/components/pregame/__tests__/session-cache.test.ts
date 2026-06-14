@@ -138,7 +138,9 @@ describe("validatePregameSession — shape violations return null", () => {
   });
 
   it("returns null when sport is an unknown value", () => {
-    expect(validatePregameSession({ ...hockeySession(), sport: "football" })).toBeNull();
+    // "football" is now a valid CachedSport (v2 dormant track); use a sport
+    // that is genuinely not in the union as the unknown-value fixture.
+    expect(validatePregameSession({ ...hockeySession(), sport: "cricket" })).toBeNull();
   });
 
   it("returns null when need is an empty string", () => {

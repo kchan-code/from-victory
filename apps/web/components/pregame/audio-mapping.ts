@@ -166,6 +166,10 @@ export const NEED_OPENER_SLUGS: Record<NeedToday, string> = {
   "Better decisions at the plate": "opener-decisions",
   // Golf (FV-265) — reuses the sport-neutral decisions opener.
   "Better course management": "opener-decisions",
+  // Football (v2 dormant) — reuses the sport-neutral decisions opener.
+  "Better reads": "opener-decisions",
+  // Swimming + Track & Field (v2 dormant) — reuse the sport-neutral opener.
+  "Better race execution": "opener-decisions",
   Leadership: "opener-leadership",
   Joy: "opener-joy",
   Hope: "opener-hope",

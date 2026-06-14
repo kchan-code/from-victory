@@ -190,6 +190,61 @@ const SPORT_CELL_EXPECTATIONS: Record<
       forbiddenSlug: "hm-glf-bomber-big-miss",
     },
   },
+  // Football (v2 DORMANT — scripts authored, audio render deferred). 7 roles ×
+  // 10 adversities, but QB drops trench-battle (reroute→qb-pick) and OL + DL
+  // drop turnover (reroute→{ol,dl}-trench-battle), so the matrix dedups to 67
+  // distinct cells. Compositional-only (golf model): cellSlugFor returns the
+  // hm-ftb-* hard-moment clip directly. EXCLUDED from the registry-parameterized
+  // file-existence loops (RENDERED_SPORT_CONFIGS) until the audio render lands
+  // football in manifest.practiceState — this entry only satisfies the
+  // Record<Sport, …> exhaustiveness type until then.
+  football: {
+    cellCount: 67,
+    slugPrefix: "hm-ftb-",
+    cellLayout: "catalog",
+    specialCase: {
+      role: "QB",
+      adversity: "I get benched.",
+      expectedSlug: "hm-ftb-qb-pulled",
+      forbiddenSlug: "hm-ftb-qb-benched",
+    },
+  },
+  // Swimming (v2 DORMANT — scripts authored, audio render deferred). 4 event
+  // specialties × 10 adversities, but Sprinter drops mind-wanders
+  // (reroute→sprint-touched-out) and Distance drops touched-out
+  // (reroute→dist-go-out-slow), so the matrix dedups to 38 distinct cells (incl.
+  // the 4 clinically-withheld plateau cells, which are authored). Compositional-
+  // only (golf model). EXCLUDED from RENDERED_SPORT_CONFIGS until the audio
+  // render — this entry only satisfies the Record<Sport, …> type until then.
+  swimming: {
+    cellCount: 38,
+    slugPrefix: "hm-swm-",
+    cellLayout: "catalog",
+    specialCase: {
+      role: "Distance",
+      adversity: "I get touched out.",
+      expectedSlug: "hm-swm-dist-go-out-slow",
+      forbiddenSlug: "hm-swm-dist-touched-out",
+    },
+  },
+  // Track & Field (v2 DORMANT — scripts authored, audio render deferred). 5 event
+  // groups × 10 adversities, with heavy per-group drops/reroutes (field groups
+  // have no gun/relay/rigging; gun groups have no field foul/bar) + the 2
+  // clinically-withheld no-height cells (Jumper/Thrower, authored) → matrix dedups
+  // to 38 distinct cells. Compositional-only (golf model). EXCLUDED from
+  // RENDERED_SPORT_CONFIGS until the audio render — this entry only satisfies the
+  // Record<Sport, …> type until then.
+  "track-field": {
+    cellCount: 38,
+    slugPrefix: "hm-trf-",
+    cellLayout: "catalog",
+    specialCase: {
+      role: "Sprinter",
+      adversity: "I foul.",
+      expectedSlug: "hm-trf-sprint-false-start",
+      forbiddenSlug: "hm-trf-sprint-foul",
+    },
+  },
 };
 
 // FV-94/FV-99: the registry-parameterized integrity suites (sections 5 & 7) run

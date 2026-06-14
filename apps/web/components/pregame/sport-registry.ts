@@ -28,7 +28,7 @@ import type { AudioSegment, NeedToday } from "./types";
 // Sport type
 // ---------------------------------------------------------------------------
 
-export type Sport = "hockey" | "basketball" | "baseball" | "golf"; // extend as more sports land
+export type Sport = "hockey" | "basketball" | "baseball" | "golf" | "football" | "swimming" | "track-field"; // extend as more sports land
 
 /**
  * A Hard Moment option: the canonical `key` (drives `cellSlugFor` + the stored
@@ -1072,6 +1072,1010 @@ export const GOLF_CONFIG: SportConfig = {
 };
 
 // ---------------------------------------------------------------------------
+// Football config (v2 — DORMANT; taxonomy = docs/football-module-map.md,
+// football-expert ratified. Content authored, NOT athlete-selectable: football
+// is intentionally absent from SUPPORTED_SPORTS (lib/sports.ts) + the DB sport
+// CHECK, exactly like baseball. Goes live behind a future go-live migration +
+// the audio render. Most position-diverse sport in the app: 7 roles.)
+// ---------------------------------------------------------------------------
+
+const FOOTBALL_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
+  "I turn the ball over.": "turnover",
+  "I get beat.": "beat",
+  "I make a mistake on film.": "film-mistake",
+  "I give up the big play.": "big-play",
+  "I get benched.": "benched",
+  "I feel nervous.": "nervous",
+  "I take a big hit.": "big-hit",
+  "I start slow.": "start-slow",
+  "We fall behind early.": "fall-behind-early",
+  "I lose a battle in the trenches.": "trench-battle",
+};
+
+// Football text-mode audio script (sport-correct body for segs 80/120/165).
+// Segments 0/35/210/250/275 are sport-neutral (byte-identical structure to the
+// hockey/golf AUDIO_SCRIPT). 80/120/165 are football-specific and role-neutral
+// (work for offense + defense). {{roleScenes}} in segment 165 is substituted at
+// render time from sportConfig.roleContent.
+const FOOTBALL_AUDIO_SCRIPT: AudioSegment[] = [
+  {
+    startSec: 0,
+    eyebrow: "Identity",
+    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+  },
+  {
+    startSec: 35,
+    eyebrow: "Settle",
+    body: "Sit tall. Long exhale. Lead your body back to ready. Four counts in. Six counts out. Let your shoulders drop.",
+  },
+  {
+    startSec: 80,
+    eyebrow: "See the field",
+    body: "See the field under the lights. Hear the crowd, the chatter in the huddle, cleats biting the turf. Feel your helmet, the pads settling on your shoulders. You belong here. You are ready.",
+  },
+  {
+    startSec: 120,
+    eyebrow: "Your first snap",
+    body: "The ball is about to snap. First play. Eyes up, read your keys, do your job full speed, finish to the whistle. Recover. Next play.",
+  },
+  {
+    startSec: 165,
+    eyebrow: "Play your position · {{role}}",
+    body: "{{roleScenes}}",
+  },
+  {
+    startSec: 210,
+    eyebrow: "If this happens",
+    body: "{{adversity}} See it. Feel it. Breathe. Speak truth. Take the next faithful action. Your mistake is real. It is not your identity.",
+  },
+  {
+    startSec: 250,
+    eyebrow: "Coach yourself",
+    body: "{{selfTalk}} When pressure hits, return here. Your anchor: {{anchor}}. Your cue word: {{cueWord}}.",
+  },
+  {
+    startSec: 275,
+    eyebrow: "Send-off",
+    body: "Lord, help me compete with courage, humility, and joy. Help me play the snap in front of me, respond well to a bad one, and remember that my worth is secure in You. Amen. Play from victory.",
+  },
+];
+
+export const FOOTBALL_CONFIG: SportConfig = {
+  displayName: "Football",
+  sportKey: "football",
+
+  // 7 position groups — the tightest authentic set (football-expert). WR/TE
+  // fold to Receiver; DL/EDGE fold to Defensive Line; CB/S fold to Defensive
+  // Back. Specialist (K/P) is a documented FUTURE role, held to bound the cell
+  // count. Slug tokens: qb / rb / wr / ol / dl / lb / db.
+  roles: [
+    "QB",
+    "Running Back",
+    "Receiver",
+    "Offensive Line",
+    "Defensive Line",
+    "Linebacker",
+    "Defensive Back",
+  ] as const,
+  roleLabel: "Position",
+
+  roleContent: {
+    QB: {
+      title: "Own the huddle.",
+      scenes: [
+        "Eyes up, read it out.",
+        "Trust your first read.",
+        "Throw it with conviction.",
+        "Protect the football.",
+        "Next play, lead them.",
+      ],
+    },
+    "Running Back": {
+      title: "Downhill, ball secure.",
+      scenes: [
+        "Read your blocks.",
+        "Hit the hole fast.",
+        "Two hands, high and tight.",
+        "Finish every run forward.",
+        "Pick up the blitz.",
+      ],
+    },
+    Receiver: {
+      title: "Run it, catch it, finish.",
+      scenes: [
+        "Win at the line.",
+        "Run the route full speed.",
+        "Look it all the way in.",
+        "Catch it, tuck it, go.",
+        "Next route, stay open.",
+      ],
+    },
+    "Offensive Line": {
+      title: "Protect the man behind you.",
+      scenes: [
+        "Set your feet, punch.",
+        "Know your assignment.",
+        "Move people off the ball.",
+        "Finish to the whistle.",
+        "Five as one.",
+      ],
+    },
+    "Defensive Line": {
+      title: "Get off, win the rep.",
+      scenes: [
+        "First off the ball.",
+        "Beat your man.",
+        "Stay in your gap.",
+        "Run to the football.",
+        "Every snap, full motor.",
+      ],
+    },
+    Linebacker: {
+      title: "Be the quarterback of the D.",
+      scenes: [
+        "Read your keys.",
+        "Fill your fit downhill.",
+        "Cover with your eyes.",
+        "Get everyone lined up.",
+        "Run and hit.",
+      ],
+    },
+    "Defensive Back": {
+      title: "Lock down your island.",
+      scenes: [
+        "Trust your technique.",
+        "Eyes on your man.",
+        "Drive on the ball.",
+        "Short memory, next rep.",
+        "Make the tackle in space.",
+      ],
+    },
+  },
+
+  adversities: [
+    "I turn the ball over.",
+    "I get beat.",
+    "I make a mistake on film.",
+    "I give up the big play.",
+    "I get benched.",
+    "I feel nervous.",
+    "I take a big hit.",
+    "I start slow.",
+    "We fall behind early.",
+    "I lose a battle in the trenches.",
+  ],
+
+  // Per-role relabels + drops (football-expert §4). Every `key` is canonical so
+  // cellSlugFor + state.adversity resolve the same cell — labels are position-
+  // true (FV-101 mechanism). QB drops "I lose a battle in the trenches." (no
+  // man-on-man trench rep); OL + DL drop "I turn the ball over." (ineligible /
+  // a giveaway isn't their failure) — the baseball-pitcher-error precedent;
+  // cellSlugFor reroutes the never-fired cell so the integrity grid resolves.
+  //
+  // CLINICAL (football-expert §12): every "I take a big hit." cell ships as
+  // COMPETITIVE COURAGE only (stand in / get up / stay on your feet) — never
+  // head-injury, playing-hurt, or body-comp. Any big-hit cell that can't stay
+  // competitive-layer is the conditional withhold (omit here) until clinical
+  // sign-off. No default withhold in v1.
+  roleAdversities: {
+    QB: [
+      { key: "I turn the ball over.", label: "I throw a pick." },
+      { key: "I get beat.", label: "I get read out / fooled." },
+      { key: "I make a mistake on film.", label: "I make a bad read on film." },
+      { key: "I give up the big play.", label: "My turnover goes the other way." },
+      { key: "I get benched.", label: "I get pulled." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I take a big hit.", label: "I get sacked / take a big hit." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+    ],
+    "Running Back": [
+      { key: "I turn the ball over.", label: "I fumble." },
+      { key: "I get beat.", label: "I miss my blitz pickup." },
+      { key: "I make a mistake on film.", label: "I miss my read / wrong hole." },
+      { key: "I give up the big play.", label: "My fumble flips the game." },
+      { key: "I get benched.", label: "I lose carries / get benched." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I take a big hit.", label: "I take a big hit." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+      { key: "I lose a battle in the trenches.", label: "I get stuffed at the line." },
+    ],
+    Receiver: [
+      { key: "I turn the ball over.", label: "I fumble after the catch." },
+      { key: "I get beat.", label: "I get jammed / can't separate." },
+      { key: "I make a mistake on film.", label: "I drop the pass." },
+      { key: "I give up the big play.", label: "My drop kills the drive." },
+      { key: "I get benched.", label: "The QB stops looking my way." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I take a big hit.", label: "I take a big hit over the middle." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+      { key: "I lose a battle in the trenches.", label: "I lose my run-block rep." },
+    ],
+    "Offensive Line": [
+      { key: "I get beat.", label: "I get beat / give up pressure." },
+      { key: "I make a mistake on film.", label: "I blow my assignment on film." },
+      { key: "I give up the big play.", label: "I give up the sack." },
+      { key: "I get benched.", label: "I get benched." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I take a big hit.", label: "I get bull-rushed / driven back." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+      { key: "I lose a battle in the trenches.", label: "I get pancaked / lose my rep." },
+    ],
+    "Defensive Line": [
+      { key: "I get beat.", label: "I get reached / hooked / washed." },
+      { key: "I make a mistake on film.", label: "I lose my run fit on film." },
+      { key: "I give up the big play.", label: "I get gashed for the big run." },
+      { key: "I get benched.", label: "I get subbed out / benched." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I take a big hit.", label: "I get double-teamed / cut." },
+      { key: "I start slow.", label: "I start slow / no get-off." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+      { key: "I lose a battle in the trenches.", label: "I lose my one-on-one." },
+    ],
+    Linebacker: [
+      { key: "I turn the ball over.", label: "I drop the pick / miss the takeaway." },
+      { key: "I get beat.", label: "I get beat in coverage." },
+      { key: "I make a mistake on film.", label: "I blow my run fit / coverage on film." },
+      { key: "I give up the big play.", label: "My blown coverage goes the distance." },
+      { key: "I get benched.", label: "I get benched." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I take a big hit.", label: "I take on the pulling guard." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+      { key: "I lose a battle in the trenches.", label: "I get sealed / kicked out." },
+    ],
+    "Defensive Back": [
+      { key: "I turn the ball over.", label: "I drop the pick." },
+      { key: "I get beat.", label: "I get beat deep." },
+      { key: "I make a mistake on film.", label: "I blow my coverage on film." },
+      { key: "I give up the big play.", label: "I give up the touchdown." },
+      { key: "I get benched.", label: "They throw away from me / I get benched." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I take a big hit.", label: "I take a big hit in run support." },
+      { key: "I start slow.", label: "I start slow / get picked on early." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+      { key: "I lose a battle in the trenches.", label: "I lose the 50/50 ball." },
+    ],
+  },
+
+  adversitySlugFragments: FOOTBALL_ADVERSITY_SLUG_FRAGMENTS,
+
+  cellSlugFor(adversity: string, role?: string | null): string {
+    const frag = FOOTBALL_ADVERSITY_SLUG_FRAGMENTS[adversity] ?? "nervous";
+    const tokenMap: Record<string, string> = {
+      QB: "qb",
+      "Running Back": "rb",
+      Receiver: "wr",
+      "Offensive Line": "ol",
+      "Defensive Line": "dl",
+      Linebacker: "lb",
+      "Defensive Back": "db",
+    };
+    const token = role ? (tokenMap[role] ?? "qb") : "qb";
+
+    // QB × turnover → pick (the truest QB giveaway is the interception).
+    if (token === "qb" && frag === "turnover") return "hm-ftb-qb-pick";
+    // QB × benched → pulled (a QB is pulled, not "benched").
+    if (token === "qb" && frag === "benched") return "hm-ftb-qb-pulled";
+    // QB drops trench-battle (no man-on-man trench rep). Omitted from the QB
+    // picker, so never fires; reroute keeps the integrity matrix whole.
+    if (token === "qb" && frag === "trench-battle") return "hm-ftb-qb-pick";
+    // RB × turnover → fumble (the RB's cardinal-sin giveaway).
+    if (token === "rb" && frag === "turnover") return "hm-ftb-rb-fumble";
+    // OL/DL drop turnover (linemen don't carry / a giveaway isn't their
+    // failure). Omitted from their pickers; reroute to the trench-battle anchor.
+    if (token === "ol" && frag === "turnover") return "hm-ftb-ol-trench-battle";
+    if (token === "dl" && frag === "turnover") return "hm-ftb-dl-trench-battle";
+
+    // Football is COMPOSITIONAL-ONLY (golf precedent): cellSlugFor returns the
+    // hm-ftb-* hard-moment clip directly — the slug the manifest templates +
+    // the integrity grid reference. No baked ftb-* composite.
+    return `hm-ftb-${token}-${frag}`;
+  },
+
+  // Pre-practice focus presets (audio render lands the clips; slugs declared
+  // now so the registry is complete). "Win my one-on-one" (padded-practice
+  // meritocracy), "Full speed, full motor" (the universal football grade),
+  // "Next play" (the 25-40s reset loop) are the football-distinct ones.
+  practiceFocusOptions: [
+    "Relentless",
+    "Finish every rep",
+    "Eyes up",
+    "Win my one-on-one",
+    "Full speed, full motor",
+    "Ball security",
+    "Next play",
+  ] as const,
+
+  practiceFocusSlugs: {
+    "Relentless": "pp-football-focus-relentless",
+    "Finish every rep": "pp-football-focus-finish-every-rep",
+    "Eyes up": "pp-football-focus-eyes-up",
+    "Win my one-on-one": "pp-football-focus-win-my-one-on-one",
+    "Full speed, full motor": "pp-football-focus-full-speed-full-motor",
+    "Ball security": "pp-football-focus-ball-security",
+    "Next play": "pp-football-focus-next-play",
+  },
+
+  // FV-117 per-sport picker lists. "Better puck decisions" → "Better reads"
+  // (the cross-position football decisions need — QB reads the defense, the
+  // back reads his blocks, the DB reads the route); all other 9 needs are
+  // sport-neutral and shared. Football reuses the shared opener clips
+  // (resolveOpenerSlug falls back to NEED_OPENER_SLUGS).
+  needs: [
+    "Confidence",
+    "Calm",
+    "Compete level",
+    "Reset after mistakes",
+    "Physical courage",
+    "Better reads",
+    "Leadership",
+    "Joy",
+    "Hope",
+    "Be more Vocal",
+  ] as const satisfies readonly NeedToday[],
+
+  // "Long exhale", "Press thumb to palm", "Say cue word" shared; the 3 middle
+  // gear-contact gestures are football-specific (clips + slugs land with the
+  // audio render — they drop cleanly until then, the baseball/golf precedent).
+  anchors: [
+    "Long exhale",
+    "Press thumb to palm",
+    "Snap the chinstrap",
+    "Slap the thigh pads",
+    "Tighten the gloves",
+    "Say cue word",
+  ] as const,
+
+  // "You're okay. Next shift." → "You're okay. Next play." (the universal
+  // football reset cadence); the other 6 are sport-neutral and shared.
+  selfTalkOptions: [
+    "You're okay. Next play.",
+    "Breathe. Do your job.",
+    "Stay steady. Make the next play.",
+    "You don't need to do too much.",
+    "Compete, recover, go again.",
+    "Your identity is secure. Play free.",
+    "You are secure. Take the next faithful action.",
+  ] as const,
+
+  practiceOpenerSlugs: {
+    // pp-opener-dialed-in is sport-neutral and reused across all sports.
+    "dialed-in": "pp-opener-dialed-in",
+    // Football-specific not-feeling-it opener (authored with the audio render;
+    // declared here for registry completeness).
+    "not-feeling-it": "pp-football-opener-get-to",
+  },
+
+  audioScript: FOOTBALL_AUDIO_SCRIPT,
+
+  cueWordHelper: "The one you'd say to yourself walking back to the huddle.",
+  cardShareHint: "Screenshot it. Open it before kickoff.",
+};
+
+// ---------------------------------------------------------------------------
+// Swimming config (v2 — DORMANT; taxonomy = docs/swimming-module-map.md,
+// swimming-expert ratified. Content authored, NOT athlete-selectable — absent
+// from SUPPORTED_SPORTS + the DB sport CHECK, like baseball/football. Swimming
+// is non-positional: the "position" dimension maps to EVENT SPECIALTY.
+//
+// TWO HARD SAFETY RAILS (swimming-expert): (1) breath/reset cues must NEVER
+// resemble breath-hold/hypoxic/underwater training — all breath language is
+// dry-land calm-down; (2) body-composition/suit/weight is flag-and-route, never
+// a cell. Both held in the scripts (clips-swimming.ts) and the daily content.)
+// ---------------------------------------------------------------------------
+
+const SWIMMING_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
+  "I get touched out.": "touched-out",
+  "I false start.": "false-start",
+  "I get DQ'd.": "dq",
+  "I'm stuck on the same time.": "plateau",
+  "I blow a turn.": "bad-turn",
+  "My mind wanders mid-race.": "mind-wanders",
+  "My goggles fail.": "goggles",
+  "I'm seeded in a slow heat.": "slow-heat",
+  "I feel nervous in the ready room.": "ready-room",
+  "I go out too slow.": "go-out-slow",
+};
+
+// Swimming text-mode audio script (sport-correct body for segs 80/120/165).
+// Segments 0/35/210/250/275 are sport-neutral. 80/120/165 are swimming-specific.
+// SAFETY: every breath cue here is DRY-LAND, behind-the-blocks calm-down
+// breathing (the breath rail) — never breath-hold / underwater / hypoxic.
+const SWIMMING_AUDIO_SCRIPT: AudioSegment[] = [
+  {
+    startSec: 0,
+    eyebrow: "Identity",
+    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+  },
+  {
+    startSec: 35,
+    eyebrow: "Settle",
+    body: "Sit tall on the deck. Long exhale. Lead your body back to ready. Four counts in. Six counts out. Let your shoulders drop.",
+  },
+  {
+    startSec: 80,
+    eyebrow: "See the pool",
+    body: "See the pool. Hear the natatorium echo, a whistle, water lapping the gutters. Smell the chlorine. Feel your cap and goggles seated, the cool air on your shoulders behind the blocks. You belong here. You are ready.",
+  },
+  {
+    startSec: 120,
+    eyebrow: "Your first race",
+    body: "They call your heat. Step up behind the blocks. Slow breath on the deck. Take your mark. Explode off the start, find your stroke, hold your form all the way to the wall. One race. Recover. Next race.",
+  },
+  {
+    startSec: 165,
+    eyebrow: "Swim your race · {{role}}",
+    body: "{{roleScenes}}",
+  },
+  {
+    startSec: 210,
+    eyebrow: "If this happens",
+    body: "{{adversity}} See it. Feel it. Breathe. Speak truth. Take the next faithful action. Your mistake is real. It is not your identity.",
+  },
+  {
+    startSec: 250,
+    eyebrow: "Coach yourself",
+    body: "{{selfTalk}} When pressure hits, return here. Your anchor: {{anchor}}. Your cue word: {{cueWord}}.",
+  },
+  {
+    startSec: 275,
+    eyebrow: "Send-off",
+    body: "Lord, help me compete with courage, humility, and joy. Help me swim the race in front of me, respond well to a bad one, and remember that my worth is secure in You. Amen. Play from victory.",
+  },
+];
+
+export const SWIMMING_CONFIG: SportConfig = {
+  displayName: "Swimming",
+  sportKey: "swimming",
+
+  // Non-positional — the role dimension maps to EVENT SPECIALTY (swimming-expert
+  // FV-274). Slug tokens: sprint / dist / stroke / im.
+  roles: ["Sprinter", "Distance", "Stroke", "IM"] as const,
+  roleLabel: "Event",
+
+  roleContent: {
+    Sprinter: {
+      title: "Explode and hold the touch.",
+      scenes: [
+        "Quick to the blocks.",
+        "Rip the start, clean break.",
+        "Hold your stroke, no spin.",
+        "Drive through the finish.",
+        "Reach for the wall.",
+      ],
+    },
+    Distance: {
+      title: "Settle in, hold the pace.",
+      scenes: [
+        "Find your rhythm early.",
+        "Lock the pace, breathe easy.",
+        "Stay on the line.",
+        "Build through the back half.",
+        "Bring it home strong.",
+      ],
+    },
+    Stroke: {
+      title: "Trust the stroke you own.",
+      scenes: [
+        "Feel the water, long and clean.",
+        "Hold your tempo.",
+        "Legal turn, sharp breakout.",
+        "Finish the stroke, full and strong.",
+        "Two hands, clean touch.",
+      ],
+    },
+    IM: {
+      title: "Master the whole race.",
+      scenes: [
+        "Fly out controlled.",
+        "Smooth into the back.",
+        "Own your breast leg.",
+        "Bring it home freestyle.",
+        "Clean every transition.",
+      ],
+    },
+  },
+
+  adversities: [
+    "I get touched out.",
+    "I false start.",
+    "I get DQ'd.",
+    "I'm stuck on the same time.",
+    "I blow a turn.",
+    "My mind wanders mid-race.",
+    "My goggles fail.",
+    "I'm seeded in a slow heat.",
+    "I feel nervous in the ready room.",
+    "I go out too slow.",
+  ],
+
+  // Per-specialty relabels + drops/withholds (swimming-expert §4). Every `key`
+  // is canonical so cellSlugFor + state.adversity resolve the same cell.
+  //  - "I'm stuck on the same time." (the season-long plateau) is WITHHELD from
+  //    ALL FOUR specialties until clinical sign-off — swimming's lose-command /
+  //    first-tee analog (the cell is authored; omitted here).
+  //  - Sprinter drops "My mind wanders mid-race." (no lonely middle in a sub-
+  //    minute sprint) → cellSlugFor reroutes to touched-out.
+  //  - Distance drops "I get touched out." (the mile isn't decided at the wall by
+  //    hundredths) → cellSlugFor reroutes to go-out-slow.
+  //  NO team-sport relabels (no bench/shifts/minutes — swim team moments are
+  //  relays + champs scoring, surfaced as script texture, never a cell).
+  roleAdversities: {
+    Sprinter: [
+      { key: "I get touched out.", label: "I get touched out." },
+      { key: "I false start.", label: "I false start." },
+      { key: "I get DQ'd.", label: "I get DQ'd." },
+      { key: "I blow a turn.", label: "I blow my turn." },
+      { key: "My goggles fail.", label: "My goggles fill on the dive." },
+      { key: "I'm seeded in a slow heat.", label: "I'm seeded outside." },
+      { key: "I feel nervous in the ready room.", label: "I feel nervous in the ready room." },
+      { key: "I go out too slow.", label: "I have a bad start." },
+    ],
+    Distance: [
+      { key: "I false start.", label: "I false start." },
+      { key: "I get DQ'd.", label: "I get DQ'd." },
+      { key: "I blow a turn.", label: "I blow a flip turn." },
+      { key: "My mind wanders mid-race.", label: "My mind wanders at the 300." },
+      { key: "My goggles fail.", label: "My goggles fog up." },
+      { key: "I'm seeded in a slow heat.", label: "I'm in the early slow heat." },
+      { key: "I feel nervous in the ready room.", label: "I feel nervous before the long one." },
+      { key: "I go out too slow.", label: "My pace slips early." },
+    ],
+    Stroke: [
+      { key: "I get touched out.", label: "I get touched out." },
+      { key: "I false start.", label: "I false start." },
+      { key: "I get DQ'd.", label: "I get DQ'd on a touch." },
+      { key: "I blow a turn.", label: "I miss my turn." },
+      { key: "My mind wanders mid-race.", label: "My stroke falls apart late." },
+      { key: "My goggles fail.", label: "My goggles slip." },
+      { key: "I'm seeded in a slow heat.", label: "I'm seeded in a slow heat." },
+      { key: "I feel nervous in the ready room.", label: "I feel nervous in the ready room." },
+      { key: "I go out too slow.", label: "My stroke isn't there in warm-up." },
+    ],
+    IM: [
+      { key: "I get touched out.", label: "I get touched out." },
+      { key: "I false start.", label: "I false start." },
+      { key: "I get DQ'd.", label: "I get DQ'd on a transition." },
+      { key: "I blow a turn.", label: "I blow a stroke transition." },
+      { key: "My mind wanders mid-race.", label: "I lose focus between strokes." },
+      { key: "My goggles fail.", label: "My goggles fail mid-race." },
+      { key: "I'm seeded in a slow heat.", label: "I'm seeded in a slow heat." },
+      { key: "I feel nervous in the ready room.", label: "I feel nervous in the ready room." },
+      { key: "I go out too slow.", label: "My weak leg costs me." },
+    ],
+  },
+
+  adversitySlugFragments: SWIMMING_ADVERSITY_SLUG_FRAGMENTS,
+
+  cellSlugFor(adversity: string, role?: string | null): string {
+    const frag = SWIMMING_ADVERSITY_SLUG_FRAGMENTS[adversity] ?? "touched-out";
+    const tokenMap: Record<string, string> = {
+      Sprinter: "sprint",
+      Distance: "dist",
+      Stroke: "stroke",
+      IM: "im",
+    };
+    const token = role ? (tokenMap[role] ?? "sprint") : "sprint";
+
+    // Sprinter × mind-wanders → touched-out: no lonely middle in a sub-minute
+    // sprint. Dropped from the picker; reroute keeps the integrity grid whole.
+    if (token === "sprint" && frag === "mind-wanders") return "hm-swm-sprint-touched-out";
+    // Distance × touched-out → go-out-slow: the mile isn't decided at the wall by
+    // hundredths. Dropped from the picker; reroute keeps the grid resolving.
+    if (token === "dist" && frag === "touched-out") return "hm-swm-dist-go-out-slow";
+
+    // Swimming is COMPOSITIONAL-ONLY (golf model): cellSlugFor returns the
+    // hm-swm-* hard-moment clip directly.
+    return `hm-swm-${token}-${frag}`;
+  },
+
+  // Pre-practice focus presets. "Sharp breakouts" (NOT "Underwaters strong") is
+  // the deliberate breath-rail-safe choice — same skill, zero breath-hold framing.
+  practiceFocusOptions: [
+    "Best average",
+    "Hold my pace",
+    "Streamline off every wall",
+    "Race-pace turns",
+    "Finish every length",
+    "Sharp breakouts",
+    "One length at a time",
+  ] as const,
+
+  practiceFocusSlugs: {
+    "Best average": "pp-swimming-focus-best-average",
+    "Hold my pace": "pp-swimming-focus-hold-my-pace",
+    "Streamline off every wall": "pp-swimming-focus-streamline-off-every-wall",
+    "Race-pace turns": "pp-swimming-focus-race-pace-turns",
+    "Finish every length": "pp-swimming-focus-finish-every-length",
+    "Sharp breakouts": "pp-swimming-focus-sharp-breakouts",
+    "One length at a time": "pp-swimming-focus-one-length-at-a-time",
+  },
+
+  // FV-117 per-sport picker lists. "Better puck decisions" → "Better race
+  // execution" (pacing / turn / finish execution — "swim your race, not theirs");
+  // all other 9 needs are sport-neutral and shared. Swimming reuses the shared
+  // opener clips (resolveOpenerSlug falls back to NEED_OPENER_SLUGS).
+  needs: [
+    "Confidence",
+    "Calm",
+    "Compete level",
+    "Reset after mistakes",
+    "Physical courage",
+    "Better race execution",
+    "Leadership",
+    "Joy",
+    "Hope",
+    "Be more Vocal",
+  ] as const satisfies readonly NeedToday[],
+
+  // "Long exhale", "Press thumb to palm", "Say cue word" shared; the 3 middle
+  // ones are swim-specific DRY-LAND deck gestures (clips + slugs land with the
+  // audio render — they drop cleanly until then). None involve breath manipulation
+  // (the breath rail): arm shake, arm swings, seating cap/goggles.
+  anchors: [
+    "Long exhale",
+    "Press thumb to palm",
+    "Shake out my arms",
+    "Two arm swings",
+    "Cap and goggles set",
+    "Say cue word",
+  ] as const,
+
+  // "You're okay. Next shift." → "You're okay. Next race." (a swimmer races
+  // multiple events per session — the between-events reset); the other 6 are
+  // sport-neutral and shared.
+  selfTalkOptions: [
+    "You're okay. Next race.",
+    "Breathe. Do your job.",
+    "Stay steady. Make the next play.",
+    "You don't need to do too much.",
+    "Compete, recover, go again.",
+    "Your identity is secure. Play free.",
+    "You are secure. Take the next faithful action.",
+  ] as const,
+
+  practiceOpenerSlugs: {
+    "dialed-in": "pp-opener-dialed-in",
+    "not-feeling-it": "pp-swimming-opener-get-to",
+  },
+
+  audioScript: SWIMMING_AUDIO_SCRIPT,
+
+  cueWordHelper: "The one you'd say behind the blocks.",
+  cardShareHint: "Screenshot it. Open it before they call your heat.",
+};
+
+// ---------------------------------------------------------------------------
+// Track & Field config (v2 — DORMANT; taxonomy = docs/track-field-module-map.md,
+// authored by a standing track coach + content trio (no dedicated expert agent
+// yet — recommend recruiting one before go-live). Content authored, NOT athlete-
+// selectable — absent from SUPPORTED_SPORTS + the DB sport CHECK. Non-positional:
+// the "position" dimension maps to EVENT GROUP. Sport slug is hyphenated
+// ("track-field") — keep the daily seed sport column + registry key in lockstep.
+//
+// CLINICAL: the "no-height" cells (Jumper + Thrower) are WITHHELD until clinical
+// sign-off (golf-first-tee precedent — never name the yips/balk; route mechanics
+// to the coach). Body-composition / RED-S (distance + jumps) is flag-and-route,
+// NEVER a cell.)
+// ---------------------------------------------------------------------------
+
+const TRACKFIELD_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
+  "I false start.": "false-start",
+  "I blow the handoff.": "handoff",
+  "I get out-leaned at the line.": "out-leaned",
+  "I foul.": "foul",
+  "I no-height.": "no-height",
+  "I draw a bad heat or lane.": "bad-heat",
+  "I hit the wall.": "hit-wall",
+  "I feel nervous in the blocks.": "nervous",
+  "I start slow.": "start-slow",
+  "I fall off the pace.": "off-pace",
+};
+
+// Track & Field text-mode audio script (sport-correct body for segs 80/120/165).
+// Segments 0/35/210/250/275 are sport-neutral. 80/120/165 are track-specific and
+// event-group-neutral (work for the gun events + the field events).
+const TRACKFIELD_AUDIO_SCRIPT: AudioSegment[] = [
+  {
+    startSec: 0,
+    eyebrow: "Identity",
+    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+  },
+  {
+    startSec: 35,
+    eyebrow: "Settle",
+    body: "Sit tall. Long exhale. Lead your body back to ready. Four counts in. Six counts out. Let your shoulders drop.",
+  },
+  {
+    startSec: 80,
+    eyebrow: "See the track",
+    body: "See the track. Hear the meet PA echo, a starter's whistle in the distance, spikes on the apron. Smell the infield. Feel your spikes bite, the chalk on your hands, the moment before you go. You belong here. You are ready.",
+  },
+  {
+    startSec: 120,
+    eyebrow: "Your first rep",
+    body: "The starter raises the gun, or the official calls your name. Settle. Slow breath. Then go — explode, commit, finish all the way through. One rep. Recover. Next rep.",
+  },
+  {
+    startSec: 165,
+    eyebrow: "Compete in your event · {{role}}",
+    body: "{{roleScenes}}",
+  },
+  {
+    startSec: 210,
+    eyebrow: "If this happens",
+    body: "{{adversity}} See it. Feel it. Breathe. Speak truth. Take the next faithful action. Your mistake is real. It is not your identity.",
+  },
+  {
+    startSec: 250,
+    eyebrow: "Coach yourself",
+    body: "{{selfTalk}} When pressure hits, return here. Your anchor: {{anchor}}. Your cue word: {{cueWord}}.",
+  },
+  {
+    startSec: 275,
+    eyebrow: "Send-off",
+    body: "Lord, help me compete with courage, humility, and joy. Help me run the race in front of me, respond well to a bad one, and remember that my worth is secure in You. Amen. Play from victory.",
+  },
+];
+
+export const TRACKFIELD_CONFIG: SportConfig = {
+  displayName: "Track & Field",
+  sportKey: "track-field",
+
+  // Non-positional — the role dimension maps to EVENT GROUP. Slug tokens:
+  // sprint / dist / hurdle / jump / throw.
+  roles: ["Sprinter", "Distance", "Hurdler", "Jumper", "Thrower"] as const,
+  roleLabel: "Event",
+
+  roleContent: {
+    Sprinter: {
+      title: "Explode and stay relaxed.",
+      scenes: [
+        "Set in the blocks.",
+        "React, drive, rise up.",
+        "Fast hands, loose face.",
+        "Run through the line.",
+        "Lean, don't reach.",
+      ],
+    },
+    Distance: {
+      title: "Run your race, your way.",
+      scenes: [
+        "Settle into your pace.",
+        "Relax the shoulders, breathe.",
+        "Stay in contact, stay patient.",
+        "Make your move on time.",
+        "Empty the tank at the bell.",
+      ],
+    },
+    Hurdler: {
+      title: "Trust your steps.",
+      scenes: [
+        "Attack the first hurdle.",
+        "Lead leg snaps down.",
+        "Trail leg comes through.",
+        "Run between the barriers.",
+        "Sprint off the last one.",
+      ],
+    },
+    Jumper: {
+      title: "Commit down the runway.",
+      scenes: [
+        "Find your mark.",
+        "Build the approach, stay tall.",
+        "Hit the board, full speed.",
+        "Commit and explode up.",
+        "Next attempt, fresh start.",
+      ],
+    },
+    Thrower: {
+      title: "Big and explosive.",
+      scenes: [
+        "Settle in the ring.",
+        "Slow, then violent.",
+        "Stay back, then rip it.",
+        "Finish tall and through.",
+        "Next throw, let it go.",
+      ],
+    },
+  },
+
+  adversities: [
+    "I false start.",
+    "I blow the handoff.",
+    "I get out-leaned at the line.",
+    "I foul.",
+    "I no-height.",
+    "I draw a bad heat or lane.",
+    "I hit the wall.",
+    "I feel nervous in the blocks.",
+    "I start slow.",
+    "I fall off the pace.",
+  ],
+
+  // Per-event-group relabels + drops/withholds. Every `key` is canonical so
+  // cellSlugFor + state.adversity resolve the same cell. Several adversities
+  // don't exist in literal form for some groups — handled by relabel → withhold
+  // → drop+reroute (priority). NO team-sport relabels (track team moments =
+  // relays + meet scoring, surfaced as texture, never a cell).
+  //  - "I no-height." is WITHHELD for Jumper + Thrower (clinical gate — the
+  //    fouling-out / runway-balk spiral; authored, omitted here until sign-off).
+  //  - Sprinter drops foul + no-height (no field implement/bar) → reroute.
+  //  - Distance drops false-start + foul + no-height (arc start, no field) → reroute.
+  //  - Hurdler drops no-height (no bar) → reroute; foul relabels to the hit-hurdle.
+  //  - Jumper + Thrower drop false-start + handoff + hit-wall (no gun/relay-leg/
+  //    rigging) → reroute to the group foul cell.
+  roleAdversities: {
+    Sprinter: [
+      { key: "I false start.", label: "I false start." },
+      { key: "I blow the handoff.", label: "I blow the handoff." },
+      { key: "I get out-leaned at the line.", label: "I get out-leaned at the line." },
+      { key: "I draw a bad heat or lane.", label: "I draw a bad lane." },
+      { key: "I hit the wall.", label: "I tie up in the last 50." },
+      { key: "I feel nervous in the blocks.", label: "I feel nervous in the blocks." },
+      { key: "I start slow.", label: "I get a slow start." },
+      { key: "I fall off the pace.", label: "I fade down the stretch." },
+    ],
+    Distance: [
+      { key: "I get out-leaned at the line.", label: "I get out-kicked at the line." },
+      { key: "I blow the handoff.", label: "I blow the handoff." },
+      { key: "I draw a bad heat or lane.", label: "I get boxed in." },
+      { key: "I hit the wall.", label: "I hit the wall." },
+      { key: "I feel nervous in the blocks.", label: "I feel nervous on the line." },
+      { key: "I start slow.", label: "I go out too slow." },
+      { key: "I fall off the pace.", label: "I fall off the pace." },
+    ],
+    Hurdler: [
+      { key: "I false start.", label: "I false start." },
+      { key: "I blow the handoff.", label: "I blow the handoff." },
+      { key: "I get out-leaned at the line.", label: "I get out-leaned at the line." },
+      { key: "I foul.", label: "I hit a hurdle." },
+      { key: "I draw a bad heat or lane.", label: "I draw a bad lane." },
+      { key: "I hit the wall.", label: "I die in the 400 hurdles." },
+      { key: "I feel nervous in the blocks.", label: "I feel nervous in the blocks." },
+      { key: "I start slow.", label: "I'm off my steps early." },
+      { key: "I fall off the pace.", label: "I lose my rhythm." },
+    ],
+    Jumper: [
+      { key: "I foul.", label: "I scratch the jump." },
+      { key: "I get out-leaned at the line.", label: "I get jumped on my last attempt." },
+      { key: "I draw a bad heat or lane.", label: "I draw an early flight." },
+      { key: "I feel nervous in the blocks.", label: "I feel nervous on the runway." },
+      { key: "I start slow.", label: "I open with a bad jump." },
+      { key: "I fall off the pace.", label: "I'm not hitting my marks." },
+    ],
+    Thrower: [
+      { key: "I foul.", label: "I scratch the throw." },
+      { key: "I get out-leaned at the line.", label: "I get out-thrown on the last throw." },
+      { key: "I draw a bad heat or lane.", label: "I throw early in the order." },
+      { key: "I feel nervous in the blocks.", label: "I feel nervous in the ring." },
+      { key: "I start slow.", label: "I open with a weak throw." },
+      { key: "I fall off the pace.", label: "I can't find a big throw." },
+    ],
+  },
+
+  adversitySlugFragments: TRACKFIELD_ADVERSITY_SLUG_FRAGMENTS,
+
+  cellSlugFor(adversity: string, role?: string | null): string {
+    const frag = TRACKFIELD_ADVERSITY_SLUG_FRAGMENTS[adversity] ?? "nervous";
+    const tokenMap: Record<string, string> = {
+      Sprinter: "sprint",
+      Distance: "dist",
+      Hurdler: "hurdle",
+      Jumper: "jump",
+      Thrower: "throw",
+    };
+    const token = role ? (tokenMap[role] ?? "sprint") : "sprint";
+
+    // Field groups (jump/throw): no gun, no relay leg, no rigging — these
+    // adversities don't exist; reroute to the group's core foul cell.
+    if (
+      (token === "jump" || token === "throw") &&
+      (frag === "false-start" || frag === "handoff" || frag === "hit-wall")
+    ) {
+      return `hm-trf-${token}-foul`;
+    }
+    // Sprinter: no field foul, no bar/height → reroute to the core rulebook-
+    // erasure cell (false-start).
+    if (token === "sprint" && (frag === "foul" || frag === "no-height")) {
+      return "hm-trf-sprint-false-start";
+    }
+    // Distance: arc/waterfall start (block false-start is a sprint reality) +
+    // field cells don't apply → reroute to the core distance failure (the wall).
+    if (token === "dist" && (frag === "false-start" || frag === "foul" || frag === "no-height")) {
+      return "hm-trf-dist-hit-wall";
+    }
+    // Hurdler: no bar/height → reroute to the hit-a-hurdle foul cell.
+    if (token === "hurdle" && frag === "no-height") {
+      return "hm-trf-hurdle-foul";
+    }
+
+    // Compositional-only (golf model): cellSlugFor returns the hm-trf-* clip.
+    return `hm-trf-${token}-${frag}`;
+  },
+
+  // Pre-practice focus presets. "Relaxed speed" (the relax-to-sprint paradox)
+  // and "Reset between attempts" (the field-event multi-round reset) are the
+  // track-distinct ones.
+  practiceFocusOptions: [
+    "Compete every rep",
+    "One rep at a time",
+    "Trust my technique",
+    "Relaxed speed",
+    "Finish through the line",
+    "Attack the moment",
+    "Reset between attempts",
+  ] as const,
+
+  practiceFocusSlugs: {
+    "Compete every rep": "pp-trackfield-focus-compete-every-rep",
+    "One rep at a time": "pp-trackfield-focus-one-rep-at-a-time",
+    "Trust my technique": "pp-trackfield-focus-trust-my-technique",
+    "Relaxed speed": "pp-trackfield-focus-relaxed-speed",
+    "Finish through the line": "pp-trackfield-focus-finish-through-the-line",
+    "Attack the moment": "pp-trackfield-focus-attack-the-moment",
+    "Reset between attempts": "pp-trackfield-focus-reset-between-attempts",
+  },
+
+  // FV-117 per-sport picker lists. "Better puck decisions" → "Better race
+  // execution" (shared with swimming — the race-plan / pacing / approach
+  // execution need); all other 9 needs are sport-neutral and shared. Track
+  // reuses the shared opener clips (resolveOpenerSlug falls back).
+  needs: [
+    "Confidence",
+    "Calm",
+    "Compete level",
+    "Reset after mistakes",
+    "Physical courage",
+    "Better race execution",
+    "Leadership",
+    "Joy",
+    "Hope",
+    "Be more Vocal",
+  ] as const satisfies readonly NeedToday[],
+
+  // "Long exhale", "Press thumb to palm", "Say cue word" shared; the 3 middle
+  // ones are track-specific (clips + slugs land with the audio render — they
+  // drop cleanly until then): the pre-race limb shake-out, the step-back-and-
+  // re-set behind the line/runway, and settling the blocks/ring/board stance.
+  anchors: [
+    "Long exhale",
+    "Press thumb to palm",
+    "Shake out the legs",
+    "Reset on the line",
+    "Set your feet",
+    "Say cue word",
+  ] as const,
+
+  // "You're okay. Next shift." → "You're okay. Next rep." ("rep" holds across a
+  // sprinter's next round, a jumper's next attempt, a thrower's next throw); the
+  // other 6 are sport-neutral and shared.
+  selfTalkOptions: [
+    "You're okay. Next rep.",
+    "Breathe. Do your job.",
+    "Stay steady. Make the next play.",
+    "You don't need to do too much.",
+    "Compete, recover, go again.",
+    "Your identity is secure. Play free.",
+    "You are secure. Take the next faithful action.",
+  ] as const,
+
+  practiceOpenerSlugs: {
+    "dialed-in": "pp-opener-dialed-in",
+    "not-feeling-it": "pp-trackfield-opener-get-to",
+  },
+
+  audioScript: TRACKFIELD_AUDIO_SCRIPT,
+
+  cueWordHelper: "The one you'd say to yourself in the blocks.",
+  cardShareHint: "Screenshot it. Open it before they call your heat.",
+};
+
+// ---------------------------------------------------------------------------
 // Registry + accessor
 // ---------------------------------------------------------------------------
 
@@ -1080,6 +2084,9 @@ export const SPORT_REGISTRY: Record<Sport, SportConfig> = {
   basketball: BASKETBALL_CONFIG,
   baseball: BASEBALL_CONFIG,
   golf: GOLF_CONFIG,
+  football: FOOTBALL_CONFIG,
+  swimming: SWIMMING_CONFIG,
+  "track-field": TRACKFIELD_CONFIG,
 };
 
 /**
