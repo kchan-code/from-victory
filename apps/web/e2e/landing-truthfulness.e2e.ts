@@ -11,15 +11,18 @@
  * What this pins:
  *   - The post-game "Coming soon" badge is present so the feature is never
  *     silently promoted as shipped before it is.
- *   - No <textarea> anywhere on / — guards against the journal being
- *     re-wired into the landing page while it remains descoped (FV-135).
+ *   - No journal <textarea> on / — guards against the journal being
+ *     re-wired into the landing page while it remains descoped (FV-135). The
+ *     waitlist's optional-note field (#w-note) is the one allowed textarea.
  *   - The available-sports labels ("Hockey" and "Basketball") render in the
  *     sport dropdown so the MVP sport set stays truthful.
  *   - The "Other sports — join the waitlist" signal renders, confirming the
  *     non-live sports are not advertised as available.
  *
- * Audience-language guard: asserts no "kid/kids/kiddo/youngster" on the
- * full page body.
+ * Audience-language guard: asserts no "kid/kids/kiddo/youngster" in the
+ * athlete-facing in-app preview region (#app). Scoped to athlete-facing copy
+ * by design — the parent-voice founder letter legitimately says "my own kids"
+ * (CLAUDE.md scopes the never-"kid" rule to athlete-facing content).
  *
  * NOTE: Playwright specs require a running Next.js server.
  *   Cannot be executed headlessly in this env without one.
@@ -39,10 +42,11 @@ async function assertNoKidLanguage(
   const text = await page.locator(selector).innerText().catch(() => "");
   const forbidden = ["kid", "kids", "kiddo", "youngster"];
   for (const word of forbidden) {
+    // Word-boundary match so we don't flag "skid"/"kidney"-type substrings.
     expect(
       text.toLowerCase(),
       `Audience-language violation: found "${word}" in ${selector}`,
-    ).not.toContain(word);
+    ).not.toMatch(new RegExp(`\\b${word}\\b`));
   }
 }
 
@@ -77,14 +81,15 @@ test.describe("Landing page — truthfulness regression guards", () => {
   // Journal textarea guard (FV-135 descope regression)
   // -------------------------------------------------------------------------
 
-  test("no <textarea> on the landing page (journal is descoped from /)", async ({
+  test("no journal <textarea> on the landing page (journal is descoped from /)", async ({
     page,
   }) => {
-    // Journal was descoped from the daily flow (FV-135). A textarea on the
-    // landing page would mean the journal was accidentally re-wired, or a
-    // new unreviewed textarea was added. Both require intentional review.
-    const textareas = page.locator("textarea");
-    await expect(textareas).toHaveCount(0);
+    // Journal was descoped from the daily flow (FV-135). A journal textarea on
+    // the landing page would mean it was accidentally re-wired. The waitlist's
+    // optional-note field (#w-note) is the one legitimate textarea, so we assert
+    // there is no OTHER textarea — a re-added journal entry box would trip this.
+    const otherTextareas = page.locator("textarea:not(#w-note)");
+    await expect(otherTextareas).toHaveCount(0);
   });
 
   // -------------------------------------------------------------------------
@@ -129,9 +134,12 @@ test.describe("Landing page — truthfulness regression guards", () => {
   // Audience-language guard
   // -------------------------------------------------------------------------
 
-  test("no audience-language violations on the landing page body", async ({
+  test("no audience-language violations in the athlete-facing app preview (#app)", async ({
     page,
   }) => {
-    await assertNoKidLanguage(page, "body");
+    // Scoped to the in-app preview region — the athlete-facing copy on /. The
+    // never-"kid" rule is for athlete-facing content; the founder's personal
+    // letter ("my own kids") is parent-voice and intentionally not covered.
+    await assertNoKidLanguage(page, "#app");
   });
 });
