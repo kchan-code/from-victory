@@ -188,6 +188,13 @@ function makeServiceMock(opts: ServiceMockOptions = {}) {
           }),
         }),
         insert: vi.fn(async (_row: unknown) => ({ error: insertError })),
+        // FV-177: generatePairingCode now voids prior unconsumed codes via
+        // delete().eq("athlete_id", …).is("consumed_at", null) before insert.
+        delete: () => ({
+          eq: (_col: string, _val: unknown) => ({
+            is: async (_col2: string, _val2: unknown) => ({ error: null }),
+          }),
+        }),
         update: (_row: unknown) => ({
           eq: (_col: string, _val: unknown) => ({
             is: (_col2: string, _val2: unknown) => ({

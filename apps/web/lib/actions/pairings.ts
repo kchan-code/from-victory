@@ -1,6 +1,6 @@
 "use server";
 
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -16,6 +16,23 @@ import { createServiceClient } from "@/lib/supabase/service";
 
 const PAIRING_CODE_BYTES = 24; // ~32 chars base64url
 const PAIRING_TTL_HOURS = 24;
+
+/**
+ * Hash a raw pairing code for storage/lookup (FV-177).
+ *
+ * The pairing code is a password-reset-class bearer token: claiming one sets
+ * the athlete's password. We store ONLY sha256(code) (hex) at rest — the raw
+ * code is shown to the parent exactly once at generation and is never written
+ * to the database or logged. The /pair claim hashes the inbound code and
+ * matches on this value. sha256 (not a slow password hash) is appropriate
+ * because the input is 192 bits of CSPRNG entropy — there is no low-entropy
+ * password to protect against offline brute force; the threat being closed is
+ * at-rest disclosure of a replayable live token (leaked backup, mis-scoped
+ * read, Studio session), and a 64-bit-plus preimage on sha256 is infeasible.
+ */
+function hashPairingCode(code: string): string {
+  return createHash("sha256").update(code).digest("hex");
+}
 
 const ClaimSchema = z.object({
   code: z.string().min(1, "Pairing code is required."),
@@ -92,14 +109,36 @@ export async function generatePairingCode(
   }
 
   const code = randomBytes(PAIRING_CODE_BYTES).toString("base64url");
+  const codeHash = hashPairingCode(code);
   const expiresAt = new Date(
     Date.now() + PAIRING_TTL_HOURS * 60 * 60 * 1000,
   ).toISOString();
 
+  // Void any prior unused codes for this athlete before issuing a new one
+  // (FV-177 AC3). Generating a fresh link invalidates older ones so a parent
+  // who regenerates can't leave multiple live claim URLs in the wild (e.g. a
+  // forwarded text). Only unconsumed rows are deleted — consumed rows are an
+  // audit trail the reaper ages out separately, and deleting them here would
+  // also be a no-op for security (a consumed code can't be claimed again). A
+  // failure here is non-fatal: worst case an older unused code stays live
+  // until its 24h TTL, so we log and proceed rather than block pairing.
+  const { error: voidError } = await service
+    .from("device_pairings")
+    .delete()
+    .eq("athlete_id", athleteId)
+    .is("consumed_at", null);
+
+  if (voidError) {
+    console.error(
+      `[pairings.generate] voiding prior codes failed (parentId=${parentId} athleteId=${athleteId}): ${voidError.message}`,
+    );
+    // Non-fatal — continue to issue the new code.
+  }
+
   const { error: insertError } = await service
     .from("device_pairings")
     .insert({
-      code,
+      code_sha256: codeHash,
       athlete_id: athleteId,
       created_by: parentId,
       expires_at: expiresAt,
@@ -112,6 +151,8 @@ export async function generatePairingCode(
     return { ok: false, error: "Could not create a pairing link. Try again." };
   }
 
+  // The raw code is returned to the parent for the claim URL and is NEVER
+  // persisted or logged — only code_sha256 is stored above.
   return { ok: true, code, expiresAt };
 }
 
@@ -153,17 +194,23 @@ export async function claimPairing(
 
   const service = createServiceClient();
 
+  // Hash the inbound code and look up by hash (FV-177). The raw code is never
+  // compared against the DB and never stored — only its sha256 is.
+  const codeHash = hashPairingCode(parsed.data.code);
+
   // Atomic consume — THE LOCK. The conditional UPDATE returns a row if and
   // only if the code existed, was unconsumed, and was unexpired. Any
   // concurrent claim for the same code (network retry, link shared twice,
   // racing tabs) loses here. This must happen BEFORE we touch the password,
   // otherwise two claimants could both update the password and the second
-  // one would silently win. HIGH #1 from PR #21 review.
+  // one would silently win. HIGH #1 from PR #21 review. (FV-177: matched on
+  // code_sha256 instead of the plaintext code — the lock semantics are
+  // identical; only the lookup key changed.)
   const nowIso = new Date().toISOString();
   const { data: claimed, error: consumeError } = await service
     .from("device_pairings")
     .update({ consumed_at: nowIso })
-    .eq("code", parsed.data.code)
+    .eq("code_sha256", codeHash)
     .is("consumed_at", null)
     .gt("expires_at", nowIso)
     .select("athlete_id")

@@ -1,3 +1,5 @@
+import { createHash } from "crypto";
+
 import { AthleteClaimForm } from "@/components/auth/AthleteClaimForm";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -23,11 +25,17 @@ export default async function PairClaimPage({ searchParams }: Search) {
     return <InvalidLink reason="missing" />;
   }
 
+  // FV-177: pairing codes are stored hashed (sha256 hex). Hash the inbound
+  // raw code from the URL and look up by code_sha256. The raw code is never
+  // stored or logged here; it is passed to the claim form, which re-validates
+  // it atomically in the claimPairing server action.
+  const codeHash = createHash("sha256").update(code).digest("hex");
+
   const service = createServiceClient();
   const { data: pairing } = await service
     .from("device_pairings")
-    .select("code, athlete_id, expires_at, consumed_at")
-    .eq("code", code)
+    .select("athlete_id, expires_at, consumed_at")
+    .eq("code_sha256", codeHash)
     .maybeSingle();
 
   if (!pairing) {

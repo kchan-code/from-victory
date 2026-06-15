@@ -111,14 +111,16 @@ values
 on conflict (parent_id) do nothing;
 
 -- ---------------------------------------------------------------------------
--- device_pairings — service-role-only table. Code for A, issued by P.
+-- device_pairings — service-role-only table. Hashed code for A, issued by P.
 -- (Trigger enforces P=parent, A=athlete, and the P→A link exists.)
+-- FV-177: device_pairings stores sha256(code) hex in code_sha256, not plaintext.
 -- ---------------------------------------------------------------------------
-insert into public.device_pairings (code, athlete_id, created_by, expires_at)
+insert into public.device_pairings (code_sha256, athlete_id, created_by, expires_at)
 values
-  ('RLS_TEST_CODE_A', '20000000-0000-4000-8000-00000000000a',
+  (encode(sha256('RLS_TEST_CODE_A'::bytea), 'hex'),
+   '20000000-0000-4000-8000-00000000000a',
    '10000000-0000-4000-8000-000000000001', now() + interval '1 day')
-on conflict (code) do nothing;
+on conflict (code_sha256) do nothing;
 
 -- ---------------------------------------------------------------------------
 -- safety_events — service-role-only table. One event for A.
