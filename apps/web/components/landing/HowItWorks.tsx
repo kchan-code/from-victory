@@ -3,19 +3,19 @@ import { SectionMeta } from "./SectionMeta";
 
 const steps = [
   {
-    num: "01 · CENTER",
-    name: "Breathe.",
-    body: "Slow down for sixty seconds. Box breath — four in, two hold, six out. Quiet the noise.",
+    num: "01 · TRAIN",
+    name: "Read the mental skill.",
+    body: "A short, direct lesson in mental toughness — grounded in sport, not theory. Built for the 13-21 athlete.",
   },
   {
-    num: "02 · RECEIVE",
-    name: "Anchor in truth.",
-    body: "A short Scripture prompt anchors your identity in Christ — short enough to actually sit with.",
+    num: "02 · ANCHOR",
+    name: "Anchor in Scripture.",
+    body: "One verse tied to the skill. Short enough to carry with you. Identity before performance.",
   },
   {
-    num: "03 · RESPOND",
-    name: "Pray.",
-    body: "A guided prayer to close the session — spoken or silent, your choice. Bring what's on your mind.",
+    num: "03 · COMPLETE",
+    name: "Mark it done.",
+    body: "Tap complete. Your rhythm grows. No streak pressure — just consistent return to the work.",
   },
   {
     num: "04 · CARRY",
@@ -37,9 +37,9 @@ export function HowItWorks() {
               A daily rhythm for the athlete&apos;s mind and spirit.
             </h2>
             <p className="fv-lede">
-              Breathe. Receive truth. Respond in prayer. Then carry one cue
-              into practice or game day. The same shape every day, so it
-              becomes a rhythm — not a reaction.
+              Read the mental skill. Anchor in Scripture. Mark it done. Each
+              daily session follows the same shape — so it builds a rhythm, not
+              a reaction.
             </p>
           </div>
         </Reveal>

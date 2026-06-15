@@ -106,6 +106,23 @@ export default defineConfig({
     },
 
     // ------------------------------------------------------------------
+    // Landing page — no auth required. Public marketing surface.
+    // FV-241: truthfulness regression guards.
+    // ------------------------------------------------------------------
+    {
+      name: "chromium-mobile-noauth",
+      testMatch: /landing-truthfulness\.e2e\.ts$/,
+      use: {
+        ...devices["iPhone 14"],
+        browserName: "chromium",
+        // No storageState — landing page is fully public.
+      },
+      // The webServer is started by the global webServer config regardless of
+      // project dependencies. We don't depend on "setup" because no DB auth
+      // is needed; the server starts via webServer before any project runs.
+    },
+
+    // ------------------------------------------------------------------
     // Secondary: Pixel 7 — run explicitly with --project=pixel7
     // Parent-auth only (multi-athlete). Add pixel7-athlete if needed.
     // ------------------------------------------------------------------
