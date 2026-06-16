@@ -264,7 +264,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Your hundred back has sat at the same time for a couple of seasons. The stroke feels good. The work is there. And the clock keeps handing you the same number, meet after meet.
 _(pause: 1.5s)_
-3. Your shoulders sink as you read the board and a tiredness sits behind your eyes. The thought hits: I'm stuck, the number won't move.
+3. Your eyes flick from the board up to the backstroke flags and back. The thought hits: I'm stuck, the number won't move.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -414,7 +414,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Your two hundred IM hasn't dropped in a while. You train four strokes against swimmers who train one, and the all-around time sits stuck while the specialists drop in their own events.
 _(pause: 1.5s)_
-3. Your shoulders sink at the board and a tiredness sits behind your eyes. The thought hits: I'm stuck, and the specialists keep dropping.
+3. You do the math on your splits in your head and stop. The thought hits: I'm stuck, and the specialists keep dropping.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -555,9 +555,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That swim is wiped from the board, and it does not get the rest of your session. Let it be done right now.
 _(pause: 2s)_
-6. One DQ doesn't write your meet. Go find your relay, own the one detail in plain words, and point them at the next leg together.
-_(pause: 2s)_
-7. Lock the fix in for next time: two hands on the wall, square and flat, and stay on the block until the incoming swimmer has clearly touched.
+6. One DQ doesn't write your meet. Go find your relay, own the one detail in plain words, then lock the fix for next time: two hands square and flat on the wall, and feet on the block until the incoming swimmer clearly touches.
 _(pause: 2s)_
 ### Swimming · Sprint · plateau
 <!-- slug: hm-swm-sprint-plateau | file: components/pregame/audio/clips-swimming.ts -->
@@ -566,7 +564,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You've gone twenty-three four in the fifty free at four straight meets. The work has been the same. The taper came and went. You look up at the board, and the clock just will not move.
 _(pause: 1.5s)_
-3. Your shoulders sink at the same time again and there's a heaviness behind your eyes. The thought hits: this number won't budge right now.
+3. You blow out a breath and look away from the board. The thought hits: this number won't budge right now.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -671,15 +669,13 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. A flip turn somewhere in the middle eight hundred rolls past vertical, or a hand slips a wall. The official saw it. A sixteen-minute swim, length after grinding length, is wiped clean off the board.
 _(pause: 1.5s)_
-3. Your stomach drops when you see the DQ, and your legs are wrecked and now they were for nothing. The thought hits: sixteen minutes of pain, and that one was on me.
+3. You climb out and your legs won't hold you, and now they were for nothing. The thought hits: that whole swim, gone off the sheet.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. That swim is wiped from the board, and it does not get the rest of your meet. Let it be done right now.
 _(pause: 2s)_
-6. The work was never for nothing — every length built the engine you carry into the next race. The board can erase a time, but not what that swim made you.
-_(pause: 2s)_
-7. Lock the fix in for next time: flip turns square and under control, two hands flat on every wall, legal and clean, length after length.
+6. The work was never for nothing — every length built the engine you carry into the next race. The board can erase a time, but not what that swim made you. Lock the fix for next time: flip turns square and under control, two hands flat on every wall, length after length.
 _(pause: 2s)_
 ### Swimming · Dist · plateau
 <!-- slug: hm-swm-dist-plateau | file: components/pregame/audio/clips-swimming.ts -->
@@ -688,7 +684,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You've held the same mile time most of the season while your lanemate dropped fifteen seconds. The yardage is brutal, the sets are honest, and the clock keeps saying it isn't paying out yet.
 _(pause: 1.5s)_
-3. Your shoulders sink at the same time again, heavy in the chest watching your lanemate drop. The thought hits: this yardage isn't paying out yet.
+3. Your hand drifts off the timing pad, slow. The thought hits: this yardage isn't paying out yet.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
