@@ -24,6 +24,7 @@ import {
   type SportConfig,
 } from "../sport-registry";
 import { NEEDS, RESET_ANCHORS, SELF_TALK_OPTIONS } from "../types";
+import { SUPPORTED_SPORTS, type Sport } from "@/lib/sports";
 
 // ---------------------------------------------------------------------------
 // FV-117 regression guard: HOCKEY_CONFIG picker lists must stay byte-identical
@@ -569,17 +570,8 @@ describe("FV-117: sport-keyed anchors picker", () => {
     expect(BASKETBALL_CONFIG.anchors).toHaveLength(6);
   });
 
-  it("every basketball anchor (except 'Say cue word') has a slug in ANCHOR_OPTION_SLUGS", () => {
-    const skip = new Set(["Say cue word"]);
-    const unmapped: string[] = [];
-    for (const anchor of BASKETBALL_CONFIG.anchors) {
-      if (skip.has(anchor)) continue;
-      if (!(anchor in ANCHOR_OPTION_SLUGS)) {
-        unmapped.push(`basketball anchor "${anchor}" not in ANCHOR_OPTION_SLUGS`);
-      }
-    }
-    expect(unmapped).toEqual([]);
-  });
+  // NOTE: the basketball-only anchor→slug coverage check was replaced by a
+  // generic per-selectable-sport guard — see the FV-301 describe below.
 });
 
 // ── Self-talk picker ──────────────────────────────────────────────────────────
@@ -630,14 +622,118 @@ describe("FV-117: sport-keyed selfTalkOptions picker", () => {
     expect(BASKETBALL_CONFIG.selfTalkOptions).toHaveLength(7);
   });
 
-  it("every basketball selfTalkOption has a slug in SELFTALK_OPTION_SLUGS", () => {
+  // NOTE: the basketball-only self-talk→slug coverage check was replaced by a
+  // generic per-selectable-sport guard — see the FV-301 describe below.
+});
+
+// ---------------------------------------------------------------------------
+// FV-301: every SELECTABLE sport voices its picker options
+//
+// Replaces the two basketball-only coverage checks above with one generic pass
+// over every sport an athlete can actually select (SUPPORTED_SPORTS — hockey,
+// basketball, golf). When a chosen anchor / self-talk phrase isn't in its slug
+// map, resolvePlaylist resolves it to null and silently drops the clip
+// (audio-playlist.ts ~L288) — the athlete picks it and hears nothing at the
+// reset. So every selectable option must map to a slug.
+//
+// Symmetric across sports and robust to HOCKEY_CONFIG.anchors being decoupled
+// from the legacy RESET_ANCHORS constant: hockey is asserted here via
+// HOCKEY_CONFIG.anchors DIRECTLY (config.anchors), not transitively through
+// RESET_ANCHORS (the FV-301 acceptance criterion).
+//
+// KNOWN_UNVOICED_* documents the one LIVE exception: golf shipped (it is in
+// SUPPORTED_SPORTS) with three sport-specific anchors + one self-talk phrase
+// whose audio clips were planned-but-never-rendered. Per GOLF_CONFIG they "drop
+// cleanly until then" — the Pre-Game Card + text mode still show the wording;
+// only the ~3s spoken reset clip is absent. Tracked for render-or-remove in
+// FV-303. Listing them keeps the guard green for the documented gap while still
+// failing on any NEW unmapped option (a real regression). The stale-entry test
+// forces this list to shrink the moment those clips render or the options drop.
+// ---------------------------------------------------------------------------
+
+const KNOWN_UNVOICED_ANCHORS: Partial<Record<Sport, readonly string[]>> = {
+  // FV-303 — render or remove these golf-specific anchors.
+  golf: ["Re-grip the club", "Glove tap", "Step back, then step in"],
+};
+
+const KNOWN_UNVOICED_SELFTALK: Partial<Record<Sport, readonly string[]>> = {
+  // FV-303 — render or remove this golf-specific self-talk phrase.
+  golf: ["You're okay. Next shot."],
+};
+
+describe("FV-301: every selectable sport voices its picker options", () => {
+  it("every anchor (except 'Say cue word') maps to ANCHOR_OPTION_SLUGS", () => {
+    const intentionallySkipped = new Set(["Say cue word"]);
     const unmapped: string[] = [];
-    for (const phrase of BASKETBALL_CONFIG.selfTalkOptions) {
-      if (!(phrase in SELFTALK_OPTION_SLUGS)) {
-        unmapped.push(`basketball self-talk "${phrase}" not in SELFTALK_OPTION_SLUGS`);
+
+    for (const sport of SUPPORTED_SPORTS) {
+      const config = getSportConfig(sport);
+      const pending = new Set(KNOWN_UNVOICED_ANCHORS[sport] ?? []);
+      for (const anchor of config.anchors) {
+        if (intentionallySkipped.has(anchor)) continue;
+        if (anchor in ANCHOR_OPTION_SLUGS) continue;
+        if (pending.has(anchor)) continue; // documented gap — FV-303
+        unmapped.push(
+          `${sport} anchor "${anchor}" has no ANCHOR_OPTION_SLUGS entry`,
+        );
       }
     }
+
     expect(unmapped).toEqual([]);
+  });
+
+  it("every self-talk phrase maps to SELFTALK_OPTION_SLUGS", () => {
+    const unmapped: string[] = [];
+
+    for (const sport of SUPPORTED_SPORTS) {
+      const config = getSportConfig(sport);
+      const pending = new Set(KNOWN_UNVOICED_SELFTALK[sport] ?? []);
+      for (const phrase of config.selfTalkOptions) {
+        if (phrase in SELFTALK_OPTION_SLUGS) continue;
+        if (pending.has(phrase)) continue; // documented gap — FV-303
+        unmapped.push(
+          `${sport} self-talk "${phrase}" has no SELFTALK_OPTION_SLUGS entry`,
+        );
+      }
+    }
+
+    expect(unmapped).toEqual([]);
+  });
+
+  // Keep the known-gap lists honest: every KNOWN_UNVOICED_* entry must still be
+  // a real option for that sport AND still be unmapped. When golf's clips render
+  // (the option gains a slug) or the option is removed, this fails until the
+  // stale entry is deleted — so the allowlist can only shrink, never rot.
+  it("KNOWN_UNVOICED_* lists have no stale entries", () => {
+    const stale: string[] = [];
+
+    for (const sport of SUPPORTED_SPORTS) {
+      const config = getSportConfig(sport);
+      for (const anchor of KNOWN_UNVOICED_ANCHORS[sport] ?? []) {
+        if (!config.anchors.includes(anchor)) {
+          stale.push(
+            `${sport} anchor "${anchor}" is allowlisted but not in config.anchors`,
+          );
+        } else if (anchor in ANCHOR_OPTION_SLUGS) {
+          stale.push(
+            `${sport} anchor "${anchor}" is now voiced — remove from KNOWN_UNVOICED_ANCHORS`,
+          );
+        }
+      }
+      for (const phrase of KNOWN_UNVOICED_SELFTALK[sport] ?? []) {
+        if (!config.selfTalkOptions.includes(phrase)) {
+          stale.push(
+            `${sport} self-talk "${phrase}" is allowlisted but not in config.selfTalkOptions`,
+          );
+        } else if (phrase in SELFTALK_OPTION_SLUGS) {
+          stale.push(
+            `${sport} self-talk "${phrase}" is now voiced — remove from KNOWN_UNVOICED_SELFTALK`,
+          );
+        }
+      }
+    }
+
+    expect(stale).toEqual([]);
   });
 });
 
