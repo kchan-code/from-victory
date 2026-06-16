@@ -191,10 +191,25 @@ function buildCurrentIndex(): Map<string, CurrentClip> {
 
 // ── Parse a script book .md ───────────────────────────────────────────────────
 
+// One element of a clip's interleaved book structure: a spoken line or a pause.
+// Captures the ORDER of speech vs pause so the generator can rebuild a clip's
+// segment sequence when the book defines a different structure than the TS
+// (FV-302 book-defines-structure path).
+export type BookItem =
+  | { type: "speech"; text: string }
+  | { type: "pause"; durationSec: number | null };
+
 type ParsedClip = {
   slug: string;
   file: string;
   lines: string[]; // numbered prose lines in order
+  // Pause markers in order of occurrence. durationSec is null for bare _(pause)_
+  // (no duration written yet — falls back to TS value). Non-null for _(pause: Ns)_
+  // (migrated value that overrides the TS value).
+  pauses: Array<{ durationSec: number | null }>;
+  // Speech + pause markers interleaved in book order (the source of truth for
+  // the line count when the book defines structure).
+  items: BookItem[];
 };
 
 type ParsedFallback = {
@@ -206,6 +221,15 @@ type ParsedBook = {
   clips: ParsedClip[];
   fallbackLines: ParsedFallback[];
 };
+
+// Pause-marker grammar:
+//   _(pause)_           → durationSec: null  (bare, transition-window fallback)
+//   _(pause: Ns)_       → durationSec: N      (migrated, overrides TS value)
+//   _(pause: N)_        → durationSec: N      (trailing 's' optional)
+//
+// Match order: try the valued form first, then the bare form.
+const PAUSE_WITH_DURATION_RE = /^_\(pause:\s*([\d.]+)s?\)_$/;
+const PAUSE_BARE_RE = /^_\(pause\)_$/;
 
 export function parseBook(content: string): ParsedBook {
   const clips: ParsedClip[] = [];
@@ -255,7 +279,7 @@ export function parseBook(content: string): ParsedBook {
 
     const metaMatch = line.match(/<!--\s*slug:\s*([^\s|]+)\s*\|\s*file:\s*([^\s>]+)\s*-->/);
     if (metaMatch?.[1] != null && metaMatch?.[2] != null) {
-      currentClip = { slug: metaMatch[1]!, file: metaMatch[2]!, lines: [] };
+      currentClip = { slug: metaMatch[1]!, file: metaMatch[2]!, lines: [], pauses: [], items: [] };
       clips.push(currentClip);
       continue;
     }
@@ -264,8 +288,23 @@ export function parseBook(content: string): ParsedBook {
       const numbered = line.match(/^(\d+)\.\s+(.+)$/);
       if (numbered?.[2] != null) {
         currentClip.lines.push(numbered[2]!);
+        currentClip.items.push({ type: "speech", text: numbered[2]! });
+        continue;
       }
-      // _(pause)_ lines are ignored
+
+      // Pause marker — valued form first, bare form fallback
+      const valued = PAUSE_WITH_DURATION_RE.exec(line);
+      if (valued?.[1] != null) {
+        const durationSec = parseFloat(valued[1]!);
+        currentClip.pauses.push({ durationSec });
+        currentClip.items.push({ type: "pause", durationSec });
+        continue;
+      }
+      if (PAUSE_BARE_RE.test(line)) {
+        currentClip.pauses.push({ durationSec: null });
+        currentClip.items.push({ type: "pause", durationSec: null });
+        continue;
+      }
     }
   }
 
@@ -370,6 +409,40 @@ export async function loadBookProse(): Promise<Map<string, string[]>> {
     const { clips } = parseBook(content);
     for (const parsed of clips) {
       result.set(parsed.slug, parsed.lines);
+    }
+  }
+  return result;
+}
+
+// ── loadBookProseWithPauses: parse all books into prose + pause map ────────────
+//
+// Returns a Map<slug, { lines: string[], pauses: Array<{durationSec: number|null}> }>
+// where:
+//   - lines: ordered speech segment texts (same as loadBookProse)
+//   - pauses: ordered pause markers in order of occurrence.
+//             durationSec is null for bare _(pause)_ (fallback to TS value),
+//             non-null for _(pause: Ns)_ (migrated, authoritative duration).
+//
+// Used by snapshot-render-plan.ts and applyBookDurationOverrides.
+
+export type BookEntry = {
+  lines: string[];
+  pauses: Array<{ durationSec: number | null }>;
+  // Interleaved speech + pause markers in book order (see BookItem). When the
+  // book's line/pause count differs from the TS script, the generator rebuilds
+  // the segment sequence from these items (FV-302 book-defines-structure).
+  items: BookItem[];
+};
+
+export async function loadBookProseWithPauses(): Promise<Map<string, BookEntry>> {
+  const result = new Map<string, BookEntry>();
+  for (const bookFile of BOOK_FILES) {
+    const bookPath = join(DOCS_SCRIPTS_DIR, bookFile);
+    if (!existsSync(bookPath)) continue;
+    const content = await readFile(bookPath, "utf8");
+    const { clips } = parseBook(content);
+    for (const parsed of clips) {
+      result.set(parsed.slug, { lines: parsed.lines, pauses: parsed.pauses, items: parsed.items });
     }
   }
   return result;
