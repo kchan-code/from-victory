@@ -189,8 +189,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. The tee shot was never the problem and it isn't the answer either. Don't chase the three back with a bigger swing. Same tempo, smart line, commit to the next shot.
 _(pause: 2s)_
-7. That three-putt is real and it is over. Your standing was never riding on a scorecard. Play the next shot free, and go again.
-_(pause: 1.5s)_
 ### Golf · Bomber · blow-up
 <!-- slug: hm-glf-bomber-blow-up | file: components/pregame/audio/clips-golf.ts -->
 
@@ -198,18 +196,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. Reachable par-5, you bombed the drive, and you go for it in two. The long iron leaks into the hazard. You drop, chunk the next one, and walk off with a seven on a hole you thought was a birdie.
 _(pause: 1.5s)_
-3. Heat climbs up your neck and your hands strangle the grip. You replay the greedy second shot on a loop. The thought hits: I always blow up the big hole. That's the anger talking, not the truth.
+3. Heat climbs up your neck and your hands strangle the grip. You replay the greedy second shot on a loop. The thought hits: I always blow up the big hole.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The triple is on the card. It is not on you, and it does not get the next hole. Sign it later. Right now it is over.
+5. The triple is on the card. It does not get the next hole. One bad hole becomes a bad nine only when you press to win it all back at once.
 _(pause: 2s)_
-6. One bad hole becomes a bad nine when you press to win it all back at once. The walk to the next tee ends this hole. New hole, new number, one shot.
+6. Stand on that next tee and play the percentages. The smart shot now is worth more than the hero shot you wish you'd hit back there. Pick the club that finds the fairway and commit.
 _(pause: 2s)_
-7. Stand on that next tee and play the percentages. The smart shot now is worth more than the hero shot you wish you'd hit back there. Pick the club that finds the fairway and commit.
-_(pause: 2s)_
-8. That blow-up hole is real and it is over. It doesn't change what you're worth — you compete from a victory that's already yours, seven or birdie. Break the spiral here, and go again.
-_(pause: 1.5s)_
 ### Golf · Bomber · ob
 <!-- slug: hm-glf-bomber-ob | file: components/pregame/audio/clips-golf.ts -->
 
@@ -223,10 +217,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That ball is gone and the penalty is already counted. There is nothing to win back on this swing — there is only this swing. Step off and re-tee like it's the first ball of the day.
 _(pause: 2s)_
-6. Take your medicine. The fastest way home is the fairway, not the hero recovery. If you're already in trouble, pitch out, take your one shot, and walk off with a number you can live with.
+6. Take your medicine. The fastest way home is the fairway, not the hero recovery. Pick a small target, make one smooth swing, and get it in play.
 _(pause: 2s)_
-7. That OB is real and it is over. The lost yards don't lower your worth — you're secure before the re-tee and after it. Smart swing, in play, and go again.
-_(pause: 1.5s)_
 ### Golf · Bomber · duff-chip
 <!-- slug: hm-glf-bomber-duff-chip | file: components/pregame/audio/clips-golf.ts -->
 
@@ -234,16 +226,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You missed the green and you're short-sided, no green to work with. You set up over the little chip, decelerate, and chunk it — the ball barely moves, still short of the putting surface.
 _(pause: 1.5s)_
-3. Your stomach sinks and your wrists go stiff and quick. You can't look at your playing partners. The thought hits: I have no hands when it actually matters.
+3. Your stomach sinks and your wrists go stiff and quick. You can't look at your playing partners. The thought hits: that one got away from me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That chip is over and you still have one in your hand. Walk up to the ball, reset your feet, and pick a clean landing spot.
+5. One chunked chip, and you still have a clean one in your hand. Walk up to the ball, reset your feet, and pick a clear landing spot.
 _(pause: 2s)_
 6. Don't try to be a hero to erase the chunk. Soft hands, accelerate through the ball, land it on your spot and let it run. Get it on the green and take your putt.
 _(pause: 2s)_
-7. One chunked chip is real and it is over. It was never a measure of who you are. Commit to the next one, and go again.
-_(pause: 1.5s)_
 ### Golf · Bomber · short-putt
 <!-- slug: hm-glf-bomber-short-putt | file: components/pregame/audio/clips-golf.ts -->
 
@@ -259,8 +249,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Don't go to the next tee swinging out of your shoes to make a birdie back. The four-footer doesn't owe you the long ball. Same routine, same line, one committed stroke.
 _(pause: 2s)_
-7. That missed putt is real and it is over. You don't have to earn your standing on the next hole — you already have it. Go again.
-_(pause: 1.5s)_
 ### Golf · Bomber · first-tee
 <!-- slug: hm-glf-bomber-first-tee | file: components/pregame/audio/clips-golf.ts -->
 
@@ -268,24 +256,22 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. On the range an hour ago, you were flushing driver. Now you're on the first tee with the group watching, and the same swing comes off cold — a top, a wipe off the planet, nothing like the range.
 _(pause: 1.5s)_
-3. Your hands go cold and a little unsure and your breath sits high in your chest. The thought hits: my swing left me on the one tee that matters. It's a feeling in this moment, not a fact about you.
+3. Your hands go cold and a little unsure and your breath sits high in your chest. The thought hits: my swing left me on the one tee that matters.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That tee shot is over. The gap between the range and the first tee happens to real players — it's happening to your hands today, not to who you are. Breathe out, and let it be just one swing.
+5. The gap between the range and the first tee happens to real players. It's happening to your hands today, and it's just one swing. Breathe out and let it be one swing.
 _(pause: 2s)_
-6. You don't have to fix your swing standing here. Slow your pre-shot routine all the way down, pick one small target, and make an easy, committed pass — no harder, just smoother.
+6. You don't have to fix your swing standing here — that's a range job for the week. Slow your routine all the way down, pick one small target, and make an easy, committed pass. No harder, just smoother.
 _(pause: 2s)_
-7. That cold first swing is real, and it is over. It is not a verdict on you — you're secure before you ever tee it up. Take what's bugging you to your coach this week and work the mechanics there; for now, play the next shot.
-_(pause: 1.5s)_
 ### Golf · Bomber · outplayed
 <!-- slug: hm-glf-bomber-outplayed | file: components/pregame/audio/clips-golf.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You step on the tee and rip it. Then your playing partner steps up and matches you, dead center, every hole — same length and he keeps it in play all day. The one edge you count on, gone.
+2. You step on the tee and rip it. Then your playing partner steps up and matches you, dead center, every hole — same length and he keeps it in play all day. The one edge you count on, quiet today.
 _(pause: 1.5s)_
-3. Your chest tightens watching his ball fly and you start trying to out-hit him on every tee. The thought hits: if I'm not longer than him, what am I out here.
+3. Your chest tightens watching his ball fly and you start trying to out-hit him on every tee. The thought hits: he's matching me off the tee — I've got nothing on him out here.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -293,8 +279,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Don't reach for ten extra yards to answer him — that's how the wheels come off. Hit your shot, play your game, and let his round be his. The card only asks for your number.
 _(pause: 2s)_
-7. Getting outdriven is real, and it stings. Your length was never the thing that named you — you're more than your driver. Play your own game, and go again.
-_(pause: 1.5s)_
 ### Golf · Bomber · nervous
 <!-- slug: hm-glf-bomber-nervous | file: components/pregame/audio/clips-golf.ts -->
 
@@ -310,8 +294,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Don't try to kill it. You don't need your hardest swing here — you need your shot. Pick a target down the left side, make a smooth pass, and just start it on line.
 _(pause: 2s)_
-7. The nerves are real, and they are not your identity. The crowd doesn't get to name you and neither does this tee shot. Smooth swing, start it on line, and go.
-_(pause: 1.5s)_
 ### Golf · Bomber · start-slow
 <!-- slug: hm-glf-bomber-start-slow | file: components/pregame/audio/clips-golf.ts -->
 
@@ -327,8 +309,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Stop trying to swing your way back to even with one huge drive. Slow your tempo, take the club that finds the fairway, and play this one hole. The round settles when you do.
 _(pause: 2s)_
-7. The slow start is real and it is over. You don't have to rescue the round to be secure — you already are. One smooth swing, one hole, and go again.
-_(pause: 1.5s)_
 ### Golf · Bomber · fall-behind
 <!-- slug: hm-glf-bomber-fall-behind | file: components/pregame/audio/clips-golf.ts -->
 
@@ -344,8 +324,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. The hero line is exactly the wrong play when you're chasing. Take the fairway, take the fat part of the green, and make your pars. Let the round come to you instead of forcing it.
 _(pause: 2s)_
-7. Being behind your number is real. The scorecard doesn't get to name you. Play smart pars, one shot at a time, and go again.
-_(pause: 1.5s)_
 ## Hard Moment Clips — Ball-Striker
 
 ### Golf · Ball-Striker · three-putt
@@ -355,7 +333,7 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You striped an iron in to twenty feet, dead at the flag. Then you race the first putt four feet by, and you miss the comebacker. Three-jack. A green you flushed, and you walk off with bogey.
 _(pause: 1.5s)_
-3. Your jaw tightens and your grip chokes the putter on the walk off. The thought hits: I hit sixteen greens and I'm shooting seventy-five, I got robbed. That's the injustice talking, not the truth.
+3. Your jaw tightens and your grip chokes the putter on the walk off. The thought hits: I hit sixteen greens and I'm shooting seventy-five, I got robbed.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -363,8 +341,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Drop the scorecard math. You're not owed a number — you're playing the next shot. Small target, one smooth swing, and let the three-putt go.
 _(pause: 2s)_
-7. The three-putt is real and it is over. The number on the card isn't your worth — you're secure before this round and after it. Go again.
-_(pause: 1.5s)_
 ### Golf · Ball-Striker · blow-up
 <!-- slug: hm-glf-ballstriker-blow-up | file: components/pregame/audio/clips-golf.ts -->
 
@@ -372,18 +348,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. One loose swing puts you in the trees. The smart play is to pitch out. But you won't accept the bogey, so you go for the gap — and clip a branch back into deeper trouble. Now you're scrambling for double, maybe worse.
 _(pause: 1.5s)_
-3. Heat climbs into your chest, the grip strangles the club, your breath goes short and quick. The thought hits: one bad swing and the whole round's gone. That's the spiral talking, not a fact.
+3. Heat climbs into your chest, the grip strangles the club, your breath goes short and quick. The thought hits: one bad swing and the whole round's gone.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That swing is over. The trouble is in front of you now, not the swing that put you there. Stop the bleeding right here.
+5. That swing is over. The trouble is in front of you now, not the swing that put you there. One bad hole is one bad hole — it does not get to write the round.
 _(pause: 2s)_
-6. Take your medicine. Accept the bogey. Pick the safe gap back to the short grass, smallest target you can find, and chip out clean. One swing in play.
+6. Take your medicine. Accept the bogey. Pick the safe gap back to the short grass, smallest target you can find, and chip out clean. Get the ball in the fairway and play the next shot from there.
 _(pause: 2s)_
-7. One bad hole is one bad hole. It does not get to write the round. Get the ball back in the fairway and play the next shot from there.
-_(pause: 2s)_
-8. The blow-up is real and it is over. One number on the card doesn't name you — you're secure no matter what this hole costs. Go again.
-_(pause: 1.5s)_
 ### Golf · Ball-Striker · ob
 <!-- slug: hm-glf-ballstriker-ob | file: components/pregame/audio/clips-golf.ts -->
 
@@ -391,16 +363,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You flush it for a living, and then one leaks dead right and crosses the white stakes. Out of bounds. Stroke and distance. You're re-teeing, already lying three before the hole has even started.
 _(pause: 1.5s)_
-3. Your stomach drops watching it sail and your hands go stiff reaching for another ball. The thought hits: that's not who I am, I don't hit it there. It's one swing, not a verdict.
+3. Your stomach drops watching it sail and your hands go stiff reaching for another ball. The thought hits: that's not who I am, I don't hit it there.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. That ball is gone. It's a penalty, not a referendum on your swing. Tee another one and breathe.
 _(pause: 2s)_
-6. Don't steer the re-tee. Trust the swing you own. Pick a small target down the fairway and make one committed pass.
+6. Don't steer the re-tee. Trust the swing you own. Pick a small target down the fairway, commit, and make one clean pass.
 _(pause: 2s)_
-7. The wild one is real and it is over. One swing doesn't move your worth — tee it up, commit, and play the next shot clean.
-_(pause: 1.5s)_
 ### Golf · Ball-Striker · duff-chip
 <!-- slug: hm-glf-ballstriker-duff-chip | file: components/pregame/audio/clips-golf.ts -->
 
@@ -408,7 +378,7 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You missed the green — rare for you — and now you're standing over a chip you resent even needing. You decelerate, catch it fat, and the ball trickles a few feet. Still short-sided. Still not up and down.
 _(pause: 1.5s)_
-3. Your ears go hot and your hands fidget on the wedge. The thought hits: I shouldn't even be down here. That's the resentment talking, and it won't help you hit the next one.
+3. Your ears go hot and your hands fidget on the wedge. The thought hits: I shouldn't even be down here.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -416,8 +386,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Stop fighting being down here. The up-and-down is gone — now protect the bogey so it doesn't become a double. Pick a landing spot and make one committed stroke, accelerating through the ball.
 _(pause: 2s)_
-7. The duffed chip is real and it is over. Where the ball ends up was never where your worth sits. Accept the spot you're in, commit to the next one, and go again.
-_(pause: 1.5s)_
 ### Golf · Ball-Striker · short-putt
 <!-- slug: hm-glf-ballstriker-short-putt | file: components/pregame/audio/clips-golf.ts -->
 
@@ -425,16 +393,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You flushed it to four feet. A kick-in for birdie, the reward for striping it all day. You stand over it, push it, and it slides past the edge. The proximity earned nothing.
 _(pause: 1.5s)_
-3. Your shoulders slump over the ball and your hands go tight on the grip. The thought hits: what's the point of striping it if the putter gives it all back. That's the bitterness talking, not the truth.
+3. Your shoulders slump over the ball and your hands go tight on the grip. The thought hits: what's the point of striping it if the putter gives it all back.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. That putt is over. The ball-striking didn't owe you the make — both are just shots. Walk to the next tee and let it go.
 _(pause: 2s)_
-6. Quit grading your swing by the putter. Next green: pick your start line, trust your speed, and roll one ball at a time.
+6. Quit grading your swing by the putter. Next green, pick your start line, trust your speed, and roll one ball at a time.
 _(pause: 2s)_
-7. The missed short one is real and it is over. A putter that went cold doesn't lower your worth — you're secure either way. Go again.
-_(pause: 1.5s)_
 ### Golf · Ball-Striker · first-tee
 <!-- slug: hm-glf-ballstriker-first-tee | file: components/pregame/audio/clips-golf.ts -->
 
@@ -442,16 +408,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. First tee, strangers watching, your name just called. The swing you've made ten thousand times on the range is the one thing you live on — and standing here, you can't feel where it is.
 _(pause: 1.5s)_
-3. Your grip is choking the club and your hands feel a foot away, like they belong to someone else. The thought hits: if I can't trust the swing, I have nothing. That's the feeling in this moment, not a fact about you.
+3. Your grip is choking the club and your hands feel a foot away, like they belong to someone else. The thought hits: if I can't trust the swing, I have nothing.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. This is happening to your hands right now, on this tee. It is nerves on the first tee, nothing more — not a verdict, not the swing you own.
 _(pause: 2s)_
-6. You don't have to fix anything here. Soften the grip, breathe out long, pick the widest target you've got, and let an easy swing go. Mechanics are a range job, not yours on this tee.
+6. You don't have to fix anything here — mechanics are a range job, not yours on this tee. Soften the grip, breathe out long, pick the widest target you've got, and let an easy swing go.
 _(pause: 2s)_
-7. The first-tee nerves are real, and they pass. Your worth was settled long before you reached this tee, and it holds however this ball comes off. Breathe, find your target, and swing.
-_(pause: 1.5s)_
 ### Golf · Ball-Striker · outplayed
 <!-- slug: hm-glf-ballstriker-outplayed | file: components/pregame/audio/clips-golf.ts -->
 
@@ -465,10 +429,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That round is over and the card is signed. He shot the lower number today — that's golf, and it's only today. Shake his hand and mean it.
 _(pause: 2s)_
-6. Let the injustice story go. The score isn't a referee on your swing. Take what's real — your ball-striking held — and go sharpen the short game that beat you.
+6. Let the injustice story go. The score isn't a referee on your swing. Take what's real — your ball-striking held — log what cost you strokes, and put it in tomorrow's short-game work.
 _(pause: 2s)_
-7. The number isn't a verdict on the player you are. Striking it that well was real too. Log what cost you strokes and put it in tomorrow's work.
-_(pause: 1.5s)_
 ### Golf · Ball-Striker · nervous
 <!-- slug: hm-glf-ballstriker-nervous | file: components/pregame/audio/clips-golf.ts -->
 
@@ -484,8 +446,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. These nerves are energy, not danger. Soften the grip, pick a small target, and make one smooth pass. You're allowed to miss one.
 _(pause: 2s)_
-7. A perfect round was never the price of admission. Play the shot in front of you, then walk and find the next one.
-_(pause: 1.5s)_
 ### Golf · Ball-Striker · start-slow
 <!-- slug: hm-glf-ballstriker-start-slow | file: components/pregame/audio/clips-golf.ts -->
 
@@ -499,10 +459,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That swing is over. One loose iron is information, not a sentence on the round. Walk to the next shot and read your lie.
 _(pause: 2s)_
-6. Don't audit your whole swing on the second hole. Small target, one smooth pass, and let the loose one go. The round is long.
+6. Don't audit your whole swing on the second hole. Small target, commit, one smooth pass, and let the loose one go. The round is long.
 _(pause: 2s)_
-7. One toe-strike doesn't decide the next seventeen holes. Pick your target, commit, and hit the next one.
-_(pause: 1.5s)_
 ### Golf · Ball-Striker · fall-behind
 <!-- slug: hm-glf-ballstriker-fall-behind | file: components/pregame/audio/clips-golf.ts -->
 
@@ -516,10 +474,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That run is over. The deficit doesn't come back on one hero swing. Get one good shot, then get the next one.
 _(pause: 2s)_
-6. Aim at the center, not the flag. Play your shot, stack a few smooth swings, and let the pars do the work. The number comes back one good shot at a time.
+6. Aim at the center, not the flag. Trust the swing you own, stack a few smooth swings, and let the pars do the work. The number comes back one good shot at a time.
 _(pause: 2s)_
-7. Being behind is real, but it's not playing your next shot — you are. Trust the swing you own and pick the smart target.
-_(pause: 1.5s)_
 ## Hard Moment Clips — Scrambler
 
 ### Golf · Scrambler · three-putt
@@ -529,16 +485,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You lag the first putt to four feet — routine. You pull the next one, it slides by, and now you're standing over a three-footer coming back. You tap it in for three. A three-jack, on the green, where you never give them away.
 _(pause: 1.5s)_
-3. Your hands go cold over the ball and your breath gets shallow. The thought hits: if I can't putt, I've got nothing — the putter was the whole thing.
+3. Your hands go cold over the ball and your breath gets shallow. The thought hits: that's a giveaway I never make — where did the speed go.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. That hole is over. Walk to the next tee, take one breath, and play the next hole on its own.
 _(pause: 2s)_
-6. One three-putt isn't a verdict on your stroke. See the line, free up your hands, good speed. The next short one is a fresh chance to roll it pure.
+6. One three-putt isn't a verdict on your stroke. See the line, free up your hands, good speed — the next short one is a fresh chance to roll it pure.
 _(pause: 2s)_
-7. Hear this plainly: the putter comes and goes, but your worth never rode on it — that was settled before you ever stood over a putt. Pick your line and roll the next one.
-_(pause: 1.5s)_
 ### Golf · Scrambler · blow-up
 <!-- slug: hm-glf-scrambler-blow-up | file: components/pregame/audio/clips-golf.ts -->
 
@@ -552,10 +506,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That hole is done — it stays on that card and it goes no further. The next tee shot is its own shot, nothing to make up.
 _(pause: 2s)_
-6. Stop chasing it back. Pick the smart play, commit, and swing easy. One good shot in the fairway is how the bleeding stops. The next save is still there for you.
+6. Stop chasing it back. Pick the smart play, commit, and swing easy. One good shot in the fairway is how the bleeding stops — the next save is still there for you.
 _(pause: 2s)_
-7. Hear this plainly: one number doesn't say who you are. You were secure before this shot and you're secure after it. Play the smart one and move on.
-_(pause: 1.5s)_
 ### Golf · Scrambler · ob
 <!-- slug: hm-glf-scrambler-ob | file: components/pregame/audio/clips-golf.ts -->
 
@@ -571,8 +523,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. You don't need the perfect drive — you need it in play. See the shot, soft grip, smooth tempo, and trust it. Get it in the short grass and you'll save the rest, like you always do.
 _(pause: 2s)_
-7. Hear this plainly: the big stick coming and going doesn't move your worth — that was secure before you pulled driver. One ball in play, then go to work.
-_(pause: 1.5s)_
 ### Golf · Scrambler · duff-chip
 <!-- slug: hm-glf-scrambler-duff-chip | file: components/pregame/audio/clips-golf.ts -->
 
@@ -580,16 +530,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. Short-sided in the rough, the kind of up-and-down you live for. You set up over it — and you catch it heavy. The ball moves two feet. The chip you make in your sleep, duffed, with the green right there in front of you.
 _(pause: 1.5s)_
-3. Your hands have gone numb on the wedge and your face is hot standing over it again. The thought hits: the up-and-down is the one thing I do, and if that's gone, what do I have? That's the miss talking, not the truth. Let it pass.
+3. Your hands have gone numb on the wedge and your face is hot standing over it again. The thought hits: that's one I make in my sleep, and I caught it heavy.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That chip is over — one swing tonight, not the thousands you've holed. Step to the next one and read the shot fresh.
+5. That chip is over — one swing today, not the thousands you've holed. Step to the next one and read the shot fresh.
 _(pause: 2s)_
-6. Next shot, don't grab the wedge tighter to make it perfect. Soft hands, see the landing spot, let the bounce do the work, and save the next one clean.
+6. Don't grab the wedge tighter to make it perfect. Soft hands, see the landing spot, let the bounce do the work, and save the next one clean.
 _(pause: 2s)_
-7. The short game is something you do, not the whole of who you are. Your worth held when the wedge let you down — it was never riding on one chip. Soft hands, see the shot, and go again.
-_(pause: 1.5s)_
 ### Golf · Scrambler · short-putt
 <!-- slug: hm-glf-scrambler-short-putt | file: components/pregame/audio/clips-golf.ts -->
 
@@ -603,10 +551,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That putt is over. Mark it, breathe, and walk to the next tee clean.
 _(pause: 2s)_
-6. One miss doesn't take your stroke. See the line, soft hands, good speed, let it roll. The next short one is a fresh chance to pour it in.
+6. One miss doesn't take your stroke. See the line, soft hands, good speed, let it roll — the next short one is a fresh chance to pour it in.
 _(pause: 2s)_
-7. Hear this plainly: the feel comes and goes hole to hole, but your worth doesn't — it was never on the line. Read the next one, trust your stroke, and roll it.
-_(pause: 1.5s)_
 ### Golf · Scrambler · first-tee
 <!-- slug: hm-glf-scrambler-first-tee | file: components/pregame/audio/clips-golf.ts -->
 
@@ -614,16 +560,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. First tee, strangers watching, your name just called. On the range the soft hands were right there. Now you stand over a little pitch and the touch you had an hour ago feels far away — the feel just isn't where it was.
 _(pause: 1.5s)_
-3. Your hands are tight and unsure on the grip and the touch that was there on the range has gone quiet. The thought hits: my hands won't do it. That's the feeling in this moment, not a fact about you.
+3. Your hands are tight and unsure on the grip and the touch that was there on the range has gone quiet. The thought hits: my hands won't do it.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. This shot is just this shot. You don't have to chase the range feel back right now. Breathe out, pick a simple, safe shot, and let it go.
 _(pause: 2s)_
-6. This is happening to your hands, not a verdict on you, and it is not yours to fix on the tee. Take what the course gives you here, and take the feel to your coach to sort — not under the gun.
+6. This is happening to your hands today, and it's not yours to fix on the tee. Take what the course gives you here, and take the feel to your coach to sort — not under the gun.
 _(pause: 2s)_
-7. The feel being off right now is real, and it will pass. You are secure before this shot and after it, hands cold or warm — that was never on the line. Play the simple one and keep walking.
-_(pause: 1.5s)_
 ### Golf · Scrambler · outplayed
 <!-- slug: hm-glf-scrambler-outplayed | file: components/pregame/audio/clips-golf.ts -->
 
@@ -637,10 +581,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. His ball isn't your business. Play your number, your shot, your card — that's the only game you're in.
 _(pause: 2s)_
-6. Scrambling isn't surviving — it's a skill, and it's yours. See the shot, soft hands, good speed, get it up and down. Every save you make is a real shot scored. Keep stacking them.
+6. Scrambling isn't surviving — it's a skill, and it's yours. See the shot, soft hands, good speed, get it up and down. Every save is a real shot scored — keep stacking them.
 _(pause: 2s)_
-7. Hear this plainly: how he hits it doesn't name you, and there's no one to be found out as — you were never hiding. Play your game and finish the hole.
-_(pause: 1.5s)_
 ### Golf · Scrambler · nervous
 <!-- slug: hm-glf-scrambler-nervous | file: components/pregame/audio/clips-golf.ts -->
 
@@ -656,8 +598,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. You don't need it perfect — you need it in play. See the shot, soft hands, good speed, and let it go. Get the ball moving and you'll save the rest as you go.
 _(pause: 2s)_
-7. Hear this plainly: your worth isn't riding on whether the magic shows up today — it was settled long before the first tee. Play the shot in front of you.
-_(pause: 1.5s)_
 ### Golf · Scrambler · start-slow
 <!-- slug: hm-glf-scrambler-start-slow | file: components/pregame/audio/clips-golf.ts -->
 
@@ -673,8 +613,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. You don't need a save to feel like yourself — you already are yourself. See the shot, soft hands, good speed, commit. The next one is a fresh chance to drop one.
 _(pause: 2s)_
-7. Hear this plainly: you don't have to earn your way back to feeling like yourself — that was never on the line. Play the next shot free.
-_(pause: 1.5s)_
 ### Golf · Scrambler · fall-behind
 <!-- slug: hm-glf-scrambler-fall-behind | file: components/pregame/audio/clips-golf.ts -->
 
@@ -688,7 +626,5 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. The number on the card is behind you. It's not playing the next shot — you are. Step up and play this one shot, right here.
 _(pause: 2s)_
-6. Play your game, not the scoreboard's. See the shot, soft hands, good speed, commit to the smart target. One shot, then the next. The course doesn't get to name you.
+6. Play your game, not the scoreboard's. See the shot, soft hands, good speed, commit to the smart target. One shot, then the next.
 _(pause: 2s)_
-7. Hear this plainly: there's no one here to be found out as, and your worth isn't on this card — it was secure before the first tee and it holds at the last. Play one shot, your game.
-_(pause: 1.5s)_
