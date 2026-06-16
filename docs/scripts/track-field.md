@@ -262,27 +262,23 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That jump is over and the flag is up — nothing left to argue. You have attempts left in this round. The distance is clearly in you; you just showed it.
 _(pause: 2s)_
-6. Next attempt, walk back to the top of the runway, breathe out long, and settle your steps. Don't pull back scared of the board — trust your mark and hit it clean.
+6. Next attempt, set your start mark, breathe out long, and settle your steps. Don't pull back scared of the board — trust your mark and hit it clean.
 _(pause: 2s)_
-7. The board reports an attempt; it can't measure a jumper. Set your start mark and run the next one.
-_(pause: 1.5s)_
 ### Track & Field · Jump · no-height
 <!-- slug: hm-trf-jump-no-height | file: components/pregame/audio/clips-trackfield.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You passed up to a higher mark, and you've missed your first two. Now one attempt stands between you and no mark for the whole meet — and standing at the top, the approach you've run a thousand times suddenly feels far away.
+2. You passed up to a higher mark, and you've missed your first two. Now one attempt stands between you and no mark for the day — and standing at the top, your rhythm just feels off right now.
 _(pause: 1.5s)_
-3. Your breath sits high in your chest. Your feet shuffle at the start, like you can't find where the run-up begins. The thought hits: I can't make myself commit to it.
+3. Your breath sits high in your chest. Your feet shuffle at the start, hunting for where the run-up begins. The thought hits: my approach isn't there today.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Slow everything down. This is the gap between the warm-up and the one attempt that counts — it happens to real jumpers, and it's happening to your run-up today, not to who you are.
+5. An off run-up is a rough patch, not a lost skill — it happens to real jumpers, and you still have an attempt to throw down.
 _(pause: 2s)_
-6. Next attempt, you don't have to fix your approach standing here. Take it one jump at a time. Slow your routine all the way down, pick one small target down the runway, and run through it, not at it.
+6. Next attempt, take it one jump at a time. Slow your routine all the way down, pick one small target down the runway, and run through it, not at it.
 _(pause: 2s)_
-7. Take what's bugging your approach to your coach this week and work it there. For now, set your mark and run the next one.
-_(pause: 1.5s)_
 ### Track & Field · Jump · out-leaned
 <!-- slug: hm-trf-jump-out-leaned | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -294,12 +290,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That flight is over and their jump was theirs. You can't out-jump a mark that's already landed. He won that flight; he doesn't own your next meet.
+5. That flight is over and their jump was theirs. You can't out-jump a mark that's already landed. They won that flight; they don't own your next meet.
 _(pause: 2s)_
-6. Next meet, you control your own attempts and not theirs — so spend nothing replaying the one that beat you. You jumped well enough to lead a whole flight; carry that forward.
+6. Next meet, control your own attempts and not theirs — spend nothing replaying the one that beat you. You jumped well enough to lead a whole flight; carry that forward and run your own day.
 _(pause: 2s)_
-7. Their mark reports their attempt; it can't name you. Hold your head up and run your own day.
-_(pause: 1.5s)_
 ### Track & Field · Jump · bad-heat
 <!-- slug: hm-trf-jump-bad-heat | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -313,10 +307,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. The flight order doesn't decide your mark — the board takes every jump the same way, early flight or late. A big mark thrown down early still stands, and it forces the seeded jumpers to come find you.
 _(pause: 2s)_
-6. Next attempt, bring your own runway with you. Run your full approach, hit your steps, and attack the board — set the bar instead of chasing it.
+6. Next attempt, settle at the top and bring your own runway with you. Run your full approach, hit your steps, and attack the board — set the bar instead of chasing it.
 _(pause: 2s)_
-7. The seeding reports where they think you are; it can't measure a jumper. Settle at the top and run your own runway.
-_(pause: 1.5s)_
 ### Track & Field · Jump · nervous
 <!-- slug: hm-trf-jump-nervous | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -330,10 +322,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. These nerves aren't a warning — they're energy your body brought because this matters. Let them sharpen you.
 _(pause: 2s)_
-6. Next attempt, you don't have to force the jump — just run your approach. Lock your eyes down the runway, hit your rhythm off the first step, and let the speed carry you to the board.
+6. Next attempt, find your start mark under your feet, lock your eyes down the runway, hit your rhythm off the first step, and let the speed carry you to the board.
 _(pause: 2s)_
-7. Find your start mark under your feet. Trust the steps you've drilled a thousand times and go.
-_(pause: 1.5s)_
 ### Track & Field · Jump · start-slow
 <!-- slug: hm-trf-jump-start-slow | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -345,12 +335,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That attempt is over and it's just one mark on the board. A flat opener is a start, not the round.
+5. That attempt is over and it's just one mark on the board. A flat opener is a start, not the round — the distance comes back on its own.
 _(pause: 2s)_
-6. Next attempt, don't try to win the round back with one giant leap — that's how you press the board and scratch. Take it one jump at a time. Settle your steps, hit your rhythm, and trust your approach.
+6. Next attempt, don't try to win the round back with one giant leap — that's how you press the board and scratch. Take it one jump at a time, settle your steps, and run one clean approach at your rhythm.
 _(pause: 2s)_
-7. The distance comes back on its own. You don't have to rescue the round — run one clean approach and go again.
-_(pause: 1.5s)_
 ### Track & Field · Jump · off-pace
 <!-- slug: hm-trf-jump-off-pace | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -364,10 +352,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. Those attempts are behind you. Steps drift in a meet — that's normal, and the fix is one attempt, not the whole day.
 _(pause: 2s)_
-6. Next attempt, simplify it. Set your start mark, run your first few steps with confidence, and let the speed build into the board — don't steer it, just run it.
+6. Next attempt, breathe out long and simplify it. Set your start mark, run your first few steps with confidence, and let the speed build into the board — don't steer it, just run it.
 _(pause: 2s)_
-7. Find the rhythm on one attempt and the rest follow. Breathe out long and run the next one.
-_(pause: 1.5s)_
 ### Track & Field · Throw · foul
 <!-- slug: hm-trf-throw-foul | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -381,27 +367,23 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That throw is over and the flag is up — nothing left to argue. You have throws left in this round. The distance is clearly in you; you just showed it.
 _(pause: 2s)_
-6. Next throw, step out of the ring, shake out your arms, breathe out long. Don't pull back scared of the board — stay tall, control your finish, keep it behind the toe board, and let it go clean.
+6. Next throw, step out of the ring, shake out your arms, breathe out long. Stay tall, control your finish, keep it behind the toe board, and let it go clean.
 _(pause: 2s)_
-7. The board reports an attempt; it can't measure a thrower. Step back in and let the next one rip.
-_(pause: 1.5s)_
 ### Track & Field · Throw · no-height
 <!-- slug: hm-trf-throw-no-height | file: components/pregame/audio/clips-trackfield.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You've fouled your first two. The third is your last chance at a fair mark, and a scratch means you leave with nothing on the board — and standing in the ring, the throw you've made a thousand times suddenly feels far away.
+2. You've fouled your first two. The third is your last fair mark, and a scratch means you leave with nothing on the board — and standing in the ring, your motion just feels off-rhythm right now.
 _(pause: 1.5s)_
-3. Your breath sits high in your chest. Your feet feel unsure at the back of the ring, like you can't commit to the drive. The thought hits: I can't make myself drive through it.
+3. Your breath sits high in your chest. Your feet feel unsure at the back of the ring, the drive not quite there. The thought hits: my motion isn't there today.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Slow everything down. This is the gap between the warm-up and the one throw that counts — it happens to real throwers, and it's happening to your run-up today, not to who you are.
+5. An off day in the ring is a rough patch, not a lost skill — it happens to real throwers, and you still have a throw left to put on the board.
 _(pause: 2s)_
-6. Next throw, you don't have to fix your technique standing here. Take it one throw at a time. Slow your setup all the way down, pick one simple thing, stay inside the ring, and let an easy, committed throw go.
+6. Next throw, take it one throw at a time. Slow your setup all the way down, pick one simple thing, stay inside the ring, and let an easy, committed throw go.
 _(pause: 2s)_
-7. Take what's bugging your run-up to your coach this week and work it there. For now, step back in and throw the next one.
-_(pause: 1.5s)_
 ### Track & Field · Throw · out-leaned
 <!-- slug: hm-trf-throw-out-leaned | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -413,12 +395,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That round is over and their throw was theirs. You can't out-throw a mark that's already landed. He won that round; he doesn't own your next meet.
+5. That round is over and their throw was theirs. You can't out-throw a mark that's already landed. They won that round; they don't own your next meet.
 _(pause: 2s)_
-6. Next meet, you control your own throws and not theirs — so spend nothing replaying the one that beat you. You threw well enough to lead a whole competition; carry that forward.
+6. Next meet, control your own throws and not theirs — spend nothing replaying the one that beat you. You threw well enough to lead a whole competition; carry that forward and throw your own day.
 _(pause: 2s)_
-7. Their mark reports their attempt; it can't name you. Hold your head up and throw your own day.
-_(pause: 1.5s)_
 ### Track & Field · Throw · bad-heat
 <!-- slug: hm-trf-throw-bad-heat | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -432,10 +412,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. The throwing order doesn't decide your mark — the board takes every throw the same way, first in the order or last. A big mark thrown first still stands, and it forces the seeded throwers to come find you.
 _(pause: 2s)_
-6. Next throw, bring your own ring with you. Run your full setup, drive through your finish, and attack the board — set the mark instead of chasing it.
+6. Next throw, settle in the ring and bring your own rhythm with you. Run your full setup, drive through your finish, and attack the board — set the mark instead of chasing it.
 _(pause: 2s)_
-7. The order reports where they think you are; it can't measure a thrower. Settle in the ring and throw your own mark.
-_(pause: 1.5s)_
 ### Track & Field · Throw · nervous
 <!-- slug: hm-trf-throw-nervous | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -449,10 +427,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. These nerves aren't a warning — they're energy your body brought because this matters. Let them sharpen you.
 _(pause: 2s)_
-6. Next throw, you don't have to force it — just run your sequence. Stay patient in the back, build through your feet and hips, and let the finish rip on its own.
+6. Next throw, feel your feet planted in the back of the ring, stay patient, build through your feet and hips, and let the finish rip on its own.
 _(pause: 2s)_
-7. Feel your feet planted in the back of the ring. Trust the motion you've drilled a thousand times and go.
-_(pause: 1.5s)_
 ### Track & Field · Throw · start-slow
 <!-- slug: hm-trf-throw-start-slow | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -464,12 +440,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That throw is over and it's just one mark on the board. A short opener is a start, not the round.
+5. That throw is over and it's just one mark on the board. A short opener is a start, not the round — the distance comes back on its own.
 _(pause: 2s)_
-6. Next throw, don't try to win it back by throwing harder — muscling it is exactly how the throw gets short and the foot drifts over the board. Take it one throw at a time. Stay smooth, trust your sequence, and let it build.
+6. Next throw, don't try to win it back by throwing harder — muscling it is how the throw gets short and the foot drifts over the board. Take it one throw at a time, stay smooth, trust your sequence, and let one clean throw build.
 _(pause: 2s)_
-7. The distance comes back on its own. You don't have to rescue the round — let one smooth throw go and go again.
-_(pause: 1.5s)_
 ### Track & Field · Throw · off-pace
 <!-- slug: hm-trf-throw-off-pace | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -483,46 +457,38 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. Those throws are behind you. Distance comes and goes within a comp — that's normal, and the fix is one throw, not the whole day.
 _(pause: 2s)_
-6. Next throw, simplify it. Stay patient in the back, build smooth through your feet, and let the finish do the work — don't force the distance, just run the sequence.
+6. Next throw, breathe out long and simplify it. Stay patient in the back, build smooth through your feet, and let the finish do the work — don't force the distance, just run the sequence.
 _(pause: 2s)_
-7. Find the rhythm on one throw and the big one shows up. Breathe out long and step back in.
-_(pause: 1.5s)_
 ### Track & Field · Sprint · false-start
 <!-- slug: hm-trf-sprint-false-start | file: components/pregame/audio/clips-trackfield.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. The gun cracks and your body twitches a hair early. Then a second shot. The official's arm comes up and points down your lane. You're out — months of work erased before you ran a single step.
+2. The gun cracks and your body twitches a hair early. Then a second shot. The official's arm comes up and points down your lane. You're out before you ran a single step.
 _(pause: 1.5s)_
-3. Heat floods up your neck as you straighten up out of the blocks and your hands shake. The thought hits: I never even got to run, and now it's gone. That's the shock talking, not the truth. Let it pass.
+3. Heat floods up your neck as you straighten up out of the blocks and your hands shake. The thought hits: I never even got to run.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That call is made and it cannot be undone. Standing on the track arguing it in your head only carries it into the next race. Breathe out long and let this one go.
+5. That call is made and it cannot be undone — arguing it in your head only carries it into the next race. The training is still in your legs; breathe out long and let this one go.
 _(pause: 2s)_
-6. Take the lesson, not the spiral. Next time you set in the blocks, get still and wait for the gun — weight settled, eyes down the track, move only on the shot. You can't jump what you don't anticipate.
+6. Take the lesson, not the spiral. Next time you set, get still and wait for the gun — weight settled, eyes down the track, move only on the shot. You can't jump what you don't anticipate.
 _(pause: 2s)_
-7. All that training is still in you and it isn't going anywhere — it's in your legs, ready for the next gun.
-_(pause: 2s)_
-8. That false start was a call on a race, not a verdict on you. A race you never got to run cannot name you — your worth was settled before you ever stepped into the blocks. Set in the blocks and run the next one.
-_(pause: 1.5s)_
 ### Track & Field · Sprint · handoff
 <!-- slug: hm-trf-sprint-handoff | file: components/pregame/audio/clips-trackfield.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You're flying into the exchange zone and you reach back for the stick. It isn't there. The timing breaks, the pass dies in your hand, and three teammates' race dies with it.
+2. You're flying into the exchange zone and you reach back for the stick. It isn't there. The timing breaks and the pass dies in your hand.
 _(pause: 1.5s)_
-3. Your stomach drops as your hand closes on nothing and you can't look back at the relay. The thought hits: I cost everyone, I ruined it for the whole team. That's the guilt talking, not the truth. Let it pass.
+3. Your stomach drops as your hand closes on nothing. The thought hits: I let the exchange go.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That exchange is over and it's behind you on the track. The catastrophe in your head isn't real, and your teammates are still your teammates. Breathe out long and let it be done.
+5. That exchange is over and it's behind you on the track. A clean leg answers a sloppy handoff — your teammates are still your teammates. Breathe out long.
 _(pause: 2s)_
-6. Take it to your next handoff. Run your acceleration, trust the call, reach back on the cue and feel the stick hit your palm. An exchange is won in the rhythm, not the panic — settle it and own your leg.
+6. Run the leg in front of you. Hit your acceleration, trust the cue, reach back and feel the stick settle clean in your palm — an exchange is won in the rhythm, not the panic.
 _(pause: 2s)_
-7. One blown handoff doesn't decide whether you belong on this relay — you're on it before the pass and after it. Settle in and run your leg.
-_(pause: 1.5s)_
 ### Track & Field · Sprint · out-leaned
 <!-- slug: hm-trf-sprint-out-leaned | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -534,12 +500,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That race is over and the time is on the board. He won that lean; he doesn't own the next one. You have more racing today.
+5. That race is over and the time is on the board. They won that lean; they don't own the next one. You have more racing today.
 _(pause: 2s)_
-6. Next race, don't replay the tape on a loop — run all the way through the line, drive your last steps, and time the lean so you win the last inch instead of giving it away.
+6. Walk it off on the infield, let one long exhale settle you, and next race run all the way through the line — drive your last steps and time the lean so you win the last inch.
 _(pause: 2s)_
-7. The tape reports a race; it can't name a runner. Walk it off on the infield, let one long exhale settle you, and go again.
-_(pause: 1.5s)_
 ### Track & Field · Sprint · bad-heat
 <!-- slug: hm-trf-sprint-bad-heat | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -551,12 +515,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The lane assignment doesn't decide your race. The clock takes everyone's time the same way, lane one or lane four. Settle into your blocks and bring your race no matter what's beside you.
+5. The lane assignment doesn't decide your race — the clock takes everyone's time the same way, lane one or lane four. A great race out of lane one still crashes the next seeding.
 _(pause: 2s)_
-6. Run your own lane, not theirs. Stay low and patient through the tight turn, run the inside line clean, and unload on the straight.
+6. Run your own lane, not theirs. Settle into your blocks, stay low and patient through the tight turn, run the inside line clean, and unload on the straight.
 _(pause: 2s)_
-7. A great race out of lane one still crashes the next seeding. The lane sheet reports where they think you are. It cannot run the race for you, and it cannot run it for them.
-_(pause: 1.5s)_
 ### Track & Field · Sprint · hit-wall
 <!-- slug: hm-trf-sprint-hit-wall | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -564,18 +526,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You're out front at eighty meters and then your arms turn to concrete. Your form falls apart, your stride shortens, and everyone you passed comes streaming back at you over the last twenty.
 _(pause: 1.5s)_
-3. Your shoulders climb up around your ears and your arms thrash to find the speed that left. The thought hits: I always tie up at the end, I can't finish. That's the panic talking, not the truth. Let it pass.
+3. Your shoulders climb up around your ears and your arms thrash to find the speed that left. The thought hits: I tied up at the end.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That race is over and the time is on the board. Climb down off the effort, walk the infield, and let one long exhale clear it.
+5. That race is over and the time is on the board. Tying up is a relaxation problem, not a willpower problem — walk the infield and let one long exhale clear it.
 _(pause: 2s)_
-6. Tying up is a relaxation problem, not a willpower problem. When the burn hits, you don't grip harder — you stay tall and loose: drop the shoulders, relax the face and hands, and let the speed flow instead of forcing it.
+6. Next race, run the first part within yourself so you have something left, then stay tall and loose through the line — drop the shoulders, relax the hands, and let the speed flow instead of forcing it.
 _(pause: 2s)_
-7. Next race, run the first part within yourself so you have something left, then carry your form through the line. Speed comes from staying smooth, not from clenching.
-_(pause: 2s)_
-8. That tie-up was one race, not a fact about who you are. The clock reports a race; it cannot name a runner. Walk it off and run the next one.
-_(pause: 1.5s)_
 ### Track & Field · Sprint · nervous
 <!-- slug: hm-trf-sprint-nervous | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -589,10 +547,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. These nerves are energy, not danger. Let them sharpen you. One slow breath out behind the blocks, feet set on the pedals, and the buzz turns into power.
 _(pause: 2s)_
-6. You don't have to manage the whole race standing here. React to the gun, drive low out of the blocks, and let your speed come up underneath you.
+6. The work is already in your legs. Set in the blocks, react to the gun, drive low, and let your speed come up underneath you.
 _(pause: 2s)_
-7. The work is already in your legs. Set in the blocks, react to the gun, and go.
-_(pause: 1.5s)_
 ### Track & Field · Sprint · start-slow
 <!-- slug: hm-trf-sprint-start-slow | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -600,16 +556,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. The gun goes and you're a beat behind everyone. Your first steps are heavy, you come up out of your drive too soon, and you're already buried in the field before you've hit top speed.
 _(pause: 1.5s)_
-3. Your eyes lock on the gap opening in front of you and your stride goes frantic, clawing to get it back. The thought hits: I lost it on the start, it's already gone.
+3. Your eyes lock on the gap opening in front of you and your stride goes frantic, clawing to get it back. The thought hits: I lost it on the start.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. That race is over and the slow start is behind you. Walk the infield and let one long exhale clear it. You have more racing today.
 _(pause: 2s)_
-6. Pressing to make it back is exactly what kept you behind. Next race, react to the gun, stay low and patient through your drive, and let the speed build under you so you never have to chase.
+6. Next race, react to the gun, stay low and patient through your drive, and let the speed build under you so you get out clean and never have to chase.
 _(pause: 2s)_
-7. Get out clean and there's nothing to claw back. Nail the next start, and go again.
-_(pause: 1.5s)_
 ### Track & Field · Sprint · off-pace
 <!-- slug: hm-trf-sprint-off-pace | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -617,16 +571,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You hit two hundred of the four hundred feeling great, right on the runner ahead. Then the last hundred the bottom drops out — your legs flood, your turnover dies, and the field swallows you down the home straight.
 _(pause: 1.5s)_
-3. Your legs turn to lead and your stride collapses inward as they come past on both sides. The thought hits: I went out too hard, I always fade.
+3. Your legs turn to lead and your stride collapses inward as they come past on both sides. The thought hits: I went out too hard.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That race is over and the fade is behind you. Walk the infield, let one long exhale settle you, and let the home straight go. You have more racing today.
+5. That race is over and the fade is behind you. The four hundred is won by pace, not by the first two hundred — walk the infield and let one long exhale settle you.
 _(pause: 2s)_
-6. The four hundred is won by pace, not by the first two hundred. Next race, run the opening within yourself, stay tall and relaxed at the two-fifty, and save the gear that carries you through the line.
+6. Next race, run the opening within yourself, stay tall and relaxed at the two-fifty, and save the gear that carries you through the line — distribute the effort and the back half holds.
 _(pause: 2s)_
-7. Distribute the effort and the back half holds. Run your own pace next time, and go again.
-_(pause: 1.5s)_
 ### Track & Field · Dist · hit-wall
 <!-- slug: hm-trf-dist-hit-wall | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -634,18 +586,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. At the twelve hundred of the sixteen hundred your legs flood and your lungs close down. The pace you've held all year is suddenly impossible, and the pack you were tucked into starts to inch away.
 _(pause: 1.5s)_
-3. Your stride shortens and your shoulders climb toward your ears. Your lungs scream and your legs go heavy. The thought hits: I'm done, I can't hold this, I'm falling off. That's the pain talking, not the truth. Let it pass.
+3. Your stride shortens and your shoulders climb toward your ears. Your lungs scream and your legs go heavy. The thought hits: I can't hold this.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. This is the part of the race you trained for — the wall is the test, not the end. It comes for everyone here, and it's happening to your legs right now, not to who you are. Breathe out long and bring your focus back to this one lap.
+5. This is the part of the race you trained for — the wall is the test, not the end. It comes for everyone here. Breathe out long and bring your focus back to this one lap.
 _(pause: 2s)_
-6. Don't try to win it all back at once — that's how a distance race falls apart. Stay tall, relax your face and shoulders, and shorten the race down to the next hundred meters. Just get to the next mark, then the next.
+6. Don't try to win it all back at once. Stay tall, relax your shoulders, and shorten the race to the next hundred meters — then ride the bell, find your turnover, lock onto the runner ahead, and reel them in stride by stride.
 _(pause: 2s)_
-7. Then ride the bell. When the last lap comes, you don't need a hero surge — you need your rhythm back. Find your turnover, lock onto the runner ahead, and reel them in stride by stride.
-_(pause: 2s)_
-8. The clock reports a race, but it cannot name a runner — you're secure whether you held the pace or not. That wall is behind you. Break the spiral here and run the next lap.
-_(pause: 1.5s)_
 ### Track & Field · Dist · handoff
 <!-- slug: hm-trf-dist-handoff | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -653,16 +601,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. On the distance medley exchange your timing is off. You come in hot, your incoming runner is gassed, you stutter in the zone — and the lead you were handed leaks away in the fumble.
 _(pause: 1.5s)_
-3. Your stomach drops as the baton bobbles in the pass and your eyes won't find the runner who handed it off clean. The thought hits: I cost everyone, I let the whole relay down.
+3. Your stomach drops as the baton bobbles in the pass. The thought hits: I let the exchange leak away.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That exchange is over and you still have a whole leg to run. The voice saying you ruined it for everyone isn't telling the truth, and your teammates are still your teammates. Breathe out long.
+5. That exchange is over and you still have a whole leg to run. A clean leg answers a sloppy exchange — your teammates are still your teammates. Breathe out long.
 _(pause: 2s)_
 6. Run the leg you've still got. Settle into your pace, hunt the runners ahead one at a time, and give your team back the ground in the only place you can — on the track now.
 _(pause: 2s)_
-7. A clean leg answers a sloppy exchange. Run the leg in front of you, and go again.
-_(pause: 1.5s)_
 ### Track & Field · Dist · out-leaned
 <!-- slug: hm-trf-dist-out-leaned | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -674,12 +620,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. He won that finish. He does not own the next one. Walk it off on the infield and let one long exhale settle you. Leading takes guts — the kick is just a skill you build next.
+5. They won that finish. They don't own the next one. Leading takes guts — the kick is just a skill you build next. Walk it off and let one long exhale settle you.
 _(pause: 2s)_
-6. Take it to your next race. If you're going to lead, lead honest and start your drive earlier so there's no gear left to out-kick. Or sit one stride back and time your own finish.
+6. Next race, if you're going to lead, lead honest and start your drive earlier so there's no gear left to out-kick — or sit one stride back and time your own finish.
 _(pause: 2s)_
-7. Either way, you train the closing speed that beat you. Build the kick, and go again.
-_(pause: 1.5s)_
 ### Track & Field · Dist · bad-heat
 <!-- slug: hm-trf-dist-bad-heat | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -687,16 +631,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You're trapped on the rail in lane one, bodies stacked on your shoulder and a runner right on your back. The pace is winding up, the move is going, and you have nowhere to go.
 _(pause: 1.5s)_
-3. Your shoulders tense, hemmed in by the pack, and your eyes dart for a gap that isn't there. The thought hits: I'm boxed, I'm stuck, the race is leaving without me.
+3. Your shoulders tense, hemmed in by the pack, and your eyes dart for a gap that isn't there. The thought hits: I'm boxed, the race is leaving without me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Being boxed is a position, not a verdict — it changes every few strides. Don't spend your race fighting the wall of bodies. Hold your rhythm on the rail and wait for the gap.
+5. Being boxed is a position, not a verdict — it changes every few strides. The runner who keeps their head in the box is the one who's there at the bell. Hold your rhythm on the rail and wait for the gap.
 _(pause: 2s)_
 6. Be patient, then decisive. Ease back a half-step to find the lane, swing wide off the turn when it clears, and go through clean.
 _(pause: 2s)_
-7. The runner who keeps their head in the box is the one who's there at the bell. Find your gap, and go again.
-_(pause: 1.5s)_
 ### Track & Field · Dist · nervous
 <!-- slug: hm-trf-dist-nervous | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -710,10 +652,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. These nerves are energy, not danger. Let them sharpen you. One slow breath out on the line, feet set under you, and bring your focus to just the first lap.
 _(pause: 2s)_
-6. Don't run the whole race standing here — you can't carry all of it at once. Break it into laps. Settle into pace, hold your rhythm, and take it one lap at a time.
+6. You've trained every meter of it. Don't run the whole race standing here — settle on the line, run the first lap, and take it one lap at a time.
 _(pause: 2s)_
-7. You've trained every meter of it. Settle on the line, run the first lap, and go.
-_(pause: 1.5s)_
 ### Track & Field · Dist · start-slow
 <!-- slug: hm-trf-dist-start-slow | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -725,12 +665,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. A slow first lap is a tactic, not a sentence — the race always comes back together. Don't burn a panicked surge to chase a gap this early. Hold your position and let the pace come to you.
+5. A slow first lap is a tactic, not a sentence — the race always comes back together, and it rewards the runner who's patient and positioned. Don't burn a panicked surge to chase a gap this early.
 _(pause: 2s)_
 6. Move with purpose, not panic. Stay out of the box on the rail, drift up to the leaders over the next lap, and be there when the real racing starts.
 _(pause: 2s)_
-7. A slow start rewards the runner who's patient and positioned. Settle into position, and go again.
-_(pause: 1.5s)_
 ### Track & Field · Dist · off-pace
 <!-- slug: hm-trf-dist-off-pace | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -742,48 +680,40 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Four seconds off is not a hole you dig out of in one lap. Sprinting to erase it now is exactly how a distance race falls apart. Settle, and bring your focus back to your rhythm.
+5. Four seconds off is not a hole you dig out of in one lap. The time comes back in increments, not one heroic surge — sprinting to erase it now is how a distance race falls apart.
 _(pause: 2s)_
-6. Claw it back in pieces, lap by lap — don't lunge for it all at once. Lock onto your target split, build through the middle, and trust your finish.
+6. Claw it back in pieces, lap by lap. Settle onto your pace, lock onto your target split, build through the middle, and trust your finish.
 _(pause: 2s)_
-7. The time comes back in increments, not one heroic surge. Settle onto your pace, and go again.
-_(pause: 1.5s)_
 ### Track & Field · Hurdle · false-start
 <!-- slug: hm-trf-hurdle-false-start | file: components/pregame/audio/clips-trackfield.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You break a hair early at the gun. The second shot fires and the official's arm points down your lane. You're disqualified before you ever reached the first barrier — the whole race gone in a twitch.
+2. You break a hair early at the gun. The second shot fires and the official's arm points down your lane. You're disqualified before you ever reached the first barrier.
 _(pause: 1.5s)_
-3. Heat floods up your neck as you come off the blocks and your hands won't stop shaking. The thought hits: I never even cleared a hurdle, and now it's over. That's the shock talking, not the truth. Let it pass.
+3. Heat floods up your neck as you come off the blocks and your hands won't stop shaking. The thought hits: I never even cleared a hurdle.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That call is made and it cannot be undone. Standing on the track arguing it in your head only carries it into the next race. Breathe out long, drop your shoulders, and let this one go.
+5. That call is made and it cannot be undone — arguing it in your head only carries it into the next race. The work on your steps and your trail leg is still in your legs; breathe out long, drop your shoulders, and let this one go.
 _(pause: 2s)_
 6. Take the lesson, not the spiral. Next time you set, get still and wait for the gun — weight settled, eyes on the first hurdle, move only on the shot. You can't jump what you don't anticipate.
 _(pause: 2s)_
-7. All that work on your steps and your trail leg is still in you. The call didn't take your training — it's in your legs, ready for the next gun.
-_(pause: 2s)_
-8. A race you never got to run cannot name you — your worth was settled before you ever stepped into the blocks. That start is behind you. Take the lesson and run the next gun.
-_(pause: 1.5s)_
 ### Track & Field · Hurdle · handoff
 <!-- slug: hm-trf-hurdle-handoff | file: components/pregame/audio/clips-trackfield.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. On the relay your exchange is sloppy. The timing's off, the stick bobbles between your legs, you fight to hang onto it — and the smooth pass you drilled all season turns into a scramble.
+2. On the relay your exchange is sloppy. The timing's off, the stick bobbles between your hands, you fight to hang onto it — and the smooth pass you drilled all season turns into a scramble.
 _(pause: 1.5s)_
-3. Your stomach drops as the stick juggles in your hands and your eyes won't find your teammate. The thought hits: I cost us the race, I let the whole team down.
+3. Your stomach drops as the stick juggles in your hands. The thought hits: I scrambled the exchange.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That exchange is over and it's behind you. The voice saying you ruined it for everyone isn't telling the truth, and your teammates are still your teammates. Breathe out long.
+5. That exchange is over and it's behind you. A clean leg answers a sloppy handoff — your teammates are still your teammates. Breathe out long.
 _(pause: 2s)_
-6. Take it to your next handoff. Hit your acceleration, trust the cue, and feel the stick settle clean in your palm. A pass is won in the rhythm, not the grab.
+6. Run the leg in front of you. Hit your acceleration, trust the cue, and feel the stick settle clean in your palm — a pass is won in the rhythm, not the grab.
 _(pause: 2s)_
-7. One bad exchange doesn't decide whether you belong on this relay. Settle the exchange, run your leg free, and go again.
-_(pause: 1.5s)_
 ### Track & Field · Hurdle · out-leaned
 <!-- slug: hm-trf-hurdle-out-leaned | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -795,12 +725,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. He won that lean. He does not own the next one. Walk it off on the infield and let one long exhale settle you. You have more racing today.
+5. They won that lean. They don't own the next one. Walk it off on the infield and let one long exhale settle you. You have more racing today.
 _(pause: 2s)_
-6. Don't replay the tape on a loop. Take it to your next race — clear that last barrier clean, sprint your steps all the way through the line, and time the lean.
+6. Next race, clear that last barrier clean, sprint your steps all the way through the line, and time the lean so you win the last inch instead of giving it away.
 _(pause: 2s)_
-7. Win the last inch instead of giving it away. Run through the tape next time, and go again.
-_(pause: 1.5s)_
 ### Track & Field · Hurdle · foul
 <!-- slug: hm-trf-hurdle-foul | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -812,12 +740,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That hurdle is behind you and there are barriers left. Hitting one is a single mistake, not the whole race. Get your stride back and attack the next one right now.
+5. That hurdle is behind you and there are barriers left. Hitting one is a single mistake, not the whole race — and rhythm beats hesitation every time.
 _(pause: 2s)_
-6. Don't chop and reach in fear of the next barrier — that's how you clip another. Find your steps, run tall at the hurdle, and snap the lead leg down.
+6. Don't chop and reach in fear of the next barrier — that's how you clip another. Find your steps, run tall, snap the lead leg down, and attack the next one.
 _(pause: 2s)_
-7. Rhythm beats hesitation, every time. Attack the next barrier, and go again.
-_(pause: 1.5s)_
 ### Track & Field · Hurdle · bad-heat
 <!-- slug: hm-trf-hurdle-bad-heat | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -829,12 +755,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The lane assignment doesn't decide your race — the clock takes every time the same, lane eight or lane four. Breathe out, settle into your blocks, and bring your race no matter who you can see.
+5. The lane assignment doesn't decide your race — the clock takes every time the same, lane eight or lane four. Out front and blind is just you against the clock, the way it always was.
 _(pause: 2s)_
-6. You never needed anyone else's rhythm — you race the hurdles. Lock onto your own steps, attack each barrier on your count, and run your pattern.
+6. Breathe out, settle into your blocks, and race the hurdles. Lock onto your own steps, attack each barrier on your count, and run your pattern.
 _(pause: 2s)_
-7. Out front and blind is just you against the clock, the way it always was. Run your own steps, and go again.
-_(pause: 1.5s)_
 ### Track & Field · Hurdle · hit-wall
 <!-- slug: hm-trf-hurdle-hit-wall | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -842,16 +766,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. Coming off hurdle eight in the four hundred hurdles your legs lock up. The lactic floods in, your steps to the next barrier fall apart, and the stagger you built over the first three hundred evaporates as the field closes.
 _(pause: 1.5s)_
-3. Your legs turn to stone, your stride pattern scatters, and the barriers rush up too fast. The thought hits: I'm dying, I can't hold my steps, it's all coming back.
+3. Your legs turn to stone, your stride pattern scatters, and the barriers rush up too fast. The thought hits: I can't hold my steps.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. This is the part of the race you trained for. The back-half lockup is the test, not the end. It comes for every four-hundred hurdler, and it's hitting your legs right now — not who you are.
+5. This is the part of the race you trained for — the back-half lockup is the test, not the end. It comes for every four-hundred hurdler. Breathe out and bring your focus back to the next barrier.
 _(pause: 2s)_
-6. Don't panic when the steps shorten — that's normal this late. Stay tall, relax your shoulders, and commit hard to the next hurdle. Clear it, get to the one after.
+6. Don't panic when the steps shorten — that's normal this late. Stay tall, relax your shoulders, commit hard to the next hurdle, then the one after, two barriers at a time to the line.
 _(pause: 2s)_
-7. Run the race two barriers at a time to the line. Attack the next barrier, and go again.
-_(pause: 1.5s)_
 ### Track & Field · Hurdle · nervous
 <!-- slug: hm-trf-hurdle-nervous | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -865,10 +787,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. These nerves are energy, not danger. Let them sharpen you. One slow breath out behind the blocks, feet set on the pedals, and the buzz turns into power.
 _(pause: 2s)_
-6. You don't have to think about all ten hurdles standing here — you just have to get to the first one. Drive low out of the blocks, hit your steps to barrier one, and let the pattern take over.
+6. You don't have to think about all ten hurdles standing here — your body knows the pattern. Set in the blocks, drive low, hit your steps to barrier one, and let it take over.
 _(pause: 2s)_
-7. Your body knows it. Set in the blocks, attack the first hurdle, and go.
-_(pause: 1.5s)_
 ### Track & Field · Hurdle · start-slow
 <!-- slug: hm-trf-hurdle-start-slow | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -880,12 +800,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That race is over and the rough start is behind you. Walk the infield and let one long exhale clear it. One bad approach doesn't erase the pattern you own. You have more racing today.
+5. That race is over and the rough start is behind you. One bad approach doesn't erase the pattern you own — set it early and the whole rhythm follows. You have more racing today.
 _(pause: 2s)_
-6. Take it to your next race. Drive hard and tall out of the blocks, trust your count to the first barrier, and hit it in stride — when the first hurdle is clean, the whole rhythm follows.
+6. Next race, drive hard and tall out of the blocks, trust your count to the first barrier, and hit it in stride so the first hurdle is clean.
 _(pause: 2s)_
-7. Set the pattern early and ride it. Nail the next approach, and go again.
-_(pause: 1.5s)_
 ### Track & Field · Hurdle · off-pace
 <!-- slug: hm-trf-hurdle-off-pace | file: components/pregame/audio/clips-trackfield.ts -->
 
@@ -893,13 +811,11 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. Mid-race your three-step pattern between the hurdles falls apart. You're caught between steps at every barrier now, reaching and reaching, jamming the takeoff, fighting the spacing instead of flowing through it.
 _(pause: 1.5s)_
-3. Your stride goes ragged, stretching for each hurdle, and every barrier feels like a fresh fight. The thought hits: I've lost my rhythm, I can't get it back.
+3. Your stride goes ragged, stretching for each hurdle, and every barrier feels like a fresh fight. The thought hits: I've lost my rhythm.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Losing the rhythm is a tempo problem, not a verdict — and you rebuild it one barrier at a time. Don't fight the whole race in your head. Bring your focus down to the very next hurdle.
+5. Losing the rhythm is a tempo problem, not a verdict — it's still in your body, and you rebuild it one barrier at a time. Don't fight the whole race in your head.
 _(pause: 2s)_
-6. Climb back onto the pattern barrier by barrier. Run tall, snap the lead leg down, and re-establish your count to the next one — then the one after that.
+6. Climb back onto the pattern barrier by barrier. Run tall, snap the lead leg down, and re-establish your count to the next hurdle — then the one after that.
 _(pause: 2s)_
-7. The rhythm is still in your body; reach back for it stride by stride. Find your count again, and go again.
-_(pause: 1.5s)_
