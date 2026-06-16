@@ -367,8 +367,8 @@ describe("adversityOptionsFor — Hard Moment options", () => {
     // The bug: a goalie was shown skater-framed labels. These re-label to
     // goalie-true language WITHOUT changing the canonical key.
     expect(byKey["I get benched."]).toBe("I get pulled.");
-    expect(byKey["I get beaten wide."]).toBe("I get beat post to post.");
-    expect(byKey["I miss a scoring chance."]).toBe("I get beat on a breakaway.");
+    expect(byKey["I get beaten wide."]).toBe("I let in a soft one.");
+    expect(byKey["I miss a scoring chance."]).toBe("I give up a bad rebound.");
     expect(byKey["We give up the first goal."]).toBe("I let in the first goal.");
 
     // Every goalie key is a CANONICAL hockey adversity that resolves to its
@@ -448,7 +448,7 @@ describe("adversityLabelFor — downstream display label", () => {
     );
     expect(
       adversityLabelFor(HOCKEY_CONFIG, "Goalie", "I miss a scoring chance."),
-    ).toBe("I get beat on a breakaway.");
+    ).toBe("I give up a bad rebound.");
     expect(
       adversityLabelFor(HOCKEY_CONFIG, "Goalie", "We give up the first goal."),
     ).toBe("I let in the first goal.");
