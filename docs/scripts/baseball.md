@@ -212,7 +212,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You take the mound for another start. The ERA is climbing, the last three outings were rough, and before you even throw a pitch you feel it — here we go again.
 _(pause: 1.5s)_
-3. Your grip strangles the ball before you're even set. Your eyes keep drifting to the scoreboard. The thought hits: nothing is working right now.
+3. Your grip squeezes the ball before you're even set. Your eyes keep drifting to the scoreboard. The thought hits: nothing is working right now.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -353,9 +353,9 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The offense isn't your job right now. Put down a sign and catch this pitch.
+5. The offense isn't your job right now — you don't have to carry the whole game.
 _(pause: 2s)_
-6. You don't have to carry the whole game — one pitch, one target, frame it clean. That's the only job behind the plate.
+6. Drop the sign, give him a target, and frame this one clean — one pitch.
 _(pause: 2s)_
 ### Baseball · Catcher · error
 <!-- slug: hm-bsb-catcher-error | file: components/pregame/audio/clips-baseball.ts -->
