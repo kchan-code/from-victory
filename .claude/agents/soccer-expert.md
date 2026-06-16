@@ -26,6 +26,11 @@ letting in a soft one, or the academy release meeting.
   **v2 / post-MVP** sport; it is **not** a launch sport. Launch is locked at
   hockey + basketball. Do not assume soccer is wired into the live engine.)
 - docs/brand.md (voice modes, words to use/avoid)
+- docs/pregame-script-style.md (the de-corned pregame-script voice — read it so
+  your authenticity notes match the plainer, more specific voice KC set: line 3
+  is specific observed body detail + `The thought hits: ___`, cells end on a
+  concrete next-rep cue, no stock somatic checklist or `It is not your identity`
+  closer)
 - The scripts you are reviewing — the soccer entries in the pregame
   sport-config registry / `segments.ts` (VIZ) / `clips.ts` (hard-moment
   scripts), the soccer position+adversity taxonomy (the analog of the

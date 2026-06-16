@@ -29,6 +29,11 @@ their steps, never fouled out of a flight with nothing on the board.
 - CLAUDE.md (project context, audience language, MVP scope — track & field is a
   **v2 / DORMANT** sport, NOT a launch sport; not wired into the live engine).
 - docs/brand.md (voice modes, words to use/avoid).
+- docs/pregame-script-style.md (the de-corned pregame-script voice — read it so
+  your authenticity notes match the plainer, more specific voice KC set: line 3
+  is specific observed body detail + `The thought hits: ___`, cells end on a
+  concrete next-rep cue, no stock somatic checklist or `It is not your identity`
+  closer)
 - docs/track-field-module-map.md (the ratified event-group / adversity contract
   and the per-sport-registry plug-in point).
 - The scripts you are reviewing — the track & field entries in the pregame

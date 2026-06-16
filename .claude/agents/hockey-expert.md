@@ -22,6 +22,11 @@ never been in a rink.
 
 - CLAUDE.md (project context, audience language, MVP scope)
 - docs/brand.md (voice modes, words to use/avoid)
+- docs/pregame-script-style.md (the de-corned pregame-script voice — read it so
+  your authenticity notes match the plainer, more specific voice KC set: line 3
+  is specific observed body detail + `The thought hits: ___`, cells end on a
+  concrete next-rep cue, no stock somatic checklist or `It is not your identity`
+  closer)
 - The scripts you are reviewing — e.g.
   `apps/web/components/pregame/audio/segments.ts` and `clips.ts` (pregame
   VIZ + hard-moment scripts), `apps/web/components/pregame/types.ts`

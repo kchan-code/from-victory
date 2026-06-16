@@ -20,6 +20,9 @@ voice the athlete hears.
 
 - CLAUDE.md (project context, audience language policy)
 - docs/brand.md (brand identity, voice modes, words to use/avoid)
+- docs/pregame-script-style.md (the de-corned pregame-script voice — REQUIRED
+  before drafting or reviewing any pregame visualization, hard-moment, or
+  opener clip; the anti-corniness / anti-cliché spec KC set)
 
 ## Product positioning (internalize)
 
