@@ -26,6 +26,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, readdir, rename, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import type {
   AudioScript,
@@ -36,7 +37,7 @@ import type {
 import {
   CLIP_SCRIPTS,
 } from "../components/pregame/audio/clips.ts";
-import { syncFromBooks, loadBookProse } from "./apply-scripts.ts";
+import { syncFromBooks, loadBookProse, loadBookProseWithPauses, type BookEntry } from "./apply-scripts.ts";
 import type { ClipManifest, ClipPhaseEntry } from "../components/pregame/audio-playlist.ts";
 import { BREATH_THRESHOLD_SCRIPT } from "../components/pregame/audio/breath-threshold.ts";
 import { SESSION_FORWARD_MISSED_CHANCE_SCRIPT } from "../components/pregame/audio/session-forward-missed-chance.ts";
@@ -289,51 +290,148 @@ function speechSegmentCount(script: AudioScript): number {
 }
 
 /**
- * Apply book-prose overrides to a script's segments.
+ * Apply book-prose AND book-structure overrides to a script's segments.
  *
- * For each speech segment in `script.segments`, if `bookProse[slug]` has an
- * entry, replace that segment's text with the corresponding book-prose line.
- * Returns the assembled (overridden) segments as a new array — the original
- * AudioScript is not mutated.
+ * The .md book is the authoritative source of a clip's prose, pause durations,
+ * AND line count (FV-302). Two paths:
  *
- * GUARD: if the book has a different number of speech-segment lines than the
- * assembled script, throws with a clear message (KC changed structure). The
- * guard runs even if the text is identical (ensures book and TS stay in sync
- * structurally).
+ *  1. IN-SYNC (book line + pause counts match the TS): substitute each speech
+ *     segment's text and each silence's duration by position; the TS segments
+ *     keep their instructions + phase marks. Byte-identical to the TS assembly
+ *     for every clip whose book mirrors the TS (the zero-drift invariant
+ *     verified by snapshot-render-plan).
+ *
+ *  2. BOOK-DEFINES-STRUCTURE (counts differ — an editor changed a cell's line
+ *     count in the book): the book wins, with NO TS reconcile. The segment list
+ *     is rebuilt from the book's interleaved `items`. instructions/speed/mark
+ *     for each book line are pulled from the TS speech segment with the SAME
+ *     text (matched in occurrence order) — so a phase mark stays on its anchor
+ *     line even when other lines are inserted/removed. New/edited lines inherit
+ *     the script-level instructions + speed (via `seg.x ?? script.x` at render)
+ *     and carry no mark. A warning is emitted; --check lists these clips.
+ *
+ * Returns a new array — the original AudioScript is not mutated.
  */
-function applyBookProseOverrides(
+export function applyBookProseOverrides(
   script: AudioScript,
-  bookProse: Map<string, string[]>,
+  bookData: Map<string, BookEntry>,
 ): Segment[] {
-  const bookLines = bookProse.get(script.slug);
-  if (!bookLines) return script.segments; // no book entry → use TS text as-is
+  const entry = bookData.get(script.slug);
+  if (!entry) return script.segments; // no book entry → use TS segments as-is
 
-  // Count speech segments in the assembled script
+  const bookLines = entry.lines;
+  const bookPauses = entry.pauses;
+  const bookItems = entry.items;
+
+  // Count speech and silence segments in the assembled script
   const speechCount = script.segments.filter((s) => s.type === "speech").length;
-  if (bookLines.length !== speechCount) {
-    throw new Error(
-      `[book-prose] MISMATCH for "${script.slug}": .md book has ${bookLines.length} speech lines, ` +
-      `assembled TS script has ${speechCount} speech segments. ` +
-      `Restore the correct number of numbered lines in the .md book to match, ` +
-      `or update the TS script structure to match the book.`,
-    );
+  const silenceCount = script.segments.filter((s) => s.type === "silence").length;
+  const hasMigratedPauses = bookPauses.some((p) => p.durationSec !== null);
+
+  const speechMatches = bookLines.length === speechCount;
+  // Pause structure only counts as a mismatch once the book carries explicit
+  // (migrated) durations — a fully-bare book defers entirely to the TS pauses.
+  const pausesMatch = !hasMigratedPauses || bookPauses.length === silenceCount;
+
+  // ── Path 1: in-sync — book mirrors TS structure. Substitute text + durations
+  //    by position; TS segments keep their marks/instructions (zero-drift).
+  if (speechMatches && pausesMatch) {
+    let speechIdx = 0;
+    let silenceIdx = 0;
+    const overridden: Segment[] = [];
+    for (const seg of script.segments) {
+      if (seg.type === "speech") {
+        const bookText = bookLines[speechIdx++];
+        if (bookText !== undefined && bookText !== seg.text) {
+          overridden.push({ ...seg, text: bookText });
+        } else {
+          overridden.push(seg);
+        }
+      } else {
+        // Silence — apply book duration if available and non-null
+        if (hasMigratedPauses && bookPauses[silenceIdx] !== undefined) {
+          const bookDur = bookPauses[silenceIdx]!.durationSec;
+          if (bookDur !== null && bookDur !== seg.durationSec) {
+            overridden.push({ ...seg, durationSec: bookDur });
+            silenceIdx++;
+            continue;
+          }
+        }
+        overridden.push(seg);
+        silenceIdx++;
+      }
+    }
+    return overridden;
   }
 
-  let speechIdx = 0;
-  const overridden: Segment[] = [];
-  for (const seg of script.segments) {
-    if (seg.type === "speech") {
-      const bookText = bookLines[speechIdx++];
-      if (bookText !== undefined && bookText !== seg.text) {
-        overridden.push({ ...seg, text: bookText });
-      } else {
-        overridden.push(seg);
-      }
+  // Safety: an empty book entry (slug present but zero numbered lines) is never
+  // an intentional structure change — rebuilding from it would ship a silent,
+  // audio-less clip. Fall back to the TS script so a malformed or half-written
+  // book section can't render as silence. (A real structure change has ≥1 line.)
+  if (bookLines.length === 0) {
+    console.warn(
+      `[book-prose] WARN: "${script.slug}": book entry has no prose lines — ` +
+      `falling back to the TS script (a real structure change needs ≥1 line).`,
+    );
+    return script.segments;
+  }
+
+  // ── Path 2: book defines structure — counts differ, the book wins.
+  console.warn(
+    `[book-prose] WARN: "${script.slug}": book structure ` +
+    `(${bookLines.length} speech / ${bookPauses.length} pause) differs from TS ` +
+    `(${speechCount} speech / ${silenceCount} silence) — rendering with the ` +
+    `book-defined structure (no TS reconcile needed).`,
+  );
+
+  const tsSpeech = script.segments.filter(
+    (s): s is Extract<Segment, { type: "speech" }> => s.type === "speech",
+  );
+  const tsSilence = script.segments.filter(
+    (s): s is Extract<Segment, { type: "silence" }> => s.type === "silence",
+  );
+  // Occurrence counter so duplicate texts (e.g. "Inhale.") match the TS speech
+  // segments in order and keep their distinct marks/rounds.
+  const seenByText = new Map<string, number>();
+
+  const rebuilt: Segment[] = [];
+  let pauseIdx = 0;
+  for (const item of bookItems) {
+    if (item.type === "speech") {
+      const occ = seenByText.get(item.text) ?? 0;
+      const tsMatch = tsSpeech.filter((s) => s.text === item.text)[occ];
+      if (tsMatch) seenByText.set(item.text, occ + 1);
+      const out: Extract<Segment, { type: "speech" }> = { type: "speech", text: item.text };
+      // Carry instructions/speed/mark from the matching TS line; a new or edited
+      // line (no text match) leaves them unset → render falls back to the
+      // script-level instructions/speed and emits no phase mark.
+      if (tsMatch?.instructions !== undefined) out.instructions = tsMatch.instructions;
+      if (tsMatch?.speed !== undefined) out.speed = tsMatch.speed;
+      if (tsMatch?.mark !== undefined) out.mark = tsMatch.mark;
+      rebuilt.push(out);
     } else {
-      overridden.push(seg);
+      // Pause — use the book duration; a bare _(pause)_ (null) falls back to the
+      // TS silence at this position, else a 1s default (warned, since a bare
+      // pause with no TS counterpart can't infer a real gap length).
+      let dur = item.durationSec;
+      if (dur === null) {
+        const tsDur = tsSilence[pauseIdx]?.durationSec;
+        if (tsDur === undefined) {
+          console.warn(
+            `[book-prose] WARN: "${script.slug}": bare _(pause)_ #${pauseIdx + 1} ` +
+            `has no TS silence to inherit — defaulting to 1s (add an explicit ` +
+            `_(pause: Ns)_ to set the gap).`,
+          );
+        }
+        dur = tsDur ?? 1;
+      }
+      const out: Extract<Segment, { type: "silence" }> = { type: "silence", durationSec: dur };
+      if (tsSilence[pauseIdx]?.mark !== undefined) out.mark = tsSilence[pauseIdx]!.mark;
+      rebuilt.push(out);
+      pauseIdx++;
     }
   }
-  return overridden;
+  return rebuilt;
 }
 
 /**
@@ -344,15 +442,15 @@ function applyBookProseOverrides(
  * In legacy baked-cell mode (no mode flag) no rename happens; returns null
  * (the caller never uses the hash for legacy files).
  *
- * `bookProse` — the render-time prose override map (slug → ordered speech texts
- * from the .md books). If the slug has an entry, its speech texts override the
- * TS seed text for TTS. This is the authoritative prose source for ALL clip
- * types (inline, spread, shared, viz).
+ * `bookData` — the render-time book-data map (slug → { lines, pauses }).
+ * If the slug has an entry, its speech texts and (if migrated) silence durations
+ * override the TS values. This is the authoritative prose + structure source for
+ * ALL clip types (inline, spread, shared, viz).
  */
 async function generateOne(
   script: AudioScript,
   flags: Flags,
-  bookProse: Map<string, string[]>,
+  bookData: Map<string, BookEntry>,
 ): Promise<{ hash8: string } | null> {
   const outDir = resolve(process.cwd(), flags.outDir);
   await mkdir(outDir, { recursive: true });
@@ -362,10 +460,10 @@ async function generateOne(
   const workDir = join(outDir, `.work-${script.slug}`);
   await mkdir(workDir, { recursive: true });
 
-  // Apply book-prose overrides. This replaces speech text for any clip whose
-  // slug appears in the .md books, regardless of whether the TS source uses
-  // inline text or spread imports. GUARD: count mismatch fails fast here.
-  const effectiveSegments = applyBookProseOverrides(script, bookProse);
+  // Apply book-prose + book-duration overrides. This replaces speech text and
+  // silence durations for any clip whose slug appears in the .md books.
+  // GUARD: count mismatch warns (not hard error) in live render path.
+  const effectiveSegments = applyBookProseOverrides(script, bookData);
   // Wrap in a minimal script-like object for the render loop.
   const effectiveScript: AudioScript = { ...script, segments: effectiveSegments };
 
@@ -373,7 +471,7 @@ async function generateOne(
   console.log(
     `   voice=${effectiveScript.voice}  segments=${effectiveScript.segments.length}  speech=${speechSegmentCount(effectiveScript)}  chars=${totalSpeechChars(effectiveScript)}`,
   );
-  if (bookProse.has(script.slug)) {
+  if (bookData.has(script.slug)) {
     // Check if any speech segment text changed (comparing effective vs original).
     let hasOverride = false;
     for (let i = 0; i < script.segments.length; i++) {
@@ -385,7 +483,8 @@ async function generateOne(
       }
     }
     if (hasOverride) {
-      console.log(`   [book-prose] rendering with .md prose (${bookProse.get(script.slug)!.length} speech lines)`);
+      const entry = bookData.get(script.slug)!;
+      console.log(`   [book-prose] rendering with .md prose (${entry.lines.length} speech lines)`);
     }
   }
 
@@ -653,7 +752,7 @@ const PHASE2_TEMPLATES: Array<{
   { position: "Scrambler", adversity: "I fall behind the number.",    vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-fall-behind" },
 ];
 
-async function generateClips(flags: Flags, bookProse: Map<string, string[]>): Promise<void> {
+async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Promise<void> {
   const baseDir = resolve(process.cwd(), DEFAULT_OUT_DIR);
   const clipsDir = join(baseDir, CLIPS_SUBDIR);
   await mkdir(clipsDir, { recursive: true });
@@ -776,7 +875,7 @@ async function generateClips(flags: Flags, bookProse: Map<string, string[]>): Pr
       clearSilenceCache();
       let renderResult: { hash8: string } | null = null;
       try {
-        renderResult = await generateOne(script, clipsFlags, bookProse);
+        renderResult = await generateOne(script, clipsFlags, bookData);
       } catch (err) {
         const msg = (err as Error).message;
         const isQuota = msg.includes("429") || msg.includes("quota") || msg.includes("insufficient");
@@ -864,7 +963,8 @@ async function generateClips(flags: Flags, bookProse: Map<string, string[]>): Pr
 
     // Check if book prose differs from source (edit detection).
     const openerScript = openerScriptMap.get(slug);
-    const bookLines = bookProse.get(slug);
+    const bookEntry = bookData.get(slug);
+    const bookLines = bookEntry?.lines;
     let bookEdited = false;
     if (openerScript && bookLines) {
       const sourceSpeechTexts = openerScript.segments
@@ -902,7 +1002,7 @@ async function generateClips(flags: Flags, bookProse: Map<string, string[]>): Pr
       // Re-TTS into top-level opener-*.mp3 (same location as legacy TTS render).
       clearSilenceCache();
       const ttsFlags: Flags = { ...flags, outDir: DEFAULT_OUT_DIR, mode: undefined };
-      await generateOne(openerScript, ttsFlags, bookProse);
+      await generateOne(openerScript, ttsFlags, bookData);
       // Now loudnorm-pass the freshly-TTS'd file to clips/.
       const tempPath = join(clipsDir, `${slug}.mp3`);
       await reEncodeMp3(openerSrc, tempPath, loudnormFilter);
@@ -1101,23 +1201,25 @@ async function main(): Promise<void> {
     return;
   }
 
-  // ── Step 0b: Load book prose for render-time override (all clip types).
-  // KC edits docs/scripts/*.md; the generator reads speech-segment texts
-  // from those books at render time and substitutes them into the assembled
-  // AudioScript just before TTS. Works uniformly for inline, spread, shared,
-  // and viz clips — no TS source file rewrite needed.
-  console.log("[book-prose] Loading .md book prose for render-time clip override...");
-  let bookProse: Map<string, string[]>;
+  // ── Step 0b: Load book prose + pause durations for render-time override.
+  // KC edits docs/scripts/*.md; the generator reads speech-segment texts and
+  // (post-migration) silence durations from those books at render time.
+  // Works uniformly for inline, spread, shared, and viz clips.
+  console.log("[book-prose] Loading .md book prose + pause durations for render-time clip override...");
+  let bookData: Map<string, BookEntry>;
   try {
-    bookProse = await loadBookProse();
+    bookData = await loadBookProseWithPauses();
   } catch (err) {
-    console.error(`[book-prose] Failed to load book prose: ${(err as Error).message}`);
+    console.error(`[book-prose] Failed to load book data: ${(err as Error).message}`);
     process.exit(1);
   }
-  console.log(`[book-prose] Loaded prose for ${bookProse.size} clip slug(s).`);
+  console.log(`[book-prose] Loaded prose for ${bookData.size} clip slug(s).`);
 
   // ── --check mode: report which clips will render with edited .md prose ────
-  // Runs the count-mismatch guard per clip. Prints a report. No TTS/ffmpeg.
+  // No TTS/ffmpeg. Reports per clip: prose edits (book text differs from TS),
+  // book-defined structure (book line/pause count differs — valid, book wins,
+  // FV-302), and the one true failure — a spoken clip with NO book entry (exits
+  // non-zero so that gap can't ship).
   // For openers: reports whether book matches source (→ loudnorm pass) or differs
   // (→ will re-TTS). For wordless audio (none currently exist, but future-proof):
   // lists them explicitly as intentionally excluded from books.
@@ -1126,11 +1228,14 @@ async function main(): Promise<void> {
     const allScripts = [...SCRIPTS, ...CLIP_SCRIPTS];
     const openerSlugSet = new Set<string>(OPENER_SLUGS);
     let editedCount = 0;
-    let mismatchCount = 0;
+    // Clips whose book line/pause count differs from the TS — the book DEFINES
+    // the structure (FV-302), which is valid, not a failure. Reported, not fatal.
+    const structureOverrides: string[] = [];
     const noBookSpoken: string[] = [];  // spoken clips with no book entry (gap)
     const noBookWordless: string[] = []; // wordless audio, intentionally no entry
     for (const script of allScripts) {
-      const bookLines = bookProse.get(script.slug);
+      const entry = bookData.get(script.slug);
+      const bookLines = entry?.lines;
       if (!bookLines) {
         // Determine if this is a spoken clip or a wordless audio target.
         const hasSpokenWords = script.segments.some((s) => s.type === "speech");
@@ -1141,13 +1246,22 @@ async function main(): Promise<void> {
         }
         continue;
       }
-      // Count-mismatch guard
+      // Structure check — a book line/pause count that differs from the TS means
+      // the book DEFINES the structure (FV-302). This is valid, not an error: the
+      // render rebuilds the clip from the book. Report it so the operator can
+      // confirm the change is intentional, then skip the per-line prose diff
+      // (positions no longer align).
       const speechCount = script.segments.filter((s) => s.type === "speech").length;
-      if (bookLines.length !== speechCount) {
-        console.error(
-          `[check] MISMATCH "${script.slug}": .md has ${bookLines.length} lines, TS has ${speechCount} speech segments. Fix before rendering.`,
+      const silenceCount = script.segments.filter((s) => s.type === "silence").length;
+      const bookPauses = entry.pauses;
+      const hasMigratedPauses = bookPauses.some((p) => p.durationSec !== null);
+      if (bookLines.length !== speechCount || (hasMigratedPauses && bookPauses.length !== silenceCount)) {
+        structureOverrides.push(
+          `${script.slug} (book ${bookLines.length} speech / ${bookPauses.length} pause vs TS ${speechCount} speech / ${silenceCount} silence)`,
         );
-        mismatchCount++;
+        console.log(
+          `  [structure] ${script.slug} — book defines structure (book ${bookLines.length} speech / ${bookPauses.length} pause, TS ${speechCount} speech / ${silenceCount} silence) → renders with book structure`,
+        );
         continue;
       }
       // Diff check
@@ -1182,7 +1296,8 @@ async function main(): Promise<void> {
     console.log(`\n[check] Summary:`);
     console.log(`  Clips with .md edits (will render with .md prose): ${editedCount}`);
     const openerEdits = [...openerSlugSet].filter((slug) => {
-      const bookLines = bookProse.get(slug);
+      const entry = bookData.get(slug);
+      const bookLines = entry?.lines;
       if (!bookLines) return false;
       const script = SCRIPTS.find((s) => s.slug === slug);
       if (!script) return false;
@@ -1191,17 +1306,18 @@ async function main(): Promise<void> {
         .map((s) => s.text);
       return bookLines.some((line, i) => line !== speechTexts[i]);
     });
-    const openerMatches = [...openerSlugSet].filter((slug) => !openerEdits.includes(slug) && bookProse.has(slug));
+    const openerMatches = [...openerSlugSet].filter((slug) => !openerEdits.includes(slug) && bookData.has(slug));
     if (openerEdits.length > 0) {
       console.log(`    Of which openers (will RE-TTS):                  ${openerEdits.length} — ${openerEdits.join(", ")}`);
     }
     if (openerMatches.length > 0) {
       console.log(`  Openers matching source (loudnorm pass, no re-TTS): ${openerMatches.length}`);
     }
-    if (mismatchCount > 0) {
-      console.error(`  Count mismatches (must fix before rendering):       ${mismatchCount}`);
+    if (structureOverrides.length > 0) {
+      console.log(`  Clips with book-defined structure (book wins, no TS reconcile): ${structureOverrides.length}`);
+      for (const s of structureOverrides) console.log(`    - ${s}`);
     } else {
-      console.log(`  Count mismatches:                                   0`);
+      console.log(`  Clips with book-defined structure:                  0  (all books match TS structure)`);
     }
     if (noBookSpoken.length > 0) {
       console.error(`  Spoken clips with NO book entry (gap — add to books): ${noBookSpoken.length} — ${noBookSpoken.join(", ")}`);
@@ -1210,10 +1326,6 @@ async function main(): Promise<void> {
     }
     if (noBookWordless.length > 0) {
       console.log(`  Wordless audio targets — no script, intentionally not in books: ${noBookWordless.length} — ${noBookWordless.join(", ")}`);
-    }
-    if (mismatchCount > 0) {
-      console.error("\n[check] FAIL: fix count mismatches before rendering.");
-      process.exit(1);
     }
     if (noBookSpoken.length > 0) {
       console.error("\n[check] FAIL: spoken clips with no book entry — run npm run scripts:export -- --force to seed them.");
@@ -1225,7 +1337,7 @@ async function main(): Promise<void> {
 
   // Clip-playlist generation path.
   if (flags.mode === "clips") {
-    await generateClips(flags, bookProse);
+    await generateClips(flags, bookData);
     return;
   }
 
@@ -1266,7 +1378,7 @@ async function main(): Promise<void> {
   clearSilenceCache();
   for (const s of scripts) {
     try {
-      await generateOne(s, flags, bookProse);
+      await generateOne(s, flags, bookData);
     } catch (err) {
       console.error(`\nFailed on ${s.slug}: ${(err as Error).message}`);
       process.exit(1);
@@ -1278,4 +1390,9 @@ async function main(): Promise<void> {
   );
 }
 
-void main();
+// Auto-run only when this file is executed directly (e.g.
+// `node scripts/generate-pregame-audio.ts`). When imported — such as by the
+// unit tests that exercise applyBookProseOverrides — main() must NOT fire.
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  void main();
+}

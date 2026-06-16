@@ -6,7 +6,7 @@
 **This file IS the script.** Edit the numbered prose lines — those words are exactly what gets spoken.
 
 1. Edit **only** the numbered prose lines (e.g. `1. Your sentence here.`).
-2. Do NOT change `### titles`, `<!-- slug ... -->` comments, `_(pause)_` markers, or line numbers.
+2. Keep the `### titles` and `<!-- slug ... -->` comments. You CAN add or remove numbered lines — the book defines the structure now (no TS reconcile) — and tune the gap between lines via `_(pause: Ns)_` (e.g. `_(pause: 1.5s)_`).
 3. One numbered line = one complete sentence (no line breaks within a numbered item).
 4. For text-mode fallback lines, same rules apply to the numbered body lines.
 5. That's it for editing. The generator reads your prose directly from this file at render time — no separate apply step. Works for EVERY clip type (inline, visualization/viz-*, and shared-* clips).
@@ -36,20 +36,20 @@
 <!-- slug: breath-threshold | file: components/pregame/audio/clips.ts -->
 
 1. Breathe first and reset. 4 seconds in, 6 seconds out, from the diaphragm, not the chest.
-_(pause)_
+_(pause: 1s)_
 2. Inhale.
-_(pause)_
+_(pause: 4s)_
 3. Exhale.
-_(pause)_
+_(pause: 6s)_
 4. Inhale.
-_(pause)_
+_(pause: 4s)_
 5. Exhale. Release.
-_(pause)_
+_(pause: 6s)_
 6. Inhale.
-_(pause)_
+_(pause: 4s)_
 7. Exhale.
-_(pause)_
-_(pause)_
+_(pause: 6s)_
+_(pause: 0.8s)_
 8. Ready. Now set your focus.
 ## Shared Structural Clips
 
@@ -57,31 +57,31 @@ _(pause)_
 <!-- slug: shared-opening | file: components/pregame/audio/clips.ts -->
 
 1. Now, take two breaths. Four in. Six out.
-_(pause)_
+_(pause: 0.8s)_
 2. Inhale.
-_(pause)_
+_(pause: 4s)_
 3. Exhale.
-_(pause)_
+_(pause: 6s)_
 4. Inhale.
-_(pause)_
+_(pause: 4s)_
 5. Exhale.
-_(pause)_
+_(pause: 6s)_
 6. Remember what is true.
-_(pause)_
+_(pause: 0.8s)_
 7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
-_(pause)_
+_(pause: 1s)_
 ### Shared · Reset Plan
 <!-- slug: shared-reset-plan | file: components/pregame/audio/clips.ts -->
 
 1. When the moment hits, come back to what is true.
-_(pause)_
+_(pause: 1s)_
 2. Breathe. Reset your body. Say the truth. Make the next play.
-_(pause)_
+_(pause: 1.5s)_
 ### Shared · Prayer (Guided)
 <!-- slug: shared-prayer | file: components/pregame/audio/clips.ts -->
 
 1. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
-_(pause)_
+_(pause: 2s)_
 ### Shared · Send-off
 <!-- slug: shared-sendoff | file: components/pregame/audio/clips.ts -->
 
@@ -106,6 +106,10 @@ _(pause)_
 <!-- slug: anc-look-at-tape | file: components/pregame/audio/clips.ts -->
 
 1. Look at your tape.
+### Anchor · take-a-drink
+<!-- slug: anc-take-a-drink | file: components/pregame/audio/clips.ts -->
+
+1. Take a drink from your bottle.
 ### Self-Talk · 01
 <!-- slug: st-01 | file: components/pregame/audio/clips.ts -->
 
@@ -246,37 +250,37 @@ _(pause)_
 <!-- slug: shared-prayer-selfguided | file: components/pregame/audio/clips.ts -->
 
 1. Take a moment with God.
-_(pause)_
+_(pause: 1s)_
 2. You do not need perfect words. He already knows what you are carrying.
-_(pause)_
+_(pause: 1s)_
 3. Thank him. Give him the pressure. Ask for courage. Ask to play free and serve your team.
-_(pause)_
+_(pause: 1s)_
 4. Now pray in your own words.
-_(pause)_
+_(pause: 30s)_
 ### Shared · Cue Word Intro
 <!-- slug: shared-cue-word-intro-pre | file: components/pregame/audio/clips.ts -->
 
 1. When the pressure builds.
-_(pause)_
+_(pause: 0.5s)_
 2. Come back to your breath and speak your cue word.
-_(pause)_
+_(pause: 0.8s)_
 ### Shared · Cue Word Send-off
 <!-- slug: shared-cue-word-sendoff-pre | file: components/pregame/audio/clips.ts -->
 
 1. Remember your cue word:
-_(pause)_
+_(pause: 0.3s)_
 ### Shared · Viz Intro
 <!-- slug: shared-viz-intro | file: components/pregame/audio/clips.ts -->
 
 1. Now, visualize this scenario.
-_(pause)_
+_(pause: 0.6s)_
 ### Shared · Anchor Intro
 <!-- slug: shared-anchor-intro | file: components/pregame/audio/clips.ts -->
 
 1. Remember your anchor.
-_(pause)_
+_(pause: 0.6s)_
 ### Shared · Self-Talk Intro
 <!-- slug: shared-selftalk-intro | file: components/pregame/audio/clips.ts -->
 
 1. Now, say it to yourself.
-_(pause)_
+_(pause: 0.6s)_

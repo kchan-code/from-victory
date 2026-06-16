@@ -458,7 +458,7 @@ function renderClip(script: AudioScript): string {
 
   for (const seg of script.segments) {
     if (seg.type === "silence") {
-      lines.push("_(pause)_");
+      lines.push(`_(pause: ${seg.durationSec}s)_`);
     } else {
       speechIndex++;
       lines.push(`${speechIndex}. ${seg.text}`);
@@ -503,7 +503,7 @@ ${dormantNote}
 **This file IS the script.** Edit the numbered prose lines — those words are exactly what gets spoken.
 
 1. Edit **only** the numbered prose lines (e.g. \`1. Your sentence here.\`).
-2. Do NOT change \`### titles\`, \`<!-- slug ... -->\` comments, \`_(pause)_\` markers, or line numbers.
+2. Keep the \`### titles\` and \`<!-- slug ... -->\` comments. You CAN add or remove numbered lines — the book defines the structure now (no TS reconcile) — and tune the gap between lines via \`_(pause: Ns)_\` (e.g. \`_(pause: 1.5s)_\`).
 3. One numbered line = one complete sentence (no line breaks within a numbered item).
 4. For text-mode fallback lines, same rules apply to the numbered body lines.
 5. That's it for editing. The generator reads your prose directly from this file at render time — no separate apply step. Works for EVERY clip type (inline, visualization/viz-*, and shared-* clips).
@@ -775,9 +775,11 @@ them automatically. No separate "apply" command needed in the normal editing wor
 # 1. Open the script book for the sport you want to edit
 open docs/scripts/hockey.md   # or basketball.md, golf.md, etc.
 
-# 2. Edit the numbered prose lines — that's it.
-#    DO NOT change ### titles, <!-- slug ... --> comments,
-#    _(pause)_ markers, or line numbers.
+# 2. Edit the numbered prose lines. You can also ADD or REMOVE lines — the
+#    book defines the structure now (no TS reconcile), and tune the gap between
+#    lines with the _(pause: Ns)_ markers (e.g. _(pause: 1.5s)_).
+#    Keep the ### titles and <!-- slug ... --> comments intact; keep each line
+#    numbered and each pause on its own _(pause: Ns)_ line.
 #    The words you write are the words that get spoken.
 #    This works for EVERY clip type — including viz-* and shared-* clips.
 
