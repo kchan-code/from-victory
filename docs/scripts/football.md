@@ -599,7 +599,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The offense is rolling and you're trying to rally ten guys who are pressing — heads down, snapping at each other in the huddle. You're the MIKE, the glue, holding the defense together while it tries to fray around you.
 _(pause: 1.5s)_
-3. Your jaw is tight and your eyes keep darting to the scoreboard. The huddle is loud and scattered around you. The thought hits: it's all coming apart and I can't hold it.
+3. Your jaw is tight and your eyes keep darting to the scoreboard. The huddle is loud and scattered around you. The thought hits: I can't get them settled.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -672,7 +672,7 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You got beat, the safety couldn't get over in time, and it's six the other way. A bust at corner stings because there's so little behind you. You watch him cross the goal line and the scoreboard flips.
+2. You got beat, the safety couldn't get over in time, and it's six the other way. A bust at corner is loud — there's not much behind you. You watch him cross the goal line and the scoreboard flips.
 _(pause: 1.5s)_
 3. Heat climbs your neck on the long walk back and your hands hang heavy. The step you lost replays on a loop. The thought hits: that one was on me.
 _(pause: 2s)_
