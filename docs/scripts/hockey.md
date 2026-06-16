@@ -66,115 +66,165 @@ These lines appear on-screen in text mode (no audio). Tokens like `{{role}}`, `{
 
 1. Close your eyes. Drop your shoulders.
 _(pause)_
-2. Out there, talking is competing. The loud player moves the puck before it even arrives. Tonight, that's the job — be the one who talks.
+2. Psalm 118 is a song of trust under pressure — the writer is surrounded and pushed hard, but because the Lord is with him, fear of people does not rule him.
 _(pause)_
-3. And here is what Paul wrote in Romans 8. For everyone in Christ, there is now no condemnation. None. The verdict on you was settled at the cross — before you ever stepped on the ice.
+3. Hear this from Psalm 118:6. The Lord is with me; I will not be afraid. What can people do to me?
 _(pause)_
-4. So when that voice tells you to stay quiet — don't risk it, don't be the one who's wrong out loud — hear it for what it is. That is not you. That is the part of you that has to look good. And that part is already settled.
+4. Fear wants you quiet. It tells you not to draw attention, not to be wrong out loud, not to look like you are trying too hard.
 _(pause)_
-5. So tonight, be the loud one. Man on. Time. Heads up. D to D on the breakout. Free to be wrong, free to speak, free to move the play before it even happens.
+5. But in Christ, you do not have to protect your image. You are already secure.
 _(pause)_
-6. What anyone out there thinks of you is not the verdict on you. You have nothing left to protect. You are free to speak.
+6. So speak. Man on. Time. Heads up. D to D. Wheel. Reverse. Help your teammates play faster.
 _(pause)_
+7. Talking is competing. Your voice moves the play before the puck even gets there. It helps your team win.
+_(pause)_
+8. Be loud early. Be clear. Be steady. Let your voice lead the play.
+_(pause)_
+
 ### Hockey Opener · hope
 <!-- slug: opener-hope | file: components/pregame/audio/opener-hope.ts -->
 
 1. Close your eyes. Take one full breath.
 _(pause)_
-2. Listen to what Isaiah wrote in chapter 40. He was speaking to a people in exile, out of strength, far from home. Even youths grow tired and weary, and young men stumble and fall. But those who hope in the LORD will renew their strength. They will soar on wings like eagles. They will run and not grow weary. They will walk and not be faint.
+2. Hear this from Isaiah 40. God was speaking to a people in exile — worn down, far from home, and out of strength: Even youths grow tired and weary, and young men stumble and fall. But those who hope in the Lord will renew their strength. They will soar on wings like eagles. They will run and not grow weary. They will walk and not be faint.
 _(pause)_
-3. Soar on wings like eagles does not mean you will never feel tired in your shift. It does not mean prayer is a performance hack. Look at what Isaiah just said — even young men stumble and fall. The source of endurance is not your willpower. It is the God who renews you when you depend on him.
+3. Isaiah does not pretend you will never get tired. He says even the young grow weary. Even strong people stumble.
 _(pause)_
-4. Hope is not believing in yourself. It is waiting on the God who is bigger than what you face.
+4. But your strength is not limited to what you can manufacture in yourself. The Lord renews those who wait on Him, trust Him, and depend on Him.
 _(pause)_
+5. So when your legs feel heavy, when the game feels long, when you feel like you are running out — do not quit inside. Hope in the Lord.
+_(pause)_
+6. Take the next shift. Skate the next stride. Trust the One who renews your strength.
+_(pause)_
+
 ### Hockey Opener · joy
 <!-- slug: opener-joy | file: components/pregame/audio/opener-joy.ts -->
 
 1. Close your eyes. Let your face soften.
 _(pause)_
-2. Listen to what Paul wrote in 1 Thessalonians 5. He was writing to a young church facing real hardship. Be joyful always, pray continually, give thanks in all circumstances. For this is God's will for you in Christ Jesus.
+2. Hear this from 1 Thessalonians 5. Paul was writing to a young church facing real hardship: Rejoice always. Pray continually. Give thanks in all circumstances. For this is God’s will for you in Christ Jesus.
 _(pause)_
-3. Be joyful always does not mean fake a smile or pretend the loss did not hurt. Look at how Paul ties it together. Joy, prayer, thanksgiving. The athlete who prays continually and gives thanks even after a tough shift is the athlete who can carry joy into the next one. Joy is not the absence of hardship. It is what you have when you stay connected to God in the middle of it.
+3. Joy does not mean you fake a smile or pretend the hard shift did not happen. Paul ties joy to prayer and thanksgiving — staying connected to God in the middle of what is hard.
 _(pause)_
-4. Joy is not a mood that changes with the scoreboard. It is a posture you take toward the God who is always with you.
+4. So remember the gift. A body that can move. A team to play with. A game you love. A chance to compete.
 _(pause)_
+5. The scoreboard matters, but it is not the whole story. Keep perspective. Give thanks. You get to do this today.
+_(pause)_
+6. Play with joy. Pray as you go. Compete hard, and take the next shift free.
+_(pause)_
+
 ### Hockey Opener · leadership
 <!-- slug: opener-leadership | file: components/pregame/audio/opener-leadership.ts -->
 
 1. Close your eyes. Take a long breath.
 _(pause)_
-2. Listen to what Jesus said in Mark 10. His disciples were arguing about who would be greatest. Jesus called them over and said this. Whoever wants to become great among you must be your servant, and whoever wants to be first must be slave of all. For even the Son of Man did not come to be served, but to serve, and to give his life as a ransom for many.
+2. Hear this from Mark 10. The disciples were arguing about who would be greatest. Jesus called them over and said, Whoever wants to become great among you must be your servant. For even the Son of Man did not come to be served, but to serve, and to give His life as a ransom for many.
 _(pause)_
-3. To serve does not mean to be soft. Jesus was not weak. It means using whatever you have been given — the C, the A, a top-line spot, a loud voice — to lift the player next to you, not to stand above them. The fourth-line winger is not ordinary. The backup goalie is not ordinary. Lead like that is true.
+3. Jesus does not call leaders to be soft. He calls them to serve. To use what they have been given — a letter, a role, a voice, a shift — to lift the people around them.
 _(pause)_
-4. Real leadership is not standing above your team. It is standing under them — the way Christ stood under you.
+4. So lead by serving. Talk early. Bring energy. Pick up a teammate after a bad shift. Make the simple play that helps the group.
 _(pause)_
+5. The C, the A, the ice time, the line — none of it is for standing above the team. It is for helping the team move forward.
+_(pause)_
+6. Lead like Christ. Strong enough to serve. Free enough to put the team first.
+_(pause)_
+
 ### Hockey Opener · decisions
 <!-- slug: opener-decisions | file: components/pregame/audio/opener-decisions.ts -->
 
 1. Close your eyes. Soften your jaw.
 _(pause)_
-2. Listen to what Solomon wrote in Proverbs 3. Trust in the Lord with all your heart and lean not on your own understanding. In all your ways submit to him, and he will make your paths straight.
+2. Hear this from Proverbs 3:5–6. Trust in the Lord with all your heart and lean not on your own understanding. In all your ways submit to Him, and He will make your paths straight.
 _(pause)_
-3. He will make your paths straight does not mean God promises you the right read on every shift. It means you can stop white-knuckling the game. The athlete who has to control every decision plays tight. The athlete who trusts God can release the death grip on outcome and actually see the ice.
+3. This does not mean God promises you the perfect read on every shift. It means you do not have to control the whole game in your own strength.
 _(pause)_
-4. Trust does not mean knowing every play before it happens. It means leaning on God instead of leaning on yourself.
+4. You have prepared. You have trained. Now give the outcome to God and trust the work.
 _(pause)_
+5. When the game speeds up, do not freeze trying to make the perfect play. See it. Trust it. Move.
+_(pause)_
+6. Head up. Hands loose. Read the ice. Make the next faithful play.
+_(pause)_
+
 ### Hockey Opener · courage
 <!-- slug: opener-courage | file: components/pregame/audio/opener-courage.ts -->
 
 1. Close your eyes. Plant both feet on the floor.
 _(pause)_
-2. Listen to what God said through Isaiah 41 to a people in exile, facing real enemies, real loss. So do not fear, for I am with you. Do not be dismayed, for I am your God. I will strengthen you and help you. I will uphold you with my righteous right hand.
+2. Hear this from Isaiah 41:10. God spoke to His people in exile, facing real enemies and real fear: Do not fear, for I am with you. Do not be dismayed, for I am your God. I will strengthen you and help you. I will uphold you with my righteous right hand.
 _(pause)_
-3. Do not fear does not mean stop feeling nervous. The hit is still coming. The net is still crowded. It means you are not alone in the moment. The God who upheld Israel in exile upholds you in the corner, on the puck race, into the slot.
+3. God knows the pressure is real. He does not downplay it. Instead, He says you are not alone in it. He strengthens. He helps. He upholds.
 _(pause)_
-4. Courage is not the absence of fear. It is moving forward because the One with you is bigger than what is in front of you.
+4. So when the corner gets heavy, when coach is on you, when the matchup is hard, you do not have to back away.
 _(pause)_
+5. Courage is not pretending fear is gone. Courage is moving forward because the One with you is greater than what is in front of you.
+_(pause)_
+6. Play brave. Step into the battle. Compete with courage. God is with you.
+_(pause)_
+
 ### Hockey Opener · reset
 <!-- slug: opener-reset | file: components/pregame/audio/opener-reset.ts -->
 
 1. Close your eyes. Let your hands rest open.
 _(pause)_
-2. Listen to what Paul wrote at the start of Romans 8. He has just spent a whole chapter naming his own failure. Then he opens chapter 8 with this. Therefore, there is now no condemnation for those who are in Christ Jesus.
+2. Hear this from Romans 8:1. Paul has just named the struggle with his own failure. Then he opens chapter 8 with this: Therefore, there is now no condemnation for those who are in Christ Jesus.
 _(pause)_
-3. No condemnation does not mean no consequences. The puck still goes the other way when you turn it over. It means the verdict on you was already settled at the cross. The mistake you make tonight cannot reopen a case God has already closed.
+3. No condemnation does not mean no consequences. If you turn it over, the puck still goes the other way. But it means the verdict on you was already settled at the cross.
 _(pause)_
-4. Your mistakes are real. The verdict is not. Reset and go again.
+4. The mistake you make tonight cannot reopen a case God has already closed.
 _(pause)_
+5. So when the bad play happens, do not carry condemnation into the next one. Learn what you need. Drop what you do not.
+_(pause)_
+6. You are free to go hard. Do not hold on. Breathe, reset, and play the next one.
+_(pause)_
+
 ### Hockey Opener · compete-level
 <!-- slug: opener-compete-level | file: components/pregame/audio/opener-compete-level.ts -->
 
 1. Close your eyes. Sit forward.
 _(pause)_
-2. Listen to what Paul wrote in Colossians 3. Whatever you do, work at it with all your heart, as working for the Lord, not for human masters, since you know that you will receive an inheritance from the Lord as a reward. It is the Lord Christ you are serving.
+2. Hear this from Colossians 3:23–24. Whatever you do, work at it with all your heart, as working for the Lord and not for people. It is the Lord Christ you are serving.
 _(pause)_
-3. Working for the Lord does not mean playing harder to earn his love. You already have it. It means every battle on the wall, every backcheck, every shift is offered up to the One who gave you the body to play. Effort becomes worship. The coach is not your final audience. God is.
+3. This is not about earning God’s love. In Christ, you already have it.
 _(pause)_
-4. You are not competing for an audience. You are competing for an Audience of One who already calls you His.
+4. This is about who your effort is for. Every wall battle. Every backcheck. Every loose puck. Every shift.
 _(pause)_
+5. The coach is not your final audience. The crowd is not your final audience. You compete before the Lord, who already calls you His.
+_(pause)_
+6. So bring your full compete. Win the wall. Finish your routes. Backcheck hard. Give the next shift everything you have.
+_(pause)_
+
 ### Hockey Opener · calm
 <!-- slug: opener-calm | file: components/pregame/audio/opener-calm.ts -->
 
 1. Close your eyes. Let your shoulders drop.
 _(pause)_
-2. Listen to what Paul wrote in Philippians 4. Not from a quiet life. From a Roman prison. Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.
+2. Hear this from Philippians 4. Paul wrote it from prison, not comfort: Do not be anxious about anything, but in every situation, bring your requests to God. And the peace of God, which transcends all understanding, will guard your heart and your mind in Christ Jesus.
 _(pause)_
-3. Peace that transcends understanding does not mean you stop feeling nerves. It means a peace that does not match what is in front of you can guard you while you compete. The pressure is still real. So is the One holding you steady inside it.
+3. That peace does not mean you stop feeling nerves. It means Christ can hold you steady while the pressure is still real.
 _(pause)_
-4. Peace is not the absence of pressure. It is the presence of Christ when pressure comes.
+4. When the pressure comes, you do not have to carry it alone. Give the game to God — the nerves, the outcome, the mistakes, the moments you cannot control.
 _(pause)_
+5. Then play free. Free from anxiety. Free from fear. Free to take the next shift with a clear mind and a steady heart.
+_(pause)_
+6. Come back to your breath. Come back to your next play. One read. One puck. One shift.
+_(pause)_
+
 ### Hockey Opener · confidence
 <!-- slug: opener-confidence | file: components/pregame/audio/opener-confidence.ts -->
 
 1. Close your eyes. Sit tall.
 _(pause)_
-2. Listen to what the writer of Hebrews said to a group of believers worn down by hardship. Hebrews 12. Let us run with perseverance the race marked out for us, fixing our eyes on Jesus, the pioneer and perfecter of faith.
+2. Hear this from Hebrews 12. Written to believers worn down by hardship: Let us run with perseverance the race marked out for us, fixing our eyes on Jesus, the pioneer and perfecter of faith.
 _(pause)_
-3. Fix your eyes on Jesus does not mean think positive thoughts about Jesus while you play. It means your confidence is not built on your last shift or your stat line. It is built on the one who already ran his race for you.
+3. Hebrews uses athletic language. Jesus is the pioneer — the One who ran before us, opened the way, endured the cross, and finished His race for us.
 _(pause)_
-4. Your confidence is not in what you can do. It is in who already loves you.
+4. That is where your confidence starts. Not in chasing a perfect game, but in Christ — the One who holds you secure as you run yours.
 _(pause)_
+5. So when the game gets hard, when the trial comes, run with perseverance. Endure the hard shift, and fix your eyes on Him.
+_(pause)_
+6. Play steady. Go hard. Be bold and fearless. Let it all go, because God already holds the outcome.
+_(pause)_
+
 ## VIZ Clips — Flagship (position)
 
 ### Hockey · Forward · VIZ (flagship)
@@ -883,14 +933,15 @@ _(pause)_
 _(pause)_
 2. You are on the bench before the first shift. Your hands feel light. Your legs feel shaky. Your heart is up in your throat.
 _(pause)_
-3. Feel what your body does. Shallow breath. Stomach tight. I am not ready for this.
+3. Your eyes keep jumping to the ice. Your stick feels light in your hands. The thought hits: I'm not ready for this.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Come back to your breath. Come back to right now.
+5. These nerves are energy, not danger. Let them sharpen you.
 _(pause)_
-6. Being nervous is energy, not danger. Let it sharpen you. First shift, move your feet, get to the wall, and touch the game early.
+6. First shift, move your feet, get to the wall, and touch the game early.
 _(pause)_
+
 ### Hockey · Forward · missed-chance
 <!-- slug: hm-forward-missed-chance | file: components/pregame/audio/clips.ts -->
 
@@ -898,29 +949,31 @@ _(pause)_
 _(pause)_
 2. You are alone in the slot. The pass finds your tape. You shoot. It rings off the post.
 _(pause)_
-3. Feel what your body does. Stomach drop. Heat in your face. I should have buried that.
+3. Your stick feels heavy for a second. Your eyes follow the puck away from the net. The thought hits: I should have finished that.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
 5. That chance is over. The next puck is still yours.
 _(pause)_
-6. Speak the truth. That shot is gone. Stay ready for the next look.
+6. Stay dangerous. Get back to the slot, show your stick, and be ready for the next look.
 _(pause)_
+
 ### Hockey · Forward · turnover
 <!-- slug: hm-forward-turnover | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. You have the puck at the offensive blue line. You try to force it through a stick. It pops loose and goes the other way. They are on the rush.
+2. You get the puck on the wall and try to force it through the middle. It hits a stick. The other team turns it back the other way.
 _(pause)_
-3. Feel what your body does. Stomach drop. Heat in your face. I just gave them that.
+3. Your shoulders tighten. You glance toward the bench. The thought hits: Coach is going to cut my minutes.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That turnover is over. Sprint back into this play.
+5. That turnover is over. Get back into the play.
 _(pause)_
-6. Speak the truth. That turnover is over. Get back, get organized, and make the next simple play.
+6. Next shift, move your feet, use the wall, and make the strong simple play.
 _(pause)_
+
 ### Hockey · Forward · beaten-wide
 <!-- slug: hm-forward-beaten-wide | file: components/pregame/audio/clips.ts -->
 
@@ -928,14 +981,15 @@ _(pause)_
 _(pause)_
 2. You are backchecking through the neutral zone. The winger has the puck and a step. You reach. He goes by you on the outside.
 _(pause)_
-3. Feel what your body does. Lungs burn. Legs heavy. I am a step slow tonight.
+3. Your lungs are burning. Your stick reaches instead of your feet. The thought hits: I let him skate past me.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That rush is over. Get your feet moving and take the next backcheck.
+5. That rush is over. Get your feet moving again.
 _(pause)_
-6. Speak the truth. He had a step. It is not your identity. Reset and go again.
+6. Next backcheck, take the inside lane, match his speed, and finish through the puck.
 _(pause)_
+
 ### Hockey · Forward · bad-penalty
 <!-- slug: hm-forward-bad-penalty | file: components/pregame/audio/clips.ts -->
 
@@ -943,16 +997,15 @@ _(pause)_
 _(pause)_
 2. You are chasing the play. You reach with your stick. The whistle blows. The ref points at you. Two minutes.
 _(pause)_
-3. Feel what your body does. Heat in your face. Stomach drop. I just hurt my team.
+3. Your stick feels too far from your body. Your feet are late. The thought hits: I gave them a power play.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. The whistle is over. Breathe, own the next shift, and compete clean.
+5. The whistle happened. Learn from it, then compete clean.
 _(pause)_
-6. Play brave next shift. Compete the same way.
+6. Next shift, move your feet, get body position, and keep your stick down.
 _(pause)_
-7. The whistle happened. Learn from it, then compete the next shift clean.
-_(pause)_
+
 ### Hockey · Forward · coach-yells
 <!-- slug: hm-forward-coach-yells | file: components/pregame/audio/clips.ts -->
 
@@ -968,38 +1021,39 @@ _(pause)_
 _(pause)_
 6. The volume is not the verdict. Take the correction, keep your feet moving, and answer with your next shift.
 _(pause)_
+
 ### Hockey · Forward · benched
 <!-- slug: hm-forward-benched | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. Two shifts go by. Then three. The line goes out without you. You sit on the bench. The door does not open.
+2. Two shifts go by. Then three. The line goes out without you. You sit on the bench. Your name never gets called.
 _(pause)_
-3. Feel what your body does. Heat in your chest. Tight in your throat. He doesn't trust me.
+3. Your legs feel ready but trapped. The thought hits: He does not trust me out there.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Stay in the game from here. Watch the pace, stay loud, and be ready when the door opens.
+5. The bench has your body for a stretch. It does not have your mind.
 _(pause)_
-6. The bench has your body for a shift. It does not have your mind. Stay loud, watch the pace, and be ready to bring energy on the next shift.
+6. Stay loud, watch the pace, and be ready to bring energy when the door opens.
 _(pause)_
+
 ### Hockey · Forward · get-hit
 <!-- slug: hm-forward-get-hit | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. You are on the wall. You don't see him coming. He finishes his check. You hit the boards hard. The puck is gone.
+2. You are on the wall. You do not see him coming. He finishes his check. You hit the boards hard. The puck is gone.
 _(pause)_
-3. Feel what your body does. Wind out of your lungs. Heat in your shoulder. I should have seen him.
+3. The air leaves your chest. Your shoulder stings. The thought hits: I got caught on the wall.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That hit is over. Breathe, get your body back, and return to the next battle.
+5. That hit is over. Get your breath back and return to the next battle.
 _(pause)_
-6. Go get the next puck battle. Get back to the wall.
+6. Next wall play, check early, protect the puck, and make the strong play.
 _(pause)_
-7. Speak the truth. You got hit. It is not your identity. Reset and go again.
-_(pause)_
+
 ### Hockey · Forward · start-slow
 <!-- slug: hm-forward-start-slow | file: components/pregame/audio/clips.ts -->
 
@@ -1015,23 +1069,25 @@ _(pause)_
 _(pause)_
 6. Loose hands. Simple plays. Let the game come to you.
 _(pause)_
-7. Speak the truth. You do not need to chase the game. Let it come to you. Win one wall battle, make one simple play, and build from there.
+7. Speak the truth. You do not need to chase the game. Let it come to you. Win one wall battle, finish a check, make one simple play, and build from there.
 _(pause)_
+
 ### Hockey · Forward · first-goal-against
 <!-- slug: hm-forward-first-goal-against | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. The puck goes in behind your goalie. The other bench celebrates. The horn sounds. You skate back to center ice.
+2. The puck is in your net. The other team celebrates. You skate back to the bench while the rink gets loud.
 _(pause)_
-3. Feel what your body does. Stomach drop. Heat in your chest. Here we go again.
+3. You glance toward the bench. The thought hits: Coach is going to cut my minutes.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That goal is over. Come back to the next shift.
+5. That goal is over. The game is still in front of you.
 _(pause)_
-6. They scored first. Come back with one strong shift.
+6. Next shift, move your feet, get on the forecheck, and help turn the momentum back.
 _(pause)_
+
 ## Hard Moment Clips — Defense
 
 ### Hockey · Defense · beaten-wide
@@ -1041,33 +1097,29 @@ _(pause)_
 _(pause)_
 2. You are back in your zone. The puck carrier comes wide. He has speed. You lose the angle. He has a step on you.
 _(pause)_
-3. Feel what your body does. Stomach drop. Burn in your chest. I lost my gap.
+3. Your feet feel heavy for a second. Your hips are turned. The thought hits: I gave him the lane.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That rush is over. Get your feet back under you and take the next matchup.
+5. He won that rush. He does not own the next one.
 _(pause)_
-6. Stay loose. Match his feet. Hold your gap.
-_(pause)_
-7. Speak the truth. That turnover is over. Get back, get organized, and make the next simple play.
-_(pause)_
+
 ### Hockey · Defense · turnover
 <!-- slug: hm-defense-turnover | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. You retrieve the puck behind your net. You try to make the pass through the slot. It hits a stick. The other team has it in front.
+2. You retrieve the puck behind your net. You try to make the pass through the slot. It hits a stick. The other team has it in front. They take a wide open shot
 _(pause)_
-3. Feel what your body does. Stomach drop. Heat in your face. I just put my goalie in a bad spot.
+3. Your eyes snap to your goalie. Your chest tightens fast. Your head drops.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That turnover is over. Get back into structure and make the next simple play.
+5. That turnover is over. Get back into structure.
 _(pause)_
-6. Next breakout, simple and strong. Off the glass if it's there.
+6. Next breakout, shoulder-check first, choose the simple play, and move it strong.
 _(pause)_
-7. That turnover is over. Get back, get organized, and make the next simple play.
-_(pause)_
+
 ### Hockey · Defense · missed-chance
 <!-- slug: hm-defense-missed-chance | file: components/pregame/audio/clips.ts -->
 
@@ -1075,14 +1127,15 @@ _(pause)_
 _(pause)_
 2. You walk the blue line. The lane opens. You step in and shoot. It misses the net wide.
 _(pause)_
-3. Feel what your body does. Stomach drop. Heat in your face. I should have hit the net.
+3. Your stick feels tight in your hands. Your eyes follow the puck around the glass. The thought hits: Coach will be pissed.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That shot is over. The next play is still yours.
+5. That shot is over. The next puck can still get through.
 _(pause)_
-6. That shot is gone. Stay ready for the next look.
+6. Next look, head up, shoot for a stick, a pad, or the open lane.
 _(pause)_
+
 ### Hockey · Defense · bad-penalty
 <!-- slug: hm-defense-bad-penalty | file: components/pregame/audio/clips.ts -->
 
@@ -1090,16 +1143,15 @@ _(pause)_
 _(pause)_
 2. The puck carrier cuts inside. You bring your stick up. The whistle blows. The ref points at you. Two minutes.
 _(pause)_
-3. Feel what your body does. Heat in your face. Tight in your chest. I just put us down a man.
+3. Feel what your body does. Heat in your face. Tight in your chest. You think, I just put us down a man.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. The whistle is over. Breathe, own the next shift, and compete clean.
+5. The whistle happened. Learn from it, then compete clean.
 _(pause)_
-6. Play hard next shift. Play your gap the same way.
+6. Next shift, trust your feet. Hold your gap. Stick down.
 _(pause)_
-7. The whistle happened. Learn from it, then compete the next shift clean.
-_(pause)_
+
 ### Hockey · Defense · coach-yells
 <!-- slug: hm-defense-coach-yells | file: components/pregame/audio/clips.ts -->
 
@@ -1107,14 +1159,15 @@ _(pause)_
 _(pause)_
 2. You come off the ice. The coach is loud. Sharp. Maybe your name. Maybe not. The whole bench can hear it.
 _(pause)_
-3. Feel what your body does. Tight jaw. Heat in your chest. He doesn't trust me back there.
+3. Your jaw locks. Your eyes drop toward the floor. The thought hits: He does not trust me back there.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That correction is over. Take what helps and come back to now.
+5. The volume is not the verdict. Take the correction. Leave the shame.
 _(pause)_
-6. The volume is not the verdict. Hear the correction, leave the shame, and play the next shift steady.
+6. Next shift, play steady — feet set, gap tight, first pass simple.
 _(pause)_
+
 ### Hockey · Defense · benched
 <!-- slug: hm-defense-benched | file: components/pregame/audio/clips.ts -->
 
@@ -1122,14 +1175,15 @@ _(pause)_
 _(pause)_
 2. Your partner goes out with someone else. Then again. You sit on the bench. The door does not open.
 _(pause)_
-3. Feel what your body does. Heat in your chest. Tight in your throat. He doesn't trust me.
+3. You listen to the coach call out the pairings. Your legs feel ready but stuck. The thought hits: He does not trust me back there.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Stay in the game from here. Watch, talk, and be ready when the door opens.
+5. The bench has your body for a shift. It does not have your mind.
 _(pause)_
-6. The bench has your body for a shift. It does not have your mind. Watch the forecheck, talk to your partner, and be ready when the door opens.
+6. Stay in the game. Watch the forecheck, talk to your partner, and be ready when the door opens.
 _(pause)_
+
 ### Hockey · Defense · nervous
 <!-- slug: hm-defense-nervous | file: components/pregame/audio/clips.ts -->
 
@@ -1137,31 +1191,31 @@ _(pause)_
 _(pause)_
 2. You are on the bench before the first shift. Your legs feel heavy. Your hands feel light. Your heart is up in your throat.
 _(pause)_
-3. Feel what your body does. Shallow breath. Stomach tight. I am going to get exposed out there.
+3. Your eyes keep finding the other team’s rushers. Your hands tighten on the stick. You're watching the puck and you chase and you're late and you get beat.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Come back to your breath. Come back to right now.
+5. These nerves are energy, not danger. Let them sharpen you.
 _(pause)_
-6. Being nervous is energy, not danger. Let it sharpen you. First shift, skate forward, hold your gap, and make the simple play.
+6. Skate loose, finish a check and make a hit. hold the middle.
 _(pause)_
+
 ### Hockey · Defense · get-hit
 <!-- slug: hm-defense-get-hit | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. You are back for the puck. You don't see him coming. He finishes his check. You hit the boards hard. The puck is gone.
+2. You are back for the puck. You do not see him coming. He finishes his check. You hit the boards hard. The puck is gone.
 _(pause)_
-3. Feel what your body does. Wind out of your lungs. Heat in your shoulder. I should have shoulder checked.
+3. The air leaves your chest. Your shoulder stings. The thought hits: I should have checked first.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That hit is over. Breathe, get your body back, and return to the next puck.
+5. That hit is over. Get your breath back and return to the next puck.
 _(pause)_
-6. Don't rim it soft next time. Make the strong play.
+6. Next retrieval, check early, protect the puck, and make the strong first play.
 _(pause)_
-7. Speak the truth. You got hit. It is not your identity. Reset and go again.
-_(pause)_
+
 ### Hockey · Defense · start-slow
 <!-- slug: hm-defense-start-slow | file: components/pregame/audio/clips.ts -->
 
@@ -1169,16 +1223,15 @@ _(pause)_
 _(pause)_
 2. First period is half over. Your gap has been late. Your passes have been off. Nothing is coming easy.
 _(pause)_
-3. Feel what your body does. Tight grip on the stick. Shoulders up. I am behind out there.
+3. Your hands squeeze the stick. Your shoulders ride high. The thought hits: I am chasing the game right now.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
 5. The slow start is over. Build the game from this next shift.
 _(pause)_
-6. Skate first. Stick on the puck. Simple breakouts.
+6. Shoulder check, finish your checks, hold your gap. Make the first simple pass.
 _(pause)_
-7. The first few shifts are gone. Your job is the next gap, the next pass, the next battle. Reset and play free.
-_(pause)_
+
 ### Hockey · Defense · first-goal-against
 <!-- slug: hm-defense-first-goal-against | file: components/pregame/audio/clips.ts -->
 
@@ -1186,16 +1239,15 @@ _(pause)_
 _(pause)_
 2. The puck goes in behind your goalie. The other bench celebrates. The horn sounds. You skate back to center ice.
 _(pause)_
-3. Feel what your body does. Stomach drop. Heat in your chest. We couldn't hold them.
+3. Your shoulders pull tight. Your eyes go back to the net. The thought hits: We let that one get through.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That goal is over. Come back to the next shift.
+5. That goal is over. It does not get the next shift.
 _(pause)_
-6. Stay loose. Hold your gap. Play the next shift, not the last one.
+6. Next shift, stay loose, hold your gap, and make the first simple play.
 _(pause)_
-7. They scored first. Come back with one strong shift.
-_(pause)_
+
 ## Hard Moment Clips — Goalie
 
 ### Hockey · Goalie · coach-yells
@@ -1205,80 +1257,79 @@ _(pause)_
 _(pause)_
 2. A goal goes in. The whistle blows. You hear your coach from the bench. Loud. Sharp. Maybe your name. Maybe not. The whole rink can hear it.
 _(pause)_
-3. Feel what your body does. Tight jaw. Heat in your chest. He does not trust me.
+3. Your mask feels hot. Your eyes stay on the crease. The thought hits: Everyone is looking at me.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That correction is over. Take what helps and come back to the next shot.
+5. The volume is not the verdict. Take what helps. Let the rest pass.
 _(pause)_
-6. The volume is not the verdict. Take what helps, let the rest pass, and meet the next shot square.
+6. Next shot, set your depth, quiet your hands, and meet the puck square.
 _(pause)_
+
 ### Hockey · Goalie · turnover
 <!-- slug: hm-goalie-turnover | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. You are behind the net with the puck. You try to move it up the wall. It hits a forechecker's stick. The other team has it on top of your crease.
+2. You are behind the net with the puck. You try to move it up the wall. It hits a forechecker’s stick. The other team has it on top of your crease.
 _(pause)_
-3. Feel what your body does. Stomach drop. Heat in your face. I just handed them a goal.
+3. Your eyes snap back to the front of the net. Your chest tightens fast. The thought hits: I just handed them a chance.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That turnover is over. Get set, find the puck, and make the next save.
+5. That turnover is over. Get set and find the puck.
 _(pause)_
-6. Decide early next time. Play the puck strong or leave it.
+6. Next play, decide early — move it strong or leave it for your defenseman.
 _(pause)_
-7. Speak the truth. That turnover is over. Get back, get organized, and make the next simple play.
-_(pause)_
+
 ### Hockey · Goalie · missed-chance
 <!-- slug: hm-goalie-missed-chance | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. The puck carrier comes in alone. You step out for the poke check. Your stick catches nothing. He walks around you.
+2. The first shot comes through traffic. You make the save, but the rebound kicks out. You push across, reach for the second shot, and it slips past you.
 _(pause)_
-3. Feel what your body does. Stomach drop. Heat in your face. I should have stayed in my net.
+3. Your pad feels late getting across. Your eyes follow the puck into the net. The thought hits: I almost had the second one.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That choice is over. Reset your depth and meet the next one.
+5. That rebound is over. Reset your crease and come back to the next shot.
 _(pause)_
-6. That chance is gone. Stay patient for the next one.
+6. Next rebound, track it first, push under control, and arrive square.
 _(pause)_
-### Hockey · Goalie · beaten-wide
-<!-- slug: hm-goalie-beaten-wide | file: components/pregame/audio/clips.ts -->
+
+### Hockey · Goalie · soft-goal
+<!-- slug: hm-goalie-soft-goal | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. The pass goes from one side of the crease to the other. You push across. You are late. The puck is in the back of the net before you set.
+2. The shot comes from the outside. You see it the whole way. It should be routine. It slips through, and the puck is in the back of the net.
 _(pause)_
-3. Feel what your body does. Stomach drop. Heat in your chest. I was too slow across.
+3. Your glove feels heavy. Your eyes go back into the net. The thought hits: I should have had that.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That pass is over. Reset your edges and trust the next push.
+5. That goal is over. Settle your crease and come back to the next shot.
 _(pause)_
-6. Don't cheat the next pass. Stay square. Trust your push.
+6. Next puck, track it all the way in, stay quiet, and make the simple save.
 _(pause)_
-7. Speak the truth. He beat you across. It is not your identity. Reset and go again.
-_(pause)_
+
 ### Hockey · Goalie · bad-penalty
 <!-- slug: hm-goalie-bad-penalty | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. The puck is in your feet. You flip it over the glass. The whistle blows. The ref points at you. Two minutes for delay of game.
+2. The puck is loose near your crease. You reach with your stick as the player cuts across. He goes down. The whistle blows. The ref points at you. Two minutes for tripping.
 _(pause)_
-3. Feel what your body does. Heat in your face. Tight in your chest. I just hurt my team.
+3. Your stick feels caught out in front of you. Your chest tightens. The thought hits: I just put them on the power play.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. The whistle is over. Breathe, trust your reads, and meet the next puck.
+5. The whistle is over. Settle your crease and get ready for the next shot.
 _(pause)_
-6. Don't play tight on the PK. Trust your reads.
+6. On the kill, stay patient, trust your reads, and meet the puck square.
 _(pause)_
-7. The whistle happened. Learn from it, then compete the next shift clean.
-_(pause)_
+
 ### Hockey · Goalie · pulled
 <!-- slug: hm-goalie-pulled | file: components/pregame/audio/clips.ts -->
 
@@ -1286,14 +1337,15 @@ _(pause)_
 _(pause)_
 2. The coach taps your backup. You skate to the bench. You sit at the end. The game keeps going without you.
 _(pause)_
-3. Feel what your body does. Heat in your chest. Tight in your throat. He gave up on me.
+3. Your mask feels heavy in your hands. Your eyes stay on the crease. The thought hits: He gave up on me.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Stay in the game from here. Support your teammate and keep your mind ready.
+5. The bench has your body for now. It does not have your worth.
 _(pause)_
-6. The bench has your body, but it does not have your worth. Stay present, support your teammate, and keep your mind in the game.
+6. Stay present, support your teammate, and keep your mind in the game.
 _(pause)_
+
 ### Hockey · Goalie · nervous
 <!-- slug: hm-goalie-nervous | file: components/pregame/audio/clips.ts -->
 
@@ -1301,14 +1353,15 @@ _(pause)_
 _(pause)_
 2. You are in your crease before the puck drops. Your hands feel light. Your chest feels tight. Your heart is up in your throat.
 _(pause)_
-3. Feel what your body does. Shallow breath. Tight shoulders. I am not ready for this.
+3. Your eyes keep finding the shooters in warmups. Your shoulders ride high. The thought hits: I am not ready for this.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Come back to your breath. Come back to right now.
+5. These nerves are energy, not danger. Let them sharpen you.
 _(pause)_
-6. Being nervous is energy, not danger. Let it sharpen you. Set your depth, quiet your hands, and track the first puck all the way in.
+6. First shot, set your depth, quiet your hands, and track it all the way in.
 _(pause)_
+
 ### Hockey · Goalie · get-hit
 <!-- slug: hm-goalie-get-hit | file: components/pregame/audio/clips.ts -->
 
@@ -1316,16 +1369,15 @@ _(pause)_
 _(pause)_
 2. There is traffic in your crease. A body comes through. You take the contact. You lose the puck.
 _(pause)_
-3. Feel what your body does. Wind out of your lungs. Heat in your chest. I am going to get run again.
+3. Your chest tightens under the pads. Your eyes search for the puck. The thought hits: I am going to get run again.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That contact is over. Breathe, get set, and find the puck again.
+5. That contact is over. Get set and find the puck again.
 _(pause)_
-6. Stay square on the next screen. Stay big. Track the puck.
+6. Next screen, hold your ground, stay big, and track through the traffic.
 _(pause)_
-7. Speak the truth. You got hit. It is not your identity. Reset and go again.
-_(pause)_
+
 ### Hockey · Goalie · start-slow
 <!-- slug: hm-goalie-start-slow | file: components/pregame/audio/clips.ts -->
 
@@ -1333,16 +1385,15 @@ _(pause)_
 _(pause)_
 2. First period is half over. The puck has felt small. You have been late on a shot or two. Nothing is coming easy.
 _(pause)_
-3. Feel what your body does. Tight in your glove hand. Shoulders up. I am not in this game.
+3. Your glove hand feels tight. Your shoulders ride high. The thought hits: I am fighting the puck right now.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
 5. The slow start is over. Build the game from this next shot.
 _(pause)_
-6. Active feet. Stay big. Track the puck all the way in.
+6. Set your depth, quiet your hands, and track the puck all the way in.
 _(pause)_
-7. Speak the truth. You are not the last shot. You are not the last goal. Reset your depth, find the puck, and meet the next one.
-_(pause)_
+
 ### Hockey · Goalie · first-goal-against
 <!-- slug: hm-goalie-first-goal-against | file: components/pregame/audio/clips.ts -->
 
@@ -1350,16 +1401,15 @@ _(pause)_
 _(pause)_
 2. The puck is in the back of your net. The other team celebrates behind you. You fish it out of the mesh. You skate to the top of your crease.
 _(pause)_
-3. Feel what your body does. Stomach drop. Heat in your chest. I should have had that.
+3. Your mask feels hot. Your eyes follow the puck out of the net. The thought hits: First one is on me.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That goal is over. Come back to the next puck.
+5. That goal is over. The game is still in front of you.
 _(pause)_
-6. Don't over-commit on the next shot. Stay patient. Let it come to you.
+6. Next shot, set your depth, stay patient, and track it all the way in.
 _(pause)_
-7. They scored first. The game is still in front of you.
-_(pause)_
+
 ## Full-Session Cells (legacy, not used in compositional path)
 
 ### Hockey · Forward · missed-chance (full session)

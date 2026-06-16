@@ -243,8 +243,8 @@ export const HOCKEY_CONFIG: SportConfig = {
     Goalie: [
       { key: "We give up the first goal.", label: "I let in the first goal." },
       { key: "I get benched.", label: "I get pulled." },
-      { key: "I get beaten wide.", label: "I get beat post to post." },
-      { key: "I miss a scoring chance.", label: "I get beat on a breakaway." },
+      { key: "I get beaten wide.", label: "I let in a soft one." },
+      { key: "I miss a scoring chance.", label: "I give up a bad rebound." },
       { key: "I feel nervous.", label: "I feel nervous." },
       { key: "I start slow.", label: "I start slow." },
       { key: "I get hit.", label: "I get run in the crease." },

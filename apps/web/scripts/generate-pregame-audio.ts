@@ -575,7 +575,7 @@ const PHASE2_TEMPLATES: Array<{
   { position: "Goalie", adversity: "Coach yells.",              vizSlug: "viz-goalie-track-and-save", hmSlug: "hm-goalie-coach-yells" },
   { position: "Goalie", adversity: "I turn the puck over.",     vizSlug: "viz-goalie-track-and-save", hmSlug: "hm-goalie-turnover" },
   { position: "Goalie", adversity: "I miss a scoring chance.",  vizSlug: "viz-goalie-track-and-save", hmSlug: "hm-goalie-missed-chance" },
-  { position: "Goalie", adversity: "I get beaten wide.",        vizSlug: "viz-goalie-track-and-save", hmSlug: "hm-goalie-beaten-wide" },
+  { position: "Goalie", adversity: "I get beaten wide.",        vizSlug: "viz-goalie-track-and-save", hmSlug: "hm-goalie-soft-goal" },
   { position: "Goalie", adversity: "I take a bad penalty.",     vizSlug: "viz-goalie-track-and-save", hmSlug: "hm-goalie-bad-penalty" },
   { position: "Goalie", adversity: "I get benched.",            vizSlug: "viz-goalie-track-and-save", hmSlug: "hm-goalie-pulled" },
   { position: "Goalie", adversity: "I feel nervous.",           vizSlug: "viz-goalie-track-and-save", hmSlug: "hm-goalie-nervous" },

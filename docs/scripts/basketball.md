@@ -66,104 +66,149 @@ These lines appear on-screen in text mode (no audio). Tokens like `{{role}}`, `{
 
 1. Close your eyes. Drop your shoulders.
 _(pause)_
-2. Out there, talking is competing. The loud player moves the defense a half-second before the offense does. Tonight, that's the job — be the one who talks.
+2. Psalm 118 is a song of trust under pressure — the writer is surrounded and pushed hard, but because the Lord is with him, fear of people does not rule him.
 _(pause)_
-3. And here is what Paul wrote in Romans 8. For everyone in Christ, there is now no condemnation. None. The verdict on you was settled at the cross — before you ever stepped on the floor.
+3. Hear this from Psalm 118:6. The Lord is with me; I will not be afraid. What can people do to me?
 _(pause)_
-4. So when that voice tells you to stay quiet — don't risk it, don't be the one who's wrong out loud — hear it for what it is. That is not you. That is the part of you that has to look good. And that part is already settled.
+4. Fear wants you quiet. It tells you not to draw attention, not to be wrong out loud, not to look like you are trying too hard.
 _(pause)_
-5. So tonight, be the loud one. I got ball. Screen left. Shot. Free to be wrong, free to speak, free to make the play before it happens.
+5. But in Christ, you do not have to protect your image. You are already secure.
 _(pause)_
-6. What anyone out there thinks of you is not the verdict on you. You have nothing left to protect. You are free to speak.
+6. So speak. I got ball. Screen left. Shot. Help. Box out. Cutter. Make your teammates play faster.
 _(pause)_
+7. Talking is competing. Your voice moves the defense before the offense gets comfortable. It helps your team win.
+_(pause)_
+8. Be loud early. Be clear. Be steady. Let your voice lead the possession.
+_(pause)_
+
 ### Basketball Opener · hope
 <!-- slug: opener-bb-hope | file: components/pregame/audio/opener-bb-hope.ts -->
 
 1. Close your eyes. Take one full breath.
 _(pause)_
-2. Listen to what Isaiah wrote in chapter 40. He was speaking to a people in exile, out of strength, far from home. Even youths grow tired and weary, and young men stumble and fall. But those who hope in the LORD will renew their strength. They will soar on wings like eagles. They will run and not grow weary. They will walk and not be faint.
+2. Hear this from Isaiah 40. God was speaking to a people in exile — worn down, far from home, and out of strength: Even youths grow tired and weary, and young men stumble and fall. But those who hope in the Lord will renew their strength. They will soar on wings like eagles. They will run and not grow weary. They will walk and not be faint.
 _(pause)_
-3. Soar on wings like eagles does not mean you will never feel your legs go late in the game. It does not mean prayer is a performance hack. Look at what Isaiah just said — even young men stumble and fall. The source of endurance is not your willpower. It is the God who renews you when you depend on him.
+3. Isaiah does not pretend you will never get tired. He says even the young grow weary. Even strong people stumble.
 _(pause)_
-4. Hope is not believing in yourself. It is waiting on the God who is bigger than what you face.
+4. But your strength is not limited to what you can manufacture in yourself. The Lord renews those who wait on Him, trust Him, and depend on Him.
 _(pause)_
+5. So when your legs feel heavy, when the run feels long, when you feel yourself fading — do not quit inside. Hope in the Lord.
+_(pause)_
+6. Sprint the next lane. Guard the next possession. Trust the One who renews your strength.
+_(pause)_
+
 ### Basketball Opener · joy
 <!-- slug: opener-bb-joy | file: components/pregame/audio/opener-bb-joy.ts -->
 
 1. Close your eyes. Let your face soften.
 _(pause)_
-2. Listen to what Paul wrote in 1 Thessalonians 5. He was writing to a young church facing real hardship. Be joyful always, pray continually, give thanks in all circumstances. For this is God's will for you in Christ Jesus.
+2. Hear this from 1 Thessalonians 5. Paul was writing to a young church facing real hardship: Rejoice always. Pray continually. Give thanks in all circumstances. For this is God’s will for you in Christ Jesus.
 _(pause)_
-3. Be joyful always does not mean fake a smile or pretend the loss did not hurt. Look at how Paul ties it together. Joy, prayer, thanksgiving. The athlete who prays continually and gives thanks even after a bad possession is the athlete who can carry joy into the next one. Joy is not the absence of hardship. It is what you have when you stay connected to God in the middle of it.
+3. Joy does not mean you fake a smile or pretend the bad possession did not happen. Paul ties joy to prayer and thanksgiving — staying connected to God in the middle of what is hard.
 _(pause)_
-4. Joy is not a mood that changes with the scoreboard. It is a posture you take toward the God who is always with you.
+4. So remember the gift. A body that can move. A team to play with. A ball in your hands. A game you love. A chance to compete.
 _(pause)_
+5. The scoreboard matters, but it is not the whole story. Keep perspective. Give thanks. You get to do this today.
+_(pause)_
+6. Play with joy. Pray as you go. Compete hard, and take the next possession free.
+_(pause)_
+
 ### Basketball Opener · leadership
 <!-- slug: opener-bb-leadership | file: components/pregame/audio/opener-bb-leadership.ts -->
 
 1. Close your eyes. Take a long breath.
 _(pause)_
-2. Listen to what Jesus said in Mark 10. His disciples were arguing about who would be greatest. Jesus called them over and said this. Whoever wants to become great among you must be your servant, and whoever wants to be first must be slave of all. For even the Son of Man did not come to be served, but to serve, and to give his life as a ransom for many.
+2. Hear this from Mark 10. The disciples were arguing about who would be greatest. Jesus called them over and said, Whoever wants to become great among you must be your servant. For even the Son of Man did not come to be served, but to serve, and to give His life as a ransom for many.
 _(pause)_
-3. To serve does not mean to be soft. Jesus was not weak. It means using whatever you have been given — the captain's role, a starting spot, a loud voice — to lift the player next to you, not to stand above them. The last one off the bench is not ordinary. The practice player is not ordinary. Lead like that is true.
+3. Jesus does not call leaders to be soft. He calls them to serve. To use what they have been given — a captain’s role, a starting spot, a voice, a possession — to lift the people around them.
 _(pause)_
-4. Real leadership is not standing above your team. It is standing under them — the way Christ stood under you.
+4. So lead by serving. Talk on defense. Pull a teammate into the huddle. Pick him up after a bad possession. Make the extra pass that helps the group.
 _(pause)_
+5. The role, the minutes, the starting spot — none of it is for standing above the team. It is for helping the team move forward.
+_(pause)_
+6. Lead like Christ. Strong enough to serve. Free enough to put the team first.
+_(pause)_
+
 ### Basketball Opener · reset
 <!-- slug: opener-bb-reset | file: components/pregame/audio/opener-bb-reset.ts -->
 
 1. Close your eyes. Let your hands rest open.
 _(pause)_
-2. Listen to what Paul wrote at the start of Romans 8. He has just spent a whole chapter naming his own failure. Then he opens chapter 8 with this. Therefore, there is now no condemnation for those who are in Christ Jesus.
+2. Hear this from Romans 8:1. Paul has just named the struggle with his own failure. Then he opens chapter 8 with this: Therefore, there is now no condemnation for those who are in Christ Jesus.
 _(pause)_
-3. No condemnation does not mean no consequences. The ball still goes the other way when you turn it over. It means the verdict on you was already settled at the cross. The mistake you make tonight cannot reopen a case God has already closed.
+3. No condemnation does not mean no consequences. If you turn it over, the ball still goes the other way. But it means the verdict on you was already settled at the cross.
 _(pause)_
-4. Your mistakes are real. The verdict is not. Reset and go again.
+4. The mistake you make tonight cannot reopen a case God has already closed.
 _(pause)_
+5. So when the bad play happens, do not carry condemnation into the next possession. Learn what you need. Drop what you do not.
+_(pause)_
+6. You are free to go hard. Do not hold on. Breathe, reset, and play the next one.
+_(pause)_
+
 ### Basketball Opener · compete-level
 <!-- slug: opener-bb-compete-level | file: components/pregame/audio/opener-bb-compete-level.ts -->
 
 1. Close your eyes. Sit forward.
 _(pause)_
-2. Listen to what Paul wrote in Colossians 3. Whatever you do, work at it with all your heart, as working for the Lord, not for human masters, since you know that you will receive an inheritance from the Lord as a reward. It is the Lord Christ you are serving.
+2. Hear this from Colossians 3:23–24. Whatever you do, work at it with all your heart, as working for the Lord and not for people. It is the Lord Christ you are serving.
 _(pause)_
-3. Working for the Lord does not mean playing harder to earn his love. You already have it. It means every possession you guard, every sprint back on defense, every loose ball you dive for is offered up to the One who gave you the body to play. Effort becomes worship. The coach is not your final audience. God is.
+3. This is not about earning God’s love. In Christ, you already have it.
 _(pause)_
-4. You are not competing for an audience. You are competing for an Audience of One who already calls you His.
+4. This is about who your effort is for. Every possession you guard. Every sprint back. Every box out. Every loose ball. Every cut.
 _(pause)_
+5. The coach is not your final audience. The crowd is not your final audience. You compete before the Lord, who already calls you His.
+_(pause)_
+6. So bring your full compete. Sprint the floor. Guard the possession. Hit first on the glass. Cut hard. Give the next play everything you have.
+_(pause)_
+
 ### Basketball Opener · confidence
 <!-- slug: opener-bb-confidence | file: components/pregame/audio/opener-bb-confidence.ts -->
 
 1. Close your eyes. Sit tall.
 _(pause)_
-2. Listen to what the writer of Hebrews said to a group of believers worn down by hardship. Hebrews 12. Let us run with perseverance the race marked out for us, fixing our eyes on Jesus, the pioneer and perfecter of faith.
+2. Hear this from Hebrews 12. Written to believers worn down by hardship: Let us run with perseverance the race marked out for us, fixing our eyes on Jesus, the pioneer and perfecter of faith.
 _(pause)_
-3. Fix your eyes on Jesus does not mean think positive thoughts about Jesus while you play. It means your confidence is not built on your last possession or your stat line. It is built on the one who already ran his race for you.
+3. Hebrews uses athletic language. Jesus is the pioneer — the One who ran before us, opened the way, endured the cross, and finished His race for us.
 _(pause)_
-4. Your confidence is not in what you can do. It is in who already loves you.
+4. That is where your confidence starts. Not in chasing a perfect game, but in Christ — the One who holds you secure as you run yours.
 _(pause)_
+5. So when the game gets hard, when the trial comes, run with perseverance. Endure the hard possession, and fix your eyes on Him.
+_(pause)_
+6. Play steady. Go hard. Be bold and fearless. Let it all go, because God already holds the outcome.
+_(pause)_
+
 ### Basketball Opener · decisions
 <!-- slug: opener-bb-decisions | file: components/pregame/audio/opener-bb-decisions.ts -->
 
 1. Close your eyes. Soften your jaw.
 _(pause)_
-2. Listen to what Solomon wrote in Proverbs 3. Trust in the Lord with all your heart and lean not on your own understanding. In all your ways submit to him, and he will make your paths straight.
+2. Hear this from Proverbs 3:5–6. Trust in the Lord with all your heart and lean not on your own understanding. In all your ways submit to Him, and He will make your paths straight.
 _(pause)_
-3. He will make your paths straight does not mean God promises you the right read on every possession. It means you can stop white-knuckling the game. The athlete who has to control every decision plays tight. The athlete who trusts God can release the death grip on outcome and actually see the floor.
+3. This does not mean God promises you the perfect read on every possession. It means you do not have to control the whole game in your own strength.
 _(pause)_
-4. Trust does not mean knowing every play before it happens. It means leaning on God instead of leaning on yourself.
+4. You have prepared. You have trained. Now give the outcome to God and trust the work.
 _(pause)_
+5. When the game speeds up, do not freeze trying to make the perfect play. See it. Trust it. Move.
+_(pause)_
+6. Eyes up. Hands ready. Hit the first action. Make the defense move.
+_(pause)_
+
 ### Basketball Opener · courage
 <!-- slug: opener-bb-courage | file: components/pregame/audio/opener-bb-courage.ts -->
 
 1. Close your eyes. Plant both feet on the floor.
 _(pause)_
-2. Listen to what God said through Isaiah 41 to a people in exile, facing real enemies, real loss. So do not fear, for I am with you. Do not be dismayed, for I am your God. I will strengthen you and help you. I will uphold you with my righteous right hand.
+2. Hear this from Isaiah 41:10. God spoke to His people in exile, facing real enemies and real fear: Do not fear, for I am with you. Do not be dismayed, for I am your God. I will strengthen you and help you. I will uphold you with my righteous right hand.
 _(pause)_
-3. Do not fear does not mean stop feeling nervous. The contact is still coming. The lane is still crowded. It means you are not alone in the moment. The God who upheld Israel in exile upholds you taking the charge, driving into the trees, going up strong with a body on you.
+3. God knows the pressure is real. He does not downplay it. Instead, He says you are not alone in it. He strengthens. He helps. He upholds.
 _(pause)_
-4. Courage is not the absence of fear. It is moving forward because the One with you is bigger than what is in front of you.
+4. So when the contact comes, when the lane is crowded, when the matchup is hard, you do not have to back away.
 _(pause)_
+5. Courage is not pretending fear is gone. Courage is moving forward because the One with you is greater than what is in front of you.
+_(pause)_
+6. Play brave. Take the charge. Go up strong. Compete with courage. God is with you.
+_(pause)_
+
 ## VIZ Clips — Flagship (position)
 
 ### Basketball · Guard · VIZ (flagship)
@@ -860,16 +905,15 @@ _(pause)_
 _(pause)_
 2. You are running the offense. You try to force a pass through traffic. They pick it off and go the other way for a layup.
 _(pause)_
-3. Feel what your body does. Jaw clenches. Legs go heavy on the backpedal. I can't be trusted with the rock.
+3. Your jaw clenches. You turn and chase the play. The thought hits: I forced that.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That turnover is over. Sprint back and lead the next possession.
+5. That turnover is over. Sprint back into the play.
 _(pause)_
-6. Slow it down. Next possession, get the team into something simple.
+6. Next possession, advance it with pace, hit the first action, and make the defense move.
 _(pause)_
-7. Speak the truth. That turnover is over. Get back, get organized, and make the next simple play.
-_(pause)_
+
 ### Basketball · Guard · missed-shot
 <!-- slug: hm-bb-guard-missed-shot | file: components/pregame/audio/clips.ts -->
 
@@ -877,16 +921,15 @@ _(pause)_
 _(pause)_
 2. You come off the screen wide open. Feet set, clean look, the shot you've made a thousand times. It rims out.
 _(pause)_
-3. Feel what your body does. Shoulders drop. A flush climbs up your neck. Now they'll sag off me. I'm not a shooter today.
+3. Your shoulders drop for a second. You start second-guessing the next one.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That shot is over. The next read is still yours.
+5. That shot is over. Stay ready for the next clean look.
 _(pause)_
-6. The read was right. Same shot, next time it's open. Don't shrink it, don't force a worse one.
+6. Next clean look, trust your prep, step into it, and let it go.
 _(pause)_
-7. That shot is gone. Stay ready for the next look.
-_(pause)_
+
 ### Basketball · Guard · got-cooked
 <!-- slug: hm-bb-guard-got-cooked | file: components/pregame/audio/clips.ts -->
 
@@ -894,16 +937,15 @@ _(pause)_
 _(pause)_
 2. You're up on the ball. He hits you with the crossover, gets your hips turned, and blows by for the layup.
 _(pause)_
-3. Feel what your body does. Face goes hot. Eyes want to drop to the floor. Everyone saw it. The whole gym saw me get cooked.
+3. Your hips are turned. Your eyes drop for a second. The thought hits: He got me bad.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That drive is over. Get your feet set and take the next matchup.
+5. That drive is over. Guard the next possession clean.
 _(pause)_
-6. Next possession, get in your stance and stay in front. Take it away with your feet, not a reach.
+6. Next possession, sit in your stance, take away the first move, and contain with your chest.
 _(pause)_
-7. They won that moment. They do not own the next one. Get your feet set and compete again.
-_(pause)_
+
 ### Basketball · Guard · foul-trouble
 <!-- slug: hm-bb-guard-foul-trouble | file: components/pregame/audio/clips.ts -->
 
@@ -911,31 +953,31 @@ _(pause)_
 _(pause)_
 2. Two quick reach-ins and the whistle's on you. Now you're guarding soft, can't pick up full-court, playing scared of the third.
 _(pause)_
-3. Feel what your body does. Hands pull back on their own. A jolt of caution down your arms. I can't even play D without fouling.
+3. Your hands pull back. Your feet get cautious. The thought hits: I can't guard him without fouling.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Those whistles are over. Defend with your feet and stay in control.
+5. Those whistles are over. Pressure with your feet, not your hands.
 _(pause)_
-6. Play angles, not reaches. Beat them to the spot, contest straight up, hands high. Defend with your feet.
+6. Beat him to the spot, chest in front, hands high, contest clean.
 _(pause)_
-7. The whistle happened. Learn from it, then compete the next possession clean.
-_(pause)_
+
 ### Basketball · Guard · coach-yells
 <!-- slug: hm-bb-guard-coach-yells | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. You make a bad read on the pick-and-roll. Coach yells your name and pulls you to the sideline. You're standing there while the game goes on.
+2. You make a bad read on the pick-and-roll. Coach yells your name and pulls you to the sideline. You’re standing there while the game goes on.
 _(pause)_
-3. Feel what your body does. Neck goes hot. Chest tightens against the breath. Coach doesn't trust me to run this.
+3. You stand there watching the play without you. The thought hits: I missed the read.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That correction is over. Take the read and come back to now.
+5. The correction is about the play. Take it and move on.
 _(pause)_
-6. The correction is about the read, not about you. Take it, slow the game down, and get the team into the next action.
+6. Next possession, slow it down, see the floor, and get the team into the right action.
 _(pause)_
+
 ### Basketball · Guard · benched
 <!-- slug: hm-bb-guard-benched | file: components/pregame/audio/clips.ts -->
 
@@ -943,14 +985,15 @@ _(pause)_
 _(pause)_
 2. After a turnover, coach calls your number. You come out, and the backup brings the ball up. You watch the offense run without you.
 _(pause)_
-3. Feel what your body does. Heat in your chest. Tight in your throat. And the thought lands. They don't trust me to run it.
+3. You sit down hard. Your eyes stay on the floor. The thought hits: I just lost my minutes.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Stay in the game from here. Watch their guard, talk, and be ready to organize.
+5. Stay in it. The next chance may come fast.
 _(pause)_
-6. The bench has your body for a stretch. It does not have your mind. Watch their guard, talk from the sideline, and be ready to organize the next possession.
+6. Watch their guard, talk from the sideline, and be ready to organize when you go back in.
 _(pause)_
+
 ### Basketball · Guard · nervous
 <!-- slug: hm-bb-guard-nervous | file: components/pregame/audio/clips.ts -->
 
@@ -966,55 +1009,53 @@ _(pause)_
 _(pause)_
 6. These nerves are readiness, not a warning. The same energy that feels like fear is the energy that makes you quick. First possession, just get the team into something simple.
 _(pause)_
+
 ### Basketball · Guard · missed-fts
 <!-- slug: hm-bb-guard-missed-fts | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. Tight game, late. You're at the line to ice it. The gym goes quiet. First one is short. Second one clanks off the front rim.
+2. Tight game, late. You're at the line to ice it. The gym goes quiet. First one clanks off the rim.
 _(pause)_
-3. Feel what your body does. Stomach sinks. Ears ringing in the quiet. I'm the guard, I'm supposed to close.
+3. You hear the miss before the ball hits the floor. The thought hits: I was supposed to close that.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Those free throws are over. Get back and guard the next possession.
+5. That shot is over. Reset for the second one. Trust your routine. Trust your stroke.
 _(pause)_
-6. Get back on defense. Next time at the line, same routine. Breathe, eyes on the rim, shoot it the way you always do.
-_(pause)_
-7. Those shots are gone. Trust your routine on the next ones.
-_(pause)_
+
 ### Basketball · Guard · start-slow
 <!-- slug: hm-bb-guard-start-slow | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. First few minutes and nothing's clicking. You're over-dribbling, pounding the ball, can't get anyone a clean look.
+2. First few minutes and nothing is clicking. You are over-dribbling, pounding the ball, and nobody is getting a clean look.
 _(pause)_
-3. Feel what your body does. Grip tightens on the ball. Breath gets short and high. It's on me to fix it.
+3. Your grip tightens on the ball. The thought hits: I can’t get us into anything.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. The slow start is over. Let the offense breathe from this possession.
+5. The slow start is over. Start this possession clean.
 _(pause)_
-6. Stop trying to fix it alone. Give it up, move it, let the offense breathe. The fix is doing less, not more.
+6. Advance it with pace, hit the first action, and make the defense move.
 _(pause)_
+
 ### Basketball · Guard · fall-behind-early
 <!-- slug: hm-bb-guard-fall-behind-early | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. They go on a quick run. You're down early, and you can feel the whole team look to you to stop the bleeding.
+2. They go on a quick run. You’re down early, and you can feel the whole team look to you to stop the bleeding.
 _(pause)_
-3. Feel what your body does. Shoulders climb toward your ears. A weight settles across your back. This whole deficit is on me to fix.
+3. You bring it up and everything feels sped up. The thought hits: We’re in trouble.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That run is over. Lead this possession.
+5. That run is over. Get one stop, then get one score.
 _(pause)_
-6. You don't owe them the whole deficit. You owe them the next possession. One stop. One good look. One at a time.
+6. Bring it up with pace, hit the first action, and get the team one clean look.
 _(pause)_
-7. Speak the truth. The deficit is real. It is not yours alone to carry, and it is not who you are. Reset and go again.
-_(pause)_
+
 ## Hard Moment Clips — Wing
 
 ### Basketball · Wing · turnover
@@ -1024,16 +1065,15 @@ _(pause)_
 _(pause)_
 2. You drive the lane and get stripped. Or you throw the cross-court swing and they jump it. The ball is gone the other way.
 _(pause)_
-3. Feel what your body does. Arms go limp at your sides. Feet slow on the sprint back. I tried to do too much.
+3. Your feet pause for a second. The thought hits: I need to get it back.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That turnover is over. Sprint back, then cut hard and show your hands.
+5. That turnover is over. Sprint back into the play.
 _(pause)_
-6. Sprint back, then get right back into it. Cut hard, show your hands, ask for the ball on the next trip.
+6. Next trip, cut hard, space right, and let the offense find you.
 _(pause)_
-7. Speak the truth. The turnover is real. It is not your identity. Reset and go again.
-_(pause)_
+
 ### Basketball · Wing · missed-shot
 <!-- slug: hm-bb-wing-missed-shot | file: components/pregame/audio/clips.ts -->
 
@@ -1041,33 +1081,31 @@ _(pause)_
 _(pause)_
 2. You catch it open in your spot. Clean look. Cold off the bench, you brick it. Front rim, nothing.
 _(pause)_
-3. Feel what your body does. Hands go cold. A flush of doubt up the back of your neck. I'm bricking, I shouldn't shoot.
+3. Your hands feel tight for a second. You start second-guessing the next one.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That shot is over. Relocate and be ready for the next one.
+5. That shot is over. Relocate and stay ready.
 _(pause)_
-6. Your make doesn't decide your worth, so the miss can't either. Relocate, show your hands, and take the next open one with the same confidence.
+6. Next clean look, show your hands, trust your prep, and let it go.
 _(pause)_
-7. That shot is gone. Stay ready for the next look.
-_(pause)_
+
 ### Basketball · Wing · got-cooked
 <!-- slug: hm-bb-wing-got-cooked | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. You're on their best scorer. You close out, he rips by you, and finishes over the help. The bench reacts. That one's on the highlight.
+2. You’re on their best scorer. You close out, he rips by you, and finishes over the help. The bench reacts. That one’s on the highlight.
 _(pause)_
-3. Feel what your body does. Heat floods your face. Your feet feel stuck to the floor. I'm a liability.
+3. Your feet stop for a second. The thought hits: He went right through me.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That closeout is over. Get your stance back and take the matchup again.
+5. That closeout is over. Take the matchup again.
 _(pause)_
-6. One beat doesn't make you a liability. Get into your stance, take the matchup again, and contest the very next closeout.
+6. Next closeout, arrive under control, cut off the straight line, and contest without flying by.
 _(pause)_
-7. Speak the truth. Getting beat on one closeout is real. It does not make you a liability, and it is not who you are. Reset and go again.
-_(pause)_
+
 ### Basketball · Wing · foul-trouble
 <!-- slug: hm-bb-wing-foul-trouble | file: components/pregame/audio/clips.ts -->
 
@@ -1075,93 +1113,95 @@ _(pause)_
 _(pause)_
 2. Two quick hand-check fouls on a faster guy. The whistle keeps finding you. You feel the bench getting close.
 _(pause)_
-3. Feel what your body does. Arms freeze at your sides. A flicker of panic before every closeout. I can't even guard anymore.
+3. Your arms freeze for a second. Your feet get cautious on the closeout. The thought hits: I can’t guard him without fouling.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Those whistles are over. Defend smarter and stay in front.
+5. Those whistles are over. Guard the angle, not the jersey.
 _(pause)_
-6. Don't back off — defend smarter. Move your feet, stay in front, hands up and back, and contest straight up without reaching.
+6. Close out under control, keep your chest in front, hands back, and contest clean.
 _(pause)_
-7. The whistle happened. Learn from it, then compete the next possession clean.
-_(pause)_
+
 ### Basketball · Wing · coach-yells
 <!-- slug: hm-bb-wing-coach-yells | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. Coach stops the play and barks your name. You didn't close out. You passed up the open one. The whole gym hears it.
+2. Coach stops the play and barks your name. You did not close out. You passed up the open one. The whole gym hears it.
 _(pause)_
-3. Feel what your body does. Ears go hot. Your eyes drop to your shoes. I can't do anything right.
+3. Your ears get hot. Your eyes drop for a second. The thought hits: I played scared.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That correction is over. Take the note and come back to now.
+5. The correction is over. Take the part you need.
 _(pause)_
-6. Coach is correcting the play, not naming you. Take the note, close out hard, and shoot the next open one free.
+6. Next possession, close out hard, stay shot-ready, and take the open one in rhythm.
 _(pause)_
+
 ### Basketball · Wing · benched
 <!-- slug: hm-bb-wing-benched | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. Your shot isn't falling, so coach pulls you. You sit down at the end of the bench and watch the game go on without you.
+2. Your shot is not falling, so coach pulls you. You sit down at the end of the bench and watch the game go on without you.
 _(pause)_
-3. Feel what your body does. A hollow drop behind your ribs. Your gaze fixed on the floor in front of the bench. I'm only as good as my last make.
+3. You sit down hard. Your eyes stay on the floor. The thought hits: I just lost my minutes.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Stay in the game from here. Stay connected, talk, and be ready when your name is called.
+5. Stay in it. The next chance may come fast.
 _(pause)_
-6. The bench has your body for a stretch. It does not have your mind. Stay connected, talk on defense, and be ready when your name is called.
+6. Talk on defense, watch the spacing, and be ready when your name is called.
 _(pause)_
+
 ### Basketball · Wing · nervous
 <!-- slug: hm-bb-wing-nervous | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. You're in warmups against a ranked team. Scouts are in the gym. Your stroke feels tight and you start doubting the shot before tip-off.
+2. You're in warmups against a ranked team. Scouts are in the gym. Your stroke feels tight and you start pressing before tip-off.
 _(pause)_
-3. Feel what your body does. Shallow breath. Hands light. I'm not ready for this.
+3. Your eyes keep finding the scouts. Your shot feels tight. The thought hits: I have to show them what I can do.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Come back to your breath. Come back to your spot.
+5. You do not need to prove it all on the first touch.
 _(pause)_
-6. This is energy, not a warning. Let it sharpen you — get to your spots, hunt your first catch, and let the first shot go free.
+6. Run the floor, space hard, and take the right shot when it comes.
 _(pause)_
+
 ### Basketball · Wing · missed-fts
 <!-- slug: hm-bb-wing-missed-fts | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. You get fouled on a jumper. Two shots, gym goes quiet, all eyes on you. First one rims out. Second one too.
+2. You get fouled on a jumper. Two shots. The gym goes quiet as you step to the line. First one rims out.
 _(pause)_
-3. Feel what your body does. The gym goes silent and loud at once. Your mouth goes dry. Even my free shot won't fall.
+3. You hear the miss before the ball hits the floor. You start thinking about the second one.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Those free throws are over. Trust your routine and keep attacking.
+5. That shot is over. Reset for the second one.
 _(pause)_
-6. Two misses don't break your stroke. Keep attacking, keep getting to the line, and trust your routine on the next ones.
+6. Same routine. Breathe, eyes on the rim, trust your stroke.
 _(pause)_
-7. Those shots are gone. Trust your routine on the next ones.
-_(pause)_
+
 ### Basketball · Wing · start-slow
 <!-- slug: hm-bb-wing-start-slow | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. Your first few touches feel off. The ball isn't finding you and the half is slipping by. You can feel yourself going quiet.
+2. Your first few touches feel off. The ball is not finding you and the half is slipping by. You can feel yourself going quiet.
 _(pause)_
-3. Feel what your body does. Your body goes quiet and small. Energy draining from your legs. I'm invisible out here.
+3. You drift to the corner and stop talking. The thought hits: I’m invisible tonight. I’m just chasing and can’t get started.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. The slow start is over. Get loud and earn the next touch.
+5. The slow start is over. Get yourself back in the game.
 _(pause)_
-6. Don't disappear — get loud. Sprint the lanes, cut hard, call for the ball, and demand your next touch.
+6. Sprint the lanes, cut hard, talk on defense, and stay shot-ready.
 _(pause)_
+
 ### Basketball · Wing · fall-behind-early
 <!-- slug: hm-bb-wing-fall-behind-early | file: components/pregame/audio/clips.ts -->
 
@@ -1169,16 +1209,15 @@ _(pause)_
 _(pause)_
 2. They go on a run and you're down early. You can feel the pull to force a shot, to answer it all by yourself, right now.
 _(pause)_
-3. Feel what your body does. A hot urgency surges through your chest. Your hands itch for the ball. I have to fix this myself.
+3. Your pace speeds up. Your hands want the ball. The thought hits: I have to answer this myself.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That run is over. Stay aggressive inside the offense.
+5. That run is over. Get one stop, then get one score.
 _(pause)_
-6. You don't have to hero-ball this. Stay aggressive inside the offense — move the ball, trust your read, and take the open one in rhythm.
+6. Guard your matchup, sprint to space, and take the rhythm shot when it comes.
 _(pause)_
-7. Speak the truth. The deficit is real. It is not yours to answer alone, and it is not who you are. Reset and go again.
-_(pause)_
+
 ## Hard Moment Clips — Big
 
 ### Basketball · Big · turnover
@@ -1188,16 +1227,15 @@ _(pause)_
 _(pause)_
 2. You roll to the rim and the help steps in. You bowl him over. Whistle. Charge. The ball goes the other way.
 _(pause)_
-3. Feel what your body does. Shoulders curl inward. A heavy thud of frustration in your chest. Keep it out of my hands.
+3. You stop for a second. Your shoulders drop. The thought hits: I forced that.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That turnover is over. Sprint back, protect the paint, and ask for it again.
+5. That turnover is over. Sprint back and protect the paint.
 _(pause)_
-6. You want the ball again. Seal your man, call for it, and roll hard into the next play.
+6. Next trip, roll under control, show your hands, and make the simple play.
 _(pause)_
-7. Speak the truth. The turnover is real. It is not your identity. Reset and go again.
-_(pause)_
+
 ### Basketball · Big · missed-shot
 <!-- slug: hm-bb-big-missed-shot | file: components/pregame/audio/clips.ts -->
 
@@ -1205,16 +1243,15 @@ _(pause)_
 _(pause)_
 2. Wide open under the rim. The layup rolls off. You get the board and the putback rims out too.
 _(pause)_
-3. Feel what your body does. Your hands feel like stone. Heat creeping up from your collar. I can't even finish at the rim.
+3. You stare at the rim for a second. Your hands feel heavy. The thought hits: I should finish those.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
 5. That finish is over. Run the floor and get back to the glass.
 _(pause)_
-6. You go right back at it. Run the rim, demand the ball deep, and crash the offensive glass on the next miss.
+6. Next trip, seal deep, show your hands, and finish through contact.
 _(pause)_
-7. Speak the truth. The miss is real. Finishing is your job, not your worth, and it is not who you are. Reset and go again.
-_(pause)_
+
 ### Basketball · Big · got-cooked
 <!-- slug: hm-bb-big-got-cooked | file: components/pregame/audio/clips.ts -->
 
@@ -1222,16 +1259,15 @@ _(pause)_
 _(pause)_
 2. The switch leaves you on their quick guard. He sizes you up, crosses over, and blows by you to the rim.
 _(pause)_
-3. Feel what your body does. Legs feel slow and rooted. A flush of exposure across your face. They'll hunt me every time.
+3. Your feet feel stuck for a second. The thought hits: They’re going to come at me again.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That switch is over. Get your base back and take the next matchup.
+5. He won that switch. He does not get the next one for free.
 _(pause)_
-6. Next switch, you give him a cushion. Drop, contain, wall him off, and stay vertical at the rim. Make him finish over a wall.
+6. Next switch, give space, angle the drive, and meet him vertical at the rim.
 _(pause)_
-7. Speak the truth. One blow-by is real. It does not mean they own you. Reset and go again.
-_(pause)_
+
 ### Basketball · Big · foul-trouble
 <!-- slug: hm-bb-big-foul-trouble | file: components/pregame/audio/clips.ts -->
 
@@ -1239,82 +1275,79 @@ _(pause)_
 _(pause)_
 2. Two quick fouls and the coach sits you. You come back in scared to touch anybody. You stop contesting. You stop boxing out.
 _(pause)_
-3. Feel what your body does. Your arms go stiff and cautious. A cold hesitation before every box out. I'm the weak link.
+3. Your arms feel stiff and cautious. Your feet hesitate before contact. The thought hits: I’m the weak link.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Those whistles are over. Defend with your feet and stay in the game.
+5. Those whistles are over. You can compete hard and stay disciplined.
 _(pause)_
-6. You can compete hard and stay disciplined at the same time. Stay vertical, hands straight up, beat them to the spot and box out clean. That's how you stay on the floor and help your team.
+6. Defend with your feet, stay vertical, hands straight up, and box out clean.
 _(pause)_
-7. The whistle happened. Learn from it, then compete the next possession clean.
-_(pause)_
+
 ### Basketball · Big · coach-yells
 <!-- slug: hm-bb-big-coach-yells | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. Their five just grabbed another offensive board. The coach turns and barks down the bench, loud enough for everyone. Box out! You're getting pushed around in there.
+2. Their five just grabbed another offensive board. The coach turns and barks down the bench, loud enough for everyone. Box out! You’re getting pushed around in there.
 _(pause)_
-3. Feel what your body does. Your face burns. Shoulders pull down under the words. I'm getting pushed around.
+3. Your shoulders pull down under the words. Your eyes go to the paint. The thought hits: I’m getting pushed around.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That correction is over. Take what helps and answer with your body.
+5. The volume is not the verdict. Take the correction. Leave the shame.
 _(pause)_
-6. Coach is correcting the possession, not naming you. Answer with your body — screen, box out, protect the paint.
+6. Next possession, hit first, box out, and protect the paint.
 _(pause)_
+
 ### Basketball · Big · fouled-out
 <!-- slug: hm-bb-big-fouled-out | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. The whistle blows. Number six. You're done. You walk off, the game still going, and you can't go back in.
+2. The whistle blows. That is your last foul. Coach has to take you out, and the game keeps going without you.
 _(pause)_
-3. Feel what your body does. The walk off the floor feels long and slow. A lump rising in your throat. I let my team down.
+3. You sit down and stare at the court. The thought hits: I can’t help them now.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. The floor is gone, but your voice is still in the game.
+5. You are out of the game, but you are not out of the team.
 _(pause)_
-6. You're still in this game. On your feet on the bench. Loud on defense, talking coverages, lifting the next big up. Your team needs your voice and your presence.
+6. Stay up, talk on defense, call coverages, and help the next big be ready.
 _(pause)_
-7. Speak the truth. Fouling out is real. It cost you the floor — it did not cost you who you are. Your team still needs you. Reset, and go again with your voice.
-_(pause)_
+
 ### Basketball · Big · nervous
 <!-- slug: hm-bb-big-nervous | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. Warmups. You watch their big across the floor. He's taller, he's heavier, and he's already pushing your teammates around.
+2. Warmups. You watch their big across the floor. He is taller, stronger, and already throwing his body around in the paint.
 _(pause)_
-3. Feel what your body does. A buzz of adrenaline through your arms. Pulse loud in your chest. What if I get bullied inside.
+3. You shift in your seat. Your shoulders tense as you watch him move people. The thought hits: This is going to be a long night.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Come back to your breath. Come back to your base.
+5. These nerves are energy, not danger. Let them sharpen you.
 _(pause)_
-6. You get to the spot first. Beat him to your position, get your body low, and hold your ground with your feet and base — not by reaching. Be ready for the contact instead of bracing against it.
+6. First possession, get low, hit first, and hold your ground with your base.
 _(pause)_
-7. Being nervous is energy, not danger. Let it sharpen you. Get low, hold your ground, and meet the first contact with your base.
-_(pause)_
+
 ### Basketball · Big · missed-fts
 <!-- slug: hm-bb-big-missed-fts | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. They grab you off the ball on purpose. Bonus. Two shots. You step to the line and both clang off the rim.
+2. Bonus. Two shots. The gym gets quiet as you step to the line. First one clangs off the rim. Second one does too.
 _(pause)_
-3. Feel what your body does. The hush of the gym presses on you. Your hands go heavy at the line. They fouled me on purpose because I'm the weak link.
+3. You hear the gym react. Your hands feel heavy. The thought hits: I have to make up for that.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. Those free throws are over. Get back, protect the rim, and stay aggressive.
+5. Those free throws are over. Get back and protect the rim.
 _(pause)_
-6. You go right back in. Get back, protect the rim, then seal deep and demand the ball. Compete because it's your job, not to get even.
+6. Next trip, stay aggressive — seal early, show your hands, and finish through contact.
 _(pause)_
-7. Speak the truth. Two misses are real. They are not the weak-link verdict, and they are not who you are. Reset and go again.
-_(pause)_
+
 ### Basketball · Big · start-slow
 <!-- slug: hm-bb-big-start-slow | file: components/pregame/audio/clips.ts -->
 
@@ -1322,31 +1355,31 @@ _(pause)_
 _(pause)_
 2. First few minutes and you're a step late to everything. He beats you to his spot. He beats you to the glass. They score twice inside.
 _(pause)_
-3. Feel what your body does. Your steps feel a half-beat behind. A tightness winding across your shoulders. I'm letting them set the tone in the paint.
+3. You feel late to every hit. The thought hits: He is beating me to the spot.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. The slow start is over. Set the tone from this possession.
+5. The slow start is over. Start this possession clean.
 _(pause)_
-6. You take the tone back. Establish position early, get the first hit on every box out, and set it from here.
+6. Get low early, hit first on the box out, and own the next rebound.
 _(pause)_
+
 ### Basketball · Big · fall-behind-early
 <!-- slug: hm-bb-big-fall-behind-early | file: components/pregame/audio/clips.ts -->
 
 1. Now rehearse the hard moment.
 _(pause)_
-2. Down ten early. They're scoring in the paint and crashing the offensive glass, and you're the one back there. It feels like the rim is yours to hold and it's slipping.
+2. Down ten early. They’re scoring in the paint and crashing the offensive glass, and you’re the one back there. It feels like the rim is yours to hold and it’s slipping.
 _(pause)_
-3. Feel what your body does. The weight of the paint settles on your shoulders. Breath shortening as the lead grows. It's all on me to hold the paint.
+3. You look at the scoreboard, then back at the paint. The thought hits: We’re getting pushed around.
 _(pause)_
 4. Now the reset. Return to your anchor.
 _(pause)_
-5. That run is over. Own this possession.
+5. That run is over. Get one stop, one board, then one score.
 _(pause)_
-6. You don't carry the scoreboard. You own the next possession. Wall up the rim, contest vertical, secure one rebound. Then the next one.
+6. Wall up, contest vertical, and finish the possession with the rebound.
 _(pause)_
-7. Speak the truth. The deficit is real. The paint is your job, not your worth, and it is not who you are. Reset and go again.
-_(pause)_
+
 ## Full-Session Cells (legacy, not used in compositional path)
 
 ### Basketball · Guard · turnover (full session)
