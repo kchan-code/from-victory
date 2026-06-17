@@ -201,12 +201,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That at-bat is over. You hit on the mound, not in the box. Grab your glove and get your head back out there.
+5. That at-bat is over. You win this game on the mound, not in the box.
 _(pause: 2s)_
-6. Next inning, one pitch at a time, find the mitt and trust your stuff.
+6. Next inning, step on the rubber, take the sign, and throw the first one to the mitt with conviction.
 _(pause: 2s)_
-7. Step on the rubber, take the sign, and throw the first one with conviction.
-_(pause: 1.5s)_
 ### Baseball · Pitcher · slump
 <!-- slug: hm-bsb-pitcher-slump | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -214,16 +212,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You take the mound for another start. The ERA is climbing, the last three outings were rough, and before you even throw a pitch you feel it — here we go again.
 _(pause: 1.5s)_
-3. Your grip strangles the ball before you're even set. Your eyes keep drifting to the scoreboard. The thought hits: I've lost it, it's gone. That's the rough stretch talking, not the truth. Let it pass.
+3. Your grip squeezes the ball before you're even set. Your eyes keep drifting to the scoreboard. The thought hits: nothing is working right now.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The slump isn't on the mound with you right now. Right now there's one hitter, one pitch. That's the whole job. Throw it.
+5. The slump isn't on the mound with you right now. There's one hitter, one pitch. That's the whole job.
 _(pause: 2s)_
-6. Stop steering it. Loosen the grip, find the mitt, and let it go — one target, nothing past that.
+6. Loosen the grip, find the mitt, and let it go — one target, nothing past that.
 _(pause: 2s)_
-7. This rough stretch is real, but your worth was never riding on this outing. You're secure before the first pitch and after the last. Throw free.
-_(pause: 1.5s)_
 ### Baseball · Pitcher · big-hit
 <!-- slug: hm-bsb-pitcher-big-hit | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -235,29 +231,25 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. He won that pitch. He does not own the next one. You made him earn it, and that's baseball. When the ball's in your hand again, you compete again.
+5. He won that pitch. He does not own the next one.
 _(pause: 2s)_
-6. Slow it down. You don't have to be perfect — you have to throw one good pitch to the mitt, not the fence.
+6. Slow it down. You don't have to be perfect — throw one good pitch to the mitt, not the fence.
 _(pause: 2s)_
-7. That pitch is over and it does not decide what you're worth. You're secure no matter how the ball carried.
-_(pause: 1.5s)_
 ### Baseball · Pitcher · lose-command
 <!-- slug: hm-bsb-pitcher-lose-command | file: components/pregame/audio/clips-baseball.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You miss with the fastball, then miss again. You start aiming it, guiding it to the mitt, and the next two go to the backstop. Ball four. Bases loaded on walks.
+2. You miss with the fastball, then miss again. The next two get away from you too. Ball four. The walks are stacking up.
 _(pause: 1.5s)_
-3. Your fingers squeeze the seams and your front side flies open. Your eyes lock on the mitt like you can steer the ball there. The thought hits: the zone is gone and I can't find it. Notice it — it's loud, but it's not a fact.
+3. Your fingers squeeze the seams and your front side flies open. Your tempo races between pitches. The thought hits: I can't find the plate right now.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. One inning got away from you tonight — not the arm you've trusted ten thousand times. Tonight, this one pitch. That's all this is.
+5. One wild inning is not the arm you've trusted ten thousand times. Tonight, this one pitch. That's all this is.
 _(pause: 2s)_
-6. Loosen the grip and slow it down. You're not aiming it. Trust your arm and let it travel to the glove — one target, one pitch.
+6. Loosen the grip and slow your tempo. Find the mitt and let one go clean — one target, one pitch.
 _(pause: 2s)_
-7. Your worth doesn't ride on this inning. You were secure before you walked out here and you're secure now, so you can throw free.
-_(pause: 1.5s)_
 ### Baseball · Pitcher · pulled
 <!-- slug: hm-bsb-pitcher-pulled | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -269,12 +261,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Coming out is a call about this game, not about you. It ends at the mound, not in the rest of your night. Sit tall and stay in it with your guys.
+5. Coming out is a call about this game, not about you. It ends at the mound, not the rest of your night.
 _(pause: 2s)_
-6. When the ball's in your hand again, it's one pitch — slow it down, trust your stuff, hit the mitt. Don't grip it trying to make up for tonight.
+6. Sit tall, stay in it with your guys, and read the at-bats so you're sharp when the ball's in your hand again.
 _(pause: 2s)_
-7. Getting pulled stings, but it does not touch your worth. You are secure no matter how tonight goes.
-_(pause: 1.5s)_
 ### Baseball · Pitcher · nervous
 <!-- slug: hm-bsb-pitcher-nervous | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -286,12 +276,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. These nerves are energy, not danger. Let them sharpen you. That count is over.
+5. These nerves are energy, not danger. Let them sharpen you.
 _(pause: 2s)_
-6. Step off, get the sign, slow your tempo, and throw the next one to the mitt.
+6. Step off, get the sign, slow your tempo, and throw one clean pitch to the mitt.
 _(pause: 2s)_
-7. Pick the glove, let one clean pitch go, and trust your stuff.
-_(pause: 1.5s)_
 ### Baseball · Pitcher · hit-batter
 <!-- slug: hm-bsb-pitcher-hit-batter | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -303,12 +291,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That pitch is over. He took his base. Get the sign, get back on the rubber, and throw the next one full.
+5. That pitch is over. He took his base.
 _(pause: 2s)_
-6. Don't aim it — aiming is what misses. Pick your spot, trust your mechanics, and let it go.
+6. Get the sign, get back on the rubber, pick your spot, and let the next one go with conviction, not caution.
 _(pause: 2s)_
-7. Commit to the next pitch and throw it with conviction, not caution.
-_(pause: 1.5s)_
 ### Baseball · Pitcher · start-slow
 <!-- slug: hm-bsb-pitcher-start-slow | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -320,12 +306,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That walk is over. Step off the rubber, get the sign, and throw one good pitch to your spot.
+5. That walk is over. You build this start one pitch at a time, not all at once.
 _(pause: 2s)_
-6. One pitch, your tempo, and trust the mitt where it sets up.
+6. Step off, slow your breathing, get the sign, and throw one good pitch clean to your spot.
 _(pause: 2s)_
-7. Slow your breathing, hit your spot, and let the next one go clean.
-_(pause: 1.5s)_
 ### Baseball · Pitcher · fall-behind-early
 <!-- slug: hm-bsb-pitcher-fall-behind-early | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -337,12 +321,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That inning is over. Get one out, then get one more. You don't get the four runs back with one pitch.
+5. That inning is over. You don't get four runs back with one pitch — get one out, then one more.
 _(pause: 2s)_
-6. Slow your tempo and just compete for this hitter — down in the zone, one pitch, trust the mitt.
+6. Slow your tempo and compete for this hitter — down in the zone, one pitch, trust the mitt.
 _(pause: 2s)_
-7. Step on the rubber, take the sign, and throw the next one with conviction.
-_(pause: 1.5s)_
 ## Hard Moment Clips — Catcher
 
 ### Baseball · Catcher · strikeout
@@ -356,12 +338,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That at-bat is over. You catch the game from behind the plate, not in the box. Get the gear on and run the next half-inning.
+5. That at-bat is over. You catch this game from behind the plate, not in the box.
 _(pause: 2s)_
-6. Don't carry the strikeout into your sequence. One sign, one pitch, work with your guy.
+6. Get the gear on, set a firm target, and frame the first strike clean — one sign, one pitch with your guy.
 _(pause: 2s)_
-7. Set a firm target, frame the first strike clean, and lock back in.
-_(pause: 1.5s)_
 ### Baseball · Catcher · slump
 <!-- slug: hm-bsb-catcher-slump | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -369,16 +349,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You ground into the third inning-ender, 0-for-20 now. You jog out, strap the gear back on, and squat to call the next half-inning with the whole staff on your shoulders.
 _(pause: 1.5s)_
-3. You drop into the crouch and your eyes drift to the on-deck circle instead of the mitt. Your hands feel heavy giving the sign. The thought hits: I'm gone, I've got nothing tonight. That's the slump talking, not the truth.
+3. You drop into the crouch and your eyes drift to the on-deck circle instead of the mitt. Your hands feel heavy giving the sign. The thought hits: I can't find a hit tonight.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The offense isn't your job right now. Put down a sign and catch this pitch.
+5. The offense isn't your job right now — you don't have to carry the whole game.
 _(pause: 2s)_
-6. You don't have to carry the whole game. One pitch, one target, frame it clean — that's the only job behind the plate.
+6. Drop the sign, give him a target, and frame this one clean — one pitch.
 _(pause: 2s)_
-7. Tonight's slump doesn't move what you're worth. You're secure whether the hits fall or not, so catch this game free.
-_(pause: 1.5s)_
 ### Baseball · Catcher · error
 <!-- slug: hm-bsb-catcher-error | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -390,12 +368,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That run is over. Get back behind the plate and call the next pitch.
+5. That run is over. It does not get the next pitch.
 _(pause: 2s)_
-6. Don't try to be perfect on every block. Body in front, chin down, smother the next one.
+6. New ball, fresh sign — body in front, chin down, and smother the next one.
 _(pause: 2s)_
-7. New ball, fresh sign, run the game one pitch at a time.
-_(pause: 1.5s)_
 ### Baseball · Catcher · big-hit
 <!-- slug: hm-bsb-catcher-big-hit | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -407,12 +383,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That pitch is over. Get a new ball, set the target, and call the next one with conviction.
+5. That pitch is over. One call doesn't decide the sequence ahead of you.
 _(pause: 2s)_
-6. Stop hunting the perfect pitch. Trust the sequence, trust your guy, and put down the next sign clean.
+6. New ball, firm target — trust your guy and put down the next sign clean, one pitch at a time.
 _(pause: 2s)_
-7. Reset the count, give a firm target, and call this at-bat one pitch at a time.
-_(pause: 1.5s)_
 ### Baseball · Catcher · lose-command
 <!-- slug: hm-bsb-catcher-lose-command | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -420,15 +394,15 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You drop into the crouch, catch strike three, and go to throw it back to your pitcher. The easy toss. It sails over his head to the screen.
 _(pause: 1.5s)_
-3. Your hand grips the seams too tight and your shoulder locks on the release. Your eyes lock on the target like that will force it there. The thought hits: my throw is gone. Let it show up — you don't have to believe it.
+3. Your hand grips the seams too tight and your shoulder locks on the release. Your eyes flick to the screen where the ball went. The thought hits: my throw is gone tonight.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. One throw got away from you tonight — not the throw you've made ten thousand times. Tonight, this one. That's all this is.
 _(pause: 2s)_
-6. Don't speed up to fix it — speeding up got it loose. Slow down, breathe out, find his glove, and let the next one go easy.
+6. Slow down, breathe out, find his glove, and let the next one go easy.
 _(pause: 2s)_
-7. Your worth was secure before this throw and it's secure after it. Find the glove and let the next one go free.
+7. Your worth was secure before this throw and it's secure after it, so you can throw free.
 _(pause: 1.5s)_
 ### Baseball · Catcher · benched
 <!-- slug: hm-bsb-catcher-benched | file: components/pregame/audio/clips-baseball.ts -->
@@ -441,12 +415,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The bench has your gear for a few innings. It does not have your mind. Stay in it. The next chance may come fast.
+5. The bench has your gear for a few innings. It does not have your mind. The next chance may come fast.
 _(pause: 2s)_
-6. Get on the rail, read every sequence, log what's working, and be ready when your name is called.
+6. Get on the rail, read every sequence, log what's working, and be ready — locked in, not pressing — when your name is called.
 _(pause: 2s)_
-7. Don't press to prove a point — stay locked in and stay ready.
-_(pause: 1.5s)_
 ### Baseball · Catcher · nervous
 <!-- slug: hm-bsb-catcher-nervous | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -458,12 +430,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. These nerves are energy, not danger. Let them sharpen you. That ball is over.
+5. These nerves are energy, not danger. Let them sharpen you.
 _(pause: 2s)_
-6. Soft hands. Let it travel, give him a quiet target, and trust your glove to do the work.
+6. Soft hands. Give him a quiet target, let it travel, and catch the next one clean.
 _(pause: 2s)_
-7. Reset behind the plate and catch the next one clean.
-_(pause: 1.5s)_
 ### Baseball · Catcher · foul-tip
 <!-- slug: hm-bsb-catcher-foul-tip | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -475,12 +445,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That pitch is over. Shake the hand out, get back down, and put down the next sign.
+5. That pitch is over. The sting doesn't catch the next one for you.
 _(pause: 2s)_
-6. Don't catch soft and protective. Give him a firm target, sit behind it, and stick the next strike.
+6. Shake the hand out, get back down, give him a firm target, and stick the next strike with conviction.
 _(pause: 2s)_
-7. Get back in your crouch, set the target, and receive the next one with conviction.
-_(pause: 1.5s)_
 ### Baseball · Catcher · start-slow
 <!-- slug: hm-bsb-catcher-start-slow | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -492,12 +460,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That ball in the dirt is over. New ball, fresh sign, give him a steady target down the middle.
+5. That ball is over. One pitch doesn't set the tempo for the night.
 _(pause: 2s)_
-6. Soft hands. Stop reaching — let the ball come and receive it quiet. One pitch, frame it clean.
+6. New ball, fresh sign, soft hands — let it come, receive it quiet, and frame one clean to settle him.
 _(pause: 2s)_
-7. Reset your target and catch the next one to settle him.
-_(pause: 1.5s)_
 ### Baseball · Catcher · fall-behind-early
 <!-- slug: hm-bsb-catcher-fall-behind-early | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -509,12 +475,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That run is behind you. Get one out, then get one more. Step out, call time, and walk it to the mound.
+5. That deficit is not yours to fix on one pitch. Get one out, then get one more.
 _(pause: 2s)_
-6. Slow it down. You don't have to fix the score. Give him one target, one pitch, and trust your glove to hold it.
+6. Call time, walk it to the mound, give him one target — one pitch at a time, with conviction.
 _(pause: 2s)_
-7. Steady him one pitch at a time and call the next one with conviction.
-_(pause: 1.5s)_
 ## Hard Moment Clips — Infield
 
 ### Baseball · Infield · strikeout
@@ -528,29 +492,25 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That at-bat is over. You win the next play in the field, not in the box. Glove on, feet moving, be ready.
+5. That at-bat is over. You win the next play in the field, not in the box.
 _(pause: 2s)_
-6. Don't carry the bat into the field. Reset between the lines, read the hop, and trust your hands on the next ball.
+6. Glove on, get on your toes, read the hop, and attack the next ground ball with your hands.
 _(pause: 2s)_
-7. Get on your toes for the pitch, read the bat, and attack the next ground ball.
-_(pause: 1.5s)_
 ### Baseball · Infield · slump
 <!-- slug: hm-bsb-infield-slump | file: components/pregame/audio/clips-baseball.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You step in 0-for-20. You barber a fastball you should crush, but you roll over it and beat it into the ground, right at the shortstop. Another loud out.
+2. You step in 0-for-20. You get a fastball you should crush, but you roll over it and beat it into the ground, right at the shortstop. Another loud out.
 _(pause: 1.5s)_
-3. Your hands choke up hard on the knob and your front shoulder flies open early. The thought hits: I'm lost, I can't hit anymore. That's the slump talking, not the truth. Let it pass.
+3. Your hands choke up hard on the knob and your front shoulder flies open early. The thought hits: I can't find a hit right now.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. One at-bat is not a verdict. It's this stretch, not forever, and not who you are.
+5. One at-bat is not a verdict. It's this stretch, not forever.
 _(pause: 2s)_
-6. Step out, one slow breath, step back in. This pitch only: stay inside the ball, shorten up, drive a strike back up the middle.
+6. Step out, one slow breath, step back in — stay inside the ball, shorten up, and drive one good pitch back up the middle.
 _(pause: 2s)_
-7. The slump is real, but your worth was settled before this at-bat and it holds after it, whatever the scoreboard says. Loosen the grip and hunt one good pitch.
-_(pause: 1.5s)_
 ### Baseball · Infield · error
 <!-- slug: hm-bsb-infield-error | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -562,12 +522,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That error is over. Get your feet ready and want the next ball hit to you.
+5. That error is over. The board can't field the next ball — you can.
 _(pause: 2s)_
-6. Don't play scared of the next one. Stay low, charge it, work through the ball, and trust your hands.
+6. Want the next one hit to you: glove out front, soft hands, work through the ball, and finish the throw.
 _(pause: 2s)_
-7. Next grounder, glove out front, soft hands, clean exchange, and finish the throw.
-_(pause: 1.5s)_
 ### Baseball · Infield · big-hit
 <!-- slug: hm-bsb-infield-big-hit | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -581,10 +539,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. He hit that one through. He does not own the next ball off the bat.
 _(pause: 2s)_
-6. Stop replaying the dive. Get back on your toes, get low, and expect the next one hit right at you.
+6. Stop replaying the dive. Get on your toes, get low, trust your first step, and expect the next one right at you.
 _(pause: 2s)_
-7. Next pitch, move your feet, trust your first step, and play it clean.
-_(pause: 1.5s)_
 ### Baseball · Infield · lose-command
 <!-- slug: hm-bsb-infield-lose-command | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -592,15 +548,15 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You field a routine grounder and set to throw to first. The throw you've made ten thousand times sails wide, or dies in the dirt halfway there.
 _(pause: 1.5s)_
-3. Your grip squeezes the seams and the shoulder locks before you let go. The thought hits: my hands won't work right now. That's the feeling in this moment, not a fact about you.
+3. Your grip squeezes the seams and the shoulder locks before you let go. The thought hits: my hands won't work right now.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. That throw doesn't get the next one. One off-line throw tonight is just that — a throw.
 _(pause: 2s)_
-6. Slow it down. Loosen the grip, pick a small target on the chest, and throw through it instead of aiming at it.
+6. Slow it down. Loosen the grip, pick a small target on the chest, and throw through it.
 _(pause: 2s)_
-7. Speak the truth: one bad throw does not change who you are, and your worth was never riding on this throw. Field the next one clean and make the simple play to first.
+7. Your worth was never riding on this throw. Field the next one clean and make the simple play to first.
 _(pause: 1.5s)_
 ### Baseball · Infield · benched
 <!-- slug: hm-bsb-infield-benched | file: components/pregame/audio/clips-baseball.ts -->
@@ -609,16 +565,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You boot the ground ball, or you go down again at the plate. An inning later, coach reads a new name at your spot. You walk to the bench and watch someone else take the field.
 _(pause: 1.5s)_
-3. Your face goes hot and your eyes stay down on the dirt. The thought hits: I lost my spot, I'm done here. That's a loud thought after a hard inning, not a fact.
+3. Your face goes hot and your eyes stay down on the dirt. The thought hits: I lost my spot, I'm done here.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The bench has your body for a couple innings. It does not have your mind.
+5. The bench has your body for a couple innings. It does not have your mind. The next chance may come fast.
 _(pause: 2s)_
 6. Stay loud on the rail, read the hitters, talk the situation out loud, and be the first one up when they need you.
 _(pause: 2s)_
-7. Speak the truth: your spot can be lost and earned back, but your worth was never on that line. You compete from a victory that is already yours, win or sit.
-_(pause: 1.5s)_
 ### Baseball · Infield · nervous
 <!-- slug: hm-bsb-infield-nervous | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -632,10 +586,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. These nerves are energy, not danger. Let them sharpen you.
 _(pause: 2s)_
-6. Get back in your ready position and want the next one hit to you.
+6. Get in your ready position and want the next one: soft hands, stay low, charge it, field it out front, not on your heels.
 _(pause: 2s)_
-7. Next grounder, soft hands, stay low, charge it, and field it out front instead of waiting on your heels.
-_(pause: 1.5s)_
 ### Baseball · Infield · hbp
 <!-- slug: hm-bsb-infield-hbp | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -647,12 +599,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That pitch is over, and the base is yours. Drop the bat, take it, and run.
+5. That pitch is over, and the base is yours. The sting doesn't change how you field.
 _(pause: 2s)_
-6. Shake the arm out and loosen the hands. The ball off you doesn't change how you field.
+6. Shake the arm out, take your base, and on the next grounder: soft hands, stay low, play it clean.
 _(pause: 2s)_
-7. Next ground ball, soft hands, stay low, and play it clean.
-_(pause: 1.5s)_
 ### Baseball · Infield · start-slow
 <!-- slug: hm-bsb-infield-start-slow | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -666,10 +616,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. One slow first step is over. It doesn't set the tempo for the night.
 _(pause: 2s)_
-6. Don't press to make it up. Stay low, work through the ball, and let the next hop come to you.
+6. Don't press to make it up. Feet moving early, glove out front, work through the ball, and field it clean.
 _(pause: 2s)_
-7. Next grounder, get your feet moving early, glove out front, and field it clean.
-_(pause: 1.5s)_
 ### Baseball · Infield · fall-behind-early
 <!-- slug: hm-bsb-infield-fall-behind-early | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -683,10 +631,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That deficit is not yours to answer on one play. Get one clean out, then the next.
 _(pause: 2s)_
-6. Slow it down. Reset your feet, stay back, and field the next one through.
+6. Slow it down. Reset your feet, let the next one come to you, work through the ball, and make the routine throw.
 _(pause: 2s)_
-7. Next grounder, let it come to you, work through the ball, and make the routine throw.
-_(pause: 1.5s)_
 ## Hard Moment Clips — Outfield
 
 ### Baseball · Outfield · strikeout
@@ -702,10 +648,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That at-bat is over. You play defense now, and that's the only job out here.
 _(pause: 2s)_
-6. Don't drift. Read the hitter, get on your toes before the pitch, and expect the ball off the bat.
+6. Read the hitter, get on your toes before the pitch, take the clean route, and hit your cutoff.
 _(pause: 2s)_
-7. Every pitch, move your feet, take the clean route, and hit your cutoff.
-_(pause: 1.5s)_
 ### Baseball · Outfield · slump
 <!-- slug: hm-bsb-outfield-slump | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -713,22 +657,20 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You are 0-for-20 and pressing. The pitcher spins one low and away, off the plate, and you chase it — out in front, rolling it over to short. The long walk back to the dugout.
 _(pause: 1.5s)_
-3. Your hands grip tighter and your shoulders climb up by your ears. The thought hits: I'm just an out now. That's the slump talking, not the truth.
+3. Your hands grip tighter and your shoulders climb up by your ears. The thought hits: I'm making the same out every time.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The slump is tonight, not forever, and your name doesn't change with your line.
+5. The slump is tonight, not forever.
 _(pause: 2s)_
-6. Stop pressing. You don't fix twenty swings in one. Shrink the zone, let the ball travel, and hunt one good pitch.
+6. Stop pressing — you don't fix twenty swings in one. Shrink the zone, let the ball travel, and hunt one good pitch.
 _(pause: 2s)_
-7. Take your walk if it's there, then go run one down in the gap. Your worth was settled before this at-bat and it holds after it.
-_(pause: 1.5s)_
 ### Baseball · Outfield · error
 <!-- slug: hm-bsb-outfield-error | file: components/pregame/audio/clips-baseball.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You drift back on a routine fly to the gap. You lose it in the lights for a half-second, get your glove up late, and it clanks off the heel and drops. The runner is already rounding second.
+2. You drift back on a routine fly to the gap. You get your glove up late, and it clanks off the heel and drops. The runner is already rounding second.
 _(pause: 1.5s)_
 3. Your glove hand goes stiff and your feet stop moving as it falls. The thought hits: how do you miss that.
 _(pause: 2s)_
@@ -736,10 +678,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That ball dropped. It does not catch the next one for you.
 _(pause: 2s)_
-6. Don't play scared out there. First step in, trust your read, and let your feet take you to the ball.
+6. First step in, trust your read, let your feet take you to the ball, and hit your cutoff clean.
 _(pause: 2s)_
-7. Next ball, hit your cutoff, get back to depth, and read it clean off the bat.
-_(pause: 1.5s)_
 ### Baseball · Outfield · big-hit
 <!-- slug: hm-bsb-outfield-big-hit | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -753,10 +693,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. One bad read is over. The next ball off the bat is a fresh read.
 _(pause: 2s)_
-6. Trust your break going back, find the wall early, and hit your cutoff.
+6. Reset your depth, get on your toes, trust your break going back, and hit your cutoff.
 _(pause: 2s)_
-7. Next pitch, reset your depth, get on your toes, and play it off the bat.
-_(pause: 1.5s)_
 ### Baseball · Outfield · lose-command
 <!-- slug: hm-bsb-outfield-lose-command | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -764,16 +702,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You run down the ball in the gap and come up throwing. The throw sails high over the cutoff man, and the runner reads it and takes the extra base.
 _(pause: 1.5s)_
-3. Your grip squeezes the seams and the shoulder tightens before you release. The thought hits: I can't trust my arm when it matters. That's the feeling right now, not a fact about you.
+3. Your grip squeezes the seams and you rush the release. The thought hits: that throw got away from me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. One throw over the cutoff doesn't get the next one. It's a throw, not a verdict.
 _(pause: 2s)_
-6. Slow it down. Next ball, throw on a line through the cutoff man and let the relay do the work.
+6. Slow it down. Back up the play, then on the next ball, throw on a line through the cutoff and let the relay do the work.
 _(pause: 2s)_
-7. Speak the truth: a high throw does not change who you are, and your worth was never riding on your arm. Back up the play, then get behind the next ball.
-_(pause: 1.5s)_
 ### Baseball · Outfield · benched
 <!-- slug: hm-bsb-outfield-benched | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -785,12 +721,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The bench has your body for two innings. It does not have your mind.
+5. The bench has your body for two innings. It does not have your mind. The next chance may come fast.
 _(pause: 2s)_
-6. Don't press to earn it back. Read the count, talk up the next guy, and be ready.
+6. Read the count, talk up the next guy, and be ready — first read, clean route, hit your cutoff when you're back out there.
 _(pause: 2s)_
-7. When you get back out there, trust your first read, take the clean route, and hit your cutoff.
-_(pause: 1.5s)_
 ### Baseball · Outfield · nervous
 <!-- slug: hm-bsb-outfield-nervous | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -804,10 +738,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. These nerves are energy, not danger. Let them sharpen the read.
 _(pause: 2s)_
-6. Stop drifting. Read it off the bat, trust your first step, and run.
+6. Read it off the bat, trust your first step, get behind it, and hit your cutoff.
 _(pause: 2s)_
-7. Next ball, get behind it, take the clean route, and hit your cutoff.
-_(pause: 1.5s)_
 ### Baseball · Outfield · hbp
 <!-- slug: hm-bsb-outfield-hbp | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -819,12 +751,10 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That pitch is over, and the base is yours. Shake out the arm and take it.
+5. That pitch is over, and the base is yours. The sting doesn't carry out to the grass.
 _(pause: 2s)_
-6. Don't carry the sting out to the grass. Settle the breath, get your lead, and put your eyes back on the ball.
+6. Shake out the arm, settle the breath, and on the next ball in the gap, take the clean route and hit your cutoff.
 _(pause: 2s)_
-7. Next ball in the gap, get behind it, take the clean route, and hit your cutoff.
-_(pause: 1.5s)_
 ### Baseball · Outfield · start-slow
 <!-- slug: hm-bsb-outfield-start-slow | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -838,10 +768,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. One late read is over. It doesn't set the tempo for the night.
 _(pause: 2s)_
-6. Stop pressing. First step back, trust your read, and get behind the ball early.
+6. Get on your toes before the pitch, first step back, trust your read, take the clean route, and hit your cutoff.
 _(pause: 2s)_
-7. Next ball, get on your toes before the pitch, take the clean route, and hit your cutoff.
-_(pause: 1.5s)_
 ### Baseball · Outfield · fall-behind-early
 <!-- slug: hm-bsb-outfield-fall-behind-early | file: components/pregame/audio/clips-baseball.ts -->
 
@@ -855,7 +783,5 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That deficit is not yours to answer on one play. Get the sure out, then the next.
 _(pause: 2s)_
-6. Slow it down. Stay back, field it clean, and trust your throw.
+6. Slow it down. Get behind the next ball, field it clean, take the sure out, and hit the cutoff man.
 _(pause: 2s)_
-7. Next ball, get behind it, take the sure out, and hit the cutoff man.
-_(pause: 1.5s)_
