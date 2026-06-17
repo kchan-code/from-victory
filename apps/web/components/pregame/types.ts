@@ -69,10 +69,11 @@ export type PregameState = {
   cueWord: string;
   prayerStyle: PrayerStyle;
   /**
-   * FV-227 — athlete-chosen music bed id (see BedId in audio/beds.ts for the
-   * full six-option catalog), or null for silence. Persisted to localStorage
-   * at the device level (fv_pregame_bed),
-   * independent of the session cache. Default is null (silence).
+   * FV-227 music bed id, or null for silence. The athlete-facing picker (the
+   * "Sound" setup step) was removed in FV-306 ("too many inputs"), so nothing
+   * sets this anymore — it stays null and every session plays voice-only. The
+   * field and the dormant mix path (useClipPlayer + audio/beds.ts) are kept on
+   * purpose (parked, not deleted) so beds can be re-enabled without a rebuild.
    */
   bedId: string | null;
   audioCompleted: boolean;
@@ -425,16 +426,6 @@ export const FLOW: FlowStep[] = [
     id: "prayerStyle",
     label: "Close",
     required: (s) => !!s.prayerStyle,
-  },
-  {
-    // FV-227 — music bed picker. bedId=null means silence (the default), which
-    // is always a valid selection. required() is always true so the bottom-bar
-    // Continue is never blocked — the athlete can always continue without
-    // picking a bed (silence is pre-selected). Adjacent to prayerStyle because
-    // both are "how do you want to close/open the audio experience" setup choices.
-    id: "soundBed",
-    label: "Sound",
-    required: () => true,
   },
   {
     id: "review",

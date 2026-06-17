@@ -8,13 +8,13 @@
 // component level:
 //
 //   1. saved session → button shown → breath → "Already settled" + CTA →
-//      lands on the AUDIO step (Step 12), never on Today's Focus
+//      lands on the AUDIO step (Step 11), never on Today's Focus
 //   2. a saved session whose `need` no longer exists in NEED_VERSE (stale
 //      rename / poisoned storage) shows NO restore button — silent fallback
 //      to full setup (review finding 1b: NEED_VERSE[need] is dereferenced
 //      unguarded on the audio + card screens)
 //   3. full-setup path is unaffected: BEGIN still goes breath → Today's Focus
-//   4. re-run seeds bedId from localStorage preference, not from stale state
+//   4. re-run plays silence — the removed "Sound" preference (FV-306) is never read
 
 import "@testing-library/jest-dom/vitest";
 
@@ -112,7 +112,7 @@ describe("PregameFlow saved-session restore (FV-223)", () => {
     fireEvent.click(screen.getByRole("button", { name: /set my focus/i }));
 
     // FIXED BEHAVIOUR: we land on the audio session step…
-    expect(screen.getByText(/Step 12 · Guided Session/i)).toBeInTheDocument();
+    expect(screen.getByText(/Step 11 · Guided Session/i)).toBeInTheDocument();
     // …and never on the Today's Focus setup screen.
     expect(screen.queryByText(/Step 02/i)).not.toBeInTheDocument();
   });
@@ -141,18 +141,17 @@ describe("PregameFlow saved-session restore (FV-223)", () => {
     fireEvent.click(screen.getByRole("button", { name: /set my focus/i }));
 
     // Sequential flow: next is the Today's Focus setup screen, NOT audio.
-    expect(screen.queryByText(/Step 12 · Guided Session/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Step 11 · Guided Session/i)).not.toBeInTheDocument();
   });
 
-  it("re-run seeds bedId from localStorage device preference (FV-227)", async () => {
-    // Regression: beginFromSaved previously seeded bedId: data.bedId which was
-    // always null on the start screen — the athlete's stored bed preference was
-    // silently dropped. Seed a stored preference, trigger re-run, and confirm
-    // useClipPlayer receives it via AudioSessionScreen.
+  it("re-run plays silence even if a stale bed preference is stored (FV-306)", async () => {
+    // FV-306 removed the "Sound" picker. The device bed preference is no longer
+    // read, so even a leftover fv_pregame_bed value from before the removal must
+    // NOT resurrect a music bed — every session, rerun included, is voice-only.
     const mockedHook = vi.mocked(useClipPlayer);
     mockedHook.mockClear();
 
-    // Store "pulse" as the device bed preference.
+    // Simulate a stale preference written by the old picker.
     localStorageStub.setItem(BED_PREF_KEY, "pulse");
 
     seedSavedSession();
@@ -160,17 +159,17 @@ describe("PregameFlow saved-session restore (FV-223)", () => {
       render(<PregameFlow athleteFirstName="Alex" sport="hockey" />);
     });
 
-    // Trigger the re-run path (skips sound screen).
+    // Trigger the re-run path.
     fireEvent.click(screen.getByTestId("run-last-time-btn"));
     fireEvent.click(screen.getByRole("button", { name: /already settled/i }));
     fireEvent.click(screen.getByRole("button", { name: /set my focus/i }));
 
-    // The audio step must have rendered (Step 12 is visible).
-    expect(screen.getByText(/Step 12 · Guided Session/i)).toBeInTheDocument();
+    // The audio step must have rendered.
+    expect(screen.getByText(/Step 11 · Guided Session/i)).toBeInTheDocument();
 
-    // useClipPlayer must have been called with bedId: "pulse" — the preference
-    // loaded from localStorage, not null from INITIAL_STATE.
+    // useClipPlayer must have been called with bedId null — the stale "pulse"
+    // preference is ignored now that the picker is gone.
     const lastCall = mockedHook.mock.calls.at(-1)?.[0];
-    expect(lastCall?.bedId).toBe("pulse");
+    expect(lastCall?.bedId).toBeNull();
   });
 });

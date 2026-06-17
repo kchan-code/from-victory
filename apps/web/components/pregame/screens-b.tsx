@@ -33,8 +33,6 @@ import { positivePlayTitle } from "./positive-plays";
 import { verseForCueWord } from "./cue-word-verses";
 import type { AudioTimeline, Phase } from "./audio/types";
 import { findActivePhase, type AssembledTimeline } from "./audio-playlist";
-import { BEDS } from "./audio/beds";
-import { readBedPreference, writeBedPreference } from "./audio/bed-preference";
 import { useClipPlayer } from "./useClipPlayer";
 
 type SetFn = <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
@@ -215,105 +213,6 @@ export function CueWordScreen({
           </div>
         </div>
       )}
-    </ScreenBody>
-  );
-}
-
-// ─── SCREEN 7a ─── Sound bed picker (FV-227)
-// Lets the athlete choose an ambient music bed to play under the guided session:
-//   Still         — warm sustained tone, near-static, for calm focus.
-//   Pulse         — same warmth with a slow rhythmic element, like a settled heartbeat.
-//   Rise          — starts sparse and gradually layers in.
-//   Rain          — soft rainfall, warm noise bed with the speech band carved out.
-//   Stream        — burbling water, drifting resonant peaks.
-//   Silence       — default, no music (same behaviour as before FV-227).
-//
-// Design decisions:
-//   - "Silence" is the default and is pre-selected — one tap to change, one
-//     tap to revert. Athletes who ignore this screen get the same experience
-//     as before.
-//   - Follows the exact SelectCard pattern used by PrayerStyleScreen (same
-//     visual language, same quiet-option-row placement, same radio group).
-//   - Preference is persisted to localStorage at the device level (fv_pregame_bed)
-//     and loaded on mount so the last choice is remembered across sessions.
-//     NOT part of the session cache — it's a device-level ambient preference,
-//     not a per-session training setup choice.
-//   - Writing localStorage on every tap is safe: the bed is always a known
-//     short string, never PII.
-export function SoundBedScreen({
-  state,
-  set,
-}: {
-  state: PregameState;
-  set: SetFn;
-}) {
-  // Load the persisted preference once on mount and seed the flow state.
-  // useEffect so localStorage is only touched client-side (SSR guard).
-  useEffect(() => {
-    const stored = readBedPreference();
-    // Only write back if the stored value differs from the current state to
-    // avoid a spurious re-render on the very first mount when both are null.
-    if (stored !== state.bedId) {
-      set("bedId", stored);
-    }
-    // Run once on mount only — we own the seeding; subsequent changes come
-    // from the tap handler below.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleSelect = useCallback(
-    (bedId: string | null) => {
-      set("bedId", bedId);
-      writeBedPreference(bedId);
-    },
-    [set],
-  );
-
-  // The Silence option — always shown at the bottom, visually quieter.
-  const SILENCE_OPTION = {
-    id: null as string | null,
-    label: "Silence",
-    description: "No music — voice only.",
-  } as const;
-
-  const isSelected = (id: string | null) => state.bedId === id;
-
-  return (
-    <ScreenBody>
-      <SectionLabel>Step 10 · Sound</SectionLabel>
-      <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
-        What do you want to hear?
-      </h1>
-      <p className="mb-5 font-body text-[14px] text-cream/50">
-        A very low layer of white noise under the voice, or nothing at all. Your call.
-      </p>
-
-      {/* Music bed options */}
-      <div
-        className="flex flex-col gap-2"
-        role="radiogroup"
-        aria-label="Session sound"
-      >
-        {BEDS.map(({ id, label, description }) => (
-          <SelectCard
-            key={id}
-            label={label}
-            sub={description}
-            selected={isSelected(id)}
-            onClick={() => handleSelect(id)}
-          />
-        ))}
-
-        {/* Silence row — visually consistent with the bed rows but placed last
-            as the "quiet" choice so the three music options appear first and the
-            default selection (silence) reads as the opt-out, not the default. */}
-        <SelectCard
-          label={SILENCE_OPTION.label}
-          sub={SILENCE_OPTION.description}
-          selected={isSelected(null)}
-          onClick={() => handleSelect(null)}
-        />
-      </div>
     </ScreenBody>
   );
 }
@@ -523,11 +422,6 @@ export function ReviewScreen({
     };
   }, []);
 
-  // FV-227: resolve a display label for the chosen bed.
-  const bedDisplayLabel = state.bedId
-    ? (BEDS.find((b) => b.id === state.bedId)?.label ?? state.bedId)
-    : "Silence";
-
   const rows: Array<{ label: string; value: string }> = [
     { label: "Today's focus", value: state.need ?? "—" },
     { label: "Position", value: state.role ?? "—" },
@@ -547,13 +441,11 @@ export function ReviewScreen({
     { label: "Self-talk", value: state.selfTalk ?? "—" },
     { label: "Cue word", value: state.cueWord || DEFAULTS.cueWord },
     { label: "Close", value: closeLabel },
-    // FV-227 — sound bed selection shown last; Silence is the default.
-    { label: "Sound", value: bedDisplayLabel },
   ];
 
   return (
     <ScreenBody>
-      <SectionLabel>Step 11 · Review</SectionLabel>
+      <SectionLabel>Step 10 · Review</SectionLabel>
       <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
         Here&rsquo;s what we&rsquo;ll work with.
       </h1>
@@ -1388,7 +1280,7 @@ export function AudioSessionScreen({
         className="select-none"
         style={{ touchAction: "manipulation" }}
       >
-        <SectionLabel>Step 12 · Guided Session</SectionLabel>
+        <SectionLabel>Step 11 · Guided Session</SectionLabel>
       </div>
 
       {debug && (
