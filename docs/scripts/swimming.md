@@ -225,27 +225,23 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. He won that touch. He does not own the next one. The walk back behind the blocks is your reset.
 _(pause: 2s)_
-6. A touch is won before the wall, not at it. Next race, hold your stroke long and strong into the finish, and time it so you attack the wall instead of gliding into it.
+6. A touch is won before the wall, not at it. Next race, hold your stroke long into the finish, and time it so you attack the wall instead of gliding into it.
 _(pause: 2s)_
-7. The board reports a swim, not a swimmer. You stood secure before this race and you stand secure after it.
-_(pause: 1.5s)_
 ### Swimming · Stroke · false-start
 <!-- slug: hm-swm-stroke-false-start | file: components/pregame/audio/clips-swimming.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. On the blocks for the hundred breast, your best event, keyed up and ready. You rock forward a hair early. The whistle blows, the official points, and just like that your race is scratched off the sheet before it ever started.
+2. On the blocks for the hundred breast, your best event, keyed up and ready. You rock forward a hair early — but there's no recall now, so you swim the whole race, and only after you touch does the official's flag go up and the DQ land.
 _(pause: 1.5s)_
-3. Your foot is already coming off the block as the whistle catches you, and heat floods your face in front of the whole deck. The thought hits: all that work, gone, and I never even swam.
+3. You feel that you went a beat early off the start, and the rest of the race you're half-waiting for the call. The thought hits: I swam it for nothing, I jumped the start.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The whistle happened. Learn from it, then compete clean. That scratch is final for this event, and it stays in this event — it doesn't get your next race.
+5. The early start happened. Learn from it, then compete clean. That call is final for this event, and it stays in this event — it doesn't get your next race.
 _(pause: 2s)_
-6. Don't carry the early start onto your next block by waiting a beat to make up for it. Set, still, eyes down, and go on the horn — react to the sound, not to the fear of jumping it.
+6. Don't overcorrect by sitting and waiting on the next block. Set, still, eyes down, and move on the horn — react to the sound, not to the fear of jumping it.
 _(pause: 2s)_
-7. A scratched race is one moment on a sheet, not a verdict on you. You're secure with no time on the board at all.
-_(pause: 1.5s)_
 ### Swimming · Stroke · dq
 <!-- slug: hm-swm-stroke-dq | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -257,29 +253,25 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Take the correction. Leave the grudge. That swim is erased on the sheet — and it stays on the sheet, not on you.
+5. Take the correction. Leave the grudge. That swim is erased on the sheet, not on you.
 _(pause: 2s)_
 6. On your next turn, square both hands to the wall and count your kicks off the break — legal first, fast second. Clean technique is how the time stays on the board.
 _(pause: 2s)_
-7. An erased time still happened in your body, and a swim wiped from a sheet can't name a swimmer. You're secure.
-_(pause: 1.5s)_
 ### Swimming · Stroke · plateau
 <!-- slug: hm-swm-stroke-plateau | file: components/pregame/audio/clips-swimming.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. Your hundred back has sat at the same time for two seasons. The stroke feels good. The work is there. And the clock keeps handing you the same number, meet after meet, no matter what you pour into it.
+2. Your hundred back has sat at the same time for a couple of seasons. The stroke feels good. The work is there. And the clock keeps handing you the same number, meet after meet.
 _(pause: 1.5s)_
-3. Your shoulders sink as you read the board and a tiredness sits behind your eyes. The thought hits: maybe this is just as far as I go.
+3. Your eyes flick from the board up to the backstroke flags and back. The thought hits: I'm stuck, the number won't move.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. A plateau is real, and it is not the end of your story. Times break loose in jumps, not inches — every swimmer hits this wall.
+5. A plateau is a flat stretch, not the end of the road. Times sit, then break loose in jumps — every swimmer hits one of these.
 _(pause: 2s)_
-6. This isn't yours to crack alone tonight, and not on this block. Bring the stuck time to your coach this week — let them look at your walls, your tempo, your training — and let this race just be one honest swim.
+6. This isn't yours to crack alone tonight, or on this block. Bring the stuck time to your coach this week — let them look at your walls, your tempo, your training — and let this race just be one honest swim.
 _(pause: 2s)_
-7. The clock reports a time, not a ceiling. Your worth was never the number on the board.
-_(pause: 1.5s)_
 ### Swimming · Stroke · bad-turn
 <!-- slug: hm-swm-stroke-bad-turn | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -295,8 +287,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Next race, attack the wall — drive your feet down, push off tight and streamlined, and let your first two strokes set the tempo instead of chasing it.
 _(pause: 2s)_
-7. The clock reports a swim, it cannot name a swimmer. You're the same whether the turn was sharp or slow.
-_(pause: 1.5s)_
 ### Swimming · Stroke · mind-wanders
 <!-- slug: hm-swm-stroke-mind-wanders | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -312,8 +302,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Next race, when the burn comes, hold your stroke long — full pull, hands clearing the water — and keep your rhythm instead of chopping it short.
 _(pause: 2s)_
-7. The clock reports a swim, it cannot name a swimmer. You're secure however the last twenty-five came.
-_(pause: 1.5s)_
 ### Swimming · Stroke · goggles
 <!-- slug: hm-swm-stroke-goggles | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -327,10 +315,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. A slipped goggle is gear, not you. That race is over and the goggles are off now.
 _(pause: 2s)_
-6. Next time, snug them tight under your cap and trust your stroke count into the wall — you've felt your way home a thousand times in practice. You can swim by feel.
+6. Next time, snug them tight under your cap and trust your stroke count into the wall — you've felt your way home a thousand times in practice. Swim by feel.
 _(pause: 2s)_
-7. The clock reports a swim, it cannot name a swimmer, and a gear slip doesn't either. You're secure.
-_(pause: 1.5s)_
 ### Swimming · Stroke · slow-heat
 <!-- slug: hm-swm-stroke-slow-heat | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -344,10 +330,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. The seed sheet is just a starting point, not a sentence. Times don't care which heat you swim them in.
 _(pause: 2s)_
-6. Race the clock, not the bodies. Lock onto your own splits, hold your stroke long and strong, and chase the number you came for. A best time from a slow heat counts exactly the same.
+6. Race the clock, not the bodies. Lock onto your own splits, hold your stroke long and strong, and chase the number you came for — a best time from a slow heat counts exactly the same.
 _(pause: 2s)_
-7. The clock reports a swim, it cannot name a swimmer, and a seed line can't either. You're secure.
-_(pause: 1.5s)_
 ### Swimming · Stroke · ready-room
 <!-- slug: hm-swm-stroke-ready-room | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -363,8 +347,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. You can't will the feel into your hands standing here, so stop auditing it. Trust your start, hold your stroke long off the dive, and let the feel come to you the way it always has, stroke by stroke.
 _(pause: 2s)_
-7. The feel comes and goes; your worth never did. Step up, react to the horn, and go.
-_(pause: 1.5s)_
 ### Swimming · Stroke · go-out-slow
 <!-- slug: hm-swm-stroke-go-out-slow | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -372,16 +354,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. In warm-up the stroke wasn't there — the catch felt empty, your hands slipping through the water with nothing to grab. Now you're on the blocks, not knowing which version of your stroke shows up when you dive.
 _(pause: 1.5s)_
-3. Your hands feel far away and unsure on the start, and your stomach knots. The thought hits: my stroke left me on the day it counts.
+3. Your hands feel far away and unsure on the start, and your stomach knots. The thought hits: the feel just isn't there yet today.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Warm-up was warm-up. An empty catch in warm-up is information, not a forecast for the race.
+5. Warm-up was warm-up. An empty catch there is information, not a forecast for the race.
 _(pause: 2s)_
 6. You don't have to fix your stroke standing here. Off the dive, reach long, find the catch on your very first pull, and let the race wake it up — the feel often shows up the second the gun goes.
 _(pause: 2s)_
-7. The clock reports a swim, it cannot name a swimmer. You're secure whichever version of the stroke shows up.
-_(pause: 1.5s)_
 ### Swimming · Im · touched-out
 <!-- slug: hm-swm-im-touched-out | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -395,27 +375,23 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. He won that touch. He does not own the next one. The walk back behind the blocks is your reset.
 _(pause: 2s)_
-6. The IM is won across four strokes, not just the last wall. Next time, build your free leg from the last turn so you arrive with speed — and drive the finish in long instead of gliding the last stroke.
+6. The IM is won across four strokes, not just the last wall. Next time, build your free leg from the last turn so you arrive with speed, and drive the finish in long instead of gliding the last stroke.
 _(pause: 2s)_
-7. The board reports a swim, not a swimmer. You stood secure before this race and you stand secure after it.
-_(pause: 1.5s)_
 ### Swimming · Im · false-start
 <!-- slug: hm-swm-im-false-start | file: components/pregame/audio/clips-swimming.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. On the blocks before the four hundred IM, the longest puzzle of the meet, everything you've trained for. You move early. The whistle blows, the official points, and your race is scratched before the fly even starts.
+2. On the blocks before the four hundred IM, the longest puzzle of the meet, everything you've trained for. You move early — but there's no recall now, so you swim all four legs, and only after you touch does the official's flag go up and the DQ land.
 _(pause: 1.5s)_
-3. Your weight tips off the block as the whistle catches you, and heat floods your face. The thought hits: all those four-stroke sets, gone, and I never swam a stroke.
+3. You feel that you went a hair early off the start, and you grind through all four strokes half-waiting for the call. The thought hits: I swam the whole thing for nothing, I jumped it.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The whistle happened. Learn from it, then compete clean. That scratch is final for this event, and it stays in this event — it doesn't get your next race.
+5. The early start happened. Learn from it, then compete clean. That call is final for this event, and it stays in this event — it doesn't get your next race.
 _(pause: 2s)_
-6. Don't carry the early start onto your next block by hesitating to make up for it. Set, still, eyes down, and go on the horn — react to the sound, not to the fear of jumping it.
+6. Don't overcorrect by sitting and waiting on the next block. Set, still, eyes down, and move on the horn — react to the sound, not to the fear of jumping it.
 _(pause: 2s)_
-7. A scratched race is one moment on a sheet, not a verdict on you. You're secure with no time on the board at all.
-_(pause: 1.5s)_
 ### Swimming · Im · dq
 <!-- slug: hm-swm-im-dq | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -427,29 +403,25 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Take the correction. Leave the grudge. That swim is erased on the sheet — and it stays on the sheet, not on you.
+5. Take the correction. Leave the grudge. That swim is erased on the sheet, not on you.
 _(pause: 2s)_
 6. The IM lives in the transitions — next race, fully touch before you turn, and keep every changeover legal. Clean transitions are how the four-stroke time stays on the board.
 _(pause: 2s)_
-7. An erased time still happened in your body, and a swim wiped from a sheet can't name a swimmer. You're secure.
-_(pause: 1.5s)_
 ### Swimming · Im · plateau
 <!-- slug: hm-swm-im-plateau | file: components/pregame/audio/clips-swimming.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. Your two hundred IM hasn't dropped in a year. You train four strokes against swimmers who train one, and the all-around time sits stuck while the specialists pass you in their own events. The math feels like it's against you.
+2. Your two hundred IM hasn't dropped in a while. You train four strokes against swimmers who train one, and the all-around time sits stuck while the specialists drop in their own events.
 _(pause: 1.5s)_
-3. Your shoulders sink at the board and a tiredness sits behind your eyes. The thought hits: maybe doing all four just means I'm never the best at any.
+3. You do the math on your splits in your head and stop. The thought hits: I'm stuck, and the specialists keep dropping.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. A plateau is real, and it is not the end of your story. The all-rounder's time breaks loose in jumps, often when one weak leg finally clicks.
+5. A plateau is a flat stretch, not the end of the road. The all-rounder's time breaks loose in jumps, often when one weak leg finally clicks.
 _(pause: 2s)_
-6. This isn't yours to crack alone tonight, and not on this block. Bring the stuck time to your coach this week — let them find the leg that's leaking time — and let this race just be one honest swim.
+6. This isn't yours to crack alone tonight, or on this block. Bring the stuck time to your coach this week — let them find the leg that's leaking time — and let this race just be one honest swim.
 _(pause: 2s)_
-7. The clock reports a time, not a ceiling. Being an all-rounder is a strength, not a verdict on you.
-_(pause: 1.5s)_
 ### Swimming · Im · bad-turn
 <!-- slug: hm-swm-im-bad-turn | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -465,8 +437,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Next race, rehearse the back-to-breast in your head before you dive — touch, drop the hips, set the breast tempo on stroke one. Smooth transitions are free speed.
 _(pause: 2s)_
-7. The clock reports a swim, it cannot name a swimmer. You're the same whether the changeover was clean or clumsy.
-_(pause: 1.5s)_
 ### Swimming · Im · mind-wanders
 <!-- slug: hm-swm-im-mind-wanders | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -482,8 +452,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Next race, give each leg one cue — long fly, steady back, snap the breast, finish the free — and ride the transitions instead of drifting through them.
 _(pause: 2s)_
-7. The clock reports a swim, it cannot name a swimmer. You're secure however the middle of the race went.
-_(pause: 1.5s)_
 ### Swimming · Im · goggles
 <!-- slug: hm-swm-im-goggles | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -491,16 +459,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. Your goggles fail off the fly dive and fill with water. You swim three strokes' worth of a four-stroke race unable to see your turns clearly, guessing every wall, fighting just to keep the medley together half-blind.
 _(pause: 1.5s)_
-3. Your eyes sting and squint at each wall, and your transitions tighten with the guesswork. The thought hits: I can't run the IM blind.
+3. Your eyes sting and squint at each wall, and your transitions tighten with the guesswork. The thought hits: I can't swim the IM blind.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. A flooded goggle is gear, not you. That race is over and the goggles are off now.
 _(pause: 2s)_
-6. Next time, snug them tight under your cap and trust your stroke count into every wall — you've felt your way through all four legs a thousand times. You can swim it by feel.
+6. Next time, snug them tight under your cap and trust your stroke count into every wall — you've felt your way through all four legs a thousand times. Swim it by feel.
 _(pause: 2s)_
-7. The clock reports a swim, it cannot name a swimmer, and a gear failure doesn't either. You're secure.
-_(pause: 1.5s)_
 ### Swimming · Im · slow-heat
 <!-- slug: hm-swm-im-slow-heat | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -514,10 +480,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. The seed sheet is a starting point, not a sentence. Times don't care which heat you swim them in.
 _(pause: 2s)_
-6. Race the clock, not the bodies. Lock onto your splits, attack every transition, and chase the number you came for. A best time in the IM from a slow heat counts exactly the same.
+6. Race the clock, not the bodies. Lock onto your splits, attack every transition, and chase the number you came for — a best time in the IM from a slow heat counts exactly the same.
 _(pause: 2s)_
-7. The clock reports a swim, it cannot name a swimmer, and a seed line can't either. You're secure.
-_(pause: 1.5s)_
 ### Swimming · Im · ready-room
 <!-- slug: hm-swm-im-ready-room | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -533,25 +497,21 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. You don't have to swim a perfect breast leg — you have to swim your race. Set up the fly and back so you arrive strong, hold the breast tempo you own, and trust your free to bring it home.
 _(pause: 2s)_
-7. One exposed leg doesn't name you, and neither does the clock — it reports a swim, not a swimmer. Step up, react to the horn, and go.
-_(pause: 1.5s)_
 ### Swimming · Im · go-out-slow
 <!-- slug: hm-swm-im-go-out-slow | file: components/pregame/audio/clips-swimming.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. Your breast split is the slow leg again. You watch the gap open exactly where you knew it would, the lanes pulling away as you grind through the one stroke that won't come, and your weak leg costs you the race.
+2. Your breast split comes in slow again — not your strongest leg today. You watch a gap open where you half-expected it, the lanes pulling a little ahead as you grind through the stroke that isn't clicking.
 _(pause: 1.5s)_
-3. Your stroke labors and your arms feel heavy, and your eyes catch the lanes slipping ahead. The thought hits: my weak leg always sinks me.
+3. Your stroke labors and your arms feel heavy, and your eyes catch the lanes slipping ahead. The thought hits: the breast just isn't there today.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That race is over and the time is on the board. A weak leg is the all-rounder's next gain, not your ceiling.
+5. That race is over and the time is on the board. A slow breast leg today is the all-rounder's next gain, not your ceiling.
 _(pause: 2s)_
 6. Next race, swim the breast you have with tempo and a long line, and take the work to practice where weak legs get built. The other three legs are yours.
 _(pause: 2s)_
-7. One slow split is one leg of one race. It never had a vote on what you're worth.
-_(pause: 1.5s)_
 ### Swimming · Sprint · touched-out
 <!-- slug: hm-swm-sprint-touched-out | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -565,46 +525,38 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That swim is over and the time is on the board. You have more racing today.
 _(pause: 2s)_
-6. Don't replay the touch on a loop. Take it to your next race instead: finish on a full stroke into the wall, no glide, drive your hand through the touchpad.
+6. Don't replay the touch on a loop. Take it to your next race: finish on a full stroke into the wall, no glide, drive your hand through the touchpad to win the last inch.
 _(pause: 2s)_
-7. Win the last inch next time. The clock reports a swim, it cannot name a swimmer.
-_(pause: 1.5s)_
 ### Swimming · Sprint · false-start
 <!-- slug: hm-swm-sprint-false-start | file: components/pregame/audio/clips-swimming.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. The horn fires, and then a second whistle behind it. Someone twitched on the blocks, and the official's arm swings around and points at your lane. Your fifty is gone before you swam a single stroke of it.
+2. You twitch a hair early off the blocks — but there's no recall now, so you swim the whole fifty, and only after you touch does the official's arm swing around and point at your lane. The DQ lands after the race, not before.
 _(pause: 1.5s)_
-3. Heat floods up your neck as you climb back onto the deck, and your hands shake. The thought hits: I never even got to race, and now it's over.
+3. You feel that you went early off the start, and you sprint the whole fifty half-knowing the call is coming. The thought hits: I swam it for nothing, I jumped the start.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That call is made and it cannot be undone. Arguing it in your head only carries it into the next race.
+5. The early start happened and the call is made. Arguing it in your head only carries it into the next race.
 _(pause: 2s)_
-6. Take the lesson, not the spiral. Next time on the blocks, get set and go still: weight settled, eyes down, move only on the beep.
+6. Take the lesson, not the spiral. Next time on the blocks, get set and go still: weight settled, eyes down, move only on the horn.
 _(pause: 2s)_
-7. You can't lose what you don't anticipate. A race you never swam can't tell you who you are.
-_(pause: 1.5s)_
 ### Swimming · Sprint · dq
 <!-- slug: hm-swm-sprint-dq | file: components/pregame/audio/clips-swimming.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You touched it dropping a hand, or your relay take-off read early on the pad. The swim is a best time and it counts for nothing. And on a relay, three teammates are looking at the scratched line where your time should be.
+2. You touched it dropping a hand, or your relay exchange left early — feet off the block a hair before the incoming swimmer's hand hit the wall. The swim is a best time and it counts for nothing, and on a relay it scratches the whole team's time.
 _(pause: 1.5s)_
-3. Your stomach drops when you see the DQ, and you can't look at your relay. The thought hits: I cost everyone, I ruined it for the whole team.
+3. Your stomach drops when you see the DQ, and you can't quite look at your relay. The thought hits: that one was on me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. That swim is wiped from the board, and it does not get the rest of your session. Let it be done right now.
 _(pause: 2s)_
-6. One DQ doesn't write your meet, and your teammates are still your teammates. Go find your relay, own the one detail, and move on together.
+6. One DQ doesn't write your meet. Go find your relay, own the one detail in plain words, then lock the fix for next time: two hands square and flat on the wall, and feet on the block until the incoming swimmer clearly touches.
 _(pause: 2s)_
-7. Lock the fix in for next time: two hands on the wall, square and flat, and stay on the block until your leg-off has clearly touched.
-_(pause: 2s)_
-8. One scratched time doesn't decide whether you belong on this team. You were theirs before the swim, and you still are.
-_(pause: 1.5s)_
 ### Swimming · Sprint · plateau
 <!-- slug: hm-swm-sprint-plateau | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -612,16 +564,14 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You've gone twenty-three four in the fifty free at four straight meets. The work has been the same. The taper came and went. You look up at the board, and the clock just will not move.
 _(pause: 1.5s)_
-3. Your shoulders sink at the same time again and there's a heaviness behind your eyes. The thought hits: maybe this is just as fast as I get. Let it arrive — it's a feeling in this moment, not a fact about you.
+3. You blow out a breath and look away from the board. The thought hits: this number won't budge right now.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. A plateau is a place on the road, not the end of it. Swimmers sit on a time and then break through — it's happening to your clock right now, not to who you are.
+5. A plateau is a flat stretch on the road, not the end of it. Swimmers sit on a time and then break through — this is your clock stalling, not you.
 _(pause: 2s)_
 6. Take what's stuck — the start, the back half, the finish — to your coach this week and find the next gear. The work isn't lost; it's the base your next drop is built on.
 _(pause: 2s)_
-7. The plateau is real, and it is not forever. The clock reports a swim; it cannot name a swimmer, and one stuck number can't touch what you're worth. You're secure whether the time drops today or not — bring it to your coach, and for now, race the next one.
-_(pause: 1.5s)_
 ### Swimming · Sprint · bad-turn
 <!-- slug: hm-swm-sprint-bad-turn | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -635,10 +585,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That swim is over and the turn is behind you. You have more racing today.
 _(pause: 2s)_
-6. Take it to your next race. See the flags, find your spot, snap the turn tight and load both feet on the wall.
+6. Take it to your next race: see the flags, find your spot, snap the turn tight, load both feet, and explode off the push — that's where the lead comes back, on the wall, not by thrashing.
 _(pause: 2s)_
-7. Explode off the push. That's where you get the lead back, on the wall, not by thrashing.
-_(pause: 1.5s)_
 ### Swimming · Sprint · goggles
 <!-- slug: hm-swm-sprint-goggles | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -652,10 +600,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. The goggles are already gone, and you can't fix them mid-race. The race is still yours to swim, blurry or not.
 _(pause: 2s)_
-6. Swim by feel. You know this distance in your body. Count your strokes off the flags, find the black line under you, and ride it to the wall.
+6. Swim by feel — you know this distance in your body. Count your strokes off the flags, find the black line under you, and ride it to the next wall.
 _(pause: 2s)_
-7. Race what you feel, not what you see. The next wall is the only thing in front of you.
-_(pause: 1.5s)_
 ### Swimming · Sprint · slow-heat
 <!-- slug: hm-swm-sprint-slow-heat | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -671,8 +617,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Race the clock, not the lane next to you. Lock onto your own splits, attack your own walls, and drop a time that crashes the next seeding.
 _(pause: 2s)_
-7. A fast swim in a slow heat still moves you up. The sheet reports where they think you are; it doesn't get the last word.
-_(pause: 1.5s)_
 ### Swimming · Sprint · ready-room
 <!-- slug: hm-swm-sprint-ready-room | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -686,10 +630,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. These nerves aren't a warning. They're energy your body brought because this matters. Let the buzz settle into power.
 _(pause: 2s)_
-6. You don't have to manage the whole fifty, you just have to react. See the start, explode off the block, swim long and fast off the breakout.
+6. You don't have to manage the whole fifty, you just have to react. See the start, explode off the block, swim long and fast off the breakout, and trust the speed you trained — it's already in you.
 _(pause: 2s)_
-7. Trust the speed you trained. It's already in you, and the ready room doesn't get to name you.
-_(pause: 1.5s)_
 ### Swimming · Sprint · go-out-slow
 <!-- slug: hm-swm-sprint-go-out-slow | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -703,27 +645,23 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That swim is over and the slow start is behind you. You have more racing today.
 _(pause: 2s)_
-6. Take it to your next race. Lock in on the start: react to the beep, drive the block, sharp streamline into a clean break.
+6. Take it to your next race: react to the horn, drive the block, sharp streamline into a clean break, and get out front early so you never have to chase.
 _(pause: 2s)_
-7. Get out front early so you never have to chase. Nail the next start, and go again.
-_(pause: 1.5s)_
 ### Swimming · Dist · false-start
 <!-- slug: hm-swm-dist-false-start | file: components/pregame/audio/clips-swimming.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. One early move on the blocks before the longest race of the meet, and the whistle cuts it dead. The official's arm points your way. The whole grind you came here to swim is over before it even began.
+2. One early move on the blocks before the longest race of the meet — but there's no recall now, so you swim the whole grind, every length of it, and only after you touch does the official's arm point your way and the DQ land.
 _(pause: 1.5s)_
-3. Heat floods up your neck climbing back onto the deck, and your hands shake. The thought hits: all that yardage, all that prep, gone on one twitch.
+3. You feel that you went early off the start, and you grind through the whole race half-knowing the call is waiting. The thought hits: all that yardage, all that prep, and I jumped the start.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That call is made and it cannot be undone. Replaying it on the deck only carries it into the next race.
+5. The early start happened and the call is made. Replaying it on the deck only carries it into the next race.
 _(pause: 2s)_
-6. Take the lesson, not the spiral. Next time on the blocks, get set and go perfectly still: weight settled, eyes down, move only on the beep.
+6. Take the lesson, not the spiral. Next time on the blocks, get set and go perfectly still: weight settled, eyes down, move only on the horn.
 _(pause: 2s)_
-7. All that training is still in you, and it isn't going anywhere. A race you never swam can't name you.
-_(pause: 1.5s)_
 ### Swimming · Dist · dq
 <!-- slug: hm-swm-dist-dq | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -731,35 +669,29 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. A flip turn somewhere in the middle eight hundred rolls past vertical, or a hand slips a wall. The official saw it. A sixteen-minute swim, length after grinding length, is wiped clean off the board.
 _(pause: 1.5s)_
-3. Your stomach drops when you see the DQ, and your legs are wrecked and now they were for nothing. The thought hits: sixteen minutes of pain and it all counts for zero.
+3. You climb out and your legs won't hold you, and now they were for nothing. The thought hits: that whole swim, gone off the sheet.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. That swim is wiped from the board, and it does not get the rest of your meet. Let it be done right now.
 _(pause: 2s)_
-6. The work was never for nothing. Every length built the engine you carry into the next race. The board can erase a time, but it can't erase what that swim made you.
+6. The work was never for nothing — every length built the engine you carry into the next race. The board can erase a time, but not what that swim made you. Lock the fix for next time: flip turns square and under control, two hands flat on every wall, length after length.
 _(pause: 2s)_
-7. Lock the fix in for next time: flip turns square and under control, two hands flat on every wall, legal and clean, length after length.
-_(pause: 2s)_
-8. One scratched swim doesn't erase what you're worth. You compete from a victory that's already yours, time or no time.
-_(pause: 1.5s)_
 ### Swimming · Dist · plateau
 <!-- slug: hm-swm-dist-plateau | file: components/pregame/audio/clips-swimming.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You've held the same mile time all season while your lanemate dropped fifteen seconds. The yardage is brutal, the sets are honest, and the clock keeps saying it isn't paying out.
+2. You've held the same mile time most of the season while your lanemate dropped fifteen seconds. The yardage is brutal, the sets are honest, and the clock keeps saying it isn't paying out yet.
 _(pause: 1.5s)_
-3. Your shoulders sink at the same time again, heavy in the chest watching your lanemate drop. The thought hits: maybe all this yardage isn't taking me anywhere. Let it arrive — it's a feeling in this moment, not a fact about you.
+3. Your hand drifts off the timing pad, slow. The thought hits: this yardage isn't paying out yet.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. A plateau is a place on the road, not the end of it. Distance breakthroughs come in big steps after long flat stretches — it's happening to your clock, not to who you are. Your lanemate's time is theirs, not a measure of you.
+5. A plateau is a flat stretch on the road, not the end of it. Distance breakthroughs come in big steps after long flat stretches — this is your clock stalling, not you, and your lanemate's time is theirs, not a measure of you.
 _(pause: 2s)_
 6. Take what's stuck — your pacing, your back half, your turns — to your coach this week and find the next gear. Every honest length is base your next drop is built on.
 _(pause: 2s)_
-7. The plateau is real, and it is not forever. The clock reports a swim; it cannot name a swimmer, and your worth never rode on a number on the board. You're secure whether the time drops today or not — bring it to your coach, and for now, race the next one.
-_(pause: 1.5s)_
 ### Swimming · Dist · bad-turn
 <!-- slug: hm-swm-dist-bad-turn | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -773,10 +705,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That wall is behind you and there's a lot of pool left. One bad turn in a distance swim is a single length, not the whole race.
 _(pause: 2s)_
-6. Rebuild the rhythm one length at a time. Find your stroke count, lengthen out, feel the catch and the steady tempo come back.
+6. Rebuild the rhythm one length at a time: find your stroke count, lengthen out, feel the catch and the steady tempo come back, and hit the next wall clean.
 _(pause: 2s)_
-7. The pace is still in your body. Climb back onto it stroke by stroke, and hit the next wall clean.
-_(pause: 1.5s)_
 ### Swimming · Dist · mind-wanders
 <!-- slug: hm-swm-dist-mind-wanders | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -790,10 +720,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. Drifting in the long middle is normal. Every distance swimmer does it. The work isn't to never drift; it's to come back, and you just came back.
 _(pause: 2s)_
-6. Anchor your mind to something small and repeating. Count your strokes per length. Feel the catch, feel the finish, feel the next turn.
+6. Anchor your mind to something small and repeating: count your strokes per length, feel the catch, feel the finish, and ride it one length at a time back onto pace.
 _(pause: 2s)_
-7. One length at a time, back on the line and back on pace. That coming-back is the whole skill.
-_(pause: 1.5s)_
 ### Swimming · Dist · goggles
 <!-- slug: hm-swm-dist-goggles | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -807,10 +735,8 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. You can't clear them mid-race, so stop fighting them. The mile is still yours to swim, fogged or clear.
 _(pause: 2s)_
-6. Swim by feel, you know this pool. Count your strokes off the flags into every wall, time your turns by rhythm, trust the line you've memorized.
+6. Swim by feel — you know this pool. Count your strokes off the flags into every wall, time your turns by rhythm, trust the line you've memorized, and swim it home.
 _(pause: 2s)_
-7. Race what you feel, not what you see. Settle in and swim it home.
-_(pause: 1.5s)_
 ### Swimming · Dist · slow-heat
 <!-- slug: hm-swm-dist-slow-heat | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -826,8 +752,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Race your pace plan, not the lanes around you. Lock onto your splits, hit your target every hundred, and drop a time that turns heads later when they read the sheet.
 _(pause: 2s)_
-7. A fast swim in an early heat still stands. Race your own pace, and go again.
-_(pause: 1.5s)_
 ### Swimming · Dist · ready-room
 <!-- slug: hm-swm-dist-ready-room | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -843,8 +767,6 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Don't swim the whole five hundred standing here — you can't carry all of it at once. Off the first wall, settle into pace, hold your splits, and take it one hundred at a time.
 _(pause: 2s)_
-7. You've trained every yard of this. The dread of the distance can ride along, but it doesn't set your pace — you do. Settle on the block, swim the first length, and go.
-_(pause: 1.5s)_
 ### Swimming · Dist · go-out-slow
 <!-- slug: hm-swm-dist-go-out-slow | file: components/pregame/audio/clips-swimming.ts -->
 
@@ -858,7 +780,5 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. Two seconds early in a long race is not a hole you dig out in one length. Sprinting to erase it now is exactly how a distance swim falls apart.
 _(pause: 2s)_
-6. Get back on pace length by length — don't lunge for it all at once. Lock onto your target split, build through the middle, and trust your back-half.
+6. Get back on pace length by length — don't lunge for it all at once. Lock onto your target split, build through the middle, trust your back-half, and let the time come back in pieces.
 _(pause: 2s)_
-7. The time comes back in pieces, not in one heroic surge. The clock reports a swim; it can't name the swimmer. Settle onto your pace, and go again.
-_(pause: 1.5s)_
