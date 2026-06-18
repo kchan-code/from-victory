@@ -31,123 +31,75 @@ export function Framework() {
           </Reveal>
 
           <Reveal>
+            {/* Container-query clip-path pyramid: one layout at every width.
+               Each tier is a trapezoid drawn behind the copy (so text never
+               clips), sized in container-query units so the silhouette and
+               type breathe down to phone width without a separate mobile
+               treatment. DOM order is top→bottom: Expression, Formation,
+               Foundation. */}
             <div className="fv-pyramid">
-              <svg
-                className="fv-pyramid-svg"
-                viewBox="0 0 600 500"
-                preserveAspectRatio="xMidYMid meet"
-                aria-hidden
-              >
-                <defs>
-                  <linearGradient
-                    id="foundationFill"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="0%" stopColor="rgba(223,175,55,0.18)" />
-                    <stop offset="100%" stopColor="rgba(223,175,55,0.06)" />
-                  </linearGradient>
-                  <linearGradient id="formationFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="rgba(247,247,247,0.05)" />
-                    <stop offset="100%" stopColor="rgba(247,247,247,0.02)" />
-                  </linearGradient>
-                  <linearGradient
-                    id="expressionFill"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="0%" stopColor="rgba(247,247,247,0.025)" />
-                    <stop offset="100%" stopColor="rgba(247,247,247,0.01)" />
-                  </linearGradient>
-                  <radialGradient id="footWash" cx="50%" cy="100%" r="60%">
-                    <stop offset="0%" stopColor="rgba(223,175,55,0.10)" />
-                    <stop offset="100%" stopColor="rgba(223,175,55,0)" />
-                  </radialGradient>
-                </defs>
+              <div className="fv-pyramid-stack">
+                {/* Expression — pointed-top apex + trapezoid body */}
+                <div className="fv-ptier fv-ptier-expression">
+                  <div className="fv-ptier-cap" aria-hidden>
+                    <span />
+                  </div>
+                  <div className="fv-ptier-body">
+                    <span className="fv-ptier-shape" aria-hidden />
+                    <div className="fv-ptier-content">
+                      <div className="font-heading font-bold uppercase tracking-[0.22em] text-[#8c8a85] text-[clamp(8px,2cqw,11px)]">
+                        Expression
+                      </div>
+                      <div className="font-heading font-semibold text-cream leading-[1.12] text-[clamp(17px,4.4cqw,25px)] mt-[0.4em]">
+                        Spirit-formed character
+                      </div>
+                      <div className="font-body text-cream/60 leading-[1.4] text-[clamp(11px,2.5cqw,14px)] mt-[0.5em]">
+                        Mental toughness · Quiet confidence · Reset after
+                        mistakes
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                <polygon
-                  points="40,460 560,460 494,322 106,322"
-                  fill="url(#foundationFill)"
-                  stroke="rgba(223,175,55,0.55)"
-                  strokeWidth="1"
-                  strokeLinejoin="round"
-                />
-                <polygon
-                  points="40,460 560,460 494,322 106,322"
-                  fill="url(#footWash)"
-                />
-                <polygon
-                  points="102,316 498,316 430,180 170,180"
-                  fill="url(#formationFill)"
-                  stroke="rgba(247,247,247,0.20)"
-                  strokeWidth="1"
-                  strokeLinejoin="round"
-                />
-                <polygon
-                  points="166,174 434,174 368,40 232,40"
-                  fill="url(#expressionFill)"
-                  stroke="rgba(247,247,247,0.14)"
-                  strokeWidth="1"
-                  strokeLinejoin="round"
-                />
+                {/* Formation */}
+                <div className="fv-ptier fv-ptier-formation">
+                  <div className="fv-ptier-body">
+                    <span className="fv-ptier-shape" aria-hidden />
+                    <div className="fv-ptier-content">
+                      <div className="font-heading font-bold uppercase tracking-[0.22em] text-[#8c8a85] text-[clamp(8px,2cqw,11px)]">
+                        Formation
+                      </div>
+                      <div className="font-heading font-semibold text-cream leading-[1.1] text-[clamp(19px,5cqw,27px)] mt-[0.4em]">
+                        Daily discipline
+                      </div>
+                      <div className="font-body text-cream/60 leading-[1.4] text-[clamp(11px,2.5cqw,14px)] mt-[0.5em]">
+                        Breath · Truth · Reflection · Prayer · Focus
+                      </div>
+                    </div>
+                  </div>
+                  <span className="fv-ptier-dot" style={{ left: "12%" }} aria-hidden />
+                  <span className="fv-ptier-dot" style={{ left: "88%" }} aria-hidden />
+                </div>
 
-                <circle cx="106" cy="322" r="3" fill="var(--fv-gold)" />
-                <circle cx="494" cy="322" r="3" fill="var(--fv-gold)" />
-                <circle
-                  cx="170"
-                  cy="180"
-                  r="2"
-                  fill="rgba(223,175,55,0.55)"
-                />
-                <circle
-                  cx="430"
-                  cy="180"
-                  r="2"
-                  fill="rgba(223,175,55,0.55)"
-                />
-              </svg>
-
-              {/* Foundation tier */}
-              <div className="fv-ptier fv-ptier-foundation">
-                <div className="font-mono uppercase tracking-[0.22em] font-semibold text-gold text-[clamp(9px,1vw,11px)] mb-2.5">
-                  Foundation
-                </div>
-                <div className="font-heading font-semibold text-cream tracking-[-0.015em] leading-[1.1] text-[clamp(22px,3.2vw,34px)] text-balance">
-                  Secure identity in Christ
-                </div>
-                <div className="font-body text-cream/70 leading-[1.45] mt-1.5 max-w-[38ch] mx-auto text-[clamp(12.5px,1.2vw,14.5px)] text-balance">
-                  Your worth is not earned by performance. Every path starts
-                  here.
-                </div>
-              </div>
-
-              {/* Formation tier */}
-              <div className="fv-ptier fv-ptier-formation">
-                <div className="font-mono uppercase tracking-[0.22em] font-semibold text-cream/50 text-[clamp(9px,1vw,11px)] mb-2.5">
-                  Formation
-                </div>
-                <div className="font-heading font-semibold text-cream tracking-[-0.01em] leading-[1.1] text-[clamp(18px,2.4vw,26px)] text-balance">
-                  Daily discipline
-                </div>
-                <div className="font-body text-cream/50 leading-[1.45] mt-1.5 text-[clamp(11px,1vw,12.5px)] tracking-[0.04em] text-balance">
-                  Breath · Truth · Reflection · Prayer · Focus
-                </div>
-              </div>
-
-              {/* Expression tier */}
-              <div className="fv-ptier fv-ptier-expression">
-                <div className="font-mono uppercase tracking-[0.20em] font-semibold text-cream/50 text-[clamp(8px,0.85vw,10px)] mb-1.5">
-                  Expression
-                </div>
-                <div className="font-heading font-semibold text-cream tracking-[-0.005em] leading-[1.05] text-[clamp(14px,1.8vw,19px)] text-balance">
-                  Spirit-formed character
-                </div>
-                <div className="font-body text-cream/50 leading-[1.45] mt-1 text-[clamp(9.5px,0.9vw,11px)] tracking-[0.02em]">
-                  Mental toughness · Quiet confidence · Reset after mistakes
+                {/* Foundation — widest, gold-warm base */}
+                <div className="fv-ptier fv-ptier-foundation">
+                  <div className="fv-ptier-body">
+                    <span className="fv-ptier-shape" aria-hidden />
+                    <div className="fv-ptier-content">
+                      <div className="font-heading font-bold uppercase tracking-[0.22em] text-gold text-[clamp(8px,2cqw,11px)]">
+                        Foundation
+                      </div>
+                      <div className="font-heading font-bold text-cream leading-[1.06] text-[clamp(22px,6.4cqw,38px)] mt-[0.35em]">
+                        Secure identity in Christ
+                      </div>
+                      <div className="font-body text-cream/[0.72] leading-[1.45] text-[clamp(11px,2.7cqw,15px)] mt-[0.5em] max-w-[32ch] mx-auto">
+                        Your worth is not earned by performance. Every path
+                        starts here.
+                      </div>
+                    </div>
+                  </div>
+                  <span className="fv-ptier-dot" style={{ left: "6%" }} aria-hidden />
+                  <span className="fv-ptier-dot" style={{ left: "94%" }} aria-hidden />
                 </div>
               </div>
             </div>
