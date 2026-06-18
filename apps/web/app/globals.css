@@ -433,91 +433,100 @@ a:hover { color: var(--accent-hot); }
     border: 1px solid rgba(223,175,55,0.22);
   }
 
-  /* Pyramid framework absolute-positioned text overlays */
+  /* ── Foundation pyramid: container-query clip-path stack ─────────────────
+     One layout at every width. Each tier is a trapezoid drawn behind the
+     copy (so text never clips) and sized in container-query units (cqw), so
+     the silhouette and type breathe from desktop down to phone width without
+     a separate mobile treatment. Replaces the old SVG-overlay + media-query
+     stacked-blocks approach. */
   .fv-pyramid {
-    position: relative;
+    container-type: inline-size;
     width: 100%;
     max-width: 560px;
     margin: 0 auto;
-    aspect-ratio: 600 / 500;
   }
-  .fv-pyramid-svg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
+  .fv-pyramid-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4cqw;
   }
   .fv-ptier {
-    position: absolute;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    pointer-events: none;
+    position: relative;
   }
-  .fv-ptier-foundation { top: 78%; width: 76%; padding: 0 8px; }
-  .fv-ptier-formation  { top: 50%; width: 54%; }
-  .fv-ptier-expression { top: 22%; width: 33%; }
+  .fv-ptier-body {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* The angled trapezoid sits behind the copy. */
+  .fv-ptier-shape {
+    position: absolute;
+    inset: 0;
+  }
+  .fv-ptier-content {
+    position: relative;
+    text-align: center;
+  }
+  /* Gold studs marking each tier's top edge. */
+  .fv-ptier-dot {
+    position: absolute;
+    top: -0.55cqw;
+    width: 1.4cqw;
+    height: 1.4cqw;
+    background: var(--fv-gold);
+    transform: translateX(-50%);
+    border-radius: 1px;
+  }
 
-  /* ── Mobile pyramid: stacked blocks below sm (< 640px) ───────────────────
-     The SVG-overlay geometry doesn't work at phone width (~280px container):
-     trapezoids are too small and the absolutely-positioned tier labels
-     collide. Below sm we abandon the overlay and render tiers as normal-flow
-     stacked blocks with tapered widths to preserve the pyramid silhouette.
-     At sm+ the original absolute-overlay layout is fully restored. */
-  @media (max-width: 639px) {
-    .fv-pyramid {
-      aspect-ratio: unset;
-      display: flex;
-      /* DOM order is foundation → formation → expression (screen readers get
-         the foundation first); column-reverse puts EXPRESSION on top visually
-         so the silhouette tapers down to the widest gold Foundation block —
-         the pyramid metaphor, not an inverted one. */
-      flex-direction: column-reverse;
-      align-items: center;
-      gap: 0;
-      padding: 0;
-    }
-    /* Hide the decorative SVG — it's too small to read or add value at mobile.
-       aria-hidden is already set on the element in the component. */
-    .fv-pyramid-svg {
-      display: none;
-    }
-    /* Each tier becomes a full-width static block, centered. */
-    .fv-ptier {
-      position: static;
-      left: unset;
-      transform: none;
-      text-align: center;
-      pointer-events: auto;
-      padding: 16px 20px;
-      border-radius: 12px;
-    }
-    /* Tapered widths: expression (narrowest/top) → formation → foundation (full).
-       This recreates the pyramid silhouette in normal flow. */
-    .fv-ptier-expression {
-      width: 78%;
-      /* Subtle top border to echo the SVG polygon edge; no fill for the top tier */
-      border: 1px solid rgba(247,247,247,0.14);
-      border-bottom: none;
-      border-radius: 12px 12px 0 0;
-    }
-    .fv-ptier-formation {
-      width: 90%;
-      border: 1px solid rgba(247,247,247,0.20);
-      border-top: none;
-      border-bottom: none;
-    }
-    .fv-ptier-foundation {
-      width: 100%;
-      padding: 18px 20px;
-      /* Reuse the gold gradient feel from the SVG foundationFill */
-      background:
-        linear-gradient(180deg, rgba(223,175,55,0.12), rgba(223,175,55,0.04));
-      border: 1px solid rgba(223,175,55,0.50);
-      border-top: none;
-      border-radius: 0 0 12px 12px;
-    }
+  /* Expression — pointed-top apex (cap) above a trapezoid body. */
+  .fv-ptier-expression .fv-ptier-cap {
+    position: relative;
+    height: clamp(52px, 11cqw, 78px);
+  }
+  .fv-ptier-expression .fv-ptier-cap > span {
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(50% 0, 82% 100%, 18% 100%);
+    background: #0e0e0e;
+  }
+  .fv-ptier-expression .fv-ptier-body {
+    min-height: clamp(162px, 28cqw, 198px);
+    margin-top: -1px;
+  }
+  .fv-ptier-expression .fv-ptier-shape {
+    clip-path: polygon(18% 0, 82% 0, 88% 100%, 12% 100%);
+    background: #0e0e0e;
+  }
+  .fv-ptier-expression .fv-ptier-content {
+    max-width: 52%;
+    padding: clamp(12px, 2.4cqw, 20px) 0;
+  }
+
+  /* Formation. */
+  .fv-ptier-formation .fv-ptier-body {
+    min-height: clamp(160px, 28cqw, 192px);
+  }
+  .fv-ptier-formation .fv-ptier-shape {
+    clip-path: polygon(12% 0, 88% 0, 94% 100%, 6% 100%);
+    background: #141414;
+  }
+  .fv-ptier-formation .fv-ptier-content {
+    max-width: 66%;
+    padding: clamp(12px, 2.4cqw, 20px) 0;
+  }
+
+  /* Foundation — the widest, gold-warm base. */
+  .fv-ptier-foundation .fv-ptier-body {
+    min-height: clamp(168px, 30cqw, 204px);
+  }
+  .fv-ptier-foundation .fv-ptier-shape {
+    clip-path: polygon(6% 0, 94% 0, 100% 100%, 0 100%);
+    background: linear-gradient(180deg, #251f12, #15110a);
+  }
+  .fv-ptier-foundation .fv-ptier-content {
+    max-width: 82%;
+    padding: clamp(14px, 2.6cqw, 22px) 0;
   }
 
   /* App-preview horizontal scroll with snap */
