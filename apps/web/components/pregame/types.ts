@@ -265,15 +265,15 @@ export const NEED_VERSE: Record<NeedToday, NeedVerse> = {
     displayText:
       "Those who hope in the Lord will renew their strength... they will run and not grow weary, they will walk and not be faint.",
   },
-  // Deliberately shares Romans 8:1 with "Reset after mistakes" (FV-124): one
-  // gospel spine ("no condemnation"), two applications — reset owns "the next
-  // mistake can't reopen a closed case"; be-vocal owns "the image-protecting
-  // ego is already covered, so you're free to speak." An athlete hears only one
-  // opener per session, so the verse never repeats in-product. Not a copy-paste.
+  // De-corn (2026-06): be-vocal moved off Romans 8:1 to Psalm 118:6 — a song of
+  // trust under pressure ("The Lord is with me; I will not be afraid"), which fits
+  // "speak up / be vocal" better than "no condemnation." The audio (opener-be-vocal
+  // / opener-bb-be-vocal) now cites Psalm 118:6; this on-screen reference must match
+  // it (FV-312 — was Romans 8:1, which contradicted the rendered audio).
   "Be more Vocal": {
-    reference: "Romans 8:1",
+    reference: "Psalm 118:6",
     displayText:
-      "Therefore, there is now no condemnation for those who are in Christ Jesus.",
+      "The Lord is with me; I will not be afraid. What can people do to me?",
   },
 };
 
