@@ -25,6 +25,7 @@ import {
 } from "../sport-registry";
 import { NEEDS, RESET_ANCHORS, SELF_TALK_OPTIONS } from "../types";
 import { SUPPORTED_SPORTS, type Sport } from "@/lib/sports";
+import { positivePlaysFor, sportHasPositivePlays } from "../positive-plays";
 
 // ---------------------------------------------------------------------------
 // FV-117 regression guard: HOCKEY_CONFIG picker lists must stay byte-identical
@@ -817,5 +818,51 @@ describe("FV-117: resolveOpenerSlug — sport-keyed opener resolution", () => {
 
   it("'Be more Vocal' basketball → 'opener-bb-be-vocal'", () => {
     expect(resolveOpenerSlug("Be more Vocal", "basketball")).toBe("opener-bb-be-vocal");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-294 regression guard: the positivePlays step must never be shown empty.
+//
+// PregameFlow shows the positivePlays step only when sportHasPositivePlays(roles)
+// is true, NOT when the sport merely declares roles. The step is
+// `required: (s) => s.positivePlays.length > 0`, so a sport that declares roles
+// but ships no plays (golf — Bomber/Ball-Striker/Scrambler exist, zero viz plays
+// until the FV-294 content lands) would render an empty picker the athlete can
+// never satisfy → TRAPPED on Step 04. That was live when golf went selectable
+// (FV-270); the integrity assertion that would have caught it only looped
+// hockey+basketball. This is that missing assertion.
+// ---------------------------------------------------------------------------
+
+describe("FV-294 — sportHasPositivePlays gates the picker so no athlete is trapped", () => {
+  it("returns false when a sport declares roles but ships no plays (golf today)", () => {
+    // The exact trap: golf HAS roles but ZERO positive plays, so the step must be
+    // skipped. Flips to true once the FV-294 golf plays land — update this then
+    // (and the integrity grid extends to golf, FV-271).
+    const golfRoles = getSportConfig("golf").roles ?? [];
+    expect(golfRoles.length).toBeGreaterThan(0);
+    expect(sportHasPositivePlays(golfRoles)).toBe(false);
+  });
+
+  it("requires EVERY role to have plays, not just some", () => {
+    expect(sportHasPositivePlays(["Forward", "Defense", "Goalie"])).toBe(true);
+    // Forward has plays but Bomber (golf) does not → the picker would be empty
+    // for a Bomber, so the whole step must stay hidden.
+    expect(sportHasPositivePlays(["Forward", "Bomber"])).toBe(false);
+  });
+
+  it("returns false for no-role / empty / undefined", () => {
+    expect(sportHasPositivePlays([])).toBe(false);
+    expect(sportHasPositivePlays(undefined)).toBe(false);
+  });
+
+  it("every supported sport that shows the picker has plays for ALL its roles", () => {
+    for (const sport of SUPPORTED_SPORTS) {
+      const roles = getSportConfig(sport).roles ?? [];
+      if (!sportHasPositivePlays(roles)) continue; // step is skipped — safe
+      for (const role of roles) {
+        expect(positivePlaysFor(role).length).toBeGreaterThan(0);
+      }
+    }
   });
 });

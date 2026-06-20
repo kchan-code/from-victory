@@ -45,6 +45,7 @@ import {
   type PregameState,
 } from "./types";
 import { getSportConfig, type Sport, type SportConfig } from "./sport-registry";
+import { sportHasPositivePlays } from "./positive-plays";
 import {
   readPregameSession,
   writePregameSession,
@@ -72,16 +73,24 @@ type View =
 export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   const sportConfig: SportConfig = getSportConfig(sport);
 
-  // Build the active flow: remove the "position" step for no-ask sports
-  // (i.e. sports that declare no roles). Hockey keeps its position step;
-  // future no-ask sports (tennis, swimming) skip it entirely and role stays null.
-  // The "positivePlays" picker is role-scoped (plays are per-position), so it is
-  // dropped alongside "position" for no-ask sports — otherwise the picker would
-  // render an empty list the athlete could never satisfy (FV-144).
+  // Build the active flow by dropping steps the sport can't support:
+  //  - "position": removed for no-ask sports (those that declare no roles).
+  //    Hockey/basketball/golf keep it; future no-ask sports (tennis, swimming)
+  //    skip it entirely and role stays null.
+  //  - "positivePlays": the picker is both role-scoped AND content-gated. A sport
+  //    can declare roles but ship no positive plays yet (golf — the
+  //    Bomber/Ball-Striker/Scrambler profiles exist but have zero viz plays until
+  //    FV-294). Gating on hasRoles alone showed golfers an empty picker they could
+  //    never satisfy (the step is `required: positivePlays.length > 0`), trapping
+  //    them on Step 04. Gate on whether plays actually exist for every role so the
+  //    step is skipped cleanly until plays land, then re-enables automatically.
   const hasRoles = (sportConfig.roles?.length ?? 0) > 0;
-  const activeFlow = hasRoles
-    ? FLOW
-    : FLOW.filter((s) => s.id !== "position" && s.id !== "positivePlays");
+  const showPositivePlays = sportHasPositivePlays(sportConfig.roles);
+  const activeFlow = FLOW.filter((s) => {
+    if (s.id === "position") return hasRoles;
+    if (s.id === "positivePlays") return showPositivePlays;
+    return true;
+  });
 
   const [view, setView] = useState<View>({ kind: "start" });
   const [data, setData] = useState<PregameState>(INITIAL_STATE);

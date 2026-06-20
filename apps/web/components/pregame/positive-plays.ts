@@ -128,3 +128,25 @@ export function positivePlaysFor(role: string | null): readonly PositivePlay[] {
 export function positivePlayTitle(slug: string): string {
   return TITLE_BY_SLUG[slug] ?? slug;
 }
+
+/**
+ * True only when the sport has authored positive plays for EVERY one of its
+ * roles — i.e. the picker is guaranteed non-empty no matter which role the
+ * athlete picks.
+ *
+ * The flow gates the positivePlays step on this rather than on "does the sport
+ * declare roles". A sport can declare roles but ship no plays yet (golf — the
+ * Bomber/Ball-Striker/Scrambler profiles exist but have zero viz plays until
+ * FV-294). Showing the step then renders an empty picker the athlete can never
+ * satisfy (the step is `required: (s) => s.positivePlays.length > 0`), trapping
+ * them on Step 04. Gating here skips the step cleanly until plays exist, and
+ * re-enables it automatically once every role has them — no flow change needed
+ * when the golf plays land.
+ *
+ * `every` (not `some`) is deliberate: the athlete could pick any role, so the
+ * step is only safe to show when no role yields an empty picker.
+ */
+export function sportHasPositivePlays(roles: readonly string[] | undefined): boolean {
+  if (!roles || roles.length === 0) return false;
+  return roles.every((role) => positivePlaysFor(role).length > 0);
+}
