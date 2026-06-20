@@ -78,6 +78,10 @@ export const ANCHOR_OPTION_SLUGS: Record<string, string> = {
   "Bounce ball twice": "anc-bounce-ball-twice",
   "Tap floor": "anc-tap-floor",
   "Look at rim": "anc-look-at-rim",
+  // Golf anchors (FV-303 — rendered + in manifest.clips)
+  "Re-grip the club": "anc-glf-regrip",
+  "Glove tap": "anc-glf-glove-tap",
+  "Step back, then step in": "anc-glf-step-back",
 };
 
 // Self-talk phrase → slug. Exact strings from SELF_TALK_OPTIONS in types.ts,
@@ -92,6 +96,8 @@ export const SELFTALK_OPTION_SLUGS: Record<string, string> = {
   "You are secure. Take the next faithful action.": "st-07",
   // Basketball self-talk (FV-116 — rendered + in manifest.clips)
   "You're okay. Next possession.": "st-bb-01",
+  // Golf self-talk (FV-303 — rendered + in manifest.clips)
+  "You're okay. Next shot.": "st-glf-01",
 };
 
 // Cue word → base slug. Resolver appends "-reset" or "-sendoff".
@@ -134,7 +140,7 @@ export const CUEWORD_OPTION_SLUGS: Record<string, string> = {
 // new manifestVersion printed to stdout, and update MANIFEST_VERSION here
 // AND in sw.js to match. AUDIO_CACHE_BUST is NOT bumped for clip regens
 // (see the retirement note below).
-export const MANIFEST_VERSION = "bd02b799"; // sync with sw.js:MANIFEST_VERSION
+export const MANIFEST_VERSION = "e68cc2db"; // sync with sw.js:MANIFEST_VERSION
 
 // AUDIO_CACHE_BUST — RETIRED for per-clip URL versioning (FV-142).
 // Clips are now content-addressed (<slug>.<hash8>.mp3) and need no ?v=.

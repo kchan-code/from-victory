@@ -246,6 +246,22 @@ _(pause: 2s)_
 <!-- slug: st-bsb-01 | file: components/pregame/audio/clips.ts -->
 
 1. You're okay. Next at-bat.
+### Anchor · glf-regrip
+<!-- slug: anc-glf-regrip | file: components/pregame/audio/clips.ts -->
+
+1. Re-grip the club.
+### Anchor · glf-glove-tap
+<!-- slug: anc-glf-glove-tap | file: components/pregame/audio/clips.ts -->
+
+1. Glove tap.
+### Anchor · glf-step-back
+<!-- slug: anc-glf-step-back | file: components/pregame/audio/clips.ts -->
+
+1. Step back, then step in.
+### Self-Talk Golf · 01
+<!-- slug: st-glf-01 | file: components/pregame/audio/clips.ts -->
+
+1. You're okay. Next shot.
 ### Shared · Prayer (Self-guided)
 <!-- slug: shared-prayer-selfguided | file: components/pregame/audio/clips.ts -->
 
