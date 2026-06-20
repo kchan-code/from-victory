@@ -835,12 +835,12 @@ describe("basketball opener parity (FV-120)", () => {
 //     bare magic number would be both brittle and opaque. Instead assert a
 //     documented per-category breakdown whose sum must equal the catalog size —
 //     this catches orphaned/dropped clips (the sum diverges) AND stays legible.
-//     Counts verified against manifest bd02b799 (FV-266 golf render + #232 intros;
-//     + anc-take-a-drink, the hockey "take a drink from your bottle" anchor).
+//     Counts verified against manifest e68cc2db (FV-305 de-corn re-render of
+//     hockey/basketball/golf + FV-303 golf anchors anc-glf-* + st-glf-01).
 // ---------------------------------------------------------------------------
 
 describe("catalog count (multi-sport, FV-266)", () => {
-  it("catalog is fully categorized (no orphans) and totals 346 entries", () => {
+  it("catalog is fully categorized (no orphans) and totals 350 entries", () => {
     const keys = Object.keys(catalog);
     const n = (re: RegExp) => keys.filter((k) => re.test(k)).length;
     const breakdown = {
@@ -853,8 +853,8 @@ describe("catalog count (multi-sport, FV-266)", () => {
       practice: n(/^pp-/), //                       56 — pre-practice clips (all sports + variations)
       openers: n(/^opener-/), //                    19 — need openers (incl. basketball variants)
       cueWord: n(/^cw-/), //                        20 — cue-word reset/sendoff
-      anchor: n(/^anc-/), //                         9 — reset-anchor clips (+anc-take-a-drink, hockey)
-      selfTalk: n(/^st-/), //                        8 — self-talk clips
+      anchor: n(/^anc-/), //                        12 — reset-anchor clips (+3 golf anc-glf-*, FV-303)
+      selfTalk: n(/^st-/), //                        9 — self-talk clips (+st-glf-01, FV-303)
       shared: n(/^shared-/), //                     10 — shared scaffold clips (+3 section intros, #232)
     };
     const sum = Object.values(breakdown).reduce((a, b) => a + b, 0);
@@ -864,7 +864,7 @@ describe("catalog count (multi-sport, FV-266)", () => {
     // Every catalog key falls into exactly one bucket — catches typos/orphans.
     expect(uncategorized, `uncategorized clips: ${uncategorized.join(", ")}`).toEqual([]);
     expect(sum).toBe(keys.length);
-    expect(keys).toHaveLength(346);
+    expect(keys).toHaveLength(350);
   });
 });
 

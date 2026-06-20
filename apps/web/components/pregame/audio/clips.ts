@@ -5097,6 +5097,56 @@ export const CLIP_ST_BSB_01_SCRIPT: AudioScript = {
   ],
 };
 
+// ── Golf personalization clips (FV-303) ──────────────────────────────────────
+// 3 golf-specific anchor clips + 1 self-talk clip. These complete the golf
+// pregame option set. Their slug-map wiring in audio-mapping.ts
+// (ANCHOR_OPTION_SLUGS / SELFTALK_OPTION_SLUGS) is added in the same PR so
+// the playlist-integrity §3 check passes when the clips are in the manifest.
+
+export const CLIP_ANC_GLF_REGRIP_SCRIPT: AudioScript = {
+  slug: "anc-glf-regrip",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Re-grip the club." },
+  ],
+};
+
+export const CLIP_ANC_GLF_GLOVE_TAP_SCRIPT: AudioScript = {
+  slug: "anc-glf-glove-tap",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Glove tap." },
+  ],
+};
+
+export const CLIP_ANC_GLF_STEP_BACK_SCRIPT: AudioScript = {
+  slug: "anc-glf-step-back",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Step back, then step in." },
+  ],
+};
+
+export const CLIP_ST_GLF_01_SCRIPT: AudioScript = {
+  slug: "st-glf-01",
+  voice: "ash",
+  instructions: SELFTALK_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "You're okay. Next shot." },
+  ],
+};
+
 // ── Pre-practice prayer clips (shared / sport-neutral) ───────────────────────
 //
 // Three clips pair with the pre-practice "Lock In" sequence.
@@ -5648,6 +5698,11 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   ...BASEBALL_PREGAME_CLIP_SCRIPTS,
   // Golf pregame clips (FV-265) — 3 profile VIZ + 30 hard-moment cells (render = FV-266).
   ...GOLF_PREGAME_CLIP_SCRIPTS,
+  // Golf anchors + self-talk (FV-303)
+  CLIP_ANC_GLF_REGRIP_SCRIPT,
+  CLIP_ANC_GLF_GLOVE_TAP_SCRIPT,
+  CLIP_ANC_GLF_STEP_BACK_SCRIPT,
+  CLIP_ST_GLF_01_SCRIPT,
   // Football pregame clips (FV-202, v2 DORMANT) — 7 role VIZ + 67 hard-moment
   // cells. Registered so the generator renders them at the (deferred) audio
   // pass; the committed manifest.json does not yet contain them.

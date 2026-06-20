@@ -32,8 +32,8 @@ import { Reveal } from "./Reveal";
 // ---------------------------------------------------------------------------
 
 export const SAMPLE_SRC =
-  "/audio/pregame/clips/opener-confidence.5307daf0.mp3"; // candidate A — defaulted
-export const SAMPLE_DURATION_SEC = 41.368;
+  "/audio/pregame/clips/opener-reset.15e12b57.mp3"; // FV-305 de-corn re-render (MANIFEST_VERSION e68cc2db) — was opener-confidence, now 61s (>60s cap), swapped to opener-reset (58.4s)
+export const SAMPLE_DURATION_SEC = 58.432;
 
 function formatTime(sec: number): string {
   const m = Math.floor(sec / 60);

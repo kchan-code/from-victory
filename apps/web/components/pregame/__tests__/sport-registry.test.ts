@@ -652,13 +652,11 @@ describe("FV-117: sport-keyed selfTalkOptions picker", () => {
 // ---------------------------------------------------------------------------
 
 const KNOWN_UNVOICED_ANCHORS: Partial<Record<Sport, readonly string[]>> = {
-  // FV-303 — render or remove these golf-specific anchors.
-  golf: ["Re-grip the club", "Glove tap", "Step back, then step in"],
+  // FV-303 — golf anchors now rendered; no known unvoiced anchors.
 };
 
 const KNOWN_UNVOICED_SELFTALK: Partial<Record<Sport, readonly string[]>> = {
-  // FV-303 — render or remove this golf-specific self-talk phrase.
-  golf: ["You're okay. Next shot."],
+  // FV-303 — golf self-talk now rendered; no known unvoiced self-talk.
 };
 
 describe("FV-301: every selectable sport voices its picker options", () => {
