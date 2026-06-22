@@ -177,6 +177,9 @@ export const NEED_OPENER_SLUGS: Record<NeedToday, string> = {
   "Better reads": "opener-decisions",
   // Swimming + Track & Field (v2 dormant) — reuse the sport-neutral opener.
   "Better race execution": "opener-decisions",
+  // Golf "Trust my swing" (FV-294) — reuses the sport-neutral decisions opener
+  // (same Proverbs 3:5-6 family). A bespoke opener-trust-swing is a later by-ear.
+  "Trust my swing": "opener-decisions",
   Leadership: "opener-leadership",
   Joy: "opener-joy",
   Hope: "opener-hope",

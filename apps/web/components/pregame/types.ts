@@ -18,6 +18,7 @@ export type NeedToday =
   | "Better course management"
   | "Better reads"
   | "Better race execution"
+  | "Trust my swing"
   | "Leadership"
   | "Joy"
   | "Hope"
@@ -246,6 +247,18 @@ export const NEED_VERSE: Record<NeedToday, NeedVerse> = {
   // training over panic. v2 dormant tracks.
   "Better race execution": {
     reference: "Proverbs 3:5-6",
+    displayText:
+      "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him.",
+  },
+  // Golf "Trust my swing" (FV-294) — replaces "Physical courage" for golf. The
+  // golf-true courage is COMMITMENT: trusting the trained swing, not steering it.
+  // Joins the decision/commitment family on Proverbs 3:5-6 ("lean not on your own
+  // understanding" = "don't steer"). The eyebrow holds the ordering line so it
+  // never reads as self-trust over God-trust — you trust the swing FROM security
+  // in Christ, never FOR it.
+  "Trust my swing": {
+    reference: "Proverbs 3:5-6",
+    eyebrow: "Trust is something you lean into, not something you manufacture.",
     displayText:
       "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him.",
   },

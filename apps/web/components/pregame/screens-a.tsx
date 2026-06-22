@@ -21,7 +21,11 @@ import {
   type NeedToday,
   type PregameState,
 } from "./types";
-import { adversityOptionsFor, type SportConfig } from "./sport-registry";
+import {
+  adversityOptionsFor,
+  DEFAULT_POSITIVE_PLAYS_COPY,
+  type SportConfig,
+} from "./sport-registry";
 import {
   positivePlaysFor,
   MAX_POSITIVE_PLAYS,
@@ -452,15 +456,20 @@ export function PositivePlaysScreen({
   // trade-off without pretending to know the exact runtime (see positive-plays).
   const estMin = Math.max(1, Math.round((picked.length * POSITIVE_PLAY_EST_SEC) / 60));
 
+  // FV-294: per-sport picker copy — golf rehearses "shots," not team "plays."
+  // Team sports omit positivePlaysCopy and fall back to the default. `{MAX}` is
+  // the hard cap, filled in at render.
+  const copy = sportConfig.positivePlaysCopy ?? DEFAULT_POSITIVE_PLAYS_COPY;
+  const fillMax = (s: string) => s.replace(/\{MAX\}/g, String(MAX_POSITIVE_PLAYS));
+
   return (
     <ScreenBody>
-      <SectionLabel>Step 04 · Positive Plays</SectionLabel>
+      <SectionLabel>{copy.label}</SectionLabel>
       <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
-        Picture the plays you&rsquo;ll make.
+        {copy.heading}
       </h1>
       <p className="mb-4 font-body text-[14px] text-cream/50">
-        Pick up to {MAX_POSITIVE_PLAYS} you want to see yourself nail today.
-        We&rsquo;ll rehearse each one in the guided session.
+        {fillMax(copy.sub)}
       </p>
 
       <div className="flex flex-wrap gap-2">
@@ -485,7 +494,7 @@ export function PositivePlaysScreen({
           <>
             <Eyebrow className="!text-gold">Pick at least one</Eyebrow>
             <p className="mt-1.5 font-heading text-[14px] font-medium leading-[1.4] text-cream">
-              Choose 1 to {MAX_POSITIVE_PLAYS} plays to rehearse before we step on.
+              {fillMax(copy.empty)}
             </p>
           </>
         ) : (
