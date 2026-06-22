@@ -5,6 +5,7 @@
 
 import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
 import { clearPregameSession } from "@/lib/pregame/session-cache";
+import { clearTourFlags } from "@/components/athlete/CoachmarkTour";
 import { signOut } from "@/lib/actions/auth";
 
 interface SignOutButtonProps {
@@ -34,10 +35,12 @@ interface SignOutButtonProps {
 export function SignOutButton({ className, children = "Sign out" }: SignOutButtonProps) {
   function handleSubmit() {
     // Clear offline caches synchronously on submit, before the server action
-    // redirects. Both are no-ops if localStorage is unavailable (private
+    // redirects. All are no-ops if localStorage is unavailable (private
     // browsing, SSR guard hit somehow).
     clearAthleteCache();
     clearPregameSession();
+    // FV-313: reset tour flags so the next athlete on this device sees the tour.
+    clearTourFlags();
   }
 
   return (

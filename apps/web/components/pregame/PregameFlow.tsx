@@ -14,6 +14,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import CoachmarkTour from "@/components/athlete/CoachmarkTour";
 import { QuickReset } from "./QuickReset";
 import {
   BreathScreen,
@@ -226,14 +227,18 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
 
   if (view.kind === "start") {
     return (
-      <PregameShell>
-        <PregameStart
-          onBegin={beginFull}
-          onQuick={beginQuick}
-          savedSession={savedSession}
-          onBeginFromSaved={beginFromSaved}
-        />
-      </PregameShell>
+      <>
+        <PregameShell>
+          <PregameStart
+            onBegin={beginFull}
+            onQuick={beginQuick}
+            savedSession={savedSession}
+            onBeginFromSaved={beginFromSaved}
+          />
+        </PregameShell>
+        {/* FV-313: coachmark tour — only on the start screen, never mid-flow */}
+        <CoachmarkTour surface="pregame" />
+      </>
     );
   }
 

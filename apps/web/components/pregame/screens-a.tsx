@@ -121,9 +121,12 @@ export function PregameStart({
         </p>
 
         <div className="flex flex-col gap-2.5 pb-8">
-          <Button variant="coach" full onClick={onBegin}>
-            BEGIN
-          </Button>
+          {/* data-coachmark wrapper: Button doesn't forward arbitrary attrs */}
+          <div data-coachmark="pregame-begin-btn">
+            <Button variant="coach" full onClick={onBegin}>
+              BEGIN
+            </Button>
+          </div>
 
           {/* FV-223: "Run it like last time" — secondary entry, shown only
               when a valid saved session exists for the current sport.
@@ -150,6 +153,7 @@ export function PregameStart({
           <button
             type="button"
             onClick={onQuick}
+            data-coachmark="pregame-quick-reset-btn"
             className="flex items-center justify-center gap-2 px-0 py-3 font-heading text-[14px] font-medium text-cream/70 transition-colors hover:text-cream"
           >
             <Icon name="bolt" size={14} className="text-gold" />

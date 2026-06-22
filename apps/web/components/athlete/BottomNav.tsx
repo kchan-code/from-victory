@@ -45,20 +45,31 @@ export function AthleteBottomNav({ activeHref }: { activeHref?: string }) {
   }, []);
 
   useEffect(() => {
+    // FV-313: the first-run coachmark tour locks scroll at the top of the hub,
+    // where the nav is normally hidden — also reveal it while the tour is
+    // active, otherwise the "Get around" stop spotlights a hidden element.
+    const computeVisible = () =>
+      window.scrollY > HIDE_THRESHOLD ||
+      document.body.getAttribute("data-coachmark-tour") === "hub";
+
     const handleScroll = () => {
       if (rafRef.current !== null) return;
       rafRef.current = requestAnimationFrame(() => {
         rafRef.current = null;
-        setVisible(window.scrollY > HIDE_THRESHOLD);
+        setVisible(computeVisible());
       });
     };
+
+    const handleTourChange = () => setVisible(computeVisible());
 
     // Run once on mount so the nav is correct if the page loads mid-scroll
     handleScroll();
 
     window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("fv:coachmark-change", handleTourChange);
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("fv:coachmark-change", handleTourChange);
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
   }, []);
@@ -68,6 +79,7 @@ export function AthleteBottomNav({ activeHref }: { activeHref?: string }) {
   return (
     <nav
       aria-label="Athlete sections"
+      data-coachmark="hub-bottom-nav"
       className={[
         // Base — fixed bottom bar, full width, charcoal surface
         "fixed bottom-0 left-0 right-0 z-40",
