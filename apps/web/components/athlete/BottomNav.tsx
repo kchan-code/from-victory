@@ -68,6 +68,7 @@ export function AthleteBottomNav({ activeHref }: { activeHref?: string }) {
   return (
     <nav
       aria-label="Athlete sections"
+      data-coachmark="hub-bottom-nav"
       className={[
         // Base — fixed bottom bar, full width, charcoal surface
         "fixed bottom-0 left-0 right-0 z-40",

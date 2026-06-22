@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AthleteBottomNav } from "@/components/athlete/BottomNav";
+import CoachmarkTour from "@/components/athlete/CoachmarkTour";
 import InstallPrompt from "@/components/athlete/InstallPrompt";
 import { Icon, RhythmRing } from "@/components/ui";
 import { SignOutButton } from "@/components/auth/SignOutButton";
@@ -107,7 +108,7 @@ export default async function AthleteHomePage() {
         <h1 className="sr-only">Athlete Home</h1>
 
         {/* ── Greeting + rhythm ring ── */}
-        <section className="flex items-center gap-5 mb-8" aria-label="Your rhythm">
+        <section className="flex items-center gap-5 mb-8" aria-label="Your rhythm" data-coachmark="hub-rhythm-ring">
           {/*
            * Day-position center: shows "N / 30" so day 1 reads as a beginning,
            * not "0%". dayNumber starts at 1 — always a positive, forward frame.
@@ -156,6 +157,7 @@ export default async function AthleteHomePage() {
           {/* 1. Daily Training — primary / gold accent */}
           <Link
             href="/athlete/daily"
+            data-coachmark="hub-daily-card"
             className="group block rounded-2xl border border-[rgba(223,175,55,0.40)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-gold active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
             style={{
               background:
@@ -189,6 +191,7 @@ export default async function AthleteHomePage() {
           {/* 2. Pregame */}
           <Link
             href="/athlete/pregame"
+            data-coachmark="hub-pregame-card"
             className="group block rounded-2xl border border-[rgba(223,175,55,0.22)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.45)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
             style={{
               background:
@@ -336,6 +339,9 @@ export default async function AthleteHomePage() {
 
       {/* ── Bottom nav (no tab active on the hub) ── */}
       <AthleteBottomNav />
+
+      {/* ── First-run coachmark tour (FV-313) ── */}
+      <CoachmarkTour surface="hub" />
     </main>
   );
 }

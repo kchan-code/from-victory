@@ -731,6 +731,23 @@ a:hover { color: var(--accent-hot); }
     .animate-card-bloom { animation: none; }
   }
 
+  /* ── FV-313: Coachmark tour fade-in ────────────────────────────────────────
+     Single keyframe used by the backdrop strips and tooltip. 200ms ease-out.
+     Wrapped in prefers-reduced-motion: no-preference so users who have
+     reduced motion enabled get no animation (instant visibility). */
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes fv-coachmark-fade {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+  }
+  .animate-coachmark-fade-in {
+    animation: fv-coachmark-fade 200ms var(--ease-out) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-coachmark-fade-in { animation: none; }
+  }
+
   /* Sticky nav blur */
   .fv-nav-wrap {
     position: fixed;
