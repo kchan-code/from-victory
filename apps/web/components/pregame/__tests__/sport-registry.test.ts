@@ -23,7 +23,7 @@ import {
   adversityLabelFor,
   type SportConfig,
 } from "../sport-registry";
-import { NEEDS, RESET_ANCHORS, SELF_TALK_OPTIONS } from "../types";
+import { NEEDS, NEED_VERSE, RESET_ANCHORS, SELF_TALK_OPTIONS } from "../types";
 import { SUPPORTED_SPORTS, type Sport } from "@/lib/sports";
 import { positivePlaysFor, sportHasPositivePlays } from "../positive-plays";
 
@@ -527,6 +527,56 @@ describe("FV-117: sport-keyed needs picker", () => {
   it("both sports include 'Be more Vocal' (FV-124)", () => {
     expect(HOCKEY_CONFIG.needs).toContain("Be more Vocal");
     expect(BASKETBALL_CONFIG.needs).toContain("Be more Vocal");
+  });
+});
+
+// ── Golf individual-sport needs + picker copy (FV-294) ──────────────────────
+// Golf is an individual sport: it drops the team-sport needs (Leadership,
+// Physical courage, Be more Vocal) and adds "Trust my swing" (commitment, not
+// contact), and it overrides the positive-plays picker copy to a "shots"
+// register. These guard that config so a future edit can't silently regress it.
+describe("FV-294: golf individual-sport needs + positive-plays copy", () => {
+  const golf = getSportConfig("golf");
+
+  it("golf needs has 8 options", () => {
+    expect(golf.needs).toHaveLength(8);
+  });
+
+  it("golf needs includes 'Trust my swing' and 'Better course management'", () => {
+    expect(golf.needs).toContain("Trust my swing");
+    expect(golf.needs).toContain("Better course management");
+  });
+
+  it("golf drops the team-sport needs (Physical courage / Leadership / Be more Vocal)", () => {
+    expect(golf.needs).not.toContain("Physical courage");
+    expect(golf.needs).not.toContain("Leadership");
+    expect(golf.needs).not.toContain("Be more Vocal");
+  });
+
+  it("every golf need resolves to an opener slug", () => {
+    const missing = golf.needs.filter((need) => !resolveOpenerSlug(need, "golf"));
+    expect(missing).toEqual([]);
+  });
+
+  it("'Trust my swing' reuses the shared decisions opener (FV-294 option A)", () => {
+    expect(resolveOpenerSlug("Trust my swing", "golf")).toBe("opener-decisions");
+    expect(NEED_OPENER_SLUGS["Trust my swing"]).toBe("opener-decisions");
+  });
+
+  it("'Trust my swing' has a NEED_VERSE entry on Proverbs 3:5-6 with the ordering eyebrow", () => {
+    const verse = NEED_VERSE["Trust my swing"];
+    expect(verse.reference).toBe("Proverbs 3:5-6");
+    expect(verse.eyebrow).toBeTruthy();
+  });
+
+  it("golf overrides the picker copy to its own 'shots' register", () => {
+    expect(golf.positivePlaysCopy?.label).toBe("Step 04 · Shots");
+    expect(golf.positivePlaysCopy?.heading).toContain("shots");
+  });
+
+  it("team sports leave positivePlaysCopy undefined (fall back to the default)", () => {
+    expect(HOCKEY_CONFIG.positivePlaysCopy).toBeUndefined();
+    expect(BASKETBALL_CONFIG.positivePlaysCopy).toBeUndefined();
   });
 });
 

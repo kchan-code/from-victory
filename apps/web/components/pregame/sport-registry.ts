@@ -39,6 +39,37 @@ export type Sport = "hockey" | "basketball" | "baseball" | "golf" | "football" |
  */
 export type AdversityOption = { key: string; label: string };
 
+/**
+ * Copy shown on the positive-plays picker (FV-294). A sport may override the
+ * team-sport default to speak its own register — golf rehearses "shots," not
+ * team "plays." `{MAX}` in `sub`/`empty` is replaced with MAX_POSITIVE_PLAYS by
+ * the picker screen. See `SportConfig.positivePlaysCopy` +
+ * `DEFAULT_POSITIVE_PLAYS_COPY`. Generalizes to swimming/tennis when they ship
+ * plays. Mirrors the `cueWordHelper` / `cardShareHint` per-sport-copy pattern.
+ */
+export type PositivePlaysCopy = {
+  /** Section label, e.g. "Step 04 · Positive Plays". */
+  label: string;
+  /** Heading, e.g. "Picture the plays you'll make.". */
+  heading: string;
+  /** Subhead; `{MAX}` → MAX_POSITIVE_PLAYS at render. */
+  sub: string;
+  /** Empty-state nudge; `{MAX}` → MAX_POSITIVE_PLAYS at render. */
+  empty: string;
+};
+
+/**
+ * The team-sport default picker copy (hockey/basketball/baseball). Used when a
+ * SportConfig declares no `positivePlaysCopy`. Verbatim from the pre-FV-294
+ * hardcoded screens-a strings, so team sports are byte-identical.
+ */
+export const DEFAULT_POSITIVE_PLAYS_COPY: PositivePlaysCopy = {
+  label: "Step 04 · Positive Plays",
+  heading: "Picture the plays you’ll make.",
+  sub: "Pick up to {MAX} you want to see yourself nail today. We’ll rehearse each one in the guided session.",
+  empty: "Choose 1 to {MAX} plays to rehearse before we step on.",
+};
+
 // ---------------------------------------------------------------------------
 // SportConfig shape
 // ---------------------------------------------------------------------------
@@ -159,6 +190,15 @@ export type SportConfig = {
    * Basketball: "Screenshot it. Open it before tip-off."
    */
   cardShareHint: string;
+
+  /**
+   * OPTIONAL per-sport copy for the positive-plays picker (FV-294). Lets an
+   * individual sport speak its own register — golf rehearses "shots," not team
+   * "plays." Absent → DEFAULT_POSITIVE_PLAYS_COPY (the team-sport strings), so
+   * hockey/basketball/baseball are byte-identical. Generalizes to swimming/tennis
+   * when they ship plays. Mirrors cueWordHelper / cardShareHint.
+   */
+  positivePlaysCopy?: PositivePlaysCopy;
 };
 
 // ---------------------------------------------------------------------------
@@ -1015,21 +1055,22 @@ export const GOLF_CONFIG: SportConfig = {
     "Reset between shots": "pp-golf-focus-reset-between-shots",
   },
 
-  // FV-117 per-sport picker lists. "Better puck decisions" → "Better course
-  // management"; all other 9 needs are sport-neutral and shared. The golf
-  // need-openers REUSE the shared opener clips (resolveOpenerSlug falls back to
-  // NEED_OPENER_SLUGS for non-basketball sports — no golf-specific opener clips).
+  // FV-294: golf is an individual sport — drop the team-sport needs
+  // ("Leadership", "Physical courage", "Be more Vocal") and add "Trust my swing"
+  // (the golf-true courage: commitment, not contact). 8 needs. "Better puck
+  // decisions" → "Better course management". Golf need-openers REUSE the shared
+  // opener clips (resolveOpenerSlug falls back to NEED_OPENER_SLUGS for
+  // non-basketball sports); "Trust my swing" → opener-decisions (same Proverbs
+  // 3:5-6 family — see NEED_OPENER_SLUGS / NEED_VERSE).
   needs: [
     "Confidence",
     "Calm",
     "Compete level",
     "Reset after mistakes",
-    "Physical courage",
+    "Trust my swing",
     "Better course management",
-    "Leadership",
     "Joy",
     "Hope",
-    "Be more Vocal",
   ] as const satisfies readonly NeedToday[],
 
   // "Long exhale", "Press thumb to palm", "Say cue word" are shared; "Re-grip the
@@ -1070,6 +1111,16 @@ export const GOLF_CONFIG: SportConfig = {
 
   cueWordHelper: "The one you'd say to yourself on the walk to the next shot.",
   cardShareHint: "Screenshot it. Open it before your tee time.",
+
+  // FV-294: golf rehearses "shots," not team "plays." Dormant until the golf
+  // positive plays land (the picker step is skipped while golf ships no plays);
+  // wired now so it activates with the right register the moment they do.
+  positivePlaysCopy: {
+    label: "Step 04 · Shots",
+    heading: "Picture the shots you’ll hit.",
+    sub: "Pick up to {MAX} you want to see yourself pure today. We’ll rehearse each one in the guided session.",
+    empty: "Choose 1 to {MAX} shots to rehearse before your tee time.",
+  },
 };
 
 // ---------------------------------------------------------------------------
