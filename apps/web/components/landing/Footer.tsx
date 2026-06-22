@@ -54,7 +54,9 @@ export function Footer() {
           <div>© 2026 From Victory · All rights reserved</div>
           <div className="flex gap-3.5 text-cream/50">
             <a
-              href="#"
+              href="https://www.instagram.com/fromvictory"
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="Instagram"
               className="inline-flex hover:text-cream"
             >
@@ -72,7 +74,9 @@ export function Footer() {
               </svg>
             </a>
             <a
-              href="#"
+              href="https://x.com/fromvictoryapp"
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="X"
               className="inline-flex hover:text-cream"
             >
@@ -88,7 +92,9 @@ export function Footer() {
               </svg>
             </a>
             <a
-              href="#"
+              href="https://www.youtube.com/channel/UCzf2kE-zUfScbYTQxG603Lw"
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="YouTube"
               className="inline-flex hover:text-cream"
             >
@@ -102,6 +108,24 @@ export function Footer() {
               >
                 <rect x="2" y="6" width="20" height="12" rx="3" />
                 <path d="M10 9l5 3-5 3V9z" fill="currentColor" />
+              </svg>
+            </a>
+            <a
+              href="https://www.tiktok.com/@fromvictoryapp"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="TikTok"
+              className="inline-flex hover:text-cream"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+              >
+                <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
               </svg>
             </a>
           </div>
