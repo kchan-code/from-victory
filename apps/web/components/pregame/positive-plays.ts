@@ -103,6 +103,33 @@ export const POSITIVE_PLAYS: readonly PositivePlay[] = [
   { slug: "viz-big-short-roll-read", role: "Big", title: "Short roll — catch, read, pass" },
   { slug: "viz-big-clutch-free-throws", role: "Big", title: "Clutch free throws — the hack didn't work" },
   { slug: "viz-big-game-sealing-block", role: "Big", title: "Late rim protection — wall up, no foul" },
+
+  // ── Bomber — Golf (7) ─────────────────────────────────────────────────────
+  { slug: "viz-bomber-stripe-the-fairway", role: "Bomber", title: "Stripe a drive down the middle" },
+  { slug: "viz-bomber-walk-up-tall", role: "Bomber", title: "Bomb it past the group, walk up tall" },
+  { slug: "viz-bomber-high-draw", role: "Bomber", title: "Flush a high draw around the corner" },
+  { slug: "viz-bomber-long-iron-par5", role: "Bomber", title: "Reach the par 5 in two" },
+  { slug: "viz-bomber-wedge-tap-in", role: "Bomber", title: "Stuff a wedge to tap-in range" },
+  { slug: "viz-bomber-rip-it-first-tee", role: "Bomber", title: "Rip it on your line, first tee" },
+  { slug: "viz-bomber-take-your-medicine", role: "Bomber", title: "Take your medicine, punch out, save par" },
+
+  // ── Ball-Striker — Golf (7) ───────────────────────────────────────────────
+  { slug: "viz-ballstriker-small-target", role: "Ball-Striker", title: "Pick a small target and flush it" },
+  { slug: "viz-ballstriker-fat-of-the-green", role: "Ball-Striker", title: "Hit the fat of the green, hole after hole" },
+  { slug: "viz-ballstriker-stick-it-pin-high", role: "Ball-Striker", title: "Stick an iron to ten feet, pin high" },
+  { slug: "viz-ballstriker-knockdown", role: "Ball-Striker", title: "Pure a knockdown under the wind" },
+  { slug: "viz-ballstriker-two-putt-walk", role: "Ball-Striker", title: "Two-putt from distance, walk to the next tee" },
+  { slug: "viz-ballstriker-let-it-go", role: "Ball-Striker", title: "Trust the stock swing, let a loose one go" },
+  { slug: "viz-ballstriker-paint-the-fairway", role: "Ball-Striker", title: "Paint the fairway off a tight tee" },
+
+  // ── Scrambler — Golf (7) ──────────────────────────────────────────────────
+  { slug: "viz-scrambler-up-and-down-short-sided", role: "Scrambler", title: "Get up and down from short-sided" },
+  { slug: "viz-scrambler-roll-in-the-breaker", role: "Scrambler", title: "Roll in a breaking putt from twelve feet" },
+  { slug: "viz-scrambler-hole-the-bunker-shot", role: "Scrambler", title: "Hole a bunker shot to save par" },
+  { slug: "viz-scrambler-lag-it-stone-dead", role: "Scrambler", title: "Lag it stone dead from across the green" },
+  { slug: "viz-scrambler-chip-in-from-rough", role: "Scrambler", title: "Chip in from the rough" },
+  { slug: "viz-scrambler-grind-out-par", role: "Scrambler", title: "Grind out a par after a wild drive" },
+  { slug: "viz-scrambler-four-footer", role: "Scrambler", title: "Drain the four-footer to keep the round alive" },
 ];
 
 // Fast slug → title lookup (built once at module load).

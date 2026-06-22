@@ -29,6 +29,7 @@ import { resolvePlaylist, type ClipManifest } from "../audio-playlist";
 import {
   HOCKEY_CONFIG,
   BASKETBALL_CONFIG,
+  GOLF_CONFIG,
   SPORT_REGISTRY,
   type Sport,
 } from "../sport-registry";
@@ -840,11 +841,12 @@ describe("basketball opener parity (FV-120)", () => {
 // ---------------------------------------------------------------------------
 
 describe("catalog count (multi-sport, FV-266)", () => {
-  it("catalog is fully categorized (no orphans) and totals 350 entries", () => {
+  it("catalog is fully categorized (no orphans) and totals 372 entries", () => {
     const keys = Object.keys(catalog);
     const n = (re: RegExp) => keys.filter((k) => re.test(k)).length;
     const breakdown = {
-      viz: n(/^viz-/), //                          65 — profile + positive-play viz (all sports)
+      viz: n(/^viz-/), //                          86 — profile + positive-play viz (all sports)
+      //                                                 +21 golf viz (FV-294)
       hmHockey: n(/^hm-(forward|defense|goalie)-/), // 30 — hockey hard-moment cells
       hmBball: n(/^hm-bb-/), //                     30 — basketball compositional cells
       bbalBaked: n(/^bb-/), //                      30 — legacy baked basketball composites
@@ -853,8 +855,8 @@ describe("catalog count (multi-sport, FV-266)", () => {
       practice: n(/^pp-/), //                       56 — pre-practice clips (all sports + variations)
       openers: n(/^opener-/), //                    19 — need openers (incl. basketball variants)
       cueWord: n(/^cw-/), //                        20 — cue-word reset/sendoff
-      anchor: n(/^anc-/), //                        12 — reset-anchor clips (+3 golf anc-glf-*, FV-303)
-      selfTalk: n(/^st-/), //                        9 — self-talk clips (+st-glf-01, FV-303)
+      anchor: n(/^anc-/), //                        12 — reset-anchor clips (+3 golf anc-glf-* FV-303)
+      selfTalk: n(/^st-/), //                       10 — self-talk clips (+st-glf-01 FV-303, +st-glf-02 FV-294)
       shared: n(/^shared-/), //                     10 — shared scaffold clips (+3 section intros, #232)
     };
     const sum = Object.values(breakdown).reduce((a, b) => a + b, 0);
@@ -864,7 +866,7 @@ describe("catalog count (multi-sport, FV-266)", () => {
     // Every catalog key falls into exactly one bucket — catches typos/orphans.
     expect(uncategorized, `uncategorized clips: ${uncategorized.join(", ")}`).toEqual([]);
     expect(sum).toBe(keys.length);
-    expect(keys).toHaveLength(350);
+    expect(keys).toHaveLength(372);
   });
 });
 
@@ -1010,9 +1012,12 @@ describe("positive-play library integrity (FV-144)", () => {
   });
 
   it("every play's declared role matches its slug prefix (viz-<role>-…)", () => {
+    // Golf's "Ball-Striker" role has slug token "ballstriker" (hyphen stripped,
+    // matching GOLF_CONFIG.cellSlugFor — role.toLowerCase().replace(/-/g,"")),
+    // so we strip hyphens from the role before building the expected prefix.
     const mismatches: string[] = [];
     for (const { slug, role } of POSITIVE_PLAYS) {
-      const expectedPrefix = `viz-${role.toLowerCase()}-`;
+      const expectedPrefix = `viz-${role.toLowerCase().replace(/-/g, "")}-`;
       if (!slug.startsWith(expectedPrefix)) {
         mismatches.push(`${slug} declares role "${role}" but is not "${expectedPrefix}…"`);
       }
@@ -1022,7 +1027,7 @@ describe("positive-play library integrity (FV-144)", () => {
 
   it("each role with positions exposes a non-empty play list", () => {
     const empty: string[] = [];
-    for (const config of [HOCKEY_CONFIG, BASKETBALL_CONFIG]) {
+    for (const config of [HOCKEY_CONFIG, BASKETBALL_CONFIG, GOLF_CONFIG]) {
       for (const role of config.roles ?? []) {
         if (positivePlaysFor(role).length === 0) empty.push(`${config.sportKey}/${role}`);
       }
@@ -1059,9 +1064,9 @@ describe("positive-play library integrity (FV-144)", () => {
     expect(slugs[sendoff + 1]).toBe("cw-steady-sendoff");
   });
 
-  it("picking plays for a real session swaps the flagship for the picked clips (every role, both sports)", () => {
+  it("picking plays for a real session swaps the flagship for the picked clips (every role, all sports)", () => {
     const failures: string[] = [];
-    for (const config of [HOCKEY_CONFIG, BASKETBALL_CONFIG]) {
+    for (const config of [HOCKEY_CONFIG, BASKETBALL_CONFIG, GOLF_CONFIG]) {
       const need = config.needs[0]!; // "Confidence" — has an opener in both sports
       const adversity = config.adversities[0]!;
       for (const role of config.roles ?? []) {

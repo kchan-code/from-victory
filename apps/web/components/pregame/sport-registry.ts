@@ -1086,12 +1086,14 @@ export const GOLF_CONFIG: SportConfig = {
     "Say cue word",
   ] as const,
 
-  // "You're okay. Next shift." → "You're okay. Next shot." for golf; the other 6
-  // phrases are sport-neutral and shared.
+  // "You're okay. Next shift." → "You're okay. Next shot." for golf;
+  // "Stay steady. Make the next play." → "Stay steady. Play the next shot." for golf
+  // (FV-294: "next play" is team-sport language, wrong for an individual sport);
+  // the other 5 phrases are sport-neutral and shared.
   selfTalkOptions: [
     "You're okay. Next shot.",
     "Breathe. Do your job.",
-    "Stay steady. Make the next play.",
+    "Stay steady. Play the next shot.",
     "You don't need to do too much.",
     "Compete, recover, go again.",
     "Your identity is secure. Play free.",

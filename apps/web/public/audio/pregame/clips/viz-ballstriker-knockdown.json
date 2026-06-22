@@ -1,0 +1,10 @@
+{
+  "slug": "viz-ballstriker-knockdown",
+  "durationSec": 65.544,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    }
+  ]
+}
