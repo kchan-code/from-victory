@@ -320,6 +320,9 @@ export default function CoachmarkTour({ surface }: { surface: Surface }) {
       setActive(false);
       // Restore scroll lock
       document.body.style.overflow = "";
+      // FV-313: clear the tour signal so sibling chrome (bottom nav) reverts.
+      document.body.removeAttribute("data-coachmark-tour");
+      window.dispatchEvent(new Event("fv:coachmark-change"));
       // Restore focus to pre-tour element
       if (priorFocusRef.current && "focus" in priorFocusRef.current) {
         (priorFocusRef.current as HTMLElement).focus();
@@ -382,6 +385,10 @@ export default function CoachmarkTour({ surface }: { surface: Surface }) {
         setActive(true);
         priorFocusRef.current = document.activeElement;
         document.body.style.overflow = "hidden";
+        // FV-313: signal sibling chrome (e.g. the bottom nav, hidden at the top
+        // of the hub) to reveal itself for the duration of the tour.
+        document.body.setAttribute("data-coachmark-tour", surface);
+        window.dispatchEvent(new Event("fv:coachmark-change"));
         return;
       }
     }
@@ -456,6 +463,7 @@ export default function CoachmarkTour({ surface }: { surface: Surface }) {
   useEffect(() => {
     return () => {
       document.body.style.overflow = "";
+      document.body.removeAttribute("data-coachmark-tour");
     };
   }, []);
 
@@ -642,7 +650,7 @@ export default function CoachmarkTour({ surface }: { surface: Surface }) {
           <div
             aria-live="polite"
             aria-atomic="true"
-            className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-gold/60 mb-2"
+            className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-gold/70 mb-2"
           >
             {stepLabel}
           </div>

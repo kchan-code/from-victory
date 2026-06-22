@@ -160,8 +160,9 @@ afterEach(() => {
   removeAnchors();
   vi.clearAllMocks();
   vi.useRealTimers();
-  // Restore body overflow if tests left it locked
+  // Restore body overflow + tour signal if tests left them set
   document.body.style.overflow = "";
+  document.body.removeAttribute("data-coachmark-tour");
 });
 
 // ---------------------------------------------------------------------------
@@ -183,6 +184,30 @@ describe("CoachmarkTour — hub surface", () => {
     await act(async () => { vi.runAllTimers(); });
     const tooltip = screen.getByTestId("coachmark-tooltip");
     expect(within(tooltip).getByText(/step 1 of 4/i)).toBeInTheDocument();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-313 regression: the hub tour reveals the bottom nav (hidden at scrollY 0
+// with scroll locked) by signalling a body attribute that BottomNav reads.
+// ---------------------------------------------------------------------------
+
+describe("CoachmarkTour — bottom-nav reveal signal (FV-313)", () => {
+  it("sets data-coachmark-tour=\"hub\" on the body while the hub tour is active", async () => {
+    injectHubAnchors();
+    render(<CoachmarkTour surface="hub" />);
+    await act(async () => { vi.runAllTimers(); });
+    expect(document.body.getAttribute("data-coachmark-tour")).toBe("hub");
+  });
+
+  it("clears the body signal when the tour is skipped", async () => {
+    injectHubAnchors();
+    render(<CoachmarkTour surface="hub" />);
+    await act(async () => { vi.runAllTimers(); });
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("coachmark-skip-btn"));
+    });
+    expect(document.body.getAttribute("data-coachmark-tour")).toBeNull();
   });
 });
 
