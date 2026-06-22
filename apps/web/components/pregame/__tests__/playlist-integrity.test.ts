@@ -1002,7 +1002,7 @@ describe("hockey focus parity — pp-focus-talk-every-shift (FV-121)", () => {
 // ---------------------------------------------------------------------------
 
 describe("positive-play library integrity (FV-144)", () => {
-  it("all 52 selectable positive plays are in the catalog with real non-zero files", () => {
+  it(`all ${POSITIVE_PLAYS.length} selectable positive plays are in the catalog with real non-zero files`, () => {
     const broken: string[] = [];
     for (const { slug } of POSITIVE_PLAYS) {
       const err = catalogFileErr(slug);
@@ -1067,7 +1067,7 @@ describe("positive-play library integrity (FV-144)", () => {
   it("picking plays for a real session swaps the flagship for the picked clips (every role, all sports)", () => {
     const failures: string[] = [];
     for (const config of [HOCKEY_CONFIG, BASKETBALL_CONFIG, GOLF_CONFIG]) {
-      const need = config.needs[0]!; // "Confidence" — has an opener in both sports
+      const need = config.needs[0]!; // "Confidence" — has an opener in all three supported sports
       const adversity = config.adversities[0]!;
       for (const role of config.roles ?? []) {
         const plays = positivePlaysFor(role);
