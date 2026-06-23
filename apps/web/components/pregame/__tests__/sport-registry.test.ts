@@ -885,20 +885,20 @@ describe("FV-117: resolveOpenerSlug — sport-keyed opener resolution", () => {
 // ---------------------------------------------------------------------------
 
 describe("FV-294 — sportHasPositivePlays gates the picker so no athlete is trapped", () => {
-  it("returns false when a sport declares roles but ships no plays (golf today)", () => {
-    // The exact trap: golf HAS roles but ZERO positive plays, so the step must be
-    // skipped. Flips to true once the FV-294 golf plays land — update this then
-    // (and the integrity grid extends to golf, FV-271).
+  it("returns true now that golf ships plays for all 3 roles (FV-294 — was false before the 21 viz clips landed)", () => {
+    // Point-in-time assertion updated: golf now has 7 plays × 3 roles (Bomber /
+    // Ball-Striker / Scrambler), so the picker is safe to show and this flips
+    // to true. The durable guard is the SUPPORTED_SPORTS loop in the next test.
     const golfRoles = getSportConfig("golf").roles ?? [];
     expect(golfRoles.length).toBeGreaterThan(0);
-    expect(sportHasPositivePlays(golfRoles)).toBe(false);
+    expect(sportHasPositivePlays(golfRoles)).toBe(true);
   });
 
   it("requires EVERY role to have plays, not just some", () => {
     expect(sportHasPositivePlays(["Forward", "Defense", "Goalie"])).toBe(true);
-    // Forward has plays but Bomber (golf) does not → the picker would be empty
-    // for a Bomber, so the whole step must stay hidden.
-    expect(sportHasPositivePlays(["Forward", "Bomber"])).toBe(false);
+    // A hypothetical sport with "Forward" (plays exist) + "UnknownRole" (no plays)
+    // → the whole step must stay hidden because UnknownRole yields an empty picker.
+    expect(sportHasPositivePlays(["Forward", "UnknownRole"])).toBe(false);
   });
 
   it("returns false for no-role / empty / undefined", () => {

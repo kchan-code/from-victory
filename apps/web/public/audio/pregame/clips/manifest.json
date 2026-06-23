@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "e68cc2db",
+  "manifestVersion": "a11286fc",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -4177,6 +4177,221 @@
     "st-glf-01": {
       "url": "/audio/pregame/clips/st-glf-01.7c99865e.mp3",
       "durationSec": 2.52,
+      "phases": []
+    },
+    "viz-bomber-stripe-the-fairway": {
+      "url": "/audio/pregame/clips/viz-bomber-stripe-the-fairway.66609a5a.mp3",
+      "durationSec": 68.856,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bomber-walk-up-tall": {
+      "url": "/audio/pregame/clips/viz-bomber-walk-up-tall.7a5630c9.mp3",
+      "durationSec": 58.048,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bomber-high-draw": {
+      "url": "/audio/pregame/clips/viz-bomber-high-draw.3c826053.mp3",
+      "durationSec": 65.568,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bomber-long-iron-par5": {
+      "url": "/audio/pregame/clips/viz-bomber-long-iron-par5.dce9e675.mp3",
+      "durationSec": 65.616,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bomber-wedge-tap-in": {
+      "url": "/audio/pregame/clips/viz-bomber-wedge-tap-in.37b039fb.mp3",
+      "durationSec": 66.384,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bomber-rip-it-first-tee": {
+      "url": "/audio/pregame/clips/viz-bomber-rip-it-first-tee.8b5317de.mp3",
+      "durationSec": 64.944,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bomber-take-your-medicine": {
+      "url": "/audio/pregame/clips/viz-bomber-take-your-medicine.1d0825cb.mp3",
+      "durationSec": 59.784,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ballstriker-small-target": {
+      "url": "/audio/pregame/clips/viz-ballstriker-small-target.efa9c5f1.mp3",
+      "durationSec": 67.8,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ballstriker-fat-of-the-green": {
+      "url": "/audio/pregame/clips/viz-ballstriker-fat-of-the-green.bd308345.mp3",
+      "durationSec": 69.456,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ballstriker-stick-it-pin-high": {
+      "url": "/audio/pregame/clips/viz-ballstriker-stick-it-pin-high.58e500ab.mp3",
+      "durationSec": 65.424,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ballstriker-knockdown": {
+      "url": "/audio/pregame/clips/viz-ballstriker-knockdown.70cba1a6.mp3",
+      "durationSec": 65.544,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ballstriker-two-putt-walk": {
+      "url": "/audio/pregame/clips/viz-ballstriker-two-putt-walk.491f6bd3.mp3",
+      "durationSec": 66.648,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ballstriker-let-it-go": {
+      "url": "/audio/pregame/clips/viz-ballstriker-let-it-go.74feb691.mp3",
+      "durationSec": 58.288,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ballstriker-paint-the-fairway": {
+      "url": "/audio/pregame/clips/viz-ballstriker-paint-the-fairway.2a7e5f4b.mp3",
+      "durationSec": 66.48,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-scrambler-up-and-down-short-sided": {
+      "url": "/audio/pregame/clips/viz-scrambler-up-and-down-short-sided.f2116d7c.mp3",
+      "durationSec": 65.28,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-scrambler-roll-in-the-breaker": {
+      "url": "/audio/pregame/clips/viz-scrambler-roll-in-the-breaker.a96bd7fa.mp3",
+      "durationSec": 63.432,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-scrambler-hole-the-bunker-shot": {
+      "url": "/audio/pregame/clips/viz-scrambler-hole-the-bunker-shot.a32b2763.mp3",
+      "durationSec": 65.112,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-scrambler-lag-it-stone-dead": {
+      "url": "/audio/pregame/clips/viz-scrambler-lag-it-stone-dead.22d4194c.mp3",
+      "durationSec": 72.72,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-scrambler-chip-in-from-rough": {
+      "url": "/audio/pregame/clips/viz-scrambler-chip-in-from-rough.e4aabf0b.mp3",
+      "durationSec": 70.656,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-scrambler-grind-out-par": {
+      "url": "/audio/pregame/clips/viz-scrambler-grind-out-par.c37c252e.mp3",
+      "durationSec": 70.224,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-scrambler-four-footer": {
+      "url": "/audio/pregame/clips/viz-scrambler-four-footer.f9caac1f.mp3",
+      "durationSec": 64.464,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "st-glf-02": {
+      "url": "/audio/pregame/clips/st-glf-02.e829d12d.mp3",
+      "durationSec": 4.608,
       "phases": []
     },
     "shared-cue-word-intro-pre": {

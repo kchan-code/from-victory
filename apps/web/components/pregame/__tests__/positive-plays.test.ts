@@ -13,7 +13,8 @@ import {
 } from "../positive-plays";
 import { FLOW, INITIAL_STATE } from "../types";
 
-// Expected counts per role, from FV-136 (docs/pregame-scripts.md §1).
+// Expected counts per role, from FV-136 (docs/pregame-scripts.md §1) +
+// FV-294 (golf roles: Bomber 7, Ball-Striker 7, Scrambler 7).
 const EXPECTED_COUNTS: Record<string, number> = {
   Defense: 9,
   Forward: 10,
@@ -21,11 +22,14 @@ const EXPECTED_COUNTS: Record<string, number> = {
   Guard: 8,
   Wing: 8,
   Big: 8,
+  Bomber: 7,
+  "Ball-Striker": 7,
+  Scrambler: 7,
 };
 
 describe("POSITIVE_PLAYS library", () => {
-  it("has all 52 plays", () => {
-    expect(POSITIVE_PLAYS).toHaveLength(52);
+  it("has all 73 plays", () => {
+    expect(POSITIVE_PLAYS).toHaveLength(73);
   });
 
   it("has no duplicate slugs", () => {

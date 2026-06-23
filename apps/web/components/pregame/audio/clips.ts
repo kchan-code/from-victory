@@ -88,6 +88,8 @@ import { SESSION_BIG_FALL_BEHIND_EARLY_SCRIPT } from "./session-big-fall-behind-
 import { VIZ_CLIP_SCRIPTS } from "./clips-viz.ts";
 import { BASEBALL_PREGAME_CLIP_SCRIPTS } from "./clips-baseball.ts";
 import { GOLF_PREGAME_CLIP_SCRIPTS } from "./clips-golf.ts";
+// FV-294: 21 golf positive-play viz clips + st-glf-02 self-talk
+import { GOLF_VIZ_CLIP_SCRIPTS } from "./clips-viz-golf.ts";
 import { FOOTBALL_PREGAME_CLIP_SCRIPTS } from "./clips-football.ts";
 import { SWIMMING_PREGAME_CLIP_SCRIPTS } from "./clips-swimming.ts";
 import { TRACKFIELD_PREGAME_CLIP_SCRIPTS } from "./clips-trackfield.ts";
@@ -5703,6 +5705,10 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_ANC_GLF_GLOVE_TAP_SCRIPT,
   CLIP_ANC_GLF_STEP_BACK_SCRIPT,
   CLIP_ST_GLF_01_SCRIPT,
+  // Golf positive-play viz clips (FV-294) — 21 per-play viz + st-glf-02 self-talk.
+  // These replace the flagship viz-bomber/viz-ballstriker/viz-scrambler in
+  // resolvePlaylist() when the athlete picks plays from the picker.
+  ...GOLF_VIZ_CLIP_SCRIPTS,
   // Football pregame clips (FV-202, v2 DORMANT) — 7 role VIZ + 67 hard-moment
   // cells. Registered so the generator renders them at the (deferred) audio
   // pass; the committed manifest.json does not yet contain them.
