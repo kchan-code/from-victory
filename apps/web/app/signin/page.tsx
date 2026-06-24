@@ -34,6 +34,14 @@ export default async function SignInPage({ searchParams }: Props) {
       .maybeSingle();
 
     if (athlete && athlete.role === "athlete") {
+      // Resolve the synthetic email so the sign-in form can wire
+      // autocomplete="username" for password managers. Graceful degrade: if
+      // getUserById fails we still render the form — just without the hint.
+      const { data: authUser } = await service.auth.admin.getUserById(
+        deviceAthleteId,
+      );
+      const accountEmail = authUser?.user?.email ?? undefined;
+
       return (
         <AuthShell title={`Welcome back, ${athlete.first_name}.`}>
           {/* FV-154: clear offline cache on mount — covers the case where
@@ -41,7 +49,10 @@ export default async function SignInPage({ searchParams }: Props) {
               not yet signed in (e.g. session expired). forgetDevice's own
               onSubmit handler also clears it, so this is belt-and-suspenders. */}
           <ClearCacheOnMount />
-          <AthleteSignInForm firstName={athlete.first_name} />
+          <AthleteSignInForm
+            firstName={athlete.first_name}
+            accountEmail={accountEmail}
+          />
         </AuthShell>
       );
     }

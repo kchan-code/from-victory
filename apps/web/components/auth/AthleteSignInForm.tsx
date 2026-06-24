@@ -17,9 +17,16 @@ const initialState: AthleteSignInState = null;
 
 type Props = {
   firstName: string;
+  /**
+   * The athlete's synthetic Supabase auth email. Present in the DOM as a
+   * readonly autocomplete="username" field so password managers (iCloud
+   * Keychain, Chrome, 1Password, Bitwarden) can autofill the credential
+   * saved on /pair. When undefined the field is omitted gracefully.
+   */
+  accountEmail?: string;
 };
 
-export function AthleteSignInForm({ firstName }: Props) {
+export function AthleteSignInForm({ firstName, accountEmail }: Props) {
   const [state, formAction] = useFormState(athleteSignIn, initialState);
   const fieldError = (name: string) =>
     state && !state.ok && state.field === name ? state.error : undefined;
@@ -29,9 +36,31 @@ export function AthleteSignInForm({ firstName }: Props) {
   return (
     <>
       <p className="font-body text-cream/80 text-[15px] leading-relaxed -mt-3 mb-7">
-        Signing in as <span className="text-cream font-semibold">{firstName}</span>.
+        Signing in as{" "}
+        <span className="text-cream font-semibold">{firstName}</span>.
       </p>
-      <form action={formAction} noValidate>
+      <form action={formAction} noValidate className="relative">
+        {/*
+         * Visually-hidden username field for password managers.
+         *
+         * Same technique as AthleteClaimForm — 1×1px absolute, opacity 0,
+         * not submitted (no `name`), readonly, tabIndex -1. Must match the
+         * field on /pair so the manager associates "saved there" → "autofill
+         * here". The email value is the athlete's synthetic Supabase auth
+         * email (never shown to the athlete in readable UI elsewhere).
+         */}
+        {accountEmail ? (
+          <input
+            type="email"
+            autoComplete="username"
+            readOnly
+            tabIndex={-1}
+            aria-hidden="true"
+            value={accountEmail}
+            className="absolute w-px h-px opacity-0 pointer-events-none"
+          />
+        ) : null}
+
         <Field
           id="password"
           name="password"
@@ -42,10 +71,7 @@ export function AthleteSignInForm({ firstName }: Props) {
           error={fieldError("password")}
         />
         {formError ? (
-          <p
-            className="mb-5 font-body text-[14px] text-red-400"
-            role="alert"
-          >
+          <p className="mb-5 font-body text-[14px] text-red-400" role="alert">
             {formError}
           </p>
         ) : null}

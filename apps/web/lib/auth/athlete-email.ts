@@ -9,6 +9,13 @@
 // reset guard in `lib/actions/auth.ts` short-circuits any password reset
 // targeting this domain so we don't burn email sends on undeliverable
 // inboxes.
+//
+// PRIVACY (FV-317): this synthetic address is an internal SYSTEM KEY — not
+// athlete contact data / PII. It is non-deliverable and UUID-based. It is
+// surfaced in the athlete's OWN page DOM (a readonly autocomplete="username"
+// field on /pair + /signin) so password managers can save/autofill the
+// credential; kids-privacy-officer reviewed and APPROVED this — it is reachable
+// only by that athlete on their own device, never exposed to another party.
 export const ATHLETE_SYNTHETIC_EMAIL_DOMAIN = "athletes.fromvictory.app";
 
 export function isSyntheticAthleteEmail(email: string): boolean {
