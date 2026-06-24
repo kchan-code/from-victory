@@ -58,12 +58,24 @@ export default async function PairClaimPage({ searchParams }: Search) {
     return <InvalidLink reason="not_found" />;
   }
 
+  // Resolve the synthetic email so the claim form can wire autocomplete="username"
+  // for password managers (iCloud Keychain, Chrome, 1Password). Graceful degrade:
+  // if getUserById fails we still render the form — just without the username hint.
+  const { data: authUser } = await service.auth.admin.getUserById(
+    pairing.athlete_id,
+  );
+  const accountEmail = authUser?.user?.email ?? undefined;
+
   return (
     <AuthShell
       title={`Welcome, ${athlete.first_name}.`}
       subtitle="Set a password to start training. You'll use this every time you sign in on this phone."
     >
-      <AthleteClaimForm code={code} />
+      <AthleteClaimForm
+        code={code}
+        firstName={athlete.first_name}
+        accountEmail={accountEmail}
+      />
     </AuthShell>
   );
 }
