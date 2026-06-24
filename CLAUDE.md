@@ -355,8 +355,11 @@ self-onboard/self-pay fork (post-MVP).
 ## Non-Negotiable Constraints
 
 ### Child Safety + Privacy
-- Minimal athlete PII: first name, birthdate, parent link. No email,
-  no phone, no address, no photos, no long-term IP-derived data.
+- Minimal athlete PII: first name, birthdate, parent link, and a self-chosen
+  username (a pseudonymous login handle — no real name required, no email,
+  never shown to third parties; added in FV-320 for cross-device login,
+  kids-privacy-officer-reviewed). No phone, no address, no photos, no
+  long-term IP-derived data.
 - Journal entries are athlete-only readable. RLS enforced at the DB level.
 - Parent dashboard reads metadata (count, dates) from a separate view,
   never journal content.

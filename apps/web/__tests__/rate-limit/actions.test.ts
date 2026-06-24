@@ -166,8 +166,30 @@ function makeServiceMock(opts: ServiceMockOptions = {}) {
         })),
       },
     },
-    from: (_table: string) => {
-      // Track which table is being queried so we can route to correct stub.
+    from: (table: string) => {
+      // FV-320: profiles table handles username-taken check (SELECT) and
+      // username UPDATE. Both succeed by default (username not taken, update ok).
+      if (table === "profiles") {
+        return {
+          select: (_cols: string, _opts?: unknown) => ({
+            eq: (_col: string, _val: unknown) => ({
+              eq: (_col2: string, _val2: unknown) => ({
+                maybeSingle: async () => ({ data: null, error: null }),
+              }),
+            }),
+          }),
+          update: (_row: unknown) => ({
+            eq: (_col: string, _val: unknown) => ({
+              eq: async (_col2: string, _val2: unknown) => ({ error: null }),
+            }),
+          }),
+        };
+      }
+
+      // device_pairings + parent_athlete_links (pre-FV-320 behaviour preserved).
+      // FV-320: peek (non-consuming SELECT on device_pairings) uses the same
+      // is().gt() path as before but returns a valid athlete_id by default so
+      // tests that set consumeData: null only affect the atomic consume step.
       const chainBase = {
         select: (_cols: string, _opts?: unknown) => ({
           eq: (_col: string, _val: unknown) => ({
@@ -177,11 +199,11 @@ function makeServiceMock(opts: ServiceMockOptions = {}) {
             maybeSingle: async () => ({ data: linkData, error: linkError }),
             is: (_col3: string, _val3: unknown) => ({
               gt: (_col4: string, _val4: unknown) => ({
-                select: (_cols2: string) => ({
-                  maybeSingle: async () => ({
-                    data: consumeData,
-                    error: consumeError,
-                  }),
+                // device_pairings non-consuming peek: always returns a valid
+                // athlete_id so the peek never blocks on consumeData: null.
+                maybeSingle: async () => ({
+                  data: { athlete_id: "athlete-uuid-001" },
+                  error: null,
                 }),
               }),
             }),
@@ -543,8 +565,9 @@ describe("claimPairing — rate limiting", () => {
     code = "testcode123",
     password = "password123",
     password_confirm = "password123",
+    username = "testuser7", // FV-320: ClaimSchema now requires username
   ) {
-    const fields: Record<string, string> = { code, password, password_confirm };
+    const fields: Record<string, string> = { code, password, password_confirm, username };
     return { get: (key: string) => fields[key] ?? null } as FormData;
   }
 
