@@ -2,8 +2,9 @@
 // pairing flow. These addresses are never delivered to — the server
 // generates them so each athlete has a stable Supabase auth.users row.
 //
-// Direct-signup athletes (admin-created beta path) use real emails and
-// do NOT match this domain.
+// ALL athlete accounts — whether created via the parent → pairing flow or the
+// admin direct-create path (FV-323) — use a synthetic address on this domain.
+// (No athlete has a real, deliverable email.)
 //
 // Source of truth: the creation site in `lib/actions/athletes.ts`. The
 // reset guard in `lib/actions/auth.ts` short-circuits any password reset

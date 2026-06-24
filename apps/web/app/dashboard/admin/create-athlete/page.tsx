@@ -14,7 +14,7 @@ export default async function AdminCreateAthletePage() {
   return (
     <AuthShell
       title="Create athlete directly"
-      subtitle="Admin-only beta-testing path. Creates an athlete with a real email + password (no pairing link)."
+      subtitle="Admin-only beta-testing path. Creates an athlete with a username + password (no pairing link needed)."
     >
       <CreateAthleteDirectForm />
     </AuthShell>
