@@ -47,15 +47,15 @@ const STOP_COPY: Record<
   },
   "hub-pregame-card": {
     title: "Before a game",
-    body: "Got a game? This five-minute audio gets your head right before warmups.",
+    body: "Got a game? A five-minute audio session to get your head right — headphones in, sound on.",
   },
   "hub-bottom-nav": {
     title: "Get around",
     body: "Your way around the app — jump to any part from here.",
   },
   "pregame-begin-btn": {
-    title: "Build it",
-    body: "Tap to build today's pregame session, shaped to your spot and your game.",
+    title: "Headphones, sound on",
+    body: "Headphones in and sound on, then build today's session — shaped to your spot and your game.",
   },
   "pregame-quick-reset-btn": {
     title: "Quick reset",
