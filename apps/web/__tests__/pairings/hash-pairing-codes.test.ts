@@ -111,6 +111,12 @@ interface ServiceRecorder {
 interface ServiceMockOptions {
   linkData?: { athlete_id: string } | null;
   linkError?: { message: string } | null;
+  // FV-320: peekData is the non-consuming device_pairings SELECT result.
+  // Defaults to { athlete_id: "athlete-uuid-001" } so existing tests that
+  // only set consumeData still get a valid peek (the peek always finds the
+  // code; only the atomic consume can then fail). Set peekData: null to
+  // simulate a code that is already expired/consumed at peek time.
+  peekData?: { athlete_id: string } | null;
   consumeData?: { athlete_id: string } | null;
   consumeError?: { message: string } | null;
   insertError?: { message: string } | null;
@@ -124,6 +130,7 @@ function makeServiceMock(opts: ServiceMockOptions = {}) {
   const {
     linkData = { athlete_id: "athlete-uuid-001" },
     linkError = null,
+    peekData = { athlete_id: "athlete-uuid-001" }, // FV-320: separate from consumeData
     consumeData = { athlete_id: "athlete-uuid-001" },
     consumeError = null,
     insertError = null,
@@ -156,60 +163,99 @@ function makeServiceMock(opts: ServiceMockOptions = {}) {
         })),
       },
     },
-    from: (_table: string) => ({
-      // parent_athlete_links link check: select().eq().eq().maybeSingle()
-      select: (_cols: string, _o?: unknown) => ({
-        eq: (_c: string, _v: unknown) => ({
-          eq: (_c2: string, _v2: unknown) => ({
-            maybeSingle: async () => ({ data: linkData, error: linkError }),
+    from: (table: string) => {
+      // profiles table: handles (a) username-taken check SELECT and
+      // (b) username UPDATE on the athlete's profile.
+      // FV-320: claimPairing now also touches profiles for the username flow.
+      if (table === "profiles") {
+        return {
+          // username-taken check: select("id").eq("username",...).eq("role","athlete").maybeSingle()
+          // Returns null (not taken) by default so existing tests pass unchanged.
+          select: (_cols: string) => ({
+            eq: (_c: string, _v: unknown) => ({
+              eq: (_c2: string, _v2: unknown) => ({
+                maybeSingle: async () => ({ data: null, error: null }),
+              }),
+            }),
           }),
-          maybeSingle: async () => ({ data: linkData, error: linkError }),
-        }),
-      }),
+          // username SET: update({username}).eq("id",...).eq("role",...)
+          update: (_row: unknown) => ({
+            eq: (_c: string, _v: unknown) => ({
+              eq: async (_c2: string, _v2: unknown) => ({ error: null }),
+            }),
+          }),
+        };
+      }
 
-      // Void-prior + (in claim) consume happen via delete()/update().
-      delete: () => ({
-        eq: (col: string, val: unknown) => {
-          recorder.voidDelete = {
-            ...(recorder.voidDelete ?? {}),
-            athleteEq: { column: col, value: val },
-          };
-          return {
-            is: async (_c: string, _v: unknown) => {
-              recorder.voidDelete = {
-                ...(recorder.voidDelete ?? {}),
-                consumedIsNull: true,
-              };
-              return { error: voidError };
-            },
-          };
-        },
-      }),
-
-      insert: vi.fn(async (row: Record<string, unknown>) => {
-        recorder.insertPayloads.push(row);
-        return { error: insertError };
-      }),
-
-      // Atomic consume: update().eq(code_sha256, hash).is().gt().select().maybeSingle()
-      update: (_row: unknown) => ({
-        eq: (col: string, val: unknown) => {
-          recorder.consumeLookup = { column: col, value: val };
-          return {
+      // device_pairings + parent_athlete_links (original mock behaviour).
+      return {
+        // parent_athlete_links link check: select().eq().eq().maybeSingle()
+        // device_pairings peek: select().eq().is().gt().maybeSingle()
+        // Both resolve via the same chained select handler.
+        select: (_cols: string, _o?: unknown) => ({
+          eq: (_c: string, _v: unknown) => ({
+            eq: (_c2: string, _v2: unknown) => ({
+              maybeSingle: async () => ({ data: linkData, error: linkError }),
+            }),
             is: (_c2: string, _v2: unknown) => ({
               gt: (_c3: string, _v3: unknown) => ({
-                select: (_cols2: string) => ({
-                  maybeSingle: async () => ({
-                    data: consumeData,
-                    error: consumeError,
-                  }),
+                // device_pairings non-consuming peek (FV-320).
+                // Uses peekData (not consumeData) so tests that set
+                // consumeData: null still get a valid peek result.
+                maybeSingle: async () => ({
+                  data: peekData,
+                  error: null,
                 }),
               }),
             }),
-          };
-        },
-      }),
-    }),
+            maybeSingle: async () => ({ data: linkData, error: linkError }),
+          }),
+        }),
+
+        // Void-prior + (in claim) consume happen via delete()/update().
+        delete: () => ({
+          eq: (col: string, val: unknown) => {
+            recorder.voidDelete = {
+              ...(recorder.voidDelete ?? {}),
+              athleteEq: { column: col, value: val },
+            };
+            return {
+              is: async (_c: string, _v: unknown) => {
+                recorder.voidDelete = {
+                  ...(recorder.voidDelete ?? {}),
+                  consumedIsNull: true,
+                };
+                return { error: voidError };
+              },
+            };
+          },
+        }),
+
+        insert: vi.fn(async (row: Record<string, unknown>) => {
+          recorder.insertPayloads.push(row);
+          return { error: insertError };
+        }),
+
+        // Atomic consume: update().eq(code_sha256, hash).is().gt().select().maybeSingle()
+        update: (_row: unknown) => ({
+          eq: (col: string, val: unknown) => {
+            recorder.consumeLookup = { column: col, value: val };
+            return {
+              is: (_c2: string, _v2: unknown) => ({
+                gt: (_c3: string, _v3: unknown) => ({
+                  select: (_cols2: string) => ({
+                    maybeSingle: async () => ({
+                      data: consumeData,
+                      error: consumeError,
+                    }),
+                  }),
+                }),
+              }),
+            };
+          },
+        }),
+      };
+    },
   };
 
   return client;
@@ -246,8 +292,9 @@ function claimFormData(
   code = "raw-pairing-code-abc123",
   password = "password123",
   password_confirm = "password123",
+  username = "testuser7", // FV-320: username is now required by ClaimSchema
 ) {
-  const fields: Record<string, string> = { code, password, password_confirm };
+  const fields: Record<string, string> = { code, password, password_confirm, username };
   return { get: (key: string) => fields[key] ?? null } as unknown as FormData;
 }
 

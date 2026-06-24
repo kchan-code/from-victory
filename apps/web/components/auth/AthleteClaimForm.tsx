@@ -15,17 +15,9 @@ type Props = {
   code: string;
   /** Athlete's first name — shown as context so the form feels personal. */
   firstName?: string;
-  /**
-   * The athlete's synthetic Supabase auth email. Present in the DOM as a
-   * readonly autocomplete="username" field so password managers (iCloud
-   * Keychain, Chrome, 1Password) can key and save the credential correctly.
-   * When undefined the field is omitted — the form still works, password
-   * managers just can't associate the credential.
-   */
-  accountEmail?: string;
 };
 
-export function AthleteClaimForm({ code, firstName, accountEmail }: Props) {
+export function AthleteClaimForm({ code, firstName }: Props) {
   const [state, formAction] = useFormState(claimPairing, initialState);
 
   // A pairing claim re-assigns this device to a (possibly different)
@@ -53,39 +45,25 @@ export function AthleteClaimForm({ code, firstName, accountEmail }: Props) {
         </p>
       ) : null}
       <p className="font-body text-[13px] text-cream/55 leading-relaxed mb-7">
-        No username needed — just a password for this phone.
+        Pick a username and password &mdash; you&rsquo;ll use them to sign in on any device.
       </p>
-      <form action={formAction} noValidate className="relative">
+      <form action={formAction} noValidate>
         <input type="hidden" name="code" value={code} />
 
-        {/*
-         * Visually-hidden username field for password managers.
-         *
-         * WHY THIS APPROACH: Password managers (iOS Safari Keychain, Chrome,
-         * 1Password, Bitwarden) require a field with autocomplete="username"
-         * to be present and non-hidden in the DOM to key a saved credential.
-         * `display:none` and `visibility:hidden` are explicitly skipped by
-         * most managers. `type="hidden"` is skipped by the autocomplete spec.
-         * The correct technique is a visually-hidden element that is still in
-         * the accessibility/layout tree — 1×1px absolute, opacity 0,
-         * pointer-events none, tabIndex -1 so it's skipped in keyboard order.
-         * `readonly` prevents the athlete from accidentally editing it.
-         * `type="email"` helps managers classify this as an account identifier.
-         * The field is NOT named (no `name` attr) so it is NOT submitted with
-         * the form — the server action never sees it and no extra field leaks.
-         */}
-        {accountEmail ? (
-          <input
-            type="email"
-            autoComplete="username"
-            readOnly
-            tabIndex={-1}
-            aria-hidden="true"
-            value={accountEmail}
-            className="absolute w-px h-px opacity-0 pointer-events-none"
-          />
-        ) : null}
-
+        <Field
+          id="username"
+          name="username"
+          label="Username"
+          type="text"
+          autoComplete="username"
+          required
+          hint="3–20 characters: letters, numbers, or underscores."
+          error={fieldError("username")}
+          // Prevent autocorrect from mangling the username on mobile
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
+        />
         <Field
           id="password"
           name="password"
@@ -94,7 +72,7 @@ export function AthleteClaimForm({ code, firstName, accountEmail }: Props) {
           autoComplete="new-password"
           required
           minLength={8}
-          hint="At least 8 characters. You'll use this every time you sign in."
+          hint="At least 8 characters."
           error={fieldError("password")}
         />
         <Field

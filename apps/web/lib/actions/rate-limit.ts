@@ -33,6 +33,7 @@ export const RATE_LIMIT_ACTIONS = [
   "generate_pairing_code",
   "password_reset",
   "password_update",
+  "username_sign_in",
 ] as const;
 
 export type RateLimitAction = (typeof RATE_LIMIT_ACTIONS)[number];
@@ -121,6 +122,19 @@ export const RATE_LIMIT_CONFIG: Record<RateLimitAction, RateLimitConfig> = {
    * well above any human password-change use case.
    */
   password_update: { limit: 10, windowMinutes: 15 },
+
+  /**
+   * username_sign_in: keyed on HMAC(lower(username) + IP) (FV-320).
+   * Threat: password brute-force against a known or guessed username from any
+   * device. The identifier is a hash of BOTH username AND IP so a distributed
+   * attack across IPs with the same username still counts per-IP, while a
+   * single IP brute-forcing many usernames still counts per-username.
+   * Keying on the hash (not the plain username) means the bucket column never
+   * stores the athlete's identifier — consistent with the existing pattern.
+   * 15 attempts / 15 min mirrors athlete_sign_in. A legitimate athlete who
+   * misremembers their password and tries a few times will not hit this.
+   */
+  username_sign_in: { limit: 15, windowMinutes: 15 },
 };
 
 // ---------------------------------------------------------------------------

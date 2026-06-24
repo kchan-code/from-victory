@@ -1,7 +1,7 @@
 import { AthleteSignInForm } from "@/components/auth/AthleteSignInForm";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { ClearCacheOnMount } from "@/components/auth/ClearCacheOnMount";
-import { SignInForm } from "@/components/auth/SignInForm";
+import { SignInChooser } from "@/components/auth/SignInChooser";
 import { getDeviceAthleteId } from "@/lib/auth/device";
 import { redirectIfAuthed } from "@/lib/auth/guards";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -63,7 +63,7 @@ export default async function SignInPage({ searchParams }: Props) {
   }
 
   return (
-    <AuthShell title="Welcome back" subtitle="Sign in to your parent account.">
+    <AuthShell title="Welcome back">
       {/* FV-154: clear offline athlete cache on mount — covers forgetDevice
           and /auth/signout escape hatch, both of which redirect here after
           signing out server-side. An authenticated athlete is never on this
@@ -92,7 +92,12 @@ export default async function SignInPage({ searchParams }: Props) {
           Your session was invalid — please sign in again.
         </div>
       ) : null}
-      <SignInForm />
+      {/* FV-320: two-tab chooser — parent (email+password) or athlete
+          (username+password on any device). The device-cookie path above
+          short-circuits before we get here, so this is only shown for
+          no-cookie visitors. Default tab is "Parent" — the more common
+          no-cookie scenario. */}
+      <SignInChooser />
     </AuthShell>
   );
 }

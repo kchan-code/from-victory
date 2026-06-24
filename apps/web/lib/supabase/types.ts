@@ -345,6 +345,15 @@ export type Database = {
           // Never surfaced on the parent dashboard.
           position: string | null
           focus_area: string | null
+          // FV-320: athlete-only username for any-device sign-in. Nullable
+          // (athletes without a username yet + all parent rows). Lowercase,
+          // 3-20 chars, [a-z0-9_]. Case-insensitive uniqueness enforced by
+          // lower(username) partial index. Owner-only readable via the
+          // get_own_username() security-definer function; FV-251 tracks
+          // DB-level column-privilege hardening on the parent-select path.
+          // Regenerate via 'supabase gen types --linked' after
+          // 20260624000000_athlete_username.sql is applied to prod.
+          username: string | null
           updated_at: string
         }
         Insert: {
@@ -366,6 +375,8 @@ export type Database = {
           // FV-228: see Row comment above.
           position?: string | null
           focus_area?: string | null
+          // FV-320: see Row comment above. Service-role writes only.
+          username?: string | null
           updated_at?: string
         }
         Update: {
@@ -387,6 +398,8 @@ export type Database = {
           // FV-228: see Row comment above.
           position?: string | null
           focus_area?: string | null
+          // FV-320: see Row comment above. Service-role writes only.
+          username?: string | null
           updated_at?: string
         }
         Relationships: []
