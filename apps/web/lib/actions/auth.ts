@@ -197,11 +197,10 @@ const UpdatePasswordSchema = z.object({
 const PUBLIC_SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.fromvictoryapp.com";
 
-// Athletes paired via the parent flow (PR-04c) have synthetic emails;
-// they recover via a new parent-generated pairing link, not this flow.
-// Direct-signup athletes (admin-created beta path) have real emails and
-// DO go through this flow. isSyntheticAthleteEmail() distinguishes them
-// — see lib/auth/athlete-email.ts for the canonical domain.
+// ALL athletes — parent-paired OR admin direct-created (FV-323) — have synthetic
+// emails and recover via a new parent-generated pairing link, not this flow.
+// isSyntheticAthleteEmail() short-circuits a reset targeting that domain so we
+// don't burn sends on undeliverable inboxes — see lib/auth/athlete-email.ts.
 
 export async function requestPasswordReset(
   _prev: AuthActionState,

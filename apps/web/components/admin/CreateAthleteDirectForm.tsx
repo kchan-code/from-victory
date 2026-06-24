@@ -30,18 +30,23 @@ export function CreateAthleteDirectForm() {
           Athlete created
         </p>
         <p className="font-body text-cream/85 text-[14px] leading-relaxed mb-4">
-          {state.first_name} is linked to your parent account and can sign in
-          at <span className="font-mono text-cream">/signin</span> with the
-          email below.
+          {state.first_name} is linked to your parent account. Hand the athlete
+          these credentials — they can sign in at{" "}
+          <span className="font-mono text-cream">/signin</span> using the
+          Athlete tab with their username + password.
         </p>
-        <div className="rounded-[10px] bg-onyx border border-hairline px-3.5 py-3 mb-5">
+        <div className="rounded-[10px] bg-onyx border border-hairline px-3.5 py-3 mb-3">
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/50 mb-1">
-            Email
+            Username
           </p>
-          <p className="font-mono text-cream text-[14px] break-all">
-            {state.email}
+          <p className="font-mono text-cream text-[14px]">
+            {state.username}
           </p>
         </div>
+        <p className="font-body text-[13px] text-cream/55 leading-relaxed mb-5">
+          The password is what you entered above — share it with the athlete
+          directly.
+        </p>
         <div className="flex flex-wrap gap-3">
           <Link
             href="/dashboard"
@@ -82,13 +87,14 @@ export function CreateAthleteDirectForm() {
         error={fieldError("birthdate")}
       />
       <Field
-        id="email"
-        name="email"
-        label="Email"
-        type="email"
-        autoComplete="email"
+        id="username"
+        name="username"
+        label="Username"
+        type="text"
+        autoComplete="off"
         required
-        error={fieldError("email")}
+        hint="3–20 chars: letters, numbers, underscores."
+        error={fieldError("username")}
       />
       <Field
         id="password"
