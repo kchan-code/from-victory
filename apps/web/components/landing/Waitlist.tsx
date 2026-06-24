@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Reveal } from "./Reveal";
 import { SectionMeta } from "./SectionMeta";
 import { SvgIcon } from "./SvgIcon";
@@ -6,8 +7,8 @@ import { WaitlistForm } from "./WaitlistForm";
 const bullets = [
   {
     icon: "flame" as const,
-    title: "Hockey and basketball — available now",
-    body: "The full app — daily training, pregame audio, pre-practice lock in — is live for hockey and basketball athletes.",
+    title: "Hockey, basketball, and golf — available now",
+    body: "The full app — daily training, pregame audio, pre-practice lock in — is live. Start your free trial today.",
   },
   {
     icon: "book" as const,
@@ -17,7 +18,7 @@ const bullets = [
   {
     icon: "shield" as const,
     title: "No spam, no shame, no streak emails",
-    body: "Launch updates only. We email when there's something real to share.",
+    body: "Sport launch updates only. We email when there's something real to share.",
   },
 ];
 
@@ -30,7 +31,7 @@ export function Waitlist() {
       <div className="fv-final-bg absolute inset-0 pointer-events-none" />
       <div className="relative mx-auto max-w-[1240px] px-5 sm:px-8">
         <Reveal>
-          <SectionMeta num="07" label="Join the early access list" />
+          <SectionMeta num="07" label="Get started" />
         </Reveal>
 
         <div className="grid gap-12 lg:gap-16 items-center grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
@@ -39,11 +40,25 @@ export function Waitlist() {
               Start training from <em>secure identity.</em>
             </h2>
             <p className="fv-lede mb-8">
-              Hockey and basketball are live now. If your sport isn&apos;t on
-              the list yet, join the waitlist and we&rsquo;ll reach out when it
-              launches. One app — built around daily rhythm, Scripture, and
-              game-day resilience.
+              Hockey, basketball, and golf are live now — start your athlete&apos;s
+              14-day free trial today. Playing something else? Select your sport
+              below and we&rsquo;ll reach out when it launches.
             </p>
+
+            {/* Primary CTA for hockey/basketball families */}
+            <div className="mb-10">
+              <Link
+                href="/signup"
+                className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
+              >
+                Start your athlete&apos;s 14-day free trial
+                <SvgIcon name="arrow" size={16} />
+              </Link>
+              <p className="mt-3 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/40 font-semibold">
+                14 days free for first-time subscribers &mdash; then $5/mo or $49/yr &mdash; cancel anytime
+              </p>
+            </div>
+
             <div className="flex flex-col gap-3.5">
               {bullets.map((b) => (
                 <div key={b.title} className="flex items-start gap-3.5">

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { FlameMark } from "@/components/ui";
 import { PhoneStatusBar } from "./PhoneStatusBar";
 import { Reveal } from "./Reveal";
@@ -35,14 +36,14 @@ export function Hero() {
               rooted in Christ, not performance.
             </p>
 
-            <div className="flex flex-wrap gap-3 mb-10">
-              <a
-                href="#waitlist"
+            <div className="flex flex-wrap gap-3 mb-5">
+              <Link
+                href="/signup"
                 className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
               >
-                Join the waitlist
+                Start your athlete&apos;s 14-day free trial
                 <SvgIcon name="arrow" size={16} />
-              </a>
+              </Link>
               <a
                 href="#how"
                 className="inline-flex items-center justify-center gap-2.5 bg-transparent text-cream border border-hairline-strong font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-charcoal active:scale-[0.97]"
@@ -51,6 +52,9 @@ export function Hero() {
                 See how it works
               </a>
             </div>
+            <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/40 font-semibold mb-10">
+              14 days free for first-time subscribers &mdash; then $5/mo or $49/yr &mdash; cancel anytime
+            </p>
 
           </Reveal>
 

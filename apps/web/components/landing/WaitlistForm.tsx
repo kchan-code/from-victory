@@ -23,7 +23,7 @@ const ROLE_LABELS: Record<(typeof ROLES)[number], string> = {
   Other: "Other",
 };
 
-// Hockey and Basketball are the two live sports (MVP). All others join a
+// Hockey, Basketball, and Golf are the live sports. All others join a
 // per-sport waitlist. The display labels make this clear in the dropdown.
 const SPORTS = [
   { value: "Hockey", label: "Hockey — available now" },
@@ -31,7 +31,7 @@ const SPORTS = [
   { value: "Soccer", label: "Soccer — coming soon" },
   { value: "Football", label: "Football — coming soon" },
   { value: "Baseball", label: "Baseball — coming soon" },
-  { value: "Golf", label: "Golf — coming soon" },
+  { value: "Golf", label: "Golf — available now" },
   { value: "Swimming", label: "Swimming — coming soon" },
   { value: "Lacrosse", label: "Lacrosse — coming soon" },
   { value: "Wrestling", label: "Wrestling — coming soon" },
@@ -108,8 +108,8 @@ export function WaitlistForm() {
         </h4>
         <p className="text-cream/70 m-0">
           {state.alreadyOnList
-            ? "Glad you're with us. We'll keep you updated."
-            : "We'll keep you updated as From Victory gets ready to launch. Glad you're here."}
+            ? "Glad you're with us. We'll reach out when your sport is ready."
+            : "We'll reach out when your sport is ready. Glad you're here."}
         </p>
       </div>
     );
@@ -144,10 +144,10 @@ export function WaitlistForm() {
 
       <div className="flex items-center gap-2.5 mb-[22px]">
         <FlameMark size={16} />
-        <span className="fv-eyebrow gold">Waitlist · Early access</span>
+        <span className="fv-eyebrow gold">Sport waitlist</span>
       </div>
       <h3 className="font-heading font-semibold text-[22px] leading-[1.15] tracking-[-0.01em] m-0 mb-6 text-cream">
-        Get on the list.
+        Notify me when my sport is ready.
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -325,8 +325,8 @@ export function WaitlistForm() {
       <SubmitButton />
 
       <p className="mt-4 text-cream/55 text-[12px] leading-relaxed">
-        By joining the waitlist, you agree that From Victory may use your information
-        to contact you about early access, product updates, and launch announcements.
+        By submitting this form, you agree that From Victory may use your information
+        to contact you about sport availability and product updates.
         We do not sell your personal information. If you are under 13, a parent or
         guardian should submit this form. See our{" "}
         <Link
@@ -349,7 +349,7 @@ function SubmitButton() {
       disabled={pending}
       className="w-full mt-4 inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed"
     >
-      {pending ? "Joining…" : "Join the waitlist"}
+      {pending ? "Sending…" : "Notify me"}
       {!pending && <SvgIcon name="arrow" size={16} />}
     </button>
   );

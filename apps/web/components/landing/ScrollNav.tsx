@@ -77,13 +77,13 @@ export function ScrollNav() {
             >
               Sign in
             </Link>
-            <a
-              href="/#waitlist"
+            <Link
+              href="/signup"
               className="ml-1.5 sm:ml-2 hidden sm:inline-flex items-center gap-1.5 sm:gap-2 whitespace-nowrap bg-gold text-onyx border border-gold font-heading font-semibold text-[13px] rounded-pill px-[12px] sm:px-[18px] py-[11px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright"
             >
-              Join the waitlist
+              Start free trial
               <SvgIcon name="arrow" size={14} className="hidden sm:block" />
-            </a>
+            </Link>
           </div>
         </nav>
       </div>

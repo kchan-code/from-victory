@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Privacy Policy · From Victory",
   description:
-    "How From Victory collects, uses, stores, and protects information submitted through our website, including the Join the Waitlist form.",
+    "How From Victory collects, uses, stores, and protects information submitted through our website, including the sport waitlist form.",
   robots: { index: true, follow: true },
 };
 
@@ -37,11 +37,11 @@ export default function PrivacyPage() {
       <section className="mb-10 text-cream/85 leading-relaxed space-y-4">
         <p>
           From Victory respects your privacy. This Privacy Policy explains how we collect, use,
-          store, and protect information submitted through our website, including the Join the
-          Waitlist form.
+          store, and protect information submitted through our website, including the sport
+          waitlist form.
         </p>
         <p>
-          By submitting information through the Join the Waitlist form, you acknowledge the
+          By submitting information through the sport waitlist form, you acknowledge the
           practices described in this Privacy Policy.
         </p>
       </section>
@@ -67,8 +67,8 @@ export default function PrivacyPage() {
         <ul className="mt-2 mb-3 pl-5 list-disc">
           <li>Add you to the From Victory waitlist</li>
           <li>
-            Communicate with you about early access, product updates, launch announcements, and
-            related information
+            Communicate with you about sport availability, product updates, and related
+            information
           </li>
           <li>
             Understand the types of users interested in From Victory, including athletes, parents,
@@ -83,8 +83,8 @@ export default function PrivacyPage() {
 
       <Section title="3. Email Communications">
         <p>
-          By joining the waitlist, you agree that From Victory may contact you by email about early
-          access, product updates, launch information, and related communications.
+          By submitting the sport waitlist form, you agree that From Victory may contact you by
+          email about sport availability, product updates, and related communications.
         </p>
         <p className="mt-3">
           You may unsubscribe or request removal from the waitlist at any time by following the

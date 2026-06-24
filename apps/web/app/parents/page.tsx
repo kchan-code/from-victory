@@ -43,7 +43,7 @@ const athleteGets = [
   {
     icon: "flame" as const,
     title: "Daily training session",
-    body: "A short daily session — mental skill plus Scripture foundation — that builds identity, discipline, and resilience over 30 days. Hockey and basketball, with more sports coming.",
+    body: "A short daily session — mental skill plus Scripture foundation — that builds identity, discipline, and resilience over 30 days. Hockey, basketball, and golf, with more sports coming.",
   },
   {
     icon: "zap" as const,
@@ -119,13 +119,13 @@ export default function ParentsPage() {
               private words stay private.
             </p>
             <div className="flex flex-wrap gap-3">
-              <a
-                href="/#waitlist"
+              <Link
+                href="/signup"
                 className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
               >
-                Join the waitlist
+                Start your athlete&apos;s 14-day free trial
                 <SvgIcon name="arrow" size={16} />
-              </a>
+              </Link>
               <Link
                 href="/pricing"
                 className="inline-flex items-center justify-center gap-2.5 bg-transparent text-cream border border-hairline-strong font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-charcoal active:scale-[0.97]"
@@ -320,7 +320,7 @@ export default function ParentsPage() {
             <div className="grid gap-12 lg:gap-16 items-start grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
               <div>
                 <h2 className="fv-h-section mb-8">
-                  14 days free. Then $49 per year.
+                  14 days free. Then $5/mo or $49/yr.
                 </h2>
                 <ul className="flex flex-col gap-3.5 m-0 p-0 list-none mb-10">
                   {pricingPoints.map((pt) => (
@@ -341,13 +341,13 @@ export default function ParentsPage() {
                   ))}
                 </ul>
                 <div className="flex flex-wrap gap-3">
-                  <a
-                    href="/#waitlist"
+                  <Link
+                    href="/signup"
                     className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
                   >
-                    Join the waitlist
+                    Start your athlete&apos;s 14-day free trial
                     <SvgIcon name="arrow" size={16} />
-                  </a>
+                  </Link>
                   <Link
                     href="/pricing"
                     className="inline-flex items-center justify-center gap-2.5 bg-transparent text-cream border border-hairline-strong font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-onyx active:scale-[0.97]"
@@ -392,7 +392,7 @@ export default function ParentsPage() {
                 <div className="h-px bg-hairline mb-7" />
                 <div className="flex flex-col gap-3 mb-8">
                   {[
-                    "Daily training session (hockey & basketball)",
+                    "Daily training session (hockey, basketball & golf)",
                     "Pregame guided audio",
                     "Pre-practice lock-in",
                     "Journey view + rhythm tracking",

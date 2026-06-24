@@ -39,7 +39,7 @@ export const metadata: Metadata = {
 };
 
 const annualFeatures = [
-  "Daily training session (hockey & basketball)",
+  "Daily training session (hockey, basketball & golf)",
   "Pregame guided audio (~5 min)",
   "Pre-practice lock-in",
   "Journey view — 30-day session map",
@@ -56,7 +56,7 @@ const faq: { q: string; a: string }[] = [
   },
   {
     q: "What sports are available right now?",
-    a: "Hockey and basketball are live at launch. More sports are planned for a future release — all 30-day training content is sport-specific, so we build each one fully before releasing it.",
+    a: "Hockey, basketball, and golf are live now. More sports are in development — all 30-day training content is sport-specific, so we build each one fully before releasing it.",
   },
   {
     q: "Can I see what my athlete does inside their sessions?",
@@ -147,8 +147,8 @@ export default function PricingPage() {
                   </span>
                 </div>
                 <div className="font-body text-[13px] text-cream/55 mb-2">
-                  About $4/mo for your first athlete &mdash; $29/yr each
-                  additional athlete
+                  $49/yr for your first athlete &mdash; $29/yr each additional
+                  athlete
                 </div>
                 <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-gold font-semibold mb-7">
                   14-day free trial
@@ -173,15 +173,15 @@ export default function PricingPage() {
                   ))}
                 </ul>
 
-                <a
-                  href="/#waitlist"
+                <Link
+                  href="/signup"
                   className="w-full inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
                 >
-                  Join the waitlist
+                  Start your athlete&apos;s free trial
                   <SvgIcon name="arrow" size={16} />
-                </a>
+                </Link>
                 <p className="text-center font-mono text-[10px] tracking-[0.12em] uppercase text-cream/35 font-semibold mt-3">
-                  14 days free when you start
+                  14 days free &mdash; cancel anytime
                 </p>
               </div>
 
@@ -234,15 +234,15 @@ export default function PricingPage() {
                   ))}
                 </ul>
 
-                <a
-                  href="/#waitlist"
+                <Link
+                  href="/signup"
                   className="w-full inline-flex items-center justify-center gap-2.5 bg-transparent text-cream border border-hairline-strong font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-surface-1 active:scale-[0.97]"
                 >
-                  Join the waitlist
+                  Start your athlete&apos;s free trial
                   <SvgIcon name="arrow" size={16} />
-                </a>
+                </Link>
                 <p className="text-center font-mono text-[10px] tracking-[0.12em] uppercase text-cream/35 font-semibold mt-3">
-                  14 days free when you start
+                  14 days free &mdash; cancel anytime
                 </p>
               </div>
             </div>
@@ -287,7 +287,7 @@ export default function PricingPage() {
                 {
                   icon: "flame" as const,
                   title: "Daily training session",
-                  body: "30 days of sport-specific mental skill + Scripture foundation. Hockey and basketball at launch.",
+                  body: "30 days of sport-specific mental skill + Scripture foundation. Hockey, basketball, and golf available now.",
                 },
                 {
                   icon: "zap" as const,
@@ -560,18 +560,18 @@ export default function PricingPage() {
               Start training from <em>secure identity.</em>
             </h2>
             <p className="fv-lede max-w-[44ch] mx-auto mb-8">
-              Join the early access list. 14 days free when we open the doors.
-              Your athlete trains. You see the rhythm.
+              14 days free, then $5/mo or $49/yr. Your athlete trains.
+              You see the rhythm.
             </p>
-            <a
-              href="/#waitlist"
+            <Link
+              href="/signup"
               className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-8 py-[20px] text-[17px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
             >
-              Join the waitlist
+              Start your athlete&apos;s 14-day free trial
               <SvgIcon name="arrow" size={17} />
-            </a>
+            </Link>
             <p className="mt-4 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/35 font-semibold">
-              14 days free when you start · No commitment
+              Cancel anytime &middot; No commitment
             </p>
           </Reveal>
         </div>
