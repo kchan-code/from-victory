@@ -32,6 +32,14 @@ type AdultAthleteProfile = {
   first_name: string;
 };
 
+// FV-327: a payer may be either a parent OR an adult_athlete. Used by the
+// /subscribe and /subscribe/success pages which must accept both roles.
+export type SubscriberProfile = {
+  id: string;
+  role: "parent" | "adult_athlete";
+  first_name: string;
+};
+
 export async function requireParent(): Promise<{
   userId: string;
   profile: ParentProfile;
@@ -85,6 +93,38 @@ export async function requireSelfPayer(): Promise<{
   return {
     userId: user.id,
     profile: profile as AdultAthleteProfile,
+  };
+}
+
+/**
+ * Require a payer account — either a parent or an adult_athlete (FV-327).
+ * Used by /subscribe and /subscribe/success which must serve both roles.
+ * Redirects to /signin if not authed, no profile row, or the profile is
+ * neither parent nor adult_athlete (e.g. a minor athlete session).
+ */
+export async function requireSubscriber(): Promise<{
+  userId: string;
+  profile: SubscriberProfile;
+}> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/signin");
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("id, role, first_name")
+    .eq("id", user.id)
+    .single();
+
+  if (error || !profile) redirect("/signin");
+  if (profile.role !== "parent" && profile.role !== "adult_athlete")
+    redirect("/signin");
+
+  return {
+    userId: user.id,
+    profile: profile as SubscriberProfile,
   };
 }
 

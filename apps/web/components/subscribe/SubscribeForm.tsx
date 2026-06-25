@@ -6,11 +6,10 @@
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
-import { createCheckoutSession } from "@/lib/actions/subscription";
-
 // Mirror the discriminated-union from lib/actions/subscription.ts.
-// We import the action as a value; its return-type is typed via the
-// SubscriptionActionState alias here so this file has no "server-only" dep.
+// We do NOT import the action directly — the caller passes it as a prop so
+// this component works for both the parent and adult_athlete checkout flows
+// without taking a "server-only" dependency.
 type SubscriptionActionState = { ok: false; error: string } | null;
 
 const initialState: SubscriptionActionState = null;
@@ -152,19 +151,25 @@ function PlanCard({ plan, selected, onSelect }: PlanCardProps) {
 
 interface SubscribeFormProps {
   /**
-   * Whether this parent is eligible for the 14-day free trial.
+   * Whether this subscriber is eligible for the 14-day free trial.
    * Derived server-side from the subscriptions row; passed as a prop so the
    * trial banner is server-rendered and never shown to returning subscribers.
    */
   trialEligible: boolean;
+  /**
+   * The server action to invoke on submit. Passed by the page so this
+   * component works for both the parent and adult_athlete checkout flows.
+   * Typed to match the SubscriptionActionState discriminated union.
+   */
+  action: (
+    prev: SubscriptionActionState,
+    formData: FormData,
+  ) => Promise<SubscriptionActionState>;
 }
 
-export function SubscribeForm({ trialEligible }: SubscribeFormProps) {
+export function SubscribeForm({ trialEligible, action }: SubscribeFormProps) {
   const [selected, setSelected] = useState<Plan>("annual");
-  const [actionState, formAction] = useFormState(
-    createCheckoutSession,
-    initialState,
-  );
+  const [actionState, formAction] = useFormState(action, initialState);
 
   // Arrow-key navigation within the radiogroup (ARIA radiogroup pattern).
   const handleGroupKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
