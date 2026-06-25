@@ -113,8 +113,8 @@ export default function PrivacyPage() {
           <li>Sport</li>
           <li>A username the athlete uses to sign in</li>
           <li>
-            Optional, self-reported training details the athlete may provide to personalize
-            sessions — such as their position and the area they want to work on
+            Optional training details the athlete selects from the options we provide to
+            personalize sessions — such as their position and the area they want to work on
           </li>
           <li>An optional upcoming game date, used only to time a reminder, then cleared</li>
         </ul>
@@ -145,8 +145,8 @@ export default function PrivacyPage() {
           </li>
           <li>Sport</li>
           <li>
-            Optional, self-reported training details the athlete may provide to personalize
-            sessions — such as their position and the area they want to work on
+            Optional training details the athlete selects from the options we provide to
+            personalize sessions — such as their position and the area they want to work on
           </li>
           <li>An optional upcoming game date, used only to time a reminder, then cleared</li>
           <li>
@@ -272,9 +272,11 @@ export default function PrivacyPage() {
 
       <Section title="4. The Athlete's Private Space">
         <p>
-          An athlete&apos;s training is meant to be their own. What an athlete selects or works
-          through inside a session — for example the focus they choose or what they reflect on —
-          is kept private to that athlete and is not shown on the parent dashboard.
+          An athlete&apos;s training is meant to be their own. Inside a session, an athlete
+          personalizes their experience by choosing from preset options we provide — for example
+          a focus area or pregame selections — rather than by typing their own words. The app does
+          not give an athlete a free-text journal, notes, or comment field. The choices an athlete
+          makes are kept private to that athlete and are not shown on the parent dashboard.
         </p>
         <p>
           A parent&apos;s dashboard shows participation information only — such as how often the
