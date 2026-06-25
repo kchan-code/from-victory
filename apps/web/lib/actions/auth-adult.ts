@@ -57,13 +57,11 @@ const SignUpAdultSchema = z
  * 18+ self-serve signup (FV-326). The adult is BOTH the payer and the athlete:
  * mirrors the parent signUp() (real email, self-insert via the profiles_insert_own
  * RLS policy) but writes a role='adult_athlete' profile with birthdate + sport,
- * then hands off to training.
+ * then routes to the adult checkout flow.
  *
- * Post-signup routes to /athlete: the adult-aware checkout step (/subscribe) is
- * FV-327, and enforcement is off today (everyone trains until
- * ENFORCE_SUBSCRIPTION_GATING flips), so the new account lands directly in the
- * training app. Once FV-327/FV-328 land the flow becomes signup → checkout →
- * /athlete.
+ * Post-signup flow: signup → /subscribe (adult checkout, FV-327) → success →
+ * /athlete. The /subscribe page uses requireSubscriber() which accepts
+ * adult_athlete, and passes createAdultCheckoutSession as the form action.
  *
  * Gated by ENABLE_ADULT_SIGNUP — the entry link and route are also flag-gated;
  * this server-side check is defense-in-depth so the action cannot be invoked
@@ -161,5 +159,5 @@ export async function signUpAdultAthlete(
     };
   }
 
-  redirect("/athlete");
+  redirect("/subscribe");
 }

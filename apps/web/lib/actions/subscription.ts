@@ -1,33 +1,45 @@
 /**
- * Server action: Stripe Checkout session creation.
+ * Server actions: Stripe Checkout session creation.
+ *
+ * Two entry points share the same core checkout logic (startSubscriptionCheckout):
+ *
+ *   createCheckoutSession      — parent buyer; quantity = number of linked athletes
+ *   createAdultCheckoutSession — adult_athlete (18+ self-serve); quantity always 1
+ *
+ * Payer-key semantics:
+ *   `subscriptions.parent_id` is the canonical payer foreign key for BOTH flows.
+ *   For a parent it is the parent's profile id. For an adult_athlete it is the
+ *   adult's own profile id. The webhook reads session.metadata.parent_id to bind
+ *   the Stripe Customer to the correct subscriptions row.
  *
  * Security contract:
- *   - requireParent() gates the action to a logged-in parent only. No athlete
- *     data ever touches Stripe. Only the parent UUID and price ID are passed.
+ *   - requireParent() / requireSelfPayer() gate each action to the correct role.
+ *     No athlete data ever touches Stripe. Only the account UUID and price ID
+ *     are passed.
  *   - The session carries `metadata: { parent_id }` and
  *     `subscription_data.metadata: { parent_id }` so the webhook handler can
- *     bind the Stripe Customer to the parent row on checkout.session.completed.
- *   - No PII in logs. Parent UUID and Stripe IDs (cus_*, price_*) are ok;
+ *     bind the Stripe Customer on checkout.session.completed.
+ *   - No PII in logs. Account UUID and Stripe IDs (cus_*, price_*) are ok;
  *     names, emails, birthdates, journal content are never logged here.
  *   - `getStripe()` is server-only (enforced by `import "server-only"` in that
  *     module). This action file must never be imported from a Client Component.
  *
  * Customer reuse strategy:
- *   If the parent already has a `subscriptions` row with a `stripe_customer_id`,
+ *   If the account already has a `subscriptions` row with a `stripe_customer_id`,
  *   we pass `customer: <id>` to Checkout so Stripe links the new session to the
- *   existing Customer record. If no row exists yet, we pass
- *   `customer_creation: "always"` and let Stripe create the Customer; the
- *   webhook upserts the row on checkout.session.completed. We do NOT create a
- *   Customer ourselves here — Checkout does it, the webhook records it.
+ *   existing Customer record. If no row exists yet, we pass no customer params and
+ *   let Checkout create the Customer; the webhook upserts the row on
+ *   checkout.session.completed. We do NOT create a Customer ourselves here —
+ *   Checkout does it, the webhook records it.
  *
  * 14-day free trial strategy:
  *   The trial is applied conditionally in code — NOT baked into the Stripe Price
- *   object — so we can enforce a one-trial-per-parent rule. A parent is
+ *   object — so we can enforce a one-trial-per-account rule. An account is
  *   trial-eligible if and only if they have NO `subscriptions` row at checkout
  *   time. The webhook writes the row when checkout.session.completed fires, so
  *   any subsequent checkout attempt (cancel-and-resubscribe, plan change) finds
- *   an existing row and receives no trial. We reuse the `existingSub` read
- *   (step 4) — no second DB query.
+ *   an existing row and receives no trial. We reuse the `existingSub` read —
+ *   no second DB query.
  *
  *   When trial-eligible:
  *     subscription_data.trial_period_days: 14
@@ -47,7 +59,7 @@ import { redirect } from "next/navigation";
 import type Stripe from "stripe";
 import { z } from "zod";
 
-import { requireParent } from "@/lib/auth/guards";
+import { requireParent, requireSelfPayer } from "@/lib/auth/guards";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { getStripe } from "@/lib/stripe/server";
@@ -71,35 +83,27 @@ const CheckoutSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
-// Action
+// Shared core — called by both parent and adult checkout actions
 // ---------------------------------------------------------------------------
 
-export async function createCheckoutSession(
-  _prev: SubscriptionActionState,
-  formData: FormData,
+/**
+ * Core Stripe checkout session creation. Called by createCheckoutSession (parent)
+ * and createAdultCheckoutSession (adult_athlete) with the resolved accountId and
+ * quantity. Reads subscriptions keyed on accountId for customer reuse and trial
+ * eligibility; never reads parent_athlete_links (the caller handles that).
+ */
+async function startSubscriptionCheckout(
+  accountId: string,
+  quantity: number,
+  plan: "monthly" | "annual",
 ): Promise<SubscriptionActionState> {
-  // 1. Gate to authenticated parent. Redirects to /signin if not authed or
-  //    if the caller is an athlete — never trust a client-passed parent_id.
-  const { userId } = await requireParent();
-
-  // 2. Validate plan selection.
-  const parsed = CheckoutSchema.safeParse({ plan: formData.get("plan") });
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error:
-        parsed.error.issues[0]?.message ?? "Choose a plan to continue.",
-    };
-  }
-  const { plan } = parsed.data;
-
   // 3. Resolve the price ID from env. Both vars must be set before checkout
   //    can work; they are populated in .env.local by KC during Stripe setup.
   const envVar = planToPriceEnvVar(plan);
   const priceId = process.env[envVar];
   if (!priceId) {
     console.error(
-      `[subscription.createCheckoutSession] ${envVar} is not set. ` +
+      `[subscription.startSubscriptionCheckout] ${envVar} is not set. ` +
         "Populate this env var before accepting subscriptions. " +
         "See .env.example for the full list of required Stripe vars.",
     );
@@ -115,46 +119,32 @@ export async function createCheckoutSession(
     };
   }
 
-  // 4. Check for an existing subscription row on this parent AND count their
-  //    linked athletes in parallel.
+  // 4. Check for an existing subscription row on this account.
   //
-  //    Uses the RLS-scoped client — the parent can only read their own rows.
+  //    Uses the RLS-scoped client — the account can only read their own rows.
   //    The subscription read serves two purposes:
   //    (a) customer reuse: pass the existing Stripe customer ID if present.
   //    (b) trial eligibility: no row → first-time subscriber → trial offered.
-  //
-  //    The athlete count drives checkout `quantity` for graduated tiered pricing:
-  //      quantity 1  → first-athlete price tier ($5/mo | $49/yr)
-  //      quantity 2+ → additional athletes at the graduated tier ($3/mo | $29/yr)
-  //    Floor at 1: a parent with 0 linked athletes still buys at least 1 seat.
   const supabase = createClient();
 
-  const [subResult, athleteCountResult] = await Promise.all([
-    supabase
-      .from("subscriptions")
-      .select("stripe_customer_id")
-      .eq("parent_id", userId)
-      .maybeSingle(),
-    supabase
-      .from("parent_athlete_links")
-      .select("athlete_id", { count: "exact", head: true })
-      .eq("parent_id", userId),
-  ]);
-
-  const { data: existingSub, error: subReadError } = subResult;
+  const { data: existingSub, error: subReadError } = await supabase
+    .from("subscriptions")
+    .select("stripe_customer_id")
+    .eq("parent_id", accountId)
+    .maybeSingle();
 
   if (subReadError) {
     // Fail CLOSED: a transient read error must never grant a trial the
-    // parent shouldn't have (qa finding, PR #185). Mirrors billing-portal's
-    // handling — log + alert with opaque ids only, return a calm error.
+    // account shouldn't have (qa finding, PR #185). Log + alert with opaque
+    // ids only, return a calm error.
     console.error(
-      `[subscription.createCheckoutSession] subscriptions read failed (parent=${userId}): ${subReadError.message}`,
+      `[subscription.startSubscriptionCheckout] subscriptions read failed (account=${accountId}): ${subReadError.message}`,
     );
     deliverInBackground(
       notifyError(
         "[checkout] subscriptions read failed",
         subReadError.message,
-        { parent_id: userId },
+        { parent_id: accountId },
       ),
     );
     return {
@@ -163,22 +153,9 @@ export async function createCheckoutSession(
     };
   }
 
-  // Athlete count — non-fatal if it fails: fall back to 1 (the minimum valid
-  // quantity). The parent can always add athletes after subscribing and the
-  // quantity will be corrected by syncAthleteQuantity on the next mutation.
-  const athleteCount = athleteCountResult.error
-    ? 1
-    : Math.max(athleteCountResult.count ?? 0, 1);
-
-  if (athleteCountResult.error) {
-    console.warn(
-      `[subscription.createCheckoutSession] athlete count read failed (parent=${userId}): ${athleteCountResult.error.message} — defaulting quantity to 1`,
-    );
-  }
-
   const existingCustomerId = existingSub?.stripe_customer_id ?? null;
   // Trial is ONLY offered when there is no existing row. If ANY row exists
-  // (any status — active, canceled, trialing) the parent has already had a trial.
+  // (any status — active, canceled, trialing) the account has already had a trial.
   const isTrialEligible = existingSub === null;
 
   // 5. Build site URL for success/cancel redirects.
@@ -192,18 +169,18 @@ export async function createCheckoutSession(
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: "subscription",
-      line_items: [{ price: priceId, quantity: athleteCount }],
+      line_items: [{ price: priceId, quantity }],
       // Required: the webhook reads session.metadata.parent_id to bind the
-      // Stripe Customer to the parent row on checkout.session.completed.
-      metadata: { parent_id: userId },
+      // Stripe Customer to the account row on checkout.session.completed.
+      metadata: { parent_id: accountId },
       // Belt-and-suspenders: also set on the subscription object itself so
       // subscription.* events also carry the parent_id if ever needed.
-      subscription_data: { metadata: { parent_id: userId } },
+      subscription_data: { metadata: { parent_id: accountId } },
       success_url: `${siteUrl}/subscribe/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${siteUrl}/subscribe?status=canceled`,
       allow_promotion_codes: true,
       // Convenience for Stripe dashboard filtering / audit.
-      client_reference_id: userId,
+      client_reference_id: accountId,
     };
 
     // 14-day free trial — first-time subscribers only.
@@ -227,13 +204,13 @@ export async function createCheckoutSession(
     // No `else`: in subscription mode Checkout ALWAYS creates a Customer, and
     // Stripe rejects the `customer_creation` param outright ("only valid in
     // payment mode") — the first live API call failed on it (hotfix, FV-217).
-    // The webhook binds the created Customer to the parent via metadata.
+    // The webhook binds the created Customer to the account via metadata.
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
     if (!session.url) {
       console.error(
-        "[subscription.createCheckoutSession] Stripe returned a session with no URL. " +
+        "[subscription.startSubscriptionCheckout] Stripe returned a session with no URL. " +
           `session_id="${session.id}"`,
       );
       deliverInBackground(notifyError(
@@ -252,7 +229,7 @@ export async function createCheckoutSession(
     // Log the Stripe error message for debugging; no PII in this log line.
     const message = err instanceof Error ? err.message : String(err);
     console.error(
-      `[subscription.createCheckoutSession] Stripe API call failed: ${message}`,
+      `[subscription.startSubscriptionCheckout] Stripe API call failed: ${message}`,
     );
     deliverInBackground(notifyError(
       "[subscription] Stripe API call failed",
@@ -268,4 +245,83 @@ export async function createCheckoutSession(
   // 7. Redirect to Stripe Checkout. Called at the top level so NEXT_REDIRECT
   //    propagates correctly — never swallowed by the try/catch above.
   redirect(checkoutUrl);
+}
+
+// ---------------------------------------------------------------------------
+// Parent checkout action (existing — behavior unchanged)
+// ---------------------------------------------------------------------------
+
+export async function createCheckoutSession(
+  _prev: SubscriptionActionState,
+  formData: FormData,
+): Promise<SubscriptionActionState> {
+  // 1. Gate to authenticated parent. Redirects to /signin if not authed or
+  //    if the caller is an athlete — never trust a client-passed parent_id.
+  const { userId } = await requireParent();
+
+  // 2. Validate plan selection.
+  const parsed = CheckoutSchema.safeParse({ plan: formData.get("plan") });
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error:
+        parsed.error.issues[0]?.message ?? "Choose a plan to continue.",
+    };
+  }
+  const { plan } = parsed.data;
+
+  // Read linked athlete count to drive checkout quantity for graduated pricing.
+  //   quantity 1  → first-athlete price tier ($5/mo | $49/yr)
+  //   quantity 2+ → additional athletes at the graduated tier ($3/mo | $29/yr)
+  // Floor at 1: a parent with 0 linked athletes still buys at least 1 seat.
+  const supabase = createClient();
+  const athleteCountResult = await supabase
+    .from("parent_athlete_links")
+    .select("athlete_id", { count: "exact", head: true })
+    .eq("parent_id", userId);
+
+  const quantity = athleteCountResult.error
+    ? 1
+    : Math.max(athleteCountResult.count ?? 0, 1);
+
+  if (athleteCountResult.error) {
+    console.warn(
+      `[subscription.createCheckoutSession] athlete count read failed (parent=${userId}): ${athleteCountResult.error.message} — defaulting quantity to 1`,
+    );
+  }
+
+  return startSubscriptionCheckout(userId, quantity, plan);
+}
+
+// ---------------------------------------------------------------------------
+// Adult self-serve checkout action (FV-327)
+// ---------------------------------------------------------------------------
+
+/**
+ * Stripe Checkout for an 18+ adult_athlete account (FV-327).
+ * The adult is BOTH the payer and the athlete — quantity is always 1
+ * (no athlete count query; no syncAthleteQuantity). The subscriptions row
+ * is keyed on the adult's own profile id (same parent_id column as parents).
+ */
+export async function createAdultCheckoutSession(
+  _prev: SubscriptionActionState,
+  formData: FormData,
+): Promise<SubscriptionActionState> {
+  // 1. Gate to authenticated adult_athlete. Redirects to /signin if not
+  //    authed or if the caller is a parent or minor athlete.
+  const { userId } = await requireSelfPayer();
+
+  // 2. Validate plan selection.
+  const parsed = CheckoutSchema.safeParse({ plan: formData.get("plan") });
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error:
+        parsed.error.issues[0]?.message ?? "Choose a plan to continue.",
+    };
+  }
+  const { plan } = parsed.data;
+
+  // Adults always buy exactly 1 seat — no athlete roster, no count query.
+  return startSubscriptionCheckout(userId, 1, plan);
 }

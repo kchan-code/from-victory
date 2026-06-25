@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { requireParent } from "@/lib/auth/guards";
+import { requireSubscriber } from "@/lib/auth/guards";
+import { createCheckoutSession, createAdultCheckoutSession } from "@/lib/actions/subscription";
 import { createClient } from "@/lib/supabase/server";
 import { SubscribeForm } from "@/components/subscribe/SubscribeForm";
 
@@ -14,7 +15,7 @@ type Props = {
 };
 
 export default async function SubscribePage({ searchParams }: Props) {
-  const { userId } = await requireParent();
+  const { userId, profile } = await requireSubscriber();
 
   // Derive trial eligibility server-side: no existing subscriptions row →
   // first-time subscriber → eligible. Reuses the same RLS-scoped client pattern
@@ -32,12 +33,21 @@ export default async function SubscribePage({ searchParams }: Props) {
 
   const wasCanceled = searchParams.status === "canceled";
 
+  // Role-aware navigation targets.
+  const dashboardHref = profile.role === "adult_athlete" ? "/athlete" : "/dashboard";
+
+  // Role-aware checkout action.
+  const checkoutAction =
+    profile.role === "adult_athlete"
+      ? createAdultCheckoutSession
+      : createCheckoutSession;
+
   return (
     <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
       <div className="mx-auto max-w-[560px]">
         {/* Header */}
         <header className="flex items-center justify-between mb-12">
-          <Link href="/dashboard" aria-label="Back to dashboard">
+          <Link href={dashboardHref} aria-label="Back to dashboard">
             <Image
               src="/logo-stacked.svg"
               alt="From Victory"
@@ -48,7 +58,7 @@ export default async function SubscribePage({ searchParams }: Props) {
             />
           </Link>
           <Link
-            href="/dashboard"
+            href={dashboardHref}
             className="font-heading font-semibold text-[14px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-5 py-2.5 transition-colors duration-fast ease-out no-underline"
           >
             Back
@@ -85,7 +95,7 @@ export default async function SubscribePage({ searchParams }: Props) {
         </section>
 
         {/* Plan selector form — trialEligible controls the trial banner */}
-        <SubscribeForm trialEligible={trialEligible} />
+        <SubscribeForm trialEligible={trialEligible} action={checkoutAction} />
 
         {/* Footer trust note */}
         <p className="mt-8 font-body text-cream/40 text-[13px] text-center leading-relaxed">

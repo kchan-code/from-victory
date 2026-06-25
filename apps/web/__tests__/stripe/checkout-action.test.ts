@@ -38,6 +38,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/auth/guards", () => ({
   requireParent: async () => ({ userId: "parent-uuid-test" }),
+  requireSelfPayer: async () => ({ userId: "adult-uuid-test" }),
 }));
 
 vi.mock("@/lib/monitoring/deliver", () => ({
@@ -69,7 +70,7 @@ vi.mock("@/lib/supabase/server", () => ({
 // Import AFTER mocks
 // ---------------------------------------------------------------------------
 
-import { createCheckoutSession } from "@/lib/actions/subscription";
+import { createCheckoutSession, createAdultCheckoutSession } from "@/lib/actions/subscription";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -409,6 +410,95 @@ describe("createCheckoutSession — quantity from athlete count (FV-283)", () =>
 
     const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
     const lineItems = params.line_items as Array<{ price: string; quantity: number }>;
+    expect(lineItems[0]?.quantity).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-327: createAdultCheckoutSession — adult self-serve checkout
+// ---------------------------------------------------------------------------
+
+describe("createAdultCheckoutSession (FV-327)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
+    process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
+    process.env.STRIPE_PRICE_ID_MONTHLY = "price_monthly_500";
+    process.env.STRIPE_PRICE_ID_ANNUAL = "price_annual_4900";
+
+    sessionsCreateMock.mockResolvedValue({
+      url: "https://checkout.stripe.com/pay/cs_test_adult",
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // (a) No row → trial + payment_method_collection + quantity 1 + metadata
+  // -------------------------------------------------------------------------
+  it("(a) no row → trial_period_days:14, payment_method_collection:'always', quantity:1, metadata.parent_id is adult uuid", async () => {
+    supabaseMockImpl = makeSubMock(null);
+
+    await createAdultCheckoutSession(null, makeFormData("monthly"));
+
+    expect(sessionsCreateMock).toHaveBeenCalledOnce();
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+
+    // Trial fields.
+    expect(
+      (params.subscription_data as Record<string, unknown>).trial_period_days,
+    ).toBe(14);
+    expect(params.payment_method_collection).toBe("always");
+
+    // Quantity is always 1 for adults.
+    const lineItems = params.line_items as Array<{ price: string; quantity: number }>;
+    expect(lineItems[0]?.quantity).toBe(1);
+
+    // Metadata payer key uses the adult uuid.
+    expect((params.metadata as Record<string, unknown>).parent_id).toBe(
+      "adult-uuid-test",
+    );
+  });
+
+  // -------------------------------------------------------------------------
+  // (b) Existing row → no trial + customer reuse + quantity 1
+  // -------------------------------------------------------------------------
+  it("(b) existing row → no trial, customer reuse, quantity:1", async () => {
+    supabaseMockImpl = makeSubMock({ stripe_customer_id: "cus_adult_existing" });
+
+    await createAdultCheckoutSession(null, makeFormData("annual"));
+
+    expect(sessionsCreateMock).toHaveBeenCalledOnce();
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+
+    // No trial fields.
+    expect(
+      (params.subscription_data as Record<string, unknown>).trial_period_days,
+    ).toBeUndefined();
+    expect(params.payment_method_collection).toBeUndefined();
+
+    // Customer reuse.
+    expect(params.customer).toBe("cus_adult_existing");
+
+    // Quantity still 1.
+    const lineItems = params.line_items as Array<{ price: string; quantity: number }>;
+    expect(lineItems[0]?.quantity).toBe(1);
+  });
+
+  // -------------------------------------------------------------------------
+  // (c) quantity is ALWAYS 1 — even if makeSubMock says 3 athletes
+  //     (proves the adult path never reads parent_athlete_links)
+  // -------------------------------------------------------------------------
+  it("(c) quantity is always 1 even when athlete-count mock would say 3", async () => {
+    // makeSubMock(null, 3) — the 3 is the parent_athlete_links mock, which the
+    // adult action must never consult. If it did, quantity would be 3.
+    supabaseMockImpl = makeSubMock(null, 3);
+
+    await createAdultCheckoutSession(null, makeFormData("monthly"));
+
+    expect(sessionsCreateMock).toHaveBeenCalledOnce();
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    const lineItems = params.line_items as Array<{ price: string; quantity: number }>;
+
+    // Must be 1, proving parent_athlete_links was never consulted.
     expect(lineItems[0]?.quantity).toBe(1);
   });
 });

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { requireParent } from "@/lib/auth/guards";
+import { requireSubscriber } from "@/lib/auth/guards";
 import { FlameMark } from "@/components/ui";
 
 export const metadata = {
@@ -9,7 +9,9 @@ export const metadata = {
 };
 
 export default async function SubscribeSuccessPage() {
-  const { profile } = await requireParent();
+  const { profile } = await requireSubscriber();
+
+  const isAdult = profile.role === "adult_athlete";
 
   return (
     <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8 flex flex-col">
@@ -41,7 +43,10 @@ export default async function SubscribeSuccessPage() {
 
           <p className="font-body text-cream/70 text-[15px] leading-relaxed mb-3 max-w-[40ch]">
             Your subscription is activating&nbsp;&mdash; it may take a moment
-            to confirm. Your athletes are ready to train.
+            to confirm.{" "}
+            {isAdult
+              ? "Your training is ready."
+              : "Your athletes are ready to train."}
           </p>
 
           <p className="font-body text-cream/50 text-[13px] leading-relaxed mb-10 max-w-[40ch]">
@@ -51,13 +56,23 @@ export default async function SubscribeSuccessPage() {
 
           {/* CTAs — primary action bottom-reachable on mobile */}
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-            <Link
-              href="/dashboard"
-              data-testid="success-to-dashboard"
-              className="flex-1 flex items-center justify-center font-heading font-semibold text-[15px] text-onyx bg-gold border border-gold rounded-pill px-6 min-h-[52px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-            >
-              Go to dashboard
-            </Link>
+            {isAdult ? (
+              <Link
+                href="/athlete"
+                data-testid="success-to-athlete"
+                className="flex-1 flex items-center justify-center font-heading font-semibold text-[15px] text-onyx bg-gold border border-gold rounded-pill px-6 min-h-[52px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+              >
+                Start training
+              </Link>
+            ) : (
+              <Link
+                href="/dashboard"
+                data-testid="success-to-dashboard"
+                className="flex-1 flex items-center justify-center font-heading font-semibold text-[15px] text-onyx bg-gold border border-gold rounded-pill px-6 min-h-[52px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+              >
+                Go to dashboard
+              </Link>
+            )}
           </div>
         </div>
       </div>
