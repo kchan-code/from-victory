@@ -97,7 +97,7 @@ export default defineConfig({
     // ------------------------------------------------------------------
     {
       name: "chromium-mobile-athlete",
-      testMatch: [/practice-flow\.e2e\.ts$/, /postgame-module\.e2e\.ts$/],
+      testMatch: [/practice-flow\.e2e\.ts$/, /postgame-module\.e2e\.ts$/, /pregame-flow\.e2e\.ts$/],
       use: {
         ...devices["iPhone 14"],
         storageState: path.join(__dirname, "e2e", ".auth", "athlete.storageState.json"),
