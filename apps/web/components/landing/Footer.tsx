@@ -18,8 +18,8 @@ const forLinks = [
 ];
 
 const companyLinks = [
-  { href: "#", label: "About" },
-  { href: "#", label: "Contact" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
 ];
@@ -51,7 +51,7 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pt-8 border-t border-hairline font-mono text-[11px] tracking-[0.14em] uppercase text-cream/50 font-semibold">
-          <div>© 2026 From Victory · All rights reserved</div>
+          <div>© 2026 From Victory LLC · All rights reserved</div>
           <div className="flex gap-3.5 text-cream/50">
             <a
               href="https://www.instagram.com/fromvictory"

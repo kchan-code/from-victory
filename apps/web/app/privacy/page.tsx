@@ -1,14 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+// FV-324 — Privacy policy expanded from waitlist-only to cover IN-APP data
+// handling (parent + athlete accounts, payments, push, email, subprocessors,
+// minor protections). DRAFT for KC + attorney review before launch.
+// Every factual claim here is grounded in the verified data inventory
+// (schema + code). Two items for KC/counsel to confirm at launch:
+//   1. EFFECTIVE_DATE below — set to the actual go-live date.
+//   2. The private-journal infrastructure is built but DORMANT (FV-135, zero
+//      production callers) and is intentionally NOT described as an active
+//      feature here. Revisit if/when it is wired.
+
 export const metadata: Metadata = {
   title: "Privacy Policy · From Victory",
   description:
-    "How From Victory collects, uses, stores, and protects information submitted through our website, including the sport waitlist form.",
+    "How From Victory collects, uses, stores, and protects information — across our website, the sport waitlist, and the From Victory app for parents and athletes (ages 13–21).",
   robots: { index: true, follow: true },
 };
 
-const EFFECTIVE_DATE = "May 22, 2026";
+// NOTE: confirm the effective date with counsel at launch.
+const EFFECTIVE_DATE = "June 24, 2026";
 const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
 export default function PrivacyPage() {
@@ -36,18 +47,28 @@ export default function PrivacyPage() {
 
       <section className="mb-10 text-cream/85 leading-relaxed space-y-4">
         <p>
-          From Victory respects your privacy. This Privacy Policy explains how we collect, use,
-          store, and protect information submitted through our website, including the sport
-          waitlist form.
+          From Victory LLC, a New Jersey limited liability company (&ldquo;From
+          Victory,&rdquo; &ldquo;we,&rdquo; or &ldquo;us&rdquo;), respects your privacy. This
+          Privacy Policy explains how we collect,
+          use, store, and protect information across three places: our website, the sport
+          waitlist form, and the From Victory app used by parents and athletes.
         </p>
         <p>
-          By submitting information through the sport waitlist form, you acknowledge the
-          practices described in this Privacy Policy.
+          From Victory is a daily mental-toughness training app, with faith as its
+          foundation, for athletes ages 13 to 21. At this time, a parent or guardian creates
+          and manages every account and is the purchaser. We collect as little information
+          about athletes as we can while still running the app, and we apply additional
+          protections to every account belonging to a minor — an athlete ages 13 to 17.
+        </p>
+        <p>
+          By using our website, submitting the waitlist form, or creating an account, you
+          acknowledge the practices described in this Privacy Policy.
         </p>
       </section>
 
       <Section title="1. Information We Collect">
-        <p>When you join the From Victory waitlist, we may collect the following information:</p>
+        <SubHeading>a. Sport waitlist</SubHeading>
+        <p>When you join the From Victory waitlist, we may collect:</p>
         <ul className="mt-2 mb-3 pl-5 list-disc">
           <li>Name</li>
           <li>Email address</li>
@@ -56,183 +77,293 @@ export default function PrivacyPage() {
           <li>Optional note, if you choose to provide one</li>
         </ul>
         <p>
-          We do not ask you to provide sensitive personal information through the waitlist form.
           Please do not include sensitive personal information, medical information, financial
           information, passwords, or highly personal details in the optional note field.
+        </p>
+
+        <SubHeading>b. Parent / account-holder accounts</SubHeading>
+        <p>When a parent or guardian creates an account, we collect:</p>
+        <ul className="mt-2 mb-3 pl-5 list-disc">
+          <li>Email address (used to sign in and for account communications)</li>
+          <li>Password (stored only in hashed form by our authentication provider)</li>
+          <li>First name</li>
+          <li>
+            Subscription and billing details needed to manage your plan — see &ldquo;Payment
+            information&rdquo; below
+          </li>
+          <li>Your email preferences, such as whether you have opted out of the weekly digest</li>
+        </ul>
+        <p>We do not collect a parent&apos;s birthdate, phone number, home address, or photos.</p>
+
+        <SubHeading>c. Athlete accounts (ages 13–21)</SubHeading>
+        <p>
+          A parent or guardian sets up the athlete&apos;s account. For an athlete we collect
+          only:
+        </p>
+        <ul className="mt-2 mb-3 pl-5 list-disc">
+          <li>First name</li>
+          <li>Birthdate (used to confirm the athlete is at least 13 and to apply minor protections)</li>
+          <li>Sport</li>
+          <li>A username the athlete uses to sign in</li>
+          <li>
+            Optional, self-reported training details the athlete may provide to personalize
+            sessions — such as their position and the area they want to work on
+          </li>
+          <li>An optional upcoming game date, used only to time a reminder, then cleared</li>
+        </ul>
+        <p>
+          We do <strong>not</strong> collect an athlete&apos;s real email address, phone
+          number, home address, photos, or precise location. The app creates a non-public,
+          system-generated sign-in identifier for each athlete so the account can function;
+          it is not a working email address and is never used to contact the athlete.
+        </p>
+        <p>
+          We also record the athlete&apos;s training activity — for example, which sessions
+          were started or completed and when. How that activity is shared (and not shared) is
+          described in &ldquo;The athlete&apos;s private space&rdquo; below.
+        </p>
+
+        <SubHeading>d. Payment information</SubHeading>
+        <p>
+          Subscriptions are processed by Stripe, our payment processor. Stripe collects and
+          stores your payment details (such as card information) directly; we do{" "}
+          <strong>not</strong> receive or store your full card number. In our own systems we
+          store only the information needed to manage your subscription, such as a Stripe
+          customer and subscription identifier, your plan, your subscription status, and the
+          current billing-period end date.
+        </p>
+
+        <SubHeading>e. Push notifications (only if enabled)</SubHeading>
+        <p>
+          If an athlete chooses to turn on training reminders, we store the technical
+          information needed to deliver web-push notifications to that device — a push
+          endpoint provided by the browser, the encryption keys associated with it, a
+          preferred reminder hour, and the device time zone. You can turn reminders off at any
+          time, which removes this information. We do not track whether notifications are
+          opened or clicked.
+        </p>
+
+        <SubHeading>f. Sign-in and security data</SubHeading>
+        <p>
+          To keep accounts secure we use authentication session cookies, and, on an
+          athlete&apos;s device, an optional sign-in helper cookie that remembers which
+          sign-in screen to show. To prevent abuse we keep short-lived, non-identifying
+          security records (for example, one-way, irreversible counters used for rate
+          limiting) that do not contain raw email addresses, usernames, or IP addresses.
+        </p>
+
+        <SubHeading>g. Contact form</SubHeading>
+        <p>
+          If you use our contact form, we collect the name, email address, and message you
+          submit so we can respond. Contact messages are delivered to our team by email
+          through our email provider; we do not store contact submissions in a separate
+          database. Please do not include sensitive personal, medical, or financial
+          information in your message.
         </p>
       </Section>
 
       <Section title="2. How We Use Your Information">
-        <p>We use the information you provide to:</p>
+        <p>We use the information we collect to:</p>
         <ul className="mt-2 mb-3 pl-5 list-disc">
-          <li>Add you to the From Victory waitlist</li>
-          <li>
-            Communicate with you about sport availability, product updates, and related
-            information
-          </li>
-          <li>
-            Understand the types of users interested in From Victory, including athletes, parents,
-            coaches, and sports communities
-          </li>
-          <li>Improve our messaging, product experience, and future app features</li>
-          <li>Respond to questions or comments submitted through the optional note field</li>
-          <li>Maintain security, prevent abuse, and operate our website</li>
-        </ul>
-        <p>We do not sell your personal information.</p>
-      </Section>
-
-      <Section title="3. Email Communications">
-        <p>
-          By submitting the sport waitlist form, you agree that From Victory may contact you by
-          email about sport availability, product updates, and related communications.
-        </p>
-        <p className="mt-3">
-          You may unsubscribe or request removal from the waitlist at any time by following the
-          unsubscribe instructions in our emails, if available, or by contacting us at{" "}
-          <PrivacyEmailLink />.
-        </p>
-      </Section>
-
-      <Section title="4. How We Store Your Information">
-        <p>
-          Information submitted through the waitlist form is stored using secure third-party
-          service providers that help us operate our website, manage waitlist submissions, and
-          maintain our database.
-        </p>
-        <p className="mt-3">
-          We use reasonable administrative, technical, and organizational safeguards designed to
-          protect the information submitted through the waitlist form. However, no method of
-          internet transmission or electronic storage is completely secure.
-        </p>
-        <p className="mt-3">
-          We may change or add service providers over time as our website and business needs
-          evolve.
-        </p>
-      </Section>
-
-      <Section title="5. How We Share Information">
-        <p>
-          We may share your information with trusted service providers who help us operate the
-          website, manage the waitlist, store data, send communications, or support our business
-          operations.
-        </p>
-        <p className="mt-3">
-          These service providers may only use your information to provide services to us and not
-          for their own independent marketing purposes.
-        </p>
-        <p className="mt-3">
-          We may also disclose information if required to do so by law, legal process, government
-          request, or to protect the rights, safety, or security of From Victory, our users, or
-          others.
-        </p>
-        <p className="mt-3">We do not sell your personal information.</p>
-      </Section>
-
-      <Section title="6. Children's Privacy">
-        <p>
-          From Victory is designed to support athletes, parents, and coaches, including families
-          and youth sports communities. However, the waitlist form is not intended to collect
-          personal information directly from children under the age of 13.
-        </p>
-        <p className="mt-3">
-          If you are under 13, please do not submit the waitlist form yourself. A parent or legal
-          guardian should submit the form on your behalf.
-        </p>
-        <p className="mt-3">
-          If we learn that we have collected personal information directly from a child under 13
-          without appropriate parental consent, we will take reasonable steps to delete that
-          information.
-        </p>
-        <p className="mt-3">
-          Parents or guardians may contact us at <PrivacyEmailLink /> to request deletion of
-          information submitted by or about a child.
-        </p>
-      </Section>
-
-      <Section title="7. Data Security">
-        <p>
-          We take reasonable administrative, technical, and organizational measures to protect the
-          information submitted through the waitlist form.
-        </p>
-        <p className="mt-3">
-          However, no method of transmission over the internet or electronic storage is completely
-          secure. We cannot guarantee absolute security, but we work to protect your information
-          using reasonable safeguards appropriate for the type of information collected.
-        </p>
-      </Section>
-
-      <Section title="8. Data Retention">
-        <p>We retain waitlist information for as long as reasonably necessary to:</p>
-        <ul className="mt-2 mb-3 pl-5 list-disc">
-          <li>Manage the waitlist</li>
-          <li>Communicate about From Victory</li>
-          <li>Support early access or launch activities</li>
+          <li>Create and operate parent and athlete accounts</li>
+          <li>Deliver the daily training, pregame, and pre-practice experiences</li>
+          <li>Personalize training using the details an athlete chooses to provide</li>
+          <li>Show a parent their athlete&apos;s participation rhythm (not the content of sessions)</li>
+          <li>Process subscriptions, trials, and billing through our payment processor</li>
+          <li>Send account, sport-availability, and product communications you have agreed to receive</li>
+          <li>Send optional training reminders, if an athlete enables them</li>
+          <li>Maintain security, prevent abuse, debug problems, and operate our services</li>
           <li>Comply with legal obligations</li>
-          <li>Resolve disputes</li>
-          <li>Maintain business records</li>
         </ul>
         <p>
-          You may request deletion of your waitlist information by contacting us at{" "}
+          We do <strong>not</strong> sell your personal information, and we do not use it for
+          cross-context behavioral advertising or targeted advertising.
+        </p>
+      </Section>
+
+      <Section title="3. Children and Minors">
+        <p>
+          From Victory is built for athletes ages 13 to 21. Athletes ages 13 to 17 are
+          minors. At this time, a parent or guardian creates and manages every account, and
+          we apply the additional protections described below to every minor (ages 13 to 17)
+          account.
+        </p>
+        <SubHeading>Age floor of 13</SubHeading>
+        <p>
+          The app does not support accounts for anyone under the age of 13. We confirm age at
+          account creation using the athlete&apos;s birthdate, and this minimum age is enforced
+          both in the app and at the database level. We do not knowingly create accounts for,
+          or collect personal information from, children under 13.
+        </p>
+        <SubHeading>A parent is in control</SubHeading>
+        <p>
+          A parent or guardian creates the athlete&apos;s account, manages the subscription,
+          and can request changes or deletion at any time. The athlete does not provide an
+          email address, and we do not send marketing email to athletes.
+        </p>
+        <SubHeading>Extra protections for athlete accounts (13–17)</SubHeading>
+        <p>
+          For every account belonging to a minor (ages 13 to 17), the following protections
+          are on by default:
+        </p>
+        <ul className="mt-2 mb-3 pl-5 list-disc">
+          <li>No advertising</li>
+          <li>No behavioral or advertising analytics</li>
+          <li>No third-party tracking</li>
+          <li>No sale of personal information</li>
+        </ul>
+        <p>
+          If you are under 13, please do not submit the waitlist form or attempt to create an
+          account. If we learn that we have collected personal information from a child under
+          13, we will take reasonable steps to delete it. A parent or guardian may contact us
+          at <PrivacyEmailLink /> about any information relating to a child.
+        </p>
+      </Section>
+
+      <Section title="4. The Athlete's Private Space">
+        <p>
+          An athlete&apos;s training is meant to be their own. What an athlete selects or works
+          through inside a session — for example the focus they choose or what they reflect on —
+          is kept private to that athlete and is not shown on the parent dashboard.
+        </p>
+        <p>
+          A parent&apos;s dashboard shows participation information only — such as how often the
+          athlete is training and how many sessions they have completed — so a parent can see
+          the habit forming without reading the contents of a session. We designed this
+          boundary on purpose: athletes engage more honestly when their space is genuinely
+          theirs.
+        </p>
+      </Section>
+
+      <Section title="5. Email Communications">
+        <p>From Victory may send the following emails:</p>
+        <ul className="mt-2 mb-3 pl-5 list-disc">
+          <li>
+            <strong>Waitlist and product updates</strong>, if you submitted the waitlist form,
+            about sport availability and related news.
+          </li>
+          <li>
+            <strong>Account and billing emails</strong> to a parent, such as messages related
+            to the subscription.
+          </li>
+          <li>
+            <strong>An optional weekly digest</strong> to a parent, summarizing their
+            athlete&apos;s participation rhythm. It never includes the contents of a session.
+            A parent can opt out at any time using the unsubscribe link in the email or by
+            contacting us.
+          </li>
+        </ul>
+        <p>
+          We send these emails using a third-party email provider. We do not send marketing
+          email to athletes.
+        </p>
+      </Section>
+
+      <Section title="6. How We Store and Protect Your Information">
+        <p>
+          Information is stored using trusted third-party service providers that help us run
+          our website and app, manage accounts, process payments, and send communications. We
+          use reasonable administrative, technical, and organizational safeguards designed to
+          protect personal information.
+        </p>
+        <p className="mt-3">
+          No method of transmission over the internet or method of electronic storage is
+          completely secure. We cannot guarantee absolute security, but we work to protect
+          your information using safeguards appropriate to the type of information involved.
+        </p>
+        <p className="mt-3">
+          We do not use advertising or behavioral-analytics tracking technologies in the app,
+          and we do not embed third-party advertising or tracking SDKs.
+        </p>
+      </Section>
+
+      <Section title="7. How We Share Information">
+        <p>
+          We do not sell your personal information. We share information only with service
+          providers that help us operate From Victory, and only so they can provide their
+          service to us. These providers include:
+        </p>
+        <ul className="mt-2 mb-3 pl-5 list-disc">
+          <li>A cloud database, authentication, and storage provider</li>
+          <li>A payment processor (for subscriptions and billing)</li>
+          <li>A web-hosting and serverless-infrastructure provider</li>
+          <li>An email delivery provider</li>
+          <li>
+            Your browser&apos;s push-notification service, only if an athlete enables reminders
+          </li>
+        </ul>
+        <p>
+          These service providers may use your information only to provide services to us, not
+          for their own independent marketing. We may also disclose information if required by
+          law, legal process, or government request, or to protect the rights, safety, or
+          security of From Victory, our users, or others. If From Victory is involved in a
+          merger, acquisition, or sale of assets, we will provide notice before personal
+          information is transferred and becomes subject to a different privacy policy.
+        </p>
+      </Section>
+
+      <Section title="8. Data Retention and Deletion">
+        <p>
+          We retain personal information for as long as reasonably necessary to operate the
+          accounts and services described here, comply with legal obligations, resolve
+          disputes, and maintain business records.
+        </p>
+        <p className="mt-3">
+          A parent or guardian may request deletion of an athlete&apos;s account and data, or
+          of their own account, at any time. When you confirm a deletion request, we delete
+          the associated account data promptly — well within 30 days of the request. We keep a
+          minimal, content-free record of deletion (for example, that a deletion occurred and
+          when) for security and recordkeeping; this record does not contain names, email
+          addresses, birthdates, or any session content.
+        </p>
+        <p className="mt-3">
+          You may also request deletion of waitlist information at any time by contacting us at{" "}
           <PrivacyEmailLink />.
         </p>
       </Section>
 
-      <Section title="9. Your Choices">
-        <p>
-          You may contact us at <PrivacyEmailLink /> to:
-        </p>
+      <Section title="9. Your Rights and Choices">
+        <p>Depending on where you live, you may have rights to:</p>
         <ul className="mt-2 mb-3 pl-5 list-disc">
-          <li>Request access to the information you submitted</li>
+          <li>Request access to the personal information we hold</li>
           <li>Correct inaccurate information</li>
-          <li>Ask us to delete your waitlist submission</li>
-          <li>Opt out of future emails</li>
+          <li>Request deletion of your information or your athlete&apos;s information</li>
+          <li>Opt out of non-essential emails</li>
           <li>Ask questions about this Privacy Policy</li>
         </ul>
         <p>
-          Depending on where you live, you may have additional privacy rights under applicable
-          state, national, or regional privacy laws.
+          A parent or guardian may exercise these rights on behalf of their athlete. To make a
+          request, contact us at <PrivacyEmailLink />. Depending on your location, you may have
+          additional rights under applicable state, national, or regional privacy laws,
+          including laws that provide heightened protections for minors.
         </p>
       </Section>
 
-      <Section title="10. No Sale or Sharing for Targeted Advertising">
-        <p>We do not sell personal information collected through the waitlist form.</p>
-        <p className="mt-3">
-          We also do not use waitlist information for cross-context behavioral advertising or
-          targeted advertising.
-        </p>
-        <p className="mt-3">
-          If our practices change, we will update this Privacy Policy and provide any required
-          notices or choices.
-        </p>
-      </Section>
-
-      <Section title="11. International Users">
+      <Section title="10. International Users">
         <p>
-          From Victory is currently intended for users in the United States. If you access the
-          website from outside the United States, you understand that your information may be
-          processed and stored in the United States or other locations where our service providers
-          operate.
+          From Victory is intended for users in the United States. If you access our website or
+          app from outside the United States, you understand that your information may be
+          processed and stored in the United States or other locations where our service
+          providers operate.
         </p>
       </Section>
 
-      <Section title="12. Changes to This Privacy Policy">
+      <Section title="11. Changes to This Privacy Policy">
         <p>
-          We may update this Privacy Policy from time to time. If we make material changes, we will
-          update the effective date above and may provide additional notice where appropriate.
-        </p>
-        <p className="mt-3">
-          Your continued use of the website or continued participation in the waitlist after an
-          update means you acknowledge the updated Privacy Policy.
+          We may update this Privacy Policy from time to time. If we make material changes, we
+          will update the effective date above and may provide additional notice where
+          appropriate. Your continued use of the website or app after an update means you
+          acknowledge the updated Privacy Policy.
         </p>
       </Section>
 
-      <Section title="13. Contact Us">
+      <Section title="12. Contact Us">
         <p>
-          If you have questions about this Privacy Policy or want to exercise your privacy choices,
-          contact us at:
+          If you have questions about this Privacy Policy or want to exercise your privacy
+          choices, contact us at:
         </p>
         <p className="mt-3">
-          From Victory
+          From Victory LLC
           <br />
           Email: <PrivacyEmailLink />
           <br />
@@ -260,6 +391,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       </h2>
       <div className="text-cream/80 leading-relaxed">{children}</div>
     </section>
+  );
+}
+
+function SubHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h3 className="font-heading font-semibold text-[16px] tracking-[-0.005em] text-cream mt-5 mb-2">
+      {children}
+    </h3>
   );
 }
 

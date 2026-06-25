@@ -44,7 +44,8 @@ export default function TermsPage() {
         </p>
         <p>
           For purposes of these Terms, &ldquo;From Victory,&rdquo; &ldquo;we,&rdquo;
-          &ldquo;us,&rdquo; and &ldquo;our&rdquo; refer to From Victory. &ldquo;Services&rdquo;
+          &ldquo;us,&rdquo; and &ldquo;our&rdquo; refer to From Victory LLC, a New Jersey
+          limited liability company. &ldquo;Services&rdquo;
           means the From Victory website, application, content, waitlist, communications, and
           related features or services.
         </p>
@@ -544,7 +545,7 @@ export default function TermsPage() {
       <Section title="26. Contact Us">
         <p>If you have questions about these Terms, contact us at:</p>
         <p className="mt-3">
-          From Victory
+          From Victory LLC
           <br />
           Email: <PrivacyEmailLink />
           <br />
