@@ -368,53 +368,6 @@ export function SelectChip({
 }
 
 // ---------------------------------------------------------------------------
-// CustomInputRow — "Write your own" entry row
-// ---------------------------------------------------------------------------
-
-export function CustomInputRow({
-  value,
-  onChange,
-  placeholder = "Write your own",
-  selected,
-  onFocus,
-  maxLength = 120,
-  ariaLabel,
-}: {
-  value: string;
-  onChange: (next: string) => void;
-  placeholder?: string;
-  selected?: boolean;
-  onFocus?: () => void;
-  maxLength?: number;
-  ariaLabel?: string;
-}) {
-  return (
-    <div
-      className={`flex items-center gap-3 rounded-[12px] border px-3.5 py-3 transition-colors duration-fast ${
-        selected ? "border-gold/55 bg-gold/[0.06]" : "border-hairline bg-charcoal"
-      }`}
-    >
-      <div
-        className={`flex h-8 w-8 flex-none items-center justify-center rounded-[8px] ${
-          selected ? "bg-gold/[0.10] text-gold" : "bg-cream/[0.04] text-cream/70"
-        }`}
-      >
-        <Icon name="edit" size={14} />
-      </div>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={onFocus}
-        placeholder={placeholder}
-        maxLength={maxLength}
-        aria-label={ariaLabel ?? placeholder}
-        className="min-w-0 flex-1 border-none bg-transparent font-heading text-[14px] font-medium text-cream outline-none placeholder:text-cream/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx rounded-sm"
-      />
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // BottomBar — sticky action area with optional secondary row
 // ---------------------------------------------------------------------------
 
