@@ -69,7 +69,11 @@ export function ResetAnchorScreen({
         When pressure hits, what physical cue brings you back?
       </p>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div
+        className="grid grid-cols-2 gap-2"
+        role="group"
+        aria-label="Choose your reset anchor"
+      >
         {anchors.map((a) => {
           const selected = state.anchor === a;
           return (
@@ -131,7 +135,11 @@ export function SelfTalkScreen({
         What do you need to hear when pressure hits?
       </p>
 
-      <div className="flex flex-col gap-2">
+      <div
+        className="flex flex-col gap-2"
+        role="group"
+        aria-label="Choose a self-talk phrase"
+      >
         {selfTalkOptions.map((p) => (
           <SelectCard
             key={p}

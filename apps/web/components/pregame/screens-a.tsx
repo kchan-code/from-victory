@@ -542,7 +542,11 @@ export function HardMomentScreen({
         you through how to respond.
       </p>
 
-      <div className="flex flex-wrap gap-2">
+      <div
+        className="flex flex-wrap gap-2"
+        role="group"
+        aria-label="Choose a hard moment"
+      >
         {options.map(({ key, label }) => (
           <SelectChip
             key={key}
