@@ -52,8 +52,8 @@ const whatItIsCards = [
   },
   {
     icon: "user" as const,
-    title: "The parent sets up. The athlete trains.",
-    body: "A parent creates and manages the account; the athlete does the work, privately. We’re launching with hockey and basketball, with more sports coming sport by sport.",
+    title: "For parents and adult athletes.",
+    body: "A parent creates and manages a younger athlete’s account, or an adult athlete signs up to train on their own. Either way, the training stays private. We’re launching with hockey and basketball, with more sports coming sport by sport.",
   },
 ];
 
@@ -295,15 +295,20 @@ export default function AboutPage() {
               <h2 className="fv-h-section mb-6 max-w-[22ch]">
                 The race is already won. We train from there.
               </h2>
+              <p className="fv-lede mb-5 max-w-[54ch]">
+                From Victory is rooted in historic Christian faith,
+                nondenominational in approach, and built on the truth of
+                Scripture.
+              </p>
+              <p className="fv-lede mb-5 max-w-[54ch]">
+                We use the NIV and apply God&apos;s Word to the real life of
+                athletes: pressure, fear, failure, comparison, discipline,
+                identity, and the desire to prove yourself through performance.
+              </p>
               <p className="fv-lede mb-8 max-w-[54ch]">
-                From Victory is rooted in historic Christian faith — evangelical,
-                non-denominational Protestant. We read Scripture in the NIV and
-                apply it to the real athletic life: fear, failure, pressure,
-                comparison, identity. The throughline never changes — an
-                athlete&apos;s worth is secure in Christ, received as a gift,
-                not earned on the scoreboard. We stay accessible across
-                Protestant traditions and don&apos;t lean on any one
-                denomination&apos;s distinctives.
+                The message underneath everything we create is simple: an
+                athlete&apos;s worth is secure in Christ. It is received as a
+                gift, not earned on the scoreboard.
               </p>
               <div className="fv-faith-callout border border-hairline rounded-[20px] px-8 sm:px-9 py-8 max-w-[560px] mb-7">
                 <div className="font-mono text-[11px] tracking-[0.18em] uppercase text-gold font-semibold mb-3.5">
