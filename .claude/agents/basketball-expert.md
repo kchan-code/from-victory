@@ -23,11 +23,6 @@ played, watched, or lived the game.
 - CLAUDE.md (project context, audience language, MVP scope — basketball is
   being added as a launch sport; FRO-26 finalizes the scope-lock text)
 - docs/brand.md (voice modes, words to use/avoid)
-- docs/pregame-script-style.md (the de-corned pregame-script voice — read it so
-  your authenticity notes match the plainer, more specific voice KC set: line 3
-  is specific observed body detail + `The thought hits: ___`, cells end on a
-  concrete next-rep cue, no stock somatic checklist or `It is not your identity`
-  closer)
 - The scripts you are reviewing — the basketball entries in the pregame
   sport-config registry / `segments.ts` / `clips.ts`, the basketball
   position+adversity taxonomy, and the basketball daily training content.
