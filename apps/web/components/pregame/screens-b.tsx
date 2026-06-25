@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   Button,
-  CustomInputRow,
   Eyebrow,
   Icon,
   ScreenBody,
@@ -41,6 +40,7 @@ type SetFn = <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
 // sportConfig.anchors is sport-keyed (FV-117): hockey shows stick-tap / glove
 // options; basketball shows ball-bounce / floor-tap / rim-look options.
 // "Long exhale", "Press thumb to palm", "Say cue word" are shared.
+// Preset-only (FV-343): no free-text entry — the athlete picks one anchor.
 export function ResetAnchorScreen({
   state,
   set,
@@ -51,7 +51,6 @@ export function ResetAnchorScreen({
   sportConfig: SportConfig;
 }) {
   const anchors = sportConfig.anchors;
-  const isCustomAnchor = !!state.anchor && !anchors.includes(state.anchor);
 
   return (
     <ScreenBody>
@@ -83,15 +82,6 @@ export function ResetAnchorScreen({
           );
         })}
       </div>
-      <div className="mt-2">
-        <CustomInputRow
-          value={isCustomAnchor ? state.anchor ?? "" : ""}
-          selected={isCustomAnchor}
-          onChange={(v) => set("anchor", v)}
-          placeholder="Custom anchor"
-          ariaLabel="Custom reset anchor"
-        />
-      </div>
     </ScreenBody>
   );
 }
@@ -100,6 +90,7 @@ export function ResetAnchorScreen({
 // sportConfig.selfTalkOptions is sport-keyed (FV-117): hockey shows
 // "You're okay. Next shift."; basketball shows "You're okay. Next possession."
 // The other 6 phrases are sport-neutral and shared.
+// Preset-only (FV-343): no free-text entry — the athlete picks one phrase.
 export function SelfTalkScreen({
   state,
   set,
@@ -110,7 +101,6 @@ export function SelfTalkScreen({
   sportConfig: SportConfig;
 }) {
   const selfTalkOptions = sportConfig.selfTalkOptions;
-  const isCustom = !!state.selfTalk && !selfTalkOptions.includes(state.selfTalk);
 
   return (
     <ScreenBody>
@@ -132,13 +122,6 @@ export function SelfTalkScreen({
             compact
           />
         ))}
-        <CustomInputRow
-          value={isCustom ? state.selfTalk ?? "" : ""}
-          selected={isCustom}
-          onChange={(v) => set("selfTalk", v)}
-          placeholder="Write your own coaching line"
-          ariaLabel="Write your own coaching line"
-        />
       </div>
 
       {state.selfTalk && (
