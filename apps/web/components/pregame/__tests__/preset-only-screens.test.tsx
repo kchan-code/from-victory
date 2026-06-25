@@ -104,3 +104,48 @@ describe.each(SPORTS)(
     });
   },
 );
+
+// FV-344 — a returning athlete may carry a pre-FV-343 free-text anchor that no
+// longer matches any preset. Reset Anchor surfaces that saved value read-only
+// (so it doesn't read as data loss) WITHOUT reintroducing a free-text input.
+describe.each(SPORTS)(
+  "Reset Anchor legacy custom-anchor note (FV-344) — $name",
+  ({ config, role }) => {
+    const LEGACY = "deep breath i made up";
+
+    function anchorState(anchor: string | null): PregameState {
+      return { ...INITIAL_STATE, role, anchor };
+    }
+
+    it("shows the saved value when the anchor matches no preset", () => {
+      render(
+        <ResetAnchorScreen state={anchorState(LEGACY)} set={vi.fn()} sportConfig={config} />,
+      );
+      expect(screen.getByText("Your current anchor")).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(LEGACY))).toBeInTheDocument();
+    });
+
+    it("does NOT reintroduce a free-text input for the legacy value", () => {
+      const { container } = render(
+        <ResetAnchorScreen state={anchorState(LEGACY)} set={vi.fn()} sportConfig={config} />,
+      );
+      expect(container.querySelectorAll("input, textarea")).toHaveLength(0);
+    });
+
+    it("hides the note when a preset anchor is selected", () => {
+      const preset = config.anchors[0];
+      if (!preset) throw new Error("expected anchor presets");
+      render(
+        <ResetAnchorScreen state={anchorState(preset)} set={vi.fn()} sportConfig={config} />,
+      );
+      expect(screen.queryByText("Your current anchor")).toBeNull();
+    });
+
+    it("hides the note when no anchor is set", () => {
+      render(
+        <ResetAnchorScreen state={anchorState(null)} set={vi.fn()} sportConfig={config} />,
+      );
+      expect(screen.queryByText("Your current anchor")).toBeNull();
+    });
+  },
+);

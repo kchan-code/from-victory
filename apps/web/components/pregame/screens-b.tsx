@@ -51,6 +51,13 @@ export function ResetAnchorScreen({
   sportConfig: SportConfig;
 }) {
   const anchors = sportConfig.anchors;
+  // FV-344: a returning athlete may carry a pre-FV-343 free-text anchor that no
+  // longer matches any preset chip. Without this, the grid shows nothing
+  // selected and reads as data loss. Surface the saved value (read-only) so the
+  // athlete can keep it (Continue is already enabled — `required` is `!!anchor`)
+  // or tap a preset to replace it. No free-text re-entry is reintroduced.
+  const hasLegacyCustomAnchor =
+    !!state.anchor && !anchors.includes(state.anchor);
 
   return (
     <ScreenBody>
@@ -82,6 +89,18 @@ export function ResetAnchorScreen({
           );
         })}
       </div>
+
+      {hasLegacyCustomAnchor && (
+        <div className="mt-3 rounded-[12px] border border-gold/30 bg-gold/[0.05] px-4 py-3.5">
+          <Eyebrow className="!text-gold">Your current anchor</Eyebrow>
+          <p className="mt-1.5 font-heading text-[14px] font-medium leading-[1.4] text-cream">
+            &ldquo;{state.anchor}&rdquo;
+          </p>
+          <p className="mt-1 font-body text-[12px] leading-snug text-cream/60">
+            Still set from a past session — pick a new one above, or keep it.
+          </p>
+        </div>
+      )}
     </ScreenBody>
   );
 }
