@@ -101,29 +101,37 @@ export function AdultSignUpForm() {
 
       {/* 18+ attestation — the explicit affirmation surface (separate from the
           computed birthdate check). */}
-      <label className="flex items-start gap-2.5 mt-1 mb-2 text-cream/70 text-[13px] leading-snug">
+      <label className="flex items-start gap-2.5 mt-1 mb-2 py-2 text-cream/70 text-[13px] leading-snug">
         <input
           type="checkbox"
           name="age_attestation"
           required
           className="mt-1 accent-cobalt cursor-pointer"
-          aria-invalid={fieldError("age_attestation") !== undefined}
+          aria-invalid={fieldError("age_attestation") ? true : undefined}
+          aria-describedby={
+            fieldError("age_attestation") ? "age-attestation-error" : undefined
+          }
         />
         <span>I confirm I am 18 years of age or older.</span>
       </label>
       {fieldError("age_attestation") ? (
-        <p className="mb-3 font-body text-[14px] text-red-400" role="alert">
+        <p
+          id="age-attestation-error"
+          className="mb-3 font-body text-[14px] text-red-400"
+          role="alert"
+        >
           {fieldError("age_attestation")}
         </p>
       ) : null}
 
-      <label className="flex items-start gap-2.5 mt-1 mb-5 text-cream/70 text-[13px] leading-snug">
+      <label className="flex items-start gap-2.5 mt-1 mb-5 py-2 text-cream/70 text-[13px] leading-snug">
         <input
           type="checkbox"
           name="consent"
           required
           className="mt-1 accent-cobalt cursor-pointer"
-          aria-invalid={fieldError("consent") !== undefined}
+          aria-invalid={fieldError("consent") ? true : undefined}
+          aria-describedby={fieldError("consent") ? "consent-error" : undefined}
         />
         <span>
           I agree to the{" "}
@@ -144,7 +152,11 @@ export function AdultSignUpForm() {
         </span>
       </label>
       {fieldError("consent") ? (
-        <p className="-mt-3 mb-5 font-body text-[14px] text-red-400" role="alert">
+        <p
+          id="consent-error"
+          className="-mt-3 mb-5 font-body text-[14px] text-red-400"
+          role="alert"
+        >
           {fieldError("consent")}
         </p>
       ) : null}

@@ -155,7 +155,7 @@ export async function signIn(
   }
 
   const supabase = createClient();
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
     password: parsed.data.password,
   });
@@ -167,6 +167,22 @@ export async function signIn(
       `[auth.signIn] signInWithPassword failed: ${error.message} (status=${error.status ?? "n/a"} code=${error.code ?? "n/a"})`,
     );
     return { ok: false, error: "Email or password is incorrect." };
+  }
+
+  // Role-aware landing (FV-326). An adult_athlete signs in here (real email,
+  // via the "Athlete 18+/Parent" email tab) but trains in the athlete app —
+  // sending them to /dashboard would loop through requireParent() back to
+  // /signin. Mirrors redirectIfAuthed(): athlete roles → /athlete, else
+  // /dashboard. Parents are unaffected.
+  if (data.user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user.id)
+      .single();
+    if (profile?.role === "athlete" || profile?.role === "adult_athlete") {
+      redirect("/athlete");
+    }
   }
 
   redirect("/dashboard");
