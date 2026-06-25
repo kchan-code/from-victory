@@ -11,7 +11,9 @@ type ParentProfile = {
 
 type AthleteProfile = {
   id: string;
-  role: "athlete";
+  // FV-325: an adult_athlete (18+ self-serve) trains on the same surfaces as a
+  // parent-created athlete, so the athlete guard accepts both roles.
+  role: "athlete" | "adult_athlete";
   first_name: string;
   sport: Sport;
   sport_selected_at: string | null;
@@ -19,6 +21,15 @@ type AthleteProfile = {
   // These are athlete-private; never exposed to parent queries.
   position: string | null;
   focus_area: string | null;
+};
+
+// FV-325: the 18+ self-serve account — the payer IS the athlete. Used by the
+// adult checkout guard. Kept separate from ParentProfile so requireParent()'s
+// "a parent is never a trainee" semantics stay clean.
+type AdultAthleteProfile = {
+  id: string;
+  role: "adult_athlete";
+  first_name: string;
 };
 
 export async function requireParent(): Promise<{
@@ -46,6 +57,37 @@ export async function requireParent(): Promise<{
   };
 }
 
+/**
+ * Require an adult self-serve account (18+) — the payer IS the athlete (FV-325).
+ * Used by the adult checkout action. Kept distinct from requireParent() so the
+ * parent guard keeps its "a parent is never a trainee" meaning, and from
+ * requireAthlete() so checkout never accepts a parent-created (minor) athlete.
+ */
+export async function requireSelfPayer(): Promise<{
+  userId: string;
+  profile: AdultAthleteProfile;
+}> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/signin");
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("id, role, first_name")
+    .eq("id", user.id)
+    .single();
+
+  if (error || !profile) redirect("/signin");
+  if (profile.role !== "adult_athlete") redirect("/signin");
+
+  return {
+    userId: user.id,
+    profile: profile as AdultAthleteProfile,
+  };
+}
+
 export async function requireAthlete(): Promise<{
   userId: string;
   profile: AthleteProfile;
@@ -63,7 +105,9 @@ export async function requireAthlete(): Promise<{
     .single();
 
   if (error || !profile) redirect("/signin");
-  if (profile.role !== "athlete") redirect("/signin");
+  // FV-325: accept the 18+ self-serve role on athlete training surfaces.
+  if (profile.role !== "athlete" && profile.role !== "adult_athlete")
+    redirect("/signin");
 
   return {
     userId: user.id,
@@ -96,7 +140,10 @@ export async function redirectIfAuthed() {
     .eq("id", user.id)
     .single();
 
-  if (profile?.role === "athlete") redirect("/athlete");
+  // FV-325: adult_athlete (18+ self-serve) trains in the athlete app, same
+  // home as a parent-created athlete.
+  if (profile?.role === "athlete" || profile?.role === "adult_athlete")
+    redirect("/athlete");
   if (profile?.role === "parent") redirect("/dashboard");
 
   // No profile (or unknown role): the session is orphaned. Redirecting to
