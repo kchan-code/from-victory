@@ -34,14 +34,20 @@
 //   apps/web/components/postgame/**  — postgame debrief components
 //   apps/web/components/athlete/**   — shared athlete-only UI (nav, pickers)
 //   apps/web/components/daily/**     — daily training session UI
+//   apps/web/app/signin/**           — athlete sign-in (every return visit)
+//   apps/web/app/pair/**             — athlete pairing / claim on a new device
+//   apps/web/app/forgot-password/**  — athlete-reachable reset flow
+//   apps/web/app/reset-password/**   — athlete-reachable reset flow
+//   apps/web/app/auth/**             — auth callback / signout route handlers
+//   apps/web/components/auth/**      — sign-in / claim / username form components
 //   apps/web/app/layout.tsx          — root layout (affects all routes incl. athletes)
 //
 // Not scanned in v1:
 //   - apps/web/app/dashboard/**      (parent-only)
-//   - apps/web/app/signin|signup/**  (pre-auth, not minor-data surfaces per se)
+//   - apps/web/app/signup/**         (account creation: parent-managed or adult self-serve)
 //   - apps/web/components/landing/** (marketing page, adult-facing)
 //   - apps/web/components/dashboard/**
-//   If any of those are ever designated minor-reachable, add them here.
+//   Keep SCAN_PATHS in sync as new athlete-reachable routes are added.
 //
 // BANNED TOKENS
 // ─────────────
@@ -89,6 +95,16 @@ const SCAN_PATHS = [
   'apps/web/components/postgame',
   'apps/web/components/athlete',
   'apps/web/components/daily',
+  // Auth/pairing surfaces a 13-17 athlete passes through — sign-in on every
+  // return visit, pairing/claim on a new device, password-reset links. Added
+  // per the FV-350 privacy review (PR #289): a tracking script added here would
+  // otherwise evade the guard on the athlete's most-frequented pre-session page.
+  'apps/web/app/signin',
+  'apps/web/app/pair',
+  'apps/web/app/forgot-password',
+  'apps/web/app/reset-password',
+  'apps/web/app/auth',
+  'apps/web/components/auth',
   'apps/web/app/layout.tsx',
 ];
 
@@ -145,6 +161,9 @@ const BANNED_IMPORT_TOKENS = [
   'crisp.chat',
   // Drift
   'drift.com',
+  // TikTok Pixel (From Victory has an active TikTok channel; ban on minor surfaces)
+  'analytics.tiktok.com',
+  '@tiktok/analytics',
 ];
 
 // ---------------------------------------------------------------------------
