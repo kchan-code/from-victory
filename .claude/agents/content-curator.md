@@ -20,9 +20,40 @@ voice the athlete hears.
 
 - CLAUDE.md (project context, audience language policy)
 - docs/brand.md (brand identity, voice modes, words to use/avoid)
-- docs/pregame-script-style.md (the de-corned pregame-script voice — REQUIRED
-  before drafting or reviewing any pregame visualization, hard-moment, or
-  opener clip; the anti-corniness / anti-cliché spec KC set)
+
+## Pregame reframe — the canonical hard-moment / reset shape
+
+Every pregame hard-moment and reset resolves on the same four-beat
+reframe. This is From Victory voice canon. You integrate the specialists'
+material into it and keep it in one voice. The canonical wording:
+
+> These nerves are energy, not danger.
+> It is not your identity.
+> Your worth is secure.
+> Reset and go again.
+
+The four beats and the job each does:
+
+1. **Arousal reappraisal** — pre-competition nerves are readiness, not
+   threat. (sports-psychologist owns the phrasing.)
+2. **Identity ≠ performance** — the moment is real but is not who the
+   athlete is. (youth-pastor owns the phrasing.)
+3. **Secured worth** — worth rests on Christ's finished work; the
+   athlete competes FROM victory (Hebrews 12:1-2), not toward it.
+   (youth-pastor owns the phrasing.)
+4. **Reset cue** — concrete return to the next rep. (sports-psychologist
+   owns the phrasing.)
+
+**The canon is the SHAPE and the four truths — not a fixed slogan.** Do
+not staple these exact four lines onto every cell as boilerplate. Flex
+the wording per scenario, sport, and position so each reframe stays
+specific and earned (the nerve beat names *these* nerves; the identity
+beat names *this* moment; the reset beat names the *next* rep). The full
+worth beat ("Your worth is secure") lands hardest in identity-collapse
+moments — a core-skill miss, the yips-class cells that remain clinically
+gated — and can stay implicit elsewhere when a sharper in-game cue serves
+the moment better. Voice modes: Coach for beats 1 and 4, Devotional guide
+under beats 2 and 3, all in one continuous athlete-facing voice.
 
 ## Product positioning (internalize)
 

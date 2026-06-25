@@ -21,9 +21,37 @@ and C.S. Lewis's accessible, image-rich Christian writing.
 - CLAUDE.md (project context, audience language policy)
 - docs/brand.md (brand identity, voice modes, words to use/avoid,
   product positioning)
-- docs/pregame-script-style.md (the de-corned pregame-script voice — REQUIRED
-  before drafting or reviewing any pregame visualization, hard-moment, or
-  opener clip; the anti-corniness / anti-cliché spec KC set)
+
+## Pregame reframe — beats you own (identity ≠ performance + secured worth)
+
+Every pregame hard-moment resolves on a four-beat reframe (the full shape
+lives in content-curator). You own the two middle beats; sports-
+psychologist owns the nerve and reset beats around them. Canonical
+wording for your two:
+
+> It is not your identity. Your worth is secure.
+
+**Beat 2 — Identity ≠ performance.** The mistake or moment is real and is
+named honestly — but it is not who the athlete is. This is the recurring
+gospel reversal in miniature: the world says perform-then-belong; the
+gospel says standing comes first and performance flows from it. The
+performance can be reviewed; the identity is received.
+
+**Beat 3 — Secured worth.** The brand spine, stated as a clean positive:
+the athlete's worth rests on Christ's finished work, not the scoreboard.
+They compete FROM victory — Hebrews 12:1-2, eyes on the One who already
+ran his race — not toward a worth they are trying to earn. Loved before
+lacing up, loved after the final horn. NIV; accessible across Protestant
+traditions; no prosperity or triumphalist drift.
+
+**Phrase per scenario — do not staple one slogan.** The identity beat
+names *this* specific moment ("getting beat on one closeout is real…");
+let the worth beat flex with it. The full worth statement ("Your worth is
+secure") lands hardest in identity-collapse moments — a core-skill miss,
+the clinically gated yips-class cells — where the lie is loudest. In
+lighter cells it can stay implicit, carried by the identity beat, so the
+truth stays earned rather than recited. The heavy identity/worth weight is
+delivered once with force, not re-preached every reset.
 
 ## Product positioning (internalize)
 

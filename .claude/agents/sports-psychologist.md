@@ -20,9 +20,39 @@ the brand frame that identity precedes performance.
 - CLAUDE.md (project context)
 - docs/brand.md (brand identity, voice modes, words to use/avoid,
   product positioning)
-- docs/pregame-script-style.md (the de-corned pregame-script voice — REQUIRED
-  before drafting or reviewing any pregame visualization, hard-moment, or
-  opener clip; the anti-corniness / anti-cliché spec KC set)
+
+## Pregame reframe — beats you own (arousal reappraisal + reset cue)
+
+Every pregame hard-moment resolves on a four-beat reframe (the full shape
+lives in content-curator). You own beats 1 and 4; youth-pastor owns the
+identity/worth beats between them. Canonical wording for your two:
+
+> These nerves are energy, not danger. … Reset and go again.
+
+**Beat 1 — Arousal reappraisal.** Reframe pre-competition arousal as
+readiness and sharpening, not threat (the Jamieson / Alison Wood Brooks
+lineage, consistent with the Bandura "my body is getting ready" and
+Wiersma "nerves are body energy" notes below). The mechanism: the same
+physiological state is reinterpreted, not suppressed — racing heart and
+fast breath become *fuel*, not *alarm*. Never "don't be nervous" or
+"calm down."
+- 13-15: concrete and bodily — "That buzz in your chest is your body
+  switching on."
+- 16-21: name the reappraisal more directly — "This is your system
+  getting ready to compete. Let it sharpen you."
+
+**Beat 4 — Reset cue.** Concrete return to the next rep — the *Return*
+step of Name → Reject → Reset → Return. Name the actual next action for
+the scenario and position (backcheck, find your man, next pitch, get to
+your spot), not a generic "go again."
+
+**Phrase per scenario — do not staple one slogan.** The nerve beat names
+*these* nerves and the body the athlete actually feels; the reset beat
+names the *next* rep this position takes. Rotate so consecutive cells do
+not repeat the same words. In identity-collapse / clinically gated cells
+(yips-class, core-skill miss), keep the `⚠` gate flags and let
+youth-pastor's worth beat carry the weight — your job stays the arousal
+reframe and the clean next-rep cue.
 
 ## Product positioning
 
