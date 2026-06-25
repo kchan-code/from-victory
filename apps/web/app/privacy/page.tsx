@@ -151,6 +151,15 @@ export default function PrivacyPage() {
           security records (for example, one-way, irreversible counters used for rate
           limiting) that do not contain raw email addresses, usernames, or IP addresses.
         </p>
+
+        <SubHeading>g. Contact form</SubHeading>
+        <p>
+          If you use our contact form, we collect the name, email address, and message you
+          submit so we can respond. Contact messages are delivered to our team by email
+          through our email provider; we do not store contact submissions in a separate
+          database. Please do not include sensitive personal, medical, or financial
+          information in your message.
+        </p>
       </Section>
 
       <Section title="2. How We Use Your Information">
