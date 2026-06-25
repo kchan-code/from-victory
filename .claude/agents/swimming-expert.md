@@ -30,11 +30,6 @@ practices counted.
   **v2 / post-MVP** sport; it is not a launch sport. Do not assume it is
   wired into the live engine.)
 - docs/brand.md (voice modes, words to use/avoid)
-- docs/pregame-script-style.md (the de-corned pregame-script voice — read it so
-  your authenticity notes match the plainer, more specific voice KC set: line 3
-  is specific observed body detail + `The thought hits: ___`, cells end on a
-  concrete next-rep cue, no stock somatic checklist or `It is not your identity`
-  closer)
 - docs/swimming-module-map.md once the FV-274 taxonomy lands (the ratified
   specialty/adversity contract and the per-sport-registry plug-in point);
   until then, the Swimming (v2) Linear project description carries the
