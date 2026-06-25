@@ -1,0 +1,45 @@
+name: Athlete no-tracking guard
+
+# FV-350 — Enforces the "no ads / no behavioral analytics / no third-party
+# tracking for athletes" promise that appears verbatim in:
+#   apps/web/components/landing/Faq.tsx
+#   apps/web/app/pricing/page.tsx
+#
+# The promise is currently true by *absence* of those SDKs. This job turns
+# that absence into a hard CI gate: if any banned analytics / ads / tracking /
+# session-replay SDK is imported — or a third-party tracking script injected —
+# on an athlete-facing surface, this job fails and the PR cannot merge.
+#
+# Athlete-facing surfaces scanned (see the script's SCAN_PATHS for the
+# authoritative list):
+#   apps/web/app/athlete/**, components/{pregame,postgame,athlete,daily}/**
+#   apps/web/app/{signin,pair,forgot-password,reset-password,auth}/**
+#   apps/web/components/auth/**
+#   apps/web/app/layout.tsx
+#
+# Dependency-free: plain Node CommonJS using only built-ins. No `npm install`.
+# Runs in ~1-2 seconds.
+#
+# TRIGGER: pull_request events that touch apps/web/**.
+# On a direct push to main (merge) the job does not re-run because the
+# guaranteeing PR run would have gated it. If a bypass is ever needed, the
+# script can also be invoked locally:
+#   node .github/scripts/check-athlete-no-tracking.cjs
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+
+jobs:
+  athlete-no-tracking:
+    name: Athlete surfaces — no tracking SDKs
+    runs-on: ubuntu-latest
+    # Fast: no npm install, no build, just a Node script reading source files.
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run athlete no-tracking guard (FV-350)
+        run: node .github/scripts/check-athlete-no-tracking.cjs
