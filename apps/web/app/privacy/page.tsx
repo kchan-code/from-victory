@@ -4,9 +4,15 @@ import Link from "next/link";
 // FV-324 — Privacy policy expanded from waitlist-only to cover IN-APP data
 // handling (parent + athlete accounts, payments, push, email, subprocessors,
 // minor protections). DRAFT for KC + attorney review before launch.
+// FV-340 — Reconciled to describe BOTH account flows: parent-managed minor
+// (13–17, synthetic email, username/device login) accounts AND adult (18+)
+// self-managed accounts (own email + password, self-pay, no parent link).
+// Adult self-serve is built but gated behind ENABLE_ADULT_SIGNUP — coordinate
+// publication with the flag flip and attorney sign-off (FV-329).
 // Every factual claim here is grounded in the verified data inventory
-// (schema + code). Two items for KC/counsel to confirm at launch:
-//   1. EFFECTIVE_DATE below — set to the actual go-live date.
+// (schema + code). Launch notes:
+//   1. EFFECTIVE_DATE below is set to June 24, 2026 (KC, 2026-06-25); the
+//      policy still needs attorney sign-off before publication (FV-329).
 //   2. The private-journal infrastructure is built but DORMANT (FV-135, zero
 //      production callers) and is intentionally NOT described as an active
 //      feature here. Revisit if/when it is wired.
@@ -14,11 +20,12 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Privacy Policy · From Victory",
   description:
-    "How From Victory collects, uses, stores, and protects information — across our website, the sport waitlist, and the From Victory app for parents and athletes (ages 13–21).",
+    "How From Victory collects, uses, stores, and protects information — across our website, the sport waitlist, and the From Victory app for parents and athletes (ages 13 and above).",
   robots: { index: true, follow: true },
 };
 
-// NOTE: confirm the effective date with counsel at launch.
+// Effective date set to June 24, 2026 by KC (2026-06-25). Attorney sign-off
+// (FV-329) still required before the policy is published.
 const EFFECTIVE_DATE = "June 24, 2026";
 const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
@@ -55,10 +62,12 @@ export default function PrivacyPage() {
         </p>
         <p>
           From Victory is a daily mental-toughness training app, with faith as its
-          foundation, for athletes ages 13 to 21. At this time, a parent or guardian creates
-          and manages every account and is the purchaser. We collect as little information
-          about athletes as we can while still running the app, and we apply additional
-          protections to every account belonging to a minor — an athlete ages 13 to 17.
+          foundation, for athletes ages 13 and above. Accounts work in one of two ways: a parent
+          or guardian creates and manages an account for a younger athlete and is the
+          purchaser, or an adult athlete (18 or older) creates and manages their own account
+          and is the purchaser. We collect as little information as we can while still running
+          the app, and we apply additional protections to every account belonging to a minor —
+          an athlete ages 13 to 17.
         </p>
         <p>
           By using our website, submitting the waitlist form, or creating an account, you
@@ -81,7 +90,7 @@ export default function PrivacyPage() {
           information, passwords, or highly personal details in the optional note field.
         </p>
 
-        <SubHeading>b. Parent / account-holder accounts</SubHeading>
+        <SubHeading>b. Parent / guardian accounts</SubHeading>
         <p>When a parent or guardian creates an account, we collect:</p>
         <ul className="mt-2 mb-3 pl-5 list-disc">
           <li>Email address (used to sign in and for account communications)</li>
@@ -95,10 +104,10 @@ export default function PrivacyPage() {
         </ul>
         <p>We do not collect a parent&apos;s birthdate, phone number, home address, or photos.</p>
 
-        <SubHeading>c. Athlete accounts (ages 13–21)</SubHeading>
+        <SubHeading>c. Athlete accounts created by a parent (ages 13–21)</SubHeading>
         <p>
-          A parent or guardian sets up the athlete&apos;s account. For an athlete we collect
-          only:
+          A parent or guardian sets up the athlete&apos;s account. For a parent-managed athlete
+          we collect only:
         </p>
         <ul className="mt-2 mb-3 pl-5 list-disc">
           <li>First name</li>
@@ -106,8 +115,8 @@ export default function PrivacyPage() {
           <li>Sport</li>
           <li>A username the athlete uses to sign in</li>
           <li>
-            Optional, self-reported training details the athlete may provide to personalize
-            sessions — such as their position and the area they want to work on
+            Optional training details the athlete selects from the options we provide to
+            personalize sessions — such as their position and the area they want to work on
           </li>
           <li>An optional upcoming game date, used only to time a reminder, then cleared</li>
         </ul>
@@ -123,7 +132,44 @@ export default function PrivacyPage() {
           described in &ldquo;The athlete&apos;s private space&rdquo; below.
         </p>
 
-        <SubHeading>d. Payment information</SubHeading>
+        <SubHeading>d. Adult athlete accounts (18 and older)</SubHeading>
+        <p>
+          An adult athlete (18 or older) can create and manage their own account, without a
+          parent or guardian. For an adult athlete we collect:
+        </p>
+        <ul className="mt-2 mb-3 pl-5 list-disc">
+          <li>Email address (used to sign in and for account and billing communications)</li>
+          <li>Password (stored only in hashed form by our authentication provider)</li>
+          <li>First name</li>
+          <li>
+            Birthdate, plus an explicit 18-or-older confirmation, used to verify the athlete is
+            at least 18
+          </li>
+          <li>Sport</li>
+          <li>
+            Optional training details the athlete selects from the options we provide to
+            personalize sessions — such as their position and the area they want to work on
+          </li>
+          <li>An optional upcoming game date, used only to time a reminder, then cleared</li>
+          <li>
+            Subscription and billing details needed to manage their plan — see &ldquo;Payment
+            information&rdquo; below
+          </li>
+        </ul>
+        <p>
+          An adult athlete is both the account holder and the purchaser for their own account;
+          there is no parent or guardian on the account, and no one else can see their
+          training. Unlike a parent-managed athlete, an adult athlete signs in with their own
+          email address. We do <strong>not</strong> collect an adult athlete&apos;s last name,
+          phone number, home address, photos, or precise location.
+        </p>
+        <p>
+          As with any athlete, we record training activity — for example, which sessions were
+          started or completed and when. How that activity is kept private is described in
+          &ldquo;The athlete&apos;s private space&rdquo; below.
+        </p>
+
+        <SubHeading>e. Payment information</SubHeading>
         <p>
           Subscriptions are processed by Stripe, our payment processor. Stripe collects and
           stores your payment details (such as card information) directly; we do{" "}
@@ -133,7 +179,7 @@ export default function PrivacyPage() {
           current billing-period end date.
         </p>
 
-        <SubHeading>e. Push notifications (only if enabled)</SubHeading>
+        <SubHeading>f. Push notifications (only if enabled)</SubHeading>
         <p>
           If an athlete chooses to turn on training reminders, we store the technical
           information needed to deliver web-push notifications to that device — a push
@@ -143,7 +189,7 @@ export default function PrivacyPage() {
           opened or clicked.
         </p>
 
-        <SubHeading>f. Sign-in and security data</SubHeading>
+        <SubHeading>g. Sign-in and security data</SubHeading>
         <p>
           To keep accounts secure we use authentication session cookies, and, on an
           athlete&apos;s device, an optional sign-in helper cookie that remembers which
@@ -152,7 +198,7 @@ export default function PrivacyPage() {
           limiting) that do not contain raw email addresses, usernames, or IP addresses.
         </p>
 
-        <SubHeading>g. Contact form</SubHeading>
+        <SubHeading>h. Contact form</SubHeading>
         <p>
           If you use our contact form, we collect the name, email address, and message you
           submit so we can respond. Contact messages are delivered to our team by email
@@ -165,10 +211,13 @@ export default function PrivacyPage() {
       <Section title="2. How We Use Your Information">
         <p>We use the information we collect to:</p>
         <ul className="mt-2 mb-3 pl-5 list-disc">
-          <li>Create and operate parent and athlete accounts</li>
+          <li>Create and operate parent, athlete, and adult-athlete accounts</li>
           <li>Deliver the daily training, pregame, and pre-practice experiences</li>
           <li>Personalize training using the details an athlete chooses to provide</li>
-          <li>Show a parent their athlete&apos;s participation rhythm (not the content of sessions)</li>
+          <li>
+            Show a parent their athlete&apos;s participation rhythm, on a parent-managed
+            account (not the content of sessions)
+          </li>
           <li>Process subscriptions, trials, and billing through our payment processor</li>
           <li>Send account, sport-availability, and product communications you have agreed to receive</li>
           <li>Send optional training reminders, if an athlete enables them</li>
@@ -183,9 +232,10 @@ export default function PrivacyPage() {
 
       <Section title="3. Children and Minors">
         <p>
-          From Victory is built for athletes ages 13 to 21. Athletes ages 13 to 17 are
-          minors. At this time, a parent or guardian creates and manages every account, and
-          we apply the additional protections described below to every minor (ages 13 to 17)
+          From Victory is built for athletes ages 13 and above. Athletes ages 13 to 17 are
+          minors. A parent or guardian creates and manages every account for an athlete under
+          18; an adult athlete (18 or older) may instead create and manage their own account.
+          We apply the additional protections described below to every minor (ages 13 to 17)
           account.
         </p>
         <SubHeading>Age floor of 13</SubHeading>
@@ -195,11 +245,13 @@ export default function PrivacyPage() {
           both in the app and at the database level. We do not knowingly create accounts for,
           or collect personal information from, children under 13.
         </p>
-        <SubHeading>A parent is in control</SubHeading>
+        <SubHeading>A parent is in control of a minor&apos;s account</SubHeading>
         <p>
-          A parent or guardian creates the athlete&apos;s account, manages the subscription,
-          and can request changes or deletion at any time. The athlete does not provide an
-          email address, and we do not send marketing email to athletes.
+          For an athlete under 18, a parent or guardian creates the account, manages the
+          subscription, and can request changes or deletion at any time. A parent-managed
+          athlete does not provide a real email address, and we do not send marketing email to
+          athletes. (An adult athlete who creates their own account provides their own email
+          address; see &ldquo;Adult athlete accounts&rdquo; above.)
         </p>
         <SubHeading>Extra protections for athlete accounts (13–17)</SubHeading>
         <p>
@@ -222,16 +274,20 @@ export default function PrivacyPage() {
 
       <Section title="4. The Athlete's Private Space">
         <p>
-          An athlete&apos;s training is meant to be their own. What an athlete selects or works
-          through inside a session — for example the focus they choose or what they reflect on —
-          is kept private to that athlete and is not shown on the parent dashboard.
+          An athlete&apos;s training is meant to be their own. Inside a session, an athlete
+          personalizes their experience by choosing from preset options we provide — for example
+          a focus area or pregame selections — rather than by typing their own words. The app does
+          not give an athlete a free-text journal, notes, or comment field. The choices an athlete
+          makes are kept private to that athlete and are not shown on the parent dashboard.
         </p>
         <p>
           A parent&apos;s dashboard shows participation information only — such as how often the
           athlete is training and how many sessions they have completed — so a parent can see
           the habit forming without reading the contents of a session. We designed this
           boundary on purpose: athletes engage more honestly when their space is genuinely
-          theirs.
+          theirs. For an adult athlete who manages their own account, there is no parent or
+          guardian dashboard at all — their training activity is visible only to them, and no
+          one else can access it through the app.
         </p>
       </Section>
 
@@ -243,19 +299,24 @@ export default function PrivacyPage() {
             about sport availability and related news.
           </li>
           <li>
-            <strong>Account and billing emails</strong> to a parent, such as messages related
-            to the subscription.
+            <strong>Account and billing emails</strong> to the account holder — a parent, or an
+            adult athlete who manages their own account — such as messages related to the
+            subscription.
           </li>
           <li>
             <strong>An optional weekly digest</strong> to a parent, summarizing their
             athlete&apos;s participation rhythm. It never includes the contents of a session.
             A parent can opt out at any time using the unsubscribe link in the email or by
-            contacting us.
+            contacting us. Adult athletes who manage their own account do not receive this
+            digest.
           </li>
         </ul>
         <p>
           We send these emails using a third-party email provider. We do not send marketing
-          email to athletes.
+          email to athletes: a parent-managed athlete receives no email from us at all, and an
+          adult athlete receives only the account and billing messages needed to operate their
+          account. Waitlist updates go only to people who submitted the waitlist form, and
+          anyone can unsubscribe at any time.
         </p>
       </Section>
 
@@ -310,11 +371,12 @@ export default function PrivacyPage() {
         </p>
         <p className="mt-3">
           A parent or guardian may request deletion of an athlete&apos;s account and data, or
-          of their own account, at any time. When you confirm a deletion request, we delete
-          the associated account data promptly — well within 30 days of the request. We keep a
-          minimal, content-free record of deletion (for example, that a deletion occurred and
-          when) for security and recordkeeping; this record does not contain names, email
-          addresses, birthdates, or any session content.
+          of their own account, at any time. An adult athlete may request deletion of their own
+          account and data at any time by contacting us at <PrivacyEmailLink />. When a
+          deletion request is confirmed, we delete the associated account data promptly — well
+          within 30 days of the request. We keep a minimal, content-free record of deletion
+          (for example, that a deletion occurred and when) for security and recordkeeping; this
+          record does not contain names, email addresses, birthdates, or any session content.
         </p>
         <p className="mt-3">
           You may also request deletion of waitlist information at any time by contacting us at{" "}
@@ -332,8 +394,9 @@ export default function PrivacyPage() {
           <li>Ask questions about this Privacy Policy</li>
         </ul>
         <p>
-          A parent or guardian may exercise these rights on behalf of their athlete. To make a
-          request, contact us at <PrivacyEmailLink />. Depending on your location, you may have
+          A parent or guardian may exercise these rights on behalf of their athlete, and an
+          adult athlete may exercise them for their own account. To make a request, contact us
+          at <PrivacyEmailLink />. Depending on your location, you may have
           additional rights under applicable state, national, or regional privacy laws,
           including laws that provide heightened protections for minors.
         </p>

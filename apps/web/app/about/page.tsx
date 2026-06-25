@@ -77,7 +77,7 @@ const whatItIsNotPoints = [
 const parentPromise = [
   {
     title: "A private training space.",
-    body: "What happens inside a session stays your athlete’s — the focus they pick, the moment they work through, the prayer they bring. Not because we’re hiding it from you, but because athletes go deeper when the space is truly their own. Your dashboard shows their rhythm and participation — never the contents of a session.",
+    body: "What happens inside a session stays your athlete’s — the focus they pick, the moment they work through, the prayer they bring. Not because we’re hiding it from you, but because athletes go deeper when the space is truly their own. On a parent-managed account, your dashboard shows their rhythm and participation — never the contents of a session.",
   },
   {
     title: "The minimum data, on minors.",
@@ -391,7 +391,8 @@ export default function AboutPage() {
               <p className="fv-lede">
                 You&apos;re trusting us with your athlete. Here&apos;s how we
                 hold that trust — not as fine print, but as how the product is
-                built.
+                built. An adult athlete who signs up on their own gets the same
+                private training space and protections, managed by them.
               </p>
             </div>
           </Reveal>
