@@ -93,7 +93,7 @@ const parentPromise = [
   },
   {
     title: "You stay in control.",
-    body: "A parent sets up and manages the account, including billing, and can request deletion of all your athlete’s data at any time — we complete it within 30 days.",
+    body: "On a parent-managed account, the parent sets up and manages everything, including billing, and can request deletion of all your athlete’s data at any time — we complete it within 30 days.",
   },
 ];
 
