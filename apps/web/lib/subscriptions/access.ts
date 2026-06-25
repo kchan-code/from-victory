@@ -113,6 +113,9 @@ export async function getParentAccessLevel(
  * Derives the access level for the currently signed-in user.
  *
  *   - If the current user is a `parent`: calls getParentAccessLevel(userId).
+ *   - If the current user is an `adult_athlete` (FV-325, 18+ self-serve): the
+ *     payer is the athlete, so access derives from their own subscription row
+ *     (their id is the payer key) — getParentAccessLevel(userId), no link hop.
  *   - If the current user is an `athlete`: resolves their parent via
  *     `parent_athlete_links` (athlete may read their own link row via RLS),
  *     then calls getParentAccessLevel(parent_id).
@@ -145,6 +148,14 @@ export async function getAccessForCurrentUser(): Promise<AccessLevel> {
   if (profileError || !profile) return "blocked";
 
   if (profile.role === "parent") {
+    return getParentAccessLevel(user.id);
+  }
+
+  if (profile.role === "adult_athlete") {
+    // FV-325: 18+ self-serve — the athlete IS the payer. Their own profile id
+    // is the payer key in `subscriptions` (stored in the parent_id column), so
+    // access derives from their OWN subscription row. No parent_athlete_links
+    // hop. Rides ENFORCE_SUBSCRIPTION_GATING automatically via the enforce layer.
     return getParentAccessLevel(user.id);
   }
 
