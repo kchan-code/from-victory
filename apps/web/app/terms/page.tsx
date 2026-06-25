@@ -461,7 +461,7 @@ export default function TermsPage() {
         <ul className="mt-2 mb-3 pl-5 list-disc space-y-1.5">
           <li>Your use of the Services</li>
           <li>Your account activity</li>
-          <li>Your submission of information, notes, journal entries, feedback, or other content</li>
+          <li>Your submission of information, notes, feedback, or other content</li>
           <li>Your violation of these Terms</li>
           <li>Your violation of any law or third-party right</li>
           <li>Your misuse of From Victory content or intellectual property</li>
