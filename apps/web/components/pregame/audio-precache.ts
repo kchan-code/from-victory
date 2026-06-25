@@ -36,8 +36,14 @@
 //   that MUST be kept in sync. When audio-engineer runs a clip regen and
 //   manifest.json is updated, update MANIFEST_VERSION in audio-mapping.ts
 //   AND in sw.js to match in the same PR.
+//
+// CacheStrategy injection (iOS native groundwork):
+//   The warm/check paths delegate to a CacheStrategy selected at call time.
+//   On web (today, always) this is WebCacheStrategy — identical Cache Storage
+//   behavior. On the native shell (future PR) it will be NativeCacheStrategy
+//   (Filesystem API). Public behavior is unchanged; selectCacheStrategy()
+//   always returns WebCacheStrategy until window.Capacitor is present.
 
-import { MANIFEST_VERSION } from "./audio-mapping";
 import {
   manifestUrl,
   resolvePlaylist,
@@ -46,6 +52,10 @@ import {
 import { getBed } from "./audio/beds";
 import type { Sport } from "./sport-registry";
 import type { PrayerStyle } from "./types";
+import {
+  selectCacheStrategy,
+  type CacheStrategy,
+} from "@/lib/audio/cache-strategy";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -100,15 +110,23 @@ export type PrecacheStatus = {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-/** The audio cache name. Matches sw.js `fv-audio-${MANIFEST_VERSION}`. */
-function audioCacheName(): string {
-  return `fv-audio-${MANIFEST_VERSION}`;
+/**
+ * Returns true when Cache Storage is available in the current browser context.
+ * Used as an early guard in both public functions — same check as before the
+ * strategy refactor, preserved for clear error messaging.
+ */
+function cacheStorageAvailable(): boolean {
+  return typeof caches !== "undefined";
 }
 
 /**
  * Compute the full reachable URL set for a given athlete setup.
  * Resolves the clip slugs and builds the list of all MP3 + JSON URLs.
  *
+ * @param strategy  The CacheStrategy to use for the manifest lookup. On web
+ *   this is WebCacheStrategy (Cache Storage); on native it will be
+ *   NativeCacheStrategy (Filesystem). Passed explicitly so this function
+ *   stays testable without touching the global selection point.
  * @param cacheOnly When true, reads the manifest ONLY from the audio cache —
  *   no network call. Returns null if the manifest isn't cached yet. Used by
  *   checkPregameAudioCached to inspect cache state without side effects.
@@ -124,24 +142,30 @@ function audioCacheName(): string {
  */
 async function resolveReachableUrls(
   params: PrecacheParams,
+  strategy: CacheStrategy,
   cacheOnly = false,
 ): Promise<string[] | null> {
-  if (typeof caches === "undefined") return null;
-
   const manifestSrc = manifestUrl(); // cache-busted manifest URL
-  const manifestGetReq = new Request(manifestSrc, { method: "GET" });
 
   let manifestResponse: Response | null = null;
   try {
-    const audioCache = await caches.open(audioCacheName());
-    const cached = await audioCache.match(manifestGetReq);
-    if (cached) {
-      manifestResponse = cached;
-    } else if (!cacheOnly) {
-      // Not in cache and network is allowed — fetch from network.
-      manifestResponse = await fetch(manifestGetReq);
+    if (cacheOnly) {
+      // cacheOnly: check whether the manifest is already in cache before
+      // attempting a fetch. If it is NOT cached, return null immediately —
+      // no network call is allowed in this mode.
+      const cached = await strategy.isCached(manifestSrc);
+      if (!cached) return null;
+      // Manifest is cached — resolve to a playable URL and read the JSON.
+      // On web: strategy.resolve() returns the same URL; the SW intercepts the
+      // fetch and serves the cached response from Cache Storage transparently.
+      const resolvedUrl = await strategy.resolve(manifestSrc);
+      manifestResponse = await fetch(resolvedUrl);
+    } else {
+      // Not cacheOnly: fetch the manifest. On web the SW serves from cache
+      // when already warm, falls through to the network on miss.
+      const resolvedUrl = await strategy.resolve(manifestSrc);
+      manifestResponse = await fetch(resolvedUrl);
     }
-    // cacheOnly + cache miss → manifestResponse stays null → return null below.
   } catch {
     return null;
   }
@@ -201,8 +225,8 @@ async function resolveReachableUrls(
 
 /**
  * Warm the fv-audio-<mv> cache with the athlete's reachable clip set.
- * Fetches the manifest, resolves the clip URLs, and calls cache.addAll() on
- * any URLs not already present — no duplicate network requests.
+ * Fetches the manifest, resolves the clip URLs, and caches any URLs not
+ * already present — no duplicate network requests.
  *
  * Intended to be called client-side when the athlete reaches the Review screen
  * while online. Safe to call multiple times; already-cached URLs are skipped.
@@ -211,10 +235,15 @@ async function resolveReachableUrls(
  * the caller can display a live progress count (e.g. "3 / 12").
  *
  * Returns the final PrecacheStatus. On any error returns { done:false, error }.
+ *
+ * @param strategy  Optional CacheStrategy override — used by tests. Callers
+ *   in production code omit this; the production default is selectCacheStrategy()
+ *   which always returns WebCacheStrategy on the web PWA.
  */
 export async function precachePregameAudio(
   params: PrecacheParams,
   onProgress?: (status: PrecacheStatus) => void,
+  strategy: CacheStrategy = selectCacheStrategy(),
 ): Promise<PrecacheStatus> {
   const errStatus = (msg: string): PrecacheStatus => ({
     cached: 0,
@@ -223,11 +252,16 @@ export async function precachePregameAudio(
     error: msg,
   });
 
-  if (typeof caches === "undefined") {
+  // Cache Storage availability guard — preserved from the pre-strategy version
+  // for callers that rely on this specific error message. Only applies on web
+  // (where typeof caches may be undefined on non-HTTPS or older browsers).
+  // The NativeCacheStrategy path does not use Cache Storage and is not guarded
+  // by this check.
+  if (!cacheStorageAvailable()) {
     return errStatus("Cache Storage not available");
   }
 
-  const urls = await resolveReachableUrls(params);
+  const urls = await resolveReachableUrls(params, strategy);
   if (!urls) {
     return errStatus("Could not resolve audio clip list");
   }
@@ -235,39 +269,15 @@ export async function precachePregameAudio(
   const total = urls.length;
   let cachedCount = 0;
 
-  let audioCache: Cache;
   try {
-    audioCache = await caches.open(audioCacheName());
-  } catch {
-    return errStatus("Could not open audio cache");
-  }
-
-  // Fetch and cache each URL individually so we can report progress and skip
-  // already-cached entries. caches.addAll() would be simpler but gives no
-  // granularity and fails the entire batch on a single error.
-  for (const url of urls) {
-    try {
-      // Use a GET request for the cache key (consistent with SW strategy).
-      const getReq = new Request(url, { method: "GET" });
-      const already = await audioCache.match(getReq);
-      if (already) {
-        cachedCount++;
-        onProgress?.({ cached: cachedCount, total, done: false, error: null });
-        continue;
-      }
-
-      const response = await fetch(getReq);
-      if (response.ok && response.status !== 206 && response.type !== "opaque") {
-        await audioCache.put(getReq, response);
-        cachedCount++;
-        onProgress?.({ cached: cachedCount, total, done: false, error: null });
-      }
-      // Non-OK responses are silently skipped — a missing optional clip (e.g.
-      // an unrendered personalization slug) should not abort the entire precache.
-    } catch {
-      // Individual fetch failure — skip and continue; we'd rather have 11/12
-      // clips cached than abort on a transient network hiccup.
-    }
+    await strategy.warm(urls, (count, _total) => {
+      cachedCount = count;
+      onProgress?.({ cached: count, total, done: false, error: null });
+    });
+  } catch (err: unknown) {
+    return errStatus(
+      err instanceof Error ? err.message : "Cache warm failed",
+    );
   }
 
   const done = cachedCount === total && total > 0;
@@ -286,35 +296,36 @@ export async function precachePregameAudio(
  * Returns { cached:0, total:0, done:false, error:null } when the URL set
  * cannot be resolved (manifest not yet cached, no template match, etc.).
  * The caller should treat that as "not ready" with no error shown.
+ *
+ * @param strategy  Optional CacheStrategy override — used by tests. Callers
+ *   in production code omit this; the production default is selectCacheStrategy()
+ *   which always returns WebCacheStrategy on the web PWA.
  */
 export async function checkPregameAudioCached(
   params: PrecacheParams,
+  strategy: CacheStrategy = selectCacheStrategy(),
 ): Promise<PrecacheStatus> {
-  if (typeof caches === "undefined") {
+  if (!cacheStorageAvailable()) {
     return { cached: 0, total: 0, done: false, error: null };
   }
 
   // cacheOnly=true: resolveReachableUrls reads the manifest from cache only —
   // no network call. If the manifest isn't cached yet, returns null → { 0/0 }.
-  const urls = await resolveReachableUrls(params, /* cacheOnly */ true);
+  const urls = await resolveReachableUrls(
+    params,
+    strategy,
+    /* cacheOnly */ true,
+  );
   if (!urls) {
     return { cached: 0, total: 0, done: false, error: null };
   }
 
   const total = urls.length;
   let cachedCount = 0;
-
-  let audioCache: Cache;
   try {
-    audioCache = await caches.open(audioCacheName());
+    cachedCount = await strategy.check(urls);
   } catch {
     return { cached: 0, total, done: false, error: null };
-  }
-
-  for (const url of urls) {
-    const getReq = new Request(url, { method: "GET" });
-    const hit = await audioCache.match(getReq);
-    if (hit) cachedCount++;
   }
 
   return {
