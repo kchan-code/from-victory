@@ -10,12 +10,11 @@ name: Athlete no-tracking guard
 # session-replay SDK is imported — or a third-party tracking script injected —
 # on an athlete-facing surface, this job fails and the PR cannot merge.
 #
-# Athlete-facing surfaces scanned (see script for full commentary):
-#   apps/web/app/athlete/**
-#   apps/web/components/pregame/**
-#   apps/web/components/postgame/**
-#   apps/web/components/athlete/**
-#   apps/web/components/daily/**
+# Athlete-facing surfaces scanned (see the script's SCAN_PATHS for the
+# authoritative list):
+#   apps/web/app/athlete/**, components/{pregame,postgame,athlete,daily}/**
+#   apps/web/app/{signin,pair,forgot-password,reset-password,auth}/**
+#   apps/web/components/auth/**
 #   apps/web/app/layout.tsx
 #
 # Dependency-free: plain Node CommonJS using only built-ins. No `npm install`.
