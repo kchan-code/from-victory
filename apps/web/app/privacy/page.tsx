@@ -8,10 +8,11 @@ import Link from "next/link";
 // (13–17, synthetic email, username/device login) accounts AND adult (18+)
 // self-managed accounts (own email + password, self-pay, no parent link).
 // Adult self-serve is built but gated behind ENABLE_ADULT_SIGNUP — coordinate
-// the effective date + publication with the flag flip and attorney review.
+// publication with the flag flip and attorney sign-off (FV-329).
 // Every factual claim here is grounded in the verified data inventory
-// (schema + code). Two items for KC/counsel to confirm at launch:
-//   1. EFFECTIVE_DATE below — set to the actual go-live date.
+// (schema + code). Launch notes:
+//   1. EFFECTIVE_DATE below is set to June 24, 2026 (KC, 2026-06-25); the
+//      policy still needs attorney sign-off before publication (FV-329).
 //   2. The private-journal infrastructure is built but DORMANT (FV-135, zero
 //      production callers) and is intentionally NOT described as an active
 //      feature here. Revisit if/when it is wired.
@@ -23,7 +24,8 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-// NOTE: confirm the effective date with counsel at launch.
+// Effective date set to June 24, 2026 by KC (2026-06-25). Attorney sign-off
+// (FV-329) still required before the policy is published.
 const EFFECTIVE_DATE = "June 24, 2026";
 const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
