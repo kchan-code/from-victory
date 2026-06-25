@@ -20,7 +20,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Privacy Policy · From Victory",
   description:
-    "How From Victory collects, uses, stores, and protects information — across our website, the sport waitlist, and the From Victory app for parents and athletes (ages 13–21).",
+    "How From Victory collects, uses, stores, and protects information — across our website, the sport waitlist, and the From Victory app for parents and athletes (ages 13 and above).",
   robots: { index: true, follow: true },
 };
 
@@ -62,7 +62,7 @@ export default function PrivacyPage() {
         </p>
         <p>
           From Victory is a daily mental-toughness training app, with faith as its
-          foundation, for athletes ages 13 to 21. Accounts work in one of two ways: a parent
+          foundation, for athletes ages 13 and above. Accounts work in one of two ways: a parent
           or guardian creates and manages an account for a younger athlete and is the
           purchaser, or an adult athlete (18 or older) creates and manages their own account
           and is the purchaser. We collect as little information as we can while still running
@@ -232,7 +232,7 @@ export default function PrivacyPage() {
 
       <Section title="3. Children and Minors">
         <p>
-          From Victory is built for athletes ages 13 to 21. Athletes ages 13 to 17 are
+          From Victory is built for athletes ages 13 and above. Athletes ages 13 to 17 are
           minors. A parent or guardian creates and manages every account for an athlete under
           18; an adult athlete (18 or older) may instead create and manage their own account.
           We apply the additional protections described below to every minor (ages 13 to 17)
