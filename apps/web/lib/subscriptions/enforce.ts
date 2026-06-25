@@ -29,10 +29,11 @@
  *     /subscribe, /signin, /signup, /billing, /auth/*, legal pages,
  *     crisis-resource displays, or the athlete settings/signout paths.
  *
- * NOTE: /athlete/paused does not yet exist as a frontend screen. The lead's
- * frontend pass must build it. It should show a calm message explaining that
- * the parent's subscription needs attention, with no checkout link (athletes
- * cannot buy). It must NOT expose any billing details to the athlete.
+ * NOTE: /athlete/paused is the gentle blocked screen for a MINOR athlete (the
+ * parent must reactivate; no checkout link, no billing details — a kids-privacy
+ * boundary). A blocked adult_athlete is a self-payer and is routed to /subscribe
+ * instead (FV-328), so they never land there via enforcement; the paused page
+ * shows them a self-remedy link only if they navigate to it directly.
  */
 import "server-only";
 

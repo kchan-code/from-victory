@@ -16,8 +16,9 @@ export const metadata = {
  * Design contract (brand spine):
  * - Identity precedes performance. Access being paused NEVER equals worth
  *   being paused. The copy must hold space, not close a door.
- * - No pricing, no Stripe links, no billing details. Athletes cannot buy;
- *   surfaces like this are also a kids-privacy boundary.
+ * - For a MINOR athlete: no pricing, no Stripe links, no billing details —
+ *   minors cannot buy, and this is a kids-privacy boundary. A self-paying
+ *   adult_athlete (FV-328) instead gets a "Reactivate subscription" link.
  * - Tone: Mentor voice — steady, warm, plainly true.
  * - Dark-mode-first, mobile-first (375px). Thumb-reach: sign-out in the
  *   bottom area, settings link in the body — both reachable one-handed.
@@ -93,7 +94,7 @@ export default async function AthletePausedPage() {
           <Link
             href="/subscribe"
             data-testid="paused-reactivate-link"
-            className="inline-flex items-center justify-center rounded-[12px] border border-gold bg-gold px-5 py-4 font-heading text-[15px] font-semibold text-onyx transition-colors duration-fast ease-out hover:bg-gold-bright focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.99] w-full mb-3"
+            className="inline-flex items-center justify-center rounded-[12px] border border-gold bg-gold px-5 py-4 font-heading text-[15px] font-semibold text-onyx transition-colors duration-fast ease-out hover:bg-gold-bright hover:text-onyx focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.99] w-full mb-3"
           >
             Reactivate subscription
           </Link>
