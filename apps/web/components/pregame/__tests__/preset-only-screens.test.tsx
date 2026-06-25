@@ -149,3 +149,34 @@ describe.each(SPORTS)(
     });
   },
 );
+
+// FV-346 — each pregame choice grid is wrapped in an accessible group so a
+// screen reader announces the set as a unit. The options are aria-pressed
+// toggle buttons (not a native radiogroup), so role="group" + a label is the
+// correct grouping. Labels mirror each screen's intent.
+describe("pregame choice grids expose an accessible group label (FV-346)", () => {
+  function baseState(): PregameState {
+    return { ...INITIAL_STATE, role: "Forward" };
+  }
+
+  it("Hard Moment grid is a labelled group", () => {
+    render(<HardMomentScreen state={baseState()} set={vi.fn()} sportConfig={HOCKEY_CONFIG} />);
+    expect(
+      screen.getByRole("group", { name: "Choose a hard moment" }),
+    ).toBeInTheDocument();
+  });
+
+  it("Reset Anchor grid is a labelled group", () => {
+    render(<ResetAnchorScreen state={baseState()} set={vi.fn()} sportConfig={HOCKEY_CONFIG} />);
+    expect(
+      screen.getByRole("group", { name: "Choose your reset anchor" }),
+    ).toBeInTheDocument();
+  });
+
+  it("Self-Talk grid is a labelled group", () => {
+    render(<SelfTalkScreen state={baseState()} set={vi.fn()} sportConfig={HOCKEY_CONFIG} />);
+    expect(
+      screen.getByRole("group", { name: "Choose a self-talk phrase" }),
+    ).toBeInTheDocument();
+  });
+});
