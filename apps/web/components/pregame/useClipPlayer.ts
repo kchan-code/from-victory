@@ -75,6 +75,7 @@ import { assembleWavBlobWithBed } from "./audio/encode-wav";
 import { getBed, BED_MIX_GAIN } from "./audio/beds";
 import { getSportConfig, type Sport } from "./sport-registry";
 import type { PrayerStyle } from "./types";
+import { selectCacheStrategy } from "@/lib/audio/cache-strategy";
 
 // ---------------------------------------------------------------------------
 // Vendor-prefix type helper (decode-only AudioContext)
@@ -230,6 +231,11 @@ const BED_DEADLINE_MS = 5_000;
  * Fetch a URL as ArrayBuffer. Returns null on network/HTTP failure — including
  * an AbortError when the optional `signal` is aborted (e.g. the lie-fi
  * deadline), which the caller treats as a fetch miss and falls back from.
+ *
+ * The `url` parameter is already the RESOLVED playable URL (after
+ * strategy.resolve() has been applied by the caller). On web this is the
+ * original content-addressed URL; on native (future PR) it will be a
+ * local file:// path returned by NativeCacheStrategy.resolve().
  */
 async function fetchArrayBuffer(url: string, signal?: AbortSignal): Promise<ArrayBuffer | null> {
   try {
@@ -415,10 +421,21 @@ export function useClipPlayer({
     };
 
     async function init() {
+      // Resolve the storage strategy once for this session. On web this is
+      // always WebCacheStrategy (identity resolve, Cache Storage warm/check).
+      // On native (future PR) it will be NativeCacheStrategy (file:// paths).
+      // Calling selectCacheStrategy() inside init() is intentional — it is
+      // memoized (module-level singleton) so the cost is negligible.
+      const strategy = selectCacheStrategy();
+
       // 1. Fetch manifest (network-bound — covered by the deadline).
+      // strategy.resolve() maps the manifest URL to a playable URL:
+      //   web:    identity — SW serves from Cache Storage transparently.
+      //   native: file:// path on the device filesystem (future PR).
       let manifestRes: Response;
       try {
-        manifestRes = await fetch(manifestUrl(), { signal: controller.signal });
+        const resolvedManifestUrl = await strategy.resolve(manifestUrl());
+        manifestRes = await fetch(resolvedManifestUrl, { signal: controller.signal });
       } catch {
         // Network failure or a deadline abort. Either way, fall back.
         clearDeadline();
@@ -500,8 +517,21 @@ export function useClipPlayer({
 
       // 4. Fetch all clip ArrayBuffers in parallel (network-bound — covered by
       // the deadline; an aborted fetch resolves to null below).
+      //
+      // strategy.resolve() maps each content-addressed clip URL to a playable
+      // URL before fetching:
+      //   web:    identity — the original /audio/pregame/clips/<slug>.<hash>.mp3
+      //           URL is returned unchanged; the SW audioCacheFirst handler
+      //           serves the cached bytes transparently.
+      //   native: file:// path on the device filesystem (future PR).
+      //
+      // All resolves run in parallel with the fetches via Promise.all. On web
+      // resolve() is a no-op async identity, so performance is unchanged.
+      const resolvedClipUrls = await Promise.all(
+        clips.map((clip) => strategy.resolve(clip.url)),
+      );
       const bufferResults = await Promise.all(
-        clips.map((clip) => fetchArrayBuffer(clip.url, controller.signal)),
+        resolvedClipUrls.map((url) => fetchArrayBuffer(url, controller.signal)),
       );
       // All network-bound work is done — clear the deadline so the CPU-bound
       // decode below is never aborted or timed out. Cache-served offline
