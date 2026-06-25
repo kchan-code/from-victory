@@ -2175,8 +2175,9 @@ export function adversityOptionsFor(
  * the inverse of `adversityOptionsFor` for every place the chosen adversity is
  * shown downstream (Review screen, session card, text-mode `{{adversity}}`).
  * A goalie's stored "I get benched." shows as "I get pulled.". Falls back to the
- * key itself for skaters, custom free-text, and sports without overrides, and
- * passes a null key straight through. (FV-101.)
+ * key itself for roles without an override, for sports without overrides, and
+ * for any unmatched value (e.g. a legacy custom string from a pre-FV-343
+ * session), and passes a null key straight through. (FV-101.)
  */
 export function adversityLabelFor(
   config: SportConfig,

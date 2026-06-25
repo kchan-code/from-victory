@@ -9,7 +9,6 @@ import { audioAssetUrl } from "./audio-mapping";
 import {
   Button,
   Card,
-  CustomInputRow,
   Eyebrow,
   Icon,
   ScreenBody,
@@ -529,9 +528,9 @@ export function HardMomentScreen({
 }) {
   // Position-aware options: a goalie sees goalie-true labels (mapped to the same
   // cells via the canonical key); skaters get the flat list. (FV-101.)
+  // Preset-only (FV-343): the adversity must map to a voiced cell, so there is
+  // no free-text entry — the athlete picks one of the options below.
   const options = adversityOptionsFor(sportConfig, state.role);
-  const isCustom =
-    !!state.adversity && !options.some((o) => o.key === state.adversity);
   return (
     <ScreenBody>
       <SectionLabel>Step 05 · Hard Moment</SectionLabel>
@@ -552,16 +551,6 @@ export function HardMomentScreen({
             onClick={() => set("adversity", key)}
           />
         ))}
-      </div>
-
-      <div className="mt-3">
-        <CustomInputRow
-          value={isCustom ? state.adversity ?? "" : ""}
-          selected={isCustom}
-          onChange={(v) => set("adversity", v)}
-          placeholder="Something else on your mind"
-          ariaLabel="Custom hard moment"
-        />
       </div>
 
       {state.adversity && (
