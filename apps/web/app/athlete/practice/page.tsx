@@ -12,7 +12,7 @@ export default async function PracticePage() {
   const { profile } = await requireAthlete();
 
   // Subscription enforcement gate (FV-62). No-op when flag is off.
-  await requireActiveAccess({ role: "athlete" });
+  await requireActiveAccess({ role: profile.role });
 
   // First-run gate: an athlete must choose their sport before reaching
   // sport-keyed pre-practice content. Mirrors the /athlete dashboard gate

@@ -443,6 +443,24 @@ describe("requireActiveAccess — flag on", () => {
     await requireActiveAccess({ role: "athlete" });
     expect(redirect).not.toHaveBeenCalledWith("/subscribe");
   });
+
+  it("redirects a blocked adult_athlete to /subscribe (FV-328: self-payer)", async () => {
+    rlsUserId = ADULT_ATHLETE_ID;
+    rlsProfileRole = "adult_athlete";
+    setGrantNone();
+    setSubscriptionNone();
+    await requireActiveAccess({ role: "adult_athlete" });
+    expect(redirect).toHaveBeenCalledWith("/subscribe");
+  });
+
+  it("never sends a blocked adult_athlete to /athlete/paused", async () => {
+    rlsUserId = ADULT_ATHLETE_ID;
+    rlsProfileRole = "adult_athlete";
+    setGrantNone();
+    setSubscriptionNone();
+    await requireActiveAccess({ role: "adult_athlete" });
+    expect(redirect).not.toHaveBeenCalledWith("/athlete/paused");
+  });
 });
 
 // ---------------------------------------------------------------------------

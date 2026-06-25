@@ -26,7 +26,7 @@ export default async function DailyPage() {
   const { userId, profile } = await requireAthlete();
 
   // Subscription enforcement gate (FV-62). No-op when flag is off.
-  await requireActiveAccess({ role: "athlete" });
+  await requireActiveAccess({ role: profile.role });
 
   if (!profile.sport_selected_at) {
     redirect("/athlete/onboarding/sport");
