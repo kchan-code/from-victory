@@ -146,6 +146,12 @@ describe("useClipPlayer lie-fi timeout (FV-172)", () => {
 
     const { result } = renderHook(() => useClipPlayer(PREGAME_OPTS));
 
+    // Flush one microtask so strategy.resolve() (async identity on web) settles
+    // before fetch() is called. The original code called fetch() as its first
+    // await; the CacheStrategy seam introduces one additional microtask before
+    // the fetch call. The behavioral assertion below is unchanged.
+    await flushMicrotasks(1);
+
     // Manifest fetch issued with the wired abort signal; still preparing.
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [, manifestInit] = fetchMock.mock.calls[0] ?? [];

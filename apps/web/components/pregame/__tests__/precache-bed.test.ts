@@ -121,9 +121,21 @@ describe("precachePregameAudio with bedId (FV-227)", () => {
   beforeEach(() => {
     const cacheStub = makeCacheStorageStub();
     vi.stubGlobal("caches", cacheStub);
-    // Return 200 for any URL so the precache loop doesn't blow up on network
-    // fetches. The test then checks which URLs were fetched.
-    fetchMock = vi.fn(async () => new Response("", { status: 200 }));
+    // Return 200 for all URLs. Manifest URL gets a parseable JSON body so
+    // resolveReachableUrls can read the clip catalog (the CacheStrategy seam
+    // now calls fetch() for the manifest directly — on web the SW serves from
+    // cache transparently; in tests we return the JSON here). All other URLs
+    // (clips, bed) return an empty-body 200 so the precache loop completes.
+    fetchMock = vi.fn(async (req: Request | string) => {
+      const url = typeof req === "string" ? req : req.url;
+      if (url.includes("manifest.json")) {
+        return new Response(
+          JSON.stringify({ version: "test", clips: {}, templates: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      return new Response("", { status: 200 });
+    });
     vi.stubGlobal("fetch", fetchMock);
   });
 

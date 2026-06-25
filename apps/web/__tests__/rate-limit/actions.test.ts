@@ -245,6 +245,7 @@ interface ServerMockOptions {
   signUpData?: { user: { id: string } } | null;
   signUpError?: { message: string; status?: number; code?: string } | null;
   signInError?: { message: string; status?: number; code?: string } | null;
+  signInProfileRole?: string;
   profileInsertError?: { message: string } | null;
   resetPasswordError?: { message: string; status?: number; code?: string } | null;
   updateUserError?: { message: string; status?: number; code?: string } | null;
@@ -255,6 +256,7 @@ function makeServerMock(opts: ServerMockOptions = {}) {
     signUpData = { user: { id: "parent-uuid-new" } },
     signUpError = null,
     signInError = null,
+    signInProfileRole = "parent",
     profileInsertError = null,
     resetPasswordError = null,
     updateUserError = null,
@@ -267,6 +269,9 @@ function makeServerMock(opts: ServerMockOptions = {}) {
         error: signUpError,
       })),
       signInWithPassword: vi.fn(async (_opts: unknown) => ({
+        // Real Supabase returns data.user on success; signIn (FV-326) now reads
+        // it to fetch the role for a role-aware landing redirect.
+        data: signInError ? null : { user: { id: "signed-in-uuid" } },
         error: signInError,
       })),
       resetPasswordForEmail: vi.fn(async (_email: string, _opts?: unknown) => ({
@@ -278,6 +283,16 @@ function makeServerMock(opts: ServerMockOptions = {}) {
     },
     from: (_table: string) => ({
       insert: vi.fn(async (_row: unknown) => ({ error: profileInsertError })),
+      // signIn's role-aware landing (FV-326): .select("role").eq(...).single().
+      // Default to a parent so the existing happy-path test lands on /dashboard.
+      select: (_cols: string) => ({
+        eq: (_col: string, _val: unknown) => ({
+          single: async () => ({
+            data: { role: signInProfileRole },
+            error: null,
+          }),
+        }),
+      }),
     }),
   };
 }

@@ -27,6 +27,16 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
         purpose: "any",
       },
+      {
+        // Maskable icon for Android adaptive icons and TWA.
+        // Full 512×512 canvas is filled (#050505 onyx); the brand mark
+        // (open-book V + flame) sits inside the center 65% — comfortably
+        // within the maskable safe zone (center 80%).
+        src: "/icon-maskable.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
     ],
   };
 }
