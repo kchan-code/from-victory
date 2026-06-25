@@ -145,6 +145,7 @@ import { redirect } from "next/navigation";
 
 const PARENT_ID = "aaaaaaaa-0000-4000-8000-000000000001";
 const ATHLETE_ID = "bbbbbbbb-0000-4000-8000-000000000002";
+const ADULT_ATHLETE_ID = "cccccccc-0000-4000-8000-000000000003";
 
 const FUTURE_ISO = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 const PAST_ISO   = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -505,5 +506,51 @@ describe("getAccessForCurrentUser — athlete path returns only AccessLevel enum
     rlsUserId = null;
     const result = await getAccessForCurrentUser();
     expect(result).toBe("blocked");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 6. adult_athlete path (FV-325) — 18+ self-serve. Access derives from the
+//    adult's OWN subscription row (their id is the payer key), with NO
+//    parent_athlete_links hop.
+// ---------------------------------------------------------------------------
+
+describe("getAccessForCurrentUser — adult_athlete (18+ self-serve) path", () => {
+  beforeEach(() => {
+    resetRlsState();
+    setGrantNone();
+    setSubscriptionNone();
+  });
+
+  it("returns 'full' for adult_athlete with an active subscription", async () => {
+    rlsUserId = ADULT_ATHLETE_ID;
+    rlsProfileRole = "adult_athlete";
+    setSubscription("active");
+    expect(await getAccessForCurrentUser()).toBe("full");
+  });
+
+  it("returns 'full' for adult_athlete with an active comp grant", async () => {
+    rlsUserId = ADULT_ATHLETE_ID;
+    rlsProfileRole = "adult_athlete";
+    setGrantActive();
+    setSubscriptionNone();
+    expect(await getAccessForCurrentUser()).toBe("full");
+  });
+
+  it("returns 'blocked' for adult_athlete with no subscription and no grant", async () => {
+    rlsUserId = ADULT_ATHLETE_ID;
+    rlsProfileRole = "adult_athlete";
+    expect(await getAccessForCurrentUser()).toBe("blocked");
+  });
+
+  it("derives access from own id, never via a parent_athlete_links hop", async () => {
+    // Even with a stray link configured, the adult_athlete branch must resolve
+    // via its own subscription (own id as payer key) — it returns before the
+    // athlete branch that would read parent_athlete_links.
+    rlsUserId = ADULT_ATHLETE_ID;
+    rlsProfileRole = "adult_athlete";
+    rlsLinkParentId = PARENT_ID; // would only matter on the athlete branch
+    setSubscription("active");
+    expect(await getAccessForCurrentUser()).toBe("full");
   });
 });
