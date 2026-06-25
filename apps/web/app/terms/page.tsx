@@ -65,7 +65,7 @@ export default function TermsPage() {
         </p>
         <p className="mt-3">
           The Services may include faith-based mindset content, Scripture reflections, daily
-          prompts, identity statements, journaling features, training rhythms, reminders,
+          prompts, identity statements, training rhythms, reminders,
           parent-facing resources, athlete-facing resources, coach-facing resources, and other
           related content or features.
         </p>
@@ -190,7 +190,7 @@ export default function TermsPage() {
       <Section title="8. Faith-Based and Mindset Content">
         <p>
           From Victory may include Christian, Scripture-based, devotional, mindset, athletic,
-          motivational, journaling, reflection, or personal development content.
+          motivational, reflection, or personal development content.
         </p>
         <p className="mt-3">
           This content is provided for general informational, educational, and encouragement
@@ -232,10 +232,13 @@ export default function TermsPage() {
         </p>
       </Section>
 
-      <Section title="10. User Content, Journal Entries, and Submissions">
+      <Section title="10. User Submissions and Feedback">
         <p>
-          The Services may allow you to submit information, notes, feedback, optional comments,
-          journal entries, reflections, goals, responses, or other content.
+          Some parts of the Services let you send us information — for example, the optional note
+          on the waitlist form, a message you send through our contact form, or feedback and
+          suggestions about From Victory. The in-app training experience does not include a
+          free-text journal, notes, or comment field for athletes; an athlete personalizes
+          sessions by choosing from options we provide, not by typing their own content.
         </p>
         <p className="mt-3">
           You are responsible for anything you submit through the Services. You represent that you
@@ -244,39 +247,16 @@ export default function TermsPage() {
         </p>
         <p className="mt-3">
           You should not submit sensitive personal information, medical information, financial
-          information, passwords, confidential information, or highly personal details through the
-          Services unless a feature specifically requests it and you are comfortable providing it.
-        </p>
-        <p className="mt-3">
-          As between you and From Victory, you retain ownership of content you submit. However, you
-          grant From Victory a non-exclusive, worldwide, royalty-free, fully paid license to use,
-          host, store, reproduce, display, process, transmit, and otherwise use your submitted
-          content as reasonably necessary to operate, provide, maintain, protect, improve, and
-          develop the Services.
-        </p>
-        <p className="mt-3">
-          Journal entries and similar private reflection content are stored privately to your
-          account and are not displayed, transmitted to third parties, or shared with parents,
-          guardians, or other users, except as required to (a) operate the safety detection
-          feature described in our{" "}
-          <Link
-            href="/privacy"
-            className="text-cream underline underline-offset-2 hover:text-gold"
-          >
-            Privacy Policy
-          </Link>
-          , (b) comply with applicable law, or (c) respond to a verified deletion request. The
-          license above does not authorize From Victory to publish, share, or use journal content
-          for marketing, training of third-party models, or any purpose beyond securely operating
-          the Services for you.
+          information, passwords, or highly personal details through the Services unless a feature
+          specifically requests it and you are comfortable providing it.
         </p>
         <p className="mt-3">
           If you submit suggestions, ideas, comments, or feedback about From Victory, you grant us
           the right to use that feedback without restriction or compensation to you.
         </p>
         <p className="mt-3">
-          We are not required to review, monitor, preserve, return, or use any user submission,
-          except as required by applicable law.
+          We are not required to review, monitor, preserve, return, or use any submission, except
+          as required by applicable law.
         </p>
       </Section>
 
@@ -481,7 +461,7 @@ export default function TermsPage() {
         <ul className="mt-2 mb-3 pl-5 list-disc space-y-1.5">
           <li>Your use of the Services</li>
           <li>Your account activity</li>
-          <li>Your submission of information, notes, journal entries, feedback, or other content</li>
+          <li>Your submission of information, notes, feedback, or other content</li>
           <li>Your violation of these Terms</li>
           <li>Your violation of any law or third-party right</li>
           <li>Your misuse of From Victory content or intellectual property</li>
