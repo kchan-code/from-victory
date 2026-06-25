@@ -35,6 +35,9 @@ export default async function SubscribePage({ searchParams }: Props) {
 
   // Role-aware navigation targets.
   const dashboardHref = profile.role === "adult_athlete" ? "/athlete" : "/dashboard";
+  // FV-328: the aria-label must match the destination (the href is role-aware).
+  const backLabel =
+    profile.role === "adult_athlete" ? "Back to training" : "Back to dashboard";
 
   // Role-aware checkout action.
   const checkoutAction =
@@ -47,7 +50,7 @@ export default async function SubscribePage({ searchParams }: Props) {
       <div className="mx-auto max-w-[560px]">
         {/* Header */}
         <header className="flex items-center justify-between mb-12">
-          <Link href={dashboardHref} aria-label="Back to dashboard">
+          <Link href={dashboardHref} aria-label={backLabel}>
             <Image
               src="/logo-stacked.svg"
               alt="From Victory"

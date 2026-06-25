@@ -23,7 +23,7 @@ export default async function AthleteHomePage() {
 
   // Subscription enforcement gate (FV-62). No-op when flag is off.
   // Must run after requireAthlete() so the role is confirmed server-side.
-  await requireActiveAccess({ role: "athlete" });
+  await requireActiveAccess({ role: profile.role });
 
   // First-run gate: athlete has not yet affirmatively chosen their sport.
   // (sport_selected_at is NULL until the picker writes it — see FV-33 spec §1.)

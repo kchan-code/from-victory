@@ -14,9 +14,10 @@
  *   Set `ENFORCE_SUBSCRIPTION_GATING=true` in Vercel env vars to enable.
  *   Any other value (including unset) leaves enforcement off.
  *
- * REDIRECT TARGETS:
- *   - Blocked parent  → /subscribe    (parent can remedy the block)
- *   - Blocked athlete → /athlete/paused  (athletes cannot buy; parent must act)
+ * REDIRECT TARGETS (by the BLOCKED user's ACTUAL role — callers pass the
+ * dynamic profile.role, not a static literal):
+ *   - Blocked parent or adult_athlete → /subscribe  (they can buy / self-remedy)
+ *   - Blocked minor athlete → /athlete/paused  (cannot buy; the parent must act)
  *   - Degraded (past_due etc.) → no redirect; returns the level so the caller
  *     can render a "fix your payment" banner if desired.
  *
@@ -28,10 +29,11 @@
  *     /subscribe, /signin, /signup, /billing, /auth/*, legal pages,
  *     crisis-resource displays, or the athlete settings/signout paths.
  *
- * NOTE: /athlete/paused does not yet exist as a frontend screen. The lead's
- * frontend pass must build it. It should show a calm message explaining that
- * the parent's subscription needs attention, with no checkout link (athletes
- * cannot buy). It must NOT expose any billing details to the athlete.
+ * NOTE: /athlete/paused is the gentle blocked screen for a MINOR athlete (the
+ * parent must reactivate; no checkout link, no billing details — a kids-privacy
+ * boundary). A blocked adult_athlete is a self-payer and is routed to /subscribe
+ * instead (FV-328), so they never land there via enforcement; the paused page
+ * shows them a self-remedy link only if they navigate to it directly.
  */
 import "server-only";
 
@@ -56,7 +58,9 @@ export function isSubscriptionEnforcementEnabled(): boolean {
 // Role type (narrows the redirect target)
 // ---------------------------------------------------------------------------
 
-export type CallerRole = "parent" | "athlete";
+// FV-328: adult_athlete is a self-payer (like a parent) — a blocked adult routes
+// to /subscribe, NOT the paused screen. Callers pass the dynamic profile.role.
+export type CallerRole = "parent" | "athlete" | "adult_athlete";
 
 // ---------------------------------------------------------------------------
 // Main guard
@@ -73,8 +77,11 @@ export type CallerRole = "parent" | "athlete";
  *                        accessible so the athlete is not hard-blocked mid-session.
  *   - "blocked"       → redirect(). Never returns to the caller.
  *
- * @param opts.role  Pass "athlete" from athlete routes, "parent" from parent routes.
- *                   Determines the redirect target when blocked.
+ * @param opts.role  The current user's ACTUAL profile.role (athlete |
+ *                   adult_athlete | parent) — NOT a static literal. Determines
+ *                   the redirect target when blocked: only a minor athlete goes
+ *                   to /athlete/paused; self-payers (parent, adult_athlete) go
+ *                   to /subscribe.
  * @returns The AccessLevel ("full" | "degraded") when no redirect occurs.
  *          ("blocked" is never returned — the function redirects before that.)
  */
@@ -97,11 +104,11 @@ export async function requireActiveAccess(opts: {
 
   // level === "blocked"
   if (opts.role === "athlete") {
-    // Athletes cannot buy subscriptions — the parent must act.
-    // Send to a gentle paused screen (frontend must build this route).
+    // A MINOR athlete cannot buy — the parent must act. Gentle paused screen.
     redirect("/athlete/paused");
   } else {
-    // Parent can remedy the block by subscribing.
+    // A parent OR an adult_athlete (FV-328) is the payer and can remedy the
+    // block themselves — both route to checkout.
     redirect("/subscribe");
   }
 

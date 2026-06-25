@@ -16,8 +16,9 @@ export const metadata = {
  * Design contract (brand spine):
  * - Identity precedes performance. Access being paused NEVER equals worth
  *   being paused. The copy must hold space, not close a door.
- * - No pricing, no Stripe links, no billing details. Athletes cannot buy;
- *   surfaces like this are also a kids-privacy boundary.
+ * - For a MINOR athlete: no pricing, no Stripe links, no billing details —
+ *   minors cannot buy, and this is a kids-privacy boundary. A self-paying
+ *   adult_athlete (FV-328) instead gets a "Reactivate subscription" link.
  * - Tone: Mentor voice — steady, warm, plainly true.
  * - Dark-mode-first, mobile-first (375px). Thumb-reach: sign-out in the
  *   bottom area, settings link in the body — both reachable one-handed.
@@ -34,7 +35,11 @@ export const metadata = {
 export default async function AthletePausedPage() {
   // Confirm the visitor is a signed-in athlete. If not signed in,
   // requireAthlete() redirects to /signin — no risk of sign-out loop.
-  await requireAthlete();
+  const { profile } = await requireAthlete();
+  // FV-328: an adult_athlete is their own payer, so enforcement routes a blocked
+  // adult to /subscribe — they should never land here. But if one navigates here
+  // directly, show a self-remedy path instead of "ask your parent".
+  const isAdult = profile.role === "adult_athlete";
 
   return (
     <main className="min-h-screen bg-onyx flex flex-col px-5 pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
@@ -72,14 +77,28 @@ export default async function AthletePausedPage() {
           never pauses.
         </h1>
 
-        {/* Body — warm, plain, no shame, no pricing */}
+        {/* Body — warm, plain, no shame. Minor athlete: no pricing/checkout
+            (kids-privacy boundary). Adult self-payer: a self-remedy path. */}
         <p className="font-body text-cream/75 text-[16px] leading-relaxed mb-3">
-          Your training is on hold right now. To get back in, ask your parent
-          to reactivate access from their dashboard.
+          {isAdult
+            ? "Your training is on hold right now. You can reactivate any time from your subscription."
+            : "Your training is on hold right now. To get back in, ask your parent to reactivate access from their dashboard."}
         </p>
         <p className="font-body text-cream/50 text-[14px] leading-relaxed mb-10">
           Your data is safe. Nothing has been removed.
         </p>
+
+        {/* Adult self-payer only: a direct path back to checkout. NEVER shown to
+            a minor athlete — no pricing/Stripe for minors (privacy boundary). */}
+        {isAdult ? (
+          <Link
+            href="/subscribe"
+            data-testid="paused-reactivate-link"
+            className="inline-flex items-center justify-center rounded-[12px] border border-gold bg-gold px-5 py-4 font-heading text-[15px] font-semibold text-onyx transition-colors duration-fast ease-out hover:bg-gold-bright hover:text-onyx focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.99] w-full mb-3"
+          >
+            Reactivate subscription
+          </Link>
+        ) : null}
 
         {/* Settings link — secondary action, in-body, thumb-reachable */}
         <Link
