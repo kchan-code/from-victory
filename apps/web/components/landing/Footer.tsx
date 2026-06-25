@@ -18,8 +18,8 @@ const forLinks = [
 ];
 
 const companyLinks = [
-  { href: "#", label: "About" },
-  { href: "#", label: "Contact" },
+  { href: "/about", label: "About" },
+  { href: "mailto:hello@fromvictoryapp.com", label: "Contact" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
 ];
