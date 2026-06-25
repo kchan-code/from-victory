@@ -47,7 +47,9 @@ export default function PrivacyPage() {
 
       <section className="mb-10 text-cream/85 leading-relaxed space-y-4">
         <p>
-          From Victory respects your privacy. This Privacy Policy explains how we collect,
+          From Victory LLC, a New Jersey limited liability company (&ldquo;From
+          Victory,&rdquo; &ldquo;we,&rdquo; or &ldquo;us&rdquo;), respects your privacy. This
+          Privacy Policy explains how we collect,
           use, store, and protect information across three places: our website, the sport
           waitlist form, and the From Victory app used by parents and athletes.
         </p>
@@ -352,7 +354,7 @@ export default function PrivacyPage() {
           choices, contact us at:
         </p>
         <p className="mt-3">
-          From Victory
+          From Victory LLC
           <br />
           Email: <PrivacyEmailLink />
           <br />
