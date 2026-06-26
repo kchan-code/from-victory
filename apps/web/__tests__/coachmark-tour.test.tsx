@@ -96,7 +96,13 @@ const HUB_STOPS = [
   "hub-pregame-card",
   "hub-bottom-nav",
 ];
-const PREGAME_STOPS = ["pregame-begin-btn", "pregame-quick-reset-btn"];
+const PREGAME_STOPS = [
+  "pregame-begin-btn",
+  "pregame-prepare-btn",
+  "pregame-play-saved-btn",
+  "pregame-run-last-btn",
+  "pregame-quick-reset-btn",
+];
 
 function injectHubAnchors() {
   return HUB_STOPS.map(injectAnchor);
@@ -258,20 +264,73 @@ describe("CoachmarkTour — complete all stops sets flag", () => {
     expect(screen.queryByTestId("coachmark-tooltip")).not.toBeInTheDocument();
   });
 
-  it("pregame: progresses through 2 steps and writes flag on Finish", async () => {
+  it("pregame: progresses through 5 steps and writes flag on Finish", async () => {
     injectPregameAnchors();
     render(<CoachmarkTour surface="pregame" />);
     await act(async () => { vi.runAllTimers(); });
 
-    // Step 1 → Finish
-    const nextBtn = screen.getByTestId("coachmark-next-btn");
-    await act(async () => { fireEvent.click(nextBtn); vi.runAllTimers(); });
+    // Steps 1→2→3→4: begin → prepare → play-saved → run-last
+    for (let i = 0; i < 4; i++) {
+      const nextBtn = screen.getByTestId("coachmark-next-btn");
+      await act(async () => { fireEvent.click(nextBtn); vi.runAllTimers(); });
+    }
 
+    // Step 5 (quick reset) is last → button reads the done line; click to finish
     const finishBtn = screen.getByTestId("coachmark-next-btn");
+    expect(finishBtn).toHaveTextContent(/compete from victory/i);
     await act(async () => { fireEvent.click(finishBtn); });
 
     expect(localStorageStub["fv_tour_pregame_done"]).toBe("1");
     expect(screen.queryByTestId("coachmark-tooltip")).not.toBeInTheDocument();
+  });
+
+  it("pregame (no saved session): skips the conditional play-saved + run-last stops and still finishes", async () => {
+    // First-run athlete with NO saved session: only begin, prepare, and
+    // quick-reset render; play-saved + run-last are absent and skip cleanly.
+    ["pregame-begin-btn", "pregame-prepare-btn", "pregame-quick-reset-btn"].forEach(
+      injectAnchor,
+    );
+    render(<CoachmarkTour surface="pregame" />);
+    await act(async () => { vi.runAllTimers(); });
+
+    // begin → prepare
+    await act(async () => { fireEvent.click(screen.getByTestId("coachmark-next-btn")); vi.runAllTimers(); });
+    expect(screen.getByText(/make all your picks and download the audio/i)).toBeInTheDocument();
+
+    // prepare → quick-reset (play-saved + run-last skipped as absent); it is last
+    await act(async () => { fireEvent.click(screen.getByTestId("coachmark-next-btn")); vi.runAllTimers(); });
+    const finishBtn = screen.getByTestId("coachmark-next-btn");
+    expect(finishBtn).toHaveTextContent(/compete from victory/i);
+    await act(async () => { fireEvent.click(finishBtn); });
+
+    expect(localStorageStub["fv_tour_pregame_done"]).toBe("1");
+    expect(screen.queryByTestId("coachmark-tooltip")).not.toBeInTheDocument();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 3b. Pregame saved-session copy disambiguates the overlapping entries
+// ---------------------------------------------------------------------------
+
+describe("CoachmarkTour — pregame saved-session copy", () => {
+  it("distinguishes 'play saved offline' (downloaded / no signal) from 'run it like last time' (fast replay)", async () => {
+    injectPregameAnchors();
+    render(<CoachmarkTour surface="pregame" />);
+    await act(async () => { vi.runAllTimers(); });
+
+    // Step 1 = BEGIN → advance to step 2 = "Set up for later"
+    await act(async () => { fireEvent.click(screen.getByTestId("coachmark-next-btn")); vi.runAllTimers(); });
+    expect(screen.getByText(/make all your picks and download the audio/i)).toBeInTheDocument();
+
+    // Step 3 = "Play saved offline session" — the downloaded, no-signal one
+    await act(async () => { fireEvent.click(screen.getByTestId("coachmark-next-btn")); vi.runAllTimers(); });
+    expect(screen.getByText(/no signal needed/i)).toBeInTheDocument();
+
+    // Step 4 = "Run it like last time" — a fast replay; deliberately says nothing
+    // about signal, so the athlete reads it as "skip setup", not "play offline".
+    await act(async () => { fireEvent.click(screen.getByTestId("coachmark-next-btn")); vi.runAllTimers(); });
+    expect(screen.getByText(/a fast replay/i)).toBeInTheDocument();
+    expect(screen.queryByText(/no signal/i)).not.toBeInTheDocument();
   });
 });
 

@@ -161,6 +161,7 @@ export function PregameStart({
           <button
             type="button"
             data-testid="set-up-for-later-btn"
+            data-coachmark="pregame-prepare-btn"
             onClick={onPrepare}
             aria-label="Set up for later — make your picks and download audio for offline play"
             className="flex flex-col items-center gap-1 rounded-[14px] border border-hairline bg-cream/[0.03] px-4 py-3.5 text-center transition-colors duration-fast hover:bg-cream/[0.06] active:scale-[0.98] active:bg-cream/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
@@ -182,6 +183,7 @@ export function PregameStart({
             <button
               type="button"
               data-testid="play-saved-offline-btn"
+              data-coachmark="pregame-play-saved-btn"
               onClick={onPlaySaved}
               aria-label="Play saved offline session — audio is downloaded and ready"
               className="flex flex-col items-center gap-1.5 rounded-[14px] border border-hairline bg-cream/[0.03] px-4 py-3.5 text-center transition-colors duration-fast hover:bg-cream/[0.06] active:scale-[0.98] active:bg-cream/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
@@ -225,6 +227,7 @@ export function PregameStart({
             <button
               type="button"
               data-testid="run-last-time-btn"
+              data-coachmark="pregame-run-last-btn"
               onClick={() => onBeginFromSaved(savedSession)}
               className="flex flex-col items-center gap-1 rounded-[14px] border border-hairline bg-cream/[0.03] px-4 py-3.5 text-center transition-colors duration-fast hover:bg-cream/[0.06] active:scale-[0.98] active:bg-cream/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
             >
