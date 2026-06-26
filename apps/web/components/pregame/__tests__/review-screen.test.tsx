@@ -279,6 +279,31 @@ describe("ReviewScreen offline download (FV-129 / FV-132)", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("mode='prepare' suppresses the offline-download-btn (FV-229 — prepare flow downloads on next screen)", async () => {
+    // In prepare mode the very next screen auto-downloads; showing the opt-in
+    // download button here would be a confusing duplicate. It must be absent.
+    checkPregameAudioCached.mockResolvedValue({
+      cached: 0,
+      total: 0,
+      done: false,
+      error: null,
+    });
+
+    render(<ReviewScreen state={makeState()} mode="prepare" />);
+
+    // Heading changes in prepare mode.
+    expect(screen.getByText(/Here.s what you.re saving\./i)).toBeInTheDocument();
+
+    // The FV-129 download control is absent in prepare mode.
+    await waitFor(() =>
+      expect(
+        screen.queryByTestId("offline-download-btn"),
+      ).not.toBeInTheDocument(),
+    );
+    // Precache was never called (no download triggered).
+    expect(precachePregameAudio).not.toHaveBeenCalled();
+  });
+
   it("recovers to the idle button if the download throws unexpectedly", async () => {
     checkPregameAudioCached.mockResolvedValue({
       cached: 0,

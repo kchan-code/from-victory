@@ -41,6 +41,9 @@ export function PregameStart({
   onClose,
   savedSession,
   onBeginFromSaved,
+  onPrepare,
+  onPlaySaved,
+  savedOfflineReady,
 }: {
   onBegin: () => void;
   onQuick: () => void;
@@ -53,6 +56,25 @@ export function PregameStart({
   savedSession?: PregameSessionCache | null;
   /** FV-223: called when the athlete taps "Run it like last time". */
   onBeginFromSaved?: (saved: PregameSessionCache) => void;
+  /**
+   * Prepare-ahead entry: always shown. Opens the PREPARE flow (setup picks
+   * + download) without running breathing or the guided audio session. The
+   * athlete saves the session for later at the rink with no signal.
+   */
+  onPrepare: () => void;
+  /**
+   * Play-saved-offline entry: shown only when a saved session exists AND
+   * its audio is confirmed fully cached (savedOfflineReady). Runs the full
+   * session — breath threshold → guided audio — using the saved selections.
+   * This is the "at the rink, no signal" play path.
+   */
+  onPlaySaved: () => void;
+  /**
+   * True when the saved session's audio has been confirmed fully cached
+   * (network-free check). Controls visibility of the "Play saved offline
+   * session" entry. While the check is pending or not done, false.
+   */
+  savedOfflineReady: boolean;
 }) {
   // FV-223: one-line summary for the "Run it like last time" entry.
   // Shows the three most salient choices — need (focus), cue word, and
@@ -130,6 +152,68 @@ export function PregameStart({
               BEGIN
             </Button>
           </div>
+
+          {/* Prepare-ahead entry — ALWAYS shown so the athlete can save
+              their setup for later regardless of whether a saved session
+              exists. Placed directly below BEGIN so it's visible without
+              scrolling on a standard 375px phone. The sub-line communicates
+              the specific value (offline + no signal) plainly. */}
+          <button
+            type="button"
+            data-testid="set-up-for-later-btn"
+            onClick={onPrepare}
+            aria-label="Set up for later — make your picks and download audio for offline play"
+            className="flex flex-col items-center gap-1 rounded-[14px] border border-hairline bg-cream/[0.03] px-4 py-3.5 text-center transition-colors duration-fast hover:bg-cream/[0.06] active:scale-[0.98] active:bg-cream/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+          >
+            <span className="font-heading text-[14px] font-semibold text-cream/90">
+              Set up for later
+            </span>
+            <span className="font-mono text-[11px] lowercase tracking-[0.04em] text-cream/45">
+              Make your picks + download — no rink signal needed.
+            </span>
+          </button>
+
+          {/* Play-saved-offline entry — shown only when a saved session exists
+              AND the cache check confirms it's fully downloaded. The gold check
+              badge mirrors the OfflineDownloadControl "ready" treatment so the
+              athlete immediately recognises this as the "I already downloaded"
+              path. This entry runs the FULL session (breath → audio). */}
+          {savedSession && savedOfflineReady && (
+            <button
+              type="button"
+              data-testid="play-saved-offline-btn"
+              onClick={onPlaySaved}
+              aria-label="Play saved offline session — audio is downloaded and ready"
+              className="flex flex-col items-center gap-1.5 rounded-[14px] border border-hairline bg-cream/[0.03] px-4 py-3.5 text-center transition-colors duration-fast hover:bg-cream/[0.06] active:scale-[0.98] active:bg-cream/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            >
+              <span className="font-heading text-[14px] font-semibold text-cream/90">
+                Play saved offline session
+              </span>
+              {/* Gold checkmark-circle + label — mirrors OfflineDownloadControl
+                  "ready" badge so the affordance is consistent. */}
+              <span className="flex items-center gap-1.5">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle cx="7" cy="7" r="6.5" stroke="#DFAF37" strokeWidth="1" />
+                  <path
+                    d="M4.5 7l1.8 1.8L9.5 5.5"
+                    stroke="#DFAF37"
+                    strokeWidth="1.25"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="font-mono text-[11px] lowercase tracking-[0.04em] text-gold">
+                  Downloaded · ready offline
+                </span>
+              </span>
+            </button>
+          )}
 
           {/* FV-223: "Run it like last time" — secondary entry, shown only
               when a valid saved session exists for the current sport.
