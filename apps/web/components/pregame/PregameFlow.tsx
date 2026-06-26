@@ -1,7 +1,10 @@
 "use client";
 
 // Pregame v2.1 — state machine router.
-// View states: 'start' | 'flow' (index 0..FLOW.length-1) | 'card' | 'quick'.
+// View states: 'start' | 'flow' (index 0..FLOW.length-1) | 'card' | 'quick'
+//   + prepare-ahead additions:
+//   'prepare-flow' (index 0..prepareFlow.length-1) | 'prepare-download'
+//
 // Setup phase (steps 0-7): tap-through choices. Step 8 is the audio session
 // (Identity scripture + visualization + coping + prayer fold into the
 // transcript). Card lives outside FLOW and renders after audio completes.
@@ -11,6 +14,11 @@
 // setup exists for the current sport, the athlete sees a secondary "Run it like
 // last time" entry that skips all setup steps and jumps straight to the breath
 // threshold (first FLOW step).
+//
+// Prepare-ahead flow: the athlete makes all setup picks (no breathing, no audio)
+// and the session is saved + downloaded for offline play. At the rink they tap
+// "Play saved offline session" which runs the full session (breath → audio) with
+// the restored selections.
 
 import { useEffect, useRef, useState } from "react";
 
@@ -27,6 +35,7 @@ import {
 import {
   AudioSessionScreen,
   CueWordScreen,
+  PrepareDownloadScreen,
   PrayerStyleScreen,
   PregameCardScreen,
   ResetAnchorScreen,
@@ -67,10 +76,40 @@ type View =
   | { kind: "start" }
   | { kind: "flow"; index: number }
   | { kind: "card" }
-  | { kind: "quick" };
+  | { kind: "quick" }
+  // Prepare-ahead additions:
+  //   "prepare-flow"     — walking through setup steps (no breath, no audio)
+  //   "prepare-download" — terminal: session saved, download in progress
+  | { kind: "prepare-flow"; index: number }
+  | { kind: "prepare-download" };
 
 // Athlete's first name surfaces only in the closing "Go play, {name}." byline
 // on the Pregame Card — kept off the rest of the flow per the design.
+// Network-free check: is this saved session's audio fully cached for offline
+// play? Centralizes the session→checkPregameAudioCached param mapping so the two
+// callers (mount effect + goStart) can't drift apart. Returns false on SSR / no
+// Cache Storage / any error.
+async function isSavedSessionCached(
+  session: PregameSessionCache,
+  sport: Sport,
+): Promise<boolean> {
+  if (typeof caches === "undefined") return false;
+  const { checkPregameAudioCached } = await import("./audio-precache");
+  const status = await checkPregameAudioCached({
+    sport,
+    need: session.need,
+    position: session.role ?? null,
+    adversity: session.adversity,
+    anchor: session.anchor ?? null,
+    selfTalk: session.selfTalk ?? null,
+    cueWord: session.cueWord || null,
+    prayerStyle: session.prayerStyle,
+    positivePlays: session.positivePlays,
+    bedId: null, // not stored in session cache (FV-306: sound picker removed)
+  });
+  return status.done;
+}
+
 export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   const sportConfig: SportConfig = getSportConfig(sport);
 
@@ -93,6 +132,17 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
     return true;
   });
 
+  // Prepare-ahead flow: same filter as activeFlow but with "breath" and "audio"
+  // removed. The athlete walks through the setup steps only (focus → position →
+  // positive plays → hard moment → anchor → self-talk → cue word → prayer →
+  // review), then lands on PrepareDownloadScreen. No breathing, no audio session.
+  // Index math is completely separate from activeFlow so neither path can corrupt
+  // the other's counters. The play path (activeFlow + goNext/goBack) is
+  // byte-for-byte unchanged.
+  const prepareFlow = activeFlow.filter(
+    (s) => s.id !== "breath" && s.id !== "audio",
+  );
+
   const [view, setView] = useState<View>({ kind: "start" });
   const [data, setData] = useState<PregameState>(INITIAL_STATE);
 
@@ -100,6 +150,11 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   // Null means no saved session, sport mismatch, unknown need, or invalid
   // shape — start screen shows only the full-setup path in that case.
   const [savedSession, setSavedSession] = useState<PregameSessionCache | null>(null);
+
+  // True when the saved session's audio is confirmed fully cached (network-free).
+  // Drives the "Play saved offline session" entry on the start screen.
+  // Defaults false so the entry is never shown until we've actually confirmed it.
+  const [savedOfflineReady, setSavedOfflineReady] = useState(false);
 
   // True between "Run it like last time" and the post-breath jump. A ref,
   // not state: it only steers the next goNext, never renders.
@@ -118,10 +173,37 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
       : null;
 
   useEffect(() => {
-    setSavedSession(restorableSession(readPregameSession()));
+    const session = restorableSession(readPregameSession());
+    setSavedSession(session);
+    // Reset offline-ready immediately when the session changes; the check
+    // below will set it back to true if applicable.
+    setSavedOfflineReady(false);
     // restorableSession is stable per sport — re-validate on sport change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sport]);
+
+  // Mount-time (and sport-change) network-free cache check for the saved
+  // session. Only runs when a restorable session exists; the session→params
+  // mapping lives in isSavedSessionCached so it can't drift from the goStart
+  // re-check below.
+  useEffect(() => {
+    const session = restorableSession(readPregameSession());
+    if (!session) return;
+
+    let cancelled = false;
+    isSavedSessionCached(session, sport)
+      .then((ok) => {
+        if (!cancelled) setSavedOfflineReady(ok);
+      })
+      .catch(() => {
+        // Non-fatal: entry stays hidden, which is the safe default.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sport]); // Re-check when sport changes; savedSession updates in parallel
 
   const set = <K extends keyof PregameState>(k: K, v: PregameState[K]) =>
     setData((d) => ({ ...d, [k]: v }));
@@ -140,7 +222,18 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
     // Refresh saved session in case a just-completed run wrote a new one —
     // and clear it when the read fails/invalidates, so the button never
     // shows stale state the store no longer backs (PR #194 review).
-    setSavedSession(restorableSession(readPregameSession()));
+    const freshSession = restorableSession(readPregameSession());
+    setSavedSession(freshSession);
+    // Also re-check the offline cache for the fresh session so the "Play
+    // saved offline session" badge reflects the current cache state.
+    setSavedOfflineReady(false);
+    if (freshSession) {
+      isSavedSessionCached(freshSession, sport)
+        .then(setSavedOfflineReady)
+        .catch(() => {
+          // Non-fatal: badge stays hidden.
+        });
+    }
   };
 
   // FV-223: "Run it like last time" — restore saved state, run the breath
@@ -165,6 +258,27 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
     fromSavedRef.current = true;
     // Start at breath (index 0) — the threshold step that's always first.
     setView({ kind: "flow", index: 0 });
+  };
+
+  // Prepare-ahead entry: start the PREPARE flow from step 0 of prepareFlow.
+  // Resets state so the athlete starts fresh (no stale data from a prior run).
+  const beginPrepare = () => {
+    fromSavedRef.current = false;
+    setData(INITIAL_STATE);
+    setView({ kind: "prepare-flow", index: 0 });
+  };
+
+  // Play-saved-offline entry. Behaviorally identical to "Run it like last
+  // time" (beginFromSaved): restore the saved picks, show the breath threshold,
+  // then jump straight to audio — the setup screens are skipped because the
+  // picks were restored (that's the "one tap at the rink" promise; the breath
+  // IS shown, only the re-picking is skipped). Delegating guarantees the same
+  // proven path. The ONLY difference between this entry and "Run it like last
+  // time" is the start-screen affordance: this one appears only when the audio
+  // is confirmed downloaded (savedOfflineReady) and carries the "ready offline"
+  // badge — the at-the-rink, no-signal reassurance.
+  const beginPlaySaved = () => {
+    if (savedSession) beginFromSaved(savedSession);
   };
 
   // FV-223: persist content choices when the athlete reaches the completion
@@ -194,6 +308,8 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view.kind]); // only re-run when we transition to the card view
+
+  // ── Play-path navigation (unchanged from before) ──────────────────────────
 
   const goNext = () => {
     if (view.kind !== "flow") return;
@@ -225,6 +341,52 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
     setView({ kind: "flow", index: view.index - 1 });
   };
 
+  // ── Prepare-path navigation ───────────────────────────────────────────────
+  // Completely separate from the play-path nav. Uses prepareFlow (no breath,
+  // no audio) and routes to prepare-download at the end instead of "card".
+  // The index math never touches activeFlow, so play-path is safe.
+
+  const goPrepareNext = () => {
+    if (view.kind !== "prepare-flow") return;
+    if (view.index >= prepareFlow.length - 1) {
+      // Last step of prepare flow (Review in prepare mode): write the session
+      // to localStorage before advancing to the download terminal, so the save
+      // exists independently of whether the download succeeds.
+      if (
+        data.need !== null &&
+        data.adversity !== null &&
+        data.anchor !== null &&
+        data.selfTalk !== null
+      ) {
+        writePregameSession({
+          sport,
+          need: data.need,
+          role: data.role,
+          positivePlays: data.positivePlays,
+          adversity: data.adversity,
+          anchor: data.anchor,
+          selfTalk: data.selfTalk,
+          cueWord: data.cueWord,
+          prayerStyle: data.prayerStyle,
+        });
+      }
+      setView({ kind: "prepare-download" });
+    } else {
+      setView({ kind: "prepare-flow", index: view.index + 1 });
+    }
+  };
+
+  const goPrepareBack = () => {
+    if (view.kind !== "prepare-flow") return;
+    if (view.index === 0) {
+      goStart();
+      return;
+    }
+    setView({ kind: "prepare-flow", index: view.index - 1 });
+  };
+
+  // ── Render: start ─────────────────────────────────────────────────────────
+
   if (view.kind === "start") {
     return (
       <>
@@ -234,6 +396,9 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
             onQuick={beginQuick}
             savedSession={savedSession}
             onBeginFromSaved={beginFromSaved}
+            onPrepare={beginPrepare}
+            onPlaySaved={beginPlaySaved}
+            savedOfflineReady={savedOfflineReady}
           />
         </PregameShell>
         {/* FV-313: coachmark tour — only on the start screen, never mid-flow */}
@@ -242,6 +407,8 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
     );
   }
 
+  // ── Render: quick ─────────────────────────────────────────────────────────
+
   if (view.kind === "quick") {
     return (
       <PregameShell>
@@ -249,6 +416,8 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
       </PregameShell>
     );
   }
+
+  // ── Render: card (play-path completion) ───────────────────────────────────
 
   if (view.kind === "card") {
     return (
@@ -275,6 +444,84 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
       </PregameShell>
     );
   }
+
+  // ── Render: prepare-download terminal ─────────────────────────────────────
+
+  if (view.kind === "prepare-download") {
+    return (
+      <PregameShell>
+        <PregameHeader
+          step={prepareFlow.length + 1}
+          total={prepareFlow.length + 1}
+          label="Saving for offline"
+          onBack={() => setView({ kind: "prepare-flow", index: prepareFlow.length - 1 })}
+          onClose={goStart}
+        />
+        <div className="animate-step-in flex flex-1 flex-col">
+          <PrepareDownloadScreen
+            state={data}
+            sport={sport}
+            onDone={goStart}
+          />
+        </div>
+      </PregameShell>
+    );
+  }
+
+  // ── Render: prepare-flow (setup steps without breath/audio) ───────────────
+
+  if (view.kind === "prepare-flow") {
+    const prepareStep = prepareFlow[view.index];
+    if (!prepareStep) return null;
+    const prepareCanAdvance = prepareStep.required(data);
+    const prepareIsLast = view.index === prepareFlow.length - 1;
+    // Override CTA label at the last step (Review) so it reads as a save
+    // action rather than a play action. All other steps keep their default.
+    const prepareCtaLabel = prepareIsLast
+      ? "SAVE & DOWNLOAD FOR LATER"
+      : (prepareStep.cta ?? "CONTINUE");
+
+    return (
+      <PregameShell>
+        <PregameHeader
+          step={view.index + 1}
+          total={prepareFlow.length + 1}
+          label={prepareStep.label}
+          onBack={goPrepareBack}
+          onClose={goStart}
+        />
+        {/* key={`p-${view.index}`} keeps the step-in animation distinct from
+            the play-flow key space so a switch between modes never reuses a
+            stale key. */}
+        <div key={`p-${view.index}`} className="animate-step-in flex flex-1 flex-col">
+          <ScreenSwitch
+            stepId={prepareStep.id}
+            state={data}
+            set={set}
+            onContinue={goPrepareNext}
+            sportConfig={sportConfig}
+            sport={sport}
+            prepareMode={prepareIsLast}
+          />
+        </div>
+        {!prepareStep.hideBottomBar && (
+          <BottomBar>
+            <Button
+              variant="coach"
+              full
+              disabled={!prepareCanAdvance}
+              onClick={goPrepareNext}
+              className={prepareCanAdvance ? "" : "opacity-45"}
+            >
+              {prepareCtaLabel}
+            </Button>
+          </BottomBar>
+        )}
+      </PregameShell>
+    );
+  }
+
+  // ── Render: play-flow (unchanged) ─────────────────────────────────────────
 
   const step = activeFlow[view.index];
   if (!step) return null;
@@ -329,6 +576,7 @@ function ScreenSwitch({
   onContinue,
   sportConfig,
   sport,
+  prepareMode = false,
 }: {
   stepId: string;
   state: PregameState;
@@ -336,6 +584,12 @@ function ScreenSwitch({
   onContinue: () => void;
   sportConfig: SportConfig;
   sport: Sport;
+  /**
+   * When true, ReviewScreen renders in "prepare" mode — the bottom bar CTA
+   * label says "SAVE & DOWNLOAD FOR LATER". All other steps are unaffected.
+   * Only passed as true when rendering the last step of prepare-flow.
+   */
+  prepareMode?: boolean;
 }) {
   switch (stepId) {
     case "breath":
@@ -361,7 +615,14 @@ function ScreenSwitch({
     case "prayerStyle":
       return <PrayerStyleScreen state={state} set={set} />;
     case "review":
-      return <ReviewScreen state={state} sportConfig={sportConfig} sport={sport} />;
+      return (
+        <ReviewScreen
+          state={state}
+          sportConfig={sportConfig}
+          sport={sport}
+          mode={prepareMode ? "prepare" : "play"}
+        />
+      );
     case "audio":
       return (
         <AudioSessionScreen state={state} set={set} onContinue={onContinue} sportConfig={sportConfig} sport={sport} />

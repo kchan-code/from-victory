@@ -285,10 +285,20 @@ export function ReviewScreen({
   state,
   sportConfig = HOCKEY_CONFIG,
   sport = "hockey",
+  mode = "play",
 }: {
   state: PregameState;
   sportConfig?: SportConfig;
   sport?: Sport;
+  /**
+   * "play"    — normal flow; CTA reads "BEGIN GUIDED SESSION" (set via
+   *             FLOW step.cta). Bottom bar is controlled by PregameFlow.
+   * "prepare" — prepare-ahead flow; CTA reads "SAVE & DOWNLOAD FOR LATER".
+   *             PregameFlow advances to PrepareDownloadScreen on Continue.
+   *             All review rows stay identical so the athlete sees exactly
+   *             what they're saving.
+   */
+  mode?: "play" | "prepare";
 }) {
   // ── FV-129: offline readiness indicator ─────────────────────────────────
   // "idle"     → haven't checked yet (SSR / caches API absent) or not cached
@@ -455,12 +465,18 @@ export function ReviewScreen({
 
   return (
     <ScreenBody>
-      <SectionLabel>Step 10 · Review</SectionLabel>
+      <SectionLabel>
+        {mode === "prepare" ? "Review · Save for the rink" : "Step 10 · Review"}
+      </SectionLabel>
       <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
-        Here&rsquo;s what we&rsquo;ll work with.
+        {mode === "prepare"
+          ? "Here’s what you’re saving."
+          : "Here’s what we’ll work with."}
       </h1>
       <p className="mb-5 font-body text-[14px] text-cream/50">
-        Five minutes of guided audio. You can close your eyes the whole way.
+        {mode === "prepare"
+          ? "We’ll download the audio so it’s ready at the rink — no signal needed."
+          : "Five minutes of guided audio. You can close your eyes the whole way."}
       </p>
 
       <div className="overflow-hidden rounded-[14px] border border-hairline bg-charcoal">
@@ -491,28 +507,36 @@ export function ReviewScreen({
         {SCRIPTURE_SHORT}
       </p>
 
-      {/* FV-129 a11y: one persistent live region, always mounted, so VoiceOver /
-          NVDA reliably announce state changes from a stable element. The
-          visual control below is presentational/interactive only. */}
-      <div aria-live="polite" aria-atomic="true" className="sr-only">
-        {offlineState === "loading" || offlineState === "retrying"
-          ? cacheProgress.total > 0
-            ? `Downloading audio, ${cacheProgress.cached} of ${cacheProgress.total}`
-            : "Downloading audio"
-          : offlineState === "ready"
-            ? "Audio ready for offline play"
-            : offlineState === "partial"
-              ? `Download didn’t finish, ${cacheProgress.cached} of ${cacheProgress.total} clips saved. Tap to retry.`
-              : ""}
-      </div>
+      {/* FV-129: the inline offline-download control is for the PLAY path only.
+          In PREPARE mode the very next screen (PrepareDownloadScreen) auto-
+          downloads, so showing this here would be a redundant second download
+          affordance — the exact confusion this prepare-ahead flow removes. */}
+      {mode === "play" && (
+        <>
+          {/* FV-129 a11y: one persistent live region, always mounted, so
+              VoiceOver / NVDA reliably announce state changes from a stable
+              element. The visual control below is presentational only. */}
+          <div aria-live="polite" aria-atomic="true" className="sr-only">
+            {offlineState === "loading" || offlineState === "retrying"
+              ? cacheProgress.total > 0
+                ? `Downloading audio, ${cacheProgress.cached} of ${cacheProgress.total}`
+                : "Downloading audio"
+              : offlineState === "ready"
+                ? "Audio ready for offline play"
+                : offlineState === "partial"
+                  ? `Download didn’t finish, ${cacheProgress.cached} of ${cacheProgress.total} clips saved. Tap to retry.`
+                  : ""}
+          </div>
 
-      {/* FV-129: opt-in offline download control — keyed to actual cache state */}
-      <OfflineDownloadControl
-        state={offlineState}
-        cached={cacheProgress.cached}
-        total={cacheProgress.total}
-        onTap={handleDownloadTap}
-      />
+          {/* FV-129: opt-in offline download control — keyed to actual cache state */}
+          <OfflineDownloadControl
+            state={offlineState}
+            cached={cacheProgress.cached}
+            total={cacheProgress.total}
+            onTap={handleDownloadTap}
+          />
+        </>
+      )}
     </ScreenBody>
   );
 }
@@ -630,6 +654,293 @@ function OfflineDownloadControl({
         )}
       </button>
     </div>
+  );
+}
+
+// ─── PREPARE DOWNLOAD TERMINAL ────────────────────────────────────────────────
+//
+// Terminal screen for the prepare-ahead flow. Reached after Review in prepare
+// mode. Auto-starts the download on mount (opt-in explicit-tap philosophy still
+// applies to the play path; the prepare path is explicitly about downloading so
+// the auto-start IS the expected action — the athlete came here to download).
+//
+// State machine matches OfflineDownloadControl for consistency:
+//   "idle"     → starting download (brief; auto-start fires on mount)
+//   "loading"  → download in progress; shows live "Saving… X / Y" progress
+//   "ready"    → download confirmed complete; shows "You're ready for the rink."
+//   "partial"  → incomplete download; shows retry
+//   "retrying" → retry in progress (same UI as loading)
+//
+// Accessibility: aria-live="polite" region announces state changes (matching
+// the ReviewScreen live-region pattern). Gold check on ready mirrors
+// OfflineDownloadControl for visual consistency.
+//
+// The picks were already written to localStorage by PregameFlow before this
+// screen mounts, so the session exists independently of download success.
+// "Couldn't finish" messaging makes this explicit so the athlete isn't confused.
+export function PrepareDownloadScreen({
+  state,
+  sport,
+  onDone,
+}: {
+  state: PregameState;
+  sport: Sport;
+  /** Called when the athlete taps "Done" — returns to the start screen. */
+  onDone: () => void;
+}) {
+  // client: download state drives progress UI; cancelRef survives re-renders
+  type DownloadState = "idle" | "loading" | "ready" | "partial" | "retrying";
+  const [dlState, setDlState] = useState<DownloadState>("idle");
+  const [progress, setProgress] = useState<{ cached: number; total: number }>({
+    cached: 0,
+    total: 0,
+  });
+  const cancelledRef = useRef(false);
+
+  // ── Auto-start download on mount ───────────────────────────────────────
+  // The prepare flow exists specifically to download — auto-start is correct
+  // here (unlike ReviewScreen's opt-in model, which defers to the athlete's
+  // choice of when to spend data mid-setup). Cancel on unmount.
+  useEffect(() => {
+    if (typeof caches === "undefined") return;
+    if (!state.need || !state.adversity) return;
+
+    cancelledRef.current = false;
+    setDlState("loading");
+    setProgress({ cached: 0, total: 0 });
+
+    async function run() {
+      const { precachePregameAudio } = await import("./audio-precache");
+      if (cancelledRef.current) return;
+
+      const finalStatus = await precachePregameAudio(
+        {
+          sport,
+          need: state.need!,
+          position: state.role ?? null,
+          adversity: state.adversity!,
+          anchor: state.anchor ?? null,
+          selfTalk: state.selfTalk ?? null,
+          cueWord: state.cueWord || null,
+          prayerStyle: state.prayerStyle,
+          positivePlays: state.positivePlays,
+          bedId: state.bedId,
+        },
+        (status) => {
+          if (cancelledRef.current) return;
+          setProgress({ cached: status.cached, total: status.total });
+        },
+      );
+
+      if (cancelledRef.current) return;
+
+      if (finalStatus.done) {
+        setDlState("ready");
+        setProgress({ cached: finalStatus.cached, total: finalStatus.total });
+      } else if (finalStatus.cached > 0) {
+        // Partial: some clips saved but not all. Never show false "ready."
+        setDlState("partial");
+        setProgress({ cached: finalStatus.cached, total: finalStatus.total });
+      } else {
+        // Zero cached: lie-fi, captive portal, hard error. Allow retry.
+        setDlState("idle");
+      }
+    }
+
+    run().catch(() => {
+      if (!cancelledRef.current) setDlState("idle");
+    });
+
+    return () => {
+      cancelledRef.current = true;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // mount-only; params are stable for the life of this screen
+
+  async function handleRetry() {
+    if (typeof caches === "undefined") return;
+    if (!state.need || !state.adversity) return;
+
+    cancelledRef.current = false;
+    setDlState("retrying");
+    setProgress({ cached: 0, total: 0 });
+
+    try {
+      const { precachePregameAudio } = await import("./audio-precache");
+      const finalStatus = await precachePregameAudio(
+        {
+          sport,
+          need: state.need,
+          position: state.role ?? null,
+          adversity: state.adversity,
+          anchor: state.anchor ?? null,
+          selfTalk: state.selfTalk ?? null,
+          cueWord: state.cueWord || null,
+          prayerStyle: state.prayerStyle,
+          positivePlays: state.positivePlays,
+          bedId: state.bedId,
+        },
+        (status) => {
+          if (cancelledRef.current) return;
+          setProgress({ cached: status.cached, total: status.total });
+        },
+      );
+
+      if (cancelledRef.current) return;
+
+      if (finalStatus.done) {
+        setDlState("ready");
+        setProgress({ cached: finalStatus.cached, total: finalStatus.total });
+      } else if (finalStatus.cached > 0) {
+        setDlState("partial");
+        setProgress({ cached: finalStatus.cached, total: finalStatus.total });
+      } else {
+        setDlState("idle");
+      }
+    } catch {
+      if (!cancelledRef.current) setDlState("idle");
+    }
+  }
+
+  const busy = dlState === "loading" || dlState === "retrying";
+
+  return (
+    <ScreenBody className="flex flex-col">
+      {/* Persistent aria-live region — same pattern as ReviewScreen.
+          Always mounted so VoiceOver/NVDA reliably pick up state changes
+          from a stable element rather than a newly mounted one. */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {busy
+          ? progress.total > 0
+            ? `Saving audio, ${progress.cached} of ${progress.total}`
+            : "Saving audio for offline play"
+          : dlState === "ready"
+            ? "You're ready for the rink. Audio saved for offline play."
+            : dlState === "partial"
+              ? `Download didn't finish — ${progress.cached} of ${progress.total} clips saved. Tap to retry.`
+              : ""}
+      </div>
+
+      <SectionLabel>Saving for offline</SectionLabel>
+
+      {/* ── IN PROGRESS ── */}
+      {busy && (
+        <>
+          <h1 className="mb-2 font-heading text-[26px] font-bold leading-[1.15] text-cream">
+            Saving your session.
+          </h1>
+          <p className="mb-6 font-body text-[14px] text-cream/50">
+            Don&rsquo;t close the app — this only takes a moment.
+          </p>
+          <div className="flex flex-1 items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <span
+                className="block h-2 w-2 animate-pulse rounded-full bg-gold/70"
+                aria-hidden="true"
+              />
+              <p className="font-mono text-[13px] uppercase tracking-[0.14em] text-cream/60">
+                {progress.total > 0
+                  ? `Saving… ${progress.cached} / ${progress.total}`
+                  : "Saving…"}
+              </p>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── READY ── */}
+      {dlState === "ready" && (
+        <>
+          <h1 className="mb-2 font-heading text-[26px] font-bold leading-[1.15] text-cream">
+            You&rsquo;re ready for the rink.
+          </h1>
+          <p className="mb-6 font-body text-[14px] text-cream/50">
+            Saved for offline. At the rink, tap{" "}
+            <span className="text-cream/80">&ldquo;Play saved offline session&rdquo;</span>{" "}
+            — no signal needed.
+          </p>
+
+          <div className="rounded-[14px] border border-gold/30 bg-gold/[0.05] px-5 py-5">
+            <div className="mb-3 flex items-center gap-2">
+              {/* Gold check circle — mirrors OfflineDownloadControl "ready" badge */}
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle cx="7" cy="7" r="6.5" stroke="#DFAF37" strokeWidth="1" />
+                <path
+                  d="M4.5 7l1.8 1.8L9.5 5.5"
+                  stroke="#DFAF37"
+                  strokeWidth="1.25"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-gold">
+                Audio saved offline
+              </span>
+            </div>
+            <p className="font-body text-[14px] leading-[1.5] text-cream/70">
+              Your picks and audio are ready. When you&rsquo;re at the rink with
+              no signal, open From Victory and tap{" "}
+              <span className="text-cream/80">&ldquo;Play saved offline session&rdquo;</span>.
+            </p>
+          </div>
+
+          <div className="mt-auto pt-6">
+            <button
+              type="button"
+              onClick={onDone}
+              data-testid="prepare-done-btn"
+              aria-label="Done — return to start"
+              className="flex w-full min-h-[56px] items-center justify-center rounded-[14px] border border-hairline bg-cream/[0.03] font-heading text-[14px] font-semibold text-cream/90 transition-colors duration-fast hover:bg-cream/[0.06] active:scale-[0.98] active:bg-cream/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            >
+              Done
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* ── PARTIAL / IDLE (after failed attempt) ── */}
+      {(dlState === "partial" || dlState === "idle") && !busy && (
+        <>
+          <h1 className="mb-2 font-heading text-[26px] font-bold leading-[1.15] text-cream">
+            {dlState === "partial" ? "Didn't finish." : "Couldn't connect."}
+          </h1>
+          <p className="mb-6 font-body text-[14px] text-cream/50">
+            {dlState === "partial"
+              ? `${progress.cached} of ${progress.total} clips saved. Your picks are still saved — tap to finish the download.`
+              : "Your picks are saved, but the audio wasn't downloaded. Check your connection and try again."}
+          </p>
+
+          <div className="flex flex-1 items-center justify-center">
+            <button
+              type="button"
+              onClick={() => void handleRetry()}
+              data-testid="prepare-retry-btn"
+              aria-label="Retry audio download"
+              className="flex min-h-[56px] items-center justify-center rounded-[14px] border border-hairline bg-cream/[0.03] px-6 font-heading text-[14px] font-semibold text-cream/90 transition-colors duration-fast hover:bg-cream/[0.06] active:scale-[0.98] active:bg-cream/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            >
+              Try again
+            </button>
+          </div>
+
+          <div className="mt-auto pt-2">
+            <button
+              type="button"
+              onClick={onDone}
+              data-testid="prepare-done-later-btn"
+              className="flex w-full min-h-[44px] items-center justify-center font-body text-[13px] text-cream/40 underline underline-offset-2 transition-colors duration-fast hover:text-cream/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx rounded-sm"
+            >
+              Done for now
+            </button>
+          </div>
+        </>
+      )}
+    </ScreenBody>
   );
 }
 
