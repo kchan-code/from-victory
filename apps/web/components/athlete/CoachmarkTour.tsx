@@ -57,6 +57,18 @@ const STOP_COPY: Record<
     title: "Headphones, sound on",
     body: "Headphones in and sound on, then build today's session — shaped to your spot and your game.",
   },
+  "pregame-prepare-btn": {
+    title: "Get it ready",
+    body: "On wifi now? Make all your picks and download the audio — so it's set to play later with no signal.",
+  },
+  "pregame-play-saved-btn": {
+    title: "The one you saved",
+    body: "Plays the session you already downloaded — breathing and audio, start to finish — with no signal needed.",
+  },
+  "pregame-run-last-btn": {
+    title: "Same as last time",
+    body: "Jumps straight back into your last setup — a fast replay of the picks you already made.",
+  },
   "pregame-quick-reset-btn": {
     title: "Quick reset",
     body: "No time for the full flow? A fast reset for the locker room.",
@@ -85,7 +97,13 @@ const SURFACE_STOPS: Record<Surface, string[]> = {
     "hub-pregame-card",
     "hub-bottom-nav",
   ],
-  pregame: ["pregame-begin-btn", "pregame-quick-reset-btn"],
+  pregame: [
+    "pregame-begin-btn",
+    "pregame-prepare-btn",
+    "pregame-play-saved-btn",
+    "pregame-run-last-btn",
+    "pregame-quick-reset-btn",
+  ],
 };
 
 interface AnchorRect {
