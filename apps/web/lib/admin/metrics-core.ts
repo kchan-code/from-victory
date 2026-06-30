@@ -24,6 +24,12 @@ import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
 // ---------------------------------------------------------------------------
 export const SMALL_N = 5;
 
+// FV-135: the private journal and its safety-keyword detection are built but
+// DORMANT (zero production writes). This is a product-scope fact, not something
+// to infer from whether safety_events happens to be empty. Flip to true only
+// when the journal is re-wired (with KC).
+export const JOURNAL_ACTIVE = false;
+
 /** Hide a segmented count when the cohort is too small to be non-identifying. */
 export function suppressSmallN(count: number): number | null {
   return count < SMALL_N ? null : count;
@@ -44,11 +50,19 @@ export const PRICE_BOOK = {
 // Raw input row shapes — exactly the columns metrics.ts selects. Keeping these
 // minimal is itself a privacy control: we never select more than we aggregate.
 // ---------------------------------------------------------------------------
+// `adult_athlete` (FV-325, dark behind ENABLE_ADULT_SIGNUP) is an athlete-class
+// account — the adult buys AND trains. They are counted as trainers below;
+// the parent-funnel metrics stay parent-scoped (adults self-pay via their own
+// subscription row, attributed in revenue). Including the role here keeps adults
+// from silently vanishing from every KPI the moment the flag flips on.
 export type ProfileRow = {
-  role: "parent" | "athlete";
+  role: "parent" | "athlete" | "adult_athlete";
   created_at: string;
   sport: string | null;
 };
+
+/** Athlete-class roles — everyone who actually trains in the app. */
+const ATHLETE_ROLES: ReadonlySet<ProfileRow["role"]> = new Set(["athlete", "adult_athlete"]);
 
 export type SessionRow = {
   athlete_id: string;
@@ -144,7 +158,15 @@ export type AdminMetrics = {
     avgSessionsPerActiveAthlete: number;
     /** Per-day started vs completed across the 30-day arc (content drop-off). */
     dayDropoff: { day: number; started: number; completed: number }[];
-    sportSegments: { sport: string; started: number; completionRate: number; suppressed: boolean }[];
+    /**
+     * Per-sport completion. Discriminated on `suppressed` so the suppressed
+     * counts are STRUCTURALLY absent (not merely hidden in the UI) — a future
+     * client component can't read a below-SMALL_N count off the shape.
+     */
+    sportSegments: (
+      | { sport: string; suppressed: true }
+      | { sport: string; suppressed: false; started: number; completionRate: number }
+    )[];
   };
 
   retention: {
@@ -295,7 +317,7 @@ export function shapeAdminMetrics(input: {
   planLabelFor: (priceId: string | null) => string;
 }): AdminMetrics {
   const { now, rangeDays } = input;
-  const athletes = input.profiles.filter((p) => p.role === "athlete");
+  const athletes = input.profiles.filter((p) => ATHLETE_ROLES.has(p.role));
   const parents = input.profiles.filter((p) => p.role === "parent");
   const totalAthletes = athletes.length;
   const totalParents = parents.length;
@@ -436,13 +458,17 @@ export function shapeAdminMetrics(input: {
     completed: completedByDay.get(i + 1) ?? 0,
   }));
   const sportSegments = [...startedBySport.entries()]
-    .map(([sport, s]) => ({
-      sport,
-      started: s,
-      completionRate: pct(completedBySport.get(sport) ?? 0, s),
-      suppressed: s < SMALL_N,
-    }))
-    .sort((a, b) => b.started - a.started);
+    .sort((a, b) => b[1] - a[1])
+    .map(([sport, s]) =>
+      s < SMALL_N
+        ? ({ sport, suppressed: true } as const)
+        : ({
+            sport,
+            suppressed: false,
+            started: s,
+            completionRate: pct(completedBySport.get(sport) ?? 0, s),
+          } as const),
+    );
 
   // ---- Revenue ----
   const subStatus = (st: string) => input.subscriptions.filter((s) => s.status === st).length;
@@ -583,7 +609,7 @@ export function shapeAdminMetrics(input: {
       safetyWeekly,
       deletionsWeekly,
       authAbuse,
-      journalDormant: input.safetyEvents.length === 0,
+      journalDormant: !JOURNAL_ACTIVE,
     },
   };
 }

@@ -128,6 +128,32 @@ describe("shapeAdminMetrics — headline KPIs", () => {
     expect(m.kpis.totalAthletes).toBe(6);
   });
 
+  it("counts adult_athlete (FV-325) as an athlete-class trainer, not a parent", () => {
+    const withAdult = shapeAdminMetrics({
+      now: NOW,
+      rangeDays: 30,
+      profiles: [
+        ...profiles,
+        { role: "adult_athlete", created_at: "2026-06-26T00:00:00Z", sport: "hockey" },
+      ],
+      sessions,
+      catalog,
+      subscriptions,
+      waitlist,
+      pushOptInCount: 2,
+      safetyEvents,
+      deletions,
+      parentLinks,
+      pairings,
+      authEvents,
+      athleteSportSelectedCount: 5,
+      athleteQuizCompleteCount: 3,
+      planLabelFor,
+    });
+    expect(withAdult.kpis.totalAthletes).toBe(7); // 6 athlete + 1 adult_athlete
+    expect(withAdult.kpis.totalParents).toBe(3); // unchanged — adults aren't parents
+  });
+
   it("activation rate = completed ≥1 session ÷ all athletes", () => {
     // A1,A2,A4,A5 completed → 4 of 6 = 67%.
     expect(m.activation.activated).toBe(4);
@@ -172,12 +198,14 @@ describe("engagement", () => {
     expect(m.engagement.completionRate).toBe(83);
   });
 
-  it("sport segments: suppress < 5, expose ≥ 5", () => {
+  it("sport segments: suppress < 5, expose ≥ 5; suppressed entries carry no counts", () => {
     const hockey = m.engagement.sportSegments.find((s) => s.sport === "hockey");
     const basketball = m.engagement.sportSegments.find((s) => s.sport === "basketball");
     expect(hockey?.suppressed).toBe(false); // 5 hockey starts
-    expect(hockey?.completionRate).toBe(80); // 4 of 5
+    expect(hockey && !hockey.suppressed && hockey.completionRate).toBe(80); // 4 of 5
     expect(basketball?.suppressed).toBe(true); // 1 basketball start
+    // Privacy hardening: the suppressed entry must not even carry the count.
+    expect(basketball && "started" in basketball).toBe(false);
   });
 
   it("per-day drop-off tracks started vs completed by catalog day", () => {

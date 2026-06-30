@@ -43,6 +43,13 @@ export type { AdminMetrics } from "./metrics-core";
 
 export const DEFAULT_RANGE_DAYS = 30;
 
+// Defensive upper bound on the lifetime-table fetches (athlete_sessions). v1
+// aggregates in-process, which is correct for a beta cohort; this makes any
+// truncation EXPLICIT rather than a silent PostgREST row-cap. The real scale fix
+// is SQL-side aggregation (documented follow-up) — when sessions approach this,
+// move counts into a view/RPC.
+const MAX_FETCH = 50_000;
+
 /**
  * Compute the full owner-metrics model. Caller MUST gate with
  * requireAdminParent() first — this function does no auth of its own.
@@ -56,6 +63,12 @@ export async function getAdminMetrics(
   const annualId = process.env.STRIPE_PRICE_ID_ANNUAL;
   const planLabelFor = (priceId: string | null) =>
     priceIdToLabel(priceId, monthlyId, annualId);
+
+  // The append-heavy log tables (safety/deletions/auth) are only ever consumed
+  // within the selected range, so floor them at the query to bound the scan.
+  const rangeCutoffIso = new Date(
+    Date.now() - rangeDays * 24 * 60 * 60 * 1000,
+  ).toISOString();
 
   // Fire all reads in parallel. Each falls back to an empty set on error so the
   // dashboard degrades gracefully (a single failing table can't blank the page).
@@ -80,18 +93,25 @@ export async function getAdminMetrics(
     supabase.from("profiles").select("role, created_at, sport"),
     supabase
       .from("athlete_sessions")
-      .select("athlete_id, catalog_id, started_at, completed_at"),
+      .select("athlete_id, catalog_id, started_at, completed_at")
+      .limit(MAX_FETCH),
     supabase.from("training_sessions_catalog").select("id, day_number, sport"),
     supabase
       .from("subscriptions")
       .select("parent_id, status, price_id, cancel_at_period_end, created_at"),
     supabase.from("waitlist_signups").select("role, sport, created_at"),
     supabase.from("push_subscriptions").select("athlete_id", { count: "exact", head: true }),
-    supabase.from("safety_events").select("category, detected_at"),
-    supabase.from("account_deletion_events").select("event_type, created_at"),
+    supabase.from("safety_events").select("category, detected_at").gte("detected_at", rangeCutoffIso),
+    supabase
+      .from("account_deletion_events")
+      .select("event_type, created_at")
+      .gte("created_at", rangeCutoffIso),
     supabase.from("parent_athlete_links").select("parent_id"),
     supabase.from("device_pairings").select("consumed_at, expires_at"),
-    supabase.from("auth_rate_limit_events").select("action, created_at"),
+    supabase
+      .from("auth_rate_limit_events")
+      .select("action, created_at")
+      .gte("created_at", rangeCutoffIso),
     supabase
       .from("profiles")
       .select("id", { count: "exact", head: true })
