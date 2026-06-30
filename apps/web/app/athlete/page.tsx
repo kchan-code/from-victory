@@ -7,6 +7,7 @@ import CoachmarkTour from "@/components/athlete/CoachmarkTour";
 import InstallPrompt from "@/components/athlete/InstallPrompt";
 import { Icon, RhythmRing } from "@/components/ui";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { recordAppOpen } from "@/lib/activity/record";
 import { requireAthlete } from "@/lib/auth/guards";
 import { requireActiveAccess } from "@/lib/subscriptions/enforce";
 import { createClient } from "@/lib/supabase/server";
@@ -30,6 +31,11 @@ export default async function AthleteHomePage() {
   if (!profile.sport_selected_at) {
     redirect("/athlete/onboarding/sport");
   }
+
+  // Record an app-open — the true-DAU signal that athlete_sessions alone can't
+  // give. Fire-and-forget: deduped to one row per athlete per UTC day, never
+  // throws, so it can never affect the hub render. (FV activity_events.)
+  await recordAppOpen(userId, "hub", profile.sport);
 
   // Load session data for the rhythm ring. requireAthlete() already ran above,
   // so we call loadDailySession directly — no redundant auth round-trip and

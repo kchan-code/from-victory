@@ -7,6 +7,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { recordActivityEvent } from "@/lib/activity/record";
 import { requireAthlete } from "@/lib/auth/guards";
 import { resolveCurrentCatalogId } from "@/lib/daily/progression";
 import { createClient } from "@/lib/supabase/server";
@@ -32,6 +33,13 @@ export async function startDailySession(): Promise<void> {
       { onConflict: "athlete_id,catalog_id", ignoreDuplicates: true },
     );
   if (error) throw new Error(`startDailySession: ${error.message}`);
+
+  // Event-only activity log (fire-and-forget; never throws).
+  await recordActivityEvent(userId, {
+    event_name: "daily_start",
+    surface: "daily",
+    sport: profile.sport,
+  });
 
   revalidatePath("/athlete");
 }
@@ -69,6 +77,13 @@ export async function completeDailySession(): Promise<void> {
     .eq("catalog_id", catalogId)
     .is("completed_at", null);
   if (error) throw new Error(`completeDailySession: ${error.message}`);
+
+  // Event-only activity log (fire-and-forget; never throws).
+  await recordActivityEvent(userId, {
+    event_name: "daily_complete",
+    surface: "daily",
+    sport: profile.sport,
+  });
 
   // Refresh BOTH the hub (rhythm ring advances) and the daily screen itself so
   // completing day N immediately surfaces day N+1's session. Without the
