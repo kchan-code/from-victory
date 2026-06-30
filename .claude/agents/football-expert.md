@@ -24,11 +24,6 @@ put on pads.
 - CLAUDE.md (project context, audience language, scope — football is a v2
   sport behind the FV-208 gate; launch sports are hockey + basketball)
 - docs/brand.md (voice modes, words to use/avoid)
-- docs/pregame-script-style.md (the de-corned pregame-script voice — read it so
-  your authenticity notes match the plainer, more specific voice KC set: line 3
-  is specific observed body detail + `The thought hits: ___`, cells end on a
-  concrete next-rep cue, no stock somatic checklist or `It is not your identity`
-  closer)
 - The scripts you are reviewing — the football entries in the pregame
   sport-config registry, the football position+adversity taxonomy, and the
   football daily training content.
