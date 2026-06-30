@@ -317,6 +317,14 @@ describe("instrumented metrics (activity_events)", () => {
     expect(m.instrumented.wau).toBe(3); // + A2 (4d ago)
     expect(m.instrumented.mau).toBe(4); // + A4 (20d ago)
     expect(m.instrumented.stickiness).toBe(50); // 2/4
+    // latest day in the range trend = today's distinct app-opens (A1, A5).
+    expect(m.instrumented.appOpenTrend.at(-1)?.value).toBe(2);
+  });
+
+  it("declared-but-unwired surfaces report 0 (no rows yet)", () => {
+    expect(m.instrumented.practiceStarts).toBe(0);
+    expect(m.instrumented.postgameOpens).toBe(0);
+    expect(m.instrumented.pushClicks).toBe(0);
   });
 
   it("pregame funnel: starts, completes, completion rate", () => {
@@ -347,6 +355,8 @@ describe("instrumented metrics (activity_events)", () => {
     });
     expect(none.instrumented.hasEvents).toBe(false);
     expect(none.instrumented.dau).toBe(0);
+    expect(none.instrumented.mau).toBe(0);
+    expect(none.instrumented.stickiness).toBe(0); // pct guard: 0/0 → 0, no NaN
     expect(none.instrumented.pregameStarts).toBe(0);
   });
 });

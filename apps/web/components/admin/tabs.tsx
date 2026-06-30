@@ -134,9 +134,12 @@ export function EngagementTab({ m }: { m: AdminMetrics }) {
         <SectionHeader
           eyebrow="from activity_events"
           title="Active athletes (app opens)"
-          action={inst.hasEvents ? <Badge tone="cobalt">live</Badge> : <Badge tone="warning">awaiting events</Badge>}
+          action={inst.mau > 0 ? <Badge tone="cobalt">live</Badge> : <Badge tone="warning">awaiting events</Badge>}
         />
-        {inst.hasEvents ? (
+        {/* Gate on recent activity (mau>0), not merely "any event in 90d": a
+            cohort idle for >30 days would otherwise show a live grid of three
+            zeros that reads like abandonment rather than no-recent-activity. */}
+        {inst.mau > 0 ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard label="DAU" value={num(inst.dau)} sub="distinct app-opens today" accent="gold" trend={inst.appOpenTrend} />
             <MetricCard label="WAU" value={num(inst.wau)} sub="…in the last 7 days" accent="cobalt" />
@@ -144,7 +147,7 @@ export function EngagementTab({ m }: { m: AdminMetrics }) {
             <MetricCard label="Stickiness" value={pctStr(inst.stickiness)} sub="DAU ÷ MAU" accent="silver" />
           </div>
         ) : (
-          <WaitingForEvents what="True DAU/WAU/MAU fill in as athletes open the app. The activity_events instrumentation is live; events appear once the migration is applied in prod and the first app_open lands." />
+          <WaitingForEvents what="True DAU/WAU/MAU fill in as athletes open the app — no app-opens recorded in the last 30 days yet. (Events flow once the activity_events migration is applied in prod.)" />
         )}
       </div>
 
@@ -228,9 +231,10 @@ export function EngagementTab({ m }: { m: AdminMetrics }) {
               <WeekBars data={inst.pregameCompletesWeekly} accent="gold" height={120} />
             </div>
             <p className="font-body text-cream/45 text-[11px] mt-3">
+              The funnel is the last {m.rangeDays} days (
               {pctStr(inst.pregameCompletionRate)} of started sessions finished the
-              audio in the last {m.rangeDays} days. Clip-vs-timer split is the next
-              dimension to add.
+              audio); the weekly chart always spans 8 weeks. Clip-vs-timer split is
+              the next dimension to add.
             </p>
           </>
         ) : (

@@ -591,6 +591,9 @@ export function shapeAdminMetrics(input: {
     input.activityEvents.filter((e) => e.event_name === name && inRange(e.occurred_at)).length;
   const pregameStarts = countEventInRange("pregame_start");
   const pregameCompletes = countEventInRange("pregame_complete");
+  // The scalar starts/completes are range-filtered; the weekly trend is always
+  // 8 weeks (range-independent), like completionsWeekly/newSubsWeekly. The UI
+  // labels each window explicitly so the two don't read as the same period.
   const pregameCompletesWeekly = bucketWeekly(
     input.activityEvents
       .filter((e) => e.event_name === "pregame_complete")
