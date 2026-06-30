@@ -6,6 +6,7 @@ import { describe, it, expect } from "vitest";
 
 import {
   shapeAdminMetrics,
+  type ActivityRow,
   type AuthEventRow,
   type CatalogRow,
   type DeletionRow,
@@ -94,6 +95,18 @@ const authEvents: AuthEventRow[] = [
   { action: "sign_in", created_at: "2026-06-29T00:00:00Z" },
 ];
 
+// activity_events fixture: A1+A5 open today (DAU), A2 opened 4d ago (WAU not DAU),
+// A4 opened 20d ago (MAU only). Two pregame_start, one pregame_complete.
+const activityEvents: ActivityRow[] = [
+  { athlete_id: "A1", event_name: "app_open", occurred_at: "2026-06-30T07:00:00Z" },
+  { athlete_id: "A5", event_name: "app_open", occurred_at: "2026-06-30T09:00:00Z" },
+  { athlete_id: "A2", event_name: "app_open", occurred_at: "2026-06-26T08:00:00Z" },
+  { athlete_id: "A4", event_name: "app_open", occurred_at: "2026-06-10T08:00:00Z" },
+  { athlete_id: "A1", event_name: "pregame_start", occurred_at: "2026-06-30T07:05:00Z" },
+  { athlete_id: "A5", event_name: "pregame_start", occurred_at: "2026-06-30T09:05:00Z" },
+  { athlete_id: "A1", event_name: "pregame_complete", occurred_at: "2026-06-30T07:12:00Z" },
+];
+
 function build() {
   return shapeAdminMetrics({
     now: NOW,
@@ -109,6 +122,7 @@ function build() {
     parentLinks,
     pairings,
     authEvents,
+    activityEvents,
     athleteSportSelectedCount: 5,
     athleteQuizCompleteCount: 3,
     planLabelFor,
@@ -146,6 +160,7 @@ describe("shapeAdminMetrics — headline KPIs", () => {
       parentLinks,
       pairings,
       authEvents,
+      activityEvents,
       athleteSportSelectedCount: 5,
       athleteQuizCompleteCount: 3,
       planLabelFor,
@@ -250,6 +265,7 @@ describe("revenue — seat-aware MRR estimate", () => {
       parentLinks,
       pairings,
       authEvents,
+      activityEvents,
       athleteSportSelectedCount: 5,
       athleteQuizCompleteCount: 3,
       planLabelFor,
@@ -283,10 +299,64 @@ describe("privacy — safety events are weekly + suppressed below SMALL_N", () =
       parentLinks,
       pairings,
       authEvents,
+      activityEvents,
       athleteSportSelectedCount: 5,
       athleteQuizCompleteCount: 3,
       planLabelFor,
     });
     expect(empty.trust.journalDormant).toBe(true);
+  });
+});
+
+describe("instrumented metrics (activity_events)", () => {
+  const m = build();
+
+  it("true DAU/WAU/MAU from app_open events", () => {
+    expect(m.instrumented.hasEvents).toBe(true);
+    expect(m.instrumented.dau).toBe(2); // A1, A5 today
+    expect(m.instrumented.wau).toBe(3); // + A2 (4d ago)
+    expect(m.instrumented.mau).toBe(4); // + A4 (20d ago)
+    expect(m.instrumented.stickiness).toBe(50); // 2/4
+    // latest day in the range trend = today's distinct app-opens (A1, A5).
+    expect(m.instrumented.appOpenTrend.at(-1)?.value).toBe(2);
+  });
+
+  it("declared-but-unwired surfaces report 0 (no rows yet)", () => {
+    expect(m.instrumented.practiceStarts).toBe(0);
+    expect(m.instrumented.postgameOpens).toBe(0);
+    expect(m.instrumented.pushClicks).toBe(0);
+  });
+
+  it("pregame funnel: starts, completes, completion rate", () => {
+    expect(m.instrumented.pregameStarts).toBe(2); // A1, A5
+    expect(m.instrumented.pregameCompletes).toBe(1); // A1
+    expect(m.instrumented.pregameCompletionRate).toBe(50); // 1/2
+  });
+
+  it("hasEvents=false with no activity events (pre-traffic state)", () => {
+    const none = shapeAdminMetrics({
+      now: NOW,
+      rangeDays: 30,
+      profiles,
+      sessions,
+      catalog,
+      subscriptions,
+      waitlist,
+      pushOptInCount: 2,
+      safetyEvents,
+      deletions,
+      parentLinks,
+      pairings,
+      authEvents,
+      activityEvents: [],
+      athleteSportSelectedCount: 5,
+      athleteQuizCompleteCount: 3,
+      planLabelFor,
+    });
+    expect(none.instrumented.hasEvents).toBe(false);
+    expect(none.instrumented.dau).toBe(0);
+    expect(none.instrumented.mau).toBe(0);
+    expect(none.instrumented.stickiness).toBe(0); // pct guard: 0/0 → 0, no NaN
+    expect(none.instrumented.pregameStarts).toBe(0);
   });
 });

@@ -436,6 +436,24 @@ export function NeedsInstrumentation({
 }
 
 // ---------------------------------------------------------------------------
+// "Instrumentation live, awaiting events" — for metrics that ARE wired to
+// activity_events but have no rows yet (table just shipped / pre-traffic).
+// ---------------------------------------------------------------------------
+export function WaitingForEvents({ what }: { what: string }) {
+  return (
+    <div className="rounded-xl border border-dashed border-gold/25 bg-gold/[0.03] px-5 py-6">
+      <div className="flex items-center gap-2 mb-2">
+        <Badge tone="warning">Awaiting events</Badge>
+        <span className="font-display font-bold uppercase tracking-[0.04em] text-cream/80 text-[13px]">
+          Instrumentation live
+        </span>
+      </div>
+      <p className="font-body text-cream/55 text-[12.5px] leading-relaxed">{what}</p>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Privacy-suppressed placeholder
 // ---------------------------------------------------------------------------
 export function Suppressed({ note }: { note?: string }) {

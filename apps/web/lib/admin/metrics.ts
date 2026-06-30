@@ -26,6 +26,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 
 import {
   shapeAdminMetrics,
+  type ActivityRow,
   type AdminMetrics,
   type AuthEventRow,
   type CatalogRow,
@@ -70,6 +71,12 @@ export async function getAdminMetrics(
     Date.now() - rangeDays * 24 * 60 * 60 * 1000,
   ).toISOString();
 
+  // activity_events feeds DAU/WAU/MAU (≤30d) and 8-week pregame trends (≤56d)
+  // regardless of the selected range, so floor it at the WIDER of the two.
+  const activityCutoffIso = new Date(
+    Date.now() - Math.max(rangeDays, 90) * 24 * 60 * 60 * 1000,
+  ).toISOString();
+
   // Fire all reads in parallel. Each falls back to an empty set on error so the
   // dashboard degrades gracefully (a single failing table can't blank the page).
   // The two head-count queries (sport-selected, quiz-complete) count non-null
@@ -87,6 +94,7 @@ export async function getAdminMetrics(
     linksRes,
     pairingsRes,
     authRes,
+    activityRes,
     sportSelectedRes,
     quizCompleteRes,
   ] = await Promise.all([
@@ -113,6 +121,11 @@ export async function getAdminMetrics(
       .select("action, created_at")
       .gte("created_at", rangeCutoffIso),
     supabase
+      .from("activity_events")
+      .select("athlete_id, event_name, occurred_at")
+      .gte("occurred_at", activityCutoffIso)
+      .limit(MAX_FETCH),
+    supabase
       .from("profiles")
       .select("id", { count: "exact", head: true })
       .eq("role", "athlete")
@@ -138,6 +151,7 @@ export async function getAdminMetrics(
     parentLinks: (linksRes.data ?? []) as ParentLinkRow[],
     pairings: (pairingsRes.data ?? []) as PairingRow[],
     authEvents: (authRes.data ?? []) as AuthEventRow[],
+    activityEvents: (activityRes.data ?? []) as ActivityRow[],
     athleteSportSelectedCount: sportSelectedRes.count ?? 0,
     athleteQuizCompleteCount: quizCompleteRes.count ?? 0,
     planLabelFor,

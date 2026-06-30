@@ -93,6 +93,13 @@ export type PairingRow = { consumed_at: string | null; expires_at: string };
 
 export type AuthEventRow = { action: string; created_at: string };
 
+/** activity_events row (event-only). The instrumentation that unlocks true DAU. */
+export type ActivityRow = {
+  athlete_id: string;
+  event_name: string;
+  occurred_at: string;
+};
+
 // ---------------------------------------------------------------------------
 // Output model
 // ---------------------------------------------------------------------------
@@ -167,6 +174,32 @@ export type AdminMetrics = {
       | { sport: string; suppressed: true }
       | { sport: string; suppressed: false; started: number; completionRate: number }
     )[];
+  };
+
+  /**
+   * Metrics from activity_events — the real instrumentation that the daily-loop
+   * tables can't give. `hasEvents` is false until events accumulate (the table
+   * may exist but be empty pre-traffic); the UI shows a "waiting for events"
+   * state rather than the old "needs instrumentation" placeholder.
+   */
+  instrumented: {
+    hasEvents: boolean;
+    /** Distinct athletes with an app_open today / 7d / 30d — TRUE DAU/WAU/MAU. */
+    dau: number;
+    wau: number;
+    mau: number;
+    stickiness: number;
+    /** Daily distinct app_open athletes across the range. */
+    appOpenTrend: TrendPoint[];
+    /** Pregame guided-audio funnel, within range. */
+    pregameStarts: number;
+    pregameCompletes: number;
+    pregameCompletionRate: number;
+    pregameCompletesWeekly: WeekPoint[];
+    /** Declared-but-not-yet-wired surfaces (counts; 0 until their wiring lands). */
+    practiceStarts: number;
+    postgameOpens: number;
+    pushClicks: number;
   };
 
   retention: {
@@ -312,6 +345,7 @@ export function shapeAdminMetrics(input: {
   parentLinks: ParentLinkRow[];
   pairings: PairingRow[];
   authEvents: AuthEventRow[];
+  activityEvents: ActivityRow[];
   athleteSportSelectedCount: number;
   athleteQuizCompleteCount: number;
   planLabelFor: (priceId: string | null) => string;
@@ -529,6 +563,45 @@ export function shapeAdminMetrics(input: {
   );
   const authAbuse = labeledCounts(input.authEvents.filter((e) => inRange(e.created_at)).map((e) => e.action));
 
+  // ---- Instrumented metrics (activity_events) ----
+  const appOpens = input.activityEvents.filter((e) => e.event_name === "app_open");
+  const distinctAppOpenWithin = (days: number): number => {
+    const cutoff = now.getTime() - days * DAY_MS;
+    const ids = new Set<string>();
+    for (const e of appOpens) {
+      if (new Date(e.occurred_at).getTime() >= cutoff) ids.add(e.athlete_id);
+    }
+    return ids.size;
+  };
+  const trueDau = distinctAppOpenWithin(1);
+  const trueWau = distinctAppOpenWithin(7);
+  const trueMau = distinctAppOpenWithin(30);
+
+  // Daily distinct app_open athletes across the selected range.
+  const appOpenByDay = new Map<string, Set<string>>(dayKeys.map((k) => [k, new Set()]));
+  for (const e of appOpens) {
+    appOpenByDay.get(toDayKey(e.occurred_at))?.add(e.athlete_id);
+  }
+  const appOpenTrend: TrendPoint[] = dayKeys.map((date) => ({
+    date,
+    value: appOpenByDay.get(date)?.size ?? 0,
+  }));
+
+  const countEventInRange = (name: string): number =>
+    input.activityEvents.filter((e) => e.event_name === name && inRange(e.occurred_at)).length;
+  const pregameStarts = countEventInRange("pregame_start");
+  const pregameCompletes = countEventInRange("pregame_complete");
+  // The scalar starts/completes are range-filtered; the weekly trend is always
+  // 8 weeks (range-independent), like completionsWeekly/newSubsWeekly. The UI
+  // labels each window explicitly so the two don't read as the same period.
+  const pregameCompletesWeekly = bucketWeekly(
+    input.activityEvents
+      .filter((e) => e.event_name === "pregame_complete")
+      .map((e) => e.occurred_at),
+    now,
+    8,
+  );
+
   return {
     generatedAt: now.toISOString(),
     rangeDays,
@@ -578,6 +651,21 @@ export function shapeAdminMetrics(input: {
       avgSessionsPerActiveAthlete,
       dayDropoff,
       sportSegments,
+    },
+    instrumented: {
+      hasEvents: input.activityEvents.length > 0,
+      dau: trueDau,
+      wau: trueWau,
+      mau: trueMau,
+      stickiness: pct(trueDau, trueMau),
+      appOpenTrend,
+      pregameStarts,
+      pregameCompletes,
+      pregameCompletionRate: pct(pregameCompletes, pregameStarts),
+      pregameCompletesWeekly,
+      practiceStarts: countEventInRange("practice_start"),
+      postgameOpens: countEventInRange("postgame_open"),
+      pushClicks: countEventInRange("push_click"),
     },
     retention: {
       rhythmDistribution,

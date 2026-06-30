@@ -168,9 +168,10 @@ export default async function OwnerMetricsPage({
           <p className="font-body text-cream/35 text-[11px] leading-relaxed max-w-[680px]">
             Aggregate, server-side, owner-only. No journal content, no
             per-athlete rows, and no minor-identifying segment below {metrics.smallN}{" "}
-            ever leave the server. True app-open DAU, pregame-audio usage, and
-            full retention cohorts unlock with the proposed{" "}
-            <span className="text-cream/55 font-mono">activity_events</span> table.
+            ever leave the server. True app-open DAU and the pregame funnel are now
+            live from{" "}
+            <span className="text-cream/55 font-mono">activity_events</span>; full
+            weekly retention cohorts remain a follow-up.
           </p>
         </footer>
       </div>

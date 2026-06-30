@@ -1,7 +1,7 @@
 // Owner-dashboard tab panels. Pure Server Components — each takes the already
 // computed AdminMetrics (server-side, aggregate-only) and renders. No data
-// access, no client JS. Honest "Needs instrumentation" states stand in for
-// metrics that require the proposed activity_events table.
+// access, no client JS. activity_events-backed panels show live data when events
+// exist and an "awaiting events" state until they do.
 
 import type { AdminMetrics } from "@/lib/admin/metrics-core";
 
@@ -16,6 +16,7 @@ import {
   Panel,
   SectionHeader,
   StatRow,
+  WaitingForEvents,
   WeekBars,
 } from "./dashboard-ui";
 
@@ -122,15 +123,43 @@ export function OverviewTab({ m }: { m: AdminMetrics }) {
 // ===========================================================================
 export function EngagementTab({ m }: { m: AdminMetrics }) {
   const e = m.engagement;
+  const inst = m.instrumented;
   const maxCompleted = Math.max(1, ...e.dayDropoff.map((d) => d.completed));
   const medianCompleted = median(e.dayDropoff.map((d) => d.completed));
+  const hasPregame = inst.pregameStarts > 0 || inst.pregameCompletes > 0;
   return (
     <div className="flex flex-col gap-8">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard label="Daily completion rate" value={pctStr(e.completionRate)} sub="completed ÷ started" accent="gold" />
-        <MetricCard label="Sessions / active athlete" value={String(e.avgSessionsPerActiveAthlete)} sub="rhythm intensity (not a streak)" accent="cobalt" />
-        <MetricCard label="Training-active 30d" value={num(e.mau)} sub="opened a session (DAU/WAU proxy)" accent="silver" />
-        <MetricCard label="Stickiness" value={pctStr(e.stickiness)} sub="daily ÷ monthly active" accent="silver" />
+      {/* TRUE activity from activity_events (app_open). */}
+      <div>
+        <SectionHeader
+          eyebrow="from activity_events"
+          title="Active athletes (app opens)"
+          action={inst.mau > 0 ? <Badge tone="cobalt">live</Badge> : <Badge tone="warning">awaiting events</Badge>}
+        />
+        {/* Gate on recent activity (mau>0), not merely "any event in 90d": a
+            cohort idle for >30 days would otherwise show a live grid of three
+            zeros that reads like abandonment rather than no-recent-activity. */}
+        {inst.mau > 0 ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricCard label="DAU" value={num(inst.dau)} sub="distinct app-opens today" accent="gold" trend={inst.appOpenTrend} />
+            <MetricCard label="WAU" value={num(inst.wau)} sub="…in the last 7 days" accent="cobalt" />
+            <MetricCard label="MAU" value={num(inst.mau)} sub="…in the last 30 days" accent="cobalt" />
+            <MetricCard label="Stickiness" value={pctStr(inst.stickiness)} sub="DAU ÷ MAU" accent="silver" />
+          </div>
+        ) : (
+          <WaitingForEvents what="True DAU/WAU/MAU fill in as athletes open the app — no app-opens recorded in the last 30 days yet. (Events flow once the activity_events migration is applied in prod.)" />
+        )}
+      </div>
+
+      {/* Session-based engagement (always available from athlete_sessions). */}
+      <div>
+        <SectionHeader eyebrow="from the daily loop" title="Daily training" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <MetricCard label="Daily completion rate" value={pctStr(e.completionRate)} sub="completed ÷ started" accent="gold" />
+          <MetricCard label="Sessions / active athlete" value={String(e.avgSessionsPerActiveAthlete)} sub="rhythm intensity (not a streak)" accent="cobalt" />
+          <MetricCard label="Training-active 30d" value={num(e.mau)} sub="opened a daily session" accent="silver" />
+          <MetricCard label="Daily stickiness" value={pctStr(e.stickiness)} sub="daily ÷ monthly (sessions)" accent="silver" />
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-5">
@@ -178,10 +207,55 @@ export function EngagementTab({ m }: { m: AdminMetrics }) {
         </ul>
       </Panel>
 
-      <NeedsInstrumentation
-        title="Pregame guided-audio usage"
-        what="The pregame guided-audio session — the premium differentiator — writes nothing to the database today, so starts, completions, and clip vs. timer-fallback rates can't be measured. The proposed activity_events table (pregame_start / pregame_complete events) unlocks this. Same for pre-practice and true app-open DAU."
-      />
+      <Panel>
+        <SectionHeader
+          eyebrow="from activity_events"
+          title="Pregame guided-audio funnel"
+          action={<Badge tone="gold">premium</Badge>}
+        />
+        {hasPregame ? (
+          <>
+            <FunnelBars
+              steps={[
+                { label: "Started", count: inst.pregameStarts, rateOfPrev: 100, rateOfTop: 100 },
+                {
+                  label: "Completed the audio",
+                  count: inst.pregameCompletes,
+                  rateOfPrev: inst.pregameCompletionRate,
+                  rateOfTop: inst.pregameCompletionRate,
+                },
+              ]}
+            />
+            <div className="mt-6">
+              <SectionHeader eyebrow="last 8 weeks" title="Pregame completions / week" />
+              <WeekBars data={inst.pregameCompletesWeekly} accent="gold" height={120} />
+            </div>
+            <p className="font-body text-cream/45 text-[11px] mt-3">
+              The funnel is the last {m.rangeDays} days (
+              {pctStr(inst.pregameCompletionRate)} of started sessions finished the
+              audio); the weekly chart always spans 8 weeks. Clip-vs-timer split is
+              the next dimension to add.
+            </p>
+          </>
+        ) : (
+          <WaitingForEvents
+            what={
+              inst.hasEvents
+                ? "Events are flowing, but no pregame session has been run yet in this window."
+                : "Pregame start/complete events appear here once the migration is applied in prod and athletes run the guided audio."
+            }
+          />
+        )}
+      </Panel>
+
+      {inst.hasEvents &&
+      inst.practiceStarts + inst.postgameOpens + inst.pushClicks > 0 ? (
+        <p className="font-body text-cream/40 text-[11px]">
+          Other surfaces — practice {num(inst.practiceStarts)} · postgame{" "}
+          {num(inst.postgameOpens)} · push-clicks {num(inst.pushClicks)} (wiring is
+          a follow-up; counts shown when present).
+        </p>
+      ) : null}
     </div>
   );
 }
