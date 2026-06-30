@@ -61,6 +61,7 @@ import {
   writePregameSession,
   type PregameSessionCache,
 } from "@/lib/pregame/session-cache";
+import { logActivityEvent } from "@/lib/actions/activity";
 
 type Props = {
   athleteFirstName: string;
@@ -208,8 +209,26 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   const set = <K extends keyof PregameState>(k: K, v: PregameState[K]) =>
     setData((d) => ({ ...d, [k]: v }));
 
+  // Fire-and-forget pregame telemetry → activity_events (via the server action).
+  // Never blocks the UI and never throws; a signed-out / non-athlete / offline
+  // caller simply no-ops. meta is allow-list-filtered server-side.
+  const fireEvent = (
+    event_name: "pregame_start" | "pregame_complete",
+    meta?: Record<string, unknown>,
+  ) => {
+    void logActivityEvent({
+      event_name,
+      surface: "pregame",
+      sport,
+      network_mode:
+        typeof navigator !== "undefined" && !navigator.onLine ? "offline" : "online",
+      meta,
+    }).catch(() => {});
+  };
+
   const beginFull = () => {
     fromSavedRef.current = false;
+    fireEvent("pregame_start", { src: "full" });
     setView({ kind: "flow", index: 0 });
   };
   const beginQuick = () => {
@@ -256,6 +275,7 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
       audioCompleted: false,
     });
     fromSavedRef.current = true;
+    fireEvent("pregame_start", { src: "saved" });
     // Start at breath (index 0) — the threshold step that's always first.
     setView({ kind: "flow", index: 0 });
   };
@@ -288,6 +308,16 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   // early returns — so the rules-of-hooks ordering invariant is respected.
   useEffect(() => {
     if (view.kind !== "card") return;
+    // Reaching the card means the audio session finished — log completion with
+    // the (allow-listed) personalization dimensions. Null fields are dropped
+    // server-side. Fires once per completion (deps: [view.kind]).
+    fireEvent("pregame_complete", {
+      position: data.role,
+      adversity: data.adversity,
+      anchor: data.anchor,
+      prayer_style: data.prayerStyle,
+      audio_completed: data.audioCompleted,
+    });
     if (
       data.need !== null &&
       data.adversity !== null &&

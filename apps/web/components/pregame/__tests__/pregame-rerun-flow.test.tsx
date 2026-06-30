@@ -26,6 +26,14 @@ import { PREGAME_SESSION_CACHE_KEY } from "@/lib/pregame/session-cache";
 import { BED_PREF_KEY } from "@/components/pregame/audio/bed-preference";
 import { useClipPlayer } from "@/components/pregame/useClipPlayer";
 
+// Mock the client-facing telemetry action so the test never imports its
+// server-only write chain (lib/activity/record.ts → `server-only`), which
+// throws when loaded outside a Server Component. Behaviour under test is
+// unchanged — the pregame event call is fire-and-forget.
+vi.mock("@/lib/actions/activity", () => ({
+  logActivityEvent: vi.fn(() => Promise.resolve()),
+}));
+
 // ── Mock useClipPlayer so the audio step never touches Web Audio / fetch ──
 // The factory uses vi.fn() so tests can capture call arguments via
 // vi.mocked(useClipPlayer) after importing the module.
