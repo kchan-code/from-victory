@@ -146,6 +146,48 @@ export type Database = {
           }
         ]
       }
+      activity_events: {
+        Row: {
+          athlete_id: string
+          audio_mode: string | null
+          event_name: string
+          id: number
+          meta: Json | null
+          network_mode: string | null
+          occurred_at: string
+          sport: string | null
+          surface: string | null
+        }
+        Insert: {
+          athlete_id: string
+          audio_mode?: string | null
+          event_name: string
+          meta?: Json | null
+          network_mode?: string | null
+          occurred_at?: string
+          sport?: string | null
+          surface?: string | null
+        }
+        Update: {
+          athlete_id?: string
+          audio_mode?: string | null
+          event_name?: string
+          meta?: Json | null
+          network_mode?: string | null
+          occurred_at?: string
+          sport?: string | null
+          surface?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_events_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athlete_sessions: {
         Row: {
           athlete_id: string

@@ -131,6 +131,14 @@ values
    '40000000-0000-4000-8000-00000000000a', 'crisis')
 on conflict (id) do nothing;
 
+-- ---------------------------------------------------------------------------
+-- activity_events — service-role-only table. One event for A (id is
+-- generated-always identity, so it is not specified here).
+-- ---------------------------------------------------------------------------
+insert into public.activity_events (athlete_id, event_name, surface, sport)
+values
+  ('20000000-0000-4000-8000-00000000000a', 'app_open', 'hub', 'hockey');
+
 commit;
 
 \echo 'RLS fixtures seeded.'
