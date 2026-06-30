@@ -39,6 +39,13 @@ import { ReviewScreen, PrepareDownloadScreen } from "@/components/pregame/screen
 import { INITIAL_STATE, type PregameState } from "@/components/pregame/types";
 import { PREGAME_SESSION_CACHE_KEY } from "@/lib/pregame/session-cache";
 
+// Mock the client-facing telemetry action so the test never imports its
+// server-only write chain (lib/activity/record.ts → `server-only`). Fire-and-
+// forget event call; behaviour under test is unchanged.
+vi.mock("@/lib/actions/activity", () => ({
+  logActivityEvent: vi.fn(() => Promise.resolve()),
+}));
+
 // ── Mock useClipPlayer — no Web Audio, no fetch ──────────────────────────────
 vi.mock("@/components/pregame/useClipPlayer", () => ({
   useClipPlayer: vi.fn(() => ({

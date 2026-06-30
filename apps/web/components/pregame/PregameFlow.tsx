@@ -61,6 +61,7 @@ import {
   writePregameSession,
   type PregameSessionCache,
 } from "@/lib/pregame/session-cache";
+import { logActivityEvent } from "@/lib/actions/activity";
 
 type Props = {
   athleteFirstName: string;
@@ -160,6 +161,12 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   // not state: it only steers the next goNext, never renders.
   const fromSavedRef = useRef(false);
 
+  // Latches pregame_complete to fire exactly ONCE per session. The card view is
+  // re-enterable (its header has a back arrow → last flow step → forward again),
+  // so the [view.kind] effect can re-run; without this latch that would insert a
+  // duplicate completion event. Reset by every session-start entry below.
+  const completionFiredRef = useRef(false);
+
   // A saved session is restorable only when it was built for this sport AND
   // its need still resolves to a known verse — NEED_VERSE[need] is
   // dereferenced unguarded on the audio + card screens, so a stale need
@@ -208,8 +215,27 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   const set = <K extends keyof PregameState>(k: K, v: PregameState[K]) =>
     setData((d) => ({ ...d, [k]: v }));
 
+  // Fire-and-forget pregame telemetry → activity_events (via the server action).
+  // Never blocks the UI and never throws; a signed-out / non-athlete / offline
+  // caller simply no-ops. meta is allow-list-filtered server-side.
+  const fireEvent = (
+    event_name: "pregame_start" | "pregame_complete",
+    meta?: Record<string, unknown>,
+  ) => {
+    void logActivityEvent({
+      event_name,
+      surface: "pregame",
+      sport,
+      network_mode:
+        typeof navigator !== "undefined" && !navigator.onLine ? "offline" : "online",
+      meta,
+    }).catch(() => {});
+  };
+
   const beginFull = () => {
     fromSavedRef.current = false;
+    completionFiredRef.current = false;
+    fireEvent("pregame_start", { src: "full" });
     setView({ kind: "flow", index: 0 });
   };
   const beginQuick = () => {
@@ -256,6 +282,8 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
       audioCompleted: false,
     });
     fromSavedRef.current = true;
+    completionFiredRef.current = false;
+    fireEvent("pregame_start", { src: "saved" });
     // Start at breath (index 0) — the threshold step that's always first.
     setView({ kind: "flow", index: 0 });
   };
@@ -264,6 +292,7 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   // Resets state so the athlete starts fresh (no stale data from a prior run).
   const beginPrepare = () => {
     fromSavedRef.current = false;
+    completionFiredRef.current = false;
     setData(INITIAL_STATE);
     setView({ kind: "prepare-flow", index: 0 });
   };
@@ -288,6 +317,21 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   // early returns — so the rules-of-hooks ordering invariant is respected.
   useEffect(() => {
     if (view.kind !== "card") return;
+    // Reaching the card means the audio session finished — log completion with
+    // the (allow-listed) personalization dimensions. Null fields are dropped
+    // server-side. The latch fires this exactly ONCE per session: the card is
+    // re-enterable (back arrow → last flow step → forward), and [view.kind]
+    // would otherwise re-run the effect and double-insert. Reset on session start.
+    if (!completionFiredRef.current) {
+      completionFiredRef.current = true;
+      fireEvent("pregame_complete", {
+        position: data.role,
+        adversity: data.adversity,
+        anchor: data.anchor,
+        prayer_style: data.prayerStyle,
+        audio_completed: data.audioCompleted,
+      });
+    }
     if (
       data.need !== null &&
       data.adversity !== null &&
