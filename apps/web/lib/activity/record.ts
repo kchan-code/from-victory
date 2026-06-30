@@ -35,6 +35,19 @@ function startOfUtcDayIso(): string {
  * `app_open` is de-duplicated to at most one row per athlete per UTC day so a
  * server re-render or quick re-navigation doesn't spam the table; DAU is a
  * distinct-athlete-per-day count, so one row per day is all that's needed.
+ *
+ * The dedup is a SELECT-then-INSERT, so two near-simultaneous hub renders for
+ * the same athlete can both pass the count==0 gate and write a duplicate
+ * app_open. This is benign: it is bounded to rapid re-navigation (not per day),
+ * and DAU/WAU/MAU count DISTINCT athletes per window, so duplicate rows do not
+ * affect any metric — they are only minor row volume.
+ *
+ * Callers AWAIT this on purpose. A bare `void` (true fire-and-forget) risks the
+ * write being dropped when the serverless function freezes after the response;
+ * `unstable_after()` is not available in Next 14.2 without the experimental
+ * flag. We choose reliable DAU over shaving one indexed query — in steady state
+ * (athlete already counted today) the cost is a single indexed head-count.
+ * Revisit with `after()` on a Next upgrade (follow-up).
  */
 export async function recordActivityEvent(
   athleteId: string,

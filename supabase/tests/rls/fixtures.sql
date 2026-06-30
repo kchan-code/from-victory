@@ -135,9 +135,15 @@ on conflict (id) do nothing;
 -- activity_events — service-role-only table. One event for A (id is
 -- generated-always identity, so it is not specified here).
 -- ---------------------------------------------------------------------------
+-- Identity PK has no natural conflict key, so guard re-runs with NOT EXISTS
+-- (keeps the file idempotent against a persistent local stack, like the others).
 insert into public.activity_events (athlete_id, event_name, surface, sport)
-values
-  ('20000000-0000-4000-8000-00000000000a', 'app_open', 'hub', 'hockey');
+select '20000000-0000-4000-8000-00000000000a', 'app_open', 'hub', 'hockey'
+where not exists (
+  select 1 from public.activity_events
+  where athlete_id = '20000000-0000-4000-8000-00000000000a'
+    and event_name = 'app_open'
+);
 
 commit;
 

@@ -43,6 +43,11 @@ create table public.activity_events (
 
   -- Low-cardinality dimensions. All nullable; none are PII.
   surface       text        check (surface in ('hub','daily','pregame','practice','postgame','push')),
+  -- sport is intentionally UNCONSTRAINED at the DB level (no CHECK), unlike
+  -- profiles.sport. Same rationale as waitlist_signups.sport / catalog.sport:
+  -- a new launch sport can be added without a schema migration. The value is a
+  -- low-cardinality slug, app-layer length-capped (lib/activity/event-core.ts);
+  -- it is a dimension, never PII.
   sport         text,
   audio_mode    text        check (audio_mode in ('clip','timer')),
   network_mode  text        check (network_mode in ('online','offline')),
@@ -77,5 +82,17 @@ create index activity_events_name_time_idx on public.activity_events (event_name
 -- ---------------------------------------------------------------------------
 alter table public.activity_events enable row level security;
 
+-- Explicit SELECT for authenticated (idempotent — keeps the schema self-contained
+-- regardless of default-privilege initialization; see 20260612000000_explicit_
+-- table_grants.sql). NOTE: anon ALSO receives SELECT via that migration's
+-- ALTER DEFAULT PRIVILEGES, but because RLS is enabled with NO policies, anon
+-- (and authenticated) see 0 rows — identical two-layer model to safety_events.
+-- No INSERT/UPDATE/DELETE is granted to any client role: the only writer is the
+-- service-role server action.
 grant select on public.activity_events to authenticated;
--- No grants to anon. No insert/update/delete to any client role.
+
+-- RETENTION: this table is append-only with no TTL. A pruning policy (e.g. a
+-- pg_cron job deleting rows older than ~90 days, sufficient for DAU/WAU/MAU and
+-- retention cohorts) is a kc-gated follow-up — appropriate purpose-limited
+-- retention for minor (13-17) activity data under state AADC guidance. Confirm
+-- the window with counsel before enabling in production. (Follow-up issue.)

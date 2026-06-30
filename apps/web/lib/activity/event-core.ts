@@ -1,7 +1,7 @@
 // activity_events — PURE validation/sanitization core.
 //
 // No server imports, no DB client. Fully unit-testable. The service-role write
-// path lives in lib/actions/activity.ts and calls buildEventRow() from here.
+// path lives in lib/activity/record.ts and calls buildEventRow() from here.
 //
 // PRIVACY BACKBONE: this module is what guarantees the table stays EVENT-ONLY.
 // It enforces a closed event vocabulary, closed enum dimensions, and — most
@@ -29,9 +29,18 @@ export type Surface = (typeof SURFACES)[number];
 export const AUDIO_MODES = ["clip", "timer"] as const;
 export const NETWORK_MODES = ["online", "offline"] as const;
 
-// Allow-listed `meta` keys. Low-cardinality slugs / ints / bools ONLY. Note we
-// deliberately EXCLUDE focus_area (athlete-private per kids-privacy-officer);
-// position is a sport role (not sensitive) and is fine as a dimension.
+// Allow-listed `meta` keys. Low-cardinality slugs / ints / bools ONLY. Each is a
+// dimension, never content:
+//   position          — sport role slug (e.g. "goalie"), not sensitive
+//   adversity         — pregame scenario slug (e.g. "benched"), a fixed set
+//   anchor            — mental-skill cue CATEGORY slug, NOT the athlete's typed cue word
+//   prayer_style      — guided | self-guided toggle, not prayer content
+//   cue_word_category — bucketed category, never the raw cue string
+//   clips_played/errored, audio_completed — pregame playback ints/bool
+//   src               — entry source (e.g. "push")
+// We deliberately EXCLUDE focus_area: it is athlete-profile preference data
+// (kids-privacy-officer flagged it as athlete-private). position is a sport role
+// and is fine; the distinction is intentional — do not add focus_area here.
 export const META_KEY_ALLOWLIST = [
   "position",
   "adversity",

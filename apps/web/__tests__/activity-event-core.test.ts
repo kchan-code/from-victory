@@ -1,5 +1,5 @@
 // activity_events pure validation core. Runs in the vitest node env (no
-// server-only, no DB). The service-role write path (lib/actions/activity.ts)
+// server-only, no DB). The service-role write path (lib/activity/record.ts)
 // is covered by integration; here we lock the EVENT-ONLY + allow-list invariants.
 
 import { describe, it, expect } from "vitest";
