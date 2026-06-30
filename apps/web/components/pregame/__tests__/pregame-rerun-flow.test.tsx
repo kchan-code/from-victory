@@ -33,6 +33,7 @@ import { useClipPlayer } from "@/components/pregame/useClipPlayer";
 vi.mock("@/lib/actions/activity", () => ({
   logActivityEvent: vi.fn(() => Promise.resolve()),
 }));
+import { logActivityEvent } from "@/lib/actions/activity";
 
 // ── Mock useClipPlayer so the audio step never touches Web Audio / fetch ──
 // The factory uses vi.fn() so tests can capture call arguments via
@@ -179,5 +180,37 @@ describe("PregameFlow saved-session restore (FV-223)", () => {
     // preference is ignored now that the picker is gone.
     const lastCall = mockedHook.mock.calls.at(-1)?.[0];
     expect(lastCall?.bedId).toBeNull();
+  });
+});
+
+describe("PregameFlow pregame telemetry (activity_events)", () => {
+  it("fires pregame_start (src=full) when BEGIN is tapped", () => {
+    vi.mocked(logActivityEvent).mockClear();
+    render(<PregameFlow athleteFirstName="Alex" sport="hockey" />);
+
+    fireEvent.click(screen.getByRole("button", { name: /^begin/i }));
+
+    expect(vi.mocked(logActivityEvent)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event_name: "pregame_start",
+        surface: "pregame",
+        meta: expect.objectContaining({ src: "full" }),
+      }),
+    );
+  });
+
+  it("fires pregame_start (src=saved) on 'Run it like last time'", () => {
+    vi.mocked(logActivityEvent).mockClear();
+    seedSavedSession();
+    render(<PregameFlow athleteFirstName="Alex" sport="hockey" />);
+
+    fireEvent.click(screen.getByTestId("run-last-time-btn"));
+
+    expect(vi.mocked(logActivityEvent)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event_name: "pregame_start",
+        meta: expect.objectContaining({ src: "saved" }),
+      }),
+    );
   });
 });
