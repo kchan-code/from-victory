@@ -115,7 +115,7 @@ export default function ParentsPage() {
             </h1>
             <p className="max-w-[52ch] mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
               From Victory is a daily mental toughness training app for Christian
-              athletes ages 13–21. Your athlete trains. You see the rhythm. Their
+              athletes ages 13 and above. Your athlete trains. You see the rhythm. Their
               private words stay private.
             </p>
             <div className="flex flex-wrap gap-3">

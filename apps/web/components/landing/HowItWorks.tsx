@@ -5,7 +5,7 @@ const steps = [
   {
     num: "01 · TRAIN",
     name: "Read the mental skill.",
-    body: "A short, direct lesson in mental toughness — grounded in sport, not theory. Built for the 13-21 athlete.",
+    body: "A short, direct lesson in mental toughness — grounded in sport, not theory. Built for athletes 13 and above.",
   },
   {
     num: "02 · ANCHOR",
