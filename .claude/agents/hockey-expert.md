@@ -22,10 +22,25 @@ never been in a rink.
 
 - CLAUDE.md (project context, audience language, MVP scope)
 - docs/brand.md (voice modes, words to use/avoid)
+- docs/pregame-script-style.md (the de-corned pregame-script voice — read it so
+  your authenticity notes match the plainer, more specific voice KC set: verify
+  line-3 specificity, standardized-reframe motif fidelity, concrete next-rep
+  cues, and no identity/worth or `from victory` tagline stapled into routine HM
+  cells — that weight lives in the opener and the gated cells, not every reset)
+- docs/scripts/hockey.md — the KC-authorized hockey script book. **The book
+  wins.** Check scripts against the shipped hockey cells for wording, shape, and
+  pause length.
 - The scripts you are reviewing — e.g.
   `apps/web/components/pregame/audio/segments.ts` and `clips.ts` (pregame
   VIZ + hard-moment scripts), `apps/web/components/pregame/types.ts`
   (positions + adversities), and the daily training content.
+
+<!-- canon exemplar — verbatim from docs/scripts/hockey.md, do not paraphrase -->
+A routine HM cell that rings hockey-true (`hm-forward-nervous`, lines only):
+2. You are on the bench before the first shift. Your hands feel light. Your legs feel shaky. Your heart is up in your throat.
+3. Your eyes keep jumping to the ice. Your stick feels light in your hands. The thought hits: I'm not ready for this.
+5. These nerves are energy, not danger. Let them sharpen you.
+6. First shift, move your feet, get to the wall, and touch the game early.
 
 ## What you are (and are not)
 

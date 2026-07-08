@@ -20,19 +20,24 @@ voice the athlete hears.
 
 - CLAUDE.md (project context, audience language policy)
 - docs/brand.md (brand identity, voice modes, words to use/avoid)
+- docs/pregame-script-style.md — the **binding** de-corned pregame-script
+  spec (line-3 specificity, standardized reframe motifs, the banned-phrase
+  list, and how the FV-339 four-beat canon reconciles with it). When this
+  spec and a book conflict, the book wins.
+- docs/scripts/hockey.md, docs/scripts/basketball.md, docs/scripts/golf.md —
+  the KC-authorized script books. **The books win.** They are the source of
+  every verbatim exemplar in this file; when in doubt about wording, pattern,
+  or pause length, match the book for that sport, not your memory of it.
 
 ## Pregame reframe — the canonical hard-moment / reset shape
 
-Every pregame hard-moment and reset resolves on the same four-beat
-reframe. This is From Victory voice canon. You integrate the specialists'
-material into it and keep it in one voice. The canonical wording:
+Every pregame hard-moment reset embodies the same four TRUTHS. This is
+From Victory voice canon — but the canon is the **shape**, not a slogan.
+`docs/pregame-script-style.md` governs the WORDS; the books
+(`docs/scripts/<sport>.md`) are the authorized realization of both. Read
+both before you draft or review a single pregame cell.
 
-> These nerves are energy, not danger.
-> It is not your identity.
-> Your worth is secure.
-> Reset and go again.
-
-The four beats and the job each does:
+The four truths, in order, and who owns each:
 
 1. **Arousal reappraisal** — pre-competition nerves are readiness, not
    threat. (sports-psychologist owns the phrasing.)
@@ -44,16 +49,83 @@ The four beats and the job each does:
 4. **Reset cue** — concrete return to the next rep. (sports-psychologist
    owns the phrasing.)
 
-**The canon is the SHAPE and the four truths — not a fixed slogan.** Do
-not staple these exact four lines onto every cell as boilerplate. Flex
-the wording per scenario, sport, and position so each reframe stays
-specific and earned (the nerve beat names *these* nerves; the identity
-beat names *this* moment; the reset beat names the *next* rep). The full
-worth beat ("Your worth is secure") lands hardest in identity-collapse
-moments — a core-skill miss, the yips-class cells that remain clinically
-gated — and can stay implicit elsewhere when a sharper in-game cue serves
-the moment better. Voice modes: Coach for beats 1 and 4, Devotional guide
-under beats 2 and 3, all in one continuous athlete-facing voice.
+### Placement doctrine (HARD RULE — this is where the corn enters)
+
+The four truths are the SHAPE of every reset, but **beats 2 and 3
+(identity ≠ performance, secured worth) are not delivered in every cell.**
+Where they land is fixed doctrine, not a stylistic choice:
+
+- **Beats 2–3 land once, with weight, in the OPENER** — the scripture clip
+  that starts every session (e.g. the Reset opener on Romans 8:1). Every
+  hard moment the athlete rehearses happens *after* that truth has landed;
+  the HM cell inherits it and does not re-preach it.
+- **Beats 2–3 also surface inside the clinically gated identity-collapse
+  cells** — the yips-class / core-skill-collapse adversities that the
+  Step-02 picker **withholds** (the `roleAdversities` overrides in
+  `apps/web/components/pregame/sport-registry.ts`, per the spec's "gated
+  cells" section) until clinical-advisor sign-off. There the worth truth
+  belongs *inside* the cell, plain and earned — never as the slogan.
+- **Routine HM cells deliver beats 1 and 4 only.** They carry beats 2–3
+  *implicitly* — by treating the mistake as finished and refusing it a
+  verdict ("That turnover is over.") — and they END on a concrete,
+  sport-true next-rep cue. They do NOT recite the identity/worth beat.
+
+**Never print these as canonical wording:** `It is not your identity.` /
+`It is not who you are.` / `Your worth is secure.` / `Reset and go again.`
+verbatim, or the brand tagline (`from victory`, `compete/play/skate from
+victory`) as an HM closer. Stapling the worth beat or the tagline into a
+routine cell is a banned-phrase violation — the exact failure the
+2026-07-08 golden-set eval caught 6 of 7 times. The identity/worth weight
+is delivered ONCE, with force, then inherited — not re-preached every
+reset. Voice modes: Coach for beats 1 and 4; Devotional guide for beats
+2–3 where they land (opener, gated cells), all in one continuous
+athlete-facing voice.
+
+### The routine HM shape (6 lines — match the book)
+
+```
+1. Now rehearse the hard moment.                                    [0.4s]
+2. <Scene — 2–4 short present-tense sentences, concrete and sport-true.> [1.5s]
+3. <Specific observed body detail, 1–2 cues.> The thought hits: <intrusive self-talk>. [2s]
+4. Now the reset. Return to your anchor.                            [reset pause]
+5. <The reframe — one short, grounded truth. Sport-specific or a standard motif.> [2s]
+6. Next <rep>, <2–3 concrete, sport-true actions>.                  [2s]
+```
+
+Line 1 is fixed. Line 3 is a **specific observed body detail** tied to
+this exact moment and sport (what the eyes/hands/stick/ball/feet do), then
+`The thought hits: ___` naming the intrusive self-talk — never the stock
+somatic checklist. Line 4 is the fixed anchor line. Line 5 is a short true
+reframe (often a standardized motif — see the spec's motifs table). Line 6
+points at the very next rep with coachable actions. **Reset pause matches
+the book: `[3s]` in hockey and basketball, `[2s]` in golf and baseball.**
+Routine cells are 6 lines; only gated identity-collapse cells may carry a
+7th worth-truth line.
+
+<!-- canon exemplar — verbatim from docs/scripts/hockey.md, do not paraphrase -->
+Routine HM done right (hockey `hm-forward-nervous`, lines only):
+1. Now rehearse the hard moment.
+2. You are on the bench before the first shift. Your hands feel light. Your legs feel shaky. Your heart is up in your throat.
+3. Your eyes keep jumping to the ice. Your stick feels light in your hands. The thought hits: I'm not ready for this.
+4. Now the reset. Return to your anchor.
+5. These nerves are energy, not danger. Let them sharpen you.
+6. First shift, move your feet, get to the wall, and touch the game early.
+
+<!-- canon exemplar — verbatim from docs/scripts/golf.md, do not paraphrase -->
+Implicit worth done right — the worth truth carried WITHOUT the slogan
+(golf `hm-glf-scrambler-duff-chip`, a live/selectable core-skill miss, lines only):
+2. Short-sided in the rough, the kind of up-and-down you live for. You set up over it — and you catch it heavy. The ball moves two feet. The chip you make in your sleep, duffed, with the green right there in front of you.
+3. Your hands have gone numb on the wedge and your face is hot standing over it again. The thought hits: that's one I make in my sleep, and I caught it heavy.
+5. That chip is over — one swing today, not the thousands you've holed. Step to the next one and read the shot fresh.
+6. Don't grab the wedge tighter to make it perfect. Soft hands, see the landing spot, let the bounce do the work, and save the next one clean.
+
+<!-- canon exemplar — verbatim from docs/scripts/hockey.md, do not paraphrase -->
+Where the identity/worth weight actually lives — the OPENER (hockey
+`opener-reset`, Romans 8:1, lines only):
+2. Hear this from Romans 8:1. Paul has just named the struggle with his own failure. Then he opens chapter 8 with this: Therefore, there is now no condemnation for those who are in Christ Jesus.
+3. No condemnation does not mean no consequences. If you turn it over, the puck still goes the other way. But it means the verdict on you was already settled at the cross.
+4. The mistake you make tonight cannot reopen a case God has already closed.
+6. You are free to go hard. Do not hold on. Breathe, reset, and play the next one.
 
 ## Product positioning (internalize)
 
@@ -816,6 +888,8 @@ If asked to review existing content:
 > **Age-fit:** <register appropriate for the target sub-band? Y/N>
 > **Brand spine:** <FROM victory served? Y/N + reasoning>
 > **Gamification:** <rhythm framing, not streak punishment? Y/N>
+> **Corn check:** <banned phrases? stapled worth/tagline in routine
+> cells? cell-to-cell reframe repetition? Y/N + specifics>
 > **Integration quality:** <scripture and psychology held together as
 > one truth, or stapled?>
 > **Strengths:** <what works>

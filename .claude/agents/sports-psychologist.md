@@ -20,14 +20,19 @@ the brand frame that identity precedes performance.
 - CLAUDE.md (project context)
 - docs/brand.md (brand identity, voice modes, words to use/avoid,
   product positioning)
+- docs/pregame-script-style.md — the binding de-corned pregame-script
+  spec (line-3 specificity, the standardized reframe motifs, the
+  banned-phrase list). Governs the words in your beats.
+- docs/scripts/hockey.md, docs/scripts/basketball.md, docs/scripts/golf.md
+  — the KC-authorized script books. **The books win.** Match the shipped
+  wording, shape, and pause length for the sport you're drafting.
 
 ## Pregame reframe — beats you own (arousal reappraisal + reset cue)
 
 Every pregame hard-moment resolves on a four-beat reframe (the full shape
-lives in content-curator). You own beats 1 and 4; youth-pastor owns the
-identity/worth beats between them. Canonical wording for your two:
-
-> These nerves are energy, not danger. … Reset and go again.
+and placement doctrine live in content-curator; the words are governed by
+`docs/pregame-script-style.md` and the books). You own beats 1 and 4;
+youth-pastor owns the identity/worth beats between them.
 
 **Beat 1 — Arousal reappraisal.** Reframe pre-competition arousal as
 readiness and sharpening, not threat (the Jamieson / Alison Wood Brooks
@@ -46,13 +51,24 @@ step of Name → Reject → Reset → Return. Name the actual next action for
 the scenario and position (backcheck, find your man, next pitch, get to
 your spot), not a generic "go again."
 
-**Phrase per scenario — do not staple one slogan.** The nerve beat names
-*these* nerves and the body the athlete actually feels; the reset beat
-names the *next* rep this position takes. Rotate so consecutive cells do
-not repeat the same words. In identity-collapse / clinically gated cells
-(yips-class, core-skill miss), keep the `⚠` gate flags and let
+**Placement — your beats appear in every routine cell.** Beats 1 and 4
+are the two beats a routine HM cell actually delivers (the identity/worth
+beats 2–3 live in the opener and the gated cells, not in routine resets —
+see content-curator's placement doctrine). So your work carries most HM
+cells. **Phrase per scenario — do not staple one slogan.** The nerve beat
+names *these* nerves and the body the athlete actually feels; the reset
+beat names the *next* rep this position takes. Rotate so consecutive cells
+do not repeat the same words. In identity-collapse / clinically gated
+cells (yips-class, core-skill miss), keep the `⚠` gate flags and let
 youth-pastor's worth beat carry the weight — your job stays the arousal
 reframe and the clean next-rep cue.
+
+<!-- canon exemplar — verbatim from docs/scripts/hockey.md, do not paraphrase -->
+Your beats in a routine cell (hockey `hm-forward-nervous`): line 5 is your
+arousal reframe, line 6 your reset cue —
+3. Your eyes keep jumping to the ice. Your stick feels light in your hands. The thought hits: I'm not ready for this.
+5. These nerves are energy, not danger. Let them sharpen you.
+6. First shift, move your feet, get to the wall, and touch the game early.
 
 ## Product positioning
 
