@@ -261,9 +261,9 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Coming out is a call about this game, not about you. It ends at the mound, not the rest of your night.
+5. Coming out is a call about this game. It ends at the mound, not the rest of your night.
 _(pause: 2s)_
-6. Sit tall, stay in it with your guys, and read the at-bats so you're sharp when the ball's in your hand again.
+6. Sit tall, stay in it with your guys, read the at-bats, and get yourself right for the next one.
 _(pause: 2s)_
 ### Baseball · Pitcher · nervous
 <!-- slug: hm-bsb-pitcher-nervous | file: components/pregame/audio/clips-baseball.ts -->
@@ -370,7 +370,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That run is over. It does not get the next pitch.
 _(pause: 2s)_
-6. New ball, fresh sign — body in front, chin down, and smother the next one.
+6. New ball, get set low — body in front, chin down, and smother the next one.
 _(pause: 2s)_
 ### Baseball · Catcher · big-hit
 <!-- slug: hm-bsb-catcher-big-hit | file: components/pregame/audio/clips-baseball.ts -->
@@ -394,7 +394,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You drop into the crouch, catch strike three, and go to throw it back to your pitcher. The easy toss. It sails over his head to the screen.
 _(pause: 1.5s)_
-3. Your hand grips the seams too tight and your shoulder locks on the release. Your eyes flick to the screen where the ball went. The thought hits: my throw is gone tonight.
+3. Your hand squeezes the ball and your arm gets tight and short on the toss back. Your eyes flick to the screen where the ball went. The thought hits: my throw is gone tonight.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -415,7 +415,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The bench has your gear for a few innings. It does not have your mind. The next chance may come fast.
+5. The bench has your gear for a few innings. It does not have your mind.
 _(pause: 2s)_
 6. Get on the rail, read every sequence, log what's working, and be ready — locked in, not pressing — when your name is called.
 _(pause: 2s)_
@@ -516,7 +516,7 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You take a routine grounder, and it kicks off the heel of your glove. Or the throw sails, pulls the first baseman off the bag — and the E lights up on the board with your number on it.
+2. You take a routine grounder, and it kicks off the heel of your glove. Or the throw sails, pulls the first baseman off the bag — and the E goes up on the board for the whole park to see.
 _(pause: 1.5s)_
 3. Your ears go hot and your glove hand clamps stiff. The thought hits: everyone saw it, and it's up there for good.
 _(pause: 2s)_
@@ -548,7 +548,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You field a routine grounder and set to throw to first. The throw you've made ten thousand times sails wide, or dies in the dirt halfway there.
 _(pause: 1.5s)_
-3. Your grip squeezes the seams and the shoulder locks before you let go. The thought hits: my hands won't work right now.
+3. Your transfer sticks and your grip clamps the seams before you set your feet. The thought hits: my hands won't work right now.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -556,7 +556,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Slow it down. Loosen the grip, pick a small target on the chest, and throw through it.
 _(pause: 2s)_
-7. Your worth was never riding on this throw. Field the next one clean and make the simple play to first.
+7. Your worth was secure before this throw and it's secure after it, so you can throw the next one free.
 _(pause: 1.5s)_
 ### Baseball · Infield · benched
 <!-- slug: hm-bsb-infield-benched | file: components/pregame/audio/clips-baseball.ts -->
@@ -569,7 +569,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The bench has your body for a couple innings. It does not have your mind. The next chance may come fast.
+5. Stay in it. The next chance may come fast.
 _(pause: 2s)_
 6. Stay loud on the rail, read the hitters, talk the situation out loud, and be the first one up when they need you.
 _(pause: 2s)_
@@ -610,7 +610,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You take the field still feeling slow, and the first grounder is on you fast. You're late getting your feet going, the ball eats you up on a short hop, and it kicks off your glove into the grass.
 _(pause: 1.5s)_
-3. Your feet feel stuck in cement and your hands tighten late. The thought hits: I can't get going today.
+3. Your first step drags and your hands tighten late on the hop. The thought hits: I can't get going today.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -702,7 +702,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You run down the ball in the gap and come up throwing. The throw sails high over the cutoff man, and the runner reads it and takes the extra base.
 _(pause: 1.5s)_
-3. Your grip squeezes the seams and you rush the release. The thought hits: that throw got away from me.
+3. You rush the crow-hop and your arm flies open before you're lined up. The thought hits: that throw got away from me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -721,7 +721,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The bench has your body for two innings. It does not have your mind. The next chance may come fast.
+5. The bench has your body for two innings. It does not have your mind.
 _(pause: 2s)_
 6. Read the count, talk up the next guy, and be ready — first read, clean route, hit your cutoff when you're back out there.
 _(pause: 2s)_
@@ -762,7 +762,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You are in left, first inning. The ball jumps off the bat and you read it late, take a flat-footed first step, and have to drift back on your heels to glove it.
 _(pause: 1.5s)_
-3. Your feet feel stuck in the grass and your shoulders tense reading it late. The thought hits: I'm not even awake out here yet.
+3. You're flat-footed off the bat and your shoulders tense reading it late. The thought hits: I'm not even awake out here yet.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
