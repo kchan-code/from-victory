@@ -7,7 +7,8 @@ export const ORGANIZATION_JSON_LD = {
   "@type": "Organization",
   name: "From Victory",
   url: siteUrl,
-  logo: `${siteUrl}/logo-icon.svg`,
+  // PNG, not SVG — Google ignores SVG for Organization.logo (qa-reviewer, FV-397)
+  logo: `${siteUrl}/icon-512.png`,
   sameAs: [
     "https://www.instagram.com/fromvictory",
     "https://x.com/fromvictoryapp",
