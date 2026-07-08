@@ -1,6 +1,6 @@
 # Lacrosse Module Map — Positions × Adversities (FV-404)
 
-**Status: DRAFT pending KC ratification (FV-404).** Decision artifact only.
+**Status: RATIFIED by KC 2026-07-08 (FV-404, PR #308 merge = ratification).** Decision artifact only.
 Authored 2026-07-08. Lacrosse is a **v2 / DORMANT** sport (KC-directed
 2026-07-08; launch stays locked hockey + basketball, FV-26). This document is
 the ratified content contract the **script book (FV-405, `docs/scripts/
@@ -579,7 +579,7 @@ as `BASEBALL_CONFIG` does.
 
 ## Ratification block
 
-**Status: DRAFT pending KC ratification (FV-404).** KC is specifically
+**Status: RATIFIED by KC 2026-07-08 (FV-404, PR #308 merge = ratification).** KC is specifically
 ratifying:
 
 1. **Position set (5): Attack / Midfield / Defense / FOGO / Goalie** — and the
