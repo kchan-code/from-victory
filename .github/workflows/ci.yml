@@ -163,6 +163,48 @@ jobs:
           fi
           echo "✓ MANIFEST_VERSION is in sync ($TS_MV)."
 
+  script-book-lint:
+    name: Script book lint
+    runs-on: ubuntu-latest
+    # PR-only, diff-scoped like audio-cache-bust: this is a static content
+    # gate over docs/scripts/*.md, so only run it when the PR actually
+    # touches a script book or the lint script itself.
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check whether script books or the lint script changed (FV-400)
+        id: changed
+        run: |
+          set -euo pipefail
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+          git fetch --no-tags origin "$BASE_REF"
+          RANGE="origin/${BASE_REF}...HEAD"
+
+          CHANGED=$(git diff --name-only "$RANGE" | grep -E '^docs/scripts/.*\.md$|^apps/web/scripts/lint-script-books\.ts$' || true)
+          if [ -z "$CHANGED" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "No script-book or lint-script changes in this PR — skipping."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Changed files:"
+            echo "$CHANGED"
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.changed.outputs.run == 'true'
+        with:
+          # Node 22, not 20: the lint script runs via --experimental-strip-types,
+          # which doesn't exist until Node 22.6 — on 20 the job dies with
+          # "node: bad option" before the lint runs. 22 also matches the E2E
+          # job and the prod/Vercel runtime (≥22).
+          node-version: '22'
+      - name: Run banned-phrase + reframe-repetition lint (FV-400)
+        if: steps.changed.outputs.run == 'true'
+        # Dependency-free (node stdlib only) — no `npm ci` needed, same as
+        # this file's own path-filtered guard style (athlete-no-tracking.yml).
+        run: node --experimental-strip-types apps/web/scripts/lint-script-books.ts
+
 # FV-4: The privacy gate lives in .github/workflows/privacy-verdict.yml.
 # It publishes a `Require privacy VERDICT` commit status on every PR that
 # touches a privacy-sensitive path, and flips to green only when the
