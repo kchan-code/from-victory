@@ -7,6 +7,7 @@ import { Footer } from "@/components/landing/Footer";
 import { Reveal } from "@/components/landing/Reveal";
 import { SectionMeta } from "@/components/landing/SectionMeta";
 import { SvgIcon } from "@/components/landing/SvgIcon";
+import { AttributionCapture } from "@/components/marketing/AttributionCapture";
 
 const siteUrl = "https://www.fromvictoryapp.com";
 
@@ -83,6 +84,7 @@ const faq: { q: string; a: string }[] = [
 export default function PricingPage() {
   return (
     <>
+      <AttributionCapture />
       <LandingIconDefs />
       <ScrollNav />
 
