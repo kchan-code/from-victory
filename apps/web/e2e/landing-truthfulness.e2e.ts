@@ -9,8 +9,8 @@
  * Auth: none — the landing page is fully public.
  *
  * What this pins:
- *   - The post-game "Coming soon" badge is present so the feature is never
- *     silently promoted as shipped before it is.
+ *   - The post-game reset preview card no longer carries a "Coming soon"
+ *     badge (FV-225 shipped the feature; FV-394 removed the caveat).
  *   - No journal <textarea> on / — guards against the journal being
  *     re-wired into the landing page while it remains descoped (FV-135). The
  *     waitlist's optional-note field (#w-note) is the one allowed textarea.
@@ -62,19 +62,19 @@ test.describe("Landing page — truthfulness regression guards", () => {
   });
 
   // -------------------------------------------------------------------------
-  // Post-game coming-soon badge
+  // Post-game reset — shipped, no "coming soon" caveat
   // -------------------------------------------------------------------------
 
-  test("post-game 'Coming soon' badge is present (feature not yet shipped)", async ({
+  test("post-game reset preview card has no 'Coming soon' badge (feature is shipped)", async ({
     page,
   }) => {
-    // The badge signals this feature is in-progress. If the badge disappears
-    // without the feature shipping, the landing page silently drops the caveat.
-    const badge = page.getByTestId("postgame-coming-soon");
-    await expect(badge).toBeVisible();
-    // Text should communicate the "coming soon" state — not a shipped CTA.
-    const text = await badge.innerText();
-    expect(text.trim().toLowerCase()).toContain("coming soon");
+    // FV-225 shipped the post-game debrief; FV-394 removed the landing-page
+    // caveat. If the badge reappears, the app preview would misrepresent a
+    // live feature as still in-progress.
+    await expect(page.getByTestId("postgame-coming-soon")).toHaveCount(0);
+    await expect(
+      page.locator("#app").getByText(/coming soon/i),
+    ).toHaveCount(0);
   });
 
   // -------------------------------------------------------------------------
