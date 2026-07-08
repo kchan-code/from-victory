@@ -12,10 +12,12 @@ import { Problem } from "@/components/landing/Problem";
 import { ScrollNav } from "@/components/landing/ScrollNav";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Waitlist } from "@/components/landing/Waitlist";
+import { AttributionCapture } from "@/components/marketing/AttributionCapture";
 
 export default function LandingPage() {
   return (
     <>
+      <AttributionCapture />
       <LandingIconDefs />
       <ScrollNav />
       <a id="top" />

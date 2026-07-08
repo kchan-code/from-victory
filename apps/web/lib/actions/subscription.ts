@@ -51,20 +51,59 @@
  *   It must NOT be called inside a try/catch block that could swallow it. The
  *   session URL is captured in a variable before the try block exits, then
  *   redirect() is called at the top level after all try/catch blocks complete.
+ *
+ * First-touch UTM attribution (FV-396):
+ *   If the client wrote a `fv_attribution` cookie (see
+ *   components/marketing/AttributionCapture.tsx) on an earlier visit to a
+ *   public marketing page, we read + defensively sanitize it here
+ *   (lib/attribution.ts) and fold the present utm_* fields + `landed_at`
+ *   into BOTH `metadata` and `subscription_data.metadata`, alongside
+ *   `parent_id`. A missing or malformed cookie silently yields no
+ *   attribution fields — checkout is never blocked or altered by this.
  */
 
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type Stripe from "stripe";
 import { z } from "zod";
 
+import {
+  ATTRIBUTION_COOKIE_NAME,
+  parseAttributionCookieValue,
+  type Attribution,
+} from "@/lib/attribution";
 import { requireParent, requireSelfPayer } from "@/lib/auth/guards";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { getStripe } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
 import { planToPriceEnvVar } from "@/lib/subscriptions/plans";
+
+// ---------------------------------------------------------------------------
+// First-touch UTM attribution (FV-396)
+// ---------------------------------------------------------------------------
+
+/**
+ * Reads the fv_attribution cookie (set client-side by
+ * components/marketing/AttributionCapture.tsx on a public marketing page)
+ * and returns a sanitized attribution payload, or an empty object.
+ *
+ * Defensive by design: the cookie is client-writable, so a malformed or
+ * tampered value must never throw or block checkout — it's silently
+ * ignored (sanitizeAttribution / parseAttributionCookieValue already
+ * never throw; this wrapper adds one more belt-and-suspenders try/catch
+ * around the cookies() read itself).
+ */
+function readAttributionFromCookie(): Attribution {
+  try {
+    const value = cookies().get(ATTRIBUTION_COOKIE_NAME)?.value;
+    return parseAttributionCookieValue(value);
+  } catch {
+    return {};
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -161,6 +200,15 @@ async function startSubscriptionCheckout(
   // 5. Build site URL for success/cancel redirects.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
+  // First-touch UTM attribution (FV-396) — read + sanitize the
+  // fv_attribution cookie (if any) so "where did they come from" rides
+  // along on the Stripe objects. Absent/malformed cookie → empty object →
+  // no attribution fields added; checkout proceeds unaffected either way.
+  const attribution = readAttributionFromCookie();
+  // Metadata values must be strings; Attribution's fields already are, so
+  // this is just a type-narrowing spread (no undefined keys survive).
+  const attributionMetadata: Record<string, string> = { ...attribution };
+
   // 6. Create the Stripe Checkout Session. Capture the URL in a variable so
   //    redirect() can be called after the try block (never inside it).
   let checkoutUrl: string;
@@ -172,10 +220,16 @@ async function startSubscriptionCheckout(
       line_items: [{ price: priceId, quantity }],
       // Required: the webhook reads session.metadata.parent_id to bind the
       // Stripe Customer to the account row on checkout.session.completed.
-      metadata: { parent_id: accountId },
+      // Also carries first-touch UTM attribution (FV-396), if present.
+      // parent_id AFTER the spread: the cookie-derived fields are
+      // whitelisted, but parent_id must win no matter what.
+      metadata: { ...attributionMetadata, parent_id: accountId },
       // Belt-and-suspenders: also set on the subscription object itself so
-      // subscription.* events also carry the parent_id if ever needed.
-      subscription_data: { metadata: { parent_id: accountId } },
+      // subscription.* events also carry the parent_id (and attribution)
+      // if ever needed.
+      subscription_data: {
+        metadata: { ...attributionMetadata, parent_id: accountId },
+      },
       success_url: `${siteUrl}/subscribe/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${siteUrl}/subscribe?status=canceled`,
       allow_promotion_codes: true,
