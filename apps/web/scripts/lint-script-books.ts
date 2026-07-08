@@ -213,6 +213,7 @@ function parseBook(fileBasename: string, content: string): {
   let i = 0;
   while (i < lines.length) {
     const line = lines[i];
+    if (line === undefined) break; // unreachable (i < length); satisfies noUncheckedIndexedAccess
 
     if (SECTION_RE.test(line)) {
       inTextModeFallback = TEXT_MODE_FALLBACK_SECTION_RE.test(line);
@@ -240,6 +241,7 @@ function parseBook(fileBasename: string, content: string): {
     let slug: string | null = null;
     while (j < lines.length) {
       const candidate = lines[j];
+      if (candidate === undefined) break; // unreachable (j < length); satisfies noUncheckedIndexedAccess
       if (candidate.trim() === "") {
         j++;
         continue;
@@ -269,6 +271,7 @@ function parseBook(fileBasename: string, content: string): {
     let k = j;
     while (k < lines.length) {
       const candidate = lines[k];
+      if (candidate === undefined) break; // unreachable (k < length); satisfies noUncheckedIndexedAccess
       if (HEADING_RE.test(candidate) || SECTION_RE.test(candidate)) break;
       const numMatch = candidate.match(NUMBERED_LINE_RE);
       if (numMatch) {
@@ -412,6 +415,7 @@ function scanOpenerNegation(cell: Cell): BlockingHit[] {
   const occurrences: { line: NumberedLine; textAfter: string }[] = [];
   for (let li = 0; li < cell.numberedLines.length; li++) {
     const nl = cell.numberedLines[li];
+    if (nl === undefined) continue; // unreachable (li < length); satisfies noUncheckedIndexedAccess
     negationRe.lastIndex = 0;
     let m: RegExpExecArray | null;
     while ((m = negationRe.exec(nl.text)) !== null) {
@@ -444,6 +448,7 @@ function scanOpenerNegation(cell: Cell): BlockingHit[] {
 
   // Exactly one: authorized IF a positive resolution follows it in the cell.
   const only = occurrences[0];
+  if (only === undefined) return []; // unreachable (length === 1); satisfies noUncheckedIndexedAccess
   if (NEGATION_RESOLUTION_RE.test(only.textAfter)) return [];
   return [
     {

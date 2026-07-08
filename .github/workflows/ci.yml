@@ -194,7 +194,11 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.changed.outputs.run == 'true'
         with:
-          node-version: '20'
+          # Node 22, not 20: the lint script runs via --experimental-strip-types,
+          # which doesn't exist until Node 22.6 — on 20 the job dies with
+          # "node: bad option" before the lint runs. 22 also matches the E2E
+          # job and the prod/Vercel runtime (≥22).
+          node-version: '22'
       - name: Run banned-phrase + reframe-repetition lint (FV-400)
         if: steps.changed.outputs.run == 'true'
         # Dependency-free (node stdlib only) — no `npm ci` needed, same as
