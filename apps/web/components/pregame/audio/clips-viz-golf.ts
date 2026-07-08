@@ -22,10 +22,7 @@
 
 import type { AudioScript } from "./types";
 import { SCRIPT_INSTRUCTIONS, VISUALIZATION_INSTRUCTIONS } from "./instructions.ts";
-
-// Same target as CLIP_LOUDNORM_FILTER in clips.ts / GOLF_LOUDNORM_FILTER in
-// clips-golf.ts. Defined locally to avoid a circular import.
-const GOLF_VIZ_LOUDNORM_FILTER = "loudnorm=I=-16:TP=-1.5:LRA=11";
+import { CLIP_LOUDNORM_FILTER } from "./loudnorm";
 
 const SELFTALK_INSTRUCTIONS = `Voice Affect: Coach voice — direct, assured, the move being called. The athlete hears themselves being coached out of the collapse.
 
@@ -46,7 +43,7 @@ export const CLIP_VIZ_BOMBER_STRIPE_THE_FAIRWAY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself on the tee, driver in hand, and know this one splits the middle.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -74,7 +71,7 @@ export const CLIP_VIZ_BOMBER_WALK_UP_TALL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the group's balls already out in the fairway, and know yours flies past them all.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -100,7 +97,7 @@ export const CLIP_VIZ_BOMBER_HIGH_DRAW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the dogleg bending left, and know you're going to turn the corner.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -128,7 +125,7 @@ export const CLIP_VIZ_BOMBER_LONG_IRON_PAR5_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the green sitting out there in two, and know you've got the number to get home.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -156,7 +153,7 @@ export const CLIP_VIZ_BOMBER_WEDGE_TAP_IN_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the flag close in front of you, and know this wedge stops next to it.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -184,7 +181,7 @@ export const CLIP_VIZ_BOMBER_RIP_IT_FIRST_TEE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself on the first tee, locked onto your line, and know it's flying straight.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -212,7 +209,7 @@ export const CLIP_VIZ_BOMBER_TAKE_YOUR_MEDICINE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself in the trees, already planning the smart way out, and know you save par.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -240,7 +237,7 @@ export const CLIP_VIZ_BALLSTRIKER_SMALL_TARGET_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the smallest target out there, and know the ball flies dead on that line.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -268,7 +265,7 @@ export const CLIP_VIZ_BALLSTRIKER_FAT_OF_THE_GREEN_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the fat of the green, and know your iron finds it again.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -296,7 +293,7 @@ export const CLIP_VIZ_BALLSTRIKER_STICK_IT_PIN_HIGH_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See a number you love, and know this iron finishes pin high.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -324,7 +321,7 @@ export const CLIP_VIZ_BALLSTRIKER_KNOCKDOWN_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the wind in the trees, and know you're flighting this one under it.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -352,7 +349,7 @@ export const CLIP_VIZ_BALLSTRIKER_TWO_PUTT_WALK_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the long putt ahead, calm and unhurried over the ball, and know two putts is plenty.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -380,7 +377,7 @@ export const CLIP_VIZ_BALLSTRIKER_LET_IT_GO_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself settled over the next ball, the last shot already gone, and know this one's pure.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -406,7 +403,7 @@ export const CLIP_VIZ_BALLSTRIKER_PAINT_THE_FAIRWAY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the tight fairway ahead, and know you commit instead of steer.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -436,7 +433,7 @@ export const CLIP_VIZ_SCRAMBLER_UP_AND_DOWN_SHORT_SIDED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself short-sided off the green, already seeing the shot, and know you get up and down.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -464,7 +461,7 @@ export const CLIP_VIZ_SCRAMBLER_ROLL_IN_THE_BREAKER_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself reading the break, calm and certain over the line, and know it drops.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -492,7 +489,7 @@ export const CLIP_VIZ_SCRAMBLER_HOLE_THE_BUNKER_SHOT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself stepping into the bunker, the shot already pictured, and know it's a save.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -520,7 +517,7 @@ export const CLIP_VIZ_SCRAMBLER_LAG_IT_STONE_DEAD_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the long putt across the green, hands soft, all your focus on speed — and know it dies by the hole.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -548,7 +545,7 @@ export const CLIP_VIZ_SCRAMBLER_CHIP_IN_FROM_ROUGH_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself in the rough by the green, calm, finding the way — and know this one goes in.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -576,7 +573,7 @@ export const CLIP_VIZ_SCRAMBLER_GRIND_OUT_PAR_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself already mapping your way to par, calm, and know you grind one out.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -604,7 +601,7 @@ export const CLIP_VIZ_SCRAMBLER_FOUR_FOOTER_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself over the short putt, settled, certain it's going in — and know it does.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -638,7 +635,7 @@ export const CLIP_ST_GLF_02_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SELFTALK_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Stay steady. Play the next shot." },
   ],

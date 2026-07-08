@@ -31,10 +31,7 @@ import {
   BOMBER_VIZ,
   SCRAMBLER_VIZ,
 } from "./segments-golf.ts";
-
-// Same target as CLIP_LOUDNORM_FILTER in clips.ts. Defined locally to avoid a
-// circular import (clips.ts imports GOLF_PREGAME_CLIP_SCRIPTS from here).
-const GOLF_LOUDNORM_FILTER = "loudnorm=I=-16:TP=-1.5:LRA=11";
+import { CLIP_LOUDNORM_FILTER } from "./loudnorm";
 
 // ── Golf VIZ clips — one per profile (FV-265) ────────────────────────────────
 
@@ -43,7 +40,7 @@ export const CLIP_VIZ_BOMBER_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...BOMBER_VIZ],
 };
 
@@ -52,7 +49,7 @@ export const CLIP_VIZ_BALLSTRIKER_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...BALLSTRIKER_VIZ],
 };
 
@@ -61,7 +58,7 @@ export const CLIP_VIZ_SCRAMBLER_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...SCRAMBLER_VIZ],
 };
 
@@ -72,7 +69,7 @@ export const CLIP_HM_GLF_BOMBER_THREE_PUTT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -99,7 +96,7 @@ export const CLIP_HM_GLF_BOMBER_BLOW_UP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -127,7 +124,7 @@ export const CLIP_HM_GLF_BOMBER_OB_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -151,7 +148,7 @@ export const CLIP_HM_GLF_BOMBER_DUFF_CHIP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -175,7 +172,7 @@ export const CLIP_HM_GLF_BOMBER_SHORT_PUTT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -205,7 +202,7 @@ export const CLIP_HM_GLF_BOMBER_FIRST_TEE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -229,7 +226,7 @@ export const CLIP_HM_GLF_BOMBER_OUTPLAYED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -253,7 +250,7 @@ export const CLIP_HM_GLF_BOMBER_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -277,7 +274,7 @@ export const CLIP_HM_GLF_BOMBER_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -301,7 +298,7 @@ export const CLIP_HM_GLF_BOMBER_FALL_BEHIND_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -327,7 +324,7 @@ export const CLIP_HM_GLF_BALLSTRIKER_THREE_PUTT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -352,7 +349,7 @@ export const CLIP_HM_GLF_BALLSTRIKER_BLOW_UP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -378,7 +375,7 @@ export const CLIP_HM_GLF_BALLSTRIKER_OB_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -402,7 +399,7 @@ export const CLIP_HM_GLF_BALLSTRIKER_DUFF_CHIP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -426,7 +423,7 @@ export const CLIP_HM_GLF_BALLSTRIKER_SHORT_PUTT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -455,7 +452,7 @@ export const CLIP_HM_GLF_BALLSTRIKER_FIRST_TEE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -480,7 +477,7 @@ export const CLIP_HM_GLF_BALLSTRIKER_OUTPLAYED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -504,7 +501,7 @@ export const CLIP_HM_GLF_BALLSTRIKER_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -528,7 +525,7 @@ export const CLIP_HM_GLF_BALLSTRIKER_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -552,7 +549,7 @@ export const CLIP_HM_GLF_BALLSTRIKER_FALL_BEHIND_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -579,7 +576,7 @@ export const CLIP_HM_GLF_SCRAMBLER_THREE_PUTT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -603,7 +600,7 @@ export const CLIP_HM_GLF_SCRAMBLER_BLOW_UP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -627,7 +624,7 @@ export const CLIP_HM_GLF_SCRAMBLER_OB_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -653,7 +650,7 @@ export const CLIP_HM_GLF_SCRAMBLER_DUFF_CHIP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -677,7 +674,7 @@ export const CLIP_HM_GLF_SCRAMBLER_SHORT_PUTT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -707,7 +704,7 @@ export const CLIP_HM_GLF_SCRAMBLER_FIRST_TEE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -731,7 +728,7 @@ export const CLIP_HM_GLF_SCRAMBLER_OUTPLAYED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -755,7 +752,7 @@ export const CLIP_HM_GLF_SCRAMBLER_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -779,7 +776,7 @@ export const CLIP_HM_GLF_SCRAMBLER_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -803,7 +800,7 @@ export const CLIP_HM_GLF_SCRAMBLER_FALL_BEHIND_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: GOLF_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },

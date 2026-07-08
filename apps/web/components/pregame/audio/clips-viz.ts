@@ -16,10 +16,7 @@
 
 import type { AudioScript } from "./types";
 import { SCRIPT_INSTRUCTIONS, VISUALIZATION_INSTRUCTIONS } from "./instructions.ts";
-
-// Same target as CLIP_LOUDNORM_FILTER in clips.ts. Defined locally to avoid
-// a circular import (clips.ts will import VIZ_CLIP_SCRIPTS from this file).
-const VIZ_LOUDNORM_FILTER = "loudnorm=I=-16:TP=-1.5:LRA=11";
+import { CLIP_LOUDNORM_FILTER } from "./loudnorm";
 
 // ── Defense — Hockey (9 plays) ───────────────────────────────────────────────
 
@@ -28,7 +25,7 @@ export const CLIP_VIZ_DEFENSE_RETRIEVAL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself as the first player back, on your toes and ready for it.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -58,7 +55,7 @@ export const CLIP_VIZ_DEFENSE_WALK_THE_LINE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the puck come to you at the blue line, with the whole play in front of you.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -86,7 +83,7 @@ export const CLIP_VIZ_DEFENSE_GAP_UP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the rush coming at you, and feel yourself ready to control the space.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -114,7 +111,7 @@ export const CLIP_VIZ_DEFENSE_BREAKOUT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself below the goal line, pressure coming, eyes up and ready to move it.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -142,7 +139,7 @@ export const CLIP_VIZ_DEFENSE_LONG_SHIFT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself late in a hard shift, tired but still responsible.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -174,7 +171,7 @@ export const CLIP_VIZ_DEFENSE_PINCH_SCORE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the puck near the wall and know this is your chance to keep the play alive.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -202,7 +199,7 @@ export const CLIP_VIZ_DEFENSE_PENALTY_KILL_CLEAR_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself on the penalty kill, locked into your lane and your job.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -230,7 +227,7 @@ export const CLIP_VIZ_DEFENSE_VOCAL_BREAKOUT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself as the calm voice on the ice, helping everyone play faster.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -258,7 +255,7 @@ export const CLIP_VIZ_DEFENSE_ANGLE_WIDE_BOXOUT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the rush building, and feel yourself set, square, and ready to angle him off.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -290,7 +287,7 @@ export const CLIP_VIZ_FORWARD_WIN_THE_WALL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the puck go into your corner and know you are going to win the race.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -318,7 +315,7 @@ export const CLIP_VIZ_FORWARD_GIVE_AND_GO_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See open ice ahead of you and feel your speed starting to build.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -346,7 +343,7 @@ export const CLIP_VIZ_FORWARD_BACKCHECK_STRIP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the turnover happen and feel yourself commit to getting back hard.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -374,7 +371,7 @@ export const CLIP_VIZ_FORWARD_NET_FRONT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself at the net-front, ready to make a hard play in traffic.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -402,7 +399,7 @@ export const CLIP_VIZ_FORWARD_FACEOFF_WIN_SHOT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself over the dot, set, calm, and ready for the puck drop.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -426,7 +423,7 @@ export const CLIP_VIZ_FORWARD_2ON1_PASS_FINISH_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the odd-man rush opening up, with space and speed in front of you.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -450,7 +447,7 @@ export const CLIP_VIZ_FORWARD_FORECHECK_STRIP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself as F1, first into the zone, setting the pressure.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -474,7 +471,7 @@ export const CLIP_VIZ_FORWARD_CYCLE_LOW_HIGH_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the puck below the goal line and feel your line ready to build pressure.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -504,7 +501,7 @@ export const CLIP_VIZ_FORWARD_3ON2_MIDDLE_DRIVE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the rush forming, and know your middle-lane drive can open everything.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -532,7 +529,7 @@ export const CLIP_VIZ_FORWARD_DZONE_FACEOFF_WIN_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the defensive-zone draw and feel the importance of doing your job.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -562,7 +559,7 @@ export const CLIP_VIZ_GOALIE_TRACK_AND_SAVE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the play enter your zone and feel yourself settled in your crease.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -590,7 +587,7 @@ export const CLIP_VIZ_GOALIE_REBOUND_CONTROL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the shooter on the wing and feel yourself ready to control the puck.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -618,7 +615,7 @@ export const CLIP_VIZ_GOALIE_POST_TO_POST_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the puck below the goal line and feel yourself sealed and patient.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -646,7 +643,7 @@ export const CLIP_VIZ_GOALIE_BREAKAWAY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the player coming in alone and feel your body stay big and quiet.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -674,7 +671,7 @@ export const CLIP_VIZ_GOALIE_GLOVE_FREEZE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the shot developing through traffic and feel your glove ready out front.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -698,7 +695,7 @@ export const CLIP_VIZ_GOALIE_SCRAMBLE_SAVE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the crease get messy and know you are going to keep fighting for the puck.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -722,7 +719,7 @@ export const CLIP_VIZ_GOALIE_SCREEN_TRAFFIC_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See bodies in front of you and feel yourself working to find the puck.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -746,7 +743,7 @@ export const CLIP_VIZ_GOALIE_PLAY_PUCK_BREAKOUT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the dump-in coming and know you can help your team before pressure arrives.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -774,7 +771,7 @@ export const CLIP_VIZ_GOALIE_PK_SEAM_SAVE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the power play moving the puck and feel yourself patient through the seam.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -804,7 +801,7 @@ export const CLIP_VIZ_GUARD_PICK_AND_ROLL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself bringing the ball up, calm, with the floor spread in front of you.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -838,7 +835,7 @@ export const CLIP_VIZ_GUARD_TRANSITION_PULLUP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the rebound hit your hands and feel the floor open in transition.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -868,7 +865,7 @@ export const CLIP_VIZ_GUARD_LIVE_STEAL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself picking up full court, low, active, and ready to pressure.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -898,7 +895,7 @@ export const CLIP_VIZ_GUARD_DRIVE_AND_KICK_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the closeout coming and know you are ready to attack the advantage.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -928,7 +925,7 @@ export const CLIP_VIZ_GUARD_PRESS_BREAK_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the press coming at you, and feel yourself calm with the ball.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -960,7 +957,7 @@ export const CLIP_VIZ_GUARD_RUN_THE_SET_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the game speeding up and feel yourself ready to settle the team.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -988,7 +985,7 @@ export const CLIP_VIZ_GUARD_CLUTCH_FREE_THROWS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself at the line in a tight game, with your routine ready.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1020,7 +1017,7 @@ export const CLIP_VIZ_GUARD_ICES_IT_LATE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the trap coming late, and feel yourself strong with the ball.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1052,7 +1049,7 @@ export const CLIP_VIZ_WING_CATCH_AND_SHOOT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself spaced on the wing, ready before the ball arrives.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1082,7 +1079,7 @@ export const CLIP_VIZ_WING_ATTACK_CLOSEOUT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the skip pass coming and feel the closeout flying at you.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1114,7 +1111,7 @@ export const CLIP_VIZ_WING_DENIAL_DEFLECTION_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See your matchup trying to get open, and feel yourself locked into the lane.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1144,7 +1141,7 @@ export const CLIP_VIZ_WING_BACKDOOR_CUT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See your defender overplaying, and feel the backdoor lane open.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1174,7 +1171,7 @@ export const CLIP_VIZ_WING_CLOSEOUT_CONTAIN_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the ball skip to the corner and feel yourself ready to close out under control.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1204,7 +1201,7 @@ export const CLIP_VIZ_WING_RELOCATE_CATCH_SHOOT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself move after the pass, staying active and ready.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1236,7 +1233,7 @@ export const CLIP_VIZ_WING_CLUTCH_FREE_THROWS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself at the line on the road, with the gym trying to shake you.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1264,7 +1261,7 @@ export const CLIP_VIZ_WING_LATE_JUMPER_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the ball find you late, with space to rise into your shot.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1294,7 +1291,7 @@ export const CLIP_VIZ_BIG_ROLL_AND_FINISH_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself sprinting into the screen, ready to create contact and roll hard.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1326,7 +1323,7 @@ export const CLIP_VIZ_BIG_POST_SEAL_DROPSTEP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself beating your man down the floor and earning deep position.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1356,7 +1353,7 @@ export const CLIP_VIZ_BIG_BOXOUT_OUTLET_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the shot go up and feel yourself ready to own the glass.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1388,7 +1385,7 @@ export const CLIP_VIZ_BIG_RIM_PROTECT_AND_GO_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the guard coming downhill and feel yourself ready to protect the rim.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1418,7 +1415,7 @@ export const CLIP_VIZ_BIG_RESCREEN_ROLL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself coming into the screen with purpose, ready to create an advantage.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1448,7 +1445,7 @@ export const CLIP_VIZ_BIG_SHORT_ROLL_READ_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the defense step toward your guard and feel the pocket open for you.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1478,7 +1475,7 @@ export const CLIP_VIZ_BIG_CLUTCH_FREE_THROWS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See yourself at the line late, with everyone expecting the miss.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },
@@ -1510,7 +1507,7 @@ export const CLIP_VIZ_BIG_GAME_SEALING_BLOCK_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: VIZ_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "See the final possession coming at the rim, and feel yourself ready to wall up.", instructions: VISUALIZATION_INSTRUCTIONS, mark: { phase: "rink" } },
     { type: "silence", durationSec: 2 },

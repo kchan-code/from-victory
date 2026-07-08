@@ -34,10 +34,7 @@ import {
   LB_VIZ,
   DB_VIZ,
 } from "./segments-football.ts";
-
-// Same target as CLIP_LOUDNORM_FILTER in clips.ts. Defined locally to avoid a
-// circular import (clips.ts imports FOOTBALL_PREGAME_CLIP_SCRIPTS from here).
-const FOOTBALL_LOUDNORM_FILTER = "loudnorm=I=-16:TP=-1.5:LRA=11";
+import { CLIP_LOUDNORM_FILTER } from "./loudnorm";
 
 // ── Football VIZ clips — one per role (FV-202) ───────────────────────────────
 
@@ -46,7 +43,7 @@ export const CLIP_VIZ_QB_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...QB_VIZ],
 };
 
@@ -55,7 +52,7 @@ export const CLIP_VIZ_RB_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...RB_VIZ],
 };
 
@@ -64,7 +61,7 @@ export const CLIP_VIZ_WR_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...WR_VIZ],
 };
 
@@ -73,7 +70,7 @@ export const CLIP_VIZ_OL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...OL_VIZ],
 };
 
@@ -82,7 +79,7 @@ export const CLIP_VIZ_DL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...DL_VIZ],
 };
 
@@ -91,7 +88,7 @@ export const CLIP_VIZ_LB_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...LB_VIZ],
 };
 
@@ -100,7 +97,7 @@ export const CLIP_VIZ_DB_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...DB_VIZ],
 };
 
@@ -113,7 +110,7 @@ export const CLIP_HM_FTB_QB_PICK_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -137,7 +134,7 @@ export const CLIP_HM_FTB_QB_BEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -161,7 +158,7 @@ export const CLIP_HM_FTB_QB_FILM_MISTAKE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -187,7 +184,7 @@ export const CLIP_HM_FTB_QB_BIG_PLAY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -213,7 +210,7 @@ export const CLIP_HM_FTB_QB_PULLED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -237,7 +234,7 @@ export const CLIP_HM_FTB_QB_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -263,7 +260,7 @@ export const CLIP_HM_FTB_QB_BIG_HIT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -287,7 +284,7 @@ export const CLIP_HM_FTB_QB_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -311,7 +308,7 @@ export const CLIP_HM_FTB_QB_FALL_BEHIND_EARLY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -339,7 +336,7 @@ export const CLIP_HM_FTB_RB_FUMBLE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -365,7 +362,7 @@ export const CLIP_HM_FTB_RB_BEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -389,7 +386,7 @@ export const CLIP_HM_FTB_RB_FILM_MISTAKE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -415,7 +412,7 @@ export const CLIP_HM_FTB_RB_BIG_PLAY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -441,7 +438,7 @@ export const CLIP_HM_FTB_RB_BENCHED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -465,7 +462,7 @@ export const CLIP_HM_FTB_RB_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -491,7 +488,7 @@ export const CLIP_HM_FTB_RB_BIG_HIT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -515,7 +512,7 @@ export const CLIP_HM_FTB_RB_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -539,7 +536,7 @@ export const CLIP_HM_FTB_RB_FALL_BEHIND_EARLY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -563,7 +560,7 @@ export const CLIP_HM_FTB_RB_TRENCH_BATTLE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -589,7 +586,7 @@ export const CLIP_HM_FTB_WR_TURNOVER_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -613,7 +610,7 @@ export const CLIP_HM_FTB_WR_BEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -639,7 +636,7 @@ export const CLIP_HM_FTB_WR_FILM_MISTAKE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -667,7 +664,7 @@ export const CLIP_HM_FTB_WR_BIG_PLAY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -693,7 +690,7 @@ export const CLIP_HM_FTB_WR_BENCHED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -717,7 +714,7 @@ export const CLIP_HM_FTB_WR_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -743,7 +740,7 @@ export const CLIP_HM_FTB_WR_BIG_HIT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -767,7 +764,7 @@ export const CLIP_HM_FTB_WR_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -791,7 +788,7 @@ export const CLIP_HM_FTB_WR_FALL_BEHIND_EARLY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -815,7 +812,7 @@ export const CLIP_HM_FTB_WR_TRENCH_BATTLE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -841,7 +838,7 @@ export const CLIP_HM_FTB_OL_BEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -865,7 +862,7 @@ export const CLIP_HM_FTB_OL_FILM_MISTAKE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -891,7 +888,7 @@ export const CLIP_HM_FTB_OL_BIG_PLAY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -917,7 +914,7 @@ export const CLIP_HM_FTB_OL_BENCHED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -941,7 +938,7 @@ export const CLIP_HM_FTB_OL_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -967,7 +964,7 @@ export const CLIP_HM_FTB_OL_BIG_HIT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -991,7 +988,7 @@ export const CLIP_HM_FTB_OL_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1015,7 +1012,7 @@ export const CLIP_HM_FTB_OL_FALL_BEHIND_EARLY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1039,7 +1036,7 @@ export const CLIP_HM_FTB_OL_TRENCH_BATTLE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1067,7 +1064,7 @@ export const CLIP_HM_FTB_DL_BEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1091,7 +1088,7 @@ export const CLIP_HM_FTB_DL_FILM_MISTAKE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1118,7 +1115,7 @@ export const CLIP_HM_FTB_DL_BIG_PLAY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1144,7 +1141,7 @@ export const CLIP_HM_FTB_DL_BENCHED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1168,7 +1165,7 @@ export const CLIP_HM_FTB_DL_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1194,7 +1191,7 @@ export const CLIP_HM_FTB_DL_BIG_HIT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1218,7 +1215,7 @@ export const CLIP_HM_FTB_DL_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1242,7 +1239,7 @@ export const CLIP_HM_FTB_DL_FALL_BEHIND_EARLY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1266,7 +1263,7 @@ export const CLIP_HM_FTB_DL_TRENCH_BATTLE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1292,7 +1289,7 @@ export const CLIP_HM_FTB_LB_TURNOVER_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1316,7 +1313,7 @@ export const CLIP_HM_FTB_LB_BEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1340,7 +1337,7 @@ export const CLIP_HM_FTB_LB_FILM_MISTAKE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1366,7 +1363,7 @@ export const CLIP_HM_FTB_LB_BIG_PLAY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1392,7 +1389,7 @@ export const CLIP_HM_FTB_LB_BENCHED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1416,7 +1413,7 @@ export const CLIP_HM_FTB_LB_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1442,7 +1439,7 @@ export const CLIP_HM_FTB_LB_BIG_HIT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1466,7 +1463,7 @@ export const CLIP_HM_FTB_LB_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1490,7 +1487,7 @@ export const CLIP_HM_FTB_LB_FALL_BEHIND_EARLY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1514,7 +1511,7 @@ export const CLIP_HM_FTB_LB_TRENCH_BATTLE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1540,7 +1537,7 @@ export const CLIP_HM_FTB_DB_TURNOVER_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1566,7 +1563,7 @@ export const CLIP_HM_FTB_DB_BEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1590,7 +1587,7 @@ export const CLIP_HM_FTB_DB_FILM_MISTAKE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1616,7 +1613,7 @@ export const CLIP_HM_FTB_DB_BIG_PLAY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1642,7 +1639,7 @@ export const CLIP_HM_FTB_DB_BENCHED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1666,7 +1663,7 @@ export const CLIP_HM_FTB_DB_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1693,7 +1690,7 @@ export const CLIP_HM_FTB_DB_BIG_HIT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1717,7 +1714,7 @@ export const CLIP_HM_FTB_DB_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1741,7 +1738,7 @@ export const CLIP_HM_FTB_DB_FALL_BEHIND_EARLY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1765,7 +1762,7 @@ export const CLIP_HM_FTB_DB_TRENCH_BATTLE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: FOOTBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
