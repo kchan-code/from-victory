@@ -385,35 +385,16 @@ export function AppPreview() {
               </div>
             </PreviewItem>
 
-            {/* 4. Post-game reset — COMING SOON (FV-225) */}
+            {/* 4. Post-game reset — the real /athlete/postgame debrief */}
             <PreviewItem
               lbl="04 / Post-game reset"
               ttl="Won, lost, mistake, tough — every game has a reset."
-              sub="Coming soon. Reflection before recap — name it, release it, carry the lesson."
+              sub="Reflection before recap — name it, release it, carry the lesson."
             >
               <div className="fv-phone-screen">
                 <div className="fv-phone-notch" />
                 <PhoneStatusBar small />
                 <div className="px-[18px] pt-1.5 pb-[18px] flex-1 overflow-hidden">
-                  {/* Coming soon badge */}
-                  <div className="mb-3">
-                    <div
-                      data-testid="postgame-coming-soon"
-                      className="inline-flex items-center gap-1.5 rounded-pill px-2.5 py-1 font-mono text-[8px] tracking-[0.14em] uppercase font-semibold"
-                      style={{
-                        background: "rgba(36,91,255,0.12)",
-                        border: "1px solid rgba(36,91,255,0.35)",
-                        color: "var(--fv-cobalt-bright, #6b8fff)",
-                      }}
-                    >
-                      <span
-                        className="w-[4px] h-[4px] rounded-pill"
-                        style={{ background: "var(--fv-cobalt-bright, #6b8fff)" }}
-                      />
-                      Coming soon
-                    </div>
-                  </div>
-
                   <div className="mb-3.5">
                     <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-cream/50 font-semibold">
                       Post-game reset
@@ -425,7 +406,7 @@ export function AppPreview() {
 
                   <div className="grid grid-cols-2 gap-[7px]">
                     <div
-                      className="rounded-[12px] px-3 py-3 text-cream opacity-60"
+                      className="rounded-[12px] px-3 py-3 text-cream"
                       style={{
                         background: "rgba(79,199,138,0.10)",
                         border: "1px solid rgba(79,199,138,0.4)",
@@ -445,7 +426,7 @@ export function AppPreview() {
                     ].map((opt) => (
                       <div
                         key={opt.label}
-                        className="bg-charcoal border border-hairline rounded-[12px] px-3 py-3 opacity-60"
+                        className="bg-charcoal border border-hairline rounded-[12px] px-3 py-3"
                       >
                         <div className="font-mono text-[8.5px] tracking-[0.16em] uppercase text-cream/50 font-semibold">
                           {opt.label}
@@ -459,8 +440,8 @@ export function AppPreview() {
 
                   <div className="mt-4 bg-charcoal border border-hairline rounded-[12px] p-3 text-center">
                     <div className="font-body text-[11px] text-cream/55 leading-[1.45]">
-                      The post-game reset is coming. It will be here when you
-                      need it.
+                      A short debrief that clears the emotion before it
+                      hardens into the story you tell yourself.
                     </div>
                   </div>
                 </div>
