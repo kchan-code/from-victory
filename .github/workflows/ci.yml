@@ -12,74 +12,43 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Detect lockfile
-        id: lockfile
-        run: |
-          if [ -f package-lock.json ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "No package-lock.json — repo not yet bootstrapped. Skipping npm steps."
-          fi
+      - name: Require package-lock.json
+        run: test -f package-lock.json || { echo "::error::package-lock.json missing — refusing to false-green"; exit 1; }
       - uses: actions/setup-node@v4
-        if: steps.lockfile.outputs.exists == 'true'
         with:
           node-version: '20'
           cache: 'npm'
-      - if: steps.lockfile.outputs.exists == 'true'
-        run: npm ci
-      - if: steps.lockfile.outputs.exists == 'true'
-        run: npm run typecheck
-      - if: steps.lockfile.outputs.exists == 'true'
-        run: npm run build
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
 
   test:
     name: Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Detect lockfile
-        id: lockfile
-        run: |
-          if [ -f package-lock.json ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "No package-lock.json — repo not yet bootstrapped. Skipping npm steps."
-          fi
+      - name: Require package-lock.json
+        run: test -f package-lock.json || { echo "::error::package-lock.json missing — refusing to false-green"; exit 1; }
       - uses: actions/setup-node@v4
-        if: steps.lockfile.outputs.exists == 'true'
         with:
           node-version: '20'
           cache: 'npm'
-      - if: steps.lockfile.outputs.exists == 'true'
-        run: npm ci
-      - if: steps.lockfile.outputs.exists == 'true'
-        run: npm test --if-present
+      - run: npm ci
+      - run: npm test --if-present
 
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Detect lockfile
-        id: lockfile
-        run: |
-          if [ -f package-lock.json ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "No package-lock.json — repo not yet bootstrapped. Skipping npm steps."
-          fi
+      - name: Require package-lock.json
+        run: test -f package-lock.json || { echo "::error::package-lock.json missing — refusing to false-green"; exit 1; }
       - uses: actions/setup-node@v4
-        if: steps.lockfile.outputs.exists == 'true'
         with:
           node-version: '20'
           cache: 'npm'
-      - if: steps.lockfile.outputs.exists == 'true'
-        run: npm ci
-      - if: steps.lockfile.outputs.exists == 'true'
-        run: npm run lint --if-present
+      - run: npm ci
+      - run: npm run lint --if-present
 
   audio-cache-bust:
     name: Audio cache-bust guard
