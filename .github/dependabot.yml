@@ -1,0 +1,32 @@
+# Dependabot — automated dependency + GitHub Actions update scanning (FV-385).
+# npm-workspaces monorepo: a single root package-lock.json at "/" covers apps/*.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+    open-pull-requests-limit: 5
+    rebase-strategy: "auto"
+    commit-message:
+      prefix: "chore"
+    groups:
+      # Batch minor + patch bumps into one PR to reduce noise; majors stay
+      # separate so they get explicit review.
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:30"
+    open-pull-requests-limit: 5
+    rebase-strategy: "auto"
+    commit-message:
+      prefix: "chore"
