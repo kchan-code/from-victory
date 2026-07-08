@@ -18,6 +18,7 @@ import {
   HOCKEY_CONFIG,
   BASKETBALL_CONFIG,
   BASEBALL_CONFIG,
+  LACROSSE_CONFIG,
   getSportConfig,
   adversityOptionsFor,
   adversityLabelFor,
@@ -914,5 +915,276 @@ describe("FV-294 — sportHasPositivePlays gates the picker so no athlete is tra
         expect(positivePlaysFor(role).length).toBeGreaterThan(0);
       }
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-406: LACROSSE_CONFIG — dormant registry wiring integrity.
+//
+// Lacrosse is v2 DORMANT (docs/lacrosse-module-map.md, FV-404 KC-ratified):
+// wired into the registry, NOT athlete-selectable. These tests assert
+// config-internal consistency only (the FV-301 pattern for a dormant sport —
+// no manifest/audio requirement; the FV-301 SUPPORTED_SPORTS loops above
+// pick lacrosse up automatically if it ever goes live). The grid: 5 positions
+// × 10 shared adversities → 47 distinct cells; + 3 clinically WITHHELD
+// yips-class cells (FV-404 §4, the FV-119 pattern) = 50 authored.
+// ---------------------------------------------------------------------------
+
+import { LACROSSE_PREGAME_CLIP_SCRIPTS } from "../audio/clips-lacrosse";
+
+describe("FV-406: lacrosse stays DORMANT", () => {
+  it("lacrosse is NOT in SUPPORTED_SPORTS (not athlete-selectable)", () => {
+    expect(SUPPORTED_SPORTS as readonly string[]).not.toContain("lacrosse");
+  });
+
+  it("getSportConfig('lacrosse') returns LACROSSE_CONFIG with sportKey 'lacrosse'", () => {
+    expect(getSportConfig("lacrosse")).toBe(LACROSSE_CONFIG);
+    expect(LACROSSE_CONFIG.sportKey).toBe("lacrosse");
+  });
+
+  it("lacrosse ships no positive plays yet, so the picker step is gated off", () => {
+    // Dormant precedent (football/swimming/track-field): no POSITIVE_PLAYS
+    // entries until the viz-lax-<position>-<play> library renders. The flow
+    // gates Step 04 on this, so no athlete could ever be trapped (FV-294).
+    expect(sportHasPositivePlays(LACROSSE_CONFIG.roles)).toBe(false);
+  });
+});
+
+describe("LACROSSE_CONFIG.cellSlugFor — the FV-404 grid", () => {
+  const roles = LACROSSE_CONFIG.roles ?? [];
+
+  it("declares the 5 ratified positions (FV-404 §1 — LSM folds into Defense)", () => {
+    expect(roles).toEqual(["Attack", "Midfield", "Defense", "FOGO", "Goalie"]);
+  });
+
+  it("all 10 adversity strings have a fragment in adversitySlugFragments", () => {
+    const missing: string[] = [];
+    for (const adversity of LACROSSE_CONFIG.adversities) {
+      if (!(adversity in LACROSSE_CONFIG.adversitySlugFragments)) missing.push(adversity);
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it("the full 5×10 matrix resolves to exactly 47 distinct hm-lax-* cells (FV-404 §3)", () => {
+    const slugs = new Set<string>();
+    for (const role of roles) {
+      for (const adversity of LACROSSE_CONFIG.adversities) {
+        slugs.add(LACROSSE_CONFIG.cellSlugFor(adversity, role));
+      }
+    }
+    expect(slugs.size).toBe(47);
+    expect([...slugs].every((s) => s.startsWith("hm-lax-"))).toBe(true);
+    // The withheld yips cells are NOT reachable from the shared-10 grid.
+    expect(slugs.has("hm-lax-fogo-clamp-yips")).toBe(false);
+    expect(slugs.has("hm-lax-goalie-save-yips")).toBe(false);
+    expect(slugs.has("hm-lax-defense-clear-yips")).toBe(false);
+  });
+
+  it("Attack special cases: failed-clear → rode-out; dropped dodged reroutes to turnover", () => {
+    expect(LACROSSE_CONFIG.cellSlugFor("I fail a clear.", "Attack")).toBe("hm-lax-attack-rode-out");
+    // Attack drops `dodged` (omitted from its picker); the reroute keeps the
+    // integrity matrix whole (the baseball pitcher-error precedent).
+    expect(LACROSSE_CONFIG.cellSlugFor("I get dodged.", "Attack")).toBe("hm-lax-attack-turnover");
+  });
+
+  it("FOGO special cases resolve to the dot-true cells (FV-404 Appendix)", () => {
+    expect(LACROSSE_CONFIG.cellSlugFor("I get dodged.", "FOGO")).toBe("hm-lax-fogo-lose-draws");
+    expect(LACROSSE_CONFIG.cellSlugFor("I take a bad penalty.", "FOGO")).toBe("hm-lax-fogo-violation");
+    expect(LACROSSE_CONFIG.cellSlugFor("I get benched.", "FOGO")).toBe("hm-lax-fogo-off-the-dot");
+    expect(LACROSSE_CONFIG.cellSlugFor("We fall behind early.", "FOGO")).toBe("hm-lax-fogo-behind-at-the-dot");
+    // Dropped FOGO combos (never shown in his picker) reroute, not 404:
+    expect(LACROSSE_CONFIG.cellSlugFor("I get shut off.", "FOGO")).toBe("hm-lax-fogo-lose-draws");
+    expect(LACROSSE_CONFIG.cellSlugFor("I fail a clear.", "FOGO")).toBe("hm-lax-fogo-turnover");
+  });
+
+  it("Goalie special cases resolve to the goalie-true cells (goalie-pulled precedent)", () => {
+    expect(LACROSSE_CONFIG.cellSlugFor("I turn the ball over.", "Goalie")).toBe("hm-lax-goalie-throw-away");
+    expect(LACROSSE_CONFIG.cellSlugFor("I get dodged.", "Goalie")).toBe("hm-lax-goalie-beaten-clean");
+    expect(LACROSSE_CONFIG.cellSlugFor("I take a bad penalty.", "Goalie")).toBe("hm-lax-goalie-man-down");
+    expect(LACROSSE_CONFIG.cellSlugFor("I get shut off.", "Goalie")).toBe("hm-lax-goalie-soft-goal");
+    expect(LACROSSE_CONFIG.cellSlugFor("I get benched.", "Goalie")).toBe("hm-lax-goalie-pulled");
+  });
+
+  it("no combination ever produces hm-lax-goalie-benched (a goalie is pulled)", () => {
+    for (const adversity of LACROSSE_CONFIG.adversities) {
+      expect(LACROSSE_CONFIG.cellSlugFor(adversity, "Goalie")).not.toBe("hm-lax-goalie-benched");
+    }
+  });
+});
+
+describe("LACROSSE_CONFIG — the ⚠⚠ withheld yips cells (FV-404 §4 / FV-119 pattern)", () => {
+  const roles = LACROSSE_CONFIG.roles ?? [];
+
+  it("'I lose my touch.' is NOT a selectable adversity", () => {
+    expect(LACROSSE_CONFIG.adversities).not.toContain("I lose my touch.");
+  });
+
+  it("no position's Hard Moment picker carries the yips umbrella key", () => {
+    for (const role of roles) {
+      const keys = adversityOptionsFor(LACROSSE_CONFIG, role).map((o) => o.key);
+      expect(keys, `${role} picker must omit the gated umbrella`).not.toContain("I lose my touch.");
+    }
+  });
+
+  it("cellSlugFor still resolves the umbrella per position (grid completeness for the clinical re-enable)", () => {
+    expect(LACROSSE_CONFIG.cellSlugFor("I lose my touch.", "FOGO")).toBe("hm-lax-fogo-clamp-yips");
+    expect(LACROSSE_CONFIG.cellSlugFor("I lose my touch.", "Goalie")).toBe("hm-lax-goalie-save-yips");
+    expect(LACROSSE_CONFIG.cellSlugFor("I lose my touch.", "Defense")).toBe("hm-lax-defense-clear-yips");
+    // Attack/Midfield carry NO yips cell — cold-touch is the slump flavor of
+    // shut-off, which ships live (FV-404 §4).
+    expect(LACROSSE_CONFIG.cellSlugFor("I lose my touch.", "Attack")).toBe("hm-lax-attack-shut-off");
+    expect(LACROSSE_CONFIG.cellSlugFor("I lose my touch.", "Midfield")).toBe("hm-lax-midfield-shut-off");
+  });
+});
+
+describe("LACROSSE_CONFIG — Hard Moment picker options per position (FV-404 §3 counts)", () => {
+  it("Attack shows 9 (drops dodged); FOGO shows 8 (drops shut-off + failed-clear)", () => {
+    expect(adversityOptionsFor(LACROSSE_CONFIG, "Attack")).toHaveLength(9);
+    expect(adversityOptionsFor(LACROSSE_CONFIG, "Attack").map((o) => o.key)).not.toContain("I get dodged.");
+    expect(adversityOptionsFor(LACROSSE_CONFIG, "FOGO")).toHaveLength(8);
+    const fogoKeys = adversityOptionsFor(LACROSSE_CONFIG, "FOGO").map((o) => o.key);
+    expect(fogoKeys).not.toContain("I get shut off.");
+    expect(fogoKeys).not.toContain("I fail a clear.");
+  });
+
+  it("Midfield + Defense fall back to the flat 10; Goalie shows a relabelled 10", () => {
+    expect(adversityOptionsFor(LACROSSE_CONFIG, "Midfield")).toHaveLength(10);
+    expect(adversityOptionsFor(LACROSSE_CONFIG, "Defense")).toHaveLength(10);
+    expect(adversityOptionsFor(LACROSSE_CONFIG, "Goalie")).toHaveLength(10);
+  });
+
+  it("every roleAdversities key is a canonical adversity (labels are display-only, FV-101)", () => {
+    const bad: string[] = [];
+    for (const [role, options] of Object.entries(LACROSSE_CONFIG.roleAdversities ?? {})) {
+      for (const o of options) {
+        if (!LACROSSE_CONFIG.adversities.includes(o.key)) bad.push(`${role}: "${o.key}"`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it("position-true relabels surface downstream via adversityLabelFor", () => {
+    expect(adversityLabelFor(LACROSSE_CONFIG, "Goalie", "I get benched.")).toBe("I get pulled.");
+    expect(adversityLabelFor(LACROSSE_CONFIG, "FOGO", "I get dodged.")).toBe("I lose a string of draws.");
+    expect(adversityLabelFor(LACROSSE_CONFIG, "Attack", "I fail a clear.")).toBe("I get rode out.");
+    // Roles without an override pass the key through.
+    expect(adversityLabelFor(LACROSSE_CONFIG, "Midfield", "I get dodged.")).toBe("I get dodged.");
+  });
+});
+
+describe("LACROSSE_CONFIG — practice + picker field completeness", () => {
+  it("roleContent covers all 5 positions with a title and 5 scenes each", () => {
+    for (const role of LACROSSE_CONFIG.roles ?? []) {
+      const content = LACROSSE_CONFIG.roleContent?.[role];
+      expect(content, `roleContent missing for ${role}`).toBeDefined();
+      expect(content!.title.length).toBeGreaterThan(0);
+      expect(content!.scenes).toHaveLength(5);
+    }
+  });
+
+  it("every practiceFocusOptions entry maps to a pp-lax-focus-* slug (keys exact)", () => {
+    expect(Object.keys(LACROSSE_CONFIG.practiceFocusSlugs).sort()).toEqual(
+      [...LACROSSE_CONFIG.practiceFocusOptions].sort(),
+    );
+    for (const slug of Object.values(LACROSSE_CONFIG.practiceFocusSlugs)) {
+      expect(slug).toMatch(/^pp-lax-focus-/);
+    }
+  });
+
+  it("every lacrosse need resolves to an opener slug (shared-opener fallback)", () => {
+    const missing = LACROSSE_CONFIG.needs.filter(
+      (need) => !resolveOpenerSlug(need, "lacrosse"),
+    );
+    expect(missing).toEqual([]);
+  });
+
+  it("keeps the NeedToday union stable: the decisions swap reuses basketball's member", () => {
+    expect(LACROSSE_CONFIG.needs).toContain("Better decisions with the ball");
+    expect(LACROSSE_CONFIG.needs).not.toContain("Better puck decisions");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-406: registry ↔ clip-script coverage (config-internal; no manifest/audio
+// requirement — lacrosse is dormant, so the playlist-integrity file-existence
+// loops exclude it until the render lands it in manifest.practiceState).
+// ---------------------------------------------------------------------------
+
+describe("FV-406: every lacrosse registry cell has an authored clip script", () => {
+  const scriptSlugs = new Set(LACROSSE_PREGAME_CLIP_SCRIPTS.map((s) => s.slug));
+
+  it("ships 60 unique scripts: 10 library VIZ (2 per position) + 47 grid cells + 3 withheld yips", () => {
+    expect(LACROSSE_PREGAME_CLIP_SCRIPTS).toHaveLength(60);
+    expect(scriptSlugs.size).toBe(60);
+  });
+
+  it("every grid cell (5×10 via cellSlugFor) has a script", () => {
+    const missing: string[] = [];
+    for (const role of LACROSSE_CONFIG.roles ?? []) {
+      for (const adversity of LACROSSE_CONFIG.adversities) {
+        const slug = LACROSSE_CONFIG.cellSlugFor(adversity, role);
+        if (!scriptSlugs.has(slug)) missing.push(`[${role} × "${adversity}"] → ${slug}`);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it("the 3 withheld yips cells are authored (grid-complete for the clinical gate)", () => {
+    for (const slug of ["hm-lax-fogo-clamp-yips", "hm-lax-goalie-save-yips", "hm-lax-defense-clear-yips"]) {
+      expect(scriptSlugs.has(slug), `${slug} must be authored`).toBe(true);
+    }
+  });
+
+  // The FV-404 §2 two-libraries rule: exactly TWO theme VIZ scripts per
+  // position, slug-for-slug with the FV-405 book. No flagship
+  // viz-lax-<position> clip exists — the themes ARE the viz axis.
+  const LACROSSE_VIZ_SLUGS = [
+    "viz-lax-attack-beat-your-man",
+    "viz-lax-attack-see-the-field",
+    "viz-lax-midfield-push-the-ball",
+    "viz-lax-midfield-cover-both-ends",
+    "viz-lax-defense-lock-him-down",
+    "viz-lax-defense-take-it-the-other-way",
+    "viz-lax-fogo-win-the-clamp",
+    "viz-lax-fogo-win-the-wing",
+    "viz-lax-goalie-make-the-save",
+    "viz-lax-goalie-start-the-clear",
+  ] as const;
+
+  it("every position has exactly its two library-theme VIZ scripts (FV-405 book slugs)", () => {
+    for (const slug of LACROSSE_VIZ_SLUGS) {
+      expect(scriptSlugs.has(slug), `${slug} must exist`).toBe(true);
+    }
+    // Exactly 10 viz-lax-* scripts — 2 per position, no flagship extras.
+    const vizCount = LACROSSE_PREGAME_CLIP_SCRIPTS.filter((s) => s.slug.startsWith("viz-lax-")).length;
+    expect(vizCount).toBe(10);
+    for (const role of LACROSSE_CONFIG.roles ?? []) {
+      const token = role.toLowerCase();
+      const perPosition = LACROSSE_VIZ_SLUGS.filter((s) => s.startsWith(`viz-lax-${token}-`)).length;
+      expect(perPosition, `${role} must carry 2 library themes`).toBe(2);
+      expect(scriptSlugs.has(`viz-lax-${token}`), `no flagship viz-lax-${token}`).toBe(false);
+    }
+  });
+
+  it("every VIZ script carries the book's 17-line flagship shape", () => {
+    const wrong: string[] = [];
+    for (const script of LACROSSE_PREGAME_CLIP_SCRIPTS) {
+      if (!script.slug.startsWith("viz-lax-")) continue;
+      const speech = script.segments.filter((s) => s.type === "speech").length;
+      if (speech !== 17) wrong.push(`${script.slug}: ${speech} speech lines (expected 17)`);
+    }
+    expect(wrong).toEqual([]);
+  });
+
+  it("routine cells carry the de-corned 6-line shape; only the yips cells carry the 7th worth line", () => {
+    const yips = new Set(["hm-lax-fogo-clamp-yips", "hm-lax-goalie-save-yips", "hm-lax-defense-clear-yips"]);
+    const wrong: string[] = [];
+    for (const script of LACROSSE_PREGAME_CLIP_SCRIPTS) {
+      if (!script.slug.startsWith("hm-lax-")) continue;
+      const speech = script.segments.filter((s) => s.type === "speech").length;
+      const expected = yips.has(script.slug) ? 7 : 6;
+      if (speech !== expected) wrong.push(`${script.slug}: ${speech} speech lines (expected ${expected})`);
+    }
+    expect(wrong).toEqual([]);
   });
 });

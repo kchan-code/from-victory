@@ -246,6 +246,27 @@ const SPORT_CELL_EXPECTATIONS: Record<
       forbiddenSlug: "hm-trf-sprint-foul",
     },
   },
+  // Lacrosse (v2 DORMANT — FV-404 taxonomy, FV-406 wiring; audio render
+  // deferred). 5 positions × 10 shared adversities, but Attack drops dodged
+  // (reroute→attack-turnover) and FOGO drops shut-off + failed-clear
+  // (reroute→fogo-lose-draws / fogo-turnover), so the matrix dedups to 47
+  // distinct cells. The 3 clinically withheld yips cells (FV-404 §4) live
+  // OUTSIDE this grid — their "I lose my touch." umbrella key is not in
+  // `adversities` (covered in sport-registry.test.ts). Compositional-only
+  // (golf model). EXCLUDED from RENDERED_SPORT_CONFIGS until the audio render
+  // lands lacrosse in manifest.practiceState — this entry only satisfies the
+  // Record<Sport, …> exhaustiveness type until then.
+  lacrosse: {
+    cellCount: 47,
+    slugPrefix: "hm-lax-",
+    cellLayout: "catalog",
+    specialCase: {
+      role: "Goalie",
+      adversity: "I get benched.",
+      expectedSlug: "hm-lax-goalie-pulled",
+      forbiddenSlug: "hm-lax-goalie-benched",
+    },
+  },
 };
 
 // FV-94/FV-99: the registry-parameterized integrity suites (sections 5 & 7) run

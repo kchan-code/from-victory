@@ -187,6 +187,14 @@ describe("Registry roles vs DB CHECK union", () => {
     // Track & Field (v2 — dormant; event groups; Sprinter + Distance shared
     // with swimming, listed once above).
     "Hurdler", "Jumper", "Thrower",
+    // Lacrosse (v2 — dormant; FV-404/FV-406; Defense + Goalie shared with
+    // hockey, listed once above). Like golf pre-FV-269, the real
+    // profiles_position_values CHECK widening lands with the lacrosse go-live
+    // migration, bundled with the sport-enum enablement — this mirror tracks
+    // the registry. Safe meanwhile: no athlete can carry sport="lacrosse"
+    // (absent from SUPPORTED_SPORTS + the DB sport CHECK), so no row can
+    // reach these position values.
+    "Attack", "Midfield", "FOGO",
   ];
 
   it("every registry role is in the DB CHECK union", () => {

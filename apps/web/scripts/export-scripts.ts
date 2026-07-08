@@ -22,6 +22,7 @@
 //   docs/scripts/football.md
 //   docs/scripts/swimming.md
 //   docs/scripts/track-field.md
+//   docs/scripts/lacrosse.md
 //   docs/scripts/shared.md
 //   docs/scripts/pre-practice.md
 //   docs/scripts/README.md
@@ -271,6 +272,9 @@ function sourceFileForSlug(slug: string): string {
   if (slug.startsWith("hm-trf-") || slug.startsWith("viz-trf-")) {
     return "components/pregame/audio/clips-trackfield.ts";
   }
+  if (slug.startsWith("hm-lax-") || slug.startsWith("viz-lax-")) {
+    return "components/pregame/audio/clips-lacrosse.ts";
+  }
   if (
     slug.startsWith("viz-defense-") || slug.startsWith("viz-forward-") || slug.startsWith("viz-goalie-") ||
     slug.startsWith("viz-guard-") || slug.startsWith("viz-wing-") || slug.startsWith("viz-big-")
@@ -292,6 +296,7 @@ type Bucket =
   | "football"
   | "swimming"
   | "track-field"
+  | "lacrosse"
   | "pre-practice"
   | "shared";
 
@@ -312,6 +317,7 @@ function bucketForSlug(slug: string): Bucket {
   if (slug.startsWith("hm-ftb-") || slug.startsWith("viz-ftb-")) return "football";
   if (slug.startsWith("hm-swm-") || slug.startsWith("viz-swm-")) return "swimming";
   if (slug.startsWith("hm-trf-") || slug.startsWith("viz-trf-")) return "track-field";
+  if (slug.startsWith("hm-lax-") || slug.startsWith("viz-lax-")) return "lacrosse";
 
   if (
     slug.startsWith("hm-bb-") ||
@@ -422,6 +428,18 @@ function humanTitle(slug: string): string {
   if (slug.startsWith("viz-trf-")) {
     const group = parts.slice(2).join("-");
     return "Track & Field · " + group.charAt(0).toUpperCase() + group.slice(1) + " · VIZ";
+  }
+  if (slug.startsWith("hm-lax-")) {
+    const rest = parts.slice(2);
+    const r0 = rest[0] ?? "";
+    const position = r0 === "fogo" ? "FOGO" : r0.charAt(0).toUpperCase() + r0.slice(1);
+    return "Lacrosse · " + position + " · " + rest.slice(1).join("-");
+  }
+  if (slug.startsWith("viz-lax-")) {
+    // viz-lax-<position>-<theme> — two library themes per position (FV-404 §2).
+    const p0 = parts[2] ?? "";
+    const position = p0 === "fogo" ? "FOGO" : p0.charAt(0).toUpperCase() + p0.slice(1);
+    return "Lacrosse · " + position + " · VIZ — " + parts.slice(3).join("-");
   }
   if (slug.startsWith("opener-bb-")) return "Basketball Opener · " + parts.slice(2).join("-");
   if (slug.startsWith("opener-")) return "Hockey Opener · " + parts.slice(1).join("-");
@@ -548,7 +566,7 @@ async function main() {
   const buckets = new Map<Bucket, AudioScript[]>();
   const allBuckets: Bucket[] = [
     "hockey", "basketball", "baseball", "golf", "football",
-    "swimming", "track-field", "pre-practice", "shared",
+    "swimming", "track-field", "lacrosse", "pre-practice", "shared",
   ];
   for (const b of allBuckets) buckets.set(b, []);
 
@@ -727,6 +745,17 @@ async function main() {
     "Track & Field",
   );
 
+  // ── Lacrosse ────────────────────────────────────────────────────────────────
+  const laxScripts = buckets.get("lacrosse")!;
+  const laxStats = await writeBook(
+    "lacrosse.md", "Lacrosse", true,
+    [
+      { header: "VIZ Clips (position)", scripts: laxScripts.filter((s) => s.slug.startsWith("viz-lax-")) },
+      { header: "Hard Moment Clips", scripts: laxScripts.filter((s) => s.slug.startsWith("hm-lax-")) },
+    ],
+    "Lacrosse",
+  );
+
   // ── Pre-Practice ────────────────────────────────────────────────────────────
   const ppScripts = buckets.get("pre-practice")!;
   const ppStats = await writeBook(
@@ -766,6 +795,7 @@ them automatically. No separate "apply" command needed in the normal editing wor
 | [football.md](./football.md) | Football VIZ + hard-moment clips | DORMANT (no audio yet) |
 | [swimming.md](./swimming.md) | Swimming VIZ + hard-moment clips | DORMANT (no audio yet) |
 | [track-field.md](./track-field.md) | Track & Field VIZ + hard-moment clips | DORMANT (no audio yet) |
+| [lacrosse.md](./lacrosse.md) | Lacrosse VIZ + hard-moment clips | DORMANT (no audio yet) |
 | [pre-practice.md](./pre-practice.md) | All pre-practice "Lock In" clips | LIVE (hockey/bb/golf) |
 | [shared.md](./shared.md) | Breath threshold + shared structural + anchor/self-talk/cue-word clips | LIVE |
 
@@ -853,6 +883,7 @@ Total CLIP_SCRIPTS registered: ${totalClips}
     { label: "football", ...ftbStats },
     { label: "swimming", ...swmStats },
     { label: "track-field", ...trfStats },
+    { label: "lacrosse", ...laxStats },
     { label: "pre-practice", ...ppStats },
     { label: "shared", ...sharedStats },
   ];
