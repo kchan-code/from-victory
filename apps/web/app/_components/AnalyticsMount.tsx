@@ -19,10 +19,26 @@
  * client boundary, so this file exists purely to own that wiring.
  */
 
+import { usePathname } from "next/navigation";
 import { Analytics } from "@vercel/analytics/next";
 
-import { filterAnalyticsEvent } from "@/lib/analytics/allowed-routes";
+import {
+  filterAnalyticsEvent,
+  isAllowedAnalyticsPath,
+} from "@/lib/analytics/allowed-routes";
 
 export function AnalyticsMount() {
+  const pathname = usePathname();
+
+  // Layer 1 (kids-privacy-officer, PR #302): don't mount the SDK at all off
+  // the marketing allowlist — the analytics script never loads on /athlete,
+  // /dashboard, /pair, auth, /subscribe, or any unknown route, rather than
+  // loading everywhere and relying on event filtering alone.
+  if (!isAllowedAnalyticsPath(pathname ?? "")) {
+    return null;
+  }
+
+  // Layer 2: beforeSend still drops any event whose URL is off-allowlist,
+  // so a client-side navigation away from a marketing page can't leak.
   return <Analytics beforeSend={filterAnalyticsEvent} />;
 }
