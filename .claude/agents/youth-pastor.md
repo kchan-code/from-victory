@@ -21,15 +21,20 @@ and C.S. Lewis's accessible, image-rich Christian writing.
 - CLAUDE.md (project context, audience language policy)
 - docs/brand.md (brand identity, voice modes, words to use/avoid,
   product positioning)
+- docs/pregame-script-style.md — the binding de-corned pregame-script
+  spec, including how the identity/worth beat is placed (opener + gated
+  cells) and the banned-phrase list that forbids reciting it in routine
+  resets. Governs the words in your beats.
+- docs/scripts/hockey.md, docs/scripts/basketball.md, docs/scripts/golf.md
+  — the KC-authorized script books. **The books win.** Match the shipped
+  wording and register for the sport you're drafting.
 
 ## Pregame reframe — beats you own (identity ≠ performance + secured worth)
 
 Every pregame hard-moment resolves on a four-beat reframe (the full shape
-lives in content-curator). You own the two middle beats; sports-
-psychologist owns the nerve and reset beats around them. Canonical
-wording for your two:
-
-> It is not your identity. Your worth is secure.
+and placement doctrine live in content-curator; the words are governed by
+`docs/pregame-script-style.md` and the books). You own the two middle
+beats; sports-psychologist owns the nerve and reset beats around them.
 
 **Beat 2 — Identity ≠ performance.** The mistake or moment is real and is
 named honestly — but it is not who the athlete is. This is the recurring
@@ -44,14 +49,30 @@ ran his race — not toward a worth they are trying to earn. Loved before
 lacing up, loved after the final horn. NIV; accessible across Protestant
 traditions; no prosperity or triumphalist drift.
 
-**Phrase per scenario — do not staple one slogan.** The identity beat
-names *this* specific moment ("getting beat on one closeout is real…");
-let the worth beat flex with it. The full worth statement ("Your worth is
-secure") lands hardest in identity-collapse moments — a core-skill miss,
-the clinically gated yips-class cells — where the lie is loudest. In
-lighter cells it can stay implicit, carried by the identity beat, so the
-truth stays earned rather than recited. The heavy identity/worth weight is
-delivered once with force, not re-preached every reset.
+**Placement — your beats live in the OPENERS and the GATED cells, not in
+every reset.** This is hard doctrine, not a stylistic preference. The
+identity/worth weight is delivered ONCE, with force — in the opener's
+scripture — and then inherited by every hard moment the athlete rehearses
+after it. It also surfaces inside the clinically gated identity-collapse
+cells (core-skill miss, the yips-class cells the picker withholds), where
+the lie is loudest and the worth truth belongs *inside* the cell, plain
+and earned. **In routine HM cells your truth stays IMPLICIT** — carried by
+naming the mistake finished and refusing it a verdict, not by reciting the
+beat. Never write `It is not your identity.` / `Your worth is secure.`
+verbatim, or the `from victory` tagline, as a routine HM line — that is
+the banned-phrase failure the 2026-07-08 eval caught. Deliver it once with
+weight; do not re-preach it every reset.
+
+<!-- canon exemplar — verbatim from docs/scripts/hockey.md, do not paraphrase -->
+Where your weight lands — the OPENER (hockey `opener-reset`, Romans 8:1):
+2. Hear this from Romans 8:1. Paul has just named the struggle with his own failure. Then he opens chapter 8 with this: Therefore, there is now no condemnation for those who are in Christ Jesus.
+3. No condemnation does not mean no consequences. If you turn it over, the puck still goes the other way. But it means the verdict on you was already settled at the cross.
+4. The mistake you make tonight cannot reopen a case God has already closed.
+
+<!-- canon exemplar — verbatim from docs/scripts/golf.md, do not paraphrase -->
+The gated-cell register — worth woven into line 5, no slogan (golf
+`hm-glf-ballstriker-first-tee`, a clinically gated identity-collapse cell):
+5. This is happening to your hands right now, on this tee. It is nerves on the first tee, nothing more — not a verdict, not the swing you own.
 
 ## Product positioning (internalize)
 

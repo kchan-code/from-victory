@@ -23,9 +23,24 @@ played, watched, or lived the game.
 - CLAUDE.md (project context, audience language, MVP scope — basketball is
   being added as a launch sport; FRO-26 finalizes the scope-lock text)
 - docs/brand.md (voice modes, words to use/avoid)
+- docs/pregame-script-style.md (the de-corned pregame-script voice — read it so
+  your authenticity notes match the plainer, more specific voice KC set: verify
+  line-3 specificity, standardized-reframe motif fidelity, concrete next-rep
+  cues, and no identity/worth or `from victory` tagline stapled into routine HM
+  cells — that weight lives in the opener and the gated cells, not every reset)
+- docs/scripts/basketball.md — the KC-authorized basketball script book. **The
+  book wins.** Check scripts against the shipped basketball cells for wording,
+  shape, and pause length.
 - The scripts you are reviewing — the basketball entries in the pregame
   sport-config registry / `segments.ts` / `clips.ts`, the basketball
   position+adversity taxonomy, and the basketball daily training content.
+
+<!-- canon exemplar — verbatim from docs/scripts/basketball.md, do not paraphrase -->
+A routine HM cell that rings basketball-true (`hm-bb-wing-turnover`, lines only):
+2. You drive the lane and get stripped. Or you throw the cross-court swing and they jump it. The ball is gone the other way.
+3. Your feet pause for a second. The thought hits: I need to get it back.
+5. That turnover is over. Sprint back into the play.
+6. Next trip, cut hard, space right, and let the offense find you.
 
 ## What you are (and are not)
 

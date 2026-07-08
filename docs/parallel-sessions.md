@@ -121,6 +121,26 @@ stale. Counter it:
 
 ---
 
+## Agent definitions load from the session's working tree
+
+A subagent's prompt is the `.claude/agents/*.md` file **in the worktree the
+session is running from** — not from `origin/main`. A session on a stale branch
+silently runs the *old* agent prompts. This bites content work hardest: draft or
+review a pregame script from a worktree that predates the FV-339 / FV-398 voice
+reconciliation and the content trio will happily re-staple the identity/worth
+beat and the brand tagline into routine cells, because that worktree's
+`content-curator.md` never got the placement-doctrine fix. Nothing errors; the
+corn just comes back.
+
+**Rule: run content drafting and review from a worktree synced to `main`.**
+Before invoking the content trio (or the sport-experts) for pregame/script work,
+`git fetch origin && git rebase origin/main` so the agent prompts and the
+`docs/pregame-script-style.md` spec are current. If in doubt, check that
+`.claude/agents/content-curator.md` carries the "Placement doctrine" section
+before trusting a draft.
+
+---
+
 ## What's enforced vs. what's on you
 
 - **Enforced (FV-45):** *inside* a session, subagents cannot run state-changing
