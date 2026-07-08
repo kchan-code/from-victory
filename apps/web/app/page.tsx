@@ -10,6 +10,7 @@ import { LandingIconDefs } from "@/components/landing/icons";
 import { PregameSample } from "@/components/landing/PregameSample";
 import { Problem } from "@/components/landing/Problem";
 import { ScrollNav } from "@/components/landing/ScrollNav";
+import { StructuredData } from "@/components/landing/StructuredData";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Waitlist } from "@/components/landing/Waitlist";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
@@ -17,6 +18,7 @@ import { AttributionCapture } from "@/components/marketing/AttributionCapture";
 export default function LandingPage() {
   return (
     <>
+      <StructuredData />
       <AttributionCapture />
       <LandingIconDefs />
       <ScrollNav />

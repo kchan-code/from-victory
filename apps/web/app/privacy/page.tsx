@@ -334,7 +334,12 @@ export default function PrivacyPage() {
         </p>
         <p className="mt-3">
           We do not use advertising or behavioral-analytics tracking technologies in the app,
-          and we do not embed third-party advertising or tracking SDKs.
+          and we do not embed third-party advertising or tracking SDKs on any signed-in
+          surface. On our public marketing pages only (for example, the home page and pricing
+          page), we use a cookieless, privacy-focused web-analytics service provided by our
+          web-hosting provider to count anonymous, aggregate page visits. It sets no cookies,
+          collects no names or other identifiers, does not follow visitors across other
+          websites, and never runs on athlete, parent-dashboard, or other signed-in surfaces.
         </p>
       </Section>
 
@@ -353,6 +358,15 @@ export default function PrivacyPage() {
             Your browser&apos;s push-notification service, only if an athlete enables reminders
           </li>
         </ul>
+        <p className="mb-3">
+          If you arrive at our marketing site from a link that identifies a marketing channel
+          (for example, a social post or a newsletter), we may remember that channel using a
+          small first-party cookie that stores only the channel labels and a timestamp, and
+          record it on the purchasing parent&apos;s or adult athlete&apos;s checkout record
+          with our payment processor so we can learn which of our outreach efforts work. This
+          applies only to the adult buyer&apos;s purchase record — never to an athlete&apos;s
+          training activity or any minor&apos;s data.
+        </p>
         <p>
           These service providers may use your information only to provide services to us, not
           for their own independent marketing. We may also disclose information if required by
