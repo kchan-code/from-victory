@@ -65,7 +65,7 @@ vi.mock("@/lib/stripe/server", () => ({
 }));
 
 // Stripe quantity sync — non-blocking fire-and-forget; no-op in tests.
-const syncAthleteQuantityMock = vi.fn(async () => {});
+const syncAthleteQuantityMock = vi.fn(async (..._args: unknown[]) => {});
 vi.mock("@/lib/stripe/sync-athlete-quantity", () => ({
   syncAthleteQuantity: (...args: unknown[]) => syncAthleteQuantityMock(...args),
 }));
