@@ -289,11 +289,11 @@ complete block; everything applies)*
 **Defense (close D + LSM lens) — 10 cells + 1 gated**
 1. **Turnover** — throw the outlet away / botch the clear under the ride; "I gave them a free possession."
 2. **Dodged** — beaten topside to GLE, your man scores in front of the bench; ★"I'm a liability out here." ⚠
-3. **Bad penalty** — the costly slash / hold / cross-check that puts the team man-down; "30 seconds of 6-on-5 on me."
+3. **Bad penalty** — the costly slash / cross-check: a 1-minute personal foul, a full minute of 6-on-5 with your team man-down; "a whole minute on me." *(Rules note for FV-405: slash/cross-check = 1-minute personal foul, 1–3 min by severity; only a hold/push is the 30-second technical.)*
 4. **Shut off** — *(LSM lens)* your transition push gets stonewalled, no outlet, forced backward; "I killed our break."
 5. **Fail a clear** — the caused turnover that instead becomes a fast break the other way; "I turned a stop into a goal."
 6. **Coach yells** — called out for a blown slide / losing the man-ball; "I can't do anything right back here."
-7. **Benched** — poled down / subbed after getting beaten twice; ★"they don't trust me on-ball." ⚠
+7. **Benched** — subbed off / sat after getting beaten twice; ★"they don't trust me on-ball." ⚠
 8. **Nervous** — matched on their committed attackman / dodging star; "what if he takes me every time."
 9. **Start slow** — beaten early, feet not moving, a step slow to the slide; "settle before it snowballs."
 10. **Fall behind early** — the anchor weight (hold the crease, quarterback the D) lands on you.
@@ -308,7 +308,7 @@ complete block; everything applies)*
 5. **Benched** → `hm-lax-fogo-off-the-dot` — the other FOGO goes in for the big draw; ★"I only have one job and I lost it." ⚠
 6. **Nervous** — first draw vs. a committed FOGO, the whole bench watching one rep; "what if he clamps me clean."
 7. **Start slow** — drop the first two draws, dig an early hole; "find the ball before it's 3-0."
-8. **Fall behind early** → `hm-lax-fogo-lose-wing` — behind, and every draw now feels like it has to be a win-and-go; the pressure to be the whole comeback at the dot.
+8. **Fall behind early** → `hm-lax-fogo-behind-at-the-dot` — behind, and every draw now feels like it has to be a win-and-go; the pressure to be the whole comeback at the dot. *(Named for the falling-behind pressure, not the wing exchange — "losing the wing battle" stays available as its own future flavor.)*
 - **⚠ GATED (withheld):** *The clamp deserts you* → `hm-lax-fogo-clamp-yips` — the fast-twitch fundamental suddenly won't fire; can't win a clamp he's won ten thousand times (§4).
 
 **Goalie (locus: exposure / last-line identity) — 10 cells + 1 gated**
@@ -330,6 +330,22 @@ complete block; everything applies)*
 > are still yours"; Midfield: "get your motor going"; Defense: "settle the feet,
 > next slide"; FOGO: "next whistle, quicker hands"; Goalie: "next shot, you're
 > the last line").
+
+> **FV-405 authoring notes (lacrosse-expert verified, 2026-07-08):**
+> - **LSM reading of Defense × `dodged`:** the LSM's version is getting beaten
+>   in the open field / transition by a quicker short-stick middie — a distinct
+>   scene from close-D's topside-to-GLE framing. The script (or an LSM-flavored
+>   sibling line) should carry both readings.
+> - **Defense × `shut-off`** (LSM transition push stonewalled) is the **thinnest
+>   shared-cell mapping** in the grid — lowest-priority cell for authoring; do
+>   not force it if it reads strained.
+> - **Watch-item (yips-gate routing):** a genuine attack/midfield
+>   *shooting-freeze* — the involuntary can't-pull-the-trigger — is yips-class
+>   and routes to the §4 gate if authoring ever drifts a cold-stretch that
+>   direction. An ordinary cold-touch stretch (the slump flavor of `shut-off` /
+>   `start-slow`) stays ungated.
+> - **Vocabulary:** "poled down" is not real benched-pole vocabulary — use
+>   "subbed off / sat / pulled."
 
 **Authored / selectable counts:** Attack 9 · Midfield 10 · Defense 10 (+1 gated)
 · FOGO 8 (+1 gated) · Goalie 10 (+1 gated) = **50 authored, 47 selectable** until
@@ -520,7 +536,7 @@ Attack   × failed-clear → hm-lax-attack-rode-out
 FOGO     × dodged       → hm-lax-fogo-lose-draws
 FOGO     × penalty      → hm-lax-fogo-violation
 FOGO     × benched      → hm-lax-fogo-off-the-dot
-FOGO     × fall-behind  → hm-lax-fogo-lose-wing
+FOGO     × fall-behind  → hm-lax-fogo-behind-at-the-dot
 Goalie   × turnover     → hm-lax-goalie-throw-away
 Goalie   × dodged       → hm-lax-goalie-beaten-clean
 Goalie   × penalty      → hm-lax-goalie-man-down
