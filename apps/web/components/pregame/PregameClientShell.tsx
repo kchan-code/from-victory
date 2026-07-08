@@ -110,6 +110,28 @@ export function PregameClientShell() {
 
     async function init() {
       try {
+        // ───────────────────────────────────────────────────────────────
+        // INTENTIONALLY CLIENT-SIDE — do not "fix" by moving to a server
+        // loader (e.g. lib/auth/guards.ts requireAthlete()).
+        //
+        // This auth (getUser()) + profile (`profiles` table) read stays in
+        // the client on purpose (FV-107, reaffirmed FV-370). It is the
+        // load-bearing half of the offline-at-the-rink pregame flow:
+        //   - app/athlete/pregame/page.tsx is a PII-free static server
+        //     shell by contract (no requireAthlete(), no server-side user
+        //     data) so it can be cached and served offline.
+        //   - public/sw.js's `pregame-shell-network-first` strategy caches
+        //     that PII-free HTML (only when there's no Set-Cookie header)
+        //     so an athlete opening /athlete/pregame with no signal still
+        //     gets a shell that boots, runs this client-side auth/profile
+        //     check, and falls back to the localStorage athlete cache
+        //     below (isNetworkError / readAthleteCache).
+        //
+        // Moving this read server-side would break the SW's PII-free-shell
+        // contract and remove offline pregame entirely — a product trade,
+        // not a routine client/server-boundary cleanup, and it would
+        // require updating public/sw.js in lockstep. See FV-370.
+        // ───────────────────────────────────────────────────────────────
         const {
           data: { user },
           error: authError,
