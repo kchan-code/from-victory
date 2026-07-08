@@ -7,6 +7,7 @@ import {
   Source_Serif_4,
 } from "next/font/google";
 import "./globals.css";
+import { AnalyticsMount } from "./_components/AnalyticsMount";
 import { ServiceWorkerRegistrar } from "./_components/ServiceWorkerRegistrar";
 
 const bigShoulders = Big_Shoulders_Display({
@@ -112,6 +113,8 @@ export default function RootLayout({
         {children}
         {/* FV-105: service worker registration — runs after window load, renders nothing */}
         <ServiceWorkerRegistrar />
+        {/* FV-395: Vercel Web Analytics — public-marketing-only via beforeSend allowlist, renders nothing */}
+        <AnalyticsMount />
       </body>
     </html>
   );
