@@ -106,6 +106,12 @@ const SCAN_PATHS = [
   'apps/web/app/auth',
   'apps/web/components/auth',
   'apps/web/app/layout.tsx',
+  // Root-layout helper components + the analytics gate module (FV-395 /
+  // PR #302 privacy review): layout.tsx only imports these by relative
+  // path, so without scanning them a banned SDK could hide one level of
+  // indirection away from the root layout and evade this guard.
+  'apps/web/app/_components',
+  'apps/web/lib/analytics',
 ];
 
 // Extensions to inspect.
@@ -207,6 +213,30 @@ const ALLOWED_TOKENS = [
   'sentry/nextjs',
   'lib/monitoring',
 ];
+
+// ---------------------------------------------------------------------------
+// FILE-SCOPED EXCEPTIONS — banned tokens sanctioned in ONE named file only.
+//
+// FV-395 (PR #302): AnalyticsMount.tsx is the single sanctioned
+// @vercel/analytics import in the app. It renders nothing unless
+// usePathname() is on the public-marketing allowlist
+// (lib/analytics/allowed-routes.ts — deny-by-default, unit-tested), so the
+// SDK never loads on an athlete-reachable route; beforeSend event filtering
+// is a second layer. Reviewed and approved by kids-privacy-officer.
+// The exception is keyed to (file, token): importing @vercel/analytics from
+// ANY other scanned file — or adding a different banned SDK to this file —
+// still fails the guard.
+// ---------------------------------------------------------------------------
+const FILE_TOKEN_EXCEPTIONS = {
+  'apps/web/app/_components/AnalyticsMount.tsx': ['@vercel/analytics'],
+};
+
+/** True if this (file, banned-token) pair is a documented sanctioned exception. */
+function isExceptedFileToken(relPath, bannedToken) {
+  const posixPath = relPath.split(path.sep).join('/');
+  const tokens = FILE_TOKEN_EXCEPTIONS[posixPath];
+  return Boolean(tokens && tokens.includes(bannedToken));
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -355,6 +385,7 @@ function main() {
       const lower = value.toLowerCase();
       for (const banned of BANNED_IMPORT_TOKENS) {
         if (lower.includes(banned.toLowerCase())) {
+          if (isExceptedFileToken(relPath, banned)) continue;
           violations.push({
             file: relPath,
             line: lineNo,
