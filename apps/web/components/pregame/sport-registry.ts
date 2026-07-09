@@ -28,7 +28,7 @@ import type { AudioSegment, NeedToday } from "./types";
 // Sport type
 // ---------------------------------------------------------------------------
 
-export type Sport = "hockey" | "basketball" | "baseball" | "golf" | "football" | "swimming" | "track-field"; // extend as more sports land
+export type Sport = "hockey" | "basketball" | "baseball" | "golf" | "football" | "swimming" | "track-field" | "lacrosse"; // extend as more sports land
 
 /**
  * A Hard Moment option: the canonical `key` (drives `cellSlugFor` + the stored
@@ -2130,6 +2130,318 @@ export const TRACKFIELD_CONFIG: SportConfig = {
 };
 
 // ---------------------------------------------------------------------------
+// Lacrosse config (v2 — DORMANT; taxonomy = docs/lacrosse-module-map.md,
+// FV-404, KC-ratified, lacrosse-expert authored. Content wired, NOT athlete-
+// selectable — absent from SUPPORTED_SPORTS (lib/sports.ts) + the DB sport
+// CHECK, like baseball/football/swimming. BOYS'/MEN'S FIELD lacrosse only
+// (girls'/box lacrosse are separate future modules — FV-404 §6). Genuinely
+// positional: 5 positions (LSM is a variant lens inside Defense, not a 6th).
+//
+// ⚠⚠ CLINICAL GATE (FV-404 §4 — the FV-119 pattern): the three yips-class
+// motor-anxiety cells (FOGO clamp / Goalie save / Defense clear — the
+// throwing yips) are AUTHORED (clips-lacrosse.ts) but WITHHELD from the
+// Step-02 picker until clinical sign-off. Mechanism: their umbrella key
+// ("I lose my touch." → fragment "lose-touch") lives ONLY in
+// LACROSSE_ADVERSITY_SLUG_FRAGMENTS + cellSlugFor — it is NOT in
+// `adversities` and NO roleAdversities entry carries it, so it is fully
+// unreachable from the picker. Re-enabling is a KC + clinical decision.
+//
+// VIZ library (FV-404 §2 two-libraries rule): TEN viz clips — 2 per position,
+// viz-lax-<position>-<theme> (clips-lacrosse.ts), matching the FV-405 book
+// slug-for-slug. There is NO flagship viz-lax-<position> clip; at go-live the
+// 10 themes wire into POSITIVE_PLAYS (positive-plays.ts) as each position's
+// selectable play list — no entries until the audio renders (dormant
+// precedent), so sportHasPositivePlays() keeps the picker step gated off.)
+// ---------------------------------------------------------------------------
+
+const LACROSSE_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
+  "I turn the ball over.": "turnover",
+  "I get dodged.": "dodged",
+  "I take a bad penalty.": "penalty",
+  "I get shut off.": "shut-off",
+  "I fail a clear.": "failed-clear",
+  "Coach yells.": "coach-yells",
+  "I get benched.": "benched",
+  "I feel nervous.": "nervous",
+  "I start slow.": "start-slow",
+  "We fall behind early.": "fall-behind-early",
+  // ⚠⚠ Gated umbrella (FV-404 §4) — resolvable by cellSlugFor for the grid +
+  // integrity test, but NOT in `adversities`, so never shown in the picker.
+  "I lose my touch.": "lose-touch",
+};
+
+export const LACROSSE_CONFIG: SportConfig = {
+  displayName: "Lacrosse",
+  sportKey: "lacrosse",
+
+  // FV-404 §1 — the scope-minimal position-true set. Slug tokens (lowercased
+  // role): attack / midfield / defense / fogo / goalie.
+  roles: ["Attack", "Midfield", "Defense", "FOGO", "Goalie"] as const,
+  roleLabel: "Position",
+
+  // Picker-card titles verbatim from FV-404 §2; scenes are the flagship-5
+  // seeds (FV-405 confirms/replaces the flagship picks with the book).
+  roleContent: {
+    Attack: {
+      title: "Take him and finish.",
+      scenes: [
+        "Win your matchup at X.",
+        "Beat your man, hands free.",
+        "Finish through contact.",
+        "Draw the slide, feed the open man.",
+        "Next possession, take him again.",
+      ],
+    },
+    Midfield: {
+      title: "Both ends, full motor.",
+      scenes: [
+        "Win the ground ball, push it.",
+        "Dodge downhill, rip it.",
+        "Backcheck the fast break.",
+        "Win your wing at the faceoff.",
+        "Sub on fresh, first touch strong.",
+      ],
+    },
+    Defense: {
+      title: "Lock him down. Take it the other way.",
+      scenes: [
+        "Move your feet, keep him topside.",
+        "Slide on time, wall up.",
+        "Win the ground ball in traffic.",
+        "Outlet clean, start the clear.",
+        "Talk loud, run the defense.",
+      ],
+    },
+    FOGO: {
+      title: "Win the dot.",
+      scenes: [
+        "Fast clamp on the whistle.",
+        "Win the pull, secure the ball.",
+        "Exit to open field.",
+        "Feed the fast break.",
+        "Next whistle, quicker hands.",
+      ],
+    },
+    Goalie: {
+      title: "The next shot. Then start the break.",
+      scenes: [
+        "Track the shot, drive your hands.",
+        "Set the angle, square up.",
+        "Smother the rebound.",
+        "Save-and-go, outlet clean.",
+        "Call the slides, own the cage.",
+      ],
+    },
+  },
+
+  // The shared 10 canonical adversities (FV-404 §3, model (a)). The gated
+  // "I lose my touch." umbrella is deliberately NOT here (see header comment).
+  adversities: [
+    "I turn the ball over.",
+    "I get dodged.",
+    "I take a bad penalty.",
+    "I get shut off.",
+    "I fail a clear.",
+    "Coach yells.",
+    "I get benched.",
+    "I feel nervous.",
+    "I start slow.",
+    "We fall behind early.",
+  ],
+
+  // FV-404 §3 per-position drops + position-true relabels (FV-101 label-only
+  // mechanism — every `key` is canonical so cellSlugFor + state.adversity
+  // resolve the same cell). Final label wording confirmed by content-curator +
+  // lacrosse-expert at FV-405.
+  //  - Attack ships 9: drops "I get dodged." (attackmen are not on-ball
+  //    defenders — the thin-cell / pitcher-error precedent; cellSlugFor
+  //    reroutes the never-fired combo so the integrity grid resolves).
+  //  - Midfield + Defense ship the full flat 10 — no override needed (the
+  //    baseball-Outfield precedent).
+  //  - FOGO ships 8: drops "I get shut off." (a FOGO isn't shut off — his
+  //    world is the dot) AND "I fail a clear." (his exit loss IS his turnover
+  //    cell); special-case slugs carry the dot-true cells.
+  //  - Goalie ships 10 with goalie-true labels mapped to special-case slugs.
+  //  - ⚠⚠ Every position omits the gated "I lose my touch." umbrella (FV-404
+  //    §4 — withheld until clinical sign-off; see header comment).
+  roleAdversities: {
+    Attack: [
+      { key: "I turn the ball over.", label: "I turn the ball over." },
+      { key: "I take a bad penalty.", label: "I take a bad penalty." },
+      { key: "I get shut off.", label: "I get shut off." },
+      { key: "I fail a clear.", label: "I get rode out." },
+      { key: "Coach yells.", label: "Coach yells." },
+      { key: "I get benched.", label: "I get benched." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+    ],
+    FOGO: [
+      { key: "I turn the ball over.", label: "I win the clamp and lose the ball." },
+      { key: "I get dodged.", label: "I lose a string of draws." },
+      { key: "I take a bad penalty.", label: "I get hit with a violation." },
+      { key: "Coach yells.", label: "Coach yells." },
+      { key: "I get benched.", label: "I get pulled off the dot." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I start slow.", label: "I drop the first draws." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+    ],
+    Goalie: [
+      { key: "I turn the ball over.", label: "I throw the clear away." },
+      { key: "I get dodged.", label: "I get beaten clean." },
+      { key: "I take a bad penalty.", label: "We get scored on man-down." },
+      { key: "I get shut off.", label: "I let in a soft goal." },
+      { key: "I fail a clear.", label: "I fail a clear." },
+      { key: "Coach yells.", label: "Coach yells." },
+      { key: "I get benched.", label: "I get pulled." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+    ],
+  },
+
+  adversitySlugFragments: LACROSSE_ADVERSITY_SLUG_FRAGMENTS,
+
+  cellSlugFor(adversity: string, role?: string | null): string {
+    const frag = LACROSSE_ADVERSITY_SLUG_FRAGMENTS[adversity] ?? "nervous";
+    // Roles are single words, so the slug token is just the lowercased role
+    // (FV-404 Appendix): attack / midfield / defense / fogo / goalie.
+    const token = role ? role.toLowerCase() : "attack";
+
+    // ⚠⚠ Gated yips umbrella (FV-404 §4) — WITHHELD from the picker (not in
+    // `adversities` / any roleAdversities), resolvable here so the grid, the
+    // integrity test, and a future clinical-signed re-enable stay whole.
+    if (frag === "lose-touch") {
+      if (token === "fogo") return "hm-lax-fogo-clamp-yips";
+      if (token === "goalie") return "hm-lax-goalie-save-yips";
+      if (token === "defense") return "hm-lax-defense-clear-yips";
+      // Attack/Midfield carry NO yips cell — their cold-touch stretch is a
+      // slump flavor of shut-off (FV-404 §4), which ships live.
+      return `hm-lax-${token}-shut-off`;
+    }
+
+    // Attack drops `dodged` (not an on-ball defender). Omitted from the
+    // Attack picker, so this never fires; the reroute keeps the exhaustive
+    // (roles × adversities) integrity matrix resolving to a real clip.
+    if (token === "attack" && frag === "dodged") return "hm-lax-attack-turnover";
+    // Attack × failed-clear → rode-out (rode out hard from the front).
+    if (token === "attack" && frag === "failed-clear") return "hm-lax-attack-rode-out";
+
+    // FOGO special cases (FV-404 Appendix).
+    if (token === "fogo") {
+      // Dot-true cells.
+      if (frag === "dodged") return "hm-lax-fogo-lose-draws";
+      if (frag === "penalty") return "hm-lax-fogo-violation";
+      if (frag === "benched") return "hm-lax-fogo-off-the-dot";
+      if (frag === "fall-behind-early") return "hm-lax-fogo-behind-at-the-dot";
+      // Dropped combos (never shown in the FOGO picker) — reroute so the
+      // integrity matrix stays whole: his "shut off" is being beaten at the
+      // dot; his failed clear is the lost exit (his turnover cell).
+      if (frag === "shut-off") return "hm-lax-fogo-lose-draws";
+      if (frag === "failed-clear") return "hm-lax-fogo-turnover";
+    }
+
+    // Goalie special cases (FV-404 Appendix — the goalie-pulled precedent).
+    if (token === "goalie") {
+      if (frag === "turnover") return "hm-lax-goalie-throw-away";
+      if (frag === "dodged") return "hm-lax-goalie-beaten-clean";
+      if (frag === "penalty") return "hm-lax-goalie-man-down";
+      if (frag === "shut-off") return "hm-lax-goalie-soft-goal";
+      if (frag === "benched") return "hm-lax-goalie-pulled";
+    }
+
+    // Lacrosse is COMPOSITIONAL-ONLY (golf/football/swimming precedent):
+    // cellSlugFor returns the hm-lax-* hard-moment clip directly — the slug
+    // the (deferred) manifest render + the integrity grid reference.
+    return `hm-lax-${token}-${frag}`;
+  },
+
+  // Pre-practice focus presets (FV-404 Appendix — slugs declared now so the
+  // registry is complete; clips land with the audio render / FV-405).
+  practiceFocusOptions: [
+    "Win my one-on-one",
+    "Full motor, both ends",
+    "Ground balls win games",
+    "Talk on defense",
+    "Next whistle, next play",
+    "Move off-ball",
+    "Take care of the ball",
+  ] as const,
+
+  practiceFocusSlugs: {
+    "Win my one-on-one": "pp-lax-focus-win-my-one-on-one",
+    "Full motor, both ends": "pp-lax-focus-full-motor-both-ends",
+    "Ground balls win games": "pp-lax-focus-ground-balls-win-games",
+    "Talk on defense": "pp-lax-focus-talk-on-defense",
+    "Next whistle, next play": "pp-lax-focus-next-whistle-next-play",
+    "Move off-ball": "pp-lax-focus-move-off-ball",
+    "Take care of the ball": "pp-lax-focus-take-care-of-the-ball",
+  },
+
+  // FV-117 per-sport picker lists. "Better puck decisions" → "Better decisions
+  // with the ball" (already a NeedToday member — basketball's swap — so the
+  // hot NeedToday union stays stable, FV-404 Appendix); all other 9 needs are
+  // sport-neutral and shared. Lacrosse reuses the shared opener clips
+  // (resolveOpenerSlug falls back to NEED_OPENER_SLUGS; sport-specific
+  // opener-lax-* clips are a documented FV-406+ follow-up, not v1 scope).
+  needs: [
+    "Confidence",
+    "Calm",
+    "Compete level",
+    "Reset after mistakes",
+    "Physical courage",
+    "Better decisions with the ball",
+    "Leadership",
+    "Joy",
+    "Hope",
+    "Be more Vocal",
+  ] as const satisfies readonly NeedToday[],
+
+  // "Long exhale", "Press thumb to palm", "Say cue word" shared; the 3 middle
+  // gear-contact gestures are lacrosse-specific (FV-404 Appendix; clips +
+  // slugs land with the audio render — they drop cleanly until then, the
+  // baseball/golf/football precedent).
+  anchors: [
+    "Long exhale",
+    "Press thumb to palm",
+    "Tap your stick",
+    "Glove tap on the shaft",
+    "Reset at the X",
+    "Say cue word",
+  ] as const,
+
+  // "You're okay. Next shift." → "You're okay. Next whistle." (the lacrosse
+  // reset cadence — FV-404 Appendix); the other 6 are sport-neutral and shared.
+  selfTalkOptions: [
+    "You're okay. Next whistle.",
+    "Breathe. Do your job.",
+    "Stay steady. Make the next play.",
+    "You don't need to do too much.",
+    "Compete, recover, go again.",
+    "Your identity is secure. Play free.",
+    "You are secure. Take the next faithful action.",
+  ] as const,
+
+  practiceOpenerSlugs: {
+    // pp-opener-dialed-in is sport-neutral and reused across all sports.
+    "dialed-in": "pp-opener-dialed-in",
+    // Lacrosse-specific not-feeling-it opener (authored at FV-405; declared
+    // here for registry completeness).
+    "not-feeling-it": "pp-lax-opener-get-to",
+  },
+
+  // Text-mode fallback: the shared AUDIO_SCRIPT placeholder satisfies the type
+  // until the render pass (the BASEBALL_CONFIG precedent — FV-404 Appendix
+  // directs this explicitly). The dedicated lacrosse text-mode script (segs
+  // 80/120/165 — see the field / first dodge-draw-save / play your position)
+  // lands with the FV-405 content pass / audio render, before go-live.
+  audioScript: AUDIO_SCRIPT,
+
+  cueWordHelper: "The one you'd say to yourself on the ride back.",
+  cardShareHint: "Screenshot it. Open it before the first faceoff.",
+};
+
+// ---------------------------------------------------------------------------
 // Registry + accessor
 // ---------------------------------------------------------------------------
 
@@ -2141,6 +2453,7 @@ export const SPORT_REGISTRY: Record<Sport, SportConfig> = {
   football: FOOTBALL_CONFIG,
   swimming: SWIMMING_CONFIG,
   "track-field": TRACKFIELD_CONFIG,
+  lacrosse: LACROSSE_CONFIG,
 };
 
 /**

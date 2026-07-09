@@ -137,6 +137,12 @@ const GATED_IDENTITY_CELLS: ReadonlySet<string> = new Set<string>([
   // hockey pulled — the authorized in-cell worth-clause variant ("The bench
   // has your body for now. It does not have your worth.")
   "hm-goalie-pulled",
+  // lacrosse yips-class (FV-404 §4 / FV-406 — withheld via roleAdversities
+  // omission in sport-registry.ts): the FOGO clamp, the goalie save, and the
+  // pole's throwing yips (the routine clear). Authorized worth register only.
+  "hm-lax-fogo-clamp-yips",
+  "hm-lax-goalie-save-yips",
+  "hm-lax-defense-clear-yips",
 ]);
 
 // ---------------------------------------------------------------------------

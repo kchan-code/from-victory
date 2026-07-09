@@ -93,6 +93,7 @@ import { GOLF_VIZ_CLIP_SCRIPTS } from "./clips-viz-golf.ts";
 import { FOOTBALL_PREGAME_CLIP_SCRIPTS } from "./clips-football.ts";
 import { SWIMMING_PREGAME_CLIP_SCRIPTS } from "./clips-swimming.ts";
 import { TRACKFIELD_PREGAME_CLIP_SCRIPTS } from "./clips-trackfield.ts";
+import { LACROSSE_PREGAME_CLIP_SCRIPTS } from "./clips-lacrosse.ts";
 
 // The EBU R128 loudness normalization filter applied to every clip.
 // -16 LUFS integrated / -1.5 dBTP true-peak / LRA 11 LU.
@@ -5719,6 +5720,11 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   // Track & Field pregame clips (FV-TRF, v2 DORMANT) — 5 event-group VIZ + 38
   // hard-moment cells. Same deferred-render staging.
   ...TRACKFIELD_PREGAME_CLIP_SCRIPTS,
+  // Lacrosse pregame clips (FV-406, v2 DORMANT) — 10 library VIZ (2 per
+  // position, FV-404 §2) + 50 hard-moment cells (47 grid + 3 withheld yips,
+  // FV-404). Same deferred-render staging; prose is FV-405 book-overridden
+  // at render.
+  ...LACROSSE_PREGAME_CLIP_SCRIPTS,
   // FV-136: Cue-word scaffold preamble clips (audio before the {insert word} token)
   CLIP_SHARED_CUE_WORD_INTRO_PRE_SCRIPT,
   CLIP_SHARED_CUE_WORD_SENDOFF_PRE_SCRIPT,
