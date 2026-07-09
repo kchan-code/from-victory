@@ -44,12 +44,71 @@ export type { AdminMetrics } from "./metrics-core";
 
 export const DEFAULT_RANGE_DAYS = 30;
 
-// Defensive upper bound on the lifetime-table fetches (athlete_sessions). v1
-// aggregates in-process, which is correct for a beta cohort; this makes any
-// truncation EXPLICIT rather than a silent PostgREST row-cap. The real scale fix
-// is SQL-side aggregation (documented follow-up) — when sessions approach this,
-// move counts into a view/RPC.
-const MAX_FETCH = 50_000;
+// Page size for the paginated lifetime-table fetches below (athlete_sessions,
+// activity_events). PostgREST/Supabase silently caps `.select()` at its default
+// row limit, so a naive `.limit(MAX_FETCH)` just moves the silent cap to a
+// bigger (still silent) number. fetchAllRows() below pages through the full
+// table via `.range()` instead, so nothing is dropped without saying so.
+const PAGE_SIZE = 1000;
+
+// Circuit-breaker: v1 aggregates in-process, which is correct for a beta
+// cohort. If a table ever grows past this many rows, stop paginating rather
+// than hammering the DB or hanging the dashboard request — log loudly and
+// return what we have with `truncated: true`. The real scale fix past this
+// point is SQL-side aggregation (documented follow-up: a view/RPC).
+const SAFETY_CEILING = 500_000;
+
+// `data` is deliberately typed `unknown` here (not `T[] | null`) so this helper
+// doesn't have to fight Supabase's generated per-select-string row type — the
+// caller casts to the metrics-core Row type on the way out, matching the
+// `(res.data ?? []) as XRow[]` pattern already used for every other query in
+// this file.
+type RangeResult = { data: unknown; error: { message: string } | null };
+
+/**
+ * Fetch every row of a query by paging through `.range(from, to)` in
+ * PAGE_SIZE chunks, instead of relying on a single `.limit()` that silently
+ * truncates. Stops (with `truncated: true`) if:
+ *   - a page errors mid-pagination (partial data already fetched is kept), or
+ *   - the SAFETY_CEILING is exceeded.
+ * Both cases console.error loudly with the table label + offset so a runaway
+ * table shows up in logs instead of silently under-reporting metrics.
+ */
+async function fetchAllRows<T>(
+  label: string,
+  build: (from: number, to: number) => PromiseLike<RangeResult>,
+): Promise<{ rows: T[]; truncated: boolean }> {
+  const rows: T[] = [];
+  let from = 0;
+
+  while (true) {
+    const to = from + PAGE_SIZE - 1;
+    const { data, error } = await build(from, to);
+
+    if (error) {
+      console.error(
+        `[admin-metrics] fetchAllRows(${label}) failed at offset ${from}: ${error.message}`,
+      );
+      return { rows, truncated: true };
+    }
+
+    const page = (data ?? []) as T[];
+    rows.push(...page);
+
+    if (page.length < PAGE_SIZE) {
+      return { rows, truncated: false };
+    }
+
+    from += PAGE_SIZE;
+
+    if (from >= SAFETY_CEILING) {
+      console.error(
+        `[admin-metrics] fetchAllRows(${label}) hit SAFETY_CEILING=${SAFETY_CEILING} at offset ${from}; truncating`,
+      );
+      return { rows, truncated: true };
+    }
+  }
+}
 
 /**
  * Compute the full owner-metrics model. Caller MUST gate with
@@ -84,7 +143,7 @@ export async function getAdminMetrics(
   // control: we never read focus_area/position, only that they are set.
   const [
     profilesRes,
-    sessionsRes,
+    sessionsResult,
     catalogRes,
     subsRes,
     waitlistRes,
@@ -94,15 +153,17 @@ export async function getAdminMetrics(
     linksRes,
     pairingsRes,
     authRes,
-    activityRes,
+    activityResult,
     sportSelectedRes,
     quizCompleteRes,
   ] = await Promise.all([
     supabase.from("profiles").select("role, created_at, sport"),
-    supabase
-      .from("athlete_sessions")
-      .select("athlete_id, catalog_id, started_at, completed_at")
-      .limit(MAX_FETCH),
+    fetchAllRows<SessionRow>("athlete_sessions", (from, to) =>
+      supabase
+        .from("athlete_sessions")
+        .select("athlete_id, catalog_id, started_at, completed_at")
+        .range(from, to),
+    ),
     supabase.from("training_sessions_catalog").select("id, day_number, sport"),
     supabase
       .from("subscriptions")
@@ -120,11 +181,13 @@ export async function getAdminMetrics(
       .from("auth_rate_limit_events")
       .select("action, created_at")
       .gte("created_at", rangeCutoffIso),
-    supabase
-      .from("activity_events")
-      .select("athlete_id, event_name, occurred_at")
-      .gte("occurred_at", activityCutoffIso)
-      .limit(MAX_FETCH),
+    fetchAllRows<ActivityRow>("activity_events", (from, to) =>
+      supabase
+        .from("activity_events")
+        .select("athlete_id, event_name, occurred_at")
+        .gte("occurred_at", activityCutoffIso)
+        .range(from, to),
+    ),
     supabase
       .from("profiles")
       .select("id", { count: "exact", head: true })
@@ -137,11 +200,19 @@ export async function getAdminMetrics(
       .not("focus_area", "is", null),
   ]);
 
+  // fetchAllRows() already console.errors loudly on truncation (table + offset);
+  // this just gives the aggregate outcome one more visible line in server logs.
+  if (sessionsResult.truncated || activityResult.truncated) {
+    console.error(
+      `[admin-metrics] getAdminMetrics returning TRUNCATED data — athlete_sessions truncated=${sessionsResult.truncated}, activity_events truncated=${activityResult.truncated}`,
+    );
+  }
+
   return shapeAdminMetrics({
     now: new Date(),
     rangeDays,
     profiles: (profilesRes.data ?? []) as ProfileRow[],
-    sessions: (sessionsRes.data ?? []) as SessionRow[],
+    sessions: sessionsResult.rows,
     catalog: (catalogRes.data ?? []) as CatalogRow[],
     subscriptions: (subsRes.data ?? []) as SubscriptionRow[],
     waitlist: (waitlistRes.data ?? []) as WaitlistRow[],
@@ -151,7 +222,7 @@ export async function getAdminMetrics(
     parentLinks: (linksRes.data ?? []) as ParentLinkRow[],
     pairings: (pairingsRes.data ?? []) as PairingRow[],
     authEvents: (authRes.data ?? []) as AuthEventRow[],
-    activityEvents: (activityRes.data ?? []) as ActivityRow[],
+    activityEvents: activityResult.rows,
     athleteSportSelectedCount: sportSelectedRes.count ?? 0,
     athleteQuizCompleteCount: quizCompleteRes.count ?? 0,
     planLabelFor,
