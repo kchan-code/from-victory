@@ -17,6 +17,7 @@ import { Footer } from "@/components/landing/Footer";
 import { Reveal } from "@/components/landing/Reveal";
 import { LandingIconDefs } from "@/components/landing/icons";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
+import { ArticleFigure } from "@/components/marketing/ArticleFigure";
 import {
   PREGAME_RITUAL_HREF,
   PREGAME_RITUAL_TITLE,
@@ -194,6 +195,15 @@ export default function ChristianAthleteAppsPage() {
                 goalie sees the first shot. A guard sees the first
                 possession.
               </p>
+              {/* FV-416 — app screenshot (capture of the Today home
+                  screen). Layout only; no copy change. */}
+              <ArticleFigure
+                src="/images/blog/app-today-home.png"
+                alt="The From Victory home screen, showing the day's training and the pre-practice lock-in"
+                width={951}
+                height={1923}
+                variant="screen"
+              />
               <p className={P}>
                 And the visualization is not self-reliant. You are not alone
                 in your own head trying to talk yourself into confidence.
