@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "a11286fc",
+  "manifestVersion": "3fa25678",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -3468,8 +3468,8 @@
       ]
     },
     "hm-bsb-pitcher-pulled": {
-      "url": "/audio/pregame/clips/hm-bsb-pitcher-pulled.9f60439e.mp3",
-      "durationSec": 76.848,
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-pulled.3249a93d.mp3",
+      "durationSec": 49.164,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3538,8 +3538,8 @@
       ]
     },
     "hm-bsb-catcher-error": {
-      "url": "/audio/pregame/clips/hm-bsb-catcher-error.39af8579.mp3",
-      "durationSec": 58.992,
+      "url": "/audio/pregame/clips/hm-bsb-catcher-error.352b8c5e.mp3",
+      "durationSec": 51.492,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3558,8 +3558,8 @@
       ]
     },
     "hm-bsb-catcher-lose-command": {
-      "url": "/audio/pregame/clips/hm-bsb-catcher-lose-command.5f666ec4.mp3",
-      "durationSec": 78.216,
+      "url": "/audio/pregame/clips/hm-bsb-catcher-lose-command.03b116bb.mp3",
+      "durationSec": 66.072,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3568,8 +3568,8 @@
       ]
     },
     "hm-bsb-catcher-benched": {
-      "url": "/audio/pregame/clips/hm-bsb-catcher-benched.511d52e6.mp3",
-      "durationSec": 60.36,
+      "url": "/audio/pregame/clips/hm-bsb-catcher-benched.87331569.mp3",
+      "durationSec": 56.076,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3638,8 +3638,8 @@
       ]
     },
     "hm-bsb-infield-error": {
-      "url": "/audio/pregame/clips/hm-bsb-infield-error.d3265764.mp3",
-      "durationSec": 61.272,
+      "url": "/audio/pregame/clips/hm-bsb-infield-error.07452425.mp3",
+      "durationSec": 50.916,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3658,8 +3658,8 @@
       ]
     },
     "hm-bsb-infield-lose-command": {
-      "url": "/audio/pregame/clips/hm-bsb-infield-lose-command.72180567.mp3",
-      "durationSec": 75.6,
+      "url": "/audio/pregame/clips/hm-bsb-infield-lose-command.98c2a163.mp3",
+      "durationSec": 60.864,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3668,8 +3668,8 @@
       ]
     },
     "hm-bsb-infield-benched": {
-      "url": "/audio/pregame/clips/hm-bsb-infield-benched.6fcbaba3.mp3",
-      "durationSec": 90.408,
+      "url": "/audio/pregame/clips/hm-bsb-infield-benched.640dd31e.mp3",
+      "durationSec": 46.644,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3698,8 +3698,8 @@
       ]
     },
     "hm-bsb-infield-start-slow": {
-      "url": "/audio/pregame/clips/hm-bsb-infield-start-slow.51b9b56a.mp3",
-      "durationSec": 60.168,
+      "url": "/audio/pregame/clips/hm-bsb-infield-start-slow.337a114b.mp3",
+      "durationSec": 50.484,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3758,8 +3758,8 @@
       ]
     },
     "hm-bsb-outfield-lose-command": {
-      "url": "/audio/pregame/clips/hm-bsb-outfield-lose-command.7e552fcd.mp3",
-      "durationSec": 57.024,
+      "url": "/audio/pregame/clips/hm-bsb-outfield-lose-command.8627f061.mp3",
+      "durationSec": 50.46,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3768,8 +3768,8 @@
       ]
     },
     "hm-bsb-outfield-benched": {
-      "url": "/audio/pregame/clips/hm-bsb-outfield-benched.9b6fb09d.mp3",
-      "durationSec": 67.872,
+      "url": "/audio/pregame/clips/hm-bsb-outfield-benched.bc9089e4.mp3",
+      "durationSec": 50.436,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3798,8 +3798,8 @@
       ]
     },
     "hm-bsb-outfield-start-slow": {
-      "url": "/audio/pregame/clips/hm-bsb-outfield-start-slow.bf62a66f.mp3",
-      "durationSec": 59.52,
+      "url": "/audio/pregame/clips/hm-bsb-outfield-start-slow.235314e4.mp3",
+      "durationSec": 49.092,
       "phases": [
         {
           "phase": "hardMoment",

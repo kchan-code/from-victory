@@ -10,15 +10,29 @@
 // Prereqs: OPENAI_API_KEY in apps/web/.env.local + ffmpeg on PATH.
 //
 // CLI flags (legacy baked-cell path):
-//   --slug <name>     Generate only the script with this slug
+//   --slug <name>     Generate only the script(s) with this slug. Repeatable
+//                     (--slug a --slug b) and/or comma-separated (--slug a,b).
 //   --dry-run         Validate scripts + estimate cost, no API calls
 //   --keep-segments   Don't delete the per-segment temp files
 //   --out-dir <path>  Override the default output directory
 //
 // CLI flags (clip-playlist path):
-//   --mode clips      Render the 6 forward-nervous clip scripts into
-//                     public/audio/pregame/clips/, loudnorm-pass the
-//                     opener, and write clips/manifest.json.
+//   --mode clips      Render CLIP_SCRIPTS into public/audio/pregame/clips/,
+//                     loudnorm-pass the openers, and write clips/manifest.json.
+//   --slug <name>     TARGETED RENDER (FV-401): render only the named clip
+//                     slug(s) — repeatable and/or comma-separated, same as the
+//                     legacy path. Re-renders the named slug even if a hashed
+//                     mp3 already exists for it (generateOne's own stale-file
+//                     cleanup replaces it). Every OTHER clip is left
+//                     completely untouched: its existing manifest.json catalog
+//                     entry is carried over verbatim (no re-probe, no
+//                     re-render), so a targeted render can never trigger a
+//                     render for clips outside the target set — this is the
+//                     safe way to re-cut a handful of cells without touching
+//                     unrelated (incl. dormant v2-track) clips. Requires an
+//                     existing clips/manifest.json to seed the baseline
+//                     catalog from. Bare `--mode clips` (no --slug) renders
+//                     the full catalog and is unchanged.
 //   --dry-run         Validate clip scripts + estimate cost, no API calls
 //   --keep-segments   Don't delete the per-segment temp files
 
@@ -213,7 +227,10 @@ const SCRIPTS: AudioScript[] = [
 const DEFAULT_OUT_DIR = "public/audio/pregame";
 
 type Flags = {
-  slug?: string;
+  // Named-slug targeting. Empty array = no targeting (render everything —
+  // unchanged bare-mode behavior in both the legacy and clips paths).
+  // Populated from repeatable and/or comma-separated --slug flags.
+  slugs: string[];
   dryRun: boolean;
   keepSegments: boolean;
   outDir: string;
@@ -231,6 +248,7 @@ type Flags = {
 
 function parseFlags(argv: string[]): Flags {
   const out: Flags = {
+    slugs: [],
     dryRun: false,
     keepSegments: false,
     outDir: DEFAULT_OUT_DIR,
@@ -247,7 +265,11 @@ function parseFlags(argv: string[]): Flags {
       out.mode = "clips";
       i++;
     } else if (a === "--slug" && argv[i + 1]) {
-      out.slug = argv[i + 1];
+      // Repeatable (--slug a --slug b) and/or comma-separated (--slug a,b).
+      for (const raw of (argv[i + 1] as string).split(",")) {
+        const s = raw.trim();
+        if (s) out.slugs.push(s);
+      }
       i++;
     } else if (a === "--out-dir" && argv[i + 1]) {
       out.outDir = argv[i + 1] as string;
@@ -757,10 +779,49 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
   const clipsDir = join(baseDir, CLIPS_SUBDIR);
   await mkdir(clipsDir, { recursive: true });
 
-  const totalChars = CLIP_SCRIPTS.reduce((n, s) => n + totalSpeechChars(s), 0);
+  // ── Targeted render (FV-401) ──────────────────────────────────────────
+  // targetSlugs === null → bare `--mode clips`, unchanged full-catalog behavior.
+  // targetSlugs !== null → only these slugs are rendered/re-rendered; every
+  // other clip's manifest entry is carried over verbatim from the existing
+  // manifest.json (no re-probe, no touch), so scripts outside the target set
+  // — including any unrendered dormant v2-track clip — are never visited by
+  // the render loop at all.
+  const targetSlugs = flags.slugs.length > 0 ? new Set(flags.slugs) : null;
+
+  let baselineCatalog: ClipManifest["clips"] = {};
+  if (targetSlugs) {
+    const manifestPath0 = join(clipsDir, "manifest.json");
+    if (!existsSync(manifestPath0)) {
+      console.error(
+        `[clips] --slug targeted render requires an existing ${manifestPath0} to seed the baseline catalog from (none found). ` +
+        `Run a full \`--mode clips\` render first, or omit --slug to render the full catalog.`,
+      );
+      process.exit(1);
+    }
+    const raw = await readFile(manifestPath0, "utf8");
+    baselineCatalog = (JSON.parse(raw) as ClipManifest).clips;
+    const unknown = [...targetSlugs].filter(
+      (slug) => !CLIP_SCRIPTS.some((s) => s.slug === slug) && !OPENER_SLUGS.includes(slug as (typeof OPENER_SLUGS)[number]),
+    );
+    if (unknown.length > 0) {
+      console.error(`[clips] --slug targeted render: unknown slug(s), not in CLIP_SCRIPTS or OPENER_SLUGS: ${unknown.join(", ")}`);
+      process.exit(1);
+    }
+    console.log(`[clips] Targeted render (FV-401): ${[...targetSlugs].join(", ")}`);
+    console.log(`[clips] All other clips reuse their existing manifest.json entries untouched.`);
+  }
+
+  const clipScriptsToProcess = targetSlugs
+    ? CLIP_SCRIPTS.filter((s) => targetSlugs.has(s.slug))
+    : CLIP_SCRIPTS;
+  const openerSlugsToProcess = targetSlugs
+    ? OPENER_SLUGS.filter((s) => targetSlugs.has(s))
+    : OPENER_SLUGS;
+
+  const totalChars = clipScriptsToProcess.reduce((n, s) => n + totalSpeechChars(s), 0);
   const cost = estimateCostUsd(totalChars);
   console.log(
-    `[clips] Phase 2 — ${CLIP_SCRIPTS.length} TTS clip scripts + ${OPENER_SLUGS.length} loudnorm opener passes.`,
+    `[clips] Phase 2 — ${clipScriptsToProcess.length} TTS clip scripts + ${openerSlugsToProcess.length} loudnorm opener passes.`,
   );
   console.log(
     `[clips] TTS chars: ${totalChars}, est. $${cost.toFixed(4)}.`,
@@ -768,12 +829,13 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
 
   if (flags.dryRun) {
     console.log("\n--dry-run: validating clip scripts, no API calls.");
-    for (const s of CLIP_SCRIPTS) {
+    for (const s of clipScriptsToProcess) {
       console.log(
         `  ${s.slug}: ${s.segments.length} segs, ${speechSegmentCount(s)} speech, ${totalSpeechChars(s)} chars`,
       );
     }
     for (const slug of OPENER_SLUGS) {
+      if (targetSlugs && !targetSlugs.has(slug)) continue;
       const src = join(baseDir, `${slug}.mp3`);
       const exists = existsSync(src);
       console.log(
@@ -781,10 +843,14 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
       );
     }
     console.log(`\n[clips] Templates: ${PHASE2_TEMPLATES.length}`);
-    console.log(
-      `[clips] Catalog will have: ${CLIP_SCRIPTS.length} TTS + ${OPENER_SLUGS.length} openers = ` +
-      `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (240 expected: 183 + 3 prayer clips + 52 viz + 2 cue-word pre, templates: 60)`,
-    );
+    if (targetSlugs) {
+      console.log(`\n[clips] Targeted dry-run — ${targetSlugs.size} slug(s) would render; all others reused from manifest.json.`);
+    } else {
+      console.log(
+        `[clips] Catalog will have: ${CLIP_SCRIPTS.length} TTS + ${OPENER_SLUGS.length} openers = ` +
+        `${CLIP_SCRIPTS.length + OPENER_SLUGS.length} total entries (240 expected: 183 + 3 prayer clips + 52 viz + 2 cue-word pre, templates: 60)`,
+      );
+    }
     return;
   }
 
@@ -795,9 +861,10 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
     process.exit(1);
   }
 
-  // Collect manifest data as we go.
+  // Collect manifest data as we go. Seeded from the baseline catalog in
+  // targeted mode so untouched slugs keep their exact existing entries.
   // clips catalog: slug → { url, durationSec, phases }
-  const catalog: ClipManifest["clips"] = {};
+  const catalog: ClipManifest["clips"] = { ...baselineCatalog };
 
   // ── Step 1: Render TTS clip scripts in batches of ≤10 to limit quota exposure.
   // clearSilenceCache() is called before each clip so the silence cache doesn't
@@ -809,15 +876,15 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
   // slugs printed so the run can resume with --slug targeting.
   const BATCH_SIZE = 10;
   const batches: AudioScript[][] = [];
-  for (let i = 0; i < CLIP_SCRIPTS.length; i += BATCH_SIZE) {
-    batches.push(CLIP_SCRIPTS.slice(i, i + BATCH_SIZE));
+  for (let i = 0; i < clipScriptsToProcess.length; i += BATCH_SIZE) {
+    batches.push(clipScriptsToProcess.slice(i, i + BATCH_SIZE));
   }
 
   const completedSlugs: string[] = [];
   const remainingSlugs: string[] = [];
 
   console.log(
-    `\n[clips] Rendering ${CLIP_SCRIPTS.length} TTS scripts in ${batches.length} batches of ≤${BATCH_SIZE}.`,
+    `\n[clips] Rendering ${clipScriptsToProcess.length} TTS scripts in ${batches.length} batches of ≤${BATCH_SIZE}.`,
   );
 
   let batchIndex = 0;
@@ -831,7 +898,13 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
       // Skip if a content-addressed clip already exists on disk (resume support).
       // With FV-142 hashed filenames, the resume check is: does any file matching
       // <slug>.<8hex>.mp3 exist? We no longer look for the plain <slug>.mp3.
-      const existingHashedMp3 = await findHashedMp3(clipsDir, script.slug);
+      //
+      // FV-401: a targeted slug (--slug) is force-rendered even if a hashed file
+      // already exists — generateOne()'s own stale-hashed-file cleanup (see its
+      // step 4) deletes the old hash and replaces it, so no manual pre-deletion
+      // is needed here.
+      const isTargeted = targetSlugs?.has(script.slug) ?? false;
+      const existingHashedMp3 = isTargeted ? null : await findHashedMp3(clipsDir, script.slug);
       if (existingHashedMp3) {
         const existingHash8 = existingHashedMp3.replace(/^.*\.([0-9a-f]{8})\.mp3$/, "$1");
         console.log(`  [skip] ${script.slug}.${existingHash8}.mp3 already exists — skipping (resume).`);
@@ -884,7 +957,7 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
             `\n[clips] QUOTA LIMIT hit on ${script.slug}.\n` +
             `  Completed: ${completedSlugs.join(", ") || "(none)"}\n` +
             `  Remaining: ${script.slug}, ` +
-            CLIP_SCRIPTS.slice(CLIP_SCRIPTS.indexOf(script) + 1)
+            clipScriptsToProcess.slice(clipScriptsToProcess.indexOf(script) + 1)
               .map((s) => s.slug)
               .join(", ") + "\n" +
             `  Top up the OpenAI quota then resume — already-generated clips are\n` +
@@ -894,9 +967,9 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
           console.error(`\n[clips] Failed on ${script.slug}: ${msg}`);
         }
         // Mark all remaining as not done.
-        const failIdx = CLIP_SCRIPTS.indexOf(script);
-        for (let i = failIdx; i < CLIP_SCRIPTS.length; i++) {
-          remainingSlugs.push(CLIP_SCRIPTS[i]!.slug);
+        const failIdx = clipScriptsToProcess.indexOf(script);
+        for (let i = failIdx; i < clipScriptsToProcess.length; i++) {
+          remainingSlugs.push(clipScriptsToProcess[i]!.slug);
         }
         break batchLoop;
       }
@@ -955,9 +1028,12 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
     }
   }
 
-  console.log(`\n[clips] Processing ${OPENER_SLUGS.length} opener MP3s (loudnorm or re-TTS if edited)...`);
+  console.log(`\n[clips] Processing ${openerSlugsToProcess.length} opener MP3s (loudnorm or re-TTS if edited)...`);
 
   for (const slug of OPENER_SLUGS) {
+    // FV-401: targeted render — skip openers outside the target set entirely;
+    // their baseline catalog entry (seeded above) is left untouched.
+    if (targetSlugs && !targetSlugs.has(slug)) continue;
     const openerSrc = join(baseDir, `${slug}.mp3`);
     const existingHashedOpener = await findHashedMp3(clipsDir, slug);
 
@@ -1159,11 +1235,16 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
   //   = 183 total (net 0: −2 retired beats +2 new openers)
   //   + 3 prayer clips (shared-prayer-selfguided, pp-prayer, pp-prayer-selfguided) = 186
   //   + 52 viz positive-play clips (FV-136) + 2 cue-word pre clips = 240 total
-  if (catalogCount !== 240) {
-    console.warn(`  WARNING: expected 240 catalog entries, got ${catalogCount}.`);
-  }
-  if (templateCount !== 60) {
-    console.warn(`  WARNING: expected 60 templates (6 positions × 10 adversities — 3 hockey + 3 basketball), got ${templateCount}.`);
+  // These fixed-total checks describe a full bare `--mode clips` catalog and
+  // are not meaningful for a targeted render (which intentionally leaves the
+  // rest of the catalog untouched at whatever size it already is).
+  if (!targetSlugs) {
+    if (catalogCount !== 240) {
+      console.warn(`  WARNING: expected 240 catalog entries, got ${catalogCount}.`);
+    }
+    if (templateCount !== 60) {
+      console.warn(`  WARNING: expected 60 templates (6 positions × 10 adversities — 3 hockey + 3 basketball), got ${templateCount}.`);
+    }
   }
 
   // Per-clip level spot-checks for one clip per position group.
@@ -1341,8 +1422,8 @@ async function main(): Promise<void> {
     return;
   }
 
-  const scripts = flags.slug
-    ? SCRIPTS.filter((s) => s.slug === flags.slug)
+  const scripts = flags.slugs.length > 0
+    ? SCRIPTS.filter((s) => flags.slugs.includes(s.slug))
     : SCRIPTS;
 
   if (scripts.length === 0) {
