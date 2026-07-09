@@ -699,6 +699,20 @@ export type Database = {
           timezone: string
         }[]
       }
+      // FV-361: SECURITY DEFINER self-read RPC. Returns the calling
+      // athlete's own position + focus_area — the safe read path now that
+      // direct column SELECT on profiles.position / profiles.focus_area is
+      // revoked from authenticated + anon (closes the FV-251 gap).
+      // Regenerate via 'supabase gen types --linked' after migration
+      // 20260708120000_athlete_private_columns_grant_hardening.sql is
+      // applied to prod.
+      get_own_personalization: {
+        Args: Record<string, never>
+        Returns: {
+          position: string | null
+          focus_area: string | null
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
