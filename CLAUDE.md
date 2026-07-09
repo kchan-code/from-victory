@@ -527,3 +527,25 @@ that conversion, not the tracker, is what raises the parallelism ceiling.
 - Supabase types generated and committed: `supabase gen types typescript --local`
 - Conventional commits enforced
 - No `any` type without a `// reason:` comment
+
+## GTM source of truth — the Delvox GTM Engine
+
+Go-to-market strategy for this app — positioning, brand messaging, ICP, content plan,
+and all publishable marketing copy — is owned by the **Delvox GTM Engine**
+(github.com/kchan-code/delvox-engine, KC's agent-driven GTM system), not this repo. Its
+KC-approved artifacts are mirrored here under `docs/gtm/` and are the contract:
+
+1. **Never invent or revise positioning, taglines, ICP, or marketing copy in this repo.**
+   Read `docs/gtm/brand.md`, `icp.md`, and `voice-and-guardrails.md` first; if what you
+   need isn't there, ask KC to run the engine rather than improvising. When this repo
+   and `docs/gtm/` disagree, `docs/gtm/` wins; when `docs/gtm/` seems stale, ask KC.
+2. **This repo's GTM job is implementation:** publish the ready pages in
+   `docs/gtm/pages/` on fromvictoryapp.com exactly as written (they carry FAQ schema
+   inline), build the waitlist, ship the product. UI strings and microcopy written here
+   follow `docs/gtm/voice-and-guardrails.md`.
+3. **Product truths flow back.** When a feature ships, changes, or is cut, record it in
+   `docs/gtm/product-truths.md` (dated, factual, no spin). The engine reads that file to
+   keep marketing true to the product — a feature missing there is a feature missing
+   from all marketing.
+4. **Approval gate:** KC approves all customer-facing marketing copy in the engine
+   before it reaches this repo. Don't create parallel approval paths here.
