@@ -26,18 +26,18 @@
 *Pillar 2 (pregame centering ritual) · Persona: Caleb / Grace · Format: Reel / TikTok · Reel script: `content/briefs/week1-reset-reel.md`*
 
 **Hook line (first 3s / on-screen):**
-> Sixty seconds before the whistle is the most honest minute in sport.
+> The five minutes before the whistle are the most honest in sport.
 
 **Caption:**
-> Sixty seconds before the whistle. Watch a kid in that minute and you can usually tell how the game will go. The one who is settled steps on loose. The one who is not makes a mistake early and then plays the next ten shifts tight, careful, trying to get it back.
+> Five minutes before the whistle. Watch a kid in that stretch and you can usually tell how the game will go. The one who is settled steps on loose. The one who is not makes a mistake early and then plays the next ten shifts tight, careful, trying to get it back.
 >
 > I am a hockey dad. I built From Victory around what my kids can do in that minute. Headphones on, eyes closed, and a voice walks them through it. Not a pep talk. It gets specific to their sport and their spot on the ice, so they picture the actual first shift and see themselves playing free.
 >
-> Everybody says visualize. Almost nobody hands you a way to actually do it. And they are not alone in their own head. The voice keeps pointing them back to who God says they are, so they step on already secure. Be still, and know that I am God (Psalm 46:10).
+> Everybody says visualize. Almost nobody hands you a way to actually do it. And they are not alone in their own head. The voice keeps pointing them back to who God says they are, so they step on already secure. Run your race with your eyes fixed on Jesus (Hebrews 12:1-2).
 >
 > From victory, not for victory. Waitlist open.
 
-**Reel note:** run Brief 1's Center / Receive / Respond / Carry structure, updated so the on-camera athlete has headphones on and eyes closed while the guided voice plays. The four beats are now shown as the audio walking the athlete through the moment, not silent captions.
+**Reel note:** run Brief 1's session structure (breath, visualization, identity, focus cue), updated so the on-camera athlete has headphones on and eyes closed while the guided voice plays. The session is now shown as the audio walking the athlete through the moment, not silent captions.
 
 ---
 
@@ -53,9 +53,9 @@
 >
 > Here is the part nobody coaches. That faith is not a postgame move. It is who you are before the whistle, not just how you carry the win or the loss after.
 >
-> From Victory is the daily practice for the athlete who already believes. Headphones on, eyes closed, about sixty seconds. A voice walks you through the moment ahead, specific to your sport and your position, and keeps you anchored in who God says you are. Everybody says visualize. This one actually walks you through it, and you are not doing it alone.
+> From Victory is the daily practice for the athlete who already believes. Headphones on, eyes closed, about five minutes. A voice walks you through the moment ahead, specific to your sport and your position, and keeps you anchored in who God says you are. Everybody says visualize. This one actually walks you through it, and you are not doing it alone.
 >
-> Cast all your anxiety on him, because he cares for you (1 Peter 5:7). From victory, not for victory. Waitlist open.
+> Whatever you do, do it with all your heart, as for the Lord (Colossians 3:23). From victory, not for victory. Waitlist open.
 
 **Reel note:** Brief 2's cultural-montage open still works (prayer circles, points to the sky). Add a beat mid-reel showing the guided visualization itself: an athlete alone with headphones and eyes closed, then stepping onto the field loose.
 
@@ -79,7 +79,7 @@
 >
 > The gap between "I believe" and "I competed from that" is a practice problem, not a knowledge one. They know the verse. They need a way to run it in the last minute before they step on the field.
 >
-> That is what From Victory hands them. Headphones on, eyes closed, about sixty seconds. A voice guides them through a pregame visualization built for their sport and their position, and keeps returning them to who God says they are. Everyone tells athletes to visualize. Almost no tool actually walks them through it, and this one does not leave them alone in their own head to do it. Center, Receive, Respond, Carry. Be still, and know that I am God (Psalm 46:10).
+> That is what From Victory hands them. Headphones on, eyes closed, about five minutes. A voice guides them through a pregame visualization built for their sport and their position, and keeps returning them to who God says they are. Everyone tells athletes to visualize. Almost no tool actually walks them through it, and this one does not leave them alone in their own head to do it. Breath, visualization, identity, and a focus cue. Run your race with your eyes fixed on Jesus (Hebrews 12:1-2).
 >
 > Built for believing athletes, not the masses. No grind, no streaks, no shame. If you want to put it in front of your huddle, reach out. We will make it easy.
 
@@ -90,4 +90,7 @@
 >
 > They do not need more information. They need a way to run their faith in the last minute before they compete. From Victory guides it: headphones on, eyes closed, a voice built for their sport and their position that keeps pointing them back to who God says they are. Everybody says visualize. This one actually walks them through it, and they are not doing it alone.
 >
-> Center, Receive, Respond, Carry. Built for believing athletes, not the masses. If you lead a huddle, a chapel, or a team, DM us.
+> Breath, visualization, identity, and a focus cue. Built for believing athletes, not the masses. If you lead a huddle, a chapel, or a team, DM us.
+
+---
+*2026-07-08: product-claims corrections per research/product-claims-audit-2026-07-08.md*
