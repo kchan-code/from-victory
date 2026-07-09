@@ -24,7 +24,7 @@ app repo. When the two disagree, the engine wins.
 - `pillars.md` + `editorial-calendar.md` — the content plan the copy derives from.
 - `pages/` — **two KC-approved pages, ready to publish on fromvictoryapp.com** (FAQ
   schema markup inline; publish as-is, do not rewrite the copy):
-  - `fv-crrc-w1-page.html` — the pregame ritual anchor (Center, Receive, Respond, Carry)
+  - `fv-crrc-w1-page.html` — the pregame ritual anchor (the guided visualization session)
   - `fv-believer-w1-page-comparison.html` — the three-app comparison
 - `copy-paste-sheet.md` — the same approved content in manual-posting form.
 - `parked-social-drafts.md` — IG/TikTok captions drafted and voice-passed but NOT yet
