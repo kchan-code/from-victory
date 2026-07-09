@@ -52,7 +52,7 @@ export function ArticleFigure({
         width={width}
         height={height}
         priority={priority}
-        sizes="(max-width: 800px) 100vw, 736px"
+        sizes="(max-width: 800px) 100vw, 600px"
         className="w-full h-auto"
       />
     </figure>

@@ -31,4 +31,4 @@ await page.waitForTimeout(900);
 await today.screenshot({ path: `${OUT}/app-today-home.png` });
 
 await browser.close();
-console.log("captured app-pregame-session.png + app-verse-card.png");
+console.log("captured app-pregame-session.png + app-today-home.png");
