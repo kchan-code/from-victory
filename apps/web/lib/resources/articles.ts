@@ -9,8 +9,26 @@
 // AUTHORED HERE (flagged for KC review):
 //   - excerpt field (one sentence per article — see AUTHORED note)
 // All other fields come verbatim from the content source.
+//
+// `related` (FV-413): optional cross-links rendered by the page/render
+// layer after the article body. `label` must be a verbatim reuse of the
+// linked page's own title/h1 — see lib/gtm/page-titles.ts.
+
+import {
+  PREGAME_RITUAL_HREF,
+  PREGAME_RITUAL_TITLE,
+  PREGAME_RITUAL_EXCERPT,
+  CHRISTIAN_ATHLETE_APPS_HREF,
+  CHRISTIAN_ATHLETE_APPS_TITLE,
+  CHRISTIAN_ATHLETE_APPS_EXCERPT,
+} from "@/lib/gtm/page-titles";
 
 export type ArticleAudience = "athlete" | "parent";
+
+export interface RelatedLink {
+  href: string;
+  label: string; // verbatim reuse of the linked page's own title/h1
+}
 
 export interface Article {
   slug: string;
@@ -19,6 +37,7 @@ export interface Article {
   excerpt: string; // AUTHORED — 1-line card excerpt for the index
   audience: ArticleAudience;
   bodyMd: string; // verbatim from content source
+  related?: RelatedLink[]; // FV-413 — cross-links, rendered after the body
 }
 
 // ---------------------------------------------------------------------------
@@ -105,6 +124,7 @@ The worst game you ever play does not lower your standing with God. The best gam
     excerpt:
       "A five-step repeatable routine — breath, identity, visualization, cue word, prayer — so nerves stop writing the story and you compete free.",
     audience: "athlete",
+    related: [{ href: PREGAME_RITUAL_HREF, label: PREGAME_RITUAL_TITLE }],
     bodyMd: `Nerves before a game aren't a malfunction. They're energy. Your body is getting ready. The problem isn't that you feel them — the problem is when nerves start writing a story about who you are. *I'm not ready. I'm going to get exposed. It's all on me.*
 
 You don't fix that with "just relax." You fix it with a routine — the same handful of moves, every time, so your mind has a rail to grab when the pressure climbs. Here's a five-step routine built on the same structure From Victory uses in its guided pregame session.
@@ -333,6 +353,42 @@ When you get that order right, you don't get a watered-down version of either. Y
 > **See how it works.** From Victory is a daily mental-toughness training app with faith as its foundation — for athletes ages 13-21. **Start a free trial** and see the order for yourself: identity first, performance from it. [Start your free trial →](/pricing)`,
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Featured pages (FV-413) — the two live GTM Engine pages. These are
+// full standalone routes (app/pregame-ritual-christian-athlete,
+// app/christian-athlete-apps), NOT /resources/[slug] articles, so they
+// are kept out of the ARTICLES registry above (which several tests pin at
+// exactly 5 entries). getAllFeaturedPages() lets /resources render cards
+// linking out to them without duplicating or moving that content.
+//
+// title/excerpt are verbatim reuse of each page's own PAGE_TITLE /
+// PAGE_DESCRIPTION — see lib/gtm/page-titles.ts (single source of truth).
+// ---------------------------------------------------------------------------
+
+export interface FeaturedPage {
+  href: string; // full route, not /resources/-prefixed
+  title: string; // verbatim reuse of the page's own <h1>
+  excerpt: string; // verbatim reuse of the page's own lead-sentence copy
+}
+
+const FEATURED_PAGES: FeaturedPage[] = [
+  {
+    href: PREGAME_RITUAL_HREF,
+    title: PREGAME_RITUAL_TITLE,
+    excerpt: PREGAME_RITUAL_EXCERPT,
+  },
+  {
+    href: CHRISTIAN_ATHLETE_APPS_HREF,
+    title: CHRISTIAN_ATHLETE_APPS_TITLE,
+    excerpt: CHRISTIAN_ATHLETE_APPS_EXCERPT,
+  },
+];
+
+/** The two live GTM pages, for the /resources index (FV-413). */
+export function getAllFeaturedPages(): FeaturedPage[] {
+  return FEATURED_PAGES;
+}
 
 // ---------------------------------------------------------------------------
 // Accessors
