@@ -269,13 +269,13 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You passed up to a higher mark, and you've missed your first two. Now one attempt stands between you and no mark for the day — and standing at the top, your rhythm just feels off right now.
+2. You've fouled your first two attempts — two red flags, your toes past the board both times. Now one attempt stands between you and leaving with no mark for the day, and standing at the top, your rhythm just feels off right now.
 _(pause: 1.5s)_
-3. Your breath sits high in your chest. Your feet shuffle at the start, hunting for where the run-up begins. The thought hits: my approach isn't there today.
+3. Your breath sits high in your chest. Your feet shuffle at the start, hunting for where the run-up begins. The thought hits: one more flag and I walk away with nothing.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. An off run-up is a rough patch, not a lost skill — it happens to real jumpers, and you still have an attempt to throw down.
+5. An off run-up is a rough patch, not a lost skill — it happens to real jumpers, and you still have an attempt to put on the board.
 _(pause: 2s)_
 6. Next attempt, take it one jump at a time. Slow your routine all the way down, pick one small target down the runway, and run through it, not at it.
 _(pause: 2s)_
@@ -305,7 +305,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The flight order doesn't decide your mark — the board takes every jump the same way, early flight or late. A big mark thrown down early still stands, and it forces the seeded jumpers to come find you.
+5. The flight order doesn't decide your mark — the pit measures every jump the same, early flight or late. A big mark put down early still stands and makes the seeded jumpers chase you.
 _(pause: 2s)_
 6. Next attempt, settle at the top and bring your own runway with you. Run your full approach, hit your steps, and attack the board — set the bar instead of chasing it.
 _(pause: 2s)_
@@ -316,11 +316,11 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You stand at the top of the runway, the board sixty feet away, the flight watching from the side. You rock onto your steps and for a second you can't feel where they are — just your heart pounding and the long strip of track in front of you.
 _(pause: 1.5s)_
-3. Your heart thumps and your hands buzz at your sides. Your legs feel light and quick underneath you. The thought hits: what if I'm off my steps with everyone watching.
+3. Your hands flick at your sides and your legs feel light and quick, itching to run. The thought hits: what if I'm off my steps with everyone watching.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. These nerves aren't a warning — they're energy your body brought because this matters. Let them sharpen you.
+5. These nerves are energy, not danger. Let them sharpen you. One slow breath at the top of the runway, eyes down the strip, and the buzz turns into speed.
 _(pause: 2s)_
 6. Next attempt, find your start mark under your feet, lock your eyes down the runway, hit your rhythm off the first step, and let the speed carry you to the board.
 _(pause: 2s)_
@@ -410,7 +410,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The throwing order doesn't decide your mark — the board takes every throw the same way, first in the order or last. A big mark thrown first still stands, and it forces the seeded throwers to come find you.
+5. The throwing order doesn't decide your mark — the tape measures every throw the same, first or last. Post a big one early and the seeded throwers have to come find you.
 _(pause: 2s)_
 6. Next throw, settle in the ring and bring your own rhythm with you. Run your full setup, drive through your finish, and attack the board — set the mark instead of chasing it.
 _(pause: 2s)_
@@ -421,11 +421,11 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You step into the ring, chalk on your hands, the competition watching from the side. You settle the implement against your neck, and suddenly it feels heavy and unfamiliar — like your body forgot a motion it knows cold.
 _(pause: 1.5s)_
-3. Your heart thumps and your hands buzz against the implement. Your legs feel light underneath you in the ring. The thought hits: what if I rush it and let go too early with everyone watching.
+3. Your fingers tighten and loosen on the implement and your feet feel unsettled in the ring. The thought hits: what if I rush it and let go too early with everyone watching.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. These nerves aren't a warning — they're energy your body brought because this matters. Let them sharpen you.
+5. These nerves are energy, not danger. Let them sharpen you. One slow breath in the back of the ring, feet planted, and the buzz turns into power.
 _(pause: 2s)_
 6. Next throw, feel your feet planted in the back of the ring, stay patient, build through your feet and hips, and let the finish rip on its own.
 _(pause: 2s)_
@@ -481,7 +481,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You're flying into the exchange zone and you reach back for the stick. It isn't there. The timing breaks and the pass dies in your hand.
 _(pause: 1.5s)_
-3. Your stomach drops as your hand closes on nothing. The thought hits: I let the exchange go.
+3. Your hand closes on empty air and your stride stumbles as you look back. The thought hits: I let the exchange go.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -541,7 +541,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You're walking to the blocks and the stadium goes quiet. The starter is waiting. You settle your feet on the pedals and your legs feel like they belong to someone else.
 _(pause: 1.5s)_
-3. Your hands are buzzing against the track and your feet won't sit still on the pedals. The thought hits: what if I'm tight off the gun and it's over before I find my speed.
+3. Your hands press restless into the track and your feet shift on the pedals. The thought hits: what if I'm tight off the gun and it's over before I find my speed.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -601,7 +601,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. On the distance medley exchange your timing is off. You come in hot, your incoming runner is gassed, you stutter in the zone — and the lead you were handed leaks away in the fumble.
 _(pause: 1.5s)_
-3. Your stomach drops as the baton bobbles in the pass. The thought hits: I let the exchange leak away.
+3. The baton bobbles against your palm and your rhythm lurches. The thought hits: I let the exchange leak away.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -706,11 +706,11 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. On the relay your exchange is sloppy. The timing's off, the stick bobbles between your hands, you fight to hang onto it — and the smooth pass you drilled all season turns into a scramble.
 _(pause: 1.5s)_
-3. Your stomach drops as the stick juggles in your hands. The thought hits: I scrambled the exchange.
+3. The stick juggles between your fingers and you clamp down to save it. The thought hits: I scrambled the exchange.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That exchange is over and it's behind you. A clean leg answers a sloppy handoff — your teammates are still your teammates. Breathe out long.
+5. That exchange is over and it's behind you. A clean leg still answers a sloppy pass — your teammates are counting on your speed, not your grab. Breathe out long.
 _(pause: 2s)_
 6. Run the leg in front of you. Hit your acceleration, trust the cue, and feel the stick settle clean in your palm — a pass is won in the rhythm, not the grab.
 _(pause: 2s)_
@@ -781,11 +781,11 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You're setting in the blocks staring down ten barriers stretching away from you. The first one looks close and tall. Your trail leg feels like it forgot the pattern you've drilled a thousand times.
 _(pause: 1.5s)_
-3. Your hands buzz on the track and your trail leg won't settle on the pedal. The thought hits: what if I'm off my steps to the first one and the whole rhythm's gone.
+3. Your back foot won't settle on the pedal and your eyes keep darting to the first barrier. The thought hits: what if I'm off my steps to the first one and the whole rhythm's gone.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. These nerves are energy, not danger. Let them sharpen you. One slow breath out behind the blocks, feet set on the pedals, and the buzz turns into power.
+5. These nerves are energy, not danger. Let them sharpen you. One slow breath out behind the blocks, eyes up to the first barrier, and the buzz turns into power.
 _(pause: 2s)_
 6. You don't have to think about all ten hurdles standing here — your body knows the pattern. Set in the blocks, drive low, hit your steps to barrier one, and let it take over.
 _(pause: 2s)_

@@ -244,10 +244,11 @@ _(pause: 2s)_
 _(pause: 2s)_
 ### Swimming · Stroke · dq
 <!-- slug: hm-swm-stroke-dq | file: components/pregame/audio/clips-swimming.ts -->
+<!-- verify: swimming-expert — DQ rule accuracy -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You swam a clean race — felt fast, hit your splits. Then one hand touched a beat before the other on the breast turn, or one too many dolphin kicks off the fly wall. The flag goes up, and the whole swim is wiped off the sheet.
+2. You swam a clean race — felt fast, hit your splits. Then one hand touched a beat before the other on the breast turn, or a flutter kick slipped into your fly. The flag goes up, and the whole swim is wiped off the sheet.
 _(pause: 1.5s)_
 3. Your chest still heaves from the effort as you stare at the official and it sinks in. The thought hits: I did the work and it counts for nothing.
 _(pause: 2s)_
@@ -255,7 +256,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. Take the correction. Leave the grudge. That swim is erased on the sheet, not on you.
 _(pause: 2s)_
-6. On your next turn, square both hands to the wall and count your kicks off the break — legal first, fast second. Clean technique is how the time stays on the board.
+6. On your next turn, square both hands to the wall, and through the fly keep both feet driving together — legal first, fast second. Clean technique is how the time stays on the board.
 _(pause: 2s)_
 ### Swimming · Stroke · plateau
 <!-- slug: hm-swm-stroke-plateau | file: components/pregame/audio/clips-swimming.ts -->
@@ -328,7 +329,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The seed sheet is just a starting point, not a sentence. Times don't care which heat you swim them in.
+5. The heat sheet is just a starting point, not a sentence. Times don't care which heat you swim them in.
 _(pause: 2s)_
 6. Race the clock, not the bodies. Lock onto your own splits, hold your stroke long and strong, and chase the number you came for — a best time from a slow heat counts exactly the same.
 _(pause: 2s)_
@@ -373,7 +374,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. He won that touch. He does not own the next one. The walk back behind the blocks is your reset.
+5. He won that touch. He does not own the next one. Shake the arms out on the walk back and start fresh.
 _(pause: 2s)_
 6. The IM is won across four strokes, not just the last wall. Next time, build your free leg from the last turn so you arrive with speed, and drive the finish in long instead of gliding the last stroke.
 _(pause: 2s)_
@@ -388,22 +389,22 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The early start happened. Learn from it, then compete clean. That call is final for this event, and it stays in this event — it doesn't get your next race.
+5. The early start happened. Learn from it, then compete clean. That DQ is final for this medley, and it stays here — your next race starts clean.
 _(pause: 2s)_
-6. Don't overcorrect by sitting and waiting on the next block. Set, still, eyes down, and move on the horn — react to the sound, not to the fear of jumping it.
+6. Don't flinch on the next block and ride the horn late to be safe. Set, go still, eyes down, and move the instant it sounds — react to the horn, not the fear.
 _(pause: 2s)_
 ### Swimming · Im · dq
 <!-- slug: hm-swm-im-dq | file: components/pregame/audio/clips-swimming.ts -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You swam all four strokes clean and fast. Then you left the wall onto your back a hair before fully touching on the back-to-breast change — or your breast kick went illegal. The flag goes up, and the whole medley is wiped out on a transition rule.
+2. You swam all four strokes clean and fast. Then on the back-to-breast change you rolled off your back a hair before your hand hit the wall — the backstroke touch has to finish on your back — or your breast kick went illegal. The flag goes up, and the whole medley is wiped out on a transition rule.
 _(pause: 1.5s)_
 3. Your chest still heaves from four legs of work as you stare at the official and it lands. The thought hits: I did all of it and it counts for nothing.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Take the correction. Leave the grudge. That swim is erased on the sheet, not on you.
+5. Take the correction. Leave the grudge. The sheet is erased, but four legs of work aren't.
 _(pause: 2s)_
 6. The IM lives in the transitions — next race, fully touch before you turn, and keep every changeover legal. Clean transitions are how the four-stroke time stays on the board.
 _(pause: 2s)_
@@ -414,7 +415,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Your two hundred IM hasn't dropped in a while. You train four strokes against swimmers who train one, and the all-around time sits stuck while the specialists drop in their own events.
 _(pause: 1.5s)_
-3. You do the math on your splits in your head and stop. The thought hits: I'm stuck, and the specialists keep dropping.
+3. You hang on the lane rope, chest heaving, and run the splits in your head. The thought hits: I'm stuck, and the specialists keep dropping.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -478,7 +479,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The seed sheet is a starting point, not a sentence. Times don't care which heat you swim them in.
+5. The heat sheet is a starting point, not a sentence. Times don't care which heat you swim them in.
 _(pause: 2s)_
 6. Race the clock, not the bodies. Lock onto your splits, attack every transition, and chase the number you came for — a best time in the IM from a slow heat counts exactly the same.
 _(pause: 2s)_
@@ -493,7 +494,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. These nerves are energy, not danger. Let them sharpen you. Roll your shoulders back once and take one slow, easy breath of the deck air.
+5. These nerves are energy, not danger. Let them sharpen you. Roll your shoulders back and let one slow breath of deck air settle you.
 _(pause: 2s)_
 6. You don't have to swim a perfect breast leg — you have to swim your race. Set up the fly and back so you arrive strong, hold the breast tempo you own, and trust your free to bring it home.
 _(pause: 2s)_
@@ -547,7 +548,7 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You touched it dropping a hand, or your relay exchange left early — feet off the block a hair before the incoming swimmer's hand hit the wall. The swim is a best time and it counts for nothing, and on a relay it scratches the whole team's time.
+2. Your relay exchange left early — feet off the block a hair before the incoming swimmer's hand hit the wall. Your leg was a best time and it counts for nothing, and it scratches the whole team's swim with it.
 _(pause: 1.5s)_
 3. Your stomach drops when you see the DQ, and you can't quite look at your relay. The thought hits: that one was on me.
 _(pause: 2s)_
@@ -555,7 +556,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That swim is wiped from the board, and it does not get the rest of your session. Let it be done right now.
 _(pause: 2s)_
-6. One DQ doesn't write your meet. Go find your relay, own the one detail in plain words, then lock the fix for next time: two hands square and flat on the wall, and feet on the block until the incoming swimmer clearly touches.
+6. One DQ doesn't write your meet. Go find your relay, own the one detail in plain words, then lock the fix for next time: feet stay on the block until the incoming swimmer clearly touches.
 _(pause: 2s)_
 ### Swimming · Sprint · plateau
 <!-- slug: hm-swm-sprint-plateau | file: components/pregame/audio/clips-swimming.ts -->
@@ -660,14 +661,15 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. The early start happened and the call is made. Replaying it on the deck only carries it into the next race.
 _(pause: 2s)_
-6. Take the lesson, not the spiral. Next time on the blocks, get set and go perfectly still: weight settled, eyes down, move only on the horn.
+6. Take the lesson, not the spiral. Next time up, settle your weight, still your eyes on the water, and move only when the horn cracks.
 _(pause: 2s)_
 ### Swimming · Dist · dq
 <!-- slug: hm-swm-dist-dq | file: components/pregame/audio/clips-swimming.ts -->
+<!-- verify: swimming-expert — DQ rule accuracy -->
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. A flip turn somewhere in the middle eight hundred rolls past vertical, or a hand slips a wall. The official saw it. A sixteen-minute swim, length after grinding length, is wiped clean off the board.
+2. A flip turn somewhere in the middle of the mile comes up short and your feet never touch the wall, or your hand grabs the lane rope to stay on pace. The official saw it. A sixteen-minute swim, length after grinding length, is wiped clean off the board.
 _(pause: 1.5s)_
 3. You climb out and your legs won't hold you, and now they were for nothing. The thought hits: that whole swim, gone off the sheet.
 _(pause: 2s)_
@@ -688,7 +690,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. A plateau is a flat stretch on the road, not the end of it. Distance breakthroughs come in big steps after long flat stretches — this is your clock stalling, not you, and your lanemate's time is theirs, not a measure of you.
+5. A plateau is a flat stretch on the road, not the end of it. Distance times sit, then break loose in big steps — this is your clock stalling, not you.
 _(pause: 2s)_
 6. Take what's stuck — your pacing, your back half, your turns — to your coach this week and find the next gear. Every honest length is base your next drop is built on.
 _(pause: 2s)_

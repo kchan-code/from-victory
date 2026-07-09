@@ -359,11 +359,11 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You crashed inside chasing the ball instead of staying home on the edge. The quarterback pulled it and kept it around the side you vacated. Now it's Monday, the room is dark, and the film stops on the gap you abandoned.
 _(pause: 1.5s)_
-3. Your face goes hot in the dark room and your eyes stay locked on the frozen frame as it rewinds. The thought hits: how did I leave that edge.
+3. Your jaw tightens in the dark room and your eyes stay locked on the frozen frame as it rewinds. The thought hits: how did I leave that edge.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That snap is graded and behind you. The film is for learning, not for living in. See it once, own it, and let it go.
+5. That snap is graded and gone. Film is where you learn the edge, not where you serve a sentence for it.
 _(pause: 2s)_
 6. Here's the fix. Edge is yours — stay home, squeeze, keep contain. Let the ball come to you instead of chasing it inside. Trust your run fit and make the QB give it up.
 _(pause: 2s)_
@@ -374,7 +374,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You get reached and washed down the line. The edge isn't set, and the back sees it — he hits the crease and he's gone. A five-yard gain turns into sixty, all the way to the house, and it started right where you were.
 _(pause: 1.5s)_
-3. Heat climbs your neck as he pulls away and your hands hang heavy. You replay getting washed down on a loop. The thought hits: that one was on me.
+3. Your hands hang heavy and your feet feel rooted to the spot he sealed you, and you watch the back cross the goal line. The thought hits: I gave up that gap.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -389,7 +389,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The rotation pulls you and sends in the fresh body. You stand on the sideline and watch the defense get a stop without you on the field. The word is rotation — but you're starting to wonder if it's becoming demotion.
 _(pause: 1.5s)_
-3. Your arms cross tight and your jaw sets as you watch the play without you. The thought hits: they don't need me out there.
+3. Your arms fold across your chest and your grip tightens on the facemask of the helmet you're not wearing. The thought hits: they don't need me out there.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -404,7 +404,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. First series, and you're lined up across from a tackle a full year older. You're not sure your get-off is enough to beat him to the spot tonight. The ball's about to be snapped and the doubt is loud.
 _(pause: 1.5s)_
-3. Your heart thumps and your hands buzz in your stance while your breath sits high in your chest. The thought hits: what if my first step is a tick too slow against him.
+3. Your down hand presses hard into the turf and your weight rocks too far forward in your stance. The thought hits: what if my first step is a tick too slow against him.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -509,11 +509,11 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You filled the wrong gap. The back read it and bounced to the one you left open. It's the film room now, the clip frozen on you out of your fit, the long run unspooling behind your mistake.
 _(pause: 1.5s)_
-3. Your face goes hot in the dark room and your stomach drops as the clip rewinds to the frozen frame. The thought hits: how did I blow that fit.
+3. Your stomach drops in the dark room as the clip rewinds to you out of your fit. The thought hits: how did I blow that fit.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That snap is graded and behind you. The film is for learning, not for living in. See it once, own it, and let it go.
+5. The grade is in and that fit is behind you. You watch the miss to fix the read, not to relive it.
 _(pause: 2s)_
 6. Here's the fix. Read your keys, trust your fit, fill your gap with your eyes — see the back, hit the right hole, and be downhill and decisive when the run shows.
 _(pause: 2s)_
@@ -524,7 +524,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You busted the coverage and lost the back out of the backfield. He slips into the open field, the ball drops in, and there's no one between him and the end zone. You watch him run it all the way in. The walk back is the loneliest one in football.
 _(pause: 1.5s)_
-3. Heat climbs your neck on that long walk and your hands hang heavy. You replay losing him on a loop. The thought hits: that one was on me.
+3. Your legs feel like lead on the long walk back and your eyes keep pulling to the scoreboard. The thought hits: that one was on me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -539,7 +539,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. It's a passing down and the defense goes to nickel. The coach trusts the other backer in coverage and takes you off the field. You stand next to him on the sideline, watching your snaps shrink down each obvious passing situation.
 _(pause: 1.5s)_
-3. Your arms cross tight and your jaw sets as you watch the defense line up without you. The thought hits: they don't trust me in space.
+3. You pace a step behind the coach, eyes on the nickel taking your snaps. The thought hits: they don't trust me in space.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -554,7 +554,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You're the MIKE. You get the call from the sideline and the whole defense is yours to line up. You're pointing guys into place, checking the formation, and the weight of running all eleven sits on you before the first snap.
 _(pause: 1.5s)_
-3. Your heart thumps as the play clock runs and your eyes dart across the formation. The thought hits: what if I get us lined up wrong with everyone watching me.
+3. Your eyes dart across the formation and the call sticks in your throat as the play clock winds down. The thought hits: what if I get us lined up wrong with everyone watching me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -659,11 +659,11 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You played the route wrong and passed off a man you should've carried. The film room is dark, and the clip freezes on the receiver running free through the zone you blew, the open grass where you should've been.
 _(pause: 1.5s)_
-3. Your face goes hot in the dark room and your stomach sinks as the clip rewinds. The thought hits: how did I blow that coverage.
+3. Your face flushes in the dark room as the clip catches the receiver running free through your zone. The thought hits: how did I blow that coverage.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That snap is graded and behind you. The film is for learning, not for living in. See it once, own it, and let it go.
+5. That coverage is on tape and it's done. The room is where you sharpen your eyes, not where you sit in the mistake.
 _(pause: 2s)_
 6. Here's the fix. Know your help, communicate the call, carry your man through your zone with your eyes on his route. Pass him off clean or run with him — no in-between.
 _(pause: 2s)_
@@ -674,7 +674,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You got beat, the safety couldn't get over in time, and it's six the other way. A bust at corner is loud — there's not much behind you. You watch him cross the goal line and the scoreboard flips.
 _(pause: 1.5s)_
-3. Heat climbs your neck on the long walk back and your hands hang heavy. The step you lost replays on a loop. The thought hits: that one was on me.
+3. Your legs still burn from the chase and your eyes drop to the turf as the number flips. The thought hits: that's six the other way, and it went through me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -689,7 +689,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You got beat early and the coaches lost confidence. Now they're rolling the coverage to your side or sitting you down, and the quarterback isn't even testing you anymore. The ball goes everywhere but your way.
 _(pause: 1.5s)_
-3. Your arms cross on the sideline and your jaw sets as you watch them throw away from you. The thought hits: they don't trust me out there anymore.
+3. Your hands settle on your hips and your jaw works under the chinstrap between snaps. The thought hits: they don't trust me out there anymore.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -704,7 +704,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You're matched on their number one all night, and you know he's faster than you. You're standing on the island before the first snap, and the only thought is getting beat deep with everyone watching the ball go over your head.
 _(pause: 1.5s)_
-3. Your heart is thumping as he lines up across from you and your hands feel light at your sides. The thought hits: what if he runs right by me on the first play.
+3. Your feet feel restless at the line and your eyes stay glued to his hips as he settles across from you. The thought hits: what if he runs right by me on the first play.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -809,11 +809,11 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Monday film. The room goes quiet. Coach freezes the frame and clicks back to it twice — your receiver wide open on the back side, and you never saw him because you locked onto the wrong half of the field.
 _(pause: 1.5s)_
-3. Your ears go hot in the dark room and you want to sink into the chair. The thought hits: everybody's watching me get this wrong.
+3. Your throat goes dry in the dark room and you want to sink into the chair. The thought hits: everybody's watching me get this wrong.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That rep is on tape and it's done. Film is where you fix it, not where you're sentenced. Sit up, look at it straight, and take the coaching.
+5. That rep is on tape and the grade is in. The room hunts the fix, not a sentence — sit up and look at it straight.
 _(pause: 2s)_
 6. Don't hide from the clip. Mark the read, work the full field on the next install, and let the correction make you better. One coaching point, owned.
 _(pause: 2s)_
@@ -824,7 +824,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You're climbing the pocket and never feel the edge rusher. He rakes the ball loose, it hits the turf, and their end scoops it and runs it sixty yards the other way. Score off you. A two-possession swing with your name on it.
 _(pause: 1.5s)_
-3. Heat climbs up your neck and your chest goes tight watching him cross the goal line. The fumble replays on a loop. The thought hits: that one was on me.
+3. Your chest goes tight and your hand keeps closing on a ball that's already sixty yards the other way. The thought hits: the game just swung on me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -944,11 +944,11 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Film session. Coach freezes the frame. The play was designed to bounce outside, you cut it back, ran straight into your own blocker, and left a wide-open touchdown on the field. Frozen there for the room.
 _(pause: 1.5s)_
-3. Your ears go hot in the dark room. You want to slide down in the seat. The thought hits: everyone's watching me get this wrong.
+3. Your neck goes hot and you slide down in the seat as the clip freezes on you. The thought hits: I ran us right out of a touchdown.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That rep is on tape and it's done. Film is where you fix it, not where you're judged. Sit up, look at it straight, and take the coaching.
+5. That cutback is graded and behind you. The clip is a teacher, not a verdict — look at it straight and take the coaching.
 _(pause: 2s)_
 6. Next install, see the design, trust your read, and hit the right hole. One coaching point, owned.
 _(pause: 2s)_
@@ -959,7 +959,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Fourth quarter, you're winning, and they punch the ball out. It hits the turf, their guy scoops it, and runs it back for six. The lead you were protecting just flipped, on a play with your name on it.
 _(pause: 1.5s)_
-3. Heat floods up your neck as you watch him cross the goal line. Your eyes lock onto the replay you can't stop running. The thought hits: that one was on me.
+3. Your stomach drops as he crosses the goal line and your eyes lock onto the replay you can't stop running. The thought hits: I coughed up the lead.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -974,7 +974,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The other back catches fire, and the carries start drying up. You stand on the sideline watching your touches — and your tape — go to someone else, series after series.
 _(pause: 1.5s)_
-3. Your jaw tightens watching him rip off a run. Your eyes drop to the grass. The thought hits: they've moved on from me.
+3. Your grip tightens on your helmet as he rips off a run, and your eyes drop to the grass. The thought hits: they've moved on from me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -989,7 +989,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. First carry is coming. The defense is keying on you all night, the box is loaded, and you can feel yourself gripping the ball too tight before the handoff is even in your gut.
 _(pause: 1.5s)_
-3. Your heart thumps in the stance. Your hands squeeze early on the air. The thought hits: what if they stuff me right out of the gate.
+3. Your hands squeeze the air where the ball will be, and your feet feel heavy in the backfield. The thought hits: what if they stuff me right out of the gate.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -1053,7 +1053,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That rep is over. One stop in short yardage is one rep, not the measure of you. Stay ready for the next time they hand it to you there.
+5. That rep is over. One stop in short yardage is one carry, not the story of your game. Stay ready for the next time they hand it to you there.
 _(pause: 2s)_
 6. Next short-yardage rep, pad level lower than his, feet churning, run behind your shoulders and fall forward. Win the leverage, not the staredown.
 _(pause: 2s)_
@@ -1092,15 +1092,15 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. Third down, the ball hits you square in the hands, and it clanks straight off and onto the turf. Drive over. One that should've been easy, and you jog off replaying it.
+2. Monday film. The room goes quiet, and coach freezes the frame on your drop — the ball right on your hands, your eyes already turned upfield before you looked it in. He clicks back to it twice.
 _(pause: 1.5s)_
-3. Your hands feel stiff as you jog off and your stomach sinks. The thought hits: that one should've been easy.
+3. Your stomach knots in the dark room and you drop your eyes from the screen. The thought hits: I looked away before I even had it.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That drop is over and the down is gone. One ball off your hands is one rep. You've caught ten thousand of these — let it go.
+5. That drop is graded and gone. Film shows you the fix — eyes all the way in — it doesn't sit you in the miss. You've caught ten thousand of these.
 _(pause: 2s)_
-6. On the next target, eyes all the way through it, watch it into the tuck, look it in before you run. Catch it first, then go — don't press, just see the ball.
+6. On the next target, watch it all the way into the tuck before you think about running. Look it in, squeeze it, then go — catch first, run second.
 _(pause: 2s)_
 ### Football · WR · big-play
 <!-- slug: hm-ftb-wr-big-play | file: components/pregame/audio/clips-football.ts -->
@@ -1109,7 +1109,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You've beaten the coverage clean, wide open down the field. The throw is perfect, right in your hands, nobody near you — and you drop the touchdown. The clip everyone is going to replay.
 _(pause: 1.5s)_
-3. Heat floods your face as you watch it hit the grass, and your hands keep clenching on nothing. The thought hits: I had that one.
+3. Your hands keep clenching on nothing and your eyes stay on the grass where it bounced. The thought hits: I had that one.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -1124,11 +1124,11 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. After the drop, the ball stops coming your way. You run great routes into a void — you're open and the quarterback looks somewhere else. Nobody benched you on paper, but the trust is quiet right now.
 _(pause: 1.5s)_
-3. Your jaw tightens coming back to the huddle uncovered again, and your eyes drop to the turf. The thought hits: he doesn't trust me right now.
+3. Your shoulders sink coming back to the huddle uncovered again, and your breath goes short. The thought hits: he doesn't trust me right now.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Trust gets rebuilt one rep at a time, and a quiet stretch isn't a verdict on who you are. Run the next route like the ball's coming.
+5. Trust goes quiet for a stretch, but it doesn't disappear — it comes back to the guy who keeps getting open. Run the next route like the ball's coming.
 _(pause: 2s)_
 6. Keep running everything full speed, win at the top of your routes, finish your blocks downfield. Snap off the break, hands ready — the targets come back to guys who keep showing up open.
 _(pause: 2s)_
@@ -1139,7 +1139,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. First target is coming up on the script — the route depends on you. You're standing at the line and all you can think about is your hands, worried about the catch before the ball is even snapped.
 _(pause: 1.5s)_
-3. Your heart thumps in the stance and your hands flex tight at your sides. The thought hits: what if I drop the first one with everyone watching.
+3. Your fingers flex and stretch at your sides, and your eyes keep dropping to your own hands. The thought hits: what if I drop the first one with everyone watching.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -1203,7 +1203,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That block is over. One lost rep on the edge is one rep, not the measure of your effort. Lock into the next assignment.
+5. That block is over. One lost rep on the edge is one assignment, not your day. Lock into the next one.
 _(pause: 2s)_
 6. Next perimeter run, break down under control, get your hat across, stay on your feet and run your feet through the block. Win the leverage and sustain it.
 _(pause: 2s)_
@@ -1229,11 +1229,11 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Film. Coach freezes it on the stunt. You and the guard both blocked the same man and left the looper unblocked, and the room watches your quarterback get crushed — on a protection call that was yours.
 _(pause: 1.5s)_
-3. Your ears go hot in the dark room and you sink lower in the seat. The thought hits: I blew the call and everyone saw it.
+3. Your ears burn and you drop your eyes to the floor as the room watches the stunt hit home. The thought hits: I blew the call and everyone saw it.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That rep is on tape and it's done. Film is where you fix it, not where you're sentenced. Look at the stunt straight and take the coaching.
+5. The call is blown and it's on tape now. Film fixes the next one; it doesn't put you on trial for the last.
 _(pause: 2s)_
 6. Don't hide from the clip. Communicate the front, pass off the stunt, take your man and trust the guard to take his. One coaching point, owned.
 _(pause: 2s)_
@@ -1244,7 +1244,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Red zone, you get beat clean off the edge, and your quarterback goes down before he can set — strip-sack, ball on the ground. The drive dies right there, on a rep with your name on it.
 _(pause: 1.5s)_
-3. Heat climbs up your neck watching the pile, and your chest goes tight. The thought hits: I let my quarterback down.
+3. Your shoulders drop as you watch the pile, and your hands still hang out where the edge should have been. The thought hits: I let my quarterback down.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -1259,7 +1259,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The o-line coach rotates the other tackle in — and then doesn't rotate you back. Standing on the sideline, you realize the depth-chart battle you thought you'd won is wide open again.
 _(pause: 1.5s)_
-3. Your jaw tightens watching him take your reps, and your eyes drop to the grass. The thought hits: I'm losing my spot.
+3. You watch him take rep after rep of yours, your hands hanging loose at your sides. The thought hits: I'm losing my spot.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -1338,7 +1338,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That rep is over. One lost rep at the point of attack is one rep, not the measure of you. Reset your eyes for the next snap.
+5. That rep is over. One lost rep at the point of attack is one snap, and the next one's yours to win. Reset your eyes for the line.
 _(pause: 2s)_
 6. Win it with leverage, not by trying to overpower him. First step low and quick, hands inside on his pads, hips through and roll — get under his pad level, drive your feet, and beat him to the punch.
 _(pause: 2s)_
