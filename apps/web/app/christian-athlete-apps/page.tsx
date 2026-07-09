@@ -65,7 +65,7 @@ const FAQ_JSON_LD = {
       name: "What is the best app for Christian athletes?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "It depends on what you need. A free devotional like FCA Challenge or YouVersion builds a daily Scripture habit. Play With Faith adds a sport-specific faith feed. From Victory guides you through pregame visualization, audio-led and specific to your sport and position, anchored in Scripture and the Center, Receive, Respond, Carry rhythm.",
+        text: "It depends on what you need. A free devotional like FCA Challenge or YouVersion builds a daily Scripture habit. Play With Faith adds a sport-specific faith feed. From Victory guides you through pregame visualization, audio-led and specific to your sport and position, anchored in Scripture and who God says you are.",
       },
     },
     {
@@ -185,9 +185,10 @@ export default function ChristianAthleteAppsPage() {
                 always been the doing. Told to visualize, most athletes sit
                 in a quiet room and try to run the movie alone, and it falls
                 apart. From Victory guides it. Headphones on, eyes closed, a
-                voice walks you through the moment in about sixty seconds,
+                voice walks you through the moment in about five minutes,
                 with prompts written for your sport and your position. A
-                goalie sees the first shot. A pitcher sees the first pitch.
+                goalie sees the first shot. A guard sees the first
+                possession.
               </p>
               <p className={P}>
                 And the visualization is not self-reliant. You are not alone
@@ -195,8 +196,9 @@ export default function ChristianAthleteAppsPage() {
                 The voice keeps returning you to who God says you are, so
                 the moment you step into is one where your worth is already
                 settled. That is what frees you to play hard. It runs on a
-                named rhythm you can call under pressure: Center, Receive,
-                Respond, Carry. No grind. No streaks. No shame. What it
+                guided session you can call under pressure: breath, a
+                visualization built for your sport and position, and who
+                God says you are. No grind. No streaks. No shame. What it
                 refuses to say is part of the point. It does not turn faith
                 into a performance upgrade. It makes secure identity the
                 ground the whole thing stands on.
@@ -231,7 +233,7 @@ export default function ChristianAthleteAppsPage() {
                 With Faith adds a sport-specific faith feed. From Victory
                 guides you through pregame visualization, audio-led and
                 specific to your sport and position, anchored in Scripture
-                and the Center, Receive, Respond, Carry rhythm.
+                and who God says you are.
               </p>
 
               <h3 className={H3}>
