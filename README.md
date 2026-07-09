@@ -1,6 +1,6 @@
 # From Victory
 
-A daily-discipline, mental-toughness, and Christian faith app for athletes ages 13-21 — launching with hockey and basketball. Parent buys, athlete uses. Identity precedes performance: we operate **from** Christ's victory, not toward it (Hebrews 12:1-2).
+A daily-discipline, mental-toughness, and Christian faith app for athletes ages 13-21 — live for hockey, basketball, and golf. Parent buys, athlete uses. Identity precedes performance: we operate **from** Christ's victory, not toward it (Hebrews 12:1-2).
 
 See [CLAUDE.md](./CLAUDE.md) for full mission, scope, and non-negotiable constraints (minor data protection, journal safety, content voice).
 
