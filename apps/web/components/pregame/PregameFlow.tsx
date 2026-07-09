@@ -229,7 +229,11 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
       network_mode:
         typeof navigator !== "undefined" && !navigator.onLine ? "offline" : "online",
       meta,
-    }).catch(() => {});
+    }).catch((err) => {
+      // Telemetry is fire-and-forget, but a swallowed failure is invisible.
+      // Log so a broken activity pipeline (network / RLS) is at least observable.
+      console.warn(`[pregame] activity event "${event_name}" failed to log`, err);
+    });
   };
 
   const beginFull = () => {
