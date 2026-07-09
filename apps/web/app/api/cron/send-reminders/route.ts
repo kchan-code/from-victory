@@ -44,6 +44,8 @@
 export const runtime = "nodejs"; // web-push requires Node.js crypto
 export const dynamic = "force-dynamic";
 
+import { timingSafeEqual } from "node:crypto";
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import webpush from "web-push";
@@ -87,7 +89,12 @@ export async function GET(req: NextRequest) {
   }
 
   const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  const expectedToken = `Bearer ${cronSecret}`;
+  const authBuf = Buffer.from(authHeader ?? "", "utf8");
+  const expectedBuf = Buffer.from(expectedToken, "utf8");
+  const authorized =
+    authBuf.length === expectedBuf.length && timingSafeEqual(authBuf, expectedBuf);
+  if (!authorized) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 

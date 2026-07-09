@@ -36,6 +36,8 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+import { timingSafeEqual } from "node:crypto";
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -57,7 +59,11 @@ async function handleCronRequest(req: NextRequest) {
   //    Vercel Cron sends: Authorization: Bearer <CRON_SECRET>
   const authHeader = req.headers.get("authorization");
   const expectedToken = `Bearer ${cronSecret}`;
-  if (!authHeader || authHeader !== expectedToken) {
+  const authBuf = Buffer.from(authHeader ?? "", "utf8");
+  const expectedBuf = Buffer.from(expectedToken, "utf8");
+  const authorized =
+    authBuf.length === expectedBuf.length && timingSafeEqual(authBuf, expectedBuf);
+  if (!authorized) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
