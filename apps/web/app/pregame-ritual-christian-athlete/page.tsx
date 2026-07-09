@@ -17,6 +17,7 @@ import { Footer } from "@/components/landing/Footer";
 import { Reveal } from "@/components/landing/Reveal";
 import { LandingIconDefs } from "@/components/landing/icons";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
+import { ArticleFigure } from "@/components/marketing/ArticleFigure";
 import { getArticleBySlug } from "@/lib/resources/articles";
 import {
   CHRISTIAN_ATHLETE_APPS_HREF,
@@ -177,6 +178,15 @@ export default function PregameRitualPage() {
                 are, so the outcome stops being the thing your worth rides
                 on.
               </p>
+              {/* FV-416 — app screenshot (capture of the pregame session
+                  screen). Layout only; no copy change. */}
+              <ArticleFigure
+                src="/images/blog/app-pregame-session.png"
+                alt="The From Victory pregame session screen, with a breathing circle, a focus cue, and a start button for the guided session"
+                width={738}
+                height={1593}
+                variant="screen"
+              />
 
               <h2 className={H2}>It opens with who you are</h2>
               <p className={P}>

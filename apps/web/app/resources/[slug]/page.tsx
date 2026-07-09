@@ -11,6 +11,7 @@ import { Footer } from "@/components/landing/Footer";
 import { Reveal } from "@/components/landing/Reveal";
 import { LandingIconDefs } from "@/components/landing/icons";
 import { ArticleBody } from "@/components/resources/ArticleBody";
+import { ArticleFigure } from "@/components/marketing/ArticleFigure";
 import {
   getArticleBySlug,
   getAllSlugs,
@@ -172,6 +173,18 @@ export default async function ArticlePage({
           <div className="mx-auto max-w-[800px] px-5 sm:px-8">
             {/* Readable line-length column */}
             <div className="max-w-[68ch]">
+              {/* Editorial hero (FV-416) — before the verbatim body */}
+              {article.image ? (
+                <div className="mb-8">
+                  <ArticleFigure
+                    src={article.image.src}
+                    alt={article.image.alt}
+                    width={article.image.width}
+                    height={article.image.height}
+                    priority
+                  />
+                </div>
+              ) : null}
               <ArticleBody markdown={article.bodyMd} />
             </div>
 
