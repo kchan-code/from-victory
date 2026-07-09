@@ -162,7 +162,7 @@ export default async function ArticlePage({
                   {audienceLabel(article.audience)}
                 </span>
               </div>
-              <h1 className="fv-h-hero mb-0 max-w-[24ch]">{article.title}</h1>
+              <h1 className="fv-h-article mb-0 max-w-[30ch]">{article.title}</h1>
             </Reveal>
           </div>
         </section>

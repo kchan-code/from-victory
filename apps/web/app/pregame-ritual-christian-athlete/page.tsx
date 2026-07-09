@@ -137,7 +137,7 @@ export default function PregameRitualPage() {
           </div>
           <div className="mx-auto max-w-[800px] px-5 sm:px-8">
             <Reveal>
-              <h1 className="fv-h-hero mb-0 max-w-[26ch]">{PAGE_TITLE}</h1>
+              <h1 className="fv-h-article mb-0 max-w-[30ch]">{PAGE_TITLE}</h1>
             </Reveal>
           </div>
         </section>
