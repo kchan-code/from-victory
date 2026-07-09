@@ -87,8 +87,8 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 For end-to-end tests:
 
 ```bash
-cp apps/web/.env.test.example apps/web/.env.test.local
-# Fill in the test credentials before running npm test
+cp apps/web/.env.test.example apps/web/.env.test
+# Fill in the test credentials before running npm run test:e2e
 ```
 
 ## Common commands
