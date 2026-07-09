@@ -36,10 +36,7 @@ import {
   STROKE_VIZ,
   IM_VIZ,
 } from "./segments-swimming.ts";
-
-// Same target as CLIP_LOUDNORM_FILTER in clips.ts. Defined locally to avoid a
-// circular import (clips.ts imports SWIMMING_PREGAME_CLIP_SCRIPTS from here).
-const SWIMMING_LOUDNORM_FILTER = "loudnorm=I=-16:TP=-1.5:LRA=11";
+import { CLIP_LOUDNORM_FILTER } from "./loudnorm";
 
 // ── Swimming VIZ clips — one per specialty (FV-275) ──────────────────────────
 
@@ -48,7 +45,7 @@ export const CLIP_VIZ_SPRINT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...SPRINT_VIZ],
 };
 
@@ -57,7 +54,7 @@ export const CLIP_VIZ_DIST_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...DIST_VIZ],
 };
 
@@ -66,7 +63,7 @@ export const CLIP_VIZ_STROKE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...STROKE_VIZ],
 };
 
@@ -75,7 +72,7 @@ export const CLIP_VIZ_IM_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...IM_VIZ],
 };
 
@@ -88,7 +85,7 @@ export const CLIP_HM_SWM_SPRINT_TOUCHED_OUT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -114,7 +111,7 @@ export const CLIP_HM_SWM_SPRINT_FALSE_START_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -140,7 +137,7 @@ export const CLIP_HM_SWM_SPRINT_DQ_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -172,7 +169,7 @@ export const CLIP_HM_SWM_SPRINT_PLATEAU_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -196,7 +193,7 @@ export const CLIP_HM_SWM_SPRINT_BAD_TURN_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -220,7 +217,7 @@ export const CLIP_HM_SWM_SPRINT_GOGGLES_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -244,7 +241,7 @@ export const CLIP_HM_SWM_SPRINT_SLOW_HEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -268,7 +265,7 @@ export const CLIP_HM_SWM_SPRINT_READY_ROOM_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -292,7 +289,7 @@ export const CLIP_HM_SWM_SPRINT_GO_OUT_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -320,7 +317,7 @@ export const CLIP_HM_SWM_DIST_FALSE_START_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -346,7 +343,7 @@ export const CLIP_HM_SWM_DIST_DQ_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -378,7 +375,7 @@ export const CLIP_HM_SWM_DIST_PLATEAU_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -402,7 +399,7 @@ export const CLIP_HM_SWM_DIST_BAD_TURN_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -426,7 +423,7 @@ export const CLIP_HM_SWM_DIST_MIND_WANDERS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -450,7 +447,7 @@ export const CLIP_HM_SWM_DIST_GOGGLES_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -474,7 +471,7 @@ export const CLIP_HM_SWM_DIST_SLOW_HEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -498,7 +495,7 @@ export const CLIP_HM_SWM_DIST_READY_ROOM_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -522,7 +519,7 @@ export const CLIP_HM_SWM_DIST_GO_OUT_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -550,7 +547,7 @@ export const CLIP_HM_SWM_STROKE_TOUCHED_OUT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -576,7 +573,7 @@ export const CLIP_HM_SWM_STROKE_FALSE_START_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -602,7 +599,7 @@ export const CLIP_HM_SWM_STROKE_DQ_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -630,7 +627,7 @@ export const CLIP_HM_SWM_STROKE_PLATEAU_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -654,7 +651,7 @@ export const CLIP_HM_SWM_STROKE_BAD_TURN_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -678,7 +675,7 @@ export const CLIP_HM_SWM_STROKE_MIND_WANDERS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -702,7 +699,7 @@ export const CLIP_HM_SWM_STROKE_GOGGLES_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -726,7 +723,7 @@ export const CLIP_HM_SWM_STROKE_SLOW_HEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -750,7 +747,7 @@ export const CLIP_HM_SWM_STROKE_READY_ROOM_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -774,7 +771,7 @@ export const CLIP_HM_SWM_STROKE_GO_OUT_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -800,7 +797,7 @@ export const CLIP_HM_SWM_IM_TOUCHED_OUT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -826,7 +823,7 @@ export const CLIP_HM_SWM_IM_FALSE_START_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -852,7 +849,7 @@ export const CLIP_HM_SWM_IM_DQ_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -880,7 +877,7 @@ export const CLIP_HM_SWM_IM_PLATEAU_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -904,7 +901,7 @@ export const CLIP_HM_SWM_IM_BAD_TURN_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -928,7 +925,7 @@ export const CLIP_HM_SWM_IM_MIND_WANDERS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -952,7 +949,7 @@ export const CLIP_HM_SWM_IM_GOGGLES_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -976,7 +973,7 @@ export const CLIP_HM_SWM_IM_SLOW_HEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1000,7 +997,7 @@ export const CLIP_HM_SWM_IM_READY_ROOM_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1024,7 +1021,7 @@ export const CLIP_HM_SWM_IM_GO_OUT_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: SWIMMING_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
