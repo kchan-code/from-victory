@@ -174,6 +174,32 @@ export default async function ArticlePage({
             <div className="max-w-[68ch]">
               <ArticleBody markdown={article.bodyMd} />
             </div>
+
+            {/* ── Related reading (FV-413) ──────────────────────────────
+                Cross-link only, rendered after the verbatim body above.
+                Link text is a verbatim reuse of the linked page's own
+                title/h1 (see article.related on the registry entry); the
+                "Related reading" label is a plain functional label, not
+                authored marketing copy. */}
+            {article.related && article.related.length > 0 && (
+              <div className="max-w-[68ch] pt-8 mt-8 border-t border-hairline">
+                <h2 className="font-mono text-[10px] tracking-[0.20em] uppercase text-cream/55 font-semibold mb-4">
+                  Related reading
+                </h2>
+                <ul className="list-none p-0 m-0 space-y-2">
+                  {article.related.map((rel) => (
+                    <li key={rel.href}>
+                      <Link
+                        href={rel.href}
+                        className="text-gold underline underline-offset-2 hover:text-gold-bright transition-colors duration-fast"
+                      >
+                        {rel.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </section>
 

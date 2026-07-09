@@ -17,6 +17,10 @@ import { Footer } from "@/components/landing/Footer";
 import { Reveal } from "@/components/landing/Reveal";
 import { LandingIconDefs } from "@/components/landing/icons";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
+import {
+  PREGAME_RITUAL_HREF,
+  PREGAME_RITUAL_TITLE,
+} from "@/lib/gtm/page-titles";
 
 const siteUrl = "https://www.fromvictoryapp.com";
 
@@ -257,6 +261,28 @@ export default function ChristianAthleteAppsPage() {
                 to who you are in Christ so you step in already secure, not
                 trying to earn it.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Related reading (FV-413) ────────────────────────────────────
+            Cross-link only, added after the verbatim article copy above.
+            Link text is a verbatim reuse of the linked page's own title —
+            the "Related reading" label is a plain functional label, not
+            authored marketing copy. */}
+        <section className="pb-16 sm:pb-20">
+          <div className="mx-auto max-w-[800px] px-5 sm:px-8">
+            <div className="max-w-[68ch] pt-8 border-t border-hairline">
+              <h2 className="font-mono text-[10px] tracking-[0.20em] uppercase text-cream/55 font-semibold mb-4">
+                Related reading
+              </h2>
+              <ul className="list-none p-0 m-0 space-y-2">
+                <li>
+                  <Link href={PREGAME_RITUAL_HREF} className={LINK_CLS}>
+                    {PREGAME_RITUAL_TITLE}
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
         </section>

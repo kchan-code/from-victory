@@ -17,6 +17,11 @@ import { Footer } from "@/components/landing/Footer";
 import { Reveal } from "@/components/landing/Reveal";
 import { LandingIconDefs } from "@/components/landing/icons";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
+import { getArticleBySlug } from "@/lib/resources/articles";
+import {
+  CHRISTIAN_ATHLETE_APPS_HREF,
+  CHRISTIAN_ATHLETE_APPS_TITLE,
+} from "@/lib/gtm/page-titles";
 
 const siteUrl = "https://www.fromvictoryapp.com";
 
@@ -111,6 +116,12 @@ const LINK_CLS =
   "text-gold underline underline-offset-2 hover:text-gold-bright transition-colors duration-fast";
 
 export default function PregameRitualPage() {
+  // FV-413 — for the cross-link below. Title rendered is the article's
+  // own verbatim title from the registry (lib/resources/articles.ts).
+  const preGameNervesArticle = getArticleBySlug(
+    "pre-game-nerves-christian-athlete-routine",
+  );
+
   return (
     <>
       <PregameRitualJsonLd />
@@ -279,6 +290,38 @@ export default function PregameRitualPage() {
                 It is the verse the session is built on. You can also carry a
                 focus-cue verse of your own into it.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Related reading (FV-413) ────────────────────────────────────
+            Cross-links only, added after the verbatim article copy above.
+            Link text is a verbatim reuse of each linked page's own title —
+            the "Related reading" label is a plain functional label, not
+            authored marketing copy. */}
+        <section className="pb-16 sm:pb-20">
+          <div className="mx-auto max-w-[800px] px-5 sm:px-8">
+            <div className="max-w-[68ch] pt-8 border-t border-hairline">
+              <h2 className="font-mono text-[10px] tracking-[0.20em] uppercase text-cream/55 font-semibold mb-4">
+                Related reading
+              </h2>
+              <ul className="list-none p-0 m-0 space-y-2">
+                <li>
+                  <Link href={CHRISTIAN_ATHLETE_APPS_HREF} className={LINK_CLS}>
+                    {CHRISTIAN_ATHLETE_APPS_TITLE}
+                  </Link>
+                </li>
+                {preGameNervesArticle && (
+                  <li>
+                    <Link
+                      href={`/resources/${preGameNervesArticle.slug}`}
+                      className={LINK_CLS}
+                    >
+                      {preGameNervesArticle.title}
+                    </Link>
+                  </li>
+                )}
+              </ul>
             </div>
           </div>
         </section>
