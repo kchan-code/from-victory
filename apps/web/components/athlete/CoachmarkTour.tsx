@@ -283,6 +283,8 @@ export default function CoachmarkTour({ surface }: { surface: Surface }) {
   const tooltipRef = useRef<HTMLDivElement>(null);
   /** Ref to the primary CTA button inside the tooltip. */
   const primaryBtnRef = useRef<HTMLButtonElement>(null);
+  /** Pending post-scroll measure timeout; cleared on re-measure + unmount. */
+  const measureTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ---- Helpers --------------------------------------------------------------
 
@@ -325,8 +327,13 @@ export default function CoachmarkTour({ surface }: { surface: Surface }) {
         );
         setTooltipPos(pos);
       };
-      // Short delay to let smooth scroll settle
-      setTimeout(measure, prefersReduced ? 0 : 200);
+      // Short delay to let smooth scroll settle. Store the handle so an
+      // unmount (or a re-measure) within the delay can cancel it and avoid
+      // a setState on an unmounted component.
+      if (measureTimeoutRef.current !== null) {
+        clearTimeout(measureTimeoutRef.current);
+      }
+      measureTimeoutRef.current = setTimeout(measure, prefersReduced ? 0 : 200);
       return true;
     },
     [resolveAnchorEl, prefersReduced],
@@ -482,6 +489,9 @@ export default function CoachmarkTour({ surface }: { surface: Surface }) {
     return () => {
       document.body.style.overflow = "";
       document.body.removeAttribute("data-coachmark-tour");
+      if (measureTimeoutRef.current !== null) {
+        clearTimeout(measureTimeoutRef.current);
+      }
     };
   }, []);
 
