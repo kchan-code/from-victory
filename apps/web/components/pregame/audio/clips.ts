@@ -35,6 +35,7 @@ import {
   SCRIPT_INSTRUCTIONS,
   VISUALIZATION_INSTRUCTIONS,
 } from "./instructions.ts";
+import { CLIP_LOUDNORM_FILTER } from "./loudnorm";
 import {
   DEFENSE_VIZ,
   FORWARD_VIZ,
@@ -97,11 +98,10 @@ import { LACROSSE_PREGAME_CLIP_SCRIPTS } from "./clips-lacrosse.ts";
 
 // The EBU R128 loudness normalization filter applied to every clip.
 // -16 LUFS integrated / -1.5 dBTP true-peak / LRA 11 LU.
-// To re-pass at a different target, change the I= value here and regenerate.
+// To re-pass at a different target, change the I= value in loudnorm.ts and regenerate.
 // -14 LUFS = I=-14   (louder, matches streaming platforms)
 // -18 LUFS = I=-18   (quieter, headroom for mixing)
-export const CLIP_LOUDNORM_FILTER =
-  "loudnorm=I=-16:TP=-1.5:LRA=11";
+export { CLIP_LOUDNORM_FILTER } from "./loudnorm";
 
 // ── Shared structural clips ──────────────────────────────────────────────────
 

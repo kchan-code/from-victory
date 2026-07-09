@@ -24,10 +24,7 @@ import {
   OUTFIELD_VIZ,
   PITCHER_VIZ,
 } from "./segments-baseball.ts";
-
-// Same target as CLIP_LOUDNORM_FILTER in clips.ts. Defined locally to avoid a
-// circular import (clips.ts imports BASEBALL_PREGAME_CLIP_SCRIPTS from here).
-const BASEBALL_LOUDNORM_FILTER = "loudnorm=I=-16:TP=-1.5:LRA=11";
+import { CLIP_LOUDNORM_FILTER } from "./loudnorm";
 
 // ── Baseball VIZ clips — one per position (FV-94) ────────────────────────────
 
@@ -36,7 +33,7 @@ export const CLIP_VIZ_PITCHER_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...PITCHER_VIZ],
 };
 
@@ -45,7 +42,7 @@ export const CLIP_VIZ_CATCHER_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...CATCHER_VIZ],
 };
 
@@ -54,7 +51,7 @@ export const CLIP_VIZ_INFIELD_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...INFIELD_VIZ],
 };
 
@@ -63,7 +60,7 @@ export const CLIP_VIZ_OUTFIELD_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...OUTFIELD_VIZ],
 };
 
@@ -74,7 +71,7 @@ export const CLIP_HM_BSB_PITCHER_STRIKEOUT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -99,7 +96,7 @@ export const CLIP_HM_BSB_PITCHER_SLUMP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -124,7 +121,7 @@ export const CLIP_HM_BSB_PITCHER_BIG_HIT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -149,7 +146,7 @@ export const CLIP_HM_BSB_PITCHER_LOSE_COMMAND_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -174,7 +171,7 @@ export const CLIP_HM_BSB_PITCHER_PULLED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -199,7 +196,7 @@ export const CLIP_HM_BSB_PITCHER_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -224,7 +221,7 @@ export const CLIP_HM_BSB_PITCHER_HIT_BATTER_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -249,7 +246,7 @@ export const CLIP_HM_BSB_PITCHER_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -274,7 +271,7 @@ export const CLIP_HM_BSB_PITCHER_FALL_BEHIND_EARLY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -300,7 +297,7 @@ export const CLIP_HM_BSB_CATCHER_STRIKEOUT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -325,7 +322,7 @@ export const CLIP_HM_BSB_CATCHER_SLUMP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -350,7 +347,7 @@ export const CLIP_HM_BSB_CATCHER_ERROR_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -375,7 +372,7 @@ export const CLIP_HM_BSB_CATCHER_BIG_HIT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -403,7 +400,7 @@ export const CLIP_HM_BSB_CATCHER_LOSE_COMMAND_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -428,7 +425,7 @@ export const CLIP_HM_BSB_CATCHER_BENCHED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -453,7 +450,7 @@ export const CLIP_HM_BSB_CATCHER_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -478,7 +475,7 @@ export const CLIP_HM_BSB_CATCHER_FOUL_TIP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -503,7 +500,7 @@ export const CLIP_HM_BSB_CATCHER_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -528,7 +525,7 @@ export const CLIP_HM_BSB_CATCHER_FALL_BEHIND_EARLY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -554,7 +551,7 @@ export const CLIP_HM_BSB_INFIELD_STRIKEOUT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -579,7 +576,7 @@ export const CLIP_HM_BSB_INFIELD_SLUMP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -604,7 +601,7 @@ export const CLIP_HM_BSB_INFIELD_ERROR_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -629,7 +626,7 @@ export const CLIP_HM_BSB_INFIELD_BIG_HIT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -657,7 +654,7 @@ export const CLIP_HM_BSB_INFIELD_LOSE_COMMAND_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -682,7 +679,7 @@ export const CLIP_HM_BSB_INFIELD_BENCHED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -707,7 +704,7 @@ export const CLIP_HM_BSB_INFIELD_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -732,7 +729,7 @@ export const CLIP_HM_BSB_INFIELD_HBP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -757,7 +754,7 @@ export const CLIP_HM_BSB_INFIELD_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -782,7 +779,7 @@ export const CLIP_HM_BSB_INFIELD_FALL_BEHIND_EARLY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -808,7 +805,7 @@ export const CLIP_HM_BSB_OUTFIELD_STRIKEOUT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -833,7 +830,7 @@ export const CLIP_HM_BSB_OUTFIELD_SLUMP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -858,7 +855,7 @@ export const CLIP_HM_BSB_OUTFIELD_ERROR_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -883,7 +880,7 @@ export const CLIP_HM_BSB_OUTFIELD_BIG_HIT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -908,7 +905,7 @@ export const CLIP_HM_BSB_OUTFIELD_LOSE_COMMAND_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -933,7 +930,7 @@ export const CLIP_HM_BSB_OUTFIELD_BENCHED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -958,7 +955,7 @@ export const CLIP_HM_BSB_OUTFIELD_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -983,7 +980,7 @@ export const CLIP_HM_BSB_OUTFIELD_HBP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1008,7 +1005,7 @@ export const CLIP_HM_BSB_OUTFIELD_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1033,7 +1030,7 @@ export const CLIP_HM_BSB_OUTFIELD_FALL_BEHIND_EARLY_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: BASEBALL_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },

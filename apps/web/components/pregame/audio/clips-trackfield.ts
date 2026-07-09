@@ -33,10 +33,7 @@ import {
   JUMP_VIZ,
   THROW_VIZ,
 } from "./segments-trackfield.ts";
-
-// Same target as CLIP_LOUDNORM_FILTER in clips.ts. Defined locally to avoid a
-// circular import (clips.ts imports TRACKFIELD_PREGAME_CLIP_SCRIPTS from here).
-const TRACKFIELD_LOUDNORM_FILTER = "loudnorm=I=-16:TP=-1.5:LRA=11";
+import { CLIP_LOUDNORM_FILTER } from "./loudnorm";
 
 // ── Track & Field VIZ clips — one per event group ────────────────────────────
 
@@ -45,7 +42,7 @@ export const CLIP_VIZ_TRF_SPRINT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...SPRINT_VIZ],
 };
 
@@ -54,7 +51,7 @@ export const CLIP_VIZ_TRF_DIST_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...DIST_VIZ],
 };
 
@@ -63,7 +60,7 @@ export const CLIP_VIZ_TRF_HURDLE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...HURDLE_VIZ],
 };
 
@@ -72,7 +69,7 @@ export const CLIP_VIZ_TRF_JUMP_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...JUMP_VIZ],
 };
 
@@ -81,7 +78,7 @@ export const CLIP_VIZ_TRF_THROW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [...THROW_VIZ],
 };
 
@@ -97,7 +94,7 @@ export const CLIP_HM_TRF_SPRINT_FALSE_START_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -123,7 +120,7 @@ export const CLIP_HM_TRF_SPRINT_HANDOFF_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -147,7 +144,7 @@ export const CLIP_HM_TRF_SPRINT_OUT_LEANED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -171,7 +168,7 @@ export const CLIP_HM_TRF_SPRINT_BAD_HEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -197,7 +194,7 @@ export const CLIP_HM_TRF_SPRINT_HIT_WALL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -223,7 +220,7 @@ export const CLIP_HM_TRF_SPRINT_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -247,7 +244,7 @@ export const CLIP_HM_TRF_SPRINT_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -271,7 +268,7 @@ export const CLIP_HM_TRF_SPRINT_OFF_PACE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -299,7 +296,7 @@ export const CLIP_HM_TRF_DIST_HIT_WALL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -325,7 +322,7 @@ export const CLIP_HM_TRF_DIST_HANDOFF_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -349,7 +346,7 @@ export const CLIP_HM_TRF_DIST_OUT_LEANED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -373,7 +370,7 @@ export const CLIP_HM_TRF_DIST_BAD_HEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -397,7 +394,7 @@ export const CLIP_HM_TRF_DIST_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -421,7 +418,7 @@ export const CLIP_HM_TRF_DIST_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -445,7 +442,7 @@ export const CLIP_HM_TRF_DIST_OFF_PACE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -474,7 +471,7 @@ export const CLIP_HM_TRF_HURDLE_FALSE_START_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -500,7 +497,7 @@ export const CLIP_HM_TRF_HURDLE_HANDOFF_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -524,7 +521,7 @@ export const CLIP_HM_TRF_HURDLE_OUT_LEANED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -548,7 +545,7 @@ export const CLIP_HM_TRF_HURDLE_FOUL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -572,7 +569,7 @@ export const CLIP_HM_TRF_HURDLE_BAD_HEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -596,7 +593,7 @@ export const CLIP_HM_TRF_HURDLE_HIT_WALL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -620,7 +617,7 @@ export const CLIP_HM_TRF_HURDLE_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -644,7 +641,7 @@ export const CLIP_HM_TRF_HURDLE_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -668,7 +665,7 @@ export const CLIP_HM_TRF_HURDLE_OFF_PACE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -696,7 +693,7 @@ export const CLIP_HM_TRF_JUMP_FOUL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -730,7 +727,7 @@ export const CLIP_HM_TRF_JUMP_NO_HEIGHT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -754,7 +751,7 @@ export const CLIP_HM_TRF_JUMP_OUT_LEANED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -778,7 +775,7 @@ export const CLIP_HM_TRF_JUMP_BAD_HEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -802,7 +799,7 @@ export const CLIP_HM_TRF_JUMP_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -826,7 +823,7 @@ export const CLIP_HM_TRF_JUMP_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -850,7 +847,7 @@ export const CLIP_HM_TRF_JUMP_OFF_PACE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -876,7 +873,7 @@ export const CLIP_HM_TRF_THROW_FOUL_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -910,7 +907,7 @@ export const CLIP_HM_TRF_THROW_NO_HEIGHT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -934,7 +931,7 @@ export const CLIP_HM_TRF_THROW_OUT_LEANED_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -958,7 +955,7 @@ export const CLIP_HM_TRF_THROW_BAD_HEAT_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -982,7 +979,7 @@ export const CLIP_HM_TRF_THROW_NERVOUS_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1006,7 +1003,7 @@ export const CLIP_HM_TRF_THROW_START_SLOW_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
@@ -1030,7 +1027,7 @@ export const CLIP_HM_TRF_THROW_OFF_PACE_SCRIPT: AudioScript = {
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
-  postFilter: TRACKFIELD_LOUDNORM_FILTER,
+  postFilter: CLIP_LOUDNORM_FILTER,
   segments: [
     { type: "speech", text: "Now rehearse the hard moment.", speed: 1.1, mark: { phase: "hardMoment" } },
     { type: "silence", durationSec: 0.4 },
