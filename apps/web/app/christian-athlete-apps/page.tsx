@@ -228,16 +228,6 @@ export default function ChristianAthleteAppsPage() {
                 to your sport, that is what From Victory is built for. Play
                 hard, fearless, and free. From victory, not for victory.
               </p>
-              <p className={P}>
-                From Victory is pre-launch.{" "}
-                <Link
-                  href="/?source=app-comparison#waitlist"
-                  className={LINK_CLS}
-                >
-                  Join the waitlist
-                </Link>
-                .
-              </p>
 
               <h2 className={H2}>Common questions</h2>
 
