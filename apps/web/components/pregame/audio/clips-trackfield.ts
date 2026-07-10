@@ -33,7 +33,7 @@ import {
   JUMP_VIZ,
   THROW_VIZ,
 } from "./segments-trackfield.ts";
-import { CLIP_LOUDNORM_FILTER } from "./loudnorm";
+import { CLIP_LOUDNORM_FILTER } from "./loudnorm.ts";
 
 // ── Track & Field VIZ clips — one per event group ────────────────────────────
 
