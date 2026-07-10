@@ -2,8 +2,9 @@
 
 ## Mission
 A daily mental toughness training app with faith built in, for athletes
-ages 13-21 launching with hockey and basketball. The parent buys (for
-MVP), the athlete
+ages 13-21. Launch sports live in production: hockey, basketball, and golf
+(source of truth: `SUPPORTED_SPORTS` in `apps/web/lib/sports.ts`). The parent
+buys (for MVP), the athlete
 trains: one daily training session combining a mental skill, a scripture
 foundation, and a private journal reflection. Built on the brand spine
 that identity precedes performance — we operate FROM Christ's victory,
@@ -320,7 +321,8 @@ The privacy veto is never suppressed to satisfy "issue-scoped only."
 ## MVP Scope (locked — kill scope creep ruthlessly)
 - Parent signup + Stripe subscription (first athlete $5/mo or $49/yr; each additional athlete $3/mo or $29/yr; 14-day first-time trial)
 - Parent creates athlete account (no email for the athlete)
-- One daily training session, hockey- and basketball-themed, faith-
+- One daily training session, themed per live sport (hockey, basketball,
+  golf — see `SUPPORTED_SPORTS`), faith-
   foundational (30 days of content per sport, seeded at launch).
   Structure: mental skill + scripture foundation. (Journal prompt was
   shipped and then descoped per FV-135 — do not re-wire without KC.)
@@ -337,7 +339,7 @@ The privacy veto is never suppressed to satisfy "issue-scoped only."
 - Crisis-resource keyword detection (Option C — see below)
 - **Pregame guided audio session** (~5 min). Athlete makes setup
   selections, then a real audio narration delivers the visualization,
-  coping plan, and send-off. Sport-aware (hockey + basketball), resolved
+  coping plan, and send-off. Sport-aware (hockey, basketball, golf), resolved
   from a per-sport config registry. Added to MVP 2026-05-24 in response to
   direct beta-tester feedback. Shipped as a compositional clip playlist —
   per-position/adversity personalization, ash voice via OpenAI TTS,
@@ -347,8 +349,8 @@ The privacy veto is never suppressed to satisfy "issue-scoped only."
 
 Out of scope for MVP: video, daily training session audio (text-only
 for MVP — only the pregame session has narration), community feed, coach
-view, team mode, native app wrap, sports beyond hockey + basketball
-(v2 — FV-21), AI-personalized content, free tier, social sign-in,
+view, team mode, native app wrap, sports beyond the live set (hockey,
+basketball, golf) — additional sports are v2 (FV-21), AI-personalized content, free tier, social sign-in,
 progressive training plans (that's v2), leaderboards (never), 18+
 self-onboard/self-pay fork (post-MVP).
 
@@ -527,3 +529,25 @@ that conversion, not the tracker, is what raises the parallelism ceiling.
 - Supabase types generated and committed: `supabase gen types typescript --local`
 - Conventional commits enforced
 - No `any` type without a `// reason:` comment
+
+## GTM source of truth — the Delvox GTM Engine
+
+Go-to-market strategy for this app — positioning, brand messaging, ICP, content plan,
+and all publishable marketing copy — is owned by the **Delvox GTM Engine**
+(github.com/kchan-code/delvox-engine, KC's agent-driven GTM system), not this repo. Its
+KC-approved artifacts are mirrored here under `docs/gtm/` and are the contract:
+
+1. **Never invent or revise positioning, taglines, ICP, or marketing copy in this repo.**
+   Read `docs/gtm/brand.md`, `icp.md`, and `voice-and-guardrails.md` first; if what you
+   need isn't there, ask KC to run the engine rather than improvising. When this repo
+   and `docs/gtm/` disagree, `docs/gtm/` wins; when `docs/gtm/` seems stale, ask KC.
+2. **This repo's GTM job is implementation:** publish the ready pages in
+   `docs/gtm/pages/` on fromvictoryapp.com exactly as written (they carry FAQ schema
+   inline), build the waitlist, ship the product. UI strings and microcopy written here
+   follow `docs/gtm/voice-and-guardrails.md`.
+3. **Product truths flow back.** When a feature ships, changes, or is cut, record it in
+   `docs/gtm/product-truths.md` (dated, factual, no spin). The engine reads that file to
+   keep marketing true to the product — a feature missing there is a feature missing
+   from all marketing.
+4. **Approval gate:** KC approves all customer-facing marketing copy in the engine
+   before it reaches this repo. Don't create parallel approval paths here.

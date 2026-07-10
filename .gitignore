@@ -43,3 +43,6 @@ apps/web/.env.test
 apps/web/e2e/.auth/
 apps/web/playwright-report/
 apps/web/test-results/
+
+# Vitest coverage (FV-380)
+apps/web/coverage/

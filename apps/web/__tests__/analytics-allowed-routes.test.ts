@@ -32,6 +32,10 @@ describe("isAllowedAnalyticsPath — public marketing allowlist", () => {
     expect(isAllowedAnalyticsPath("/resources")).toBe(true);
     expect(isAllowedAnalyticsPath("/privacy")).toBe(true);
     expect(isAllowedAnalyticsPath("/terms")).toBe(true);
+    expect(isAllowedAnalyticsPath("/pregame-ritual-christian-athlete")).toBe(
+      true,
+    );
+    expect(isAllowedAnalyticsPath("/christian-athlete-apps")).toBe(true);
   });
 
   it("allows resources article slugs (sub-path)", () => {
