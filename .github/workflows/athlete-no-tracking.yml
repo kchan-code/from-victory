@@ -39,7 +39,7 @@ jobs:
     # Fast: no npm install, no build, just a Node script reading source files.
     timeout-minutes: 3
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Run athlete no-tracking guard (FV-350)
         run: node .github/scripts/check-athlete-no-tracking.cjs
