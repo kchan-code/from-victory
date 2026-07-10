@@ -1,0 +1,28 @@
+# From Victory
+
+> A Christian athlete mindset app for athletes ages 13 and above — daily mental-toughness training rooted in Christ, not performance. Public tagline: "Your Identity Is Secure. Compete From Victory."
+
+From Victory is a web app (installable PWA) for serious youth and college athletes. The core mechanic is a ~5-minute audio-guided pregame session — breath, a scripture-anchored identity opener, a visualization specific to the athlete's sport and position, a plan for the hard moment, prayer, and a send-off. Live sports: hockey, basketball, golf. A parent manages and pays for accounts of athletes under 18 ($5/mo or $49/yr for the first athlete, 14-day free trial). No ads, no behavioral analytics, and no third-party tracking on athlete accounts.
+
+## Product
+
+- [Home](https://www.fromvictoryapp.com/): A Christian athlete mindset app for athletes who compete from identity, not performance.
+- [Pricing](https://www.fromvictoryapp.com/pricing): 14 days free, then $49/yr or $5/mo for your first athlete — $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.
+- [For Parents](https://www.fromvictoryapp.com/parents): You invest in your athlete's physical training. From Victory builds the mental and spiritual foundation underneath it — daily mindset training, pregame preparation, and a private practice for resilience. You see the rhythm; they own the growth.
+- [For Teams, Churches & Sports Ministries](https://www.fromvictoryapp.com/teams): From Victory gives teams, clubs, FCA chapters, chaplains, and church youth groups a simple way to provide Scripture-rooted athlete mindset training to families — without managing accounts, monitoring athletes, or holding private data.
+- [About](https://www.fromvictoryapp.com/about): From Victory is a daily mental toughness training app for Christian athletes — built on the conviction that identity precedes performance, and that athletes compete from Christ's victory, not toward one they're trying to earn.
+
+## Guides
+
+- [A Pregame Ritual for the Christian Athlete: The Guided Visualization](https://www.fromvictoryapp.com/pregame-ritual-christian-athlete): A pregame ritual for the Christian athlete is a short, repeatable practice that carries your faith into the moment before you compete.
+- [Three Apps for the Christian Athlete: What Each One Gets Right](https://www.fromvictoryapp.com/christian-athlete-apps): A Christian athlete choosing an app is really weighing three kinds of tool: a free Scripture devotional, a sport-specific faith app, and a faith-based app that guides you through pregame visualization.
+- [12 Bible Verses for Athletes to Read Before a Game](https://www.fromvictoryapp.com/resources/bible-verses-for-athletes-before-a-game): Twelve NIV Bible verses for athletes before a game, with short, identity-first reflections. Steady your nerves on who you already are in Christ.
+- [Pre-Game Nerves: A Christian Athlete's 5-Step Routine](https://www.fromvictoryapp.com/resources/pre-game-nerves-christian-athlete-routine): A simple, repeatable pre-game routine for Christian athletes — breath, identity, visualization, a cue word — to settle nerves and compete free.
+- [How to Bounce Back After a Bad Game](https://www.fromvictoryapp.com/resources/how-to-bounce-back-after-a-bad-game): A bad game is information, not a verdict. A faith-grounded, no-shame way for athletes to reset, recover, and return after a rough night.
+- [When Your Athlete Gets Cut: A Parent's Guide](https://www.fromvictoryapp.com/resources/when-your-athlete-gets-cut-a-parents-guide): Your athlete just got cut. A warm, practical guide for parents — what to say in the car, what to avoid, and how to anchor them in identity, not results.
+- [Sports Psychology and Faith: Do They Mix?](https://www.fromvictoryapp.com/resources/sports-psychology-and-faith-do-they-mix): Can sports psychology and Christian faith work together? Yes — when faith is the foundation, not the decoration. An honest look at how, and the limits.
+
+## Policies
+
+- [Privacy Policy](https://www.fromvictoryapp.com/privacy): Minimal athlete data, no tracking on minor accounts, parent-controlled deletion.
+- [Terms of Use](https://www.fromvictoryapp.com/terms): From Victory is a training tool, not a mental-health or clinical service.

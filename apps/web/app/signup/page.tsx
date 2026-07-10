@@ -6,7 +6,7 @@ import { redirectIfAuthed } from "@/lib/auth/guards";
 import { isAdultSignupEnabled } from "@/lib/flags";
 
 export const metadata = {
-  title: "Create your parent account · From Victory",
+  title: "Create your parent account",
 };
 
 export default async function SignUpPage() {

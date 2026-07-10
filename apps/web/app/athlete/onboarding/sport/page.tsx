@@ -2,7 +2,7 @@ import SportPicker from "@/components/athlete/SportPicker";
 import { requireAthlete } from "@/lib/auth/guards";
 
 export const metadata = {
-  title: "Your sport · From Victory",
+  title: "Your sport",
 };
 
 // No gate redirect here — this route IS the first-run destination.

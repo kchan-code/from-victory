@@ -5,7 +5,7 @@ import { requireAthlete } from "@/lib/auth/guards";
 import { requireActiveAccess } from "@/lib/subscriptions/enforce";
 
 export const metadata = {
-  title: "Pre-Practice · From Victory",
+  title: "Pre-Practice",
 };
 
 export default async function PracticePage() {

@@ -10,27 +10,23 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
-## 2026-07-08 — Guided visualization (core mechanic; corrected against the shipped app 2026-07-08)
+## 2026-07-08 — Guided visualization (core mechanic, recorded by KC)
 
-The pregame session is a **~5-minute audio-guided experience**, not a sixty-second one:
-breathing, a scripture opener that settles identity and worth, a **focus visualization**,
-a plan for the hard moment, and a send-off. Voice prompts are specific to the athlete's
-**sport and position** (hockey, basketball, golf live; per-position visualization
-libraries). Earbuds in; the athlete makes short setup selections first, then the audio
-runs. A text-mode fallback exists when audio can't load.
+The pregame session is **audio-guided
+visualization**: voice prompts specific to the athlete's **sport and position**.
+Headphones on, eyes closed, about five minutes (experienced order, verified against the
+app 2026-07-08: a short guided **breath** screen first, then quick setup selections —
+today's focus, position, positive plays, hard moment, reset anchor, self-talk — then
+the audio: **identity opener** (scripture varies by today's focus), sport- and
+position-specific **visualization**, the **hard moment** rehearsed with its reset,
+**prayer** (guided or self-guided, athlete's choice), **send-off**. Brand/session anchor
+verse Hebrews 12:1-2 — also the default verse behind the athlete's cue word; sports
+live: hockey, basketball, golf; baseball coming soon).
 
-Naming caution: the app does **not** use the names "Center, Receive, Respond, Carry"
-anywhere in the product. The shipped four-beat canon (FV-339) is a content SHAPE that is
-deliberately unnamed in-session: (1) nerves reframed as energy, (2) identity is not
-performance, (3) worth secure, (4) a concrete reset cue. If CRRC is to be the public
-name of the ritual, the app must first adopt that naming in-session — a product change
-that is not built today. Marketing that promises a named CRRC ritual or a ~60-second
-practice describes a product that does not yet exist in that form.
-
-Why it matters (unchanged): visualization is generally accepted best practice in sport,
-but almost no tools help athletes actually do it. From Victory does. And during it the
-athlete is not self-reliant and not alone — the power of God empowering their freedom to
-play hard, fearless, and free. This is the category differentiator.
+Why it matters: visualization is generally accepted best practice in sport, but almost
+no tools help athletes actually do it. From Victory does. And during it the athlete is
+not self-reliant and not alone — the power of God empowering their freedom to play hard,
+fearless, and free. This is the category differentiator and it now leads the messaging.
 
 ## 2026-07-08 — Status facts
 
@@ -38,7 +34,7 @@ play hard, fearless, and free. This is the category differentiator.
   counts, or retention claims may be asserted anywhere until a launch cohort exists.
 - Connected social accounts (Publer): Facebook, Instagram, YouTube. No LinkedIn.
 
-## 2026-06-25 — Paid subscriptions live (recorded 2026-07-08 by the app repo)
+## 2026-06-25 — Paid subscriptions live (recorded 2026-07-08 by the app repo; re-added after the 2026-07-08 re-export dropped it)
 
 Stripe billing is live and enforced in production: first athlete $5/mo or $49/yr, each
 additional athlete $3/mo or $29/yr, 14-day free trial for first-time subscribers,

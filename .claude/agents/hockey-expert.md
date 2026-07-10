@@ -38,7 +38,7 @@ never been in a rink.
 <!-- canon exemplar — verbatim from docs/scripts/hockey.md, do not paraphrase -->
 A routine HM cell that rings hockey-true (`hm-forward-nervous`, lines only):
 2. You are on the bench before the first shift. Your hands feel light. Your legs feel shaky. Your heart is up in your throat.
-3. Your eyes keep jumping to the ice. Your stick feels light in your hands. The thought hits: I'm not ready for this.
+3. Your eyes keep jumping to the ice. Your stick feels light in your hands. The thought hits: self-doubt shows up before the first shift.
 5. These nerves are energy, not danger. Let them sharpen you.
 6. First shift, move your feet, get to the wall, and touch the game early.
 

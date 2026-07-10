@@ -321,6 +321,20 @@ a:hover { color: var(--accent-hot); }
     font-weight: 600;
   }
 
+  /* Long-form article/blog title (FV-414): the hero clamp is sized for
+     short taglines; ten-word article titles need a smaller scale, between
+     --t-h1 (32px) and --t-display (48px). */
+  .fv-h-article {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: clamp(30px, 4.5vw, 44px);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    color: var(--fg);
+    text-wrap: balance;
+    margin: 0;
+  }
+
   .fv-h-section {
     font-family: var(--font-heading);
     font-weight: 600;

@@ -106,7 +106,7 @@ Routine cells are 6 lines; only gated identity-collapse cells may carry a
 Routine HM done right (hockey `hm-forward-nervous`, lines only):
 1. Now rehearse the hard moment.
 2. You are on the bench before the first shift. Your hands feel light. Your legs feel shaky. Your heart is up in your throat.
-3. Your eyes keep jumping to the ice. Your stick feels light in your hands. The thought hits: I'm not ready for this.
+3. Your eyes keep jumping to the ice. Your stick feels light in your hands. The thought hits: self-doubt shows up before the first shift.
 4. Now the reset. Return to your anchor.
 5. These nerves are energy, not danger. Let them sharpen you.
 6. First shift, move your feet, get to the wall, and touch the game early.

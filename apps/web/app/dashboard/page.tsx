@@ -12,7 +12,7 @@ import { DeleteAthleteButton } from "@/components/dashboard/DeleteAthleteButton"
 import { RhythmRing } from "@/components/ui";
 
 export const metadata = {
-  title: "Dashboard · From Victory",
+  title: "Dashboard",
 };
 
 export default async function DashboardPage() {

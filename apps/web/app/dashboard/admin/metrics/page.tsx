@@ -16,7 +16,7 @@ import {
 // (including signed-in non-admin parents), so this never appears in nav and is
 // not discoverable. Never indexed.
 export const metadata = {
-  title: "Owner Metrics · From Victory",
+  title: "Owner Metrics",
   robots: { index: false, follow: false },
 };
 

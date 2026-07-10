@@ -72,6 +72,12 @@ export function ScrollNav() {
               Pricing
             </Link>
             <Link
+              href="/resources"
+              className="hidden lg:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
+            >
+              Resources
+            </Link>
+            <Link
               href="/signin"
               className="inline-flex items-center whitespace-nowrap bg-transparent text-cream border border-hairline-strong hover:border-cream/50 font-heading font-semibold text-[13px] rounded-pill px-[14px] sm:px-[18px] py-[11px] no-underline transition-colors duration-base ease-out"
             >

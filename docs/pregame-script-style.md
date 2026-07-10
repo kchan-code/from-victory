@@ -120,8 +120,36 @@ the feet do.
 Name it as a thought passing through, not the athlete's settled belief. This is
 cognitive defusion — the athlete learns to *notice* the thought instead of *being*
 it. Use `The thought hits: ___` (default) or `You think, ___`. The quoted thought
-may stay colloquial (`I'm not ready for this`, `I can't guard him`) — it's the
+may stay colloquial (`I forced that`, `I'm forcing things`) — it's the
 athlete's inner voice. The narration around it stays plain and steady.
+
+**2a. The thought's CONTENT is constrained — defuse, don't install (KC,
+2026-07-09, FV-412).** A rehearsal script that voices a composed negative label
+can INSTALL a story the athlete never had, rather than defusing one they have.
+(The ruling case: the rendered baseball clip said `The thought hits: I lost the
+staff. They don't trust me back there.` — KC ruled it dangerous.) A line-3
+intrusive thought may be:
+
+- **A behavioral read of the play/pattern** — KC's verbatim allowed examples:
+  `I forced that` ✓ · `I'm forcing things` ✓ · `I'm playing outside of myself,
+  doing too much` ✓
+- **A generic naming of the mental noise** (for fear-of-recurrence moments):
+  `self-doubt runs through my head` ✓ — name the doubt's arrival, never script
+  its content.
+
+It may NOT be:
+
+- **A capability/identity verdict:** `I'm not ready for this` ✗ (KC-explicit —
+  this line was previously cited in the authorized hockey forward-nervous cell
+  AND in this rule's own pre-FV-412 examples; the FV-412 rule supersedes both)
+- **A status/permanence verdict:** `I lost my spot` ✗ · `I'm done here` ✗ ·
+  `I lost the staff` ✗
+- **An other-party judgment read:** `he/they don't trust me` ✗ · `the pitcher
+  can't trust me` ✗ · `coach thinks I can't play` ✗
+
+(Exception path: the clinically gated identity-collapse cells, where the
+identity lie is the clinical subject — see "Open KC decisions" item 8; those
+route to FV-119, not to a mechanical application of this rule.)
 
 **3. Cut the mindfulness platitude.** The line `Come back to your breath. Come
 back to right now.` (and `Come back to your base.`) is **banned in HM cells**.
@@ -300,6 +328,14 @@ pregame scripts:
 - Bare first-person thoughts (use `The thought hits: ___` or `You think, ___`)
 - The stock somatic trio `Stomach drop. Heat in your face. Tight chest.` repeated
   cell to cell
+- **Line-3-scoped (intrusive-thought CONTENT — FV-412, added 2026-07-09, not
+  part of the FV-398 live-book confirmation):** banned as the quoted thought in
+  line 3 — `not ready for this` · `don't trust me` / `doesn't trust me` /
+  `can't trust me` · `can't be trusted` · `I'm done here` · `I lost my spot` ·
+  `I lost the staff`. These are the greppable instances of the three banned
+  classes (capability/identity verdict, status/permanence verdict, other-party
+  judgment read) — see Part 1, rule 2a. Gated identity-collapse cells are
+  exempted pending FV-119 (see "Open KC decisions" item 8).
 
 A handful of live, KC-authorized cells still contain banned lines — they are
 canon drift, catalogued under "Open KC decisions" below. Do not copy their
@@ -336,7 +372,10 @@ bump per FV-142). **Flag only — never edit the books without KC.**
 1. **hockey `hm-forward-coach-yells`** — line 3: `Feel what your body does.
    Tight jaw. Heat in your chest. He is going to bury me.` — banned stock
    opener + bare first-person thought (no `The thought hits:`). Reset pause
-   also still `[2s]`. (The finding that motivated FV-398.)
+   also still `[2s]`. (The finding that motivated FV-398.) *FV-412 note: the
+   thought content itself (`He is going to bury me` — an other-party judgment
+   read) also violates rule 2a; quoted here as shipped canon, superseded
+   pending re-cut per FV-412.*
 2. **hockey `hm-forward-start-slow`** — line 3: `Feel what your body does.
    Tight grip on the stick. Shoulders up. I am not in this game.` — banned
    stock opener + bare thought; **plus** a 7th line `Speak the truth. You do
@@ -366,3 +405,12 @@ bump per FV-142). **Flag only — never edit the books without KC.**
    your identity.` — outside the audio de-corn scope but visible to athletes
    in text mode. Align with the de-corned register, or ratify as a distinct
    surface.
+8. **Gated identity cells' thought lines vs the FV-412 intrusive-thought rule
+   (added 2026-07-09, FV-412).** The clinically gated identity-collapse cells
+   carry thought lines whose content IS an identity verdict — golf `first-tee`
+   (`if I can't trust the swing, I have nothing`) and the yips-class
+   `lose-command` cells. There the identity lie is the clinical subject of the
+   cell, not incidental script content. Route these to the FV-119 clinical
+   review; do NOT mechanically apply rule 2a / the line-3-scoped banned classes
+   to them. Any re-cut of a gated cell's thought line is a KC + clinical
+   decision.

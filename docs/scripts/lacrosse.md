@@ -446,7 +446,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You force the dodge into the double at the top of the box. Two poles close and the ball pops loose. They scoop it, and it's a fast break the other way while you're still standing there.
 _(pause: 1.5s)_
-3. Your stick drops to your hip and your feet stop moving. Your eyes chase the ball up the field. The thought hits: I can't be trusted with the ball.
+3. Your stick drops to your hip and your feet stop moving. Your eyes chase the ball up the field. The thought hits: I forced that right into the double.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -461,7 +461,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Their best pole picks you up at the midline and never leaves. He face-guards you a full quarter — no touches, no looks, the offense running five-on-five while you drag him around the field.
 _(pause: 1.5s)_
-3. Your gloves squeeze a shaft you haven't used in ten minutes and your eyes keep drifting to the bench. The thought hits: I'm invisible out here — I'm nothing without the ball.
+3. Your gloves squeeze a shaft you haven't used in ten minutes and your eyes keep drifting to the bench. The thought hits: I've barely touched it all quarter.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -491,7 +491,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You forced another dodge into the slide and coach pulls you for a shift. He's loud about it — the whole sideline hears exactly what he thinks of that decision.
 _(pause: 1.5s)_
-3. Your chin drops and you pick at the mesh of your pocket instead of looking at him. The thought hits: he doesn't trust my hands anymore.
+3. Your chin drops and you pick at the mesh of your pocket instead of looking at him. The thought hits: the ball stopped coming to my side.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -506,7 +506,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. A cold stretch, and coach sits you. You stand at the box and watch the second unit run your offense — and score without you. The bench gets longer every minute you're on it.
 _(pause: 1.5s)_
-3. Your helmet is still on and your gloves stay wrapped around your stick like you're going back any second. The thought hits: that's it, I lost my spot.
+3. Your helmet is still on and your gloves stay wrapped around your stick like you're going back any second. The thought hits: the second unit's out there running my offense.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -628,7 +628,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. They put a pole on you up top and he's in your gloves on every touch. Your dodge — the thing you're out there for — isn't there. You can't get your hands free to shoot or even feed.
 _(pause: 1.5s)_
-3. You keep switching hands without going anywhere and your feet are dancing in place. The thought hits: they took my dodge away, and I've got nothing else.
+3. You keep switching hands without going anywhere and your feet are dancing in place. The thought hits: they scouted my dodge and sat on it all night.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -658,7 +658,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The whistle stops play and coach subs you off at the box for the offensive specialist — again. On your way past he barks about your last feed, and the bench goes quiet.
 _(pause: 1.5s)_
-3. You drop onto the bench and yank your helmet half off, jaw working. The thought hits: I'm just a legs guy to him — he doesn't see the rest of my game.
+3. You drop onto the bench and yank your helmet half off, jaw working. The thought hits: every call for me tonight is run, clear, run again.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -673,7 +673,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The rotation tightens and your runs stop coming. You watch two full quarters from the box, helmet on, waiting for a tap that doesn't come.
 _(pause: 1.5s)_
-3. You bounce on your toes at every whistle, then rock back on your heels when it's not you. The thought hits: I lost the run, and I don't know when it's coming back.
+3. You bounce on your toes at every whistle, then rock back on your heels when it's not you. The thought hits: two quarters, and my run still hasn't come.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -750,7 +750,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Their attackman takes you topside and beats you to GLE — or out in the open field, a quicker middie splits you at the midline. Either way it ends the same. The ball is in your net, and it was your man.
 _(pause: 1.5s)_
-3. Your feet felt like they were in cement, and now your pole drags as you circle behind the cage. The thought hits: I'm a liability out here.
+3. Your feet felt like they were in cement, and now your pole drags as you circle behind the cage. The thought hits: he went right through my check.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -825,7 +825,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Beaten twice in a quarter, and coach makes the change. You watch the third pole take your matchup, and every slide call from the sideline sounds like a sentence about you.
 _(pause: 1.5s)_
-3. Your helmet stays buckled and you chew your mouthpiece, eyes locked on the man who isn't yours right now. The thought hits: they don't trust me on-ball anymore.
+3. Your helmet stays buckled and you chew your mouthpiece, eyes locked on the man who isn't yours right now. The thought hits: the third pole has my matchup now.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -920,7 +920,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Three straight draws, three straight losses. His clamp is just quicker tonight. Every loss sends their offense the other way, and you can feel the whole sideline doing the math.
 _(pause: 1.5s)_
-3. Your forearms burn from squeezing the shaft and you're leaning over the dot before the whistle. The thought hits: I'm losing us this game at the X.
+3. Your forearms burn from squeezing the shaft and you're leaning over the dot before the whistle. The thought hits: he's beating me to the clamp tonight.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -950,7 +950,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Three losses at the dot and coach meets you at the sideline with an earful — the possession game is bleeding out, and in his eyes that's your column of the stat sheet.
 _(pause: 1.5s)_
-3. You stand there nodding inside your helmet, gloves flexing on the shaft. The thought hits: one more lost draw and I'm done out here.
+3. You stand there nodding inside your helmet, gloves flexing on the shaft. The thought hits: three straight lost, and the whistle's coming again.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -965,7 +965,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Timeout, big draw coming, and coach sends the other FOGO to the X. Your one job, the reason you dress, and the biggest rep of the night belongs to somebody else while you watch from the box.
 _(pause: 1.5s)_
-3. You're standing at the box with your stick flipped upside down, butt-end in the turf. The thought hits: I have one job, and I just lost it.
+3. You're standing at the box with your stick flipped upside down, butt-end in the turf. The thought hits: the biggest draw of the night, and it isn't mine.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -1135,7 +1135,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Five goals in, coach calls time and points to the backup. You hand over the crease in front of everyone and make the long walk to the bench, helmet still on so nobody sees your face.
 _(pause: 1.5s)_
-3. You sit at the end of the bench, stick flat across your knees, watching someone else warm up in your cage. The thought hits: I got yanked — I'm done here.
+3. You sit at the end of the bench, stick flat across your knees, watching someone else warm up in your cage. The thought hits: I got pulled in front of everyone.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_

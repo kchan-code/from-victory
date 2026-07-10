@@ -18,7 +18,8 @@ import Link from "next/link";
 //      feature here. Revisit if/when it is wired.
 
 export const metadata: Metadata = {
-  title: "Privacy Policy · From Victory",
+  alternates: { canonical: "/privacy" },
+  title: "Privacy Policy",
   description:
     "How From Victory collects, uses, stores, and protects information — across our website, the sport waitlist, and the From Victory app for parents and athletes (ages 13 and above).",
   robots: { index: true, follow: true },

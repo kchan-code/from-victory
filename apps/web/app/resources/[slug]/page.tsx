@@ -11,6 +11,7 @@ import { Footer } from "@/components/landing/Footer";
 import { Reveal } from "@/components/landing/Reveal";
 import { LandingIconDefs } from "@/components/landing/icons";
 import { ArticleBody } from "@/components/resources/ArticleBody";
+import { ArticleFigure } from "@/components/marketing/ArticleFigure";
 import {
   getArticleBySlug,
   getAllSlugs,
@@ -43,19 +44,28 @@ export async function generateMetadata({
 
   const pageTitle = `${article.title} · From Victory`;
   const ogUrl = `${siteUrl}/resources/${article.slug}`;
+  // Per-article OG card (FV-418): 1200x630 crop of the article's editorial
+  // hero, generated alongside the hero in public/images/blog/og/. Falls back
+  // to the shared brand card for any article without an image.
+  const ogImage = article.image
+    ? `${siteUrl}${article.image.src.replace("/images/blog/", "/images/blog/og/")}`
+    : `${siteUrl}/from-victory-social-preview.jpg`;
 
   return {
-    title: pageTitle,
+    title: article.title, // root layout template appends "· From Victory"
     description: article.metaDescription,
+    alternates: { canonical: `/resources/${article.slug}` },
     openGraph: {
       type: "article",
       url: ogUrl,
       siteName: "From Victory",
       title: pageTitle,
       description: article.metaDescription,
+      publishedTime: article.datePublished,
+      modifiedTime: article.dateModified,
       images: [
         {
-          url: `${siteUrl}/from-victory-social-preview.jpg`,
+          url: ogImage,
           width: 1200,
           height: 630,
         },
@@ -65,7 +75,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: pageTitle,
       description: article.metaDescription,
-      images: [`${siteUrl}/from-victory-social-preview.jpg`],
+      images: [ogImage],
     },
   };
 }
@@ -81,6 +91,17 @@ function ArticleJsonLd({ article }: { article: Article }) {
     headline: article.title,
     description: article.metaDescription,
     url: `${siteUrl}/resources/${article.slug}`,
+    // FV-418: dates, author, and image — freshness/attribution signals for
+    // search and answer engines. Author is the organization (articles are
+    // unsigned house content).
+    datePublished: article.datePublished,
+    dateModified: article.dateModified,
+    author: {
+      "@type": "Organization",
+      name: "From Victory",
+      url: siteUrl,
+    },
+    ...(article.image ? { image: [`${siteUrl}${article.image.src}`] } : {}),
     publisher: {
       "@type": "Organization",
       name: "From Victory",
@@ -99,6 +120,17 @@ function ArticleJsonLd({ article }: { article: Article }) {
 // ---------------------------------------------------------------------------
 // Audience label helper
 // ---------------------------------------------------------------------------
+
+// "2026-07-09" → "July 9, 2026". Manual parse — new Date("YYYY-MM-DD") is
+// UTC-midnight and can shift a day depending on build timezone (FV-418).
+function formatArticleDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const MONTHS = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+  return `${MONTHS[(m ?? 1) - 1]} ${d}, ${y}`;
+}
 
 function audienceLabel(audience: Article["audience"]): string {
   return audience === "athlete" ? "For athletes" : "For parents";
@@ -161,8 +193,19 @@ export default async function ArticlePage({
                 <span className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55">
                   {audienceLabel(article.audience)}
                 </span>
+                <span className="text-cream/20" aria-hidden="true">
+                  /
+                </span>
+                {/* Visible updated date (FV-418) — engines cross-check the
+                    Article schema's dateModified against on-page text. */}
+                <time
+                  dateTime={article.dateModified}
+                  className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55"
+                >
+                  Updated {formatArticleDate(article.dateModified)}
+                </time>
               </div>
-              <h1 className="fv-h-hero mb-0 max-w-[24ch]">{article.title}</h1>
+              <h1 className="fv-h-article mb-0 max-w-[30ch]">{article.title}</h1>
             </Reveal>
           </div>
         </section>
@@ -172,8 +215,46 @@ export default async function ArticlePage({
           <div className="mx-auto max-w-[800px] px-5 sm:px-8">
             {/* Readable line-length column */}
             <div className="max-w-[68ch]">
+              {/* Editorial hero (FV-416) — before the verbatim body */}
+              {article.image ? (
+                <div className="mb-8">
+                  <ArticleFigure
+                    src={article.image.src}
+                    alt={article.image.alt}
+                    width={article.image.width}
+                    height={article.image.height}
+                    priority
+                  />
+                </div>
+              ) : null}
               <ArticleBody markdown={article.bodyMd} />
             </div>
+
+            {/* ── Related reading (FV-413) ──────────────────────────────
+                Cross-link only, rendered after the verbatim body above.
+                Link text is a verbatim reuse of the linked page's own
+                title/h1 (see article.related on the registry entry); the
+                "Related reading" label is a plain functional label, not
+                authored marketing copy. */}
+            {article.related && article.related.length > 0 && (
+              <div className="max-w-[68ch] pt-8 mt-8 border-t border-hairline">
+                <h2 className="font-mono text-[10px] tracking-[0.20em] uppercase text-cream/55 font-semibold mb-4">
+                  Related reading
+                </h2>
+                <ul className="list-none p-0 m-0 space-y-2">
+                  {article.related.map((rel) => (
+                    <li key={rel.href}>
+                      <Link
+                        href={rel.href}
+                        className="text-gold underline underline-offset-2 hover:text-gold-bright transition-colors duration-fast"
+                      >
+                        {rel.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </section>
 

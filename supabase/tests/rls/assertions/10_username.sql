@@ -6,8 +6,10 @@
 --   (b) A DIFFERENT athlete cannot read athlete A's username via get_own_username().
 --   (c) A parent (linked to athlete A) cannot read athlete A's username via
 --       a direct profiles SELECT — verifies the application-layer contract.
---       Note: the column-level DB enforcement (FV-251) is pending; this
---       assertion documents the INTENDED guarantee at the function boundary.
+--   (c2) The column-level DB enforcement (FV-251, closed by FV-361): a
+--       direct profiles SELECT of `username` by the linked parent raises
+--       insufficient_privilege — the column REVOKE denies it even though the
+--       row is RLS-visible.
 --   (d) Anon cannot call get_own_username() (no active session → NULL).
 --
 -- Fixture graph (from fixtures.sql):
@@ -111,15 +113,15 @@ rollback;
 
 
 -- ---------------------------------------------------------------------------
--- (c2) FV-251 GAP (documented, not yet closed) — a parent linked to athlete A
---      can currently read A's username via a DIRECT row SELECT, because the
---      parent-reads-linked-athlete policy grants row-level SELECT and there is
---      no column-level REVOKE on `username` yet (same class as position /
---      focus_area, tracked by FV-251). This assertion documents the CURRENT
---      pre-FV-251 state — it EXPECTS the username to be visible. When FV-251
---      lands `REVOKE SELECT (username) ... FROM authenticated`, this assert
---      goes red; flip it to expect NULL. That red is the mechanical signal the
---      gap is closed (per kids-privacy-officer FV-320 review).
+-- (c2) FV-251 GAP — CLOSED by FV-361
+--      (20260708120000_athlete_private_columns_grant_hardening.sql).
+--      A parent linked to athlete A could previously read A's username via a
+--      DIRECT row SELECT, because the parent-reads-linked-athlete policy
+--      grants row-level SELECT and there was no column-level REVOKE on
+--      `username` (same class as position / focus_area). FV-361 added
+--      `REVOKE SELECT (username, position, focus_area, next_game_on) ...
+--      FROM authenticated, anon` — so the SELECT itself must now raise
+--      insufficient_privilege (SQLSTATE 42501) rather than return a value.
 -- ---------------------------------------------------------------------------
 
 begin;
@@ -132,10 +134,14 @@ begin;
     select username into seen
       from public.profiles
      where id = '20000000-0000-4000-8000-00000000000a';
-    assert seen = 'athlete_a_username',
-      format('AC(c2): expected PRE-FV-251 username exposure to the linked parent, got "%s". '
-             'If FV-251 landed the column REVOKE, change this assert to expect NULL.',
-             coalesce(seen, '<NULL>'));
+    raise exception
+      'AC(c2) FAIL: parent read athlete A''s username via direct SELECT '
+      '(got "%s") — FV-361 column REVOKE is missing or not applied.',
+      coalesce(seen, '<NULL>');
+  exception
+    when insufficient_privilege then
+      -- Expected: the column-level REVOKE denies the SELECT outright.
+      null;
   end $$;
 rollback;
 

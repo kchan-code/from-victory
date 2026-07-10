@@ -7,7 +7,7 @@ import { requireParent } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
-  title: "Pair a device · From Victory",
+  title: "Pair a device",
 };
 
 type Params = {

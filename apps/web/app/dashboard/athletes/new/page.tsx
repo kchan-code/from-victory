@@ -3,7 +3,7 @@ import { AthleteForm } from "@/components/dashboard/AthleteForm";
 import { requireParent } from "@/lib/auth/guards";
 
 export const metadata = {
-  title: "Add an athlete · From Victory",
+  title: "Add an athlete",
 };
 
 export default async function NewAthletePage() {

@@ -29,7 +29,7 @@
 import { PregameClientShell } from "@/components/pregame/PregameClientShell";
 
 export const metadata = {
-  title: "Pregame · From Victory",
+  title: "Pregame",
 };
 
 export default function PregamePage() {

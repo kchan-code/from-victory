@@ -933,7 +933,7 @@ _(pause: 2.5s)_
 _(pause: 0.4s)_
 2. You are on the bench before the first shift. Your hands feel light. Your legs feel shaky. Your heart is up in your throat.
 _(pause: 1.5s)_
-3. Your eyes keep jumping to the ice. Your stick feels light in your hands. The thought hits: I'm not ready for this.
+3. Your eyes keep jumping to the ice. Your stick feels light in your hands. The thought hits: self-doubt shows up before the first shift.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 3s)_
@@ -965,7 +965,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You get the puck on the wall and try to force it through the middle. It hits a stick. The other team turns it back the other way.
 _(pause: 1.5s)_
-3. Your shoulders tighten. You glance toward the bench. The thought hits: Coach is going to cut my minutes.
+3. Your shoulders tighten. You glance toward the bench. The thought hits: I forced that through the middle.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 3s)_
@@ -1029,7 +1029,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Two shifts go by. Then three. The line goes out without you. You sit on the bench. Your name never gets called.
 _(pause: 1.5s)_
-3. Your legs feel ready but trapped. The thought hits: He does not trust me out there.
+3. Your legs feel ready but trapped. The thought hits: three shifts gone and my name hasn't been called.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 3s)_
@@ -1079,7 +1079,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The puck is in your net. The other team celebrates. You skate back to the bench while the rink gets loud.
 _(pause: 1.5s)_
-3. You glance toward the bench. The thought hits: Coach is going to cut my minutes.
+3. You glance toward the bench. The thought hits: we're chasing it already, and that one's partly on me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 3s)_
@@ -1159,7 +1159,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You come off the ice. The coach is loud. Sharp. Maybe your name. Maybe not. The whole bench can hear it.
 _(pause: 1.5s)_
-3. Your jaw locks. Your eyes drop toward the floor. The thought hits: He does not trust me back there.
+3. Your jaw locks. Your eyes drop toward the floor. The thought hits: the whole bench heard my name.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 3s)_
@@ -1175,7 +1175,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Your partner goes out with someone else. Then again. You sit on the bench. The door does not open.
 _(pause: 1.5s)_
-3. You listen to the coach call out the pairings. Your legs feel ready but stuck. The thought hits: He does not trust me back there.
+3. You listen to the coach call out the pairings. Your legs feel ready but stuck. The thought hits: the other pair keeps going over the boards.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 3s)_
@@ -1337,7 +1337,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The coach taps your backup. You skate to the bench. You sit at the end. The game keeps going without you.
 _(pause: 1.5s)_
-3. Your mask feels heavy in your hands. Your eyes stay on the crease. The thought hits: He gave up on me.
+3. Your mask feels heavy in your hands. Your eyes stay on the crease. The thought hits: I got pulled in front of everyone.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 3s)_
@@ -1353,7 +1353,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You are in your crease before the puck drops. Your hands feel light. Your chest feels tight. Your heart is up in your throat.
 _(pause: 1.5s)_
-3. Your eyes keep finding the shooters in warmups. Your shoulders ride high. The thought hits: I am not ready for this.
+3. Your eyes keep finding the shooters in warmups. Your shoulders ride high. The thought hits: the doubt shows up before the first shot.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 3s)_

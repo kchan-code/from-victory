@@ -5,7 +5,7 @@ import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
-  title: "Choose a new password · From Victory",
+  title: "Choose a new password",
 };
 
 export default async function ResetPasswordPage() {
