@@ -27,6 +27,12 @@
  *   - vi.mock() hoists before imports.
  *   - Mutable module-level state (`mockUser` / `mockProfile` / `mockProfileError`)
  *     is swapped per test; the chainable supabase stub reads it lazily.
+ *
+ * FV-361: requireAthlete() also calls the SECURITY DEFINER
+ * get_own_personalization() RPC (position/focus_area are no longer selectable
+ * directly — see the migration + guards.ts comment). The mock supabase client
+ * therefore also implements `.rpc(fn).maybeSingle()`, driven by the
+ * `mockPersonalization` / `mockPersonalizationError` module state below.
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -47,22 +53,34 @@ vi.mock("next/navigation", () => ({
 
 type MockUser = { id: string } | null;
 type ProfileRow = Record<string, unknown> | null;
+type PersonalizationRow = { position: string | null; focus_area: string | null } | null;
 
 let mockUser: MockUser = null;
 let mockProfile: ProfileRow = null;
 let mockProfileError: { message: string } | null = null;
+// FV-361: drives the get_own_personalization() RPC mock used by requireAthlete().
+let mockPersonalization: PersonalizationRow = null;
+let mockPersonalizationError: { message: string } | null = null;
+// When set, .rpc(...).maybeSingle() REJECTS instead of resolving — simulates a
+// thrown network/client error rather than a resolved { error } shape.
+let mockPersonalizationThrows: Error | null = null;
 
 // Call tracking for the profiles query chain, so tests can assert a guard
 // short-circuited (via the thrown redirect) BEFORE ever querying the DB.
 let selectCalls: { table: string; columns: string }[] = [];
 let eqCalls: { column: string; value: unknown }[] = [];
+let rpcCalls: string[] = [];
 
 function resetMockState() {
   mockUser = null;
   mockProfile = null;
   mockProfileError = null;
+  mockPersonalization = null;
+  mockPersonalizationError = null;
+  mockPersonalizationThrows = null;
   selectCalls = [];
   eqCalls = [];
+  rpcCalls = [];
 }
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -85,6 +103,23 @@ vi.mock("@/lib/supabase/server", () => ({
         };
       }),
     })),
+    // FV-361: requireAthlete() reads position/focus_area via the
+    // get_own_personalization() SECURITY DEFINER RPC rather than a direct
+    // column SELECT (that direct SELECT now fails at the DB grant layer for
+    // every `authenticated` caller — see the FV-361 migration).
+    rpc: vi.fn((fn: string) => {
+      rpcCalls.push(fn);
+      return {
+        maybeSingle: vi.fn(() =>
+          mockPersonalizationThrows
+            ? Promise.reject(mockPersonalizationThrows)
+            : Promise.resolve({
+                data: mockPersonalization,
+                error: mockPersonalizationError,
+              }),
+        ),
+      };
+    }),
   }),
 }));
 
@@ -339,7 +374,7 @@ describe("requireAthlete", () => {
     expect(redirect).toHaveBeenCalledWith("/signin");
   });
 
-  it("returns userId + profile when the role is 'athlete'", async () => {
+  it("returns userId + profile when the role is 'athlete', reading position/focus_area via get_own_personalization()", async () => {
     mockUser = { id: USER_ID };
     mockProfile = {
       id: USER_ID,
@@ -347,21 +382,28 @@ describe("requireAthlete", () => {
       first_name: "Jordan",
       sport: "hockey",
       sport_selected_at: "2026-01-01T00:00:00Z",
-      position: "forward",
-      focus_area: "confidence",
     };
+    mockPersonalization = { position: "forward", focus_area: "confidence" };
 
     const result = await requireAthlete();
 
     expect(result).toEqual({
       userId: USER_ID,
-      profile: mockProfile,
+      profile: {
+        ...mockProfile,
+        position: "forward",
+        focus_area: "confidence",
+      },
     });
     expect(redirect).not.toHaveBeenCalled();
+    // FV-361: position/focus_area are no longer in the direct column SELECT —
+    // they are excluded from `authenticated`'s column-restricted grant at the
+    // DB layer, so requireAthlete() must not ask for them here.
     expect(selectCalls[0]).toEqual({
       table: "profiles",
-      columns: "id, role, first_name, sport, sport_selected_at, position, focus_area",
+      columns: "id, role, first_name, sport, sport_selected_at",
     });
+    expect(rpcCalls).toEqual(["get_own_personalization"]);
   });
 
   it("returns userId + profile when the role is 'adult_athlete' (FV-325)", async () => {
@@ -372,15 +414,62 @@ describe("requireAthlete", () => {
       first_name: "Riley",
       sport: "basketball",
       sport_selected_at: null,
-      position: null,
-      focus_area: null,
     };
+    // No personalization row yet (RPC resolves with no data) — falls back to nulls.
+    mockPersonalization = null;
 
     const result = await requireAthlete();
 
     expect(result).toEqual({
       userId: USER_ID,
-      profile: mockProfile,
+      profile: {
+        ...mockProfile,
+        position: null,
+        focus_area: null,
+      },
+    });
+    expect(redirect).not.toHaveBeenCalled();
+    expect(rpcCalls).toEqual(["get_own_personalization"]);
+  });
+
+  it("does not block sign-in when get_own_personalization() resolves with an error (non-fatal)", async () => {
+    mockUser = { id: USER_ID };
+    mockProfile = {
+      id: USER_ID,
+      role: "athlete",
+      first_name: "Jordan",
+      sport: "hockey",
+      sport_selected_at: null,
+    };
+    mockPersonalizationError = { message: "rpc unavailable" };
+
+    const result = await requireAthlete();
+
+    expect(result).toEqual({
+      userId: USER_ID,
+      profile: { ...mockProfile, position: null, focus_area: null },
+    });
+    expect(redirect).not.toHaveBeenCalled();
+  });
+
+  it("does not block sign-in when get_own_personalization() throws (defensive try/catch)", async () => {
+    mockUser = { id: USER_ID };
+    mockProfile = {
+      id: USER_ID,
+      role: "athlete",
+      first_name: "Jordan",
+      sport: "hockey",
+      sport_selected_at: null,
+    };
+    // Force .rpc(...).maybeSingle() to REJECT rather than resolve with an
+    // { error } shape — this exercises requireAthlete()'s try/catch guard.
+    mockPersonalizationThrows = new Error("network fault");
+
+    const result = await requireAthlete();
+
+    expect(result).toEqual({
+      userId: USER_ID,
+      profile: { ...mockProfile, position: null, focus_area: null },
     });
     expect(redirect).not.toHaveBeenCalled();
   });

@@ -15,29 +15,51 @@
 -- Column split (verified against every RLS-scoped `.from("profiles")` call
 -- site in apps/web/lib and apps/web/app before writing this migration):
 --   Parent-visible (unchanged):  id, role, first_name, birthdate, sport,
---                                sport_selected_at, created_at, updated_at
+--                                sport_selected_at, created_at, updated_at,
+--                                digest_opt_out, digest_unsubscribe_token
 --   Athlete-private (this migration closes the gap): position, focus_area,
 --                                next_game_on, username
 --   (digest_opt_out / digest_unsubscribe_token are parent-own-row fields —
 --   always NULL on athlete rows and reached only via profiles_select_own on
---   the PARENT's own id, so they are out of scope for this migration.)
+--   the PARENT's own id. They are grouped with the "parent-visible" list
+--   above because they are NOT part of the athlete-private four this
+--   migration restricts — nothing about them changes here.)
 --
--- Mechanism chosen: column-level REVOKE + SECURITY DEFINER self-read RPC.
+--   Full non-private column list granted below (every `public.profiles`
+--   column as of this migration, enumerated by walking every
+--   `create table profiles` / `alter table profiles add column` in
+--   supabase/migrations/, MINUS the four athlete-private columns):
+--     id, role, first_name, birthdate, created_at, updated_at, sport,
+--     sport_selected_at, digest_opt_out, digest_unsubscribe_token
+--
+-- Mechanism chosen: reversed table/column GRANT model + SECURITY DEFINER
+-- self-read RPC.
 --   Postgres RLS is row-only; GRANT/REVOKE is the one primitive Postgres
---   offers for column-level access, but a GRANT/REVOKE is scoped to a ROLE,
---   not a row. Both the athlete (reading their own row) and a linked parent
---   (reading the athlete's row) authenticate as the SAME Postgres role
---   (`authenticated`) — so a blanket column REVOKE would also block the
---   athlete's legitimate self-read. The fix already shipped for `username`
---   (20260624000000_athlete_username.sql: get_own_username()) is the
---   template this migration generalises to position/focus_area:
---     1. REVOKE SELECT on the athlete-private columns from authenticated
---        and anon — closes the raw-API leak for EVERY caller, including the
---        athlete's own direct-table SELECT.
---     2. Provide get_own_personalization(), a SECURITY DEFINER function that
+--   offers for column-level access. BUT column-level privileges are
+--   ADDITIVE under a table-level grant, never subtractive: Postgres checks
+--   "does the role have table-level SELECT, OR column-level SELECT on this
+--   specific column" — so a column-level REVOKE cannot narrow a pre-existing
+--   table-level GRANT. profiles already carries a blanket
+--   `grant select, insert, update on public.profiles to authenticated`
+--   (20260612000000_explicit_table_grants.sql). The FIRST version of this
+--   migration issued a column-level REVOKE on top of that blanket grant and
+--   was a confirmed no-op — CI's 10_username.sql AC(c2) caught it: a linked
+--   parent's direct `SELECT username FROM profiles WHERE id = <athlete>`
+--   still succeeded. The only way to actually deny SELECT on specific
+--   columns while preserving it on the rest is to:
+--     1. REVOKE the blanket table-level SELECT from `authenticated`
+--        entirely (INSERT / UPDATE stay table-wide — untouched — this
+--        migration is scoped to the SELECT leak only).
+--     2. GRANT SELECT on an explicit column ALLOWLIST (every column except
+--        the four athlete-private ones) back to `authenticated`. This
+--        applies uniformly to EVERY caller authenticated as that Postgres
+--        role — the athlete themselves included, which is why step 3 below
+--        (the self-read RPC) exists.
+--     3. Provide get_own_personalization(), a SECURITY DEFINER function that
 --        internally scopes to `id = auth.uid()`, as the athlete's own safe
---        read path. SECURITY DEFINER functions execute with the function
---        owner's privileges, so they are unaffected by the REVOKE.
+--        read path for position/focus_area. SECURITY DEFINER functions
+--        execute with the function owner's privileges, so they are
+--        unaffected by the column allowlist in step 2.
 --   next_game_on and username need no equivalent getter: verified (see
 --   below) that no RLS-scoped client code ever SELECTs them for self-read
 --   today (next_game_on is write-only from the client; username already
@@ -52,14 +74,14 @@
 --     get_own_personalization() instead of selecting the columns.
 --   - Every `.eq("username", ...)` filter (pairings.ts, admin.ts) runs
 --     through `createServiceClient()` (service role bypasses grants + RLS
---     entirely) — unaffected by this REVOKE.
+--     entirely) — unaffected by this migration.
 --   - Every UPDATE of position/focus_area/next_game_on/username
 --     (athlete-quiz.ts, next-game.ts, pairings.ts, admin.ts, the game-day
 --     cron route) either (a) sets a literal value with no chained
 --     `.select()` (Postgres UPDATE needs UPDATE privilege on the column,
 --     not SELECT, when there is no RETURNING/representation), or (b) runs
---     via service role. None require the SELECT grant this migration
---     revokes.
+--     via service role. None require the column-level SELECT grant this
+--     migration withholds.
 --   - No `select("*")` on profiles anywhere in the app.
 --   - No parent-facing query (dashboard, athlete-detail-core.ts,
 --     admin/metrics.ts) ever asks for these columns — this migration does
@@ -104,9 +126,9 @@ comment on function public.get_own_personalization() is
   'FV-361: returns position + focus_area for the currently authenticated '
   'athlete (or adult_athlete). Security-definer with internal WHERE id = '
   'auth.uid() guard — only the caller''s own values are returned, and only '
-  'for athlete/adult_athlete roles. Safe self-read path now that direct '
-  'column SELECT on profiles.position / profiles.focus_area is revoked from '
-  'authenticated and anon below. Mirrors get_own_username() (FV-320).';
+  'for athlete/adult_athlete roles. Safe self-read path now that '
+  'authenticated''s column-restricted SELECT grant on profiles omits '
+  'position / focus_area below. Mirrors get_own_username() (FV-320).';
 
 -- Grant execute to authenticated so athletes can call it via PostgREST RPC.
 -- (anon calling this returns zero rows: auth.uid() is NULL for an
@@ -122,27 +144,66 @@ revoke execute on function public.get_own_personalization() from public, anon;
 
 
 -- ---------------------------------------------------------------------------
--- Section 2: Column-level REVOKE — close the raw-API leak
+-- Section 2: Reverse the grant model — table-wide GRANT cannot be narrowed
+--   by a column-level REVOKE (see header comment for the full explanation
+--   and the CI failure that proved it).
 --
---   Postgres supports per-column privileges layered under a table-wide
---   GRANT: profiles has `grant select, insert, update on public.profiles to
---   authenticated` (20260612000000_explicit_table_grants.sql); this REVOKE
---   narrows SELECT specifically, leaving INSERT/UPDATE and SELECT on every
---   other column untouched. UPDATE of these columns is unaffected — Postgres
---   UPDATE requires the UPDATE privilege on the column being SET (which is
---   NOT revoked here), not SELECT, unless the column is read back via
---   RETURNING/representation (verified above: none of the app's UPDATEs do).
---
---   Both anon and authenticated are revoked (belt-and-suspenders — anon has
---   no profiles SELECT grant from the explicit grants migration, but the
---   underlying Supabase cluster may carry ambient default-privilege grants
---   from project initialisation; revoking explicitly is the same
---   belt-and-suspenders pattern used for due_game_day_reminders() EXECUTE).
+--   Step 1: REVOKE the blanket table-level SELECT on profiles from
+--   `authenticated` (granted in 20260612000000_explicit_table_grants.sql).
+--   INSERT / UPDATE are untouched — they stay table-wide, matching
+--   pre-existing behaviour; this migration is scoped to closing the SELECT
+--   leak only. UPDATE of the athlete-private columns is unaffected by this
+--   whole migration — Postgres UPDATE requires the UPDATE privilege on the
+--   column being SET (never touched here), not SELECT, unless the column is
+--   read back via RETURNING/representation (verified above: none of the
+--   app's UPDATEs do).
 -- ---------------------------------------------------------------------------
 
-revoke select ("position", focus_area, next_game_on, username)
-  on public.profiles
-  from authenticated, anon;
+revoke select on public.profiles from authenticated;
+
+-- ---------------------------------------------------------------------------
+--   Step 2: GRANT SELECT back on an explicit column allowlist — every
+--   `public.profiles` column EXCEPT the four athlete-private ones
+--   (position, focus_area, next_game_on, username). This is the mechanism
+--   that actually restricts SELECT to a column subset: a role with a
+--   column-level GRANT and no table-level GRANT can only read the listed
+--   columns; any other column raises insufficient_privilege (SQLSTATE
+--   42501) for every caller authenticated as `authenticated`, including a
+--   linked parent's JWT reading an athlete's row via
+--   profiles_parent_select_linked_athlete.
+--
+--   Column list derivation: every column ever added to public.profiles
+--   across supabase/migrations/ as of this migration (baseline: id, role,
+--   first_name, birthdate, created_at, updated_at; FV-27: sport; FV-33:
+--   sport_selected_at; FV-226: digest_opt_out, digest_unsubscribe_token),
+--   minus the four athlete-private columns closed by this migration.
+-- ---------------------------------------------------------------------------
+
+grant select (
+  id,
+  role,
+  first_name,
+  birthdate,
+  created_at,
+  updated_at,
+  sport,
+  sport_selected_at,
+  digest_opt_out,
+  digest_unsubscribe_token
+) on public.profiles to authenticated;
+
+-- ---------------------------------------------------------------------------
+--   anon: deliberately receives NO grant here, table-level or column-level.
+--   Verified (20260612000000_explicit_table_grants.sql) that anon was never
+--   granted table-level SELECT on profiles in the first place — only
+--   `authenticated` was. anon therefore already has zero SELECT privilege on
+--   every profiles column (private and non-private alike); this migration
+--   does not need to open a column-restricted door for anon because there
+--   was never a door for anon to narrow. No profiles RLS policy grants an
+--   anon-facing row either (profiles_select_own / profiles_parent_select_
+--   linked_athlete both key on auth.uid(), which is NULL for anon), so this
+--   is consistent with existing behaviour, not a new restriction.
+-- ---------------------------------------------------------------------------
 
 
 -- ---------------------------------------------------------------------------
@@ -153,7 +214,8 @@ comment on column public.profiles.position is
   'Athlete self-identified sport position (role), e.g. "Forward", "Guard", "Pitcher". '
   'NULL when the athlete skipped the onboarding quiz or plays a sport with no role picker. '
   'Constrained to the union of all MVP sport roles via CHECK. '
-  'Athlete-private: direct column SELECT is revoked from authenticated and anon '
+  'Athlete-private: `authenticated` has no table-level SELECT on profiles and '
+  'this column is deliberately excluded from its column-restricted SELECT grant '
   '(FV-361, closing the FV-251 gap) — read via get_own_personalization() only. '
   'A linked parent''s JWT can no longer read this column via a raw PostgREST request.';
 
@@ -162,7 +224,8 @@ comment on column public.profiles.focus_area is
   'One of: nerves | bouncing-back | confidence | focus | faith. '
   'NULL when skipped. Used to personalise the Daily hub card subtitle and the '
   'pregame "Today''s Focus" default. '
-  'Athlete-private: direct column SELECT is revoked from authenticated and anon '
+  'Athlete-private: `authenticated` has no table-level SELECT on profiles and '
+  'this column is deliberately excluded from its column-restricted SELECT grant '
   '(FV-361, closing the FV-251 gap) — read via get_own_personalization() only. '
   'A linked parent''s JWT can no longer read this column via a raw PostgREST request.';
 
@@ -174,11 +237,12 @@ comment on column public.profiles.next_game_on is
   'the game-day cron after delivery. '
   'NEVER surfaced on the parent dashboard or any parent-facing query. '
   'Coarse date only — no time, location, opponent, or venue stored. '
-  'Athlete-private: direct column SELECT is revoked from authenticated and anon '
+  'Athlete-private: `authenticated` has no table-level SELECT on profiles and '
+  'this column is deliberately excluded from its column-restricted SELECT grant '
   '(FV-361, closing the FV-251 gap). Nothing in the app reads this column back '
   'via the RLS-scoped client (write-only from the athlete client; the cron route '
   'and due_game_day_reminders() read it via service role / SECURITY DEFINER, '
-  'both unaffected by this REVOKE).';
+  'both unaffected by this grant restriction).';
 
 comment on column public.profiles.username is
   'Athlete-only lookup handle for any-device sign-in (FV-320). '
@@ -188,10 +252,11 @@ comment on column public.profiles.username is
   'Normalised to lowercase before storage by validateUsername() in '
   'lib/auth/athlete-username.ts. Set by the claimPairing server action '
   '(service role) at first device claim. '
-  'Owner-only readable via client: get_own_username() RPC. Direct column SELECT '
-  'is now revoked from authenticated and anon (FV-361, closing the FV-251 gap) '
+  'Owner-only readable via client: get_own_username() RPC. `authenticated` has '
+  'no table-level SELECT on profiles and this column is deliberately excluded '
+  'from its column-restricted SELECT grant (FV-361, closing the FV-251 gap) '
   '— a linked parent''s JWT can no longer read this column via a raw PostgREST '
-  'request, and the revoke has no effect on get_own_username() (SECURITY '
-  'DEFINER executes with the function owner''s privileges).';
+  'request, and the grant restriction has no effect on get_own_username() '
+  '(SECURITY DEFINER executes with the function owner''s privileges).';
 
 commit;

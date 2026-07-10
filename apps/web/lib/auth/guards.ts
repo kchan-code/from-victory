@@ -149,22 +149,37 @@ export async function requireAthlete(): Promise<{
   if (profile.role !== "athlete" && profile.role !== "adult_athlete")
     redirect("/signin");
 
-  // FV-361: position/focus_area are athlete-private columns — direct SELECT
-  // on them is revoked at the DB layer (a linked parent's JWT must not be
-  // able to read them via a raw PostgREST request; RLS is row-only and
-  // cannot make that distinction on its own). Read them via the SECURITY
-  // DEFINER get_own_personalization() RPC instead, which scopes to
-  // auth.uid() internally and is unaffected by the revoke. A failure here
-  // is non-fatal — personalization is supplementary, not auth-critical —
-  // so we fall back to nulls rather than blocking sign-in.
-  const { data: personalization, error: personalizationError } = await supabase
-    .rpc("get_own_personalization")
-    .maybeSingle();
+  // FV-361: position/focus_area are athlete-private columns — `authenticated`
+  // has no table-level SELECT on profiles and these columns are deliberately
+  // excluded from its column-restricted SELECT grant (a linked parent's JWT
+  // must not be able to read them via a raw PostgREST request; RLS is
+  // row-only and cannot make that distinction on its own). Read them via the
+  // SECURITY DEFINER get_own_personalization() RPC instead, which scopes to
+  // auth.uid() internally and is unaffected by the grant restriction. A
+  // failure here is non-fatal — personalization is supplementary, not
+  // auth-critical — so we fall back to nulls rather than blocking sign-in.
+  // The try/catch is defensive: supabase-js normally resolves `{ data, error }`
+  // even on an API-level failure, but a genuine thrown error (e.g. a network
+  // fault) must not block sign-in either.
+  let personalization: { position: string | null; focus_area: string | null } | null =
+    null;
+  try {
+    const { data, error: personalizationError } = await supabase
+      .rpc("get_own_personalization")
+      .maybeSingle();
 
-  if (personalizationError) {
+    if (personalizationError) {
+      console.error(
+        "[guards.requireAthlete] get_own_personalization failed:",
+        personalizationError.message,
+      );
+    } else {
+      personalization = data;
+    }
+  } catch (err) {
     console.error(
-      "[guards.requireAthlete] get_own_personalization failed:",
-      personalizationError.message,
+      "[guards.requireAthlete] get_own_personalization threw:",
+      err instanceof Error ? err.message : String(err),
     );
   }
 
