@@ -145,6 +145,19 @@ where not exists (
     and event_name = 'app_open'
 );
 
+-- ---------------------------------------------------------------------------
+-- activity_rollup — service-role-only AGGREGATE table (FV-415). One aggregate
+-- row (NO athlete_id) so the RLS assertions test a real 0-row denial for client
+-- roles and a real >=1-row read for service_role. NULLS-NOT-DISTINCT unique key;
+-- `on conflict do nothing` keeps this idempotent against a persistent stack.
+-- ---------------------------------------------------------------------------
+insert into public.activity_rollup
+  (grain, period_start, event_name, surface, sport, audio_mode, network_mode,
+   active_athletes, event_count)
+values
+  ('day', current_date - 1, 'app_open', 'hub', 'hockey', null, null, 1, 3)
+on conflict do nothing;
+
 commit;
 
 \echo 'RLS fixtures seeded.'

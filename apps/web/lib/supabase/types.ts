@@ -713,6 +713,16 @@ export type Database = {
           focus_area: string | null
         }[]
       }
+      // FV-415: SECURITY DEFINER RPC called by the prune-activity-events cron
+      // route (service-role only) to UPSERT day/week/month aggregates into
+      // activity_rollup BEFORE the raw prune. Returns the number of rollup rows
+      // affected. Execute revoked from public, anon, and authenticated.
+      // Regenerate via 'supabase gen types --linked' after migration
+      // 20260710000000_activity_rollup.sql is applied to prod.
+      rollup_activity_events: {
+        Args: { retention_days?: number }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
