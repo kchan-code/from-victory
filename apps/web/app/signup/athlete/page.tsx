@@ -6,7 +6,7 @@ import { redirectIfAuthed } from "@/lib/auth/guards";
 import { isAdultSignupEnabled } from "@/lib/flags";
 
 export const metadata = {
-  title: "Create your athlete account · From Victory",
+  title: "Create your athlete account",
 };
 
 export default async function AdultSignUpPage() {

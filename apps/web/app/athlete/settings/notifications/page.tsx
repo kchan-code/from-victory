@@ -6,7 +6,7 @@ import { requireAthlete } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
-  title: "Daily reminder · From Victory",
+  title: "Daily reminder",
 };
 
 export default async function NotificationsSettingsPage() {

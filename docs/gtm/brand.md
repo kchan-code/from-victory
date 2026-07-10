@@ -8,7 +8,7 @@
 
 ## Positioning statement
 
-**For Christian high-school and college athletes who play tight because their worth is riding on the scoreboard, From Victory is the daily identity-training app that fuses Scripture-anchored security in Christ with a sport-specific competing rhythm (Center · Receive · Respond · Carry). Unlike secular mindset apps that train mechanics with no foundation, and faith apps that stay in read-and-reflect and never reach game day, From Victory turns "you are already won in Christ" into something you can practice every morning and call on the moment you want to quit.**
+**For Christian high-school and college athletes who play tight because their worth is riding on the scoreboard, From Victory is the daily identity-training app that fuses Scripture-anchored security in Christ with a guided, sport-specific pregame session (breath, visualization, identity, and a focus cue). Unlike secular mindset apps that train mechanics with no foundation, and faith apps that stay in read-and-reflect and never reach game day, From Victory turns "you are already won in Christ" into a daily rhythm you train and a pregame session you can call on the moment you want to quit.**
 
 The category we are claiming: **Christian athlete identity training.** Not sports-psychology-with-verses. Not a devotional with a whistle. A training system where identity is the foundation and performance is the overflow.
 
@@ -54,7 +54,7 @@ Two forces just collided. Athletes are in an open mental-health crisis: roughly 
 An athlete whose worth rides on the scoreboard plays scared. Scared of the mistake, the bench, the next rep. That fear is the thing actually costing them the game, and the joy of the game with it. Secular mindset apps hand them better breathing and visualization, but the foundation never changes: identity is still on the line every play, so the anxiety always comes back. The free devotional gives them a verse to read and nothing to *do* with it when the whistle blows. Nobody is training the one thing underneath all of it: who you are when you step on the field. Keep competing *for* victory, to earn worth that was never yours to earn, and the scoreboard owns you for the rest of your career.
 
 ### The promised land (the better way, named)
-You step onto the field already secure. Not because you played well. Because of who you are in Christ, which was settled before the game started and doesn't move when the scoreboard does. You compete **from** victory, not **for** it. The fear of the mistake loses its grip, because the mistake can't touch the thing your identity is actually built on. You still want to win. But winning is the overflow of a settled heart, not the source of one. From Victory is the daily rhythm that trains that security in and makes it callable in the moment you want to quit: Center, Receive, Respond, Carry. A few minutes each morning. One thing inside your control when everything else isn't.
+You step onto the field already secure. Not because you played well. Because of who you are in Christ, which was settled before the game started and doesn't move when the scoreboard does. You compete **from** victory, not **for** it. The fear of the mistake loses its grip, because the mistake can't touch the thing your identity is actually built on. You still want to win. But winning is the overflow of a settled heart, not the source of one. From Victory is the daily rhythm that trains that security in and the guided pregame session that makes it callable in the moment you want to quit: breath, visualization, identity, and a focus cue. A few minutes, headphones on. One thing inside your control when everything else isn't.
 
 ---
 
@@ -70,9 +70,9 @@ Your worth was settled in Christ before the game started. We don't bolt faith on
 - *Proof:* Built on "already won in Christ," not "earn it this game." Secular apps (Calm, Headspace, Athlete Mindset, Champion's Mind) carry no faith layer at all *(competitors.md)*.
 - *Always-say it carries:* "secure identity," "rooted in Christ, not performance," "from victory not for victory."
 
-**Pillar 2 — A daily rhythm you can actually compete with: Center · Receive · Respond · Carry.**
-Not a verse to read. A four-beat rhythm you practice every morning and call on at game time. Center (still your body and mind), Receive (take in who Scripture says you are), Respond (reframe the fear and the moment), Carry (bring it onto the field). This is the structured training system the read-and-reflect apps never become.
-- *Proof:* Faith incumbents (FCA Challenge, Ao1, YouVersion athlete plans) stay in reading-plan territory and never reach a competing rhythm or game-day cue *(competitors.md)*. CRRC is the named mechanic that turns a devotional into training.
+**Pillar 2 — A guided pregame session you can actually compete with: breath, visualization, identity, and your focus cue.**
+Not a verse to read. A guided session you run with headphones on and eyes closed in the last few minutes before you compete: breath, a sport- and position-specific visualization, and a voice that keeps returning you to who God says you are. Everyone tells athletes to visualize; almost no faith tool actually walks you through it. This one does, and you are not doing it alone. The daily rhythm trains the security in; the pregame session calls it up. This is the structured practice the read-and-reflect apps never become.
+- *Proof:* Faith incumbents (FCA Challenge, Ao1, YouVersion athlete plans) stay in reading-plan territory and never reach a guided game-day session *(competitors.md)*. The guided pregame visualization is the mechanic that turns a devotional into training.
 - *Always-say it carries:* "daily rhythm," "reset," "one thing inside your control."
 
 **Pillar 3 — Built for the believing athlete, not the masses.**
@@ -92,7 +92,7 @@ For your faith and your sport specifically — hockey, soccer, lacrosse, footbal
 
 | Objection | The honest answer |
 |---|---|
-| **"I already get a free athlete devotional from FCA / YouVersion."** | Those give you a verse to read. From Victory gives you a rhythm to compete with — Center, Receive, Respond, Carry — built for the moment on the field a reading plan can't reach. Keep the devotional. This is the training underneath it. |
+| **"I already get a free athlete devotional from FCA / YouVersion."** | Those give you a verse to read. From Victory gives you a guided pregame session to compete with (breath, visualization, identity, and a focus cue) built for the moment on the field a reading plan can't reach. Keep the devotional. This is the training underneath it. |
 | **"Why pay when a $15 book or a journal does this?"** | A book is read once. This is a daily rhythm that shows up with you on game day — sport-specific, in your pocket, callable in real time. The book is the idea; this is the practice. |
 | **"I'll just use Calm / Headspace for pre-game nerves."** | Those calm the symptom and leave the cause untouched — your worth is still riding on the next play, so the nerves come back. From Victory trains the foundation underneath the nerves: identity that doesn't move when the scoreboard does. |
 | **"What about my kid's privacy / they're under 13?"** | The app gates for age and runs verifiable parental consent for younger athletes; reflection and journaling data is governed by a published retention and deletion policy. (Confirm exact flow with the compliance/saas-lawyer pass before this answer ships. COPPA full-compliance deadline is April 22, 2026.) *(buying-process.md)* |
@@ -135,7 +135,7 @@ The underlying rules are **kc-voice** (non-negotiable house style); the company'
 > Most apps train your mind to perform. This one trains who you are before you perform. Secure identity in Christ first. The scoreboard second. A daily rhythm built for your sport and the moment you want to quit.
 
 **Partnership / FCA-leader register (peer, direct, no pitch):**
-> Your athletes already read the verse. They don't know how to carry it onto the field. From Victory is the daily rhythm between the two: Center, Receive, Respond, Carry. Built for believing athletes, not the masses. Want to put it in front of your huddle?
+> Your athletes already read the verse. They don't know how to carry it onto the field. From Victory is the guided pregame session between the two: breath, visualization, identity, and a focus cue. Built for believing athletes, not the masses. Want to put it in front of your huddle?
 
 **Off-voice (do not ship):**
 > Crush your goals and unlock your God-given potential with our comprehensive mindset platform! Keep your streak alive and grind toward greatness. (Banned: grind, streak, comprehensive, earn-your-worth energy, cheerleading.)
@@ -148,7 +148,7 @@ The underlying rules are **kc-voice** (non-negotiable house style); the company'
 2. **Compete from a secure identity.** *(Outcome-forward. Pairs the always-say "secure identity" with the core promise.)*
 3. **Rooted in Christ. Not the scoreboard.** *(The contrast, plain. Names what your worth is, and isn't, tied to.)*
 4. **Train who you are before you train what you do.** *(Identity-as-foundation pillar in one line. Good for the challenger narrative.)*
-5. **The moment you want to quit, you have a rhythm.** *(Game-day resilience and the CRRC system. Speaks to the real moment.)*
+5. **The moment you want to quit, you have a rhythm.** *(Game-day resilience and the guided pregame session. Speaks to the real moment.)*
 
 ---
 
@@ -171,3 +171,6 @@ All claims trace to the on-disk research with verification verdicts honored. Mar
 This positioning makes three load-bearing bets KC is approving: **(1)** launch narrow on the believing-athlete niche rather than chasing the secular middle (accepts a TAM cap to win conversion and CAC); **(2)** name the enemy as performance-based identity, never a competitor by name (keeps the fight on ownable ground); **(3)** own the category language now while spending the founder budget only on the niche that converts. Downstream work — content calendar, the Instagram/TikTok engine, FCA and church partnership pitches, outbound, paywall copy — should not begin until this is signed off.
 
 **Approved by KC — 2026-06-11.** Activation unlocked: `/content`, `/campaign`, `/outbound`.
+
+---
+*2026-07-08: product-claims corrections per research/product-claims-audit-2026-07-08.md*

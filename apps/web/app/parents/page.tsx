@@ -12,7 +12,8 @@ import { AttributionCapture } from "@/components/marketing/AttributionCapture";
 const siteUrl = "https://www.fromvictoryapp.com";
 
 export const metadata: Metadata = {
-  title: "For Parents · From Victory",
+  alternates: { canonical: "/parents" },
+  title: "For Parents",
   description:
     "You invest in your athlete's physical training. From Victory builds the mental and spiritual foundation underneath it — daily mindset training, pregame preparation, and a private practice for resilience. You see the rhythm; they own the growth.",
   openGraph: {

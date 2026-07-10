@@ -30,6 +30,8 @@ const ALLOWED_PREFIXES: readonly string[] = [
   "/resources",
   "/privacy",
   "/terms",
+  "/pregame-ritual-christian-athlete",
+  "/christian-athlete-apps",
 ];
 
 /**

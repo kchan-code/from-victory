@@ -66,7 +66,7 @@ reframe and the clean next-rep cue.
 <!-- canon exemplar — verbatim from docs/scripts/hockey.md, do not paraphrase -->
 Your beats in a routine cell (hockey `hm-forward-nervous`): line 5 is your
 arousal reframe, line 6 your reset cue —
-3. Your eyes keep jumping to the ice. Your stick feels light in your hands. The thought hits: I'm not ready for this.
+3. Your eyes keep jumping to the ice. Your stick feels light in your hands. The thought hits: self-doubt shows up before the first shift.
 5. These nerves are energy, not danger. Let them sharpen you.
 6. First shift, move your feet, get to the wall, and touch the game early.
 

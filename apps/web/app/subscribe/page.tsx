@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { SubscribeForm } from "@/components/subscribe/SubscribeForm";
 
 export const metadata = {
-  title: "Subscribe · From Victory",
+  title: "Subscribe",
 };
 
 type Props = {

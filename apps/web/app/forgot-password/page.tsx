@@ -3,7 +3,7 @@ import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import { redirectIfAuthed } from "@/lib/auth/guards";
 
 export const metadata = {
-  title: "Reset your password · From Victory",
+  title: "Reset your password",
 };
 
 export default async function ForgotPasswordPage() {

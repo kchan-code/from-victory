@@ -5,7 +5,7 @@ import { requireSubscriber } from "@/lib/auth/guards";
 import { FlameMark } from "@/components/ui";
 
 export const metadata = {
-  title: "Subscription active · From Victory",
+  title: "Subscription active",
 };
 
 export default async function SubscribeSuccessPage() {

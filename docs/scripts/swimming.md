@@ -295,7 +295,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Last twenty-five of the hundred fly. Your stroke shortens, your arms stop clearing the water, and your tempo falls apart. The smooth rhythm you had is gone, and it turns into pure survival just to reach the wall.
 _(pause: 1.5s)_
-3. Your arms stop clearing the water and your tempo goes ragged and short. The thought hits: I always fall apart at the end.
+3. Your arms stop clearing the water and your tempo goes ragged and short. The thought hits: my last twenty-five is slipping away right now.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -325,7 +325,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You're seeded into a slow heat off a meet where your stroke felt off. The fast swimmers are in a later heat, and you're racing the clock alone, with no one next to you to pull you down to your time.
 _(pause: 1.5s)_
-3. Your shoulders slump on the deck and you feel a little forgotten back in this heat. The thought hits: I don't even belong in the real race.
+3. Your shoulders slump on the deck and you feel a little forgotten back in this heat. The thought hits: this isn't even the heat that counts.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -490,7 +490,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Behind the blocks before the IM, your heat about to be called. You're already bracing for the breast leg everyone can see — the part of the race you can't hide, the one where the gap always seems to open.
 _(pause: 1.5s)_
-3. Your heart thumps, your hands fidget at your cap, your stomach is light. The thought hits: what if the breast leg gives me away again, right out in the open.
+3. Your heart thumps, your hands fidget at your cap, your stomach is light. The thought hits: the doubt walks into the ready room with me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_

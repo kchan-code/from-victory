@@ -8,7 +8,11 @@ import { ScrollNav } from "@/components/landing/ScrollNav";
 import { Footer } from "@/components/landing/Footer";
 import { Reveal } from "@/components/landing/Reveal";
 import { LandingIconDefs } from "@/components/landing/icons";
-import { getAllArticles, type Article } from "@/lib/resources/articles";
+import {
+  getAllArticles,
+  getAllFeaturedPages,
+  type Article,
+} from "@/lib/resources/articles";
 
 const siteUrl = "https://www.fromvictoryapp.com";
 
@@ -18,7 +22,8 @@ const siteUrl = "https://www.fromvictoryapp.com";
 
 // AUTHORED metadata description:
 export const metadata: Metadata = {
-  title: "Resources · From Victory",
+  alternates: { canonical: "/resources" },
+  title: "Resources",
   description:
     "Articles on faith, mental toughness, and competing as a Christian athlete. Free evergreen resources from From Victory.",
   openGraph: {
@@ -59,6 +64,7 @@ function audienceLabel(audience: Article["audience"]): string {
 
 export default function ResourcesPage() {
   const articles = getAllArticles();
+  const featuredPages = getAllFeaturedPages();
 
   return (
     <>
@@ -109,6 +115,29 @@ export default function ResourcesPage() {
                   </h2>
                   <p className="font-body text-[13.5px] leading-[1.6] text-cream/60 m-0">
                     {article.excerpt}
+                  </p>
+                </Link>
+              </Reveal>
+            ))}
+
+            {/* FV-413 — cards for the two live GTM pages (previously
+                orphaned). Same card markup/styles as the article cards
+                above; title/excerpt are verbatim reuse of each page's own
+                copy (see lib/gtm/page-titles.ts). */}
+            {featuredPages.map((page) => (
+              <Reveal key={page.href}>
+                <Link
+                  href={page.href}
+                  className="group block bg-onyx border border-hairline rounded-lg p-7 h-full no-underline transition-colors duration-base ease-out hover:border-hairline-strong"
+                >
+                  <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-cream/55 font-semibold mb-4">
+                    {audienceLabel("athlete")}
+                  </div>
+                  <h2 className="font-heading font-semibold text-[18px] leading-[1.25] text-cream tracking-[-0.005em] mb-3 group-hover:text-gold transition-colors duration-fast">
+                    {page.title}
+                  </h2>
+                  <p className="font-body text-[13.5px] leading-[1.6] text-cream/60 m-0">
+                    {page.excerpt}
                   </p>
                 </Link>
               </Reveal>

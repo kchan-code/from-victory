@@ -8,7 +8,8 @@ import { ContactForm } from "@/components/landing/ContactForm";
 const siteUrl = "https://www.fromvictoryapp.com";
 
 export const metadata: Metadata = {
-  title: "Contact · From Victory",
+  alternates: { canonical: "/contact" },
+  title: "Contact",
   description:
     "Questions about From Victory? Reach out — we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
   openGraph: {

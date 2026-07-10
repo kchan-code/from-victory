@@ -53,7 +53,7 @@ The buying process splits **user, payer, and gatekeeper** (buying-process.md). A
 
 ### 1. Caleb — the Believing Competitor (primary user + chooser)
 HS/college competitive athlete, 15-22, mostly (not only) male, identifies as Christian. The men's-Bible-use resurgence (+19% in 2024-2025) blows directly on this persona (trends.md).
-- **Goals:** compete from secure identity in Christ, not fear of the next mistake; a repeatable game-day rhythm (Center-Receive-Respond-Carry); connect faith to sport; a habit that survives a packed season.
+- **Goals:** compete from secure identity in Christ, not fear of the next mistake; a repeatable game-day session (breath, visualization, identity, and a focus cue); connect faith to sport; a habit that survives a packed season.
 - **Pains:** confidence hostage to the scoreboard; fear of mistakes makes him play tight; anxiety he won't take to a coach or therapist; free reading plans feel static and don't help in the competing moment.
 
 ### 2. Grace — the Faith-Anchored Athlete (primary user, recruiter)
@@ -75,7 +75,7 @@ FCA/AiA leader, coach, youth pastor, or Christian-school chaplain. Endorses and 
 
 1. When I walk onto the field afraid of messing up, help me **compete from a secure identity in Christ** so my confidence isn't hostage to the scoreboard.
 2. When my faith feels disconnected from my sport, give me a **daily Scripture-anchored rhythm** that shows up in the competing moment, not just in quiet time.
-3. When pressure spikes on game day, give me a **repeatable cue (Center-Receive-Respond-Carry)** to steady myself in seconds.
+3. When pressure spikes on game day, give me a **repeatable, guided pregame session (breath, visualization, identity, and a focus cue)** to steady myself before I compete.
 4. When my season gets overwhelming, give me a **grounding daily habit** — not one more streak to guilt me.
 5. As a parent watching my kid play scared, give me a **values-aligned, safe** way to help them find peace under pressure.
 6. As a coach or ministry leader, give me a **trusted daily tool** I can hand my athletes that disciples and steadies them beyond our limited time together.
@@ -106,3 +106,6 @@ The market research is explicit that conversion — not reachable audience — i
 - Owned-channel cold start, community-channel audience, reputation bar: `companies/from-victory-app/research/social.md`
 
 *Figures drawn from on-disk research carry that research's verification verdicts; any item labeled directional there (ARPU, follower counts, unpublished competitor pricing) remains a directional estimate here, not a fact.*
+
+---
+*2026-07-08: product-claims corrections per research/product-claims-audit-2026-07-08.md*

@@ -196,7 +196,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Reachable par-5, you bombed the drive, and you go for it in two. The long iron leaks into the hazard. You drop, chunk the next one, and walk off with a seven on a hole you thought was a birdie.
 _(pause: 1.5s)_
-3. Heat climbs up your neck and your hands strangle the grip. You replay the greedy second shot on a loop. The thought hits: I always blow up the big hole.
+3. Heat climbs up your neck and your hands strangle the grip. You replay the greedy second shot on a loop. The thought hits: the big number is sitting right there in front of me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -515,7 +515,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Long par four, a course that makes you hit driver — the club you don't trust. You step up, the swing feels loose, and you watch it sail right, over the stakes. Out of bounds. You're re-teeing, hitting three.
 _(pause: 1.5s)_
-3. Your hands feel unsure on the grip and your throat goes dry reaching for another ball. The thought hits: I can't scramble from out of bounds — this is the part of my game that isn't there.
+3. Your hands feel unsure on the grip and your throat goes dry reaching for another ball. The thought hits: there's no scrambling out of a re-tee.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -575,7 +575,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Your playing partner has striped it all day — fairways, greens, pin high every time. You've been grinding out saves from everywhere, scrambling to stay close, playing defense the whole round. And you're still waiting for it to catch up to you.
 _(pause: 1.5s)_
-3. Your shoulders ride up watching his ball fly and your jaw sets on every walk. The thought hits: I'm getting out-struck all day — sooner or later they're going to find me out.
+3. Your shoulders ride up watching his ball fly and your jaw sets on every walk. The thought hits: the doubt gets louder on every tee.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -590,7 +590,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You're on the range before the round, hitting little chips and putts, hunting for the feel. Some are crisp, some aren't. And the dread creeps in before you've even teed off: what if the touch isn't there today.
 _(pause: 1.5s)_
-3. Your stomach knots over a warm-up putt and your hands check the grip again and again. The thought hits: if the feel isn't here, I've got nothing today.
+3. Your stomach knots over a warm-up putt and your hands check the grip again and again. The thought hits: self-doubt won't leave me alone out here.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -620,7 +620,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Long, demanding course — the kind that tests the ball-striking, with no easy bailouts to scramble from. You glance at the number and you're well over, behind where you need to be. A track that won't let you save your way around it.
 _(pause: 1.5s)_
-3. Your chest goes tight on the tee and your hands grip down hard. The thought hits: I'm in over my head here — this is where I get found out.
+3. Your chest goes tight on the tee and your hands grip down hard. The thought hits: self-doubt gets loud staring at that number.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
