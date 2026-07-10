@@ -57,6 +57,15 @@
 //     `roleAdversities` in apps/web/components/pregame/sport-registry.ts
 //     (FV-119 pattern), so this script carries the gated slugs as the
 //     explicit GATED_IDENTITY_CELLS allowlist below.
+//   - The rule-2a line-3 checks (capability/identity verdict, status/
+//     permanence verdict, other-party trust verdict — KC, FV-412, spec
+//     "2a. The thought's CONTENT is constrained — defuse, don't install")
+//     scan ONLY the numbered line-3 text of `hm-*` cells (the "The thought
+//     hits: ___" / "You think, ___" line) — never line 5's reframe, which
+//     legitimately carries sanctioned worth motifs ("It does not have your
+//     worth."). They are also exempted on GATED_IDENTITY_CELLS: a gated
+//     cell's thought line is the clinically-owned identity-collapse subject
+//     (FV-119 territory), not a mechanical rule-2a violation.
 //
 // Usage (dependency-free — node stdlib only, run exactly like sibling
 // scripts):
@@ -328,6 +337,8 @@ interface SimpleRule {
   label: string;
   /** Skip this rule on GATED_IDENTITY_CELLS (identity/worth canon there). */
   identityWorthExempt?: boolean;
+  /** Restrict this rule to one numbered-line label (e.g. 3 = the thought line). Unset = scan every line. */
+  lineScope?: number;
   regex: RegExp;
 }
 
@@ -379,6 +390,41 @@ const SIMPLE_RULES: SimpleRule[] = [
     label: 'Brand tagline stapled into HM prose: "from victory."',
     identityWorthExempt: true,
     regex: /from victory/i,
+  },
+  // Rule 2a (KC, 2026-07-09, FV-412) — the thought's CONTENT is constrained:
+  // defuse, don't install. Scoped to line 3 (the "The thought hits: ___" /
+  // "You think, ___" line) only — never the reframe (line 5), which
+  // legitimately carries sanctioned worth motifs. Exempt on
+  // GATED_IDENTITY_CELLS: the identity lie is the clinical subject there.
+  {
+    id: "rule2a-capability-verdict",
+    label:
+      'Banned line-3 intrusive thought (capability/identity verdict), rule 2a: "I\'m not ready for this."',
+    identityWorthExempt: true,
+    lineScope: 3,
+    regex: /not ready for this/i,
+  },
+  {
+    id: "rule2a-status-permanence-verdict",
+    label:
+      'Banned line-3 intrusive thought (status/permanence verdict), rule 2a: "I lost my spot" / "I\'m done here" / "I lost the staff."',
+    identityWorthExempt: true,
+    lineScope: 3,
+    regex: new RegExp(
+      apostropheTolerant("i lost my spot|i'm done here|i lost the staff"),
+      "i",
+    ),
+  },
+  {
+    id: "rule2a-other-party-trust-verdict",
+    label:
+      'Banned line-3 intrusive thought (other-party judgment read), rule 2a: "don\'t / doesn\'t / can\'t trust me" or "can\'t be trusted."',
+    identityWorthExempt: true,
+    lineScope: 3,
+    regex: new RegExp(
+      apostropheTolerant("don't trust me|doesn't trust me|can't trust me|can't be trusted"),
+      "i",
+    ),
   },
 ];
 
@@ -491,6 +537,7 @@ function scanBlocking(cells: Cell[]): BlockingHit[] {
       if (rule.identityWorthExempt && identityWorthExempt) continue;
 
       for (const nl of cell.numberedLines) {
+        if (rule.lineScope !== undefined && nl.label !== rule.lineScope) continue;
         if (rule.regex.test(nl.text)) {
           const key: LegacyKey = `${cell.slug}::${rule.id}`;
           hits.push({
