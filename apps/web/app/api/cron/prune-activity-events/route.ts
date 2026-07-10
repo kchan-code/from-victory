@@ -1,5 +1,16 @@
 /**
- * Cron route: GET/POST /api/cron/prune-activity-events (FV-382)
+ * Cron route: GET/POST /api/cron/prune-activity-events (FV-382, FV-415)
+ *
+ * Runs ROLL-UP-THEN-PRUNE on each tick:
+ *   1. (FV-415) UPSERT day/week/month aggregates from the raw window into
+ *      `activity_rollup` via the service-role-only `rollup_activity_events`
+ *      function — BEFORE any prune, so a distinct-athlete count (DAU/WAU/MAU,
+ *      which is NOT additive) can never be lost to the prune. The rollup only
+ *      touches complete, fully-retained periods and UPSERTs idempotently, so
+ *      re-running is safe and self-healing (see the migration for the guards).
+ *   2. (FV-382) DELETE raw rows older than the retention window.
+ * If the rollup fails the request returns 500 and the prune is SKIPPED — the
+ * prune can never outrun the rollup.
  *
  * `activity_events` (20260630120000_activity_events.sql) is append-only —
  * one row per app_open / daily_start / pregame_complete / etc — and grows
@@ -39,7 +50,10 @@
  *
  * Privacy contract:
  *   - activity_events is EVENT-ONLY (no content) already; this job doesn't
- *     change that. It never logs athlete_id or meta — only an opaque count.
+ *     change that. It never logs athlete_id or meta — only opaque counts.
+ *   - activity_rollup is AGGREGATE-ONLY (no athlete_id, no PII). The rollup
+ *     function returns only a row-affected count; nothing per-athlete is
+ *     logged.
  *
  * Middleware:
  *   Under /api/cron/ — NOT excluded from session-refresh middleware (only
@@ -99,11 +113,33 @@ async function handleCronRequest(req: NextRequest) {
     Date.now() - ACTIVITY_EVENTS_RETENTION_DAYS * 24 * 60 * 60 * 1000,
   ).toISOString();
 
-  let pruned = 0;
+  // 3. ROLL UP FIRST (FV-415). Aggregate the still-retained raw window into
+  //    activity_rollup at day/week/month grains BEFORE pruning, so the
+  //    non-additive distinct-athlete counts are captured while raw exists. The
+  //    function is idempotent (UPSERT) and only rolls complete, fully-retained
+  //    periods, so a missed/duplicate run cannot corrupt the aggregates. It
+  //    returns only a row-affected count — no athlete_id, no meta.
+  const { data: rolled, error: rollupError } = await service.rpc(
+    "rollup_activity_events",
+    { retention_days: ACTIVITY_EVENTS_RETENTION_DAYS },
+  );
 
-  // Delete rows strictly older than the retention window. `.select("id")`
-  // returns only the surrogate key of each deleted row — never athlete_id or
-  // meta — so the count can never leak event content into logs.
+  if (rollupError) {
+    // Do NOT prune if the rollup failed — the prune must never outrun the
+    // rollup, or a distinct-athlete count could be lost permanently.
+    console.error(
+      "[cron/prune-activity-events] rollup failed (prune skipped):",
+      rollupError.message,
+    );
+    return NextResponse.json({ error: "Rollup failed." }, { status: 500 });
+  }
+
+  const rolledCount = typeof rolled === "number" ? rolled : 0;
+
+  // 4. PRUNE (FV-382). Delete rows strictly older than the retention window.
+  //    `.select("id")` returns only the surrogate key of each deleted row —
+  //    never athlete_id or meta — so the count can never leak event content
+  //    into logs.
   const { data, error } = await service
     .from("activity_events")
     .delete()
@@ -115,11 +151,13 @@ async function handleCronRequest(req: NextRequest) {
     return NextResponse.json({ error: "Prune failed." }, { status: 500 });
   }
 
-  pruned = data?.length ?? 0;
+  const pruned = data?.length ?? 0;
 
-  console.info(`[cron/prune-activity-events] done — pruned=${pruned}`);
+  console.info(
+    `[cron/prune-activity-events] done — rolled=${rolledCount} pruned=${pruned}`,
+  );
 
-  return NextResponse.json({ pruned });
+  return NextResponse.json({ rolled: rolledCount, pruned });
 }
 
 // Vercel Cron invokes with GET; POST kept for manual ops triggering.
