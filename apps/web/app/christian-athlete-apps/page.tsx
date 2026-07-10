@@ -32,7 +32,8 @@ const PAGE_DESCRIPTION =
   "A Christian athlete choosing an app is really weighing three kinds of tool: a free Scripture devotional, a sport-specific faith app, and a faith-based app that guides you through pregame visualization.";
 
 export const metadata: Metadata = {
-  title: `${PAGE_TITLE} · From Victory`,
+  alternates: { canonical: "/christian-athlete-apps" },
+  title: PAGE_TITLE,
   description: PAGE_DESCRIPTION,
   openGraph: {
     type: "article",

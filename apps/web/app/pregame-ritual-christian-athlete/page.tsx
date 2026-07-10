@@ -34,7 +34,8 @@ const PAGE_DESCRIPTION =
   "A pregame ritual for the Christian athlete is a short, repeatable practice that carries your faith into the moment before you compete.";
 
 export const metadata: Metadata = {
-  title: `${PAGE_TITLE} · From Victory`,
+  alternates: { canonical: "/pregame-ritual-christian-athlete" },
+  title: PAGE_TITLE,
   description: PAGE_DESCRIPTION,
   openGraph: {
     type: "article",

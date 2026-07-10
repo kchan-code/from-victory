@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Terms of Use · From Victory",
+  alternates: { canonical: "/terms" },
+  title: "Terms of Use",
   description:
     "Terms of Use governing your access to and use of the From Victory website, application, content, waitlist, communications, and related services.",
   robots: { index: true, follow: true },

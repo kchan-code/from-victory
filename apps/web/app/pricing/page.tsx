@@ -12,7 +12,8 @@ import { AttributionCapture } from "@/components/marketing/AttributionCapture";
 const siteUrl = "https://www.fromvictoryapp.com";
 
 export const metadata: Metadata = {
-  title: "Pricing · From Victory",
+  alternates: { canonical: "/pricing" },
+  title: "Pricing",
   description:
     "14 days free, then $49/yr or $5/mo for your first athlete — $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
   openGraph: {

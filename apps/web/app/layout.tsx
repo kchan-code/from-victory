@@ -61,7 +61,10 @@ const socialTitle = "From Victory | Compete from Victory";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "From Victory | Christian Athlete Mindset App",
+  title: {
+    default: "From Victory | Christian Athlete Mindset App",
+    template: "%s · From Victory",
+  },
   description: socialDescription,
   openGraph: {
     type: "website",
