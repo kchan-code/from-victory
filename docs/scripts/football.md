@@ -389,7 +389,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The rotation pulls you and sends in the fresh body. You stand on the sideline and watch the defense get a stop without you on the field. The word is rotation — but you're starting to wonder if it's becoming demotion.
 _(pause: 1.5s)_
-3. Your arms fold across your chest and your grip tightens on the facemask of the helmet you're not wearing. The thought hits: they don't need me out there.
+3. Your arms fold across your chest and your grip tightens on the facemask of the helmet you're not wearing. The thought hits: the rotation went by me twice.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -464,7 +464,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Third and long. Everyone in the stadium knows you're rushing the passer. You go one-on-one with the tackle — and he stones you. Square, anchored, no push. The quarterback steps up clean and delivers, no pressure off the edge.
 _(pause: 1.5s)_
-3. Your hands stall against his chest and your rush dies on contact. The thought hits: I can't win when they know it's coming.
+3. Your hands stall against his chest and your rush dies on contact. The thought hits: he stoned me with the whole stadium knowing the call.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -494,7 +494,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You're matched on the slot, a faster guy than you. He runs the option route, breaks one way, and you bite. By the time you flip your hips, he's wide open in the space you were supposed to cover. Easy completion.
 _(pause: 1.5s)_
-3. Your legs feel a step behind and you reach late as the ball arrives. The thought hits: he's too quick for me out here.
+3. Your legs feel a step behind and you reach late as the ball arrives. The thought hits: I bit, and he was gone.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -539,7 +539,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. It's a passing down and the defense goes to nickel. The coach trusts the other backer in coverage and takes you off the field. You stand next to him on the sideline, watching your snaps shrink down each obvious passing situation.
 _(pause: 1.5s)_
-3. You pace a step behind the coach, eyes on the nickel taking your snaps. The thought hits: they don't trust me in space.
+3. You pace a step behind the coach, eyes on the nickel taking your snaps. The thought hits: the nickel went out there without me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -689,7 +689,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You got beat early and the coaches lost confidence. Now they're rolling the coverage to your side or sitting you down, and the quarterback isn't even testing you anymore. The ball goes everywhere but your way.
 _(pause: 1.5s)_
-3. Your hands settle on your hips and your jaw works under the chinstrap between snaps. The thought hits: they don't trust me out there anymore.
+3. Your hands settle on your hips and your jaw works under the chinstrap between snaps. The thought hits: another series gone and I'm still on the sideline.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -734,7 +734,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. They came right at you the first two series and completed both. Now you're playing tentative, sitting back off the line, afraid to get beat — the worst way for a corner to play.
 _(pause: 1.5s)_
-3. Your feet are flat and hesitant at the line, and you catch yourself guessing instead of trusting. The thought hits: they've already got my number.
+3. Your feet are flat and hesitant at the line, and you catch yourself guessing instead of trusting. The thought hits: two series, two completions, both right at me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -749,7 +749,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The offense is up and throwing on you every down. The deep shots keep coming, one after another, testing your island over and over. One more beat-deep and it's a blowout. The pressure sits on every snap.
 _(pause: 1.5s)_
-3. Your chest is tight before the snap and your legs feel heavy with every deep ball coming your way. The thought hits: one more and it's over.
+3. Your chest is tight before the snap and your legs feel heavy with every deep ball coming your way. The thought hits: every snap it's another deep shot at me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -824,7 +824,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You're climbing the pocket and never feel the edge rusher. He rakes the ball loose, it hits the turf, and their end scoops it and runs it sixty yards the other way. Score off you. A two-possession swing with your name on it.
 _(pause: 1.5s)_
-3. Your chest goes tight and your hand keeps closing on a ball that's already sixty yards the other way. The thought hits: the game just swung on me.
+3. Your chest goes tight and your hand keeps closing on a ball that's already sixty yards the other way. The thought hits: I never felt him coming off the edge.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -974,7 +974,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The other back catches fire, and the carries start drying up. You stand on the sideline watching your touches — and your tape — go to someone else, series after series.
 _(pause: 1.5s)_
-3. Your grip tightens on your helmet as he rips off a run, and your eyes drop to the grass. The thought hits: they've moved on from me.
+3. Your grip tightens on your helmet as he rips off a run, and your eyes drop to the grass. The thought hits: the carries are going somewhere else.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -1034,7 +1034,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Down two scores early, and the game script abandons the run. The offense goes pass-heavy, your role shrinks, and you find yourself standing on the sideline watching it happen.
 _(pause: 1.5s)_
-3. Your chest tightens watching from the grass. Your eyes follow the ball without you in it. The thought hits: I'm not part of this anymore.
+3. Your chest tightens watching from the grass. Your eyes follow the ball without you in it. The thought hits: the run game just left the plan.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -1079,7 +1079,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The corner gets his hands on you at the line and rides your hip the whole route. You never come open. The QB checks it down to someone else — and on that play, you didn't exist.
 _(pause: 1.5s)_
-3. Your jaw tightens jogging back to the line. Your hands flex at your sides. The thought hits: I can't shake this guy.
+3. Your jaw tightens jogging back to the line. Your hands flex at your sides. The thought hits: he rode my hip the whole route.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -1124,7 +1124,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. After the drop, the ball stops coming your way. You run great routes into a void — you're open and the quarterback looks somewhere else. Nobody benched you on paper, but the trust is quiet right now.
 _(pause: 1.5s)_
-3. Your shoulders sink coming back to the huddle uncovered again, and your breath goes short. The thought hits: he doesn't trust me right now.
+3. Your shoulders sink coming back to the huddle uncovered again, and your breath goes short. The thought hits: the ball has stopped coming my way.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -1259,7 +1259,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The o-line coach rotates the other tackle in — and then doesn't rotate you back. Standing on the sideline, you realize the depth-chart battle you thought you'd won is wide open again.
 _(pause: 1.5s)_
-3. You watch him take rep after rep of yours, your hands hanging loose at your sides. The thought hits: I'm losing my spot.
+3. You watch him take rep after rep of yours, your hands hanging loose at your sides. The thought hits: the second unit took my reps that series.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -1289,7 +1289,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The defensive tackle puts his hands on you and bull-rushes straight through the middle. He's walking you backward, right into the pocket, into your own quarterback. The rep is slipping.
 _(pause: 1.5s)_
-3. Your feet are giving ground and your base is climbing up tall. The thought hits: he's stronger than me, just give.
+3. Your feet are giving ground and your base is climbing up tall. The thought hits: he put me on skates that time.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_

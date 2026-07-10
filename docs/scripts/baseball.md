@@ -227,7 +227,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You are one strike away. You come back to the fastball, and he turns on it — barrels it. You watch it carry, all the way over the fence. Walk-off.
 _(pause: 1.5s)_
-3. You follow the ball over the wall and your eyes drop to the dirt. The new ball goes heavy in your hand. The thought hits: I lost us the game.
+3. You follow the ball over the wall and your eyes drop to the dirt. The new ball goes heavy in your hand. The thought hits: I left that fastball over the plate.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -257,7 +257,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You are walking off the mound. You hand the manager the ball. The bullpen door swings open behind you, and the dugout is quiet as you sit down.
 _(pause: 1.5s)_
-3. Your eyes drop to the dirt and your jaw sets. You sink onto the bench like it's swallowing you. The thought hits: I'm not good enough to be out there.
+3. Your eyes drop to the dirt and your jaw sets. You sink onto the bench like it's swallowing you. The thought hits: I got the hook in front of everyone.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -272,7 +272,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You are on the bump, first pitch against the top of a stacked lineup. The gun is up behind the plate. You miss with the first three, and now it's 3-0 on the leadoff guy.
 _(pause: 1.5s)_
-3. Your grip squeezes the ball and your front shoulder pulls toward the dugout. Your eyes keep darting to the radar gun. The thought hits: I'm going to walk the yard and they'll see I don't belong here.
+3. Your grip squeezes the ball and your front shoulder pulls toward the dugout. Your eyes keep darting to the radar gun. The thought hits: the doubt starts talking before the first pitch.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -287,7 +287,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You come inside and miss. The pitch rides in and drills the batter. He goes down, shakes it off, and takes his base. Now you have to throw the next one.
 _(pause: 1.5s)_
-3. Your front shoulder flies open early and your grip clamps the ball. Your eyes follow him jogging to first. The thought hits: I can't trust myself inside — what if I do it again.
+3. Your front shoulder flies open early and your grip clamps the ball. Your eyes follow him jogging to first. The thought hits: the doubt arrives with the next inside call.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -317,7 +317,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You hang a fastball and they line it into the gap. Two more cross before you get the third out. You walk off the mound down four in the first.
 _(pause: 1.5s)_
-3. Your grip clamps the seams and your shoulders climb toward your ears. Your eyes stay on the scoreboard on the walk off. The thought hits: I already lost this game for us.
+3. Your grip clamps the seams and your shoulders climb toward your ears. Your eyes stay on the scoreboard on the walk off. The thought hits: I hung that one right into the gap.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -411,7 +411,7 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You are catching a tight game. Coach calls time, walks out, and sends in the other catcher. You hand off the gear and walk back to the dugout.
 _(pause: 1.5s)_
-3. Your eyes go to the ground as you peel off the gear. Your shoulders drop handing it over. The thought hits: I lost the staff. They don't trust me back there.
+3. Your eyes go to the ground as you peel off the gear. Your shoulders drop handing it over. The thought hits: someone else is putting down the signs tonight.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -426,7 +426,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You set up low and away. He uncorks one harder than anything you've caught, and it tails late. You stab at it and it clanks off the heel of your glove to the backstop.
 _(pause: 1.5s)_
-3. Your hands tighten and you start stabbing at the ball instead of letting it come. Your shoulders creep up toward your ears. The thought hits: I can't handle this guy.
+3. Your hands tighten and you start stabbing at the ball instead of letting it come. Your shoulders creep up toward your ears. The thought hits: his ball is getting on me faster than I can get set.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -456,7 +456,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You set up inside, the fastball runs in on you, and it handcuffs you and skips to the backstop. The runner moves up. First inning, and you still can't feel the ball in your mitt.
 _(pause: 1.5s)_
-3. Your hands grip tight and you reach for the ball instead of letting it travel. Your shoulders climb on every pitch. The thought hits: I'm too slow back here, the pitcher can't trust me.
+3. Your hands grip tight and you reach for the ball instead of letting it travel. Your shoulders climb on every pitch. The thought hits: I'm a beat late on everything back here.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -533,7 +533,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You are holding at double-play depth. A ball gets ripped on the dirt to your backhand side, just past your dive, through the hole. It rolls to the wall and the go-ahead run scores.
 _(pause: 1.5s)_
-3. Your feet plant heavy and your eyes stay stuck on the ball skipping past. The thought hits: I should have had that, I cost us the game.
+3. Your feet plant heavy and your eyes stay stuck on the ball skipping past. The thought hits: I should have had that — it got just past my glove.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -565,7 +565,7 @@ _(pause: 1.5s)_
 _(pause: 0.4s)_
 2. You boot the ground ball, or you go down again at the plate. An inning later, coach reads a new name at your spot. You walk to the bench and watch someone else take the field.
 _(pause: 1.5s)_
-3. Your face goes hot and your eyes stay down on the dirt. The thought hits: I lost my spot, I'm done here.
+3. Your face goes hot and your eyes stay down on the dirt. The thought hits: someone else is taking my ground balls.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -580,7 +580,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You set up before the first pitch, hoping it goes anywhere but to you. Then the batter chops a routine two-hopper right at you, and you feel your hands tighten before the ball even gets there.
 _(pause: 1.5s)_
-3. Your hands grip tight and your weight sinks back onto your heels. The thought hits: I can't be trusted with a routine ball.
+3. Your hands grip tight and your weight sinks back onto your heels. The thought hits: what if the first routine one finds me early.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -687,7 +687,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You read it in. The ball carries over your head and splits the gap. You turn and run, and by the time you hit the cutoff, two have scored and they're standing on third.
 _(pause: 1.5s)_
-3. Your first step locks the wrong way and your throat goes dry chasing it. The thought hits: I can't read a ball off the bat.
+3. Your first step locks the wrong way and your throat goes dry chasing it. The thought hits: I read that one dead wrong.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -717,7 +717,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You are jogging in from right field. The coach is sending a defensive replacement out for the last two innings. You pass him on the warning track and take the long walk to the dugout.
 _(pause: 1.5s)_
-3. Your shoulders drop on the walk in and your hands feel useless without a glove. The thought hits: I'm a liability out there now.
+3. Your shoulders drop on the walk in and your hands feel useless without a glove. The thought hits: my spot in the field has someone else standing in it.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -732,7 +732,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You are tracking a deep fly ball with the scouts' guns on you. You take a bad first step in, drift back too late, and the ball drops behind you for a double.
 _(pause: 1.5s)_
-3. Your feet get heavy reading the ball and your chest pulls tight. The thought hits: I can't trust my reads with them watching.
+3. Your feet get heavy reading the ball and your chest pulls tight. The thought hits: doubt creeps in on every ball hit my way.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_

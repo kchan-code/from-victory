@@ -953,7 +953,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Two quick reach-ins and the whistle's on you. Now you're guarding soft, can't pick up full-court, playing scared of the third.
 _(pause: 1.5s)_
-3. Your hands pull back. Your feet get cautious. The thought hits: I can't guard him without fouling.
+3. Your hands pull back. Your feet get cautious. The thought hits: two quick reach-ins already, both on this guy.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 3s)_
@@ -985,7 +985,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. After a turnover, coach calls your number. You come out, and the backup brings the ball up. You watch the offense run without you.
 _(pause: 1.5s)_
-3. You sit down hard. Your eyes stay on the floor. The thought hits: I just lost my minutes.
+3. You sit down hard. Your eyes stay on the floor. The thought hits: the backup is bringing it up right now.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 3s)_
@@ -1113,7 +1113,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Two quick hand-check fouls on a faster guy. The whistle keeps finding you. You feel the bench getting close.
 _(pause: 1.5s)_
-3. Your arms freeze for a second. Your feet get cautious on the closeout. The thought hits: I can’t guard him without fouling.
+3. Your arms freeze for a second. Your feet get cautious on the closeout. The thought hits: every time I close out, the whistle comes.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 3s)_
@@ -1145,7 +1145,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Your shot is not falling, so coach pulls you. You sit down at the end of the bench and watch the game go on without you.
 _(pause: 1.5s)_
-3. You sit down hard. Your eyes stay on the floor. The thought hits: I just lost my minutes.
+3. You sit down hard. Your eyes stay on the floor. The thought hits: the offense is running without me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 3s)_
@@ -1275,7 +1275,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Two quick fouls and the coach sits you. You come back in scared to touch anybody. You stop contesting. You stop boxing out.
 _(pause: 1.5s)_
-3. Your arms feel stiff and cautious. Your feet hesitate before contact. The thought hits: I’m the weak link.
+3. Your arms feel stiff and cautious. Your feet hesitate before contact. The thought hits: I'm playing soft, backing off every play.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 3s)_
