@@ -13,6 +13,12 @@
 // `related` (FV-413): optional cross-links rendered by the page/render
 // layer after the article body. `label` must be a verbatim reuse of the
 // linked page's own title/h1 — see lib/gtm/page-titles.ts.
+//
+// 2026-07-10 (KC-requested content review): the closing CTA in the first
+// three articles pointed to the pre-launch /#waitlist section. The app is
+// live, so those three CTAs were swapped for the "Start a free trial" →
+// /pricing pattern already used in articles 4-5. sha256 pins below and
+// dateModified on the three articles were updated to match.
 
 import {
   PREGAME_RITUAL_HREF,
@@ -65,7 +71,7 @@ const ARTICLES: Article[] = [
       "Twelve NIV verses with identity-first reflections — to settle your nerves on who you already are before the first whistle.",
     audience: "athlete",
     datePublished: "2026-06-12",
-    dateModified: "2026-07-09",
+    dateModified: "2026-07-10",
     image: {
       src: "/images/blog/bible-verses-before-a-game.jpg",
       alt: "Outdoor basketball hoop overlooking the sea in gray morning light",
@@ -130,7 +136,7 @@ Don't try to memorize all twelve. Pick one. Read it slow. Let it do one job — 
 
 The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. That's the freedom these verses point to.
 
-> **Try a pregame session.** Want a 5-minute guided routine that turns a verse like these into a calm, focused mind before you compete? **From Victory** builds it into your warmup. [Get started with a pregame session →](/#waitlist)`,
+> **Try a pregame session.** Want a 5-minute guided routine that turns a verse like these into a calm, focused mind before you compete? **From Victory** builds it into your warmup. **Start a free trial** and run your first session before your next game. [Start your free trial →](/pricing)`,
   },
 
   {
@@ -143,7 +149,7 @@ The worst game you ever play does not lower your standing with God. The best gam
       "A five-step repeatable routine — breath, identity, visualization, cue word, prayer — so nerves stop writing the story and you compete free.",
     audience: "athlete",
     datePublished: "2026-06-12",
-    dateModified: "2026-07-09",
+    dateModified: "2026-07-10",
     image: {
       src: "/images/blog/pre-game-nerves.jpg",
       alt: "Goalie pads and skates beside the net, pucks on the ice",
@@ -203,7 +209,7 @@ None of these steps make you immune to nerves. That's not the goal. The goal is 
 
 Same routine, every game. That's how it becomes yours.
 
-> **Try a pregame session.** From Victory turns these five steps into a real ~5-minute guided audio session — sport-aware, position-aware, voiced for the moment before you compete. [Get started with a pregame session →](/#waitlist)`,
+> **Try a pregame session.** From Victory turns these five steps into a real ~5-minute guided audio session — sport-aware, position-aware, voiced for the moment before you compete. **Start a free trial** and run it before your next game. [Start your free trial →](/pricing)`,
   },
 
   {
@@ -216,7 +222,7 @@ Same routine, every game. That's how it becomes yours.
       "A bad game is information, not a verdict. A faith-grounded, no-shame reset process for after the hard nights.",
     audience: "athlete",
     datePublished: "2026-06-12",
-    dateModified: "2026-07-09",
+    dateModified: "2026-07-10",
     image: {
       src: "/images/blog/bounce-back.jpg",
       alt: "Basketball rim and net lit against a dark gym",
@@ -262,7 +268,7 @@ That return is built on something steady. Hebrews says it like this: *"Let us ru
 
 The game is the game. You are not the game. You never were. Now go take the next rep.
 
-> **Try a pregame session.** Walk into your next game already grounded. From Victory's 5-minute guided pregame routine helps you reset before you ever step on — so a bad night doesn't follow you into the next one. [Get started with a pregame session →](/#waitlist)`,
+> **Try a pregame session.** Walk into your next game already grounded. From Victory's 5-minute guided pregame routine helps you reset before you ever step on — so a bad night doesn't follow you into the next one. **Start a free trial** and run your first session today. [Start your free trial →](/pricing)`,
   },
 
   {
