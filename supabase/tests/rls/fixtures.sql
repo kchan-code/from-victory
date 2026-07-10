@@ -146,17 +146,22 @@ where not exists (
 );
 
 -- ---------------------------------------------------------------------------
--- activity_rollup — service-role-only AGGREGATE table (FV-415). One aggregate
--- row (NO athlete_id) so the RLS assertions test a real 0-row denial for client
--- roles and a real >=1-row read for service_role. NULLS-NOT-DISTINCT unique key;
--- `on conflict do nothing` keeps this idempotent against a persistent stack.
+-- activity_rollup — service-role-only AGGREGATE table (FV-415). No athlete_id,
+-- no PII: only grain / period_start / event_name / counts. Seeds BOTH row
+-- shapes the rollup produces so assertions/reads exercise each:
+--   - one all-events row (event_name IS NULL) = the exact DAU/WAU/MAU headline;
+--   - one per-event row  (event_name = 'app_open') = per-event volume/active.
+-- NULLS-NOT-DISTINCT unique key on (grain, period_start, event_name); the
+-- explicit conflict target keeps this idempotent against a persistent stack
+-- (a bare `on conflict do nothing` cannot infer a NULLS-NOT-DISTINCT arbiter
+-- for the NULL-event_name row).
 -- ---------------------------------------------------------------------------
 insert into public.activity_rollup
-  (grain, period_start, event_name, surface, sport, audio_mode, network_mode,
-   active_athletes, event_count)
+  (grain, period_start, event_name, active_athletes, event_count)
 values
-  ('day', current_date - 1, 'app_open', 'hub', 'hockey', null, null, 1, 3)
-on conflict do nothing;
+  ('day', current_date - 1, null,       1, 3),  -- all-events (DAU) headline
+  ('day', current_date - 1, 'app_open', 1, 3)   -- per-event volume/active
+on conflict (grain, period_start, event_name) do nothing;
 
 commit;
 

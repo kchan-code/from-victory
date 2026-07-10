@@ -23,6 +23,11 @@ import "server-only";
 
 import { priceIdToLabel } from "@/lib/subscriptions/plans";
 import { createServiceClient } from "@/lib/supabase/service";
+import {
+  buildUsageTrend,
+  grainForRangeDays,
+  type RollupRow,
+} from "@/lib/admin/rollup-read";
 
 import {
   shapeAdminMetrics,
@@ -115,7 +120,7 @@ async function fetchAllRows<T>(
  * requireAdminParent() first — this function does no auth of its own.
  */
 export async function getAdminMetrics(
-  rangeDays: number = DEFAULT_RANGE_DAYS,
+  requestedRangeDays: number = DEFAULT_RANGE_DAYS,
 ): Promise<AdminMetrics> {
   const supabase = createServiceClient();
 
@@ -123,6 +128,16 @@ export async function getAdminMetrics(
   const annualId = process.env.STRIPE_PRICE_ID_ANNUAL;
   const planLabelFor = (priceId: string | null) =>
     priceIdToLabel(priceId, monthlyId, annualId);
+
+  // FV-415 part 2: the >90d tabs (365/1095) add a long-range activity_rollup
+  // panel (below) but do NOT extend every other section to that window — the
+  // "raw sections" (everything shapeAdminMetrics computes from raw tables)
+  // stay capped at min(rangeDays, 90) so the 7/30/90 tabs are byte-identical
+  // to before this change, and the 365/1095 tabs render identically to the
+  // 90d tab PLUS the new longRange series. `rangeDays` below is therefore
+  // always <= 90; `requestedRangeDays` (the true selection) only feeds the
+  // rollup query + buildUsageTrend.
+  const rangeDays = Math.min(requestedRangeDays, 90);
 
   // The append-heavy log tables (safety/deletions/auth) are only ever consumed
   // within the selected range, so floor them at the query to bound the scan.
@@ -208,8 +223,10 @@ export async function getAdminMetrics(
     );
   }
 
-  return shapeAdminMetrics({
-    now: new Date(),
+  const now = new Date();
+
+  const metrics = shapeAdminMetrics({
+    now,
     rangeDays,
     profiles: (profilesRes.data ?? []) as ProfileRow[],
     sessions: sessionsResult.rows,
@@ -227,4 +244,38 @@ export async function getAdminMetrics(
     athleteQuizCompleteCount: quizCompleteRes.count ?? 0,
     planLabelFor,
   });
+
+  // FV-415 part 2: only the >90d tabs (365/1095) read activity_rollup. The
+  // raw activityResult.rows fetched above already cover the last 90 days
+  // (activityCutoffIso is floored at 90 regardless of rangeDays) — the exact
+  // same rows buildUsageTrend uses for its "period_start >= now-90d" raw
+  // path, so no second raw fetch is needed here.
+  if (requestedRangeDays > 90) {
+    const grain = grainForRangeDays(requestedRangeDays);
+    const rollupCutoffIso = new Date(
+      Date.now() - requestedRangeDays * 24 * 60 * 60 * 1000,
+    ).toISOString();
+
+    const rollupRes = await supabase
+      .from("activity_rollup")
+      .select("grain, period_start, event_name, active_athletes, event_count")
+      .eq("grain", grain)
+      .gte("period_start", rollupCutoffIso.slice(0, 10));
+
+    if (rollupRes.error) {
+      // Graceful degrade: no longRange panel rather than a broken page.
+      console.error(
+        `[admin-metrics] activity_rollup read failed for grain=${grain}: ${rollupRes.error.message}`,
+      );
+    } else {
+      metrics.longRange = buildUsageTrend({
+        now,
+        rangeDays: requestedRangeDays,
+        activityEvents: activityResult.rows,
+        rollupRows: (rollupRes.data ?? []) as RollupRow[],
+      });
+    }
+  }
+
+  return metrics;
 }

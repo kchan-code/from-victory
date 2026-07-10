@@ -33,7 +33,18 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
-const RANGES = [7, 30, 90] as const;
+// FV-415 part 2: 365/1095 add the year-over-year usage panel (Engagement tab)
+// sourced from activity_rollup. Every OTHER section stays capped at min(range,
+// 90) — see lib/admin/metrics.ts — so 7/30/90 are unaffected and 365/1095
+// render like the 90d tab plus the long-range panel.
+const RANGES = [7, 30, 90, 365, 1095] as const;
+const RANGE_LABEL: Record<(typeof RANGES)[number], string> = {
+  7: "7d",
+  30: "30d",
+  90: "90d",
+  365: "1y",
+  1095: "3y",
+};
 
 function parseTab(v: string | string[] | undefined): TabId {
   const s = Array.isArray(v) ? v[0] : v;
@@ -117,7 +128,7 @@ export default async function OwnerMetricsPage({
                     active ? "bg-gold text-onyx" : "text-cream/55 hover:text-cream"
                   }`}
                 >
-                  {r}d
+                  {RANGE_LABEL[r]}
                 </Link>
               );
             })}
@@ -157,6 +168,15 @@ export default async function OwnerMetricsPage({
             Generated {new Date(metrics.generatedAt).toUTCString()}
           </p>
         </div>
+
+        {rangeDays > 90 ? (
+          <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-cobalt-bright/80 mb-6 -mt-2">
+            {RANGE_LABEL[rangeDays as (typeof RANGES)[number]]} selected — every
+            tab below stays capped at the last 90 days (raw data); the
+            Engagement tab adds a {RANGE_LABEL[rangeDays as (typeof RANGES)[number]]}{" "}
+            usage panel from activity_rollup.
+          </p>
+        ) : null}
 
         {tab === "overview" ? <OverviewTab m={metrics} /> : null}
         {tab === "engagement" ? <EngagementTab m={metrics} /> : null}

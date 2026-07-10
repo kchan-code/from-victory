@@ -19,6 +19,7 @@ import {
   WaitingForEvents,
   WeekBars,
 } from "./dashboard-ui";
+import { LongRangeTrend } from "./long-range-trend";
 
 const pctStr = (n: number) => `${n}%`;
 const num = (n: number) => n.toLocaleString();
@@ -255,6 +256,13 @@ export function EngagementTab({ m }: { m: AdminMetrics }) {
           {num(inst.postgameOpens)} · push-clicks {num(inst.pushClicks)} (wiring is
           a follow-up; counts shown when present).
         </p>
+      ) : null}
+
+      {m.longRange ? (
+        <LongRangeTrend
+          data={m.longRange}
+          rangeLabel={m.longRange.grain === "month" ? "last 3 years" : "last year"}
+        />
       ) : null}
     </div>
   );
