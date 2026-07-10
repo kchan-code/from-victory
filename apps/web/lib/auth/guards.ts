@@ -140,7 +140,7 @@ export async function requireAthlete(): Promise<{
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, role, first_name, sport, sport_selected_at, position, focus_area")
+    .select("id, role, first_name, sport, sport_selected_at")
     .eq("id", user.id)
     .single();
 
@@ -149,9 +149,47 @@ export async function requireAthlete(): Promise<{
   if (profile.role !== "athlete" && profile.role !== "adult_athlete")
     redirect("/signin");
 
+  // FV-361: position/focus_area are athlete-private columns — `authenticated`
+  // has no table-level SELECT on profiles and these columns are deliberately
+  // excluded from its column-restricted SELECT grant (a linked parent's JWT
+  // must not be able to read them via a raw PostgREST request; RLS is
+  // row-only and cannot make that distinction on its own). Read them via the
+  // SECURITY DEFINER get_own_personalization() RPC instead, which scopes to
+  // auth.uid() internally and is unaffected by the grant restriction. A
+  // failure here is non-fatal — personalization is supplementary, not
+  // auth-critical — so we fall back to nulls rather than blocking sign-in.
+  // The try/catch is defensive: supabase-js normally resolves `{ data, error }`
+  // even on an API-level failure, but a genuine thrown error (e.g. a network
+  // fault) must not block sign-in either.
+  let personalization: { position: string | null; focus_area: string | null } | null =
+    null;
+  try {
+    const { data, error: personalizationError } = await supabase
+      .rpc("get_own_personalization")
+      .maybeSingle();
+
+    if (personalizationError) {
+      console.error(
+        "[guards.requireAthlete] get_own_personalization failed:",
+        personalizationError.message,
+      );
+    } else {
+      personalization = data;
+    }
+  } catch (err) {
+    console.error(
+      "[guards.requireAthlete] get_own_personalization threw:",
+      err instanceof Error ? err.message : String(err),
+    );
+  }
+
   return {
     userId: user.id,
-    profile: profile as AthleteProfile,
+    profile: {
+      ...profile,
+      position: personalization?.position ?? null,
+      focus_area: personalization?.focus_area ?? null,
+    } as AthleteProfile,
   };
 }
 
