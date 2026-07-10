@@ -24,7 +24,7 @@ import {
   OUTFIELD_VIZ,
   PITCHER_VIZ,
 } from "./segments-baseball.ts";
-import { CLIP_LOUDNORM_FILTER } from "./loudnorm";
+import { CLIP_LOUDNORM_FILTER } from "./loudnorm.ts";
 
 // ── Baseball VIZ clips — one per position (FV-94) ────────────────────────────
 

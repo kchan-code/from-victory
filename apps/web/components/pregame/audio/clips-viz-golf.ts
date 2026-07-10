@@ -22,7 +22,7 @@
 
 import type { AudioScript } from "./types";
 import { SCRIPT_INSTRUCTIONS, VISUALIZATION_INSTRUCTIONS } from "./instructions.ts";
-import { CLIP_LOUDNORM_FILTER } from "./loudnorm";
+import { CLIP_LOUDNORM_FILTER } from "./loudnorm.ts";
 
 const SELFTALK_INSTRUCTIONS = `Voice Affect: Coach voice — direct, assured, the move being called. The athlete hears themselves being coached out of the collapse.
 

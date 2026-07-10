@@ -36,7 +36,7 @@ import {
   STROKE_VIZ,
   IM_VIZ,
 } from "./segments-swimming.ts";
-import { CLIP_LOUDNORM_FILTER } from "./loudnorm";
+import { CLIP_LOUDNORM_FILTER } from "./loudnorm.ts";
 
 // ── Swimming VIZ clips — one per specialty (FV-275) ──────────────────────────
 

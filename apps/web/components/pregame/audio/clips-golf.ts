@@ -31,7 +31,7 @@ import {
   BOMBER_VIZ,
   SCRAMBLER_VIZ,
 } from "./segments-golf.ts";
-import { CLIP_LOUDNORM_FILTER } from "./loudnorm";
+import { CLIP_LOUDNORM_FILTER } from "./loudnorm.ts";
 
 // ── Golf VIZ clips — one per profile (FV-265) ────────────────────────────────
 

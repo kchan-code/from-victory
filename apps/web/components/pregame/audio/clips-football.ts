@@ -34,7 +34,7 @@ import {
   LB_VIZ,
   DB_VIZ,
 } from "./segments-football.ts";
-import { CLIP_LOUDNORM_FILTER } from "./loudnorm";
+import { CLIP_LOUDNORM_FILTER } from "./loudnorm.ts";
 
 // ── Football VIZ clips — one per role (FV-202) ───────────────────────────────
 
