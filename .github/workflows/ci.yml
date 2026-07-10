@@ -11,7 +11,7 @@ jobs:
     name: Build + Typecheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Require package-lock.json
         run: test -f package-lock.json || { echo "::error::package-lock.json missing — refusing to false-green"; exit 1; }
       - uses: actions/setup-node@v6
@@ -26,7 +26,7 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Require package-lock.json
         run: test -f package-lock.json || { echo "::error::package-lock.json missing — refusing to false-green"; exit 1; }
       - uses: actions/setup-node@v6
@@ -40,7 +40,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Require package-lock.json
         run: test -f package-lock.json || { echo "::error::package-lock.json missing — refusing to false-green"; exit 1; }
       - uses: actions/setup-node@v6
@@ -58,7 +58,7 @@ jobs:
     # diff against.
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Require MANIFEST_VERSION bump when committed *.mp3 files change (FV-142)
@@ -140,7 +140,7 @@ jobs:
     # touches a script book or the lint script itself.
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Check whether script books or the lint script changed (FV-400)
@@ -198,7 +198,7 @@ jobs:
     timeout-minutes: 25
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Detect lockfile
         id: lockfile
@@ -334,7 +334,7 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Verify psql is available
         run: psql --version
