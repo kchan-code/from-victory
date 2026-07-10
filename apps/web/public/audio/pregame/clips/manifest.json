@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "3fa25678",
+  "manifestVersion": "10e52fec",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -75,8 +75,8 @@
       ]
     },
     "hm-forward-nervous": {
-      "url": "/audio/pregame/clips/hm-forward-nervous.a17bb0b4.mp3",
-      "durationSec": 47.668,
+      "url": "/audio/pregame/clips/hm-forward-nervous.73bd11a6.mp3",
+      "durationSec": 48.388,
       "phases": [
         {
           "phase": "hardMoment",
@@ -95,8 +95,8 @@
       ]
     },
     "hm-forward-turnover": {
-      "url": "/audio/pregame/clips/hm-forward-turnover.9c470c12.mp3",
-      "durationSec": 42.004,
+      "url": "/audio/pregame/clips/hm-forward-turnover.a653bdf5.mp3",
+      "durationSec": 44.644,
       "phases": [
         {
           "phase": "hardMoment",
@@ -135,8 +135,8 @@
       ]
     },
     "hm-forward-benched": {
-      "url": "/audio/pregame/clips/hm-forward-benched.ddbdb6fb.mp3",
-      "durationSec": 43.084,
+      "url": "/audio/pregame/clips/hm-forward-benched.dbf903a5.mp3",
+      "durationSec": 46.924,
       "phases": [
         {
           "phase": "hardMoment",
@@ -165,8 +165,8 @@
       ]
     },
     "hm-forward-first-goal-against": {
-      "url": "/audio/pregame/clips/hm-forward-first-goal-against.720b0e01.mp3",
-      "durationSec": 41.236,
+      "url": "/audio/pregame/clips/hm-forward-first-goal-against.4d02f82b.mp3",
+      "durationSec": 41.476,
       "phases": [
         {
           "phase": "hardMoment",
@@ -215,8 +215,8 @@
       ]
     },
     "hm-defense-coach-yells": {
-      "url": "/audio/pregame/clips/hm-defense-coach-yells.40408fbc.mp3",
-      "durationSec": 46.468,
+      "url": "/audio/pregame/clips/hm-defense-coach-yells.acebcf9e.mp3",
+      "durationSec": 44.692,
       "phases": [
         {
           "phase": "hardMoment",
@@ -225,8 +225,8 @@
       ]
     },
     "hm-defense-benched": {
-      "url": "/audio/pregame/clips/hm-defense-benched.31f14b5f.mp3",
-      "durationSec": 47.956,
+      "url": "/audio/pregame/clips/hm-defense-benched.cf53d8a9.mp3",
+      "durationSec": 45.148,
       "phases": [
         {
           "phase": "hardMoment",
@@ -325,8 +325,8 @@
       ]
     },
     "hm-goalie-pulled": {
-      "url": "/audio/pregame/clips/hm-goalie-pulled.db0f35c3.mp3",
-      "durationSec": 43.084,
+      "url": "/audio/pregame/clips/hm-goalie-pulled.71c04b36.mp3",
+      "durationSec": 42.964,
       "phases": [
         {
           "phase": "hardMoment",
@@ -335,8 +335,8 @@
       ]
     },
     "hm-goalie-nervous": {
-      "url": "/audio/pregame/clips/hm-goalie-nervous.8a36f08d.mp3",
-      "durationSec": 49.18,
+      "url": "/audio/pregame/clips/hm-goalie-nervous.70d3058a.mp3",
+      "durationSec": 48.172,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2527,8 +2527,8 @@
       ]
     },
     "hm-bb-guard-foul-trouble": {
-      "url": "/audio/pregame/clips/hm-bb-guard-foul-trouble.450b6b40.mp3",
-      "durationSec": 45.028,
+      "url": "/audio/pregame/clips/hm-bb-guard-foul-trouble.463137bc.mp3",
+      "durationSec": 49.78,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2547,8 +2547,8 @@
       ]
     },
     "hm-bb-guard-benched": {
-      "url": "/audio/pregame/clips/hm-bb-guard-benched.06aa0c08.mp3",
-      "durationSec": 44.332,
+      "url": "/audio/pregame/clips/hm-bb-guard-benched.e11419fd.mp3",
+      "durationSec": 44.164,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2627,8 +2627,8 @@
       ]
     },
     "hm-bb-wing-foul-trouble": {
-      "url": "/audio/pregame/clips/hm-bb-wing-foul-trouble.c0e3081d.mp3",
-      "durationSec": 45.436,
+      "url": "/audio/pregame/clips/hm-bb-wing-foul-trouble.bd54407d.mp3",
+      "durationSec": 45.076,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2647,8 +2647,8 @@
       ]
     },
     "hm-bb-wing-benched": {
-      "url": "/audio/pregame/clips/hm-bb-wing-benched.986192de.mp3",
-      "durationSec": 44.14,
+      "url": "/audio/pregame/clips/hm-bb-wing-benched.ab35e79e.mp3",
+      "durationSec": 45.964,
       "phases": [
         {
           "phase": "hardMoment",
@@ -2727,8 +2727,8 @@
       ]
     },
     "hm-bb-big-foul-trouble": {
-      "url": "/audio/pregame/clips/hm-bb-big-foul-trouble.bf19ecea.mp3",
-      "durationSec": 48.196,
+      "url": "/audio/pregame/clips/hm-bb-big-foul-trouble.e593a8b7.mp3",
+      "durationSec": 51.004,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3448,8 +3448,8 @@
       ]
     },
     "hm-bsb-pitcher-big-hit": {
-      "url": "/audio/pregame/clips/hm-bsb-pitcher-big-hit.f49b4967.mp3",
-      "durationSec": 76.92,
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-big-hit.a6cd1667.mp3",
+      "durationSec": 48.348,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3468,8 +3468,8 @@
       ]
     },
     "hm-bsb-pitcher-pulled": {
-      "url": "/audio/pregame/clips/hm-bsb-pitcher-pulled.3249a93d.mp3",
-      "durationSec": 49.164,
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-pulled.0c3732c0.mp3",
+      "durationSec": 50.652,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3478,8 +3478,8 @@
       ]
     },
     "hm-bsb-pitcher-nervous": {
-      "url": "/audio/pregame/clips/hm-bsb-pitcher-nervous.3deec4a5.mp3",
-      "durationSec": 66.288,
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-nervous.abbbbbbc.mp3",
+      "durationSec": 52.428,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3488,8 +3488,8 @@
       ]
     },
     "hm-bsb-pitcher-hit-batter": {
-      "url": "/audio/pregame/clips/hm-bsb-pitcher-hit-batter.1ff5e592.mp3",
-      "durationSec": 70.2,
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-hit-batter.a40272cc.mp3",
+      "durationSec": 51.804,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3508,8 +3508,8 @@
       ]
     },
     "hm-bsb-pitcher-fall-behind-early": {
-      "url": "/audio/pregame/clips/hm-bsb-pitcher-fall-behind-early.b4319ca6.mp3",
-      "durationSec": 59.856,
+      "url": "/audio/pregame/clips/hm-bsb-pitcher-fall-behind-early.11021e07.mp3",
+      "durationSec": 53.652,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3568,8 +3568,8 @@
       ]
     },
     "hm-bsb-catcher-benched": {
-      "url": "/audio/pregame/clips/hm-bsb-catcher-benched.87331569.mp3",
-      "durationSec": 56.076,
+      "url": "/audio/pregame/clips/hm-bsb-catcher-benched.9182c96e.mp3",
+      "durationSec": 53.604,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3578,8 +3578,8 @@
       ]
     },
     "hm-bsb-catcher-nervous": {
-      "url": "/audio/pregame/clips/hm-bsb-catcher-nervous.8ac3a644.mp3",
-      "durationSec": 61.488,
+      "url": "/audio/pregame/clips/hm-bsb-catcher-nervous.7578bf5b.mp3",
+      "durationSec": 54.132,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3598,8 +3598,8 @@
       ]
     },
     "hm-bsb-catcher-start-slow": {
-      "url": "/audio/pregame/clips/hm-bsb-catcher-start-slow.950507ae.mp3",
-      "durationSec": 70.368,
+      "url": "/audio/pregame/clips/hm-bsb-catcher-start-slow.efe64456.mp3",
+      "durationSec": 54.636,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3648,8 +3648,8 @@
       ]
     },
     "hm-bsb-infield-big-hit": {
-      "url": "/audio/pregame/clips/hm-bsb-infield-big-hit.5af6e656.mp3",
-      "durationSec": 68.544,
+      "url": "/audio/pregame/clips/hm-bsb-infield-big-hit.1e1e079e.mp3",
+      "durationSec": 54.252,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3668,8 +3668,8 @@
       ]
     },
     "hm-bsb-infield-benched": {
-      "url": "/audio/pregame/clips/hm-bsb-infield-benched.640dd31e.mp3",
-      "durationSec": 46.644,
+      "url": "/audio/pregame/clips/hm-bsb-infield-benched.4d950e79.mp3",
+      "durationSec": 49.428,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3678,8 +3678,8 @@
       ]
     },
     "hm-bsb-infield-nervous": {
-      "url": "/audio/pregame/clips/hm-bsb-infield-nervous.f1069f53.mp3",
-      "durationSec": 64.632,
+      "url": "/audio/pregame/clips/hm-bsb-infield-nervous.36e2dfb8.mp3",
+      "durationSec": 52.044,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3748,8 +3748,8 @@
       ]
     },
     "hm-bsb-outfield-big-hit": {
-      "url": "/audio/pregame/clips/hm-bsb-outfield-big-hit.5d21c2c4.mp3",
-      "durationSec": 59.616,
+      "url": "/audio/pregame/clips/hm-bsb-outfield-big-hit.4823f659.mp3",
+      "durationSec": 49.38,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3768,8 +3768,8 @@
       ]
     },
     "hm-bsb-outfield-benched": {
-      "url": "/audio/pregame/clips/hm-bsb-outfield-benched.bc9089e4.mp3",
-      "durationSec": 50.436,
+      "url": "/audio/pregame/clips/hm-bsb-outfield-benched.e669e949.mp3",
+      "durationSec": 51.516,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3778,8 +3778,8 @@
       ]
     },
     "hm-bsb-outfield-nervous": {
-      "url": "/audio/pregame/clips/hm-bsb-outfield-nervous.8370cbf0.mp3",
-      "durationSec": 55.776,
+      "url": "/audio/pregame/clips/hm-bsb-outfield-nervous.a8047066.mp3",
+      "durationSec": 48.852,
       "phases": [
         {
           "phase": "hardMoment",
@@ -3870,8 +3870,8 @@
       ]
     },
     "hm-glf-bomber-blow-up": {
-      "url": "/audio/pregame/clips/hm-glf-bomber-blow-up.4a1b3eab.mp3",
-      "durationSec": 65.412,
+      "url": "/audio/pregame/clips/hm-glf-bomber-blow-up.34cbf705.mp3",
+      "durationSec": 65.82,
       "phases": [
         {
           "phase": "hardMoment",
@@ -4080,8 +4080,8 @@
       ]
     },
     "hm-glf-scrambler-ob": {
-      "url": "/audio/pregame/clips/hm-glf-scrambler-ob.78d2680d.mp3",
-      "durationSec": 67.284,
+      "url": "/audio/pregame/clips/hm-glf-scrambler-ob.fe78733c.mp3",
+      "durationSec": 61.308,
       "phases": [
         {
           "phase": "hardMoment",
@@ -4120,8 +4120,8 @@
       ]
     },
     "hm-glf-scrambler-outplayed": {
-      "url": "/audio/pregame/clips/hm-glf-scrambler-outplayed.2371b410.mp3",
-      "durationSec": 69.252,
+      "url": "/audio/pregame/clips/hm-glf-scrambler-outplayed.a3843d60.mp3",
+      "durationSec": 66.108,
       "phases": [
         {
           "phase": "hardMoment",
@@ -4130,8 +4130,8 @@
       ]
     },
     "hm-glf-scrambler-nervous": {
-      "url": "/audio/pregame/clips/hm-glf-scrambler-nervous.f5c3805e.mp3",
-      "durationSec": 63.9,
+      "url": "/audio/pregame/clips/hm-glf-scrambler-nervous.203b04d1.mp3",
+      "durationSec": 62.964,
       "phases": [
         {
           "phase": "hardMoment",
@@ -4150,8 +4150,8 @@
       ]
     },
     "hm-glf-scrambler-fall-behind": {
-      "url": "/audio/pregame/clips/hm-glf-scrambler-fall-behind.59a97adc.mp3",
-      "durationSec": 64.26,
+      "url": "/audio/pregame/clips/hm-glf-scrambler-fall-behind.037f45a3.mp3",
+      "durationSec": 62.772,
       "phases": [
         {
           "phase": "hardMoment",
