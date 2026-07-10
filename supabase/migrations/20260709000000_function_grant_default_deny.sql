@@ -1,0 +1,195 @@
+-- =============================================================================
+-- Migration: 20260709000000_function_grant_default_deny.sql
+--
+-- Purpose: FV-363 — audit + close the live function-EXECUTE grant gap found on
+--   EXISTING functions (most notably public.enforce_birthdate_immutable(),
+--   which has held an unrevoked anon/authenticated EXECUTE grant since
+--   2026-06-25), and undo a stray default-privileges escalation from
+--   20260612000000. This migration does NOT attempt a runtime "default-deny
+--   for FUTURE functions" mechanism — see "Descope" below.
+--
+-- Root cause (two separate grant-to-everyone mechanisms on EXISTING
+-- functions):
+--   1. Postgres itself grants EXECUTE to PUBLIC automatically on every
+--      CREATE FUNCTION. This is a Postgres built-in, independent of
+--      ALTER DEFAULT PRIVILEGES, and it means every function ever created in
+--      this schema — including trigger functions never meant to be called
+--      directly — currently has EXECUTE granted to PUBLIC (and therefore to
+--      anon + authenticated) unless a migration explicitly revoked it. Only
+--      due_push_reminders() and due_game_day_reminders() ever did that
+--      (FV-164 / FV-240).
+--   2. 20260612000000_explicit_table_grants.sql additionally set
+--      `alter default privileges in schema public grant execute on functions
+--      to authenticated, anon;` — meaning every function created AFTER that
+--      migration inherits an explicit authenticated/anon EXECUTE grant on
+--      creation, on top of the Postgres PUBLIC default. Belt AND suspenders,
+--      both in the wrong direction.
+--
+--   Net effect found while auditing: the trigger function
+--   public.enforce_birthdate_immutable() (created 2026-06-25, after the
+--   FV-216 default-privileges statement) currently has EXECUTE granted to
+--   anon and authenticated with no migration ever revoking it — reachable via
+--   PostgREST as POST /rest/v1/rpc/enforce_birthdate_immutable by anyone
+--   holding the anon key. Postgres would reject a direct call (a function
+--   declared `returns trigger` can only be invoked by the trigger manager,
+--   SQLSTATE 42809), so this was not a live data-access hole, but it is
+--   exactly the "silently callable" gap this migration closes for every
+--   existing function in the inventory below.
+--
+-- Descope — no runtime enforcement for FUTURE functions (KC decision,
+-- 2026-07-09): an earlier version of this migration also tried to make new
+-- functions default-deny automatically, going forward. Two approaches were
+-- evaluated and BOTH are out of scope here:
+--
+--   (a) `ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE EXECUTE ON
+--       FUNCTIONS FROM PUBLIC` — empirically verified (against a real
+--       Postgres 16 instance) to be a documented no-op for this purpose:
+--         - ALTER DEFAULT PRIVILEGES stores only an ADDITIVE delta
+--           (pg_default_acl.defaclacl) on top of Postgres's own built-in
+--           default; a new function's real ACL is always
+--           `acldefault() ⊎ defaclacl`, computed fresh at CREATE FUNCTION
+--           time.
+--         - REVOKE only removes entries that are literally present IN THAT
+--           STORED DELTA. PUBLIC's EXECUTE grant is never stored in the
+--           delta in the first place (it comes from acldefault(), not from
+--           any prior GRANT statement) — so `REVOKE ... FROM PUBLIC` has
+--           nothing to remove and is a no-op, REGARDLESS of FOR ROLE,
+--           REGARDLESS of whether other roles are named in the same
+--           statement, and REGARDLESS of whether PUBLIC was ever explicitly
+--           granted (and then revoked) in the delta first — tested all four
+--           variants.
+--         - If a REVOKE drains the stored delta to zero entries, Postgres
+--           deletes the pg_default_acl row outright rather than storing an
+--           empty override, which means "no override at all" — so the very
+--           next CREATE FUNCTION reverts fully to the built-in PUBLIC=X
+--           default.
+--   (b) A `ddl_command_end` EVENT TRIGGER that revokes PUBLIC/anon/
+--       authenticated EXECUTE on every newly created function — the only
+--       runtime mechanism that actually works (verified end-to-end against
+--       the real migration chronology + the RLS harness). Not used here:
+--       `CREATE EVENT TRIGGER` requires the creating role to be a Postgres
+--       superuser, and hosted Supabase's `postgres` connection role likely
+--       does not hold that bit (unconfirmed either way from this repo — the
+--       risk is asymmetric: CI only ever runs `supabase db push --local`
+--       against a genuinely-superuser local Docker Postgres, so a green CI
+--       run cannot prove this would also succeed against the hosted project,
+--       where migrations auto-apply on merge). Shipping it here risked a
+--       silent-until-merge db-migrate failure that CI structurally cannot
+--       catch. Deferred instead.
+--
+--   Follow-up (tracked separately, not in this migration): enforce
+--   "every new CREATE FUNCTION ships with an explicit REVOKE/GRANT"
+--   as a build-time CI migration-lint over new supabase/migrations/*.sql
+--   files (no superuser, no runtime DB dependency) rather than a live DB
+--   mechanism. Until that lands, the discipline is manual: any future
+--   migration that creates a function must explicitly REVOKE EXECUTE from
+--   public/anon/authenticated (unless it's meant to be RPC-callable, in
+--   which case GRANT explicitly — see get_own_username() below for the
+--   established pattern) in the SAME migration.
+--
+-- Function inventory (every public function across all prior migrations) —
+-- for each: whether it's ever called directly (RPC) by a client role, and
+-- the grant decision applied below.
+--
+--   TRIGGER FUNCTIONS (never called directly — invoked only by the trigger
+--   manager, which does not consult the invoking session's EXECUTE privilege
+--   at all; a `returns trigger` function additionally cannot be called via
+--   ordinary SQL/RPC — Postgres raises "trigger functions can only be called
+--   as triggers"). REVOKE execute from PUBLIC on all of these; this cannot
+--   break the triggers that use them, and closes the accidental RPC surface:
+--     - public.set_updated_at()                    (20260520200000)
+--     - public.check_parent_athlete_link_roles()    (20260520200000)
+--     - public.check_device_pairing_roles()         (20260521200232)
+--     - public.check_athlete_session_role()         (20260522000749, redefined
+--                                                     20260625000000 — CREATE
+--                                                     OR REPLACE preserves
+--                                                     existing privileges, so
+--                                                     the redefinition did not
+--                                                     re-grant anything)
+--     - public.check_journal_entry_consistency()    (20260522000749)
+--     - public.check_safety_event_consistency()     (20260522002717)
+--     - public.enforce_birthdate_immutable()        (20260625170000 — the
+--                                                     live gap described above)
+--
+--   SECURITY DEFINER, RPC-STYLE, SERVICE-ROLE-ONLY (already explicitly
+--   revoked from public/anon/authenticated in their own migrations —
+--   re-affirmed here, idempotent, so this migration is self-contained):
+--     - public.due_push_reminders()       (20260612130000 / FV-164)
+--     - public.due_game_day_reminders()   (20260612140000 / FV-240)
+--   Called only via createServiceClient().rpc(...) from
+--   apps/web/app/api/cron/send-reminders/route.ts, which authenticates with
+--   the service_role key (service_role has its own independent EXECUTE grant
+--   via 20260613040000_service_role_grants.sql — unaffected by this migration).
+--
+--   SECURITY DEFINER, RPC-STYLE, LEGITIMATELY CALLED BY authenticated
+--   (already explicitly granted in its own migration — re-affirmed here):
+--     - public.get_own_username()  (20260624000000 / FV-320) — self-guarded:
+--       the function body derives the caller's own id from auth.uid() and
+--       returns only that row's username; there is no parameter an attacker
+--       could vary to read someone else's data. authenticated needs EXECUTE
+--       so an athlete can call it via PostgREST RPC after claiming a device
+--       pairing code, per that migration's own comment.
+--
+-- Nothing below requires superuser: ALTER DEFAULT PRIVILEGES (owner-scoped)
+-- and REVOKE/GRANT EXECUTE on functions this role already owns are ordinary
+-- owner-level DDL. Nothing above changes: no table grant, no RLS policy.
+-- Functions only.
+-- =============================================================================
+
+-- ---------------------------------------------------------------------------
+-- 1. Hygiene — undo 20260612000000's explicit default-privileges escalation.
+--    This does NOT stop Postgres's built-in PUBLIC grant on new functions
+--    (see "Descope" above) — it only removes the redundant, wrong-direction
+--    `grant execute on functions to authenticated, anon` delta that
+--    migration installed, so this schema's default-privileges state doesn't
+--    actively compound the built-in default. (This statement drains the
+--    stored delta to zero entries, which Postgres represents by deleting the
+--    pg_default_acl row rather than storing an empty override — functionally
+--    equivalent here to that GRANT never having been issued.) No superuser
+--    required — owner-level ALTER DEFAULT PRIVILEGES.
+-- ---------------------------------------------------------------------------
+alter default privileges in schema public
+  revoke execute on functions from public, anon, authenticated;
+
+-- ---------------------------------------------------------------------------
+-- 2. THE ACTUAL FIX — close the gap on EXISTING functions: revoke the
+--    Postgres-automatic PUBLIC EXECUTE grant from every trigger function.
+--    None of these are meant to be called directly by any client role;
+--    trigger firing is unaffected because the trigger manager invokes the
+--    function directly, bypassing the EXECUTE privilege check entirely.
+--    (enforce_birthdate_immutable was created AFTER 20260612000000's
+--    grant-to-all default, so it also carries explicit anon/authenticated
+--    grants — revoke those too, not just PUBLIC.) No superuser required —
+--    plain REVOKE on functions this role owns.
+-- ---------------------------------------------------------------------------
+revoke execute on function public.set_updated_at()                 from public;
+revoke execute on function public.check_parent_athlete_link_roles() from public;
+revoke execute on function public.check_device_pairing_roles()      from public;
+revoke execute on function public.check_athlete_session_role()      from public;
+revoke execute on function public.check_journal_entry_consistency() from public;
+revoke execute on function public.check_safety_event_consistency()  from public;
+revoke execute on function public.enforce_birthdate_immutable()     from public, anon, authenticated;
+
+-- ---------------------------------------------------------------------------
+-- 3. Re-affirm the SECURITY DEFINER functions that are NOT RPC-called by
+--    anon/authenticated stay revoked (idempotent — already revoked in their
+--    own migrations; repeated here so this migration is self-contained and
+--    the deny-by-default posture is visible in one place).
+-- ---------------------------------------------------------------------------
+revoke execute on function public.due_push_reminders()     from public, anon, authenticated;
+revoke execute on function public.due_game_day_reminders() from public, anon, authenticated;
+
+-- ---------------------------------------------------------------------------
+-- 4. Re-affirm the one function that IS legitimately RPC-called by
+--    authenticated, so this migration's clean-up does not silently take
+--    this away. (Idempotent — already granted in
+--    20260624000000_athlete_username.sql; this grant is a role-specific
+--    GRANT, not inherited via ALTER DEFAULT PRIVILEGES, so step 1 above does
+--    not touch it either way. Restated here for an exhaustive, self-
+--    contained record of every RPC-callable function's grant.)
+--    NOTE: get_own_username is INTENTIONALLY anon-callable as a safe-degrade
+--    (SECURITY DEFINER scoped to auth.uid() → returns NULL for anon), a
+--    contract pinned by 10_username.sql AC(d). So we only re-affirm its
+--    authenticated grant and deliberately do NOT revoke anon here.
+-- ---------------------------------------------------------------------------
+grant execute on function public.get_own_username() to authenticated;
