@@ -33,7 +33,7 @@ import { createClient } from "@/lib/supabase/server";
 import { priceIdToLabel } from "@/lib/subscriptions/plans";
 
 export const metadata = {
-  title: "Account settings · From Victory",
+  title: "Account settings",
 };
 
 // ---------------------------------------------------------------------------

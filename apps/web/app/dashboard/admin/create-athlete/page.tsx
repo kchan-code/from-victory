@@ -3,7 +3,7 @@ import { CreateAthleteDirectForm } from "@/components/admin/CreateAthleteDirectF
 import { requireAdminParent } from "@/lib/auth/admin";
 
 export const metadata = {
-  title: "Create athlete (admin) · From Victory",
+  title: "Create athlete (admin)",
   robots: { index: false, follow: false },
 };
 

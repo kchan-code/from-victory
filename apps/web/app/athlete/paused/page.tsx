@@ -5,7 +5,7 @@ import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireAthlete } from "@/lib/auth/guards";
 
 export const metadata = {
-  title: "Training Paused · From Victory",
+  title: "Training Paused",
   robots: { index: false, follow: false },
 };
 

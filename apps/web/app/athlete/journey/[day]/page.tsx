@@ -33,9 +33,9 @@ function formatDate(iso: string): string {
 export async function generateMetadata({ params }: JourneyDayPageProps) {
   const dayNum = parseInt(params.day, 10);
   if (!Number.isInteger(dayNum) || dayNum < 1 || dayNum > TOTAL_TRAINING_DAYS) {
-    return { title: "Session Not Found · From Victory" };
+    return { title: "Session Not Found" };
   }
-  return { title: `Day ${dayNum} · Journey · From Victory` };
+  return { title: `Day ${dayNum} · Journey` };
 }
 
 export default async function JourneyDayPage({ params }: JourneyDayPageProps) {

@@ -14,7 +14,7 @@ import { requireActiveAccess } from "@/lib/subscriptions/enforce";
 import { getJourney } from "@/lib/athlete/journey-entry";
 
 export const metadata = {
-  title: "Your Journey · From Victory",
+  title: "Your Journey",
 };
 
 /** Format a completed_at ISO timestamp as a readable date (no time). */

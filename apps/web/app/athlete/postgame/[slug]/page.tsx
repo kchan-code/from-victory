@@ -30,7 +30,7 @@ export async function generateMetadata({
 }) {
   const mod = moduleBySlug(params.slug);
   return {
-    title: mod ? `${mod.title} · From Victory` : "After the Game · From Victory",
+    title: mod ? mod.title : "After the Game",
   };
 }
 

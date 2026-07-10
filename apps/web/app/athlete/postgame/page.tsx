@@ -19,7 +19,7 @@ import { requireActiveAccess } from "@/lib/subscriptions/enforce";
 import { modulesForSport, type PostgameScenario } from "@/lib/postgame/modules";
 
 export const metadata = {
-  title: "After the Game · From Victory",
+  title: "After the Game",
 };
 
 const SCENARIO_EYEBROW: Record<PostgameScenario, string> = {

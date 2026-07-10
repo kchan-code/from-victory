@@ -16,7 +16,7 @@ import { modulesForSport } from "@/lib/postgame/modules";
 import { dailyCardSubtitle } from "@/lib/quiz-config";
 
 export const metadata = {
-  title: "Today · From Victory",
+  title: "Today",
 };
 
 export default async function AthleteHomePage() {

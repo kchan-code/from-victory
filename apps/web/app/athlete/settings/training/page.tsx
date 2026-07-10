@@ -8,7 +8,7 @@ import type { Sport as RegistrySport } from "@/components/pregame/sport-registry
 import type { Sport } from "@/lib/sports";
 
 export const metadata = {
-  title: "Training focus · From Victory",
+  title: "Training focus",
 };
 
 /**
