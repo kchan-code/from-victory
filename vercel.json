@@ -19,5 +19,18 @@
       "path": "/api/cron/prune-activity-events",
       "schedule": "20 4 * * *"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "fromvictoryapp.com"
+        }
+      ],
+      "destination": "https://www.fromvictoryapp.com/:path*",
+      "permanent": true
+    }
   ]
 }

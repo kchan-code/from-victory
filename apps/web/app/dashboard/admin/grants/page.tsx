@@ -4,7 +4,7 @@ import { requireAdminParent } from "@/lib/auth/admin";
 import { listCompGrants } from "@/lib/actions/grants";
 
 export const metadata = {
-  title: "Comp grants (admin) · From Victory",
+  title: "Comp grants (admin)",
   robots: { index: false, follow: false },
 };
 

@@ -16,7 +16,7 @@ export async function generateMetadata({
   params: { id: string };
 }) {
   return {
-    title: "Athlete detail · From Victory",
+    title: "Athlete detail",
     // Override with athlete name once the data loads. Next.js calls this
     // before the page function, so we use a generic title here.
   };

@@ -22,7 +22,8 @@ const siteUrl = "https://www.fromvictoryapp.com";
 
 // AUTHORED metadata description:
 export const metadata: Metadata = {
-  title: "Resources · From Victory",
+  alternates: { canonical: "/resources" },
+  title: "Resources",
   description:
     "Articles on faith, mental toughness, and competing as a Christian athlete. Free evergreen resources from From Victory.",
   openGraph: {

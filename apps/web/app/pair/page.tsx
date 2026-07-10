@@ -5,7 +5,7 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { createServiceClient } from "@/lib/supabase/service";
 
 export const metadata = {
-  title: "Welcome · From Victory",
+  title: "Welcome",
 };
 
 type Search = {

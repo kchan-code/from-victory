@@ -7,7 +7,7 @@ import { redirectIfAuthed } from "@/lib/auth/guards";
 import { createServiceClient } from "@/lib/supabase/service";
 
 export const metadata = {
-  title: "Sign in · From Victory",
+  title: "Sign in",
 };
 
 type Props = {

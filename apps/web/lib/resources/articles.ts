@@ -45,6 +45,8 @@ export interface Article {
   audience: ArticleAudience;
   bodyMd: string; // verbatim from content source
   related?: RelatedLink[]; // FV-413 — cross-links, rendered after the body
+  datePublished: string; // ISO date (FV-418) — merge date of the content
+  dateModified: string; // ISO date (FV-418) — last substantive update
   image?: ArticleImage; // FV-416 — editorial hero, rendered between header and body
 }
 
@@ -62,6 +64,8 @@ const ARTICLES: Article[] = [
     excerpt:
       "Twelve NIV verses with identity-first reflections — to settle your nerves on who you already are before the first whistle.",
     audience: "athlete",
+    datePublished: "2026-06-12",
+    dateModified: "2026-07-09",
     image: {
       src: "/images/blog/bible-verses-before-a-game.jpg",
       alt: "Outdoor basketball hoop overlooking the sea in gray morning light",
@@ -138,6 +142,8 @@ The worst game you ever play does not lower your standing with God. The best gam
     excerpt:
       "A five-step repeatable routine — breath, identity, visualization, cue word, prayer — so nerves stop writing the story and you compete free.",
     audience: "athlete",
+    datePublished: "2026-06-12",
+    dateModified: "2026-07-09",
     image: {
       src: "/images/blog/pre-game-nerves.jpg",
       alt: "Goalie pads and skates beside the net, pucks on the ice",
@@ -209,6 +215,8 @@ Same routine, every game. That's how it becomes yours.
     excerpt:
       "A bad game is information, not a verdict. A faith-grounded, no-shame reset process for after the hard nights.",
     audience: "athlete",
+    datePublished: "2026-06-12",
+    dateModified: "2026-07-09",
     image: {
       src: "/images/blog/bounce-back.jpg",
       alt: "Basketball rim and net lit against a dark gym",
@@ -266,6 +274,8 @@ The game is the game. You are not the game. You never were. Now go take the next
     excerpt:
       "What to say in the car, what to avoid, and how to anchor your athlete in identity — not results — after a cut.",
     audience: "parent",
+    datePublished: "2026-06-12",
+    dateModified: "2026-07-09",
     image: {
       src: "/images/blog/when-your-athlete-gets-cut.jpg",
       alt: "Rows of empty arena seats",
@@ -340,6 +350,8 @@ Your athlete is not the cut. They never were. **Your Identity Is Secure. Compete
     excerpt:
       "They mix well — but only when faith is the foundation the mental skills stand on, not the other way around. An honest look at how, and the limits.",
     audience: "parent",
+    datePublished: "2026-06-12",
+    dateModified: "2026-07-09",
     image: {
       src: "/images/blog/sports-psychology-and-faith.jpg",
       alt: "Basketball court lines seen from above",

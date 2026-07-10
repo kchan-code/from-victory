@@ -4,7 +4,7 @@ import ChangeSportFlow from "@/components/athlete/ChangeSportFlow";
 import { requireAthlete } from "@/lib/auth/guards";
 
 export const metadata = {
-  title: "Change sport · From Victory",
+  title: "Change sport",
 };
 
 export default async function ChangeSportPage() {

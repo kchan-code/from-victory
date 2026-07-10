@@ -10,7 +10,7 @@ import { FOCUS_AREA_LABELS, isFocusAreaKey } from "@/lib/quiz-config";
 import { formatHour } from "@/lib/push/format";
 
 export const metadata = {
-  title: "Settings · From Victory",
+  title: "Settings",
 };
 
 function isSport(value: string | undefined): value is Sport {

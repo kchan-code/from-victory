@@ -11,7 +11,8 @@ import { SvgIcon } from "@/components/landing/SvgIcon";
 const siteUrl = "https://www.fromvictoryapp.com";
 
 export const metadata: Metadata = {
-  title: "About · From Victory",
+  alternates: { canonical: "/about" },
+  title: "About",
   description:
     "From Victory is a daily mental toughness training app for Christian athletes — built on the conviction that identity precedes performance, and that athletes compete from Christ's victory, not toward one they're trying to earn.",
   openGraph: {

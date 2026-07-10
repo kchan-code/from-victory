@@ -44,19 +44,28 @@ export async function generateMetadata({
 
   const pageTitle = `${article.title} · From Victory`;
   const ogUrl = `${siteUrl}/resources/${article.slug}`;
+  // Per-article OG card (FV-418): 1200x630 crop of the article's editorial
+  // hero, generated alongside the hero in public/images/blog/og/. Falls back
+  // to the shared brand card for any article without an image.
+  const ogImage = article.image
+    ? `${siteUrl}${article.image.src.replace("/images/blog/", "/images/blog/og/")}`
+    : `${siteUrl}/from-victory-social-preview.jpg`;
 
   return {
-    title: pageTitle,
+    title: article.title, // root layout template appends "· From Victory"
     description: article.metaDescription,
+    alternates: { canonical: `/resources/${article.slug}` },
     openGraph: {
       type: "article",
       url: ogUrl,
       siteName: "From Victory",
       title: pageTitle,
       description: article.metaDescription,
+      publishedTime: article.datePublished,
+      modifiedTime: article.dateModified,
       images: [
         {
-          url: `${siteUrl}/from-victory-social-preview.jpg`,
+          url: ogImage,
           width: 1200,
           height: 630,
         },
@@ -66,7 +75,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: pageTitle,
       description: article.metaDescription,
-      images: [`${siteUrl}/from-victory-social-preview.jpg`],
+      images: [ogImage],
     },
   };
 }
@@ -82,6 +91,17 @@ function ArticleJsonLd({ article }: { article: Article }) {
     headline: article.title,
     description: article.metaDescription,
     url: `${siteUrl}/resources/${article.slug}`,
+    // FV-418: dates, author, and image — freshness/attribution signals for
+    // search and answer engines. Author is the organization (articles are
+    // unsigned house content).
+    datePublished: article.datePublished,
+    dateModified: article.dateModified,
+    author: {
+      "@type": "Organization",
+      name: "From Victory",
+      url: siteUrl,
+    },
+    ...(article.image ? { image: [`${siteUrl}${article.image.src}`] } : {}),
     publisher: {
       "@type": "Organization",
       name: "From Victory",
@@ -100,6 +120,17 @@ function ArticleJsonLd({ article }: { article: Article }) {
 // ---------------------------------------------------------------------------
 // Audience label helper
 // ---------------------------------------------------------------------------
+
+// "2026-07-09" → "July 9, 2026". Manual parse — new Date("YYYY-MM-DD") is
+// UTC-midnight and can shift a day depending on build timezone (FV-418).
+function formatArticleDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const MONTHS = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+  return `${MONTHS[(m ?? 1) - 1]} ${d}, ${y}`;
+}
 
 function audienceLabel(audience: Article["audience"]): string {
   return audience === "athlete" ? "For athletes" : "For parents";
@@ -162,6 +193,17 @@ export default async function ArticlePage({
                 <span className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55">
                   {audienceLabel(article.audience)}
                 </span>
+                <span className="text-cream/20" aria-hidden="true">
+                  /
+                </span>
+                {/* Visible updated date (FV-418) — engines cross-check the
+                    Article schema's dateModified against on-page text. */}
+                <time
+                  dateTime={article.dateModified}
+                  className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55"
+                >
+                  Updated {formatArticleDate(article.dateModified)}
+                </time>
               </div>
               <h1 className="fv-h-article mb-0 max-w-[30ch]">{article.title}</h1>
             </Reveal>

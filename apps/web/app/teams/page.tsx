@@ -12,7 +12,8 @@ import { AttributionCapture } from "@/components/marketing/AttributionCapture";
 const siteUrl = "https://www.fromvictoryapp.com";
 
 export const metadata: Metadata = {
-  title: "For Teams, Churches & Sports Ministries · From Victory",
+  alternates: { canonical: "/teams" },
+  title: "For Teams, Churches & Sports Ministries",
   description:
     "From Victory gives teams, clubs, FCA chapters, chaplains, and church youth groups a simple way to provide Scripture-rooted athlete mindset training to families — without managing accounts, monitoring athletes, or holding private data.",
   openGraph: {

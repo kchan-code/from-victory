@@ -19,7 +19,7 @@ import {
 } from "@/lib/daily/progression";
 
 export const metadata = {
-  title: "Today's Training · From Victory",
+  title: "Today's Training",
 };
 
 export default async function DailyPage() {
