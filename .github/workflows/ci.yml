@@ -264,7 +264,7 @@ jobs:
       - name: Cache Playwright browsers
         if: steps.lockfile.outputs.exists == 'true'
         id: pw-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
