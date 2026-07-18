@@ -42,6 +42,17 @@ A routine HM cell that rings basketball-true (`hm-bb-wing-turnover`, lines only)
 5. That turnover is over. Sprint back into the play.
 6. Next trip, cut hard, space right, and let the offense find you.
 
+- The pregame viz model (ALL sports — KC directive 2026-07-18): the flagship
+  `viz-{role}` clip is a FALLBACK only; athletes choose up to 3 plays from the
+  sport's per-position **positive-play library** (clip sources in
+  `components/pregame/audio/clips-viz*.ts` / `clips-{sport}.ts`, registered in
+  `components/pregame/positive-plays.ts`), and the chosen plays replace the
+  flagship at runtime (FV-144). A complete sport = flagship + ~7-play library
+  per position + hard-moment grid + pre-practice presets
+  (`docs/adding-a-sport.md` Step 7). When verifying viz content, verify the
+  PLAY LIBRARY — a sport whose viz is one monolithic per-position clip is
+  missing its library, not done.
+
 ## What you are (and are not)
 
 You ARE: a basketball lifer's knowledge base — the game, the development

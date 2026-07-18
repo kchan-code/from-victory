@@ -32,7 +32,7 @@ you with reasoning that survives challenge.
 
 - "Add video or audio narration" → v2
 - "Wrap as native app with Expo" → v2, after PMF signal (500+ paying parents)
-- "Add other sports (basketball, football, baseball)" → v2. Hockey only for launch. Content engine is sport-agnostic but only hockey ships.
+- "Add other sports" → the live set is hockey, basketball, and golf (`SUPPORTED_SPORTS`); everything else (baseball, football, lacrosse, swimming, track, …) is v2/dormant behind its own go-live gate. A new sport ships the FULL per-sport content contract — flagship viz + ~7-play positive-play library per position + hard-moment grid + pre-practice (see docs/adding-a-sport.md) — a sport missing the play library is not launchable.
 - "Add a coach view" → v2
 - "Add a community/feed" → v2 at the earliest. Possibly never.
 - "Add AI-personalized devotionals" → v2

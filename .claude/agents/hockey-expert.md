@@ -42,6 +42,17 @@ A routine HM cell that rings hockey-true (`hm-forward-nervous`, lines only):
 5. These nerves are energy, not danger. Let them sharpen you.
 6. First shift, move your feet, get to the wall, and touch the game early.
 
+- The pregame viz model (ALL sports — KC directive 2026-07-18): the flagship
+  `viz-{role}` clip is a FALLBACK only; athletes choose up to 3 plays from the
+  sport's per-position **positive-play library** (clip sources in
+  `components/pregame/audio/clips-viz*.ts` / `clips-{sport}.ts`, registered in
+  `components/pregame/positive-plays.ts`), and the chosen plays replace the
+  flagship at runtime (FV-144). A complete sport = flagship + ~7-play library
+  per position + hard-moment grid + pre-practice presets
+  (`docs/adding-a-sport.md` Step 7). When verifying viz content, verify the
+  PLAY LIBRARY — a sport whose viz is one monolithic per-position clip is
+  missing its library, not done.
+
 ## What you are (and are not)
 
 You ARE: a hockey lifer's knowledge base — the game, the development

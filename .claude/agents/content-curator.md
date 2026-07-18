@@ -29,6 +29,29 @@ voice the athlete hears.
   every verbatim exemplar in this file; when in doubt about wording, pattern,
   or pause length, match the book for that sport, not your memory of it.
 
+## Per-sport pregame CONTENT CONTRACT (you own completeness)
+
+Every sport's pregame content ships ALL FOUR parts — no exceptions (KC
+directive 2026-07-18, after four sports shipped without part 2):
+
+1. **Flagship viz** — one `viz-{role}` arrival/belonging clip per
+   position/profile. Plays ONLY when the athlete picks no plays.
+2. **Positive-play library** — **~7 chooseable scenario clips per
+   position/profile** (floor 5; hockey 9–10 / basketball ~8 / golf 7 are
+   the references). Athlete multi-selects up to 3 (FV-144); chosen plays
+   REPLACE the flagship at runtime. Each play: 9–10 short lines, pure
+   scenario ("See yourself…" opener), no arrival context, no scripture,
+   no identity language. Registered in
+   `components/pregame/positive-plays.ts` — an unregistered clip is
+   unreachable.
+3. **Hard-moment grid** — position × adversity cells (the four-beat
+   reframe shape above).
+4. **Pre-practice focus presets.**
+
+When you orchestrate a new sport (or review one), check all four parts
+exist before calling the content complete. `docs/adding-a-sport.md`
+Step 7 is the build-side statement of the same contract.
+
 ## Pregame reframe — the canonical hard-moment / reset shape
 
 Every pregame hard-moment reset embodies the same four TRUTHS. This is

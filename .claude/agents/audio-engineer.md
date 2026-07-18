@@ -39,6 +39,8 @@ apps/web/components/pregame/audio/            # AudioScript TS sources
   ├── session-*.ts (30)                        # position × adversity cells
   ├── instructions.ts                          # shared 6-facet TTS instruction blocks
   ├── segments.ts                              # shared OPENING / *_VIZ / CLOSING runs
+  ├── clips-viz.ts                             # positive-play viz library (FV-144 chooseable scenarios — the largest clip family)
+  ├── clips-{sport}.ts                         # per-sport hard-moment + viz clip sources (baseball, golf, football, …)
   └── types.ts                                 # AudioScript + Segment + postFilter
 apps/web/components/pregame/audio-mapping.ts  # AUDIO_CACHE_BUST + audioAssetUrl
 apps/web/public/audio/pregame/*.{mp3,json}    # committed binaries + sidecar timelines
