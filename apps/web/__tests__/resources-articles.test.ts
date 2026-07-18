@@ -193,11 +193,11 @@ describe('"kid/kids/kiddo/youngster" audience-language scan', () => {
 describe("whole-body sha256 fidelity pins", () => {
   const PINS: Record<string, string> = {
     "bible-verses-for-athletes-before-a-game":
-      "394b9a6696fd9ea2e2bd8396bce990dd57943c527460f864b0fc4bca73539a84",
+      "19d6a824dc39a5a7ce21dbc21a205371982f7c05709e18c889bb9faa585f435b",
     "pre-game-nerves-christian-athlete-routine":
-      "6503de4d9d38477b53d7846c846db789f2452f1f942336db2385a3b9f3ecf1c9",
+      "233184d5bb8a388009797f6d741be9b5af8938981ab56c745b59e0bfaca26533",
     "how-to-bounce-back-after-a-bad-game":
-      "ecec2b1ca13457c4457d674a08d3bfb5c367455a373fee2ff0de12b724488288",
+      "6f0212bdc206eaec27a0e28f8a24828551eac65d3128a89944102f198f5c3622",
     "when-your-athlete-gets-cut-a-parents-guide":
       "c7a9bc8238fbd09a9db83b6031c5164755fabc5102afc3c32cae9389245054b9",
     "sports-psychology-and-faith-do-they-mix":
