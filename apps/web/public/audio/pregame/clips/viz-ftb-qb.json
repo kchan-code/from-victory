@@ -1,0 +1,14 @@
+{
+  "slug": "viz-ftb-qb",
+  "durationSec": 149.476,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 50.674
+    }
+  ]
+}

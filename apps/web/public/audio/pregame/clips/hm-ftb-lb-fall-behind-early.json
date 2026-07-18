@@ -1,0 +1,10 @@
+{
+  "slug": "hm-ftb-lb-fall-behind-early",
+  "durationSec": 60.516,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

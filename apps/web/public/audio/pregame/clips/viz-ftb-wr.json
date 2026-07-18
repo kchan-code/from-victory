@@ -1,0 +1,14 @@
+{
+  "slug": "viz-ftb-wr",
+  "durationSec": 150.988,
+  "phases": [
+    {
+      "phase": "rink",
+      "startSec": 0
+    },
+    {
+      "phase": "firstShift",
+      "startSec": 50.554
+    }
+  ]
+}

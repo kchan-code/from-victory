@@ -1,0 +1,10 @@
+{
+  "slug": "hm-ftb-db-turnover",
+  "durationSec": 57.612,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

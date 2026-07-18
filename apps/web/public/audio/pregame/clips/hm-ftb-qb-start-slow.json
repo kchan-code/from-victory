@@ -1,0 +1,10 @@
+{
+  "slug": "hm-ftb-qb-start-slow",
+  "durationSec": 55.524,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

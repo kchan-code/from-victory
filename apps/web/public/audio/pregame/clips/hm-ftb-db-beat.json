@@ -1,0 +1,10 @@
+{
+  "slug": "hm-ftb-db-beat",
+  "durationSec": 63.348,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

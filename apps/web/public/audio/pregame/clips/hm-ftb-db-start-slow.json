@@ -1,0 +1,10 @@
+{
+  "slug": "hm-ftb-db-start-slow",
+  "durationSec": 58.5,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}
