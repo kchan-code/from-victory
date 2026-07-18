@@ -188,6 +188,40 @@ export type Database = {
           },
         ]
       }
+      // FV-415: hand-added (table Row was never present pre-reshape; the RPC
+      // type below was the only entry). Confirm shape via `supabase gen types
+      // typescript --linked` after `supabase db push` applies
+      // 20260711000000_activity_rollup_reshape.sql to the linked project.
+      // Service-role-only: RLS enabled, no policies. event_name IS NULL rows
+      // are the exact all-events distinct (DAU/WAU/MAU); non-NULL rows are
+      // per-event volume/active. No FK — this is a pure aggregate, no PII.
+      activity_rollup: {
+        Row: {
+          active_athletes: number
+          event_count: number
+          event_name: string | null
+          grain: string
+          period_start: string
+          updated_at: string
+        }
+        Insert: {
+          active_athletes: number
+          event_count: number
+          event_name?: string | null
+          grain: string
+          period_start: string
+          updated_at?: string
+        }
+        Update: {
+          active_athletes?: number
+          event_count?: number
+          event_name?: string | null
+          grain?: string
+          period_start?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       athlete_sessions: {
         Row: {
           athlete_id: string
@@ -715,10 +749,12 @@ export type Database = {
       }
       // FV-415: SECURITY DEFINER RPC called by the prune-activity-events cron
       // route (service-role only) to UPSERT day/week/month aggregates into
-      // activity_rollup BEFORE the raw prune. Returns the number of rollup rows
-      // affected. Execute revoked from public, anon, and authenticated.
-      // Regenerate via 'supabase gen types --linked' after migration
-      // 20260710000000_activity_rollup.sql is applied to prod.
+      // activity_rollup BEFORE the raw prune (GROUPING SETS — also emits the
+      // event_name-IS-NULL all-events row per FV-415 part 2's reshape).
+      // Returns the number of rollup rows affected. Execute revoked from
+      // public, anon, and authenticated. Regenerate via 'supabase gen types
+      // typescript --linked' after migration
+      // 20260711000000_activity_rollup_reshape.sql is applied to prod.
       rollup_activity_events: {
         Args: { retention_days?: number }
         Returns: number

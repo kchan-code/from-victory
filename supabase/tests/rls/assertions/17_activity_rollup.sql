@@ -29,8 +29,8 @@ begin
       and table_name   = 'activity_rollup';
 
   assert cols = array[
-    'active_athletes','audio_mode','event_count','event_name','grain',
-    'network_mode','period_start','sport','surface','updated_at'
+    'active_athletes','event_count','event_name','grain',
+    'period_start','updated_at'
   ],
     format('FV-415 FAIL: activity_rollup columns drifted from aggregate-only set: %s', cols);
 

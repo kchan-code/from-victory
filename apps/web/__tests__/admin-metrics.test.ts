@@ -360,3 +360,35 @@ describe("instrumented metrics (activity_events)", () => {
     expect(none.instrumented.pregameStarts).toBe(0);
   });
 });
+
+describe("FV-415 part 2 — longRange is a metrics.ts concern, not this pure core's", () => {
+  // shapeAdminMetrics (this pure core) NEVER sets `longRange` — metrics.ts
+  // attaches it separately, after fetching activity_rollup, only for >90d
+  // ranges. Asserting it's always absent here from the core is what
+  // guarantees the 7/30/90 tabs stay byte-identical: nothing in this shaping
+  // function's output changes shape based on the new field's existence.
+  it("never populates longRange, regardless of rangeDays", () => {
+    expect(build().longRange).toBeUndefined();
+
+    const wide = shapeAdminMetrics({
+      now: NOW,
+      rangeDays: 90, // metrics.ts caps at 90 before calling this core, even for a 365/1095 request
+      profiles,
+      sessions,
+      catalog,
+      subscriptions,
+      waitlist,
+      pushOptInCount: 2,
+      safetyEvents,
+      deletions,
+      parentLinks,
+      pairings,
+      authEvents,
+      activityEvents,
+      athleteSportSelectedCount: 5,
+      athleteQuizCompleteCount: 3,
+      planLabelFor,
+    });
+    expect(wide.longRange).toBeUndefined();
+  });
+});

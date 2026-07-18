@@ -15,6 +15,9 @@
 //     this module. Nothing here returns an athlete-identifying row.
 
 import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
+import type { UsageTrend } from "@/lib/admin/rollup-read";
+
+export type { UsageTrend, UsagePoint, RollupGrain, RollupRow } from "@/lib/admin/rollup-read";
 
 // ---------------------------------------------------------------------------
 // Privacy: small-N suppression. Any *segmented* count over minor (13-17) data
@@ -112,6 +115,15 @@ export type AdminMetrics = {
   generatedAt: string;
   rangeDays: number;
   smallN: number;
+
+  /**
+   * FV-415 part 2: the year-over-year usage series (>90d ranges only), built
+   * by lib/admin/rollup-read.ts from activity_rollup + raw activity_events.
+   * Undefined for 7/30/90d ranges — this pure core NEVER sets this field
+   * (rollup-read has no I/O of its own to run here); metrics.ts attaches it
+   * after calling shapeAdminMetrics, once it has fetched the rollup rows.
+   */
+  longRange?: UsageTrend;
 
   kpis: {
     /** NORTH STAR — distinct athletes who COMPLETED ≥1 session in the last 7 days. */
