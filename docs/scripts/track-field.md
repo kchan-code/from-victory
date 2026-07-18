@@ -79,7 +79,7 @@ _(pause: 2.2s)_
 _(pause: 2s)_
 7. You tell yourself, You belong here.
 _(pause: 1.25s)_
-8. You back into the blocks and set your feet. Slow breath. This race is yours.
+8. You back into the blocks and set your feet. Slow breath. Stay with your race plan.
 _(pause: 0.25s)_
 9. Set position — hips up, eyes down. The gun. You explode out, driving low and powerful.
 _(pause: 2s)_
@@ -124,17 +124,17 @@ _(pause: 2s)_
 _(pause: 2s)_
 11. You stay in contact, stay patient, sitting easy off the leaders, the laps clicking by.
 _(pause: 2s)_
-12. At the bell, you make your move on time and empty the tank to the line. One lap at a time — that's how it goes all meet.
+12. At the bell, you make your move on time and drive all the way to the line. One lap at a time — that's how it goes all meet.
 _(pause: 2s)_
 13. See yourself run your race, your way.
 _(pause: 2s)_
 14. Settle into your pace. Relax the shoulders, breathe. Stay in contact, stay patient — every lap, the same.
 _(pause: 2s)_
-15. Make your move on time. Empty the tank at the bell. And when the early pace is too hot, you don't get pulled off your plan — you run your own race and trust the work to bring you back.
+15. Make your move on time and commit at the bell. When the early pace is too hot, stay with your plan and let the race come back to you.
 _(pause: 2s)_
 16. Now visualize the next rep.
 _(pause: 0.8s)_
-17. The longest race on your card, the field tearing out hard early. You don't chase it. You settle into your pace, relax the shoulders, breathe, and stay patient — then make your move on time and empty the tank at the bell, running them down to the line.
+17. The longest race on your card, the field tearing out hard early. You do not chase it. Settle into your pace, relax your shoulders, stay patient, then make your move at the bell and drive to the line.
 _(pause: 2s)_
 ### Track & Field · Hurdle · VIZ
 <!-- slug: viz-trf-hurdle | file: components/pregame/audio/clips-trackfield.ts -->
@@ -190,7 +190,7 @@ _(pause: 2.2s)_
 _(pause: 2s)_
 7. You tell yourself, You belong here.
 _(pause: 1.25s)_
-8. You stand at the top of the runway and find your mark. Slow breath. This attempt is yours.
+8. You stand at the top of the runway and find your mark. Slow breath. Start with your first step.
 _(pause: 0.25s)_
 9. You start the approach, building speed, staying tall and under control down the runway.
 _(pause: 2s)_
@@ -204,7 +204,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 14. Find your mark. Build the approach, stay tall. Hit the board, full speed — no reaching, no backing off.
 _(pause: 2s)_
-15. Commit and explode up. And if you foul or come up short, you let it go — next attempt, fresh start. Same mark, same full-speed approach, full commitment again.
+15. Commit and explode up. If you foul or come up short, reset for the next attempt with the same mark and the same full-speed approach.
 _(pause: 2s)_
 16. Now visualize the next rep.
 _(pause: 0.8s)_
@@ -227,7 +227,7 @@ _(pause: 2.2s)_
 _(pause: 2s)_
 7. You tell yourself, You belong here.
 _(pause: 1.25s)_
-8. You step into the ring and settle in. Slow breath. This throw is yours.
+8. You step into the ring and settle in. Slow breath. Stay with your sequence.
 _(pause: 0.25s)_
 9. You start slow and controlled, balanced at the back, building into the throw with patience.
 _(pause: 2s)_
@@ -237,11 +237,11 @@ _(pause: 2s)_
 _(pause: 2s)_
 12. You stay in the ring, watch it sail, and step out clean. One throw at a time — that's how it goes all meet.
 _(pause: 2s)_
-13. See yourself be big and explosive.
+13. See yourself stay balanced, then finish fast.
 _(pause: 2s)_
 14. Settle in the ring. Slow, then violent. Stay back, then rip it — patient at the start, all power at the finish.
 _(pause: 2s)_
-15. Finish tall and through. And if one comes out flat or sails wide, you don't grip it tighter — next throw, let it go. Settle back in, slow then violent, and let it fly free.
+15. Finish tall and through. If one comes out flat or wide, do not tighten your grip. Reset, start controlled, and accelerate through the release.
 _(pause: 2s)_
 16. Now visualize the next rep.
 _(pause: 0.8s)_
@@ -301,13 +301,13 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You drew the early flight. You're jumping cold while the seeded athletes wait their turn, and the runway feels foreign — no one ahead of you to chase, no big marks on the board to measure against.
 _(pause: 1.5s)_
-3. Your eyes drift to the empty board and your shoulders drop. Your legs feel a little flat at the top of the runway. The thought hits: what's the point, the real flight hasn't even started.
+3. Your eyes drift to the empty board and your shoulders drop. Your legs feel a little flat at the top of the runway. The thought hits: I wanted the seeded flight, and now I have to set the mark myself.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. The flight order doesn't decide your mark — the pit measures every jump the same, early flight or late. A big mark put down early still stands and makes the seeded jumpers chase you.
 _(pause: 2s)_
-6. Next attempt, settle at the top and bring your own runway with you. Run your full approach, hit your steps, and attack the board — set the bar instead of chasing it.
+6. Next attempt, settle at the top, run your full approach, hit your steps, and attack the board. Put down the mark the later flight has to answer.
 _(pause: 2s)_
 ### Track & Field · Jump · nervous
 <!-- slug: hm-trf-jump-nervous | file: components/pregame/audio/clips-trackfield.ts -->
@@ -320,7 +320,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. These nerves are energy, not danger. Let them sharpen you. One slow breath at the top of the runway, eyes down the strip, and the buzz turns into speed.
+5. These nerves are energy, not danger. Let them sharpen you. Take one slow breath at the top of the runway and bring your eyes to your first steps.
 _(pause: 2s)_
 6. Next attempt, find your start mark under your feet, lock your eyes down the runway, hit your rhythm off the first step, and let the speed carry you to the board.
 _(pause: 2s)_
@@ -406,7 +406,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You throw first in the order, cold, with no big marks ahead of you to chase or measure against. The board is empty, the seeded throwers are waiting their turn, and the ring feels foreign with no rhythm set yet.
 _(pause: 1.5s)_
-3. Your eyes drift to the empty board and your shoulders drop. Your arm feels a little flat warming up. The thought hits: what's the point, the real throwers haven't even gone.
+3. Your eyes drift to the empty board and your shoulders drop. Your arm feels a little flat warming up. The thought hits: I wanted a mark to chase, and now I have to put the first real one out there.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -425,7 +425,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. These nerves are energy, not danger. Let them sharpen you. One slow breath in the back of the ring, feet planted, and the buzz turns into power.
+5. These nerves are energy, not danger. Let them sharpen you. Take one slow breath in the back of the ring and feel your feet settle.
 _(pause: 2s)_
 6. Next throw, feel your feet planted in the back of the ring, stay patient, build through your feet and hips, and let the finish rip on its own.
 _(pause: 2s)_
@@ -515,7 +515,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The lane assignment doesn't decide your race — the clock takes everyone's time the same way, lane one or lane four. A great race out of lane one still crashes the next seeding.
+5. The lane assignment does not decide your race. The clock takes every lane the same way, and a strong race from lane one still moves you up.
 _(pause: 2s)_
 6. Run your own lane, not theirs. Settle into your blocks, stay low and patient through the tight turn, run the inside line clean, and unload on the straight.
 _(pause: 2s)_
@@ -545,9 +545,9 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. These nerves are energy, not danger. Let them sharpen you. One slow breath out behind the blocks, feet set on the pedals, and the buzz turns into power.
+5. These nerves are energy, not danger. Let them sharpen you. Take one slow breath behind the blocks and feel your feet set on the pedals.
 _(pause: 2s)_
-6. The work is already in your legs. Set in the blocks, react to the gun, drive low, and let your speed come up underneath you.
+6. Set in the blocks, react to the gun, drive low, and let your speed build through the first steps.
 _(pause: 2s)_
 ### Track & Field · Sprint · start-slow
 <!-- slug: hm-trf-sprint-start-slow | file: components/pregame/audio/clips-trackfield.ts -->
@@ -616,13 +616,13 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You led the whole last lap, you held the front, and you can hear them coming. In the final fifty someone with a fresher gear blows past you, and you cross the line a step behind after leading all the way.
 _(pause: 1.5s)_
-3. Your whole body burns from the front-running and your eyes lock on the back that just passed you. The thought hits: I did all the work and they stole it at the end.
+3. Your whole body burns from leading, and your eyes lock on the runner who came past in the final stretch. The thought hits: I carried the pace and had nothing left to answer the move.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. They won that finish. They don't own the next one. Leading takes guts — the kick is just a skill you build next. Walk it off and let one long exhale settle you.
+5. They won that finish. They do not own the next one. Leading took courage; now the race gives you information about where to place your kick.
 _(pause: 2s)_
-6. Next race, if you're going to lead, lead honest and start your drive earlier so there's no gear left to out-kick — or sit one stride back and time your own finish.
+6. Next race, choose the tactic before the bell — drive earlier if you lead, or stay one stride off and protect your own move — then commit to the finish you chose.
 _(pause: 2s)_
 ### Track & Field · Dist · bad-heat
 <!-- slug: hm-trf-dist-bad-heat | file: components/pregame/audio/clips-trackfield.ts -->
@@ -785,7 +785,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. These nerves are energy, not danger. Let them sharpen you. One slow breath out behind the blocks, eyes up to the first barrier, and the buzz turns into power.
+5. These nerves are energy, not danger. Let them sharpen you. Take one slow breath behind the blocks and bring your eyes to the first barrier.
 _(pause: 2s)_
 6. You don't have to think about all ten hurdles standing here — your body knows the pattern. Set in the blocks, drive low, hit your steps to barrier one, and let it take over.
 _(pause: 2s)_

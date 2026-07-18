@@ -91,7 +91,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 13. Caught, first down. You jog back to the huddle in command. One play at a time — that's how it goes all night.
 _(pause: 2s)_
-14. See yourself own the huddle.
+14. See yourself lead the huddle.
 _(pause: 2s)_
 15. Eyes up, read it out. You trust your first read and throw it with conviction — every snap, all night.
 _(pause: 2s)_
@@ -134,7 +134,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 15. You read your blocks and hit the hole fast — two hands, high and tight, every carry.
 _(pause: 2s)_
-16. You finish every run forward, and when they need you in protection, you pick up the blitz — square up, deliver the punch, and seal the edge.
+16. You finish every run forward, and when they need you in protection, you pick up the blitz — square up, strike inside, and stay between the rusher and your quarterback.
 _(pause: 2s)_
 17. Now visualize the next play.
 _(pause: 0.8s)_
@@ -157,7 +157,7 @@ _(pause: 2.2s)_
 _(pause: 2s)_
 7. You tell yourself, You belong here.
 _(pause: 1.25s)_
-8. You line up wide, toe on the line, eyes inside to the corner. Slow breath. This route is yours.
+8. You line up wide, check the formation and the corner's leverage. Slow breath. This route is yours.
 _(pause: 0.25s)_
 9. Snap. You explode off the line and win at the release, clean and fast.
 _(pause: 2s)_
@@ -255,7 +255,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 17. Now visualize the next play.
 _(pause: 0.8s)_
-18. Third and short, they're trying to run it right at you, the line firing out. You don't get moved. You get off low, take on the double team, hold your gap, and shed to the back — stop short of the sticks, off the field.
+18. Third and long, everyone knows you are rushing the passer. You get off on the ball, attack half a man, win with your hands, and close the pocket — the quarterback has nowhere clean to step.
 _(pause: 2s)_
 ### Football · LB · VIZ
 <!-- slug: viz-ftb-lb | file: components/pregame/audio/clips-football.ts -->
@@ -417,15 +417,17 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. They down-block and double you — the tackle and guard both driving their hands into your side, working to wash you off the ball. The whole rep is staying square and holding your ground, not getting buried in the pile.
+2. They down-block and double you, the tackle and guard working together to move you off the spot. You fight to stay square as the pile closes around the gap.
 _(pause: 1.5s)_
-3. Your weight wants to give and your feet want to slide off the spot. The thought hits: I can't hold two of them.
+3. Your base starts to give and your feet slide under the pressure. The thought hits: I cannot let two of them move me again.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Reset between snaps. Eyes back to the ball, feet back under you. The next double-team is just another rep to fight — meet it square.
+5. That double-team is over. Reset your base and play the next one with your technique.
 _(pause: 2s)_
-6. Here's the move. Get your hands inside first, drop your base, and keep your feet driving. Stay square, hold your ground, and clog the hole so the run has nowhere to go.
+6. If something feels off, speak up.
+_(pause: 1.2s)_
+7. Get your hands inside first, drop your base, keep your feet driving, and stay square in the gap.
 _(pause: 2s)_
 ### Football · DL · start-slow
 <!-- slug: hm-ftb-dl-start-slow | file: components/pregame/audio/clips-football.ts -->
@@ -567,15 +569,17 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. Power play. The guard pulls and comes for you, looking to clear the hole. Your read is clean — you've got to fill downhill and take him on in the gap. Meet force with force. The whole rep is not flinching from the collision.
+2. Power play. The guard pulls into your gap, and your read tells you to trigger downhill and take on the block so the ball has to turn.
 _(pause: 1.5s)_
-3. Everything in you wants to drift sideways and soften the hit, your feet giving a little ground. The thought hits: take him on, take him on.
+3. Your feet hesitate for half a beat as the guard closes, and your body wants to slip around the block instead of owning the fit. The thought hits: beat him to the spot and play it clean.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Reset between snaps. Eyes back to your keys, feet downhill. The next puller in the hole is just another rep to win — meet it square.
+5. That collision is over. Reset your eyes and trust the fit you trained.
 _(pause: 2s)_
-6. Here's the move. See the pull, trigger downhill, and beat him to the hole — strike with your hands, drop your pads under his, and stack the gap. Be the one delivering the blow, not catching it.
+6. If something feels off, speak up.
+_(pause: 1.2s)_
+7. See the pull, trigger downhill, strike with your hands, keep your outside arm free, and force the ball to your help.
 _(pause: 2s)_
 ### Football · LB · start-slow
 <!-- slug: hm-ftb-lb-start-slow | file: components/pregame/audio/clips-football.ts -->
@@ -597,7 +601,7 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. The offense is rolling and you're trying to rally ten guys who are pressing — heads down, snapping at each other in the huddle. You're the MIKE, the glue, holding the defense together while it tries to fray around you.
+2. The offense is rolling and the defense is pressing — heads down, voices sharp, assignments getting muddy in the huddle. You're the MIKE, and everyone is waiting for your call.
 _(pause: 1.5s)_
 3. Your jaw is tight and your eyes keep darting to the scoreboard. The huddle is loud and scattered around you. The thought hits: I can't get them settled.
 _(pause: 2s)_
@@ -605,7 +609,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. Shrink it down to one snap. You don't have to fix the whole game in the huddle — you lead the next play. Steady your voice and make the call.
 _(pause: 2s)_
-6. Be the calm in the huddle. Make the call clear and loud, get everyone's eyes, then play your own fit fast — one good snap settles the whole defense, then the next one.
+6. Make the call clear and loud, get everyone's eyes, then play your own fit fast. One clean snap gives the defense something solid to build on.
 _(pause: 2s)_
 ### Football · LB · trench-battle
 <!-- slug: hm-ftb-lb-trench-battle | file: components/pregame/audio/clips-football.ts -->
@@ -717,15 +721,17 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. The run breaks to the perimeter and you're the last line. It's you and the back in open space, and he's got a full head of steam. You've got to come downhill and take him on. The whole rep is not giving ground out there in the open field.
+2. The run breaks to the perimeter and you are the force player in space. The back is coming fast, and your job is to close the angle, keep leverage, and make a sound tackle.
 _(pause: 1.5s)_
-3. Your weight wants to drift back onto your heels and wait for help. Your feet stutter as he closes. The thought hits: give ground and hope someone else gets there.
+3. Your feet stall as the space disappears and your body wants to wait for someone else to arrive. The thought hits: close the space without losing control.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. Reset between snaps. Eyes back to your run-pass read, feet under you. The next perimeter run is just another rep to win — come downhill and meet it.
+5. That open-field rep is over. Do not let it make you wait on the next one.
 _(pause: 2s)_
-6. Here's the move. See run, trigger downhill, break down under control — square your hips, keep leverage to your help, and force him back inside. Be the one closing the space, not catching it.
+6. If something feels off, speak up.
+_(pause: 1.2s)_
+7. Trigger downhill, break down under control, keep leverage to your help, wrap, and run your feet through the tackle.
 _(pause: 2s)_
 ### Football · DB · start-slow
 <!-- slug: hm-ftb-db-start-slow | file: components/pregame/audio/clips-football.ts -->
@@ -762,15 +768,15 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. The ball's in the air and you're stride for stride. You both go up at the high point — the fifty-fifty ball you have to win. He times it, reaches over you, and comes down with it. The contested rep you had to win, and didn't.
+2. The offense runs outside and the receiver gets into your chest before you can set the edge. He turns your shoulders, the back cuts outside of you, and the run spills down the sideline through the space you were supposed to close.
 _(pause: 1.5s)_
-3. Your hands grab at air as he secures it and your shoulders drop coming back down. The thought hits: I had position and he still got it.
+3. Your outside foot gets pinned and you feel the back race past your leverage. The thought hits: I lost the edge and gave him the sideline.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That rep is over. Short memory — the next ball comes whether you're ready or not, so let it go.
+5. That edge is gone. One block does not decide the next run-support rep — reset your alignment and get your eyes back to your key.
 _(pause: 2s)_
-6. Next fifty-fifty ball, win it at the top. Find the ball with your eyes, get your hands up through his, and play it at its highest point. Be the receiver — high-point it and take it away.
+6. Next perimeter run, trigger sooner, strike the blocker with your hands, keep your outside arm free, and force the ball back inside to your help.
 _(pause: 2s)_
 ### Football · QB · pick
 <!-- slug: hm-ftb-qb-pick | file: components/pregame/audio/clips-football.ts -->
@@ -809,13 +815,13 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Monday film. The room goes quiet. Coach freezes the frame and clicks back to it twice — your receiver wide open on the back side, and you never saw him because you locked onto the wrong half of the field.
 _(pause: 1.5s)_
-3. Your throat goes dry in the dark room and you want to sink into the chair. The thought hits: everybody's watching me get this wrong.
+3. Your throat goes dry in the dark room and you feel every eye on the frozen frame. The thought hits: I missed the read, and everyone can see it.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That rep is on tape and the grade is in. The room hunts the fix, not a sentence — sit up and look at it straight.
+5. That rep is on tape and the grade is in. Film makes the miss visible so the next read can be better — sit up and look at it straight.
 _(pause: 2s)_
-6. Don't hide from the clip. Mark the read, work the full field on the next install, and let the correction make you better. One coaching point, owned.
+6. Stay with the clip. Mark the read, work the full field on the next install, and carry that correction into the next rep.
 _(pause: 2s)_
 ### Football · QB · big-play
 <!-- slug: hm-ftb-qb-big-play | file: components/pregame/audio/clips-football.ts -->
@@ -867,15 +873,17 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. The pocket collapses faster than you read it. You set to throw and take a clean shot from the blind side you never saw coming. You go down hard and you're slow getting up off the turf.
+2. The pocket collapses faster than you read it. You set to throw and take a clean shot from the blind side you never saw coming. You hit the turf hard, and the rush is suddenly loud in your mind.
 _(pause: 1.5s)_
-3. Your breath is short as you push up off the turf. Your eyes want to drop to the rush. The thought hits: I don't want to feel that again.
+3. Your breath comes fast as you get up, and your eyes want to leave the coverage and find the rush. The thought hits: I do not want to take that shot again.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That sack is over. You're back on your feet and back in the huddle. The next throw asks for the same conviction, not less.
+5. That sack is over. Do not let the rush take your eyes off the next throw.
 _(pause: 2s)_
-6. Next dropback, trust your protection, climb the pocket, keep your eyes downfield, and deliver it on time. Same read, full commitment.
+6. If something feels off, speak up.
+_(pause: 1.2s)_
+7. Trust your protection, climb the pocket, keep your eyes downfield, and deliver on time.
 _(pause: 2s)_
 ### Football · QB · start-slow
 <!-- slug: hm-ftb-qb-start-slow | file: components/pregame/audio/clips-football.ts -->
@@ -950,7 +958,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That cutback is graded and behind you. The clip is a teacher, not a verdict — look at it straight and take the coaching.
 _(pause: 2s)_
-6. Next install, see the design, trust your read, and hit the right hole. One coaching point, owned.
+6. Next install, see the design, trust your read, and hit the right hole. Carry that correction into the next rep.
 _(pause: 2s)_
 ### Football · RB · big-play
 <!-- slug: hm-ftb-rb-big-play | file: components/pregame/audio/clips-football.ts -->
@@ -1002,15 +1010,17 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You hit the hole and the linebacker is waiting there. You drop your pad level, take the contact shoulder-first, head up and to the side, and fight through it for the extra yard.
+2. You hit the hole and the linebacker meets you square. You protect the ball, keep your head up, and finish the run through contact before going down.
 _(pause: 1.5s)_
-3. Your breath is short as you climb back up. Your shoulder still rings from the hit. The thought hits: maybe I should run a little softer next time.
+3. Your breath comes fast as you get up, and the next collision is already in your mind. The thought hits: I might pull back on the next carry.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That collision is over. You're back on your feet. The next carry asks one thing — get up, walk to the huddle, and ask for the ball again.
+5. That collision is over. Do not let it make you hesitate on the next carry.
 _(pause: 2s)_
-6. Next carry, pad level low, head up, run behind your shoulders, hit the hole with your eyes up and finish forward. Downhill, full commitment.
+6. If something feels off, speak up.
+_(pause: 1.2s)_
+7. Take the next handoff high and tight, keep your eyes up, hit the crease, and finish forward.
 _(pause: 2s)_
 ### Football · RB · start-slow
 <!-- slug: hm-ftb-rb-start-slow | file: components/pregame/audio/clips-football.ts -->
@@ -1115,7 +1125,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That ball is over and the play is dead. One drop, even a big one, is one rep — it does not get the rest of your game. There's more football, and your number gets called again.
 _(pause: 2s)_
-6. When it comes back your way, eyes through the ball, watch it all the way into the tuck, look it in before you think about running. Want the next one — don't press, just catch it.
+6. When it comes back your way, track the ball all the way into the tuck before you think about running. Stay ready for the next target and catch it clean.
 _(pause: 2s)_
 ### Football · WR · benched
 <!-- slug: hm-ftb-wr-benched | file: components/pregame/audio/clips-football.ts -->
@@ -1152,15 +1162,17 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. You're running the dig into the teeth of the coverage. You know the safety is sitting right there, waiting, and the ball and the hit are going to arrive at the same time over the middle.
+2. You run the dig into traffic, secure the ball, and take contact as you come through the catch point. The hit is loud, and the next route over the middle is already in your mind.
 _(pause: 1.5s)_
-3. Your eyes want to leave the ball and find the safety, and your shoulders brace early. The thought hits: this one's going to hurt.
+3. Your shoulders tighten before the next snap and your eyes want to find the safety instead of the ball. The thought hits: I do not want to take that hit again.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The test of this moment is simple — keep your eyes on the ball all the way through the hit. Catch it first, take what comes, and hold on.
+5. That hit is over. Do not let it pull your eyes off the next ball.
 _(pause: 2s)_
-6. Don't short-arm it and don't peek at the safety. Run through the catch point, eyes on the ball, hands first, secure it, and brace late. Finish the route with full commitment.
+6. If something feels off, speak up.
+_(pause: 1.2s)_
+7. Run the route at full speed, see the ball through the catch, secure it, and get north.
 _(pause: 2s)_
 ### Football · WR · start-slow
 <!-- slug: hm-ftb-wr-start-slow | file: components/pregame/audio/clips-football.ts -->
@@ -1229,13 +1241,13 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Film. Coach freezes it on the stunt. You and the guard both blocked the same man and left the looper unblocked, and the room watches your quarterback get crushed — on a protection call that was yours.
 _(pause: 1.5s)_
-3. Your ears burn and you drop your eyes to the floor as the room watches the stunt hit home. The thought hits: I blew the call and everyone saw it.
+3. Your ears burn as the room watches the looper come free, and you know the communication started with you. The thought hits: I missed the call, and everyone saw the result.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The call is blown and it's on tape now. Film fixes the next one; it doesn't put you on trial for the last.
+5. The call was missed and it is on tape. Film gives you the correction; it does not define the kind of lineman you are.
 _(pause: 2s)_
-6. Don't hide from the clip. Communicate the front, pass off the stunt, take your man and trust the guard to take his. One coaching point, owned.
+6. Stay with the clip. Communicate the front, pass off the stunt, take your man, and trust the guard to take his on the next rep.
 _(pause: 2s)_
 ### Football · OL · big-play
 <!-- slug: hm-ftb-ol-big-play | file: components/pregame/audio/clips-football.ts -->
@@ -1287,15 +1299,17 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. The defensive tackle puts his hands on you and bull-rushes straight through the middle. He's walking you backward, right into the pocket, into your own quarterback. The rep is slipping.
+2. The defensive tackle gets under your pads and drives the bull rush through the middle. Your base narrows, you give ground, and the pocket starts collapsing into your quarterback.
 _(pause: 1.5s)_
-3. Your feet are giving ground and your base is climbing up tall. The thought hits: he put me on skates that time.
+3. Your feet scramble underneath you and your hips rise as you fight to stop the rush. The thought hits: he walked me straight back that time.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. The test of this moment is simple — anchor instead of folding. Sink your hips, drop your base, and stop the ground you're giving.
+5. That rep is over. Reset your base and do not carry the lost anchor into the next snap.
 _(pause: 2s)_
-6. Win it with leverage, not by out-muscling him. Pad level under his, hands inside on his chest, hips down, and re-anchor. Knock his hands off — don't fold, sit down on it.
+6. If something feels off, speak up.
+_(pause: 1.2s)_
+7. Win with leverage: hips down, hands inside, feet under you, and re-anchor before he reaches the pocket.
 _(pause: 2s)_
 ### Football · OL · start-slow
 <!-- slug: hm-ftb-ol-start-slow | file: components/pregame/audio/clips-football.ts -->
