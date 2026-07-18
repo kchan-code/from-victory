@@ -857,22 +857,23 @@ describe("basketball opener parity (FV-120)", () => {
 //     bare magic number would be both brittle and opaque. Instead assert a
 //     documented per-category breakdown whose sum must equal the catalog size —
 //     this catches orphaned/dropped clips (the sum diverges) AND stays legible.
-//     Counts verified against manifest e68cc2db (FV-305 de-corn re-render of
-//     hockey/basketball/golf + FV-303 golf anchors anc-glf-* + st-glf-01).
+//     Counts verified against manifest 7c785eaf (FV-203 football first render:
+//     +7 viz-ftb-* and +67 hm-ftb-* on top of the e68cc2db baseline).
 // ---------------------------------------------------------------------------
 
 describe("catalog count (multi-sport, FV-266)", () => {
-  it("catalog is fully categorized (no orphans) and totals 372 entries", () => {
+  it("catalog is fully categorized (no orphans) and totals 446 entries", () => {
     const keys = Object.keys(catalog);
     const n = (re: RegExp) => keys.filter((k) => re.test(k)).length;
     const breakdown = {
-      viz: n(/^viz-/), //                          86 — profile + positive-play viz (all sports)
-      //                                                 +21 golf viz (FV-294)
+      viz: n(/^viz-/), //                          93 — profile + positive-play viz (all sports)
+      //                                                 +21 golf viz (FV-294), +7 football (FV-203)
       hmHockey: n(/^hm-(forward|defense|goalie)-/), // 30 — hockey hard-moment cells
       hmBball: n(/^hm-bb-/), //                     30 — basketball compositional cells
       bbalBaked: n(/^bb-/), //                      30 — legacy baked basketball composites
       hmBaseball: n(/^hm-bsb-/), //                 39 — baseball cells (FV-94)
       hmGolf: n(/^hm-glf-/), //                     30 — golf cells (FV-266)
+      hmFootball: n(/^hm-ftb-/), //                 67 — football cells (FV-203, dormant sport)
       practice: n(/^pp-/), //                       56 — pre-practice clips (all sports + variations)
       openers: n(/^opener-/), //                    19 — need openers (incl. basketball variants)
       cueWord: n(/^cw-/), //                        20 — cue-word reset/sendoff
@@ -887,7 +888,7 @@ describe("catalog count (multi-sport, FV-266)", () => {
     // Every catalog key falls into exactly one bucket — catches typos/orphans.
     expect(uncategorized, `uncategorized clips: ${uncategorized.join(", ")}`).toEqual([]);
     expect(sum).toBe(keys.length);
-    expect(keys).toHaveLength(372);
+    expect(keys).toHaveLength(446);
   });
 });
 
