@@ -390,7 +390,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 12. Next possession, a low bouncer through traffic — you find it late, drop the stick, and kick it out to the corner, no rebound.
 _(pause: 2s)_
-13. See yourself own the cage.
+13. See yourself steady in the cage.
 _(pause: 2s)_
 14. You set your angle early, square up to every shot, take away the far pipe, and beat the step-down shooters with your hands, quarter after quarter.
 _(pause: 2s)_
@@ -810,7 +810,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. The slide was yours and you were late — goal. Next possession, you lose the man-ball at your own feet. Coach is screaming your name across the field, and the whole defense hears every word.
 _(pause: 1.5s)_
-3. You crouch lower in your stance and stare at the turf while he goes. The thought hits: I can't do anything right back here tonight.
+3. Your shoulders tighten under your pads and the next slide call catches in your throat. The thought hits: every mistake back here feels louder right now.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -1105,7 +1105,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Save, possession, the whole field ahead — and the ride swallows it. Your outlet gets jumped, the second look isn't there, and the count forces a throw that never had a chance. Turned over, right back in your end.
 _(pause: 1.5s)_
-3. Your eyes sweep the field twice and find nobody, and your grip climbs the shaft. The thought hits: I can't even get us out of our own end.
+3. Your eyes sweep the field twice and find nobody, and your grip climbs the shaft. The thought hits: the ride has taken away every first look.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
