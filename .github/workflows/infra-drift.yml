@@ -134,6 +134,7 @@ jobs:
           NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ vars.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          DIGEST_EMAIL_FROM: ${{ secrets.DIGEST_EMAIL_FROM }}
           # ALERT_EMAIL_TO / ALERT_EMAIL_FROM are checked too (set above).
         run: |
           node --experimental-strip-types apps/web/scripts/check-env-presence.ts
