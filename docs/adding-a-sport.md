@@ -190,13 +190,39 @@ export const ALLCOURT_VIZ: AudioSegment[] = [
 ];
 ```
 
-### Step 7: Create Positive-Plays Visualization Clips (if applicable)
+### Step 7: Create the Positive-Play Visualization Library (REQUIRED)
 
-**File:** `apps/web/components/pregame/audio/clips-viz-{sport}.ts` (optional)
+**File:** `apps/web/components/pregame/audio/clips-viz-{sport}.ts`
 
-If the sport has role-specific positive-play scenarios (like golf's 21 viz clips), define them here as a exported array `{SPORT_UPPER}_VIZ_CLIP_SCRIPTS`.
+**Every sport ships a positive-play library. This is not optional** (KC directive
+2026-07-18, after football/baseball/swim/track shipped flagship-only and lacrosse
+shipped a thin 2-play library). The FV-144 product model: the athlete
+multi-selects up to 3 positive plays from a per-position library, and
+`resolvePlaylist()` plays the chosen clips IN PLACE of the flagship `viz-{role}`
+clip — the flagship is only the fallback when nothing is picked. A sport with an
+empty library silently degrades to the arrival-only flagship for every session
+(`sportHasPositivePlays()` gates the picker step off), which is the broken state
+this step exists to prevent.
 
-**Not all sports need this.** Hockey has generalized viz clips (one per position); basketball reuses hockey's clips; golf has sport-specific clips because its player-profile taxonomy differs.
+**The per-sport VIZ content contract:**
+1. One flagship `viz-{role}` clip per position/profile (arrival + belonging;
+   fallback only).
+2. **~7 positive-play clips per position/profile** (hockey has 9–10, basketball
+   ~8, golf 7 — treat 5 as the hard floor; the CI guard in
+   `playlist-integrity.test.ts` enforces it for every live sport). Each play:
+   9–10 short numbered lines, pure chosen-scenario rehearsal ("See yourself…" /
+   "See the…" opener, beat-by-beat present tense, ends on the successful rep) —
+   no arrival context, no scripture, no identity language. Span the position's
+   real game: core reps, at least one clutch/situational moment, and one
+   recovery play (begins after a neutral/bad beat).
+3. The position×adversity hard-moment grid (Step 6).
+4. Pre-practice focus presets.
+
+Reference implementations: hockey (`docs/scripts/hockey.md` "VIZ Clips —
+Positive Plays"), basketball, golf. (Basketball has its OWN Guard/Wing/Big
+plays — it does not reuse hockey's clips.)
+
+Define the clips as an exported array `{SPORT_UPPER}_VIZ_CLIP_SCRIPTS`.
 
 **Example entry:**
 
@@ -213,6 +239,16 @@ If the sport has role-specific positive-play scenarios (like golf's 21 viz clips
   ],
 }
 ```
+
+**Register every play in the picker (REQUIRED — authoring clips is not enough):**
+add one `{ slug, role, title }` entry per play to `POSITIVE_PLAYS` in
+`apps/web/components/pregame/positive-plays.ts`. The picker screen is built from
+this registry — clips that exist in the manifest but not in `POSITIVE_PLAYS` are
+unreachable, and a role with zero entries makes `sportHasPositivePlays()` skip
+the picker entirely. Titles are athlete-facing list items ("2-on-1 read, pass
+and finish") — short, concrete, position-true. For a DORMANT sport, stage the
+entries with the sport's registry-wiring PR so book, clips, and picker land as
+one reviewable unit.
 
 ### Step 8: Register Clips in the Barrel Export
 
@@ -396,7 +432,8 @@ This renders the sport's clip MP3s from the `clips-{sport}.ts` AudioScript objec
 | `apps/web/components/pregame/sport-registry.ts` | `Sport` union, `SPORT_REGISTRY`, `*_CONFIG` objects | ✓ | ✓ |
 | `apps/web/components/pregame/audio/clips-{sport}.ts` | Hard-moment cell AudioScript objects | ✓ | ✓ |
 | `apps/web/components/pregame/audio/segments-{sport}.ts` | Role-specific VIZ AudioSegment definitions | ✓ | ✓ |
-| `apps/web/components/pregame/audio/clips-viz-{sport}.ts` | Role-specific positive-play viz clips (optional) | ✓ | ✓ |
+| `apps/web/components/pregame/audio/clips-viz-{sport}.ts` | Role-specific positive-play viz clips (REQUIRED — ~7/position, floor 5) | ✓ | ✓ |
+| `apps/web/components/pregame/positive-plays.ts` | `POSITIVE_PLAYS` picker registration for every play (REQUIRED; `sportHasPositivePlays()` gates the picker) | ✓ | Staged with wiring |
 | `apps/web/components/pregame/audio/clips.ts` | Barrel exports of all clip scripts | ✓ | ✓ |
 | `supabase/migrations/*_*_db_enablement.sql` | Widen `sport_valid_values` CHECK | ✓ | — (deferred) |
 | `docs/pregame-scripts.md` | Content editing reference (if edits needed) | ✓ | ✓ |

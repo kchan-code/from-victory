@@ -7,13 +7,19 @@ them automatically. No separate "apply" command needed in the normal editing wor
 
 | File | Sport / Category | Status |
 |---|---|---|
-| [hockey.md](./hockey.md) | Hockey need-openers (editable), VIZ plays, hard-moment clips, legacy full-session cells | LIVE |
-| [basketball.md](./basketball.md) | Basketball need-openers (editable), VIZ plays, hard-moment clips | LIVE |
-| [baseball.md](./baseball.md) | Baseball VIZ + hard-moment clips | LIVE (audio = FV-95) |
-| [golf.md](./golf.md) | Golf VIZ + hard-moment clips | LIVE |
-| [football.md](./football.md) | Football VIZ + hard-moment clips | DORMANT (no audio yet) |
-| [swimming.md](./swimming.md) | Swimming VIZ + hard-moment clips | DORMANT (no audio yet) |
-| [track-field.md](./track-field.md) | Track & Field VIZ + hard-moment clips | DORMANT (no audio yet) |
+| [hockey.md](./hockey.md) | Hockey need-openers (editable), flagship VIZ + positive-play library, hard-moment clips, legacy full-session cells | LIVE |
+| [basketball.md](./basketball.md) | Basketball need-openers (editable), flagship VIZ + positive-play library, hard-moment clips | LIVE |
+| [baseball.md](./baseball.md) | Baseball flagship VIZ + hard-moment clips (⚠ play library pending FV-424) | Audio rendered; sport not selectable |
+| [golf.md](./golf.md) | Golf flagship VIZ + positive-play library, hard-moment clips | LIVE |
+| [football.md](./football.md) | Football flagship VIZ + hard-moment clips (play library = FV-423) | DORMANT (first audio rendered, PR #364) |
+| [swimming.md](./swimming.md) | Swimming flagship VIZ + hard-moment clips (⚠ play library pending FV-426) | DORMANT (no audio yet) |
+| [track-field.md](./track-field.md) | Track & Field flagship VIZ + hard-moment clips (⚠ play library pending FV-427) | DORMANT (no audio yet) |
+| [lacrosse.md](./lacrosse.md) | Lacrosse VIZ play library (thin — FV-425) + hard-moment clips | DORMANT (no audio yet) |
+
+> **Every sport book carries the full viz contract:** flagship `viz-{role}`
+> clip (fallback) **+ a ~7-play positive-play library per position** (the
+> FV-144 chooseable scenarios) + the hard-moment grid. See
+> `docs/adding-a-sport.md` Step 7. Books marked ⚠ predate this rule.
 | [pre-practice.md](./pre-practice.md) | All pre-practice "Lock In" clips | LIVE (hockey/bb/golf) |
 | [shared.md](./shared.md) | Breath threshold + shared structural + anchor/self-talk/cue-word clips | LIVE |
 

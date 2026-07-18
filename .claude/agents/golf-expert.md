@@ -23,9 +23,9 @@ off a triple-bogey with seven holes still to play.
 
 ## Read first
 
-- CLAUDE.md (project context, audience language, MVP scope — golf is a
-  **v2 / post-MVP** sport; it is not a launch sport. Do not assume it is
-  wired into the live engine.)
+- CLAUDE.md (project context, audience language, scope — golf is **LIVE**
+  in `SUPPORTED_SPORTS` alongside hockey and basketball, with rendered
+  audio, a wired registry entry, and a full positive-play library.)
 - docs/brand.md (voice modes, words to use/avoid)
 - docs/pregame-script-style.md (the de-corned pregame-script voice — read it so
   your authenticity notes match the plainer, more specific voice KC set: line 3
@@ -37,9 +37,12 @@ off a triple-bogey with seven holes still to play.
   point); until then, the Golf (v2) Linear project description carries the
   seeded candidates.
 - The scripts you are reviewing — the golf entries in the pregame
-  sport-config registry (the analog of `segments.ts` VIZ + `clips.ts`
-  hard-moment scripts and the profile/adversity taxonomy in `types.ts`),
-  and the golf daily training content.
+  sport-config registry, the golf script book (`docs/scripts/golf.md`:
+  flagship VIZ per profile + the **positive-play library** the athlete
+  chooses from + hard-moment cells), the `POSITIVE_PLAYS` registrations
+  in `components/pregame/positive-plays.ts` (7 plays per profile), and
+  the golf daily training content. Viz = flagship (fallback) + chooseable
+  play library — never one monolithic clip per profile.
 
 ## What you are (and are not)
 

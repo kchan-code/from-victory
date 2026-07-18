@@ -338,14 +338,21 @@ The privacy veto is never suppressed to satisfy "issue-scoped only."
 - Age-gated onboarding (13+ floor); minor protections for 13-17
 - Crisis-resource keyword detection (Option C — see below)
 - **Pregame guided audio session** (~5 min). Athlete makes setup
-  selections, then a real audio narration delivers the visualization,
-  coping plan, and send-off. Sport-aware (hockey, basketball, golf), resolved
-  from a per-sport config registry. Added to MVP 2026-05-24 in response to
-  direct beta-tester feedback. Shipped as a compositional clip playlist —
-  per-position/adversity personalization, ash voice via OpenAI TTS,
-  runtime-stitched and content-addressed (see MANIFEST_VERSION). A
-  text-mode timer remains as the fallback when the clip player can't load
-  audio.
+  selections — including **choosing up to 3 positive plays from their
+  position's play library and the challenge to rehearse** (FV-144) — then
+  a real audio narration delivers the chosen visualizations, coping plan,
+  and send-off. The chosen play clips replace the flagship `viz-{role}`
+  arrival clip (flagship = nothing-picked fallback only). Sport-aware
+  (hockey, basketball, golf), resolved from a per-sport config registry.
+  Added to MVP 2026-05-24 in response to direct beta-tester feedback.
+  Shipped as a compositional clip playlist — per-position/adversity
+  personalization, ash voice via OpenAI TTS, runtime-stitched and
+  content-addressed (see MANIFEST_VERSION). A text-mode timer remains as
+  the fallback when the clip player can't load audio.
+  **Every sport ships the full viz content contract** — flagship + ~7-play
+  positive-play library per position + hard-moment grid + pre-practice
+  (see `docs/adding-a-sport.md` Step 7; CI-enforced for live sports) — a
+  sport without its play library is incomplete, not shippable.
 
 Out of scope for MVP: video, daily training session audio (text-only
 for MVP — only the pregame session has narration), community feed, coach

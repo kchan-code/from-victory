@@ -1121,3 +1121,34 @@ describe("positive-play library integrity (FV-144)", () => {
     expect(failures).toEqual([]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// FV-428 — per-sport viz content contract guard.
+// Every LIVE sport (SUPPORTED_SPORTS) must give every registry role a
+// positive-play library of at least 5 chooseable plays (reference sports carry
+// 7-10). A role with an empty/thin library silently degrades the session to
+// the arrival-only flagship via sportHasPositivePlays() — the flagship-only
+// trap KC flagged 2026-07-18 (football/baseball/swim/track shipped without
+// libraries). Going live with a new sport REQUIRES registering its plays in
+// positive-plays.ts; this test makes that mechanical, not remembered.
+// ---------------------------------------------------------------------------
+import { SUPPORTED_SPORTS } from "../../../lib/sports";
+
+describe("viz content contract (FV-428) — live sports have positive-play libraries", () => {
+  const MIN_PLAYS_PER_ROLE = 5;
+
+  it(`every SUPPORTED_SPORTS role has ≥${5} POSITIVE_PLAYS entries`, () => {
+    const failures: string[] = [];
+    for (const sport of SUPPORTED_SPORTS) {
+      const config = SPORT_REGISTRY[sport as Sport];
+      expect(config, `no registry config for live sport "${sport}"`).toBeDefined();
+      for (const role of config.roles ?? []) {
+        const n = positivePlaysFor(role).length;
+        if (n < MIN_PLAYS_PER_ROLE) {
+          failures.push(`${sport}/${role}: ${n} plays (< ${MIN_PLAYS_PER_ROLE})`);
+        }
+      }
+    }
+    expect(failures).toEqual([]);
+  });
+});

@@ -496,6 +496,8 @@ product flow:
 1. Required setup selections (athlete taps through):
    - Today's focus
    - Position
+   - **Positive plays (FV-144 multi-select, up to 3)** — chosen from the
+     sport's per-position positive-play library (`positive-plays.ts`)
    - Hard moment
    - Reset anchor
    - Self-talk phrase
@@ -512,16 +514,27 @@ heard, not read):
 1. Receive identity
 2. Regulate breath
 3. Remember what is true
-4. Enter the rink
-5. First shift
-6. Role rehearsal
-7. Hard moment
-8. Reset plan
-9. Prayer / send-off
+4. Visualization — the athlete's CHOSEN positive plays, played in
+   sequence (each play: 9–10 short lines, pure scenario rehearsal,
+   "See yourself…" opener). The flagship `viz-{role}` clip (arrival →
+   "You belong here" → generic reps) plays ONLY as the fallback when the
+   athlete picked nothing. Do not write viz as one monolithic
+   per-position clip — that is the pre-FV-144 model.
+5. Hard moment (the athlete's chosen adversity)
+6. Reset plan
+7. Prayer / send-off
 
 The athlete's setup selections substitute into the script as tokens
-(cue word, position scenes, adversity, anchor, self-talk). Write
-segments so substitution feels natural, not slotted.
+(cue word, adversity, anchor, self-talk) or resolve to whole chosen
+clips (positive plays). Write segments so substitution feels natural,
+not slotted.
+
+**Per-sport viz content contract (every sport, no exceptions):** one
+flagship clip per position (fallback only) + **~7 positive-play clips per
+position** (floor 5, CI-enforced for live sports) + the position×adversity
+hard-moment grid + pre-practice presets. See `docs/adding-a-sport.md`
+Step 7. A sport without the play library is broken: its athletes can
+never choose scenarios (KC directive 2026-07-18).
 
 ## Self-Talk, Reset Anchors, and Coping Imagery
 
