@@ -79,7 +79,7 @@ _(pause: 2.2s)_
 _(pause: 2s)_
 7. You step up behind the blocks. You tell yourself, You belong here.
 _(pause: 1.25s)_
-8. You step up onto the block and find your set position. Slow breath. This race is yours.
+8. You step onto the block and find your set position. Slow breath. Stay with your race plan.
 _(pause: 0.25s)_
 9. The horn. You explode off the block, arms driving, into a tight, clean entry.
 _(pause: 2s)_
@@ -153,7 +153,7 @@ _(pause: 2.2s)_
 _(pause: 2s)_
 7. You step up behind the blocks. You tell yourself, You belong here.
 _(pause: 1.25s)_
-8. You step up onto the block and find your set. Slow breath. You own this stroke.
+8. You step onto the block and find your set. Slow breath. Trust the stroke you trained.
 _(pause: 0.25s)_
 9. The horn. You start clean and break out into the stroke you've drilled a thousand times.
 _(pause: 2s)_
@@ -167,7 +167,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 14. Feel the water, long and clean. Hold your tempo. Legal turn, sharp breakout — every wall, dialed in.
 _(pause: 2s)_
-15. Finish the stroke, full and strong. Two hands, clean touch. You make every turn legal and every finish legal — nothing left to chance, the race is yours on technique.
+15. Finish the stroke full and strong. Two hands, clean touch. Keep every turn and finish legal so the time stays on the board.
 _(pause: 2s)_
 16. Now visualize the next race.
 _(pause: 0.8s)_
@@ -200,7 +200,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 12. You bring it home freestyle, every transition clean, and drive through to the wall. One race at a time — that's how it goes all meet.
 _(pause: 2s)_
-13. See yourself master the whole race.
+13. See yourself stay composed through all four strokes.
 _(pause: 2s)_
 14. Fly out controlled. Smooth into the back. Own your breast leg — each stroke its own job, done right.
 _(pause: 2s)_
@@ -550,11 +550,11 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Your relay exchange left early — feet off the block a hair before the incoming swimmer's hand hit the wall. Your leg was a best time and it counts for nothing, and it scratches the whole team's swim with it.
 _(pause: 1.5s)_
-3. Your stomach drops when you see the DQ, and you can't quite look at your relay. The thought hits: that one was on me.
+3. Your stomach drops when the DQ appears, and it is hard to meet your relay teammates' eyes. The thought hits: my exchange cost all four of us that swim.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That swim is wiped from the board, and it does not get the rest of your session. Let it be done right now.
+5. That relay is wiped from the board, but hiding from your teammates only carries the mistake farther. Own it, listen, and stay present for the rest of the meet.
 _(pause: 2s)_
 6. One DQ doesn't write your meet. Go find your relay, own the one detail in plain words, then lock the fix for next time: feet stay on the block until the incoming swimmer clearly touches.
 _(pause: 2s)_
@@ -610,13 +610,13 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. You're seeded out in lane one, a full second back of the fast heat. The swimmers you want to chase race later, in a different heat. You're up here racing the clock alone, with no one beside you to pull you along.
 _(pause: 1.5s)_
-3. Your shoulders sag looking at the empty lanes around you, and your legs feel flat behind the blocks. The thought hits: what's the point, I'm not even in the real race.
+3. Your shoulders sag looking at the open water around you, and your legs feel flat behind the blocks. The thought hits: I wanted the fast heat, and now I have to create the race myself.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. The heat sheet doesn't decide your swim. The clock takes everyone's time the same way, lane one or lane four.
 _(pause: 2s)_
-6. Race the clock, not the lane next to you. Lock onto your own splits, attack your own walls, and drop a time that crashes the next seeding.
+6. Race the clock, not the lane next to you. Lock onto your own splits, attack your walls, and put down a time that moves you up next time.
 _(pause: 2s)_
 ### Swimming · Sprint · ready-room
 <!-- slug: hm-swm-sprint-ready-room | file: components/pregame/audio/clips-swimming.ts -->
@@ -669,7 +669,7 @@ _(pause: 2s)_
 
 1. Now rehearse the hard moment.
 _(pause: 0.4s)_
-2. A flip turn somewhere in the middle of the mile comes up short and your feet never touch the wall, or your hand grabs the lane rope to stay on pace. The official saw it. A sixteen-minute swim, length after grinding length, is wiped clean off the board.
+2. A turn in the middle of the mile comes up short and you fail to make contact with the wall, or you pull on the lane rope to gain an advantage. The official saw it, and a long, grinding swim is wiped from the board.
 _(pause: 1.5s)_
 3. You climb out and your legs won't hold you, and now they were for nothing. The thought hits: that whole swim, gone off the sheet.
 _(pause: 2s)_
@@ -677,7 +677,7 @@ _(pause: 2s)_
 _(pause: 2s)_
 5. That swim is wiped from the board, and it does not get the rest of your meet. Let it be done right now.
 _(pause: 2s)_
-6. The work was never for nothing — every length built the engine you carry into the next race. The board can erase a time, but not what that swim made you. Lock the fix for next time: flip turns square and under control, two hands flat on every wall, length after length.
+6. The work was never for nothing — every length built the engine you carry into the next race. Lock in the fix: make clear contact at every wall, control each turn, and never use the lane rope to help your progress.
 _(pause: 2s)_
 ### Swimming · Dist · plateau
 <!-- slug: hm-swm-dist-plateau | file: components/pregame/audio/clips-swimming.ts -->
@@ -716,7 +716,7 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. At the three hundred the pool goes silent. It's just you and the black line on the bottom, length after length. And before you catch it, your mind drifts somewhere else and your pace drifts with it.
 _(pause: 1.5s)_
-3. Your stroke goes soft and absent, and you realize you've stopped counting. The thought hits: I checked out, I let the pace slip, I can't even stay in my own race.
+3. Your stroke goes soft and absent, and you realize you have stopped counting. The thought hits: I drifted and let the pace get away from me.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
@@ -746,13 +746,13 @@ _(pause: 2s)_
 _(pause: 0.4s)_
 2. Distance heats swim slow-to-fast, so you're in the early heat with half the pool still empty. The stands are quiet, the fast swimmers are hours away, and you're chasing a pace target with no one near you.
 _(pause: 1.5s)_
-3. Your shoulders sag in the empty, quiet pool, and your legs feel flat behind the blocks. The thought hits: what's the point, no one's even watching this heat.
+3. Your shoulders sag in the quiet pool, and your legs feel flat behind the blocks. The thought hits: there is nobody here to pull me onto the pace I want.
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
 5. The heat sheet doesn't decide your swim. The clock takes every time the same way, early heat or final.
 _(pause: 2s)_
-6. Race your pace plan, not the lanes around you. Lock onto your splits, hit your target every hundred, and drop a time that turns heads later when they read the sheet.
+6. Race your pace plan, not the lanes around you. Lock onto your splits, hit your target every hundred, and put down a time that holds up when the later heats are posted.
 _(pause: 2s)_
 ### Swimming · Dist · ready-room
 <!-- slug: hm-swm-dist-ready-room | file: components/pregame/audio/clips-swimming.ts -->
