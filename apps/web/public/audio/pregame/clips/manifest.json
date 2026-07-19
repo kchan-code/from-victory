@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "51c39c41",
+  "manifestVersion": "0b21a5b4",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -5923,8 +5923,8 @@
       "phases": []
     },
     "pp-football-focus-next-play": {
-      "url": "/audio/pregame/clips/pp-football-focus-next-play.533eaf3b.mp3",
-      "durationSec": 1.512,
+      "url": "/audio/pregame/clips/pp-football-focus-next-play.429988ea.mp3",
+      "durationSec": 1.392,
       "phases": []
     }
   },
@@ -7368,6 +7368,1126 @@
         "{{cueSendoff}}",
         "shared-sendoff"
       ]
+    },
+    {
+      "position": "QB",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-qb-rhythm-throw",
+        "hm-ftb-qb-pick",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "QB",
+      "adversity": "I get beat.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-qb-rhythm-throw",
+        "hm-ftb-qb-beat",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "QB",
+      "adversity": "I make a mistake on film.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-qb-rhythm-throw",
+        "hm-ftb-qb-film-mistake",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "QB",
+      "adversity": "I give up the big play.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-qb-rhythm-throw",
+        "hm-ftb-qb-big-play",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "QB",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-qb-rhythm-throw",
+        "hm-ftb-qb-pulled",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "QB",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-qb-rhythm-throw",
+        "hm-ftb-qb-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "QB",
+      "adversity": "I take a big hit.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-qb-rhythm-throw",
+        "hm-ftb-qb-big-hit",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "QB",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-qb-rhythm-throw",
+        "hm-ftb-qb-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "QB",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-qb-rhythm-throw",
+        "hm-ftb-qb-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "QB",
+      "adversity": "I lose a battle in the trenches.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-qb-rhythm-throw",
+        "hm-ftb-qb-pick",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "RB",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-rb-inside-zone",
+        "hm-ftb-rb-fumble",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "RB",
+      "adversity": "I get beat.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-rb-inside-zone",
+        "hm-ftb-rb-beat",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "RB",
+      "adversity": "I make a mistake on film.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-rb-inside-zone",
+        "hm-ftb-rb-film-mistake",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "RB",
+      "adversity": "I give up the big play.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-rb-inside-zone",
+        "hm-ftb-rb-big-play",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "RB",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-rb-inside-zone",
+        "hm-ftb-rb-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "RB",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-rb-inside-zone",
+        "hm-ftb-rb-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "RB",
+      "adversity": "I take a big hit.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-rb-inside-zone",
+        "hm-ftb-rb-big-hit",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "RB",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-rb-inside-zone",
+        "hm-ftb-rb-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "RB",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-rb-inside-zone",
+        "hm-ftb-rb-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "RB",
+      "adversity": "I lose a battle in the trenches.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-rb-inside-zone",
+        "hm-ftb-rb-trench-battle",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "WR",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-wr-beat-the-press",
+        "hm-ftb-wr-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "WR",
+      "adversity": "I get beat.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-wr-beat-the-press",
+        "hm-ftb-wr-beat",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "WR",
+      "adversity": "I make a mistake on film.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-wr-beat-the-press",
+        "hm-ftb-wr-film-mistake",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "WR",
+      "adversity": "I give up the big play.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-wr-beat-the-press",
+        "hm-ftb-wr-big-play",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "WR",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-wr-beat-the-press",
+        "hm-ftb-wr-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "WR",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-wr-beat-the-press",
+        "hm-ftb-wr-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "WR",
+      "adversity": "I take a big hit.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-wr-beat-the-press",
+        "hm-ftb-wr-big-hit",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "WR",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-wr-beat-the-press",
+        "hm-ftb-wr-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "WR",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-wr-beat-the-press",
+        "hm-ftb-wr-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "WR",
+      "adversity": "I lose a battle in the trenches.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-wr-beat-the-press",
+        "hm-ftb-wr-trench-battle",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "OL",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-ol-drive-block",
+        "hm-ftb-ol-trench-battle",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "OL",
+      "adversity": "I get beat.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-ol-drive-block",
+        "hm-ftb-ol-beat",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "OL",
+      "adversity": "I make a mistake on film.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-ol-drive-block",
+        "hm-ftb-ol-film-mistake",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "OL",
+      "adversity": "I give up the big play.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-ol-drive-block",
+        "hm-ftb-ol-big-play",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "OL",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-ol-drive-block",
+        "hm-ftb-ol-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "OL",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-ol-drive-block",
+        "hm-ftb-ol-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "OL",
+      "adversity": "I take a big hit.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-ol-drive-block",
+        "hm-ftb-ol-big-hit",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "OL",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-ol-drive-block",
+        "hm-ftb-ol-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "OL",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-ol-drive-block",
+        "hm-ftb-ol-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "OL",
+      "adversity": "I lose a battle in the trenches.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-ol-drive-block",
+        "hm-ftb-ol-trench-battle",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DL",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-dl-get-off",
+        "hm-ftb-dl-trench-battle",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DL",
+      "adversity": "I get beat.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-dl-get-off",
+        "hm-ftb-dl-beat",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DL",
+      "adversity": "I make a mistake on film.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-dl-get-off",
+        "hm-ftb-dl-film-mistake",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DL",
+      "adversity": "I give up the big play.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-dl-get-off",
+        "hm-ftb-dl-big-play",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DL",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-dl-get-off",
+        "hm-ftb-dl-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DL",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-dl-get-off",
+        "hm-ftb-dl-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DL",
+      "adversity": "I take a big hit.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-dl-get-off",
+        "hm-ftb-dl-big-hit",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DL",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-dl-get-off",
+        "hm-ftb-dl-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DL",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-dl-get-off",
+        "hm-ftb-dl-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DL",
+      "adversity": "I lose a battle in the trenches.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-dl-get-off",
+        "hm-ftb-dl-trench-battle",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "LB",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-lb-read-and-fill",
+        "hm-ftb-lb-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "LB",
+      "adversity": "I get beat.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-lb-read-and-fill",
+        "hm-ftb-lb-beat",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "LB",
+      "adversity": "I make a mistake on film.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-lb-read-and-fill",
+        "hm-ftb-lb-film-mistake",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "LB",
+      "adversity": "I give up the big play.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-lb-read-and-fill",
+        "hm-ftb-lb-big-play",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "LB",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-lb-read-and-fill",
+        "hm-ftb-lb-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "LB",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-lb-read-and-fill",
+        "hm-ftb-lb-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "LB",
+      "adversity": "I take a big hit.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-lb-read-and-fill",
+        "hm-ftb-lb-big-hit",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "LB",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-lb-read-and-fill",
+        "hm-ftb-lb-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "LB",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-lb-read-and-fill",
+        "hm-ftb-lb-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "LB",
+      "adversity": "I lose a battle in the trenches.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-lb-read-and-fill",
+        "hm-ftb-lb-trench-battle",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DB",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-db-press-man",
+        "hm-ftb-db-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DB",
+      "adversity": "I get beat.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-db-press-man",
+        "hm-ftb-db-beat",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DB",
+      "adversity": "I make a mistake on film.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-db-press-man",
+        "hm-ftb-db-film-mistake",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DB",
+      "adversity": "I give up the big play.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-db-press-man",
+        "hm-ftb-db-big-play",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DB",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-db-press-man",
+        "hm-ftb-db-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DB",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-db-press-man",
+        "hm-ftb-db-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DB",
+      "adversity": "I take a big hit.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-db-press-man",
+        "hm-ftb-db-big-hit",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DB",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-db-press-man",
+        "hm-ftb-db-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DB",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-db-press-man",
+        "hm-ftb-db-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "DB",
+      "adversity": "I lose a battle in the trenches.",
+      "clips": [
+        "shared-opening",
+        "viz-ftb-db-press-man",
+        "hm-ftb-db-trench-battle",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
     }
   ],
   "practiceState": {
@@ -7423,6 +8543,24 @@
         "pp-choose-focus-tail",
         "pp-golf-full-routine",
         "pp-golf-see-it-go"
+      ]
+    },
+    "football": {
+      "dialed-in": [
+        "pp-football-name-standard",
+        "pp-football-goal-fusion",
+        "pp-choose-focus-lead",
+        "pp-choose-focus-tail",
+        "pp-football-be-vocal",
+        "pp-football-see-it-go"
+      ],
+      "not-feeling-it": [
+        "pp-football-name-standard",
+        "pp-football-goal-fusion",
+        "pp-choose-focus-lead",
+        "pp-choose-focus-tail",
+        "pp-football-be-vocal",
+        "pp-football-see-it-go"
       ]
     }
   }

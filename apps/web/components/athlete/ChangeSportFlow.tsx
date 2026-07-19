@@ -18,6 +18,7 @@ const SPORT_SUB: Record<Sport, string> = {
   hockey: "Ice, skates, the full shift.",
   basketball: "The court, your game, your role.",
   golf: "The course, your swing, your score.",
+  football: "The field, the huddle, your position.",
 };
 
 function CheckIcon() {

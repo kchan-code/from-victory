@@ -191,14 +191,17 @@ const SPORT_CELL_EXPECTATIONS: Record<
       forbiddenSlug: "hm-glf-bomber-big-miss",
     },
   },
-  // Football (v2 DORMANT — scripts authored, audio render deferred). 7 roles ×
-  // 10 adversities, but QB drops trench-battle (reroute→qb-pick) and OL + DL
-  // drop turnover (reroute→{ol,dl}-trench-battle), so the matrix dedups to 67
-  // distinct cells. Compositional-only (golf model): cellSlugFor returns the
-  // hm-ftb-* hard-moment clip directly. EXCLUDED from the registry-parameterized
-  // file-existence loops (RENDERED_SPORT_CONFIGS) until the audio render lands
-  // football in manifest.practiceState — this entry only satisfies the
-  // Record<Sport, …> exhaustiveness type until then.
+  // Football (FV-206 go-live — SUPPORTED_SPORTS + pregame hard-moment/flagship
+  // clips are live; pre-practice "Lock In" audio is still landing in a parallel
+  // stream). 7 roles × 10 adversities, but QB drops trench-battle
+  // (reroute→qb-pick) and OL + DL drop turnover (reroute→{ol,dl}-trench-battle),
+  // so the matrix dedups to 67 distinct cells. Compositional-only (golf model):
+  // cellSlugFor returns the hm-ftb-* hard-moment clip directly. Still EXCLUDED
+  // from the registry-parameterized file-existence loops (RENDERED_SPORT_CONFIGS)
+  // until football lands in manifest.practiceState (the pre-practice tail) —
+  // this entry satisfies the Record<Sport, …> exhaustiveness type and will
+  // auto-activate the full grid assertion the moment practiceState.football
+  // exists, no code change needed here.
   football: {
     cellCount: 67,
     slugPrefix: "hm-ftb-",
@@ -501,13 +504,13 @@ describe("hockey compositional template matrix", () => {
   const POSITIONS = HOCKEY_CONFIG.roles ?? [];
   const ADVERSITIES = HOCKEY_CONFIG.adversities;
 
-  it("manifest has exactly 90 templates (3 compositional sports × 3 positions × 10 adversities)", () => {
+  it("manifest has exactly 160 templates (hockey 30 + basketball 30 + golf 30 + football 70)", () => {
     // 30 hockey (Forward/Defense/Goalie) + 30 basketball (Guard/Wing/Big)
     // + 30 golf (Bomber/Ballstriker/Scrambler) = 90.
     // FV-113 added the basketball arm; FV-266 added the golf arm.
     // NOTE: baseball is live but resolves cells directly (cellSlugFor → catalog),
     // NOT via the compositional templates array, so it contributes 0 templates here.
-    expect(manifest.templates).toHaveLength(90);
+    expect(manifest.templates).toHaveLength(160);
   });
 
   it("every (position × adversity) combination has exactly one template", () => {

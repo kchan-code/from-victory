@@ -772,6 +772,82 @@ const PHASE2_TEMPLATES: Array<{
   { position: "Scrambler", adversity: "I feel nervous.",              vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-nervous" },
   { position: "Scrambler", adversity: "I start slow.",                vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-start-slow" },
   { position: "Scrambler", adversity: "I fall behind the number.",    vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-fall-behind" },
+  // Football × 7 roles (FV-206 go-live; canonical adversity keys, module map §3/§5.
+  // Reroutes mirror cellSlugFor: QB turnover/trench→pick, QB benched→pulled,
+  //  OL/DL turnover→their trench-battle, RB turnover→fumble. big-hit rows exist
+  //  for grid parity but the adversity is picker-WITHHELD (§6 clinical gate).
+  //  Default vizSlug = one discrete positive play per role (FV-136 pattern);
+  //  athlete picks replace it at runtime (FV-144).
+  { position: "QB", adversity: "I turn the ball over.", vizSlug: "viz-ftb-qb-rhythm-throw", hmSlug: "hm-ftb-qb-pick" },
+  { position: "QB", adversity: "I get beat.", vizSlug: "viz-ftb-qb-rhythm-throw", hmSlug: "hm-ftb-qb-beat" },
+  { position: "QB", adversity: "I make a mistake on film.", vizSlug: "viz-ftb-qb-rhythm-throw", hmSlug: "hm-ftb-qb-film-mistake" },
+  { position: "QB", adversity: "I give up the big play.", vizSlug: "viz-ftb-qb-rhythm-throw", hmSlug: "hm-ftb-qb-big-play" },
+  { position: "QB", adversity: "I get benched.", vizSlug: "viz-ftb-qb-rhythm-throw", hmSlug: "hm-ftb-qb-pulled" },
+  { position: "QB", adversity: "I feel nervous.", vizSlug: "viz-ftb-qb-rhythm-throw", hmSlug: "hm-ftb-qb-nervous" },
+  { position: "QB", adversity: "I take a big hit.", vizSlug: "viz-ftb-qb-rhythm-throw", hmSlug: "hm-ftb-qb-big-hit" },
+  { position: "QB", adversity: "I start slow.", vizSlug: "viz-ftb-qb-rhythm-throw", hmSlug: "hm-ftb-qb-start-slow" },
+  { position: "QB", adversity: "We fall behind early.", vizSlug: "viz-ftb-qb-rhythm-throw", hmSlug: "hm-ftb-qb-fall-behind-early" },
+  { position: "QB", adversity: "I lose a battle in the trenches.", vizSlug: "viz-ftb-qb-rhythm-throw", hmSlug: "hm-ftb-qb-pick" },
+  { position: "RB", adversity: "I turn the ball over.", vizSlug: "viz-ftb-rb-inside-zone", hmSlug: "hm-ftb-rb-fumble" },
+  { position: "RB", adversity: "I get beat.", vizSlug: "viz-ftb-rb-inside-zone", hmSlug: "hm-ftb-rb-beat" },
+  { position: "RB", adversity: "I make a mistake on film.", vizSlug: "viz-ftb-rb-inside-zone", hmSlug: "hm-ftb-rb-film-mistake" },
+  { position: "RB", adversity: "I give up the big play.", vizSlug: "viz-ftb-rb-inside-zone", hmSlug: "hm-ftb-rb-big-play" },
+  { position: "RB", adversity: "I get benched.", vizSlug: "viz-ftb-rb-inside-zone", hmSlug: "hm-ftb-rb-benched" },
+  { position: "RB", adversity: "I feel nervous.", vizSlug: "viz-ftb-rb-inside-zone", hmSlug: "hm-ftb-rb-nervous" },
+  { position: "RB", adversity: "I take a big hit.", vizSlug: "viz-ftb-rb-inside-zone", hmSlug: "hm-ftb-rb-big-hit" },
+  { position: "RB", adversity: "I start slow.", vizSlug: "viz-ftb-rb-inside-zone", hmSlug: "hm-ftb-rb-start-slow" },
+  { position: "RB", adversity: "We fall behind early.", vizSlug: "viz-ftb-rb-inside-zone", hmSlug: "hm-ftb-rb-fall-behind-early" },
+  { position: "RB", adversity: "I lose a battle in the trenches.", vizSlug: "viz-ftb-rb-inside-zone", hmSlug: "hm-ftb-rb-trench-battle" },
+  { position: "WR", adversity: "I turn the ball over.", vizSlug: "viz-ftb-wr-beat-the-press", hmSlug: "hm-ftb-wr-turnover" },
+  { position: "WR", adversity: "I get beat.", vizSlug: "viz-ftb-wr-beat-the-press", hmSlug: "hm-ftb-wr-beat" },
+  { position: "WR", adversity: "I make a mistake on film.", vizSlug: "viz-ftb-wr-beat-the-press", hmSlug: "hm-ftb-wr-film-mistake" },
+  { position: "WR", adversity: "I give up the big play.", vizSlug: "viz-ftb-wr-beat-the-press", hmSlug: "hm-ftb-wr-big-play" },
+  { position: "WR", adversity: "I get benched.", vizSlug: "viz-ftb-wr-beat-the-press", hmSlug: "hm-ftb-wr-benched" },
+  { position: "WR", adversity: "I feel nervous.", vizSlug: "viz-ftb-wr-beat-the-press", hmSlug: "hm-ftb-wr-nervous" },
+  { position: "WR", adversity: "I take a big hit.", vizSlug: "viz-ftb-wr-beat-the-press", hmSlug: "hm-ftb-wr-big-hit" },
+  { position: "WR", adversity: "I start slow.", vizSlug: "viz-ftb-wr-beat-the-press", hmSlug: "hm-ftb-wr-start-slow" },
+  { position: "WR", adversity: "We fall behind early.", vizSlug: "viz-ftb-wr-beat-the-press", hmSlug: "hm-ftb-wr-fall-behind-early" },
+  { position: "WR", adversity: "I lose a battle in the trenches.", vizSlug: "viz-ftb-wr-beat-the-press", hmSlug: "hm-ftb-wr-trench-battle" },
+  { position: "OL", adversity: "I turn the ball over.", vizSlug: "viz-ftb-ol-drive-block", hmSlug: "hm-ftb-ol-trench-battle" },
+  { position: "OL", adversity: "I get beat.", vizSlug: "viz-ftb-ol-drive-block", hmSlug: "hm-ftb-ol-beat" },
+  { position: "OL", adversity: "I make a mistake on film.", vizSlug: "viz-ftb-ol-drive-block", hmSlug: "hm-ftb-ol-film-mistake" },
+  { position: "OL", adversity: "I give up the big play.", vizSlug: "viz-ftb-ol-drive-block", hmSlug: "hm-ftb-ol-big-play" },
+  { position: "OL", adversity: "I get benched.", vizSlug: "viz-ftb-ol-drive-block", hmSlug: "hm-ftb-ol-benched" },
+  { position: "OL", adversity: "I feel nervous.", vizSlug: "viz-ftb-ol-drive-block", hmSlug: "hm-ftb-ol-nervous" },
+  { position: "OL", adversity: "I take a big hit.", vizSlug: "viz-ftb-ol-drive-block", hmSlug: "hm-ftb-ol-big-hit" },
+  { position: "OL", adversity: "I start slow.", vizSlug: "viz-ftb-ol-drive-block", hmSlug: "hm-ftb-ol-start-slow" },
+  { position: "OL", adversity: "We fall behind early.", vizSlug: "viz-ftb-ol-drive-block", hmSlug: "hm-ftb-ol-fall-behind-early" },
+  { position: "OL", adversity: "I lose a battle in the trenches.", vizSlug: "viz-ftb-ol-drive-block", hmSlug: "hm-ftb-ol-trench-battle" },
+  { position: "DL", adversity: "I turn the ball over.", vizSlug: "viz-ftb-dl-get-off", hmSlug: "hm-ftb-dl-trench-battle" },
+  { position: "DL", adversity: "I get beat.", vizSlug: "viz-ftb-dl-get-off", hmSlug: "hm-ftb-dl-beat" },
+  { position: "DL", adversity: "I make a mistake on film.", vizSlug: "viz-ftb-dl-get-off", hmSlug: "hm-ftb-dl-film-mistake" },
+  { position: "DL", adversity: "I give up the big play.", vizSlug: "viz-ftb-dl-get-off", hmSlug: "hm-ftb-dl-big-play" },
+  { position: "DL", adversity: "I get benched.", vizSlug: "viz-ftb-dl-get-off", hmSlug: "hm-ftb-dl-benched" },
+  { position: "DL", adversity: "I feel nervous.", vizSlug: "viz-ftb-dl-get-off", hmSlug: "hm-ftb-dl-nervous" },
+  { position: "DL", adversity: "I take a big hit.", vizSlug: "viz-ftb-dl-get-off", hmSlug: "hm-ftb-dl-big-hit" },
+  { position: "DL", adversity: "I start slow.", vizSlug: "viz-ftb-dl-get-off", hmSlug: "hm-ftb-dl-start-slow" },
+  { position: "DL", adversity: "We fall behind early.", vizSlug: "viz-ftb-dl-get-off", hmSlug: "hm-ftb-dl-fall-behind-early" },
+  { position: "DL", adversity: "I lose a battle in the trenches.", vizSlug: "viz-ftb-dl-get-off", hmSlug: "hm-ftb-dl-trench-battle" },
+  { position: "LB", adversity: "I turn the ball over.", vizSlug: "viz-ftb-lb-read-and-fill", hmSlug: "hm-ftb-lb-turnover" },
+  { position: "LB", adversity: "I get beat.", vizSlug: "viz-ftb-lb-read-and-fill", hmSlug: "hm-ftb-lb-beat" },
+  { position: "LB", adversity: "I make a mistake on film.", vizSlug: "viz-ftb-lb-read-and-fill", hmSlug: "hm-ftb-lb-film-mistake" },
+  { position: "LB", adversity: "I give up the big play.", vizSlug: "viz-ftb-lb-read-and-fill", hmSlug: "hm-ftb-lb-big-play" },
+  { position: "LB", adversity: "I get benched.", vizSlug: "viz-ftb-lb-read-and-fill", hmSlug: "hm-ftb-lb-benched" },
+  { position: "LB", adversity: "I feel nervous.", vizSlug: "viz-ftb-lb-read-and-fill", hmSlug: "hm-ftb-lb-nervous" },
+  { position: "LB", adversity: "I take a big hit.", vizSlug: "viz-ftb-lb-read-and-fill", hmSlug: "hm-ftb-lb-big-hit" },
+  { position: "LB", adversity: "I start slow.", vizSlug: "viz-ftb-lb-read-and-fill", hmSlug: "hm-ftb-lb-start-slow" },
+  { position: "LB", adversity: "We fall behind early.", vizSlug: "viz-ftb-lb-read-and-fill", hmSlug: "hm-ftb-lb-fall-behind-early" },
+  { position: "LB", adversity: "I lose a battle in the trenches.", vizSlug: "viz-ftb-lb-read-and-fill", hmSlug: "hm-ftb-lb-trench-battle" },
+  { position: "DB", adversity: "I turn the ball over.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-turnover" },
+  { position: "DB", adversity: "I get beat.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-beat" },
+  { position: "DB", adversity: "I make a mistake on film.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-film-mistake" },
+  { position: "DB", adversity: "I give up the big play.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-big-play" },
+  { position: "DB", adversity: "I get benched.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-benched" },
+  { position: "DB", adversity: "I feel nervous.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-nervous" },
+  { position: "DB", adversity: "I take a big hit.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-big-hit" },
+  { position: "DB", adversity: "I start slow.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-start-slow" },
+  { position: "DB", adversity: "We fall behind early.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-fall-behind-early" },
+  { position: "DB", adversity: "I lose a battle in the trenches.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-trench-battle" },
 ];
 
 async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Promise<void> {
@@ -1178,6 +1254,16 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
     "pp-golf-see-it-go",
   ];
 
+  const footballSharedTail = [
+    "pp-football-name-standard",
+    "pp-football-goal-fusion",
+    "pp-choose-focus-lead",
+    // focus clip injected by resolver between lead and tail
+    "pp-choose-focus-tail",
+    "pp-football-be-vocal",
+    "pp-football-see-it-go",
+  ];
+
   const practiceStatePlaylist = {
     hockey: {
       "dialed-in": hockeySharedTail,
@@ -1190,6 +1276,10 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
     golf: {
       "dialed-in": golfSharedTail,
       "not-feeling-it": golfSharedTail,
+    },
+    football: {
+      "dialed-in": footballSharedTail,
+      "not-feeling-it": footballSharedTail,
     },
   };
 
@@ -1242,8 +1332,8 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
     if (catalogCount !== 240) {
       console.warn(`  WARNING: expected 240 catalog entries, got ${catalogCount}.`);
     }
-    if (templateCount !== 60) {
-      console.warn(`  WARNING: expected 60 templates (6 positions × 10 adversities — 3 hockey + 3 basketball), got ${templateCount}.`);
+    if (templateCount !== 160) {
+      console.warn(`  WARNING: expected 160 templates (hockey 30 + basketball 30 + golf 30 + football 70), got ${templateCount}.`);
     }
   }
 

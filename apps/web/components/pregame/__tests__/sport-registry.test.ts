@@ -18,6 +18,7 @@ import {
   HOCKEY_CONFIG,
   BASKETBALL_CONFIG,
   BASEBALL_CONFIG,
+  FOOTBALL_CONFIG,
   LACROSSE_CONFIG,
   getSportConfig,
   adversityOptionsFor,
@@ -705,10 +706,18 @@ describe("FV-117: sport-keyed selfTalkOptions picker", () => {
 
 const KNOWN_UNVOICED_ANCHORS: Partial<Record<Sport, readonly string[]>> = {
   // FV-303 — golf anchors now rendered; no known unvoiced anchors.
+  // FV-206 — football's 3 gear/reset anchors (module-map Appendix) are
+  // authored options but the audio render is landing in a parallel stream;
+  // they drop cleanly (Pre-Game Card + text mode still show the wording)
+  // until the clips + ANCHOR_OPTION_SLUGS entries land.
+  football: ["Snap the chinstrap", "Tap the helmet", "Clap and break the huddle"],
 };
 
 const KNOWN_UNVOICED_SELFTALK: Partial<Record<Sport, readonly string[]>> = {
   // FV-303 — golf self-talk now rendered; no known unvoiced self-talk.
+  // FV-206 — football's "Next play" reset-cadence self-talk phrase; audio
+  // render pending (parallel stream).
+  football: ["You're okay. Next play."],
 };
 
 describe("FV-301: every selectable sport voices its picker options", () => {
@@ -1186,5 +1195,32 @@ describe("FV-406: every lacrosse registry cell has an authored clip script", () 
       if (speech !== expected) wrong.push(`${script.slug}: ${speech} speech lines (expected ${expected})`);
     }
     expect(wrong).toEqual([]);
+  });
+});
+
+describe("FOOTBALL_CONFIG — the §6.3 big-hit clinical withhold (FV-206 / FV-119 pattern)", () => {
+  const BIG_HIT = "I take a big hit.";
+
+  it("withholds the big-hit adversity from EVERY role's picker", () => {
+    const offered: string[] = [];
+    for (const role of FOOTBALL_CONFIG.roles ?? []) {
+      const opts = FOOTBALL_CONFIG.roleAdversities?.[role] ?? [];
+      if (opts.some((o) => o.key === BIG_HIT)) offered.push(role);
+    }
+    expect(
+      offered,
+      `big-hit must stay picker-withheld until clinical sign-off; offered for: ${offered.join(", ")}`,
+    ).toEqual([]);
+  });
+
+  it("keeps big-hit in the flat adversities list (grid parity — authored, not offered)", () => {
+    expect(FOOTBALL_CONFIG.adversities).toContain(BIG_HIT);
+  });
+
+  it("the 7 big-hit cells resolve to their authored clips (grid-complete for the clinical gate)", () => {
+    for (const role of FOOTBALL_CONFIG.roles ?? []) {
+      const slug = FOOTBALL_CONFIG.cellSlugFor(BIG_HIT, role);
+      expect(slug, `cellSlugFor(big-hit, ${role})`).toBe(`hm-ftb-${role.toLowerCase()}-big-hit`);
+    }
   });
 });

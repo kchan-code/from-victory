@@ -1126,11 +1126,22 @@ export const GOLF_CONFIG: SportConfig = {
 };
 
 // ---------------------------------------------------------------------------
-// Football config (v2 — DORMANT; taxonomy = docs/football-module-map.md,
-// football-expert ratified. Content authored, NOT athlete-selectable: football
-// is intentionally absent from SUPPORTED_SPORTS (lib/sports.ts) + the DB sport
-// CHECK, exactly like baseball. Goes live behind a future go-live migration +
-// the audio render. Most position-diverse sport in the app: 7 roles.)
+// Football config (FV-206 — go-live wiring per the 2026-07-19 KC launch
+// directive; taxonomy = docs/football-module-map.md, football-expert
+// ratified. 123 pregame clips (67 hard-moment + 7 flagship viz + 49
+// positive-play viz) rendered + in the manifest catalog (FV-203/FV-423); the
+// DB sport CHECK + SUPPORTED_SPORTS gates are owned separately (lead's
+// FV-205). Most position-diverse sport in the app: 7 roles.
+//
+// Role tokens are the SHORT depth-chart abbreviations ("QB","RB","WR","OL",
+// "DL","LB","DB") — NOT the long position-group names the FV-203 dormant
+// scaffold originally used. This is a deliberate fix, not a style choice:
+// POSITIVE_PLAYS' `role` field (positive-plays.ts, FV-423, 49 entries) and
+// every rendered clip slug (viz-ftb-{token}, hm-ftb-{token}-{frag}) are keyed
+// on the short tokens, so `state.role` (drawn from `SportConfig.roles`) MUST
+// match them exactly or the positive-play picker silently shows zero plays.
+// Athletes already read QB/RB/WR/OL/DL/LB/DB as real depth-chart shorthand,
+// so the short token doubles as the correct display value too.
 // ---------------------------------------------------------------------------
 
 const FOOTBALL_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
@@ -1144,6 +1155,27 @@ const FOOTBALL_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
   "I start slow.": "start-slow",
   "We fall behind early.": "fall-behind-early",
   "I lose a battle in the trenches.": "trench-battle",
+};
+
+// Per-role canonical-key reroutes (football-module-map.md §5 — the
+// baseball-pitcher-error / OL-DL-turnover precedent: a cell that doesn't
+// exist for a role maps to that role's nearest authored cell, so cellSlugFor
+// never produces an orphan slug and the (roles × adversities) integrity grid
+// dedups cleanly to 67 distinct cells).
+//
+// QB's turnover→pick and benched→pulled reroute at the SLUG level, not just
+// the label level — this departs from §5's minimal pseudocode table (which
+// only lists the trench-battle reroute and calls turnover/benched "label-only
+// relabels"), because the ACTUALLY RENDERED clip catalog (FV-203) has no
+// hm-ftb-qb-turnover or hm-ftb-qb-benched clip — only hm-ftb-qb-pick and
+// hm-ftb-qb-pulled exist. The rendered audio is ground truth here (the
+// baseball pitcher-pulled/hit-batter precedent: a relabel that is ALSO a slug
+// rename). QB's dropped trench-battle cell folds into the same qb-pick clip.
+const FOOTBALL_KEY_REROUTES: Record<string, Record<string, string>> = {
+  QB: { turnover: "pick", benched: "pulled", "trench-battle": "pick" },
+  RB: { turnover: "fumble" },
+  OL: { turnover: "trench-battle" },
+  DL: { turnover: "trench-battle" },
 };
 
 // Football text-mode audio script (sport-correct body for segs 80/120/165).
@@ -1198,94 +1230,98 @@ export const FOOTBALL_CONFIG: SportConfig = {
   displayName: "Football",
   sportKey: "football",
 
-  // 7 position groups — the tightest authentic set (football-expert). WR/TE
-  // fold to Receiver; DL/EDGE fold to Defensive Line; CB/S fold to Defensive
-  // Back. Specialist (K/P) is a documented FUTURE role, held to bound the cell
-  // count. Slug tokens: qb / rb / wr / ol / dl / lb / db.
-  roles: [
-    "QB",
-    "Running Back",
-    "Receiver",
-    "Offensive Line",
-    "Defensive Line",
-    "Linebacker",
-    "Defensive Back",
-  ] as const,
+  // 7 position groups (football-module-map.md §1) — the tightest authentic
+  // set; football is the most positional sport in the catalog. WR/TE fold to
+  // WR; DL/EDGE fold to DL; CB/S fold to DB. Specialist (K/P) is a documented
+  // FUTURE role, held to bound the cell count. Tokens double as slug tokens
+  // (qb/rb/wr/ol/dl/lb/db) and the display label — see the file-header note
+  // on why these are short, not the long position-group names.
+  roles: ["QB", "RB", "WR", "OL", "DL", "LB", "DB"] as const,
   roleLabel: "Position",
 
+  // §2 ROLE_CONTENT — the athlete's first-rep rehearsal (identity title + 5
+  // present-tense VIZ scenes). The reset cues are pre-loaded on purpose: each
+  // role's collapse reflex is named so the rehearsal builds the antidote in —
+  // QB "throw it away, live to the next down" (anti-hero-throw), WR "drop or
+  // not, run the next one clean" (anti-drop-spiral), OL "lose one, win the
+  // next rep" (anti-anonymous-until-blamed), DL "stay in my gap"
+  // (anti-freelance), LB "missed it — back to my keys" (anti-guess), DB "beat
+  // or burn, flush it" (the corner's amnesia, anti-gamble), RB "two hands,
+  // ball secure" (pre-loads ball security ahead of the fumble cell).
   roleContent: {
     QB: {
-      title: "Own the huddle.",
+      title: "Run the offense.",
       scenes: [
-        "Eyes up, read it out.",
-        "Trust your first read.",
-        "Throw it with conviction.",
-        "Protect the football.",
-        "Next play, lead them.",
+        "Read it pre-snap.",
+        "Trust the progression.",
+        "Deliver on time.",
+        "Throw it away, live to the next down.",
+        "Next play, next drive.",
       ],
     },
-    "Running Back": {
-      title: "Downhill, ball secure.",
+    RB: {
+      title: "Hit it downhill.",
       scenes: [
-        "Read your blocks.",
-        "Hit the hole fast.",
-        "Two hands, high and tight.",
-        "Finish every run forward.",
+        "See the hole.",
+        "Press the line, then cut.",
+        "Two hands, ball secure.",
+        "Finish forward, every carry.",
         "Pick up the blitz.",
       ],
     },
-    Receiver: {
-      title: "Run it, catch it, finish.",
+    WR: {
+      title: "Win my route.",
       scenes: [
-        "Win at the line.",
-        "Run the route full speed.",
-        "Look it all the way in.",
-        "Catch it, tuck it, go.",
-        "Next route, stay open.",
+        "Beat the press.",
+        "Run it full speed.",
+        "Snap the break.",
+        "Late hands, look it in.",
+        "Drop or not, run the next one clean.",
       ],
     },
-    "Offensive Line": {
-      title: "Protect the man behind you.",
+    OL: {
+      title: "Protect and finish.",
       scenes: [
-        "Set your feet, punch.",
-        "Know your assignment.",
-        "Move people off the ball.",
-        "Finish to the whistle.",
-        "Five as one.",
+        "Set the edge.",
+        "Hands inside, anchor.",
+        "Drive my feet.",
+        "Pass it off clean.",
+        "Lose one, win the next rep.",
       ],
     },
-    "Defensive Line": {
-      title: "Get off, win the rep.",
+    DL: {
+      title: "Win the line of scrimmage.",
       scenes: [
-        "First off the ball.",
-        "Beat your man.",
-        "Stay in your gap.",
-        "Run to the football.",
-        "Every snap, full motor.",
+        "Get off on the ball.",
+        "Win my one-on-one.",
+        "Stay in my gap.",
+        "Get hands up if I can't get home.",
+        "Beat one block, then the next.",
       ],
     },
-    Linebacker: {
-      title: "Be the quarterback of the D.",
+    LB: {
+      title: "Diagnose and finish.",
       scenes: [
-        "Read your keys.",
-        "Fill your fit downhill.",
-        "Cover with your eyes.",
-        "Get everyone lined up.",
-        "Run and hit.",
+        "Read my keys.",
+        "Trust my fit.",
+        "Trigger downhill.",
+        "Wrap up, drive my feet.",
+        "Missed it — back to my keys.",
       ],
     },
-    "Defensive Back": {
-      title: "Lock down your island.",
+    DB: {
+      title: "Lock my one-on-one.",
       scenes: [
-        "Trust your technique.",
-        "Eyes on your man.",
-        "Drive on the ball.",
-        "Short memory, next rep.",
-        "Make the tackle in space.",
+        "Eyes on my key.",
+        "Phase, then play the ball.",
+        "Trust my technique.",
+        "Beat or burn, flush it.",
+        "Next snap, short memory.",
       ],
     },
   },
 
+  // §3 — the shared 10-adversity list, first-person football voice.
   adversities: [
     "I turn the ball over.",
     "I get beat.",
@@ -1299,99 +1335,99 @@ export const FOOTBALL_CONFIG: SportConfig = {
     "I lose a battle in the trenches.",
   ],
 
-  // Per-role relabels + drops (football-expert §4). Every `key` is canonical so
-  // cellSlugFor + state.adversity resolve the same cell — labels are position-
-  // true (FV-101 mechanism). QB drops "I lose a battle in the trenches." (no
-  // man-on-man trench rep); OL + DL drop "I turn the ball over." (ineligible /
-  // a giveaway isn't their failure) — the baseball-pitcher-error precedent;
-  // cellSlugFor reroutes the never-fired cell so the integrity grid resolves.
-  //
-  // CLINICAL (football-expert §12): every "I take a big hit." cell ships as
-  // COMPETITIVE COURAGE only (stand in / get up / stay on your feet) — never
-  // head-injury, playing-hurt, or body-comp. Any big-hit cell that can't stay
-  // competitive-layer is the conditional withhold (omit here) until clinical
-  // sign-off. No default withhold in v1.
+  // §5 roleAdversities — label-only relabels + drops (key stays canonical so
+  // cellSlugFor + state.adversity resolve the same cell — the FV-101
+  // mechanism) PLUS the §6.3 clinical gate: "I take a big hit." is withheld
+  // from EVERY role's picker here (authored + rendered at
+  // hm-ftb-{role}-big-hit — it just isn't offered) until clinical sign-off —
+  // the FV-119 / baseball-yips / golf-first-tee pattern, applied universally
+  // per the 2026-07-19 KC go-live directive rather than conditionally per
+  // role (§6 documents it as a conditional withhold; nothing is cleared yet,
+  // so nothing ships selectable at go-live).
   roleAdversities: {
     QB: [
       { key: "I turn the ball over.", label: "I throw a pick." },
-      { key: "I get beat.", label: "I get read out / fooled." },
-      { key: "I make a mistake on film.", label: "I make a bad read on film." },
-      { key: "I give up the big play.", label: "My turnover goes the other way." },
+      { key: "I get beat.", label: "I get beat." },
+      { key: "I make a mistake on film.", label: "I make a mistake on film." },
+      { key: "I give up the big play.", label: "I give up the big play." },
       { key: "I get benched.", label: "I get pulled." },
       { key: "I feel nervous.", label: "I feel nervous." },
-      { key: "I take a big hit.", label: "I get sacked / take a big hit." },
       { key: "I start slow.", label: "I start slow." },
       { key: "We fall behind early.", label: "We fall behind early." },
+      // trench-battle dropped (§5 — a QB doesn't fight at the point of
+      // attack; rerouted to the qb-pick cell in cellSlugFor).
+      // big-hit withheld (§6.3 clinical gate — see comment above).
     ],
-    "Running Back": [
-      { key: "I turn the ball over.", label: "I fumble." },
-      { key: "I get beat.", label: "I miss my blitz pickup." },
-      { key: "I make a mistake on film.", label: "I miss my read / wrong hole." },
-      { key: "I give up the big play.", label: "My fumble flips the game." },
-      { key: "I get benched.", label: "I lose carries / get benched." },
-      { key: "I feel nervous.", label: "I feel nervous." },
-      { key: "I take a big hit.", label: "I take a big hit." },
-      { key: "I start slow.", label: "I start slow." },
-      { key: "We fall behind early.", label: "We fall behind early." },
-      { key: "I lose a battle in the trenches.", label: "I get stuffed at the line." },
-    ],
-    Receiver: [
-      { key: "I turn the ball over.", label: "I fumble after the catch." },
-      { key: "I get beat.", label: "I get jammed / can't separate." },
-      { key: "I make a mistake on film.", label: "I drop the pass." },
-      { key: "I give up the big play.", label: "My drop kills the drive." },
-      { key: "I get benched.", label: "The QB stops looking my way." },
-      { key: "I feel nervous.", label: "I feel nervous." },
-      { key: "I take a big hit.", label: "I take a big hit over the middle." },
-      { key: "I start slow.", label: "I start slow." },
-      { key: "We fall behind early.", label: "We fall behind early." },
-      { key: "I lose a battle in the trenches.", label: "I lose my run-block rep." },
-    ],
-    "Offensive Line": [
-      { key: "I get beat.", label: "I get beat / give up pressure." },
-      { key: "I make a mistake on film.", label: "I blow my assignment on film." },
-      { key: "I give up the big play.", label: "I give up the sack." },
+    RB: [
+      { key: "I turn the ball over.", label: "I put the ball on the ground." },
+      { key: "I get beat.", label: "I get beat." },
+      { key: "I make a mistake on film.", label: "I make a mistake on film." },
+      { key: "I give up the big play.", label: "I give up the big play." },
       { key: "I get benched.", label: "I get benched." },
       { key: "I feel nervous.", label: "I feel nervous." },
-      { key: "I take a big hit.", label: "I get bull-rushed / driven back." },
       { key: "I start slow.", label: "I start slow." },
       { key: "We fall behind early.", label: "We fall behind early." },
-      { key: "I lose a battle in the trenches.", label: "I get pancaked / lose my rep." },
+      { key: "I lose a battle in the trenches.", label: "I lose a battle in the trenches." },
+      // big-hit withheld (§6.3).
     ],
-    "Defensive Line": [
-      { key: "I get beat.", label: "I get reached / hooked / washed." },
-      { key: "I make a mistake on film.", label: "I lose my run fit on film." },
-      { key: "I give up the big play.", label: "I get gashed for the big run." },
-      { key: "I get benched.", label: "I get subbed out / benched." },
-      { key: "I feel nervous.", label: "I feel nervous." },
-      { key: "I take a big hit.", label: "I get double-teamed / cut." },
-      { key: "I start slow.", label: "I start slow / no get-off." },
-      { key: "We fall behind early.", label: "We fall behind early." },
-      { key: "I lose a battle in the trenches.", label: "I lose my one-on-one." },
-    ],
-    Linebacker: [
-      { key: "I turn the ball over.", label: "I drop the pick / miss the takeaway." },
-      { key: "I get beat.", label: "I get beat in coverage." },
-      { key: "I make a mistake on film.", label: "I blow my run fit / coverage on film." },
-      { key: "I give up the big play.", label: "My blown coverage goes the distance." },
+    WR: [
+      { key: "I turn the ball over.", label: "I cough it up after the catch." },
+      { key: "I get beat.", label: "A corner shuts me down." },
+      { key: "I make a mistake on film.", label: "I make a mistake on film." },
+      { key: "I give up the big play.", label: "I give up the big play." },
       { key: "I get benched.", label: "I get benched." },
       { key: "I feel nervous.", label: "I feel nervous." },
-      { key: "I take a big hit.", label: "I take on the pulling guard." },
       { key: "I start slow.", label: "I start slow." },
       { key: "We fall behind early.", label: "We fall behind early." },
-      { key: "I lose a battle in the trenches.", label: "I get sealed / kicked out." },
+      { key: "I lose a battle in the trenches.", label: "I lose a battle in the trenches." },
+      // big-hit withheld (§6.3).
     ],
-    "Defensive Back": [
-      { key: "I turn the ball over.", label: "I drop the pick." },
-      { key: "I get beat.", label: "I get beat deep." },
-      { key: "I make a mistake on film.", label: "I blow my coverage on film." },
-      { key: "I give up the big play.", label: "I give up the touchdown." },
-      { key: "I get benched.", label: "They throw away from me / I get benched." },
+    OL: [
+      { key: "I get beat.", label: "My guy wins the rep." },
+      { key: "I make a mistake on film.", label: "I make a mistake on film." },
+      { key: "I give up the big play.", label: "I give up the big play." },
+      { key: "I get benched.", label: "I get benched." },
       { key: "I feel nervous.", label: "I feel nervous." },
-      { key: "I take a big hit.", label: "I take a big hit in run support." },
-      { key: "I start slow.", label: "I start slow / get picked on early." },
+      { key: "I start slow.", label: "I start slow." },
       { key: "We fall behind early.", label: "We fall behind early." },
-      { key: "I lose a battle in the trenches.", label: "I lose the 50/50 ball." },
+      { key: "I lose a battle in the trenches.", label: "I lose a battle in the trenches." },
+      // turnover dropped (§5 — a lineman doesn't carry the ball; rerouted to
+      // the trench-battle cell in cellSlugFor). big-hit withheld (§6.3).
+    ],
+    DL: [
+      { key: "I get beat.", label: "I get reached / hooked." },
+      { key: "I make a mistake on film.", label: "I make a mistake on film." },
+      { key: "I give up the big play.", label: "I give up the big play." },
+      { key: "I get benched.", label: "I get benched." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+      { key: "I lose a battle in the trenches.", label: "I lose a battle in the trenches." },
+      // turnover dropped (§5, same reroute as OL). big-hit withheld (§6.3).
+    ],
+    LB: [
+      { key: "I turn the ball over.", label: "I turn the ball over." },
+      { key: "I get beat.", label: "I get beat." },
+      { key: "I make a mistake on film.", label: "I make a mistake on film." },
+      { key: "I give up the big play.", label: "I give up the big play." },
+      { key: "I get benched.", label: "I get benched." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+      { key: "I lose a battle in the trenches.", label: "I get washed out by a block." },
+      // big-hit withheld (§6.3).
+    ],
+    DB: [
+      { key: "I turn the ball over.", label: "I turn the ball over." },
+      { key: "I get beat.", label: "I get burned." },
+      { key: "I make a mistake on film.", label: "I make a mistake on film." },
+      { key: "I give up the big play.", label: "I give up the big play." },
+      { key: "I get benched.", label: "I get benched." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+      { key: "I lose a battle in the trenches.", label: "I lose the edge in run support." },
+      // big-hit withheld (§6.3).
     ],
   },
 
@@ -1399,66 +1435,47 @@ export const FOOTBALL_CONFIG: SportConfig = {
 
   cellSlugFor(adversity: string, role?: string | null): string {
     const frag = FOOTBALL_ADVERSITY_SLUG_FRAGMENTS[adversity] ?? "nervous";
-    const tokenMap: Record<string, string> = {
-      QB: "qb",
-      "Running Back": "rb",
-      Receiver: "wr",
-      "Offensive Line": "ol",
-      "Defensive Line": "dl",
-      Linebacker: "lb",
-      "Defensive Back": "db",
-    };
-    const token = role ? (tokenMap[role] ?? "qb") : "qb";
-
-    // QB × turnover → pick (the truest QB giveaway is the interception).
-    if (token === "qb" && frag === "turnover") return "hm-ftb-qb-pick";
-    // QB × benched → pulled (a QB is pulled, not "benched").
-    if (token === "qb" && frag === "benched") return "hm-ftb-qb-pulled";
-    // QB drops trench-battle (no man-on-man trench rep). Omitted from the QB
-    // picker, so never fires; reroute keeps the integrity matrix whole.
-    if (token === "qb" && frag === "trench-battle") return "hm-ftb-qb-pick";
-    // RB × turnover → fumble (the RB's cardinal-sin giveaway).
-    if (token === "rb" && frag === "turnover") return "hm-ftb-rb-fumble";
-    // OL/DL drop turnover (linemen don't carry / a giveaway isn't their
-    // failure). Omitted from their pickers; reroute to the trench-battle anchor.
-    if (token === "ol" && frag === "turnover") return "hm-ftb-ol-trench-battle";
-    if (token === "dl" && frag === "turnover") return "hm-ftb-dl-trench-battle";
+    const roleKey = role ?? "QB";
+    const rerouted = FOOTBALL_KEY_REROUTES[roleKey]?.[frag] ?? frag;
+    // Role tokens are already the slug tokens (QB→qb, RB→rb, …).
+    const roleStr = roleKey.toLowerCase();
 
     // Football is COMPOSITIONAL-ONLY (golf precedent): cellSlugFor returns the
     // hm-ftb-* hard-moment clip directly — the slug the manifest templates +
     // the integrity grid reference. No baked ftb-* composite.
-    return `hm-ftb-${token}-${frag}`;
+    return `hm-ftb-${roleStr}-${rerouted}`;
   },
 
-  // Pre-practice focus presets (audio render lands the clips; slugs declared
-  // now so the registry is complete). "Win my one-on-one" (padded-practice
-  // meritocracy), "Full speed, full motor" (the universal football grade),
-  // "Next play" (the 25-40s reset loop) are the football-distinct ones.
+  // Pre-practice focus presets (football-module-map.md Appendix; clips render
+  // in a parallel stream — FV-206 references the slugs without verifying mp3
+  // existence). "Run to the ball", "Win my one-on-one", "Play fast", "Ball
+  // security", "Next play" are the football-distinct ones.
   practiceFocusOptions: [
-    "Relentless",
+    "Run to the ball",
     "Finish every rep",
     "Eyes up",
     "Win my one-on-one",
-    "Full speed, full motor",
+    "Play fast",
     "Ball security",
     "Next play",
   ] as const,
 
   practiceFocusSlugs: {
-    "Relentless": "pp-football-focus-relentless",
+    "Run to the ball": "pp-football-focus-run-to-the-ball",
     "Finish every rep": "pp-football-focus-finish-every-rep",
     "Eyes up": "pp-football-focus-eyes-up",
     "Win my one-on-one": "pp-football-focus-win-my-one-on-one",
-    "Full speed, full motor": "pp-football-focus-full-speed-full-motor",
+    "Play fast": "pp-football-focus-play-fast",
     "Ball security": "pp-football-focus-ball-security",
     "Next play": "pp-football-focus-next-play",
   },
 
-  // FV-117 per-sport picker lists. "Better puck decisions" → "Better reads"
-  // (the cross-position football decisions need — QB reads the defense, the
-  // back reads his blocks, the DB reads the route); all other 9 needs are
-  // sport-neutral and shared. Football reuses the shared opener clips
-  // (resolveOpenerSlug falls back to NEED_OPENER_SLUGS).
+  // FV-117 per-sport picker lists (Appendix). "Better puck decisions" →
+  // "Better reads" (the cross-position football decisions need — QB reads the
+  // defense, the back reads his blocks, the DB reads the route); "Physical
+  // courage" is a strong native fit in football (unlike golf) and stays; all
+  // other 8 needs are sport-neutral and shared. Football reuses the shared
+  // opener clips (resolveOpenerSlug falls back to NEED_OPENER_SLUGS).
   needs: [
     "Confidence",
     "Calm",
@@ -1473,14 +1490,15 @@ export const FOOTBALL_CONFIG: SportConfig = {
   ] as const satisfies readonly NeedToday[],
 
   // "Long exhale", "Press thumb to palm", "Say cue word" shared; the 3 middle
-  // gear-contact gestures are football-specific (clips + slugs land with the
-  // audio render — they drop cleanly until then, the baseball/golf precedent).
+  // gear/reset gestures are football-specific (Appendix — clips + slugs land
+  // with the audio render; they drop cleanly until then, the baseball/golf
+  // precedent).
   anchors: [
     "Long exhale",
     "Press thumb to palm",
     "Snap the chinstrap",
-    "Slap the thigh pads",
-    "Tighten the gloves",
+    "Tap the helmet",
+    "Clap and break the huddle",
     "Say cue word",
   ] as const,
 
@@ -1499,8 +1517,8 @@ export const FOOTBALL_CONFIG: SportConfig = {
   practiceOpenerSlugs: {
     // pp-opener-dialed-in is sport-neutral and reused across all sports.
     "dialed-in": "pp-opener-dialed-in",
-    // Football-specific not-feeling-it opener (authored with the audio render;
-    // declared here for registry completeness).
+    // Football-specific not-feeling-it opener (clips render in a parallel
+    // stream; declared here for registry completeness).
     "not-feeling-it": "pp-football-opener-get-to",
   },
 
