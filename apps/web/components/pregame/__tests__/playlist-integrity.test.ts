@@ -857,17 +857,17 @@ describe("basketball opener parity (FV-120)", () => {
 //     bare magic number would be both brittle and opaque. Instead assert a
 //     documented per-category breakdown whose sum must equal the catalog size —
 //     this catches orphaned/dropped clips (the sum diverges) AND stays legible.
-//     Counts verified against manifest 7c785eaf (FV-203 football first render:
-//     +7 viz-ftb-* and +67 hm-ftb-* on top of the e68cc2db baseline).
+//     Counts verified against the FV-423 render (FV-203 baseline 7c785eaf
+//     +49 viz-ftb-{role}-{play} positive-play clips).
 // ---------------------------------------------------------------------------
 
 describe("catalog count (multi-sport, FV-266)", () => {
-  it("catalog is fully categorized (no orphans) and totals 446 entries", () => {
+  it("catalog is fully categorized (no orphans) and totals 495 entries", () => {
     const keys = Object.keys(catalog);
     const n = (re: RegExp) => keys.filter((k) => re.test(k)).length;
     const breakdown = {
-      viz: n(/^viz-/), //                          93 — profile + positive-play viz (all sports)
-      //                                                 +21 golf viz (FV-294), +7 football (FV-203)
+      viz: n(/^viz-/), //                         142 — profile + positive-play viz (all sports)
+      //                                                 +21 golf viz (FV-294), +7 football flagship (FV-203), +49 football plays (FV-423)
       hmHockey: n(/^hm-(forward|defense|goalie)-/), // 30 — hockey hard-moment cells
       hmBball: n(/^hm-bb-/), //                     30 — basketball compositional cells
       bbalBaked: n(/^bb-/), //                      30 — legacy baked basketball composites
@@ -888,7 +888,7 @@ describe("catalog count (multi-sport, FV-266)", () => {
     // Every catalog key falls into exactly one bucket — catches typos/orphans.
     expect(uncategorized, `uncategorized clips: ${uncategorized.join(", ")}`).toEqual([]);
     expect(sum).toBe(keys.length);
-    expect(keys).toHaveLength(446);
+    expect(keys).toHaveLength(495);
   });
 });
 
@@ -1037,11 +1037,20 @@ describe("positive-play library integrity (FV-144)", () => {
     // Golf's "Ball-Striker" role has slug token "ballstriker" (hyphen stripped,
     // matching GOLF_CONFIG.cellSlugFor — role.toLowerCase().replace(/-/g,"")),
     // so we strip hyphens from the role before building the expected prefix.
+    // FV-423: later sports namespace their viz slugs with the sport token from
+    // the module-map slug scheme (football "ftb", lacrosse "lax", …) to keep
+    // the catalog collision-free: viz-{sportToken}-{role}-{play}. Legacy
+    // hockey/basketball/golf slugs stay un-namespaced (viz-{role}-{play}).
+    const SPORT_SLUG_TOKENS = ["ftb"];
     const mismatches: string[] = [];
     for (const { slug, role } of POSITIVE_PLAYS) {
-      const expectedPrefix = `viz-${role.toLowerCase().replace(/-/g, "")}-`;
-      if (!slug.startsWith(expectedPrefix)) {
-        mismatches.push(`${slug} declares role "${role}" but is not "${expectedPrefix}…"`);
+      const roleToken = role.toLowerCase().replace(/-/g, "");
+      const validPrefixes = [
+        `viz-${roleToken}-`,
+        ...SPORT_SLUG_TOKENS.map((t) => `viz-${t}-${roleToken}-`),
+      ];
+      if (!validPrefixes.some((p) => slug.startsWith(p))) {
+        mismatches.push(`${slug} declares role "${role}" but matches none of ${validPrefixes.join(", ")}`);
       }
     }
     expect(mismatches).toEqual([]);

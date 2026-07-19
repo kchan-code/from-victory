@@ -1356,3 +1356,1096 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Win it with leverage, not by trying to overpower him. First step low and quick, hands inside on his pads, hips through and roll — get under his pad level, drive your feet, and beat him to the punch.
 _(pause: 2s)_
+
+## VIZ Clips — Positive Plays (FV-423)
+
+Athlete-chooseable rehearsal scenarios (FV-144): the athlete picks up to 3 and
+they replace the flagship viz. 7 per position.
+
+### Football · QB · rhythm-throw · viz play
+<!-- slug: viz-ftb-qb-rhythm-throw | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself under center, reading the coverage before the snap.
+_(pause: 2s)_
+2. You check the safeties — two-high, the middle open.
+_(pause: 2.5s)_
+3. You already know where you're going with it.
+_(pause: 2s)_
+4. Snap. Clean three-step drop, feet set.
+_(pause: 2s)_
+5. Your first read clears at the top of his route.
+_(pause: 2.5s)_
+6. You don't wait. You trust it and let it go.
+_(pause: 2s)_
+7. Tight spiral, right on the numbers, on time.
+_(pause: 2s)_
+8. Caught in stride, first down.
+_(pause: 3s)_
+9. You jog back to the huddle and get the next call.
+_(pause: 2s)_
+10. Read it, set your feet, and deliver it on time.
+_(pause: 2.5s)_
+
+### Football · QB · play-action-shot · viz play
+<!-- slug: viz-ftb-qb-play-action-shot | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the play-action shot called, and know the top is there to take.
+_(pause: 2s)_
+2. Snap. You open with the fake and ride the mesh, hiding the ball.
+_(pause: 2.5s)_
+3. The linebackers bite downhill on the run.
+_(pause: 2s)_
+4. You pull it and set your feet.
+_(pause: 2s)_
+5. Your receiver has a step on the safety, down the sideline.
+_(pause: 2.5s)_
+6. You drop it in over his outside shoulder.
+_(pause: 2s)_
+7. The ball hangs, then falls right into his hands.
+_(pause: 2s)_
+8. He runs under it in stride and finishes the play.
+_(pause: 3s)_
+9. You reset and get ready for the next snap.
+_(pause: 2.5s)_
+
+### Football · QB · rpo-read · viz play
+<!-- slug: viz-ftb-qb-rpo-read | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the RPO called — hand it off, or pull and throw the bubble.
+_(pause: 2s)_
+2. Snap. You ride the mesh with the back and read the box.
+_(pause: 2.5s)_
+3. The linebacker triggers down hard to fill the run.
+_(pause: 2s)_
+4. That's your throw key. You pull it clean.
+_(pause: 2s)_
+5. Your eyes snap out to the bubble.
+_(pause: 2s)_
+6. The numbers are yours — the flat is wide open.
+_(pause: 2.5s)_
+7. You put it out quick and flat, on his hip.
+_(pause: 2s)_
+8. Caught with grass ahead, first down and more.
+_(pause: 3s)_
+9. Right read, right throw. Simple and clean.
+_(pause: 2.5s)_
+
+### Football · QB · scramble · viz play
+<!-- slug: viz-ftb-qb-scramble | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the pocket start to break down around you.
+_(pause: 2s)_
+2. Snap. You take your drop, but the edge caves.
+_(pause: 2s)_
+3. You feel the rush before you see it.
+_(pause: 2s)_
+4. You climb up and slide out of the pocket, still square.
+_(pause: 2.5s)_
+5. Your eyes stay downfield, not on the rush.
+_(pause: 2.5s)_
+6. A receiver breaks his route off and works back to you.
+_(pause: 2s)_
+7. You reset your feet and deliver on the move.
+_(pause: 2.5s)_
+8. Complete, past the sticks. First down.
+_(pause: 3s)_
+9. You stayed composed, reset your feet, and completed the play.
+_(pause: 2.5s)_
+
+### Football · QB · take-the-checkdown · viz play
+<!-- slug: viz-ftb-qb-take-the-checkdown | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the deep shot called, but stay ready to take what they give.
+_(pause: 2s)_
+2. Snap. Clean drop, eyes down the field.
+_(pause: 2s)_
+3. The coverage rolls and takes your deep man away.
+_(pause: 2.5s)_
+4. Nothing's there down the field — and that's fine.
+_(pause: 2s)_
+5. You come off it instead of forcing it into coverage.
+_(pause: 2.5s)_
+6. Your back leaks out of the backfield, wide open.
+_(pause: 2s)_
+7. You drop it to him soft and let him work.
+_(pause: 2s)_
+8. Eight easy yards. Second and short.
+_(pause: 3s)_
+9. The safe throw kept the drive alive.
+_(pause: 2s)_
+10. Take the available throw and keep the offense on schedule.
+_(pause: 2.5s)_
+
+### Football · QB · two-minute-drive · viz play
+<!-- slug: viz-ftb-qb-two-minute-drive | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the two-minute drive, down four, with time and field position to manage.
+_(pause: 2s)_
+2. You break the huddle, communicate the call, and get everyone lined up.
+_(pause: 2.5s)_
+3. First snap, you hit the quick out and he steps out of bounds.
+_(pause: 2s)_
+4. The clock stops. You move them to the line fast.
+_(pause: 2s)_
+5. Next play, you find the seam over the middle and move the ball into scoring range.
+_(pause: 2.5s)_
+6. You spike it, catch your breath, and read the call.
+_(pause: 2s)_
+7. Under a minute now, ball at the twenty.
+_(pause: 2s)_
+8. You take the snap, climb the pocket, and put the fade where only your receiver can reach it.
+_(pause: 2.5s)_
+9. Your receiver secures it in the end zone.
+_(pause: 3s)_
+10. You managed the clock, made the reads, and finished the drive.
+_(pause: 2.5s)_
+
+### Football · QB · bounce-back-throw · viz play
+<!-- slug: viz-ftb-qb-bounce-back-throw | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself right after a throw sails on you, incomplete.
+_(pause: 2s)_
+2. The throw is over. You get your eyes back to the next call.
+_(pause: 2.5s)_
+3. Next snap. You get back under center, eyes up.
+_(pause: 2s)_
+4. Same clean footwork, same easy read.
+_(pause: 2s)_
+5. Your first option opens on the hitch.
+_(pause: 2.5s)_
+6. You trust it and drive the throw on a line.
+_(pause: 2s)_
+7. Caught, moving the chains.
+_(pause: 3s)_
+8. The completion puts you back into the flow of the offense.
+_(pause: 2s)_
+9. You return to the huddle ready for the next snap.
+_(pause: 2.5s)_
+
+### Football · RB · inside-zone · viz play
+<!-- slug: viz-ftb-rb-inside-zone | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the inside zone called, and trust the blocks to open it.
+_(pause: 2s)_
+2. You set your depth, eyes on the front.
+_(pause: 2s)_
+3. Snap. The handoff is clean — two hands, high and tight.
+_(pause: 2.5s)_
+4. You press the line right at the guard's hip.
+_(pause: 2s)_
+5. The hole shows late, the cutback lane opening.
+_(pause: 2.5s)_
+6. You plant hard and cut downhill, no dancing.
+_(pause: 2s)_
+7. North and south now, pad level low.
+_(pause: 2s)_
+8. You break the arm tackle at the second level.
+_(pause: 2.5s)_
+9. Five more yards after contact, finished forward.
+_(pause: 3s)_
+10. You pop up and flip the ball to the ref.
+_(pause: 2.5s)_
+
+### Football · RB · outside-zone · viz play
+<!-- slug: viz-ftb-rb-outside-zone | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the outside zone, and read the edge before you bounce it.
+_(pause: 2s)_
+2. Snap. You take the handoff clean, ball high and tight.
+_(pause: 2s)_
+3. You aim for the tight end's outside hip.
+_(pause: 2s)_
+4. You press it, stretching the front sideways.
+_(pause: 2.5s)_
+5. The end sets hard — the edge is closed.
+_(pause: 2s)_
+6. So you plant and cut it up in the crease inside.
+_(pause: 2.5s)_
+7. You slice through the seam, downhill fast.
+_(pause: 2s)_
+8. You lower your pad level and fall forward past the safety.
+_(pause: 3s)_
+9. You take the crease inside and move the chains.
+_(pause: 2.5s)_
+
+### Football · RB · check-release-screen · viz play
+<!-- slug: viz-ftb-rb-check-release-screen | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the screen called your way, and sell the block first.
+_(pause: 2s)_
+2. Snap. You slip the rusher and drift to the flat.
+_(pause: 2s)_
+3. You turn and open your hands for the ball.
+_(pause: 2s)_
+4. The pass is soft, right into your chest.
+_(pause: 2.5s)_
+5. Your linemen are out in front, setting up their blocks.
+_(pause: 2s)_
+6. You follow their hips and let it set up.
+_(pause: 2.5s)_
+7. You cut off the last block and get upfield.
+_(pause: 2s)_
+8. Open grass now — you hit it full speed.
+_(pause: 3s)_
+9. You follow the blocks and finish the play for a big gain.
+_(pause: 2.5s)_
+
+### Football · RB · blitz-pickup · viz play
+<!-- slug: viz-ftb-rb-blitz-pickup | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the blitz coming, and know your job is to protect.
+_(pause: 2s)_
+2. You scan the front and read the pressure pre-snap.
+_(pause: 2.5s)_
+3. Snap. The linebacker fires through the A-gap.
+_(pause: 2s)_
+4. You step up and meet him square in the hole.
+_(pause: 2.5s)_
+5. Low pad level, hands inside, feet driving.
+_(pause: 2s)_
+6. You stop his charge and hold your ground in protection.
+_(pause: 2.5s)_
+7. Your quarterback steps up into clean space.
+_(pause: 2s)_
+8. The ball gets out downfield for a completion.
+_(pause: 3s)_
+9. The protection holds and the quarterback completes the throw.
+_(pause: 2.5s)_
+
+### Football · RB · short-yardage · viz play
+<!-- slug: viz-ftb-rb-short-yardage | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See fourth and one, with the offense needing a yard.
+_(pause: 2s)_
+2. Everyone in the stadium knows it's coming to you.
+_(pause: 2.5s)_
+3. Snap. Clean handoff, ball locked away high and tight.
+_(pause: 2s)_
+4. You take one hard step and press the line.
+_(pause: 2s)_
+5. No dancing — you get downhill right now.
+_(pause: 2.5s)_
+6. You hit the pile low, legs churning.
+_(pause: 2s)_
+7. You keep your feet driving through contact.
+_(pause: 2.5s)_
+8. You fall forward, past the line. First down.
+_(pause: 3s)_
+9. You get the yard and move the chains.
+_(pause: 2.5s)_
+
+### Football · RB · take-what-is-there · viz play
+<!-- slug: viz-ftb-rb-take-what-is-there | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the run called inside, and take the yards that are there.
+_(pause: 2s)_
+2. Snap. Handoff clean, two hands, high and tight.
+_(pause: 2s)_
+3. You press the hole, but it's clogged inside.
+_(pause: 2.5s)_
+4. The edge looks tempting — the bounce is right there.
+_(pause: 2s)_
+5. You don't chase it. That's how runs go backward.
+_(pause: 2.5s)_
+6. You stick your foot and take the tough gain up the middle.
+_(pause: 2s)_
+7. Four hard yards, downhill, pad level low.
+_(pause: 2s)_
+8. You finish forward and fall for one more.
+_(pause: 3s)_
+9. Second and short beats a run for a loss.
+_(pause: 2s)_
+10. The smart yards keep the chains moving.
+_(pause: 2.5s)_
+
+### Football · RB · next-carry-clean · viz play
+<!-- slug: viz-ftb-rb-next-carry-clean | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself get stuffed at the line, no gain.
+_(pause: 2s)_
+2. You let that carry go — it's already behind you.
+_(pause: 2.5s)_
+3. Next play, same call, same trust in the blocks.
+_(pause: 2s)_
+4. Snap. Clean handoff, ball high and tight.
+_(pause: 2s)_
+5. You press the hole a beat longer this time.
+_(pause: 2.5s)_
+6. It opens late, and you cut downhill hard.
+_(pause: 2s)_
+7. You burst through the second level clean.
+_(pause: 2.5s)_
+8. A big gain to answer the stuff.
+_(pause: 3s)_
+9. One patient carry, and you broke it.
+_(pause: 2.5s)_
+
+### Football · WR · beat-the-press · viz play
+<!-- slug: viz-ftb-wr-beat-the-press | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the corner pressed up on you, and know you'll win the release.
+_(pause: 2s)_
+2. You set your stance, weight balanced, eyes on his hands.
+_(pause: 2.5s)_
+3. Snap. You attack his leverage with a quick jab.
+_(pause: 2s)_
+4. You swipe his hands off and burst past him clean.
+_(pause: 2.5s)_
+5. You stack him, getting on top and even.
+_(pause: 2s)_
+6. You're a full step ahead now, running free.
+_(pause: 2s)_
+7. The ball drops in over your shoulder.
+_(pause: 2.5s)_
+8. You look it in and squeeze it home.
+_(pause: 3s)_
+9. Caught clean, off the press, and gone.
+_(pause: 2.5s)_
+
+### Football · WR · slant-yac · viz play
+<!-- slug: viz-ftb-wr-slant-yac | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the slant called and focus first on winning the route.
+_(pause: 2s)_
+2. Snap. You take three hard steps upfield.
+_(pause: 2s)_
+3. You break flat across the linebacker's face.
+_(pause: 2.5s)_
+4. The ball is there quick, on your frame.
+_(pause: 2s)_
+5. Late hands, you snatch it out of the air.
+_(pause: 2.5s)_
+6. You tuck it and turn upfield in one move.
+_(pause: 2s)_
+7. You slip the first tackle and get vertical.
+_(pause: 2.5s)_
+8. You get vertical and finish the run upfield.
+_(pause: 3s)_
+9. A quick throw turned into a big gain.
+_(pause: 2.5s)_
+
+### Football · WR · deep-ball · viz play
+<!-- slug: viz-ftb-wr-deep-ball | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the go route called, and trust yourself to run under it.
+_(pause: 2s)_
+2. Snap. You explode off the line, full speed.
+_(pause: 2s)_
+3. You get on top of the corner, even, then past.
+_(pause: 2.5s)_
+4. You find the ball over your outside shoulder.
+_(pause: 2s)_
+5. You track it in the air without breaking stride.
+_(pause: 2.5s)_
+6. You adjust late, hands up, eyes locked on it.
+_(pause: 2s)_
+7. The ball drops into your hands in stride.
+_(pause: 2.5s)_
+8. You look it all the way in and tuck it.
+_(pause: 3s)_
+9. You secure the catch and finish the route into the end zone.
+_(pause: 2.5s)_
+
+### Football · WR · contested-catch · viz play
+<!-- slug: viz-ftb-wr-contested-catch | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the fade called to your back shoulder, one-on-one.
+_(pause: 2s)_
+2. Snap. You release up the sideline and create position on the corner.
+_(pause: 2s)_
+3. You feel the corner draped on your hip.
+_(pause: 2.5s)_
+4. The ball comes back-shoulder, away from him.
+_(pause: 2s)_
+5. You throttle down and come back to it.
+_(pause: 2.5s)_
+6. You go up strong and high-point it at the top.
+_(pause: 2s)_
+7. Two hands, you rip it down through the contest.
+_(pause: 2.5s)_
+8. You get your feet in and hang on through the ground.
+_(pause: 3s)_
+9. You secure the catch through contact and complete the play.
+_(pause: 2.5s)_
+
+### Football · WR · stalk-block · viz play
+<!-- slug: viz-ftb-wr-stalk-block | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the run called your way, and know your block springs it.
+_(pause: 2s)_
+2. Snap. You release like it's a route to hold the corner.
+_(pause: 2.5s)_
+3. He backpedals, respecting the deep ball.
+_(pause: 2s)_
+4. You break down under control, feet chopping.
+_(pause: 2s)_
+5. You fit your hands inside his chest, eyes up.
+_(pause: 2.5s)_
+6. You mirror him and wall him off from the play.
+_(pause: 2s)_
+7. Your back cuts off your block, up the sideline.
+_(pause: 2.5s)_
+8. He races past into open grass, gone.
+_(pause: 3s)_
+9. Your block gives the back room to get up the sideline.
+_(pause: 2.5s)_
+
+### Football · WR · third-down-move-chains · viz play
+<!-- slug: viz-ftb-wr-third-down-move-chains | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See third and long, and know the throw is coming to you.
+_(pause: 2s)_
+2. Snap. You release clean and get vertical fast.
+_(pause: 2s)_
+3. You read the coverage dropping off soft.
+_(pause: 2.5s)_
+4. You find the marker and settle in the soft spot.
+_(pause: 2s)_
+5. You sit down just past the sticks, facing the ball.
+_(pause: 2.5s)_
+6. The pass hits you square in the numbers.
+_(pause: 2s)_
+7. You secure it first, then turn and fall forward.
+_(pause: 2.5s)_
+8. Past the line to gain. First down.
+_(pause: 3s)_
+9. You secure the catch beyond the marker and move the chains.
+_(pause: 2.5s)_
+
+### Football · WR · run-the-next-one-clean · viz play
+<!-- slug: viz-ftb-wr-run-the-next-one-clean | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself drop a ball you should have had, clean off your hands.
+_(pause: 2s)_
+2. The drop is over. You get back to the huddle and listen for the next call.
+_(pause: 2.5s)_
+3. You do not protect against another drop or carry the frustration into the next route.
+_(pause: 2s)_
+4. Next play, you line up and run it full speed.
+_(pause: 2s)_
+5. Snap. You beat the press and stem it hard.
+_(pause: 2.5s)_
+6. You snap your break, coming open again.
+_(pause: 2s)_
+7. This time you look it all the way in.
+_(pause: 2.5s)_
+8. You show your hands late, look it in, and secure it.
+_(pause: 3s)_
+9. You complete the next catch and reset for the next play.
+_(pause: 2.5s)_
+
+### Football · OL · pass-set-anchor · viz play
+<!-- slug: viz-ftb-ol-pass-set-anchor | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the drop-back called and focus on your pass set.
+_(pause: 2s)_
+2. You set in your stance, hand down, eyes on the rusher.
+_(pause: 2.5s)_
+3. Snap. You kick and slide, staying square.
+_(pause: 2s)_
+4. He comes with speed, aiming for your edge.
+_(pause: 2s)_
+5. You mirror his rush, feet quiet, hands ready.
+_(pause: 2.5s)_
+6. He tries to bull you — you punch inside and anchor.
+_(pause: 2s)_
+7. Your base sinks, and he stalls against you.
+_(pause: 2.5s)_
+8. The pocket stays firm behind you.
+_(pause: 3s)_
+9. The pocket stays firm and the throw gets out clean.
+_(pause: 2.5s)_
+
+### Football · OL · drive-block · viz play
+<!-- slug: viz-ftb-ol-drive-block | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the run called to your gap and focus on winning your leverage.
+_(pause: 2s)_
+2. You get in your stance, eyes on your man.
+_(pause: 2s)_
+3. Snap. You fire off low and hard, first off the ball.
+_(pause: 2.5s)_
+4. You get your hat across his front.
+_(pause: 2s)_
+5. Hands inside, you take his chest and lift.
+_(pause: 2.5s)_
+6. You drive your feet in short, choppy steps.
+_(pause: 2s)_
+7. You move him off the ball, opening the hole.
+_(pause: 2.5s)_
+8. Your back runs off your hip through the gap.
+_(pause: 3s)_
+9. You sustain the block through the whistle and the back hits the gap.
+_(pause: 2.5s)_
+
+### Football · OL · reach-block · viz play
+<!-- slug: viz-ftb-ol-reach-block | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the zone run called, and know you'll reach the edge.
+_(pause: 2s)_
+2. Snap. You take a quick play-side step, flat and fast.
+_(pause: 2.5s)_
+3. You get your head across his outside shoulder.
+_(pause: 2s)_
+4. He tries to fight over the top to the sideline.
+_(pause: 2.5s)_
+5. You stay on his edge, hands inside, feet running.
+_(pause: 2s)_
+6. You gain leverage and turn his shoulders.
+_(pause: 2s)_
+7. You seal him inside, away from the play.
+_(pause: 2.5s)_
+8. The back bends it right off your block.
+_(pause: 3s)_
+9. Edge sealed. He hits the crease clean.
+_(pause: 2.5s)_
+
+### Football · OL · pull-and-kick · viz play
+<!-- slug: viz-ftb-ol-pull-and-kick | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the trap called, and picture yourself leading the play.
+_(pause: 2s)_
+2. Snap. You pull flat down the line, quick and low.
+_(pause: 2.5s)_
+3. You keep your eyes in the hole for your man.
+_(pause: 2s)_
+4. The end crashes down, right into your path.
+_(pause: 2.5s)_
+5. You square up and strike him with your inside hands.
+_(pause: 2s)_
+6. You kick him out, sealing the wall.
+_(pause: 2.5s)_
+7. The crease opens up right behind you.
+_(pause: 2s)_
+8. Your back shoots through it downhill.
+_(pause: 3s)_
+9. Your kick-out opens the crease and the back gets downhill.
+_(pause: 2.5s)_
+
+### Football · OL · pass-off-the-stunt · viz play
+<!-- slug: viz-ftb-ol-pass-off-the-stunt | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the twist coming, and trust your rules to pass it off.
+_(pause: 2s)_
+2. Snap. You set to your man and stay square.
+_(pause: 2s)_
+3. The end crashes inside, the tackle looping behind.
+_(pause: 2.5s)_
+4. You feel the pick and don't chase it.
+_(pause: 2s)_
+5. You pass the crasher to your guard, eyes outside.
+_(pause: 2.5s)_
+6. You slide to pick up the looper coming free.
+_(pause: 2s)_
+7. You punch him inside and ride him wide.
+_(pause: 2.5s)_
+8. No free rusher gets through. The pocket holds.
+_(pause: 3s)_
+9. You and the guard sort the stunt and keep the pocket clean.
+_(pause: 2.5s)_
+
+### Football · OL · combo-climb · viz play
+<!-- slug: viz-ftb-ol-combo-climb | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See the double-team called, and know you'll climb to the backer.
+_(pause: 2s)_
+2. Snap. You and your guard hit the down lineman together.
+_(pause: 2.5s)_
+3. Four hands, one man — you jolt him off the ball.
+_(pause: 2s)_
+4. You feel your guard take over the block.
+_(pause: 2.5s)_
+5. You come off late, eyes up to the second level.
+_(pause: 2s)_
+6. The linebacker fills downhill toward the gap.
+_(pause: 2.5s)_
+7. You climb clean and fit your hands on him.
+_(pause: 2s)_
+8. You wall him off and run your feet.
+_(pause: 3s)_
+9. Both defenders blocked. The back cuts through.
+_(pause: 2.5s)_
+
+### Football · OL · win-the-next-rep · viz play
+<!-- slug: viz-ftb-ol-win-the-next-rep | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself get beat on a rep, your man winning clean.
+_(pause: 2s)_
+2. That snap is over. You reset your stance and your eyes.
+_(pause: 2.5s)_
+3. You do not over-set or change your technique trying to make up for it.
+_(pause: 2s)_
+4. Next play, you get back in your stance, eyes calm.
+_(pause: 2s)_
+5. Snap. You set quick, hands loaded, base under you.
+_(pause: 2.5s)_
+6. He tries the same speed rush again.
+_(pause: 2s)_
+7. This time you punch first and lock him out.
+_(pause: 2.5s)_
+8. You anchor, mirror, and ride him past the pocket.
+_(pause: 3s)_
+9. You keep the pocket clean on the next rep.
+_(pause: 2.5s)_
+
+### Football · DL · get-off · viz play
+<!-- slug: viz-ftb-dl-get-off | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself across the ball, coiled and ready to win the get-off.
+_(pause: 2s)_
+2. You key the football, weight loaded, eyes on the tip of the ball.
+_(pause: 2.5s)_
+3. Snap. You fire off first, low and hard, beating the guard to the spot.
+_(pause: 2s)_
+4. Your hands land inside his chest before he can set.
+_(pause: 2s)_
+5. You lock him out, hold your gap, and feel the run develop.
+_(pause: 2.5s)_
+6. The back cuts toward your gap. You shed the block clean.
+_(pause: 2s)_
+7. You come off square, eyes on the ball carrier.
+_(pause: 2s)_
+8. You break down, wrap him up, and drive your feet through the tackle.
+_(pause: 3s)_
+9. Stopped for no gain. You peel off and get back to the huddle, ready for the next one.
+_(pause: 2s)_
+
+### Football · DL · stack-shed · viz play
+<!-- slug: viz-ftb-dl-stack-shed | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself head-up on the lineman, ready to take him on and read it.
+_(pause: 2s)_
+2. Snap. He fires out at you, hat down, trying to move you.
+_(pause: 2s)_
+3. You strike first — hands inside, pad under pad, and you anchor.
+_(pause: 2.5s)_
+4. You stack him up and hold your ground at the line.
+_(pause: 2s)_
+5. You keep your eyes in the backfield, reading the back through the block.
+_(pause: 2.5s)_
+6. He commits to your side. You shed hard toward the ball.
+_(pause: 2s)_
+7. You come off the block clean, square to the ball carrier.
+_(pause: 2s)_
+8. You fill the lane, wrap up, and finish the tackle for no gain.
+_(pause: 3s)_
+9. The pile stops at the line. You come off it and get set for the next snap.
+_(pause: 2s)_
+
+### Football · DL · win-the-edge · viz play
+<!-- slug: viz-ftb-dl-win-the-edge | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself on the edge, third and long, ready to rush the passer.
+_(pause: 2s)_
+2. You know it's a pass. You get off on the ball, first step upfield.
+_(pause: 2s)_
+3. You attack half the man, aiming for his outside shoulder.
+_(pause: 2.5s)_
+4. He kicks to set, but your get-off already has him beat.
+_(pause: 2s)_
+5. You dip your shoulder, bend the edge, and turn the corner tight.
+_(pause: 2.5s)_
+6. His hands miss as you rip through and flatten to the quarterback.
+_(pause: 2s)_
+7. You close the space fast — he's still looking downfield.
+_(pause: 2s)_
+8. You get home clean, wrap him up, and bring him down.
+_(pause: 3s)_
+9. Sack. You pop up and get back to the huddle for the next rush.
+_(pause: 2s)_
+
+### Football · DL · hands-up · viz play
+<!-- slug: viz-ftb-dl-hands-up | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself rushing the passer, working to win your lane.
+_(pause: 2s)_
+2. Snap. You get off and press the tackle, working your hands.
+_(pause: 2s)_
+3. He mirrors you and stays square — no clean lane home.
+_(pause: 2.5s)_
+4. You feel the quarterback set to throw, still just out of reach.
+_(pause: 2s)_
+5. You stop trying to run through and get your eyes on the ball.
+_(pause: 2.5s)_
+6. You throw your hands straight up into the passing lane.
+_(pause: 2s)_
+7. The throw comes — and you get a piece of it at the line.
+_(pause: 2s)_
+8. The ball flutters and falls incomplete, batted down.
+_(pause: 3s)_
+9. The ball falls incomplete and the defense gets off the field.
+_(pause: 2s)_
+
+### Football · DL · goal-line · viz play
+<!-- slug: viz-ftb-dl-goal-line | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself on the goal line, with the offense trying to run through your gap.
+_(pause: 2s)_
+2. They're going to run it right at you. You get low in your stance.
+_(pause: 2.5s)_
+3. Snap. The line fires out to move you off the ball.
+_(pause: 2s)_
+4. You strike first, hands inside, and drop your base.
+_(pause: 2s)_
+5. You drop your base, hold your ground, and keep the gap closed.
+_(pause: 2.5s)_
+6. The back dives for the line, looking for a crease.
+_(pause: 2s)_
+7. There's no crease. You've clogged it up with the whole front.
+_(pause: 2s)_
+8. You come off the block and meet him in the hole, head up and low.
+_(pause: 3s)_
+9. Stopped short. Goal-line stand. The defense holds.
+_(pause: 2s)_
+
+### Football · DL · contain-scramble · viz play
+<!-- slug: viz-ftb-dl-contain-scramble | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself rushing, disciplined, staying in your rush lane.
+_(pause: 2s)_
+2. Snap. You get off and press your rush up the field.
+_(pause: 2s)_
+3. The pocket starts to break down and the quarterback feels it.
+_(pause: 2.5s)_
+4. He steps up, looking to escape and make a play with his legs.
+_(pause: 2s)_
+5. You don't chase the sack out of your lane — you stay home.
+_(pause: 2.5s)_
+6. You keep your rush lane, squeeze him back inside, no escape.
+_(pause: 2s)_
+7. He's got nowhere to run. You close from your edge.
+_(pause: 2s)_
+8. You corral him and wrap him up before he crosses the line.
+_(pause: 3s)_
+9. You keep contain and stop the scramble before the line.
+_(pause: 2s)_
+
+### Football · DL · pursue-backside · viz play
+<!-- slug: viz-ftb-dl-pursue-backside | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself on the backside of a run, ready to chase it flat down the line.
+_(pause: 2s)_
+2. Snap. The tackle reaches you and seals you from your gap.
+_(pause: 2s)_
+3. For a beat, you're hooked and the run is going away from you.
+_(pause: 2s)_
+4. You rip off the block and get back into pursuit.
+_(pause: 2.5s)_
+5. You run flat down the line of scrimmage and stay in the play.
+_(pause: 2s)_
+6. The back cuts back, looking for the backside crease.
+_(pause: 2s)_
+7. You close the backside crease as the back cuts toward it.
+_(pause: 2.5s)_
+8. You run him down from behind and drag him to the turf.
+_(pause: 3s)_
+9. You recover from the block and make the tackle on the cutback.
+_(pause: 2s)_
+
+### Football · LB · read-and-fill · viz play
+<!-- slug: viz-ftb-lb-read-and-fill | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself in the box, eyes on your keys, ready for the snap.
+_(pause: 2s)_
+2. You read the guard and the backfield, patient at the snap.
+_(pause: 2.5s)_
+3. The guard down-blocks and the back presses the hole — it's a run.
+_(pause: 2s)_
+4. You trigger downhill, no hesitation, filling your gap.
+_(pause: 2s)_
+5. A lineman climbs to block you. You take him on with your hands.
+_(pause: 2.5s)_
+6. You keep your shoulders square and stay clean off the block.
+_(pause: 2s)_
+7. You shed, find the back, and close the space fast.
+_(pause: 2s)_
+8. Head up, you wrap him up and drive your feet through the tackle.
+_(pause: 3s)_
+9. Stopped for a short gain. You pop up and signal the next call.
+_(pause: 2s)_
+
+### Football · LB · take-on-lead · viz play
+<!-- slug: viz-ftb-lb-take-on-lead | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself reading a power play developing right at you.
+_(pause: 2s)_
+2. Snap. You see the guard pull and the lead blocker climbing to you.
+_(pause: 2.5s)_
+3. You trigger downhill and meet the block in the hole, not on your heels.
+_(pause: 2s)_
+4. You strike the blocker with your hands, pad under pad.
+_(pause: 2s)_
+5. You keep your outside arm free and hold your leverage.
+_(pause: 2.5s)_
+6. You force the run back inside, to your help.
+_(pause: 2s)_
+7. The back has to cut it up into the traffic.
+_(pause: 2s)_
+8. Your help is there, and you come off to finish the tackle.
+_(pause: 3s)_
+9. Short gain, run defended. You reset the front and get the call in.
+_(pause: 2s)_
+
+### Football · LB · zone-drop · viz play
+<!-- slug: viz-ftb-lb-zone-drop | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself dropping into your zone, eyes up on the quarterback.
+_(pause: 2s)_
+2. Snap. You read pass and open into your drop, feeling the routes.
+_(pause: 2.5s)_
+3. A receiver crosses into your zone — you carry him with your eyes.
+_(pause: 2s)_
+4. You settle in the window and keep your eyes on the quarterback.
+_(pause: 2.5s)_
+5. He winds up to throw over the middle.
+_(pause: 2s)_
+6. You read his eyes and break the instant the ball leaves his hand.
+_(pause: 2s)_
+7. You drive downhill on the throw, closing the window.
+_(pause: 2s)_
+8. You arrive as the ball does and knock it away clean.
+_(pause: 3s)_
+9. Incomplete. Third down stop. You made them punt.
+_(pause: 2s)_
+
+### Football · LB · cover-the-back · viz play
+<!-- slug: viz-ftb-lb-cover-the-back | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself matched on the back, ready to run with him in coverage.
+_(pause: 2s)_
+2. Snap. He slips out of the backfield on a route to the flat.
+_(pause: 2s)_
+3. You don't bite on the play fake — you stay locked on the back.
+_(pause: 2.5s)_
+4. You open your hips and run with him step for step.
+_(pause: 2s)_
+5. He tries to break it upfield on a wheel.
+_(pause: 2s)_
+6. You stay on top and keep your leverage, no separation.
+_(pause: 2.5s)_
+7. The quarterback looks, but there's no window to throw.
+_(pause: 2s)_
+8. He comes off it, and the back is covered all the way.
+_(pause: 3s)_
+9. The quarterback comes off the route because you stay in coverage.
+_(pause: 2s)_
+
+### Football · LB · blitz · viz play
+<!-- slug: viz-ftb-lb-blitz | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself walked up, timing the snap, ready to bring the blitz.
+_(pause: 2s)_
+2. You get the call and creep toward your gap late.
+_(pause: 2.5s)_
+3. Snap. You time it clean and shoot the A-gap downhill.
+_(pause: 2s)_
+4. You're through the line before the guard can pick you up.
+_(pause: 2s)_
+5. You bend flat to the quarterback, eyes on the ball.
+_(pause: 2.5s)_
+6. He never sees you coming downhill through the pocket.
+_(pause: 2s)_
+7. You close the last step and wrap him up clean.
+_(pause: 2s)_
+8. You bring him down before he can get the throw off.
+_(pause: 3s)_
+9. Sack. You pop up and get the defense lined up again.
+_(pause: 2s)_
+
+### Football · LB · goal-line · viz play
+<!-- slug: viz-ftb-lb-goal-line | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself stacked in the box on the goal line, ready to fill your gap.
+_(pause: 2s)_
+2. They're going to try to pound it in. You get downhill in your stance.
+_(pause: 2.5s)_
+3. Snap. You read run and trigger fast, no false steps.
+_(pause: 2s)_
+4. You beat the blocker to the hole and fill it downhill.
+_(pause: 2s)_
+5. You meet the back in the gap before he reaches the line.
+_(pause: 2.5s)_
+6. Head up, you get your pads under his and stand him up.
+_(pause: 2s)_
+7. You wrap, squeeze, and drive your feet.
+_(pause: 2s)_
+8. He doesn't get across. Your help swarms to finish it.
+_(pause: 3s)_
+9. Goal-line stand. The defense holds and takes over the ball.
+_(pause: 2s)_
+
+### Football · LB · recover-play-action · viz play
+<!-- slug: viz-ftb-lb-recover-play-action | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself reading run, then catching yourself on the play fake.
+_(pause: 2s)_
+2. Snap. The line shows run and you take a step downhill.
+_(pause: 2s)_
+3. It's play-action — the back doesn't have it, the quarterback pulls it.
+_(pause: 2s)_
+4. For a beat, you're out of your drop and a step out of position.
+_(pause: 2s)_
+5. You don't panic or grab — you get your eyes back to your keys.
+_(pause: 2.5s)_
+6. You flip and drop back into your zone, recovering fast.
+_(pause: 2s)_
+7. You find the crosser and read the quarterback's eyes.
+_(pause: 2s)_
+8. He throws, and you break on it, driving through the window.
+_(pause: 3s)_
+9. You recover into the window and knock the pass away.
+_(pause: 2s)_
+
+### Football · DB · press-man · viz play
+<!-- slug: viz-ftb-db-press-man | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself pressed over your man, eyes on his hips and feet balanced.
+_(pause: 2s)_
+2. Snap. He releases, and you don't lunge — patient feet.
+_(pause: 2.5s)_
+3. You mirror his first move and get your hands on him at the line.
+_(pause: 2s)_
+4. You stay hip to hip, running with him stride for stride.
+_(pause: 2s)_
+5. He can't stack you — you're in phase the whole way.
+_(pause: 2.5s)_
+6. He breaks, and you drive on it, closing the cushion.
+_(pause: 2s)_
+7. The ball comes on his break, in front of you.
+_(pause: 2s)_
+8. You drive through his hands and knock it away clean.
+_(pause: 3s)_
+9. Incomplete. You reset and get ready for the next coverage call.
+_(pause: 2s)_
+
+### Football · DB · off-break · viz play
+<!-- slug: viz-ftb-db-off-break | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself in off coverage, reading the route through his stem.
+_(pause: 2s)_
+2. Snap. You backpedal, patient, keeping your cushion.
+_(pause: 2.5s)_
+3. You read his stem and feel the route developing underneath.
+_(pause: 2s)_
+4. He sits down in the hook, and the quarterback loads to throw.
+_(pause: 2.5s)_
+5. You plant off your cushion and break downhill on the ball.
+_(pause: 2s)_
+6. You close the ground fast, driving on the catch point.
+_(pause: 2s)_
+7. You arrive as the ball does, right on his hands.
+_(pause: 2s)_
+8. You arrive through the hands and break the pass up.
+_(pause: 3s)_
+9. Incomplete. You read the route and close the window.
+_(pause: 2s)_
+
+### Football · DB · pick · viz play
+<!-- slug: viz-ftb-db-pick | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself reading the concept and holding your leverage long enough to invite the throw.
+_(pause: 2s)_
+2. Snap. You get depth and keep your eyes on the quarterback.
+_(pause: 2.5s)_
+3. You read the route combination and see the throw before it comes.
+_(pause: 2s)_
+4. You recognize the throw and drive in front of the receiver.
+_(pause: 2s)_
+5. The ball's in the air, and you're already breaking to it.
+_(pause: 2.5s)_
+6. You attack it at the high point with both hands.
+_(pause: 2s)_
+7. You pick it clean and tuck it away.
+_(pause: 2s)_
+8. You get your feet under you and turn upfield with the ball.
+_(pause: 3s)_
+9. You secure the interception and get the offense the ball back.
+_(pause: 2s)_
+
+### Football · DB · run-support · viz play
+<!-- slug: viz-ftb-db-run-support | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself reading run, coming downhill as the force in the alley.
+_(pause: 2s)_
+2. Snap. You read run and trigger, driving toward the line.
+_(pause: 2s)_
+3. The back breaks outside, looking for room in the alley.
+_(pause: 2.5s)_
+4. You fill fast but under control, breaking down as you close.
+_(pause: 2s)_
+5. You keep leverage, forcing him back inside to your help.
+_(pause: 2.5s)_
+6. You square him up, head up, in a good tackling position.
+_(pause: 2s)_
+7. You wrap him up and drive your feet on contact.
+_(pause: 2s)_
+8. You bring him down in space, a sure open-field tackle.
+_(pause: 3s)_
+9. Short gain. You reset and get the next coverage call.
+_(pause: 2s)_
+
+### Football · DB · set-the-edge · viz play
+<!-- slug: viz-ftb-db-set-the-edge | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself as the force player on the edge of a perimeter run.
+_(pause: 2s)_
+2. Snap. The run breaks your way and the receiver comes to block you.
+_(pause: 2.5s)_
+3. You trigger down and meet him before he gets into your chest.
+_(pause: 2s)_
+4. You strike him with your hands and keep your outside arm free.
+_(pause: 2.5s)_
+5. You hold the edge — you don't get turned or reached.
+_(pause: 2s)_
+6. You force the ball back inside, to your help.
+_(pause: 2s)_
+7. The back has to cut up into the traffic.
+_(pause: 2s)_
+8. You shed the block and come off to help finish the tackle.
+_(pause: 3s)_
+9. You keep the edge set and force the run back to your help.
+_(pause: 2s)_
+
+### Football · DB · clutch-deep · viz play
+<!-- slug: viz-ftb-db-clutch-deep | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself matched on their best receiver late in the game, with no help over the top.
+_(pause: 2s)_
+2. Snap. He releases hard, trying to get on top of you.
+_(pause: 2.5s)_
+3. You stay patient, in phase, eyes on his hips, not the noise.
+_(pause: 2s)_
+4. He goes vertical, and you run with him stride for stride.
+_(pause: 2.5s)_
+5. The ball goes up deep toward your side.
+_(pause: 2s)_
+6. You stay on top, get your eyes back, and find the ball.
+_(pause: 2s)_
+7. You stay in phase, find the ball, and play through his hands at the catch point.
+_(pause: 2s)_
+8. You knock it away clean as it comes down.
+_(pause: 3s)_
+9. Incomplete. You finish the rep and reset for the next snap.
+_(pause: 2s)_
+
+### Football · DB · recover-in-phase · viz play
+<!-- slug: viz-ftb-db-recover-in-phase | file: components/pregame/audio/clips-viz-football.ts -->
+
+1. See yourself on your man, then feeling him get a step on your break.
+_(pause: 2s)_
+2. Snap. He releases and stems you, and you open your hips too early.
+_(pause: 2s)_
+3. For a beat, he's got half a step and you're trailing.
+_(pause: 2s)_
+4. You do not grab or look back too early. You keep running to recover.
+_(pause: 2.5s)_
+5. You dig, get back to his hip, and recover into phase.
+_(pause: 2s)_
+6. You close the cushion, running stride for stride again.
+_(pause: 2s)_
+7. The ball's in the air, a step ahead of you.
+_(pause: 2s)_
+8. You get your eyes back, find it, and rake it away at the catch point.
+_(pause: 3s)_
+9. Incomplete. You recover your position and finish through the catch point.
+_(pause: 2s)_
