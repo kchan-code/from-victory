@@ -1,0 +1,10 @@
+{
+  "slug": "hm-ftb-db-big-play",
+  "durationSec": 60.396,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

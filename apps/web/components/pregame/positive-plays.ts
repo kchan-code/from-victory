@@ -40,6 +40,76 @@ export const POSITIVE_PLAY_EST_SEC = 65;
 // filters by the `role` field, so group order within a role is the only thing
 // that matters for display.
 export const POSITIVE_PLAYS: readonly PositivePlay[] = [
+  // ── QB — Football (7) — FV-423. DORMANT: football roles enter the
+  // registry with FV-206; until then these entries are unreachable.
+  { slug: "viz-ftb-qb-rhythm-throw", role: "QB", title: "Rhythm throw, on time" },
+  { slug: "viz-ftb-qb-play-action-shot", role: "QB", title: "Play-action shot down the field" },
+  { slug: "viz-ftb-qb-rpo-read", role: "QB", title: "RPO read \u2014 give or throw it" },
+  { slug: "viz-ftb-qb-scramble", role: "QB", title: "Pocket breaks down, keep it alive" },
+  { slug: "viz-ftb-qb-take-the-checkdown", role: "QB", title: "Take the checkdown, live to the next down" },
+  { slug: "viz-ftb-qb-two-minute-drive", role: "QB", title: "Two-minute drive, manage the situation" },
+  { slug: "viz-ftb-qb-bounce-back-throw", role: "QB", title: "Miss one, complete the next" },
+
+  // ── RB — Football (7) — FV-423. DORMANT: football roles enter the
+  // registry with FV-206; until then these entries are unreachable.
+  { slug: "viz-ftb-rb-inside-zone", role: "RB", title: "Inside zone, hit it downhill" },
+  { slug: "viz-ftb-rb-outside-zone", role: "RB", title: "Outside zone, read the edge" },
+  { slug: "viz-ftb-rb-check-release-screen", role: "RB", title: "Screen pass, catch and go" },
+  { slug: "viz-ftb-rb-blitz-pickup", role: "RB", title: "Pick up the blitz, protect the QB" },
+  { slug: "viz-ftb-rb-short-yardage", role: "RB", title: "Short yardage, finish forward" },
+  { slug: "viz-ftb-rb-take-what-is-there", role: "RB", title: "Take the tough yards, ball secure" },
+  { slug: "viz-ftb-rb-next-carry-clean", role: "RB", title: "Stuffed once, stay patient on the next carry" },
+
+  // ── WR — Football (7) — FV-423. DORMANT: football roles enter the
+  // registry with FV-206; until then these entries are unreachable.
+  { slug: "viz-ftb-wr-beat-the-press", role: "WR", title: "Beat the press, win the release" },
+  { slug: "viz-ftb-wr-slant-yac", role: "WR", title: "Slant, catch, and turn upfield" },
+  { slug: "viz-ftb-wr-deep-ball", role: "WR", title: "Track the deep ball, look it in" },
+  { slug: "viz-ftb-wr-contested-catch", role: "WR", title: "High-point the contested catch" },
+  { slug: "viz-ftb-wr-stalk-block", role: "WR", title: "Stalk block, spring the run" },
+  { slug: "viz-ftb-wr-third-down-move-chains", role: "WR", title: "Third down, find the sticks" },
+  { slug: "viz-ftb-wr-run-the-next-one-clean", role: "WR", title: "Drop one, finish the next catch" },
+
+  // ── OL — Football (7) — FV-423. DORMANT: football roles enter the
+  // registry with FV-206; until then these entries are unreachable.
+  { slug: "viz-ftb-ol-pass-set-anchor", role: "OL", title: "Pass set, hands inside, anchor" },
+  { slug: "viz-ftb-ol-drive-block", role: "OL", title: "Fire off, drive him off the ball" },
+  { slug: "viz-ftb-ol-reach-block", role: "OL", title: "Reach block, seal the edge" },
+  { slug: "viz-ftb-ol-pull-and-kick", role: "OL", title: "Pull, lead, and kick out the edge" },
+  { slug: "viz-ftb-ol-pass-off-the-stunt", role: "OL", title: "Pass off the stunt, no free rusher" },
+  { slug: "viz-ftb-ol-combo-climb", role: "OL", title: "Combo block, climb to the linebacker" },
+  { slug: "viz-ftb-ol-win-the-next-rep", role: "OL", title: "Lose one, win the next rep" },
+
+  // ── DL — Football (7) — FV-423. DORMANT: football roles enter the
+  // registry with FV-206; until then these entries are unreachable.
+  { slug: "viz-ftb-dl-get-off", role: "DL", title: "Win the get-off and the rep" },
+  { slug: "viz-ftb-dl-stack-shed", role: "DL", title: "Stack the block, shed, make the tackle" },
+  { slug: "viz-ftb-dl-win-the-edge", role: "DL", title: "Speed rush, win the edge, get home" },
+  { slug: "viz-ftb-dl-hands-up", role: "DL", title: "Can't get home \u2014 get your hands up" },
+  { slug: "viz-ftb-dl-goal-line", role: "DL", title: "Goal-line stand, hold your gap" },
+  { slug: "viz-ftb-dl-contain-scramble", role: "DL", title: "Keep your lane, corral the scramble" },
+  { slug: "viz-ftb-dl-pursue-backside", role: "DL", title: "Reached on the run \u2014 chase it down" },
+
+  // ── LB — Football (7) — FV-423. DORMANT: football roles enter the
+  // registry with FV-206; until then these entries are unreachable.
+  { slug: "viz-ftb-lb-read-and-fill", role: "LB", title: "Read your keys, trigger, fill" },
+  { slug: "viz-ftb-lb-take-on-lead", role: "LB", title: "Take on the lead block, force it back inside" },
+  { slug: "viz-ftb-lb-zone-drop", role: "LB", title: "Drop, read the QB, break on the ball" },
+  { slug: "viz-ftb-lb-cover-the-back", role: "LB", title: "Carry the back out of the backfield" },
+  { slug: "viz-ftb-lb-blitz", role: "LB", title: "Time the blitz and get home" },
+  { slug: "viz-ftb-lb-goal-line", role: "LB", title: "Goal-line stop, fill the hole" },
+  { slug: "viz-ftb-lb-recover-play-action", role: "LB", title: "Bite the fake, recover, break on it" },
+
+  // ── DB — Football (7) — FV-423. DORMANT: football roles enter the
+  // registry with FV-206; until then these entries are unreachable.
+  { slug: "viz-ftb-db-press-man", role: "DB", title: "Press, mirror, play the ball" },
+  { slug: "viz-ftb-db-off-break", role: "DB", title: "Read it off, break on the throw" },
+  { slug: "viz-ftb-db-pick", role: "DB", title: "Read the route, jump it, take it away" },
+  { slug: "viz-ftb-db-run-support", role: "DB", title: "Fill the alley, tackle in space" },
+  { slug: "viz-ftb-db-set-the-edge", role: "DB", title: "Set the edge, force it back inside" },
+  { slug: "viz-ftb-db-clutch-deep", role: "DB", title: "Late deep ball, stay in phase" },
+  { slug: "viz-ftb-db-recover-in-phase", role: "DB", title: "Hips flipped early \u2014 recover and play the ball" },
+
   // ── Defense — Hockey (9) ──────────────────────────────────────────────────
   { slug: "viz-defense-retrieval", role: "Defense", title: "Clean puck retrieval" },
   { slug: "viz-defense-walk-the-line", role: "Defense", title: "Walk the blue line" },

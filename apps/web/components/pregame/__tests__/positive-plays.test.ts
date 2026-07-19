@@ -25,11 +25,20 @@ const EXPECTED_COUNTS: Record<string, number> = {
   Bomber: 7,
   "Ball-Striker": 7,
   Scrambler: 7,
+  // Football (FV-423) — DORMANT until FV-206 wiring
+  QB: 7,
+  RB: 7,
+  WR: 7,
+  OL: 7,
+  DL: 7,
+  LB: 7,
+  DB: 7,
 };
 
 describe("POSITIVE_PLAYS library", () => {
-  it("has all 73 plays", () => {
-    expect(POSITIVE_PLAYS).toHaveLength(73);
+  it("has all 122 plays", () => {
+    // 73 (hockey/basketball/golf) + 49 football (FV-423, dormant until FV-206)
+    expect(POSITIVE_PLAYS).toHaveLength(122);
   });
 
   it("has no duplicate slugs", () => {

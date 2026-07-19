@@ -1,0 +1,10 @@
+{
+  "slug": "hm-ftb-lb-benched",
+  "durationSec": 60.06,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

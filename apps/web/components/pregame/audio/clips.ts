@@ -92,6 +92,7 @@ import { GOLF_PREGAME_CLIP_SCRIPTS } from "./clips-golf.ts";
 // FV-294: 21 golf positive-play viz clips + st-glf-02 self-talk
 import { GOLF_VIZ_CLIP_SCRIPTS } from "./clips-viz-golf.ts";
 import { FOOTBALL_PREGAME_CLIP_SCRIPTS } from "./clips-football.ts";
+import { FOOTBALL_VIZ_CLIP_SCRIPTS } from "./clips-viz-football.ts";
 import { SWIMMING_PREGAME_CLIP_SCRIPTS } from "./clips-swimming.ts";
 import { TRACKFIELD_PREGAME_CLIP_SCRIPTS } from "./clips-trackfield.ts";
 import { LACROSSE_PREGAME_CLIP_SCRIPTS } from "./clips-lacrosse.ts";
@@ -5714,6 +5715,7 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   // cells. Registered so the generator renders them at the (deferred) audio
   // pass; the committed manifest.json does not yet contain them.
   ...FOOTBALL_PREGAME_CLIP_SCRIPTS,
+  ...FOOTBALL_VIZ_CLIP_SCRIPTS,
   // Swimming pregame clips (FV-275, v2 DORMANT) — 4 specialty VIZ + 38
   // hard-moment cells. Same deferred-render staging as football.
   ...SWIMMING_PREGAME_CLIP_SCRIPTS,

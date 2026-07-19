@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "10e52fec",
+  "manifestVersion": "f424746f",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -4605,6 +4605,1264 @@
       "phases": [
         {
           "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-qb": {
+      "url": "/audio/pregame/clips/viz-ftb-qb.3f8d0a90.mp3",
+      "durationSec": 149.476,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 50.674
+        }
+      ]
+    },
+    "viz-ftb-rb": {
+      "url": "/audio/pregame/clips/viz-ftb-rb.77e71026.mp3",
+      "durationSec": 149.716,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 49.45
+        }
+      ]
+    },
+    "viz-ftb-wr": {
+      "url": "/audio/pregame/clips/viz-ftb-wr.30c3f32d.mp3",
+      "durationSec": 150.988,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 50.554
+        }
+      ]
+    },
+    "viz-ftb-ol": {
+      "url": "/audio/pregame/clips/viz-ftb-ol.583c6131.mp3",
+      "durationSec": 154.012,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 51.154
+        }
+      ]
+    },
+    "viz-ftb-dl": {
+      "url": "/audio/pregame/clips/viz-ftb-dl.fda00a29.mp3",
+      "durationSec": 150.1,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 51.754
+        }
+      ]
+    },
+    "viz-ftb-lb": {
+      "url": "/audio/pregame/clips/viz-ftb-lb.1d3be42e.mp3",
+      "durationSec": 149.428,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 49.522
+        }
+      ]
+    },
+    "viz-ftb-db": {
+      "url": "/audio/pregame/clips/viz-ftb-db.cd5389cb.mp3",
+      "durationSec": 157.324,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        },
+        {
+          "phase": "firstShift",
+          "offsetSec": 51.802
+        }
+      ]
+    },
+    "hm-ftb-dl-beat": {
+      "url": "/audio/pregame/clips/hm-ftb-dl-beat.aafa9a51.mp3",
+      "durationSec": 59.964,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-dl-film-mistake": {
+      "url": "/audio/pregame/clips/hm-ftb-dl-film-mistake.116463d1.mp3",
+      "durationSec": 61.308,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-dl-big-play": {
+      "url": "/audio/pregame/clips/hm-ftb-dl-big-play.6a14dd4b.mp3",
+      "durationSec": 60.756,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-dl-benched": {
+      "url": "/audio/pregame/clips/hm-ftb-dl-benched.f3417332.mp3",
+      "durationSec": 61.38,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-dl-nervous": {
+      "url": "/audio/pregame/clips/hm-ftb-dl-nervous.e1b0d340.mp3",
+      "durationSec": 61.476,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-dl-big-hit": {
+      "url": "/audio/pregame/clips/hm-ftb-dl-big-hit.e96cef4a.mp3",
+      "durationSec": 53.22,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-dl-start-slow": {
+      "url": "/audio/pregame/clips/hm-ftb-dl-start-slow.b43117fc.mp3",
+      "durationSec": 60.516,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-dl-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-ftb-dl-fall-behind-early.ac69ef8a.mp3",
+      "durationSec": 61.524,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-dl-trench-battle": {
+      "url": "/audio/pregame/clips/hm-ftb-dl-trench-battle.8309f74d.mp3",
+      "durationSec": 63.06,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-lb-turnover": {
+      "url": "/audio/pregame/clips/hm-ftb-lb-turnover.eb535304.mp3",
+      "durationSec": 56.268,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-lb-beat": {
+      "url": "/audio/pregame/clips/hm-ftb-lb-beat.e025d938.mp3",
+      "durationSec": 58.02,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-lb-film-mistake": {
+      "url": "/audio/pregame/clips/hm-ftb-lb-film-mistake.50f91147.mp3",
+      "durationSec": 59.028,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-lb-big-play": {
+      "url": "/audio/pregame/clips/hm-ftb-lb-big-play.dfe04f96.mp3",
+      "durationSec": 68.052,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-lb-benched": {
+      "url": "/audio/pregame/clips/hm-ftb-lb-benched.06279c1c.mp3",
+      "durationSec": 60.06,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-lb-nervous": {
+      "url": "/audio/pregame/clips/hm-ftb-lb-nervous.78538f01.mp3",
+      "durationSec": 70.644,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-lb-big-hit": {
+      "url": "/audio/pregame/clips/hm-ftb-lb-big-hit.ed290bb5.mp3",
+      "durationSec": 57.612,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-lb-start-slow": {
+      "url": "/audio/pregame/clips/hm-ftb-lb-start-slow.3f77b2e0.mp3",
+      "durationSec": 60.276,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-lb-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-ftb-lb-fall-behind-early.bf8db067.mp3",
+      "durationSec": 60.516,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-lb-trench-battle": {
+      "url": "/audio/pregame/clips/hm-ftb-lb-trench-battle.ab7ad280.mp3",
+      "durationSec": 62.052,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-db-turnover": {
+      "url": "/audio/pregame/clips/hm-ftb-db-turnover.abc7e6c5.mp3",
+      "durationSec": 57.612,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-db-beat": {
+      "url": "/audio/pregame/clips/hm-ftb-db-beat.52d1ff5f.mp3",
+      "durationSec": 63.348,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-db-film-mistake": {
+      "url": "/audio/pregame/clips/hm-ftb-db-film-mistake.5232e9a7.mp3",
+      "durationSec": 61.332,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-db-big-play": {
+      "url": "/audio/pregame/clips/hm-ftb-db-big-play.253a5780.mp3",
+      "durationSec": 60.396,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-db-benched": {
+      "url": "/audio/pregame/clips/hm-ftb-db-benched.aff2398c.mp3",
+      "durationSec": 61.476,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-db-nervous": {
+      "url": "/audio/pregame/clips/hm-ftb-db-nervous.671df4d0.mp3",
+      "durationSec": 62.796,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-db-big-hit": {
+      "url": "/audio/pregame/clips/hm-ftb-db-big-hit.77837bc0.mp3",
+      "durationSec": 54.78,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-db-start-slow": {
+      "url": "/audio/pregame/clips/hm-ftb-db-start-slow.fdad3793.mp3",
+      "durationSec": 58.5,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-db-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-ftb-db-fall-behind-early.3002531b.mp3",
+      "durationSec": 63.228,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-db-trench-battle": {
+      "url": "/audio/pregame/clips/hm-ftb-db-trench-battle.e785009a.mp3",
+      "durationSec": 59.676,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-qb-pick": {
+      "url": "/audio/pregame/clips/hm-ftb-qb-pick.ed8ca1a9.mp3",
+      "durationSec": 60.78,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-qb-beat": {
+      "url": "/audio/pregame/clips/hm-ftb-qb-beat.fd578c4a.mp3",
+      "durationSec": 55.62,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-qb-film-mistake": {
+      "url": "/audio/pregame/clips/hm-ftb-qb-film-mistake.54411a10.mp3",
+      "durationSec": 57.9,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-qb-big-play": {
+      "url": "/audio/pregame/clips/hm-ftb-qb-big-play.0ea3e911.mp3",
+      "durationSec": 64.908,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-qb-pulled": {
+      "url": "/audio/pregame/clips/hm-ftb-qb-pulled.ccdd67d8.mp3",
+      "durationSec": 60.684,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-qb-nervous": {
+      "url": "/audio/pregame/clips/hm-ftb-qb-nervous.2e72fc8a.mp3",
+      "durationSec": 56.796,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-qb-big-hit": {
+      "url": "/audio/pregame/clips/hm-ftb-qb-big-hit.0f1753e0.mp3",
+      "durationSec": 58.284,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-qb-start-slow": {
+      "url": "/audio/pregame/clips/hm-ftb-qb-start-slow.296abea6.mp3",
+      "durationSec": 55.524,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-qb-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-ftb-qb-fall-behind-early.ac59adf0.mp3",
+      "durationSec": 58.212,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-rb-fumble": {
+      "url": "/audio/pregame/clips/hm-ftb-rb-fumble.6744d46d.mp3",
+      "durationSec": 60.612,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-rb-beat": {
+      "url": "/audio/pregame/clips/hm-ftb-rb-beat.4aebfdeb.mp3",
+      "durationSec": 53.772,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-rb-film-mistake": {
+      "url": "/audio/pregame/clips/hm-ftb-rb-film-mistake.714cf9dc.mp3",
+      "durationSec": 55.956,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-rb-big-play": {
+      "url": "/audio/pregame/clips/hm-ftb-rb-big-play.1322114b.mp3",
+      "durationSec": 58.476,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-rb-benched": {
+      "url": "/audio/pregame/clips/hm-ftb-rb-benched.954b5562.mp3",
+      "durationSec": 59.316,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-rb-nervous": {
+      "url": "/audio/pregame/clips/hm-ftb-rb-nervous.1dfe1a7d.mp3",
+      "durationSec": 56.556,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-rb-big-hit": {
+      "url": "/audio/pregame/clips/hm-ftb-rb-big-hit.1ae2aa50.mp3",
+      "durationSec": 52.548,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-rb-start-slow": {
+      "url": "/audio/pregame/clips/hm-ftb-rb-start-slow.2677294f.mp3",
+      "durationSec": 60.084,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-rb-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-ftb-rb-fall-behind-early.0603a606.mp3",
+      "durationSec": 57.06,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-rb-trench-battle": {
+      "url": "/audio/pregame/clips/hm-ftb-rb-trench-battle.0193b69f.mp3",
+      "durationSec": 58.524,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-wr-turnover": {
+      "url": "/audio/pregame/clips/hm-ftb-wr-turnover.201138b1.mp3",
+      "durationSec": 53.652,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-wr-beat": {
+      "url": "/audio/pregame/clips/hm-ftb-wr-beat.0bed28ff.mp3",
+      "durationSec": 55.14,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-wr-film-mistake": {
+      "url": "/audio/pregame/clips/hm-ftb-wr-film-mistake.19c699cf.mp3",
+      "durationSec": 60.636,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-wr-big-play": {
+      "url": "/audio/pregame/clips/hm-ftb-wr-big-play.b36c4324.mp3",
+      "durationSec": 54.396,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-wr-benched": {
+      "url": "/audio/pregame/clips/hm-ftb-wr-benched.78a8ea55.mp3",
+      "durationSec": 61.596,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-wr-nervous": {
+      "url": "/audio/pregame/clips/hm-ftb-wr-nervous.2946d0c9.mp3",
+      "durationSec": 59.124,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-wr-big-hit": {
+      "url": "/audio/pregame/clips/hm-ftb-wr-big-hit.18cbdb33.mp3",
+      "durationSec": 56.604,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-wr-start-slow": {
+      "url": "/audio/pregame/clips/hm-ftb-wr-start-slow.1ed0b597.mp3",
+      "durationSec": 55.956,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-wr-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-ftb-wr-fall-behind-early.21eb04bb.mp3",
+      "durationSec": 60.06,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-wr-trench-battle": {
+      "url": "/audio/pregame/clips/hm-ftb-wr-trench-battle.37cfb691.mp3",
+      "durationSec": 57.372,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-ol-beat": {
+      "url": "/audio/pregame/clips/hm-ftb-ol-beat.0735370f.mp3",
+      "durationSec": 59.052,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-ol-film-mistake": {
+      "url": "/audio/pregame/clips/hm-ftb-ol-film-mistake.1e180192.mp3",
+      "durationSec": 59.58,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-ol-big-play": {
+      "url": "/audio/pregame/clips/hm-ftb-ol-big-play.dc5b3975.mp3",
+      "durationSec": 59.508,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-ol-benched": {
+      "url": "/audio/pregame/clips/hm-ftb-ol-benched.05e583b1.mp3",
+      "durationSec": 60.756,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-ol-nervous": {
+      "url": "/audio/pregame/clips/hm-ftb-ol-nervous.0b51872d.mp3",
+      "durationSec": 59.964,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-ol-big-hit": {
+      "url": "/audio/pregame/clips/hm-ftb-ol-big-hit.4438851e.mp3",
+      "durationSec": 55.884,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-ol-start-slow": {
+      "url": "/audio/pregame/clips/hm-ftb-ol-start-slow.1e3b7b2a.mp3",
+      "durationSec": 57.66,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-ol-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-ftb-ol-fall-behind-early.b9e2ab3d.mp3",
+      "durationSec": 62.172,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-ftb-ol-trench-battle": {
+      "url": "/audio/pregame/clips/hm-ftb-ol-trench-battle.0efa1018.mp3",
+      "durationSec": 64.716,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-qb-rhythm-throw": {
+      "url": "/audio/pregame/clips/viz-ftb-qb-rhythm-throw.75f6fe86.mp3",
+      "durationSec": 65.94,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-qb-play-action-shot": {
+      "url": "/audio/pregame/clips/viz-ftb-qb-play-action-shot.120b7fca.mp3",
+      "durationSec": 59.26,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-qb-rpo-read": {
+      "url": "/audio/pregame/clips/viz-ftb-qb-rpo-read.e022e57c.mp3",
+      "durationSec": 59.62,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-qb-scramble": {
+      "url": "/audio/pregame/clips/viz-ftb-qb-scramble.13d10ed5.mp3",
+      "durationSec": 58.872,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-qb-take-the-checkdown": {
+      "url": "/audio/pregame/clips/viz-ftb-qb-take-the-checkdown.5e216195.mp3",
+      "durationSec": 63.66,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-qb-two-minute-drive": {
+      "url": "/audio/pregame/clips/viz-ftb-qb-two-minute-drive.15632e92.mp3",
+      "durationSec": 73.16,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-qb-bounce-back-throw": {
+      "url": "/audio/pregame/clips/viz-ftb-qb-bounce-back-throw.e07fdc62.mp3",
+      "durationSec": 56.5,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-rb-inside-zone": {
+      "url": "/audio/pregame/clips/viz-ftb-rb-inside-zone.3014acc4.mp3",
+      "durationSec": 66.872,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-rb-outside-zone": {
+      "url": "/audio/pregame/clips/viz-ftb-rb-outside-zone.6e5398b3.mp3",
+      "durationSec": 61.708,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-rb-check-release-screen": {
+      "url": "/audio/pregame/clips/viz-ftb-rb-check-release-screen.4b6acbb5.mp3",
+      "durationSec": 59.236,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-rb-blitz-pickup": {
+      "url": "/audio/pregame/clips/viz-ftb-rb-blitz-pickup.9f5c2660.mp3",
+      "durationSec": 61.728,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-rb-short-yardage": {
+      "url": "/audio/pregame/clips/viz-ftb-rb-short-yardage.d59f9c65.mp3",
+      "durationSec": 56.016,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-rb-take-what-is-there": {
+      "url": "/audio/pregame/clips/viz-ftb-rb-take-what-is-there.d0053aaa.mp3",
+      "durationSec": 63.972,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-rb-next-carry-clean": {
+      "url": "/audio/pregame/clips/viz-ftb-rb-next-carry-clean.bb8b415e.mp3",
+      "durationSec": 55.584,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-wr-beat-the-press": {
+      "url": "/audio/pregame/clips/viz-ftb-wr-beat-the-press.fae77847.mp3",
+      "durationSec": 58.176,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-wr-slant-yac": {
+      "url": "/audio/pregame/clips/viz-ftb-wr-slant-yac.4e454b1a.mp3",
+      "durationSec": 57.048,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-wr-deep-ball": {
+      "url": "/audio/pregame/clips/viz-ftb-wr-deep-ball.19c714dd.mp3",
+      "durationSec": 59.928,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-wr-contested-catch": {
+      "url": "/audio/pregame/clips/viz-ftb-wr-contested-catch.90c6c4a4.mp3",
+      "durationSec": 61.536,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-wr-stalk-block": {
+      "url": "/audio/pregame/clips/viz-ftb-wr-stalk-block.4e1c551c.mp3",
+      "durationSec": 57.936,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-wr-third-down-move-chains": {
+      "url": "/audio/pregame/clips/viz-ftb-wr-third-down-move-chains.2b69a843.mp3",
+      "durationSec": 59.208,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-wr-run-the-next-one-clean": {
+      "url": "/audio/pregame/clips/viz-ftb-wr-run-the-next-one-clean.147f41bd.mp3",
+      "durationSec": 62.832,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-ol-pass-set-anchor": {
+      "url": "/audio/pregame/clips/viz-ftb-ol-pass-set-anchor.633fa0de.mp3",
+      "durationSec": 57.288,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-ol-drive-block": {
+      "url": "/audio/pregame/clips/viz-ftb-ol-drive-block.a6bcee4f.mp3",
+      "durationSec": 59.424,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-ol-reach-block": {
+      "url": "/audio/pregame/clips/viz-ftb-ol-reach-block.0cf123b3.mp3",
+      "durationSec": 60.456,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-ol-pull-and-kick": {
+      "url": "/audio/pregame/clips/viz-ftb-ol-pull-and-kick.e0ba0a19.mp3",
+      "durationSec": 57.432,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-ol-pass-off-the-stunt": {
+      "url": "/audio/pregame/clips/viz-ftb-ol-pass-off-the-stunt.b057734e.mp3",
+      "durationSec": 60.936,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-ol-combo-climb": {
+      "url": "/audio/pregame/clips/viz-ftb-ol-combo-climb.8349e090.mp3",
+      "durationSec": 57.792,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-ol-win-the-next-rep": {
+      "url": "/audio/pregame/clips/viz-ftb-ol-win-the-next-rep.bc05e22d.mp3",
+      "durationSec": 62.016,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-dl-get-off": {
+      "url": "/audio/pregame/clips/viz-ftb-dl-get-off.7eed741d.mp3",
+      "durationSec": 66.632,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-dl-stack-shed": {
+      "url": "/audio/pregame/clips/viz-ftb-dl-stack-shed.53d9f95f.mp3",
+      "durationSec": 66.08,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-dl-win-the-edge": {
+      "url": "/audio/pregame/clips/viz-ftb-dl-win-the-edge.ac199495.mp3",
+      "durationSec": 66.776,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-dl-hands-up": {
+      "url": "/audio/pregame/clips/viz-ftb-dl-hands-up.c7f1e6bf.mp3",
+      "durationSec": 62.72,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-dl-goal-line": {
+      "url": "/audio/pregame/clips/viz-ftb-dl-goal-line.ad02bb62.mp3",
+      "durationSec": 65.816,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-dl-contain-scramble": {
+      "url": "/audio/pregame/clips/viz-ftb-dl-contain-scramble.93256174.mp3",
+      "durationSec": 66.488,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-dl-pursue-backside": {
+      "url": "/audio/pregame/clips/viz-ftb-dl-pursue-backside.6bc621ff.mp3",
+      "durationSec": 64.424,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-lb-read-and-fill": {
+      "url": "/audio/pregame/clips/viz-ftb-lb-read-and-fill.6f63d2fd.mp3",
+      "durationSec": 62.336,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-lb-take-on-lead": {
+      "url": "/audio/pregame/clips/viz-ftb-lb-take-on-lead.29bb0ace.mp3",
+      "durationSec": 61.64,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-lb-zone-drop": {
+      "url": "/audio/pregame/clips/viz-ftb-lb-zone-drop.f2099544.mp3",
+      "durationSec": 65.552,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-lb-cover-the-back": {
+      "url": "/audio/pregame/clips/viz-ftb-lb-cover-the-back.a0244d08.mp3",
+      "durationSec": 62.936,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-lb-blitz": {
+      "url": "/audio/pregame/clips/viz-ftb-lb-blitz.ed381ebb.mp3",
+      "durationSec": 63.608,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-lb-goal-line": {
+      "url": "/audio/pregame/clips/viz-ftb-lb-goal-line.6ee4ab00.mp3",
+      "durationSec": 65.72,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-lb-recover-play-action": {
+      "url": "/audio/pregame/clips/viz-ftb-lb-recover-play-action.6367d52f.mp3",
+      "durationSec": 60.276,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-db-press-man": {
+      "url": "/audio/pregame/clips/viz-ftb-db-press-man.a617320c.mp3",
+      "durationSec": 62.84,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-db-off-break": {
+      "url": "/audio/pregame/clips/viz-ftb-db-off-break.3dad3053.mp3",
+      "durationSec": 59.888,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-db-pick": {
+      "url": "/audio/pregame/clips/viz-ftb-db-pick.9c458e0d.mp3",
+      "durationSec": 62.24,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-db-run-support": {
+      "url": "/audio/pregame/clips/viz-ftb-db-run-support.6a4ef790.mp3",
+      "durationSec": 63.632,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-db-set-the-edge": {
+      "url": "/audio/pregame/clips/viz-ftb-db-set-the-edge.e1debe4f.mp3",
+      "durationSec": 63.416,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-db-clutch-deep": {
+      "url": "/audio/pregame/clips/viz-ftb-db-clutch-deep.08d6eafe.mp3",
+      "durationSec": 65.096,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-ftb-db-recover-in-phase": {
+      "url": "/audio/pregame/clips/viz-ftb-db-recover-in-phase.ee4115cc.mp3",
+      "durationSec": 65.028,
+      "phases": [
+        {
+          "phase": "rink",
           "offsetSec": 0
         }
       ]
