@@ -178,10 +178,17 @@ describe("Registry roles vs DB CHECK union", () => {
     // constraint to these three lands with golf's DB enablement (FV-269),
     // bundled with the sport-enum migration; this mirror tracks the registry.
     "Bomber", "Ball-Striker", "Scrambler",
-    // Football (v2 — dormant; position groups). Added to the CHECK by
-    // 20260613100000_v2_dormant_sport_positions.sql (sport stays gated).
-    "QB", "Running Back", "Receiver", "Offensive Line",
-    "Defensive Line", "Linebacker", "Defensive Back",
+    // Football (FV-206 go-live — short depth-chart tokens, matching
+    // SportConfig.roles + POSITIVE_PLAYS' role field + the rendered clip
+    // slugs). NOTE: 20260613100000_v2_dormant_sport_positions.sql (added
+    // while football was dormant) still has the OLD long-form names
+    // ("Running Back", "Receiver", "Offensive Line", "Defensive Line",
+    // "Linebacker", "Defensive Back") in its CHECK constraint — those values
+    // were never actually reachable (football wasn't in SUPPORTED_SPORTS), so
+    // nothing in prod depends on them. The lead's DB-migration follow-up
+    // (FV-205 or a new issue) must widen/replace the CHECK to these short
+    // tokens before an athlete can actually persist a football position.
+    "QB", "RB", "WR", "OL", "DL", "LB", "DB",
     // Swimming (v2 — dormant; event specialties).
     "Sprinter", "Distance", "Stroke", "IM",
     // Track & Field (v2 — dormant; event groups; Sprinter + Distance shared

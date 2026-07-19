@@ -8,12 +8,15 @@
 // entry — that exhaustiveness is the safety net.
 //
 // Golf goes live at launch (KC directive 2026-06-12, overriding the FV-272
-// founder gate). Baseball + football stay DORMANT — content authored, not
-// athlete-selectable — so they are intentionally absent here.
+// founder gate). Football goes live per the 2026-07-19 KC launch directive
+// (FV-206) — app-side wiring only; the DB sport CHECK widening is owned
+// separately by the lead (FV-205; must land before football is truly usable
+// end-to-end). Baseball stays DORMANT — content authored, not
+// athlete-selectable — so it is intentionally absent here.
 //
 // Plain module (no "use server"): safe to import from server actions and
 // client components alike (e.g. the FV-33 onboarding sport selector).
-export const SUPPORTED_SPORTS = ["hockey", "basketball", "golf"] as const;
+export const SUPPORTED_SPORTS = ["hockey", "basketball", "golf", "football"] as const;
 export type Sport = (typeof SUPPORTED_SPORTS)[number];
 
 // The interim default until the FV-33 onboarding selector ships. Hockey is the

@@ -68,9 +68,12 @@ describe("readAthleteCache", () => {
   });
 
   it("returns null when sport is an unrecognised value", () => {
+    // "curling" is not (and is never expected to be) a Sport union member —
+    // unlike "football", which went live in SUPPORTED_SPORTS via FV-206 and
+    // would now be a valid cached value.
     localStorageStub.setItem(
       ATHLETE_CACHE_KEY,
-      JSON.stringify({ sport: "football", firstName: "Alex" }),
+      JSON.stringify({ sport: "curling", firstName: "Alex" }),
     );
     expect(readAthleteCache()).toBeNull();
   });

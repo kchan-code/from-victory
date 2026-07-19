@@ -10,6 +10,15 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-07-19 — Football is a live sport
+Football is selectable at onboarding and in Settings → Change sport, at full
+content parity: pregame guided audio (7 position tracks, 49 athlete-chooseable
+positive-play visualizations, 67 hard-moment scripts — the "big hit" adversity
+is authored but withheld pending clinical advisor sign-off), pre-practice
+"Lock In" session, and the 30-day daily training arc (now sport-agnostic across
+all sports, same scripture spine). Live sports: hockey, basketball, golf,
+football.
+
 ## 2026-07-08 — Guided visualization (core mechanic, recorded by KC)
 
 The pregame session is **audio-guided
