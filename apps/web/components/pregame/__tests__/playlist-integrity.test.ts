@@ -862,7 +862,7 @@ describe("basketball opener parity (FV-120)", () => {
 // ---------------------------------------------------------------------------
 
 describe("catalog count (multi-sport, FV-266)", () => {
-  it("catalog is fully categorized (no orphans) and totals 495 entries", () => {
+  it("catalog is fully categorized (no orphans) and totals 507 entries", () => {
     const keys = Object.keys(catalog);
     const n = (re: RegExp) => keys.filter((k) => re.test(k)).length;
     const breakdown = {
@@ -874,7 +874,7 @@ describe("catalog count (multi-sport, FV-266)", () => {
       hmBaseball: n(/^hm-bsb-/), //                 39 — baseball cells (FV-94)
       hmGolf: n(/^hm-glf-/), //                     30 — golf cells (FV-266)
       hmFootball: n(/^hm-ftb-/), //                 67 — football cells (FV-203, dormant sport)
-      practice: n(/^pp-/), //                       56 — pre-practice clips (all sports + variations)
+      practice: n(/^pp-/), //                       68 — pre-practice clips (all sports + variations)
       openers: n(/^opener-/), //                    19 — need openers (incl. basketball variants)
       cueWord: n(/^cw-/), //                        20 — cue-word reset/sendoff
       anchor: n(/^anc-/), //                        12 — reset-anchor clips (+3 golf anc-glf-* FV-303)
@@ -888,7 +888,7 @@ describe("catalog count (multi-sport, FV-266)", () => {
     // Every catalog key falls into exactly one bucket — catches typos/orphans.
     expect(uncategorized, `uncategorized clips: ${uncategorized.join(", ")}`).toEqual([]);
     expect(sum).toBe(keys.length);
-    expect(keys).toHaveLength(495);
+    expect(keys).toHaveLength(507);
   });
 });
 

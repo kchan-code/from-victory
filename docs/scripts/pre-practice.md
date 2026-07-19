@@ -525,3 +525,80 @@ _(pause: 1s)_
 <!-- slug: pp-golf-focus-reset-between-shots | file: components/pregame/audio/clips.ts -->
 
 1. Reset between shots.
+
+## Football Pre-Practice Clips
+
+### Pre-Practice Football · opener-get-to
+<!-- slug: pp-football-opener-get-to | file: components/pregame/audio/clips.ts -->
+
+1. Be honest — you're not really feeling it today. The pads feel heavy and your legs are flat.
+_(pause: 1.2s)_
+2. You do not need to feel ready before you start. Give the first rep your full attention and let the practice build from there.
+_(pause: 1s)_
+3. Work at it with your whole heart, for the Lord. Your job today is not to manufacture a mood; it is to be faithful with the rep in front of you.
+_(pause: 1.2s)_
+4. Start with what you can control: your stance, your feet, your eyes, and your effort.
+_(pause: 1s)_
+5. Do not try to fix the whole practice at once. Get through the first individual period one rep at a time — feet moving, eyes up, assignment finished.
+_(pause: 0.8s)_
+6. First rep. Go.
+### Pre-Practice Football · name-standard
+<!-- slug: pp-football-name-standard | file: components/pregame/audio/clips.ts -->
+
+1. Name today's standard before practice starts. Get aligned, know the assignment, and give each rep your full attention.
+_(pause: 1s)_
+2. The standard is simple: no drifting through reps and no finishing halfway.
+### Pre-Practice Football · goal-fusion
+<!-- slug: pp-football-goal-fusion | file: components/pregame/audio/clips.ts -->
+
+1. Connect this drill to the play you want to make in a game. Do not rush through it just because you have done it before.
+_(pause: 1s)_
+2. Fit the block with the right leverage, run the route at game speed, or break on the ball with your eyes right. Practice the detail now so it is available when the game speeds up.
+_(pause: 1s)_
+3. You do not need a perfect practice. You need honest, complete reps.
+### Pre-Practice Football · be-vocal
+<!-- slug: pp-football-be-vocal | file: components/pregame/audio/clips.ts -->
+
+1. Use your voice today. Echo the call, communicate shifts and motion, and call "ball" when it is in the air.
+_(pause: 1.2s)_
+2. Do not assume your teammate saw what you saw. Clear communication helps everyone play faster.
+_(pause: 0.8s)_
+3. Make the call that belongs to your position, repeat the check, and keep talking through the rep.
+_(pause: 0.8s)_
+4. Be clear, be early, and make sure the player next to you has the information.
+### Pre-Practice Football · see-it-go
+<!-- slug: pp-football-see-it-go | file: components/pregame/audio/clips.ts -->
+
+1. See one rep. Get lined up correctly, read your key, move your feet, and finish the assignment.
+_(pause: 1.5s)_
+2. Some reps will go badly. Take the coaching, make the correction, and reset before the next one.
+_(pause: 1s)_
+3. You do not need to prove your worth in practice. You are here to learn, compete, and do the work in front of you.
+### Pre-Practice Football · focus-run-to-the-ball
+<!-- slug: pp-football-focus-run-to-the-ball | file: components/pregame/audio/clips.ts -->
+
+1. Run to the ball.
+### Pre-Practice Football · focus-finish-every-rep
+<!-- slug: pp-football-focus-finish-every-rep | file: components/pregame/audio/clips.ts -->
+
+1. Finish every rep.
+### Pre-Practice Football · focus-eyes-up
+<!-- slug: pp-football-focus-eyes-up | file: components/pregame/audio/clips.ts -->
+
+1. Eyes up.
+### Pre-Practice Football · focus-win-my-one-on-one
+<!-- slug: pp-football-focus-win-my-one-on-one | file: components/pregame/audio/clips.ts -->
+
+1. Win my one-on-one.
+### Pre-Practice Football · focus-play-fast
+<!-- slug: pp-football-focus-play-fast | file: components/pregame/audio/clips.ts -->
+
+1. Play fast.
+### Pre-Practice Football · focus-ball-security
+<!-- slug: pp-football-focus-ball-security | file: components/pregame/audio/clips.ts -->
+
+1. Ball security.
+### Pre-Practice Football · focus-next-play
+<!-- slug: pp-football-focus-next-play | file: components/pregame/audio/clips.ts -->
+
+1. Next play.
