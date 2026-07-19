@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "f424746f",
+  "manifestVersion": "51c39c41",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -5866,6 +5866,66 @@
           "offsetSec": 0
         }
       ]
+    },
+    "pp-football-opener-get-to": {
+      "url": "/audio/pregame/clips/pp-football-opener-get-to.3c49eb36.mp3",
+      "durationSec": 50.632,
+      "phases": []
+    },
+    "pp-football-name-standard": {
+      "url": "/audio/pregame/clips/pp-football-name-standard.3c297198.mp3",
+      "durationSec": 14.848,
+      "phases": []
+    },
+    "pp-football-goal-fusion": {
+      "url": "/audio/pregame/clips/pp-football-goal-fusion.4c62ecea.mp3",
+      "durationSec": 29,
+      "phases": []
+    },
+    "pp-football-be-vocal": {
+      "url": "/audio/pregame/clips/pp-football-be-vocal.e1cc3236.mp3",
+      "durationSec": 30.544,
+      "phases": []
+    },
+    "pp-football-see-it-go": {
+      "url": "/audio/pregame/clips/pp-football-see-it-go.5cc53137.mp3",
+      "durationSec": 23.236,
+      "phases": []
+    },
+    "pp-football-focus-run-to-the-ball": {
+      "url": "/audio/pregame/clips/pp-football-focus-run-to-the-ball.79bed869.mp3",
+      "durationSec": 1.56,
+      "phases": []
+    },
+    "pp-football-focus-finish-every-rep": {
+      "url": "/audio/pregame/clips/pp-football-focus-finish-every-rep.8ac28be6.mp3",
+      "durationSec": 3.192,
+      "phases": []
+    },
+    "pp-football-focus-eyes-up": {
+      "url": "/audio/pregame/clips/pp-football-focus-eyes-up.eb79a476.mp3",
+      "durationSec": 1.56,
+      "phases": []
+    },
+    "pp-football-focus-win-my-one-on-one": {
+      "url": "/audio/pregame/clips/pp-football-focus-win-my-one-on-one.ff5ddf89.mp3",
+      "durationSec": 2.64,
+      "phases": []
+    },
+    "pp-football-focus-play-fast": {
+      "url": "/audio/pregame/clips/pp-football-focus-play-fast.d280461e.mp3",
+      "durationSec": 1.92,
+      "phases": []
+    },
+    "pp-football-focus-ball-security": {
+      "url": "/audio/pregame/clips/pp-football-focus-ball-security.a99b18fa.mp3",
+      "durationSec": 1.92,
+      "phases": []
+    },
+    "pp-football-focus-next-play": {
+      "url": "/audio/pregame/clips/pp-football-focus-next-play.533eaf3b.mp3",
+      "durationSec": 1.512,
+      "phases": []
     }
   },
   "templates": [

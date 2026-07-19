@@ -3142,6 +3142,252 @@ export const CLIP_PP_BASEBALL_FOCUS_ONE_PITCH_AT_A_TIME_SCRIPT: AudioScript = {
   segments: [{ type: "speech", text: "One pitch at a time." }],
 };
 
+// ── Football opener-get-to — pp-football-opener-get-to (FV-429) ─────
+export const CLIP_PP_FOOTBALL_OPENER_GET_TO_SCRIPT: AudioScript = {
+  slug: "pp-football-opener-get-to",
+  voice: "ash",
+  instructions: PRACTICE_GET_TO_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Be honest \u2014 you're not really feeling it today. The pads feel heavy and your legs are flat.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "You do not need to feel ready before you start. Give the first rep your full attention and let the practice build from there.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "Work at it with your whole heart, for the Lord. Your job today is not to manufacture a mood; it is to be faithful with the rep in front of you.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Start with what you can control: your stance, your feet, your eyes, and your effort.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "Do not try to fix the whole practice at once. Get through the first individual period one rep at a time \u2014 feet moving, eyes up, assignment finished.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "First rep. Go.",
+    },
+  ],
+};
+
+// ── Football name-standard — pp-football-name-standard (FV-429) ─────
+export const CLIP_PP_FOOTBALL_NAME_STANDARD_SCRIPT: AudioScript = {
+  slug: "pp-football-name-standard",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Name today's standard before practice starts. Get aligned, know the assignment, and give each rep your full attention.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "The standard is simple: no drifting through reps and no finishing halfway.",
+    },
+  ],
+};
+
+// ── Football goal-fusion — pp-football-goal-fusion (FV-429) ─────
+export const CLIP_PP_FOOTBALL_GOAL_FUSION_SCRIPT: AudioScript = {
+  slug: "pp-football-goal-fusion",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Connect this drill to the play you want to make in a game. Do not rush through it just because you have done it before.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "Fit the block with the right leverage, run the route at game speed, or break on the ball with your eyes right. Practice the detail now so it is available when the game speeds up.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "You do not need a perfect practice. You need honest, complete reps.",
+    },
+  ],
+};
+
+// ── Football be-vocal — pp-football-be-vocal (FV-429) ─────
+export const CLIP_PP_FOOTBALL_BE_VOCAL_SCRIPT: AudioScript = {
+  slug: "pp-football-be-vocal",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Use your voice today. Echo the call, communicate shifts and motion, and call \"ball\" when it is in the air.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Do not assume your teammate saw what you saw. Clear communication helps everyone play faster.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "Make the call that belongs to your position, repeat the check, and keep talking through the rep.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "Be clear, be early, and make sure the player next to you has the information.",
+    },
+  ],
+};
+
+// ── Football see-it-go — pp-football-see-it-go (FV-429) ─────
+export const CLIP_PP_FOOTBALL_SEE_IT_GO_SCRIPT: AudioScript = {
+  slug: "pp-football-see-it-go",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "See one rep. Get lined up correctly, read your key, move your feet, and finish the assignment.",
+    },
+    { type: "silence", durationSec: 1.5 },
+    {
+      type: "speech",
+      text: "Some reps will go badly. Take the coaching, make the correction, and reset before the next one.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "You do not need to prove your worth in practice. You are here to learn, compete, and do the work in front of you.",
+    },
+  ],
+};
+
+// ── Football focus-run-to-the-ball — pp-football-focus-run-to-the-ball (FV-429) ─────
+export const CLIP_PP_FOOTBALL_FOCUS_RUN_TO_THE_BALL_SCRIPT: AudioScript = {
+  slug: "pp-football-focus-run-to-the-ball",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Run to the ball.",
+    },
+  ],
+};
+
+// ── Football focus-finish-every-rep — pp-football-focus-finish-every-rep (FV-429) ─────
+export const CLIP_PP_FOOTBALL_FOCUS_FINISH_EVERY_REP_SCRIPT: AudioScript = {
+  slug: "pp-football-focus-finish-every-rep",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Finish every rep.",
+    },
+  ],
+};
+
+// ── Football focus-eyes-up — pp-football-focus-eyes-up (FV-429) ─────
+export const CLIP_PP_FOOTBALL_FOCUS_EYES_UP_SCRIPT: AudioScript = {
+  slug: "pp-football-focus-eyes-up",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Eyes up.",
+    },
+  ],
+};
+
+// ── Football focus-win-my-one-on-one — pp-football-focus-win-my-one-on-one (FV-429) ─────
+export const CLIP_PP_FOOTBALL_FOCUS_WIN_MY_ONE_ON_ONE_SCRIPT: AudioScript = {
+  slug: "pp-football-focus-win-my-one-on-one",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Win my one-on-one.",
+    },
+  ],
+};
+
+// ── Football focus-play-fast — pp-football-focus-play-fast (FV-429) ─────
+export const CLIP_PP_FOOTBALL_FOCUS_PLAY_FAST_SCRIPT: AudioScript = {
+  slug: "pp-football-focus-play-fast",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Play fast.",
+    },
+  ],
+};
+
+// ── Football focus-ball-security — pp-football-focus-ball-security (FV-429) ─────
+export const CLIP_PP_FOOTBALL_FOCUS_BALL_SECURITY_SCRIPT: AudioScript = {
+  slug: "pp-football-focus-ball-security",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Ball security.",
+    },
+  ],
+};
+
+// ── Football focus-next-play — pp-football-focus-next-play (FV-429) ─────
+export const CLIP_PP_FOOTBALL_FOCUS_NEXT_PLAY_SCRIPT: AudioScript = {
+  slug: "pp-football-focus-next-play",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Next play.",
+    },
+  ],
+};
+
+
 // ── Golf pre-practice "Lock In" clips (FV-267) ───────────────────────────────
 //
 // 1:1 vocab swaps onto the approved hockey/basketball/baseball pre-practice
@@ -5590,6 +5836,18 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_PP_BASEBALL_FOCUS_SOFT_HANDS_SCRIPT,
   CLIP_PP_BASEBALL_FOCUS_QUICK_FEET_SCRIPT,
   CLIP_PP_BASEBALL_FOCUS_ONE_PITCH_AT_A_TIME_SCRIPT,
+  CLIP_PP_FOOTBALL_OPENER_GET_TO_SCRIPT,
+  CLIP_PP_FOOTBALL_NAME_STANDARD_SCRIPT,
+  CLIP_PP_FOOTBALL_GOAL_FUSION_SCRIPT,
+  CLIP_PP_FOOTBALL_BE_VOCAL_SCRIPT,
+  CLIP_PP_FOOTBALL_SEE_IT_GO_SCRIPT,
+  CLIP_PP_FOOTBALL_FOCUS_RUN_TO_THE_BALL_SCRIPT,
+  CLIP_PP_FOOTBALL_FOCUS_FINISH_EVERY_REP_SCRIPT,
+  CLIP_PP_FOOTBALL_FOCUS_EYES_UP_SCRIPT,
+  CLIP_PP_FOOTBALL_FOCUS_WIN_MY_ONE_ON_ONE_SCRIPT,
+  CLIP_PP_FOOTBALL_FOCUS_PLAY_FAST_SCRIPT,
+  CLIP_PP_FOOTBALL_FOCUS_BALL_SECURITY_SCRIPT,
+  CLIP_PP_FOOTBALL_FOCUS_NEXT_PLAY_SCRIPT,
   // Golf pre-practice "Lock In" clips (FV-267). Render = FV-266.
   CLIP_PP_GOLF_OPENER_GET_TO_SCRIPT,
   CLIP_PP_GOLF_NAME_STANDARD_SCRIPT,
