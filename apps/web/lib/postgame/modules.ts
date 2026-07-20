@@ -43,7 +43,7 @@ export interface PostgameModule {
    * Optional per-module card eyebrow override. When absent the picker/detail
    * pages fall back to the team-sport-default SCENARIO_EYEBROW map. Individual
    * sports set this where the default leaks team-sport framing — e.g. golf's
-   * `benching` module is "Didn't Qualify", not "The Bench". Generalizes to any
+   * `benching` module is "The Bad Round", not "The Bench". Generalizes to any
    * non-team sport (swimming/tennis) without a per-sport eyebrow map.
    */
   eyebrow?: string;
@@ -435,6 +435,11 @@ to practice ready to work, because this win does not guarantee the next.`,
 // hockey-expert texture (car-or-bus / wet gear / dark window). The reset
 // blockquote and the "Only the night did" seam deliberately echo The Win.)
 // ---------------------------------------------------------------------------
+// CLINICAL_SIGN_OFF_REQUIRED: this module (and its sibling-sport mirrors)
+// reaches a minor at a night-time, post-loss low point. It must NOT roll out
+// to a broad athlete base before the pending clinical-advisor sign-off
+// (CLAUDE.md Open Items; tracked in FV-296). grep CLINICAL_SIGN_OFF_REQUIRED
+// for all such modules.
 const HOCKEY_PRAISE: PostgameModule = {
   slug: "hockey-praise-anyway",
   sport: "hockey",
@@ -472,6 +477,11 @@ have to feel resolved tonight. That is enough to begin.`,
 // 1e; basketball-expert texture — gym bag heavier / lot clearing / the score
 // still behind your eyes; "the floor" not "the court").
 // ---------------------------------------------------------------------------
+// CLINICAL_SIGN_OFF_REQUIRED: this module (and its sibling-sport mirrors)
+// reaches a minor at a night-time, post-loss low point. It must NOT roll out
+// to a broad athlete base before the pending clinical-advisor sign-off
+// (CLAUDE.md Open Items; tracked in FV-296). grep CLINICAL_SIGN_OFF_REQUIRED
+// for all such modules.
 const BASKETBALL_PRAISE: PostgameModule = {
   slug: "basketball-praise-anyway",
   sport: "basketball",
