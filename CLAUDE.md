@@ -356,8 +356,12 @@ The privacy veto is never suppressed to satisfy "issue-scoped only."
   (see `docs/adding-a-sport.md` Step 7; CI-enforced for live sports) — a
   sport without its play library is incomplete, not shippable.
 
-Out of scope for MVP: video, daily training session audio (text-only
-for MVP — only the pregame session has narration), community feed, coach
+Out of scope for MVP: video, daily training session audio (Daily
+Training and the Post-Game Debrief are text-only for MVP — narration
+lives in the two guided performance-prep audio surfaces: Game-Day
+Pregame at `/athlete/pregame` and Pre-Practice "Lock In" at
+`/athlete/practice`, distinct athlete-facing experiences sharing one
+engine), community feed, coach
 view, team mode, native app wrap, sports beyond the live set (hockey,
 basketball, golf, football) — additional sports are v2 (FV-21), AI-personalized content, free tier, social sign-in,
 progressive training plans (that's v2), leaderboards (never), 18+
