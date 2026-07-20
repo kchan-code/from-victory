@@ -2,8 +2,8 @@
 
 ## Mission
 A daily mental toughness training app with faith built in, for athletes
-ages 13-21. Launch sports live in production: hockey, basketball, and golf
-(source of truth: `SUPPORTED_SPORTS` in `apps/web/lib/sports.ts`). The parent
+ages 13-21. Launch sports live in production: hockey, basketball, golf, and
+football (source of truth: `SUPPORTED_SPORTS` in `apps/web/lib/sports.ts`). The parent
 buys (for MVP), the athlete
 trains: one daily training session combining a mental skill, a scripture
 foundation, and a private journal reflection. Built on the brand spine
@@ -142,13 +142,15 @@ works together: curator briefs both specialists, they return raw material,
 curator integrates into a single training session in one voice.
 
 For sport-specific content, content-curator also pulls in the relevant
-**sport-expert** (hockey-expert / basketball-expert) for domain
+**sport-expert** (hockey-expert / basketball-expert / golf-expert /
+football-expert) for domain
 authenticity — realistic positions, adversities, vocabulary, and
 age/level fit. The sport-expert advises and verifies; it does NOT write
 the mental skill (sports-psychologist) or the scripture (youth-pastor),
-and it is not a clinician. One sport-expert per launch sport. Hockey and
-basketball are the launch sports — the pregame engine resolves each from a
-per-sport config registry (see MVP Scope). Sports beyond them are v2.
+and it is not a clinician. One sport-expert per live sport. Hockey,
+basketball, golf, and football are the live sports (source of truth:
+`SUPPORTED_SPORTS`) — the pregame engine resolves each from a
+per-sport config registry (see MVP Scope). Sports beyond the live set are v2.
 
 ## Agent Orchestration
 The lead agent is the **sole orchestrator**. Subagents are leaf workers — they
@@ -166,7 +168,7 @@ Standing invocation policy — apply these by default, not by memory:
 | Supabase schema / RLS / migration / auth / Stripe / server action | backend-engineer |
 | Pregame audio pipeline / TTS / ffmpeg / EQ / `MANIFEST_VERSION` | audio-engineer |
 | Athlete-facing training, journal, or scripture content | content-curator (orchestrates sports-psychologist + youth-pastor) |
-| Sport-specific content (hockey/basketball scenarios, positions, examples, pregame scripts) | content-curator + the relevant sport-expert (hockey-expert / basketball-expert) for authenticity |
+| Sport-specific content (hockey/basketball/golf/football scenarios, positions, examples, pregame scripts) | content-curator + the relevant sport-expert (hockey-expert / basketball-expert / golf-expert / football-expert) for authenticity |
 | Any PR touching runtime or tested code — before privacy + merge | qa-reviewer |
 | Any PR touching `apps/web/**`, `supabase/**`, `.claude/agents/**`, `CLAUDE.md`, `docs/brand.md` | kids-privacy-officer (also nudged by the privacy-review hook) |
 
@@ -322,7 +324,7 @@ The privacy veto is never suppressed to satisfy "issue-scoped only."
 - Parent signup + Stripe subscription (first athlete $5/mo or $49/yr; each additional athlete $3/mo or $29/yr; 14-day first-time trial)
 - Parent creates athlete account (no email for the athlete)
 - One daily training session, themed per live sport (hockey, basketball,
-  golf — see `SUPPORTED_SPORTS`), faith-
+  golf, football — see `SUPPORTED_SPORTS`), faith-
   foundational (30 days of content per sport, seeded at launch).
   Structure: mental skill + scripture foundation. (Journal prompt was
   shipped and then descoped per FV-135 — do not re-wire without KC.)
@@ -343,7 +345,7 @@ The privacy veto is never suppressed to satisfy "issue-scoped only."
   a real audio narration delivers the chosen visualizations, coping plan,
   and send-off. The chosen play clips replace the flagship `viz-{role}`
   arrival clip (flagship = nothing-picked fallback only). Sport-aware
-  (hockey, basketball, golf), resolved from a per-sport config registry.
+  (hockey, basketball, golf, football), resolved from a per-sport config registry.
   Added to MVP 2026-05-24 in response to direct beta-tester feedback.
   Shipped as a compositional clip playlist — per-position/adversity
   personalization, ash voice via OpenAI TTS, runtime-stitched and
@@ -357,7 +359,7 @@ The privacy veto is never suppressed to satisfy "issue-scoped only."
 Out of scope for MVP: video, daily training session audio (text-only
 for MVP — only the pregame session has narration), community feed, coach
 view, team mode, native app wrap, sports beyond the live set (hockey,
-basketball, golf) — additional sports are v2 (FV-21), AI-personalized content, free tier, social sign-in,
+basketball, golf, football) — additional sports are v2 (FV-21), AI-personalized content, free tier, social sign-in,
 progressive training plans (that's v2), leaderboards (never), 18+
 self-onboard/self-pay fork (post-MVP).
 
@@ -424,7 +426,8 @@ docs/brand.md "Voice Modes" for the full table. Default mode is Mentor.
   prose. Calibrate by age — simpler and more concrete for 13-15, more
   depth and nuance for 16-21. Never down-talk any age.
 - Athlete-facing content uses "athlete" or "you," never "kid."
-- Hockey and basketball examples for MVP. Underlying content structure is
+- Examples drawn from the live sports (hockey, basketball, golf,
+  football) for MVP. Underlying content structure is
   sport-agnostic so adding more sports in v2 is trivial.
 
 ### Visual Design
