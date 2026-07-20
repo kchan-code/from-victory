@@ -15,36 +15,61 @@ delay shipping.
 ## The MVP is locked
 
 It ships when these work and no more:
-- Parent signup + Stripe subscription
-- Parent creates kid account
-- Daily devotional (30 days seeded)
-- Daily journal prompt with Option C safety architecture
-- Streak counter
-- Parent dashboard (metadata only, no journal content)
-- Push notifications
+- Parent signup + Stripe subscription (first athlete $5/mo or $49/yr; each
+  additional athlete $3/mo or $29/yr; 14-day first-time trial)
+- Parent creates athlete account (no email for the athlete; athletes are 13-21)
+- One daily training session — mental skill + scripture foundation, text-only,
+  themed per live sport (hockey, basketball, golf, football — source of truth:
+  `SUPPORTED_SPORTS` in `apps/web/lib/sports.ts`)
+- Pregame guided audio session (~5 min, compositional clip playlist — the ONLY
+  narrated surface in MVP)
+- Rhythm visualization — never a punitive streak counter. Internal data may
+  track streaks; the user-facing concept is rhythm.
+- Parent dashboard (rhythm + entry-count metadata only, never journal content)
+- Push notifications (Web Push)
 - One landing page
-- COPPA-compliant onboarding for under-13 kids
+- Age-gated onboarding: 13+ floor, minor protections for ages 13-17. COPPA
+  (under-13) does NOT apply — there is no under-13 path. If you see under-13
+  consent machinery proposed, that is stale scope, not a requirement.
+- Athlete-private journal: BUILT, DORMANT, DESCOPED (FV-135). Infrastructure
+  exists; zero production callers. Re-wiring it is a scope change that needs KC.
 
 Anything outside this list is v2 unless the founder explicitly overrides
 you with reasoning that survives challenge.
 
 ## Push back hard on
 
-- "Add video or audio narration" → v2
-- "Wrap as native app with Expo" → v2, after PMF signal (500+ paying parents)
-- "Add other sports" → the live set is hockey, basketball, and golf (`SUPPORTED_SPORTS`); everything else (baseball, football, lacrosse, swimming, track, …) is v2/dormant behind its own go-live gate. A new sport ships the FULL per-sport content contract — flagship viz + ~7-play positive-play library per position + hard-moment grid + pre-practice (see docs/adding-a-sport.md) — a sport missing the play library is not launchable.
+- "Add video" → v2
+- "Add audio narration to the daily session" → v2. Daily training is text-only;
+  the pregame session is the only narrated surface in MVP.
+- "Wrap as native app" → out of MVP scope. Store/native tracks are KC-directed
+  work, never agent-initiated scope.
+- "Add other sports" → the live set is hockey, basketball, golf, and football
+  (`SUPPORTED_SPORTS`); everything else (baseball, lacrosse, swimming, track, …)
+  is v2/dormant behind its own go-live gate. A new sport ships the FULL
+  per-sport content contract — flagship viz + ~7-play positive-play library per
+  position + hard-moment grid + pre-practice (see docs/adding-a-sport.md) — a
+  sport missing the play library is not launchable.
 - "Add a coach view" → v2
 - "Add a community/feed" → v2 at the earliest. Possibly never.
-- "Add AI-personalized devotionals" → v2
-- "Let kids share entries with friends" → never in MVP. Trust model is parent-kid only.
-- "Add a free tier" → no. Paid only. Free tier inflates support burden and muddies COPPA consent.
-- "Add Google/Apple/Facebook social sign-in" → v1.1 maybe. Email/password for MVP reduces COPPA surface.
+- "Add AI-personalized content" → v2
+- "Let athletes share journal entries with friends" → never in MVP. The trust
+  model is parent-athlete only — and the journal itself is dormant (FV-135).
+- "Add leaderboards" → never. Gamification non-negotiable: no athlete-to-athlete
+  comparison, no public scoring.
+- "Add a free tier" → no. Paid only. A free tier inflates support burden and
+  muddies the parent-buyer model.
+- "Add Google/Apple/Facebook social sign-in" → out of MVP. Email/password (and
+  the athlete's pseudonymous username) keeps the minor-data surface small.
 
 ## Push back with curiosity (might be valid)
 
-- "Add a coach invite link" → does this unlock distribution or create a 3-way data model that breaks COPPA?
-- "Add an annual price with discount" → does Stripe handle this without code changes? If yes, fine. If no, v2.
-- "Track engagement analytics" → what specific metric and is it COPPA-compliant for under-13 accounts?
+- "Add a coach invite link" → does this unlock distribution, or create a 3-way
+  data model that widens minor-data (13-17) exposure?
+- "Change pricing / add a promo" → if Stripe configuration handles it without
+  code changes, fine. If it needs code, it competes with launch scope.
+- "Track engagement analytics" → what specific metric, and does it respect the
+  no-behavioral-analytics rule for 13-17 accounts?
 
 ## Say yes when
 
