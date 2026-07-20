@@ -24,26 +24,42 @@ work around it.)
 ## Stack
 
 - Playwright for E2E. Mobile-first viewports (iPhone 14 default, Pixel 7
-  secondary).
+  secondary) — wired in `apps/web/playwright.config.ts`.
 - Vitest for unit and component tests.
 - React Testing Library on top of Vitest for component tests.
-- axe-core / @axe-core/playwright for accessibility scans.
+- axe-core / @axe-core/playwright for accessibility scans (PLANNED — not yet
+  in package.json or CI; until wired, a11y review is manual per the checklist
+  below).
 - No Cypress, no Jest, no Enzyme. Settled.
 
 ## What you test (priority order)
 
 1. **Critical user flows end-to-end.** If these break, the app is broken:
    - Parent signup → Stripe checkout → subscription active
-   - Parent creates athlete account → verifiable consent flow (under 13)
-   - Athlete logs in → reads daily devotional → writes journal entry → sees streak
-   - Athlete writes content that triggers safety keyword → resource screen
-     surfaces (verifies Option C end-to-end without testing the actual
-     crisis content, which lives in `apps/web/lib/safety/safety-keywords.json`)
-   - Parent dashboard shows streak + entry count, NEVER content
+   - Parent creates athlete account (13+ birthdate floor — there is NO
+     under-13 path and NO consent flow to test; a path that allows under-13
+     creation is itself a critical bug)
+   - Negative test of the floor: submitting a birthdate under 13 at athlete
+     creation must be rejected
+   - Athlete signs in (username + password at `/signin`, or device pairing
+     via `/pair`) → completes the daily training session (`/athlete/daily`,
+     text-only) → rhythm updates
+   - Athlete runs the pregame guided audio session (`/athlete/pregame`,
+     sport-aware across the live sports — `SUPPORTED_SPORTS`); pre-practice
+     (`/athlete/practice`) and post-game (`/athlete/postgame`) likewise
+   - Parent dashboard shows rhythm + entry-count metadata, NEVER journal
+     content
    - Parent cancels subscription → access degrades appropriately
 
-2. **Accessibility on every athlete-facing route.** axe scan in CI. Zero
-   violations to merge. WCAG 2.1 AA baseline.
+   DORMANT (FV-135): the athlete journal and the Option C safety-keyword
+   flow (`apps/web/lib/safety/`) are built but descoped — zero production
+   callers. Do not smoke-test them as live flows; they return to this list
+   only if KC re-wires the journal.
+
+2. **Accessibility on every athlete-facing route.** WCAG 2.1 AA baseline.
+   Target state: axe scan in CI with zero violations to merge (PROPOSED —
+   not yet wired; no axe dependency exists today). Until then, review the
+   checklist below manually on changed athlete-facing routes.
 
 3. **Component tests for non-trivial logic.** Anything with conditional
    rendering, validation, state machines, or computed display values.
@@ -52,8 +68,8 @@ work around it.)
    input and reject bad input.
 
 5. **Snapshot tests.** Used sparingly, only for stable visual content
-   (e.g., a rendered devotional given known props). Snapshots break on
-   every CSS tweak otherwise.
+   (e.g., a rendered daily training session given known props). Snapshots
+   break on every CSS tweak otherwise.
 
 ## What you don't test
 
@@ -76,21 +92,23 @@ Specifically:
 The check is a defense against drift, not the primary enforcement. The
 content-curator owns it; you catch what slipped through.
 
-## Playwright structure
+## Test layout (as shipped)
 apps/web/
-└── tests/
-├── e2e/
-│   ├── parent-signup.spec.ts
-│   ├── athlete-onboarding.spec.ts
-│   ├── daily-devotional.spec.ts
-│   ├── journal-entry.spec.ts
-│   ├── safety-keyword-flow.spec.ts
-│   ├── parent-dashboard.spec.ts
-│   └── subscription-lifecycle.spec.ts
-├── a11y/
-│   └── routes.spec.ts            # axe scan across every route
-└── fixtures/
-└── seeded-state.ts           # test data setup
+├── e2e/                          # Playwright (testDir in playwright.config.ts)
+│   ├── global-setup.ts / global-teardown.ts
+│   ├── pregame-flow.e2e.ts
+│   ├── practice-flow.e2e.ts
+│   ├── postgame-module.e2e.ts
+│   ├── multi-athlete.e2e.ts
+│   └── landing-truthfulness.e2e.ts
+├── __tests__/                    # Vitest unit/route tests (~45 files, e.g.
+│                                 # dashboard-rhythm.test.ts, middleware-matcher.test.ts)
+└── components/**/__tests__/      # colocated component tests (e.g. pregame)
+
+PROPOSED (not yet built): an `a11y` route-scan spec (axe across every
+athlete-facing route) and E2E coverage for parent signup→Stripe and
+subscription-lifecycle flows. Label new specs `<flow>.e2e.ts` to match the
+existing convention.
 
 Each E2E spec:
 - Uses the mobile viewport by default (iPhone 14)
@@ -112,8 +130,9 @@ If a test could potentially mutate production data, it doesn't run.
 
 ## Accessibility specifics
 
-For every athlete-facing route, axe scan must report zero violations.
-Common things you catch:
+For every athlete-facing route, the standard is zero axe violations
+(scan is manual until the PROPOSED CI wiring lands). Common things you
+catch:
 
 - Missing labels on inputs
 - Insufficient color contrast (Tailwind defaults sometimes fail at
@@ -196,4 +215,4 @@ BLOCK only for:
 - .claude/agents/frontend-engineer.md (markup conventions, testids)
 - .claude/agents/backend-engineer.md (schema, server actions)
 - .claude/agents/kids-privacy-officer.md (runs after you in CI)
-- apps/web/tests/ (where everything you own lives)
+- apps/web/e2e/ + apps/web/__tests__/ (where everything you own lives)
