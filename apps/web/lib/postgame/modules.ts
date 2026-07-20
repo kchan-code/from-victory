@@ -9,8 +9,10 @@
 // Architecture contract:
 //   - Zero DB reads. Zero athlete-data writes. No "opened" events, no
 //     completion stamps, no localStorage counters.
-//   - Content is VERBATIM from docs/track-b-drafts-fv225-fv230.md PART 1,
-//     specialist-approved copy. Do not edit, trim, or reflow any module body.
+//   - Content source of truth: KC's 2026-07-20 postgame review-bundle pass
+//     (all bodies re-authored by KC; football added FV-431; golf `benching`
+//     REMOVED per KC — "there is no benching for golf"). Do not edit, trim,
+//     or reflow any module body without a KC prose gate.
 //   - Sport resolution: caller filters by profile.sport. If a sport has no
 //     modules (future sports), the picker page 404s/redirects gracefully.
 //   - Scenario types: 'loss' | 'benching' | 'bad-game' | 'win' | 'praise'
@@ -64,30 +66,28 @@ const HOCKEY_LOSS: PostgameModule = {
     "The Lord is close to the brokenhearted and saves those who are crushed in spirit.",
   bodyMd: `### What happened
 
-You lost. The room was quiet, the gear came off slow, and now the
-window's dark and nobody's saying much.
+You lost. The room went quiet, the gear came off slowly, and now nobody
+has much to say.
 
-Let it be what it is. A loss is allowed to hurt. You don't have to talk
-yourself out of it on the drive home, and you don't have to pretend it
-didn't matter. It mattered. That's why it stings.
+Do not use "God is in control" to act like the game did not matter. You
+wanted to win, you worked for it, and losing hurts. You can tell God the
+truth about that without cleaning it up first.
 
 ### What's true
 
-Here's what the night doesn't get to do: it doesn't get to tell you who
-you are. The scoreboard reports what happened on the ice. It can't reach
-the part of you that's settled in Christ.
+God's control does not make you passive. It lets you face the loss without
+being crushed by it. Psalm 34 says He is close to the brokenhearted. He is
+not waiting for you to stop caring before you come to Him.
 
-The Psalms don't rush you past this. David wrote that God is *close* to
-the brokenhearted — not impressed by the ones who shrug it off, close
-to the ones who feel it. He's near you tonight, in the car, in the
-quiet.
+Ask the honest questions. Did you prepare well? Did you stay with your
+assignment? Did you support your line when the game turned? Own what is
+yours. Leave alone what was never yours to control.
 
-So feel it tonight. You're not asked to feel it forever.
+> Care about the loss. Learn from it. Do not make it your identity.
 
-> The loss is real. It is not the verdict on you.
-
-Tomorrow the tape is waiting and so is the next rep. Tonight, you're
-already held.`,
+Your standing with God rests on what Christ has done, not on tonight's
+score. Tomorrow, watch the tape and take one correction back to practice.
+Tonight, let the loss be painful without putting yourself on trial.`,
 };
 
 // ---------------------------------------------------------------------------
@@ -103,30 +103,26 @@ const HOCKEY_BENCHING: PostgameModule = {
     "You have searched me, Lord, and you know me. You know when I sit and when I rise; you perceive my thoughts from afar. You discern my going out and my lying down; you are familiar with all my ways.",
   bodyMd: `### What happened
 
-The door kept not opening. Shift after shift, your line went without
-you — or you watched the whole night from the end of the bench in a
-clean jersey. Now you're in the car and the question won't quit:
-*does he even trust me?*
-
-That's a real question, and it's a hard seat. You're allowed to be
-frustrated. Sitting when you're built to compete is its own kind of
-loud.
+The door kept opening for somebody else. Shift after shift, you stayed on
+the bench and did not hear your name. It hurts to watch someone else get
+the opportunity you wanted. Do not pretend it does not.
 
 ### What's true
 
-But hear the trap in it. The bench can decide your minutes tonight. It
-cannot decide your worth. Those are two different things, and the night
-keeps trying to blur them.
+Right now, the coach is not trusting you with the ice time you want. Start
+there. Do not spend the ride home guessing at every reason or building a
+case against him. Psalm 139 says God knows you completely. Because your
+life is secure in Christ, you can face a limited role without letting it
+decide who you are.
 
-David wrote Psalm 139 about a God who already knows him completely —
-sitting, rising, every honest corner. You weren't invisible out there.
-The One who matters most didn't just see your minutes — he's known you
-all the way down since long before tonight.
+> You do not control the shifts you are given. You control what you do with them.
 
-> A coach sets your ice time. He doesn't set your standing.
-
-Tomorrow you can ask him what he wants to see. Tonight, you're already
-seen.`,
+Tomorrow, be bold enough to ask the coach what must improve. Listen even
+if the answer is incomplete or hard to hear. Then own the part you can
+change. If you get three shifts, make them disciplined shifts. Practice
+with purpose, support your line, and stay ready. God may not change the
+role immediately. He can still form courage, patience, and faithfulness in
+you while you work inside it.`,
 };
 
 // ---------------------------------------------------------------------------
@@ -142,29 +138,27 @@ const HOCKEY_BAD_GAME: PostgameModule = {
     "Because of the Lord's great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness.",
   bodyMd: `### What happened
 
-You couldn't find it tonight. The turnover that ended up in your net.
-The bad shift that turned into a bad night. You replayed it on the bench,
-and you're replaying it now, and the highlight reel in your head only
-keeps the worst clips.
+You had a bad night. Maybe your turnover ended up in the net. Maybe one
+lost assignment changed the game. Your mind keeps replaying the same
+shift because you know it mattered.
 
-That loop is normal. A rough night earns a little ache. Don't fake
-being fine.
+Do not minimize it, and do not exaggerate it. Tell the truth about the
+play.
 
 ### What's true
 
-But watch what the loop is doing. It's taking what *happened* and quietly
-turning it into who you *are*. *I'm trash. I cost us.* That's the lie
-underneath the replay, and it's louder at night.
+Maybe the mistake was yours. Grace does not ask you to deny that. It lets
+you own the turnover, apologize if someone needs to hear it, and learn
+without deciding that one night has exposed who you really are.
 
-Lamentations was written from real wreckage — a city in ruins, no
-spin on it. And right in the middle, the writer says God's mercies are
-*new every morning.* Not earned by a better game. New tomorrow because
-He is faithful, not because you were.
+Lamentations says God's compassion is new every morning. That mercy is
+not a promise that your next game will be better. It is the reason you
+can face the tape honestly: Christ has already carried your condemnation.
 
-> A bad night is information. It is not your identity.
+> Own the mistake without turning it into your name.
 
-Watch the tape tomorrow with clear eyes. Tonight, the morning's already
-coming.`,
+Tomorrow, find the first decision or detail that broke down. Take the
+coaching and work on it. Tonight, stop replaying the shift as a punishment.`,
 };
 
 // ---------------------------------------------------------------------------
@@ -180,30 +174,28 @@ const BASKETBALL_LOSS: PostgameModule = {
     "The Lord is close to the brokenhearted and saves those who are crushed in spirit.",
   bodyMd: `### What happened
 
-You lost. The locker room emptied out quiet, the gym lights are behind
-you now, and the ride home is mostly silence.
+You lost. The locker room emptied quietly, the gym lights are behind you,
+and the ride home gives you plenty of time to replay it.
 
-Let it be what it is. A loss is allowed to hurt. You don't have to talk
-yourself out of it in the car, and you don't have to act like it didn't
-matter. It did. That's why it stings.
+Do not hide behind "God is in control" as if caring less were more
+spiritual. You wanted this game. You worked for it. The loss can hurt.
 
 ### What's true
 
-Here's what the night doesn't get to do: it doesn't get to tell you who
-you are. The scoreboard reports what happened on the floor. It can't
-touch the part of you that's secure in Christ.
+Psalm 34 says God is close to the brokenhearted. You can bring Him the
+actual disappointment, not the answer you think a Christian athlete is
+supposed to give.
 
-The Psalms don't hurry you past this. David wrote that God is *close* to
-the brokenhearted — not impressed by whoever shrugs it off, close to
-whoever actually feels it. He's near you tonight, in the car, in the
-quiet.
+Then be honest about your part. Did you defend with discipline? Did you
+move the ball? Did your effort change when the game turned? Responsibility
+is not condemnation. It is how you learn.
 
-So feel it tonight. You're not asked to feel it forever.
+> The result matters. It is not your standing before God.
 
-> The loss is real. It is not the verdict on you.
-
-Tomorrow the film is waiting and so is the next rep. Tonight, you're
-already held.`,
+Christ's finished work, not your final score, secures that standing.
+Tomorrow, take one clear correction from the film and bring it to practice.
+Tonight, do not force perspective or turn the loss into a judgment on your
+whole life.`,
 };
 
 // ---------------------------------------------------------------------------
@@ -219,29 +211,26 @@ const BASKETBALL_BENCHING: PostgameModule = {
     "You have searched me, Lord, and you know me. You know when I sit and when I rise; you perceive my thoughts from afar. You discern my going out and my lying down; you are familiar with all my ways.",
   bodyMd: `### What happened
 
-The sub never came. You checked the scorer's table, you stayed ready,
-and the buzzer went without your number. Now you're in the car and the
-question keeps circling: *does he even trust me?*
-
-That's a real question, and it's a hard seat. You're allowed to be
-frustrated. Sitting when you're built to compete is its own kind of
-loud.
+The sub never came. You watched the scorer's table, stayed ready, and the
+buzzer sounded without your number. It hurts to sit while somebody else
+gets the minutes you wanted. You do not have to act like it does not.
 
 ### What's true
 
-But hear the trap in it. The bench can decide your minutes tonight. It
-cannot decide your worth. Those are two different things, and the night
-keeps trying to blur them.
+Right now, the coach is not trusting you with the role you want. Accepting
+that fact is not the same as agreeing with every decision. It means you
+stop spending your energy on the minutes you were not given. Psalm 139
+says God knows you completely. Your place in Christ is secure enough for
+you to face the situation without hiding from it.
 
-David wrote Psalm 139 about a God who already knows him completely —
-sitting, rising, every honest corner. You weren't invisible down there.
-The One who matters most didn't just see your minutes — he's known you
-all the way down since long before tonight.
+> You cannot choose your minutes. You can be ready for every one you receive.
 
-> A coach sets your minutes. He doesn't set your standing.
-
-Tomorrow you can ask him what he wants to see. Tonight, you're already
-seen.`,
+Tomorrow, ask the coach directly what you need to improve. Listen without
+arguing, then turn the clearest part of the answer into work. If practice
+gives you three live reps, make them three attentive, disciplined reps.
+Talk from the bench, help your teammates, and stay ready. God does not
+promise a larger role, but He does give you courage to be faithful in the
+one you have.`,
 };
 
 // ---------------------------------------------------------------------------
@@ -257,70 +246,27 @@ const GOLF_LOSS: PostgameModule = {
     "The Lord is close to the brokenhearted and saves those who are crushed in spirit.",
   bodyMd: `### What happened
 
-You got beat. Maybe the match slipped on the back nine, maybe the playoff
-went the other way, maybe you signed for a number that wasn't enough. Now
-it's just you, the car, and a quiet you can't talk your way out of.
+You got beat. Maybe the match turned on the back nine, the playoff went the
+other way, or you signed for a number that was not enough. Now it is just
+you and the round you wish you could play again.
 
-Let it be what it is. A loss is allowed to hurt. Out here there's no bench
-to hide on and no line to share it with — it was your card, your round, and
-that's a lonely kind of sting. It mattered. That's why it aches.
-
-### What's true
-
-Here's what the round doesn't get to do: it doesn't get to tell you who you
-are. The card reports what happened on the course. It can't reach the part
-of you that's settled in Christ.
-
-The Psalms don't rush you past this. David wrote that God is *close* to the
-brokenhearted — not impressed by the ones who shrug it off, close to the
-ones who feel it. He's near you tonight, in the car, in the quiet.
-
-So feel it tonight. You're not asked to feel it forever.
-
-> The loss is real. It is not the verdict on you.
-
-Tomorrow the range is waiting and so is the next round. Tonight, you're
-already held.`,
-};
-
-// ---------------------------------------------------------------------------
-// Module 3b — Golf · Left Off the Card (benching analog — didn't qualify)
-// ---------------------------------------------------------------------------
-const GOLF_BENCHING: PostgameModule = {
-  slug: "golf-left-off-the-card",
-  sport: "golf",
-  scenario: "benching",
-  title: "Left Off the Card",
-  eyebrow: "Didn't Qualify", // golf has no bench — overrides the default "The Bench"
-  scriptureRef: "Psalm 139:1-3",
-  scriptureText:
-    "You have searched me, Lord, and you know me. You know when I sit and when I rise; you perceive my thoughts from afar. You discern my going out and my lying down; you are familiar with all my ways.",
-  bodyMd: `### What happened
-
-Your number wasn't good enough. Qualifying came and went, the lineup got
-posted, and your name wasn't on it — beaten by a stroke or two, left home
-while the travel five tees off without you. Now you're in the car and the
-question won't quit: *am I even good enough for this?*
-
-That's a real question, and it's a hard seat. You're allowed to be
-frustrated. Doing the work and missing the cut by one is its own kind of
-loud.
+Do not call the result unimportant because God is in control. You cared,
+you competed, and your name is on the card. The loss can hurt.
 
 ### What's true
 
-But hear the trap in it. The qualifying sheet can decide your spot this
-week. It cannot decide your worth. Those are two different things, and the
-night keeps trying to blur them.
+Psalm 34 says God is close to the brokenhearted. You do not need to become
+detached from the game to trust Him. Bring Him the disappointment as it is.
 
-David wrote Psalm 139 about a God who already knows him completely —
-sitting, rising, every honest corner. Your number got read. *You* didn't.
-The One who matters most has known you all the way down since long before
-this week's scores.
+Then separate what you controlled from what you did not. Your decisions,
+commitment, and response after mistakes are yours to examine. A bad bounce
+or another player's score is not.
 
-> A coach reads your card. He doesn't write who you are.
+> Take the round seriously without making it ultimate.
 
-Tomorrow you can ask what it takes to make it next time. Tonight, you're
-already known.`,
+Your standing with God rests on Christ, not on the card. Tomorrow, review
+the round and choose one part of your game to address. Tonight, you do not
+need to explain the loss away or condemn yourself for it.`,
 };
 
 // ---------------------------------------------------------------------------
@@ -337,29 +283,28 @@ const GOLF_BAD_GAME: PostgameModule = {
     "Because of the Lord's great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness.",
   bodyMd: `### What happened
 
-You couldn't find it today. The one bad hole that turned into a snowman, the
-swing that left somewhere on the front nine, the number that ran away from
-you and wouldn't stop. You replayed it walking up the last fairway, and
-you're replaying it now, and your head only keeps the worst holes.
+The round got away from you. One bad hole became a bigger number, or the
+swing disappeared on the front nine and never returned. Your mind keeps
+replaying the worst shots.
 
-That loop is normal. A round like that earns a little ache. Don't fake
-being fine.
+Start with facts. Which decisions were poor? Which misses were technical?
+Where did frustration change the next shot?
 
 ### What's true
 
-But watch what the loop is doing. It's taking what *happened* and quietly
-turning it into who you *are*. *I'm a choker. I can't play.* That's the lie
-under the replay, and it's louder at night.
+You may have managed the course badly. Own that. But *I made poor decisions*
+is not the same as *I am a choker.* The first claim can lead to change. The
+second turns one round into a label.
 
-Lamentations was written from real wreckage — a city in ruins, no spin on
-it. And right in the middle, the writer says God's mercies are *new every
-morning.* Not earned by a better round. New tomorrow because He is faithful,
-not because you were.
+Lamentations says God's compassion is new every morning. That is not a
+promise of a lower score tomorrow. It means your failures do not exhaust
+His mercy. Because Christ has taken your condemnation, you can review the
+card without defending yourself or tearing yourself apart.
 
-> A blow-up round is information. It is not your identity.
+> Be honest about the round, then make the next correction.
 
-Hit the range tomorrow with clear eyes. Tonight, the morning's already
-coming.`,
+Tomorrow, work on the clearest pattern and make a plan for stopping one
+bad hole from leading to two more. Tonight, put the card away.`,
 };
 
 // ---------------------------------------------------------------------------
@@ -375,29 +320,28 @@ const BASKETBALL_BAD_GAME: PostgameModule = {
     "Because of the Lord's great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness.",
   bodyMd: `### What happened
 
-You couldn't find it tonight. The shot wouldn't fall, or the turnover
-came at the worst time and you felt the gym react. You replayed it on
-the bench, and you're replaying it now, and the highlight reel in your
-head only saves the worst clips.
+You had a bad game. The shot would not fall, or the turnover came at the
+worst time and you heard the gym react. Your mind keeps going back to it
+because the play mattered.
 
-That loop is normal. A cold night earns a little ache. Don't fake being
-fine.
+Be exact about what happened. A bad shooting night, a missed rotation,
+and a careless decision are different problems.
 
 ### What's true
 
-But watch what the loop is doing. It's taking what *happened* and quietly
-turning it into who you *are*. *I'm a liability. I cost us.* That's the
-lie under the replay, and it's louder at night.
+Maybe your mistake hurt the team. Own it. If you ignored a call or let a
+teammate down, repair it. But do not turn *I played badly* into *I am a
+liability.* Condemnation stays vague and personal; conviction is specific
+and gives you a next step.
 
-Lamentations was written from real wreckage — a city in ruins, no spin
-on it. And right in the middle, the writer says God's mercies are *new
-every morning.* Not earned by a better game. New tomorrow because He is
-faithful, not because you were.
+Lamentations says God's compassion is new every morning. His mercy is not
+earned by making shots tomorrow. Because Christ has carried your
+condemnation, you can look directly at the performance and tell the truth.
 
-> A cold night is information. It is not your identity.
+> Name the mistake. Take the correction. Do not make the mistake your name.
 
-Get up shots tomorrow with clear eyes. Tonight, the morning's already
-coming.`,
+Tomorrow, review the possessions and work on the detail that failed.
+Tonight, stop using the replay to punish yourself.`,
 };
 
 // ---------------------------------------------------------------------------
@@ -418,30 +362,29 @@ const HOCKEY_WIN: PostgameModule = {
     "Every good and perfect gift is from above, coming down from the Father of the heavenly lights, who does not change like shifting shadows.",
   bodyMd: `### What happened
 
-You won. Maybe it was the goal, the big save, the shift that swung it.
-The body's still buzzing.
+You won. Maybe it was your goal, a big save, or the shift that changed the
+game. Enjoy it. Winning is a good gift, and gratitude does not require you
+to act less excited.
 
-Good. Sit in it. Name what actually went right — the reps that built it,
-the pass that set you up, the linemate, the prep nobody saw.
+Notice what made the night possible: the work you put in, the pass before
+the goal, the teammate who covered for you, the people who helped you get
+here.
 
 ### What's true
 
-The scoreboard couldn't drop you after a loss, and it can't crown you
-after this. That's the freedom.
+James says every good gift comes from a Father who does not change. Your
+ability to play, the teammates beside you, and the joy of this night are
+gifts. The final score is not proof that God favored you over the other
+team or payment for having enough faith.
 
-Every good gift comes down from a Father who doesn't change like shifting
-shadows. The win, the body, the room, this whole night — gift. The
-Father you'd thank tonight is the same One who was close in the car after
-the last loss. He didn't change. Only the scoreboard did. You don't need
-a speech. Just: thank you.
+Your work mattered. Your teammates mattered. God's grace does not erase
+either one. It keeps you from acting as though you did it alone.
 
-Enjoy it tonight, then let it rest — the win doesn't owe you a sequel.
-And win like someone who's lost before — someone two stalls down might've
-had their worst night.
+> Enjoy the win without asking it to prove you are enough.
 
-> The win is real. It is not the crown on you.
-
-Take the win — and let the thank-you travel past the scoreboard.`,
+Thank God plainly. Then thank a teammate for something specific. If a
+player beside you had a hard night, make room for that too. Tomorrow, go
+back to work without assuming this result guarantees the next one.`,
 };
 
 // ---------------------------------------------------------------------------
@@ -458,30 +401,28 @@ const BASKETBALL_WIN: PostgameModule = {
     "Every good and perfect gift is from above, coming down from the Father of the heavenly lights, who does not change like shifting shadows.",
   bodyMd: `### What happened
 
-You won. Maybe it was the dagger three, the and-one, the stop in crunch
-time. The body's still buzzing.
+You won. Maybe you hit a late three, finished through contact, or made the
+stop that closed the game. Enjoy it. You do not need to downplay a good
+night to prove you are humble.
 
-Good. Sit in it. Name what actually went right — the reps that built it,
-the pass that set you up, the teammate, the prep nobody saw.
+Pay attention to what helped: the extra work, the screen that freed you,
+the teammate who made the next pass, the talk on defense.
 
 ### What's true
 
-The scoreboard couldn't drop you after a loss, and it can't crown you
-after this. That's the freedom.
+James says every good gift comes from a Father who does not change. Your
+ability to compete, your teammates, and the joy of the night are gifts.
+The final score is not proof that God chose your side or rewarded your
+faith.
 
-Every good gift comes down from a Father who doesn't change like shifting
-shadows. The win, the body, the teammates, this whole night — gift. The
-Father you'd thank tonight is the same One who was close in the car after
-the last loss. He didn't change. Only the scoreboard did. You don't need
-a speech. Just: thank you.
+Your preparation mattered, and grace gives you no reason to become lazy.
+It also gives you no reason to make the result your proof of worth.
 
-Enjoy it tonight, then let it rest — the win doesn't owe you a sequel.
-And win like someone who's lost before — the teammate two seats down
-might've had their worst night.
+> Receive the win as a gift, not as proof that you have arrived.
 
-> The win is real. It is not the crown on you.
-
-Take the win — and let the thank-you travel past the scoreboard.`,
+Thank God. Thank the teammate whose work may not show in the box score.
+Notice if someone on the ride home is carrying a rough night. Then return
+to practice ready to work, because this win does not guarantee the next.`,
 };
 
 // ---------------------------------------------------------------------------
@@ -504,30 +445,26 @@ const HOCKEY_PRAISE: PostgameModule = {
     "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
   bodyMd: `### What happened
 
-The win never came. You're in the car — or the back of the bus — gear
-still wet, the window dark, the loss sitting heavy in your chest.
-
-And you might still feel bad tonight, and that's okay. Name the ache
-first. Don't talk yourself out of it.
+The win never came. Your gear is still wet, the ride is quiet, and the
+loss feels heavy. You do not have to call the night good. It was not the
+result you wanted.
 
 ### What's true
 
-Habakkuk looked at empty fields and ruined vines and said *yet I will
-rejoice* — not because the harvest came, but because his God hadn't moved.
+Habakkuk had lost the visible signs that life was going well, but he had
+not lost God Himself. His praise did not deny the loss or bargain for a
+better outcome. It named God as good when the circumstances were not.
 
-> Praise on a hard night is real. It is not a trade for a better one.
+> Praise is not pretending the loss did not matter.
 
-That's the whole thing. You're not praising because the night was good.
-You're praising because He's good — and those were never the same thing.
+God's control is not a reason to shrug. It is the reason you can grieve,
+own your part, and keep trusting Him without demanding that He explain the
+score. Nothing changes on the scoreboard when you pray. Prayer is not a
+way to force the next game to go differently.
 
-Nothing on the scoreboard changes when you say it. The same God you'd
-thank after a win is the same God in this dark car. He didn't change.
-Only the night did.
-
-So lean on Him, not on yourself. The thank-you isn't gritted teeth — it's
-weight handed over.
-
-Say the thank-you with empty hands — and mean it.`,
+Your prayer can be small and honest: *God, this hurts. Show me what is
+mine to learn. Thank You that Christ has not let go of me.* You do not
+have to feel resolved tonight. That is enough to begin.`,
 };
 
 // ---------------------------------------------------------------------------
@@ -545,30 +482,25 @@ const BASKETBALL_PRAISE: PostgameModule = {
     "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
   bodyMd: `### What happened
 
-The win never came. You're in the car, the gym bag heavier than it
-should be, the lot clearing out, the score still sitting behind your eyes.
-
-And you might still feel bad tonight, and that's okay. Name the ache
-first. Don't talk yourself out of it.
+The win never came. The parking lot is clearing, and the score keeps
+running through your head. Let the disappointment be honest. Praise does
+not require you to pretend the night went well.
 
 ### What's true
 
-Habakkuk looked at empty fields and ruined vines and said *yet I will
-rejoice* — not because the harvest came, but because his God hadn't moved.
+Habakkuk praised when every visible source of security had failed. He did
+not praise the loss. He trusted God in it.
 
-> Praise on a hard night is real. It is not a trade for a better one.
+> Trusting God does not mean becoming indifferent to the result.
 
-That's the whole thing. You're not praising because the night was good.
-You're praising because He's good — and those were never the same thing.
+God's sovereignty frees you to face the loss, your own play, and the work
+ahead. It does not excuse poor preparation or make improvement optional.
+Nothing on the scoreboard changes because you pray, and prayer is not a
+deal for a win next time.
 
-Nothing on the scoreboard changes when you say it. The same God you'd
-thank after a win is the same God in this quiet car. He didn't change.
-Only the night did.
-
-So lean on Him, not on yourself. The thank-you isn't gritted teeth — it's
-weight handed over.
-
-Say the thank-you with empty hands — and mean it.`,
+You can pray: *God, I wanted that game. Show me what I need to own and
+change. Thank You that Your love for me rests on Christ, not my stat line.*
+You can still feel disappointed when the prayer is over.`,
 };
 
 // ---------------------------------------------------------------------------
@@ -586,31 +518,28 @@ const GOLF_WIN: PostgameModule = {
     "Every good and perfect gift is from above, coming down from the Father of the heavenly lights, who does not change like shifting shadows.",
   bodyMd: `### What happened
 
-You won. Maybe you closed out the match, shot your best ever, or your
-number finally cleared the cut. The body's still buzzing.
+You won. Maybe you closed the match, posted your best score, or finally
+made the lineup. Enjoy it. A good round is worth enjoying.
 
-Good. Sit in it. Name what actually went right — the reps that built it,
-the up-and-down that saved the round, the practice nobody saw.
+Name what helped: the work you put in, the smart decision after a miss,
+the up-and-down that saved the round, the people who supported you.
 
 ### What's true
 
-The scorecard couldn't drop you after a blow-up round, and it can't crown
-you after this. That's the freedom.
+James says every good gift comes from a Father who does not change. Your
+ability to play, the people who helped you, and the joy of a good round are
+gifts. God did not reward your faith with a lower score. Your preparation
+still mattered.
 
-Every good gift comes down from a Father who doesn't change like shifting
-shadows. The round, the swing, this whole day — gift, not wages. God didn't
-reward your faith with a lower score; the good round and your standing with
-Him were never on the same scorecard. The Father you'd thank tonight is the
-same One who was close in the car after the last bad round. He didn't
-change. Only the number did.
+Receive it without using it to prove that you are finally good enough.
+Your standing with God rested on Christ before the first tee and still
+rests there after the last putt.
 
-Enjoy it tonight, then let it rest — the round doesn't owe you a sequel.
-And win like someone who's blown up before, who knows the next card can go
-the other way.
+> Enjoy the score without asking it to justify you.
 
-> The win is real. It is not the crown on you.
-
-Take the round — and let the thank-you travel past the scorecard.`,
+Thank God, and thank the people who helped you prepare. Record what worked
+while it is fresh. Then return to practice knowing this round was real but
+does not guarantee the next one.`,
 };
 
 // ---------------------------------------------------------------------------
@@ -635,33 +564,221 @@ const GOLF_PRAISE: PostgameModule = {
     "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
   bodyMd: `### What happened
 
-The round didn't come. You're in the car, clubs in the trunk, the bad
-number still sitting behind your eyes — the round that got away from you
-on the back nine, or the cut you missed by one. Four hours alone with your
-own card, and it didn't go your way.
-
-And you might still feel bad tonight, and that's okay. Name the ache
-first. Don't talk yourself out of it.
+The round did not come together. The clubs are in the trunk, and you still
+see the number: the back nine that got away or the cut you missed by one.
+Do not call it good, and do not act like it did not matter.
 
 ### What's true
 
-Habakkuk looked at empty fields and ruined vines and said *yet I will
-rejoice* — not because the harvest came, but because his God hadn't moved.
+Habakkuk had lost the visible signs that life was going well, yet he still
+called God his Savior. He did not praise the empty fields. He trusted God
+when the fields were empty.
 
-> Praise on a hard night is real. It is not a trade for a better round.
+> Praise does not erase the card or purchase a better one.
 
-That's the whole thing. You're not praising to earn a lower score next
-time. You're praising because He's good — and those were never the same
-thing.
+God's sovereignty does not make the work optional. It frees you to admit
+where your decisions, preparation, or response failed without treating the
+score as a verdict on your life. Prayer will not change today's card, and
+it is not leverage for tomorrow's score.
 
-Nothing on the card changes when you say it. The same God you'd thank
-after your best round is the same God in this quiet car. He didn't change.
-Only the number did.
+You can pray honestly: *God, I am disappointed. Show me what to learn and
+help me return to the work. Thank You that my standing with You rests on
+Christ, not this number.* You do not have to make yourself feel better
+before you finish the prayer.`,
+};
 
-So lean on Him, not on yourself. The thank-you isn't gritted teeth — it's
-weight handed over.
+// ---------------------------------------------------------------------------
+// Module — Football · After the Win (FV-431; KC-authored final copy, 2026-07-20
+// postgame review bundle — the content source of truth for this const)
+// ---------------------------------------------------------------------------
+const FOOTBALL_WIN: PostgameModule = {
+  slug: "football-after-the-win",
+  sport: "football",
+  scenario: "win",
+  title: "After the Win",
+  scriptureRef: "James 1:17",
+  scriptureText:
+    "Every good and perfect gift is from above, coming down from the Father of the heavenly lights, who does not change like shifting shadows.",
+  bodyMd: `### What happened
 
-Say the thank-you with empty hands — and mean it.`,
+You won. Maybe you got the game ball, led the fourth-quarter drive, or
+made the stop that ended it. Enjoy the night. Winning is good, and humility
+does not require you to act unimpressed.
+
+Notice what made the result possible: the week of preparation, the block
+that opened the run, the teammate who handled his assignment, the coach or
+parent who helped you get here.
+
+### What's true
+
+James says every good gift comes from a Father who does not change. Your
+ability to compete, your teammates, and the joy of the night are gifts.
+The final score is not evidence that God favored your team or rewarded you
+for having more faith.
+
+Your preparation mattered. Grace is not an excuse to work less. It is what
+keeps hard work from becoming self-worship when the result goes your way.
+
+> Enjoy the win. Give thanks. Stay teachable.
+
+Thank God on more than winning nights. Thank a teammate
+for a specific play. Check on the player whose night did not feel like a
+victory. Then return to work without assuming this score promises another.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Football · After the Loss (FV-431; KC-authored final copy, 2026-07-20
+// postgame review bundle — the content source of truth for this const)
+// ---------------------------------------------------------------------------
+const FOOTBALL_LOSS: PostgameModule = {
+  slug: "football-the-loss",
+  sport: "football",
+  scenario: "loss",
+  title: "After the Loss",
+  scriptureRef: "Psalm 34:18",
+  scriptureText:
+    "The Lord is close to the brokenhearted and saves those who are crushed in spirit.",
+  bodyMd: `### What happened
+
+You lost. The locker room went quiet, the pads came off slowly, and now
+the score keeps running through your head.
+
+Do not use "God is in control" to shrug at the result. You wanted to win.
+You prepared for it. The loss matters, and you can be disappointed.
+
+### What's true
+
+Psalm 34 says God is close to the brokenhearted. His sovereignty gives you
+somewhere to take the pain; it does not make the pain unreal or the work
+irrelevant.
+
+Ask what belongs to you. Did you know the assignment? Did you communicate?
+Did you finish when the game turned? Own those answers. Do not take
+responsibility for every bounce, call, or teammate's decision.
+
+> Face the score honestly. Take responsibility without taking condemnation.
+
+Your standing with God rests on what Christ has done, not what you did in
+four quarters. Tomorrow, watch the film and take one correction into the
+next practice. Tonight, let the loss hurt without making it your identity.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Football · Glued to the Bench (FV-431; KC-authored final copy, 2026-07-20
+// postgame review bundle — the content source of truth for this const)
+// ---------------------------------------------------------------------------
+const FOOTBALL_BENCHING: PostgameModule = {
+  slug: "football-glued-to-the-bench",
+  sport: "football",
+  scenario: "benching",
+  title: "Glued to the Bench",
+  scriptureRef: "Psalm 139:1-3",
+  scriptureText:
+    "You have searched me, Lord, and you know me. You know when I sit and when I rise; you perceive my thoughts from afar. You discern my going out and my lying down; you are familiar with all my ways.",
+  bodyMd: `### What happened
+
+The depth chart went up and your name moved down. Snap after snap, someone
+else took the reps you wanted. It hurts to stand ready and never hear your
+number. Do not pretend the role is fine with you.
+
+### What's true
+
+Right now, the coach is not trusting you with the snaps you want. Begin
+with the situation as it is, not the one you think you deserve. Psalm 139
+says God knows you completely. Your identity in Christ gives you the
+freedom to face the depth chart without letting it define you.
+
+> You do not control how many reps you get. You control how you use them.
+
+Tomorrow, ask the coach what you need to show in practice, film study, or
+your assignment. Be bold enough to hear the answer, then own what you can
+change. If you get three reps, make them three prepared, physical,
+assignment-sound reps. Communicate, help the starter, and stay ready. Paul
+did not choose his confinement, but he refused to let it make him useless.
+God may not give you the role you want. He can still make you faithful in
+the role you have.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Football · The Bad Game (FV-431; KC-authored final copy, 2026-07-20
+// postgame review bundle — the content source of truth for this const)
+// ---------------------------------------------------------------------------
+const FOOTBALL_BAD_GAME: PostgameModule = {
+  slug: "football-the-bad-game",
+  sport: "football",
+  scenario: "bad-game",
+  title: "The Bad Game",
+  scriptureRef: "Lamentations 3:22-23",
+  scriptureText:
+    "Because of the Lord's great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness.",
+  bodyMd: `### What happened
+
+You had a bad game. Maybe you dropped the third-down ball, blew an
+assignment, or let a receiver get behind you. It will be on Hudl, and you
+already know the clip you do not want to watch.
+
+Do not soften the play, and do not turn it into a statement about your
+whole life. Start with what actually happened.
+
+### What's true
+
+Maybe your mistake cost the team. If it did, own it. Apologize where that
+is needed. Then refuse the label *I am a liability.* A missed assignment
+gives you something specific to correct. A label only tells you to feel
+worse.
+
+Lamentations says God's compassion is new every morning. That mercy does
+not guarantee a better game next week. It means you can watch the film
+without hiding, because Christ has already borne your condemnation.
+
+> Own the snap. Repair what you can. Learn the correction.
+
+Tomorrow, sit with the coach, name what you saw, and take the detail back
+to practice. Tonight, stop replaying the clip as a way to pay for it.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Football · Praise Anyway (FV-431; KC-authored final copy, 2026-07-20
+// postgame review bundle — the content source of truth for this const)
+//
+// CLINICAL_SIGN_OFF_REQUIRED: this module (and its hockey/basketball/golf
+// mirrors) reaches a minor at a night-time, post-loss low point. It must NOT
+// roll out to a broad athlete base before the pending clinical-advisor
+// sign-off (CLAUDE.md Open Items; tracked in FV-296). The content names the
+// ache, permits it, and never forces a bypass — but the clinical gate is a
+// standing requirement, not satisfied by this code.
+// ---------------------------------------------------------------------------
+const FOOTBALL_PRAISE: PostgameModule = {
+  slug: "football-praise-anyway",
+  sport: "football",
+  scenario: "praise",
+  title: "Praise Anyway",
+  scriptureRef: "Habakkuk 3:17-18",
+  scriptureText:
+    "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
+  bodyMd: `### What happened
+
+The win never came. The pads are packed, the bus is dark, and the score is
+still in your head. You wanted a different ending. Do not rush past that
+or call the loss good.
+
+### What's true
+
+Habakkuk had lost every visible sign that life was going well, yet he still
+called God his Savior. He did not praise the empty fields. He trusted God
+in the middle of them.
+
+> Faith in God's control is not indifference to the result.
+
+God's sovereignty frees you to grieve, examine your own play, and return
+to the work. It does not excuse missed preparation or remove the need to
+repair a mistake. Prayer does not change the final score, and it is not a
+trade for a better result next week.
+
+Your prayer can be direct: *God, this hurts. Show me what is mine to own
+and help me do the work. Thank You that my standing with You rests on
+Christ, not tonight's score.* You can finish that prayer and still feel the
+loss.`,
 };
 
 export const POSTGAME_MODULES: PostgameModule[] = [
@@ -677,9 +794,13 @@ export const POSTGAME_MODULES: PostgameModule[] = [
   BASKETBALL_PRAISE,
   GOLF_WIN,
   GOLF_LOSS,
-  GOLF_BENCHING,
   GOLF_BAD_GAME,
   GOLF_PRAISE,
+  FOOTBALL_WIN,
+  FOOTBALL_LOSS,
+  FOOTBALL_BENCHING,
+  FOOTBALL_BAD_GAME,
+  FOOTBALL_PRAISE,
 ];
 
 /**

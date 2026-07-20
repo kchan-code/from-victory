@@ -1,7 +1,8 @@
 // FV-225 — Post-game debrief module registry tests.
 //
 // Pins:
-//   1. All 15 modules present: 5 scenarios × 3 sports; slugs unique; every
+//   1. All 19 modules present: 5 scenarios × 4 sports minus golf benching
+//      (KC 2026-07-20: "there is no benching for golf"); slugs unique; every
 //      module has title/ref/text/body.
 //   2. Scripture byte-pins: each SCRIPTURE_TEXT matches exact expected NIV
 //      strings (mirrors the FV-229 cue-word-verses.test.ts pattern).
@@ -32,8 +33,9 @@ import {
 // ---------------------------------------------------------------------------
 
 describe("POSTGAME_MODULES registry completeness", () => {
-  it("contains exactly 15 modules", () => {
-    expect(POSTGAME_MODULES).toHaveLength(15);
+  it("contains exactly 19 modules", () => {
+    // 5 scenarios × 4 sports − golf benching (removed per KC 2026-07-20).
+    expect(POSTGAME_MODULES).toHaveLength(19);
   });
 
   it("all slugs are unique", () => {
@@ -51,26 +53,16 @@ describe("POSTGAME_MODULES registry completeness", () => {
     }
   });
 
-  it("covers all 5 scenarios × 3 sports", () => {
-    const scenarios: PostgameScenario[] = [
-      "win",
-      "loss",
-      "benching",
-      "bad-game",
-      "praise",
-    ];
-    const sports = ["hockey", "basketball", "golf"] as const;
-
-    for (const sport of sports) {
-      for (const scenario of scenarios) {
-        const match = POSTGAME_MODULES.find(
-          (m) => m.sport === sport && m.scenario === scenario,
-        );
-        expect(
-          match,
-          `missing module: sport=${sport} scenario=${scenario}`,
-        ).toBeDefined();
-      }
+  it("covers the expected scenario grid per sport (golf has no benching)", () => {
+    const expected: Record<string, string[]> = {
+      hockey: ["win", "loss", "benching", "bad-game", "praise"],
+      basketball: ["win", "loss", "benching", "bad-game", "praise"],
+      golf: ["win", "loss", "bad-game", "praise"], // no benching (KC 2026-07-20)
+      football: ["win", "loss", "benching", "bad-game", "praise"],
+    };
+    for (const [sport, scenarios] of Object.entries(expected)) {
+      const got = POSTGAME_MODULES.filter((m) => m.sport === sport).map((m) => m.scenario).sort();
+      expect(got, sport).toEqual([...scenarios].sort());
     }
   });
 });
@@ -186,15 +178,6 @@ describe("Scripture verbatim NIV byte-pins", () => {
     );
   });
 
-  it("Psalm 139:1-3 — same exact text on golf benching (left off the card)", () => {
-    const mod = moduleBySlug("golf-left-off-the-card");
-    expect(mod).toBeDefined();
-    expect(mod!.scriptureRef).toBe("Psalm 139:1-3");
-    expect(mod!.scriptureText).toBe(
-      "You have searched me, Lord, and you know me. You know when I sit and when I rise; you perceive my thoughts from afar. You discern my going out and my lying down; you are familiar with all my ways.",
-    );
-  });
-
   it("Lamentations 3:22-23 — same exact text on golf bad game (blow-up round)", () => {
     const mod = moduleBySlug("golf-the-blow-up-round");
     expect(mod).toBeDefined();
@@ -220,6 +203,21 @@ describe("Scripture verbatim NIV byte-pins", () => {
     expect(mod!.scriptureText).toBe(
       "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
     );
+  });
+
+  // Football (FV-431) — same five texts, cross-pinned to the hockey originals
+  // so a drift in either sport's verse breaks loudly.
+  it.each([
+    ["football-the-loss", "hockey-the-loss"],
+    ["football-glued-to-the-bench", "hockey-glued-to-the-bench"],
+    ["football-the-bad-game", "hockey-the-bad-night"],
+    ["football-after-the-win", "hockey-after-the-win"],
+    ["football-praise-anyway", "hockey-praise-anyway"],
+  ])("%s scripture text byte-matches %s", (ftbSlug, hockeySlug) => {
+    const ftb = moduleBySlug(ftbSlug)!;
+    const hky = moduleBySlug(hockeySlug)!;
+    expect(ftb.scriptureRef).toBe(hky.scriptureRef);
+    expect(ftb.scriptureText).toBe(hky.scriptureText);
   });
 });
 
@@ -247,7 +245,7 @@ function countWords(text: string): number {
 
 describe("Body word-count ceiling", () => {
   for (const mod of POSTGAME_MODULES) {
-    const ceiling = mod.sport === "golf" ? 220 : 190;
+    const ceiling = mod.sport === "golf" || mod.sport === "football" ? 220 : 190;
     it(`${mod.slug} body is ≤${ceiling} words`, () => {
       const count = countWords(mod.bodyMd);
       expect(
@@ -290,86 +288,81 @@ describe("Audience language — no prohibited terms", () => {
 // 5. Youth-pastor protect-lines verbatim
 // ---------------------------------------------------------------------------
 
-describe("Youth-pastor protect-lines", () => {
-  it('hockey loss contains "not impressed by the ones who shrug it off"', () => {
-    const mod = moduleBySlug("hockey-the-loss");
-    expect(mod!.bodyMd).toContain("not impressed by the ones who shrug it off");
+describe("KC-copy protect-lines (2026-07-20 re-author)", () => {
+  // KC re-authored every module body in the 2026-07-20 postgame review bundle
+  // (the content source of truth). The load-bearing anchors are now the reset
+  // blockquotes — one per module, each doing the module's theological work.
+  // A future edit that drops or rewrites a reset must come back through a KC
+  // prose gate; this pin makes that mechanical.
+  const normalize = (x: string) => x.replace(/\s+/g, " ").trim();
+
+  const RESET_BLOCKQUOTES: Array<[string, string]> = [
+    ["basketball-after-the-win", "Receive the win as a gift, not as proof that you have arrived."],
+    ["basketball-glued-to-the-bench", "You cannot choose your minutes. You can be ready for every one you receive."],
+    ["basketball-praise-anyway", "Trusting God does not mean becoming indifferent to the result."],
+    ["basketball-the-cold-night", "Name the mistake. Take the correction. Do not make the mistake your name."],
+    ["basketball-the-loss", "The result matters. It is not your standing before God."],
+    ["football-after-the-win", "Enjoy the win. Give thanks. Stay teachable."],
+    ["football-glued-to-the-bench", "You do not control how many reps you get. You control how you use them."],
+    ["football-praise-anyway", "Faith in God's control is not indifference to the result."],
+    ["football-the-bad-game", "Own the snap. Repair what you can. Learn the correction."],
+    ["football-the-loss", "Face the score honestly. Take responsibility without taking condemnation."],
+    ["golf-after-the-win", "Enjoy the score without asking it to justify you."],
+    ["golf-praise-anyway", "Praise does not erase the card or purchase a better one."],
+    ["golf-the-blow-up-round", "Be honest about the round, then make the next correction."],
+    ["golf-the-loss", "Take the round seriously without making it ultimate."],
+    ["hockey-after-the-win", "Enjoy the win without asking it to prove you are enough."],
+    ["hockey-glued-to-the-bench", "You do not control the shifts you are given. You control what you do with them."],
+    ["hockey-praise-anyway", "Praise is not pretending the loss did not matter."],
+    ["hockey-the-bad-night", "Own the mistake without turning it into your name."],
+    ["hockey-the-loss", "Care about the loss. Learn from it. Do not make it your identity."],
+  ];
+
+  it.each(RESET_BLOCKQUOTES)("%s keeps its KC reset blockquote", (slug, reset) => {
+    const mod = moduleBySlug(slug);
+    expect(mod, slug).toBeDefined();
+    expect(normalize(mod!.bodyMd)).toContain(reset);
   });
 
-  it('basketball loss contains "not impressed by whoever shrugs it off"', () => {
-    // Basketball loss uses slightly different phrasing per the source doc.
-    const mod = moduleBySlug("basketball-the-loss");
-    expect(mod!.bodyMd).toContain("not impressed by whoever shrugs it off");
-  });
+  // Win modules must never read as evidence of God's favor. KC's re-authored
+  // copy REFUTES the transaction explicitly ("The final score is not proof
+  // that God favored you…") — mention-to-refute is the point of the module,
+  // so each authorized refutation sentence is asserted present, stripped,
+  // and THEN the banned patterns are scanned. Any new (non-refuting) use of
+  // the pattern still fails.
+  const WIN_AUTHORIZED_REFUTATIONS: Record<string, string[]> = {
+    "hockey-after-the-win": [
+      "The final score is not proof that God favored you over the other team or payment for having enough faith.",
+    ],
+    "basketball-after-the-win": [
+      "The final score is not proof that God chose your side or rewarded your faith.",
+    ],
+    "golf-after-the-win": [
+      "God did not reward your faith with a lower score.",
+    ],
+    "football-after-the-win": [
+      "The final score is not evidence that God favored your team or rewarded you for having more faith.",
+    ],
+  };
 
-  it('hockey bad night contains "Don\'t fake being fine"', () => {
-    const mod = moduleBySlug("hockey-the-bad-night");
-    expect(mod!.bodyMd).toContain("Don't fake\nbeing fine");
-  });
-
-  it('basketball bad game contains "Don\'t fake being fine"', () => {
-    const mod = moduleBySlug("basketball-the-cold-night");
-    expect(mod!.bodyMd).toContain("Don't fake being\nfine");
-  });
-
-  it("win modules: reset blockquote echoes the loss reset (the product point)", () => {
-    for (const slug of ["hockey-after-the-win", "basketball-after-the-win"]) {
-      const mod = moduleBySlug(slug);
-      expect(mod).toBeDefined();
-      expect(mod!.bodyMd).toContain(
-        "The win is real. It is not the crown on you.",
-      );
-    }
-  });
-
-  it("win modules: no prosperity-transaction language (youth-pastor guardrail)", () => {
-    // A win must never read as evidence of God's favor. These phrases are
-    // banned in the win modules specifically (docs/brand.md words-to-avoid).
-    const banned = [/God('s)? favor/i, /God showed up/i, /came through for (you|us)/i, /God (is |was )?on (your|our) side/i];
-    for (const slug of ["hockey-after-the-win", "basketball-after-the-win"]) {
-      const mod = moduleBySlug(slug)!;
-      for (const re of banned) {
-        expect(re.test(mod.bodyMd), `${slug}: matches banned pattern ${re}`).toBe(false);
+  it("win modules: no prosperity-transaction language outside authorized refutations", () => {
+    const banned = [
+      /God('s)? favor/i,
+      /God favored/i,
+      /God showed up/i,
+      /came through for (you|us)/i,
+      /God (is |was )?on (your|our) side/i,
+      /reward(ed)? your faith/i,
+    ];
+    for (const [slug, refutations] of Object.entries(WIN_AUTHORIZED_REFUTATIONS)) {
+      let body = normalize(moduleBySlug(slug)!.bodyMd);
+      for (const sentence of refutations) {
+        expect(body, `${slug}: authorized refutation missing`).toContain(sentence);
+        body = body.replace(sentence, "");
       }
-    }
-  });
-
-  it('hockey LOSS module keeps the sports-psych exit rewrite ("not asked to feel it forever")', () => {
-    // sports-psychologist mandated the exit rewrite: "feel it tonight / not asked to feel it forever"
-    // It lives in the LOSS modules (not the bad-night modules):
-    const hockeyLoss = moduleBySlug("hockey-the-loss");
-    expect(hockeyLoss!.bodyMd).toContain("You're not asked to feel it forever");
-  });
-
-  // Golf protect-lines (FV-294) — same theological guardrails, sport-specific texture
-  it('golf loss contains "not impressed by the ones who shrug it off"', () => {
-    const mod = moduleBySlug("golf-the-loss");
-    expect(mod!.bodyMd).toContain("not impressed by the ones who shrug it off");
-  });
-
-  it('golf loss contains sports-psych exit rewrite ("not asked to feel it forever")', () => {
-    const mod = moduleBySlug("golf-the-loss");
-    expect(mod!.bodyMd).toContain("You're not asked to feel it forever");
-  });
-
-  it('golf blow-up round contains "Don\'t fake being fine"', () => {
-    const mod = moduleBySlug("golf-the-blow-up-round");
-    expect(mod!.bodyMd).toContain("Don't fake\nbeing fine");
-  });
-
-  it("golf win module: reset blockquote echoes the loss reset (the product point)", () => {
-    const mod = moduleBySlug("golf-after-the-win");
-    expect(mod).toBeDefined();
-    expect(mod!.bodyMd).toContain(
-      "The win is real. It is not the crown on you.",
-    );
-  });
-
-  it("golf win module: no prosperity-transaction language (youth-pastor guardrail)", () => {
-    const banned = [/God('s)? favor/i, /God showed up/i, /came through for (you|us)/i, /God (is |was )?on (your|our) side/i];
-    const mod = moduleBySlug("golf-after-the-win")!;
-    for (const re of banned) {
-      expect(re.test(mod.bodyMd), `golf-after-the-win: matches banned pattern ${re}`).toBe(false);
+      for (const re of banned) {
+        expect(re.test(body), `${slug}: matches banned pattern ${re}`).toBe(false);
+      }
     }
   });
 });
@@ -384,145 +377,54 @@ describe("Youth-pastor protect-lines", () => {
 // ---------------------------------------------------------------------------
 
 describe("Praise-on-a-hard-night modules (The Hard Night)", () => {
-  const PRAISE_SLUGS = ["hockey-praise-anyway", "basketball-praise-anyway"];
-
-  // Bodies are hard-wrapped at ~70 chars, so normalize whitespace before
-  // substring-matching protect-lines that span a wrap.
-  const normalize = (s: string) => s.replace(/\s+/g, " ").trim();
-
-  // Must survive any future copy-edit. Each does load-bearing guardrail /
-  // mirror / theology work (youth-pastor + sports-psychologist).
-  const PROTECT_LINES = [
-    // anti-prosperity spine — praise is not a trade (the reset blockquote)
-    "Praise on a hard night is real. It is not a trade for a better one.",
-    // sports-psych spine — praise IN the loss, never FOR it
-    "You're not praising because the night was good. You're praising because He's good — and those were never the same thing.",
-    // anti-rumination — the ache is permitted to remain (no promised mood-lift)
-    "you might still feel bad tonight, and that's okay",
-    // the mirror seam to The Win ("Only the scoreboard did" → "Only the night did")
-    "He didn't change. Only the night did.",
-    // the Habakkuk "yet" engine
-    "yet I will rejoice",
-    // the closing line — Habakkuk's bare fields made athletic
-    "Say the thank-you with empty hands — and mean it.",
+  const PRAISE_SLUGS = [
+    "hockey-praise-anyway",
+    "basketball-praise-anyway",
+    "golf-praise-anyway",
+    "football-praise-anyway",
   ];
 
-  for (const slug of PRAISE_SLUGS) {
-    it(`${slug}: scenario "praise", title "Praise Anyway", Habakkuk anchor`, () => {
-      const mod = moduleBySlug(slug)!;
-      expect(mod.scenario).toBe("praise");
-      expect(mod.title).toBe("Praise Anyway");
-      expect(mod.scriptureRef).toBe("Habakkuk 3:17-18");
-    });
+  const normalize = (x: string) => x.replace(/\s+/g, " ").trim();
 
-    it(`${slug}: all protect-lines present (whitespace-normalized)`, () => {
-      const body = normalize(moduleBySlug(slug)!.bodyMd);
-      for (const line of PROTECT_LINES) {
-        expect(body, `${slug}: missing protect-line "${line}"`).toContain(
-          normalize(line),
-        );
-      }
-    });
+  // KC's 2026-07-20 re-authored copy names the disappointment in
+  // "What happened" BEFORE the Habakkuk turn in "What's true" — collapsing
+  // them is the spiritual-bypassing failure the sports-psychologist flagged.
+  // Per-module ache anchors are verbatim from the KC copy.
+  const ACHE_ANCHORS: Record<string, string> = {
+    "hockey-praise-anyway": "You do not have to call the night good.",
+    "basketball-praise-anyway": "Let the disappointment be honest.",
+    "golf-praise-anyway": "Do not call it good, and do not act like it did not matter.",
+    "football-praise-anyway": "You wanted a different ending.",
+  };
 
-    it(`${slug}: ache is named before the praise turn (anti-bypassing sequencing)`, () => {
-      // The "What's true" praise turn must come AFTER the ache is named in
-      // "What happened" — collapsing them is the spiritual-bypassing failure
-      // the sports-psychologist flagged. Normalize: the "yet" phrase spans a
-      // hard-wrap in the source body.
-      const body = normalize(moduleBySlug(slug)!.bodyMd);
-      const acheIdx = body.indexOf("Name the ache");
-      const yetIdx = body.indexOf("yet I will rejoice");
-      expect(acheIdx).toBeGreaterThan(-1);
-      expect(yetIdx).toBeGreaterThan(acheIdx);
-    });
+  // Mention-to-refute sentences (see the win-module guard note above).
+  const PRAISE_AUTHORIZED_REFUTATIONS: Record<string, string[]> = {
+    "golf-praise-anyway": [
+      "You do not have to make yourself feel better before you finish the prayer.",
+    ],
+  };
 
-    it(`${slug}: no prosperity-gospel / bypassing patterns`, () => {
-      // These patterns turn worship into a lever / a mood-fix / God owing a
-      // reversal. Extends the win-module guardrail with the turnaround cluster.
-      const banned = [
-        /turn(ed|s)? it around/i,
-        /turnaround/i,
-        /bounce back/i,
-        /next (game|night|time)\b.{0,40}\b(will|better|yours)/i,
-        /claim it/i,
-        /speak it/i,
-        /declare (victory|it)/i,
-        /God('s)? (will )?(bless|reward|repay)/i,
-        /God('s)? favor/i,
-        /God (is |was )?on (your|our) side/i,
-        /everything happens for a reason/i,
-        /silver lining/i,
-        /look (on )?the bright side/i,
-        /at least\b/i,
-        /just be (thankful|grateful|positive)/i,
-        /feel better/i,
-        /lift your mood/i,
-        /if you (just )?(praise|believe)/i,
-      ];
-      const body = moduleBySlug(slug)!.bodyMd;
-      for (const re of banned) {
-        expect(re.test(body), `${slug}: matches banned pattern ${re}`).toBe(
-          false,
-        );
-      }
-    });
-  }
-
-  // Golf praise module (FV-294) — same Habakkuk engine, golf-specific texture.
-  // Key differences from team-sport modules: "a better round" (not "a better
-  // one"), "Nothing on the card" (not scoreboard), "Only the number did" (not
-  // "Only the night did"). Protect-lines reference those sport-specific seams.
-  // NOTE: "lower score next time" appears ONLY inside an explicit negation
-  // ("not praising to earn a lower score next time") — banned-pattern regex
-  // must NOT match negated occurrences; the raw /lower score/ scan is skipped
-  // here because the negation makes it safe (the anti-prosperity scan covers
-  // the affirmative prosperity patterns).
-  it('golf-praise-anyway: scenario "praise", title "Praise Anyway", Habakkuk anchor', () => {
-    const mod = moduleBySlug("golf-praise-anyway")!;
+  it.each(PRAISE_SLUGS)('%s: scenario "praise", title "Praise Anyway", Habakkuk anchor', (slug) => {
+    const mod = moduleBySlug(slug)!;
     expect(mod.scenario).toBe("praise");
     expect(mod.title).toBe("Praise Anyway");
     expect(mod.scriptureRef).toBe("Habakkuk 3:17-18");
   });
 
-  it("golf-praise-anyway: golf-specific protect-lines present (whitespace-normalized)", () => {
-    const body = normalize(moduleBySlug("golf-praise-anyway")!.bodyMd);
-    const GOLF_PRAISE_PROTECT_LINES = [
-      // anti-prosperity blockquote — golf variant ("a better round" not "a better one")
-      "Praise on a hard night is real. It is not a trade for a better round.",
-      // sports-psych spine — praise IN the loss, never FOR it (same as team sports)
-      "You're praising because He's good — and those were never the same thing.",
-      // anti-rumination — ache permitted to remain
-      "you might still feel bad tonight, and that's okay",
-      // the Habakkuk "yet" engine
-      "yet I will rejoice",
-      // the closing line — same across all sports
-      "Say the thank-you with empty hands — and mean it.",
-      // Praise Anyway "What happened" opening line — verbatim from draft
-      "The round didn't come.",
-    ];
-    for (const line of GOLF_PRAISE_PROTECT_LINES) {
-      expect(body, `golf-praise-anyway: missing protect-line "${line}"`).toContain(
-        normalize(line),
-      );
-    }
+  it.each(PRAISE_SLUGS)("%s: ache named before the Habakkuk turn (anti-bypassing)", (slug) => {
+    const body = normalize(moduleBySlug(slug)!.bodyMd);
+    const acheIdx = body.indexOf(ACHE_ANCHORS[slug]!);
+    const turnIdx = body.indexOf("Habakkuk");
+    expect(acheIdx, `${slug}: ache anchor missing`).toBeGreaterThan(-1);
+    expect(turnIdx, `${slug}: Habakkuk turn missing`).toBeGreaterThan(acheIdx);
   });
 
-  it("golf-praise-anyway: ache named before praise turn (anti-bypassing sequencing)", () => {
-    const body = normalize(moduleBySlug("golf-praise-anyway")!.bodyMd);
-    const acheIdx = body.indexOf("Name the ache");
-    const yetIdx = body.indexOf("yet I will rejoice");
-    expect(acheIdx).toBeGreaterThan(-1);
-    expect(yetIdx).toBeGreaterThan(acheIdx);
-  });
-
-  it("golf-praise-anyway: no prosperity-gospel / bypassing patterns", () => {
-    // Golf-specific addition: "shoot better" is also banned (unless inside
-    // an explicit negation). The draft uses only "lower score next time" inside
-    // a negation — the banned-pattern scan below covers the affirmative forms.
+  it.each(PRAISE_SLUGS)("%s: no prosperity-gospel / bypassing patterns", (slug) => {
     const banned = [
       /turn(ed|s)? it around/i,
       /turnaround/i,
       /bounce back/i,
+      /next (game|night|time)\b.{0,40}\b(will|better|yours)/i,
       /claim it/i,
       /speak it/i,
       /declare (victory|it)/i,
@@ -537,15 +439,14 @@ describe("Praise-on-a-hard-night modules (The Hard Night)", () => {
       /feel better/i,
       /lift your mood/i,
       /if you (just )?(praise|believe)/i,
-      // golf-specific prosperity forms (affirmative only — "lower score next
-      // time" and "shoot better" are safe ONLY inside explicit negations)
-      /shoot better (next|after|tomorrow)/i,
     ];
-    const body = moduleBySlug("golf-praise-anyway")!.bodyMd;
+    let body = normalize(moduleBySlug(slug)!.bodyMd);
+    for (const sentence of PRAISE_AUTHORIZED_REFUTATIONS[slug] ?? []) {
+      expect(body, `${slug}: authorized refutation missing`).toContain(sentence);
+      body = body.replace(sentence, "");
+    }
     for (const re of banned) {
-      expect(re.test(body), `golf-praise-anyway: matches banned pattern ${re}`).toBe(
-        false,
-      );
+      expect(re.test(body), `${slug}: matches banned pattern ${re}`).toBe(false);
     }
   });
 });
@@ -567,10 +468,16 @@ describe("modulesForSport", () => {
     expect(mods.every((m) => m.sport === "basketball")).toBe(true);
   });
 
-  it("returns 5 modules for golf", () => {
+  it("returns 4 modules for golf (no benching — KC 2026-07-20)", () => {
     const mods = modulesForSport("golf");
-    expect(mods).toHaveLength(5);
+    expect(mods).toHaveLength(4);
     expect(mods.every((m) => m.sport === "golf")).toBe(true);
+  });
+
+  it("returns 5 modules for football", () => {
+    const mods = modulesForSport("football");
+    expect(mods).toHaveLength(5);
+    expect(mods.every((m) => m.sport === "football")).toBe(true);
   });
 
   it("hockey modules cover all 5 scenarios", () => {
@@ -591,20 +498,27 @@ describe("modulesForSport", () => {
     expect(scenarios.has("praise")).toBe(true);
   });
 
-  it("golf modules cover all 5 scenarios", () => {
+  it("golf modules cover 4 scenarios — no benching (KC 2026-07-20)", () => {
     const scenarios = new Set(modulesForSport("golf").map((m) => m.scenario));
     expect(scenarios.has("win")).toBe(true);
     expect(scenarios.has("loss")).toBe(true);
-    expect(scenarios.has("benching")).toBe(true);
+    expect(scenarios.has("benching")).toBe(false);
     expect(scenarios.has("bad-game")).toBe(true);
     expect(scenarios.has("praise")).toBe(true);
+  });
+
+  it("football modules cover all 5 scenarios", () => {
+    const scenarios = new Set(modulesForSport("football").map((m) => m.scenario));
+    for (const scen of ["win", "loss", "benching", "bad-game", "praise"]) {
+      expect(scenarios.has(scen as never), scen).toBe(true);
+    }
   });
 
   // Pins the picker-order UX contract from the modulesForSport JSDoc:
   // the win LEADS (a good-night athlete finds theirs first) and "Praise
   // Anyway" (praise on a hard night) TRAILS as the chosen-posture capstone.
   // Membership/count tests alone would pass if a future edit reordered them.
-  it.each(["hockey", "basketball", "golf"] as const)(
+  it.each(["hockey", "basketball", "golf", "football"] as const)(
     "%s modules keep win-first, praise-last order",
     (sport) => {
       const mods = modulesForSport(sport);
@@ -664,6 +578,13 @@ describe("Sport isolation", () => {
     expect(overlap).toHaveLength(0);
   });
 
+  it("no football module appears in hockey results", () => {
+    const footballSlugs = modulesForSport("football").map((m) => m.slug);
+    const hockeySlugs = modulesForSport("hockey").map((m) => m.slug);
+    const overlap = footballSlugs.filter((sl) => hockeySlugs.includes(sl));
+    expect(overlap).toHaveLength(0);
+  });
+
   it("hockey loss slug resolves to sport=hockey, not basketball", () => {
     const mod = moduleBySlug("hockey-the-loss");
     expect(mod!.sport).toBe("hockey");
@@ -686,10 +607,6 @@ describe("Sport isolation", () => {
 // golf overrides the two scenarios whose default leaks team-sport framing.
 // ---------------------------------------------------------------------------
 describe("Golf eyebrow overrides", () => {
-  it("golf benching ('Left Off the Card') overrides the default 'The Bench'", () => {
-    expect(moduleBySlug("golf-left-off-the-card")!.eyebrow).toBe("Didn't Qualify");
-  });
-
   it("golf bad-game ('The Blow-Up Round') overrides 'The Bad Game' (round, not game)", () => {
     expect(moduleBySlug("golf-the-blow-up-round")!.eyebrow).toBe("The Bad Round");
   });
