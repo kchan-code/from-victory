@@ -39,6 +39,8 @@ work around it.)
    - Parent creates athlete account (13+ birthdate floor — there is NO
      under-13 path and NO consent flow to test; a path that allows under-13
      creation is itself a critical bug)
+   - Negative test of the floor: submitting a birthdate under 13 at athlete
+     creation must be rejected
    - Athlete signs in (username + password at `/signin`, or device pairing
      via `/pair`) → completes the daily training session (`/athlete/daily`,
      text-only) → rhythm updates
