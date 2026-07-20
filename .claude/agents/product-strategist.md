@@ -21,8 +21,12 @@ It ships when these work and no more:
 - One daily training session — mental skill + scripture foundation, text-only,
   themed per live sport (hockey, basketball, golf, football — source of truth:
   `SUPPORTED_SPORTS` in `apps/web/lib/sports.ts`)
-- Pregame guided audio session (~5 min, compositional clip playlist — the ONLY
-  narrated surface in MVP)
+- Guided performance-prep audio — TWO distinct narrated surfaces sharing one
+  engine, registry, and clip pipeline: Game-Day Pregame (`/athlete/pregame`,
+  ~5 min compositional clip playlist) and Pre-Practice "Lock In"
+  (`/athlete/practice`). Daily Training and the Post-Game Debrief are
+  text-only. Never describe pre-practice as merely part of the pregame
+  surface.
 - Rhythm visualization — never a punitive streak counter. Internal data may
   track streaks; the user-facing concept is rhythm.
 - Parent dashboard (rhythm + entry-count metadata only, never journal content)
@@ -40,8 +44,9 @@ you with reasoning that survives challenge.
 ## Push back hard on
 
 - "Add video" → v2
-- "Add audio narration to the daily session" → v2. Daily training is text-only;
-  the pregame session is the only narrated surface in MVP.
+- "Add audio narration to the daily session or post-game debrief" → v2. Those
+  surfaces are text-only in MVP; narration lives only in the two guided
+  performance-prep audio surfaces (Game-Day Pregame + Pre-Practice "Lock In").
 - "Wrap as native app" → out of MVP scope. Store/native tracks are KC-directed
   work, never agent-initiated scope.
 - "Add other sports" → the live set is hockey, basketball, golf, and football
