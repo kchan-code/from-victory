@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireParent } from "@/lib/auth/guards";
+import { requireParent, requireSubscriber } from "@/lib/auth/guards";
 import {
   isDeletionRateLimited,
   DELETION_RATE_LIMIT,
@@ -17,7 +17,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
 // =============================================================================
-// Account deletion — parent-initiated, IMMEDIATE hard delete.
+// Account deletion — payer-initiated, IMMEDIATE hard delete.
 //
 // Mechanism: deleting the auth.users row (service.auth.admin.deleteUser)
 // cascades through every FK in the schema — profiles → parent_athlete_links,
@@ -27,9 +27,16 @@ import { createServiceClient } from "@/lib/supabase/service";
 // request" requirement and minimises how long a minor's data is retained.
 //
 // Two flows:
-//   - deleteAthlete: removes ONE athlete this parent manages.
-//   - deleteAccount: removes the parent and every athlete they SOLELY manage
-//     (athletes also linked to a co-parent are left intact — see below).
+//   - deleteAthlete: removes ONE athlete this parent manages. PARENT-ONLY
+//     (requireParent) — an adult_athlete never appears as a parent_id in
+//     parent_athlete_links (link-role trigger enforced), so this flow has no
+//     adult_athlete equivalent and is deliberately NOT widened (FV-440).
+//   - deleteAccount: removes the caller's own account and every athlete they
+//     SOLELY manage (athletes also linked to a co-parent are left intact —
+//     see below). Widened in FV-440 (requireSubscriber) so an adult_athlete
+//     can self-delete; for an adult_athlete the sole-managed-athletes loop is
+//     structurally empty (adults never own parent_athlete_links rows), so it
+//     reduces to "cancel Stripe, delete the caller's own row."
 //
 // Both require a typed confirmation. Deletion events are logged (event only,
 // never content) for a durable audit trail (FV-14 — account_deletion_events).
@@ -167,7 +174,13 @@ export async function deleteAccount(
     return { ok: false, error: 'Type "DELETE" to confirm.' };
   }
 
-  const { userId: parentId } = await requireParent();
+  // FV-440: widened from requireParent() to requireSubscriber() so an
+  // adult_athlete (18+ self-serve payer) can delete their own account, not
+  // just a parent. The delete target is always the SESSION user's own id —
+  // never trust a client-passed id. `parentId` below is that session id; the
+  // name is kept (rather than renamed to `payerId`) to minimize the diff
+  // against the rest of this well-tested function.
+  const { userId: parentId } = await requireSubscriber();
   const service = createServiceClient();
 
   // ---------------------------------------------------------------------------
@@ -259,6 +272,13 @@ export async function deleteAccount(
   //
   // If any sole-managed athlete fails to delete, abort BEFORE deleting the
   // parent — otherwise we'd orphan that athlete's data with no manager left.
+  //
+  // FV-440: for an adult_athlete caller this query is structurally empty —
+  // an adult_athlete never appears as parent_id in parent_athlete_links
+  // (check_parent_athlete_link_roles() only permits role='parent' on that
+  // side; see 20260625000000_adult_athlete_role.sql). So `links` is always
+  // `[]` for an adult, the loop below runs zero iterations, and the flow
+  // reduces to "cancel Stripe (step 1, above), delete the caller (step 3)."
   // ---------------------------------------------------------------------------
   const { data: links } = await service
     .from("parent_athlete_links")

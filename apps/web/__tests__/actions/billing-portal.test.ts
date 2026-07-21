@@ -4,7 +4,7 @@
  * Mocks:
  *   - server-only              → no-op (Next.js guard not available in vitest/node)
  *   - next/navigation           → captures redirect() calls without throwing
- *   - @/lib/auth/guards         → controlled requireParent() stub
+ *   - @/lib/auth/guards         → controlled requireSubscriber() stub (FV-440)
  *   - @/lib/stripe/server       → controlled billingPortal.sessions.create stub
  *   - @/lib/supabase/server     → controlled chainable Supabase client stub
  *   - @/lib/monitoring/deliver  → no-op (fire-and-forget, not under test)
@@ -15,6 +15,11 @@
  *   2. No subscription row → { ok: false, code: "no_subscription" }
  *   3. portal sessions.create throws → { ok: false, code: "portal_unavailable" }
  *   4. Supabase read error → { ok: false, code: "portal_unavailable" }
+ *   5. (FV-440) adult_athlete payer can open the portal; return_url branches
+ *      by role (parent → /dashboard/settings, adult_athlete → /athlete/settings);
+ *      a minor athlete session is rejected the same way requireSubscriber()
+ *      rejects it in guards.test.ts — the stub throws to mimic redirect()
+ *      throwing NEXT_REDIRECT in production.
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -33,9 +38,19 @@ vi.mock("next/navigation", () => ({
   },
 }));
 
-// requireParent() returns a fixed parent id.
+// requireSubscriber() — mutable stub, defaulted to a parent payer in
+// beforeEach. Individual tests swap in an adult_athlete profile or a
+// rejecting (throwing) implementation to simulate a minor athlete session.
+type SubscriberResult = {
+  userId: string;
+  profile: { id: string; role: "parent" | "adult_athlete"; first_name: string };
+};
+let requireSubscriberImpl: () => Promise<SubscriberResult> = async () => ({
+  userId: "parent-uuid-123",
+  profile: { id: "parent-uuid-123", role: "parent", first_name: "Casey" },
+});
 vi.mock("@/lib/auth/guards", () => ({
-  requireParent: async () => ({ userId: "parent-uuid-123" }),
+  requireSubscriber: () => requireSubscriberImpl(),
 }));
 
 // Monitoring: fire-and-forget; not under test here.
@@ -112,6 +127,11 @@ describe("openBillingPortal", () => {
     vi.clearAllMocks();
     // Default: env var set for stable test env
     process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
+    // Default: a parent payer session (individual tests override as needed).
+    requireSubscriberImpl = async () => ({
+      userId: "parent-uuid-123",
+      profile: { id: "parent-uuid-123", role: "parent", first_name: "Casey" },
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -251,5 +271,80 @@ describe("openBillingPortal", () => {
 
     // Restore
     process.env.NEXT_PUBLIC_SITE_URL = original;
+  });
+
+  // -------------------------------------------------------------------------
+  // FV-440: adult_athlete self-serve payer support
+  // -------------------------------------------------------------------------
+  describe("adult_athlete payer (FV-440)", () => {
+    it("allows an adult_athlete payer to open the portal", async () => {
+      requireSubscriberImpl = async () => ({
+        userId: "adult-uuid-456",
+        profile: { id: "adult-uuid-456", role: "adult_athlete", first_name: "Riley" },
+      });
+      supabaseMockImpl = makeSupabaseMock({ stripe_customer_id: "cus_adult456" });
+      billingPortalCreateMock.mockResolvedValue({
+        url: "https://billing.stripe.com/session/bps_adult",
+      });
+
+      const result = await openBillingPortal(null, emptyFormData);
+
+      expect(result).toBeUndefined();
+      expect(redirectMock).toHaveBeenCalledWith(
+        "https://billing.stripe.com/session/bps_adult",
+      );
+    });
+
+    it("uses /athlete/settings as the return_url for an adult_athlete payer", async () => {
+      requireSubscriberImpl = async () => ({
+        userId: "adult-uuid-456",
+        profile: { id: "adult-uuid-456", role: "adult_athlete", first_name: "Riley" },
+      });
+      supabaseMockImpl = makeSupabaseMock({ stripe_customer_id: "cus_adult456" });
+      billingPortalCreateMock.mockResolvedValue({
+        url: "https://billing.stripe.com/session/bps_adult2",
+      });
+
+      await openBillingPortal(null, emptyFormData);
+
+      expect(billingPortalCreateMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          return_url: "https://app.fromvictoryapp.com/athlete/settings",
+        }),
+      );
+    });
+
+    it("uses /dashboard/settings as the return_url for a parent payer", async () => {
+      // requireSubscriberImpl defaults to a parent in beforeEach.
+      supabaseMockImpl = makeSupabaseMock({ stripe_customer_id: "cus_parent789" });
+      billingPortalCreateMock.mockResolvedValue({
+        url: "https://billing.stripe.com/session/bps_parent",
+      });
+
+      await openBillingPortal(null, emptyFormData);
+
+      expect(billingPortalCreateMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          return_url: "https://app.fromvictoryapp.com/dashboard/settings",
+        }),
+      );
+    });
+
+    it("rejects a minor athlete session the way requireSubscriber() rejects it (redirect-throw behavior)", async () => {
+      // requireSubscriber() in production calls redirect("/signin") for a
+      // minor `athlete` role, and next/navigation's real redirect() throws a
+      // NEXT_REDIRECT digest to unwind the render (see guards.test.ts). Since
+      // @/lib/auth/guards is mocked wholesale here, the stub reproduces that
+      // throwing behavior directly rather than re-exercising guards.ts.
+      requireSubscriberImpl = async () => {
+        throw new Error("NEXT_REDIRECT:/signin");
+      };
+
+      await expect(openBillingPortal(null, emptyFormData)).rejects.toThrow(
+        "NEXT_REDIRECT:/signin",
+      );
+      expect(billingPortalCreateMock).not.toHaveBeenCalled();
+      expect(redirectMock).not.toHaveBeenCalled();
+    });
   });
 });

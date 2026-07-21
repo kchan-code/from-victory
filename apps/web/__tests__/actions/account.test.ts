@@ -1,14 +1,20 @@
 /**
- * Unit tests for the account-deletion server actions (FV-375).
+ * Unit tests for the account-deletion server actions (FV-375; deleteAccount
+ * widened to the adult_athlete self-serve role in FV-440).
  *
  * Covers `lib/actions/account.ts`:
  *   - deleteAthlete: non-owner rejection (+ ownership-check-before-delete
  *     ordering), owner success (deletes the right athlete id), missing
  *     profile, wrong confirmation text, rate-limit-at-threshold.
+ *     PARENT-ONLY — untouched by FV-440; still gated by requireParent().
  *   - deleteAccount: happy path (deletes caller's own id, signs out,
  *     redirects), auth-guard rejection, rate-limit (no side effects), wrong
- *     confirmation (nothing happens, requireParent never even called),
- *     co-parented athlete preserved (sole-managed deleted, shared kept).
+ *     confirmation (nothing happens, requireSubscriber never even called),
+ *     co-parented athlete preserved (sole-managed deleted, shared kept), and
+ *     (FV-440) an adult_athlete self-delete path: deletes only the caller's
+ *     own row, cancels Stripe first, respects the rate limit, and never
+ *     touches a parent_athlete_links-linked athlete (structurally empty for
+ *     an adult — see the trigger invariant documented in account.ts).
  *
  * Mocking strategy mirrors create-athlete-direct.test.ts / billing-portal.test.ts:
  *   - vi.mock() hoists before imports.
@@ -45,14 +51,22 @@ vi.mock("next/navigation", () => ({
   },
 }));
 
-// Auth guard — controllable per test. Default: a fixed parent id. Tests that
+// Auth guards — controllable per test. Default: a fixed parent id. Tests that
 // need to simulate an unauthenticated / non-parent caller swap in a rejecting
-// implementation (mirroring how requireParent() really redirects on failure —
-// in real Next.js that throws NEXT_REDIRECT and halts the action).
+// implementation (mirroring how requireParent()/requireSubscriber() really
+// redirect on failure — in real Next.js that throws NEXT_REDIRECT and halts
+// the action).
+//
+// deleteAthlete is PARENT-ONLY (requireParent, untouched by FV-440).
+// deleteAccount is widened to requireSubscriber (FV-440) so an adult_athlete
+// can self-delete; requireSubscriberMock defaults to the same fixed id so
+// every existing "parent" deleteAccount test keeps passing unchanged.
 const PARENT_ID = "parent-uuid-123";
 const requireParentMock = vi.fn(async () => ({ userId: PARENT_ID }));
+const requireSubscriberMock = vi.fn(async () => ({ userId: PARENT_ID }));
 vi.mock("@/lib/auth/guards", () => ({
   requireParent: () => requireParentMock(),
+  requireSubscriber: () => requireSubscriberMock(),
 }));
 
 // Stripe client — only deleteAccount's cancel-before-delete step touches
@@ -278,6 +292,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   callOrder = [];
   requireParentMock.mockImplementation(async () => ({ userId: PARENT_ID }));
+  requireSubscriberMock.mockImplementation(async () => ({ userId: PARENT_ID }));
   serviceMockImpl = makeServiceMock();
 });
 
@@ -442,8 +457,8 @@ describe("deleteAccount — happy path", () => {
 });
 
 describe("deleteAccount — auth-guard rejection", () => {
-  it("does NOT delete anything when requireParent rejects (unauthenticated / non-parent)", async () => {
-    requireParentMock.mockImplementation(async () => {
+  it("does NOT delete anything when requireSubscriber rejects (unauthenticated / minor athlete)", async () => {
+    requireSubscriberMock.mockImplementation(async () => {
       throw new Error("NEXT_REDIRECT");
     });
     serviceMockImpl = makeServiceMock();
@@ -481,11 +496,11 @@ describe("deleteAccount — rate limit", () => {
 });
 
 describe("deleteAccount — wrong confirmation text", () => {
-  it("returns an error and never even calls requireParent (nothing happens)", async () => {
+  it("returns an error and never even calls requireSubscriber (nothing happens)", async () => {
     const result = await deleteAccount(null, makeFormData({ confirm: "delete" }));
 
     expect(result).toMatchObject({ ok: false, error: 'Type "DELETE" to confirm.' });
-    expect(requireParentMock).not.toHaveBeenCalled();
+    expect(requireSubscriberMock).not.toHaveBeenCalled();
     expect(serviceMockImpl.__deleteUserCalls()).toHaveLength(0);
     expect(stripeCancelMock).not.toHaveBeenCalled();
     expect(signOutMock).not.toHaveBeenCalled();
@@ -519,6 +534,89 @@ describe("deleteAccount — co-parented athlete preserved", () => {
       event_type: "account_deleted",
       actor_parent_id: PARENT_ID,
       athletes_deleted: 1,
+    });
+  });
+});
+
+// ===========================================================================
+// deleteAccount — adult_athlete self-serve payer (FV-440)
+// ===========================================================================
+//
+// An adult_athlete never appears as parent_id in parent_athlete_links (the
+// check_parent_athlete_link_roles() trigger only accepts role='parent' on
+// that side — see 20260625000000_adult_athlete_role.sql). So for every test
+// below, `parentLinks` is left at its default `[]`: the links-fetch query
+// naturally returns nothing for an adult caller, and the sole-managed-
+// athletes loop runs zero iterations. These tests assert that reduced shape
+// end-to-end rather than re-deriving the DB invariant.
+
+const ADULT_ID = "adult-uuid-789";
+
+describe("deleteAccount — adult_athlete self-delete (FV-440)", () => {
+  it("deletes only the caller's own account, signs out, and redirects home", async () => {
+    requireSubscriberMock.mockImplementation(async () => ({ userId: ADULT_ID }));
+    serviceMockImpl = makeServiceMock({ subscriptionRow: null, parentLinks: [] });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(serviceMockImpl.__deleteUserCalls()).toEqual([ADULT_ID]);
+    expect(signOutMock).toHaveBeenCalledOnce();
+    expect(redirectMock).toHaveBeenCalledWith("/");
+  });
+
+  it("cancels the Stripe subscription before deleting an adult_athlete with a live subscription", async () => {
+    requireSubscriberMock.mockImplementation(async () => ({ userId: ADULT_ID }));
+    serviceMockImpl = makeServiceMock({
+      subscriptionRow: { stripe_subscription_id: "sub_adult_123" },
+      parentLinks: [],
+    });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(stripeCancelMock).toHaveBeenCalledWith("sub_adult_123");
+    const cancelIdx = callOrder.indexOf("subscription_check");
+    const deleteIdx = callOrder.indexOf(`delete_user:${ADULT_ID}`);
+    expect(cancelIdx).toBeLessThan(deleteIdx);
+  });
+
+  it("applies the deletion rate limit to the adult self-delete path (no side effects when at limit)", async () => {
+    requireSubscriberMock.mockImplementation(async () => ({ userId: ADULT_ID }));
+    serviceMockImpl = makeServiceMock({
+      recentEventCount: 10,
+      subscriptionRow: { stripe_subscription_id: "sub_should_not_be_touched" },
+      parentLinks: [],
+    });
+
+    const result = await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: expect.stringMatching(/too many|wait/i),
+    });
+    expect(stripeCancelMock).not.toHaveBeenCalled();
+    expect(serviceMockImpl.__deleteUserCalls()).toHaveLength(0);
+    expect(signOutMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it("never queries or deletes any parent_athlete_links-linked athlete for an adult caller", async () => {
+    requireSubscriberMock.mockImplementation(async () => ({ userId: ADULT_ID }));
+    serviceMockImpl = makeServiceMock({ subscriptionRow: null, parentLinks: [] });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    // The links-fetch query runs (it's unconditional), but resolves empty for
+    // an adult — no co-parent-count query and no athlete delete ever happen.
+    expect(callOrder).toContain("links_fetch");
+    expect(callOrder.some((c) => c.startsWith("co_parent_count:"))).toBe(false);
+    expect(serviceMockImpl.__deleteUserCalls()).toEqual([ADULT_ID]);
+
+    const audit = serviceMockImpl.__auditInsertPayloads();
+    expect(audit).toHaveLength(1);
+    expect(audit[0]).toMatchObject({
+      event_type: "account_deleted",
+      actor_parent_id: ADULT_ID,
+      athletes_deleted: 0,
     });
   });
 });
