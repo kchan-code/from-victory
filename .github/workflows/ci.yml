@@ -174,6 +174,22 @@ jobs:
         # this file's own path-filtered guard style (athlete-no-tracking.yml).
         run: node --experimental-strip-types apps/web/scripts/lint-script-books.ts
 
+  codex-sync:
+    name: Codex mirror sync check
+    runs-on: ubuntu-latest
+    # Runs unconditionally (PRs and pushes to main): the check is a sub-second
+    # pure-shell regeneration+diff, and drift can enter from EITHER side — a
+    # source edit (CLAUDE.md, .claude/agents/**, .claude/hooks/**, the design
+    # skill) without re-running the sync, or a hand-edit to the generated
+    # mirror (AGENTS.md, .codex/**, .agents/**). No Node, no npm ci — the
+    # script needs only bash/awk/sed/grep, all present on ubuntu-latest.
+    steps:
+      - uses: actions/checkout@v7
+      - name: Require Codex mirror to match sources (FV-460)
+        # Fails with the script's own actionable message:
+        # "DRIFT: ... Run bin/sync-codex.sh and commit the result."
+        run: bash bin/sync-codex.sh --check
+
 # FV-4: The privacy gate lives in .github/workflows/privacy-verdict.yml.
 # It publishes a `Require privacy VERDICT` commit status on every PR that
 # touches a privacy-sensitive path, and flips to green only when the
