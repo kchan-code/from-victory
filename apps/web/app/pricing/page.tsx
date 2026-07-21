@@ -78,7 +78,7 @@ const faq: { q: string; a: string }[] = [
   },
   {
     q: "Can athletes under 13 use From Victory?",
-    a: "From Victory is designed for athletes ages 13 and above. Accounts for athletes under 18 are set up and managed by a parent or guardian, and athletes 13–17 receive additional data protections. The app is not available for users under 13.",
+    a: "From Victory is designed for athletes ages 13 and above. Accounts for athletes under 18 are set up and managed by a parent or guardian, and athletes 13–17 receive additional data protections. Athletes 18 and older can sign up and pay for themselves. The app is not available for users under 13.",
   },
 ];
 
