@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
@@ -25,9 +26,19 @@ function ConfirmButton({ disabled }: { disabled: boolean }) {
 
 /**
  * Danger zone — whole-account deletion. Removes the parent and every athlete
- * they solely manage. Requires typing DELETE.
+ * they solely manage (or, for an adult_athlete self-payer, just their own
+ * account). Requires typing DELETE.
+ *
+ * `description` is copy-neutral pass-through so the athlete settings page
+ * (adult_athlete only, FV-441) can supply account-only copy without forking
+ * this component. The parent dashboard usage omits the prop, so its rendered
+ * copy is unchanged.
  */
-export function DeleteAccountSection() {
+export function DeleteAccountSection({
+  description,
+}: {
+  description?: ReactNode;
+} = {}) {
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState("");
   const [state, formAction] = useFormState(deleteAccount, initialState);
@@ -41,10 +52,14 @@ export function DeleteAccountSection() {
       </h2>
       <div className="bg-charcoal border border-red-500/25 rounded-2xl p-6">
         <p className="font-body text-cream/70 text-[14px] leading-relaxed max-w-[560px]">
-          Permanently delete your account and every athlete you manage —
-          including all journals, training history, and your subscription
-          record. This is immediate and cannot be undone. Athletes also linked
-          to a co-parent are kept on that parent&rsquo;s account.
+          {description ?? (
+            <>
+              Permanently delete your account and every athlete you manage —
+              including all journals, training history, and your subscription
+              record. This is immediate and cannot be undone. Athletes also
+              linked to a co-parent are kept on that parent&rsquo;s account.
+            </>
+          )}
         </p>
 
         {!open ? (
