@@ -2905,8 +2905,9 @@ export function PregameCardScreen({
       {/* ─── Crisis resource footer ─────────────────────────────────────────
           Shown on every completion card. Display-only. No logging, no
           keyword detection, no parent alert. A quiet door — not a signal.
-          Copy replicates the exact strings from ResourceScreen.tsx so the
-          privacy review stays clean. (Future: extract shared constant.) */}
+          Copy is the FV-445 universal crisis-resource wording (KC-approved,
+          final) and must stay byte-identical to CrisisFooter.tsx /
+          ResourceScreen.tsx. (Future: extract shared constant.) */}
       <div
         className="mt-8 border-t border-hairline pt-6"
         role="complementary"
@@ -2949,18 +2950,19 @@ export function PregameCardScreen({
 
           <li>
             <p className="font-heading text-[13px] font-semibold text-cream/70">
-              Talk to a trusted adult
+              Talk to someone you trust
             </p>
             <p className="mt-0.5 font-body text-[12px] text-cream/40">
-              A parent, coach, teacher, pastor, or counselor. You don&rsquo;t
-              have to carry this alone.
+              A parent, coach, teammate, pastor, mentor, or counselor. You
+              don&rsquo;t have to carry this alone.
             </p>
           </li>
         </ul>
 
         <p className="mt-5 font-body text-[11px] leading-relaxed text-cream/30">
-          Nothing here is shared with your parent. From Victory is not a
-          mental-health service. In an immediate emergency, call 911.
+          This screen is private &mdash; no one is notified, and nothing here
+          is shared. From Victory is not a mental-health service. In an
+          immediate emergency, call 911.
         </p>
       </div>
     </div>

@@ -1,3 +1,14 @@
+// Option C in-line resource screen (FV-135 — built, dormant, no production
+// callers; do not wire without KC).
+//
+// Copy is the FV-445 universal crisis-resource wording (KC-approved, final)
+// and must stay byte-identical to the same strings in
+// components/postgame/CrisisFooter.tsx: "Talk to someone you trust" (not
+// "trusted adult"), and the closing disclaimer states plainly that nothing
+// here is shared rather than singling out the parent. The `trusted_adult`
+// resource key and the detection vocabulary in lib/safety/keywords.ts are
+// unaffected — this file only renames the display copy.
+
 import type { SafetyResourcesFocus } from "@/lib/safety/keywords";
 
 type Props = {
@@ -23,11 +34,11 @@ const RESOURCES = {
     description: "Free, 24/7, text-based crisis support.",
   },
   trusted_adult: {
-    name: "Talk to a trusted adult",
+    name: "Talk to someone you trust",
     primaryAction: null,
     primaryHref: null,
     description:
-      "A parent, coach, teacher, pastor, or counselor. You don't have to carry this alone.",
+      "A parent, coach, teammate, pastor, mentor, or counselor. You don’t have to carry this alone.",
   },
 } as const;
 
@@ -58,7 +69,7 @@ export function ResourceScreen({ focus = "988_lifeline" }: Props) {
       <p className="font-body text-cream/80 text-[15px] leading-relaxed mb-6">
         You don&rsquo;t have to handle this on your own. Below are people
         trained to listen, available right now. Your training session is
-        saved &mdash; nothing here will be sent to your parent.
+        saved &mdash; it stays private.
       </p>
 
       <ul className="grid gap-4 mb-6">
@@ -96,9 +107,9 @@ export function ResourceScreen({ focus = "988_lifeline" }: Props) {
       </ul>
 
       <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-cream/50 leading-relaxed">
-        From Victory is not a mental-health service. These resources are
-        provided by independent organisations. In an immediate emergency,
-        call 911.
+        This screen is private &mdash; no one is notified, and nothing here
+        is shared. From Victory is not a mental-health service. In an
+        immediate emergency, call 911.
       </p>
     </section>
   );
