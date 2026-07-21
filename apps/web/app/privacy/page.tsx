@@ -169,10 +169,6 @@ export default function PrivacyPage() {
           started or completed and when. How that activity is kept private is described in
           &ldquo;The athlete&apos;s private space&rdquo; below.
         </p>
-        <p>
-          An adult athlete can manage their own subscription and delete their own account
-          directly from their settings page, without going through a parent.
-        </p>
 
         <SubHeading>e. Payment information</SubHeading>
         <p>
