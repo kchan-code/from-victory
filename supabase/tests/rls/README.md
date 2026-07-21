@@ -17,6 +17,7 @@ Run as role-scoped clients against a freshly-migrated local Supabase:
 | (d) | client roles cannot INSERT or UPDATE `subscriptions` (and athletes can't read them) |
 | (e) | `device_pairings` not readable by any client role (cross-user or own) |
 | (f) | `safety_events` unreadable by both athlete and parent roles |
+| (g) | FV-443: `adult_athlete` (18+ self-serve payer/trainee) is invisible to every parent, can never appear in `parent_athlete_links` on either side, cannot reach another profile / another account's `subscriptions` row / any `parent_athlete_links` row, CAN read (but not write) its own `subscriptions` row, and its private-column self-read (`get_own_personalization()`) carries no wider grant than the existing athlete pattern — see `assertions/18_adult_athlete_boundary.sql` |
 
 ## Why plain SQL (not supabase-js / pgTAP)
 
@@ -53,7 +54,9 @@ supabase/tests/rls/
 │   ├── 02_metadata_view.sql     # AC c
 │   ├── 03_subscriptions.sql     # AC d
 │   ├── 04_device_pairings.sql   # AC e
-│   └── 05_safety_events.sql     # AC f
+│   ├── 05_safety_events.sql     # AC f
+│   ├── ...
+│   └── 18_adult_athlete_boundary.sql  # AC g (FV-443)
 ├── run.sh                 # seeds fixtures, then runs every assertions/*.sql
 └── README.md
 ```

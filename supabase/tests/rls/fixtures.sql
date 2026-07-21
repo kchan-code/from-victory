@@ -9,9 +9,15 @@
 --
 -- Fixture graph
 -- -------------
---   PARENT   P  — role=parent, owns a subscription, linked to athlete A only
---   ATHLETE  A  — role=athlete, 1 completed session + 1 journal entry + 1 safety_event
---   ATHLETE  B  — role=athlete, 1 started session + 1 journal entry (NOT linked to P)
+--   PARENT         P  — role=parent, owns a subscription, linked to athlete A only
+--   ATHLETE        A  — role=athlete, 1 completed session + 1 journal entry + 1 safety_event
+--   ATHLETE        B  — role=athlete, 1 started session + 1 journal entry (NOT linked to P)
+--   ADULT_ATHLETE AA  — role=adult_athlete (FV-325/18+ self-serve), 18+, own subscription
+--                       row (payer = self), NO parent_athlete_links row on either side
+--                       (an adult_athlete is never a parent's linked athlete and never
+--                       links to anyone as a parent). Added FV-443 for the RLS harness's
+--                       adult_athlete-vs-athlete boundary assertions
+--                       (assertions/18_adult_athlete_boundary.sql).
 --
 -- The "P linked to A but NOT B" shape lets the assertions prove the
 -- parent-linked read path (athlete_sessions / metadata view) without ever
@@ -21,14 +27,15 @@
 -- harness can be re-run against a persistent local stack.
 --
 -- Fixed UUIDs (documented so assertions/*.sql can reference them by sight):
---   PARENT    10000000-0000-4000-8000-000000000001
---   ATHLETE_A 20000000-0000-4000-8000-00000000000a
---   ATHLETE_B 20000000-0000-4000-8000-00000000000b
---   ASESS_A   40000000-0000-4000-8000-00000000000a
---   ASESS_B   40000000-0000-4000-8000-00000000000b
---   JOURNAL_A 50000000-0000-4000-8000-00000000000a
---   JOURNAL_B 50000000-0000-4000-8000-00000000000b
---   SAFETY_A  60000000-0000-4000-8000-00000000000a
+--   PARENT         10000000-0000-4000-8000-000000000001
+--   ATHLETE_A      20000000-0000-4000-8000-00000000000a
+--   ATHLETE_B      20000000-0000-4000-8000-00000000000b
+--   ASESS_A        40000000-0000-4000-8000-00000000000a
+--   ASESS_B        40000000-0000-4000-8000-00000000000b
+--   JOURNAL_A      50000000-0000-4000-8000-00000000000a
+--   JOURNAL_B      50000000-0000-4000-8000-00000000000b
+--   SAFETY_A       60000000-0000-4000-8000-00000000000a
+--   ADULT_ATHLETE  70000000-0000-4000-8000-000000000001
 -- =============================================================================
 
 begin;
@@ -43,7 +50,8 @@ insert into auth.users (id, aud, role, email, raw_app_meta_data, raw_user_meta_d
 values
   ('10000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'parent@rls.test',   '{}', '{}', now(), now()),
   ('20000000-0000-4000-8000-00000000000a', 'authenticated', 'authenticated', 'athlete-a@rls.test', '{}', '{}', now(), now()),
-  ('20000000-0000-4000-8000-00000000000b', 'authenticated', 'authenticated', 'athlete-b@rls.test', '{}', '{}', now(), now())
+  ('20000000-0000-4000-8000-00000000000b', 'authenticated', 'authenticated', 'athlete-b@rls.test', '{}', '{}', now(), now()),
+  ('70000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'adult-athlete@rls.test', '{}', '{}', now(), now())
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
@@ -53,15 +61,23 @@ on conflict (id) do nothing;
 -- carry a sport in ('hockey','basketball') and parent rows to have sport NULL
 -- (sport_role_consistency + sport_valid_values). A and B use different sports
 -- so the harness exercises both launch sports.
+-- ADULT_ATHLETE (AA) is role='adult_athlete' (FV-325, 18+ self-serve): payer
+-- AND trainee on one account, birthdate satisfies adult_athlete_min_age_18
+-- (>= 18 years before today), sport required (sport_role_consistency).
 insert into public.profiles (id, role, first_name, birthdate, sport)
 values
-  ('10000000-0000-4000-8000-000000000001', 'parent',  'Parent', null,                null),
-  ('20000000-0000-4000-8000-00000000000a', 'athlete', 'Ava',    date '2010-01-01',   'hockey'),
-  ('20000000-0000-4000-8000-00000000000b', 'athlete', 'Ben',    date '2010-02-02',   'basketball')
+  ('10000000-0000-4000-8000-000000000001', 'parent',        'Parent', null,                null),
+  ('20000000-0000-4000-8000-00000000000a', 'athlete',       'Ava',    date '2010-01-01',   'hockey'),
+  ('20000000-0000-4000-8000-00000000000b', 'athlete',       'Ben',    date '2010-02-02',   'basketball'),
+  ('70000000-0000-4000-8000-000000000001', 'adult_athlete', 'Alex',   date '2000-03-15',   'golf')
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
--- parent_athlete_links — P is linked to A ONLY (deliberately not to B).
+-- parent_athlete_links — P is linked to A ONLY (deliberately not to B, and
+-- deliberately never to ADULT_ATHLETE — check_parent_athlete_link_roles()
+-- would reject any row referencing AA on either side; see FV-443
+-- assertions/18_adult_athlete_boundary.sql, which asserts that rejection
+-- directly rather than seeding it here).
 -- ---------------------------------------------------------------------------
 insert into public.parent_athlete_links (parent_id, athlete_id)
 values
@@ -102,11 +118,19 @@ on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
 -- subscriptions — P's billing row (status active).
+--
+-- ADULT_ATHLETE (AA) also gets its OWN subscriptions row: post-FV-325,
+-- subscriptions.parent_id means "the payer account" (parent OR adult_athlete
+-- profile id) — an adult_athlete is its own payer. Used by
+-- assertions/18_adult_athlete_boundary.sql to prove AA can read its own row
+-- but not P's, and vice versa.
 -- ---------------------------------------------------------------------------
 insert into public.subscriptions
   (parent_id, stripe_customer_id, stripe_subscription_id, status, price_id, current_period_end)
 values
   ('10000000-0000-4000-8000-000000000001', 'cus_rls_test', 'sub_rls_test',
+   'active', 'price_monthly_899', now() + interval '30 days'),
+  ('70000000-0000-4000-8000-000000000001', 'cus_rls_test_adult', 'sub_rls_test_adult',
    'active', 'price_monthly_899', now() + interval '30 days')
 on conflict (parent_id) do nothing;
 
