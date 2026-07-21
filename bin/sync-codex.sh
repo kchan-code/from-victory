@@ -51,6 +51,24 @@ toml_hazard_check() { # $1=file
   fi
 }
 
+# Fail loud on agent .md shapes the parser cannot represent faithfully
+# (qa-reviewer findings, PR #379): missing frontmatter would silently produce
+# an empty agent; YAML folded/literal description scalars would leak '>'/'|'.
+frontmatter_guard() { # $1=file
+  if [ "$(head -1 "$1")" != "---" ]; then
+    echo "ERROR: $1 does not start with '---' frontmatter — refusing to generate an empty agent." >&2
+    exit 1
+  fi
+  if ! awk 'NR>1 && /^---$/ {found=1; exit} END {exit found?0:1}' "$1"; then
+    echo "ERROR: $1 has an unterminated frontmatter block." >&2
+    exit 1
+  fi
+  if awk 'fm<2 && /^---$/ {fm++; next} fm==1 && /^description:[ ]*[>|]/ {found=1; exit} END {exit found?0:1}' "$1"; then
+    echo "ERROR: $1 uses a YAML folded/literal description scalar (>|) — unsupported; use plain indented continuation lines." >&2
+    exit 1
+  fi
+}
+
 generate_into() { # $1 = destination root
   local out="$1"
   mkdir -p "$out/.codex/agents" "$out/.codex/hooks" \
@@ -61,9 +79,10 @@ generate_into() { # $1 = destination root
 
   # ── .codex/agents/*.toml (one per .claude/agents/*.md, sorted) ──────────
   local md name desc body_file
-  for md in $(ls "$ROOT"/.claude/agents/*.md | sort); do
+  for md in "$ROOT"/.claude/agents/*.md; do
     name="$(basename "$md" .md)"
     toml_hazard_check "$md"
+    frontmatter_guard "$md"
 
     # frontmatter description: the `description:` line plus indented
     # continuation lines, joined and whitespace-squeezed.
@@ -78,10 +97,11 @@ generate_into() { # $1 = destination root
     desc="${desc//\\/\\\\}"
     desc="${desc//\"/\\\"}"
 
-    # body: everything after the closing ---, leading blank lines stripped,
-    # T1-T3 applied.
+    # body: everything after the SECOND --- only (a bare --- inside the body
+    # is a markdown horizontal rule and must survive — qa-reviewer finding),
+    # leading blank lines stripped, T1-T3 applied.
     body_file="$(mktemp)"
-    awk '/^---$/ { fm++; next } fm >= 2 { print }' "$md" \
+    awk 'fm < 2 && /^---$/ { fm++; next } fm >= 2 { print }' "$md" \
       | sed '/./,$!d' | transform > "$body_file"
 
     {
