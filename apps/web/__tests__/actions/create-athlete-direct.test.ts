@@ -575,6 +575,47 @@ describe("createAthleteDirect — username race-collision on profile insert", ()
 });
 
 // ===========================================================================
+// 8. FV-448 — created_as_adult_by_parent (13-25 expansion arc, D5 turn-18
+//    deferral mitigation)
+// ===========================================================================
+
+describe("createAthleteDirect — created_as_adult_by_parent (FV-448)", () => {
+  it("sets created_as_adult_by_parent: true when the athlete is already 18 (default fixture birthdate)", async () => {
+    // makeFormData's default birthdate (2008-01-15) is 18 years old at the
+    // time this suite was written — see the "well above 13 floor" comment.
+    await createAthleteDirect(null, makeFormData());
+
+    const profilePayload = serviceMockImpl.__profileInsertPayload();
+    expect(profilePayload?.role).toBe("athlete");
+    expect(profilePayload?.created_as_adult_by_parent).toBe(true);
+  });
+
+  it("sets created_as_adult_by_parent: false for a 17-year-old", async () => {
+    const year = new Date().getFullYear() - 17;
+    const result = await createAthleteDirect(
+      null,
+      makeFormData({ birthdate: `${year}-01-01` }),
+    );
+
+    expect(result).toMatchObject({ ok: true });
+    const profilePayload = serviceMockImpl.__profileInsertPayload();
+    expect(profilePayload?.created_as_adult_by_parent).toBe(false);
+  });
+
+  it("sets created_as_adult_by_parent: true for an athlete well past 18 (e.g. 21)", async () => {
+    const year = new Date().getFullYear() - 21;
+    const result = await createAthleteDirect(
+      null,
+      makeFormData({ birthdate: `${year}-01-01` }),
+    );
+
+    expect(result).toMatchObject({ ok: true });
+    const profilePayload = serviceMockImpl.__profileInsertPayload();
+    expect(profilePayload?.created_as_adult_by_parent).toBe(true);
+  });
+});
+
+// ===========================================================================
 // 7. Success state shape: username (not email) is surfaced
 // ===========================================================================
 

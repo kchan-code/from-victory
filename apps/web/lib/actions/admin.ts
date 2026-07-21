@@ -161,6 +161,12 @@ export async function createAthleteDirect(
   // A unique-constraint violation on username here means a race condition
   // (another athlete claimed the username between the check and this insert);
   // roll back the auth user cleanly.
+  // FV-448 (13-25 expansion arc, D5 turn-18 deferral mitigation): mirrors
+  // athletes.ts createAthlete — mark rows created for an already-18+ athlete
+  // so the future turn-18 consent/takeover flow (FV-450) has a population.
+  const createdAsAdultByParent =
+    (ageFromBirthdate(parsed.data.birthdate) ?? 0) >= 18;
+
   const { error: profileError } = await service.from("profiles").insert({
     id: athleteId,
     role: "athlete",
@@ -168,6 +174,7 @@ export async function createAthleteDirect(
     birthdate: parsed.data.birthdate,
     sport: parsed.data.sport,
     username: normalizedUsername,
+    created_as_adult_by_parent: createdAsAdultByParent,
   });
   if (profileError) {
     const { error: rollbackError } =
