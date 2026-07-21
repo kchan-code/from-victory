@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { BillingPortalButton } from "@/components/dashboard/BillingPortalButton";
+import { DeleteAccountSection } from "@/components/dashboard/DeleteAccountSection";
 import { Icon } from "@/components/ui";
 import { requireAthlete } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
@@ -26,6 +28,13 @@ export default async function AthleteSettingsPage({
 }) {
   const { profile, userId } = await requireAthlete();
   const supabase = createClient();
+
+  // FV-441: an adult_athlete (18+ self-serve payer) is their own billing
+  // account, so Subscription + Delete account sections apply to them only.
+  // A minor athlete (role: "athlete") is never the payer and must never see
+  // Stripe/billing or self-delete UI — same boundary requireAthlete() itself
+  // documents at app/athlete/paused/page.tsx:19-21.
+  const isAdult = profile.role === "adult_athlete";
 
   // Load push subscription summary for the "Daily reminder" settings row.
   // Only fetch reminder_hour — never expose keys/endpoint to the page.
@@ -190,7 +199,10 @@ export default async function AthleteSettingsPage({
         </section>
 
         {/* ── ACCOUNT ── */}
-        <section aria-labelledby="settings-account-heading">
+        <section
+          aria-labelledby="settings-account-heading"
+          className={isAdult ? "mb-9" : undefined}
+        >
           <h2
             id="settings-account-heading"
             className="mb-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/40"
@@ -199,6 +211,33 @@ export default async function AthleteSettingsPage({
           </h2>
           <SignOutButton className="inline-flex w-full items-center justify-center rounded-[12px] border border-hairline bg-charcoal px-5 py-4 font-heading text-[14px] font-semibold text-cream/70 transition-colors duration-fast ease-out hover:text-cream hover:border-cream/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx" />
         </section>
+
+        {/* ── SUBSCRIPTION + DELETE ACCOUNT (adult_athlete only) ──
+            HARD REQUIREMENT (FV-441): a minor athlete must never see
+            Stripe/billing or self-delete UI — this is a kids-privacy
+            boundary, not a cosmetic one. isAdult is the same
+            `profile.role === "adult_athlete"` check used at
+            app/athlete/paused/page.tsx:19-21. */}
+        {isAdult ? (
+          <>
+            <section aria-labelledby="settings-subscription-heading" className="mb-9">
+              <h2
+                id="settings-subscription-heading"
+                className="mb-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/40"
+              >
+                Subscription
+              </h2>
+              <div className="rounded-[12px] border border-hairline bg-charcoal px-4 py-3.5">
+                <p className="mb-4 font-body text-[13px] leading-snug text-cream/50">
+                  Manage or cancel your subscription.
+                </p>
+                <BillingPortalButton />
+              </div>
+            </section>
+
+            <DeleteAccountSection description="Deletes your account, training history, and subscription. This cannot be undone." />
+          </>
+        ) : null}
       </div>
     </main>
   );
