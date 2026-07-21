@@ -1,0 +1,98 @@
+/**
+ * @vitest-environment jsdom
+ *
+ * RTL tests for the subscribe page's price-paragraph framing (FV-442).
+ *
+ * The 13-25 expansion arc adds an adult_athlete self-serve checkout flow.
+ * The page must branch the heading-block price paragraph on the existing
+ * `profile.role === "adult_athlete"` check — parent copy stays byte-identical
+ * (first-athlete + each-additional-athlete tiering), adult copy drops the
+ * per-athlete tiering language entirely.
+ *
+ * SubscribeForm is mocked to a thin stub so these tests stay scoped to the
+ * page's own paragraph and to the isAdult prop it passes through — the
+ * SubscribeForm reminder copy itself is covered by subscribe-form.test.tsx.
+ */
+
+import { describe, it, expect, afterEach, vi } from "vitest";
+import { render, cleanup } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
+
+const { requireSubscriberMock, maybeSingleMock } = vi.hoisted(() => ({
+  requireSubscriberMock: vi.fn(),
+  maybeSingleMock: vi.fn(),
+}));
+
+vi.mock("@/lib/auth/guards", () => ({
+  requireSubscriber: requireSubscriberMock,
+}));
+
+vi.mock("@/lib/actions/subscription", () => ({
+  createCheckoutSession: vi.fn(),
+  createAdultCheckoutSession: vi.fn(),
+}));
+
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: () => ({
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: maybeSingleMock,
+        }),
+      }),
+    }),
+  }),
+}));
+
+// Stub SubscribeForm — assert only that the page renders it and forwards
+// isAdult correctly; its own copy is tested in subscribe-form.test.tsx.
+vi.mock("@/components/subscribe/SubscribeForm", () => ({
+  SubscribeForm: ({ isAdult }: { isAdult?: boolean }) => (
+    <div data-testid="subscribe-form-stub">
+      isAdult:{String(isAdult ?? false)}
+    </div>
+  ),
+}));
+
+import SubscribePage from "@/app/subscribe/page";
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
+
+describe("SubscribePage — price paragraph (parent vs adult)", () => {
+  it("renders today's parent tiering copy unchanged for a parent profile", async () => {
+    requireSubscriberMock.mockResolvedValue({
+      userId: "parent-1",
+      profile: { id: "parent-1", role: "parent", first_name: "Kim" },
+    });
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    const jsx = await SubscribePage({ searchParams: {} });
+    const { container } = render(jsx);
+    const text = container.textContent ?? "";
+
+    expect(text).toContain(
+      "$5/mo or $49/yr for your first athlete; $3/mo or $29/yr for each additional athlete.",
+    );
+    expect(text).toContain("isAdult:false");
+  });
+
+  it("renders individual framing for an adult_athlete profile, with no per-athlete tiering language", async () => {
+    requireSubscriberMock.mockResolvedValue({
+      userId: "adult-1",
+      profile: { id: "adult-1", role: "adult_athlete", first_name: "Jordan" },
+    });
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    const jsx = await SubscribePage({ searchParams: {} });
+    const { container } = render(jsx);
+    const text = container.textContent ?? "";
+
+    expect(text).toContain("$5/mo or $49/yr. Cancel any time.");
+    expect(text).not.toMatch(/for your first athlete/i);
+    expect(text).not.toMatch(/additional athlete/i);
+    expect(text).toContain("isAdult:true");
+  });
+});

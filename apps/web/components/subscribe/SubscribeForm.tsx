@@ -165,9 +165,21 @@ interface SubscribeFormProps {
     prev: SubscriptionActionState,
     formData: FormData,
   ) => Promise<SubscriptionActionState>;
+  /**
+   * FV-442: true for the adult_athlete self-serve checkout flow. Swaps the
+   * "each additional athlete" value-prop reminder (parent-only framing —
+   * adults subscribe for themselves, quantity is always 1) for individual
+   * framing. Defaults to false so every existing (parent) call site is
+   * unaffected.
+   */
+  isAdult?: boolean;
 }
 
-export function SubscribeForm({ trialEligible, action }: SubscribeFormProps) {
+export function SubscribeForm({
+  trialEligible,
+  action,
+  isAdult = false,
+}: SubscribeFormProps) {
   const [selected, setSelected] = useState<Plan>("annual");
   const [actionState, formAction] = useFormState(action, initialState);
 
@@ -230,10 +242,21 @@ export function SubscribeForm({ trialEligible, action }: SubscribeFormProps) {
         </div>
       ) : null}
 
-      {/* Value prop reminder */}
-      <p className="font-body text-cream/50 text-[13px] leading-relaxed mb-7">
-        Your first athlete is $5/mo or $49/yr &mdash; each additional
-        athlete is $3/mo or $29/yr.
+      {/* Value prop reminder — individual framing for the adult_athlete
+          self-serve flow (no "additional athlete" tiering; quantity is
+          always 1), parent framing otherwise. */}
+      <p
+        data-testid="value-prop-reminder"
+        className="font-body text-cream/50 text-[13px] leading-relaxed mb-7"
+      >
+        {isAdult ? (
+          <>One subscription, just for you. Cancel any time.</>
+        ) : (
+          <>
+            Your first athlete is $5/mo or $49/yr &mdash; each additional
+            athlete is $3/mo or $29/yr.
+          </>
+        )}
       </p>
 
       {/* Inline error */}

@@ -12,7 +12,7 @@ export default async function ForgotPasswordPage() {
   return (
     <AuthShell
       title="Reset your password"
-      subtitle="Enter the email on your parent account. We'll send a reset link if we find a match."
+      subtitle="Enter the email on your account. We'll send a reset link if we find a match."
     >
       <ForgotPasswordForm />
     </AuthShell>

@@ -1,8 +1,10 @@
 /**
- * Server actions for the parent account/settings page (FV-192).
+ * Server actions for the account/settings page (FV-192; widened to the
+ * adult_athlete self-serve role in FV-440).
  *
  * sendOwnPasswordReset — sends a password-reset email to the SIGNED-IN
- * parent's own account email. The email is derived server-side from the
+ * payer's own account email (a parent, or an adult_athlete self-managing
+ * their own account). The email is derived server-side from the
  * authenticated session (auth.getUser()) and the formData argument is
  * ignored entirely, so a tampered POST body cannot direct the reset email
  * anywhere else (qa finding on the prior hidden-field pattern).
@@ -12,7 +14,7 @@
 
 "use server";
 
-import { requireParent } from "@/lib/auth/guards";
+import { requireSubscriber } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { AuthActionState } from "@/lib/actions/auth";
 
@@ -20,8 +22,9 @@ export async function sendOwnPasswordReset(
   _prev: AuthActionState,
   _formData: FormData,
 ): Promise<AuthActionState> {
-  // Gate to an authenticated parent; redirects to /signin otherwise.
-  await requireParent();
+  // Gate to an authenticated payer (parent OR adult_athlete, FV-440);
+  // redirects to /signin otherwise.
+  await requireSubscriber();
 
   const supabase = createClient();
   const {
@@ -30,7 +33,7 @@ export async function sendOwnPasswordReset(
 
   const email = user?.email;
   if (!email) {
-    // A parent session without an email should not exist; fail calmly.
+    // A payer session without an email should not exist; fail calmly.
     return {
       ok: false,
       error: "Couldn't send the reset link right now. Try again in a moment.",
