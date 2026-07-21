@@ -105,7 +105,7 @@ export default function PrivacyPage() {
         </ul>
         <p>We do not collect a parent&apos;s birthdate, phone number, home address, or photos.</p>
 
-        <SubHeading>c. Athlete accounts created by a parent (ages 13–21)</SubHeading>
+        <SubHeading>c. Athlete accounts created by a parent (ages 13 and up)</SubHeading>
         <p>
           A parent or guardian sets up the athlete&apos;s account. For a parent-managed athlete
           we collect only:
