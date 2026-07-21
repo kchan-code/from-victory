@@ -11,15 +11,20 @@
 
 'use strict';
 
-// Privacy-sensitive paths, verbatim from CLAUDE.md → Project Workflow Config.
+// Privacy-sensitive paths, from CLAUDE.md → Project Workflow Config, plus the
+// committed Codex mirror of the same content (FV-460, KC 2026-07-21):
+// AGENTS.md and .codex/agents/** are generated from CLAUDE.md and
+// .claude/agents/** by bin/sync-codex.sh, so they carry the identical
+// PII/minor-protection language and get the identical gate.
 // Prefix entries match the path and everything under it; exact entries match
 // only that file.
 const PRIVACY_PREFIXES = [
   'apps/web/',
   'supabase/',
   '.claude/agents/',
+  '.codex/agents/',
 ];
-const PRIVACY_EXACT = ['CLAUDE.md', 'docs/brand.md'];
+const PRIVACY_EXACT = ['CLAUDE.md', 'docs/brand.md', 'AGENTS.md'];
 
 // Comment authors we trust to issue a verdict. The kids-privacy-officer runs in
 // a maintainer's Claude Code session and posts via that account, so the verdict
