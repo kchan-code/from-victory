@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
-# sync-codex.sh — deterministic generator for the committed Codex mirror (FV-432).
+# sync-codex.sh — deterministic generator for the committed Codex mirror
+# (FV-432; enforcement model revised by FV-462).
 #
 # Sources of truth (Claude side, canonical)  →  Generated targets (Codex side):
 #   CLAUDE.md                                →  AGENTS.md
 #   .claude/agents/<name>.md                 →  .codex/agents/<name>.toml
-#   .claude/hooks/*.sh                       →  .codex/hooks/*.sh   (byte copy)
 #   .claude/skills/from-victory-design/SKILL.md
 #                                            →  .agents/skills/from-victory-design/SKILL.md
-#   (template in this script)                →  .codex/hooks.json
 #   (template in this script)                →  .codex/README.md
+#
+# Claude-side hooks are intentionally NOT mirrored (FV-462): the harnesses use
+# different enforcement mechanisms. See "Enforcement model" in .codex/README.md.
 #
 # Sanctioned transformations (the ONLY differences allowed; see .codex/README.md):
 #   T1  CLAUDE.md            → AGENTS.md
@@ -17,9 +19,15 @@
 #   T4  design-system path is NOT renamed — docs/Claude Design System/ is the
 #       real directory and stays verbatim.
 #   T5  agent .md → .toml: frontmatter name/description → TOML keys; body →
-#       developer_instructions with T1-T3 applied. frontmatter tools:/model:
-#       are DROPPED (no known Codex equivalent — documented loss).
-#   T6  hooks byte-copied; hooks.json uses repo-relative hook paths.
+#       developer_instructions with T1-T3 applied. tools: maps to the Codex
+#       sandbox: agents whose tools include neither Edit nor Write generate
+#       `sandbox_mode = "read-only"`; Edit/Write agents omit the override and
+#       inherit the parent workspace-write sandbox. Claude `model:` is DROPPED —
+#       never translated into guessed Codex model names.
+#   T6  hooks are NOT mirrored (harness-specific enforcement — FV-462). The
+#       Codex boundary is the documented workspace-write sandbox (protected
+#       read-only paths .git/.codex/.agents) plus per-agent sandbox_mode; the
+#       Claude boundary remains .claude/hooks/** (untouched by this script).
 #
 # Modes:
 #   bin/sync-codex.sh           regenerate the mirror in place
@@ -33,6 +41,16 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MODE="${1:-generate}"
+
+# Sandbox-mapping expectations (FV-462). Overridable ONLY for the test harness
+# (bin/sync-codex.test.sh); production runs use the defaults. Adding a new
+# Edit/Write agent or changing the roster size is a deliberate governance event:
+# update these expectations consciously in the same PR.
+EXPECTED_WRITERS="${SYNC_CODEX_EXPECT_WRITERS-audio-engineer
+backend-engineer
+frontend-engineer
+qa-reviewer}"
+EXPECTED_READONLY_COUNT="${SYNC_CODEX_EXPECT_READONLY_COUNT-15}"
 
 # T1-T3. T4 is deliberately absent (real path kept). Order-independent: the
 # three patterns cannot overlap (case-sensitive, distinct tokens).
@@ -69,20 +87,43 @@ frontmatter_guard() { # $1=file
   fi
 }
 
+# T5 sandbox mapping (FV-462): read the single-line `tools:` frontmatter field.
+# Fails loud when the field is missing or empty — a Claude agent without an
+# explicit tools list cannot be mapped to a Codex sandbox faithfully.
+tools_of() { # $1=file → prints the tools list
+  local line
+  line="$(awk 'fm<2 && /^---$/ {fm++; next} fm==1 && /^tools:/ {sub(/^tools:[ ]*/, ""); print; found=1; exit} END {exit found?0:1}' "$1")" || {
+    echo "ERROR: $1 has no parseable single-line 'tools:' frontmatter field — cannot map a Codex sandbox_mode." >&2
+    exit 1
+  }
+  if [ -z "$line" ]; then
+    echo "ERROR: $1 has an empty 'tools:' frontmatter field — cannot map a Codex sandbox_mode." >&2
+    exit 1
+  fi
+  printf '%s' "$line"
+}
+
+# True (exit 0) when the tools list grants write capability. Word-boundary
+# match so a hypothetical tool named e.g. "Editor" would not silently count.
+is_writer() { # $1=tools list
+  printf '%s' "$1" | grep -qE '(^|[, ])(Edit|Write)($|[, ])'
+}
+
 generate_into() { # $1 = destination root
   local out="$1"
-  mkdir -p "$out/.codex/agents" "$out/.codex/hooks" \
-           "$out/.agents/skills/from-victory-design"
+  mkdir -p "$out/.codex/agents" "$out/.agents/skills/from-victory-design"
 
   # ── AGENTS.md ────────────────────────────────────────────────────────────
   transform < "$ROOT/CLAUDE.md" > "$out/AGENTS.md"
 
   # ── .codex/agents/*.toml (one per .claude/agents/*.md, sorted) ──────────
-  local md name desc body_file
+  local md name desc tools body_file
+  local writers="" readers="" reader_count=0
   for md in "$ROOT"/.claude/agents/*.md; do
     name="$(basename "$md" .md)"
     toml_hazard_check "$md"
     frontmatter_guard "$md"
+    tools="$(tools_of "$md")"
 
     # frontmatter description: the `description:` line plus indented
     # continuation lines, joined and whitespace-squeezed.
@@ -107,6 +148,14 @@ generate_into() { # $1 = destination root
     {
       printf 'name = "%s"\n' "$name"
       printf 'description = "%s"\n' "$desc"
+      if is_writer "$tools"; then
+        writers="${writers}${name}"$'\n'
+      else
+        # No Edit/Write on the Claude side → mechanically read-only on Codex.
+        printf 'sandbox_mode = "read-only"\n'
+        readers="${readers}${name}"$'\n'
+        reader_count=$((reader_count + 1))
+      fi
       printf 'developer_instructions = """\n'
       cat "$body_file"
       printf '"""\n'
@@ -114,45 +163,33 @@ generate_into() { # $1 = destination root
     rm -f "$body_file"
   done
 
-  # ── hooks: byte-identical copies ─────────────────────────────────────────
-  local h
-  for h in "$ROOT"/.claude/hooks/*.sh; do
-    cp "$h" "$out/.codex/hooks/$(basename "$h")"
-    chmod +x "$out/.codex/hooks/$(basename "$h")"
-  done
+  # ── sandbox-mapping assertions (FV-462): fail loud on any deviation ──────
+  local expected_sorted actual_sorted
+  expected_sorted="$(printf '%s\n' "$EXPECTED_WRITERS" | sed '/^$/d' | sort)"
+  actual_sorted="$(printf '%s' "$writers" | sed '/^$/d' | sort)"
+  if [ "$expected_sorted" != "$actual_sorted" ]; then
+    echo "SANDBOX MAPPING MISMATCH: Edit/Write agents differ from the expected writer set." >&2
+    diff <(printf '%s\n' "$expected_sorted") <(printf '%s\n' "$actual_sorted") >&2 || true
+    echo "If a writer agent was legitimately added/removed, update EXPECTED_WRITERS in bin/sync-codex.sh in the same PR." >&2
+    exit 1
+  fi
+  if [ "$reader_count" -ne "$EXPECTED_READONLY_COUNT" ]; then
+    echo "SANDBOX MAPPING MISMATCH: expected $EXPECTED_READONLY_COUNT read-only agents, generated $reader_count." >&2
+    echo "If the roster legitimately changed, update EXPECTED_READONLY_COUNT in bin/sync-codex.sh in the same PR." >&2
+    exit 1
+  fi
 
-  # ── hooks.json: repo-relative paths (T6) ─────────────────────────────────
-  # NOTE: earlier local mirrors used machine-absolute paths. Relative paths
-  # are the committable form; if a Codex session shows hooks NOT firing,
-  # see .codex/README.md ("hooks.json paths") before changing anything.
-  cat > "$out/.codex/hooks.json" <<'JSON'
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "'.codex/hooks/block-subagent-git.sh'"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "'.codex/hooks/privacy-review-reminder.sh'"
-          }
-        ]
-      }
-    ]
-  }
-}
-JSON
+  # ── hooks: intentionally NOT mirrored (FV-462) ───────────────────────────
+  # The copied block-subagent-git.sh could not work on Codex (documented
+  # PreToolUse payload has no agent_id; the script fails open without it), and
+  # the privacy reminder is superseded by the REQUIRED privacy-verdict CI gate
+  # (FV-460). Retire any previously generated hook files in-place so --check
+  # (which regenerates fresh) stays in agreement.
+  rm -f "$out/.codex/hooks.json" \
+        "$out/.codex/hooks/block-subagent-git.sh" \
+        "$out/.codex/hooks/block-subagent-git.test.sh" \
+        "$out/.codex/hooks/privacy-review-reminder.sh"
+  rmdir "$out/.codex/hooks" 2>/dev/null || true
 
   # ── design skill (T4: real path preserved, so this is a near-verbatim copy)
   transform < "$ROOT/.claude/skills/from-victory-design/SKILL.md" \
@@ -160,7 +197,7 @@ JSON
 
   # ── README documenting the mechanism ─────────────────────────────────────
   cat > "$out/.codex/README.md" <<'README'
-# Codex mirror — generated configuration (FV-432)
+# Codex mirror — generated configuration (FV-432, enforcement model FV-462)
 
 Everything in `.codex/`, `.agents/`, and the root `AGENTS.md` is **generated**
 by `bin/sync-codex.sh` from the Claude-side sources of truth. Never edit these
@@ -170,9 +207,8 @@ files directly — edit the source and re-run the script:
 |-------------------------------------------------|--------------------------------------------------|
 | `CLAUDE.md`                                      | `AGENTS.md`                                      |
 | `.claude/agents/<name>.md`                       | `.codex/agents/<name>.toml`                      |
-| `.claude/hooks/*.sh`                             | `.codex/hooks/*.sh` (byte-identical)             |
 | `.claude/skills/from-victory-design/SKILL.md`    | `.agents/skills/from-victory-design/SKILL.md`    |
-| template inside `bin/sync-codex.sh`              | `.codex/hooks.json`, this README                 |
+| template inside `bin/sync-codex.sh`              | this README                                      |
 
 ## Sanctioned transformations
 
@@ -183,35 +219,60 @@ files directly — edit the source and re-run the script:
   is the real directory and stays verbatim
 - **T5** agent conversion: frontmatter `name`/`description` → TOML keys; body →
   `developer_instructions` (TOML multiline basic string) with T1–T3 applied.
-  **Known loss:** frontmatter `tools:` and `model:` are dropped — the deployed
-  Codex agent format observed in production carries no equivalent keys, so
-  Codex agents run without the Claude-side tool/model restrictions. If Codex
-  gains support for them, extend T5 rather than hand-editing TOMLs.
-- **T6** hooks are byte-copies; `hooks.json` uses **repo-relative** hook paths
-  so the file is identical on every machine.
+  `tools:` maps to the Codex sandbox (see "Enforcement model" below): no
+  Edit/Write → `sandbox_mode = "read-only"`; Edit/Write → no override
+  (inherits the parent workspace-write mode). Claude `model:` is dropped and
+  is NEVER translated into guessed Codex model names.
+- **T6** Claude-side hooks are intentionally **not** mirrored. The two
+  harnesses use different enforcement mechanisms by design — see below.
 
 No other differences between source and mirror are permitted; `--check`
-enforces this.
+enforces this (and CI runs it on every PR — the "Codex mirror sync check" job).
+
+## Enforcement model (FV-461 discovery → FV-462)
+
+The two harnesses enforce the same From Victory rules through different,
+harness-native mechanisms — intentionally:
+
+- **Claude Code:** `.claude/hooks/block-subagent-git.sh` (PreToolUse) blocks
+  subagent git state changes; proven by its test suite and live behavior.
+  That hook is Claude-specific: its subagent discriminator (`agent_id` in the
+  PreToolUse payload) does not exist in Codex's documented PreToolUse schema,
+  so a copy of it on the Codex side would silently fail open. It is therefore
+  NOT copied here.
+- **Codex:** the documented `workspace-write` sandbox is the mechanical
+  boundary — `.git`, `.codex`, and `.agents` are recursively read-only
+  protected paths, so no agent (lead or subagent) can mutate git state from
+  inside the sandbox. On top of that, the 15 custom agents whose Claude
+  definitions grant no Edit/Write tool are generated with
+  `sandbox_mode = "read-only"`; the 4 implementation agents (audio-engineer,
+  backend-engineer, frontend-engineer, qa-reviewer) inherit the parent
+  workspace-write mode so they can edit files — but still cannot touch the
+  protected paths.
+- **Lead git flow on Codex:** in-sandbox `.git` writes are blocked for the
+  lead too; the exact approval-path behavior for lead-authorized git
+  operations is recorded per the FV-462 live validation (see the FV-462
+  Linear issue for the 4-cell matrix and its results).
+- **Out of posture:** dangerous/full-access mode bypasses the sandbox
+  entirely and is UNSUPPORTED for From Victory subagent work. A sandbox
+  denial is a sandbox denial — it does not indicate any hook fired.
+- **Privacy review:** the authoritative mechanical control is the REQUIRED
+  `privacy-verdict` CI check (FV-460), which covers the canonical paths AND
+  this mirror (`AGENTS.md`, `.codex/agents/**`). The Claude-side advisory
+  reminder hook is not mirrored: its output contract is unproven on Codex and
+  the CI gate supersedes its function.
 
 ## Verifying / re-running
 
 ```
 bin/sync-codex.sh          # regenerate in place
 bin/sync-codex.sh --check  # exit non-zero if the committed mirror has drifted
+bin/sync-codex.test.sh     # generator unit tests (mapping, guards, disposition)
 ```
 
 `--check` also runs the roster assertion (every `.claude/agents/*.md` has
-exactly one `.codex/agents/*.toml`, 1:1 by name, no strays).
-
-## hooks.json paths
-
-Earlier (pre-FV-432) local mirrors hardcoded machine-absolute hook paths.
-The committed file uses repo-relative paths — the only form that is identical
-across machines. **If a Codex session's hooks do not fire** (test: a Codex
-subagent running a state-changing `git` command should be blocked), the
-relative paths are the first suspect: run the hook directly to confirm it
-works, then raise it with KC before reintroducing absolute paths (they cannot
-be committed; they would drift per machine).
+exactly one `.codex/agents/*.toml`, 1:1 by name, no strays) and the sandbox
+mapping assertion (exactly the 4 named writer agents; exactly 15 read-only).
 
 ## `.hash`
 
