@@ -27,6 +27,16 @@ test('isPrivacyPath matches every CLAUDE.md privacy path', () => {
   }
 });
 
+test('isPrivacyPath matches the committed Codex mirror paths (FV-460)', () => {
+  for (const f of [
+    'AGENTS.md', // generated from CLAUDE.md — same content, same gate
+    '.codex/agents/kids-privacy-officer.toml',
+    '.codex/agents/product-strategist.toml',
+  ]) {
+    assert.equal(isPrivacyPath(f), true, `${f} should be sensitive`);
+  }
+});
+
 test('isPrivacyPath rejects non-privacy paths (incl. lookalikes)', () => {
   for (const f of [
     'README.md',
@@ -40,6 +50,21 @@ test('isPrivacyPath rejects non-privacy paths (incl. lookalikes)', () => {
     'CLAUDE.md.bak',
     'docs/brand.md.bak',
     '',
+  ]) {
+    assert.equal(isPrivacyPath(f), false, `${f} should NOT be sensitive`);
+  }
+});
+
+test('isPrivacyPath rejects Codex-mirror lookalikes and non-agent mirror files (FV-460)', () => {
+  for (const f of [
+    'AGENTS.md.bak', // exact match only
+    'agents.md', // case-sensitive exact match only
+    '.codex/hooks.json', // only .codex/agents/ is the sensitive prefix
+    '.codex/hooks/block-subagent-git.sh',
+    '.codex/README.md',
+    '.codexagents/x.toml', // prefix lookalike must not match .codex/agents/
+    '.agents/skills/from-victory-design/SKILL.md', // .agents/ is not a sensitive prefix
+    'bin/sync-codex.sh', // the generator itself is tooling, not content
   ]) {
     assert.equal(isPrivacyPath(f), false, `${f} should NOT be sensitive`);
   }
@@ -183,4 +208,30 @@ test('decide: OWNER fresh APPROVED clears the gate (intended solo-repo behavior)
   // verdict is an acceptable manual clear; the gate forces it to exist + be
   // fresh, it does not cryptographically bar the maintainer.
   assert.equal(decide(['apps/web/x.tsx'], [owner('APPROVED', AFTER)], COMMIT_AT).state, 'success');
+});
+
+// --- Codex mirror coverage (FV-460) ----------------------------------------
+
+test('decide: PR touching only AGENTS.md requires a fresh verdict', () => {
+  assert.equal(decide(['AGENTS.md'], [], COMMIT_AT).state, 'failure');
+  const stale = decide(['AGENTS.md'], [owner('APPROVED', BEFORE)], COMMIT_AT);
+  assert.equal(stale.state, 'failure');
+  assert.match(stale.description, /predates/);
+  assert.equal(decide(['AGENTS.md'], [owner('APPROVED', AFTER)], COMMIT_AT).state, 'success');
+});
+
+test('decide: PR touching only a .codex/agents TOML requires a fresh verdict', () => {
+  const files = ['.codex/agents/kids-privacy-officer.toml'];
+  assert.equal(decide(files, [], COMMIT_AT).state, 'failure');
+  assert.equal(decide(files, [owner('APPROVED', AFTER)], COMMIT_AT).state, 'success');
+});
+
+test('decide: mirror tooling/config alone stays N/A (no false gate)', () => {
+  const r = decide(
+    ['bin/sync-codex.sh', '.codex/hooks.json', '.codex/README.md', '.github/workflows/ci.yml'],
+    [],
+    COMMIT_AT,
+  );
+  assert.equal(r.state, 'success');
+  assert.match(r.description, /N\/A/);
 });
