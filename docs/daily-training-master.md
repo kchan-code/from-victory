@@ -308,7 +308,7 @@ John writes that perfect love drives out fear, and he names why fear has such a 
 
 ### What you face
 
-You play stiff because part of you is competing to be approved — by the coach, the scout, the parent in the stands. So every rep becomes an audit. That's exhausting, and it's the wrong job.
+You play stiff because part of you is competing to be approved — by the coach, the scout, the crowd in the stands. So every rep becomes an audit. That's exhausting, and it's the wrong job.
 
 ### The reset
 
@@ -624,7 +624,7 @@ You think leadership is for the captains, the older players, the ones with the t
 
 ### The reset
 
-When you think you're too young or low on the depth chart to matter, decide otherwise:
+When you think you're too new or too far down the depth chart to matter, decide otherwise:
 
 > *My example sets the tone.*
 
