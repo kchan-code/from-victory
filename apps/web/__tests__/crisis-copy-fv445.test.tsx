@@ -65,7 +65,7 @@ describe("ResourceScreen — FV-445 copy", () => {
     const text = container.textContent ?? "";
     expect(text).toContain("Talk to someone you trust");
     expect(text).toContain(
-      "A parent, coach, teammate, pastor, mentor, or counselor. You don't have to carry this alone.",
+      "A parent, coach, teammate, pastor, mentor, or counselor. You don’t have to carry this alone.",
     );
   });
 

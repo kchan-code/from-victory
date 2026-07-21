@@ -38,7 +38,7 @@ const RESOURCES = {
     primaryAction: null,
     primaryHref: null,
     description:
-      "A parent, coach, teammate, pastor, mentor, or counselor. You don't have to carry this alone.",
+      "A parent, coach, teammate, pastor, mentor, or counselor. You don’t have to carry this alone.",
   },
 } as const;
 
