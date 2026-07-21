@@ -179,7 +179,7 @@ Standing invocation policy — apply these by default, not by memory:
 | Athlete-facing training, journal, or scripture content | content-curator (orchestrates sports-psychologist + youth-pastor) |
 | Sport-specific content (hockey/basketball/golf/football scenarios, positions, examples, pregame scripts) | content-curator + the relevant sport-expert (hockey-expert / basketball-expert / golf-expert / football-expert) for authenticity |
 | Any PR touching runtime or tested code — before privacy + merge | qa-reviewer |
-| Any PR touching `apps/web/**`, `supabase/**`, `.codex/agents/**`, `AGENTS.md`, `docs/brand.md` | kids-privacy-officer (also nudged by the privacy-review hook) |
+| Any PR touching `apps/web/**`, `supabase/**`, `.codex/agents/**`, `AGENTS.md`, `docs/brand.md` | kids-privacy-officer (also nudged by the privacy-review hook in Claude Code; enforced by the required privacy-verdict CI check) |
 
 Rules of the road:
 - **Reviewer order:** qa-reviewer → kids-privacy-officer → merge (via GitHub UI).
@@ -206,9 +206,11 @@ that "preserves the work." Enforce mechanically, not by reminder.
    branch, commit, push, PR, checkout, stash, rebase, merge. Subagents return
    **file edits / diffs** to the lead; the lead integrates and commits. Never
    trust an agent's "I committed it" — if agents never touch git there is nothing
-   to verify after the fact. A `PreToolUse` hook
-   (`.codex/hooks/block-subagent-git.sh`) denies state-changing git to subagents
-   as a backstop; it fails OPEN, so it can never block the lead.
+   to verify after the fact. Mechanical backstop per harness: in Claude Code, the
+   `block-subagent-git` PreToolUse hook (in the Claude-side hooks directory)
+   denies state-changing git to subagents — it fails OPEN, so it can never block
+   the lead; in Codex, the workspace-write sandbox's protected read-only `.git`
+   path provides the equivalent boundary (see the Codex mirror README, FV-462).
 2. **File-editing agents run in worktree isolation.** Spawn any agent that edits
    files with the Agent tool's `isolation: "worktree"`, so its filesystem and git
    are sandboxed and it cannot switch the shared branch or stomp the main tree.
