@@ -2,7 +2,8 @@
 
 ## Mission
 A daily mental toughness training app with faith built in, for athletes
-ages 13-21. Launch sports live in production: hockey, basketball, golf, and
+ages 13 and up — no upper age limit; content and GTM are calibrated for
+13-25 (see Audience). Launch sports live in production: hockey, basketball, golf, and
 football (source of truth: `SUPPORTED_SPORTS` in `apps/web/lib/sports.ts`). The parent
 buys (for MVP), the athlete
 trains: one daily training session combining a mental skill, a scripture
@@ -49,13 +50,21 @@ we don't yet have.
 
 ## Audience
 
-### Primary: athletes ages 13-21
-A wide band — middle school through college. Frameworks hold across the
-range; examples and register do not. Content calibrates per piece.
+### Primary: athletes ages 13-25 (eligible: 13+, no upper limit)
+A wide band — middle school through college and just beyond. Eligibility
+is 13 and up with no upper age limit (KC decision 2026-07-20); content
+and GTM are calibrated for 13-25, and the marketing target stays the
+scholastic core (~15-22) — 22-25 is eligible, not targeted. Frameworks
+hold across the range; examples and register do not. Content calibrates
+per piece.
 - 13-15 (U15): younger, simpler register, concrete examples
 - 16-18 (U18 / junior): recruiting, cuts, depth charts, identity pressure
 - 18-21 (junior / college; legal adults): autonomy, performance stakes,
   owning their own faith
+- 22-25 (grad/extended collegiate, junior/club/semi-pro/pro, transition
+  out of sport): self-owned accounts (18+ self-serve), roster and
+  contract stakes, identity after the sport ends. Content must ring true
+  here without excluding the younger bands.
 
 These are serious athletes. Many train 10+ hours/week, compete in scouted
 leagues, think about junior, prep school, or college. Bullshit detectors
@@ -426,9 +435,9 @@ docs/brand.md "Voice Modes" for the full table. Default mode is Mentor.
 ### Content Voice
 - Brand frame: identity → performance. FROM victory.
 - Scripture: NIV default. Cite chapter and verse.
-- Reading level: accessible across the whole 13-21 band. Clear, direct
+- Reading level: accessible across the whole 13-25 band. Clear, direct
   prose. Calibrate by age — simpler and more concrete for 13-15, more
-  depth and nuance for 16-21. Never down-talk any age.
+  depth and nuance for 16-25. Never down-talk any age.
 - Athlete-facing content uses "athlete" or "you," never "kid."
 - Examples drawn from the live sports (hockey, basketball, golf,
   football) for MVP. Underlying content structure is
