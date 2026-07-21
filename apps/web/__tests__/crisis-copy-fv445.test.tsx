@@ -10,6 +10,8 @@
 // byte-identical.
 
 import "@testing-library/jest-dom/vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, it, expect, afterEach } from "vitest";
 import { render, cleanup } from "@testing-library/react";
 
@@ -101,5 +103,38 @@ describe("ResourceScreen — FV-445 copy", () => {
     const { container } = render(<ResourceScreen />);
     const text = container.textContent ?? "";
     expect(/\bkid\b|kiddo|youngster/i.test(text)).toBe(false);
+  });
+});
+
+// The third copy of this block lives inline in the pregame completion card
+// (components/pregame/screens-b.tsx — hot file, not extracted until FV-455).
+// It can't be rendered in isolation here, so guard against silent drift with
+// source-level assertions: the approved strings must be present and the old
+// parent-singling strings must be gone. Delete this block when FV-455 lands.
+describe("screens-b pregame completion card — FV-445 copy stays in sync", () => {
+  const source = readFileSync(
+    join(__dirname, "..", "components", "pregame", "screens-b.tsx"),
+    "utf8",
+  );
+
+  it("carries the approved trusted-person and closing strings", () => {
+    expect(source).toContain("Talk to someone you trust");
+    expect(source).toContain(
+      "A parent, coach, teammate, pastor, mentor, or counselor.",
+    );
+    expect(source).toContain(
+      "no one is notified, and nothing here",
+    );
+  });
+
+  it("no longer contains the old parent-singling strings", () => {
+    expect(source).not.toContain("Talk to a trusted adult");
+    expect(source).not.toContain("shared with your parent");
+    expect(source).not.toMatch(/\bkid\b|kiddo|youngster/i);
+  });
+
+  it("keeps the crisis contact methods", () => {
+    expect(source).toContain('href="tel:988"');
+    expect(source).toContain('href="sms:741741?body=HOME"');
   });
 });
