@@ -8,6 +8,11 @@
 // understated. The intro line from the FV-225 spec is shown above the
 // resource list. Nothing is logged when the athlete sees or taps this.
 //
+// Copy is the FV-445 universal crisis-resource wording (KC-approved,
+// final) — "trusted person," not "trusted adult," and the closing
+// disclaimer states plainly that nothing here is shared, rather than
+// singling out the parent.
+//
 // Server Component — no interactivity beyond native <a> links.
 
 export function CrisisFooter() {
@@ -57,18 +62,19 @@ export function CrisisFooter() {
 
         <li>
           <p className="font-heading text-[13px] font-semibold text-cream/70">
-            Talk to a trusted adult
+            Talk to someone you trust
           </p>
           <p className="mt-0.5 font-body text-[12px] text-cream/55">
-            A parent, coach, teacher, pastor, or counselor. You don&rsquo;t
-            have to carry this alone.
+            A parent, coach, teammate, pastor, mentor, or counselor. You
+            don&rsquo;t have to carry this alone.
           </p>
         </li>
       </ul>
 
       <p className="mt-5 font-body text-[11px] leading-relaxed text-cream/55">
-        Nothing here is shared with your parent. From Victory is not a
-        mental-health service. In an immediate emergency, call 911.
+        This screen is private &mdash; no one is notified, and nothing here
+        is shared. From Victory is not a mental-health service. In an
+        immediate emergency, call 911.
       </p>
     </div>
   );
