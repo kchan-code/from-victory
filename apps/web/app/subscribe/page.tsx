@@ -33,17 +33,19 @@ export default async function SubscribePage({ searchParams }: Props) {
 
   const wasCanceled = searchParams.status === "canceled";
 
+  // FV-442: reused below for the price paragraph and the SubscribeForm prop
+  // so the adult_athlete check isn't recomputed in three places.
+  const isAdult = profile.role === "adult_athlete";
+
   // Role-aware navigation targets.
-  const dashboardHref = profile.role === "adult_athlete" ? "/athlete" : "/dashboard";
+  const dashboardHref = isAdult ? "/athlete" : "/dashboard";
   // FV-328: the aria-label must match the destination (the href is role-aware).
-  const backLabel =
-    profile.role === "adult_athlete" ? "Back to training" : "Back to dashboard";
+  const backLabel = isAdult ? "Back to training" : "Back to dashboard";
 
   // Role-aware checkout action.
-  const checkoutAction =
-    profile.role === "adult_athlete"
-      ? createAdultCheckoutSession
-      : createCheckoutSession;
+  const checkoutAction = isAdult
+    ? createAdultCheckoutSession
+    : createCheckoutSession;
 
   return (
     <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
@@ -90,15 +92,29 @@ export default async function SubscribePage({ searchParams }: Props) {
             Train every day.
           </h1>
           <p className="font-body text-cream/70 text-[15px] leading-relaxed max-w-[42ch]">
-            $5/mo or $49/yr for your first athlete; $3/mo or $29/yr for each
-            additional athlete. Daily mental-toughness training with faith built
-            in&nbsp;&mdash; one session per day combining a mental skill and a
-            scripture foundation.
+            {isAdult ? (
+              <>
+                $5/mo or $49/yr. Cancel any time. Daily mental-toughness
+                training with faith built in&nbsp;&mdash; one session per day
+                combining a mental skill and a scripture foundation.
+              </>
+            ) : (
+              <>
+                $5/mo or $49/yr for your first athlete; $3/mo or $29/yr for
+                each additional athlete. Daily mental-toughness training with
+                faith built in&nbsp;&mdash; one session per day combining a
+                mental skill and a scripture foundation.
+              </>
+            )}
           </p>
         </section>
 
         {/* Plan selector form — trialEligible controls the trial banner */}
-        <SubscribeForm trialEligible={trialEligible} action={checkoutAction} />
+        <SubscribeForm
+          trialEligible={trialEligible}
+          action={checkoutAction}
+          isAdult={isAdult}
+        />
 
         {/* Footer trust note */}
         <p className="mt-8 font-body text-cream/40 text-[13px] text-center leading-relaxed">
