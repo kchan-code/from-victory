@@ -105,7 +105,7 @@ export default function PrivacyPage() {
         </ul>
         <p>We do not collect a parent&apos;s birthdate, phone number, home address, or photos.</p>
 
-        <SubHeading>c. Athlete accounts created by a parent (ages 13–21)</SubHeading>
+        <SubHeading>c. Athlete accounts created by a parent (ages 13 and up)</SubHeading>
         <p>
           A parent or guardian sets up the athlete&apos;s account. For a parent-managed athlete
           we collect only:
@@ -168,6 +168,10 @@ export default function PrivacyPage() {
           As with any athlete, we record training activity — for example, which sessions were
           started or completed and when. How that activity is kept private is described in
           &ldquo;The athlete&apos;s private space&rdquo; below.
+        </p>
+        <p>
+          An adult athlete can manage their own subscription and delete their own account
+          directly from their settings page, without going through a parent.
         </p>
 
         <SubHeading>e. Payment information</SubHeading>

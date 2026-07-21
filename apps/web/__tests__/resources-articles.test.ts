@@ -200,8 +200,11 @@ describe("whole-body sha256 fidelity pins", () => {
       "6f0212bdc206eaec27a0e28f8a24828551eac65d3128a89944102f198f5c3622",
     "when-your-athlete-gets-cut-a-parents-guide":
       "c7a9bc8238fbd09a9db83b6031c5164755fabc5102afc3c32cae9389245054b9",
+    // Pin updated FV-446 (2026-07-21): factual correction "ages 13-21" →
+    // "ages 13 and up" in the closing CTA paragraph (13-25 arc, no upper
+    // bound). Reviewed and authorized by KC as a factual-fix-lane edit.
     "sports-psychology-and-faith-do-they-mix":
-      "f555804b7274d38308b5780a8969c802703be7bc8001f72ad575d14c1f88d8d7",
+      "dd869bccedc7fff6623dc28fa2daabc3a56e92c1e73effbdc1b6e7a3c112acbd",
   };
 
   for (const [slug, expectedHash] of Object.entries(PINS)) {

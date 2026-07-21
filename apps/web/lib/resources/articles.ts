@@ -406,7 +406,7 @@ Yes. Faith and sports psychology mix beautifully, on one condition: faith goes o
 
 When you get that order right, you don't get a watered-down version of either. You get an athlete who can compete with everything they have *and* lose without losing themselves — because their identity was never riding on the scoreboard. They run the race marked out for them, *"fixing our eyes on Jesus, the pioneer and perfecter of faith"* (Hebrews 12:1-2), from a victory that's already won.
 
-> **See how it works.** From Victory is a daily mental-toughness training app with faith as its foundation — for athletes ages 13-21. **Start a free trial** and see the order for yourself: identity first, performance from it. [Start your free trial →](/pricing)`,
+> **See how it works.** From Victory is a daily mental-toughness training app with faith as its foundation — for athletes ages 13 and up. **Start a free trial** and see the order for yourself: identity first, performance from it. [Start your free trial →](/pricing)`,
   },
 ];
 
