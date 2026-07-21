@@ -46,3 +46,7 @@ apps/web/test-results/
 
 # Vitest coverage (FV-380)
 apps/web/coverage/
+# Untracked local marker of unknown provenance (contents 808e3331, mtime
+# 2026-06-22) — excluded from the Codex mirror commit until its producer is
+# identified (FV-432 / KC decision 2026-07-20). Do not regenerate or interpret.
+/.hash
