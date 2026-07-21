@@ -88,12 +88,22 @@ export async function createAthlete(
   }
   const athleteId = created.user.id;
 
+  // FV-448 (13-25 expansion arc, D5 turn-18 deferral mitigation): the arc
+  // removes the upper age bound on parent-created athletes, so a parent may
+  // create a profile for someone already 18+. That stays on the minor-schema
+  // `role: "athlete"` shape (no UI change, no self-serve billing — see
+  // project_13-25-expansion-discovery memory), but the row is marked so a
+  // future turn-18 consent/takeover flow (FV-450) has a population to act on.
+  const createdAsAdultByParent =
+    (ageFromBirthdate(parsed.data.birthdate) ?? 0) >= 18;
+
   const { error: profileError } = await service.from("profiles").insert({
     id: athleteId,
     role: "athlete",
     first_name: parsed.data.first_name,
     birthdate: parsed.data.birthdate,
     sport: parsed.data.sport,
+    created_as_adult_by_parent: createdAsAdultByParent,
   });
   if (profileError) {
     const { error: rollbackError } =

@@ -394,6 +394,17 @@ export type Database = {
         Row: {
           birthdate: string | null
           created_at: string
+          // FV-448: 13-25 expansion arc, D5 turn-18 deferral mitigation.
+          // True when a parent-created role='athlete' row belonged to
+          // someone already 18+ (by birthdate) at parent-creation time.
+          // Written once at insert by createAthlete / createAthleteDirect;
+          // never updated afterward. Not exposed to any client role — the
+          // column-restricted SELECT grant on profiles (20260708120000)
+          // deliberately omits it; service_role only. Seeds the future
+          // FV-450 turn-18 consent/takeover flow.
+          // Regenerate via 'supabase gen types --linked' after migration
+          // 20260721020000_created_as_adult_by_parent.sql is applied.
+          created_as_adult_by_parent: boolean
           // FV-226: parent rows only. null on athlete rows (constraint).
           // When true, parent is excluded from the weekly digest send.
           digest_opt_out: boolean | null
@@ -435,6 +446,8 @@ export type Database = {
         Insert: {
           birthdate?: string | null
           created_at?: string
+          // FV-448: see Row comment above. Defaults false; server-role writes.
+          created_as_adult_by_parent?: boolean
           // FV-226: see Row comment above.
           digest_opt_out?: boolean | null
           // FV-226: see Row comment above.
@@ -458,6 +471,8 @@ export type Database = {
         Update: {
           birthdate?: string | null
           created_at?: string
+          // FV-448: see Row comment above. Service-role writes only.
+          created_as_adult_by_parent?: boolean
           // FV-226: see Row comment above.
           digest_opt_out?: boolean | null
           // FV-226: see Row comment above.
