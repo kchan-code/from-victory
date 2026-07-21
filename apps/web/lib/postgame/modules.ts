@@ -617,7 +617,7 @@ does not require you to act unimpressed.
 
 Notice what made the result possible: the week of preparation, the block
 that opened the run, the teammate who handled his assignment, the coach or
-parent who helped you get here.
+family member who helped you get here.
 
 ### What's true
 
