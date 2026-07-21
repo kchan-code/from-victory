@@ -23,7 +23,7 @@ export const FAQ_ITEMS: FaqEntry[] = [
   },
   {
     q: "How old does my athlete need to be?",
-    a: "Thirteen and up. We confirm age at account creation — there’s no account for anyone under 13. For every athlete aged 13 to 17, we apply minor protections by default: no ads, no behavioral analytics, and no third-party tracking, ever. Athletes 18 and older are adults, though for now a parent still sets up and manages the subscription.",
+    a: "Thirteen and up. We confirm age at account creation — there’s no account for anyone under 13. For every athlete aged 13 to 17, we apply minor protections by default: no ads, no behavioral analytics, and no third-party tracking, ever. Athletes 18 and older are adults and can create and pay for their own account, or train under a family subscription a parent manages.",
   },
   {
     q: "How much screen time is this?",
