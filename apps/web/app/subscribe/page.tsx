@@ -3,6 +3,8 @@ import Link from "next/link";
 
 import { requireSubscriber } from "@/lib/auth/guards";
 import { createCheckoutSession, createAdultCheckoutSession } from "@/lib/actions/subscription";
+import { getParentAccessLevel } from "@/lib/subscriptions/access";
+import { isSubscriptionEnforcementEnabled } from "@/lib/subscriptions/enforce";
 import { createClient } from "@/lib/supabase/server";
 import { SubscribeForm } from "@/components/subscribe/SubscribeForm";
 
@@ -37,10 +39,21 @@ export default async function SubscribePage({ searchParams }: Props) {
   // so the adult_athlete check isn't recomputed in three places.
   const isAdult = profile.role === "adult_athlete";
 
+  // FV-464: when subscription enforcement would bounce this user straight
+  // back here, the app targets below are a dead loop — send them to the
+  // public home instead. Mirrors the exact condition requireActiveAccess uses.
+  const wouldBounce =
+    isSubscriptionEnforcementEnabled() &&
+    (await getParentAccessLevel(userId)) === "blocked";
+
   // Role-aware navigation targets.
-  const dashboardHref = isAdult ? "/athlete" : "/dashboard";
+  const dashboardHref = wouldBounce ? "/" : isAdult ? "/athlete" : "/dashboard";
   // FV-328: the aria-label must match the destination (the href is role-aware).
-  const backLabel = isAdult ? "Back to training" : "Back to dashboard";
+  const backLabel = wouldBounce
+    ? "Back to home"
+    : isAdult
+      ? "Back to training"
+      : "Back to dashboard";
 
   // Role-aware checkout action.
   const checkoutAction = isAdult
