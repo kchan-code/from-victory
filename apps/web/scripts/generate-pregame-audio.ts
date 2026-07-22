@@ -103,6 +103,16 @@ import { OPENER_BB_JOY_SCRIPT } from "../components/pregame/audio/opener-bb-joy.
 import { OPENER_BB_HOPE_SCRIPT } from "../components/pregame/audio/opener-bb-hope.ts";
 import { OPENER_BE_VOCAL_SCRIPT } from "../components/pregame/audio/opener-be-vocal.ts";
 import { OPENER_BB_BE_VOCAL_SCRIPT } from "../components/pregame/audio/opener-bb-be-vocal.ts";
+import { OPENER_SHARED_CONFIDENCE_SCRIPT } from "../components/pregame/audio/opener-shared-confidence.ts";
+import { OPENER_SHARED_CALM_SCRIPT } from "../components/pregame/audio/opener-shared-calm.ts";
+import { OPENER_SHARED_COMPETE_LEVEL_SCRIPT } from "../components/pregame/audio/opener-shared-compete-level.ts";
+import { OPENER_SHARED_RESET_SCRIPT } from "../components/pregame/audio/opener-shared-reset.ts";
+import { OPENER_SHARED_COURAGE_SCRIPT } from "../components/pregame/audio/opener-shared-courage.ts";
+import { OPENER_SHARED_DECISIONS_SCRIPT } from "../components/pregame/audio/opener-shared-decisions.ts";
+import { OPENER_SHARED_LEADERSHIP_SCRIPT } from "../components/pregame/audio/opener-shared-leadership.ts";
+import { OPENER_SHARED_JOY_SCRIPT } from "../components/pregame/audio/opener-shared-joy.ts";
+import { OPENER_SHARED_HOPE_SCRIPT } from "../components/pregame/audio/opener-shared-hope.ts";
+import { OPENER_SHARED_BE_VOCAL_SCRIPT } from "../components/pregame/audio/opener-shared-be-vocal.ts";
 import {
   clearSilenceCache,
   concatMp3s,
@@ -187,6 +197,17 @@ const SCRIPTS: AudioScript[] = [
   // FV-124: Be more Vocal openers — hockey + basketball variants.
   OPENER_BE_VOCAL_SCRIPT,
   OPENER_BB_BE_VOCAL_SCRIPT,
+  // FV-466: sport-neutral shared openers (fallback for all non-hockey/non-bb sports).
+  OPENER_SHARED_CONFIDENCE_SCRIPT,
+  OPENER_SHARED_CALM_SCRIPT,
+  OPENER_SHARED_COMPETE_LEVEL_SCRIPT,
+  OPENER_SHARED_RESET_SCRIPT,
+  OPENER_SHARED_COURAGE_SCRIPT,
+  OPENER_SHARED_DECISIONS_SCRIPT,
+  OPENER_SHARED_LEADERSHIP_SCRIPT,
+  OPENER_SHARED_JOY_SCRIPT,
+  OPENER_SHARED_HOPE_SCRIPT,
+  OPENER_SHARED_BE_VOCAL_SCRIPT,
   // Cell-specific session scripts — selected by (position, adversity).
   // Forward (10 cells)
   SESSION_FORWARD_MISSED_CHANCE_SCRIPT,
@@ -621,6 +642,19 @@ const OPENER_SLUGS = [
   // FV-124: Be more Vocal openers — hockey + basketball.
   "opener-be-vocal",
   "opener-bb-be-vocal",
+  // FV-466: sport-neutral shared openers — the NEED_OPENER_SLUGS fallback
+  // for every sport without its own opener set. Rendered from SCRIPTS above,
+  // then loudnorm-passed to clips/ like the hockey/basketball openers.
+  "opener-shared-confidence",
+  "opener-shared-calm",
+  "opener-shared-compete-level",
+  "opener-shared-reset",
+  "opener-shared-courage",
+  "opener-shared-decisions",
+  "opener-shared-leadership",
+  "opener-shared-joy",
+  "opener-shared-hope",
+  "opener-shared-be-vocal",
 ] as const;
 
 // Keep the Phase 1 const for backward compat references inside generateClips.

@@ -17,7 +17,7 @@ import {
 } from "../audio-playlist";
 
 import {
-  NEED_OPENER_SLUGS,
+  resolveOpenerSlug,
   ANCHOR_OPTION_SLUGS,
   SELFTALK_OPTION_SLUGS,
   CUEWORD_OPTION_SLUGS,
@@ -51,7 +51,11 @@ function catalogEntryWithPhases(
 // removed the test fails at runtime, which is the intended regression signal.
 // reason: noUncheckedIndexedAccess widens Record<string,string> lookups to
 //   string|undefined; we assert presence here rather than loosening tsconfig.
-const REAL_OPENER_CONFIDENCE = NEED_OPENER_SLUGS["Confidence"]!; // "opener-confidence"
+// These fixtures exercise hockey sessions (Forward / puck adversities), and
+// the default sport is hockey — so resolve the opener the same way the
+// resolver under test does (FV-466: NEED_OPENER_SLUGS now holds the
+// sport-neutral opener-shared-* fallbacks; hockey resolves via override).
+const REAL_OPENER_CONFIDENCE = resolveOpenerSlug("Confidence", "hockey")!; // "opener-confidence"
 const REAL_ANCHOR_EXHALE = ANCHOR_OPTION_SLUGS["Long exhale"]!;   // "anc-long-exhale"
 const REAL_ST_01 = SELFTALK_OPTION_SLUGS["You're okay. Next shift."]!; // "st-01"
 const REAL_CW_STEADY = CUEWORD_OPTION_SLUGS["Steady"]!; // "cw-steady"

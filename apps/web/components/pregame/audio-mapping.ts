@@ -12,25 +12,29 @@ import type { NeedToday } from "./types";
 import { getSportConfig, type Sport } from "./sport-registry";
 
 // ---------------------------------------------------------------------------
-// Sport-aware opener slug resolution (FV-117)
+// Sport-aware opener slug resolution (FV-117, FV-466)
 // ---------------------------------------------------------------------------
 //
-// Basketball has dedicated opener clips for 8 of the 9 needs (FV-116 + FV-120).
-// "Physical courage" and "Better decisions with the ball" were rendered in FV-116.
-// "Confidence", "Compete level", "Reset after mistakes", "Leadership", "Joy",
-// and "Hope" were rendered in FV-120.
-// "Calm" intentionally reuses opener-calm (no basketball-specific variant needed).
+// Three tiers (FV-466):
+//   1. Hockey → HOCKEY_OPENER_OVERRIDES (the original opener-* clips, which
+//      are hockey-specific: "next shift", "loose puck", "the C, the A").
+//   2. Basketball → BASKETBALL_OPENER_OVERRIDES (opener-bb-*, FV-116/120/124),
+//      falling back to the shared clips for "Calm".
+//   3. Everything else → NEED_OPENER_SLUGS, the sport-NEUTRAL opener-shared-*
+//      clips. Any new sport gets a leak-free fallback by default.
 //
-// Hockey resolution is unchanged: always uses NEED_OPENER_SLUGS directly.
+// History: the original opener-* clips used to BE the shared fallback, which
+// leaked hockey language into football/golf (and basketball "Calm") — see
+// FV-466 and pregame-opener-sport-audit.md.
 
 const BASKETBALL_OPENER_OVERRIDES: Partial<Record<NeedToday, string>> = {
   // FV-116 (courage + decisions rendered first)
   "Physical courage": "opener-bb-courage",
   "Better decisions with the ball": "opener-bb-decisions",
   // FV-120 (remaining 6 sport-specific variants)
-  // NOTE: "Calm" is intentionally absent — it reuses opener-calm via
-  // the NEED_OPENER_SLUGS fallback in resolveOpenerSlug (no basketball-specific
-  // content change needed for that need).
+  // NOTE: "Calm" is intentionally absent — it falls back to the sport-neutral
+  // opener-shared-calm via NEED_OPENER_SLUGS (FV-466; the old opener-calm
+  // fallback closed with "One puck. One shift.").
   "Confidence": "opener-bb-confidence",
   "Compete level": "opener-bb-compete-level",
   "Reset after mistakes": "opener-bb-reset",
@@ -41,16 +45,38 @@ const BASKETBALL_OPENER_OVERRIDES: Partial<Record<NeedToday, string>> = {
   "Be more Vocal": "opener-bb-be-vocal",
 };
 
+// FV-466: the original opener-* clips are hockey's sport-specific set.
+// Keyed by hockey's 10 needs; MP3s are unchanged (byte-identical), only
+// their resolution tier moved. The default sport is "hockey" everywhere,
+// so legacy call sites keep hearing exactly these clips.
+const HOCKEY_OPENER_OVERRIDES: Partial<Record<NeedToday, string>> = {
+  Confidence: "opener-confidence",
+  Calm: "opener-calm",
+  "Compete level": "opener-compete-level",
+  "Reset after mistakes": "opener-reset",
+  "Physical courage": "opener-courage",
+  "Better puck decisions": "opener-decisions",
+  Leadership: "opener-leadership",
+  Joy: "opener-joy",
+  Hope: "opener-hope",
+  "Be more Vocal": "opener-be-vocal",
+};
+
 /**
  * Resolve the opener slug for a given (need, sport) pair.
- * Basketball uses sport-specific clips where available (FV-116);
- * all other combinations fall back to the shared NEED_OPENER_SLUGS map.
+ * Hockey and basketball use sport-specific clips where available
+ * (FV-466 / FV-116); all other combinations fall back to the
+ * sport-neutral opener-shared-* clips in NEED_OPENER_SLUGS.
  * Returns null for unknown needs.
  */
 export function resolveOpenerSlug(
   need: string,
   sport: Sport = "hockey",
 ): string | null {
+  if (sport === "hockey") {
+    const override = HOCKEY_OPENER_OVERRIDES[need as NeedToday] ?? null;
+    if (override) return override;
+  }
   if (sport === "basketball") {
     const override =
       BASKETBALL_OPENER_OVERRIDES[need as NeedToday] ?? null;
@@ -142,7 +168,7 @@ export const CUEWORD_OPTION_SLUGS: Record<string, string> = {
 // new manifestVersion printed to stdout, and update MANIFEST_VERSION here
 // AND in sw.js to match. AUDIO_CACHE_BUST is NOT bumped for clip regens
 // (see the retirement note below).
-export const MANIFEST_VERSION = "0b21a5b4"; // sync with sw.js:MANIFEST_VERSION
+export const MANIFEST_VERSION = "3332f06d"; // sync with sw.js:MANIFEST_VERSION
 
 // AUDIO_CACHE_BUST — RETIRED for per-clip URL versioning (FV-142).
 // Clips are now content-addressed (<slug>.<hash8>.mp3) and need no ?v=.
@@ -158,34 +184,33 @@ export function audioAssetUrl(slug: string, ext: "mp3" | "json"): string {
   return `/audio/pregame/${slug}.${ext}?v=${AUDIO_CACHE_BUST}`;
 }
 
-// NEED_OPENER_SLUGS contains the HOCKEY (and shared) opener slugs.
-// Basketball sport-specific overrides are handled by resolveOpenerSlug() above.
-// "Better decisions with the ball" maps to the same opener-decisions clip as
-// "Better puck decisions" (sport-neutral scripture; basketball-specific variant
-// in BASKETBALL_OPENER_OVERRIDES above takes precedence via resolveOpenerSlug).
+// NEED_OPENER_SLUGS is the sport-NEUTRAL fallback: the opener-shared-* clips
+// (FV-466), safe for any sport. Hockey and basketball sport-specific overrides
+// are handled by resolveOpenerSlug() above. All the decisions-family needs map
+// to the same opener-shared-decisions clip (Proverbs 3:5-6).
 export const NEED_OPENER_SLUGS: Record<NeedToday, string> = {
-  Confidence: "opener-confidence",
-  Calm: "opener-calm",
-  "Compete level": "opener-compete-level",
-  "Reset after mistakes": "opener-reset",
-  "Physical courage": "opener-courage",
-  "Better puck decisions": "opener-decisions",
-  "Better decisions with the ball": "opener-decisions",
-  // Baseball (FV-94) — reuses the sport-neutral decisions opener.
-  "Better decisions at the plate": "opener-decisions",
-  // Golf (FV-265) — reuses the sport-neutral decisions opener.
-  "Better course management": "opener-decisions",
-  // Football (v2 dormant) — reuses the sport-neutral decisions opener.
-  "Better reads": "opener-decisions",
-  // Swimming + Track & Field (v2 dormant) — reuse the sport-neutral opener.
-  "Better race execution": "opener-decisions",
-  // Golf "Trust my swing" (FV-294) — reuses the sport-neutral decisions opener
-  // (same Proverbs 3:5-6 family). A bespoke opener-trust-swing is a later by-ear.
-  "Trust my swing": "opener-decisions",
-  Leadership: "opener-leadership",
-  Joy: "opener-joy",
-  Hope: "opener-hope",
-  "Be more Vocal": "opener-be-vocal",
+  Confidence: "opener-shared-confidence",
+  Calm: "opener-shared-calm",
+  "Compete level": "opener-shared-compete-level",
+  "Reset after mistakes": "opener-shared-reset",
+  "Physical courage": "opener-shared-courage",
+  "Better puck decisions": "opener-shared-decisions",
+  "Better decisions with the ball": "opener-shared-decisions",
+  // Baseball (FV-94)
+  "Better decisions at the plate": "opener-shared-decisions",
+  // Golf (FV-265)
+  "Better course management": "opener-shared-decisions",
+  // Football
+  "Better reads": "opener-shared-decisions",
+  // Swimming + Track & Field (v2 dormant)
+  "Better race execution": "opener-shared-decisions",
+  // Golf "Trust my swing" (FV-294) — same Proverbs 3:5-6 family. A bespoke
+  // opener-trust-swing is a later by-ear.
+  "Trust my swing": "opener-shared-decisions",
+  Leadership: "opener-shared-leadership",
+  Joy: "opener-shared-joy",
+  Hope: "opener-shared-hope",
+  "Be more Vocal": "opener-shared-be-vocal",
 };
 
 // ADVERSITY_SLUG_FRAGMENTS and cellSlugFor have moved to sport-registry.ts

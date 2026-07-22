@@ -1,0 +1,10 @@
+{
+  "slug": "opener-shared-reset",
+  "durationSec": 56.2,
+  "phases": [
+    {
+      "phase": "intro",
+      "startSec": 0
+    }
+  ]
+}
