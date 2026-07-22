@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "0b21a5b4",
+  "manifestVersion": "9b021e0a",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -5926,6 +5926,106 @@
       "url": "/audio/pregame/clips/pp-football-focus-next-play.429988ea.mp3",
       "durationSec": 1.392,
       "phases": []
+    },
+    "opener-shared-confidence": {
+      "url": "/audio/pregame/clips/opener-shared-confidence.6b374914.mp3",
+      "durationSec": 61.816,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-shared-calm": {
+      "url": "/audio/pregame/clips/opener-shared-calm.a9077909.mp3",
+      "durationSec": 68.56,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-shared-compete-level": {
+      "url": "/audio/pregame/clips/opener-shared-compete-level.baa22e99.mp3",
+      "durationSec": 57.784,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-shared-reset": {
+      "url": "/audio/pregame/clips/opener-shared-reset.7f437d87.mp3",
+      "durationSec": 56.2,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-shared-courage": {
+      "url": "/audio/pregame/clips/opener-shared-courage.ba51c347.mp3",
+      "durationSec": 63.904,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-shared-decisions": {
+      "url": "/audio/pregame/clips/opener-shared-decisions.4f3a5b48.mp3",
+      "durationSec": 51.976,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-shared-leadership": {
+      "url": "/audio/pregame/clips/opener-shared-leadership.4c3d1ee1.mp3",
+      "durationSec": 69.472,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-shared-joy": {
+      "url": "/audio/pregame/clips/opener-shared-joy.b84ba8d3.mp3",
+      "durationSec": 62.464,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-shared-hope": {
+      "url": "/audio/pregame/clips/opener-shared-hope.8b57366d.mp3",
+      "durationSec": 69.928,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "opener-shared-be-vocal": {
+      "url": "/audio/pregame/clips/opener-shared-be-vocal.302df0e2.mp3",
+      "durationSec": 67.504,
+      "phases": [
+        {
+          "phase": "intro",
+          "offsetSec": 0
+        }
+      ]
     }
   },
   "templates": [

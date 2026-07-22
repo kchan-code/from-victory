@@ -805,7 +805,8 @@ describe("basketball compositional clip catalog presence (FV-116)", () => {
 // ---------------------------------------------------------------------------
 // 11. Basketball opener parity (FV-120) — the 6 new opener-bb-* clips are in
 //     the catalog with real files, and resolveOpenerSlug returns them for
-//     basketball. "Calm" intentionally absent (reuses opener-calm via fallback).
+//     basketball. "Calm" intentionally absent (falls back to the sport-neutral
+//     opener-shared-calm, FV-466).
 // ---------------------------------------------------------------------------
 
 describe("basketball opener parity (FV-120)", () => {
@@ -841,15 +842,74 @@ describe("basketball opener parity (FV-120)", () => {
     expect(mismatches).toEqual([]);
   });
 
-  it("resolveOpenerSlug('Calm', 'basketball') falls back to opener-calm (no bb variant)", () => {
-    // "Calm" intentionally has no basketball-specific opener — it reuses the
-    // shared opener-calm clip. resolveOpenerSlug must NOT return a bb-calm slug
-    // that doesn't exist.
-    expect(resolveOpenerSlug("Calm", "basketball")).toBe("opener-calm");
+  it("resolveOpenerSlug('Calm', 'basketball') falls back to opener-shared-calm (no bb variant)", () => {
+    // "Calm" intentionally has no basketball-specific opener — it falls back to
+    // the sport-neutral opener-shared-calm clip (FV-466; the old opener-calm
+    // fallback was hockey-specific: "One puck. One shift."). resolveOpenerSlug
+    // must NOT return a bb-calm slug that doesn't exist.
+    expect(resolveOpenerSlug("Calm", "basketball")).toBe("opener-shared-calm");
   });
 
-  it("opener-calm is in the catalog (the basketball Calm fallback must resolve)", () => {
-    expect(catalogFileErr("opener-calm")).toBeNull();
+  it("opener-shared-calm is in the catalog (the basketball Calm fallback must resolve)", () => {
+    expect(catalogFileErr("opener-shared-calm")).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 11b. Shared sport-neutral openers (FV-466) — the 10 opener-shared-* clips
+//      are in the catalog with real files, non-hockey/non-bb sports resolve
+//      to them, and hockey keeps its original openers. Guards against the
+//      pre-FV-466 leak where football/golf played hockey-specific openers
+//      ("the C, the A, the ice time, the line").
+// ---------------------------------------------------------------------------
+
+describe("shared sport-neutral openers (FV-466)", () => {
+  const SHARED_OPENERS: Array<{ need: string; slug: string }> = [
+    { need: "Confidence",           slug: "opener-shared-confidence" },
+    { need: "Calm",                 slug: "opener-shared-calm" },
+    { need: "Compete level",        slug: "opener-shared-compete-level" },
+    { need: "Reset after mistakes", slug: "opener-shared-reset" },
+    { need: "Physical courage",     slug: "opener-shared-courage" },
+    { need: "Better reads",         slug: "opener-shared-decisions" },
+    { need: "Leadership",           slug: "opener-shared-leadership" },
+    { need: "Joy",                  slug: "opener-shared-joy" },
+    { need: "Hope",                 slug: "opener-shared-hope" },
+    { need: "Be more Vocal",        slug: "opener-shared-be-vocal" },
+  ];
+
+  it("all 10 opener-shared-* clips are in the catalog with real non-zero files", () => {
+    const broken: string[] = [];
+    for (const { slug } of SHARED_OPENERS) {
+      const err = catalogFileErr(slug);
+      if (err) broken.push(`${slug}: ${err}`);
+    }
+    expect(broken).toEqual([]);
+  });
+
+  it("football resolves every need to a shared (or sport-neutral) opener, never a hockey clip", () => {
+    const mismatches: string[] = [];
+    for (const { need, slug } of SHARED_OPENERS) {
+      const resolved = resolveOpenerSlug(need, "football");
+      if (resolved !== slug) {
+        mismatches.push(
+          `resolveOpenerSlug("${need}", "football") = "${resolved}", expected "${slug}"`,
+        );
+      }
+    }
+    expect(mismatches).toEqual([]);
+  });
+
+  it("golf decisions-family needs resolve to opener-shared-decisions", () => {
+    expect(resolveOpenerSlug("Better course management", "golf")).toBe("opener-shared-decisions");
+    expect(resolveOpenerSlug("Trust my swing", "golf")).toBe("opener-shared-decisions");
+  });
+
+  it("hockey keeps its original sport-specific openers (byte-identical clips)", () => {
+    expect(resolveOpenerSlug("Leadership", "hockey")).toBe("opener-leadership");
+    expect(resolveOpenerSlug("Calm", "hockey")).toBe("opener-calm");
+    expect(resolveOpenerSlug("Better puck decisions", "hockey")).toBe("opener-decisions");
+    // Default sport is hockey — legacy call sites keep hearing the originals.
+    expect(resolveOpenerSlug("Leadership")).toBe("opener-leadership");
   });
 });
 
@@ -865,7 +925,7 @@ describe("basketball opener parity (FV-120)", () => {
 // ---------------------------------------------------------------------------
 
 describe("catalog count (multi-sport, FV-266)", () => {
-  it("catalog is fully categorized (no orphans) and totals 507 entries", () => {
+  it("catalog is fully categorized (no orphans) and totals 517 entries", () => {
     const keys = Object.keys(catalog);
     const n = (re: RegExp) => keys.filter((k) => re.test(k)).length;
     const breakdown = {
@@ -878,7 +938,7 @@ describe("catalog count (multi-sport, FV-266)", () => {
       hmGolf: n(/^hm-glf-/), //                     30 — golf cells (FV-266)
       hmFootball: n(/^hm-ftb-/), //                 67 — football cells (FV-203, dormant sport)
       practice: n(/^pp-/), //                       68 — pre-practice clips (all sports + variations)
-      openers: n(/^opener-/), //                    19 — need openers (incl. basketball variants)
+      openers: n(/^opener-/), //                    29 — need openers (incl. basketball variants + 10 shared sport-neutral, FV-466)
       cueWord: n(/^cw-/), //                        20 — cue-word reset/sendoff
       anchor: n(/^anc-/), //                        12 — reset-anchor clips (+3 golf anc-glf-* FV-303)
       selfTalk: n(/^st-/), //                       10 — self-talk clips (+st-glf-01 FV-303, +st-glf-02 FV-294)
@@ -891,7 +951,7 @@ describe("catalog count (multi-sport, FV-266)", () => {
     // Every catalog key falls into exactly one bucket — catches typos/orphans.
     expect(uncategorized, `uncategorized clips: ${uncategorized.join(", ")}`).toEqual([]);
     expect(sum).toBe(keys.length);
-    expect(keys).toHaveLength(507);
+    expect(keys).toHaveLength(517);
   });
 });
 

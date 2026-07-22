@@ -75,6 +75,16 @@ import { OPENER_BB_JOY_SCRIPT } from "../components/pregame/audio/opener-bb-joy.
 import { OPENER_BB_HOPE_SCRIPT } from "../components/pregame/audio/opener-bb-hope.ts";
 import { OPENER_BE_VOCAL_SCRIPT } from "../components/pregame/audio/opener-be-vocal.ts";
 import { OPENER_BB_BE_VOCAL_SCRIPT } from "../components/pregame/audio/opener-bb-be-vocal.ts";
+import { OPENER_SHARED_CONFIDENCE_SCRIPT } from "../components/pregame/audio/opener-shared-confidence.ts";
+import { OPENER_SHARED_CALM_SCRIPT } from "../components/pregame/audio/opener-shared-calm.ts";
+import { OPENER_SHARED_COMPETE_LEVEL_SCRIPT } from "../components/pregame/audio/opener-shared-compete-level.ts";
+import { OPENER_SHARED_RESET_SCRIPT } from "../components/pregame/audio/opener-shared-reset.ts";
+import { OPENER_SHARED_COURAGE_SCRIPT } from "../components/pregame/audio/opener-shared-courage.ts";
+import { OPENER_SHARED_DECISIONS_SCRIPT } from "../components/pregame/audio/opener-shared-decisions.ts";
+import { OPENER_SHARED_LEADERSHIP_SCRIPT } from "../components/pregame/audio/opener-shared-leadership.ts";
+import { OPENER_SHARED_JOY_SCRIPT } from "../components/pregame/audio/opener-shared-joy.ts";
+import { OPENER_SHARED_HOPE_SCRIPT } from "../components/pregame/audio/opener-shared-hope.ts";
+import { OPENER_SHARED_BE_VOCAL_SCRIPT } from "../components/pregame/audio/opener-shared-be-vocal.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -111,6 +121,17 @@ const ALL_SCRIPTS: AudioScript[] = [
   OPENER_BB_HOPE_SCRIPT,
   OPENER_BE_VOCAL_SCRIPT,
   OPENER_BB_BE_VOCAL_SCRIPT,
+  // FV-466: sport-neutral shared openers (fallback for all non-hockey/non-bb sports).
+  OPENER_SHARED_CONFIDENCE_SCRIPT,
+  OPENER_SHARED_CALM_SCRIPT,
+  OPENER_SHARED_COMPETE_LEVEL_SCRIPT,
+  OPENER_SHARED_RESET_SCRIPT,
+  OPENER_SHARED_COURAGE_SCRIPT,
+  OPENER_SHARED_DECISIONS_SCRIPT,
+  OPENER_SHARED_LEADERSHIP_SCRIPT,
+  OPENER_SHARED_JOY_SCRIPT,
+  OPENER_SHARED_HOPE_SCRIPT,
+  OPENER_SHARED_BE_VOCAL_SCRIPT,
   SESSION_FORWARD_MISSED_CHANCE_SCRIPT,
   SESSION_FORWARD_TURNOVER_SCRIPT,
   SESSION_FORWARD_BEATEN_WIDE_SCRIPT,

@@ -1058,10 +1058,10 @@ export const GOLF_CONFIG: SportConfig = {
   // FV-294: golf is an individual sport — drop the team-sport needs
   // ("Leadership", "Physical courage", "Be more Vocal") and add "Trust my swing"
   // (the golf-true courage: commitment, not contact). 8 needs. "Better puck
-  // decisions" → "Better course management". Golf need-openers REUSE the shared
-  // opener clips (resolveOpenerSlug falls back to NEED_OPENER_SLUGS for
-  // non-basketball sports); "Trust my swing" → opener-decisions (same Proverbs
-  // 3:5-6 family — see NEED_OPENER_SLUGS / NEED_VERSE).
+  // decisions" → "Better course management". Golf need-openers use the
+  // sport-neutral opener-shared-* clips (FV-466; resolveOpenerSlug falls back
+  // to NEED_OPENER_SLUGS); "Trust my swing" → opener-shared-decisions (same
+  // Proverbs 3:5-6 family — see NEED_OPENER_SLUGS / NEED_VERSE).
   needs: [
     "Confidence",
     "Calm",
@@ -1474,8 +1474,8 @@ export const FOOTBALL_CONFIG: SportConfig = {
   // "Better reads" (the cross-position football decisions need — QB reads the
   // defense, the back reads his blocks, the DB reads the route); "Physical
   // courage" is a strong native fit in football (unlike golf) and stays; all
-  // other 8 needs are sport-neutral and shared. Football reuses the shared
-  // opener clips (resolveOpenerSlug falls back to NEED_OPENER_SLUGS).
+  // other 8 needs are shared. Football uses the sport-neutral opener-shared-*
+  // clips (FV-466; resolveOpenerSlug falls back to NEED_OPENER_SLUGS).
   needs: [
     "Confidence",
     "Calm",

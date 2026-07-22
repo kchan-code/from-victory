@@ -561,8 +561,9 @@ describe("FV-294: golf individual-sport needs + positive-plays copy", () => {
   });
 
   it("'Trust my swing' reuses the shared decisions opener (FV-294 option A)", () => {
-    expect(resolveOpenerSlug("Trust my swing", "golf")).toBe("opener-decisions");
-    expect(NEED_OPENER_SLUGS["Trust my swing"]).toBe("opener-decisions");
+    // FV-466: the shared fallback is now the sport-neutral opener-shared-* set.
+    expect(resolveOpenerSlug("Trust my swing", "golf")).toBe("opener-shared-decisions");
+    expect(NEED_OPENER_SLUGS["Trust my swing"]).toBe("opener-shared-decisions");
   });
 
   it("'Trust my swing' has a NEED_VERSE entry on Proverbs 3:5-6 with the ordering eyebrow", () => {
@@ -815,12 +816,13 @@ describe("FV-117: resolveOpenerSlug — sport-keyed opener resolution", () => {
     );
   });
 
-  it("hockey has no 'Better decisions with the ball' option so it falls back to opener-decisions", () => {
+  it("hockey has no 'Better decisions with the ball' option so it falls back to opener-shared-decisions", () => {
     // "Better decisions with the ball" is a basketball-only label, but the
-    // NeedToday union now includes it. Hockey resolution falls back to the
-    // shared map (opener-decisions) via NEED_OPENER_SLUGS.
+    // NeedToday union now includes it. It's not in HOCKEY_OPENER_OVERRIDES
+    // (hockey never offers it), so resolution falls back to the sport-neutral
+    // shared map (opener-shared-decisions, FV-466) via NEED_OPENER_SLUGS.
     expect(resolveOpenerSlug("Better decisions with the ball", "hockey")).toBe(
-      "opener-decisions",
+      "opener-shared-decisions",
     );
   });
 
@@ -832,8 +834,8 @@ describe("FV-117: resolveOpenerSlug — sport-keyed opener resolution", () => {
     );
   });
 
-  it("basketball 'Calm' falls back to opener-calm", () => {
-    expect(resolveOpenerSlug("Calm", "basketball")).toBe("opener-calm");
+  it("basketball 'Calm' falls back to the sport-neutral opener-shared-calm (FV-466)", () => {
+    expect(resolveOpenerSlug("Calm", "basketball")).toBe("opener-shared-calm");
   });
 
   it("returns null for an unknown need string", () => {
@@ -846,9 +848,9 @@ describe("FV-117: resolveOpenerSlug — sport-keyed opener resolution", () => {
     expect(resolveOpenerSlug("Physical courage")).toBe("opener-courage");
   });
 
-  it("NEED_OPENER_SLUGS contains 'Better decisions with the ball' mapping to opener-decisions", () => {
+  it("NEED_OPENER_SLUGS contains 'Better decisions with the ball' mapping to opener-shared-decisions", () => {
     // Ensures the NeedToday union extension is fully covered in the shared map.
-    expect(NEED_OPENER_SLUGS["Better decisions with the ball"]).toBe("opener-decisions");
+    expect(NEED_OPENER_SLUGS["Better decisions with the ball"]).toBe("opener-shared-decisions");
   });
 
   it("every hockey need has an opener slug via resolveOpenerSlug", () => {
