@@ -168,7 +168,7 @@ export const CUEWORD_OPTION_SLUGS: Record<string, string> = {
 // new manifestVersion printed to stdout, and update MANIFEST_VERSION here
 // AND in sw.js to match. AUDIO_CACHE_BUST is NOT bumped for clip regens
 // (see the retirement note below).
-export const MANIFEST_VERSION = "9b021e0a"; // sync with sw.js:MANIFEST_VERSION
+export const MANIFEST_VERSION = "3332f06d"; // sync with sw.js:MANIFEST_VERSION
 
 // AUDIO_CACHE_BUST — RETIRED for per-clip URL versioning (FV-142).
 // Clips are now content-addressed (<slug>.<hash8>.mp3) and need no ?v=.

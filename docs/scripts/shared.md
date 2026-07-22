@@ -353,7 +353,7 @@ _(pause: 1s)_
 _(pause: 1s)_
 2. Hear this from 1 Thessalonians 5. Paul was writing to a young church facing real hardship: Rejoice always. Pray continually. Give thanks in all circumstances. For this is God’s will for you in Christ Jesus.
 _(pause: 1s)_
-3. Joy does not mean you fake a smile or pretend the hard moment did not happen. Paul ties joy to prayer and thanksgiving — staying connected to God in the middle of what is hard.
+3. Joy does not mean you fake a smile or pretend the hard moment did not happen. It means staying connected to God in the middle of what is hard — Paul ties joy to prayer and thanksgiving.
 _(pause: 1s)_
 4. So remember the gift. A body that can move. A team around you. A sport you love. A chance to compete.
 _(pause: 1s)_

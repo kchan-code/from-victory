@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "9b021e0a",
+  "manifestVersion": "3332f06d",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -5998,8 +5998,8 @@
       ]
     },
     "opener-shared-joy": {
-      "url": "/audio/pregame/clips/opener-shared-joy.b84ba8d3.mp3",
-      "durationSec": 62.464,
+      "url": "/audio/pregame/clips/opener-shared-joy.163e534d.mp3",
+      "durationSec": 61.192,
       "phases": [
         {
           "phase": "intro",

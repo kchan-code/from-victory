@@ -50,7 +50,7 @@ export const OPENER_SHARED_JOY_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 1 },
     {
       type: "speech",
-      text: "Joy does not mean you fake a smile or pretend the hard moment did not happen. Paul ties joy to prayer and thanksgiving — staying connected to God in the middle of what is hard.",
+      text: "Joy does not mean you fake a smile or pretend the hard moment did not happen. It means staying connected to God in the middle of what is hard — Paul ties joy to prayer and thanksgiving.",
       speed: 1.1,
       instructions: NARRATIVE_INSTRUCTIONS,
     },
