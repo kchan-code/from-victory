@@ -1,60 +1,55 @@
 # From Victory — Content Pillars
 
-*Dated: 2026-06-22 (revised) · Built on APPROVED positioning (brand.md, 2026-06-11) · Voice: kc-voice + faith-forward, pregame centering*
+*Dated: 2026-07-14 (rebuilt under the 5-3-2 lane contract, ADE-183) · Built on APPROVED positioning (brand.md, 2026-06-11) · Voice: house-voice + faith-forward, pregame centering · Supersedes the 2026-06-22 pillars.*
 
-> **Tone direction (revised 2026-06-22):** Content leads with faith on the field — not with athlete pain as the hook. The pregame session is a faith practice first, a performance tool second. Lean into the cultural moment: more athletes than ever are being open about their faith publicly. Content celebrates that and shows what it looks like in practice, on game day, the moment before the whistle.
-
----
-
-## The three content pillars
-
-### Pillar 1 — Faith on the field
-*Ladders to brand Pillar 1: "Identity is the foundation, not a feature." The cultural moment.*
-
-- **Hook:** More athletes are talking about their faith. Here is what that looks like the moment before the whistle blows.
-- **What it proves:** There is a real cultural shift happening. Shedeur Sanders prays before every snap. Athletes post their faith openly. From Victory is the daily practice that makes that faith actionable in the competing moment — not just a postgame interview.
-- **Personas:** Caleb, Grace. Athletes who already believe and want their faith to show up in their sport, not just their church.
-- **JTBD:** "I believe in Christ. I want that to mean something when I step on the field. Show me what that looks like."
-- **Formats:** Short-form video of an athlete getting centered before competition. "Here is what faith looks like on the field" framing. Scripture + sport moment pairings. The cultural conversation — engage athletes who are open about their faith publicly.
-- **Always-say:** from victory not for victory · secure identity · rooted in Christ.
-
-### Pillar 2 — The pregame centering ritual
-*Ladders to brand Pillar 2: "A guided pregame session you can compete with: breath, visualization, identity, and your focus cue."*
-
-- **Hook:** Before you step on the field. A five-minute pregame session built for the believing athlete.
-- **What it proves:** Read-and-reflect faith apps stop at the verse. From Victory gives you a guided pregame session (breath, a sport- and position-specific visualization, identity, and a focus cue) you run in the last few minutes before you compete. This is the practice underneath the prayer. It is also the highest-value unclaimed content cluster: no app explains this pregame ritual in SEO/citation-legible terms.
-- **Personas:** Caleb, Grace (the athletes who run the session). Coach Marcus (the leader who hands it to a huddle).
-- **JTBD:** "Give me a Scripture-anchored ritual I can run before I compete, so I step on the field already settled."
-- **Formats:** The signature centering Reel (calm, deliberate — what it looks like to run the pregame session before a game). Step-by-step walkthroughs. Sport-specific pregame rituals (before a face-off, before a free throw, before a tee shot). The pregame protocol explainer (article + Reel — the answer-engine anchor for this cluster).
-- **Always-say:** daily rhythm · reset · one thing inside your control · breath, visualization, identity, and your focus cue.
-
-### Pillar 3 — Built for the believing athlete
-*Ladders to brand Pillar 3: "Built for the believing athlete, not the masses." The niche.*
-
-- **Hook:** Your faith and your sport. Built for both. Not an afterthought in a generic wellness app.
-- **What it proves:** The big mindset apps have no faith layer. The devotional apps have no game-day layer. From Victory is built for athletes who want both — and what it refuses to say (no grind, no shame, no streaks) is the proof of what it is. This pillar speaks to the gatekeeper and the parent as much as the athlete.
-- **Personas:** Coach Marcus (peer-level, hand it to your huddle). Diane (parent who wants faith-rooted confidence, not hustle culture). Grace (brings teammates into the practice).
-- **JTBD:** "Give me a trusted daily tool for believing athletes I can hand my huddle." And: "Give my kid something that grounds their confidence in Christ, not the scoreboard."
-- **Formats:** Leader pitch post ("your athletes already read the verse — here is the rhythm between the verse and the field"). Parent-facing carousels. The "what we refuse to say" values post. Sport-by-sport posts.
-- **Always-say:** the never-say list as brand work — no hustle, no grind, no earn-your-worth, no streak, no shame.
+> **Why the rebuild.** KC's review of the first produced batch: every asset pivoted to the app and ended in the same trial CTA. Packaging the app is not a content plan. The feed now runs on the 5-3-2 mix: per 10 social posts, 5 curate, 3 create, 2 personal, and at most 1 dedicated sell post per 10 during launch weeks. CTAs and the app name live in the sell lane only. The test for everything else: **still worth the reader's time if the app did not exist.**
+>
+> The tone direction from 2026-06-22 stands: faith on the field leads, never pain-first hooks. The cultural moment (the 2026 World Cup prayer circles, Pulisic's Bible Time, athletes public about their faith everywhere) is the feed's engine, and most weeks it is other people's moments, shared with credit and a take.
 
 ---
 
-## How the pillars map
+## The five pillars
 
-| Content pillar | Brand pillar | Primary personas | Primary JTBD | Best formats |
-|---|---|---|---|---|
-| 1 — Faith on the field | P1 Identity, not a feature | Caleb, Grace | My faith shows up when I compete | Cultural-moment Reels, athlete faith stories, Scripture + sport pairings |
-| 2 — The pregame centering ritual | P2 Guided pregame session | Caleb, Grace, Marcus | A repeatable pregame practice rooted in Scripture | Centering Reels, step-by-step walkthroughs, pregame protocol explainer |
-| 3 — Built for the believing athlete | P3 For the believer, not the masses | Marcus, Diane, Grace | A trusted tool built for this athlete specifically | Leader pitch post, values contrast, parent carousels, sport-by-sport |
+### Pillar 1 — Faith on the field *(curate + create · the cultural moment)*
+- **What it is:** Athletes are living their faith in the open. This pillar celebrates it: the prayer circle at midfield, the postgame testimony, the verse on the wrist tape. Mostly curated (link, react, quote with credit, never re-upload), plus original identity teaching.
+- **Personas:** Caleb, Grace. **Ladders to:** brand pillar 1, "Identity is the foundation."
+- **Zero product.** No app mentions, no CTAs, ever.
+
+### Pillar 2 — The pregame practice *(create · scripture + sport teaching, practical craft)*
+- **What it is:** Generous teaching. A verse taught into a competing moment. A reset an athlete can run in the parking lot before tryouts. It works whether or not you ever download anything, which is exactly why it earns the follow.
+- **Personas:** Caleb, Grace. **Ladders to:** brand pillar 2, the daily rhythm.
+- **Zero product.** The practice is taught in full, not teased.
+
+### Pillar 3 — The huddle and the drive home *(create · coach + parent guidance)*
+- **What it is:** Pure audience territory. How to lead a believing huddle. What to say on the drive home after a bad game. Serving Marcus and Diane directly, no product angle.
+- **Personas:** Coach Marcus, Diane. **Ladders to:** nothing. That is the point.
+
+### Pillar 4 — Hockey dad diary *(personal · the human behind the brand)*
+- **What it is:** The founder in first person: rink mornings, the quiet of July, watching his own kids compete. The product may appear as natural story context ("what I'm building"), never a pitch or a link.
+- **Personas:** Diane and every parent following along; Caleb sees the real person.
+
+### Pillar 5 — Built for the believing athlete *(sell + site anchors)*
+- **What it is:** The one openly promotional post per 10 during launch weeks, plus the owned site pages (answer-engine anchors keep their understated CTA). Honest and unhedged: what From Victory is, who it is for, the trial. Because every other lane holds the line, this one is allowed to sell.
+- **Personas:** Coach Marcus, Diane, Caleb. **Ladders to:** brand pillar 3.
 
 ---
 
-## What each pillar carries in the funnel
+## The mix (per rolling 10 social posts)
 
-- **Pillar 1 (Faith on the field)** is reach and community. It taps the cultural moment — athletes are open about their faith now — and earns the follow from believers who recognize themselves. Weighted heaviest pre-launch (weeks 1-4).
-- **Pillar 2 (Pregame centering)** is consideration and product legibility. It shows what From Victory actually is, makes the guided pregame session citable, and anchors the answer-engine cluster around pregame faith rituals.
-- **Pillar 3 (Built for the believer)** is partnership and conversion. It speaks to the gatekeeper and the payer. Weighted up at launch (weeks 5-8) when leader drops and the founding cohort wave run.
+| Lane | Share | Home pillars | Rules |
+|---|---|---|---|
+| curate | 5 | P1, P3 | Link/react/quote with credit. Never re-upload. Source cited in `curationSource`. |
+| create | 3 | P2, P3, P1 | Teach in full. Zero product mention, zero CTA. |
+| personal | 2 | P4 | First-person founder. Product as story context only. |
+| sell | ≤1 per 10, launch weeks | P5 | Open, honest, rare. The only lane with a CTA. |
 
----
-*2026-07-08: product-claims corrections per research/product-claims-audit-2026-07-08.md*
+Sell posts land in week 5 (launch) and week 7 (founding cohort). Site pages sit outside the ratio.
+
+## Curation sourcing beats (the engine's weekly search)
+
+1. **The creator accounts (primary — KC 2026-07-14: repost these, not news outlets like CBN)** — the faith-athlete feeds the audience already follows: @_christhlete (Christian Athletes, 654K), @holy.athletes (98K), @athletes4.christ, @christians_in_sport. Share their post with a short take and credit; never re-upload.
+2. **The athletes' own posts** — when the moment is the athlete's, share the athlete: @cmpulisic's Bible Time / team-prayer posts, postgame testimony posts. First-party beats commentary.
+3. **The moment of the week** — a public athlete-faith moment: postgame glory-to-God, pregame prayer, testimony. (This month: the 2026 World Cup is a running feed of them.) Find the creator-account or athlete post carrying it, not the news article.
+4. **The gatekeepers** — a coach or parent voice on faith and youth sports.
+
+Publications (Sports Spectrum, The Christian Athlete, FCA stories) stay useful as background and for verifying a moment is real, but the repost itself points at the creator or athlete post. The producer finds the real moment at produce time, credits the creator, and cites the source in `curationSource`. No verifiable moment found means the slot produces as create instead, flagged in the summary.

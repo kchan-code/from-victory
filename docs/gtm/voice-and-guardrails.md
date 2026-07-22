@@ -30,7 +30,10 @@ listings, and microcopy get written here. They follow the same rules.
    positioning.
 4. **No prosperity-gospel "claim the win."** Worth is not the scoreboard — that's the
    thesis; don't break it.
-5. **Pre-launch honesty.** No invented proof. Waitlist-only CTAs until launch.
+5. **Launched honesty.** No invented proof — no testimonials, ratings, user counts, or
+   retention claims until a real cohort exists. The CTA is the 14-day free trial
+   ($5/mo or $49/yr first athlete); waitlist language only for not-yet-live sports.
+   Buyers: parents for athletes 13-17; athletes 18+ self-serve (live 2026-07-22).
 6. **Claim visualization, don't knock it.** Everyone says visualize; almost nobody helps
    you do it; From Victory does — and you don't do it alone. (Don't dismiss
    visualization/mental training as hollow; that framing was rejected.)

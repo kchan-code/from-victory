@@ -2,6 +2,8 @@
 
 *Dated: 2026-06-10 · US-first, B2C self-serve Christian athlete mindset app · Pre-revenue, founder-led*
 
+*Amended 2026-07-22 (FV-459 reconciliation, KC-approved): buyer = athlete 18+ self-serve (live 2026-07-22) or believing parent (required 13-17); under-13 is a product exclusion, not a deferral (no VPC flow exists or is planned); lingering cut-CRRC references replaced with the founder framing. Target unchanged: scholastic core 15-22; 22-25 is eligible, not targeted.*
+
 ## So what (the one-paragraph version)
 
 From Victory does not win by reaching the most athletes — it wins by reaching the *right* ones at a conversion rate the wellness-app category can't touch. The on-disk research is unanimous on this: **this is a distribution-and-conversion problem, not a market-size problem** (market.md). The TAM is large enough (a directional ~$230M US, ~5.1M Christian competitive athletes), but the SOM math only works if tight ICP fit lifts free-to-paid above the brutal 1-2.3% meditation-app benchmark, and if faith-sports rails (FCA, churches, ministries) replace the paid CAC a founder can't fund. So the ICP must be **narrow and exclusionary on purpose**: the believing minority of competitive athletes, reached through a warm gatekeeper, in acute identity-performance pain. Everyone else is noise that drags conversion down.
@@ -10,7 +12,7 @@ The trend research sharpens the same point: **own the believing minority, don't 
 
 ## The bullseye
 
-A **Christian, scholastic, competitive athlete (15-22)** whose confidence rises and falls with the scoreboard, who is reachable through an **FCA huddle, coach, youth pastor, Christian school, or believing parent**, and who already keeps a daily faith or training rhythm. The buyer is either the athlete (16+ self-pay) or a **believing sports parent** funding an edge inside an already-four-figure annual sports budget.
+A **Christian, scholastic, competitive athlete (15-22)** whose confidence rises and falls with the scoreboard, who is reachable through an **FCA huddle, coach, youth pastor, Christian school, or believing parent**, and who already keeps a daily faith or training rhythm. The buyer is either the athlete (18+ self-serve, live since 2026-07-22) or a **believing sports parent** (required for 13-17) funding an edge inside an already-four-figure annual sports budget.
 
 ## Include criteria (must clear the bar)
 
@@ -21,13 +23,13 @@ A **Christian, scholastic, competitive athlete (15-22)** whose confidence rises 
 5. **Reachable via a warm faith-sports gatekeeper** — not a cold app-store listing. FCA alone spans 10,000+ campuses and 21,000+ schools — a large warm referral surface (buying-process.md).
 6. **Daily-rhythm habit already present** (devotional, prayer app, or training log) — a leading indicator they'll sustain a daily cue. The category's existential risk is the first 7 days, not awareness (trends.md).
 7. **Recurring high-pressure competitive moment** (game day, tryout, meet, recruiting showcase) where game-day resilience cues land.
-8. **Buyer = athlete (16+) or believing sports parent** — inside the >$40B/yr US youth-sports spend ($1,016 primary-sport spend in 2024, +46% since 2019). [Source: trends.md / Aspen Project Play]
+8. **Buyer = athlete (18+ self-serve, live since 2026-07-22) or believing sports parent (required for 13-17)** — inside the >$40B/yr US youth-sports spend ($1,016 primary-sport spend in 2024, +46% since 2019). [Source: trends.md / Aspen Project Play]
 
 ## Exclude criteria (be ruthless — these *lower* conversion)
 
 1. **Secular athletes with no faith interest.** Scripture-anchored identity *is* the product; chasing the non-believing middle dilutes the wedge and tanks conversion. They belong to Athlete Mindset / Champion's Mind.
 2. **Recreational / casual / non-competitive movers.** No game-day pressure, no core pain. Calm, Headspace, and Stand Unshaken own that.
-3. **Under-13 at launch.** Triggers COPPA verifiable-parental-consent, data-retention, and age-gating obligations that are launch-blocking for a founder-led team. Defer until a VPC flow exists.
+3. **Under-13.** Excluded from the product entirely — the 13+ floor is code-enforced, no accounts exist below it, and no VPC flow exists or is planned. An exclusion, not a deferred segment (amended 2026-07-22; the original "defer until a VPC flow exists" framing predated the shipped model).
 4. **Adult / pro / masters athletes** as the primary target — they sit outside the FCA/church/school rails the whole model rides.
 5. **Devotional-reading-only faith consumers** who want no performance rhythm. They're served free by YouVersion, FCA Challenge, and Ao1; don't fight free reading plans on their turf.
 6. **Free-anchored or one-time-substitute buyers** committed to free ministry content or a $15 Christian-athlete workbook as a complete answer. (The book shelf — *The Christian Mindset Playbook*, *The Empowered Athlete* — is a real substitute that owns category search.)
@@ -41,7 +43,7 @@ A "deal" here is a self-serve B2C subscription decided in minutes, not a B2B cyc
 - **Performance breakdown** — chokes, plays scared, loses playing time, worth visibly tied to the scoreboard. The core pain, made acute.
 - **Season / tryout / recruiting window** — seasonal anxiety spike the sport-by-sport rollout can target.
 - **Faith-community prompt** — a coach, youth pastor, FCA huddle, or camp recommends it. Lowest-friction entry past the faith-fit barrier.
-- **Parent intervention** — a believing parent watches their kid compete anxious, becomes payer (and, under-13, consenter).
+- **Parent intervention** — a believing parent watches their kid compete anxious, becomes payer (required for athletes 13-17).
 - **Athlete mental-health moment** — ~64.5% of student-athletes reported anxiety in 2025; only ~10% seek help. From Victory is the low-stigma step between "do nothing" and "see a therapist." [Source: trends.md]
 - **Waitlist hand-raise** — self-selects type (Athlete/Parent/Coach) + primary sport; an explicit signal to target with sport-specific onboarding.
 - **Already follows a faith-athlete org/creator** (FCA, Athletes in Action, @youplayipray, @_christhlete) — already in the believing-athlete content stream.
@@ -53,7 +55,7 @@ The buying process splits **user, payer, and gatekeeper** (buying-process.md). A
 
 ### 1. Caleb — the Believing Competitor (primary user + chooser)
 HS/college competitive athlete, 15-22, mostly (not only) male, identifies as Christian. The men's-Bible-use resurgence (+19% in 2024-2025) blows directly on this persona (trends.md).
-- **Goals:** compete from secure identity in Christ, not fear of the next mistake; a repeatable game-day session (breath, visualization, identity, and a focus cue); connect faith to sport; a habit that survives a packed season.
+- **Goals:** compete from secure identity in Christ, not fear of the next mistake; a repeatable game-day rhythm (breath, visualization, identity, and your focus cue); connect faith to sport; a habit that survives a packed season.
 - **Pains:** confidence hostage to the scoreboard; fear of mistakes makes him play tight; anxiety he won't take to a coach or therapist; free reading plans feel static and don't help in the competing moment.
 
 ### 2. Grace — the Faith-Anchored Athlete (primary user, recruiter)
@@ -62,7 +64,7 @@ Female HS/college competitive athlete, 15-22, devout, often brings teammates in.
 - **Pains:** confidence tied to results and approval; faith and competitive drive feel opposed; secular apps say nothing about identity in Christ, faith apps say nothing about sport; wellness habits die in week one without an immediate hook.
 
 ### 3. Diane — the Sports Parent (secondary buyer + legal gatekeeper)
-Believing parent of a youth/HS athlete. Holds the App Store payment method and, for under-13, the required legal consent.
+Believing parent of a youth/HS athlete. Holds the payment method (web app, Stripe billing — not app-store) and, for athletes 13-17, creates and manages the account.
 - **Goals:** help her kid compete with peace, not pressure; add a faith-aligned edge to an already-large sports investment; trust the values and child-safety posture first; see real change after a bad game.
 - **Pains:** watching her child play scared; wary of screen time and minor data privacy; spends four figures a year already — needs clear worth; rejects hustle/grind/shame messaging aimed at her kid.
 
@@ -90,7 +92,7 @@ Sum the five weighted dimensions. **>=80 = priority target · 60-79 = nurture ·
 | **Competitive intensity (25%)** | Recreational / casual, no game-day pressure | Competes but low-stakes, intermittent | Scholastic competitive athlete with recurring high-pressure moments |
 | **Pain acuity (20%)** | No identity-performance pain | Occasional nerves in big moments | Worth tied to scoreboard, fear of mistakes, faith disconnected from sport — felt now |
 | **Reachability via warm rail (15%)** | Only via cold paid app-store acquisition | Loosely connected to faith-sports content | Inside FCA/AiA huddle, Christian school, church group, or has a believing referrer |
-| **Willingness + ability to pay (10%)** | Free-only; a $15 workbook is a complete answer | Open but highly price-elastic | Athlete (16+) or believing sports parent ready to fund a faith-aligned edge |
+| **Willingness + ability to pay (10%)** | Free-only; a $15 workbook is a complete answer | Open but highly price-elastic | Athlete (18+) or believing sports parent ready to fund a faith-aligned edge |
 
 **Auto-exclude:** a score of 1 on **Faith fit** OR **Competitive intensity** disqualifies regardless of total. **Under-13** is excluded at launch on compliance grounds independent of score.
 
@@ -107,5 +109,4 @@ The market research is explicit that conversion — not reachable audience — i
 
 *Figures drawn from on-disk research carry that research's verification verdicts; any item labeled directional there (ARPU, follower counts, unpublished competitor pricing) remains a directional estimate here, not a fact.*
 
----
 *2026-07-08: product-claims corrections per research/product-claims-audit-2026-07-08.md*
