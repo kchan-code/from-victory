@@ -1,4 +1,6 @@
-// Pregame opener — Today's focus: "Better puck decisions."
+// Pregame opener — Today's focus: the decisions family ("Better decisions
+// with the ball", "Better reads", "Better course management", "Better
+// decisions at the plate", "Better race execution", "Trust my swing").
 //
 // FV-466: shared sport-neutral variant of opener-decisions. Serves every
 // sport that falls back to NEED_OPENER_SLUGS (football, golf, basketball
@@ -8,7 +10,7 @@
 // vocabulary (test: a golfer, a swimmer, and a linebacker all nod).
 //
 // Replaces segment 1 of the locked pilot session when the athlete
-// selects Better puck decisions on the Today's Focus screen.
+// selects a decisions-family need on the Today's Focus screen.
 //
 // Verse: Proverbs 3:5-6 — trust in the Lord with all your heart.
 // Why: The most theologically tricky of the eight needs. The
