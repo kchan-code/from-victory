@@ -18,13 +18,31 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
-const { requireSubscriberMock, maybeSingleMock } = vi.hoisted(() => ({
+const {
+  requireSubscriberMock,
+  maybeSingleMock,
+  enforcementEnabledMock,
+  accessLevelMock,
+} = vi.hoisted(() => ({
   requireSubscriberMock: vi.fn(),
   maybeSingleMock: vi.fn(),
+  enforcementEnabledMock: vi.fn(() => false),
+  accessLevelMock: vi.fn(async () => "full"),
 }));
 
 vi.mock("@/lib/auth/guards", () => ({
   requireSubscriber: requireSubscriberMock,
+}));
+
+// FV-464: the page mirrors enforcement's bounce condition to avoid a dead
+// Back-button loop. Defaults (enforcement off / full access) preserve the
+// pre-FV-464 behavior for the FV-442 copy tests above.
+vi.mock("@/lib/subscriptions/enforce", () => ({
+  isSubscriptionEnforcementEnabled: enforcementEnabledMock,
+}));
+
+vi.mock("@/lib/subscriptions/access", () => ({
+  getParentAccessLevel: accessLevelMock,
 }));
 
 vi.mock("@/lib/actions/subscription", () => ({
@@ -59,6 +77,10 @@ import SubscribePage from "@/app/subscribe/page";
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  // clearAllMocks keeps mockReturnValue overrides — restore the FV-464
+  // defaults so test order never matters.
+  enforcementEnabledMock.mockReturnValue(false);
+  accessLevelMock.mockResolvedValue("full");
 });
 
 describe("SubscribePage — price paragraph (parent vs adult)", () => {
@@ -94,5 +116,63 @@ describe("SubscribePage — price paragraph (parent vs adult)", () => {
     expect(text).not.toMatch(/for your first athlete/i);
     expect(text).not.toMatch(/additional athlete/i);
     expect(text).toContain("isAdult:true");
+  });
+});
+
+describe("SubscribePage — back-link loop guard (FV-464)", () => {
+  const asAdult = () =>
+    requireSubscriberMock.mockResolvedValue({
+      userId: "adult-1",
+      profile: { id: "adult-1", role: "adult_athlete", first_name: "Jordan" },
+    });
+  const asParent = () =>
+    requireSubscriberMock.mockResolvedValue({
+      userId: "parent-1",
+      profile: { id: "parent-1", role: "parent", first_name: "Kim" },
+    });
+
+  it("sends a blocked adult's back links to the public home, not /athlete", async () => {
+    asAdult();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("blocked");
+
+    const { container } = render(await SubscribePage({ searchParams: {} }));
+
+    expect(container.querySelector('a[href="/athlete"]')).toBeNull();
+    const home = container.querySelector('a[aria-label="Back to home"]');
+    expect(home).not.toBeNull();
+    expect(home).toHaveAttribute("href", "/");
+  });
+
+  it("sends a blocked parent's back links to the public home, not /dashboard", async () => {
+    asParent();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("blocked");
+
+    const { container } = render(await SubscribePage({ searchParams: {} }));
+
+    expect(container.querySelector('a[href="/dashboard"]')).toBeNull();
+    expect(
+      container.querySelector('a[aria-label="Back to home"]'),
+    ).toHaveAttribute("href", "/");
+  });
+
+  it("keeps the role-aware target for an adult with active access", async () => {
+    asAdult();
+    maybeSingleMock.mockResolvedValue({
+      data: { stripe_customer_id: "cus_1" },
+      error: null,
+    });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("full");
+
+    const { container } = render(await SubscribePage({ searchParams: {} }));
+
+    expect(
+      container.querySelector('a[aria-label="Back to training"]'),
+    ).toHaveAttribute("href", "/athlete");
+    expect(container.querySelector('a[aria-label="Back to home"]')).toBeNull();
   });
 });
