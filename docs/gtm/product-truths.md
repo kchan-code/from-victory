@@ -10,6 +10,24 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-07-22 — Adults 18+ can sign up, pay, and train on their own account; eligibility is 13+ with no upper limit
+
+Adult self-serve is live in production (go-live smoke passed 2026-07-22). An
+athlete 18 or older signs up with their own email, confirms they are 18+,
+pays $5/mo or $49/yr with the 14-day first-time trial, manages or cancels
+billing through the Stripe portal, and can delete their own account from
+their settings page — no parent involved. Accounts for athletes under 18
+remain parent-created and parent-managed, unchanged. Product eligibility is
+now 13 and up with no upper age limit; content is calibrated for 13-25.
+Crisis-resource copy across the app is one universal age-neutral version
+("Talk to someone you trust"; "This screen is private — no one is notified").
+Public pages (pricing, landing FAQ, privacy policy) describe both account
+paths.
+
+Why it matters to a buyer: college, junior, club, and semi-pro athletes can
+now buy directly — the parent is no longer required for 18+. The parent
+remains the buyer for 13-17.
+
 ## 2026-07-19 — Football is a live sport
 Football is selectable at onboarding and in Settings → Change sport, at full
 content parity: pregame guided audio (7 position tracks, 49 athlete-chooseable
