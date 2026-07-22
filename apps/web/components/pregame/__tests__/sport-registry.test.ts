@@ -706,19 +706,13 @@ describe("FV-117: sport-keyed selfTalkOptions picker", () => {
 // ---------------------------------------------------------------------------
 
 const KNOWN_UNVOICED_ANCHORS: Partial<Record<Sport, readonly string[]>> = {
-  // FV-303 — golf anchors now rendered; no known unvoiced anchors.
-  // FV-206 — football's 3 gear/reset anchors (module-map Appendix) are
-  // authored options but the audio render is landing in a parallel stream;
-  // they drop cleanly (Pre-Game Card + text mode still show the wording)
-  // until the clips + ANCHOR_OPTION_SLUGS entries land.
-  football: ["Snap the chinstrap", "Tap the helmet", "Clap and break the huddle"],
+  // FV-303 — golf anchors rendered; FV-468 — football anchors rendered.
+  // No known unvoiced anchors remain.
 };
 
 const KNOWN_UNVOICED_SELFTALK: Partial<Record<Sport, readonly string[]>> = {
-  // FV-303 — golf self-talk now rendered; no known unvoiced self-talk.
-  // FV-206 — football's "Next play" reset-cadence self-talk phrase; audio
-  // render pending (parallel stream).
-  football: ["You're okay. Next play."],
+  // FV-303 — golf self-talk rendered; FV-468 — football self-talk rendered.
+  // No known unvoiced self-talk remains.
 };
 
 describe("FV-301: every selectable sport voices its picker options", () => {

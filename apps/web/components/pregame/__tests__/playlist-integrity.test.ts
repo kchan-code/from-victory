@@ -925,7 +925,7 @@ describe("shared sport-neutral openers (FV-466)", () => {
 // ---------------------------------------------------------------------------
 
 describe("catalog count (multi-sport, FV-266)", () => {
-  it("catalog is fully categorized (no orphans) and totals 517 entries", () => {
+  it("catalog is fully categorized (no orphans) and totals 521 entries", () => {
     const keys = Object.keys(catalog);
     const n = (re: RegExp) => keys.filter((k) => re.test(k)).length;
     const breakdown = {
@@ -940,8 +940,8 @@ describe("catalog count (multi-sport, FV-266)", () => {
       practice: n(/^pp-/), //                       68 — pre-practice clips (all sports + variations)
       openers: n(/^opener-/), //                    29 — need openers (incl. basketball variants + 10 shared sport-neutral, FV-466)
       cueWord: n(/^cw-/), //                        20 — cue-word reset/sendoff
-      anchor: n(/^anc-/), //                        12 — reset-anchor clips (+3 golf anc-glf-* FV-303)
-      selfTalk: n(/^st-/), //                       10 — self-talk clips (+st-glf-01 FV-303, +st-glf-02 FV-294)
+      anchor: n(/^anc-/), //                        15 — reset-anchor clips (+3 golf anc-glf-* FV-303, +3 football anc-ftb-* FV-468)
+      selfTalk: n(/^st-/), //                       11 — self-talk clips (+st-glf-01/02 FV-303/294, +st-ftb-01 FV-468)
       shared: n(/^shared-/), //                     10 — shared scaffold clips (+3 section intros, #232)
     };
     const sum = Object.values(breakdown).reduce((a, b) => a + b, 0);
@@ -951,7 +951,7 @@ describe("catalog count (multi-sport, FV-266)", () => {
     // Every catalog key falls into exactly one bucket — catches typos/orphans.
     expect(uncategorized, `uncategorized clips: ${uncategorized.join(", ")}`).toEqual([]);
     expect(sum).toBe(keys.length);
-    expect(keys).toHaveLength(517);
+    expect(keys).toHaveLength(521);
   });
 });
 

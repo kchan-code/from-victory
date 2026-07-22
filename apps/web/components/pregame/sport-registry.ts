@@ -1490,9 +1490,8 @@ export const FOOTBALL_CONFIG: SportConfig = {
   ] as const satisfies readonly NeedToday[],
 
   // "Long exhale", "Press thumb to palm", "Say cue word" shared; the 3 middle
-  // gear/reset gestures are football-specific (Appendix — clips + slugs land
-  // with the audio render; they drop cleanly until then, the baseball/golf
-  // precedent).
+  // gear/reset gestures are football-specific (rendered + wired in FV-468 —
+  // anc-ftb-* in ANCHOR_OPTION_SLUGS).
   anchors: [
     "Long exhale",
     "Press thumb to palm",
@@ -1503,7 +1502,8 @@ export const FOOTBALL_CONFIG: SportConfig = {
   ] as const,
 
   // "You're okay. Next shift." → "You're okay. Next play." (the universal
-  // football reset cadence); the other 6 are sport-neutral and shared.
+  // football reset cadence; rendered + wired in FV-468 — st-ftb-01 in
+  // SELFTALK_OPTION_SLUGS); the other 6 are sport-neutral and shared.
   selfTalkOptions: [
     "You're okay. Next play.",
     "Breathe. Do your job.",

@@ -262,6 +262,22 @@ _(pause: 2s)_
 <!-- slug: st-glf-01 | file: components/pregame/audio/clips.ts -->
 
 1. You're okay. Next shot.
+### Anchor · ftb-chinstrap
+<!-- slug: anc-ftb-chinstrap | file: components/pregame/audio/clips.ts -->
+
+1. Snap the chinstrap.
+### Anchor · ftb-tap-helmet
+<!-- slug: anc-ftb-tap-helmet | file: components/pregame/audio/clips.ts -->
+
+1. Tap the helmet.
+### Anchor · ftb-break-huddle
+<!-- slug: anc-ftb-break-huddle | file: components/pregame/audio/clips.ts -->
+
+1. Clap and break the huddle.
+### Self-Talk Football · 01
+<!-- slug: st-ftb-01 | file: components/pregame/audio/clips.ts -->
+
+1. You're okay. Next play.
 ### Shared · Prayer (Self-guided)
 <!-- slug: shared-prayer-selfguided | file: components/pregame/audio/clips.ts -->
 
