@@ -95,7 +95,7 @@ For your faith and your sport specifically — hockey, soccer, lacrosse, footbal
 | **"I already get a free athlete devotional from FCA / YouVersion."** | Those give you a verse to read. From Victory gives you a guided pregame session to compete with (breath, visualization, identity, and a focus cue) built for the moment on the field a reading plan can't reach. Keep the devotional. This is the training underneath it. |
 | **"Why pay when a $15 book or a journal does this?"** | A book is read once. This is a daily rhythm that shows up with you on game day — sport-specific, in your pocket, callable in real time. The book is the idea; this is the practice. |
 | **"I'll just use Calm / Headspace for pre-game nerves."** | Those calm the symptom and leave the cause untouched — your worth is still riding on the next play, so the nerves come back. From Victory trains the foundation underneath the nerves: identity that doesn't move when the scoreboard does. |
-| **"What about my kid's privacy / they're under 13?"** | The app gates for age and runs verifiable parental consent for younger athletes; reflection and journaling data is governed by a published retention and deletion policy. (Confirm exact flow with the compliance/saas-lawyer pass before this answer ships. COPPA full-compliance deadline is April 22, 2026.) *(buying-process.md)* |
+| **"What about my kid's privacy / they're under 13?"** | Under-13 accounts don't exist — the floor is 13, enforced in the product. Every account for an athlete under 18 is created and managed by the parent; the post-game debrief tracks nothing (no events, no records, "no order, no tracking"); data handling is governed by the published privacy policy. (Amended 2026-07-22 to match the shipped model; the earlier answer promised a verifiable-parental-consent flow the product does not have.) |
 | **"Is this just hype with Bible verses on top?"** | No grind, no streaks, no "earn your worth," no shame. The whole point is the opposite of hustle culture — secure identity first, performance as the overflow. The thing we refuse to say is the proof of what we are. |
 
 ---
@@ -174,3 +174,5 @@ This positioning makes three load-bearing bets KC is approving: **(1)** launch n
 
 ---
 *2026-07-08: product-claims corrections per research/product-claims-audit-2026-07-08.md*
+
+*2026-07-22: FV-459 amendments (KC-approved) — under-13 objection answer now matches the shipped exclusion model (13+ floor, parent-managed under 18, no VPC flow); buyer mechanics: parent buys for 13-17, athletes 18+ self-serve since 2026-07-22. This file back-ports the 2026-07-08 product-claims corrections that previously lived only in the app-repo mirror — engine and mirror now match.*

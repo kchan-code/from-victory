@@ -1,6 +1,6 @@
 # GTM handoff — From Victory ⇄ Delvox GTM Engine
 
-**Snapshot date: 2026-07-08.** This folder is a dated export from the Delvox GTM Engine
+**Snapshot date: 2026-07-22.** This folder is a dated export from the Delvox GTM Engine
 (github.com/kchan-code/delvox-engine), the system that owns From Victory's go-to-market
 strategy. The engine is the source of truth; this folder is its read-only mirror in the
 app repo. When the two disagree, the engine wins.

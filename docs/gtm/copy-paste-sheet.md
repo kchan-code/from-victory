@@ -1,4 +1,4 @@
-# Copy-paste sheet — from-victory-app — exported 2026-07-08
+# Copy-paste sheet — from-victory-app — exported 2026-07-09
 
 ## Three Apps for the Christian Athlete: What Each One Gets Right
 - **Channel:** site
@@ -20,7 +20,7 @@
 <p>And the visualization is not self-reliant. You are not alone in your own head trying to talk yourself into confidence. The voice keeps returning you to who God says you are, so the moment you step into is one where your worth is already settled. That is what frees you to play hard. It runs on a guided session you can call under pressure: breath, a visualization built for your sport and position, and who God says you are. No grind. No streaks. No shame. What it refuses to say is part of the point. It does not turn faith into a performance upgrade. It makes secure identity the ground the whole thing stands on.</p>
 <h2>Which one is for you</h2>
 <p>Keep the free devotional; it is a good habit. If you want a sport-specific faith feed, Play With Faith is worth a look. If you have been told to visualize and never had a tool that actually walks you through it, faith-anchored and specific to your sport, that is what From Victory is built for. Play hard, fearless, and free. From victory, not for victory.</p>
-<p>From Victory is pre-launch. <a href="https://fromvictoryapp.com">Join the waitlist</a>.</p>
+<p><a href="https://fromvictoryapp.com">Start your athlete's 14-day free trial</a>. $5/mo or $49/yr after, cancel anytime.</p>
 <h2>Common questions</h2>
 <h3>What is the best app for Christian athletes?</h3>
 <p>It depends on what you need. A free devotional like FCA Challenge or YouVersion builds a daily Scripture habit. Play With Faith adds a sport-specific faith feed. From Victory guides you through pregame visualization, audio-led and specific to your sport and position, anchored in Scripture and who God says you are.</p>
@@ -59,7 +59,7 @@
 <p>You are not alone in your own head trying to manufacture confidence. That is the difference. A secular script leaves you to build yourself up by yourself. This one keeps handing the moment back to the One who already settled your worth. God's power, freeing you to play hard. That is what lets you stop white-knuckling the result.</p>
 <h2>Why a session, not just a verse</h2>
 <p>A verse you read in the morning is a good start. But the moment you want to quit does not need more information. It needs a practice you can run without thinking. That is what the session is. Faith on the field, not just on Sunday.</p>
-<p>This is the ritual From Victory is built around. Play hard, fearless, and free. From Victory is pre-launch. <a href="https://fromvictoryapp.com">Join the waitlist</a>.</p>
+<p>This is the ritual From Victory is built around. Play hard, fearless, and free. <a href="https://fromvictoryapp.com">Start your athlete's 14-day free trial</a>. $5/mo or $49/yr after, cancel anytime.</p>
 <h2>Common questions</h2>
 <h3>What is a good pregame prayer or ritual for Christian athletes?</h3>
 <p>A guided pregame session: breath, a visualization built for your sport and position, and a voice that keeps returning you to who God says you are. From Victory runs it as audio, headphones on and eyes closed, about five minutes before you compete, and closes in prayer.</p>

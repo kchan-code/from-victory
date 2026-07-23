@@ -48,7 +48,8 @@ the audio: **identity opener** (scripture varies by today's focus), sport- and
 position-specific **visualization**, the **hard moment** rehearsed with its reset,
 **prayer** (guided or self-guided, athlete's choice), **send-off**. Brand/session anchor
 verse Hebrews 12:1-2 — also the default verse behind the athlete's cue word; sports
-live: hockey, basketball, golf; baseball coming soon).
+live: hockey, basketball, golf; baseball coming soon — *superseded: see the
+2026-07-19 entry; live sports are hockey, basketball, golf, football*).
 
 Why it matters: visualization is generally accepted best practice in sport, but almost
 no tools help athletes actually do it. From Victory does. And during it the athlete is
@@ -56,6 +57,11 @@ not self-reliant and not alone — the power of God empowering their freedom to 
 fearless, and free. This is the category differentiator and it now leads the messaging.
 
 ## 2026-07-08 — Status facts
+
+*Superseded on both counts — see the 2026-06-25 billing entry (the app is live and
+buyable; trial CTA) and the 2026-07-22 adult self-serve entry. The claims discipline
+(no testimonials, ratings, user counts, or retention claims until a launch cohort
+exists) still stands. Connected socials unchanged.*
 
 - Pre-launch, pre-revenue. Waitlist is the only CTA. No testimonials, ratings, user
   counts, or retention claims may be asserted anywhere until a launch cohort exists.
