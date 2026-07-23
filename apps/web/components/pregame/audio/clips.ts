@@ -5397,6 +5397,58 @@ export const CLIP_ST_GLF_01_SCRIPT: AudioScript = {
   ],
 };
 
+// ── Football personalization clips (FV-468) ──────────────────────────────────
+// 3 football-specific anchor clips + 1 self-talk clip. These voice the
+// FOOTBALL_CONFIG picker options that shipped un-rendered with FV-206
+// ("drop cleanly" placeholders). Their slug-map wiring in audio-mapping.ts
+// (ANCHOR_OPTION_SLUGS / SELFTALK_OPTION_SLUGS) is added in the same PR so
+// the playlist-integrity §3 check passes when the clips are in the manifest
+// (the FV-303 golf pattern).
+
+export const CLIP_ANC_FTB_CHINSTRAP_SCRIPT: AudioScript = {
+  slug: "anc-ftb-chinstrap",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Snap the chinstrap." },
+  ],
+};
+
+export const CLIP_ANC_FTB_TAP_HELMET_SCRIPT: AudioScript = {
+  slug: "anc-ftb-tap-helmet",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Tap the helmet." },
+  ],
+};
+
+export const CLIP_ANC_FTB_BREAK_HUDDLE_SCRIPT: AudioScript = {
+  slug: "anc-ftb-break-huddle",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Clap and break the huddle." },
+  ],
+};
+
+export const CLIP_ST_FTB_01_SCRIPT: AudioScript = {
+  slug: "st-ftb-01",
+  voice: "ash",
+  instructions: SELFTALK_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "You're okay. Next play." },
+  ],
+};
+
 // ── Pre-practice prayer clips (shared / sport-neutral) ───────────────────────
 //
 // Three clips pair with the pre-practice "Lock In" sequence.
@@ -5965,6 +6017,11 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_ANC_GLF_GLOVE_TAP_SCRIPT,
   CLIP_ANC_GLF_STEP_BACK_SCRIPT,
   CLIP_ST_GLF_01_SCRIPT,
+  // Football anchors + self-talk (FV-468)
+  CLIP_ANC_FTB_CHINSTRAP_SCRIPT,
+  CLIP_ANC_FTB_TAP_HELMET_SCRIPT,
+  CLIP_ANC_FTB_BREAK_HUDDLE_SCRIPT,
+  CLIP_ST_FTB_01_SCRIPT,
   // Golf positive-play viz clips (FV-294) — 21 per-play viz + st-glf-02 self-talk.
   // These replace the flagship viz-bomber/viz-ballstriker/viz-scrambler in
   // resolvePlaylist() when the athlete picks plays from the picker.

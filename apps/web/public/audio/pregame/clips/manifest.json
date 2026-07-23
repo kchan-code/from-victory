@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "3332f06d",
+  "manifestVersion": "413323a7",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -6026,6 +6026,26 @@
           "offsetSec": 0
         }
       ]
+    },
+    "anc-ftb-chinstrap": {
+      "url": "/audio/pregame/clips/anc-ftb-chinstrap.116e02a7.mp3",
+      "durationSec": 2.616,
+      "phases": []
+    },
+    "anc-ftb-tap-helmet": {
+      "url": "/audio/pregame/clips/anc-ftb-tap-helmet.ed038096.mp3",
+      "durationSec": 2.064,
+      "phases": []
+    },
+    "anc-ftb-break-huddle": {
+      "url": "/audio/pregame/clips/anc-ftb-break-huddle.cdd42e0a.mp3",
+      "durationSec": 2.28,
+      "phases": []
+    },
+    "st-ftb-01": {
+      "url": "/audio/pregame/clips/st-ftb-01.b1c66321.mp3",
+      "durationSec": 2.424,
+      "phases": []
     }
   },
   "templates": [
