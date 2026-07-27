@@ -25,20 +25,20 @@
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
-    "@supabase/supabase-js": "^2.106.1",
+    "@supabase/supabase-js": "^2.110.8",
     "@vercel/analytics": "^2.0.1",
-    "@vercel/functions": "^3.7.5",
+    "@vercel/functions": "^3.7.6",
     "next": "14.2.35",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "resend": "6.17.2",
+    "resend": "6.18.0",
     "server-only": "0.0.1",
     "stripe": "^16.12.0",
     "web-push": "^3.6.7",
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@playwright/test": "^1.61.1",
+    "@playwright/test": "^1.62.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -52,7 +52,7 @@
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.35",
     "jsdom": "^29.1.1",
-    "postcss": "8.5.20",
+    "postcss": "8.5.23",
     "tailwindcss": "3.4.6",
     "typescript": "5.5.3",
     "vitest": "^4.1.8"
