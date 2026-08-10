@@ -65,378 +65,999 @@ These lines appear on-screen in text mode (no audio). Tokens like `{{role}}`, `{
 
 ## Audio Clips
 
-## VIZ Clips (position × library)
+## VIZ Clips — Flagships (position)
+
+### Lacrosse · Attack · VIZ (flagship)
+<!-- slug: viz-lax-attack | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. Keep your eyes closed. See yourself walking onto the field.
+_(pause: 1s)_
+2. You hear the ball snapping into pockets in warmups.
+_(pause: 1s)_
+3. Hear cleats on the turf, a coach calling out the lines.
+_(pause: 2s)_
+4. You feel the field under your feet.
+_(pause: 2.2s)_
+5. Feel your gloves close around the shaft.
+_(pause: 2.2s)_
+6. Feel your helmet settle, the chin strap snug.
+_(pause: 2s)_
+7. You settle your breathing and prepare for the first possession.
+_(pause: 1.25s)_
+8. You set up at X with the ball and identify where the first slide will come from.
+_(pause: 0.25s)_
+9. You split dodge from X, gain a step, and roll back when the defender overplays.
+_(pause: 2s)_
+10. You turn the corner at GLE, free your hands, and finish low to high at the far pipe.
+_(pause: 2s)_
+11. The shot reaches the net, and you return to your spot for the next call.
+_(pause: 2s)_
+12. Next possession, you slip the pick in the two-man game and catch on the move.
+_(pause: 2s)_
+13. You keep the stick protected through contact and finish inside the far pipe.
+_(pause: 2s)_
+14. See the next possession develop from up top.
+_(pause: 2s)_
+15. You use a question-mark dodge to gain separation, and when the double commits, you feed the crease on time.
+_(pause: 2s)_
+16. When the slide arrives early and closes the lane, you pull the ball out and move it to the open side.
+_(pause: 2s)_
+17. Now visualize the next play.
+_(pause: 0.8s)_
+18. On the next look, you work away from the shut-off, catch on the move, and release the shot before the slide arrives.
+_(pause: 2s)_
+
+### Lacrosse · Midfield · VIZ (flagship)
+<!-- slug: viz-lax-midfield | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. Keep your eyes closed. See yourself walking onto the field.
+_(pause: 1s)_
+2. You hear the ball snapping into pockets in warmups.
+_(pause: 1s)_
+3. Hear cleats on the turf, a coach calling out the lines.
+_(pause: 2s)_
+4. You feel the field under your feet.
+_(pause: 2.2s)_
+5. Feel your gloves close around the shaft.
+_(pause: 2.2s)_
+6. Feel your helmet settle, the chin strap snug.
+_(pause: 2s)_
+7. You settle your breathing and prepare for the first shift.
+_(pause: 1.25s)_
+8. You cross midfield on the run and scan the numbers ahead.
+_(pause: 0.25s)_
+9. A ground ball comes loose at midfield. You get low, scoop through it with two hands, and move it forward.
+_(pause: 2s)_
+10. You carry into space, draw the pole, and keep your head up.
+_(pause: 2s)_
+11. You hit the trailer in stride, fill the next lane, and the offense finishes the break.
+_(pause: 2s)_
+12. Next shift, you split the short-stick from up top, get downhill, and shoot far pipe on the run.
+_(pause: 2s)_
+13. You recover through midfield and pick up the next assignment.
+_(pause: 2s)_
+14. See the next defensive possession turn into transition.
+_(pause: 2s)_
+15. You ride the ball carrier, disrupt the outlet, scoop the ground ball, and move it to the open wing.
+_(pause: 2s)_
+16. When the numbers disappear, you pull the ball out and let the offense get organized.
+_(pause: 2s)_
+17. Now visualize the next play.
+_(pause: 0.8s)_
+18. You trail the next break, catch the swing pass, and step into a time-and-room shot to the far side.
+_(pause: 2s)_
+
+### Lacrosse · Defense · VIZ (flagship)
+<!-- slug: viz-lax-defense | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. Keep your eyes closed. See yourself walking onto the field.
+_(pause: 1s)_
+2. You hear the ball snapping into pockets in warmups.
+_(pause: 1s)_
+3. Hear cleats on the turf, a coach calling out the lines.
+_(pause: 2s)_
+4. You feel the field under your feet.
+_(pause: 2.2s)_
+5. Feel your gloves close around the long pole.
+_(pause: 2.2s)_
+6. Feel your helmet settle, the chin strap snug.
+_(pause: 2s)_
+7. You settle your breathing and prepare for the first matchup.
+_(pause: 1.25s)_
+8. You pick up the attackman at X, keep the pole in front, and confirm where your help is.
+_(pause: 0.25s)_
+9. He drives topside. You move your feet, stay on his hands, and force him behind the cage.
+_(pause: 2s)_
+10. He tries again. You break down and place one controlled poke on his bottom hand.
+_(pause: 2s)_
+11. You take away his strong hand, and he moves the ball back up top.
+_(pause: 2s)_
+12. On the next dodge, you arrive with the slide, close his hands, and force a low-angle shot the goalie handles.
+_(pause: 2s)_
+13. The defense collects the ball and starts the clear.
+_(pause: 2s)_
+14. See yourself communicate through the next possession.
+_(pause: 2s)_
+15. You approach under control, steer him to his weak hand, call the slide, then scoop the loose ball and hit the outlet.
+_(pause: 2s)_
+16. When he gains a step, you recover to his hands and trust the slide instead of reaching for a desperate check.
+_(pause: 2s)_
+17. Now visualize the next play.
+_(pause: 0.8s)_
+18. On a late possession, you keep your leverage, force the dodger to his weak hand, and make him move the ball away from the cage.
+_(pause: 2s)_
+
+### Lacrosse · FOGO · VIZ (flagship)
+<!-- slug: viz-lax-fogo | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. Keep your eyes closed. See yourself walking onto the field.
+_(pause: 1s)_
+2. You hear the ball snapping into pockets in warmups.
+_(pause: 1s)_
+3. Hear cleats on the turf, a coach calling out the lines.
+_(pause: 2s)_
+4. You feel the field under your feet.
+_(pause: 2.2s)_
+5. Feel your gloves close around the shaft.
+_(pause: 2.2s)_
+6. Feel your helmet settle, the chin strap snug.
+_(pause: 2s)_
+7. You settle your breathing and check your grip and stance.
+_(pause: 1.25s)_
+8. You walk to the X, set your feet at the dot, and prepare for one draw.
+_(pause: 0.25s)_
+9. Down, set. On the whistle, your clamp gets to the ball first.
+_(pause: 2s)_
+10. You control the ball and rake it toward your wing.
+_(pause: 2s)_
+11. Your wing scoops through it and moves the ball to the offense.
+_(pause: 2s)_
+12. On the next draw, he counters quickly. You go over the top, stop his exit, and pull the ball to space.
+_(pause: 2s)_
+13. You scoop, protect the stick, and make the outlet.
+_(pause: 2s)_
+14. See another draw stall under both sticks.
+_(pause: 2s)_
+15. You stay low, keep pressure on his hands, and direct the loose ball toward your wing.
+_(pause: 2s)_
+16. When he wins the clamp, you stop the exit, keep the ball contested, and let the wing matchup decide possession.
+_(pause: 2s)_
+17. Now visualize the next play.
+_(pause: 0.8s)_
+18. On a late draw, you clamp, direct the ball to space, scoop it, and make the short outlet.
+_(pause: 2s)_
+
+### Lacrosse · Goalie · VIZ (flagship)
+<!-- slug: viz-lax-goalie | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. Keep your eyes closed. See yourself walking onto the field.
+_(pause: 1s)_
+2. You hear the ball snapping into pockets in warmups.
+_(pause: 1s)_
+3. Hear cleats on the turf, a coach calling out the lines.
+_(pause: 2s)_
+4. You feel the crease under your feet.
+_(pause: 2.2s)_
+5. Feel your gloves close around the shaft.
+_(pause: 2.2s)_
+6. Feel your chest protector settle, the helmet snug.
+_(pause: 2s)_
+7. You settle your breathing and set your stance.
+_(pause: 1.25s)_
+8. You step into the cage, call the hot defender and the second slide, and set your angle.
+_(pause: 0.25s)_
+9. A shooter winds up from twelve yards, and you track the release off the stick.
+_(pause: 2s)_
+10. You step toward the shot, drive both hands stick-side high, and control it in the pocket.
+_(pause: 2s)_
+11. You look upfield and hit the breaking midfielder on the wing.
+_(pause: 2s)_
+12. The outlet starts transition before the ride can organize.
+_(pause: 2s)_
+13. On the next shot, you stay square, get the stick to the low bounce first, and control the rebound.
+_(pause: 2s)_
+14. See the next possession develop from behind the defense.
+_(pause: 2s)_
+15. You set the angle early, stay square, drive both hands to the step-down shot, and direct the rebound to the corner.
+_(pause: 2s)_
+16. When one gets by you, you reset your feet, make the defensive calls, and prepare for the next shot.
+_(pause: 2s)_
+17. Now visualize the next play.
+_(pause: 0.8s)_
+18. On a man-down feed to the crease, you hold the angle, step to the shot, and steer the rebound to the pole in the corner.
+_(pause: 2s)_
+
+## VIZ Clips — Positive Plays (position × library)
 
 ### Lacrosse · Attack · VIZ — Beat your man
-<!-- slug: viz-lax-attack-beat-your-man | file: components/pregame/audio/clips-lacrosse.ts -->
+<!-- slug: viz-lax-attack-beat-your-man | file: components/pregame/audio/clips-viz-lacrosse.ts -->
 
-1. Keep your eyes closed. See yourself walking onto the field.
-_(pause: 1s)_
-2. You hear the ball snapping into pockets in warmups.
-_(pause: 1s)_
-3. Hear cleats on the turf, a coach calling out the lines.
+1. See yourself at X with the ball, reading your matchup and the first slide.
 _(pause: 2s)_
-4. You feel the field under your feet.
-_(pause: 2.2s)_
-5. Feel your gloves close around the shaft.
-_(pause: 2.2s)_
-6. Feel your helmet settle, the chin strap snug.
+2. You split dodge, gain a step, and roll back when the defender overplays.
 _(pause: 2s)_
-7. You tell yourself, You belong here.
-_(pause: 1.25s)_
-8. You set up at X, ball in your stick. Slow breath. Your matchup is on you, and that's exactly how you want it.
-_(pause: 0.25s)_
-9. You split dodge from X, get your feet past him, and roll back the moment he overplays.
+3. You turn the corner at GLE, free your hands, and finish low to high at the far pipe.
+_(pause: 2.5s)_
+4. The shot reaches the net, and you return to X for the next possession.
 _(pause: 2s)_
-10. You turn the corner at GLE, hands free, and finish low to high — far pipe.
+5. Next possession, you slip the pick in the two-man game and catch on the move.
+_(pause: 2.5s)_
+6. You protect the stick through contact and release the shot before the recovery arrives.
+_(pause: 2.5s)_
+7. When the slide comes early and closes the lane, you keep the stick protected.
 _(pause: 2s)_
-11. The net snaps. You beat him clean, and everyone on the field knows it.
+8. You pull the ball out and move it to the open side.
+_(pause: 2.5s)_
+9. On the next possession, the defender denies you at X.
 _(pause: 2s)_
-12. Next possession, the two-man game — you slip the pick, turn the corner, and bury it through contact.
-_(pause: 2s)_
-13. See yourself take your man, again and again.
-_(pause: 2s)_
-14. Question-mark from up top, bull dodge from X, face dodge through the alley — you get to your spots, absorb the check, and finish with your hands free.
-_(pause: 2s)_
-15. And when the slide comes early and the lane closes, you don't force it. You pull it out, move it, and take him again next time.
-_(pause: 2s)_
-16. Now visualize the next play.
-_(pause: 0.8s)_
-17. Late game, they put their best pole on you and shade the double. You beat the shut-off, catch on the move, and finish before the slide arrives — one dodge, one finish, still yours.
-_(pause: 2s)_
+10. You cut away from the shut-off, catch on the move, and release before the slide arrives.
+_(pause: 2.5s)_
+
 ### Lacrosse · Attack · VIZ — See the field
-<!-- slug: viz-lax-attack-see-the-field | file: components/pregame/audio/clips-lacrosse.ts -->
+<!-- slug: viz-lax-attack-see-the-field | file: components/pregame/audio/clips-viz-lacrosse.ts -->
 
-1. Keep your eyes closed. See yourself walking onto the field.
-_(pause: 1s)_
-2. You hear the ball snapping into pockets in warmups.
-_(pause: 1s)_
-3. Hear cleats on the turf, a coach calling out the lines.
+1. See yourself at X, scanning the crease and the adjacent slide.
 _(pause: 2s)_
-4. You feel the field under your feet.
-_(pause: 2.2s)_
-5. Feel your gloves close around the shaft.
-_(pause: 2.2s)_
-6. Feel your helmet settle, the chin strap snug.
+2. You drive from X and see the crease defender begin to slide.
 _(pause: 2s)_
-7. You tell yourself, You belong here.
-_(pause: 1.25s)_
-8. You set up at X, ball in your stick. Slow breath. You see the whole offense in front of you.
-_(pause: 0.25s)_
-9. You drive hard from X and feel the defense tilt — the slide is coming.
+3. You carry the slide far enough, then deliver the feed to the crease.
+_(pause: 2.5s)_
+4. Your teammate catches and finishes before the defense can recover.
 _(pause: 2s)_
-10. You draw the pole all the way in, then snap the feed to the crease.
+5. Next trip, you send the skip pass to the weak-side shooter's outside shoulder.
+_(pause: 2.5s)_
+6. On the man-up, you move it one more until the open player has the catch-and-shoot look.
+_(pause: 2.5s)_
+7. When the defense takes away the inside feed, you keep possession.
 _(pause: 2s)_
-11. Your man catches and finishes in one touch. You made that goal happen.
+8. You pull the ball out and restart the set.
+_(pause: 2.5s)_
+9. On the clear, you take an angle that steers the ball carrier toward the sideline.
 _(pause: 2s)_
-12. Next trip, you skip it to the weakside shooter for a catch-and-shoot — right on his hands, top shelf.
+10. The pass goes to the sideline, where you intercept it and move it to the open teammate.
+_(pause: 2.5s)_
+
+### Lacrosse · Attack · VIZ — Finish on the crease
+<!-- slug: viz-lax-attack-finish-on-crease | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself on the crease, sealing the defender and showing a target.
 _(pause: 2s)_
-13. See yourself run the offense.
+2. The ball is up top, and your teammate begins the dodge.
 _(pause: 2s)_
-14. You hit the cutter coming off the crease, you come off a pick off-ball and bury the catch-and-shoot, you one-more it on the man-up until the open man has it.
+3. Your defender leaves to slide.
+_(pause: 2.5s)_
+4. You keep position, turn your shoulders, and open the stick to the feed.
+_(pause: 2.5s)_
+5. The feed arrives low and firm.
 _(pause: 2s)_
-15. And when the defense takes the feed away, you don't press. You settle it, wind it, and run the set on time.
+6. You receive it with soft hands and keep the head of the stick protected.
+_(pause: 2.5s)_
+7. You release it in one motion without winding up.
+_(pause: 3s)_
+8. The quick stick travels low to high inside the far pipe.
+_(pause: 3s)_
+9. You catch and release before the defender can recover to the crease.
+_(pause: 2.5s)_
+
+### Lacrosse · Attack · VIZ — Time and room, step in and rip
+<!-- slug: viz-lax-attack-time-and-room | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself up top with the ball and space in front of you.
 _(pause: 2s)_
-16. Now visualize the next play.
-_(pause: 0.8s)_
-17. Their clear breaks out and you ride hard from the front — you force the errant pass, win it back, and find the open man before their defense can breathe.
+2. The defense stays below you and leaves room for the shot.
 _(pause: 2s)_
+3. You set your feet and bring your hands away from your body.
+_(pause: 2s)_
+4. You load on the back foot and step toward the target.
+_(pause: 2.5s)_
+5. Your hips and shoulders move through the shot together.
+_(pause: 2s)_
+6. You finish over the front foot with an overhand release.
+_(pause: 2.5s)_
+7. The ball travels off-stick high.
+_(pause: 3s)_
+8. The shot reaches the corner before the goalie can set to it.
+_(pause: 2s)_
+9. You used the available space and completed the shooting motion on balance.
+_(pause: 2.5s)_
+
+### Lacrosse · Attack · VIZ — Ride hard, force the turnover
+<!-- slug: viz-lax-attack-ride-force-turnover | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself as the first rider, taking away the middle of the field.
+_(pause: 2s)_
+2. The goalie makes the save and looks for the first outlet.
+_(pause: 2s)_
+3. You approach on an angle that sends the ball carrier toward the sideline.
+_(pause: 2.5s)_
+4. He turns his shoulders and looks for the next pass.
+_(pause: 2s)_
+5. You close on his hands and delay the release.
+_(pause: 2.5s)_
+6. Under pressure, he sends the pass up the sideline.
+_(pause: 2s)_
+7. You read the pass and catch it cleanly out of the air.
+_(pause: 3s)_
+8. You protect the stick and look inside from thirty yards out.
+_(pause: 2s)_
+9. You move it to the open teammate before the defense finishes matching up.
+_(pause: 3s)_
+
+### Lacrosse · Attack · VIZ — Bury the man-up look
+<!-- slug: viz-lax-attack-man-up-finish | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself on the man-up, set on the wing as the ball moves around the perimeter.
+_(pause: 2s)_
+2. The unit keeps the passes firm and moves the defense with each catch.
+_(pause: 2s)_
+3. The rotation leaves your side open for a moment.
+_(pause: 2.5s)_
+4. The ball swings to you as the defender begins to close out.
+_(pause: 2s)_
+5. You catch with your hands ready and step toward the cage.
+_(pause: 2.5s)_
+6. You have room to release before the rotation reaches you.
+_(pause: 2s)_
+7. You shoot overhand before the defender closes the space.
+_(pause: 3s)_
+8. The shot stays low and reaches the far pipe.
+_(pause: 2.5s)_
+9. You complete the catch-and-shoot look created by the ball movement.
+_(pause: 2.5s)_
+
+### Lacrosse · Attack · VIZ — Miss the doorstep, bury the next
+<!-- slug: viz-lax-attack-next-look-clean | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself get open on the crease for a close-range feed.
+_(pause: 2s)_
+2. The feed reaches your stick, and you release before controlling it.
+_(pause: 2s)_
+3. The shot misses high.
+_(pause: 2s)_
+4. The ball goes out of bounds, and you turn and ride.
+_(pause: 2.5s)_
+5. On a later possession, you seal the defender and show your stick again.
+_(pause: 2.5s)_
+6. The feed returns to the same area.
+_(pause: 2s)_
+7. You receive it first, keep the hands soft, and make a compact release.
+_(pause: 3s)_
+8. The quick stick stays low and inside the pipe.
+_(pause: 3s)_
+9. You run through the crease and pick up the next assignment.
+_(pause: 2.5s)_
+
 ### Lacrosse · Midfield · VIZ — Push the ball
-<!-- slug: viz-lax-midfield-push-the-ball | file: components/pregame/audio/clips-lacrosse.ts -->
+<!-- slug: viz-lax-midfield-push-the-ball | file: components/pregame/audio/clips-viz-lacrosse.ts -->
 
-1. Keep your eyes closed. See yourself walking onto the field.
-_(pause: 1s)_
-2. You hear the ball snapping into pockets in warmups.
-_(pause: 1s)_
-3. Hear cleats on the turf, a coach calling out the lines.
+1. See yourself crossing midfield with the ball and scanning the numbers ahead.
 _(pause: 2s)_
-4. You feel the field under your feet.
-_(pause: 2.2s)_
-5. Feel your gloves close around the shaft.
-_(pause: 2.2s)_
-6. Feel your helmet settle, the chin strap snug.
+2. A ground ball comes loose at midfield. You get low and scoop through it with two hands.
+_(pause: 2.5s)_
+3. You carry into space, draw the pole, and keep your head up.
 _(pause: 2s)_
-7. You tell yourself, You belong here.
-_(pause: 1.25s)_
-8. You break the midline on the fly, fresh legs. Slow breath. The middle of the field is yours.
-_(pause: 0.25s)_
-9. A ground ball squirts loose at the midline. You get low, scoop it clean through traffic, and push.
+4. You hit the trailer in stride and fill the next lane.
+_(pause: 2.5s)_
+5. Next shift, you split the short-stick from up top and get downhill.
+_(pause: 2.5s)_
+6. You keep the stick protected, draw the next defender, and move the ball to the open side.
+_(pause: 2.5s)_
+7. When the defense matches up and the break is gone, you keep possession.
 _(pause: 2s)_
-10. You're up the field in three strides, drawing a pole, numbers ahead.
+8. You pull the ball out and let the offense get organized.
+_(pause: 2.5s)_
+9. On the next transition, you trail the play and catch the swing pass.
 _(pause: 2s)_
-11. You hit the trailer, fill the lane, and the break ends in the back of the net.
-_(pause: 2s)_
-12. Next shift, you dodge from up top, split the short-stick, get downhill, and rip it far pipe off the run.
-_(pause: 2s)_
-13. See yourself push the pace.
-_(pause: 2s)_
-14. Off the faceoff wing you take it end to end, you invert and dodge the pole from X, you sub on fresh and go before the defense sets.
-_(pause: 2s)_
-15. And when the break isn't there, you don't force the hero pass. You slow it down, settle it, and let the offense work.
-_(pause: 2s)_
-16. Now visualize the next play.
-_(pause: 0.8s)_
-17. Tie game, you trail the break — you catch the swing pass, step into a time-and-room shot, and put it away like you've done it a thousand times.
-_(pause: 2s)_
+10. You set your feet and take the time-and-room shot to the far side.
+_(pause: 2.5s)_
+
 ### Lacrosse · Midfield · VIZ — Cover both ends
-<!-- slug: viz-lax-midfield-cover-both-ends | file: components/pregame/audio/clips-lacrosse.ts -->
+<!-- slug: viz-lax-midfield-cover-both-ends | file: components/pregame/audio/clips-viz-lacrosse.ts -->
 
-1. Keep your eyes closed. See yourself walking onto the field.
-_(pause: 1s)_
-2. You hear the ball snapping into pockets in warmups.
-_(pause: 1s)_
-3. Hear cleats on the turf, a coach calling out the lines.
+1. See the ball turn over and pick up the nearest midfielder at the midline.
 _(pause: 2s)_
-4. You feel the field under your feet.
-_(pause: 2.2s)_
-5. Feel your gloves close around the shaft.
-_(pause: 2.2s)_
-6. Feel your helmet settle, the chin strap snug.
+2. The midfielder dodges, and you close the lane without overcommitting.
+_(pause: 2.5s)_
+3. The pass hits the turf. You call man-ball, scoop through it, and protect the stick.
 _(pause: 2s)_
-7. You tell yourself, You belong here.
-_(pause: 1.25s)_
-8. You pick up your man at the midline as the ball turns over. Slow breath. Both ends of this field belong to you.
-_(pause: 0.25s)_
-9. Their middie dodges and you slide over, break up the lane, and force the bad feed.
+4. You move it to the first outlet and start transition.
+_(pause: 2.5s)_
+5. On a long defensive possession, you stay connected to the matchup and keep the middle closed.
+_(pause: 2.5s)_
+6. On the faceoff wing, you box out, track the loose ball, and help secure possession.
+_(pause: 2.5s)_
+7. Late in the shift, you take the direct route through the middle on the backcheck.
 _(pause: 2s)_
-10. The ball hits the turf and you're on it — man-ball, scoop, protect it.
+8. You force the ball wide, communicate the matchup, then sub through the box.
+_(pause: 2.5s)_
+9. On the next fast break, you again recover through the middle and identify the most dangerous player.
 _(pause: 2s)_
-11. You start the break the other way and hit the outlet before their ride can set.
+10. The offense is pushed to a low-angle shot that the goalie can track.
+_(pause: 2.5s)_
+
+### Lacrosse · Midfield · VIZ — Shoot it on the run
+<!-- slug: viz-lax-midfield-shoot-on-the-run | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself filling the lane as the ball swings your way.
 _(pause: 2s)_
-12. Deep in the fourth, gassed at the end of a long defensive possession, you dig in, keep your feet moving, and get the stop.
+2. You catch on the move with the stick protected to the outside.
 _(pause: 2s)_
-13. See yourself own both ends.
+3. You keep running and bring your hands away from your body.
+_(pause: 2.5s)_
+4. You load through the hips without shortening your stride.
+_(pause: 2.5s)_
+5. Your shoulders and hips turn through the release.
 _(pause: 2s)_
-14. You ride your man hard on the clear and force the turnover, you win the wing battle at the faceoff, you match their best middie and keep him topside all night.
+6. You release the shot without breaking stride.
+_(pause: 3s)_
+7. The ball travels overhand toward the far side.
+_(pause: 2.5s)_
+8. The shot reaches the open space before the goalie finishes moving across.
+_(pause: 2.5s)_
+9. You complete the shooting motion on balance and continue through the play.
+_(pause: 2.5s)_
+
+### Lacrosse · Midfield · VIZ — Both ends in one shift
+<!-- slug: viz-lax-midfield-both-ends-shift | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself pick up your man as the ball turns over.
 _(pause: 2s)_
-15. And when your legs are screaming, you don't cheat the backcheck. One more sprint, take away the middle, then get off and recover.
+2. Their midfielder drives, and you arrive with the first slide.
 _(pause: 2s)_
-16. Now visualize the next play.
-_(pause: 0.8s)_
-17. Their fast break is coming downhill — you backcheck through the middle, force it wide, and turn their best chance into a low-angle nothing shot.
+3. You close his hands and force the pass away from the crease.
+_(pause: 2.5s)_
+4. The pass hits the turf, and you scoop through it with two hands.
+_(pause: 2.5s)_
+5. You protect the stick and carry into the open side of the field.
 _(pause: 2s)_
+6. You cross midfield and identify the advantage.
+_(pause: 2.5s)_
+7. You draw the final defender and pass to the trailer.
+_(pause: 3s)_
+8. The trailer catches in stride and finishes the transition chance.
+_(pause: 3s)_
+9. You recover through the middle and prepare for the next substitution.
+_(pause: 2.5s)_
+
+### Lacrosse · Midfield · VIZ — Win the ground-ball scrum
+<!-- slug: viz-lax-midfield-ground-ball-scrum | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See a loose ball between several players and approach under control.
+_(pause: 2s)_
+2. You call man-ball and identify the opponent nearest the ball.
+_(pause: 2s)_
+3. You get your hips low and box the opponent away from the ball.
+_(pause: 2.5s)_
+4. You keep both hands on the stick and scoop through the ball.
+_(pause: 3s)_
+5. Contact arrives as you bring the stick tight to your body.
+_(pause: 2.5s)_
+6. You move out of traffic and protect the head of the stick.
+_(pause: 2.5s)_
+7. You get your head up and find the open outlet on the wing.
+_(pause: 2s)_
+8. You deliver the pass to the outside shoulder.
+_(pause: 3s)_
+9. The outlet receives it and carries the ball into the offensive half.
+_(pause: 2.5s)_
+
+### Lacrosse · Midfield · VIZ — Slide early, rotate, get the stop
+<!-- slug: viz-lax-midfield-slide-and-rotate | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself off-ball, set as the first slide.
+_(pause: 2s)_
+2. Their midfielder gains a step and turns toward the middle.
+_(pause: 2s)_
+3. You leave on the call and meet the dodger before the crease.
+_(pause: 2.5s)_
+4. You break down, get to his hands, and stop his path to the cage.
+_(pause: 3s)_
+5. He moves the ball to the player you left.
+_(pause: 2.5s)_
+6. The second slide and adjacent defenders rotate behind you.
+_(pause: 2s)_
+7. You recover to the open player created by the rotation.
+_(pause: 2.5s)_
+8. You close under control and take away the quick feed inside.
+_(pause: 3s)_
+9. The ball moves back outside, and the defense returns to its shape.
+_(pause: 2.5s)_
+
+### Lacrosse · Midfield · VIZ — Cough one up, clear the next clean
+<!-- slug: viz-lax-midfield-next-clear-clean | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself receive the outlet near the sideline and turn upfield.
+_(pause: 2s)_
+2. The ride closes the sideline and removes your forward outlet.
+_(pause: 2s)_
+3. You force a pass into the middle, and their midfielder intercepts it.
+_(pause: 2s)_
+4. Possession changes. You sprint back, communicate, and match up.
+_(pause: 2.5s)_
+5. Later, your defense regains the ball and the outlet comes to you again.
+_(pause: 2.5s)_
+6. You check the field before the catch and see the sideline pressure coming.
+_(pause: 2.5s)_
+7. You come back to the ball, move it to the goalie, and cut into space.
+_(pause: 2.5s)_
+8. The goalie finds the open midfielder, and you fill the next lane.
+_(pause: 3s)_
+9. The ball crosses midfield, and the offense settles into its set.
+_(pause: 2.5s)_
+
 ### Lacrosse · Defense · VIZ — Lock him down
-<!-- slug: viz-lax-defense-lock-him-down | file: components/pregame/audio/clips-lacrosse.ts -->
+<!-- slug: viz-lax-defense-lock-him-down | file: components/pregame/audio/clips-viz-lacrosse.ts -->
 
-1. Keep your eyes closed. See yourself walking onto the field.
-_(pause: 1s)_
-2. You hear the ball snapping into pockets in warmups.
-_(pause: 1s)_
-3. Hear cleats on the turf, a coach calling out the lines.
+1. See yourself pick up the attackman at X with the pole out in front.
 _(pause: 2s)_
-4. You feel the field under your feet.
-_(pause: 2.2s)_
-5. Feel your gloves close around the long pole.
-_(pause: 2.2s)_
-6. Feel your helmet settle, the chin strap snug.
+2. He drives topside. You move your feet, stay on his hands, and force him behind the cage.
+_(pause: 2.5s)_
+3. He tries again. You break down and place one controlled poke on his bottom hand.
+_(pause: 2.5s)_
+4. You take away his strong hand, and he moves the ball back up top.
+_(pause: 2.5s)_
+5. On the next dodge, you arrive with the slide and force a low-angle shot the goalie handles.
+_(pause: 2.5s)_
+6. You approach under control, steer him to his weak hand, and make the slide call early.
+_(pause: 2.5s)_
+7. When he gains a step, you recover to his hands without reaching across his body.
 _(pause: 2s)_
-7. You tell yourself, You belong here.
-_(pause: 1.25s)_
-8. You pick up their attackman at X, pole out in front. Slow breath. This matchup is yours all night.
-_(pause: 0.25s)_
-9. He drives topside and you move your feet, stay in his hands, and force him back behind the cage.
+8. The slide stops the ball, and you rotate to the open player.
+_(pause: 2.5s)_
+9. On a late possession, the attackman isolates at X again.
 _(pause: 2s)_
-10. He tries again — you break down, throw one clean poke, and knock the ball off his bottom hand.
-_(pause: 2s)_
-11. You take away his strong hand, ride him off his spot, and the possession dies with him standing at X.
-_(pause: 2s)_
-12. The slide call comes and you're there on time — you wall up, force the bad shot, and your goalie eats it easy.
-_(pause: 2s)_
-13. See yourself erase your man.
-_(pause: 2s)_
-14. You approach under control, no wild trail check, keep him topside where your help lives, and quarterback the slide package loud enough for the whole defense to hear.
-_(pause: 2s)_
-15. And when he does beat you a step, you don't panic and you don't chase the highlight check. You recover to his hands, trust the slide, and win the next one.
-_(pause: 2s)_
-16. Now visualize the next play.
-_(pause: 0.8s)_
-17. Last two minutes, one-goal game, their best dodger isolates on you — you move your feet, force him to his weak hand, deny the shot he wants, and the stop is yours.
-_(pause: 2s)_
+10. You maintain leverage, force him to his weak hand, and make him move the ball away from the cage.
+_(pause: 2.5s)_
+
 ### Lacrosse · Defense · VIZ — Take it the other way
-<!-- slug: viz-lax-defense-take-it-the-other-way | file: components/pregame/audio/clips-lacrosse.ts -->
+<!-- slug: viz-lax-defense-take-it-the-other-way | file: components/pregame/audio/clips-viz-lacrosse.ts -->
 
-1. Keep your eyes closed. See yourself walking onto the field.
-_(pause: 1s)_
-2. You hear the ball snapping into pockets in warmups.
-_(pause: 1s)_
-3. Hear cleats on the turf, a coach calling out the lines.
+1. See the ball spill toward the faceoff wing with the long pole in your hands.
 _(pause: 2s)_
-4. You feel the field under your feet.
-_(pause: 2.2s)_
-5. Feel your gloves close around the long pole.
-_(pause: 2.2s)_
-6. Feel your helmet settle, the chin strap snug.
+2. You get your hips low, use two hands, and scoop through traffic.
 _(pause: 2s)_
-7. You tell yourself, You belong here.
-_(pause: 1.25s)_
-8. You line up on the faceoff wing, long pole in your gloves. Slow breath. The ground ball is about to be yours.
-_(pause: 0.25s)_
-9. The ball spills to the wing and you win it in traffic — low hips, two hands, scoop through.
+3. You protect the stick through contact and look for the first outlet.
+_(pause: 2.5s)_
+4. You carry past midfield, draw the short-stick, and move the ball to the open lane.
+_(pause: 2.5s)_
+5. Next possession, a controlled lift check dislodges the ball.
+_(pause: 2.5s)_
+6. You scoop it, protect the pole, and identify whether the numbers support transition.
+_(pause: 2.5s)_
+7. When the numbers are even, you make the short outlet instead of forcing the carry.
 _(pause: 2s)_
-10. You protect it through the check, look up, and the field opens in front of you.
+8. You move the ball, cross midfield, and return to the defensive side through the box.
+_(pause: 2.5s)_
+9. On the next clear, you scoop a loose ball and move away from the first rider.
 _(pause: 2s)_
-11. You push past midfield, draw a short stick, and feed the break — shot, goal, started by your stick.
+10. You cross midfield with your head up and hit the open midfielder in stride.
+_(pause: 2.5s)_
+
+### Lacrosse · Defense · VIZ — Shut down the 1v1 at X
+<!-- slug: viz-lax-defense-shutdown-1v1-x | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself pick up the attackman at X and confirm where your help is.
 _(pause: 2s)_
-12. Next possession you throw a lift check at the perfect moment, strip it clean, and go the other way with it.
+2. With the pole in front, you set your approach angle.
 _(pause: 2s)_
-13. See yourself turn defense into offense.
+3. He drives topside, and you move your feet to maintain leverage.
+_(pause: 2.5s)_
+4. You stay on his hands and keep your hips between him and GLE.
+_(pause: 2.5s)_
+5. With the topside route closed, he rolls back behind the cage.
 _(pause: 2s)_
-14. You jump the passing lane, you clean up the clear under a hard ride, you stand a middie up in transition and force the reset — your pole is a weapon at both ends.
+6. You arrive first and close the path to GLE.
+_(pause: 3s)_
+7. A controlled poke moves his hands away from the shooting angle.
+_(pause: 2.5s)_
+8. He moves the ball back up top.
+_(pause: 3s)_
+9. You recover below GLE, check the crease, and call the next matchup.
+_(pause: 2.5s)_
+
+### Lacrosse · Defense · VIZ — Slide, recover, deny the feed
+<!-- slug: viz-lax-defense-slide-recover | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself off-ball, set as the first slide.
 _(pause: 2s)_
-15. And when the numbers aren't there, you don't force the carry. You find the outlet, move it smart, and get back to your end.
+2. Their attackman gains a step toward the crease.
 _(pause: 2s)_
-16. Now visualize the next play.
-_(pause: 0.8s)_
-17. A caused turnover in your own end — you scoop it, beat the first rider, carry it over midfield with your head up, and hit the open middie in stride for the finish.
+3. You leave on the call and meet the dodger before the crease.
+_(pause: 2.5s)_
+4. You close his hands and force him to move the ball.
+_(pause: 3s)_
+5. He passes to the player you left.
+_(pause: 2.5s)_
+6. The defense rotates, and you recover to the next open player.
+_(pause: 2.5s)_
+7. You arrive under control as he receives the pass.
+_(pause: 2.5s)_
+8. With the pole on his hands, you take away the feed to the crease.
+_(pause: 3s)_
+9. He moves the ball outside, and the defense returns to its shape.
+_(pause: 2.5s)_
+
+### Lacrosse · Defense · VIZ — Win the gritty ground ball, clear it
+<!-- slug: viz-lax-defense-ground-ball-clear | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See a loose ball at the edge of the crease and approach under control.
 _(pause: 2s)_
+2. An attackman closes from the other side.
+_(pause: 2s)_
+3. You get low, establish body position, and scoop through the ball with two hands.
+_(pause: 3s)_
+4. Contact arrives as you bring the stick close to your body.
+_(pause: 2.5s)_
+5. With the ball secure, you move behind the cage to create an outlet angle.
+_(pause: 2.5s)_
+6. You protect the pole and move away from the first rider.
+_(pause: 2.5s)_
+7. You get your head up and find the midfielder flashing toward the midline.
+_(pause: 2.5s)_
+8. You deliver the outlet to his outside shoulder.
+_(pause: 3s)_
+9. The ball crosses midfield, and you set your feet back on the defensive side.
+_(pause: 2.5s)_
+
+### Lacrosse · Defense · VIZ — Man-down, hold the middle
+<!-- slug: viz-lax-defense-man-down-hold | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself in the man-down shape, protecting the middle of the field.
+_(pause: 2s)_
+2. Their extra-man unit moves the ball around the perimeter.
+_(pause: 2s)_
+3. You sink toward the hole with the stick in the inside passing lane.
+_(pause: 2.5s)_
+4. As the ball swings, you rotate with the unit.
+_(pause: 2.5s)_
+5. You keep the stick up and maintain the crease lane.
+_(pause: 2s)_
+6. They force the inside feed, and you deflect it.
+_(pause: 3s)_
+7. The ball stays loose near the crease.
+_(pause: 2s)_
+8. You scoop through it as the penalty expires.
+_(pause: 2.5s)_
+9. You move the ball to the outlet and the unit returns to even strength.
+_(pause: 2.5s)_
+
+### Lacrosse · Defense · VIZ — Beaten once, win the next matchup
+<!-- slug: viz-lax-defense-win-next-matchup | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself matched up on a quick dodger at X.
+_(pause: 2s)_
+2. He uses a jab step, gains topside, and reaches GLE.
+_(pause: 2s)_
+3. He finishes the shot before the slide arrives.
+_(pause: 2s)_
+4. The goal is recorded, and you return to the huddle for the next call.
+_(pause: 2.5s)_
+5. On a later possession, the same dodger starts from X.
+_(pause: 2.5s)_
+6. You break down earlier and keep a better cushion.
+_(pause: 2.5s)_
+7. You maintain topside leverage and steer him to his weak hand.
+_(pause: 3s)_
+8. He cannot reach GLE and moves the ball back up top.
+_(pause: 3s)_
+9. You recover below GLE, check the crease, and prepare for the next dodge.
+_(pause: 2.5s)_
+
 ### Lacrosse · FOGO · VIZ — Win the clamp
-<!-- slug: viz-lax-fogo-win-the-clamp | file: components/pregame/audio/clips-lacrosse.ts -->
+<!-- slug: viz-lax-fogo-win-the-clamp | file: components/pregame/audio/clips-viz-lacrosse.ts -->
 
-1. Keep your eyes closed. See yourself walking onto the field.
-_(pause: 1s)_
-2. You hear the ball snapping into pockets in warmups.
-_(pause: 1s)_
-3. Hear cleats on the turf, a coach calling out the lines.
+1. See yourself set your feet at the dot and check your grip and stance.
 _(pause: 2s)_
-4. You feel the field under your feet.
-_(pause: 2.2s)_
-5. Feel your gloves close around the shaft.
-_(pause: 2.2s)_
-6. Feel your helmet settle, the chin strap snug.
+2. Down, set. On the whistle, your clamp gets to the ball first.
 _(pause: 2s)_
-7. You tell yourself, You belong here.
-_(pause: 1.25s)_
-8. You walk to the X and set your feet at the dot. Slow breath. This draw is one rep, and it's yours.
-_(pause: 0.25s)_
-9. Down, set — the whistle blows and your clamp fires first.
+3. You control the ball and rake it toward your wing.
+_(pause: 2.5s)_
+4. Your wing scoops through it and moves the ball to the offense.
+_(pause: 2.5s)_
+5. On the next draw, he counters quickly. You go over the top and stop his exit.
+_(pause: 2.5s)_
+6. You pull the ball into space, scoop it, and make the short outlet.
+_(pause: 2.5s)_
+7. When he wins the clamp, you move immediately to the tie-up.
 _(pause: 2s)_
-10. You beat him to the ball and rake it back to your wing side, clean.
-_(pause: 2s)_
-11. Your wing scoops it, and your offense has the ball because of you.
-_(pause: 2s)_
-12. Next draw he counters fast, so you adjust — over the top, win the pull, exit to open field with it on your stick.
-_(pause: 2s)_
-13. See yourself win the dot.
-_(pause: 2s)_
-14. You read his tendency between draws, get lower than him on the whistle, win the leverage battle, and come out clean, draw after draw.
-_(pause: 2s)_
-15. And when he wins the clamp, you don't quit on the rep. You tie him up, let your wing win the fifty-fifty, and reset for the next whistle.
-_(pause: 2s)_
-16. Now visualize the next play.
-_(pause: 0.8s)_
-17. Fourth quarter, one-goal game, the big draw — quick hands on the whistle, clamp, pop it to space, scoop, and your team has the ball when it matters most.
-_(pause: 2s)_
+8. You keep the ball contested and direct it toward the wing matchup.
+_(pause: 2.5s)_
+9. On a late draw, you clamp and direct the ball away from pressure.
+_(pause: 2.5s)_
+10. You scoop it, protect the stick, and make the outlet.
+_(pause: 2.5s)_
+
 ### Lacrosse · FOGO · VIZ — Win the wing
-<!-- slug: viz-lax-fogo-win-the-wing | file: components/pregame/audio/clips-lacrosse.ts -->
+<!-- slug: viz-lax-fogo-win-the-wing | file: components/pregame/audio/clips-viz-lacrosse.ts -->
 
-1. Keep your eyes closed. See yourself walking onto the field.
-_(pause: 1s)_
-2. You hear the ball snapping into pockets in warmups.
-_(pause: 1s)_
-3. Hear cleats on the turf, a coach calling out the lines.
+1. See the clamp battle stall and the ball move loose toward the wing.
 _(pause: 2s)_
-4. You feel the field under your feet.
-_(pause: 2.2s)_
-5. Feel your gloves close around the shaft.
-_(pause: 2.2s)_
-6. Feel your helmet settle, the chin strap snug.
+2. You keep your hips low, stay connected to the play, and box out the nearest opponent.
+_(pause: 2.5s)_
+3. Your wing scoops through the ball and sends it to the outlet.
+_(pause: 2.5s)_
+4. On the next draw, you direct the ball forward and scoop it in stride.
+_(pause: 2.5s)_
+5. You carry with your head up and move it to the open lane in transition.
+_(pause: 2.5s)_
+6. On another tie-up, you and the wing midfielder keep the ball on your side of the scrum.
+_(pause: 2.5s)_
+7. After a lost draw, you review the exit and reset your stance.
 _(pause: 2s)_
-7. You tell yourself, You belong here.
-_(pause: 1.25s)_
-8. You crouch at the dot with your wings set. Slow breath. Whatever happens on this whistle, the ball comes out yours.
-_(pause: 0.25s)_
-9. The whistle blows, the clamp battle stalls, and the ball squirts into the scrum.
+8. You prepare for the next whistle without changing the whole plan.
 _(pause: 2s)_
-10. You stay on it — low hips, feet churning, and you come out of the pile with the ball in your stick.
+9. The next ball moves to the wing, and you establish body position between the pole and the ball.
+_(pause: 2.5s)_
+10. You scoop through it and move the ball to the nearest outlet.
+_(pause: 2.5s)_
+
+### Lacrosse · FOGO · VIZ — Counter and win the pull
+<!-- slug: viz-lax-fogo-counter-the-clamp | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself set at the dot, ready with a counter if he beats you to the clamp.
 _(pause: 2s)_
-11. You hit your outlet, get off the field clean, and let the offense run.
+2. Down, set. On the whistle, his clamp gets to the ball first.
 _(pause: 2s)_
-12. Next draw you win it forward, scoop it in stride, and push it yourself — the defense isn't set, and you feed the fast break before they can slide.
+3. You recognize the loss and move immediately to the counter.
+_(pause: 2.5s)_
+4. You go over the top and place pressure on the back of his stick.
+_(pause: 2.5s)_
+5. You stop the exit and keep the ball under both sticks.
+_(pause: 2.5s)_
+6. You re-clamp and pull the ball toward your hand.
+_(pause: 2.5s)_
+7. You use your body to protect the ball and step away from the dot.
+_(pause: 2.5s)_
+8. Your wing moves alongside you as an outlet.
 _(pause: 2s)_
-13. See yourself win the battle after the whistle.
+9. You make the short pass and prepare for the next substitution.
+_(pause: 3s)_
+
+### Lacrosse · FOGO · VIZ — Win it forward, push the break
+<!-- slug: viz-lax-fogo-win-and-go | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself set at the X with a forward exit available.
 _(pause: 2s)_
-14. You win the wing exchange with your middie, you battle the fifty-fifty until it's yours, you draw the violation and take the free possession.
+2. Down, set. On the whistle, you clamp and direct the ball forward.
+_(pause: 2.5s)_
+3. You scoop through it in stride and protect the stick.
+_(pause: 2.5s)_
+4. You look up and identify the transition numbers.
+_(pause: 2.5s)_
+5. The trailing midfielder fills the lane behind you.
+_(pause: 2.5s)_
+6. You carry to the top of the box and draw the defender.
+_(pause: 2.5s)_
+7. When he commits, you feed the trailing midfielder in stride.
+_(pause: 2.5s)_
+8. He catches on the run and releases before the slide arrives.
 _(pause: 2s)_
-15. And after a loss at the dot, you reset fast — next whistle, quicker hands, and the last draw stays behind you.
+9. You clear toward the sideline and prepare to sub off.
+_(pause: 3s)_
+
+### Lacrosse · FOGO · VIZ — Close it out at the dot
+<!-- slug: viz-lax-fogo-close-it-out | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself walk to the X for a late draw with your team protecting a lead.
 _(pause: 2s)_
-16. Now visualize the next play.
-_(pause: 0.8s)_
-17. The ball is loose on the wing with their pole bearing down — you get there first, body between him and the ball, scoop through clean, and turn one ground ball into the possession that becomes a goal.
+2. You identify the defensive-side exit and check the wing alignment.
+_(pause: 2.5s)_
+3. Down, set. On the whistle, you stay low and clamp toward the defensive side.
+_(pause: 2.5s)_
+4. You keep the exit simple and rake the ball away from pressure.
+_(pause: 2.5s)_
+5. The pole on the wing moves to the ball.
+_(pause: 2.5s)_
+6. He scoops through it and moves to the outlet.
+_(pause: 2.5s)_
+7. The clear moves up the sideline before the ride can trap it.
+_(pause: 2.5s)_
+8. The offense settles into its possession set and uses the clock.
 _(pause: 2s)_
+9. You return to the sideline and prepare for the next whistle.
+_(pause: 3s)_
+
+### Lacrosse · FOGO · VIZ — Read the counter and adjust
+<!-- slug: viz-lax-fogo-read-and-adjust | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself between draws, reviewing the opponent's clamp and exit.
+_(pause: 2s)_
+2. The opponent has favored a quick clamp with an exit to his right.
+_(pause: 2.5s)_
+3. You choose an over-the-top counter to stop that exit.
+_(pause: 2.5s)_
+4. Down, set. You remain still and react when the whistle sounds.
+_(pause: 2.5s)_
+5. His clamp arrives first, and you move directly to the planned counter.
+_(pause: 2.5s)_
+6. You get over his stick and stop the ball from reaching his exit.
+_(pause: 2.5s)_
+7. You redirect the ball away from his pressure.
+_(pause: 2.5s)_
+8. You rake it to space, scoop through it, and protect the stick.
+_(pause: 2s)_
+9. You make the short outlet and record the adjustment for the next draw.
+_(pause: 3s)_
+
+### Lacrosse · FOGO · VIZ — Win the next one clean
+<!-- slug: viz-lax-fogo-win-the-next-one | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself return to the X after losing the previous three draws.
+_(pause: 2s)_
+2. You review the common exit, then focus on this setup.
+_(pause: 2.5s)_
+3. You adjust the grip and lower the stance without rushing the whistle.
+_(pause: 2.5s)_
+4. Down, set. On the whistle, you get under his hands and clamp.
+_(pause: 2.5s)_
+5. The ball stays under your stick as you turn toward the wing.
+_(pause: 2.5s)_
+6. You rake it toward your wing and away from the counter.
+_(pause: 2.5s)_
+7. Your wing establishes position and scoops through the loose ball.
+_(pause: 2.5s)_
+8. The ball moves to the outlet, and you clear the scrum.
+_(pause: 2s)_
+9. You return to the sideline and prepare for the next draw on its own.
+_(pause: 3s)_
+
 ### Lacrosse · Goalie · VIZ — Make the save
-<!-- slug: viz-lax-goalie-make-the-save | file: components/pregame/audio/clips-lacrosse.ts -->
+<!-- slug: viz-lax-goalie-make-the-save | file: components/pregame/audio/clips-viz-lacrosse.ts -->
 
-1. Keep your eyes closed. See yourself walking onto the field.
-_(pause: 1s)_
-2. You hear the ball snapping into pockets in warmups.
-_(pause: 1s)_
-3. Hear cleats on the turf, a coach calling out the lines.
+1. See yourself set the angle in the cage and check the shooter's hands.
 _(pause: 2s)_
-4. You feel the crease dirt under your feet.
-_(pause: 2.2s)_
-5. Feel your gloves close around the shaft.
-_(pause: 2.2s)_
-6. Feel your chest pad settle, the helmet snug.
+2. The shooter winds up from twelve yards, and you track the release off the stick.
+_(pause: 2.5s)_
+3. You step toward the ball, drive both hands stick-side high, and control it in the pocket.
 _(pause: 2s)_
-7. You tell yourself, You belong here.
-_(pause: 1.25s)_
-8. You step into the cage and set your angle. Slow breath. The next shot is all that exists.
-_(pause: 0.25s)_
-9. Their shooter winds up from twelve yards and you track it all the way off the stick.
+4. You secure the ball and look immediately for the first outlet.
+_(pause: 2.5s)_
+5. Next possession, a low bouncer comes through traffic. You stay square and get the stick to the ball first.
+_(pause: 2.5s)_
+6. Your body follows the stick, and you control the rebound in front of you.
+_(pause: 2.5s)_
+7. On a later shot, the ball reaches the net before you get across.
 _(pause: 2s)_
-10. Your hands drive to the ball — stick-side high, and you smother it.
+8. You retrieve it, reset your feet, and make the defensive calls for the restart.
+_(pause: 2.5s)_
+9. On the next crease feed, you hold the angle and step toward the shooter's hands.
 _(pause: 2s)_
-11. Save. You hear your defense exhale, and your eyes are already up the field.
-_(pause: 2s)_
-12. Next possession, a low bouncer through traffic — you find it late, drop the stick, and kick it out to the corner, no rebound.
-_(pause: 2s)_
-13. See yourself steady in the cage.
-_(pause: 2s)_
-14. You set your angle early, square up to every shot, take away the far pipe, and beat the step-down shooters with your hands, quarter after quarter.
-_(pause: 2s)_
-15. And when one gets by you, you don't replay it. You set your feet, call out the defense, and take the next shot as its own.
-_(pause: 2s)_
-16. Now visualize the next play.
-_(pause: 0.8s)_
-17. Man-down, point-blank on the crease — you hold your ground, force his hands, make the desperation save, and steer the rebound to the corner where your pole cleans it up.
-_(pause: 2s)_
+10. You meet the shot with stick and body and steer the rebound toward the pole in the corner.
+_(pause: 2.5s)_
+
 ### Lacrosse · Goalie · VIZ — Start the clear
-<!-- slug: viz-lax-goalie-start-the-clear | file: components/pregame/audio/clips-lacrosse.ts -->
+<!-- slug: viz-lax-goalie-start-the-clear | file: components/pregame/audio/clips-viz-lacrosse.ts -->
 
-1. Keep your eyes closed. See yourself walking onto the field.
-_(pause: 1s)_
-2. You hear the ball snapping into pockets in warmups.
-_(pause: 1s)_
-3. Hear cleats on the turf, a coach calling out the lines.
+1. See yourself set in the cage, calling the hot defender and the second slide.
 _(pause: 2s)_
-4. You feel the crease dirt under your feet.
-_(pause: 2.2s)_
-5. Feel your gloves close around the shaft.
-_(pause: 2.2s)_
-6. Feel your chest pad settle, the helmet snug.
+2. The shot comes from up top, and you secure it in the pocket.
+_(pause: 2.5s)_
+3. Your eyes move upfield as the break midfielder runs the wing.
+_(pause: 2.5s)_
+4. You deliver the outlet in stride before the ride can close the lane.
+_(pause: 2.5s)_
+5. On the next clear, the ride takes away the first pass, so you carry behind the cage and keep scanning.
+_(pause: 2.5s)_
+6. You call the redirect and find the defender on the weak side.
+_(pause: 2.5s)_
+7. When a clear is ridden into a turnover, you communicate the matchups immediately.
 _(pause: 2s)_
-7. You tell yourself, You belong here.
-_(pause: 1.25s)_
-8. You set up in the cage and call out the defense — who's hot, who has two. Slow breath. This defense runs on your voice.
-_(pause: 0.25s)_
-9. The shot comes and you make the save, ball socked away in your stick.
+8. You reset the defense, call the next slide, and set your angle.
+_(pause: 2.5s)_
+9. On the next save, you control the ball and return to the simple outlet on the wing.
+_(pause: 2.5s)_
+10. The outlet crosses midfield, and you return to the crease.
+_(pause: 2.5s)_
+
+### Lacrosse · Goalie · VIZ — Stone the doorstep
+<!-- slug: viz-lax-goalie-doorstep | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself set in the crease as the ball moves inside.
 _(pause: 2s)_
-10. Your eyes are up before the whistle — the break middie is streaking up the wing.
+2. Their attackman catches on the crease, five feet from the cage.
+_(pause: 2.5s)_
+3. You hold the angle instead of retreating toward the goal line.
+_(pause: 2.5s)_
+4. You step toward his hands and reduce the open cage.
+_(pause: 2.5s)_
+5. You track the head of his stick through the release.
+_(pause: 2.5s)_
+6. Both hands drive to the ball, with your body behind the stick.
+_(pause: 2.5s)_
+7. You control the ball against your chest and keep it in the pocket.
+_(pause: 2.5s)_
+8. You check the crease and wait for the outlet to separate.
 _(pause: 2s)_
-11. You hit him in stride. Save and go, and four seconds later it's a scoring chance at the other end.
+9. You make the outlet call and begin the clear.
+_(pause: 3s)_
+
+### Lacrosse · Goalie · VIZ — Stop the low bouncer
+<!-- slug: viz-lax-goalie-low-bouncer | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself set square to a shooter winding up from ten yards.
 _(pause: 2s)_
-12. Next stop, their ride comes hard — you stay patient behind the cage, find the open man through the pressure, and the clear goes off clean.
+2. His hands drop through the release, and you track the ball low.
+_(pause: 2.5s)_
+3. The shot is aimed to bounce near your feet.
+_(pause: 2.5s)_
+4. You keep your eyes on the ball and step toward the bounce.
+_(pause: 2.5s)_
+5. The stick arrives first, with both hands driving toward the ball.
+_(pause: 2.5s)_
+6. You stay square so the body follows directly behind the stick.
+_(pause: 2.5s)_
+7. The ball settles in front of you without a rebound to the crease.
+_(pause: 2.5s)_
+8. You scoop it, bring the stick to protection, and check the outlets.
 _(pause: 2s)_
-13. See yourself run the field from the crease.
+9. You reset your feet and make the clear call.
+_(pause: 3s)_
+
+### Lacrosse · Goalie · VIZ — Hold the man-down kill
+<!-- slug: viz-lax-goalie-man-down-kill | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself in the cage with a defender serving a penalty.
 _(pause: 2s)_
-14. You direct the slide package before the shot, you control every rebound to the corner, you quarterback the clear past midfield — the whole field organized from your voice.
+2. Their extra-man unit moves the ball around the perimeter.
+_(pause: 2.5s)_
+3. You move on your arc and stay square to each catch.
+_(pause: 2.5s)_
+4. The first shot comes from up top, and you direct the rebound to the corner.
+_(pause: 2.5s)_
+5. The defense moves the rebound up the sideline while the penalty continues.
+_(pause: 2.5s)_
+6. On the next possession, the ball moves skip-side.
+_(pause: 2.5s)_
+7. You read the feed to the crease and set the angle before the catch.
+_(pause: 2.5s)_
+8. You step to the release and control the ball without a rebound.
 _(pause: 2s)_
-15. And when a clear gets rode and turned, you don't go quiet. You reset the defense, call the next slide, and take the next save.
+9. The penalty expires, and you make the outlet as the team returns to even strength.
+_(pause: 3s)_
+
+### Lacrosse · Goalie · VIZ — Command the defense, no shot
+<!-- slug: viz-lax-goalie-command-the-defense | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself set in the middle of the crease with the offense arranged around you.
 _(pause: 2s)_
-16. Now visualize the next play.
-_(pause: 0.8s)_
-17. First save of the game, early — warm hands, clean catch, one crisp outlet to the wing, and the whole defense settles because you did.
+2. Their attackman catches at X, and you identify the on-ball matchup.
+_(pause: 2.5s)_
+3. You call the hot defender and the second slide before the dodge begins.
+_(pause: 2.5s)_
+4. He dodges, and the first slide leaves on your call.
+_(pause: 2.5s)_
+5. You call the rotation, and the adjacent defenders fill behind the slide.
+_(pause: 2.5s)_
+6. The ball moves outside as the defense returns to its shape.
+_(pause: 2.5s)_
+7. The offense forces a feed inside, and the pole intercepts it.
+_(pause: 2.5s)_
+8. You call the clear as the pole moves the ball away from the crease.
 _(pause: 2s)_
+9. You return to your angle and organize the outlets.
+_(pause: 3s)_
+
+### Lacrosse · Goalie · VIZ — Soft one behind you, next save
+<!-- slug: viz-lax-goalie-next-save | file: components/pregame/audio/clips-viz-lacrosse.ts -->
+
+1. See yourself return to the crease after a shot you expected to save reaches the net.
+_(pause: 2s)_
+2. The goal is recorded. You retrieve the ball and reset the cage.
+_(pause: 2.5s)_
+3. You set your feet on the arc and establish the angle early.
+_(pause: 2.5s)_
+4. You call the hot defender and the second slide for the restart.
+_(pause: 2.5s)_
+5. The next shot comes from the wing.
+_(pause: 2.5s)_
+6. You stay square with both hands ready and track the release.
+_(pause: 2.5s)_
+7. You step toward the shot and drive the stick to the ball.
+_(pause: 2.5s)_
+8. You control the ball against your chest.
+_(pause: 2s)_
+9. You secure the ball and give the first outlet call.
+_(pause: 3s)_
 ## Hard Moment Clips — Attack
 
 ### Lacrosse · Attack · turnover
