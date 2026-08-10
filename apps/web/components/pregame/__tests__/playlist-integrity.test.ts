@@ -925,12 +925,12 @@ describe("shared sport-neutral openers (FV-466)", () => {
 // ---------------------------------------------------------------------------
 
 describe("catalog count (multi-sport, FV-266)", () => {
-  it("catalog is fully categorized (no orphans) and totals 521 entries", () => {
+  it("catalog is fully categorized (no orphans) and totals 549 entries", () => {
     const keys = Object.keys(catalog);
     const n = (re: RegExp) => keys.filter((k) => re.test(k)).length;
     const breakdown = {
-      viz: n(/^viz-/), //                         142 — profile + positive-play viz (all sports)
-      //                                                 +21 golf viz (FV-294), +7 football flagship (FV-203), +49 football plays (FV-423)
+      viz: n(/^viz-/), //                         170 — profile + positive-play viz (all sports)
+      //                                                 +21 golf viz (FV-294), +7 football flagship (FV-203), +49 football plays (FV-423), +28 baseball plays (FV-424)
       hmHockey: n(/^hm-(forward|defense|goalie)-/), // 30 — hockey hard-moment cells
       hmBball: n(/^hm-bb-/), //                     30 — basketball compositional cells
       bbalBaked: n(/^bb-/), //                      30 — legacy baked basketball composites
@@ -951,7 +951,7 @@ describe("catalog count (multi-sport, FV-266)", () => {
     // Every catalog key falls into exactly one bucket — catches typos/orphans.
     expect(uncategorized, `uncategorized clips: ${uncategorized.join(", ")}`).toEqual([]);
     expect(sum).toBe(keys.length);
-    expect(keys).toHaveLength(521);
+    expect(keys).toHaveLength(549);
   });
 });
 
@@ -1104,7 +1104,7 @@ describe("positive-play library integrity (FV-144)", () => {
     // the module-map slug scheme (football "ftb", lacrosse "lax", …) to keep
     // the catalog collision-free: viz-{sportToken}-{role}-{play}. Legacy
     // hockey/basketball/golf slugs stay un-namespaced (viz-{role}-{play}).
-    const SPORT_SLUG_TOKENS = ["ftb"];
+    const SPORT_SLUG_TOKENS = ["ftb", "bsb"];
     const mismatches: string[] = [];
     for (const { slug, role } of POSITIVE_PLAYS) {
       const roleToken = role.toLowerCase().replace(/-/g, "");
