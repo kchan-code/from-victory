@@ -602,3 +602,80 @@ _(pause: 1s)_
 <!-- slug: pp-football-focus-next-play | file: components/pregame/audio/clips.ts -->
 
 1. Next play.
+
+## Lacrosse Pre-Practice Clips
+
+### Pre-Practice Lacrosse · opener-get-to
+<!-- slug: pp-lax-opener-get-to | file: components/pregame/audio/clips.ts -->
+
+1. Be honest: your energy is low today. You are still responsible for how you practice.
+_(pause: 1.2s)_
+2. Do not wait for your mood to change. Start with one controllable action: move your feet, show a target, and finish the first wall-ball pass.
+_(pause: 1s)_
+3. Working for the Lord does not mean pretending you feel good. It means giving honest attention to the work in front of you, even on a flat day.
+_(pause: 1.2s)_
+4. Notice what is in front of you: your body can move, your teammates are here, and the first drill has a clear job.
+_(pause: 1s)_
+5. Do not solve the whole practice at once. Get your feet moving, keep two hands on the stick, and communicate through the first rep.
+_(pause: 0.8s)_
+6. Start with the first rep.
+### Pre-Practice Lacrosse · name-standard
+<!-- slug: pp-lax-name-standard | file: components/pregame/audio/clips.ts -->
+
+1. Name one standard for today: two hands through ground balls, early slide calls, or active feet on every approach. Make it specific enough to evaluate after each rep.
+_(pause: 1s)_
+2. Carry that standard through each drill. When a rep slips, take the correction and apply it to the next one.
+### Pre-Practice Lacrosse · goal-fusion
+<!-- slug: pp-lax-goal-fusion | file: components/pregame/audio/clips.ts -->
+
+1. Find one game detail inside today's drill. On wall ball, it may be moving your feet through the catch. On a ground ball, it may be getting low and scooping through with two hands.
+_(pause: 1s)_
+2. Rehearse that detail at practice speed, then keep it when contact or fatigue is added. The drill gives you a repeatable action for the game.
+_(pause: 1s)_
+3. One clear detail, repeated on purpose.
+### Pre-Practice Lacrosse · be-vocal
+<!-- slug: pp-lax-be-vocal | file: components/pregame/audio/clips.ts -->
+
+1. Communication is part of the rep. Call "ball," "hot," "I've got two," "cutter," and "switch" early enough for a teammate to act.
+_(pause: 1.2s)_
+2. Do not wait until the call sounds perfect. Use the correct word, with enough volume and enough time.
+_(pause: 0.8s)_
+3. On defense, identify the ball, the first slide, and the second slide. On the clear, point to the outlet and call where the pressure is coming from. On the ride, call who has the ball and take the outlet away.
+_(pause: 0.8s)_
+4. Make the first useful call before the drill begins.
+### Pre-Practice Lacrosse · see-it-go
+<!-- slug: pp-lax-see-it-go | file: components/pregame/audio/clips.ts -->
+
+1. See one rep: start in ready position, hear the call, move your feet, and finish the assignment.
+_(pause: 1.5s)_
+2. If the rep breaks down, listen to the correction, identify one change, and reset before the next whistle.
+_(pause: 1s)_
+3. Start the next rep from ready position instead of carrying the last one forward.
+### Pre-Practice Lacrosse · focus-run-through-every-ground-ball
+<!-- slug: pp-lax-focus-run-through-every-ground-ball | file: components/pregame/audio/clips.ts -->
+
+1. Run through every ground ball.
+### Pre-Practice Lacrosse · focus-move-first
+<!-- slug: pp-lax-focus-move-first | file: components/pregame/audio/clips.ts -->
+
+1. Move first when the ball is loose.
+### Pre-Practice Lacrosse · focus-two-hands-through
+<!-- slug: pp-lax-focus-two-hands-through | file: components/pregame/audio/clips.ts -->
+
+1. Two hands through the ground ball.
+### Pre-Practice Lacrosse · focus-call-the-slide-early
+<!-- slug: pp-lax-focus-call-the-slide-early | file: components/pregame/audio/clips.ts -->
+
+1. Call the slide early.
+### Pre-Practice Lacrosse · focus-finish-the-rep
+<!-- slug: pp-lax-focus-finish-the-rep | file: components/pregame/audio/clips.ts -->
+
+1. Finish the rep, then reset.
+### Pre-Practice Lacrosse · focus-protect-the-stick-through-traffic
+<!-- slug: pp-lax-focus-protect-the-stick-through-traffic | file: components/pregame/audio/clips.ts -->
+
+1. Protect the stick through traffic.
+### Pre-Practice Lacrosse · focus-finish-hands-free
+<!-- slug: pp-lax-focus-finish-hands-free | file: components/pregame/audio/clips.ts -->
+
+1. Finish with your hands free.
