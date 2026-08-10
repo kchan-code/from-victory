@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "ad594a80",
+  "manifestVersion": "a7cd6b67",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -6046,6 +6046,286 @@
       "url": "/audio/pregame/clips/st-ftb-01.b1c66321.mp3",
       "durationSec": 2.424,
       "phases": []
+    },
+    "viz-bsb-pitcher-attack-first-inning": {
+      "url": "/audio/pregame/clips/viz-bsb-pitcher-attack-first-inning.b0f94b82.mp3",
+      "durationSec": 62.02,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-pitcher-strikeout-sequence": {
+      "url": "/audio/pregame/clips/viz-bsb-pitcher-strikeout-sequence.77af9d54.mp3",
+      "durationSec": 64.848,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-pitcher-escape-the-jam": {
+      "url": "/audio/pregame/clips/viz-bsb-pitcher-escape-the-jam.3eadc448.mp3",
+      "durationSec": 64.2,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-pitcher-hold-and-field": {
+      "url": "/audio/pregame/clips/viz-bsb-pitcher-hold-and-field.76fea212.mp3",
+      "durationSec": 63.72,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-pitcher-putaway-pitch": {
+      "url": "/audio/pregame/clips/viz-bsb-pitcher-putaway-pitch.55f2b5b9.mp3",
+      "durationSec": 61.46,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-pitcher-deep-outing-rhythm": {
+      "url": "/audio/pregame/clips/viz-bsb-pitcher-deep-outing-rhythm.8135cb46.mp3",
+      "durationSec": 62.448,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-pitcher-bounce-back": {
+      "url": "/audio/pregame/clips/viz-bsb-pitcher-bounce-back.b59ed124.mp3",
+      "durationSec": 67.464,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-catcher-frame-the-zone": {
+      "url": "/audio/pregame/clips/viz-bsb-catcher-frame-the-zone.86b59320.mp3",
+      "durationSec": 60.576,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-catcher-block-in-the-dirt": {
+      "url": "/audio/pregame/clips/viz-bsb-catcher-block-in-the-dirt.5eba1976.mp3",
+      "durationSec": 57.812,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-catcher-throw-out-the-runner": {
+      "url": "/audio/pregame/clips/viz-bsb-catcher-throw-out-the-runner.7d0dec9b.mp3",
+      "durationSec": 62.832,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-catcher-call-the-game": {
+      "url": "/audio/pregame/clips/viz-bsb-catcher-call-the-game.e24bff1c.mp3",
+      "durationSec": 63.644,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-catcher-play-at-the-plate": {
+      "url": "/audio/pregame/clips/viz-bsb-catcher-play-at-the-plate.c9686e71.mp3",
+      "durationSec": 65.3,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-catcher-clutch-at-bat": {
+      "url": "/audio/pregame/clips/viz-bsb-catcher-clutch-at-bat.d8f02984.mp3",
+      "durationSec": 59.852,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-catcher-bounce-back": {
+      "url": "/audio/pregame/clips/viz-bsb-catcher-bounce-back.eaa7e0c4.mp3",
+      "durationSec": 62.42,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-infield-turn-two": {
+      "url": "/audio/pregame/clips/viz-bsb-infield-turn-two.cd0eb9bd.mp3",
+      "durationSec": 56.264,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-infield-backhand-hole": {
+      "url": "/audio/pregame/clips/viz-bsb-infield-backhand-hole.dd84a603.mp3",
+      "durationSec": 61.3,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-infield-diving-stop": {
+      "url": "/audio/pregame/clips/viz-bsb-infield-diving-stop.43481d5a.mp3",
+      "durationSec": 60.94,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-infield-drive-in-run": {
+      "url": "/audio/pregame/clips/viz-bsb-infield-drive-in-run.1a353f38.mp3",
+      "durationSec": 58.424,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-infield-work-count-single": {
+      "url": "/audio/pregame/clips/viz-bsb-infield-work-count-single.30e3eec6.mp3",
+      "durationSec": 64.136,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-infield-two-strike-battle": {
+      "url": "/audio/pregame/clips/viz-bsb-infield-two-strike-battle.48df0fa4.mp3",
+      "durationSec": 62.64,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-infield-next-ball-clean": {
+      "url": "/audio/pregame/clips/viz-bsb-infield-next-ball-clean.51e0d583.mp3",
+      "durationSec": 65.212,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-outfield-run-down-gap": {
+      "url": "/audio/pregame/clips/viz-bsb-outfield-run-down-gap.3196164b.mp3",
+      "durationSec": 64.152,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-outfield-throw-out-runner": {
+      "url": "/audio/pregame/clips/viz-bsb-outfield-throw-out-runner.e88a61b9.mp3",
+      "durationSec": 61.16,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-outfield-diving-catch": {
+      "url": "/audio/pregame/clips/viz-bsb-outfield-diving-catch.1e0750fc.mp3",
+      "durationSec": 58.348,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-outfield-play-the-wall": {
+      "url": "/audio/pregame/clips/viz-bsb-outfield-play-the-wall.f334043d.mp3",
+      "durationSec": 63.004,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-outfield-drive-the-gap": {
+      "url": "/audio/pregame/clips/viz-bsb-outfield-drive-the-gap.8f0e2585.mp3",
+      "durationSec": 62.164,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-outfield-two-strike-single": {
+      "url": "/audio/pregame/clips/viz-bsb-outfield-two-strike-single.aa588571.mp3",
+      "durationSec": 62.548,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-bsb-outfield-next-at-bat-clean": {
+      "url": "/audio/pregame/clips/viz-bsb-outfield-next-at-bat-clean.4e94af6b.mp3",
+      "durationSec": 65.332,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
     }
   },
   "templates": [
