@@ -37,7 +37,7 @@
 
 1. Before you step in, remember where you stand. Christ has already spoken for you.
 _(pause: 1.2s)_
-2. You are loved, held, and sent — before the first whistle, before the first touch, before anything goes right or wrong.
+2. You are loved, held, and sent — before the first rep, before the first drill, before anything goes right or wrong.
 _(pause: 1.2s)_
 3. So compete like someone who has been set free.
 _(pause: 1.2s)_
@@ -71,7 +71,7 @@ _(pause: 1.2s)_
 _(pause: 1.2s)_
 9. So step in.
 _(pause: 1.2s)_
-10. No holding back. No playing small. No carrying the last play.
+10. No holding back. No playing small. No carrying the last mistake.
 _(pause: 1.2s)_
 11. Give everything you have.
 _(pause: 1.2s)_

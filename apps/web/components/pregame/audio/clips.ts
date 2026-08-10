@@ -2153,7 +2153,7 @@ export const CLIP_PP_OPENER_DIALED_IN_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 1.2 },
     {
       type: "speech",
-      text: "You are loved, held, and sent — before the first whistle, before the first touch, before anything goes right or wrong.",
+      text: "You are loved, held, and sent — before the first rep, before the first drill, before anything goes right or wrong.",
     },
     { type: "silence", durationSec: 1.2 },
     {
@@ -2243,7 +2243,7 @@ export const CLIP_PP_OPENER_DIALED_IN_2_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 1.2 },
     {
       type: "speech",
-      text: "No holding back. No playing small. No carrying the last play.",
+      text: "No holding back. No playing small. No carrying the last mistake.",
     },
     { type: "silence", durationSec: 1.2 },
     {

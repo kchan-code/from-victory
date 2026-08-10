@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "413323a7",
+  "manifestVersion": "ad594a80",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -570,13 +570,13 @@
       "phases": []
     },
     "pp-opener-dialed-in": {
-      "url": "/audio/pregame/clips/pp-opener-dialed-in.a368ee0d.mp3",
-      "durationSec": 51,
+      "url": "/audio/pregame/clips/pp-opener-dialed-in.545b4bcc.mp3",
+      "durationSec": 56.808,
       "phases": []
     },
     "pp-opener-dialed-in-2": {
-      "url": "/audio/pregame/clips/pp-opener-dialed-in-2.20aaf203.mp3",
-      "durationSec": 72.384,
+      "url": "/audio/pregame/clips/pp-opener-dialed-in-2.79751ecf.mp3",
+      "durationSec": 72.144,
       "phases": []
     },
     "pp-opener-dialed-in-3": {
