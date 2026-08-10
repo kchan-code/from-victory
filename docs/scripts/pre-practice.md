@@ -640,7 +640,7 @@ _(pause: 1s)_
 _(pause: 1.2s)_
 2. Do not wait until the call sounds perfect. Use the correct word, with enough volume and enough time.
 _(pause: 0.8s)_
-3. On defense, identify the ball, the first slide, and the second slide. On the ride or clear, point to the outlet and call where the pressure is coming from.
+3. On defense, identify the ball, the first slide, and the second slide. On the clear, point to the outlet and call where the pressure is coming from. On the ride, call who has the ball and take the outlet away.
 _(pause: 0.8s)_
 4. Make the first useful call before the drill begins.
 ### Pre-Practice Lacrosse · see-it-go
