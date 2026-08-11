@@ -397,7 +397,7 @@ function showBodyDiff(sportLabel: string, idx: number, oldBody: string, newBody:
 
 const BOOK_FILES = [
   "hockey.md", "basketball.md", "baseball.md", "golf.md",
-  "football.md", "swimming.md", "track-field.md",
+  "football.md", "swimming.md", "track-field.md", "lacrosse.md",
   "pre-practice.md", "shared.md",
 ];
 

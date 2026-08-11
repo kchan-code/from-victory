@@ -97,6 +97,7 @@ import { FOOTBALL_VIZ_CLIP_SCRIPTS } from "./clips-viz-football.ts";
 import { SWIMMING_PREGAME_CLIP_SCRIPTS } from "./clips-swimming.ts";
 import { TRACKFIELD_PREGAME_CLIP_SCRIPTS } from "./clips-trackfield.ts";
 import { LACROSSE_PREGAME_CLIP_SCRIPTS } from "./clips-lacrosse.ts";
+import { LACROSSE_VIZ_CLIP_SCRIPTS } from "./clips-viz-lacrosse.ts";
 
 // The EBU R128 loudness normalization filter applied to every clip.
 // -16 LUFS integrated / -1.5 dBTP true-peak / LRA 11 LU.
@@ -3389,6 +3390,259 @@ export const CLIP_PP_FOOTBALL_FOCUS_NEXT_PLAY_SCRIPT: AudioScript = {
 };
 
 
+// ── Lacrosse Pre-Practice "Lock In" clips (FV-406) ───────────────────────────
+//
+// 1:1 vocab swap onto the approved football/baseball pre-practice structure
+// (opener-get-to / name-standard / goal-fusion / be-vocal / see-it-go + 7
+// one-line focus cues). Prose source of truth: docs/scripts/pre-practice.md
+// ("## Lacrosse Pre-Practice Clips") — the book wins at render time (FV-302).
+// Sport stays DORMANT until the FV-407 go-live gate.
+
+// ── Lacrosse opener-get-to — pp-lax-opener-get-to (FV-406) ─────
+export const CLIP_PP_LAX_OPENER_GET_TO_SCRIPT: AudioScript = {
+  slug: "pp-lax-opener-get-to",
+  voice: "ash",
+  instructions: PRACTICE_GET_TO_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Be honest: your energy is low today. You are still responsible for how you practice.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Do not wait for your mood to change. Start with one controllable action: move your feet, show a target, and finish the first wall-ball pass.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "Working for the Lord does not mean pretending you feel good. It means giving honest attention to the work in front of you, even on a flat day.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Notice what is in front of you: your body can move, your teammates are here, and the first drill has a clear job.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "Do not solve the whole practice at once. Get your feet moving, keep two hands on the stick, and communicate through the first rep.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "Start with the first rep.",
+    },
+  ],
+};
+
+// ── Lacrosse name-standard — pp-lax-name-standard (FV-406) ─────
+export const CLIP_PP_LAX_NAME_STANDARD_SCRIPT: AudioScript = {
+  slug: "pp-lax-name-standard",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Name one standard for today: two hands through ground balls, early slide calls, or active feet on every approach. Make it specific enough to evaluate after each rep.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "Carry that standard through each drill. When a rep slips, take the correction and apply it to the next one.",
+    },
+  ],
+};
+
+// ── Lacrosse goal-fusion — pp-lax-goal-fusion (FV-406) ─────
+export const CLIP_PP_LAX_GOAL_FUSION_SCRIPT: AudioScript = {
+  slug: "pp-lax-goal-fusion",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Find one game detail inside today's drill. On wall ball, it may be moving your feet through the catch. On a ground ball, it may be getting low and scooping through with two hands.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "Rehearse that detail at practice speed, then keep it when contact or fatigue is added. The drill gives you a repeatable action for the game.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "One clear detail, repeated on purpose.",
+    },
+  ],
+};
+
+// ── Lacrosse be-vocal — pp-lax-be-vocal (FV-406) ─────
+export const CLIP_PP_LAX_BE_VOCAL_SCRIPT: AudioScript = {
+  slug: "pp-lax-be-vocal",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Communication is part of the rep. Call \"ball,\" \"hot,\" \"I've got two,\" \"cutter,\" and \"switch\" early enough for a teammate to act.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Do not wait until the call sounds perfect. Use the correct word, with enough volume and enough time.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "On defense, identify the ball, the first slide, and the second slide. On the clear, point to the outlet and call where the pressure is coming from. On the ride, call who has the ball and take the outlet away.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "Make the first useful call before the drill begins.",
+    },
+  ],
+};
+
+// ── Lacrosse see-it-go — pp-lax-see-it-go (FV-406) ─────
+export const CLIP_PP_LAX_SEE_IT_GO_SCRIPT: AudioScript = {
+  slug: "pp-lax-see-it-go",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "See one rep: start in ready position, hear the call, move your feet, and finish the assignment.",
+    },
+    { type: "silence", durationSec: 1.5 },
+    {
+      type: "speech",
+      text: "If the rep breaks down, listen to the correction, identify one change, and reset before the next whistle.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "Start the next rep from ready position instead of carrying the last one forward.",
+    },
+  ],
+};
+
+// ── Lacrosse focus-run-through-every-ground-ball — pp-lax-focus-run-through-every-ground-ball (FV-406) ─────
+export const CLIP_PP_LAX_FOCUS_RUN_THROUGH_EVERY_GROUND_BALL_SCRIPT: AudioScript = {
+  slug: "pp-lax-focus-run-through-every-ground-ball",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Run through every ground ball.",
+    },
+  ],
+};
+
+// ── Lacrosse focus-move-first — pp-lax-focus-move-first (FV-406) ─────
+export const CLIP_PP_LAX_FOCUS_MOVE_FIRST_SCRIPT: AudioScript = {
+  slug: "pp-lax-focus-move-first",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Move first when the ball is loose.",
+    },
+  ],
+};
+
+// ── Lacrosse focus-two-hands-through — pp-lax-focus-two-hands-through (FV-406) ─────
+export const CLIP_PP_LAX_FOCUS_TWO_HANDS_THROUGH_SCRIPT: AudioScript = {
+  slug: "pp-lax-focus-two-hands-through",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Two hands through the ground ball.",
+    },
+  ],
+};
+
+// ── Lacrosse focus-call-the-slide-early — pp-lax-focus-call-the-slide-early (FV-406) ─────
+export const CLIP_PP_LAX_FOCUS_CALL_THE_SLIDE_EARLY_SCRIPT: AudioScript = {
+  slug: "pp-lax-focus-call-the-slide-early",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Call the slide early.",
+    },
+  ],
+};
+
+// ── Lacrosse focus-finish-the-rep — pp-lax-focus-finish-the-rep (FV-406) ─────
+export const CLIP_PP_LAX_FOCUS_FINISH_THE_REP_SCRIPT: AudioScript = {
+  slug: "pp-lax-focus-finish-the-rep",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Finish the rep, then reset.",
+    },
+  ],
+};
+
+// ── Lacrosse focus-protect-the-stick-through-traffic — pp-lax-focus-protect-the-stick-through-traffic (FV-406) ─────
+export const CLIP_PP_LAX_FOCUS_PROTECT_THE_STICK_THROUGH_TRAFFIC_SCRIPT: AudioScript = {
+  slug: "pp-lax-focus-protect-the-stick-through-traffic",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Protect the stick through traffic.",
+    },
+  ],
+};
+
+// ── Lacrosse focus-finish-hands-free — pp-lax-focus-finish-hands-free (FV-406) ─────
+export const CLIP_PP_LAX_FOCUS_FINISH_HANDS_FREE_SCRIPT: AudioScript = {
+  slug: "pp-lax-focus-finish-hands-free",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Finish with your hands free.",
+    },
+  ],
+};
+
 // ── Golf pre-practice "Lock In" clips (FV-267) ───────────────────────────────
 //
 // 1:1 vocab swaps onto the approved hockey/basketball/baseball pre-practice
@@ -5901,6 +6155,19 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_PP_FOOTBALL_FOCUS_PLAY_FAST_SCRIPT,
   CLIP_PP_FOOTBALL_FOCUS_BALL_SECURITY_SCRIPT,
   CLIP_PP_FOOTBALL_FOCUS_NEXT_PLAY_SCRIPT,
+  // Lacrosse pre-practice "Lock In" clips (FV-406, v2 DORMANT).
+  CLIP_PP_LAX_OPENER_GET_TO_SCRIPT,
+  CLIP_PP_LAX_NAME_STANDARD_SCRIPT,
+  CLIP_PP_LAX_GOAL_FUSION_SCRIPT,
+  CLIP_PP_LAX_BE_VOCAL_SCRIPT,
+  CLIP_PP_LAX_SEE_IT_GO_SCRIPT,
+  CLIP_PP_LAX_FOCUS_RUN_THROUGH_EVERY_GROUND_BALL_SCRIPT,
+  CLIP_PP_LAX_FOCUS_MOVE_FIRST_SCRIPT,
+  CLIP_PP_LAX_FOCUS_TWO_HANDS_THROUGH_SCRIPT,
+  CLIP_PP_LAX_FOCUS_CALL_THE_SLIDE_EARLY_SCRIPT,
+  CLIP_PP_LAX_FOCUS_FINISH_THE_REP_SCRIPT,
+  CLIP_PP_LAX_FOCUS_PROTECT_THE_STICK_THROUGH_TRAFFIC_SCRIPT,
+  CLIP_PP_LAX_FOCUS_FINISH_HANDS_FREE_SCRIPT,
   // Golf pre-practice "Lock In" clips (FV-267). Render = FV-266.
   CLIP_PP_GOLF_OPENER_GET_TO_SCRIPT,
   CLIP_PP_GOLF_NAME_STANDARD_SCRIPT,
@@ -6039,11 +6306,13 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   // Track & Field pregame clips (FV-TRF, v2 DORMANT) — 5 event-group VIZ + 38
   // hard-moment cells. Same deferred-render staging.
   ...TRACKFIELD_PREGAME_CLIP_SCRIPTS,
-  // Lacrosse pregame clips (FV-406, v2 DORMANT) — 10 library VIZ (2 per
-  // position, FV-404 §2) + 50 hard-moment cells (47 grid + 3 withheld yips,
-  // FV-404). Same deferred-render staging; prose is FV-405 book-overridden
-  // at render.
+  // Lacrosse pregame clips (FV-406, v2 DORMANT) — 40 VIZ clips in
+  // clips-viz-lacrosse.ts (5 position flagships + 35 positive-play library
+  // entries, 7 per position) + 50 hard-moment cells (47 grid + 3 withheld
+  // yips, FV-404). Same deferred-render staging; prose is FV-405 book-
+  // overridden at render.
   ...LACROSSE_PREGAME_CLIP_SCRIPTS,
+  ...LACROSSE_VIZ_CLIP_SCRIPTS,
   // FV-136: Cue-word scaffold preamble clips (audio before the {insert word} token)
   CLIP_SHARED_CUE_WORD_INTRO_PRE_SCRIPT,
   CLIP_SHARED_CUE_WORD_SENDOFF_PRE_SCRIPT,

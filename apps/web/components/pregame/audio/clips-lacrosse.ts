@@ -1,10 +1,11 @@
-// Lacrosse pregame compositional clips (FV-406, v2 DORMANT) — 10 library VIZ
-// clips (2 per position, FV-404 §2) + 50 hard-moment cells, wired from the
-// KC-ratified FV-404 taxonomy
+// Lacrosse pregame compositional clips (FV-406, v2 DORMANT) — 50 hard-moment
+// cells, wired from the KC-ratified FV-404 taxonomy
 // (docs/lacrosse-module-map.md). The lacrosse analog of clips-football.ts /
 // clips-swimming.ts. Kept in a sibling file to stay out of the clips.ts hot
 // file. Registered into CLIP_SCRIPTS via `...LACROSSE_PREGAME_CLIP_SCRIPTS`
-// in clips.ts.
+// in clips.ts. The 40 VIZ clips (5 position flagships + 35 positive-play
+// library entries) live in clips-viz-lacrosse.ts, registered separately via
+// `...LACROSSE_VIZ_CLIP_SCRIPTS`.
 //
 // PRE-BOOK STRUCTURAL SEEDS: the FV-405 script book (docs/scripts/lacrosse.md,
 // authored in parallel by content-curator + lacrosse-expert +
@@ -42,72 +43,17 @@
 //
 // SCOPE: boys'/men's FIELD lacrosse only (FV-404 §6).
 
-import type { AudioScript, Segment } from "./types";
+import type { AudioScript } from "./types";
 import {
   HARD_MOMENT_NARRATION_INSTRUCTIONS,
   HARD_MOMENT_TRUTH_INSTRUCTIONS,
   SCRIPT_INSTRUCTIONS,
   VISUALIZATION_INSTRUCTIONS,
 } from "./instructions.ts";
-import {
-  ATTACK_BEAT_YOUR_MAN_VIZ,
-  ATTACK_SEE_THE_FIELD_VIZ,
-  MIDFIELD_PUSH_THE_BALL_VIZ,
-  MIDFIELD_COVER_BOTH_ENDS_VIZ,
-  DEFENSE_LOCK_HIM_DOWN_VIZ,
-  DEFENSE_TAKE_IT_THE_OTHER_WAY_VIZ,
-  FOGO_WIN_THE_CLAMP_VIZ,
-  FOGO_WIN_THE_WING_VIZ,
-  GOALIE_MAKE_THE_SAVE_VIZ,
-  GOALIE_START_THE_CLEAR_VIZ,
-} from "./segments-lacrosse.ts";
 
 // Same target as CLIP_LOUDNORM_FILTER in clips.ts. Defined locally to avoid a
 // circular import (clips.ts imports LACROSSE_PREGAME_CLIP_SCRIPTS from here).
 const LACROSSE_LOUDNORM_FILTER = "loudnorm=I=-16:TP=-1.5:LRA=11";
-
-// ── Lacrosse VIZ clips — two per position (FV-404 §2 two-libraries rule) ─────
-// Slugs match the FV-405 book exactly: viz-lax-<position>-<theme>. There is
-// deliberately NO flagship viz-lax-<position> clip — the two library themes
-// ARE the selectable viz axis; at go-live they wire into POSITIVE_PLAYS
-// (positive-plays.ts) as each position's play list (dormant precedent: no
-// entries until the audio renders, so the picker step stays gated off).
-
-function lacrosseVizScript(slug: string, segments: readonly Segment[]): AudioScript {
-  return {
-    slug,
-    voice: "ash",
-    instructions: SCRIPT_INSTRUCTIONS,
-    speed: 1.1,
-    postFilter: LACROSSE_LOUDNORM_FILTER,
-    segments: [...segments],
-  };
-}
-
-export const CLIP_VIZ_LAX_ATTACK_BEAT_YOUR_MAN_SCRIPT = lacrosseVizScript("viz-lax-attack-beat-your-man", ATTACK_BEAT_YOUR_MAN_VIZ);
-export const CLIP_VIZ_LAX_ATTACK_SEE_THE_FIELD_SCRIPT = lacrosseVizScript("viz-lax-attack-see-the-field", ATTACK_SEE_THE_FIELD_VIZ);
-export const CLIP_VIZ_LAX_MIDFIELD_PUSH_THE_BALL_SCRIPT = lacrosseVizScript("viz-lax-midfield-push-the-ball", MIDFIELD_PUSH_THE_BALL_VIZ);
-export const CLIP_VIZ_LAX_MIDFIELD_COVER_BOTH_ENDS_SCRIPT = lacrosseVizScript("viz-lax-midfield-cover-both-ends", MIDFIELD_COVER_BOTH_ENDS_VIZ);
-export const CLIP_VIZ_LAX_DEFENSE_LOCK_HIM_DOWN_SCRIPT = lacrosseVizScript("viz-lax-defense-lock-him-down", DEFENSE_LOCK_HIM_DOWN_VIZ);
-export const CLIP_VIZ_LAX_DEFENSE_TAKE_IT_THE_OTHER_WAY_SCRIPT = lacrosseVizScript("viz-lax-defense-take-it-the-other-way", DEFENSE_TAKE_IT_THE_OTHER_WAY_VIZ);
-export const CLIP_VIZ_LAX_FOGO_WIN_THE_CLAMP_SCRIPT = lacrosseVizScript("viz-lax-fogo-win-the-clamp", FOGO_WIN_THE_CLAMP_VIZ);
-export const CLIP_VIZ_LAX_FOGO_WIN_THE_WING_SCRIPT = lacrosseVizScript("viz-lax-fogo-win-the-wing", FOGO_WIN_THE_WING_VIZ);
-export const CLIP_VIZ_LAX_GOALIE_MAKE_THE_SAVE_SCRIPT = lacrosseVizScript("viz-lax-goalie-make-the-save", GOALIE_MAKE_THE_SAVE_VIZ);
-export const CLIP_VIZ_LAX_GOALIE_START_THE_CLEAR_SCRIPT = lacrosseVizScript("viz-lax-goalie-start-the-clear", GOALIE_START_THE_CLEAR_VIZ);
-
-// Grouped for the export + the coverage test (2 per position, library order A/B).
-const LACROSSE_VIZ_CLIP_SCRIPTS: AudioScript[] = [
-  CLIP_VIZ_LAX_ATTACK_BEAT_YOUR_MAN_SCRIPT,
-  CLIP_VIZ_LAX_ATTACK_SEE_THE_FIELD_SCRIPT,
-  CLIP_VIZ_LAX_MIDFIELD_PUSH_THE_BALL_SCRIPT,
-  CLIP_VIZ_LAX_MIDFIELD_COVER_BOTH_ENDS_SCRIPT,
-  CLIP_VIZ_LAX_DEFENSE_LOCK_HIM_DOWN_SCRIPT,
-  CLIP_VIZ_LAX_DEFENSE_TAKE_IT_THE_OTHER_WAY_SCRIPT,
-  CLIP_VIZ_LAX_FOGO_WIN_THE_CLAMP_SCRIPT,
-  CLIP_VIZ_LAX_FOGO_WIN_THE_WING_SCRIPT,
-  CLIP_VIZ_LAX_GOALIE_MAKE_THE_SAVE_SCRIPT,
-  CLIP_VIZ_LAX_GOALIE_START_THE_CLEAR_SCRIPT,
-];
 
 // ── Hard-moment cell factory ─────────────────────────────────────────────────
 // All 50 cells share the de-corned 6-line structure (7 lines for the gated
@@ -570,9 +516,9 @@ const LACROSSE_HM_CLIP_SCRIPTS: AudioScript[] = [
   ...GATED_HM_SEEDS,
 ].map(lacrosseHmScript);
 
-// 10 library VIZ (2 per position) + 50 hard-moment cells (47 grid + 3
-// withheld yips) = 60.
+// 50 hard-moment cells (47 grid + 3 withheld yips). The 40 VIZ clips (5
+// flagships + 35 positive plays) are registered separately from
+// clips-viz-lacrosse.ts via `...LACROSSE_VIZ_CLIP_SCRIPTS` in clips.ts.
 export const LACROSSE_PREGAME_CLIP_SCRIPTS: AudioScript[] = [
-  ...LACROSSE_VIZ_CLIP_SCRIPTS,
   ...LACROSSE_HM_CLIP_SCRIPTS,
 ];

@@ -126,7 +126,7 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   //    them on Step 04. Gate on whether plays actually exist for every role so the
   //    step is skipped cleanly until plays land, then re-enables automatically.
   const hasRoles = (sportConfig.roles?.length ?? 0) > 0;
-  const showPositivePlays = sportHasPositivePlays(sportConfig.roles);
+  const showPositivePlays = sportHasPositivePlays(sportConfig.sportKey, sportConfig.roles);
   const activeFlow = FLOW.filter((s) => {
     if (s.id === "position") return hasRoles;
     if (s.id === "positivePlays") return showPositivePlays;

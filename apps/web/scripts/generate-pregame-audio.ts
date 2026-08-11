@@ -929,6 +929,64 @@ const PHASE2_TEMPLATES: Array<{
   { position: "Outfield", adversity: "I get hit by a pitch.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-hbp" },
   { position: "Outfield", adversity: "I start slow.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-start-slow" },
   { position: "Outfield", adversity: "We fall behind early.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-fall-behind-early" },
+  // Lacrosse × 5 roles × 10 canonical adversities (FV-406/FV-407 go-live;
+  // LACROSSE_CONFIG.adversities — the shared flat 10; the withheld "I lose my
+  // touch." yips umbrella is NOT one of the 10, so it never enters this grid,
+  // matching cellSlugFor's picker-unreachable design (sport-registry.ts)).
+  // hmSlug = LACROSSE_CONFIG.cellSlugFor(adversity, role) reproduced literally
+  // here (compositional-only sport — golf/football precedent). vizSlug is
+  // always the flagship viz-lax-<role> (FV-406: athlete picks replace it at
+  // runtime via FV-144, same as every other sport's default row).
+  { position: "Attack", adversity: "I turn the ball over.", vizSlug: "viz-lax-attack", hmSlug: "hm-lax-attack-turnover" },
+  { position: "Attack", adversity: "I get dodged.", vizSlug: "viz-lax-attack", hmSlug: "hm-lax-attack-turnover" },
+  { position: "Attack", adversity: "I take a bad penalty.", vizSlug: "viz-lax-attack", hmSlug: "hm-lax-attack-penalty" },
+  { position: "Attack", adversity: "I get shut off.", vizSlug: "viz-lax-attack", hmSlug: "hm-lax-attack-shut-off" },
+  { position: "Attack", adversity: "I fail a clear.", vizSlug: "viz-lax-attack", hmSlug: "hm-lax-attack-rode-out" },
+  { position: "Attack", adversity: "Coach yells.", vizSlug: "viz-lax-attack", hmSlug: "hm-lax-attack-coach-yells" },
+  { position: "Attack", adversity: "I get benched.", vizSlug: "viz-lax-attack", hmSlug: "hm-lax-attack-benched" },
+  { position: "Attack", adversity: "I feel nervous.", vizSlug: "viz-lax-attack", hmSlug: "hm-lax-attack-nervous" },
+  { position: "Attack", adversity: "I start slow.", vizSlug: "viz-lax-attack", hmSlug: "hm-lax-attack-start-slow" },
+  { position: "Attack", adversity: "We fall behind early.", vizSlug: "viz-lax-attack", hmSlug: "hm-lax-attack-fall-behind-early" },
+  { position: "Midfield", adversity: "I turn the ball over.", vizSlug: "viz-lax-midfield", hmSlug: "hm-lax-midfield-turnover" },
+  { position: "Midfield", adversity: "I get dodged.", vizSlug: "viz-lax-midfield", hmSlug: "hm-lax-midfield-dodged" },
+  { position: "Midfield", adversity: "I take a bad penalty.", vizSlug: "viz-lax-midfield", hmSlug: "hm-lax-midfield-penalty" },
+  { position: "Midfield", adversity: "I get shut off.", vizSlug: "viz-lax-midfield", hmSlug: "hm-lax-midfield-shut-off" },
+  { position: "Midfield", adversity: "I fail a clear.", vizSlug: "viz-lax-midfield", hmSlug: "hm-lax-midfield-failed-clear" },
+  { position: "Midfield", adversity: "Coach yells.", vizSlug: "viz-lax-midfield", hmSlug: "hm-lax-midfield-coach-yells" },
+  { position: "Midfield", adversity: "I get benched.", vizSlug: "viz-lax-midfield", hmSlug: "hm-lax-midfield-benched" },
+  { position: "Midfield", adversity: "I feel nervous.", vizSlug: "viz-lax-midfield", hmSlug: "hm-lax-midfield-nervous" },
+  { position: "Midfield", adversity: "I start slow.", vizSlug: "viz-lax-midfield", hmSlug: "hm-lax-midfield-start-slow" },
+  { position: "Midfield", adversity: "We fall behind early.", vizSlug: "viz-lax-midfield", hmSlug: "hm-lax-midfield-fall-behind-early" },
+  { position: "Defense", adversity: "I turn the ball over.", vizSlug: "viz-lax-defense", hmSlug: "hm-lax-defense-turnover" },
+  { position: "Defense", adversity: "I get dodged.", vizSlug: "viz-lax-defense", hmSlug: "hm-lax-defense-dodged" },
+  { position: "Defense", adversity: "I take a bad penalty.", vizSlug: "viz-lax-defense", hmSlug: "hm-lax-defense-penalty" },
+  { position: "Defense", adversity: "I get shut off.", vizSlug: "viz-lax-defense", hmSlug: "hm-lax-defense-shut-off" },
+  { position: "Defense", adversity: "I fail a clear.", vizSlug: "viz-lax-defense", hmSlug: "hm-lax-defense-failed-clear" },
+  { position: "Defense", adversity: "Coach yells.", vizSlug: "viz-lax-defense", hmSlug: "hm-lax-defense-coach-yells" },
+  { position: "Defense", adversity: "I get benched.", vizSlug: "viz-lax-defense", hmSlug: "hm-lax-defense-benched" },
+  { position: "Defense", adversity: "I feel nervous.", vizSlug: "viz-lax-defense", hmSlug: "hm-lax-defense-nervous" },
+  { position: "Defense", adversity: "I start slow.", vizSlug: "viz-lax-defense", hmSlug: "hm-lax-defense-start-slow" },
+  { position: "Defense", adversity: "We fall behind early.", vizSlug: "viz-lax-defense", hmSlug: "hm-lax-defense-fall-behind-early" },
+  { position: "FOGO", adversity: "I turn the ball over.", vizSlug: "viz-lax-fogo", hmSlug: "hm-lax-fogo-turnover" },
+  { position: "FOGO", adversity: "I get dodged.", vizSlug: "viz-lax-fogo", hmSlug: "hm-lax-fogo-lose-draws" },
+  { position: "FOGO", adversity: "I take a bad penalty.", vizSlug: "viz-lax-fogo", hmSlug: "hm-lax-fogo-violation" },
+  { position: "FOGO", adversity: "I get shut off.", vizSlug: "viz-lax-fogo", hmSlug: "hm-lax-fogo-lose-draws" },
+  { position: "FOGO", adversity: "I fail a clear.", vizSlug: "viz-lax-fogo", hmSlug: "hm-lax-fogo-turnover" },
+  { position: "FOGO", adversity: "Coach yells.", vizSlug: "viz-lax-fogo", hmSlug: "hm-lax-fogo-coach-yells" },
+  { position: "FOGO", adversity: "I get benched.", vizSlug: "viz-lax-fogo", hmSlug: "hm-lax-fogo-off-the-dot" },
+  { position: "FOGO", adversity: "I feel nervous.", vizSlug: "viz-lax-fogo", hmSlug: "hm-lax-fogo-nervous" },
+  { position: "FOGO", adversity: "I start slow.", vizSlug: "viz-lax-fogo", hmSlug: "hm-lax-fogo-start-slow" },
+  { position: "FOGO", adversity: "We fall behind early.", vizSlug: "viz-lax-fogo", hmSlug: "hm-lax-fogo-behind-at-the-dot" },
+  { position: "Goalie", adversity: "I turn the ball over.", vizSlug: "viz-lax-goalie", hmSlug: "hm-lax-goalie-throw-away" },
+  { position: "Goalie", adversity: "I get dodged.", vizSlug: "viz-lax-goalie", hmSlug: "hm-lax-goalie-beaten-clean" },
+  { position: "Goalie", adversity: "I take a bad penalty.", vizSlug: "viz-lax-goalie", hmSlug: "hm-lax-goalie-man-down" },
+  { position: "Goalie", adversity: "I get shut off.", vizSlug: "viz-lax-goalie", hmSlug: "hm-lax-goalie-soft-goal" },
+  { position: "Goalie", adversity: "I fail a clear.", vizSlug: "viz-lax-goalie", hmSlug: "hm-lax-goalie-failed-clear" },
+  { position: "Goalie", adversity: "Coach yells.", vizSlug: "viz-lax-goalie", hmSlug: "hm-lax-goalie-coach-yells" },
+  { position: "Goalie", adversity: "I get benched.", vizSlug: "viz-lax-goalie", hmSlug: "hm-lax-goalie-pulled" },
+  { position: "Goalie", adversity: "I feel nervous.", vizSlug: "viz-lax-goalie", hmSlug: "hm-lax-goalie-nervous" },
+  { position: "Goalie", adversity: "I start slow.", vizSlug: "viz-lax-goalie", hmSlug: "hm-lax-goalie-start-slow" },
+  { position: "Goalie", adversity: "We fall behind early.", vizSlug: "viz-lax-goalie", hmSlug: "hm-lax-goalie-fall-behind-early" },
 ];
 
 async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Promise<void> {
@@ -1358,6 +1416,22 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
     "pp-baseball-see-it-go",
   ];
 
+  // Lacrosse Beats 2/3/5/6 (FV-406) — mirrors the football tail shape;
+  // matches docs/scripts/pre-practice.md "## Lacrosse Pre-Practice Clips"
+  // module order (name-standard → goal-fusion → focus lead/tail →
+  // be-vocal → see-it-go). Dormant-harmless: lacrosse is absent from
+  // SUPPORTED_SPORTS, so this entry only takes effect at the FV-407 render
+  // + go-live (the manifest regenerates only when this script runs).
+  const lacrosseSharedTail = [
+    "pp-lax-name-standard",
+    "pp-lax-goal-fusion",
+    "pp-choose-focus-lead",
+    // focus clip injected by resolver between lead and tail
+    "pp-choose-focus-tail",
+    "pp-lax-be-vocal",
+    "pp-lax-see-it-go",
+  ];
+
   const practiceStatePlaylist = {
     hockey: {
       "dialed-in": hockeySharedTail,
@@ -1378,6 +1452,10 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
     baseball: {
       "dialed-in": baseballSharedTail,
       "not-feeling-it": baseballSharedTail,
+    },
+    lacrosse: {
+      "dialed-in": lacrosseSharedTail,
+      "not-feeling-it": lacrosseSharedTail,
     },
   };
 
@@ -1430,8 +1508,8 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
     if (catalogCount !== 240) {
       console.warn(`  WARNING: expected 240 catalog entries, got ${catalogCount}.`);
     }
-    if (templateCount !== 200) {
-      console.warn(`  WARNING: expected 200 templates (hockey 30 + basketball 30 + golf 30 + football 70 + baseball 40), got ${templateCount}.`);
+    if (templateCount !== 250) {
+      console.warn(`  WARNING: expected 250 templates (hockey 30 + basketball 30 + golf 30 + football 70 + baseball 40 + lacrosse 50), got ${templateCount}.`);
     }
   }
 

@@ -11,39 +11,66 @@ import {
   positivePlaysFor,
   positivePlayTitle,
 } from "../positive-plays";
+import type { Sport } from "../sport-registry";
 import { FLOW, INITIAL_STATE } from "../types";
 
-// Expected counts per role, from FV-136 (docs/pregame-scripts.md §1) +
-// FV-294 (golf roles: Bomber 7, Ball-Striker 7, Scrambler 7).
-const EXPECTED_COUNTS: Record<string, number> = {
-  Defense: 9,
-  Forward: 10,
-  Goalie: 9,
-  Guard: 8,
-  Wing: 8,
-  Big: 8,
-  Bomber: 7,
-  "Ball-Striker": 7,
-  Scrambler: 7,
-  // Football (FV-423) — DORMANT until FV-206 wiring
-  QB: 7,
-  RB: 7,
-  WR: 7,
-  OL: 7,
-  DL: 7,
-  LB: 7,
-  DB: 7,
+// Expected counts per (sport, role), from FV-136 (docs/pregame-scripts.md §1)
+// + FV-294 (golf) + FV-406 (lacrosse, docs/scripts/lacrosse.md).
+//
+// FV-406: keyed by sport because role names collide across sports (e.g.
+// hockey "Defense"/"Goalie" vs. lacrosse "Defense"/"Goalie" are different
+// roles with different libraries — hockey Defense ships 9, lacrosse Defense
+// ships 7).
+const EXPECTED_COUNTS: Partial<Record<Sport, Record<string, number>>> = {
+  hockey: {
+    Defense: 9,
+    Forward: 10,
+    Goalie: 9,
+  },
+  basketball: {
+    Guard: 8,
+    Wing: 8,
+    Big: 8,
+  },
+  golf: {
+    Bomber: 7,
+    "Ball-Striker": 7,
+    Scrambler: 7,
+  },
+  // Football (FV-423) — live (FV-206 go-live, 2026-07-20)
+  football: {
+    QB: 7,
+    RB: 7,
+    WR: 7,
+    OL: 7,
+    DL: 7,
+    LB: 7,
+    DB: 7,
+  },
   // Baseball (FV-424) — live (FV-98/FV-100 go-live, 2026-08-11)
-  Pitcher: 7,
-  Catcher: 7,
-  Infield: 7,
-  Outfield: 7,
+  baseball: {
+    Pitcher: 7,
+    Catcher: 7,
+    Infield: 7,
+    Outfield: 7,
+  },
+  // Lacrosse (FV-406/FV-407) — DORMANT until the FV-407 render/go-live
+  lacrosse: {
+    Attack: 7,
+    Midfield: 7,
+    Defense: 7,
+    FOGO: 7,
+    Goalie: 7,
+  },
+  // swimming / track-field: no positive plays authored (yet) — omitted so
+  // `counts` (built only from keys that actually occur) can `toEqual` this.
 };
 
 describe("POSITIVE_PLAYS library", () => {
-  it("has all 150 plays", () => {
-    // 73 (hockey/basketball/golf) + 49 football (FV-423, dormant) + 28 baseball (FV-424, live)
-    expect(POSITIVE_PLAYS).toHaveLength(150);
+  it("has all 185 plays", () => {
+    // 73 (hockey/basketball/golf) + 49 football (FV-423, live) + 28 baseball
+    // (FV-424, live) + 35 lacrosse (FV-406, dormant until FV-407 go-live).
+    expect(POSITIVE_PLAYS).toHaveLength(185);
   });
 
   it("has no duplicate slugs", () => {
@@ -56,9 +83,12 @@ describe("POSITIVE_PLAYS library", () => {
     expect(blank).toEqual([]);
   });
 
-  it("matches the expected per-role counts", () => {
-    const counts: Record<string, number> = {};
-    for (const p of POSITIVE_PLAYS) counts[p.role] = (counts[p.role] ?? 0) + 1;
+  it("matches the expected per-(sport, role) counts", () => {
+    const counts: Record<string, Record<string, number>> = {};
+    for (const p of POSITIVE_PLAYS) {
+      counts[p.sport] ??= {};
+      counts[p.sport]![p.role] = (counts[p.sport]![p.role] ?? 0) + 1;
+    }
     expect(counts).toEqual(EXPECTED_COUNTS);
   });
 
@@ -69,19 +99,29 @@ describe("POSITIVE_PLAYS library", () => {
 
 describe("positivePlaysFor", () => {
   it("returns the role's plays in declared order", () => {
-    const defense = positivePlaysFor("Defense");
+    const defense = positivePlaysFor("hockey", "Defense");
     expect(defense).toHaveLength(9);
-    expect(defense.every((p) => p.role === "Defense")).toBe(true);
+    expect(defense.every((p) => p.sport === "hockey" && p.role === "Defense")).toBe(true);
     // First entry is the FV-136 flagship for Defense.
     expect(defense[0]!.slug).toBe("viz-defense-retrieval");
   });
 
+  it("disambiguates a role name that collides across sports (FV-406)", () => {
+    const hockeyDefense = positivePlaysFor("hockey", "Defense");
+    const laxDefense = positivePlaysFor("lacrosse", "Defense");
+    expect(hockeyDefense).toHaveLength(9);
+    expect(laxDefense).toHaveLength(7);
+    // No overlap in slugs between the two "Defense" libraries.
+    const laxSlugs = new Set(laxDefense.map((p) => p.slug));
+    expect(hockeyDefense.some((p) => laxSlugs.has(p.slug))).toBe(false);
+  });
+
   it("returns [] for a null role (no-position sports never reach the picker)", () => {
-    expect(positivePlaysFor(null)).toEqual([]);
+    expect(positivePlaysFor("hockey", null)).toEqual([]);
   });
 
   it("returns [] for an unknown role", () => {
-    expect(positivePlaysFor("Striker")).toEqual([]);
+    expect(positivePlaysFor("hockey", "Striker")).toEqual([]);
   });
 });
 

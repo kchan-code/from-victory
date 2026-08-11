@@ -27,7 +27,7 @@ import {
 } from "../sport-registry";
 import { NEEDS, NEED_VERSE, RESET_ANCHORS, SELF_TALK_OPTIONS } from "../types";
 import { SUPPORTED_SPORTS, type Sport } from "@/lib/sports";
-import { positivePlaysFor, sportHasPositivePlays } from "../positive-plays";
+import { positivePlaysFor, sportHasPositivePlays, POSITIVE_PLAYS } from "../positive-plays";
 
 // ---------------------------------------------------------------------------
 // FV-117 regression guard: HOCKEY_CONFIG picker lists must stay byte-identical
@@ -947,31 +947,49 @@ describe("FV-294 — sportHasPositivePlays gates the picker so no athlete is tra
     // Point-in-time assertion updated: golf now has 7 plays × 3 roles (Bomber /
     // Ball-Striker / Scrambler), so the picker is safe to show and this flips
     // to true. The durable guard is the SUPPORTED_SPORTS loop in the next test.
-    const golfRoles = getSportConfig("golf").roles ?? [];
+    const golfConfig = getSportConfig("golf");
+    const golfRoles = golfConfig.roles ?? [];
     expect(golfRoles.length).toBeGreaterThan(0);
-    expect(sportHasPositivePlays(golfRoles)).toBe(true);
+    expect(sportHasPositivePlays(golfConfig.sportKey, golfRoles)).toBe(true);
   });
 
   it("requires EVERY role to have plays, not just some", () => {
-    expect(sportHasPositivePlays(["Forward", "Defense", "Goalie"])).toBe(true);
+    expect(sportHasPositivePlays("hockey", ["Forward", "Defense", "Goalie"])).toBe(true);
     // A hypothetical sport with "Forward" (plays exist) + "UnknownRole" (no plays)
     // → the whole step must stay hidden because UnknownRole yields an empty picker.
-    expect(sportHasPositivePlays(["Forward", "UnknownRole"])).toBe(false);
+    expect(sportHasPositivePlays("hockey", ["Forward", "UnknownRole"])).toBe(false);
   });
 
   it("returns false for no-role / empty / undefined", () => {
-    expect(sportHasPositivePlays([])).toBe(false);
-    expect(sportHasPositivePlays(undefined)).toBe(false);
+    expect(sportHasPositivePlays("hockey", [])).toBe(false);
+    expect(sportHasPositivePlays("hockey", undefined)).toBe(false);
   });
 
   it("every supported sport that shows the picker has plays for ALL its roles", () => {
     for (const sport of SUPPORTED_SPORTS) {
-      const roles = getSportConfig(sport).roles ?? [];
-      if (!sportHasPositivePlays(roles)) continue; // step is skipped — safe
+      const config = getSportConfig(sport);
+      const roles = config.roles ?? [];
+      if (!sportHasPositivePlays(config.sportKey, roles)) continue; // step is skipped — safe
       for (const role of roles) {
-        expect(positivePlaysFor(role).length).toBeGreaterThan(0);
+        expect(positivePlaysFor(config.sportKey, role).length).toBeGreaterThan(0);
       }
     }
+  });
+
+  it("hockey and lacrosse 'Defense'/'Goalie' role names don't collide across sports (FV-406)", () => {
+    // Regression guard for the bug the `sport` field fixed: before FV-406,
+    // positivePlaysFor(role) filtered on role alone, so hockey's Defense/
+    // Goalie picker could leak lacrosse's Defense/Goalie plays (or vice
+    // versa) once lacrosse went live. lacrosse stays dormant, but the fix is
+    // verifiable now.
+    const hockeyDefense = positivePlaysFor("hockey", "Defense");
+    const laxDefense = positivePlaysFor("lacrosse", "Defense");
+    const hockeyGoalie = positivePlaysFor("hockey", "Goalie");
+    const laxGoalie = positivePlaysFor("lacrosse", "Goalie");
+    expect(hockeyDefense.every((p) => p.sport === "hockey")).toBe(true);
+    expect(laxDefense.every((p) => p.sport === "lacrosse")).toBe(true);
+    expect(hockeyGoalie.every((p) => p.sport === "hockey")).toBe(true);
+    expect(laxGoalie.every((p) => p.sport === "lacrosse")).toBe(true);
   });
 });
 
@@ -988,6 +1006,7 @@ describe("FV-294 — sportHasPositivePlays gates the picker so no athlete is tra
 // ---------------------------------------------------------------------------
 
 import { LACROSSE_PREGAME_CLIP_SCRIPTS } from "../audio/clips-lacrosse";
+import { LACROSSE_VIZ_CLIP_SCRIPTS } from "../audio/clips-viz-lacrosse";
 
 describe("FV-406: lacrosse stays DORMANT", () => {
   it("lacrosse is NOT in SUPPORTED_SPORTS (not athlete-selectable)", () => {
@@ -999,11 +1018,14 @@ describe("FV-406: lacrosse stays DORMANT", () => {
     expect(LACROSSE_CONFIG.sportKey).toBe("lacrosse");
   });
 
-  it("lacrosse ships no positive plays yet, so the picker step is gated off", () => {
-    // Dormant precedent (football/swimming/track-field): no POSITIVE_PLAYS
-    // entries until the viz-lax-<position>-<play> library renders. The flow
-    // gates Step 04 on this, so no athlete could ever be trapped (FV-294).
-    expect(sportHasPositivePlays(LACROSSE_CONFIG.roles)).toBe(false);
+  it("lacrosse's positive-play content is complete (FV-406) — dormancy is enforced by SUPPORTED_SPORTS, not this gate", () => {
+    // FV-406 wired all 35 lacrosse POSITIVE_PLAYS entries (7 per role), so
+    // sportHasPositivePlays now returns true — same as any live sport. That's
+    // fine: lacrosse athletes can never exist (absent from SUPPORTED_SPORTS
+    // above), so PregameFlow never reaches this gate for lacrosse regardless
+    // of its value. The FV-294 trap this gate exists to prevent (an athlete
+    // stranded on an empty picker) requires a reachable athlete first.
+    expect(sportHasPositivePlays(LACROSSE_CONFIG.sportKey, LACROSSE_CONFIG.roles)).toBe(true);
   });
 });
 
@@ -1165,14 +1187,22 @@ describe("LACROSSE_CONFIG — practice + picker field completeness", () => {
 // FV-406: registry ↔ clip-script coverage (config-internal; no manifest/audio
 // requirement — lacrosse is dormant, so the playlist-integrity file-existence
 // loops exclude it until the render lands it in manifest.practiceState).
+//
+// FV-406 UPDATE: the FV-404/FV-405 "two library themes, no flagship" VIZ
+// contract was superseded during FV-406 wiring — lacrosse now ships the same
+// flagship + 7-per-role positive-play contract every live sport ships
+// (docs/scripts/lacrosse.md; see positive-plays.ts). Hard-moment scripts stay
+// in clips-lacrosse.ts (LACROSSE_PREGAME_CLIP_SCRIPTS); VIZ scripts (flagship
+// + positive plays) moved to clips-viz-lacrosse.ts (LACROSSE_VIZ_CLIP_SCRIPTS)
+// and are registered into the manifest separately via clips.ts.
 // ---------------------------------------------------------------------------
 
-describe("FV-406: every lacrosse registry cell has an authored clip script", () => {
+describe("FV-406: every lacrosse registry cell has an authored hard-moment script", () => {
   const scriptSlugs = new Set(LACROSSE_PREGAME_CLIP_SCRIPTS.map((s) => s.slug));
 
-  it("ships 60 unique scripts: 10 library VIZ (2 per position) + 47 grid cells + 3 withheld yips", () => {
-    expect(LACROSSE_PREGAME_CLIP_SCRIPTS).toHaveLength(60);
-    expect(scriptSlugs.size).toBe(60);
+  it("ships 50 unique hard-moment scripts: 47 grid cells + 3 withheld yips", () => {
+    expect(LACROSSE_PREGAME_CLIP_SCRIPTS).toHaveLength(50);
+    expect(scriptSlugs.size).toBe(50);
   });
 
   it("every grid cell (5×10 via cellSlugFor) has a script", () => {
@@ -1192,57 +1222,40 @@ describe("FV-406: every lacrosse registry cell has an authored clip script", () 
     }
   });
 
-  // The FV-404 §2 two-libraries rule: exactly TWO theme VIZ scripts per
-  // position, slug-for-slug with the FV-405 book. No flagship
-  // viz-lax-<position> clip exists — the themes ARE the viz axis.
-  const LACROSSE_VIZ_SLUGS = [
-    "viz-lax-attack-beat-your-man",
-    "viz-lax-attack-see-the-field",
-    "viz-lax-midfield-push-the-ball",
-    "viz-lax-midfield-cover-both-ends",
-    "viz-lax-defense-lock-him-down",
-    "viz-lax-defense-take-it-the-other-way",
-    "viz-lax-fogo-win-the-clamp",
-    "viz-lax-fogo-win-the-wing",
-    "viz-lax-goalie-make-the-save",
-    "viz-lax-goalie-start-the-clear",
-  ] as const;
+  it("no VIZ scripts leak into the hard-moment array (they live in clips-viz-lacrosse.ts)", () => {
+    const leaked = LACROSSE_PREGAME_CLIP_SCRIPTS.filter((s) => s.slug.startsWith("viz-lax-"));
+    expect(leaked.map((s) => s.slug)).toEqual([]);
+  });
+});
 
-  it("every position has exactly its two library-theme VIZ scripts (FV-405 book slugs)", () => {
-    for (const slug of LACROSSE_VIZ_SLUGS) {
-      expect(scriptSlugs.has(slug), `${slug} must exist`).toBe(true);
-    }
-    // Exactly 10 viz-lax-* scripts — 2 per position, no flagship extras.
-    const vizCount = LACROSSE_PREGAME_CLIP_SCRIPTS.filter((s) => s.slug.startsWith("viz-lax-")).length;
-    expect(vizCount).toBe(10);
+describe("FV-406: lacrosse VIZ library matches the flagship + 7-per-role positive-play contract", () => {
+  const vizScriptSlugs = new Set(LACROSSE_VIZ_CLIP_SCRIPTS.map((s) => s.slug));
+  const laxPlays = POSITIVE_PLAYS.filter((p) => p.sport === "lacrosse");
+
+  it("ships exactly 40 VIZ scripts: 5 flagships + 35 positive plays (7 per role)", () => {
+    expect(LACROSSE_VIZ_CLIP_SCRIPTS).toHaveLength(40);
+    expect(vizScriptSlugs.size).toBe(40);
+  });
+
+  it("every role has exactly one flagship (viz-lax-<role>) and 7 positive-play scripts", () => {
     for (const role of LACROSSE_CONFIG.roles ?? []) {
       const token = role.toLowerCase();
-      const perPosition = LACROSSE_VIZ_SLUGS.filter((s) => s.startsWith(`viz-lax-${token}-`)).length;
-      expect(perPosition, `${role} must carry 2 library themes`).toBe(2);
-      expect(scriptSlugs.has(`viz-lax-${token}`), `no flagship viz-lax-${token}`).toBe(false);
+      expect(vizScriptSlugs.has(`viz-lax-${token}`), `flagship viz-lax-${token} missing`).toBe(true);
+      const plays = [...vizScriptSlugs].filter((s) => s.startsWith(`viz-lax-${token}-`));
+      expect(plays, `${role} positive-play script count`).toHaveLength(7);
     }
   });
 
-  it("every VIZ script carries the book's 17-line flagship shape", () => {
-    const wrong: string[] = [];
-    for (const script of LACROSSE_PREGAME_CLIP_SCRIPTS) {
-      if (!script.slug.startsWith("viz-lax-")) continue;
-      const speech = script.segments.filter((s) => s.type === "speech").length;
-      if (speech !== 17) wrong.push(`${script.slug}: ${speech} speech lines (expected 17)`);
-    }
-    expect(wrong).toEqual([]);
+  it("every lacrosse POSITIVE_PLAYS slug has a matching VIZ script (registry ↔ audio-content wiring)", () => {
+    const missing = laxPlays.filter((p) => !vizScriptSlugs.has(p.slug)).map((p) => p.slug);
+    expect(missing).toEqual([]);
   });
 
-  it("routine cells carry the de-corned 6-line shape; only the yips cells carry the 7th worth line", () => {
-    const yips = new Set(["hm-lax-fogo-clamp-yips", "hm-lax-goalie-save-yips", "hm-lax-defense-clear-yips"]);
-    const wrong: string[] = [];
-    for (const script of LACROSSE_PREGAME_CLIP_SCRIPTS) {
-      if (!script.slug.startsWith("hm-lax-")) continue;
-      const speech = script.segments.filter((s) => s.type === "speech").length;
-      const expected = yips.has(script.slug) ? 7 : 6;
-      if (speech !== expected) wrong.push(`${script.slug}: ${speech} speech lines (expected ${expected})`);
+  it("POSITIVE_PLAYS declares 35 lacrosse entries — 7 per role, matching the VIZ library", () => {
+    expect(laxPlays).toHaveLength(35);
+    for (const role of LACROSSE_CONFIG.roles ?? []) {
+      expect(laxPlays.filter((p) => p.role === role), `lacrosse ${role} play count`).toHaveLength(7);
     }
-    expect(wrong).toEqual([]);
   });
 });
 
