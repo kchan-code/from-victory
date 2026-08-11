@@ -24,7 +24,11 @@
 //     cycle + both sport experts; highest anti-prosperity guardrail load
 //     in the app — see the banned-pattern scan in the FV-225 tests.)
 
-import type { Sport } from "@/lib/sports";
+// Sport comes from the pregame registry union (ALL sports incl. dormant),
+// not lib/sports' live-only union: dormant baseball/lacrosse modules land
+// here ahead of their go-live gates and are unreachable until then (callers
+// filter by profile.sport, which can only hold live values).
+import type { Sport } from "@/components/pregame/sport-registry";
 
 export type PostgameScenario =
   | "loss"
@@ -791,6 +795,402 @@ Christ, not tonight's score.* You can finish that prayer and still feel the
 loss.`,
 };
 
+// ---------------------------------------------------------------------------
+// Module — Baseball · After the Win (FV-424 arc; KC-authored final copy,
+// 2026-08-10 postgame review bundle — the content source of truth for this const)
+// ---------------------------------------------------------------------------
+const BASEBALL_WIN: PostgameModule = {
+  slug: "baseball-after-the-win",
+  sport: "baseball",
+  scenario: "win",
+  title: "After the Win",
+  scriptureRef: "James 1:17",
+  scriptureText:
+    "Every good and perfect gift is from above, coming down from the Father of the heavenly lights, who does not change like shifting shadows.",
+  bodyMd: `### What happened
+
+You won. Maybe you drove in the winning run, turned the double play that
+ended it, or threw strikes when the game was tight. Enjoy the night.
+Winning is good, and humility does not require you to minimize it.
+
+Notice what made the result possible: the early work, the teammate who
+moved the runner over, the pitcher who kept you in it, the coach or family
+member who helped you get here.
+
+### What's true
+
+James says every good gift comes from a Father who does not change. Your
+ability to compete, your teammates, and the joy of the night are gifts.
+The final score is not evidence that God favored your team or rewarded you
+for having more faith.
+
+Your preparation mattered. Grace is not an excuse to work less. It is what
+keeps hard work from becoming self-worship when the night goes your way.
+
+> Enjoy the win. Give thanks. Stay teachable.
+
+Thank God on more than winning nights. Thank a teammate for a specific
+play. Check on the teammate who went 0-for-4 and does not feel like
+celebrating. Then return to work. This result can show you what went well;
+it cannot guarantee the next one.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Baseball · After the Loss (FV-424 arc; KC-authored final copy,
+// 2026-08-10 postgame review bundle — the content source of truth for this const)
+// ---------------------------------------------------------------------------
+const BASEBALL_LOSS: PostgameModule = {
+  slug: "baseball-the-loss",
+  sport: "baseball",
+  scenario: "loss",
+  title: "After the Loss",
+  scriptureRef: "Psalm 34:18",
+  scriptureText:
+    "The Lord is close to the brokenhearted and saves those who are crushed in spirit.",
+  bodyMd: `### What happened
+
+You lost. Maybe it came down to one pitch, one swing, or one misplayed ball,
+and it keeps replaying on the ride home.
+
+Do not use "God is in control" to act like the game did not matter. You
+wanted to win. You prepared for it. The loss is real, and you can be
+disappointed.
+
+### What's true
+
+Psalm 34 says God is close to the brokenhearted. His control gives you
+somewhere to take the pain; it does not make the pain unreal or the work
+irrelevant.
+
+Ask what belongs to you. Did you have a plan in the box? Did you play catch
+clean and hit your cutoff? Did you pick up a teammate when the game turned?
+Own those answers. Do not carry every bad hop, every umpire's call, or a
+teammate's decision.
+
+> Face the score honestly. Own what was yours without turning it into a judgment on your worth.
+
+Your standing with God rests on what Christ has done, not on nine innings.
+Tomorrow, watch the at-bats again and take one correction into the cage.
+Tonight, you do not have to feel better. Stop reviewing when it stops being
+useful and becomes self-punishment.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Baseball · Left Out of the Lineup (FV-424 arc; KC-authored final copy,
+// 2026-08-10 postgame review bundle — the content source of truth for this const)
+// ---------------------------------------------------------------------------
+const BASEBALL_BENCHING: PostgameModule = {
+  slug: "baseball-glued-to-the-bench",
+  sport: "baseball",
+  scenario: "benching",
+  title: "Left Out of the Lineup",
+  scriptureRef: "Psalm 139:1-3",
+  scriptureText:
+    "You have searched me, Lord, and you know me. You know when I sit and when I rise; you perceive my thoughts from afar. You discern my going out and my lying down; you are familiar with all my ways.",
+  bodyMd: `### What happened
+
+The lineup card went up and your name was not on it. Inning after inning
+you watched from the rail, maybe got one pinch-hit look, maybe not even
+that. It hurts to stand ready and never hear your name. Do not pretend the
+role is fine with you.
+
+### What's true
+
+Right now, the coach is not trusting you with the at-bats you want. Begin
+with the situation as it is, not the one you think you deserve. Psalm 139
+says God knows you completely. Your identity in Christ gives you the
+freedom to face the lineup without letting it define you.
+
+> The coach controls the at-bats. You control how you prepare and how you use the ones you get.
+
+Tomorrow, ask the coach what you need to show in practice, in BP, or in the
+field. Hear the whole answer, then own what you can change. If you get one
+pinch-hit at-bat, make it a prepared, disciplined at-bat. Stay in the game
+from the bench, track the count and the situation, and keep your body loose.
+Do not assume faith guarantees a lineup change. Keep preparing faithfully
+inside the role you have.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Baseball · After a Bad Game (FV-424 arc; KC-authored final copy,
+// 2026-08-10 postgame review bundle — the content source of truth for this const)
+// ---------------------------------------------------------------------------
+const BASEBALL_BAD_GAME: PostgameModule = {
+  slug: "baseball-the-bad-game",
+  sport: "baseball",
+  scenario: "bad-game",
+  title: "After a Bad Game",
+  scriptureRef: "Lamentations 3:22-23",
+  scriptureText:
+    "Because of the Lord's great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness.",
+  bodyMd: `### What happened
+
+You had a bad game. Maybe you went 0-for-4 with three strikeouts, or the
+error let two runs score, or you got pulled in the third with the bases
+loaded. Baseball is a game of failure — a .300 hitter makes an out seven
+times out of ten — but knowing that does not make tonight feel any better.
+
+Do not soften the play, and do not turn it into a verdict on your whole
+life. Start with what actually happened.
+
+### What's true
+
+Maybe your mistake cost the team. If it did, own it. Apologize where that
+is needed. Then refuse the label *I am a liability.* A misplayed ball or a
+bad approach at the plate gives you something specific to fix. A label only
+tells you to feel worse.
+
+Lamentations says God's compassion is new every morning. That mercy does
+not guarantee a better night at the plate tomorrow. It means you can watch
+the at-bats again without hiding, because Christ has already carried your
+condemnation.
+
+> Name the breakdown. Repair what you can. Take the correction into the work.
+
+Tomorrow, find the first thing that broke down — the pitch you chased, the
+footwork on the throw — and take it into the cage or the early work.
+Tonight, stop replaying the strikeout as a way to pay for it.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Baseball · Praise After the Loss (FV-424 arc; KC-authored final copy,
+// 2026-08-10 postgame review bundle — the content source of truth for this const)
+// ---------------------------------------------------------------------------
+// CLINICAL_SIGN_OFF_REQUIRED: this module (and its hockey/basketball/golf/
+// football mirrors) reaches a minor at a night-time, post-loss low point. It
+// must NOT roll out to a broad athlete base before the pending clinical-advisor
+// sign-off (CLAUDE.md Open Items; tracked in FV-296). The content names the
+// ache, permits it, and never forces a bypass — but the clinical gate is a
+// standing requirement, not satisfied by this code.
+const BASEBALL_PRAISE: PostgameModule = {
+  slug: "baseball-praise-anyway",
+  sport: "baseball",
+  scenario: "praise",
+  title: "Praise After the Loss",
+  scriptureRef: "Habakkuk 3:17-18",
+  scriptureText:
+    "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
+  bodyMd: `### What happened
+
+You lost. Maybe one inning changed the game, or the bats never got
+going. You wanted a different result. Do not rush past that or call
+the loss good.
+
+### What's true
+
+Habakkuk had lost every visible sign that life was going well, yet he still
+called God his Savior. He did not praise the empty fields. He trusted God
+in the middle of them.
+
+> Faith in God's control is not indifference to the result.
+
+God's sovereignty frees you to grieve, examine your own play, and return to
+the work. It does not excuse missed preparation or remove the need to
+repair a mistake. Nothing on the scoreboard changes because you pray, and
+prayer is not a trade for a better game next time.
+
+Your prayer can be direct: *God, this hurts. Show me what is mine to own
+and help me do the work. Thank You that my standing with You rests on
+Christ, not tonight's box score.* You can finish that prayer and still feel
+the loss. You do not need to force a resolution tonight.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Lacrosse · After the Win (FV-425 arc; KC-authored final copy,
+// 2026-08-10 postgame review bundle — the content source of truth for this const)
+// ---------------------------------------------------------------------------
+const LACROSSE_WIN: PostgameModule = {
+  slug: "lacrosse-after-the-win",
+  sport: "lacrosse",
+  scenario: "win",
+  title: "After the Win",
+  scriptureRef: "James 1:17",
+  scriptureText:
+    "Every good and perfect gift is from above, coming down from the Father of the heavenly lights, who does not change like shifting shadows.",
+  bodyMd: `### What happened
+
+You won. Maybe you scored late, secured the ground ball on the final
+possession, or made the save that ended it. Enjoy the night. Winning is good,
+and humility does not require you to minimize it.
+
+Notice what made the result possible: the week of preparation, the feed
+before the goal, the pole who kept their best dodger away from the middle,
+the coach or family member who helped you get here.
+
+### What's true
+
+James says every good gift comes from a Father who does not change. Your
+ability to compete, your teammates, and the joy of the night are gifts. The
+final score is not evidence that God favored your team or rewarded you for
+having more faith.
+
+Your preparation mattered. Grace is not an excuse to work less. It is what
+keeps hard work from becoming self-worship when the result goes your way.
+
+> Enjoy the win. Give thanks. Stay teachable.
+
+Thank God on more than winning nights. Thank a teammate for a specific play.
+Check on the player whose night did not feel like a victory. Then return to
+work. This result can show you what went well; it cannot guarantee the next
+one.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Lacrosse · After the Loss (FV-425 arc; KC-authored final copy,
+// 2026-08-10 postgame review bundle — the content source of truth for this const)
+// ---------------------------------------------------------------------------
+const LACROSSE_LOSS: PostgameModule = {
+  slug: "lacrosse-the-loss",
+  sport: "lacrosse",
+  scenario: "loss",
+  title: "After the Loss",
+  scriptureRef: "Psalm 34:18",
+  scriptureText:
+    "The Lord is close to the brokenhearted and saves those who are crushed in spirit.",
+  bodyMd: `### What happened
+
+You lost. Maybe it turned on a failed clear, a late turnover, or a shot you
+want back, and that possession keeps running through your head.
+
+Do not use "God is in control" to shrug at the result. You wanted to win.
+You prepared for it. The loss matters, and you can be disappointed.
+
+### What's true
+
+Psalm 34 says God is close to the brokenhearted. His sovereignty gives you
+somewhere to take the pain; it does not make the pain unreal or the work
+irrelevant.
+
+Ask what belongs to you. Did you know your slide? Did you take care of the
+ball? Did you keep running when the game turned? Own those answers. Do not
+take responsibility for every bounce, call, or teammate's decision.
+
+> Face the score honestly. Own what was yours without turning it into a judgment on your worth.
+
+Your standing with God rests on what Christ has done, not on four quarters
+of lacrosse. Tomorrow, watch the film and take one correction into the next
+practice. Tonight, you do not have to feel better. Stop reviewing when it
+stops being useful and becomes self-punishment.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Lacrosse · Left on the Sideline (FV-425 arc; KC-authored final copy,
+// 2026-08-10 postgame review bundle — the content source of truth for this const)
+// ---------------------------------------------------------------------------
+const LACROSSE_BENCHING: PostgameModule = {
+  slug: "lacrosse-glued-to-the-bench",
+  sport: "lacrosse",
+  scenario: "benching",
+  title: "Left on the Sideline",
+  scriptureRef: "Psalm 139:1-3",
+  scriptureText:
+    "You have searched me, Lord, and you know me. You know when I sit and when I rise; you perceive my thoughts from afar. You discern my going out and my lying down; you are familiar with all my ways.",
+  bodyMd: `### What happened
+
+Your minutes dried up. The rotation tightened, the subs went to someone
+else, and you watched the fourth quarter from the sideline, waiting for a
+number that never got called. It hurts to stay ready and never hear your name. Do not
+pretend the role is fine with you.
+
+### What's true
+
+Right now, the coach is not trusting you with the minutes you want. Begin
+with the situation as it is, not the one you think you deserve. Do not spend
+the ride home building a case against the coach. Psalm 139 says God knows you
+completely. Because your life is secure in Christ, you can face a shortened
+role without letting it decide who you are.
+
+> The coach controls the minutes. You control how you prepare and use them.
+
+Tomorrow, ask the coach what must improve — your ground balls, your defense,
+your decisions with the ball. Hear the whole answer, then own what you can
+change. If you get three runs, make them three disciplined runs. Talk from
+the sideline, keep your legs warm, and stay ready. Do not assume faith
+guarantees more minutes. Keep preparing faithfully inside the role you have.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Lacrosse · After a Bad Game (FV-425 arc; KC-authored final copy,
+// 2026-08-10 postgame review bundle — the content source of truth for this const)
+// ---------------------------------------------------------------------------
+const LACROSSE_BAD_GAME: PostgameModule = {
+  slug: "lacrosse-the-bad-game",
+  sport: "lacrosse",
+  scenario: "bad-game",
+  title: "After a Bad Game",
+  scriptureRef: "Lamentations 3:22-23",
+  scriptureText:
+    "Because of the Lord's great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness.",
+  bodyMd: `### What happened
+
+You had a bad game. Maybe you turned the ball over three times, got shut off
+and disappeared for a half, or lost draw after draw at the X. The clips will
+be on Hudl, including the possessions you need to review.
+
+Do not soften the game, and do not turn it into a statement about your whole
+life. Start with what actually happened.
+
+### What's true
+
+Maybe your mistakes cost the team. If they did, own it. Apologize where that
+is needed. Then refuse the label *I am a liability.* A turnover you can name
+gives you something specific to correct. A label only tells you to feel
+worse.
+
+Lamentations says God's compassion is new every morning. That mercy does not
+guarantee a better game next week. It means you can watch the film without
+hiding, because Christ has already borne your condemnation.
+
+> Name the mistake. Take the correction into practice. Refuse the larger label.
+
+Tomorrow, sit with the film, find the first thing that broke down, and take
+it to wall ball or the next practice. Tonight, stop replaying the game as a
+way to pay for it.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Lacrosse · Praise After the Loss (FV-425 arc; KC-authored final copy,
+// 2026-08-10 postgame review bundle — the content source of truth for this const)
+// ---------------------------------------------------------------------------
+// CLINICAL_SIGN_OFF_REQUIRED: this module (and its hockey/basketball/golf/
+// football mirrors) reaches a minor at a night-time, post-loss low point. It
+// must NOT roll out to a broad athlete base before the pending clinical-advisor
+// sign-off (CLAUDE.md Open Items; tracked in FV-296). The content names the
+// ache, permits it, and never forces a bypass — but the clinical gate is a
+// standing requirement, not satisfied by this code.
+const LACROSSE_PRAISE: PostgameModule = {
+  slug: "lacrosse-praise-anyway",
+  sport: "lacrosse",
+  scenario: "praise",
+  title: "Praise After the Loss",
+  scriptureRef: "Habakkuk 3:17-18",
+  scriptureText:
+    "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
+  bodyMd: `### What happened
+
+You lost. Maybe the game turned during a man-down possession, or your team
+never settled into its offense. You wanted a different result. Do not rush
+past that or call the loss good.
+
+### What's true
+
+Habakkuk had lost every visible sign that life was going well, yet he still
+called God his Savior. He did not praise the empty fields. He trusted God in
+the middle of them.
+
+> Praising God tonight is not a trade for a better game next week.
+
+God's sovereignty frees you to grieve, examine your own play, and return to
+the work. It does not excuse missed preparation or remove the need to repair
+a mistake. Nothing on the scoreboard changes because you pray, and prayer is
+not leverage for the next result.
+
+Your prayer can be direct: *God, this hurts. Show me what is mine to own and
+help me do the work. Thank You that my standing with You rests on Christ,
+not tonight's score.* You can finish that prayer and still feel the loss.
+You do not need to force a resolution tonight.`,
+};
+
 export const POSTGAME_MODULES: PostgameModule[] = [
   HOCKEY_WIN,
   HOCKEY_LOSS,
@@ -811,6 +1211,16 @@ export const POSTGAME_MODULES: PostgameModule[] = [
   FOOTBALL_BENCHING,
   FOOTBALL_BAD_GAME,
   FOOTBALL_PRAISE,
+  BASEBALL_WIN,
+  BASEBALL_LOSS,
+  BASEBALL_BENCHING,
+  BASEBALL_BAD_GAME,
+  BASEBALL_PRAISE,
+  LACROSSE_WIN,
+  LACROSSE_LOSS,
+  LACROSSE_BENCHING,
+  LACROSSE_BAD_GAME,
+  LACROSSE_PRAISE,
 ];
 
 /**
