@@ -1403,7 +1403,7 @@ _(pause: 1.5s)_
 _(pause: 2s)_
 4. Now the reset. Return to your anchor.
 _(pause: 2s)_
-5. That ball is on you, and it's finished. Playing out costs you one sometimes — that doesn't mean the next one has to go long.
+5. That ball is on you, and it's finished. Playing out costs you one sometimes — the answer is a better look before you play, not a longer ball.
 _(pause: 2s)_
 6. Next goal kick, look before you play. Pick the free player, weight it to their back foot, and tell your back line what's on before you strike it.
 _(pause: 2s)_
