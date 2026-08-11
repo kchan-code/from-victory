@@ -110,6 +110,46 @@ export const POSITIVE_PLAYS: readonly PositivePlay[] = [
   { slug: "viz-ftb-db-clutch-deep", role: "DB", title: "Late deep ball, stay in phase" },
   { slug: "viz-ftb-db-recover-in-phase", role: "DB", title: "Hips flipped early \u2014 recover and play the ball" },
 
+  // ── Pitcher — Baseball (7) — FV-424. DORMANT: baseball is not in
+  // SUPPORTED_SPORTS; these entries become reachable at the FV-100 go-live.
+  { slug: "viz-bsb-pitcher-attack-first-inning", role: "Pitcher", title: "First inning, establish the zone" },
+  { slug: "viz-bsb-pitcher-strikeout-sequence", role: "Pitcher", title: "Change speed and location" },
+  { slug: "viz-bsb-pitcher-escape-the-jam", role: "Pitcher", title: "Get the ground-ball double play" },
+  { slug: "viz-bsb-pitcher-hold-and-field", role: "Pitcher", title: "Hold the runner, field the comebacker" },
+  { slug: "viz-bsb-pitcher-putaway-pitch", role: "Pitcher", title: "Finish an 0-2 count" },
+  { slug: "viz-bsb-pitcher-deep-outing-rhythm", role: "Pitcher", title: "Sixth inning, repeat your delivery" },
+  { slug: "viz-bsb-pitcher-bounce-back", role: "Pitcher", title: "Home run, reset for the next hitter" },
+
+  // ── Catcher — Baseball (7) — FV-424. DORMANT: baseball is not in
+  // SUPPORTED_SPORTS; these entries become reachable at the FV-100 go-live.
+  { slug: "viz-bsb-catcher-frame-the-zone", role: "Catcher", title: "Receive the low corner cleanly" },
+  { slug: "viz-bsb-catcher-block-in-the-dirt", role: "Catcher", title: "Block the pitch, keep the runner at third" },
+  { slug: "viz-bsb-catcher-throw-out-the-runner", role: "Catcher", title: "Quick transfer, throw to second" },
+  { slug: "viz-bsb-catcher-call-the-game", role: "Catcher", title: "Call the sequence, one pitch at a time" },
+  { slug: "viz-bsb-catcher-play-at-the-plate", role: "Catcher", title: "Receive the throw and apply the tag" },
+  { slug: "viz-bsb-catcher-clutch-at-bat", role: "Catcher", title: "Runner in scoring position, drive him in" },
+  { slug: "viz-bsb-catcher-bounce-back", role: "Catcher", title: "Passed ball, reset for the next pitch" },
+
+  // ── Infield — Baseball (7) — FV-424. DORMANT: baseball is not in
+  // SUPPORTED_SPORTS; these entries become reachable at the FV-100 go-live.
+  { slug: "viz-bsb-infield-turn-two", role: "Infield", title: "Field it clean and turn two" },
+  { slug: "viz-bsb-infield-backhand-hole", role: "Infield", title: "Backhand deep in the hole" },
+  { slug: "viz-bsb-infield-diving-stop", role: "Infield", title: "Diving stop, recover and throw" },
+  { slug: "viz-bsb-infield-drive-in-run", role: "Infield", title: "Runner on third, use the middle" },
+  { slug: "viz-bsb-infield-work-count-single", role: "Infield", title: "Stay disciplined through a full count" },
+  { slug: "viz-bsb-infield-two-strike-battle", role: "Infield", title: "Two strikes, shorten the swing" },
+  { slug: "viz-bsb-infield-next-ball-clean", role: "Infield", title: "Error, reset for the next ground ball" },
+
+  // ── Outfield — Baseball (7) — FV-424. DORMANT: baseball is not in
+  // SUPPORTED_SPORTS; these entries become reachable at the FV-100 go-live.
+  { slug: "viz-bsb-outfield-run-down-gap", role: "Outfield", title: "Take the angle to the gap" },
+  { slug: "viz-bsb-outfield-throw-out-runner", role: "Outfield", title: "Field the single, throw to third" },
+  { slug: "viz-bsb-outfield-diving-catch", role: "Outfield", title: "Sinking liner, decide early" },
+  { slug: "viz-bsb-outfield-play-the-wall", role: "Outfield", title: "Read the wall and hit the relay" },
+  { slug: "viz-bsb-outfield-drive-the-gap", role: "Outfield", title: "Drive the fastball into the gap" },
+  { slug: "viz-bsb-outfield-two-strike-single", role: "Outfield", title: "Two strikes, shorten and stay in the zone" },
+  { slug: "viz-bsb-outfield-next-at-bat-clean", role: "Outfield", title: "Called strike three, adjust next time up" },
+
   // ── Defense — Hockey (9) ──────────────────────────────────────────────────
   { slug: "viz-defense-retrieval", role: "Defense", title: "Clean puck retrieval" },
   { slug: "viz-defense-walk-the-line", role: "Defense", title: "Walk the blue line" },

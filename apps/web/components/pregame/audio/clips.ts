@@ -88,6 +88,7 @@ import { SESSION_BIG_FALL_BEHIND_EARLY_SCRIPT } from "./session-big-fall-behind-
 // FV-136: 52 discrete positive-play viz clips (one per scenario in §1 of md)
 import { VIZ_CLIP_SCRIPTS } from "./clips-viz.ts";
 import { BASEBALL_PREGAME_CLIP_SCRIPTS } from "./clips-baseball.ts";
+import { BASEBALL_VIZ_CLIP_SCRIPTS } from "./clips-viz-baseball.ts";
 import { GOLF_PREGAME_CLIP_SCRIPTS } from "./clips-golf.ts";
 // FV-294: 21 golf positive-play viz clips + st-glf-02 self-talk
 import { GOLF_VIZ_CLIP_SCRIPTS } from "./clips-viz-golf.ts";
@@ -6010,6 +6011,7 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   ...VIZ_CLIP_SCRIPTS,
   // Baseball pregame clips (FV-94) — 4 VIZ + 39 hard-moment cells.
   ...BASEBALL_PREGAME_CLIP_SCRIPTS,
+  ...BASEBALL_VIZ_CLIP_SCRIPTS,
   // Golf pregame clips (FV-265) — 3 profile VIZ + 30 hard-moment cells (render = FV-266).
   ...GOLF_PREGAME_CLIP_SCRIPTS,
   // Golf anchors + self-talk (FV-303)

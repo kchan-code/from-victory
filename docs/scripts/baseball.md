@@ -785,3 +785,594 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Slow it down. Get behind the next ball, field it clean, take the sure out, and hit the cutoff man.
 _(pause: 2s)_
+
+## VIZ Clips — Positive Plays (FV-424)
+
+### Baseball · Pitcher · attack-first-inning (viz play)
+<!-- slug: viz-bsb-pitcher-attack-first-inning | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself taking the mound for the first inning, focused on the first pitch.
+_(pause: 2s)_
+2. You toe the rubber, get your sign, and come set.
+_(pause: 2s)_
+3. First pitch, fastball at the knees on the glove-side corner.
+_(pause: 2.5s)_
+4. Your catcher receives it on the edge. Strike one.
+_(pause: 2s)_
+5. You get the ball back and prepare the same way.
+_(pause: 2s)_
+6. Another fastball down produces early contact.
+_(pause: 2.5s)_
+7. Ground ball to short. One out.
+_(pause: 2s)_
+8. You keep the same tempo, get the sign, and hit the next target.
+_(pause: 2.5s)_
+9. You finish the inning by working ahead and staying on your locations.
+_(pause: 3s)_
+### Baseball · Pitcher · strikeout-sequence (viz play)
+<!-- slug: viz-bsb-pitcher-strikeout-sequence | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself facing a hitter with a clear plan for the at-bat.
+_(pause: 2s)_
+2. First pitch, fastball in for a strike. He takes it.
+_(pause: 2.5s)_
+3. You come back with another fastball on the outside edge. 0-2.
+_(pause: 2.5s)_
+4. You show a breaking ball below the zone without leaving it over the plate.
+_(pause: 2.5s)_
+5. He takes it. The count moves to 1-2.
+_(pause: 2s)_
+6. He has seen firm pitches on both sides of the plate.
+_(pause: 2s)_
+7. You go back to the breaking ball, finishing it down and away.
+_(pause: 2.5s)_
+8. He starts his swing and misses over it.
+_(pause: 2s)_
+9. Strike three. You changed speed and location to finish the at-bat.
+_(pause: 3s)_
+### Baseball · Pitcher · escape-the-jam (viz play)
+<!-- slug: viz-bsb-pitcher-escape-the-jam | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself with runners on first and second, one out, looking for a ground ball.
+_(pause: 2s)_
+2. You step off, take a breath, and get your sign.
+_(pause: 2s)_
+3. You stay with the plan instead of expanding the zone for a strikeout.
+_(pause: 2.5s)_
+4. You throw the sinker at the bottom of the zone.
+_(pause: 2.5s)_
+5. The hitter rolls it over sharply to short.
+_(pause: 2s)_
+6. The shortstop feeds second, and the turn goes over to first.
+_(pause: 2s)_
+7. The defense turns two. The inning is over.
+_(pause: 2.5s)_
+8. The pitch location created the contact you wanted.
+_(pause: 2.5s)_
+9. You execute the pitch and let the defense finish the play.
+_(pause: 3s)_
+### Baseball · Pitcher · hold-and-field (viz play)
+<!-- slug: viz-bsb-pitcher-hold-and-field | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself with a fast runner on first, holding him close and staying in your delivery.
+_(pause: 2s)_
+2. You come set, eyes on the runner, then back to the mitt.
+_(pause: 2s)_
+3. You vary your hold time, keep him close, then deliver.
+_(pause: 2.5s)_
+4. You stay quick to the plate without rushing your delivery.
+_(pause: 2.5s)_
+5. The hitter chops it right back at you, a comebacker.
+_(pause: 2s)_
+6. You field it clean, glove to hand.
+_(pause: 2s)_
+7. You turn, set your feet, and make the feed to second.
+_(pause: 2.5s)_
+8. The turn goes over to first. Two outs.
+_(pause: 2.5s)_
+9. You control the runner, field the comebacker, and start the 1-6-3 double play.
+_(pause: 3s)_
+### Baseball · Pitcher · putaway-pitch (viz play)
+<!-- slug: viz-bsb-pitcher-putaway-pitch | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself ahead 0-2, ready to finish the sequence.
+_(pause: 2s)_
+2. The first two pitches have him timed for the fastball.
+_(pause: 2s)_
+3. You come set and keep the same tempo in your delivery.
+_(pause: 2.5s)_
+4. Changeup — fastball arm speed from the same release window.
+_(pause: 2.5s)_
+5. It finishes below the barrel.
+_(pause: 2.5s)_
+6. He is out in front and swings over it.
+_(pause: 2s)_
+7. Swing and miss. Strike three.
+_(pause: 2.5s)_
+8. Your arm speed stays consistent and the pitch finishes below the zone.
+_(pause: 2.5s)_
+9. You complete the sequence without changing or rushing your delivery.
+_(pause: 3s)_
+### Baseball · Pitcher · deep-outing-rhythm (viz play)
+<!-- slug: viz-bsb-pitcher-deep-outing-rhythm | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself in the sixth inning, keeping your delivery repeatable.
+_(pause: 2s)_
+2. The pitch count is climbing, so you check your breathing and posture.
+_(pause: 2s)_
+3. You get the ball, take the sign, and keep your normal tempo.
+_(pause: 2.5s)_
+4. Fastball down, ground ball, one out.
+_(pause: 2s)_
+5. Two pitches later, a routine fly ball. Two outs.
+_(pause: 2.5s)_
+6. You use movement and location instead of reaching for more velocity.
+_(pause: 2.5s)_
+7. You stay tall, repeat your delivery, and hit the target.
+_(pause: 2.5s)_
+8. The inning ends, and you return to the dugout.
+_(pause: 2s)_
+9. You finish the inning with the same tempo and mechanics you started with.
+_(pause: 3s)_
+### Baseball · Pitcher · bounce-back (viz play)
+<!-- slug: viz-bsb-pitcher-bounce-back | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself on the mound after a fastball catches too much plate and leaves the park.
+_(pause: 2s)_
+2. The run counts. That pitch is finished.
+_(pause: 2s)_
+3. You take the new ball, step behind the mound, and review the missed location.
+_(pause: 2s)_
+4. You settle your breathing and return to the rubber.
+_(pause: 2.5s)_
+5. The next hitter steps in. You get the sign and return to your plan.
+_(pause: 2s)_
+6. You come set and repeat your normal delivery.
+_(pause: 2.5s)_
+7. Fastball at the bottom of the zone, into the mitt. Strike one.
+_(pause: 2.5s)_
+8. The catcher returns the ball, and you prepare for the next pitch.
+_(pause: 2.5s)_
+9. You are back in the at-bat, ahead 0-1.
+_(pause: 3s)_
+### Baseball · Catcher · frame-the-zone (viz play)
+<!-- slug: viz-bsb-catcher-frame-the-zone | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself set up low, giving the pitcher a quiet target.
+_(pause: 2s)_
+2. The pitcher comes set and works to your glove.
+_(pause: 2s)_
+3. The pitch comes to the low corner, right on the edge.
+_(pause: 2.5s)_
+4. You receive it softly, keeping your body and glove quiet.
+_(pause: 2.5s)_
+5. You hold the pitch on the edge long enough for the umpire to see it.
+_(pause: 2.5s)_
+6. The umpire calls strike one.
+_(pause: 2s)_
+7. You return the ball and reset your target.
+_(pause: 2s)_
+8. On the next borderline pitch, you receive from the ground up without extra movement.
+_(pause: 2.5s)_
+9. You give the umpire a clean look at each pitch on the edge.
+_(pause: 3s)_
+### Baseball · Catcher · block-in-the-dirt (viz play)
+<!-- slug: viz-bsb-catcher-block-in-the-dirt | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself calling for the breaking ball with a runner on third.
+_(pause: 2s)_
+2. You give the sign, settle your weight, and prepare to block.
+_(pause: 2s)_
+3. The pitch short-hops the dirt in front of you.
+_(pause: 2.5s)_
+4. You drop your hips behind it, chin tucked, glove between your knees.
+_(pause: 2.5s)_
+5. The ball hits your chest protector and stays close.
+_(pause: 2.5s)_
+6. You keep it directly in front of you.
+_(pause: 2s)_
+7. The runner stays at third.
+_(pause: 2.5s)_
+8. You recover the ball, get to your feet, and check the runner.
+_(pause: 2.5s)_
+9. Your block keeps the pitch close and prevents the advance.
+_(pause: 3s)_
+### Baseball · Catcher · throw-out-the-runner (viz play)
+<!-- slug: viz-bsb-catcher-throw-out-the-runner | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself with a runner taking an aggressive lead at first.
+_(pause: 2s)_
+2. You stay balanced in your crouch and keep the runner in view.
+_(pause: 2s)_
+3. The pitch comes in at the top of the zone, where you can handle it.
+_(pause: 2.5s)_
+4. The runner breaks for second. You receive the pitch cleanly.
+_(pause: 2s)_
+5. You transfer close to your body as you replace your feet underneath you.
+_(pause: 2.5s)_
+6. You use a short arm action and carry the throw to the bag.
+_(pause: 2.5s)_
+7. The ball arrives knee-high on the fielder's glove side.
+_(pause: 2s)_
+8. The shortstop applies the tag. Out.
+_(pause: 2.5s)_
+9. The exchange, footwork, and accurate throw complete the play.
+_(pause: 3s)_
+### Baseball · Catcher · call-the-game (viz play)
+<!-- slug: viz-bsb-catcher-call-the-game | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself guiding the pitcher through the lineup from behind the plate.
+_(pause: 2s)_
+2. The pitcher looks in, and you return to the plan for this hitter.
+_(pause: 2s)_
+3. You notice where the hitter is late and which pitch he is tracking well.
+_(pause: 2.5s)_
+4. You give the sign and set a clear target.
+_(pause: 2s)_
+5. Fastball in, then an off-speed pitch away.
+_(pause: 2.5s)_
+6. The change in speed keeps the hitter from getting on time.
+_(pause: 2.5s)_
+7. He rolls a ground ball to the infield for an out.
+_(pause: 2.5s)_
+8. You return the ball, check the situation, and call the next pitch.
+_(pause: 2.5s)_
+9. You keep the plan clear and work with the pitcher one pitch at a time.
+_(pause: 3s)_
+### Baseball · Catcher · play-at-the-plate (viz play)
+<!-- slug: viz-bsb-catcher-play-at-the-plate | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself with a runner trying to score from second and the throw headed home.
+_(pause: 2s)_
+2. A base hit reaches the outfield, and the runner rounds third.
+_(pause: 2s)_
+3. You move toward the plate, keep the runner's lane open, and track the throw.
+_(pause: 2.5s)_
+4. The throw comes in on one hop, and you follow it into your glove.
+_(pause: 2.5s)_
+5. You receive it cleanly, then move into position for the tag.
+_(pause: 2s)_
+6. You apply the tag to the front edge of the slide.
+_(pause: 2.5s)_
+7. The umpire calls the runner out at the plate.
+_(pause: 2.5s)_
+8. You keep control of the ball through the tag.
+_(pause: 2.5s)_
+9. You receive the throw, apply the tag, and record the out.
+_(pause: 3s)_
+### Baseball · Catcher · clutch-at-bat (viz play)
+<!-- slug: viz-bsb-catcher-clutch-at-bat | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself stepping into the box with a runner on second.
+_(pause: 2s)_
+2. You take the sign, settle in, and stay with your approach.
+_(pause: 2s)_
+3. The first pitch catches the edge for strike one. You stay with the plan.
+_(pause: 2.5s)_
+4. The next pitch is a fastball over the outer half.
+_(pause: 2.5s)_
+5. You stay through it and drive it the other way.
+_(pause: 2.5s)_
+6. The ball carries on a line into the right-center gap.
+_(pause: 2s)_
+7. The runner scores as you round first and read the outfield.
+_(pause: 2.5s)_
+8. You reach second standing with the ball back in the infield.
+_(pause: 2.5s)_
+9. You stay on the pitch and drive the runner home.
+_(pause: 3s)_
+### Baseball · Catcher · bounce-back (viz play)
+<!-- slug: viz-bsb-catcher-bounce-back | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself right after a pitch skips past you to the backstop.
+_(pause: 2s)_
+2. The runner advances. The play is over.
+_(pause: 2s)_
+3. You retrieve the ball, return it, and reset your equipment.
+_(pause: 2s)_
+4. You take one breath and settle back into your crouch.
+_(pause: 2.5s)_
+5. You give the sign and present a firm target.
+_(pause: 2.5s)_
+6. The next pitch is a breaking ball down in the dirt.
+_(pause: 2.5s)_
+7. You get your body behind it and keep it in front.
+_(pause: 2.5s)_
+8. You recover the ball and return it to the mound.
+_(pause: 2.5s)_
+9. You settle back into your crouch for the next sign.
+_(pause: 3s)_
+### Baseball · Infield · turn-two (viz play)
+<!-- slug: viz-bsb-infield-turn-two | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself ready for a double-play ball with a runner on first.
+_(pause: 2s)_
+2. With less than two outs, you set at double-play depth.
+_(pause: 2s)_
+3. The ball is chopped on the ground into your range.
+_(pause: 2.5s)_
+4. You field it out front and work your feet toward second.
+_(pause: 2.5s)_
+5. You deliver a firm, chest-high feed to the bag.
+_(pause: 2s)_
+6. Your teammate touches second and makes a quick transfer.
+_(pause: 2.5s)_
+7. The throw travels across the diamond on a line.
+_(pause: 2s)_
+8. It reaches first ahead of the runner.
+_(pause: 2s)_
+9. You field the ball cleanly, deliver the feed, and the defense turns two.
+_(pause: 2.5s)_
+### Baseball · Infield · backhand-hole (viz play)
+<!-- slug: viz-bsb-infield-backhand-hole | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See a hard ground ball hit deep to your backhand side.
+_(pause: 2s)_
+2. You read the hop and take an aggressive angle into the hole.
+_(pause: 2s)_
+3. Your first step puts you on a direct route to the ball.
+_(pause: 2s)_
+4. You reach across your body and field the backhand cleanly.
+_(pause: 2.5s)_
+5. You gather your feet and get your shoulders toward first.
+_(pause: 2.5s)_
+6. You make the long throw across the diamond on a line.
+_(pause: 3s)_
+7. The throw carries chest-high to the bag.
+_(pause: 2s)_
+8. It reaches the first baseman just ahead of the runner.
+_(pause: 2s)_
+9. Your first step, clean backhand, and accurate throw complete the play.
+_(pause: 2.5s)_
+### Baseball · Infield · diving-stop (viz play)
+<!-- slug: viz-bsb-infield-diving-stop | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See a hard ground ball hit down the line to your glove side.
+_(pause: 2s)_
+2. You read it off the bat and move across the dirt.
+_(pause: 2s)_
+3. The ball stays just beyond your normal fielding range.
+_(pause: 2s)_
+4. You dive, extend the glove, and secure the ball.
+_(pause: 2.5s)_
+5. You land with the glove closed and keep control of it.
+_(pause: 2.5s)_
+6. You recover to a knee, find first base, and gather your grip.
+_(pause: 2.5s)_
+7. You make a firm throw across the diamond.
+_(pause: 2.5s)_
+8. The first baseman stretches and secures it.
+_(pause: 2s)_
+9. You secure the ball, regain your balance, and finish the throw.
+_(pause: 2.5s)_
+### Baseball · Infield · drive-in-run (viz play)
+<!-- slug: viz-bsb-infield-drive-in-run | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself in the box with a runner on third and less than two outs.
+_(pause: 2s)_
+2. You check the infield positioning and look for a pitch you can drive through the middle.
+_(pause: 2s)_
+3. You settle into the box, shorten slightly, and stay with that approach.
+_(pause: 2.5s)_
+4. The pitch is a fastball on the outer half.
+_(pause: 2s)_
+5. You stay through it and drive it the other way.
+_(pause: 2.5s)_
+6. The ball travels on a line into right-center.
+_(pause: 2.5s)_
+7. The runner scores standing up.
+_(pause: 2s)_
+8. You reach second with the ball back in the infield.
+_(pause: 2s)_
+9. You execute the approach and drive the runner home.
+_(pause: 2.5s)_
+### Baseball · Infield · work-count-single (viz play)
+<!-- slug: viz-bsb-infield-work-count-single | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself stay disciplined through a full-count at-bat.
+_(pause: 2s)_
+2. The first pitch is a breaking ball just outside. Ball one.
+_(pause: 2s)_
+3. The next fastball misses off the plate. Two balls, no strikes.
+_(pause: 2.5s)_
+4. You take a strike, foul off the next pitch, and hold on a fastball below the zone.
+_(pause: 2.5s)_
+5. The count is full. You stay with your strike-zone plan.
+_(pause: 2s)_
+6. The next fastball comes into the zone.
+_(pause: 2s)_
+7. You stay short, put the barrel on it, and drive it on a line.
+_(pause: 2.5s)_
+8. The ball reaches left field for a single.
+_(pause: 2s)_
+9. You reach first after staying within the zone for the entire at-bat.
+_(pause: 2.5s)_
+### Baseball · Infield · two-strike-battle (viz play)
+<!-- slug: viz-bsb-infield-two-strike-battle | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself at 0-2, making an adjustment to protect the zone.
+_(pause: 2s)_
+2. The pitcher has room to expand beyond the plate.
+_(pause: 2s)_
+3. You choke up, widen your stance, and shorten your move to the ball.
+_(pause: 2.5s)_
+4. He tries to expand below the zone, and you hold off. Ball one.
+_(pause: 2.5s)_
+5. He spins a slider on the corner, and you foul it away.
+_(pause: 2.5s)_
+6. You foul the next pitch straight back and reset.
+_(pause: 2s)_
+7. A fastball enters the zone, and you put a short swing on it.
+_(pause: 2.5s)_
+8. You send it the other way, past the shortstop.
+_(pause: 2.5s)_
+9. The shorter approach lets you handle the pitch and reach first.
+_(pause: 2.5s)_
+### Baseball · Infield · next-ball-clean (viz play)
+<!-- slug: viz-bsb-infield-next-ball-clean | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See a routine ground ball kick off your glove for an error.
+_(pause: 2s)_
+2. The runner reaches. You have time to reset before the next pitch.
+_(pause: 2.5s)_
+3. You check the outs, settle into ready position, and prepare for the next ball.
+_(pause: 2s)_
+4. The next batter chops a ground ball into your range.
+_(pause: 2.5s)_
+5. You move through it under control.
+_(pause: 2s)_
+6. With the glove out front, you field it cleanly and work through the ball.
+_(pause: 2.5s)_
+7. You set your feet and make the throw across the diamond.
+_(pause: 2.5s)_
+8. The throw reaches first ahead of the runner. One out.
+_(pause: 2s)_
+9. You finish the play, check the situation, and return to ready position.
+_(pause: 2.5s)_
+### Baseball · Outfield · run-down-gap (viz play)
+<!-- slug: viz-bsb-outfield-run-down-gap | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See a ball driven into the gap and prepare to take the right angle.
+_(pause: 2s)_
+2. The ball carries toward left-center.
+_(pause: 2s)_
+3. You read it off the bat, take a drop step, and get moving.
+_(pause: 2.5s)_
+4. You run on an angle that keeps the ball over your glove-side shoulder.
+_(pause: 2.5s)_
+5. You stay on the route without drifting underneath it too early.
+_(pause: 2.5s)_
+6. You close the final steps and catch it in stride.
+_(pause: 2.5s)_
+7. You gather after the catch and get your feet underneath you.
+_(pause: 2s)_
+8. You return the ball to the cutoff on a line.
+_(pause: 2.5s)_
+9. Your first step and route put you under the ball in the gap.
+_(pause: 2.5s)_
+### Baseball · Outfield · throw-out-runner (viz play)
+<!-- slug: viz-bsb-outfield-throw-out-runner | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See a ground-ball single come through the right side with a runner on first.
+_(pause: 2s)_
+2. The runner rounds second and considers taking third.
+_(pause: 2s)_
+3. You charge under control and field the ball out front.
+_(pause: 2.5s)_
+4. You come through the ball and line up the throw to third.
+_(pause: 2s)_
+5. You use a crow hop and make a firm throw.
+_(pause: 2.5s)_
+6. The throw travels on a line and takes one hop to the bag.
+_(pause: 2.5s)_
+7. It arrives on the fielder's glove side, ahead of the runner.
+_(pause: 2s)_
+8. The fielder applies the tag, and the umpire calls the runner out.
+_(pause: 2s)_
+9. You keep the throw low, accurate, and ahead of the runner.
+_(pause: 2.5s)_
+### Baseball · Outfield · diving-catch (viz play)
+<!-- slug: viz-bsb-outfield-diving-catch | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See a sinking line drive headed into shallow center.
+_(pause: 2s)_
+2. You read the height and speed as soon as it leaves the bat.
+_(pause: 2s)_
+3. You break forward and take a direct route.
+_(pause: 2.5s)_
+4. You decide early and close the ground for a controlled dive.
+_(pause: 2s)_
+5. You extend with the glove low to the grass.
+_(pause: 2.5s)_
+6. The ball reaches the webbing just above the ground.
+_(pause: 2.5s)_
+7. You land with the glove closed and keep control of the ball.
+_(pause: 2.5s)_
+8. The umpire signals the out.
+_(pause: 2s)_
+9. You get to your feet, return the ball to the infield, and reset your position.
+_(pause: 2.5s)_
+### Baseball · Outfield · play-the-wall (viz play)
+<!-- slug: viz-bsb-outfield-play-the-wall | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See a high drive carry toward the wall and prepare for the carom.
+_(pause: 2s)_
+2. The ball is hit over your head toward the warning track.
+_(pause: 2s)_
+3. You drop step, take your route, and continue reading the flight.
+_(pause: 2.5s)_
+4. You read that the ball will hit the wall instead of clearing it.
+_(pause: 2s)_
+5. You get into position, square to the wall, and prepare for the bounce.
+_(pause: 2.5s)_
+6. The ball caroms back, and you field it cleanly on the bounce.
+_(pause: 2.5s)_
+7. You turn, use a crow hop, and hit the relay on a line.
+_(pause: 2.5s)_
+8. The hitter sees the ball ahead of him and stops at second.
+_(pause: 2s)_
+9. You read the wall, field the carom, and keep the hitter to a double.
+_(pause: 2.5s)_
+### Baseball · Outfield · drive-the-gap (viz play)
+<!-- slug: viz-bsb-outfield-drive-the-gap | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself ready for a fastball you can drive into the gap.
+_(pause: 2s)_
+2. You settle into the box and look for a fastball in the zone.
+_(pause: 2s)_
+3. The pitcher leaves one over the plate, middle-in.
+_(pause: 2s)_
+4. You stay balanced, load on time, and take a direct path to the ball.
+_(pause: 2.5s)_
+5. The barrel meets it squarely.
+_(pause: 2.5s)_
+6. The ball travels on a line into the left-center gap.
+_(pause: 2.5s)_
+7. You leave the box hard and watch the ball as you run.
+_(pause: 2s)_
+8. You read the gap, continue to second, and arrive ahead of the throw.
+_(pause: 2.5s)_
+9. You stay balanced through contact and run out the double.
+_(pause: 2.5s)_
+### Baseball · Outfield · two-strike-single (viz play)
+<!-- slug: viz-bsb-outfield-two-strike-single | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself with two strikes, shortening the swing and protecting the zone.
+_(pause: 2s)_
+2. At 1-2, the pitcher has room to expand.
+_(pause: 2s)_
+3. You choke up, spread out, and shorten your move to the ball.
+_(pause: 2.5s)_
+4. He throws a fastball above the zone, and you hold off. Ball two.
+_(pause: 2.5s)_
+5. He drops a breaking ball on the edge, and you foul it away.
+_(pause: 2.5s)_
+6. You foul the next pitch straight back and reset.
+_(pause: 2s)_
+7. A fastball enters the zone, and you put the barrel on it.
+_(pause: 2.5s)_
+8. The ball travels up the middle for a single.
+_(pause: 2s)_
+9. You stay within the zone, shorten the swing, and reach first.
+_(pause: 2.5s)_
+### Baseball · Outfield · next-at-bat-clean (viz play)
+<!-- slug: viz-bsb-outfield-next-at-bat-clean | file: components/pregame/audio/clips-viz-baseball.ts -->
+
+1. See yourself take strike three on a fastball you expected to miss the zone.
+_(pause: 2s)_
+2. The at-bat is over. You return to the dugout and review the pitch.
+_(pause: 2.5s)_
+3. Next time up, you keep the same approach but prepare earlier for that fastball.
+_(pause: 2s)_
+4. You settle into the box and track the pitch out of the hand.
+_(pause: 2.5s)_
+5. The pitcher returns to the same fastball, and you recognize it sooner.
+_(pause: 2s)_
+6. You stay short and put the barrel on the ball.
+_(pause: 2.5s)_
+7. The ball travels on a line through the left side for a single.
+_(pause: 2.5s)_
+8. You run through first and look to the coach.
+_(pause: 2s)_
+9. You take your lead from first and pick up the next sign.
+_(pause: 2.5s)_
