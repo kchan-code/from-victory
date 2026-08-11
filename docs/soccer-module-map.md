@@ -209,7 +209,7 @@ through the middle; the offside-flag run you keep making anyway.
    the ball, make the simple pass, and return to the midfield shape.
 5. **Arrive late in the box and finish** `late-run-finish` *(core — #8 lens)*
    The ball goes wide and you continue the run, arriving as the cross comes in. You meet it
-   near the edge of the six-yard box and direct the finish on target.
+   around the penalty spot and direct the finish on target.
 6. **Receive and play through the press** `beat-the-press` *(situational)*
    The keeper rolls it to you in your own third with a presser closing on your back.
    One touch to turn out of the pressure, and suddenly the whole pitch is in front of you.
@@ -233,7 +233,7 @@ that kills the counter; the tackle-and-go that starts your own attack.
    You see the pass into the forward's feet before it is played and move into the lane. You
    intercept cleanly, get your head up, and make the first pass.
 4. **Play out under pressure** `play-out` *(core)*
-   Their forward presses from your weak side and removes the easy pass. Your first touch
+   Their forward presses across your body and removes the easy pass. Your first touch
    opens the body, and the next pass finds the midfielder's back foot.
 5. **Overlap and deliver** `overlap-cross` *(core — fullback lens)*
    Your winger moves inside and you overlap into the space outside.
