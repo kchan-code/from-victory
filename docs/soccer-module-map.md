@@ -81,7 +81,7 @@ emotional center — not distinctness of the shirt number.**
   — is what the VIZ block and the adversity column encode.
 - **Captured without a new block.** The Forward library carries a dedicated winger play
   (`take-him-on`) and the `marked-out` adversity has an explicit winger reading (the
-  fullback who wins every duel and the crosses that keep hitting the nearest defender).
+  fullback who wins every duel and the crosses that keep hitting the first defender).
 - **Scope math.** A 5th block = +1 flagship + 7 more viz plays + a full 10-cell adversity
   column + ~18 more renders + a broken integrity-test parity, for a role that shares
   Forward's core wound. This is the exact call lacrosse made on LSM and basketball made on
@@ -101,7 +101,7 @@ Forward library, not a 5th position. Escalate to a 5th block only if that fails.
 world — the overlap, the cross, tracking back for 90, getting beaten for pace by a quick
 winger — is *flavor on the same wound*: **my matchup got past me and it cost us.** It is carried
 by a dedicated fullback play (`overlap-cross`) and by fullback readings of `turned` (beaten
-for pace on the outside, not turned in behind) and `giveaway` (the cross that hits the nearest
+for pace on the outside, not turned in behind) and `giveaway` (the cross that hits the first
 defender). Same call as lacrosse's LSM.
 
 ### Why attacking and defensive mids do NOT split (RATIFY)
@@ -227,7 +227,7 @@ that kills the counter; the tackle-and-go that starts your own attack.
    The winger runs at you with space and the touchline nearby. You manage the distance,
    show the attacker outside, and stay on your feet until support arrives.
 2. **Attack the header** `win-the-header` *(core)*
-   The corner comes in and you locate the marker early, then attack the flight of the ball.
+   The corner comes in and you locate the attacker you're marking early, then attack the flight of the ball.
    You attack the front of the ball at the top of your jump and head it clear and long.
 3. **Read it early, step in and intercept** `read-and-intercept` *(core)*
    You see the pass into the forward's feet before it is played and move into the lane. You
@@ -253,7 +253,7 @@ the offside-line step-up on the whole back four's call.
 
 1. **Set the angle and control the shot** `set-and-save` *(core)*
    The shot comes from the edge of the box and you're already set, weight forward.
-   You move both hands through the ball, bring it into the body, and control the rebound.
+   You move both hands through the ball and bring it into the body — held, no rebound.
 2. **Come and claim the cross** `claim-the-cross` *(core)*
    The corner is swung into traffic and you call **keeper's** before leaving the line.
    You come through the crowd at the top of your jump and take it cleanly out of the air.
@@ -412,14 +412,15 @@ marked → `slug`.
 
 **Defender (CB + fullback lens; locus: last line / "it got past me") — 10 cells**
 1. **Give the ball away** — the pass out from the back intercepted in your own third under
-   the press; *(fullback lens: the cross that keeps hitting the nearest defender)*.
+   the press; *(fullback lens: the cross that keeps hitting the first defender)*.
 2. **Miss a big chance** — the free header at the back post from a corner, and you put it
    wide; the one chance a defender gets all game.
 3. **Beaten one-v-one** → `hm-soc-def-turned` — turned and beaten in behind by a quick
    striker, and you cannot get back; *(fullback lens: beaten for pace on the outside)*;
    ★"I'm too slow for this level." ⚠
-4. **Booked** — the recovery challenge you mistimed, a foul stopping a clear chance; or you
-   brought the attacker down in the box and conceded a penalty.
+4. **Booked** — the recovery challenge you mistimed, the cynical foul that stops a promising
+   attack; or you went for the ball, brought the attacker down in the box, and conceded a
+   penalty.
 5. **The goal is on me** → `hm-soc-def-goal-on-me` — the own goal off your shin, the
    deflection, the marker you lost at the corner; the goal that everyone can see is yours;
    ★"I lost us that one." ⚠
