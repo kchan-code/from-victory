@@ -1,8 +1,9 @@
 // Post-game debrief module registry — FV-225.
 //
-// Code-resident content: ten on-demand, re-openable modules for the
-// car-ride-home moment (The Loss / The Benching / The Bad Game / The Win /
-// The Hard Night, hockey + basketball). Mirrors the pregame/pre-practice
+// Code-resident content: on-demand, re-openable modules for the
+// car-ride-home moment (win / loss / benching / bad-game / praise across
+// hockey, basketball, golf (no benching), football, and the dormant
+// baseball + lacrosse sets). Mirrors the pregame/pre-practice
 // precedent: on-demand content lives in code; only the sequenced daily
 // catalog is DB.
 //

@@ -327,6 +327,16 @@ describe("KC-copy protect-lines (2026-07-20 re-author)", () => {
   const normalize = (x: string) => x.replace(/\s+/g, " ").trim();
 
   const RESET_BLOCKQUOTES: Array<[string, string]> = [
+    ["baseball-after-the-win", "Enjoy the win. Give thanks. Stay teachable."],
+    ["baseball-glued-to-the-bench", "The coach controls the at-bats. You control how you prepare and how you use the ones you get."],
+    ["baseball-praise-anyway", "Faith in God's control is not indifference to the result."],
+    ["baseball-the-bad-game", "Name the breakdown. Repair what you can. Take the correction into the work."],
+    ["baseball-the-loss", "Face the score honestly. Own what was yours without turning it into a judgment on your worth."],
+    ["lacrosse-after-the-win", "Enjoy the win. Give thanks. Stay teachable."],
+    ["lacrosse-glued-to-the-bench", "The coach controls the minutes. You control how you prepare and use them."],
+    ["lacrosse-praise-anyway", "Praising God tonight is not a trade for a better game next week."],
+    ["lacrosse-the-bad-game", "Name the mistake. Take the correction into practice. Refuse the larger label."],
+    ["lacrosse-the-loss", "Face the score honestly. Own what was yours without turning it into a judgment on your worth."],
     ["basketball-after-the-win", "Receive the win as a gift, not as proof that you have arrived."],
     ["basketball-glued-to-the-bench", "You cannot choose your minutes. You can be ready for every one you receive."],
     ["basketball-praise-anyway", "Trusting God does not mean becoming indifferent to the result."],
@@ -371,6 +381,12 @@ describe("KC-copy protect-lines (2026-07-20 re-author)", () => {
       "God did not reward your faith with a lower score.",
     ],
     "football-after-the-win": [
+      "The final score is not evidence that God favored your team or rewarded you for having more faith.",
+    ],
+    "baseball-after-the-win": [
+      "The final score is not evidence that God favored your team or rewarded you for having more faith.",
+    ],
+    "lacrosse-after-the-win": [
       "The final score is not evidence that God favored your team or rewarded you for having more faith.",
     ],
   };
