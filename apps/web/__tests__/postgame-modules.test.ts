@@ -33,9 +33,10 @@ import {
 // ---------------------------------------------------------------------------
 
 describe("POSTGAME_MODULES registry completeness", () => {
-  it("contains exactly 19 modules", () => {
-    // 5 scenarios × 4 sports − golf benching (removed per KC 2026-07-20).
-    expect(POSTGAME_MODULES).toHaveLength(19);
+  it("contains exactly 29 modules", () => {
+    // 5 scenarios × 6 sports − golf benching (removed per KC 2026-07-20).
+    // Baseball + lacrosse (dormant) landed 2026-08-10, FV-424/FV-425 arcs.
+    expect(POSTGAME_MODULES).toHaveLength(29);
   });
 
   it("all slugs are unique", () => {
@@ -58,6 +59,8 @@ describe("POSTGAME_MODULES registry completeness", () => {
       hockey: ["win", "loss", "benching", "bad-game", "praise"],
       basketball: ["win", "loss", "benching", "bad-game", "praise"],
       golf: ["win", "loss", "bad-game", "praise"], // no benching (KC 2026-07-20)
+      baseball: ["win", "loss", "benching", "bad-game", "praise"],
+      lacrosse: ["win", "loss", "benching", "bad-game", "praise"],
       football: ["win", "loss", "benching", "bad-game", "praise"],
     };
     for (const [sport, scenarios] of Object.entries(expected)) {
@@ -219,6 +222,25 @@ describe("Scripture verbatim NIV byte-pins", () => {
     expect(ftb.scriptureRef).toBe(hky.scriptureRef);
     expect(ftb.scriptureText).toBe(hky.scriptureText);
   });
+
+  // Baseball + lacrosse (FV-424/FV-425 arcs, 2026-08-10) — same cross-pin.
+  it.each([
+    ["baseball-the-loss", "hockey-the-loss"],
+    ["baseball-glued-to-the-bench", "hockey-glued-to-the-bench"],
+    ["baseball-the-bad-game", "hockey-the-bad-night"],
+    ["baseball-after-the-win", "hockey-after-the-win"],
+    ["baseball-praise-anyway", "hockey-praise-anyway"],
+    ["lacrosse-the-loss", "hockey-the-loss"],
+    ["lacrosse-glued-to-the-bench", "hockey-glued-to-the-bench"],
+    ["lacrosse-the-bad-game", "hockey-the-bad-night"],
+    ["lacrosse-after-the-win", "hockey-after-the-win"],
+    ["lacrosse-praise-anyway", "hockey-praise-anyway"],
+  ])("%s scripture text byte-matches %s", (newSlug, hockeySlug) => {
+    const mod = moduleBySlug(newSlug)!;
+    const hky = moduleBySlug(hockeySlug)!;
+    expect(mod.scriptureRef).toBe(hky.scriptureRef);
+    expect(mod.scriptureText).toBe(hky.scriptureText);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -245,7 +267,15 @@ function countWords(text: string): number {
 
 describe("Body word-count ceiling", () => {
   for (const mod of POSTGAME_MODULES) {
-    const ceiling = mod.sport === "golf" || mod.sport === "football" ? 220 : 190;
+    // Baseball + lacrosse ceiling re-pinned to KC's 2026-08-10 handback copy
+    // (six bodies run 191-224; the guidance closers he added pushed them over
+    // the 190 team-sport value). Revisit if the cards feel long on mobile.
+    const ceiling =
+      mod.sport === "baseball" || mod.sport === "lacrosse"
+        ? 230
+        : mod.sport === "golf" || mod.sport === "football"
+          ? 220
+          : 190;
     it(`${mod.slug} body is ≤${ceiling} words`, () => {
       const count = countWords(mod.bodyMd);
       expect(
@@ -297,6 +327,16 @@ describe("KC-copy protect-lines (2026-07-20 re-author)", () => {
   const normalize = (x: string) => x.replace(/\s+/g, " ").trim();
 
   const RESET_BLOCKQUOTES: Array<[string, string]> = [
+    ["baseball-after-the-win", "Enjoy the win. Give thanks. Stay teachable."],
+    ["baseball-glued-to-the-bench", "The coach controls the at-bats. You control how you prepare and how you use the ones you get."],
+    ["baseball-praise-anyway", "Faith in God's control is not indifference to the result."],
+    ["baseball-the-bad-game", "Name the breakdown. Repair what you can. Take the correction into the work."],
+    ["baseball-the-loss", "Face the score honestly. Own what was yours without turning it into a judgment on your worth."],
+    ["lacrosse-after-the-win", "Enjoy the win. Give thanks. Stay teachable."],
+    ["lacrosse-glued-to-the-bench", "The coach controls the minutes. You control how you prepare and use them."],
+    ["lacrosse-praise-anyway", "Praising God tonight is not a trade for a better game next week."],
+    ["lacrosse-the-bad-game", "Name the mistake. Take the correction into practice. Refuse the larger label."],
+    ["lacrosse-the-loss", "Face the score honestly. Own what was yours without turning it into a judgment on your worth."],
     ["basketball-after-the-win", "Receive the win as a gift, not as proof that you have arrived."],
     ["basketball-glued-to-the-bench", "You cannot choose your minutes. You can be ready for every one you receive."],
     ["basketball-praise-anyway", "Trusting God does not mean becoming indifferent to the result."],
@@ -343,6 +383,12 @@ describe("KC-copy protect-lines (2026-07-20 re-author)", () => {
     "football-after-the-win": [
       "The final score is not evidence that God favored your team or rewarded you for having more faith.",
     ],
+    "baseball-after-the-win": [
+      "The final score is not evidence that God favored your team or rewarded you for having more faith.",
+    ],
+    "lacrosse-after-the-win": [
+      "The final score is not evidence that God favored your team or rewarded you for having more faith.",
+    ],
   };
 
   it("win modules: no prosperity-transaction language outside authorized refutations", () => {
@@ -382,7 +428,21 @@ describe("Praise-on-a-hard-night modules (The Hard Night)", () => {
     "basketball-praise-anyway",
     "golf-praise-anyway",
     "football-praise-anyway",
+    "baseball-praise-anyway",
+    "lacrosse-praise-anyway",
   ];
+
+  // KC retitled the baseball/lacrosse praise modules in the 2026-08-10
+  // handback ("Praise After the Loss"); the four originals stay "Praise
+  // Anyway". Slugs are unchanged across all six.
+  const PRAISE_TITLES: Record<string, string> = {
+    "hockey-praise-anyway": "Praise Anyway",
+    "basketball-praise-anyway": "Praise Anyway",
+    "golf-praise-anyway": "Praise Anyway",
+    "football-praise-anyway": "Praise Anyway",
+    "baseball-praise-anyway": "Praise After the Loss",
+    "lacrosse-praise-anyway": "Praise After the Loss",
+  };
 
   const normalize = (x: string) => x.replace(/\s+/g, " ").trim();
 
@@ -395,6 +455,8 @@ describe("Praise-on-a-hard-night modules (The Hard Night)", () => {
     "basketball-praise-anyway": "Let the disappointment be honest.",
     "golf-praise-anyway": "Do not call it good, and do not act like it did not matter.",
     "football-praise-anyway": "You wanted a different ending.",
+    "baseball-praise-anyway": "You wanted a different result.",
+    "lacrosse-praise-anyway": "You wanted a different result.",
   };
 
   // Mention-to-refute sentences (see the win-module guard note above).
@@ -404,10 +466,10 @@ describe("Praise-on-a-hard-night modules (The Hard Night)", () => {
     ],
   };
 
-  it.each(PRAISE_SLUGS)('%s: scenario "praise", title "Praise Anyway", Habakkuk anchor', (slug) => {
+  it.each(PRAISE_SLUGS)('%s: scenario "praise", pinned title, Habakkuk anchor', (slug) => {
     const mod = moduleBySlug(slug)!;
     expect(mod.scenario).toBe("praise");
-    expect(mod.title).toBe("Praise Anyway");
+    expect(mod.title).toBe(PRAISE_TITLES[slug]!);
     expect(mod.scriptureRef).toBe("Habakkuk 3:17-18");
   });
 
@@ -480,6 +542,18 @@ describe("modulesForSport", () => {
     expect(mods.every((m) => m.sport === "football")).toBe(true);
   });
 
+  it("returns 5 modules for baseball (dormant — FV-424 arc)", () => {
+    const mods = modulesForSport("baseball");
+    expect(mods).toHaveLength(5);
+    expect(mods.every((m) => m.sport === "baseball")).toBe(true);
+  });
+
+  it("returns 5 modules for lacrosse (dormant — FV-425 arc)", () => {
+    const mods = modulesForSport("lacrosse");
+    expect(mods).toHaveLength(5);
+    expect(mods.every((m) => m.sport === "lacrosse")).toBe(true);
+  });
+
   it("hockey modules cover all 5 scenarios", () => {
     const scenarios = new Set(modulesForSport("hockey").map((m) => m.scenario));
     expect(scenarios.has("win")).toBe(true);
@@ -518,7 +592,7 @@ describe("modulesForSport", () => {
   // the win LEADS (a good-night athlete finds theirs first) and "Praise
   // Anyway" (praise on a hard night) TRAILS as the chosen-posture capstone.
   // Membership/count tests alone would pass if a future edit reordered them.
-  it.each(["hockey", "basketball", "golf", "football"] as const)(
+  it.each(["hockey", "basketball", "golf", "football", "baseball", "lacrosse"] as const)(
     "%s modules keep win-first, praise-last order",
     (sport) => {
       const mods = modulesForSport(sport);
