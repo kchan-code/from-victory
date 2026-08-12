@@ -66,6 +66,7 @@ async function parseFallbackBodiesFromRegistry(): Promise<FallbackCurrent[]> {
     { constName: "SWIMMING_AUDIO_SCRIPT", sportLabel: "Swimming", fileSrc: registrySrc },
     { constName: "TRACKFIELD_AUDIO_SCRIPT", sportLabel: "Track & Field", fileSrc: registrySrc },
     { constName: "LACROSSE_AUDIO_SCRIPT", sportLabel: "Lacrosse", fileSrc: registrySrc },
+    { constName: "SOCCER_AUDIO_SCRIPT", sportLabel: "Soccer", fileSrc: registrySrc },
   ];
 
   const results: FallbackCurrent[] = [];
@@ -159,6 +160,9 @@ function sourceFileForSlug(slug: string): string {
   if (slug.startsWith("hm-ftb-") || slug.startsWith("viz-ftb-")) return "components/pregame/audio/clips-football.ts";
   if (slug.startsWith("hm-swm-") || slug.startsWith("viz-swm-")) return "components/pregame/audio/clips-swimming.ts";
   if (slug.startsWith("hm-trf-") || slug.startsWith("viz-trf-")) return "components/pregame/audio/clips-trackfield.ts";
+  if (slug.startsWith("hm-lax-") || slug.startsWith("viz-lax-")) return "components/pregame/audio/clips-lacrosse.ts";
+  if (slug.startsWith("hm-soc-")) return "components/pregame/audio/clips-soccer.ts";
+  if (slug.startsWith("viz-soc-")) return "components/pregame/audio/clips-viz-soccer.ts";
   if (
     slug.startsWith("viz-defense-") || slug.startsWith("viz-forward-") || slug.startsWith("viz-goalie-") ||
     slug.startsWith("viz-guard-") || slug.startsWith("viz-wing-") || slug.startsWith("viz-big-")
@@ -526,6 +530,7 @@ export async function syncFromBooks({ write }: { write: boolean }): Promise<Sync
     Swimming: "swimming.md",
     "Track & Field": "track-field.md",
     Lacrosse: "lacrosse.md",
+    Soccer: "soccer.md",
   };
 
   let totalFallbackChanged = 0;

@@ -152,6 +152,15 @@ const GATED_IDENTITY_CELLS: ReadonlySet<string> = new Set<string>([
   "hm-lax-fogo-clamp-yips",
   "hm-lax-goalie-save-yips",
   "hm-lax-defense-clear-yips",
+  // soccer withheld (module map §4 / FV-76 — withheld via roleAdversities
+  // omission in sport-registry.ts): the four shootout-miss cells (structural
+  // no-next-rep gate) and the keeper handling collapse (yips-class).
+  // Authorized worth register only.
+  "hm-soc-fwd-shootout",
+  "hm-soc-mid-shootout",
+  "hm-soc-def-shootout",
+  "hm-soc-gk-shootout",
+  "hm-soc-gk-handling-yips",
 ]);
 
 // ---------------------------------------------------------------------------

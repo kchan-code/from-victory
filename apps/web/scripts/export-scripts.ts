@@ -296,6 +296,8 @@ function sourceFileForSlug(slug: string): string {
   if (slug.startsWith("hm-lax-") || slug.startsWith("viz-lax-")) {
     return "components/pregame/audio/clips-lacrosse.ts";
   }
+  if (slug.startsWith("hm-soc-")) return "components/pregame/audio/clips-soccer.ts";
+  if (slug.startsWith("viz-soc-")) return "components/pregame/audio/clips-viz-soccer.ts";
   if (
     slug.startsWith("viz-defense-") || slug.startsWith("viz-forward-") || slug.startsWith("viz-goalie-") ||
     slug.startsWith("viz-guard-") || slug.startsWith("viz-wing-") || slug.startsWith("viz-big-")
@@ -318,6 +320,7 @@ type Bucket =
   | "swimming"
   | "track-field"
   | "lacrosse"
+  | "soccer"
   | "pre-practice"
   | "shared";
 
@@ -339,6 +342,7 @@ function bucketForSlug(slug: string): Bucket {
   if (slug.startsWith("hm-swm-") || slug.startsWith("viz-swm-")) return "swimming";
   if (slug.startsWith("hm-trf-") || slug.startsWith("viz-trf-")) return "track-field";
   if (slug.startsWith("hm-lax-") || slug.startsWith("viz-lax-")) return "lacrosse";
+  if (slug.startsWith("hm-soc-") || slug.startsWith("viz-soc-")) return "soccer";
 
   if (
     slug.startsWith("hm-bb-") ||
@@ -593,7 +597,7 @@ async function main() {
   const buckets = new Map<Bucket, AudioScript[]>();
   const allBuckets: Bucket[] = [
     "hockey", "basketball", "baseball", "golf", "football",
-    "swimming", "track-field", "lacrosse", "pre-practice", "shared",
+    "swimming", "track-field", "lacrosse", "soccer", "pre-practice", "shared",
   ];
   for (const b of allBuckets) buckets.set(b, []);
 
@@ -790,6 +794,24 @@ async function main() {
     "Lacrosse",
   );
 
+  // ── Soccer ──────────────────────────────────────────────────────────────────
+  // FV-76 prerequisite wiring: flagship viz-soc-<pos> PLUS 7 positive-play
+  // viz-soc-<pos>-<theme> clips per role (docs/scripts/soccer.md headers:
+  // "## VIZ Clips — Flagships (position)" / "## VIZ Clips — Positive Plays
+  // (position × library)"), matching every other live sport's contract.
+  // Sport stays DORMANT (not in SUPPORTED_SPORTS) until FV-78/79.
+  const socScripts = buckets.get("soccer")!;
+  const SOC_FLAGSHIP_SLUGS = ["viz-soc-fwd", "viz-soc-mid", "viz-soc-def", "viz-soc-gk"];
+  const socStats = await writeBook(
+    "soccer.md", "Soccer", true,
+    [
+      { header: "VIZ Clips — Flagships (position)", scripts: socScripts.filter((s) => SOC_FLAGSHIP_SLUGS.includes(s.slug)) },
+      { header: "VIZ Clips — Positive Plays (position × library)", scripts: socScripts.filter((s) => s.slug.startsWith("viz-soc-") && !SOC_FLAGSHIP_SLUGS.includes(s.slug)) },
+      { header: "Hard Moment Clips", scripts: socScripts.filter((s) => s.slug.startsWith("hm-soc-")) },
+    ],
+    "Soccer",
+  );
+
   // ── Pre-Practice ────────────────────────────────────────────────────────────
   const ppScripts = buckets.get("pre-practice")!;
   const ppStats = await writeBook(
@@ -834,6 +856,7 @@ them automatically. No separate "apply" command needed in the normal editing wor
 | [swimming.md](./swimming.md) | Swimming VIZ + hard-moment clips | DORMANT (no audio yet) |
 | [track-field.md](./track-field.md) | Track & Field VIZ + hard-moment clips | DORMANT (no audio yet) |
 | [lacrosse.md](./lacrosse.md) | Lacrosse VIZ + hard-moment clips | DORMANT (no audio yet) |
+| [soccer.md](./soccer.md) | Soccer VIZ + hard-moment clips | DORMANT (no audio yet) |
 | [pre-practice.md](./pre-practice.md) | All pre-practice "Lock In" clips | LIVE (hockey/bb/golf) |
 | [shared.md](./shared.md) | Breath threshold + shared structural + anchor/self-talk/cue-word clips | LIVE |
 
@@ -922,6 +945,7 @@ Total CLIP_SCRIPTS registered: ${totalClips}
     { label: "swimming", ...swmStats },
     { label: "track-field", ...trfStats },
     { label: "lacrosse", ...laxStats },
+    { label: "soccer", ...socStats },
     { label: "pre-practice", ...ppStats },
     { label: "shared", ...sharedStats },
   ];

@@ -306,6 +306,43 @@ export const POSITIVE_PLAYS: readonly PositivePlay[] = [
   { slug: "viz-lax-goalie-man-down-kill", sport: "lacrosse", role: "Goalie", title: "Hold the man-down kill" },
   { slug: "viz-lax-goalie-command-the-defense", sport: "lacrosse", role: "Goalie", title: "Command the defense, no shot" },
   { slug: "viz-lax-goalie-next-save", sport: "lacrosse", role: "Goalie", title: "Soft one behind you, next save" },
+
+  // ── Forward — Soccer (7) — FV-76 prerequisite wiring. DORMANT: soccer
+  // stays out of SUPPORTED_SPORTS until FV-78/79 go-live.
+  { slug: "viz-soc-fwd-run-in-behind", sport: "soccer", role: "Forward", title: "Run in behind" },
+  { slug: "viz-soc-fwd-near-post-finish", sport: "soccer", role: "Forward", title: "Attack the near post" },
+  { slug: "viz-soc-fwd-take-on", sport: "soccer", role: "Forward", title: "Take on the fullback" },
+  { slug: "viz-soc-fwd-hold-and-spin", sport: "soccer", role: "Forward", title: "Hold it up and spin" },
+  { slug: "viz-soc-fwd-press-and-finish", sport: "soccer", role: "Forward", title: "Angle the press" },
+  { slug: "viz-soc-fwd-penalty", sport: "soccer", role: "Forward", title: "The penalty" },
+  { slug: "viz-soc-fwd-next-chance", sport: "soccer", role: "Forward", title: "Miss the sitter, get back in the match" },
+
+  // ── Midfielder — Soccer (7) — FV-76 prerequisite wiring. DORMANT until FV-78/79.
+  { slug: "viz-soc-mid-half-turn", sport: "soccer", role: "Midfielder", title: "Receive on the half-turn" },
+  { slug: "viz-soc-mid-switch-play", sport: "soccer", role: "Midfielder", title: "Switch the play" },
+  { slug: "viz-soc-mid-through-ball", sport: "soccer", role: "Midfielder", title: "Play the ball through the line" },
+  { slug: "viz-soc-mid-win-it-back", sport: "soccer", role: "Midfielder", title: "Win it back in front of the back four" },
+  { slug: "viz-soc-mid-late-run-finish", sport: "soccer", role: "Midfielder", title: "Arrive late in the box" },
+  { slug: "viz-soc-mid-beat-the-press", sport: "soccer", role: "Midfielder", title: "Turn out of the press" },
+  { slug: "viz-soc-mid-next-touch", sport: "soccer", role: "Midfielder", title: "Give it away, recover the shape" },
+
+  // ── Defender — Soccer (7) — FV-76 prerequisite wiring. DORMANT until FV-78/79.
+  { slug: "viz-soc-def-one-v-one-stand", sport: "soccer", role: "Defender", title: "Stand up the 1v1" },
+  { slug: "viz-soc-def-win-the-header", sport: "soccer", role: "Defender", title: "Attack the header" },
+  { slug: "viz-soc-def-read-and-intercept", sport: "soccer", role: "Defender", title: "Read it early, step in" },
+  { slug: "viz-soc-def-play-out", sport: "soccer", role: "Defender", title: "Play out under pressure" },
+  { slug: "viz-soc-def-overlap-cross", sport: "soccer", role: "Defender", title: "Overlap and deliver" },
+  { slug: "viz-soc-def-recovery-tackle", sport: "soccer", role: "Defender", title: "Recover the run, win it clean" },
+  { slug: "viz-soc-def-next-duel", sport: "soccer", role: "Defender", title: "Beaten once, reset the matchup" },
+
+  // ── Goalkeeper — Soccer (7) — FV-76 prerequisite wiring. DORMANT until FV-78/79.
+  { slug: "viz-soc-gk-set-and-save", sport: "soccer", role: "Goalkeeper", title: "Set the angle, control the shot" },
+  { slug: "viz-soc-gk-claim-the-cross", sport: "soccer", role: "Goalkeeper", title: "Call it early, claim the cross" },
+  { slug: "viz-soc-gk-off-your-line", sport: "soccer", role: "Goalkeeper", title: "Close the space on the through ball" },
+  { slug: "viz-soc-gk-distribution", sport: "soccer", role: "Goalkeeper", title: "Collect it, start the next attack" },
+  { slug: "viz-soc-gk-wall-and-freekick", sport: "soccer", role: "Goalkeeper", title: "Set the wall, save the free kick" },
+  { slug: "viz-soc-gk-penalty-save", sport: "soccer", role: "Goalkeeper", title: "Set on the line, read the strike" },
+  { slug: "viz-soc-gk-next-save", sport: "soccer", role: "Goalkeeper", title: "Soft goal, reset for the next shot" },
 ];
 
 // Fast slug → title lookup (built once at module load).

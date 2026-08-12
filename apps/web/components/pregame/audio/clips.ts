@@ -98,6 +98,8 @@ import { SWIMMING_PREGAME_CLIP_SCRIPTS } from "./clips-swimming.ts";
 import { TRACKFIELD_PREGAME_CLIP_SCRIPTS } from "./clips-trackfield.ts";
 import { LACROSSE_PREGAME_CLIP_SCRIPTS } from "./clips-lacrosse.ts";
 import { LACROSSE_VIZ_CLIP_SCRIPTS } from "./clips-viz-lacrosse.ts";
+import { SOCCER_PREGAME_CLIP_SCRIPTS } from "./clips-soccer.ts";
+import { SOCCER_VIZ_CLIP_SCRIPTS } from "./clips-viz-soccer.ts";
 
 // The EBU R128 loudness normalization filter applied to every clip.
 // -16 LUFS integrated / -1.5 dBTP true-peak / LRA 11 LU.
@@ -3643,6 +3645,232 @@ export const CLIP_PP_LAX_FOCUS_FINISH_HANDS_FREE_SCRIPT: AudioScript = {
   ],
 };
 
+// ── Soccer Pre-Practice "Lock In" clips (FV-76 prerequisite wiring) ──────────
+//
+// 1:1 structure onto the approved football/baseball/lacrosse pre-practice
+// shape (opener-get-to / name-standard / goal-fusion / be-vocal / see-it-go
+// + 7 one-line focus cues). Prose source of truth: docs/scripts/pre-practice.md
+// ("## Soccer Pre-Practice Clips") — the book wins at render time (FV-302).
+// Sport stays DORMANT until the FV-78/79 go-live gate. No whistle in the
+// opener (FV-469) — write it onto the first touch and the first rondo.
+
+// ── Soccer opener-get-to — pp-soc-opener-get-to ─────
+export const CLIP_PP_SOC_OPENER_GET_TO_SCRIPT: AudioScript = {
+  slug: "pp-soc-opener-get-to",
+  voice: "ash",
+  instructions: PRACTICE_GET_TO_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Be honest: your legs are heavy and your energy is low today. You are still responsible for how you train.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Do not wait for your mood to change. Start with one controllable action: get your cleats on, get a ball at your feet, and take your first touch with purpose.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "Working for the Lord does not mean pretending you feel good. It means giving honest attention to the work in front of you — even in the fourth session of the week, in the rain, after a long drive.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Notice the session in front of you: your teammates are here, the ball is at your feet, and the first rondo has a clear job.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "Do not solve the whole session at once. Move your feet, scan before you receive, and complete your first pass.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "Start with the first touch.",
+    },
+  ],
+};
+
+// ── Soccer name-standard — pp-soc-name-standard ─────
+export const CLIP_PP_SOC_NAME_STANDARD_SCRIPT: AudioScript = {
+  slug: "pp-soc-name-standard",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Name one standard for today: first touch out of your feet, a scan before every ball you receive, or a full sprint on every pressing trigger. Make it specific enough to evaluate after each rep.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "Carry that standard from the rondo through to the last finishing rep. When a rep slips, take the correction and apply it to the next ball.",
+    },
+  ],
+};
+
+// ── Soccer goal-fusion — pp-soc-goal-fusion ─────
+export const CLIP_PP_SOC_GOAL_FUSION_SCRIPT: AudioScript = {
+  slug: "pp-soc-goal-fusion",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Find one game detail inside today's session. In the rondo, it may be opening your body before the ball arrives. In shape work, it may be checking your cover before you step to press.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "Rehearse that detail at game speed, then keep it when the defender is live and your legs are tired. The drill gives you a repeatable action for the game.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "Keep one clear detail through the whole session.",
+    },
+  ],
+};
+
+// ── Soccer be-vocal — pp-soc-be-vocal ─────
+export const CLIP_PP_SOC_BE_VOCAL_SCRIPT: AudioScript = {
+  slug: "pp-soc-be-vocal",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "Communication is part of the rep. Call \"man on,\" \"turn,\" \"time,\" \"switch it,\" and \"keeper's\" early enough for a teammate to act.",
+    },
+    { type: "silence", durationSec: 1.2 },
+    {
+      type: "speech",
+      text: "Do not wait until the call sounds perfect. Use the correct word, with enough volume and enough time.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "In the rondo, tell the player receiving what they have. In shape work, name the presser and the cover behind. In pattern play, call the switch before the ball travels. If you are in the handling block with the goalkeeper coach, use the same voice there that you will need on matchday.",
+    },
+    { type: "silence", durationSec: 0.8 },
+    {
+      type: "speech",
+      text: "Make the first useful call before the first rondo starts.",
+    },
+  ],
+};
+
+// ── Soccer see-it-go — pp-soc-see-it-go ─────
+export const CLIP_PP_SOC_SEE_IT_GO_SCRIPT: AudioScript = {
+  slug: "pp-soc-see-it-go",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text: "See one rep: check your shoulder, receive on your back foot, take your first touch into space, and complete the pass.",
+    },
+    { type: "silence", durationSec: 1.5 },
+    {
+      type: "speech",
+      text: "If the rep breaks down, listen to the correction, identify one change, and reset before the next ball is served.",
+    },
+    { type: "silence", durationSec: 1 },
+    {
+      type: "speech",
+      text: "Start the next rep from your ready position instead of carrying the last one forward.",
+    },
+  ],
+};
+
+export const CLIP_PP_SOC_FOCUS_FIRST_TOUCH_INTO_SPACE_SCRIPT: AudioScript = {
+  slug: "pp-soc-focus-first-touch-into-space",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "First touch into space." },
+  ],
+};
+
+export const CLIP_PP_SOC_FOCUS_PATIENT_IN_THE_ONE_V_ONE_SCRIPT: AudioScript = {
+  slug: "pp-soc-focus-patient-in-the-one-v-one",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Stay patient in the 1v1." },
+  ],
+};
+
+export const CLIP_PP_SOC_FOCUS_SCAN_BEFORE_RECEIVE_SCRIPT: AudioScript = {
+  slug: "pp-soc-focus-scan-before-receive",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Scan before I receive." },
+  ],
+};
+
+export const CLIP_PP_SOC_FOCUS_TALK_EARLY_SCRIPT: AudioScript = {
+  slug: "pp-soc-focus-talk-early",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Talk early." },
+  ],
+};
+
+export const CLIP_PP_SOC_FOCUS_RECOVER_SHAPE_SCRIPT: AudioScript = {
+  slug: "pp-soc-focus-recover-shape",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Recover shape after losing it." },
+  ],
+};
+
+export const CLIP_PP_SOC_FOCUS_MOVE_AFTER_PASS_SCRIPT: AudioScript = {
+  slug: "pp-soc-focus-move-after-pass",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Move after I pass." },
+  ],
+};
+
+export const CLIP_PP_SOC_FOCUS_FINISH_ON_BALANCE_SCRIPT: AudioScript = {
+  slug: "pp-soc-focus-finish-on-balance",
+  voice: "ash",
+  instructions: PP_COACH_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Finish on balance." },
+  ],
+};
+
 // ── Golf pre-practice "Lock In" clips (FV-267) ───────────────────────────────
 //
 // 1:1 vocab swaps onto the approved hockey/basketball/baseball pre-practice
@@ -6219,6 +6447,19 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_PP_LAX_FOCUS_FINISH_THE_REP_SCRIPT,
   CLIP_PP_LAX_FOCUS_PROTECT_THE_STICK_THROUGH_TRAFFIC_SCRIPT,
   CLIP_PP_LAX_FOCUS_FINISH_HANDS_FREE_SCRIPT,
+  // Soccer pre-practice "Lock In" clips (FV-76, v2 DORMANT).
+  CLIP_PP_SOC_OPENER_GET_TO_SCRIPT,
+  CLIP_PP_SOC_NAME_STANDARD_SCRIPT,
+  CLIP_PP_SOC_GOAL_FUSION_SCRIPT,
+  CLIP_PP_SOC_BE_VOCAL_SCRIPT,
+  CLIP_PP_SOC_SEE_IT_GO_SCRIPT,
+  CLIP_PP_SOC_FOCUS_FIRST_TOUCH_INTO_SPACE_SCRIPT,
+  CLIP_PP_SOC_FOCUS_PATIENT_IN_THE_ONE_V_ONE_SCRIPT,
+  CLIP_PP_SOC_FOCUS_SCAN_BEFORE_RECEIVE_SCRIPT,
+  CLIP_PP_SOC_FOCUS_TALK_EARLY_SCRIPT,
+  CLIP_PP_SOC_FOCUS_RECOVER_SHAPE_SCRIPT,
+  CLIP_PP_SOC_FOCUS_MOVE_AFTER_PASS_SCRIPT,
+  CLIP_PP_SOC_FOCUS_FINISH_ON_BALANCE_SCRIPT,
   // Golf pre-practice "Lock In" clips (FV-267). Render = FV-266.
   CLIP_PP_GOLF_OPENER_GET_TO_SCRIPT,
   CLIP_PP_GOLF_NAME_STANDARD_SCRIPT,
@@ -6369,6 +6610,13 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   // overridden at render.
   ...LACROSSE_PREGAME_CLIP_SCRIPTS,
   ...LACROSSE_VIZ_CLIP_SCRIPTS,
+  // Soccer pregame clips (FV-76 prerequisite wiring, v2 DORMANT) — 32 VIZ
+  // clips in clips-viz-soccer.ts (4 position flagships + 28 positive-play
+  // library entries, 7 per position) + 45 hard-moment cells (40 grid + 5
+  // withheld, module map §4). Same deferred-render staging; prose is book-
+  // overridden at render. Soccer stays out of SUPPORTED_SPORTS until FV-78/79.
+  ...SOCCER_PREGAME_CLIP_SCRIPTS,
+  ...SOCCER_VIZ_CLIP_SCRIPTS,
   // FV-136: Cue-word scaffold preamble clips (audio before the {insert word} token)
   CLIP_SHARED_CUE_WORD_INTRO_PRE_SCRIPT,
   CLIP_SHARED_CUE_WORD_SENDOFF_PRE_SCRIPT,
