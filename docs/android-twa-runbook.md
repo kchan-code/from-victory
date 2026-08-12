@@ -1,8 +1,16 @@
 # Android TWA Runbook — From Victory
 
-This runbook walks KC through generating a signed Android App Bundle (AAB),
-wiring the Digital Asset Links fingerprint, and submitting to Play Internal
-Testing. Assumes minimal Android experience; every command is spelled out.
+> **Status: evaluated alternative — not pursued.**
+> The active Android track is the Capacitor shell in `apps/native`
+> (see [docs/native-capacitor.md](./native-capacitor.md)). Keeping two Android
+> delivery paths (TWA + Capacitor) for the same package id
+> `com.fromvictory.app` would create conflicting Play listings. This runbook
+> is retained for historical context and for the keystore / Digital Asset
+> Links fingerprint steps, which still apply to the Capacitor track.
+
+This runbook walked through generating a signed Android App Bundle (AAB) via
+Bubblewrap TWA, wiring the Digital Asset Links fingerprint, and submitting to
+Play Internal Testing. Prefer Capacitor for new work.
 
 ---
 

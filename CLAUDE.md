@@ -103,8 +103,10 @@ Protestant traditions.
 
 ## Tech Stack (do not deviate without product-strategist approval)
 - Frontend: Next.js 14 (App Router), Tailwind CSS, TypeScript strict
-- Mobile delivery: PWA (installable to home screen). No native iOS/Android
-  in MVP.
+- Mobile delivery: PWA (installable to home screen) remains the primary
+  path. Capacitor native shells in `apps/native` are an additive App
+  Store / Play distribution channel around the same web app — no
+  native-only features or native-only content (see `docs/native-capacitor.md`).
 - Backend: Supabase (Postgres + Auth + Storage)
 - Payments: Stripe Billing
 - Hosting: Vercel (auto-deploy from main)
@@ -373,7 +375,9 @@ lives in the two guided performance-prep audio surfaces: Game-Day
 Pregame at `/athlete/pregame` and Pre-Practice "Lock In" at
 `/athlete/practice`, distinct athlete-facing experiences sharing one
 engine), community feed, coach
-view, team mode, native app wrap, sports beyond the live set (hockey,
+view, team mode, native-only features/content (the Capacitor shell in
+`apps/native` may ship as a store wrapper of the existing PWA — it must
+not introduce native-only product surface), sports beyond the live set (hockey,
 basketball, golf, football, baseball) — additional sports are v2 (FV-21), AI-personalized content, free tier, social sign-in,
 progressive training plans (that's v2), leaderboards (never), 18+
 self-onboard/self-pay fork (post-MVP).
