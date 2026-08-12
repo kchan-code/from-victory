@@ -16,8 +16,40 @@ pipeline and the integrity tests key off them. The book is the prose source
 of truth; the TS clip sources are derived from it at wiring/render time
 (FV-302: books define clip structure). Openers are inherited from the shared
 sport-neutral set (verse-per-need map in `docs/pregame-script-style.md`) —
-soccer authors no opener clips. Text-mode fallback lines land with the
-`SOCCER_CONFIG` wiring (FV-78/79), not in this book.
+soccer authors no opener clips. Text-mode fallback lines are below (FV-78/79
+`SOCCER_CONFIG` wiring — source of truth for `SOCCER_AUDIO_SCRIPT` in
+`sport-registry.ts`).
+
+---
+
+## Text-mode fallback (Soccer)
+
+These lines appear on-screen in text mode (no audio). Tokens like `{{role}}`, `{{adversity}}`, etc. are substituted at runtime — edit them as-is.
+
+<!-- audioScript#0 | eyebrow: Identity -->
+1. ${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.
+
+<!-- audioScript#1 | eyebrow: Settle -->
+2. Sit tall. Long exhale. Lead your body back to ready. Four counts in. Six counts out. Let your shoulders drop.
+
+<!-- audioScript#2 | eyebrow: See the field -->
+3. See the field before kickoff. Hear the ball pinging back and forth in warmups, cleats on the field, a coach calling the group in. Feel your shin guards under your socks, the ground under your feet. You belong here. You are ready.
+
+<!-- audioScript#3 | eyebrow: Your first touch -->
+4. Kickoff. Move your feet, get an early touch. Scan before the ball arrives, then keep the first one simple — a simple layoff, a clean clearance, a ball collected and played. Recover. Next ball.
+
+<!-- audioScript#4 | eyebrow: Play your position · {{role}} -->
+5. {{roleScenes}}
+
+<!-- audioScript#5 | eyebrow: If this happens -->
+6. {{adversity}} See it. Feel it. Breathe. Speak truth. Take the next faithful action. Your mistake is real. It is not your identity.
+
+<!-- audioScript#6 | eyebrow: Coach yourself -->
+7. {{selfTalk}} When pressure hits, return here. Your anchor: {{anchor}}. Your cue word: {{cueWord}}.
+
+<!-- audioScript#7 | eyebrow: Send-off -->
+8. Lord, help me compete with courage, humility, and joy. Help me play the ball in front of me, respond well to mistakes, and remember that my worth is secure in You. Amen. Play from victory.
+---
 
 ## Audio Clips
 
@@ -25,7 +57,7 @@ soccer authors no opener clips. Text-mode fallback lines land with the
 
 
 ### Soccer · Forward · VIZ (flagship)
-<!-- slug: viz-soc-fwd | file: components/pregame/audio/segments-soccer.ts -->
+<!-- slug: viz-soc-fwd | file: components/pregame/audio/clips-viz-soccer.ts -->
 
 1. Keep your eyes closed. See yourself walking onto the field.
 _(pause: 1s)_
@@ -65,7 +97,7 @@ _(pause: 0.8s)_
 _(pause: 2s)_
 
 ### Soccer · Midfielder · VIZ (flagship)
-<!-- slug: viz-soc-mid | file: components/pregame/audio/segments-soccer.ts -->
+<!-- slug: viz-soc-mid | file: components/pregame/audio/clips-viz-soccer.ts -->
 
 1. Keep your eyes closed. See yourself walking onto the field.
 _(pause: 1s)_
@@ -105,7 +137,7 @@ _(pause: 0.8s)_
 _(pause: 2s)_
 
 ### Soccer · Defender · VIZ (flagship)
-<!-- slug: viz-soc-def | file: components/pregame/audio/segments-soccer.ts -->
+<!-- slug: viz-soc-def | file: components/pregame/audio/clips-viz-soccer.ts -->
 
 1. Keep your eyes closed. See yourself walking onto the field.
 _(pause: 1s)_
@@ -145,7 +177,7 @@ _(pause: 0.8s)_
 _(pause: 2s)_
 
 ### Soccer · Goalkeeper · VIZ (flagship)
-<!-- slug: viz-soc-gk | file: components/pregame/audio/segments-soccer.ts -->
+<!-- slug: viz-soc-gk | file: components/pregame/audio/clips-viz-soccer.ts -->
 
 1. Keep your eyes closed. See yourself walking onto the field.
 _(pause: 1s)_

@@ -119,6 +119,18 @@ export const ANCHOR_OPTION_SLUGS: Record<string, string> = {
   "Tap your stick": "anc-lax-tap-stick",
   "Glove tap on the shaft": "anc-lax-glove-tap-shaft",
   "Reset at the X": "anc-lax-reset-at-x",
+  // Soccer anchors ("Touch the grass" / "Reset on the walk back" / "Clap
+  // your gloves" → anc-soc-touch-the-grass / anc-soc-reset-walk-back /
+  // anc-soc-clap-gloves) are DELIBERATELY NOT wired here yet, unlike every
+  // sport above: this map's every existing entry is catalog-backed (the
+  // playlist-integrity "anchor option map" test enforces that — every value
+  // here must resolve to a real manifest.clips entry), and agent A's
+  // clip-script sources (audio/clips.ts) have no rendered audio until the
+  // FV-76 render pass. SOCCER_CONFIG.anchors already declares these 3
+  // options (sport-registry.ts) — they drop cleanly today (the baseball/
+  // golf/football precedent for a picker option with no clip yet) and this
+  // map gets its soccer entries added AT render time, mirroring every prior
+  // sport's actual sequencing (not at taxonomy-wiring time).
 };
 
 // Self-talk phrase → slug. Exact strings from SELF_TALK_OPTIONS in types.ts,
@@ -143,6 +155,11 @@ export const SELFTALK_OPTION_SLUGS: Record<string, string> = {
   "You're okay. Next at-bat.": "st-bsb-01",
   // Lacrosse self-talk (FV-407 — rendered + in manifest.clips)
   "You're okay. Next whistle.": "st-lax-01",
+  // Soccer self-talk ("You're okay. Next ball." → st-soc-01) is DELIBERATELY
+  // NOT wired here yet — see the ANCHOR_OPTION_SLUGS soccer comment above for
+  // why (catalog-backed invariant; agent A's clip script has no rendered
+  // audio until FV-76). SOCCER_CONFIG.selfTalkOptions already declares this
+  // phrase; it drops cleanly today.
 };
 
 // Cue word → base slug. Resolver appends "-reset" or "-sendoff".

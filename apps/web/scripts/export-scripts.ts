@@ -181,6 +181,14 @@ async function parseFallbacksFromRegistry(): Promise<FallbackEntry[]> {
     { constName: "FOOTBALL_AUDIO_SCRIPT", sportLabel: "Football", fileSrc: registrySrc },
     { constName: "SWIMMING_AUDIO_SCRIPT", sportLabel: "Swimming", fileSrc: registrySrc },
     { constName: "TRACKFIELD_AUDIO_SCRIPT", sportLabel: "Track & Field", fileSrc: registrySrc },
+    // NOTE: BASEBALL_AUDIO_SCRIPT and LACROSSE_AUDIO_SCRIPT are pre-existing
+    // gaps in this constMap (both sports' own scripts have fallback sections
+    // already hand-authored in their .md books, so the gap is latent — a
+    // --force regen would silently skip re-rendering their fallback section
+    // rather than error). Not fixed here (out of scope for FV-78/79); adding
+    // SOCCER_AUDIO_SCRIPT below so a future --force regen doesn't repeat the
+    // gap for soccer too.
+    { constName: "SOCCER_AUDIO_SCRIPT", sportLabel: "Soccer", fileSrc: registrySrc },
   ];
 
   const results: FallbackEntry[] = [];
@@ -296,6 +304,12 @@ function sourceFileForSlug(slug: string): string {
   if (slug.startsWith("hm-lax-") || slug.startsWith("viz-lax-")) {
     return "components/pregame/audio/clips-lacrosse.ts";
   }
+  if (slug.startsWith("hm-soc-")) {
+    return "components/pregame/audio/clips-soccer.ts";
+  }
+  if (slug.startsWith("viz-soc-")) {
+    return "components/pregame/audio/clips-viz-soccer.ts";
+  }
   if (
     slug.startsWith("viz-defense-") || slug.startsWith("viz-forward-") || slug.startsWith("viz-goalie-") ||
     slug.startsWith("viz-guard-") || slug.startsWith("viz-wing-") || slug.startsWith("viz-big-")
@@ -318,6 +332,7 @@ type Bucket =
   | "swimming"
   | "track-field"
   | "lacrosse"
+  | "soccer"
   | "pre-practice"
   | "shared";
 
@@ -339,6 +354,7 @@ function bucketForSlug(slug: string): Bucket {
   if (slug.startsWith("hm-swm-") || slug.startsWith("viz-swm-")) return "swimming";
   if (slug.startsWith("hm-trf-") || slug.startsWith("viz-trf-")) return "track-field";
   if (slug.startsWith("hm-lax-") || slug.startsWith("viz-lax-")) return "lacrosse";
+  if (slug.startsWith("hm-soc-") || slug.startsWith("viz-soc-")) return "soccer";
 
   if (
     slug.startsWith("hm-bb-") ||
@@ -467,6 +483,26 @@ function humanTitle(slug: string): string {
       ? "Lacrosse · " + position + " · VIZ — " + theme
       : "Lacrosse · " + position + " · VIZ (flagship)";
   }
+  // Soccer's slug tokens are abbreviations (fwd/mid/def/gk), not the
+  // lowercased role — map explicitly rather than title-casing the token.
+  if (slug.startsWith("hm-soc-") || slug.startsWith("viz-soc-")) {
+    const SOC_ROLE_LABELS: Record<string, string> = {
+      fwd: "Forward", mid: "Midfielder", def: "Defender", gk: "Goalkeeper",
+    };
+    if (slug.startsWith("hm-soc-")) {
+      const rest = parts.slice(2);
+      const tok = rest[0] ?? "";
+      const position = SOC_ROLE_LABELS[tok] ?? tok;
+      return "Soccer · " + position + " · " + rest.slice(1).join("-");
+    }
+    // viz-soc-<tok> (flagship) or viz-soc-<tok>-<play> (positive-play library)
+    const tok = parts[2] ?? "";
+    const position = SOC_ROLE_LABELS[tok] ?? tok;
+    const theme = parts.slice(3).join("-");
+    return theme.length > 0
+      ? "Soccer · " + position + " · VIZ — " + theme
+      : "Soccer · " + position + " · VIZ (flagship)";
+  }
   if (slug.startsWith("opener-bb-")) return "Basketball Opener · " + parts.slice(2).join("-");
   if (slug.startsWith("opener-")) return "Hockey Opener · " + parts.slice(1).join("-");
   if (slug.startsWith("anc-")) return "Anchor · " + parts.slice(1).join("-");
@@ -481,6 +517,11 @@ function humanTitle(slug: string): string {
   if (slug.startsWith("pp-bb-")) return "Pre-Practice Basketball · " + parts.slice(2).join("-");
   if (slug.startsWith("pp-baseball-")) return "Pre-Practice Baseball · " + parts.slice(2).join("-");
   if (slug.startsWith("pp-golf-")) return "Pre-Practice Golf · " + parts.slice(2).join("-");
+  // FV-78/79: pp-soc- added alongside the existing pp-bb-/pp-baseball-/pp-golf-
+  // branches so soccer's pre-practice clips don't mislabel as "Hockey" via the
+  // generic pp- fallback below (out of scope: pp-lax- has the same gap —
+  // pre-existing, not touched here).
+  if (slug.startsWith("pp-soc-")) return "Pre-Practice Soccer · " + parts.slice(2).join("-");
   if (slug.startsWith("pp-")) return "Pre-Practice Hockey · " + parts.slice(1).join("-");
   if (slug.startsWith("shared-")) return "Shared · " + parts.slice(1).join("-");
 
@@ -592,7 +633,7 @@ async function main() {
   const buckets = new Map<Bucket, AudioScript[]>();
   const allBuckets: Bucket[] = [
     "hockey", "basketball", "baseball", "golf", "football",
-    "swimming", "track-field", "lacrosse", "pre-practice", "shared",
+    "swimming", "track-field", "lacrosse", "soccer", "pre-practice", "shared",
   ];
   for (const b of allBuckets) buckets.set(b, []);
 
@@ -789,17 +830,45 @@ async function main() {
     "Lacrosse",
   );
 
+  // ── Soccer ──────────────────────────────────────────────────────────────────
+  // FV-78/79 wiring (DORMANT — no audio rendered; go-live gate is FV-81).
+  // docs/scripts/soccer.md ships 4 role-split Hard Moment sections (Forward/
+  // Midfielder/Defender/Goalkeeper), not one combined section like lacrosse,
+  // plus a "Clinically Withheld" section for the 5 gated cells (4 shootout +
+  // gk-handling-yips) — headers below are transcribed from the book's actual
+  // ## headers, not assumed from the lacrosse shape.
+  const socScripts = buckets.get("soccer")!;
+  const SOC_FLAGSHIP_SLUGS = ["viz-soc-fwd", "viz-soc-mid", "viz-soc-def", "viz-soc-gk"];
+  const SOC_WITHHELD_SLUGS = [
+    "hm-soc-fwd-shootout", "hm-soc-mid-shootout", "hm-soc-def-shootout",
+    "hm-soc-gk-shootout", "hm-soc-gk-handling-yips",
+  ];
+  const socStats = await writeBook(
+    "soccer.md", "Soccer", true,
+    [
+      { header: "VIZ Clips — Flagships (position)", scripts: socScripts.filter((s) => SOC_FLAGSHIP_SLUGS.includes(s.slug)) },
+      { header: "VIZ Clips — Positive Plays (position × library)", scripts: socScripts.filter((s) => s.slug.startsWith("viz-soc-") && !SOC_FLAGSHIP_SLUGS.includes(s.slug)) },
+      { header: "Hard Moment Clips — Forward", scripts: socScripts.filter((s) => s.slug.startsWith("hm-soc-fwd-") && !SOC_WITHHELD_SLUGS.includes(s.slug)) },
+      { header: "Hard Moment Clips — Midfielder", scripts: socScripts.filter((s) => s.slug.startsWith("hm-soc-mid-") && !SOC_WITHHELD_SLUGS.includes(s.slug)) },
+      { header: "Hard Moment Clips — Defender", scripts: socScripts.filter((s) => s.slug.startsWith("hm-soc-def-") && !SOC_WITHHELD_SLUGS.includes(s.slug)) },
+      { header: "Hard Moment Clips — Goalkeeper", scripts: socScripts.filter((s) => s.slug.startsWith("hm-soc-gk-") && !SOC_WITHHELD_SLUGS.includes(s.slug)) },
+      { header: "Hard Moment Clips — Clinically Withheld (5, omitted from every picker)", scripts: socScripts.filter((s) => SOC_WITHHELD_SLUGS.includes(s.slug)) },
+    ],
+    "Soccer",
+  );
+
   // ── Pre-Practice ────────────────────────────────────────────────────────────
   const ppScripts = buckets.get("pre-practice")!;
   const ppStats = await writeBook(
     "pre-practice.md", "Pre-Practice", false,
     [
-      { header: "Hockey Pre-Practice Clips", scripts: ppScripts.filter((s) => !s.slug.startsWith("pp-bb-") && !s.slug.startsWith("pp-baseball-") && !s.slug.startsWith("pp-golf-") && !s.slug.startsWith("pp-football-") && !s.slug.startsWith("pp-lax-")) },
+      { header: "Hockey Pre-Practice Clips", scripts: ppScripts.filter((s) => !s.slug.startsWith("pp-bb-") && !s.slug.startsWith("pp-baseball-") && !s.slug.startsWith("pp-golf-") && !s.slug.startsWith("pp-football-") && !s.slug.startsWith("pp-lax-") && !s.slug.startsWith("pp-soc-")) },
       { header: "Basketball Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-bb-")) },
       { header: "Baseball Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-baseball-")) },
       { header: "Golf Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-golf-")) },
       { header: "Football Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-football-")) },
       { header: "Lacrosse Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-lax-")) },
+      { header: "Soccer Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-soc-")) },
     ],
   );
 
@@ -831,6 +900,7 @@ them automatically. No separate "apply" command needed in the normal editing wor
 | [swimming.md](./swimming.md) | Swimming VIZ + hard-moment clips | DORMANT (no audio yet) |
 | [track-field.md](./track-field.md) | Track & Field VIZ + hard-moment clips | DORMANT (no audio yet) |
 | [lacrosse.md](./lacrosse.md) | Lacrosse VIZ + hard-moment clips | DORMANT (no audio yet) |
+| [soccer.md](./soccer.md) | Soccer VIZ + hard-moment clips | DORMANT (no audio yet, go-live gate FV-81) |
 | [pre-practice.md](./pre-practice.md) | All pre-practice "Lock In" clips | LIVE (hockey/bb/golf) |
 | [shared.md](./shared.md) | Breath threshold + shared structural + anchor/self-talk/cue-word clips | LIVE |
 
@@ -919,6 +989,7 @@ Total CLIP_SCRIPTS registered: ${totalClips}
     { label: "swimming", ...swmStats },
     { label: "track-field", ...trfStats },
     { label: "lacrosse", ...laxStats },
+    { label: "soccer", ...socStats },
     { label: "pre-practice", ...ppStats },
     { label: "shared", ...sharedStats },
   ];

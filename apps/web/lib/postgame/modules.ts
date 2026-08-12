@@ -3,7 +3,7 @@
 // Code-resident content: on-demand, re-openable modules for the
 // car-ride-home moment (win / loss / benching / bad-game / praise across
 // hockey, basketball, golf (no benching), football, and the dormant
-// baseball + lacrosse sets). Mirrors the pregame/pre-practice
+// baseball + lacrosse + soccer sets). Mirrors the pregame/pre-practice
 // precedent: on-demand content lives in code; only the sequenced daily
 // catalog is DB.
 //
@@ -1192,6 +1192,223 @@ not tonight's score.* You can finish that prayer and still feel the loss.
 You do not need to force a resolution tonight.`,
 };
 
+// ---------------------------------------------------------------------------
+// Module — Soccer · After the Win (FV-79 wiring arc; KC-ratified final copy,
+// 2026-08-10 soccer-postgame-review bundle — the content source of truth for
+// this const)
+// ---------------------------------------------------------------------------
+const SOCCER_WIN: PostgameModule = {
+  slug: "soccer-after-the-win",
+  sport: "soccer",
+  scenario: "win",
+  title: "After the Win",
+  scriptureRef: "James 1:17",
+  scriptureText:
+    "Every good and perfect gift is from above, coming down from the Father of the heavenly lights, who does not change like shifting shadows.",
+  bodyMd: `### What happened
+
+You won. Maybe you scored, kept the clean sheet, recovered to stop a counter,
+or held the shape while the other team pushed for an equalizer. Enjoy it.
+Winning is good, and humility does not require you to minimize it.
+
+Notice what made the result possible: the week of training, the run that
+dragged a defender away, the teammate who tracked back when you were caught
+upfield, the people who get you to games.
+
+### What's true
+
+James says every good gift comes from a Father who does not change. Your
+ability to compete, your teammates, and the joy of tonight are gifts. The
+result is not evidence that God favored your side or paid you back for
+having enough faith.
+
+Your preparation mattered. Grace is not permission to work less. It is what
+keeps hard work from turning into self-worship when the result goes your
+way.
+
+> Receive the win with gratitude. Do not use it to rank your worth.
+
+Thank God plainly. Then thank a teammate for something specific — the save,
+the recovery run nobody clapped for, the pass before the pass. Check on the
+player who never got on tonight. Then return to training ready to work. The
+win can confirm what went well; it cannot guarantee the next result.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Soccer · After the Loss (FV-79 wiring arc; KC-ratified final copy,
+// 2026-08-10 soccer-postgame-review bundle — the content source of truth for
+// this const)
+// ---------------------------------------------------------------------------
+const SOCCER_LOSS: PostgameModule = {
+  slug: "soccer-the-loss",
+  sport: "soccer",
+  scenario: "loss",
+  title: "After the Loss",
+  scriptureRef: "Psalm 34:18",
+  scriptureText:
+    "The Lord is close to the brokenhearted and saves those who are crushed in spirit.",
+  bodyMd: `### What happened
+
+You lost. Maybe it was 1-0, and one decision, missed chance, or deflection
+keeps replaying on the ride home.
+
+Do not use "God is in control" to shrug at the result. You wanted to win.
+You trained for it. The loss matters, and you can be disappointed.
+
+### What's true
+
+Psalm 34 says God is close to the brokenhearted. His sovereignty gives you
+somewhere to take the disappointment; it does not make the disappointment
+unreal or the work pointless.
+
+Ask what belongs to you. Did you hold your shape? Did your decisions
+hold up when you got tired? Did you keep pressing when the game turned? Own those
+answers. Do not take responsibility for every deflection, every call, or
+every decision a teammate made.
+
+> Own what was yours without turning it into a judgment on your worth.
+
+Your standing with God rests on what Christ has done, not on ninety
+minutes. Tomorrow, watch the clips and take one correction into training.
+Tonight, you do not have to feel better. Stop the review when it stops being
+useful and becomes self-punishment.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Soccer · Left Out or Left on the Bench (FV-79 wiring arc;
+// KC-ratified final copy, 2026-08-10 soccer-postgame-review bundle — the
+// content source of truth for this const. Covers both soccer wounds — the
+// unused sub and the player left off the team sheet — in one module, without
+// splitting.)
+// ---------------------------------------------------------------------------
+const SOCCER_BENCHING: PostgameModule = {
+  slug: "soccer-glued-to-the-bench",
+  sport: "soccer",
+  scenario: "benching",
+  title: "Left Out or Left on the Bench",
+  scriptureRef: "Psalm 139:1-3",
+  scriptureText:
+    "You have searched me, Lord, and you know me. You know when I sit and when I rise; you perceive my thoughts from afar. You discern my going out and my lying down; you are familiar with all my ways.",
+  bodyMd: `### What happened
+
+There are two versions of this night. In one, you warmed up down the
+sideline through the whole second half, kept glancing back at the bench,
+and the call never came. In the other, the team sheet went up and your
+name was not on it, so you watched in your training top a game you had
+prepared all week to play.
+
+It hurts to stay ready and never get on. Some positions only have one
+spot, and the wait can be a whole season. Do not pretend the role is fine
+with you.
+
+### What's true
+
+Right now, the coach is not trusting you with the minutes you want. Maybe
+you are not getting minutes. Maybe your name was not on the team sheet at
+all. Start with the situation as it is, not the one you believe you have
+earned.
+Accepting the fact is not the same as agreeing with every decision. Psalm
+139 says God knows you completely. He knows the work you did before the team
+sheet went up. Your place in Christ is secure enough for you to face a small
+role without hiding from the coach's evaluation.
+
+> The coach controls the minutes. You control how you train and how you use them.
+
+Tomorrow, ask what the coach needs to see from you in training. Hear the
+whole answer, then choose one part you can change. If you get ten minutes,
+use them with discipline: clean first touch, correct position, immediate
+recovery when the ball turns over. Do not assume faith guarantees the team
+sheet will change. Keep working faithfully inside the role you have.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Soccer · After a Bad Game (FV-79 wiring arc; KC-ratified final
+// copy, 2026-08-10 soccer-postgame-review bundle — the content source of
+// truth for this const)
+// ---------------------------------------------------------------------------
+const SOCCER_BAD_GAME: PostgameModule = {
+  slug: "soccer-the-bad-game",
+  sport: "soccer",
+  scenario: "bad-game",
+  title: "After a Bad Game",
+  scriptureRef: "Lamentations 3:22-23",
+  scriptureText:
+    "Because of the Lord's great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness.",
+  bodyMd: `### What happened
+
+You had a bad game. Maybe you missed the sitter from six yards. Maybe
+the ball you gave away in your own half ended up in the net, or the ball
+came off you and went in your own net, or a shot you should have held squirmed under
+you. It will be on Veo, and you already know the clip you do not want to watch.
+
+Do not soften it, and do not stretch it into a statement about your whole
+life. A missed chance, a lost duel, and a lazy decision are three different
+problems.
+
+### What's true
+
+Maybe your mistake cost the team. If it did, own it. Say it to the players
+who need to hear it. Then refuse the label *I am the reason we lose.* A
+specific error can be reviewed and corrected. A label only extends the
+punishment.
+
+Lamentations says God's compassion is new every morning. That mercy is not
+a guarantee that the next game goes better. It means you can watch the film
+without flinching, because Christ has already carried your condemnation.
+
+> Name the mistake. Repair what you can. Refuse the label.
+
+Tomorrow, find the first thing that broke down and take it into training —
+extra finishing, one correction in your marking, ten minutes of handling
+with the keeper coach. Tonight, stop replaying the goal as a way to pay for
+it.`,
+};
+
+// ---------------------------------------------------------------------------
+// Module — Soccer · Praise After the Loss (FV-79 wiring arc; KC-ratified
+// final copy, 2026-08-10 soccer-postgame-review bundle — the content source
+// of truth for this const)
+// ---------------------------------------------------------------------------
+// CLINICAL_SIGN_OFF_REQUIRED: this module (and its hockey/basketball/golf/
+// football/baseball/lacrosse mirrors) reaches a minor at a night-time,
+// post-loss low point. It must NOT roll out to a broad athlete base before
+// the pending clinical-advisor sign-off (CLAUDE.md Open Items; tracked in
+// FV-296). The content names the ache, permits it, and never forces a
+// bypass — but the clinical gate is a standing requirement, not satisfied by
+// this code.
+const SOCCER_PRAISE: PostgameModule = {
+  slug: "soccer-praise-anyway",
+  sport: "soccer",
+  scenario: "praise",
+  title: "Praise After the Loss",
+  scriptureRef: "Habakkuk 3:17-18",
+  scriptureText:
+    "Though the fig tree does not bud and there are no grapes on the vines, though the olive crop fails and the fields produce no food, though there are no sheep in the pen and no cattle in the stalls, yet I will rejoice in the Lord, I will be joyful in God my Savior.",
+  bodyMd: `### What happened
+
+The win never came. Maybe you worked for ninety minutes in a 3-0 loss and
+rarely received the ball. You wanted a different result. Do not rush past
+that disappointment or call the loss good.
+
+### What's true
+
+Habakkuk had lost every visible sign that life was going well, yet he still
+called God his Savior. He did not praise the empty fields. He trusted God
+while they were empty.
+
+> Praise is not a trade. It does not buy a better result.
+
+God's sovereignty frees you to grieve, look honestly at your own play, and
+go back to the work. It does not excuse a week of poor preparation or make
+an apology unnecessary. Nothing on the scoreboard changes because you pray,
+and prayer is not a deposit against next weekend.
+
+Your prayer can be plain: *God, this hurts. Show me what is mine to own and
+help me do the work. Thank You that my standing with You rests on Christ,
+not on tonight's result.* You may still feel disappointed when the prayer
+ends. You do not need to force an emotional resolution tonight.`,
+};
+
 export const POSTGAME_MODULES: PostgameModule[] = [
   HOCKEY_WIN,
   HOCKEY_LOSS,
@@ -1222,6 +1439,11 @@ export const POSTGAME_MODULES: PostgameModule[] = [
   LACROSSE_BENCHING,
   LACROSSE_BAD_GAME,
   LACROSSE_PRAISE,
+  SOCCER_WIN,
+  SOCCER_LOSS,
+  SOCCER_BENCHING,
+  SOCCER_BAD_GAME,
+  SOCCER_PRAISE,
 ];
 
 /**

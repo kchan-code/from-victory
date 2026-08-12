@@ -20,6 +20,7 @@ import {
   BASEBALL_CONFIG,
   FOOTBALL_CONFIG,
   LACROSSE_CONFIG,
+  SOCCER_CONFIG,
   getSportConfig,
   adversityOptionsFor,
   adversityLabelFor,
@@ -1281,5 +1282,180 @@ describe("FOOTBALL_CONFIG — the §6.3 big-hit clinical withhold (FV-206 / FV-1
       const slug = FOOTBALL_CONFIG.cellSlugFor(BIG_HIT, role);
       expect(slug, `cellSlugFor(big-hit, ${role})`).toBe(`hm-ftb-${role.toLowerCase()}-big-hit`);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-78/79: SOCCER_CONFIG — registry wiring integrity. Soccer is DORMANT
+// (docs/soccer-module-map.md, KC-ratified 2026-08-10) — the go-live decision
+// is FV-81, and soccer stays absent from SUPPORTED_SPORTS (and the DB
+// sport_valid_values CHECK) until then. This suite guards the taxonomy
+// contract the same way the pre-flip LACROSSE_CONFIG suites above did before
+// FV-407: a dormant-guard assertion plus the FV-119-pattern gated-cells
+// suite, so the taxonomy is provably correct well before the audio render.
+// ---------------------------------------------------------------------------
+
+describe("FV-78/79: soccer is DORMANT (pre-flip guard)", () => {
+  it("soccer is NOT in SUPPORTED_SPORTS (not athlete-selectable yet)", () => {
+    expect(SUPPORTED_SPORTS as readonly string[]).not.toContain("soccer");
+  });
+
+  it("getSportConfig('soccer') still resolves SOCCER_CONFIG (the registry entry exists even though the sport is unselectable)", () => {
+    expect(getSportConfig("soccer")).toBe(SOCCER_CONFIG);
+    expect(SOCCER_CONFIG.sportKey).toBe("soccer");
+  });
+});
+
+describe("SOCCER_CONFIG.cellSlugFor — the module-map §3/§5 grid", () => {
+  const roles = SOCCER_CONFIG.roles ?? [];
+
+  it("declares the 4 ratified positions (module map §1)", () => {
+    expect(roles).toEqual(["Forward", "Midfielder", "Defender", "Goalkeeper"]);
+  });
+
+  it("all 10 adversity strings have a fragment in adversitySlugFragments", () => {
+    const missing: string[] = [];
+    for (const adversity of SOCCER_CONFIG.adversities) {
+      if (!(adversity in SOCCER_CONFIG.adversitySlugFragments)) missing.push(adversity);
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it("the full 4×10 matrix resolves to exactly 40 distinct hm-soc-* cells — a clean product, no drops, no dedup (module map §3)", () => {
+    const slugs = new Set<string>();
+    for (const role of roles) {
+      for (const adversity of SOCCER_CONFIG.adversities) {
+        slugs.add(SOCCER_CONFIG.cellSlugFor(adversity, role));
+      }
+    }
+    expect(slugs.size).toBe(40);
+    expect([...slugs].every((s) => s.startsWith("hm-soc-"))).toBe(true);
+    // The withheld gated cells are NOT reachable from the shared-10 grid.
+    expect(slugs.has("hm-soc-fwd-shootout")).toBe(false);
+    expect(slugs.has("hm-soc-mid-shootout")).toBe(false);
+    expect(slugs.has("hm-soc-def-shootout")).toBe(false);
+    expect(slugs.has("hm-soc-gk-shootout")).toBe(false);
+    expect(slugs.has("hm-soc-gk-handling-yips")).toBe(false);
+  });
+
+  it("Forward special cases resolve to the module-map Appendix slugs", () => {
+    expect(SOCCER_CONFIG.cellSlugFor("I miss a big chance.", "Forward")).toBe("hm-soc-fwd-sitter");
+    expect(SOCCER_CONFIG.cellSlugFor("I get beaten one-v-one.", "Forward")).toBe("hm-soc-fwd-marked-out");
+    expect(SOCCER_CONFIG.cellSlugFor("I start slow.", "Forward")).toBe("hm-soc-fwd-drought");
+  });
+
+  it("Midfielder special case: start-slow → cant-get-into-it", () => {
+    expect(SOCCER_CONFIG.cellSlugFor("I start slow.", "Midfielder")).toBe("hm-soc-mid-cant-get-into-it");
+  });
+
+  it("Defender special case: beaten → turned; goal-on-me is a documented NO-OP (byte-identical to the default pattern)", () => {
+    expect(SOCCER_CONFIG.cellSlugFor("I get beaten one-v-one.", "Defender")).toBe("hm-soc-def-turned");
+    expect(SOCCER_CONFIG.cellSlugFor("The goal is on me.", "Defender")).toBe("hm-soc-def-goal-on-me");
+  });
+
+  it("Goalkeeper special cases resolve to the goalie-true cells (goalie-pulled precedent)", () => {
+    expect(SOCCER_CONFIG.cellSlugFor("I give the ball away.", "Goalkeeper")).toBe("hm-soc-gk-played-into-trouble");
+    expect(SOCCER_CONFIG.cellSlugFor("I miss a big chance.", "Goalkeeper")).toBe("hm-soc-gk-dropped-cross");
+    expect(SOCCER_CONFIG.cellSlugFor("I get beaten one-v-one.", "Goalkeeper")).toBe("hm-soc-gk-beaten-near-post");
+    expect(SOCCER_CONFIG.cellSlugFor("I get booked.", "Goalkeeper")).toBe("hm-soc-gk-penalty-conceded");
+    expect(SOCCER_CONFIG.cellSlugFor("The goal is on me.", "Goalkeeper")).toBe("hm-soc-gk-soft-goal");
+    expect(SOCCER_CONFIG.cellSlugFor("I get benched.", "Goalkeeper")).toBe("hm-soc-gk-dropped");
+  });
+
+  it("no combination ever produces hm-soc-gk-benched (a goalkeeper loses the shirt, they're not 'benched')", () => {
+    for (const adversity of SOCCER_CONFIG.adversities) {
+      expect(SOCCER_CONFIG.cellSlugFor(adversity, "Goalkeeper")).not.toBe("hm-soc-gk-benched");
+    }
+  });
+
+  it("role tokens are explicit abbreviations (fwd/mid/def/gk), not role.toLowerCase()", () => {
+    expect(SOCCER_CONFIG.cellSlugFor("I give the ball away.", "Forward")).toMatch(/^hm-soc-fwd-/);
+    expect(SOCCER_CONFIG.cellSlugFor("I give the ball away.", "Midfielder")).toMatch(/^hm-soc-mid-/);
+    expect(SOCCER_CONFIG.cellSlugFor("I give the ball away.", "Defender")).toMatch(/^hm-soc-def-/);
+    expect(SOCCER_CONFIG.cellSlugFor("I give the ball away.", "Goalkeeper")).toMatch(/^hm-soc-gk-/);
+  });
+});
+
+describe("SOCCER_CONFIG — the ⚠⚠ gated cells (module map §4 / FV-119 pattern)", () => {
+  const roles = SOCCER_CONFIG.roles ?? [];
+  const GATED = ["I miss in the shootout.", "I lose my hands."];
+
+  it("neither gated umbrella is a selectable adversity", () => {
+    for (const key of GATED) {
+      expect(SOCCER_CONFIG.adversities).not.toContain(key);
+    }
+  });
+
+  it("no position's Hard Moment picker carries either gated umbrella key", () => {
+    for (const role of roles) {
+      const keys = adversityOptionsFor(SOCCER_CONFIG, role).map((o) => o.key);
+      for (const gated of GATED) {
+        expect(keys, `${role} picker must omit "${gated}"`).not.toContain(gated);
+      }
+    }
+  });
+
+  it("cellSlugFor still resolves all 5 gated slugs (grid completeness for the clinical re-enable)", () => {
+    expect(SOCCER_CONFIG.cellSlugFor("I miss in the shootout.", "Forward")).toBe("hm-soc-fwd-shootout");
+    expect(SOCCER_CONFIG.cellSlugFor("I miss in the shootout.", "Midfielder")).toBe("hm-soc-mid-shootout");
+    expect(SOCCER_CONFIG.cellSlugFor("I miss in the shootout.", "Defender")).toBe("hm-soc-def-shootout");
+    expect(SOCCER_CONFIG.cellSlugFor("I miss in the shootout.", "Goalkeeper")).toBe("hm-soc-gk-shootout");
+    expect(SOCCER_CONFIG.cellSlugFor("I lose my hands.", "Goalkeeper")).toBe("hm-soc-gk-handling-yips");
+  });
+
+  it("the grid stays 4×10 = 40 even with the gated umbrellas resolvable (they are not part of the 10)", () => {
+    const roleCount = roles.length;
+    const adversityCount = SOCCER_CONFIG.adversities.length;
+    expect(roleCount * adversityCount).toBe(40);
+  });
+});
+
+describe("SOCCER_CONFIG — practice + picker field completeness", () => {
+  it("roleContent covers all 4 positions with a title and 5 scenes each", () => {
+    for (const role of SOCCER_CONFIG.roles ?? []) {
+      const content = SOCCER_CONFIG.roleContent?.[role];
+      expect(content, `roleContent missing for ${role}`).toBeDefined();
+      expect(content!.title.length).toBeGreaterThan(0);
+      expect(content!.scenes).toHaveLength(5);
+    }
+  });
+
+  it("every practiceFocusOptions entry maps to a pp-soc-focus-* slug (keys exact)", () => {
+    expect(Object.keys(SOCCER_CONFIG.practiceFocusSlugs).sort()).toEqual(
+      [...SOCCER_CONFIG.practiceFocusOptions].sort(),
+    );
+    for (const slug of Object.values(SOCCER_CONFIG.practiceFocusSlugs)) {
+      expect(slug).toMatch(/^pp-soc-focus-/);
+    }
+  });
+
+  it("every soccer need resolves to an opener slug (shared-opener fallback)", () => {
+    const missing = SOCCER_CONFIG.needs.filter(
+      (need) => !resolveOpenerSlug(need, "soccer"),
+    );
+    expect(missing).toEqual([]);
+  });
+
+  it("keeps the NeedToday union stable: the decisions swap reuses the basketball/lacrosse member", () => {
+    expect(SOCCER_CONFIG.needs).toContain("Better decisions with the ball");
+  });
+
+  it("selfTalkOptions ships the ratified 6 (omits the shared 7th 'You are secure...' phrase, per the ratified module map)", () => {
+    expect(SOCCER_CONFIG.selfTalkOptions).toHaveLength(6);
+    expect(SOCCER_CONFIG.selfTalkOptions).not.toContain(
+      "You are secure. Take the next faithful action.",
+    );
+    expect(SOCCER_CONFIG.selfTalkOptions).toContain("You're okay. Next ball.");
+  });
+
+  it("anchors ships the 3 shared plus the 3 soccer-specific anchors", () => {
+    expect(SOCCER_CONFIG.anchors).toEqual([
+      "Long exhale",
+      "Press thumb to palm",
+      "Touch the grass",
+      "Reset on the walk back",
+      "Clap your gloves",
+      "Say cue word",
+    ]);
   });
 });

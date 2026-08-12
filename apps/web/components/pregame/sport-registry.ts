@@ -28,7 +28,7 @@ import type { AudioSegment, NeedToday } from "./types";
 // Sport type
 // ---------------------------------------------------------------------------
 
-export type Sport = "hockey" | "basketball" | "baseball" | "golf" | "football" | "swimming" | "track-field" | "lacrosse"; // extend as more sports land
+export type Sport = "hockey" | "basketball" | "baseball" | "golf" | "football" | "swimming" | "track-field" | "lacrosse" | "soccer"; // extend as more sports land
 
 /**
  * A Hard Moment option: the canonical `key` (drives `cellSlugFor` + the stored
@@ -2572,6 +2572,364 @@ export const LACROSSE_CONFIG: SportConfig = {
 };
 
 // ---------------------------------------------------------------------------
+// Soccer config (FV-78/79 — DORMANT until FV-81 KC flip; taxonomy =
+// docs/soccer-module-map.md, KC-ratified 2026-08-10, incl. the
+// recovery-play doctrine amendment to ratification item 9 — the 7th play in
+// every position library is a RECOVERY play that returns the athlete to the
+// position's normal process, never payback/redemption/proof-the-mistake-no-
+// longer-matters. Soccer stays ABSENT from SUPPORTED_SPORTS (lib/sports.ts)
+// and the DB sport_valid_values CHECK until KC flips it live — same
+// discipline as football/baseball/lacrosse before their go-lives. Content
+// source of truth: docs/scripts/soccer.md.
+// ---------------------------------------------------------------------------
+
+const SOCCER_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
+  "I give the ball away.": "giveaway",
+  "I miss a big chance.": "missed-chance",
+  "I get beaten one-v-one.": "beaten",
+  "I get booked.": "booked",
+  "The goal is on me.": "goal-on-me",
+  "Coach yells.": "coach-yells",
+  "I get benched.": "benched",
+  "I feel nervous.": "nervous",
+  "I start slow.": "start-slow",
+  "We fall behind early.": "fall-behind-early",
+  // ⚠⚠ Gated umbrellas (module map §4) — resolvable by cellSlugFor for grid
+  // completeness, but NOT in `adversities` / any `roleAdversities` array, so
+  // never shown in the picker (FV-119 pattern).
+  "I miss in the shootout.": "shootout",
+  "I lose my hands.": "lose-hands", // GK-only
+};
+
+// Explicit role → slug-token map (module map §5) — soccer's tokens are
+// abbreviations (fwd/mid/def/gk), NOT role.toLowerCase(). This differs from
+// hockey/basketball/baseball/lacrosse, whose slug tokens ARE the lowercased
+// role string.
+const SOCCER_ROLE_TOKENS: Record<string, string> = {
+  Forward: "fwd",
+  Midfielder: "mid",
+  Defender: "def",
+  Goalkeeper: "gk",
+};
+
+// Soccer text-mode audio script (FV-78/79 go-live wiring). Built on the
+// LACROSSE_AUDIO_SCRIPT startSec grid (0/35/80/120/165/210/250/275); segs
+// 0/35/165/210/250 are byte-shared across every sport's script (165's
+// {{roleScenes}} token substitutes Forward/Midfielder/Defender/Goalkeeper
+// strings from roleContent below). Segs 80/120/275 are soccer-specific,
+// content-trio authored + soccer-expert verified (lead's final text,
+// 2026-08-12) — transcribed verbatim into docs/scripts/soccer.md's
+// "## Text-mode fallback (Soccer)" section (source of truth per FV-302).
+const SOCCER_AUDIO_SCRIPT: AudioSegment[] = [
+  {
+    startSec: 0,
+    eyebrow: "Identity",
+    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+  },
+  {
+    startSec: 35,
+    eyebrow: "Settle",
+    body: "Sit tall. Long exhale. Lead your body back to ready. Four counts in. Six counts out. Let your shoulders drop.",
+  },
+  {
+    startSec: 80,
+    eyebrow: "See the field",
+    body: "See the field before kickoff. Hear the ball pinging back and forth in warmups, cleats on the field, a coach calling the group in. Feel your shin guards under your socks, the ground under your feet. You belong here. You are ready.",
+  },
+  {
+    startSec: 120,
+    eyebrow: "Your first touch",
+    body: "Kickoff. Move your feet, get an early touch. Scan before the ball arrives, then keep the first one simple — a simple layoff, a clean clearance, a ball collected and played. Recover. Next ball.",
+  },
+  {
+    startSec: 165,
+    eyebrow: "Play your position · {{role}}",
+    body: "{{roleScenes}}",
+  },
+  {
+    startSec: 210,
+    eyebrow: "If this happens",
+    body: "{{adversity}} See it. Feel it. Breathe. Speak truth. Take the next faithful action. Your mistake is real. It is not your identity.",
+  },
+  {
+    startSec: 250,
+    eyebrow: "Coach yourself",
+    body: "{{selfTalk}} When pressure hits, return here. Your anchor: {{anchor}}. Your cue word: {{cueWord}}.",
+  },
+  {
+    startSec: 275,
+    eyebrow: "Send-off",
+    body: "Lord, help me compete with courage, humility, and joy. Help me play the ball in front of me, respond well to mistakes, and remember that my worth is secure in You. Amen. Play from victory.",
+  },
+];
+
+export const SOCCER_CONFIG: SportConfig = {
+  displayName: "Soccer",
+  sportKey: "soccer",
+
+  roles: ["Forward", "Midfielder", "Defender", "Goalkeeper"] as const,
+  roleLabel: "Position",
+
+  // roleContent.scenes are 5-line compressions of the position's flagship VIZ
+  // (docs/scripts/soccer.md lines 9-18 of each "VIZ (flagship)" clip),
+  // covering the core positive-play beats the flagship actually narrates —
+  // the lacrosse flagship-5 calibration (FV-404/405).
+  roleContent: {
+    Forward: {
+      title: "Threaten in behind. Combine. Finish.",
+      scenes: [
+        "Time the run, finish across the keeper.",
+        "Attack the near post, redirect it home.",
+        "Beat the fullback, reach the byline.",
+        "Hold it up, spin in behind.",
+        "Angle your press, finish from close range.",
+      ],
+    },
+    Midfielder: {
+      title: "Receive. Connect. Recover.",
+      scenes: [
+        "Receive on the half-turn, break the line.",
+        "Switch the play to the far side.",
+        "Arrive late in the box, finish.",
+        "Win it back, play it simple.",
+        "Turn out of the press, play forward.",
+      ],
+    },
+    Defender: {
+      title: "Protect the space. Start the next attack.",
+      scenes: [
+        "Show the winger wide, stay on your feet.",
+        "Attack the flight, head it clear.",
+        "Open your body, find the pass.",
+        "Keep it simple, hold your shape.",
+        "Recover inside, delay the runner.",
+      ],
+    },
+    Goalkeeper: {
+      title: "Set the angle. Communicate. Distribute.",
+      scenes: [
+        "Set the angle, control the shot.",
+        "Scan the field, start the attack.",
+        "Call it early, claim the cross.",
+        "Close the space, smother the ball.",
+        "Set the wall, cover your side.",
+      ],
+    },
+  },
+
+  // The shared 10 canonical adversities (module map §3, model (a)). The 2
+  // gated umbrella fragments ("shootout", "lose-hands") are deliberately NOT
+  // here — see adversitySlugFragments comment above.
+  adversities: [
+    "I give the ball away.",
+    "I miss a big chance.",
+    "I get beaten one-v-one.",
+    "I get booked.",
+    "The goal is on me.",
+    "Coach yells.",
+    "I get benched.",
+    "I feel nervous.",
+    "I start slow.",
+    "We fall behind early.",
+  ],
+
+  // Label-only overrides (module map Appendix + docs/scripts/soccer.md
+  // "picker label" comments — verified byte-identical to the book). Every
+  // `key` stays canonical (FV-101 mechanism) so cellSlugFor + state.adversity
+  // resolve the same cell. Soccer's grid is uniform (4x10, no drops — module
+  // map §3) so every role gets a FULL 10-entry array once any one label
+  // differs — unlike hockey/baseball/lacrosse roles that also DROP cells.
+  roleAdversities: {
+    Forward: [
+      { key: "I give the ball away.", label: "I give the ball away." },
+      { key: "I miss a big chance.", label: "I miss a sitter." },
+      { key: "I get beaten one-v-one.", label: "I get marked out of the game." },
+      { key: "I get booked.", label: "I get booked." },
+      { key: "The goal is on me.", label: "The goal is on me." },
+      { key: "Coach yells.", label: "Coach yells." },
+      { key: "I get benched.", label: "I get benched." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I start slow.", label: "The goals aren't coming." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+    ],
+    Midfielder: [
+      { key: "I give the ball away.", label: "I give the ball away." },
+      { key: "I miss a big chance.", label: "I miss a big chance." },
+      { key: "I get beaten one-v-one.", label: "I get beaten one-v-one." },
+      { key: "I get booked.", label: "I get booked." },
+      { key: "The goal is on me.", label: "The goal is on me." },
+      { key: "Coach yells.", label: "Coach yells." },
+      { key: "I get benched.", label: "I get benched." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I start slow.", label: "I can't get into the game." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+    ],
+    Defender: [
+      { key: "I give the ball away.", label: "I give the ball away." },
+      { key: "I miss a big chance.", label: "I miss a big chance." },
+      { key: "I get beaten one-v-one.", label: "I get turned." },
+      { key: "I get booked.", label: "I get booked." },
+      { key: "The goal is on me.", label: "The goal is on me." },
+      { key: "Coach yells.", label: "Coach yells." },
+      { key: "I get benched.", label: "I get benched." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+    ],
+    Goalkeeper: [
+      { key: "I give the ball away.", label: "I play us into trouble." },
+      { key: "I miss a big chance.", label: "I don't claim the cross." },
+      { key: "I get beaten one-v-one.", label: "One gets past me." },
+      { key: "I get booked.", label: "I give away a penalty." },
+      { key: "The goal is on me.", label: "I let in a soft one." },
+      { key: "Coach yells.", label: "Coach yells." },
+      { key: "I get benched.", label: "I lose the shirt." },
+      { key: "I feel nervous.", label: "I feel nervous." },
+      { key: "I start slow.", label: "I start slow." },
+      { key: "We fall behind early.", label: "We fall behind early." },
+    ],
+  },
+
+  adversitySlugFragments: SOCCER_ADVERSITY_SLUG_FRAGMENTS,
+
+  cellSlugFor(adversity: string, role?: string | null): string {
+    const frag = SOCCER_ADVERSITY_SLUG_FRAGMENTS[adversity] ?? "giveaway";
+    const token = SOCCER_ROLE_TOKENS[role ?? "Midfielder"] ?? "mid";
+
+    // ⚠⚠ Gated umbrellas (module map §4) — resolvable here for grid
+    // completeness though ABSENT from `adversities` / every `roleAdversities`
+    // array (FV-119 pattern; see adversitySlugFragments comment). The
+    // shootout miss is authored for all 4 positions; "lose my hands" is a
+    // GK-only cell — outfield positions carry NO yips-class cell (their cold
+    // spell ships live as the `drought` / `cant-get-into-it` / plain
+    // `start-slow` reading), the lacrosse-yips precedent.
+    if (frag === "shootout") return `hm-soc-${token}-shootout`;
+    if (frag === "lose-hands") return "hm-soc-gk-handling-yips";
+
+    // Special-case slugs (module map Appendix — the goalie-pulled precedent).
+    // 11 REAL special cases total (3 Forward + 1 Midfielder + 1 Defender +
+    // 6 Goalkeeper).
+    if (token === "fwd") {
+      if (frag === "missed-chance") return "hm-soc-fwd-sitter";
+      if (frag === "beaten") return "hm-soc-fwd-marked-out";
+      if (frag === "start-slow") return "hm-soc-fwd-drought";
+    }
+    if (token === "mid" && frag === "start-slow") return "hm-soc-mid-cant-get-into-it";
+    if (token === "def" && frag === "beaten") return "hm-soc-def-turned";
+    // NOTE: Defender × "goal-on-me" → hm-soc-def-goal-on-me is a NO-OP — it
+    // is byte-identical to the default `hm-soc-${token}-${frag}` pattern
+    // below. The module map Appendix lists it as a "special case" for
+    // documentation symmetry with the other positions' goal-on-me readings;
+    // it is not one at the code level, so it is asserted in
+    // sport-registry.test.ts rather than coded here.
+    if (token === "gk") {
+      if (frag === "giveaway") return "hm-soc-gk-played-into-trouble";
+      if (frag === "missed-chance") return "hm-soc-gk-dropped-cross";
+      if (frag === "beaten") return "hm-soc-gk-beaten-near-post";
+      if (frag === "booked") return "hm-soc-gk-penalty-conceded";
+      if (frag === "goal-on-me") return "hm-soc-gk-soft-goal";
+      if (frag === "benched") return "hm-soc-gk-dropped";
+    }
+
+    // Soccer is COMPOSITIONAL-ONLY (golf/football/lacrosse precedent):
+    // cellSlugFor returns the hm-soc-* hard-moment clip directly.
+    return `hm-soc-${token}-${frag}`;
+  },
+
+  // Pre-practice focus presets (module map Appendix, matches
+  // docs/scripts/soccer.md 1:1 — unlike lacrosse, no book-supersedes-Appendix
+  // step was needed here).
+  practiceFocusOptions: [
+    "First touch into space",
+    "Stay patient in the 1v1",
+    "Scan before I receive",
+    "Talk early",
+    "Recover shape after losing it",
+    "Move after I pass",
+    "Finish on balance",
+  ] as const,
+
+  practiceFocusSlugs: {
+    "First touch into space": "pp-soc-focus-first-touch-into-space",
+    "Stay patient in the 1v1": "pp-soc-focus-patient-in-the-one-v-one",
+    "Scan before I receive": "pp-soc-focus-scan-before-receive",
+    "Talk early": "pp-soc-focus-talk-early",
+    "Recover shape after losing it": "pp-soc-focus-recover-shape",
+    "Move after I pass": "pp-soc-focus-move-after-pass",
+    "Finish on balance": "pp-soc-focus-finish-on-balance",
+  },
+
+  // needs: the lead's pre-made decision (a) — reuse the EXISTING NeedToday
+  // member "Better decisions with the ball" (basketball/lacrosse's swap),
+  // NOT the module map Appendix's proposed wording "Better decisions on the
+  // ball" — the existing member keeps the hot NeedToday union stable and
+  // reuses the already-free opener-shared-decisions resolution. KC can
+  // relabel the union member later if "on the ball" is preferred soccer-true
+  // wording; do not add a second decisions-family member without KC.
+  needs: [
+    "Confidence",
+    "Calm",
+    "Compete level",
+    "Reset after mistakes",
+    "Physical courage",
+    "Better decisions with the ball",
+    "Leadership",
+    "Joy",
+    "Hope",
+    "Be more Vocal",
+  ] as const satisfies readonly NeedToday[],
+
+  // Shared 3 first (Long exhale, Press thumb to palm), then the 3
+  // soccer-specific anchors (module map Appendix), Say cue word last — the
+  // basketball/golf/lacrosse ordering convention.
+  anchors: [
+    "Long exhale",
+    "Press thumb to palm",
+    "Touch the grass",
+    "Reset on the walk back",
+    "Clap your gloves",
+    "Say cue word",
+  ] as const,
+
+  // The lead's pre-made decision (b) — ship the module map's ratified 6
+  // (omit lacrosse's 7th "You are secure. Take the next faithful action." —
+  // the module map Appendix lists only 6 for soccer; the omission is
+  // deliberate per the ratified map, not an oversight). "You're okay. Next
+  // ball." is soccer's next-rep phrase (module map Appendix — the truest of
+  // "next play" / "next action" / "next ball").
+  selfTalkOptions: [
+    "You're okay. Next ball.",
+    "Breathe. Do your job.",
+    "Stay steady. Make the next play.",
+    "You don't need to do too much.",
+    "Compete, recover, go again.",
+    "Your identity is secure. Play free.",
+  ] as const,
+
+  practiceOpenerSlugs: {
+    // pp-opener-dialed-in is sport-neutral and reused across all sports.
+    "dialed-in": "pp-opener-dialed-in",
+    // Soccer-specific not-feeling-it opener — the drive, the boots going on,
+    // the first rondo, no whistle (FV-469 lesson; module map §9).
+    "not-feeling-it": "pp-soc-opener-get-to",
+  },
+
+  // FV-78/79: soccer text-mode audio script (sport-correct body for segs
+  // 80/120/275; segs 0/35/165/210/250 shared).
+  audioScript: SOCCER_AUDIO_SCRIPT,
+
+  cueWordHelper: "The one you'd say to yourself on the walk back to halfway.",
+  // "Screenshot it. Open it before kickoff." — the module map Appendix
+  // proposed the hyphenated/UK "kick-off"; the ratified Americanization rule
+  // (module map §7/§8) plus the book's uniform "kickoff" spelling wins here.
+  cardShareHint: "Screenshot it. Open it before kickoff.",
+
+  // positivePlaysCopy: omitted — DEFAULT_POSITIVE_PLAYS_COPY's "Plays"
+  // register is correct for soccer (module map Appendix; no golf-style
+  // "shots" override needed).
+};
+
+// ---------------------------------------------------------------------------
 // Registry + accessor
 // ---------------------------------------------------------------------------
 
@@ -2584,6 +2942,7 @@ export const SPORT_REGISTRY: Record<Sport, SportConfig> = {
   swimming: SWIMMING_CONFIG,
   "track-field": TRACKFIELD_CONFIG,
   lacrosse: LACROSSE_CONFIG,
+  soccer: SOCCER_CONFIG,
 };
 
 /**

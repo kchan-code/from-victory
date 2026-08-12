@@ -943,6 +943,19 @@ Goalkeeper    × lose-hands  → hm-soc-gk-handling-yips
 No position drops a cell — the 4 × 10 grid is uniform.
 ```
 
+> **Wiring note (FV-78/79, added at engine-wiring time — content above
+> unchanged):** `Defender × goal-on-me → hm-soc-def-goal-on-me` is listed
+> above for documentation symmetry with the other positions' `goal-on-me`
+> readings, but it is a **no-op** — that slug is byte-identical to the
+> default compositional pattern `hm-soc-{pos}-{frag}` every uncodified cell
+> already resolves to. `SOCCER_CONFIG.cellSlugFor` in `sport-registry.ts`
+> does not special-case it (there is nothing to special-case); the
+> integrity test asserts the slug rather than the code branching on it. The
+> **11 REAL special cases** are: Forward × {missed-chance, beaten,
+> start-slow} (3), Midfielder × start-slow (1), Defender × beaten (1),
+> Goalkeeper × {giveaway, missed-chance, beaten, booked, goal-on-me,
+> benched} (6).
+
 **`roleAdversities` label-only overrides** (the `key` stays canonical so `cellSlugFor` and
 `state.adversity` resolve the same cell — the hockey / baseball / golf mechanism):
 - **Forward:** `missed-chance` → *"I miss a sitter."* · `beaten` → *"I get marked out of the
@@ -1031,6 +1044,17 @@ soccer; no golf-style override needed).
    (b) **the shootout miss**, all four positions (`hm-soc-{fwd,mid,def,gk}-shootout`) —
    withheld on the **structural "no next rep"** ground, not the motor-anxiety ground.
    Outfield positions carry no yips cell. (§4)
+   > **Reconciliation note (dated 2026-08-12, FV-78/79 wiring pass — content
+   > unchanged above).** `docs/scripts/soccer.md`'s "Clinical routing memo"
+   > (authored after this ratification) retires the purely-structural "no
+   > next rep" argument for the 4 shootout cells — it shows the Return beat
+   > can be postural/social rather than motor (the walk back, rejoining the
+   > line) — and replaces it with a **clinical/performance** ground instead:
+   > rehearsing a penalty-kick miss in the minutes before the athlete may be
+   > selected to take one inverts coping-imagery's normal protective effect.
+   > **The withhold itself stands**, on the stronger ground; only the stated
+   > *reason* moved. The gated roster (5 cells) and the FV-119 withhold
+   > mechanism above are otherwise unaffected.
 7. **Academy release / "I got cut" is NOT a pregame cell** — routed to daily training +
    postgame as a slow arc (football-slump precedent). (§4)
 8. **No football-style `big-hit` cell for soccer** — replaced by a **standing head-impact

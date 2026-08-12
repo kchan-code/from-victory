@@ -62,15 +62,23 @@ const EXPECTED_COUNTS: Partial<Record<Sport, Record<string, number>>> = {
     FOGO: 7,
     Goalie: 7,
   },
+  // Soccer (FV-78/79) — DORMANT until the FV-81 go-live
+  soccer: {
+    Forward: 7,
+    Midfielder: 7,
+    Defender: 7,
+    Goalkeeper: 7,
+  },
   // swimming / track-field: no positive plays authored (yet) — omitted so
   // `counts` (built only from keys that actually occur) can `toEqual` this.
 };
 
 describe("POSITIVE_PLAYS library", () => {
-  it("has all 185 plays", () => {
+  it("has all 213 plays", () => {
     // 73 (hockey/basketball/golf) + 49 football (FV-423, live) + 28 baseball
-    // (FV-424, live) + 35 lacrosse (FV-406, dormant until FV-407 go-live).
-    expect(POSITIVE_PLAYS).toHaveLength(185);
+    // (FV-424, live) + 35 lacrosse (FV-406, dormant until FV-407 go-live) +
+    // 28 soccer (FV-78/79, dormant until FV-81 go-live).
+    expect(POSITIVE_PLAYS).toHaveLength(213);
   });
 
   it("has no duplicate slugs", () => {

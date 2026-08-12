@@ -201,6 +201,13 @@ describe("Registry roles vs DB CHECK union", () => {
     // DB migration (20260812010000), bundled with the sport-enum enablement —
     // this mirror tracks the registry.
     "Attack", "Midfield", "FOGO",
+    // Soccer (DORMANT until the FV-81 flip — FV-77/FV-78/FV-79; "Forward"
+    // shared with hockey, listed once above; Midfielder/Defender/Goalkeeper
+    // are deliberately distinct strings from hockey's Defense/Goalie per the
+    // ratified map's DB note). The real profiles_position_values CHECK
+    // widening ships with the soccer go-live DB migration (20260812230000) —
+    // this mirror tracks the registry.
+    "Midfielder", "Defender", "Goalkeeper",
   ];
 
   it("every registry role is in the DB CHECK union", () => {

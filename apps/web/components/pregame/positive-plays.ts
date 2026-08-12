@@ -11,8 +11,15 @@
 // copied verbatim from docs/pregame-scripts.md §1 (the source the audio
 // narration was generated from); lacrosse titles are copied verbatim from the
 // `### ... VIZ — <title>` headers in docs/scripts/lacrosse.md (its script
-// book — lacrosse has no entry in pregame-scripts.md §1). Do not paraphrase —
-// keep this list and its source doc in lockstep. Every slug here must exist
+// book — lacrosse has no entry in pregame-scripts.md §1). Soccer titles are
+// copied verbatim from the `<!-- PLAYS: ... -->` comment blocks in
+// docs/scripts/soccer.md (soccer.md:195/364/541/718) — KC's canonical
+// picker-titles mechanism, which exists ONLY in the soccer book. Where a
+// PLAYS: label differs from its `### ... VIZ — <title>` header (most plays;
+// the header is the audio-clip descriptor, PLAYS: is the picker-card copy),
+// PLAYS: wins — except Goalkeeper, where the two are identical. Do not
+// paraphrase — keep this list and its source doc in lockstep. Every slug here
+// must exist
 // in the clip catalog for sports that have rendered (the playlist-integrity
 // test asserts both directions, gated by manifest.practiceState for dormant
 // sports — see SPORT_SLUG_TOKENS / RENDERED_SPORT_CONFIGS there).
@@ -306,6 +313,47 @@ export const POSITIVE_PLAYS: readonly PositivePlay[] = [
   { slug: "viz-lax-goalie-man-down-kill", sport: "lacrosse", role: "Goalie", title: "Hold the man-down kill" },
   { slug: "viz-lax-goalie-command-the-defense", sport: "lacrosse", role: "Goalie", title: "Command the defense, no shot" },
   { slug: "viz-lax-goalie-next-save", sport: "lacrosse", role: "Goalie", title: "Soft one behind you, next save" },
+
+  // ── Forward — Soccer (7) — FV-78/79. DORMANT until FV-81 (soccer absent
+  // from SUPPORTED_SPORTS); titles from docs/scripts/soccer.md:195 PLAYS:.
+  { slug: "viz-soc-fwd-run-in-behind", sport: "soccer", role: "Forward", title: "Time the run, finish across the keeper" },
+  { slug: "viz-soc-fwd-near-post-finish", sport: "soccer", role: "Forward", title: "Attack the near post, finish first-time" },
+  { slug: "viz-soc-fwd-take-on", sport: "soccer", role: "Forward", title: "Take on the fullback, reach the byline" },
+  { slug: "viz-soc-fwd-hold-and-spin", sport: "soccer", role: "Forward", title: "Hold it up, lay it off, spin in behind" },
+  { slug: "viz-soc-fwd-press-and-finish", sport: "soccer", role: "Forward", title: "Angle the press, win it high" },
+  { slug: "viz-soc-fwd-penalty", sport: "soccer", role: "Forward", title: "Penalty: choose early, strike it clean" },
+  { slug: "viz-soc-fwd-next-chance", sport: "soccer", role: "Forward", title: "Miss the sitter, re-enter the match" },
+
+  // ── Midfielder — Soccer (7) — FV-78/79. DORMANT until FV-81; titles from
+  // docs/scripts/soccer.md:364 PLAYS:.
+  { slug: "viz-soc-mid-half-turn", sport: "soccer", role: "Midfielder", title: "Check away, receive open, break the line" },
+  { slug: "viz-soc-mid-switch-play", sport: "soccer", role: "Midfielder", title: "Scan the far side, switch the play" },
+  { slug: "viz-soc-mid-through-ball", sport: "soccer", role: "Midfielder", title: "Receive between the lines, play it through" },
+  { slug: "viz-soc-mid-win-it-back", sport: "soccer", role: "Midfielder", title: "Read the pass, step in, play simple" },
+  { slug: "viz-soc-mid-late-run-finish", sport: "soccer", role: "Midfielder", title: "Arrive late in the box, finish on target" },
+  { slug: "viz-soc-mid-beat-the-press", sport: "soccer", role: "Midfielder", title: "Turn out of the press, play forward" },
+  { slug: "viz-soc-mid-next-touch", sport: "soccer", role: "Midfielder", title: "Give it away, recover, play the simple ball" },
+
+  // ── Defender — Soccer (7) — FV-78/79. DORMANT until FV-81; titles from
+  // docs/scripts/soccer.md:541 PLAYS:.
+  { slug: "viz-soc-def-one-v-one-stand", sport: "soccer", role: "Defender", title: "Manage the distance, show the winger wide" },
+  { slug: "viz-soc-def-win-the-header", sport: "soccer", role: "Defender", title: "Attack the flight, head it clear" },
+  { slug: "viz-soc-def-read-and-intercept", sport: "soccer", role: "Defender", title: "Read the pass, intercept, start the attack" },
+  { slug: "viz-soc-def-play-out", sport: "soccer", role: "Defender", title: "Open the body, break the first press" },
+  { slug: "viz-soc-def-overlap-cross", sport: "soccer", role: "Defender", title: "Overlap outside, deliver the low cross" },
+  { slug: "viz-soc-def-recovery-tackle", sport: "soccer", role: "Defender", title: "Recover inside, delay, win the ball clean" },
+  { slug: "viz-soc-def-next-duel", sport: "soccer", role: "Defender", title: "Beaten once, better distance next duel" },
+
+  // ── Goalkeeper — Soccer (7) — FV-78/79. DORMANT until FV-81; titles from
+  // docs/scripts/soccer.md:718 PLAYS: (identical to the `### ... VIZ —`
+  // headers for this position — the one role where the two sources agree).
+  { slug: "viz-soc-gk-set-and-save", sport: "soccer", role: "Goalkeeper", title: "Set the angle, control the shot" },
+  { slug: "viz-soc-gk-claim-the-cross", sport: "soccer", role: "Goalkeeper", title: "Call it early, claim the cross" },
+  { slug: "viz-soc-gk-off-your-line", sport: "soccer", role: "Goalkeeper", title: "Close the space on the through ball" },
+  { slug: "viz-soc-gk-distribution", sport: "soccer", role: "Goalkeeper", title: "Collect it, start the next attack" },
+  { slug: "viz-soc-gk-wall-and-freekick", sport: "soccer", role: "Goalkeeper", title: "Set the wall, save the free kick" },
+  { slug: "viz-soc-gk-penalty-save", sport: "soccer", role: "Goalkeeper", title: "Set on the line, read the strike" },
+  { slug: "viz-soc-gk-next-save", sport: "soccer", role: "Goalkeeper", title: "Soft goal, reset for the next shot" },
 ];
 
 // Fast slug → title lookup (built once at module load).

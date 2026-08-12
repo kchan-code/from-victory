@@ -261,6 +261,16 @@ export function resolvePlaylist(
     // Only the original p1 manifests carried a `need` field on each template.
     // No `sport` filter needed here: p1 predates every sport but hockey, so
     // its templates carry zero cross-sport position collisions (FV-407).
+    // DEAD CODE TODAY: the committed manifest.json is always "p6" (see
+    // ClipManifest.version), so this branch never actually executes against
+    // real data — it only matters for a hypothetical/fixture p1 manifest.
+    // If it ever DID run against a manifest carrying later sports' rows, this
+    // sport-blind lookup would be unsafe: soccer's "Forward" position is a
+    // literal string collision with hockey's "Forward" (same as lacrosse's
+    // Defense/Goalie vs. hockey's, the collision FV-407 fixed in the
+    // dimensional branch below) — a hockey Forward query could silently
+    // resolve a soccer Forward template. Verified FV-78/79 (not fixed here:
+    // out of reach of any real manifest, so not worth the churn on dead code).
     const template = manifest.templates.find(
       (t) =>
         t.need === need &&

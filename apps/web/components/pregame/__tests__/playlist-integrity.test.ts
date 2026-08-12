@@ -278,6 +278,30 @@ const SPORT_CELL_EXPECTATIONS: Record<
       forbiddenSlug: "hm-lax-goalie-benched",
     },
   },
+  // Soccer (v2 DORMANT — FV-78/79 taxonomy + wiring; audio render deferred to
+  // FV-81). 4 positions × 10 shared adversities, uniform grid, NO drops and
+  // NO dedup — soccer is the first sport whose grid is a clean 4×10 = 40
+  // product (docs/soccer-module-map.md §3: unlike hockey/lacrosse/football/
+  // baseball, every position attacks AND defends, so every cell has a true
+  // reading for every position). The 5 clinically withheld cells (4 shootout
+  // + gk-handling-yips) live OUTSIDE this grid — their gated umbrella
+  // fragments ("shootout", "lose-hands") are not in SOCCER_CONFIG.adversities
+  // (covered in sport-registry.test.ts, the lacrosse-yips pattern).
+  // Compositional-only (golf/football/lacrosse model). EXCLUDED from
+  // RENDERED_SPORT_CONFIGS until the audio render lands soccer in
+  // manifest.practiceState — this entry only satisfies the Record<Sport, …>
+  // exhaustiveness type until then.
+  soccer: {
+    cellCount: 40,
+    slugPrefix: "hm-soc-",
+    cellLayout: "catalog",
+    specialCase: {
+      role: "Goalkeeper",
+      adversity: "I get benched.",
+      expectedSlug: "hm-soc-gk-dropped",
+      forbiddenSlug: "hm-soc-gk-benched",
+    },
+  },
 };
 
 // FV-94/FV-99: the registry-parameterized integrity suites (sections 5 & 7) run
@@ -1224,15 +1248,28 @@ describe("positive-play library integrity (FV-144)", () => {
     // so we strip hyphens from the role before building the expected prefix.
     // FV-423: later sports namespace their viz slugs with the sport token from
     // the module-map slug scheme (football "ftb", baseball "bsb", lacrosse
-    // "lax", …) to keep the catalog collision-free:
+    // "lax", soccer "soc", …) to keep the catalog collision-free:
     // viz-{sportToken}-{role}-{play}. Legacy hockey/basketball/golf slugs stay
     // un-namespaced (viz-{role}-{play}). This shape check runs unconditionally
     // — including for dormant sports whose files don't exist yet (the test
     // above) — so a malformed dormant entry still fails CI immediately.
-    const SPORT_SLUG_TOKENS = ["ftb", "bsb", "lax"];
+    const SPORT_SLUG_TOKENS = ["ftb", "bsb", "lax", "soc"];
+    // FV-78/79: football's role.toLowerCase() happening to equal its slug
+    // token (QB→"qb", RB→"rb", …) was an ACCIDENT of football's roster using
+    // short depth-chart names as its registry roles (see sport-registry.ts's
+    // FOOTBALL_CONFIG header comment) — it is not a rule other sports can
+    // rely on. Soccer's registry roles are full names (Forward/Midfielder/
+    // Defender/Goalkeeper — the DB-whitelist-facing labels, module map §1)
+    // but its slug tokens are the abbreviations fwd/mid/def/gk (module map
+    // §5), so an explicit per-(sport, role) override is required here rather
+    // than extending the hyphen-strip trick.
+    const ROLE_TOKEN_OVERRIDES: Partial<Record<Sport, Record<string, string>>> = {
+      soccer: { Forward: "fwd", Midfielder: "mid", Defender: "def", Goalkeeper: "gk" },
+    };
     const mismatches: string[] = [];
-    for (const { slug, role } of POSITIVE_PLAYS) {
-      const roleToken = role.toLowerCase().replace(/-/g, "");
+    for (const { slug, role, sport } of POSITIVE_PLAYS) {
+      const roleToken =
+        ROLE_TOKEN_OVERRIDES[sport]?.[role] ?? role.toLowerCase().replace(/-/g, "");
       const validPrefixes = [
         `viz-${roleToken}-`,
         ...SPORT_SLUG_TOKENS.map((t) => `viz-${t}-${roleToken}-`),

@@ -96,6 +96,10 @@ const DOCS_SCRIPTS_DIR = join(REPO_ROOT, "docs", "scripts");
 const BOOK_FILES = [
   "hockey.md", "basketball.md", "baseball.md", "golf.md",
   "football.md", "swimming.md", "track-field.md",
+  // FV-78/79: lacrosse.md was a pre-existing gap in this list (missed at its
+  // FV-406/407 go-live) — added alongside soccer.md so both books' pause
+  // markers are covered by this migration tool.
+  "lacrosse.md", "soccer.md",
   "pre-practice.md", "shared.md",
 ];
 

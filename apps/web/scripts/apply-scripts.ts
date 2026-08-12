@@ -66,6 +66,7 @@ async function parseFallbackBodiesFromRegistry(): Promise<FallbackCurrent[]> {
     { constName: "SWIMMING_AUDIO_SCRIPT", sportLabel: "Swimming", fileSrc: registrySrc },
     { constName: "TRACKFIELD_AUDIO_SCRIPT", sportLabel: "Track & Field", fileSrc: registrySrc },
     { constName: "LACROSSE_AUDIO_SCRIPT", sportLabel: "Lacrosse", fileSrc: registrySrc },
+    { constName: "SOCCER_AUDIO_SCRIPT", sportLabel: "Soccer", fileSrc: registrySrc },
   ];
 
   const results: FallbackCurrent[] = [];
@@ -251,8 +252,21 @@ export function parseBook(content: string): ParsedBook {
     }
 
     // Any top-level ## heading (other than fallback) ends the fallback zone
+    // AND ends whatever clip was open (FV-78/79 fix: a `##` heading is
+    // ALWAYS a section boundary in every book — clip groups use `###` — so a
+    // clip's numbered lines must never bleed into a following `##` section's
+    // own prose. Discovered via docs/scripts/soccer.md's "## Clinical
+    // routing memo" section, which follows the withheld-cells clip group
+    // directly and contains its own unrelated numbered list (4 items); before
+    // this fix, `hm-soc-gk-handling-yips` silently absorbed those 4 lines as
+    // 4 extra "speech" lines (7 real + 4 memo = 11), surfacing only as a
+    // count-mismatch warning at `scripts:apply`/render time, not a hard
+    // error. No prior book had prose with a numbered list directly following
+    // its last clip section without an intervening `### ` boundary, so this
+    // was previously unreachable.
     if (line.startsWith("## ") && !line.startsWith("## Text-mode fallback")) {
       inFallback = false;
+      currentClip = null;
       continue;
     }
 
@@ -399,6 +413,7 @@ function showBodyDiff(sportLabel: string, idx: number, oldBody: string, newBody:
 const BOOK_FILES = [
   "hockey.md", "basketball.md", "baseball.md", "golf.md",
   "football.md", "swimming.md", "track-field.md", "lacrosse.md",
+  "soccer.md",
   "pre-practice.md", "shared.md",
 ];
 
@@ -496,6 +511,7 @@ export async function syncFromBooks({ write }: { write: boolean }): Promise<Sync
     Swimming: "swimming.md",
     "Track & Field": "track-field.md",
     Lacrosse: "lacrosse.md",
+    Soccer: "soccer.md",
   };
 
   let totalFallbackChanged = 0;
