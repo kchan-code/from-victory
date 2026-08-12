@@ -16,7 +16,8 @@
  * Content choices only — no PII, no history. Single most-recent setup,
  * overwritten on each completion. Fields stored:
  *
- *   sport          — the sport the setup was built for ("hockey" | "basketball")
+ *   sport          — the sport the setup was built for (CachedSport; live +
+ *                    dormant registry keys, never sent over the network)
  *   need           — Today's Focus selection (NeedToday string)
  *   role           — position/role string, or null for no-ask sports
  *   positivePlays  — array of viz-* slug strings (1–3)
