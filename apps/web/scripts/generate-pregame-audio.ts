@@ -882,6 +882,53 @@ const PHASE2_TEMPLATES: Array<{
   { position: "DB", adversity: "I start slow.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-start-slow" },
   { position: "DB", adversity: "We fall behind early.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-fall-behind-early" },
   { position: "DB", adversity: "I lose a battle in the trenches.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-trench-battle" },
+  // Baseball × 4 positions (FV-98 go-live; canonical adversity keys, BASEBALL_CONFIG).
+  // Reroutes mirror cellSlugFor: Pitcher benched→pulled, Pitcher hbp→hit-batter,
+  // Pitcher error→strikeout (Pitcher ships 9 distinct cells), Catcher hbp→foul-tip.
+  // Default vizSlug = the flagship viz-{role} arrival clip (baseball, unlike
+  // football, HAS a true flagship per position — the golf pattern, not
+  // football's "first library play" default); athlete picks (up to 3) replace
+  // it at runtime (FV-144).
+  { position: "Pitcher", adversity: "I strike out.", vizSlug: "viz-pitcher", hmSlug: "hm-bsb-pitcher-strikeout" },
+  { position: "Pitcher", adversity: "I'm in a slump.", vizSlug: "viz-pitcher", hmSlug: "hm-bsb-pitcher-slump" },
+  { position: "Pitcher", adversity: "I make an error.", vizSlug: "viz-pitcher", hmSlug: "hm-bsb-pitcher-strikeout" },
+  { position: "Pitcher", adversity: "I give up the big hit.", vizSlug: "viz-pitcher", hmSlug: "hm-bsb-pitcher-big-hit" },
+  { position: "Pitcher", adversity: "I lose my command.", vizSlug: "viz-pitcher", hmSlug: "hm-bsb-pitcher-lose-command" },
+  { position: "Pitcher", adversity: "I get benched.", vizSlug: "viz-pitcher", hmSlug: "hm-bsb-pitcher-pulled" },
+  { position: "Pitcher", adversity: "I feel nervous.", vizSlug: "viz-pitcher", hmSlug: "hm-bsb-pitcher-nervous" },
+  { position: "Pitcher", adversity: "I get hit by a pitch.", vizSlug: "viz-pitcher", hmSlug: "hm-bsb-pitcher-hit-batter" },
+  { position: "Pitcher", adversity: "I start slow.", vizSlug: "viz-pitcher", hmSlug: "hm-bsb-pitcher-start-slow" },
+  { position: "Pitcher", adversity: "We fall behind early.", vizSlug: "viz-pitcher", hmSlug: "hm-bsb-pitcher-fall-behind-early" },
+  { position: "Catcher", adversity: "I strike out.", vizSlug: "viz-catcher", hmSlug: "hm-bsb-catcher-strikeout" },
+  { position: "Catcher", adversity: "I'm in a slump.", vizSlug: "viz-catcher", hmSlug: "hm-bsb-catcher-slump" },
+  { position: "Catcher", adversity: "I make an error.", vizSlug: "viz-catcher", hmSlug: "hm-bsb-catcher-error" },
+  { position: "Catcher", adversity: "I give up the big hit.", vizSlug: "viz-catcher", hmSlug: "hm-bsb-catcher-big-hit" },
+  { position: "Catcher", adversity: "I lose my command.", vizSlug: "viz-catcher", hmSlug: "hm-bsb-catcher-lose-command" },
+  { position: "Catcher", adversity: "I get benched.", vizSlug: "viz-catcher", hmSlug: "hm-bsb-catcher-benched" },
+  { position: "Catcher", adversity: "I feel nervous.", vizSlug: "viz-catcher", hmSlug: "hm-bsb-catcher-nervous" },
+  { position: "Catcher", adversity: "I get hit by a pitch.", vizSlug: "viz-catcher", hmSlug: "hm-bsb-catcher-foul-tip" },
+  { position: "Catcher", adversity: "I start slow.", vizSlug: "viz-catcher", hmSlug: "hm-bsb-catcher-start-slow" },
+  { position: "Catcher", adversity: "We fall behind early.", vizSlug: "viz-catcher", hmSlug: "hm-bsb-catcher-fall-behind-early" },
+  { position: "Infield", adversity: "I strike out.", vizSlug: "viz-infield", hmSlug: "hm-bsb-infield-strikeout" },
+  { position: "Infield", adversity: "I'm in a slump.", vizSlug: "viz-infield", hmSlug: "hm-bsb-infield-slump" },
+  { position: "Infield", adversity: "I make an error.", vizSlug: "viz-infield", hmSlug: "hm-bsb-infield-error" },
+  { position: "Infield", adversity: "I give up the big hit.", vizSlug: "viz-infield", hmSlug: "hm-bsb-infield-big-hit" },
+  { position: "Infield", adversity: "I lose my command.", vizSlug: "viz-infield", hmSlug: "hm-bsb-infield-lose-command" },
+  { position: "Infield", adversity: "I get benched.", vizSlug: "viz-infield", hmSlug: "hm-bsb-infield-benched" },
+  { position: "Infield", adversity: "I feel nervous.", vizSlug: "viz-infield", hmSlug: "hm-bsb-infield-nervous" },
+  { position: "Infield", adversity: "I get hit by a pitch.", vizSlug: "viz-infield", hmSlug: "hm-bsb-infield-hbp" },
+  { position: "Infield", adversity: "I start slow.", vizSlug: "viz-infield", hmSlug: "hm-bsb-infield-start-slow" },
+  { position: "Infield", adversity: "We fall behind early.", vizSlug: "viz-infield", hmSlug: "hm-bsb-infield-fall-behind-early" },
+  { position: "Outfield", adversity: "I strike out.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-strikeout" },
+  { position: "Outfield", adversity: "I'm in a slump.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-slump" },
+  { position: "Outfield", adversity: "I make an error.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-error" },
+  { position: "Outfield", adversity: "I give up the big hit.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-big-hit" },
+  { position: "Outfield", adversity: "I lose my command.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-lose-command" },
+  { position: "Outfield", adversity: "I get benched.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-benched" },
+  { position: "Outfield", adversity: "I feel nervous.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-nervous" },
+  { position: "Outfield", adversity: "I get hit by a pitch.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-hbp" },
+  { position: "Outfield", adversity: "I start slow.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-start-slow" },
+  { position: "Outfield", adversity: "We fall behind early.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-fall-behind-early" },
 ];
 
 async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Promise<void> {
@@ -1298,6 +1345,19 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
     "pp-football-see-it-go",
   ];
 
+  // Baseball Beats 2/3/5/6 (FV-98) — baseball is a team sport like hockey/
+  // basketball/football, so Beat 5 is pp-baseball-be-vocal (not golf's
+  // routine-discipline variant).
+  const baseballSharedTail = [
+    "pp-baseball-name-standard",
+    "pp-baseball-goal-fusion",
+    "pp-choose-focus-lead",
+    // focus clip injected by resolver between lead and tail
+    "pp-choose-focus-tail",
+    "pp-baseball-be-vocal",
+    "pp-baseball-see-it-go",
+  ];
+
   const practiceStatePlaylist = {
     hockey: {
       "dialed-in": hockeySharedTail,
@@ -1314,6 +1374,10 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
     football: {
       "dialed-in": footballSharedTail,
       "not-feeling-it": footballSharedTail,
+    },
+    baseball: {
+      "dialed-in": baseballSharedTail,
+      "not-feeling-it": baseballSharedTail,
     },
   };
 
@@ -1366,8 +1430,8 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
     if (catalogCount !== 240) {
       console.warn(`  WARNING: expected 240 catalog entries, got ${catalogCount}.`);
     }
-    if (templateCount !== 160) {
-      console.warn(`  WARNING: expected 160 templates (hockey 30 + basketball 30 + golf 30 + football 70), got ${templateCount}.`);
+    if (templateCount !== 200) {
+      console.warn(`  WARNING: expected 200 templates (hockey 30 + basketball 30 + golf 30 + football 70 + baseball 40), got ${templateCount}.`);
     }
   }
 

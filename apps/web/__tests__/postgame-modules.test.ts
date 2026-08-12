@@ -542,7 +542,7 @@ describe("modulesForSport", () => {
     expect(mods.every((m) => m.sport === "football")).toBe(true);
   });
 
-  it("returns 5 modules for baseball (dormant — FV-424 arc)", () => {
+  it("returns 5 modules for baseball (live — FV-98/FV-100 go-live, FV-424 arc)", () => {
     const mods = modulesForSport("baseball");
     expect(mods).toHaveLength(5);
     expect(mods.every((m) => m.sport === "baseball")).toBe(true);

@@ -610,8 +610,59 @@ export const BASKETBALL_CONFIG: SportConfig = {
 };
 
 // ---------------------------------------------------------------------------
-// Baseball config (FV-94 — v2 sport; taxonomy = docs/baseball-taxonomy-FV-93.md)
+// Baseball config (FV-94 taxonomy = docs/baseball-taxonomy-FV-93.md; live at
+// go-live per the 2026-08-11 KC directive — FV-98 app-side wiring)
 // ---------------------------------------------------------------------------
+
+// FV-98: baseball text-mode audio script (sport-correct body for segs 80/120/165).
+// Segments 0/35/210/250 are sport-neutral — byte-identical structure to the
+// hockey AUDIO_SCRIPT (same eyebrow, body, startSec). Segments 80/120/165/275 are
+// baseball-specific (field/first-pitch/position scenes + the baseball send-off
+// clause). {{roleScenes}} in segment 165 is substituted at render time via
+// substituteSegment() reading sportConfig.roleContent — Pitcher/Catcher/
+// Infield/Outfield strings come from the registry, not duplicated here.
+const BASEBALL_AUDIO_SCRIPT: AudioSegment[] = [
+  {
+    startSec: 0,
+    eyebrow: "Identity",
+    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+  },
+  {
+    startSec: 35,
+    eyebrow: "Settle",
+    body: "Sit tall. Long exhale. Lead your body back to ready. Four counts in. Six counts out. Let your shoulders drop.",
+  },
+  {
+    startSec: 80,
+    eyebrow: "See the field",
+    body: "See the field before first pitch. Hear the ball popping into leather, the chatter across the infield, a bat in the rack. Feel the dirt under your cleats, your glove on your hand. You belong here. You are ready.",
+  },
+  {
+    startSec: 120,
+    eyebrow: "Your first pitch",
+    body: "First pitch of the game. Slow breath. Get set. Eyes on the ball, feet under you, nothing rushed. Compete for this one pitch. Simple, strong play. Recover. Next pitch.",
+  },
+  {
+    startSec: 165,
+    eyebrow: "Play your position · {{role}}",
+    body: "{{roleScenes}}",
+  },
+  {
+    startSec: 210,
+    eyebrow: "If this happens",
+    body: "{{adversity}} See it. Feel it. Breathe. Speak truth. Take the next faithful action. Your mistake is real. It is not your identity.",
+  },
+  {
+    startSec: 250,
+    eyebrow: "Coach yourself",
+    body: "{{selfTalk}} When pressure hits, return here. Your anchor: {{anchor}}. Your cue word: {{cueWord}}.",
+  },
+  {
+    startSec: 275,
+    eyebrow: "Send-off",
+    body: "Lord, help me compete with courage, humility, and joy. Help me play the pitch in front of me, respond well to mistakes, and remember that my worth is secure in You. Amen. Play from victory.",
+  },
+];
 
 const BASEBALL_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
   "I strike out.": "strikeout",
@@ -741,29 +792,33 @@ export const BASEBALL_CONFIG: SportConfig = {
     const frag =
       BASEBALL_ADVERSITY_SLUG_FRAGMENTS[adversity] ?? "strikeout";
     // Pitcher × benched → pulled (a pitcher is pulled, not benched).
-    if (role === "Pitcher" && frag === "benched") return "bsb-pitcher-pulled";
+    if (role === "Pitcher" && frag === "benched") return "hm-bsb-pitcher-pulled";
     // Pitcher × hbp → hit-batter (a pitcher throws it, he doesn't wear it).
-    if (role === "Pitcher" && frag === "hbp") return "bsb-pitcher-hit-batter";
+    if (role === "Pitcher" && frag === "hbp") return "hm-bsb-pitcher-hit-batter";
     // Pitcher × error → strikeout: Pitcher ships 9 — the thin fielding-error cell
     // is dropped (FV-93). "I make an error." is omitted from the Pitcher picker
     // (roleAdversities), so this never fires at runtime; the redirect keeps the
     // exhaustive (roles × adversities) integrity matrix resolving to a real clip
     // (Pitcher stays at 9 distinct cells; the goalie-bad-penalty parallel).
-    if (role === "Pitcher" && frag === "error") return "bsb-pitcher-strikeout";
+    if (role === "Pitcher" && frag === "error") return "hm-bsb-pitcher-strikeout";
     // Catcher × hbp → foul-tip (a catcher wears foul tips / gets crossed up).
-    if (role === "Catcher" && frag === "hbp") return "bsb-catcher-foul-tip";
+    if (role === "Catcher" && frag === "hbp") return "hm-bsb-catcher-foul-tip";
     const roleStr = role ? role.toLowerCase() : "pitcher";
-    // Returns the bsb-* cell key (NOT hm-bsb-*), mirroring basketball's bb-*.
-    // FV-95 renders BOTH hm-bsb-{pos}-{frag} (the hard-moment clip referenced by
-    // the manifest templates) AND bsb-{pos}-{frag} (the full composite =
-    // OPENING + {POSITION}_VIZ + hm-bsb-* + CLOSING) that this slug targets.
-    return `bsb-${roleStr}-${frag}`;
+    // Baseball is COMPOSITIONAL-ONLY (golf/football precedent): there is no
+    // baked bsb-* composite session clip — zero exist in the rendered catalog.
+    // cellSlugFor returns the hm-bsb-* hard-moment clip directly, exactly what
+    // the manifest templates and the playlist-integrity grid reference
+    // (FV-94/FV-95 rendered the hm-bsb-* + viz-{role}/viz-bsb-{role}-{play}
+    // clips; FV-98 flips this resolver from the never-rendered bsb-* guess to
+    // the real compositional slug).
+    return `hm-bsb-${roleStr}-${frag}`;
   },
 
-  // Pre-practice focus presets (FV-94). Audio render + the rest of the
-  // pre-practice "Lock In" session (opener + Beats 2-6 tail + manifest
-  // practiceState.baseball) land with the audio render (FV-95) / pre-practice
-  // follow-up; these slugs are declared now so the registry is complete.
+  // Pre-practice focus presets (FV-94; clips already rendered). The rest of
+  // the pre-practice "Lock In" session (opener + Beats 2-6 tail) is wired via
+  // baseballSharedTail + manifest.practiceState.baseball in
+  // generate-pregame-audio.ts (FV-98) — it activates once that render pass
+  // lands the tail in the committed manifest.
   practiceFocusOptions: [
     "Relentless",
     "Hungry",
@@ -802,8 +857,8 @@ export const BASEBALL_CONFIG: SportConfig = {
   ] as const satisfies readonly NeedToday[],
 
   // "Long exhale", "Press thumb to palm", "Say cue word" are shared; "Tap bat
-  // twice" and "Look at the pitcher" are baseball-specific (clips + slugs land
-  // with the audio render — they drop cleanly until then).
+  // twice" and "Look at the pitcher" are baseball-specific (anc-tap-bat-twice /
+  // anc-look-at-the-pitcher, wired in ANCHOR_OPTION_SLUGS — FV-98).
   anchors: [
     "Long exhale",
     "Press thumb to palm",
@@ -832,10 +887,8 @@ export const BASEBALL_CONFIG: SportConfig = {
     "not-feeling-it": "pp-baseball-opener-get-to",
   },
 
-  // Baseball audio clips are v2 (not yet generated). Use the shared AUDIO_SCRIPT
-  // structure as a placeholder so the type is satisfied; a dedicated baseball
-  // audio pass will replace this before the sport goes live.
-  audioScript: AUDIO_SCRIPT,
+  // FV-98: baseball text-mode audio script (sport-correct body for segs 80/120/165).
+  audioScript: BASEBALL_AUDIO_SCRIPT,
 
   cueWordHelper: "The one you'd step up to the plate with.",
   cardShareHint: "Screenshot it. Open it before first pitch.",

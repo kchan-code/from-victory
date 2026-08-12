@@ -28,6 +28,35 @@
 
 ---
 
+## Text-mode fallback (Baseball)
+
+These lines appear on-screen in text mode (no audio). Tokens like `{{role}}`, `{{adversity}}`, etc. are substituted at runtime — edit them as-is.
+
+<!-- audioScript#0 | eyebrow: Identity -->
+1. ${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.
+
+<!-- audioScript#1 | eyebrow: Settle -->
+2. Sit tall. Long exhale. Lead your body back to ready. Four counts in. Six counts out. Let your shoulders drop.
+
+<!-- audioScript#2 | eyebrow: See the field -->
+3. See the field before first pitch. Hear the ball popping into leather, the chatter across the infield, a bat in the rack. Feel the dirt under your cleats, your glove on your hand. You belong here. You are ready.
+
+<!-- audioScript#3 | eyebrow: Your first pitch -->
+4. First pitch of the game. Slow breath. Get set. Eyes on the ball, feet under you, nothing rushed. Compete for this one pitch. Simple, strong play. Recover. Next pitch.
+
+<!-- audioScript#4 | eyebrow: Play your position · {{role}} -->
+5. {{roleScenes}}
+
+<!-- audioScript#5 | eyebrow: If this happens -->
+6. {{adversity}} See it. Feel it. Breathe. Speak truth. Take the next faithful action. Your mistake is real. It is not your identity.
+
+<!-- audioScript#6 | eyebrow: Coach yourself -->
+7. {{selfTalk}} When pressure hits, return here. Your anchor: {{anchor}}. Your cue word: {{cueWord}}.
+
+<!-- audioScript#7 | eyebrow: Send-off -->
+8. Lord, help me compete with courage, humility, and joy. Help me play the pitch in front of me, respond well to mistakes, and remember that my worth is secure in You. Amen. Play from victory.
+---
+
 ## Audio Clips
 
 ## VIZ Clips (position)

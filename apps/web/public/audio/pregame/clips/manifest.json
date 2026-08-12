@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "a7cd6b67",
+  "manifestVersion": "173e3c46",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -6326,6 +6326,21 @@
           "offsetSec": 0
         }
       ]
+    },
+    "anc-tap-bat-twice": {
+      "url": "/audio/pregame/clips/anc-tap-bat-twice.3acb6ac5.mp3",
+      "durationSec": 3.024,
+      "phases": []
+    },
+    "anc-look-at-the-pitcher": {
+      "url": "/audio/pregame/clips/anc-look-at-the-pitcher.dfe90467.mp3",
+      "durationSec": 2.16,
+      "phases": []
+    },
+    "st-bsb-01": {
+      "url": "/audio/pregame/clips/st-bsb-01.c7b20274.mp3",
+      "durationSec": 2.736,
+      "phases": []
     }
   },
   "templates": [
@@ -8888,6 +8903,646 @@
         "{{cueSendoff}}",
         "shared-sendoff"
       ]
+    },
+    {
+      "position": "Pitcher",
+      "adversity": "I strike out.",
+      "clips": [
+        "shared-opening",
+        "viz-pitcher",
+        "hm-bsb-pitcher-strikeout",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Pitcher",
+      "adversity": "I'm in a slump.",
+      "clips": [
+        "shared-opening",
+        "viz-pitcher",
+        "hm-bsb-pitcher-slump",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Pitcher",
+      "adversity": "I make an error.",
+      "clips": [
+        "shared-opening",
+        "viz-pitcher",
+        "hm-bsb-pitcher-strikeout",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Pitcher",
+      "adversity": "I give up the big hit.",
+      "clips": [
+        "shared-opening",
+        "viz-pitcher",
+        "hm-bsb-pitcher-big-hit",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Pitcher",
+      "adversity": "I lose my command.",
+      "clips": [
+        "shared-opening",
+        "viz-pitcher",
+        "hm-bsb-pitcher-lose-command",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Pitcher",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-pitcher",
+        "hm-bsb-pitcher-pulled",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Pitcher",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-pitcher",
+        "hm-bsb-pitcher-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Pitcher",
+      "adversity": "I get hit by a pitch.",
+      "clips": [
+        "shared-opening",
+        "viz-pitcher",
+        "hm-bsb-pitcher-hit-batter",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Pitcher",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-pitcher",
+        "hm-bsb-pitcher-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Pitcher",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-pitcher",
+        "hm-bsb-pitcher-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Catcher",
+      "adversity": "I strike out.",
+      "clips": [
+        "shared-opening",
+        "viz-catcher",
+        "hm-bsb-catcher-strikeout",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Catcher",
+      "adversity": "I'm in a slump.",
+      "clips": [
+        "shared-opening",
+        "viz-catcher",
+        "hm-bsb-catcher-slump",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Catcher",
+      "adversity": "I make an error.",
+      "clips": [
+        "shared-opening",
+        "viz-catcher",
+        "hm-bsb-catcher-error",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Catcher",
+      "adversity": "I give up the big hit.",
+      "clips": [
+        "shared-opening",
+        "viz-catcher",
+        "hm-bsb-catcher-big-hit",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Catcher",
+      "adversity": "I lose my command.",
+      "clips": [
+        "shared-opening",
+        "viz-catcher",
+        "hm-bsb-catcher-lose-command",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Catcher",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-catcher",
+        "hm-bsb-catcher-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Catcher",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-catcher",
+        "hm-bsb-catcher-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Catcher",
+      "adversity": "I get hit by a pitch.",
+      "clips": [
+        "shared-opening",
+        "viz-catcher",
+        "hm-bsb-catcher-foul-tip",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Catcher",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-catcher",
+        "hm-bsb-catcher-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Catcher",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-catcher",
+        "hm-bsb-catcher-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Infield",
+      "adversity": "I strike out.",
+      "clips": [
+        "shared-opening",
+        "viz-infield",
+        "hm-bsb-infield-strikeout",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Infield",
+      "adversity": "I'm in a slump.",
+      "clips": [
+        "shared-opening",
+        "viz-infield",
+        "hm-bsb-infield-slump",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Infield",
+      "adversity": "I make an error.",
+      "clips": [
+        "shared-opening",
+        "viz-infield",
+        "hm-bsb-infield-error",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Infield",
+      "adversity": "I give up the big hit.",
+      "clips": [
+        "shared-opening",
+        "viz-infield",
+        "hm-bsb-infield-big-hit",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Infield",
+      "adversity": "I lose my command.",
+      "clips": [
+        "shared-opening",
+        "viz-infield",
+        "hm-bsb-infield-lose-command",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Infield",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-infield",
+        "hm-bsb-infield-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Infield",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-infield",
+        "hm-bsb-infield-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Infield",
+      "adversity": "I get hit by a pitch.",
+      "clips": [
+        "shared-opening",
+        "viz-infield",
+        "hm-bsb-infield-hbp",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Infield",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-infield",
+        "hm-bsb-infield-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Infield",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-infield",
+        "hm-bsb-infield-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Outfield",
+      "adversity": "I strike out.",
+      "clips": [
+        "shared-opening",
+        "viz-outfield",
+        "hm-bsb-outfield-strikeout",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Outfield",
+      "adversity": "I'm in a slump.",
+      "clips": [
+        "shared-opening",
+        "viz-outfield",
+        "hm-bsb-outfield-slump",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Outfield",
+      "adversity": "I make an error.",
+      "clips": [
+        "shared-opening",
+        "viz-outfield",
+        "hm-bsb-outfield-error",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Outfield",
+      "adversity": "I give up the big hit.",
+      "clips": [
+        "shared-opening",
+        "viz-outfield",
+        "hm-bsb-outfield-big-hit",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Outfield",
+      "adversity": "I lose my command.",
+      "clips": [
+        "shared-opening",
+        "viz-outfield",
+        "hm-bsb-outfield-lose-command",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Outfield",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-outfield",
+        "hm-bsb-outfield-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Outfield",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-outfield",
+        "hm-bsb-outfield-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Outfield",
+      "adversity": "I get hit by a pitch.",
+      "clips": [
+        "shared-opening",
+        "viz-outfield",
+        "hm-bsb-outfield-hbp",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Outfield",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-outfield",
+        "hm-bsb-outfield-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "position": "Outfield",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-outfield",
+        "hm-bsb-outfield-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
     }
   ],
   "practiceState": {
@@ -8961,6 +9616,24 @@
         "pp-choose-focus-tail",
         "pp-football-be-vocal",
         "pp-football-see-it-go"
+      ]
+    },
+    "baseball": {
+      "dialed-in": [
+        "pp-baseball-name-standard",
+        "pp-baseball-goal-fusion",
+        "pp-choose-focus-lead",
+        "pp-choose-focus-tail",
+        "pp-baseball-be-vocal",
+        "pp-baseball-see-it-go"
+      ],
+      "not-feeling-it": [
+        "pp-baseball-name-standard",
+        "pp-baseball-goal-fusion",
+        "pp-choose-focus-lead",
+        "pp-choose-focus-tail",
+        "pp-baseball-be-vocal",
+        "pp-baseball-see-it-go"
       ]
     }
   }
