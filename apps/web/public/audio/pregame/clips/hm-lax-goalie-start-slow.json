@@ -1,0 +1,10 @@
+{
+  "slug": "hm-lax-goalie-start-slow",
+  "durationSec": 55.188,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

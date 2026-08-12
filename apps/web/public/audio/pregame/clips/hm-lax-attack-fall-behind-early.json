@@ -1,0 +1,10 @@
+{
+  "slug": "hm-lax-attack-fall-behind-early",
+  "durationSec": 51.156,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

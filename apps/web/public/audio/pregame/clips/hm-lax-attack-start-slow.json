@@ -1,0 +1,10 @@
+{
+  "slug": "hm-lax-attack-start-slow",
+  "durationSec": 58.332,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

@@ -112,10 +112,13 @@ export const ANCHOR_OPTION_SLUGS: Record<string, string> = {
   "Snap the chinstrap": "anc-ftb-chinstrap",
   "Tap the helmet": "anc-ftb-tap-helmet",
   "Clap and break the huddle": "anc-ftb-break-huddle",
-  // Baseball anchors (FV-98 — clip scripts authored, render lands with the
-  // FV-98 audio pass)
+  // Baseball anchors (FV-98 — rendered + in manifest.clips)
   "Tap bat twice": "anc-tap-bat-twice",
   "Look at the pitcher": "anc-look-at-the-pitcher",
+  // Lacrosse anchors (FV-407 — rendered + in manifest.clips)
+  "Tap your stick": "anc-lax-tap-stick",
+  "Glove tap on the shaft": "anc-lax-glove-tap-shaft",
+  "Reset at the X": "anc-lax-reset-at-x",
 };
 
 // Self-talk phrase → slug. Exact strings from SELF_TALK_OPTIONS in types.ts,
@@ -136,9 +139,10 @@ export const SELFTALK_OPTION_SLUGS: Record<string, string> = {
   "Stay steady. Play the next shot.": "st-glf-02",
   // Football self-talk (FV-468 — rendered + in manifest.clips)
   "You're okay. Next play.": "st-ftb-01",
-  // Baseball self-talk (FV-98 — clip script authored, render lands with the
-  // FV-98 audio pass)
+  // Baseball self-talk (FV-98 — rendered + in manifest.clips)
   "You're okay. Next at-bat.": "st-bsb-01",
+  // Lacrosse self-talk (FV-407 — rendered + in manifest.clips)
+  "You're okay. Next whistle.": "st-lax-01",
 };
 
 // Cue word → base slug. Resolver appends "-reset" or "-sendoff".
@@ -181,7 +185,7 @@ export const CUEWORD_OPTION_SLUGS: Record<string, string> = {
 // new manifestVersion printed to stdout, and update MANIFEST_VERSION here
 // AND in sw.js to match. AUDIO_CACHE_BUST is NOT bumped for clip regens
 // (see the retirement note below).
-export const MANIFEST_VERSION = "173e3c46"; // sync with sw.js:MANIFEST_VERSION
+export const MANIFEST_VERSION = "e84a6e26"; // sync with sw.js:MANIFEST_VERSION
 
 // AUDIO_CACHE_BUST — RETIRED for per-clip URL versioning (FV-142).
 // Clips are now content-addressed (<slug>.<hash8>.mp3) and need no ?v=.

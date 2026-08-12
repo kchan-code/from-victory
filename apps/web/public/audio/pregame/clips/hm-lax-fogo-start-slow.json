@@ -1,0 +1,10 @@
+{
+  "slug": "hm-lax-fogo-start-slow",
+  "durationSec": 55.932,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

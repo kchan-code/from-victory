@@ -41,6 +41,10 @@ const SPORT_META: Record<Sport, { label: string; sub: string }> = {
     label: "Baseball",
     sub: "The diamond, your glove, the next pitch.",
   },
+  lacrosse: {
+    label: "Lacrosse",
+    sub: "Turf, your stick, the next whistle.",
+  },
 };
 
 const SPORT_OPTIONS: SportOption[] = SUPPORTED_SPORTS.map((sport) => {

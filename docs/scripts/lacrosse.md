@@ -1,6 +1,6 @@
 # From Victory · Script Book · Lacrosse
 
-> **DORMANT** — no audio rendered yet for this sport. Edit freely; the first audio render is the go-live pass.
+> **LIVE** (FV-407 go-live, 2026-08-12) — audio rendered and in the manifest. Edits here now require a re-render + `MANIFEST_VERSION` bump (FV-142), same as every live sport's book.
 > Scope: BOYS' / MEN'S FIELD LACROSSE (per `docs/lacrosse-module-map.md` §6 — girls'/box lacrosse are separate future sports, never blended here).
 
 ## HOW TO EDIT

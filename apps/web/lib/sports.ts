@@ -16,11 +16,16 @@
 // (FV-100 GO) — content + hard-moment/viz clips were already authored and
 // rendered (FV-94/FV-95); this app-side wiring (FV-98) makes it
 // athlete-selectable. The DB sport CHECK was widened separately (FV-97,
-// already applied in prod).
+// already applied in prod). Lacrosse goes live per the 2026-08-11 KC
+// launch directive (FV-407) — content, hard-moment/viz clips, and the
+// first audio render were already authored (FV-404/FV-405/FV-406, then
+// rendered at FV-407); this app-side wiring makes it athlete-selectable.
+// The DB sport CHECK widening ships in the same PR chain via the
+// 20260812010000 migration.
 //
 // Plain module (no "use server"): safe to import from server actions and
 // client components alike (e.g. the FV-33 onboarding sport selector).
-export const SUPPORTED_SPORTS = ["hockey", "basketball", "golf", "football", "baseball"] as const;
+export const SUPPORTED_SPORTS = ["hockey", "basketball", "golf", "football", "baseball", "lacrosse"] as const;
 export type Sport = (typeof SUPPORTED_SPORTS)[number];
 
 // The interim default until the FV-33 onboarding selector ships. Hockey is the

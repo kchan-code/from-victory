@@ -1,0 +1,10 @@
+{
+  "slug": "hm-lax-defense-shut-off",
+  "durationSec": 55.596,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

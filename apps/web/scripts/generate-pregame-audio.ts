@@ -680,8 +680,11 @@ function timelineToClipPhases(timeline: AudioTimeline): ClipPhaseEntry[] {
   });
 }
 
-// The 30 (position × adversity) template definitions for the Phase 2 manifest.
-// Keyed by position + adversity — NO `need`, opener is prepended by resolver.
+// The (position × adversity) template definitions for the Phase 2 manifest,
+// grouped per sport below (250 rows total across hockey/basketball/golf/
+// football/baseball/lacrosse).
+// Keyed by position + adversity within a sport — NO `need`, opener is
+// prepended by resolver.
 // viz slug chosen by position; hm slug per cell mapping incl. goalie-pulled.
 // FV-136: MVP default viz slugs — one "flagship" play per position, used until
 // the v2 selection picker (FV-144) lets athletes choose. These point to discrete
@@ -698,12 +701,29 @@ function timelineToClipPhases(timeline: AudioTimeline): ClipPhaseEntry[] {
 //
 // To swap a default: change the vizSlug string and re-run the generator.
 // FV-144 (v2 picker) will make this per-session when the athlete selects.
-const PHASE2_TEMPLATES: Array<{
+type Phase2TemplateRow = {
   position: string;
   adversity: string;
   vizSlug: string;
   hmSlug: string;
-}> = [
+};
+
+// FV-407 bugfix: template rows were keyed by (position, adversity) ONLY — no
+// sport — so hockey's Defense/Goalie collided with lacrosse's identically
+// named positions once lacrosse rows were added, making the dimensional
+// lookup in audio-playlist.ts order-dependent (a live hockey Defense/Goalie
+// athlete could resolve a lacrosse template instead). Every row below is now
+// tagged with its sport via this helper. Mirrors the FV-406
+// positivePlaysFor(sport, role) fix in positive-plays.ts.
+function withSport(
+  sport: string,
+  rows: Phase2TemplateRow[],
+): Array<Phase2TemplateRow & { sport: string }> {
+  return rows.map((row) => ({ sport, ...row }));
+}
+
+// Hockey — Forward/Defense/Goalie × 10 adversities each (30 rows).
+const HOCKEY_PHASE2_ROWS: Phase2TemplateRow[] = [
   // Forward × 10 adversities (FV-136: discrete viz-forward-win-the-wall default)
   { position: "Forward", adversity: "I feel nervous.",          vizSlug: "viz-forward-win-the-wall", hmSlug: "hm-forward-nervous" },
   { position: "Forward", adversity: "I miss a scoring chance.", vizSlug: "viz-forward-win-the-wall", hmSlug: "hm-forward-missed-chance" },
@@ -737,6 +757,10 @@ const PHASE2_TEMPLATES: Array<{
   { position: "Goalie", adversity: "I get hit.",                vizSlug: "viz-goalie-track-and-save", hmSlug: "hm-goalie-get-hit" },
   { position: "Goalie", adversity: "I start slow.",             vizSlug: "viz-goalie-track-and-save", hmSlug: "hm-goalie-start-slow" },
   { position: "Goalie", adversity: "We give up the first goal.", vizSlug: "viz-goalie-track-and-save", hmSlug: "hm-goalie-first-goal-against" },
+];
+
+// Basketball — Guard/Wing/Big × 10 adversities each (30 rows) (FV-113).
+const BASKETBALL_PHASE2_ROWS: Phase2TemplateRow[] = [
   // Basketball — Guard × 10 adversities (FV-113; FV-136: viz-guard-pick-and-roll)
   { position: "Guard", adversity: "I turn the ball over.",      vizSlug: "viz-guard-pick-and-roll", hmSlug: "hm-bb-guard-turnover" },
   { position: "Guard", adversity: "I miss an open shot.",       vizSlug: "viz-guard-pick-and-roll", hmSlug: "hm-bb-guard-missed-shot" },
@@ -770,6 +794,10 @@ const PHASE2_TEMPLATES: Array<{
   { position: "Big", adversity: "I miss two free throws.",      vizSlug: "viz-big-roll-and-finish", hmSlug: "hm-bb-big-missed-fts" },
   { position: "Big", adversity: "I start slow.",                vizSlug: "viz-big-roll-and-finish", hmSlug: "hm-bb-big-start-slow" },
   { position: "Big", adversity: "We fall behind early.",        vizSlug: "viz-big-roll-and-finish", hmSlug: "hm-bb-big-fall-behind-early" },
+];
+
+// Golf — Bomber/Ball-Striker/Scrambler × 10 adversities each (30 rows).
+const GOLF_PHASE2_ROWS: Phase2TemplateRow[] = [
   // Golf — compositional-only (no baked composite): viz-{profile} + hm-glf-{profile}-{frag} (FV-266).
   // All 30 cells rendered for grid parity; the 3 first-tee cells are withheld
   // from the athlete picker via GOLF_CONFIG.roleAdversities (clinical gate).
@@ -806,6 +834,10 @@ const PHASE2_TEMPLATES: Array<{
   { position: "Scrambler", adversity: "I feel nervous.",              vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-nervous" },
   { position: "Scrambler", adversity: "I start slow.",                vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-start-slow" },
   { position: "Scrambler", adversity: "I fall behind the number.",    vizSlug: "viz-scrambler", hmSlug: "hm-glf-scrambler-fall-behind" },
+];
+
+// Football × 7 roles × 10 adversities each (70 rows).
+const FOOTBALL_PHASE2_ROWS: Phase2TemplateRow[] = [
   // Football × 7 roles (FV-206 go-live; canonical adversity keys, module map §3/§5.
   // Reroutes mirror cellSlugFor: QB turnover/trench→pick, QB benched→pulled,
   //  OL/DL turnover→their trench-battle, RB turnover→fumble. big-hit rows exist
@@ -882,6 +914,10 @@ const PHASE2_TEMPLATES: Array<{
   { position: "DB", adversity: "I start slow.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-start-slow" },
   { position: "DB", adversity: "We fall behind early.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-fall-behind-early" },
   { position: "DB", adversity: "I lose a battle in the trenches.", vizSlug: "viz-ftb-db-press-man", hmSlug: "hm-ftb-db-trench-battle" },
+];
+
+// Baseball × 4 positions × 10 adversities each (40 rows).
+const BASEBALL_PHASE2_ROWS: Phase2TemplateRow[] = [
   // Baseball × 4 positions (FV-98 go-live; canonical adversity keys, BASEBALL_CONFIG).
   // Reroutes mirror cellSlugFor: Pitcher benched→pulled, Pitcher hbp→hit-batter,
   // Pitcher error→strikeout (Pitcher ships 9 distinct cells), Catcher hbp→foul-tip.
@@ -929,6 +965,10 @@ const PHASE2_TEMPLATES: Array<{
   { position: "Outfield", adversity: "I get hit by a pitch.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-hbp" },
   { position: "Outfield", adversity: "I start slow.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-start-slow" },
   { position: "Outfield", adversity: "We fall behind early.", vizSlug: "viz-outfield", hmSlug: "hm-bsb-outfield-fall-behind-early" },
+];
+
+// Lacrosse × 5 roles × 10 adversities each (50 rows).
+const LACROSSE_PHASE2_ROWS: Phase2TemplateRow[] = [
   // Lacrosse × 5 roles × 10 canonical adversities (FV-406/FV-407 go-live;
   // LACROSSE_CONFIG.adversities — the shared flat 10; the withheld "I lose my
   // touch." yips umbrella is NOT one of the 10, so it never enters this grid,
@@ -987,6 +1027,18 @@ const PHASE2_TEMPLATES: Array<{
   { position: "Goalie", adversity: "I feel nervous.", vizSlug: "viz-lax-goalie", hmSlug: "hm-lax-goalie-nervous" },
   { position: "Goalie", adversity: "I start slow.", vizSlug: "viz-lax-goalie", hmSlug: "hm-lax-goalie-start-slow" },
   { position: "Goalie", adversity: "We fall behind early.", vizSlug: "viz-lax-goalie", hmSlug: "hm-lax-goalie-fall-behind-early" },
+];
+
+// Composed, sport-tagged catalog consumed by the manifest emitter below
+// (FV-407 bugfix — see the withSport() comment above for why every row now
+// carries a `sport` field).
+const PHASE2_TEMPLATES: Array<Phase2TemplateRow & { sport: string }> = [
+  ...withSport("hockey", HOCKEY_PHASE2_ROWS),
+  ...withSport("basketball", BASKETBALL_PHASE2_ROWS),
+  ...withSport("golf", GOLF_PHASE2_ROWS),
+  ...withSport("football", FOOTBALL_PHASE2_ROWS),
+  ...withSport("baseball", BASEBALL_PHASE2_ROWS),
+  ...withSport("lacrosse", LACROSSE_PHASE2_ROWS),
 ];
 
 async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Promise<void> {
@@ -1326,8 +1378,11 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
   }
 
   // ── Step 3: Write Phase 3 manifest.json (version "p3").
-  // Templates: 30 entries keyed by (position × adversity) ONLY — no `need`,
-  // no opener in clips list. Opener is prepended by resolver per-need.
+  // Templates: 250 entries keyed by (sport × position × adversity) — no
+  // `need`, no opener in clips list. Opener is prepended by resolver per-need.
+  // FV-407 bugfix: `sport` is now carried into every emitted template row so
+  // the runtime lookup in audio-playlist.ts can disambiguate positions that
+  // collide across sports (e.g. hockey vs. lacrosse Defense/Goalie).
   // Phase 3b adds personalization sentinels at lean-structure positions:
   //   {{anchor}} {{selfTalk}} {{cueReset}} after the hm clip;
   //   {{cueSendoff}} between shared-prayer and shared-sendoff.
@@ -1335,6 +1390,7 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
   // chosen anchor/self-talk/cue-word slugs, dropping them gracefully if absent.
   const templates = PHASE2_TEMPLATES.map((t) => {
     return {
+      sport: t.sport,
       position: t.position,
       adversity: t.adversity,
       clips: [

@@ -2201,12 +2201,13 @@ export const TRACKFIELD_CONFIG: SportConfig = {
 };
 
 // ---------------------------------------------------------------------------
-// Lacrosse config (v2 — DORMANT; taxonomy = docs/lacrosse-module-map.md,
-// FV-404, KC-ratified, lacrosse-expert authored. Content wired, NOT athlete-
-// selectable — absent from SUPPORTED_SPORTS (lib/sports.ts) + the DB sport
-// CHECK, like baseball/football/swimming. BOYS'/MEN'S FIELD lacrosse only
-// (girls'/box lacrosse are separate future modules — FV-404 §6). Genuinely
-// positional: 5 positions (LSM is a variant lens inside Defense, not a 6th).
+// Lacrosse config (LIVE — KC launch directive 2026-08-11, FV-407; taxonomy =
+// docs/lacrosse-module-map.md, FV-404, KC-ratified, lacrosse-expert
+// authored. Athlete-selectable — added to SUPPORTED_SPORTS (lib/sports.ts) +
+// the DB sport CHECK (20260812010000), following the baseball (FV-97/FV-98)
+// go-live pattern. BOYS'/MEN'S FIELD lacrosse only (girls'/box lacrosse are
+// separate future modules — FV-404 §6). Genuinely positional: 5 positions
+// (LSM is a variant lens inside Defense, not a 6th).
 //
 // ⚠⚠ CLINICAL GATE (FV-404 §4 — the FV-119 pattern): the three yips-class
 // motor-anxiety cells (FOGO clamp / Goalie save / Defense clear — the
@@ -2216,19 +2217,69 @@ export const TRACKFIELD_CONFIG: SportConfig = {
 // LACROSSE_ADVERSITY_SLUG_FRAGMENTS + cellSlugFor — it is NOT in
 // `adversities` and NO roleAdversities entry carries it, so it is fully
 // unreachable from the picker. Re-enabling is a KC + clinical decision.
+// This gate is independent of go-live status and stays in force.
 //
 // VIZ library (FV-404 §2 → expanded at FV-406 to the flagship + 7-per-role
 // positive-play contract every live sport ships): a flagship viz-lax-<role>
 // clip per position PLUS 35 viz-lax-<role>-<theme> positive plays (7 per
 // role), matching docs/scripts/lacrosse.md slug-for-slug. All 35 positive
-// plays are wired into POSITIVE_PLAYS (positive-plays.ts, sport: "lacrosse")
-// — content-complete, so sportHasPositivePlays() now returns true for
-// lacrosse (same as any live sport). Dormancy is NOT enforced by that
-// gate here — it is enforced by lacrosse's absence from SUPPORTED_SPORTS
-// (lib/sports.ts): no athlete can ever have sport: "lacrosse", so
-// PregameFlow never resolves a lacrosse session, rendered clips or not.
-// The FV-407 render pass makes the (already-wired) clips real.
+// plays are wired into POSITIVE_PLAYS (positive-plays.ts, sport: "lacrosse").
+// The FV-407 render pass made the (already-wired) clips real audio (106
+// clips; manifest.practiceState.lacrosse populated); this go-live change
+// (SUPPORTED_SPORTS + this file's audioScript wiring) is what actually lets
+// an athlete reach lacrosse's PregameFlow session.
 // ---------------------------------------------------------------------------
+
+// Lacrosse text-mode audio script (sport-correct body for segs 80/120/165).
+// Segments 0/35/210/250 are sport-neutral (byte-identical structure to the
+// hockey/baseball/football AUDIO_SCRIPT). 80/120/165/275 are lacrosse-specific
+// (80/120/275 transcribed verbatim from docs/scripts/lacrosse.md's
+// "## Text-mode fallback (Lacrosse)" section). {{roleScenes}} in segment 165
+// is substituted at render time via substituteSegment() reading
+// sportConfig.roleContent — Attack/Midfield/Defense/FOGO/Goalie strings come
+// from the registry, not duplicated here.
+const LACROSSE_AUDIO_SCRIPT: AudioSegment[] = [
+  {
+    startSec: 0,
+    eyebrow: "Identity",
+    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+  },
+  {
+    startSec: 35,
+    eyebrow: "Settle",
+    body: "Sit tall. Long exhale. Lead your body back to ready. Four counts in. Six counts out. Let your shoulders drop.",
+  },
+  {
+    startSec: 80,
+    eyebrow: "See the field",
+    body: "See the field. Hear the ball snapping into pockets in warmups, cleats on the turf. Feel your gloves, your stick, the ground under you. You belong here. You are ready.",
+  },
+  {
+    startSec: 120,
+    eyebrow: "Your first touch",
+    body: "First whistle. Run hard to your spot. Eyes up. Win your first touch — a clean catch, a ground ball, one simple play. Recover. Next play.",
+  },
+  {
+    startSec: 165,
+    eyebrow: "Play your position · {{role}}",
+    body: "{{roleScenes}}",
+  },
+  {
+    startSec: 210,
+    eyebrow: "If this happens",
+    body: "{{adversity}} See it. Feel it. Breathe. Speak truth. Take the next faithful action. Your mistake is real. It is not your identity.",
+  },
+  {
+    startSec: 250,
+    eyebrow: "Coach yourself",
+    body: "{{selfTalk}} When pressure hits, return here. Your anchor: {{anchor}}. Your cue word: {{cueWord}}.",
+  },
+  {
+    startSec: 275,
+    eyebrow: "Send-off",
+    body: "Lord, help me compete with courage, humility, and joy. Help me play the next play in front of me, respond well to mistakes, and remember that my worth is secure in You. Amen. Play from victory.",
+  },
+];
 
 const LACROSSE_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
   "I turn the ball over.": "turnover",
@@ -2510,12 +2561,11 @@ export const LACROSSE_CONFIG: SportConfig = {
     "not-feeling-it": "pp-lax-opener-get-to",
   },
 
-  // Text-mode fallback: the shared AUDIO_SCRIPT placeholder satisfies the type
-  // until the render pass (the BASEBALL_CONFIG precedent — FV-404 Appendix
-  // directs this explicitly). The dedicated lacrosse text-mode script (segs
-  // 80/120/165 — see the field / first dodge-draw-save / play your position)
-  // lands with the FV-405 content pass / audio render, before go-live.
-  audioScript: AUDIO_SCRIPT,
+  // Dedicated lacrosse text-mode script (LACROSSE_AUDIO_SCRIPT above),
+  // transcribed from docs/scripts/lacrosse.md's "## Text-mode fallback
+  // (Lacrosse)" section — the FV-407 go-live wiring (baseball/football
+  // precedent: sport-correct segs 80/120/165/275, shared 0/35/210/250).
+  audioScript: LACROSSE_AUDIO_SCRIPT,
 
   cueWordHelper: "The one you'd say to yourself on the ride back.",
   cardShareHint: "Screenshot it. Open it before the first faceoff.",

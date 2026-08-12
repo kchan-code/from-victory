@@ -65,6 +65,7 @@ async function parseFallbackBodiesFromRegistry(): Promise<FallbackCurrent[]> {
     { constName: "FOOTBALL_AUDIO_SCRIPT", sportLabel: "Football", fileSrc: registrySrc },
     { constName: "SWIMMING_AUDIO_SCRIPT", sportLabel: "Swimming", fileSrc: registrySrc },
     { constName: "TRACKFIELD_AUDIO_SCRIPT", sportLabel: "Track & Field", fileSrc: registrySrc },
+    { constName: "LACROSSE_AUDIO_SCRIPT", sportLabel: "Lacrosse", fileSrc: registrySrc },
   ];
 
   const results: FallbackCurrent[] = [];
@@ -494,6 +495,7 @@ export async function syncFromBooks({ write }: { write: boolean }): Promise<Sync
     Football: "football.md",
     Swimming: "swimming.md",
     "Track & Field": "track-field.md",
+    Lacrosse: "lacrosse.md",
   };
 
   let totalFallbackChanged = 0;

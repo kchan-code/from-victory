@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "173e3c46",
+  "manifestVersion": "e84a6e26",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.3f675837.mp3",
@@ -6341,10 +6341,991 @@
       "url": "/audio/pregame/clips/st-bsb-01.c7b20274.mp3",
       "durationSec": 2.736,
       "phases": []
+    },
+    "hm-lax-attack-benched": {
+      "url": "/audio/pregame/clips/hm-lax-attack-benched.65b1673c.mp3",
+      "durationSec": 55.284,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-attack-coach-yells": {
+      "url": "/audio/pregame/clips/hm-lax-attack-coach-yells.c1025fc4.mp3",
+      "durationSec": 54.036,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-attack-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-lax-attack-fall-behind-early.114bdaf1.mp3",
+      "durationSec": 51.156,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-attack-nervous": {
+      "url": "/audio/pregame/clips/hm-lax-attack-nervous.c64d2a7d.mp3",
+      "durationSec": 54.756,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-attack-penalty": {
+      "url": "/audio/pregame/clips/hm-lax-attack-penalty.1799737e.mp3",
+      "durationSec": 53.34,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-attack-rode-out": {
+      "url": "/audio/pregame/clips/hm-lax-attack-rode-out.d1235898.mp3",
+      "durationSec": 52.74,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-attack-shut-off": {
+      "url": "/audio/pregame/clips/hm-lax-attack-shut-off.b412750c.mp3",
+      "durationSec": 61.164,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-attack-start-slow": {
+      "url": "/audio/pregame/clips/hm-lax-attack-start-slow.8bfdc219.mp3",
+      "durationSec": 58.332,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-attack-turnover": {
+      "url": "/audio/pregame/clips/hm-lax-attack-turnover.ac775974.mp3",
+      "durationSec": 53.604,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-defense-benched": {
+      "url": "/audio/pregame/clips/hm-lax-defense-benched.e6e6d553.mp3",
+      "durationSec": 54.228,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-defense-clear-yips": {
+      "url": "/audio/pregame/clips/hm-lax-defense-clear-yips.2a09f081.mp3",
+      "durationSec": 70.868,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-defense-coach-yells": {
+      "url": "/audio/pregame/clips/hm-lax-defense-coach-yells.159eae7e.mp3",
+      "durationSec": 55.284,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-defense-dodged": {
+      "url": "/audio/pregame/clips/hm-lax-defense-dodged.0ff9dc45.mp3",
+      "durationSec": 56.076,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-defense-failed-clear": {
+      "url": "/audio/pregame/clips/hm-lax-defense-failed-clear.d684a1f3.mp3",
+      "durationSec": 60.516,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-defense-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-lax-defense-fall-behind-early.b7704142.mp3",
+      "durationSec": 54.276,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-defense-nervous": {
+      "url": "/audio/pregame/clips/hm-lax-defense-nervous.969a38da.mp3",
+      "durationSec": 49.428,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-defense-penalty": {
+      "url": "/audio/pregame/clips/hm-lax-defense-penalty.dea3a90e.mp3",
+      "durationSec": 57.804,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-defense-shut-off": {
+      "url": "/audio/pregame/clips/hm-lax-defense-shut-off.95294ce8.mp3",
+      "durationSec": 55.596,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-defense-start-slow": {
+      "url": "/audio/pregame/clips/hm-lax-defense-start-slow.e0a0428c.mp3",
+      "durationSec": 58.956,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-defense-turnover": {
+      "url": "/audio/pregame/clips/hm-lax-defense-turnover.cd5a6ece.mp3",
+      "durationSec": 54.3,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-fogo-behind-at-the-dot": {
+      "url": "/audio/pregame/clips/hm-lax-fogo-behind-at-the-dot.52c77824.mp3",
+      "durationSec": 55.86,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-fogo-clamp-yips": {
+      "url": "/audio/pregame/clips/hm-lax-fogo-clamp-yips.796df2ce.mp3",
+      "durationSec": 72.164,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-fogo-coach-yells": {
+      "url": "/audio/pregame/clips/hm-lax-fogo-coach-yells.38a88ad9.mp3",
+      "durationSec": 52.236,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-fogo-lose-draws": {
+      "url": "/audio/pregame/clips/hm-lax-fogo-lose-draws.f68e07f8.mp3",
+      "durationSec": 53.196,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-fogo-nervous": {
+      "url": "/audio/pregame/clips/hm-lax-fogo-nervous.a31a58a9.mp3",
+      "durationSec": 58.068,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-fogo-off-the-dot": {
+      "url": "/audio/pregame/clips/hm-lax-fogo-off-the-dot.0ffdc51e.mp3",
+      "durationSec": 57.156,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-fogo-start-slow": {
+      "url": "/audio/pregame/clips/hm-lax-fogo-start-slow.df93ec24.mp3",
+      "durationSec": 55.932,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-fogo-turnover": {
+      "url": "/audio/pregame/clips/hm-lax-fogo-turnover.2f74e015.mp3",
+      "durationSec": 56.028,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-fogo-violation": {
+      "url": "/audio/pregame/clips/hm-lax-fogo-violation.ff4ab8a0.mp3",
+      "durationSec": 52.812,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-goalie-beaten-clean": {
+      "url": "/audio/pregame/clips/hm-lax-goalie-beaten-clean.dd51a73f.mp3",
+      "durationSec": 51.636,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-goalie-coach-yells": {
+      "url": "/audio/pregame/clips/hm-lax-goalie-coach-yells.5dcee2bf.mp3",
+      "durationSec": 57.3,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-goalie-failed-clear": {
+      "url": "/audio/pregame/clips/hm-lax-goalie-failed-clear.ddcd1083.mp3",
+      "durationSec": 58.668,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-goalie-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-lax-goalie-fall-behind-early.9ef77fbf.mp3",
+      "durationSec": 54.852,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-goalie-man-down": {
+      "url": "/audio/pregame/clips/hm-lax-goalie-man-down.c0ff1b92.mp3",
+      "durationSec": 57.9,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-goalie-nervous": {
+      "url": "/audio/pregame/clips/hm-lax-goalie-nervous.6d6a4ff8.mp3",
+      "durationSec": 50.724,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-goalie-pulled": {
+      "url": "/audio/pregame/clips/hm-lax-goalie-pulled.16afe4be.mp3",
+      "durationSec": 55.38,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-goalie-save-yips": {
+      "url": "/audio/pregame/clips/hm-lax-goalie-save-yips.1560ce4c.mp3",
+      "durationSec": 64.556,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-goalie-soft-goal": {
+      "url": "/audio/pregame/clips/hm-lax-goalie-soft-goal.b98ca154.mp3",
+      "durationSec": 57.54,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-goalie-start-slow": {
+      "url": "/audio/pregame/clips/hm-lax-goalie-start-slow.79bdb07e.mp3",
+      "durationSec": 55.188,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-goalie-throw-away": {
+      "url": "/audio/pregame/clips/hm-lax-goalie-throw-away.1e5cb368.mp3",
+      "durationSec": 58.164,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-midfield-benched": {
+      "url": "/audio/pregame/clips/hm-lax-midfield-benched.bf6c0add.mp3",
+      "durationSec": 50.676,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-midfield-coach-yells": {
+      "url": "/audio/pregame/clips/hm-lax-midfield-coach-yells.7a093d67.mp3",
+      "durationSec": 53.412,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-midfield-dodged": {
+      "url": "/audio/pregame/clips/hm-lax-midfield-dodged.3ac1746f.mp3",
+      "durationSec": 50.22,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-midfield-failed-clear": {
+      "url": "/audio/pregame/clips/hm-lax-midfield-failed-clear.d2e0751e.mp3",
+      "durationSec": 54.012,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-midfield-fall-behind-early": {
+      "url": "/audio/pregame/clips/hm-lax-midfield-fall-behind-early.ca9b7259.mp3",
+      "durationSec": 53.82,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-midfield-nervous": {
+      "url": "/audio/pregame/clips/hm-lax-midfield-nervous.5527f005.mp3",
+      "durationSec": 57.372,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-midfield-penalty": {
+      "url": "/audio/pregame/clips/hm-lax-midfield-penalty.b66f167a.mp3",
+      "durationSec": 52.26,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-midfield-shut-off": {
+      "url": "/audio/pregame/clips/hm-lax-midfield-shut-off.79906e93.mp3",
+      "durationSec": 58.236,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-midfield-start-slow": {
+      "url": "/audio/pregame/clips/hm-lax-midfield-start-slow.6abac442.mp3",
+      "durationSec": 58.572,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "hm-lax-midfield-turnover": {
+      "url": "/audio/pregame/clips/hm-lax-midfield-turnover.36d861c4.mp3",
+      "durationSec": 54.18,
+      "phases": [
+        {
+          "phase": "hardMoment",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "pp-lax-be-vocal": {
+      "url": "/audio/pregame/clips/pp-lax-be-vocal.c02da1e3.mp3",
+      "durationSec": 37.336,
+      "phases": []
+    },
+    "pp-lax-focus-call-the-slide-early": {
+      "url": "/audio/pregame/clips/pp-lax-focus-call-the-slide-early.09242ef9.mp3",
+      "durationSec": 2.688,
+      "phases": []
+    },
+    "pp-lax-focus-finish-hands-free": {
+      "url": "/audio/pregame/clips/pp-lax-focus-finish-hands-free.66ae2ad9.mp3",
+      "durationSec": 2.832,
+      "phases": []
+    },
+    "pp-lax-focus-finish-the-rep": {
+      "url": "/audio/pregame/clips/pp-lax-focus-finish-the-rep.59c65ada.mp3",
+      "durationSec": 3.24,
+      "phases": []
+    },
+    "pp-lax-focus-move-first": {
+      "url": "/audio/pregame/clips/pp-lax-focus-move-first.8089966d.mp3",
+      "durationSec": 2.832,
+      "phases": []
+    },
+    "pp-lax-focus-protect-the-stick-through-traffic": {
+      "url": "/audio/pregame/clips/pp-lax-focus-protect-the-stick-through-traffic.d79cdc96.mp3",
+      "durationSec": 2.52,
+      "phases": []
+    },
+    "pp-lax-focus-run-through-every-ground-ball": {
+      "url": "/audio/pregame/clips/pp-lax-focus-run-through-every-ground-ball.d72423eb.mp3",
+      "durationSec": 2.976,
+      "phases": []
+    },
+    "pp-lax-focus-two-hands-through": {
+      "url": "/audio/pregame/clips/pp-lax-focus-two-hands-through.85d34916.mp3",
+      "durationSec": 3.144,
+      "phases": []
+    },
+    "pp-lax-goal-fusion": {
+      "url": "/audio/pregame/clips/pp-lax-goal-fusion.de5c9339.mp3",
+      "durationSec": 25.736,
+      "phases": []
+    },
+    "pp-lax-name-standard": {
+      "url": "/audio/pregame/clips/pp-lax-name-standard.e93cda67.mp3",
+      "durationSec": 18.472,
+      "phases": []
+    },
+    "pp-lax-opener-get-to": {
+      "url": "/audio/pregame/clips/pp-lax-opener-get-to.ff5cacfc.mp3",
+      "durationSec": 49.408,
+      "phases": []
+    },
+    "pp-lax-see-it-go": {
+      "url": "/audio/pregame/clips/pp-lax-see-it-go.d9b53480.mp3",
+      "durationSec": 22.468,
+      "phases": []
+    },
+    "viz-lax-attack": {
+      "url": "/audio/pregame/clips/viz-lax-attack.6047b462.mp3",
+      "durationSec": 129.916,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-attack-beat-your-man": {
+      "url": "/audio/pregame/clips/viz-lax-attack-beat-your-man.9d3b3288.mp3",
+      "durationSec": 78.78,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-attack-finish-on-crease": {
+      "url": "/audio/pregame/clips/viz-lax-attack-finish-on-crease.e7fbf437.mp3",
+      "durationSec": 65.656,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-attack-man-up-finish": {
+      "url": "/audio/pregame/clips/viz-lax-attack-man-up-finish.b8a386a5.mp3",
+      "durationSec": 62.352,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-attack-next-look-clean": {
+      "url": "/audio/pregame/clips/viz-lax-attack-next-look-clean.1d462193.mp3",
+      "durationSec": 63.668,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-attack-ride-force-turnover": {
+      "url": "/audio/pregame/clips/viz-lax-attack-ride-force-turnover.661998de.mp3",
+      "durationSec": 63.168,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-attack-see-the-field": {
+      "url": "/audio/pregame/clips/viz-lax-attack-see-the-field.97eebbef.mp3",
+      "durationSec": 75.516,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-attack-time-and-room": {
+      "url": "/audio/pregame/clips/viz-lax-attack-time-and-room.631ad8fe.mp3",
+      "durationSec": 63.196,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-defense": {
+      "url": "/audio/pregame/clips/viz-lax-defense.1d443902.mp3",
+      "durationSec": 131.332,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-defense-ground-ball-clear": {
+      "url": "/audio/pregame/clips/viz-lax-defense-ground-ball-clear.961e2343.mp3",
+      "durationSec": 66.78,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-defense-lock-him-down": {
+      "url": "/audio/pregame/clips/viz-lax-defense-lock-him-down.8f0e88f7.mp3",
+      "durationSec": 84.988,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-defense-man-down-hold": {
+      "url": "/audio/pregame/clips/viz-lax-defense-man-down-hold.95b28b76.mp3",
+      "durationSec": 60.456,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-defense-shutdown-1v1-x": {
+      "url": "/audio/pregame/clips/viz-lax-defense-shutdown-1v1-x.48b5f231.mp3",
+      "durationSec": 65.032,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-defense-slide-recover": {
+      "url": "/audio/pregame/clips/viz-lax-defense-slide-recover.359fd23c.mp3",
+      "durationSec": 66.204,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-defense-take-it-the-other-way": {
+      "url": "/audio/pregame/clips/viz-lax-defense-take-it-the-other-way.777f392e.mp3",
+      "durationSec": 77.432,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-defense-win-next-matchup": {
+      "url": "/audio/pregame/clips/viz-lax-defense-win-next-matchup.32caaa0b.mp3",
+      "durationSec": 68.848,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-fogo": {
+      "url": "/audio/pregame/clips/viz-lax-fogo.7c13d2c7.mp3",
+      "durationSec": 121.636,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-fogo-close-it-out": {
+      "url": "/audio/pregame/clips/viz-lax-fogo-close-it-out.081f5ced.mp3",
+      "durationSec": 66.328,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-fogo-counter-the-clamp": {
+      "url": "/audio/pregame/clips/viz-lax-fogo-counter-the-clamp.391b32a3.mp3",
+      "durationSec": 64.22,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-fogo-read-and-adjust": {
+      "url": "/audio/pregame/clips/viz-lax-fogo-read-and-adjust.bcebf2af.mp3",
+      "durationSec": 68.152,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-fogo-win-and-go": {
+      "url": "/audio/pregame/clips/viz-lax-fogo-win-and-go.23db088b.mp3",
+      "durationSec": 63.712,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-fogo-win-the-clamp": {
+      "url": "/audio/pregame/clips/viz-lax-fogo-win-the-clamp.3b6b7c01.mp3",
+      "durationSec": 74.548,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-fogo-win-the-next-one": {
+      "url": "/audio/pregame/clips/viz-lax-fogo-win-the-next-one.2f29c9cb.mp3",
+      "durationSec": 67.912,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-fogo-win-the-wing": {
+      "url": "/audio/pregame/clips/viz-lax-fogo-win-the-wing.c84b15f3.mp3",
+      "durationSec": 78.796,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-goalie": {
+      "url": "/audio/pregame/clips/viz-lax-goalie.1e5ecb8c.mp3",
+      "durationSec": 130.324,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-goalie-command-the-defense": {
+      "url": "/audio/pregame/clips/viz-lax-goalie-command-the-defense.71bc14a0.mp3",
+      "durationSec": 69.04,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-goalie-doorstep": {
+      "url": "/audio/pregame/clips/viz-lax-goalie-doorstep.534fcf71.mp3",
+      "durationSec": 65.248,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-goalie-low-bouncer": {
+      "url": "/audio/pregame/clips/viz-lax-goalie-low-bouncer.08174488.mp3",
+      "durationSec": 62.632,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-goalie-make-the-save": {
+      "url": "/audio/pregame/clips/viz-lax-goalie-make-the-save.cdb351a4.mp3",
+      "durationSec": 81.824,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-goalie-man-down-kill": {
+      "url": "/audio/pregame/clips/viz-lax-goalie-man-down-kill.cc2b43f4.mp3",
+      "durationSec": 66.952,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-goalie-next-save": {
+      "url": "/audio/pregame/clips/viz-lax-goalie-next-save.02a8ce00.mp3",
+      "durationSec": 62.872,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-goalie-start-the-clear": {
+      "url": "/audio/pregame/clips/viz-lax-goalie-start-the-clear.ad64b7b9.mp3",
+      "durationSec": 81.648,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-midfield": {
+      "url": "/audio/pregame/clips/viz-lax-midfield.2a701c35.mp3",
+      "durationSec": 126.34,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-midfield-both-ends-shift": {
+      "url": "/audio/pregame/clips/viz-lax-midfield-both-ends-shift.8c5ba729.mp3",
+      "durationSec": 65.152,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-midfield-cover-both-ends": {
+      "url": "/audio/pregame/clips/viz-lax-midfield-cover-both-ends.819c40a7.mp3",
+      "durationSec": 79.784,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-midfield-ground-ball-scrum": {
+      "url": "/audio/pregame/clips/viz-lax-midfield-ground-ball-scrum.d45e7070.mp3",
+      "durationSec": 63.064,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-midfield-next-clear-clean": {
+      "url": "/audio/pregame/clips/viz-lax-midfield-next-clear-clean.2f1cae43.mp3",
+      "durationSec": 68.444,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-midfield-push-the-ball": {
+      "url": "/audio/pregame/clips/viz-lax-midfield-push-the-ball.34535e2d.mp3",
+      "durationSec": 79.064,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-midfield-shoot-on-the-run": {
+      "url": "/audio/pregame/clips/viz-lax-midfield-shoot-on-the-run.15d9c483.mp3",
+      "durationSec": 65.252,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "viz-lax-midfield-slide-and-rotate": {
+      "url": "/audio/pregame/clips/viz-lax-midfield-slide-and-rotate.af50dc39.mp3",
+      "durationSec": 63.952,
+      "phases": [
+        {
+          "phase": "rink",
+          "offsetSec": 0
+        }
+      ]
+    },
+    "anc-lax-tap-stick": {
+      "url": "/audio/pregame/clips/anc-lax-tap-stick.9d22e9fb.mp3",
+      "durationSec": 2.016,
+      "phases": []
+    },
+    "anc-lax-glove-tap-shaft": {
+      "url": "/audio/pregame/clips/anc-lax-glove-tap-shaft.71932667.mp3",
+      "durationSec": 2.424,
+      "phases": []
+    },
+    "anc-lax-reset-at-x": {
+      "url": "/audio/pregame/clips/anc-lax-reset-at-x.225ffc05.mp3",
+      "durationSec": 1.824,
+      "phases": []
+    },
+    "st-lax-01": {
+      "url": "/audio/pregame/clips/st-lax-01.81e32d4b.mp3",
+      "durationSec": 2.616,
+      "phases": []
     }
   },
   "templates": [
     {
+      "sport": "hockey",
       "position": "Forward",
       "adversity": "I feel nervous.",
       "clips": [
@@ -6361,6 +7342,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Forward",
       "adversity": "I miss a scoring chance.",
       "clips": [
@@ -6377,6 +7359,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Forward",
       "adversity": "I turn the puck over.",
       "clips": [
@@ -6393,6 +7376,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Forward",
       "adversity": "I get beaten wide.",
       "clips": [
@@ -6409,6 +7393,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Forward",
       "adversity": "I take a bad penalty.",
       "clips": [
@@ -6425,6 +7410,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Forward",
       "adversity": "Coach yells.",
       "clips": [
@@ -6441,6 +7427,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Forward",
       "adversity": "I get benched.",
       "clips": [
@@ -6457,6 +7444,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Forward",
       "adversity": "I get hit.",
       "clips": [
@@ -6473,6 +7461,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Forward",
       "adversity": "I start slow.",
       "clips": [
@@ -6489,6 +7478,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Forward",
       "adversity": "We give up the first goal.",
       "clips": [
@@ -6505,6 +7495,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Defense",
       "adversity": "I get beaten wide.",
       "clips": [
@@ -6521,6 +7512,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Defense",
       "adversity": "I turn the puck over.",
       "clips": [
@@ -6537,6 +7529,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Defense",
       "adversity": "I miss a scoring chance.",
       "clips": [
@@ -6553,6 +7546,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Defense",
       "adversity": "I take a bad penalty.",
       "clips": [
@@ -6569,6 +7563,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Defense",
       "adversity": "Coach yells.",
       "clips": [
@@ -6585,6 +7580,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Defense",
       "adversity": "I get benched.",
       "clips": [
@@ -6601,6 +7597,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Defense",
       "adversity": "I feel nervous.",
       "clips": [
@@ -6617,6 +7614,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Defense",
       "adversity": "I get hit.",
       "clips": [
@@ -6633,6 +7631,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Defense",
       "adversity": "I start slow.",
       "clips": [
@@ -6649,6 +7648,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Defense",
       "adversity": "We give up the first goal.",
       "clips": [
@@ -6665,6 +7665,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Goalie",
       "adversity": "Coach yells.",
       "clips": [
@@ -6681,6 +7682,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Goalie",
       "adversity": "I turn the puck over.",
       "clips": [
@@ -6697,6 +7699,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Goalie",
       "adversity": "I miss a scoring chance.",
       "clips": [
@@ -6713,6 +7716,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Goalie",
       "adversity": "I get beaten wide.",
       "clips": [
@@ -6729,6 +7733,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Goalie",
       "adversity": "I take a bad penalty.",
       "clips": [
@@ -6745,6 +7750,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Goalie",
       "adversity": "I get benched.",
       "clips": [
@@ -6761,6 +7767,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Goalie",
       "adversity": "I feel nervous.",
       "clips": [
@@ -6777,6 +7784,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Goalie",
       "adversity": "I get hit.",
       "clips": [
@@ -6793,6 +7801,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Goalie",
       "adversity": "I start slow.",
       "clips": [
@@ -6809,6 +7818,7 @@
       ]
     },
     {
+      "sport": "hockey",
       "position": "Goalie",
       "adversity": "We give up the first goal.",
       "clips": [
@@ -6825,6 +7835,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Guard",
       "adversity": "I turn the ball over.",
       "clips": [
@@ -6841,6 +7852,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Guard",
       "adversity": "I miss an open shot.",
       "clips": [
@@ -6857,6 +7869,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Guard",
       "adversity": "I get cooked off the dribble.",
       "clips": [
@@ -6873,6 +7886,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Guard",
       "adversity": "I get into foul trouble.",
       "clips": [
@@ -6889,6 +7903,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Guard",
       "adversity": "Coach yells.",
       "clips": [
@@ -6905,6 +7920,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Guard",
       "adversity": "I get benched.",
       "clips": [
@@ -6921,6 +7937,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Guard",
       "adversity": "I feel nervous.",
       "clips": [
@@ -6937,6 +7954,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Guard",
       "adversity": "I miss two free throws.",
       "clips": [
@@ -6953,6 +7971,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Guard",
       "adversity": "I start slow.",
       "clips": [
@@ -6969,6 +7988,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Guard",
       "adversity": "We fall behind early.",
       "clips": [
@@ -6985,6 +8005,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Wing",
       "adversity": "I turn the ball over.",
       "clips": [
@@ -7001,6 +8022,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Wing",
       "adversity": "I miss an open shot.",
       "clips": [
@@ -7017,6 +8039,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Wing",
       "adversity": "I get cooked off the dribble.",
       "clips": [
@@ -7033,6 +8056,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Wing",
       "adversity": "I get into foul trouble.",
       "clips": [
@@ -7049,6 +8073,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Wing",
       "adversity": "Coach yells.",
       "clips": [
@@ -7065,6 +8090,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Wing",
       "adversity": "I get benched.",
       "clips": [
@@ -7081,6 +8107,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Wing",
       "adversity": "I feel nervous.",
       "clips": [
@@ -7097,6 +8124,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Wing",
       "adversity": "I miss two free throws.",
       "clips": [
@@ -7113,6 +8141,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Wing",
       "adversity": "I start slow.",
       "clips": [
@@ -7129,6 +8158,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Wing",
       "adversity": "We fall behind early.",
       "clips": [
@@ -7145,6 +8175,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Big",
       "adversity": "I turn the ball over.",
       "clips": [
@@ -7161,6 +8192,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Big",
       "adversity": "I miss an open shot.",
       "clips": [
@@ -7177,6 +8209,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Big",
       "adversity": "I get cooked off the dribble.",
       "clips": [
@@ -7193,6 +8226,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Big",
       "adversity": "I get into foul trouble.",
       "clips": [
@@ -7209,6 +8243,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Big",
       "adversity": "Coach yells.",
       "clips": [
@@ -7225,6 +8260,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Big",
       "adversity": "I get benched.",
       "clips": [
@@ -7241,6 +8277,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Big",
       "adversity": "I feel nervous.",
       "clips": [
@@ -7257,6 +8294,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Big",
       "adversity": "I miss two free throws.",
       "clips": [
@@ -7273,6 +8311,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Big",
       "adversity": "I start slow.",
       "clips": [
@@ -7289,6 +8328,7 @@
       ]
     },
     {
+      "sport": "basketball",
       "position": "Big",
       "adversity": "We fall behind early.",
       "clips": [
@@ -7305,6 +8345,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Bomber",
       "adversity": "I three-putt.",
       "clips": [
@@ -7321,6 +8362,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Bomber",
       "adversity": "I have a blow-up hole.",
       "clips": [
@@ -7337,6 +8379,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Bomber",
       "adversity": "I hit it OB.",
       "clips": [
@@ -7353,6 +8396,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Bomber",
       "adversity": "I duff a short-game shot.",
       "clips": [
@@ -7369,6 +8413,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Bomber",
       "adversity": "I miss a short putt.",
       "clips": [
@@ -7385,6 +8430,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Bomber",
       "adversity": "My swing leaves me on the first tee.",
       "clips": [
@@ -7401,6 +8447,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Bomber",
       "adversity": "I get outplayed in my group.",
       "clips": [
@@ -7417,6 +8464,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Bomber",
       "adversity": "I feel nervous.",
       "clips": [
@@ -7433,6 +8481,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Bomber",
       "adversity": "I start slow.",
       "clips": [
@@ -7449,6 +8498,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Bomber",
       "adversity": "I fall behind the number.",
       "clips": [
@@ -7465,6 +8515,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Ball-Striker",
       "adversity": "I three-putt.",
       "clips": [
@@ -7481,6 +8532,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Ball-Striker",
       "adversity": "I have a blow-up hole.",
       "clips": [
@@ -7497,6 +8549,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Ball-Striker",
       "adversity": "I hit it OB.",
       "clips": [
@@ -7513,6 +8566,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Ball-Striker",
       "adversity": "I duff a short-game shot.",
       "clips": [
@@ -7529,6 +8583,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Ball-Striker",
       "adversity": "I miss a short putt.",
       "clips": [
@@ -7545,6 +8600,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Ball-Striker",
       "adversity": "My swing leaves me on the first tee.",
       "clips": [
@@ -7561,6 +8617,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Ball-Striker",
       "adversity": "I get outplayed in my group.",
       "clips": [
@@ -7577,6 +8634,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Ball-Striker",
       "adversity": "I feel nervous.",
       "clips": [
@@ -7593,6 +8651,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Ball-Striker",
       "adversity": "I start slow.",
       "clips": [
@@ -7609,6 +8668,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Ball-Striker",
       "adversity": "I fall behind the number.",
       "clips": [
@@ -7625,6 +8685,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Scrambler",
       "adversity": "I three-putt.",
       "clips": [
@@ -7641,6 +8702,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Scrambler",
       "adversity": "I have a blow-up hole.",
       "clips": [
@@ -7657,6 +8719,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Scrambler",
       "adversity": "I hit it OB.",
       "clips": [
@@ -7673,6 +8736,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Scrambler",
       "adversity": "I duff a short-game shot.",
       "clips": [
@@ -7689,6 +8753,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Scrambler",
       "adversity": "I miss a short putt.",
       "clips": [
@@ -7705,6 +8770,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Scrambler",
       "adversity": "My swing leaves me on the first tee.",
       "clips": [
@@ -7721,6 +8787,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Scrambler",
       "adversity": "I get outplayed in my group.",
       "clips": [
@@ -7737,6 +8804,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Scrambler",
       "adversity": "I feel nervous.",
       "clips": [
@@ -7753,6 +8821,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Scrambler",
       "adversity": "I start slow.",
       "clips": [
@@ -7769,6 +8838,7 @@
       ]
     },
     {
+      "sport": "golf",
       "position": "Scrambler",
       "adversity": "I fall behind the number.",
       "clips": [
@@ -7785,6 +8855,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "QB",
       "adversity": "I turn the ball over.",
       "clips": [
@@ -7801,6 +8872,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "QB",
       "adversity": "I get beat.",
       "clips": [
@@ -7817,6 +8889,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "QB",
       "adversity": "I make a mistake on film.",
       "clips": [
@@ -7833,6 +8906,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "QB",
       "adversity": "I give up the big play.",
       "clips": [
@@ -7849,6 +8923,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "QB",
       "adversity": "I get benched.",
       "clips": [
@@ -7865,6 +8940,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "QB",
       "adversity": "I feel nervous.",
       "clips": [
@@ -7881,6 +8957,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "QB",
       "adversity": "I take a big hit.",
       "clips": [
@@ -7897,6 +8974,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "QB",
       "adversity": "I start slow.",
       "clips": [
@@ -7913,6 +8991,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "QB",
       "adversity": "We fall behind early.",
       "clips": [
@@ -7929,6 +9008,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "QB",
       "adversity": "I lose a battle in the trenches.",
       "clips": [
@@ -7945,6 +9025,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "RB",
       "adversity": "I turn the ball over.",
       "clips": [
@@ -7961,6 +9042,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "RB",
       "adversity": "I get beat.",
       "clips": [
@@ -7977,6 +9059,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "RB",
       "adversity": "I make a mistake on film.",
       "clips": [
@@ -7993,6 +9076,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "RB",
       "adversity": "I give up the big play.",
       "clips": [
@@ -8009,6 +9093,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "RB",
       "adversity": "I get benched.",
       "clips": [
@@ -8025,6 +9110,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "RB",
       "adversity": "I feel nervous.",
       "clips": [
@@ -8041,6 +9127,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "RB",
       "adversity": "I take a big hit.",
       "clips": [
@@ -8057,6 +9144,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "RB",
       "adversity": "I start slow.",
       "clips": [
@@ -8073,6 +9161,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "RB",
       "adversity": "We fall behind early.",
       "clips": [
@@ -8089,6 +9178,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "RB",
       "adversity": "I lose a battle in the trenches.",
       "clips": [
@@ -8105,6 +9195,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "WR",
       "adversity": "I turn the ball over.",
       "clips": [
@@ -8121,6 +9212,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "WR",
       "adversity": "I get beat.",
       "clips": [
@@ -8137,6 +9229,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "WR",
       "adversity": "I make a mistake on film.",
       "clips": [
@@ -8153,6 +9246,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "WR",
       "adversity": "I give up the big play.",
       "clips": [
@@ -8169,6 +9263,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "WR",
       "adversity": "I get benched.",
       "clips": [
@@ -8185,6 +9280,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "WR",
       "adversity": "I feel nervous.",
       "clips": [
@@ -8201,6 +9297,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "WR",
       "adversity": "I take a big hit.",
       "clips": [
@@ -8217,6 +9314,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "WR",
       "adversity": "I start slow.",
       "clips": [
@@ -8233,6 +9331,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "WR",
       "adversity": "We fall behind early.",
       "clips": [
@@ -8249,6 +9348,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "WR",
       "adversity": "I lose a battle in the trenches.",
       "clips": [
@@ -8265,6 +9365,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "OL",
       "adversity": "I turn the ball over.",
       "clips": [
@@ -8281,6 +9382,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "OL",
       "adversity": "I get beat.",
       "clips": [
@@ -8297,6 +9399,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "OL",
       "adversity": "I make a mistake on film.",
       "clips": [
@@ -8313,6 +9416,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "OL",
       "adversity": "I give up the big play.",
       "clips": [
@@ -8329,6 +9433,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "OL",
       "adversity": "I get benched.",
       "clips": [
@@ -8345,6 +9450,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "OL",
       "adversity": "I feel nervous.",
       "clips": [
@@ -8361,6 +9467,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "OL",
       "adversity": "I take a big hit.",
       "clips": [
@@ -8377,6 +9484,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "OL",
       "adversity": "I start slow.",
       "clips": [
@@ -8393,6 +9501,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "OL",
       "adversity": "We fall behind early.",
       "clips": [
@@ -8409,6 +9518,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "OL",
       "adversity": "I lose a battle in the trenches.",
       "clips": [
@@ -8425,6 +9535,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DL",
       "adversity": "I turn the ball over.",
       "clips": [
@@ -8441,6 +9552,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DL",
       "adversity": "I get beat.",
       "clips": [
@@ -8457,6 +9569,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DL",
       "adversity": "I make a mistake on film.",
       "clips": [
@@ -8473,6 +9586,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DL",
       "adversity": "I give up the big play.",
       "clips": [
@@ -8489,6 +9603,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DL",
       "adversity": "I get benched.",
       "clips": [
@@ -8505,6 +9620,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DL",
       "adversity": "I feel nervous.",
       "clips": [
@@ -8521,6 +9637,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DL",
       "adversity": "I take a big hit.",
       "clips": [
@@ -8537,6 +9654,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DL",
       "adversity": "I start slow.",
       "clips": [
@@ -8553,6 +9671,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DL",
       "adversity": "We fall behind early.",
       "clips": [
@@ -8569,6 +9688,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DL",
       "adversity": "I lose a battle in the trenches.",
       "clips": [
@@ -8585,6 +9705,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "LB",
       "adversity": "I turn the ball over.",
       "clips": [
@@ -8601,6 +9722,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "LB",
       "adversity": "I get beat.",
       "clips": [
@@ -8617,6 +9739,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "LB",
       "adversity": "I make a mistake on film.",
       "clips": [
@@ -8633,6 +9756,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "LB",
       "adversity": "I give up the big play.",
       "clips": [
@@ -8649,6 +9773,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "LB",
       "adversity": "I get benched.",
       "clips": [
@@ -8665,6 +9790,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "LB",
       "adversity": "I feel nervous.",
       "clips": [
@@ -8681,6 +9807,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "LB",
       "adversity": "I take a big hit.",
       "clips": [
@@ -8697,6 +9824,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "LB",
       "adversity": "I start slow.",
       "clips": [
@@ -8713,6 +9841,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "LB",
       "adversity": "We fall behind early.",
       "clips": [
@@ -8729,6 +9858,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "LB",
       "adversity": "I lose a battle in the trenches.",
       "clips": [
@@ -8745,6 +9875,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DB",
       "adversity": "I turn the ball over.",
       "clips": [
@@ -8761,6 +9892,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DB",
       "adversity": "I get beat.",
       "clips": [
@@ -8777,6 +9909,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DB",
       "adversity": "I make a mistake on film.",
       "clips": [
@@ -8793,6 +9926,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DB",
       "adversity": "I give up the big play.",
       "clips": [
@@ -8809,6 +9943,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DB",
       "adversity": "I get benched.",
       "clips": [
@@ -8825,6 +9960,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DB",
       "adversity": "I feel nervous.",
       "clips": [
@@ -8841,6 +9977,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DB",
       "adversity": "I take a big hit.",
       "clips": [
@@ -8857,6 +9994,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DB",
       "adversity": "I start slow.",
       "clips": [
@@ -8873,6 +10011,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DB",
       "adversity": "We fall behind early.",
       "clips": [
@@ -8889,6 +10028,7 @@
       ]
     },
     {
+      "sport": "football",
       "position": "DB",
       "adversity": "I lose a battle in the trenches.",
       "clips": [
@@ -8905,6 +10045,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Pitcher",
       "adversity": "I strike out.",
       "clips": [
@@ -8921,6 +10062,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Pitcher",
       "adversity": "I'm in a slump.",
       "clips": [
@@ -8937,6 +10079,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Pitcher",
       "adversity": "I make an error.",
       "clips": [
@@ -8953,6 +10096,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Pitcher",
       "adversity": "I give up the big hit.",
       "clips": [
@@ -8969,6 +10113,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Pitcher",
       "adversity": "I lose my command.",
       "clips": [
@@ -8985,6 +10130,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Pitcher",
       "adversity": "I get benched.",
       "clips": [
@@ -9001,6 +10147,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Pitcher",
       "adversity": "I feel nervous.",
       "clips": [
@@ -9017,6 +10164,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Pitcher",
       "adversity": "I get hit by a pitch.",
       "clips": [
@@ -9033,6 +10181,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Pitcher",
       "adversity": "I start slow.",
       "clips": [
@@ -9049,6 +10198,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Pitcher",
       "adversity": "We fall behind early.",
       "clips": [
@@ -9065,6 +10215,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Catcher",
       "adversity": "I strike out.",
       "clips": [
@@ -9081,6 +10232,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Catcher",
       "adversity": "I'm in a slump.",
       "clips": [
@@ -9097,6 +10249,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Catcher",
       "adversity": "I make an error.",
       "clips": [
@@ -9113,6 +10266,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Catcher",
       "adversity": "I give up the big hit.",
       "clips": [
@@ -9129,6 +10283,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Catcher",
       "adversity": "I lose my command.",
       "clips": [
@@ -9145,6 +10300,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Catcher",
       "adversity": "I get benched.",
       "clips": [
@@ -9161,6 +10317,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Catcher",
       "adversity": "I feel nervous.",
       "clips": [
@@ -9177,6 +10334,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Catcher",
       "adversity": "I get hit by a pitch.",
       "clips": [
@@ -9193,6 +10351,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Catcher",
       "adversity": "I start slow.",
       "clips": [
@@ -9209,6 +10368,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Catcher",
       "adversity": "We fall behind early.",
       "clips": [
@@ -9225,6 +10385,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Infield",
       "adversity": "I strike out.",
       "clips": [
@@ -9241,6 +10402,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Infield",
       "adversity": "I'm in a slump.",
       "clips": [
@@ -9257,6 +10419,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Infield",
       "adversity": "I make an error.",
       "clips": [
@@ -9273,6 +10436,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Infield",
       "adversity": "I give up the big hit.",
       "clips": [
@@ -9289,6 +10453,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Infield",
       "adversity": "I lose my command.",
       "clips": [
@@ -9305,6 +10470,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Infield",
       "adversity": "I get benched.",
       "clips": [
@@ -9321,6 +10487,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Infield",
       "adversity": "I feel nervous.",
       "clips": [
@@ -9337,6 +10504,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Infield",
       "adversity": "I get hit by a pitch.",
       "clips": [
@@ -9353,6 +10521,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Infield",
       "adversity": "I start slow.",
       "clips": [
@@ -9369,6 +10538,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Infield",
       "adversity": "We fall behind early.",
       "clips": [
@@ -9385,6 +10555,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Outfield",
       "adversity": "I strike out.",
       "clips": [
@@ -9401,6 +10572,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Outfield",
       "adversity": "I'm in a slump.",
       "clips": [
@@ -9417,6 +10589,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Outfield",
       "adversity": "I make an error.",
       "clips": [
@@ -9433,6 +10606,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Outfield",
       "adversity": "I give up the big hit.",
       "clips": [
@@ -9449,6 +10623,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Outfield",
       "adversity": "I lose my command.",
       "clips": [
@@ -9465,6 +10640,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Outfield",
       "adversity": "I get benched.",
       "clips": [
@@ -9481,6 +10657,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Outfield",
       "adversity": "I feel nervous.",
       "clips": [
@@ -9497,6 +10674,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Outfield",
       "adversity": "I get hit by a pitch.",
       "clips": [
@@ -9513,6 +10691,7 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Outfield",
       "adversity": "I start slow.",
       "clips": [
@@ -9529,12 +10708,863 @@
       ]
     },
     {
+      "sport": "baseball",
       "position": "Outfield",
       "adversity": "We fall behind early.",
       "clips": [
         "shared-opening",
         "viz-outfield",
         "hm-bsb-outfield-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Attack",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-attack",
+        "hm-lax-attack-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Attack",
+      "adversity": "I get dodged.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-attack",
+        "hm-lax-attack-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Attack",
+      "adversity": "I take a bad penalty.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-attack",
+        "hm-lax-attack-penalty",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Attack",
+      "adversity": "I get shut off.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-attack",
+        "hm-lax-attack-shut-off",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Attack",
+      "adversity": "I fail a clear.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-attack",
+        "hm-lax-attack-rode-out",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Attack",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-attack",
+        "hm-lax-attack-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Attack",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-attack",
+        "hm-lax-attack-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Attack",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-attack",
+        "hm-lax-attack-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Attack",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-attack",
+        "hm-lax-attack-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Attack",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-attack",
+        "hm-lax-attack-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Midfield",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-midfield",
+        "hm-lax-midfield-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Midfield",
+      "adversity": "I get dodged.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-midfield",
+        "hm-lax-midfield-dodged",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Midfield",
+      "adversity": "I take a bad penalty.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-midfield",
+        "hm-lax-midfield-penalty",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Midfield",
+      "adversity": "I get shut off.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-midfield",
+        "hm-lax-midfield-shut-off",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Midfield",
+      "adversity": "I fail a clear.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-midfield",
+        "hm-lax-midfield-failed-clear",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Midfield",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-midfield",
+        "hm-lax-midfield-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Midfield",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-midfield",
+        "hm-lax-midfield-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Midfield",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-midfield",
+        "hm-lax-midfield-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Midfield",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-midfield",
+        "hm-lax-midfield-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Midfield",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-midfield",
+        "hm-lax-midfield-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Defense",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-defense",
+        "hm-lax-defense-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Defense",
+      "adversity": "I get dodged.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-defense",
+        "hm-lax-defense-dodged",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Defense",
+      "adversity": "I take a bad penalty.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-defense",
+        "hm-lax-defense-penalty",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Defense",
+      "adversity": "I get shut off.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-defense",
+        "hm-lax-defense-shut-off",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Defense",
+      "adversity": "I fail a clear.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-defense",
+        "hm-lax-defense-failed-clear",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Defense",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-defense",
+        "hm-lax-defense-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Defense",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-defense",
+        "hm-lax-defense-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Defense",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-defense",
+        "hm-lax-defense-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Defense",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-defense",
+        "hm-lax-defense-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Defense",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-defense",
+        "hm-lax-defense-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "FOGO",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-fogo",
+        "hm-lax-fogo-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "FOGO",
+      "adversity": "I get dodged.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-fogo",
+        "hm-lax-fogo-lose-draws",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "FOGO",
+      "adversity": "I take a bad penalty.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-fogo",
+        "hm-lax-fogo-violation",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "FOGO",
+      "adversity": "I get shut off.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-fogo",
+        "hm-lax-fogo-lose-draws",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "FOGO",
+      "adversity": "I fail a clear.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-fogo",
+        "hm-lax-fogo-turnover",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "FOGO",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-fogo",
+        "hm-lax-fogo-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "FOGO",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-fogo",
+        "hm-lax-fogo-off-the-dot",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "FOGO",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-fogo",
+        "hm-lax-fogo-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "FOGO",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-fogo",
+        "hm-lax-fogo-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "FOGO",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-fogo",
+        "hm-lax-fogo-behind-at-the-dot",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Goalie",
+      "adversity": "I turn the ball over.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-goalie",
+        "hm-lax-goalie-throw-away",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Goalie",
+      "adversity": "I get dodged.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-goalie",
+        "hm-lax-goalie-beaten-clean",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Goalie",
+      "adversity": "I take a bad penalty.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-goalie",
+        "hm-lax-goalie-man-down",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Goalie",
+      "adversity": "I get shut off.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-goalie",
+        "hm-lax-goalie-soft-goal",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Goalie",
+      "adversity": "I fail a clear.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-goalie",
+        "hm-lax-goalie-failed-clear",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Goalie",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-goalie",
+        "hm-lax-goalie-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Goalie",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-goalie",
+        "hm-lax-goalie-pulled",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Goalie",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-goalie",
+        "hm-lax-goalie-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Goalie",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-goalie",
+        "hm-lax-goalie-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "lacrosse",
+      "position": "Goalie",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-lax-goalie",
+        "hm-lax-goalie-fall-behind-early",
         "{{anchor}}",
         "{{selfTalk}}",
         "{{cueReset}}",
@@ -9634,6 +11664,24 @@
         "pp-choose-focus-tail",
         "pp-baseball-be-vocal",
         "pp-baseball-see-it-go"
+      ]
+    },
+    "lacrosse": {
+      "dialed-in": [
+        "pp-lax-name-standard",
+        "pp-lax-goal-fusion",
+        "pp-choose-focus-lead",
+        "pp-choose-focus-tail",
+        "pp-lax-be-vocal",
+        "pp-lax-see-it-go"
+      ],
+      "not-feeling-it": [
+        "pp-lax-name-standard",
+        "pp-lax-goal-fusion",
+        "pp-choose-focus-lead",
+        "pp-choose-focus-tail",
+        "pp-lax-be-vocal",
+        "pp-lax-see-it-go"
       ]
     }
   }
