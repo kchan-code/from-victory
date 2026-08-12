@@ -54,7 +54,7 @@ const whatItIsCards = [
   {
     icon: "user" as const,
     title: "For parents and adult athletes.",
-    body: "A parent creates and manages a younger athlete’s account, or an adult athlete signs up to train on their own. Either way, the training stays private. We’re launching with hockey and basketball, with more sports coming sport by sport.",
+    body: "A parent creates and manages a younger athlete’s account, or an adult athlete signs up to train on their own. Either way, the training stays private. Hockey, basketball, golf, football, baseball, and lacrosse are live now, with more sports coming sport by sport.",
   },
 ];
 
@@ -445,10 +445,10 @@ export default function AboutPage() {
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href="/#waitlist"
+                  href="/signup"
                   className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
                 >
-                  Join the waitlist
+                  Start your athlete&apos;s 14-day free trial
                   <SvgIcon name="arrow" size={16} />
                 </Link>
                 <Link
