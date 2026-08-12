@@ -1,0 +1,30 @@
+{
+  "name": "@from-victory/native",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Capacitor native shell for From Victory (Android + iOS). Loads the hosted Next.js app; does not replace the PWA.",
+  "scripts": {
+    "sync": "npx cap sync",
+    "open:android": "npx cap open android",
+    "open:ios": "npx cap open ios",
+    "add:android": "npx cap add android",
+    "add:ios": "npx cap add ios",
+    "build:android:debug": "cd android && ./gradlew assembleDebug",
+    "build:android:bundle": "cd android && ./gradlew bundleRelease"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/app": "^7.1.0",
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/ios": "^7.4.3",
+    "@capacitor/splash-screen": "^7.0.3",
+    "@capacitor/status-bar": "^7.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3",
+    "typescript": "5.5.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
