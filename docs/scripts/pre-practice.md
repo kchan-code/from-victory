@@ -679,3 +679,80 @@ _(pause: 1s)_
 <!-- slug: pp-lax-focus-finish-hands-free | file: components/pregame/audio/clips.ts -->
 
 1. Finish with your hands free.
+
+## Soccer Pre-Practice Clips
+
+### Pre-Practice Soccer · opener-get-to
+<!-- slug: pp-soc-opener-get-to | file: components/pregame/audio/clips.ts -->
+
+1. Be honest: your legs are heavy and your energy is low today. You are still responsible for how you train.
+_(pause: 1.2s)_
+2. Do not wait for your mood to change. Start with one controllable action: get your cleats on, get a ball at your feet, and take your first touch with purpose.
+_(pause: 1s)_
+3. Working for the Lord does not mean pretending you feel good. It means giving honest attention to the work in front of you — even in the fourth session of the week, in the rain, after a long drive.
+_(pause: 1.2s)_
+4. Notice the session in front of you: your teammates are here, the ball is at your feet, and the first rondo has a clear job.
+_(pause: 1s)_
+5. Do not solve the whole session at once. Move your feet, scan before you receive, and complete your first pass.
+_(pause: 0.8s)_
+6. Start with the first touch.
+### Pre-Practice Soccer · name-standard
+<!-- slug: pp-soc-name-standard | file: components/pregame/audio/clips.ts -->
+
+1. Name one standard for today: first touch out of your feet, a scan before every ball you receive, or a full sprint on every pressing trigger. Make it specific enough to evaluate after each rep.
+_(pause: 1s)_
+2. Carry that standard from the rondo through to the last finishing rep. When a rep slips, take the correction and apply it to the next ball.
+### Pre-Practice Soccer · goal-fusion
+<!-- slug: pp-soc-goal-fusion | file: components/pregame/audio/clips.ts -->
+
+1. Find one game detail inside today's session. In the rondo, it may be opening your body before the ball arrives. In shape work, it may be checking your cover before you step to press.
+_(pause: 1s)_
+2. Rehearse that detail at game speed, then keep it when the defender is live and your legs are tired. The drill gives you a repeatable action for the game.
+_(pause: 1s)_
+3. Keep one clear detail through the whole session.
+### Pre-Practice Soccer · be-vocal
+<!-- slug: pp-soc-be-vocal | file: components/pregame/audio/clips.ts -->
+
+1. Communication is part of the rep. Call "man on," "turn," "time," "switch it," and "keeper's" early enough for a teammate to act.
+_(pause: 1.2s)_
+2. Do not wait until the call sounds perfect. Use the correct word, with enough volume and enough time.
+_(pause: 0.8s)_
+3. In the rondo, tell the player receiving what they have. In shape work, name the presser and the cover behind. In pattern play, call the switch before the ball travels. If you are in the handling block with the goalkeeper coach, use the same voice there that you will need on matchday.
+_(pause: 0.8s)_
+4. Make the first useful call before the first rondo starts.
+### Pre-Practice Soccer · see-it-go
+<!-- slug: pp-soc-see-it-go | file: components/pregame/audio/clips.ts -->
+
+1. See one rep: check your shoulder, receive on your back foot, take your first touch into space, and complete the pass.
+_(pause: 1.5s)_
+2. If the rep breaks down, listen to the correction, identify one change, and reset before the next ball is served.
+_(pause: 1s)_
+3. Start the next rep from your ready position instead of carrying the last one forward.
+### Pre-Practice Soccer · focus-first-touch-into-space
+<!-- slug: pp-soc-focus-first-touch-into-space | file: components/pregame/audio/clips.ts -->
+
+1. First touch into space.
+### Pre-Practice Soccer · focus-patient-in-the-one-v-one
+<!-- slug: pp-soc-focus-patient-in-the-one-v-one | file: components/pregame/audio/clips.ts -->
+
+1. Stay patient in the 1v1.
+### Pre-Practice Soccer · focus-scan-before-receive
+<!-- slug: pp-soc-focus-scan-before-receive | file: components/pregame/audio/clips.ts -->
+
+1. Scan before I receive.
+### Pre-Practice Soccer · focus-talk-early
+<!-- slug: pp-soc-focus-talk-early | file: components/pregame/audio/clips.ts -->
+
+1. Talk early.
+### Pre-Practice Soccer · focus-recover-shape
+<!-- slug: pp-soc-focus-recover-shape | file: components/pregame/audio/clips.ts -->
+
+1. Recover shape after losing it.
+### Pre-Practice Soccer · focus-move-after-pass
+<!-- slug: pp-soc-focus-move-after-pass | file: components/pregame/audio/clips.ts -->
+
+1. Move after I pass.
+### Pre-Practice Soccer · focus-finish-on-balance
+<!-- slug: pp-soc-focus-finish-on-balance | file: components/pregame/audio/clips.ts -->
+
+1. Finish on balance.
