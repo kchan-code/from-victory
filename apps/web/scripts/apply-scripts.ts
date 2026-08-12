@@ -26,7 +26,7 @@
 // The core logic is exported as syncFromBooks({ write }) so generate-pregame-audio.ts
 // can call it at startup (auto-sync .md edits before TTS rendering).
 
-import { readFile, writeFile } from "node:fs/promises";
+import { readdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -396,13 +396,41 @@ function showBodyDiff(sportLabel: string, idx: number, oldBody: string, newBody:
 //
 // This is the authoritative runtime text source for all clip rendering.
 
-const BOOK_FILES = [
+// Every docs/scripts/*.md book except README.md. Omitting a book here makes
+// it inert at render time (FV-406 lacrosse, FV-471 soccer). assertBookFilesComplete
+// fails fast if a book lands on disk without being listed.
+export const BOOK_FILES = [
   "hockey.md", "basketball.md", "baseball.md", "golf.md",
-  "football.md", "swimming.md", "track-field.md", "lacrosse.md",
+  "football.md", "swimming.md", "track-field.md", "lacrosse.md", "soccer.md",
   "pre-practice.md", "shared.md",
 ];
 
+const SCRIPT_BOOK_IGNORE = new Set(["README.md"]);
+
+/** Books on disk (docs/scripts/*.md, excluding README) that BOOK_FILES omits. */
+export function unlistedScriptBooks(
+  onDiskBasenames: string[],
+  listed: readonly string[] = BOOK_FILES,
+): string[] {
+  return onDiskBasenames
+    .filter((f) => f.endsWith(".md") && !SCRIPT_BOOK_IGNORE.has(f))
+    .filter((f) => !listed.includes(f))
+    .sort();
+}
+
+async function assertBookFilesComplete(): Promise<void> {
+  const onDisk = await readdir(DOCS_SCRIPTS_DIR);
+  const missing = unlistedScriptBooks(onDisk);
+  if (missing.length > 0) {
+    throw new Error(
+      `BOOK_FILES is missing ${missing.map((f) => `docs/scripts/${f}`).join(", ")}. ` +
+        `Add each book to BOOK_FILES in apply-scripts.ts so loadBookProse picks it up at render time (FV-471).`,
+    );
+  }
+}
+
 export async function loadBookProse(): Promise<Map<string, string[]>> {
+  await assertBookFilesComplete();
   const result = new Map<string, string[]>();
   for (const bookFile of BOOK_FILES) {
     const bookPath = join(DOCS_SCRIPTS_DIR, bookFile);
@@ -437,6 +465,7 @@ export type BookEntry = {
 };
 
 export async function loadBookProseWithPauses(): Promise<Map<string, BookEntry>> {
+  await assertBookFilesComplete();
   const result = new Map<string, BookEntry>();
   for (const bookFile of BOOK_FILES) {
     const bookPath = join(DOCS_SCRIPTS_DIR, bookFile);
@@ -478,6 +507,7 @@ export type SyncSummary = {
 };
 
 export async function syncFromBooks({ write }: { write: boolean }): Promise<SyncSummary> {
+  await assertBookFilesComplete();
   // Clip-prose is no longer synced to TS. Only fallback bodies are written.
   const currentIndex = buildCurrentIndex();
   const fallbackCurrents = await parseFallbackBodiesFromRegistry();

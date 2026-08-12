@@ -481,6 +481,7 @@ function humanTitle(slug: string): string {
   if (slug.startsWith("pp-bb-")) return "Pre-Practice Basketball · " + parts.slice(2).join("-");
   if (slug.startsWith("pp-baseball-")) return "Pre-Practice Baseball · " + parts.slice(2).join("-");
   if (slug.startsWith("pp-golf-")) return "Pre-Practice Golf · " + parts.slice(2).join("-");
+  if (slug.startsWith("pp-soc-")) return "Pre-Practice Soccer · " + parts.slice(2).join("-");
   if (slug.startsWith("pp-")) return "Pre-Practice Hockey · " + parts.slice(1).join("-");
   if (slug.startsWith("shared-")) return "Shared · " + parts.slice(1).join("-");
 
@@ -794,12 +795,14 @@ async function main() {
   const ppStats = await writeBook(
     "pre-practice.md", "Pre-Practice", false,
     [
-      { header: "Hockey Pre-Practice Clips", scripts: ppScripts.filter((s) => !s.slug.startsWith("pp-bb-") && !s.slug.startsWith("pp-baseball-") && !s.slug.startsWith("pp-golf-") && !s.slug.startsWith("pp-football-") && !s.slug.startsWith("pp-lax-")) },
+      { header: "Hockey Pre-Practice Clips", scripts: ppScripts.filter((s) => !s.slug.startsWith("pp-bb-") && !s.slug.startsWith("pp-baseball-") && !s.slug.startsWith("pp-golf-") && !s.slug.startsWith("pp-football-") && !s.slug.startsWith("pp-lax-") && !s.slug.startsWith("pp-soc-")) },
       { header: "Basketball Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-bb-")) },
       { header: "Baseball Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-baseball-")) },
       { header: "Golf Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-golf-")) },
       { header: "Football Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-football-")) },
       { header: "Lacrosse Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-lax-")) },
+      // FV-471: header matches docs/scripts/pre-practice.md `## Soccer Pre-Practice Clips`.
+      { header: "Soccer Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-soc-")) },
     ],
   );
 
