@@ -10,6 +10,29 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-08-12 — Lacrosse is live: sixth sport, full parity
+
+Lacrosse (boys'/men's field lacrosse) is athlete-selectable in production
+(KC founder sign-off 2026-08-11 on FV-407; by-ear audio approval and
+go-live 2026-08-12, same day as baseball). Live sports are now hockey,
+basketball, golf, football, baseball, and lacrosse. A lacrosse athlete
+picks a position (Attack, Midfield, Defense, FOGO, Goalie) and gets the
+full surface: 30 days of daily training, the audio-guided pregame session
+(position-specific visualization with a 35-play positive-play library — 7
+per position — and a position×adversity hard-moment grid), the
+pre-practice "Lock In" session, and the text-only post-game debrief. Same
+price, same plan — one subscription covers every live sport and an
+athlete can switch sports in settings.
+
+Why it matters to a buyer: lacrosse families can buy today instead of
+waitlisting; the hockey-lacrosse two-sport athlete (a common pairing)
+covers both seasons with one subscription.
+
+Scope note: girls' lacrosse is a different game and is NOT covered —
+content is authored for boys'/men's field lacrosse only. Claims
+discipline unchanged: no testimonials, ratings, user counts, or retention
+claims until a launch cohort exists.
+
 ## 2026-08-12 — Baseball is live: fifth sport, full parity
 
 Baseball is athlete-selectable in production (KC founder decision 2026-08-11,

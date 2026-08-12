@@ -45,7 +45,7 @@ const athleteGets = [
   {
     icon: "flame" as const,
     title: "Daily training session",
-    body: "A short daily session — mental skill plus Scripture foundation — that builds identity, discipline, and resilience over 30 days. Hockey, basketball, golf, football, and baseball, with more sports coming.",
+    body: "A short daily session — mental skill plus Scripture foundation — that builds identity, discipline, and resilience over 30 days. Hockey, basketball, golf, football, baseball, and lacrosse, with more sports coming.",
   },
   {
     icon: "zap" as const,
@@ -395,7 +395,7 @@ export default function ParentsPage() {
                 <div className="h-px bg-hairline mb-7" />
                 <div className="flex flex-col gap-3 mb-8">
                   {[
-                    "Daily training session (hockey, basketball, golf, football & baseball)",
+                    "Daily training session (hockey, basketball, golf, football, baseball & lacrosse)",
                     "Pregame guided audio",
                     "Pre-practice lock-in",
                     "Journey view + rhythm tracking",

@@ -33,7 +33,7 @@ const SPORTS = [
   { value: "Baseball", label: "Baseball — available now" },
   { value: "Golf", label: "Golf — available now" },
   { value: "Swimming", label: "Swimming — coming soon" },
-  { value: "Lacrosse", label: "Lacrosse — coming soon" },
+  { value: "Lacrosse", label: "Lacrosse — available now" },
   { value: "Wrestling", label: "Wrestling — coming soon" },
   { value: "Volleyball", label: "Volleyball — coming soon" },
   { value: "Track & field", label: "Track & field — coming soon" },
