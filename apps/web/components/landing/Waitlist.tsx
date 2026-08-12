@@ -7,13 +7,13 @@ import { WaitlistForm } from "./WaitlistForm";
 const bullets = [
   {
     icon: "flame" as const,
-    title: "Hockey, basketball, golf, and football — available now",
+    title: "Hockey, basketball, golf, football, and baseball — available now",
     body: "The full app — daily training, pregame audio, pre-practice lock in — is live. Start your free trial today.",
   },
   {
     icon: "book" as const,
     title: "Other sports — join the waitlist",
-    body: "Soccer, baseball, and more are coming sport-by-sport. Select your sport and we'll notify you when it's ready.",
+    body: "Soccer, lacrosse, and more are coming sport-by-sport. Select your sport and we'll notify you when it's ready.",
   },
   {
     icon: "shield" as const,
@@ -40,7 +40,7 @@ export function Waitlist() {
               Start training from <em>secure identity.</em>
             </h2>
             <p className="fv-lede mb-8">
-              Hockey, basketball, golf, and football are live now — start your athlete&apos;s
+              Hockey, basketball, golf, football, and baseball are live now — start your athlete&apos;s
               14-day free trial today. Playing something else? Select your sport
               below and we&rsquo;ll reach out when it launches.
             </p>
