@@ -10,6 +10,26 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-08-12 — Baseball is live: fifth sport, full parity
+
+Baseball is athlete-selectable in production (KC founder decision 2026-08-11,
+FV-100; shipped via FV-97/FV-98, smoke-tested by KC on 2026-08-12). Live
+sports are now hockey, basketball, golf, football, and baseball. A baseball
+athlete picks a position (Pitcher, Catcher, Infield, Outfield) and gets the
+full surface: 30 days of daily training, the audio-guided pregame session
+(position-specific visualization with a 28-play positive-play library — 7 per
+position — and a position×adversity hard-moment grid), the pre-practice
+"Lock In" session, and the text-only post-game debrief (5 scenarios). Same
+price, same plan — a subscription covers every live sport and an athlete can
+switch sports in settings.
+
+Why it matters to a buyer: baseball families can now buy today instead of
+joining the waitlist; multi-sport athletes (e.g. hockey + baseball) cover
+both seasons with one subscription.
+
+Claims discipline unchanged: no testimonials, ratings, user counts, or
+retention claims until a launch cohort exists.
+
 ## 2026-07-22 — Adults 18+ can sign up, pay, and train on their own account; eligibility is 13+ with no upper limit
 
 Adult self-serve is live in production (go-live smoke passed 2026-07-22). An
