@@ -278,6 +278,25 @@ const SPORT_CELL_EXPECTATIONS: Record<
       forbiddenSlug: "hm-lax-goalie-benched",
     },
   },
+  // Soccer (v2 DORMANT — FV-76 prerequisite wiring; audio render deferred).
+  // 4 positions × 10 shared adversities, uniform grid, no drops → 40 distinct
+  // cells. The 5 clinically withheld cells (4 shootout + GK handling-yips,
+  // module map §4) live OUTSIDE this grid — their umbrella keys are not in
+  // `adversities` (covered in sport-registry.test.ts). Compositional-only
+  // (golf/lacrosse model). EXCLUDED from RENDERED_SPORT_CONFIGS until the
+  // audio render lands soccer in manifest.practiceState — this entry only
+  // satisfies the Record<Sport, …> exhaustiveness type until then.
+  soccer: {
+    cellCount: 40,
+    slugPrefix: "hm-soc-",
+    cellLayout: "catalog",
+    specialCase: {
+      role: "Goalkeeper",
+      adversity: "I get benched.",
+      expectedSlug: "hm-soc-gk-dropped",
+      forbiddenSlug: "hm-soc-gk-benched",
+    },
+  },
 };
 
 // FV-94/FV-99: the registry-parameterized integrity suites (sections 5 & 7) run
@@ -1229,10 +1248,22 @@ describe("positive-play library integrity (FV-144)", () => {
     // un-namespaced (viz-{role}-{play}). This shape check runs unconditionally
     // — including for dormant sports whose files don't exist yet (the test
     // above) — so a malformed dormant entry still fails CI immediately.
-    const SPORT_SLUG_TOKENS = ["ftb", "bsb", "lax"];
+    const SPORT_SLUG_TOKENS = ["ftb", "bsb", "lax", "soc"];
+    // Soccer position tokens are abbreviated (module map §5), not
+    // role.toLowerCase() — Forward→fwd, Midfielder→mid, Defender→def,
+    // Goalkeeper→gk. Hockey's identically-named "Forward" stays un-namespaced
+    // (viz-forward-*).
+    const SOCCER_ROLE_TOKENS: Record<string, string> = {
+      Forward: "fwd",
+      Midfielder: "mid",
+      Defender: "def",
+      Goalkeeper: "gk",
+    };
     const mismatches: string[] = [];
-    for (const { slug, role } of POSITIVE_PLAYS) {
-      const roleToken = role.toLowerCase().replace(/-/g, "");
+    for (const { slug, role, sport } of POSITIVE_PLAYS) {
+      const roleToken =
+        (sport === "soccer" ? SOCCER_ROLE_TOKENS[role] : undefined) ??
+        role.toLowerCase().replace(/-/g, "");
       const validPrefixes = [
         `viz-${roleToken}-`,
         ...SPORT_SLUG_TOKENS.map((t) => `viz-${t}-${roleToken}-`),

@@ -1488,6 +1488,21 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
     "pp-lax-see-it-go",
   ];
 
+  // Soccer Beats 2/3/5/6 (FV-76 prerequisite wiring) — mirrors the lacrosse
+  // tail shape; matches docs/scripts/pre-practice.md "## Soccer Pre-Practice
+  // Clips" module order. Dormant-harmless: soccer is absent from
+  // SUPPORTED_SPORTS, so this entry only takes effect at the FV-76 render
+  // (the manifest regenerates only when this script runs).
+  const soccerSharedTail = [
+    "pp-soc-name-standard",
+    "pp-soc-goal-fusion",
+    "pp-choose-focus-lead",
+    // focus clip injected by resolver between lead and tail
+    "pp-choose-focus-tail",
+    "pp-soc-be-vocal",
+    "pp-soc-see-it-go",
+  ];
+
   const practiceStatePlaylist = {
     hockey: {
       "dialed-in": hockeySharedTail,
@@ -1512,6 +1527,10 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
     lacrosse: {
       "dialed-in": lacrosseSharedTail,
       "not-feeling-it": lacrosseSharedTail,
+    },
+    soccer: {
+      "dialed-in": soccerSharedTail,
+      "not-feeling-it": soccerSharedTail,
     },
   };
 

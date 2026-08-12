@@ -16,7 +16,8 @@
  * Content choices only — no PII, no history. Single most-recent setup,
  * overwritten on each completion. Fields stored:
  *
- *   sport          — the sport the setup was built for ("hockey" | "basketball")
+ *   sport          — the sport the setup was built for (CachedSport; live +
+ *                    dormant registry keys, never sent over the network)
  *   need           — Today's Focus selection (NeedToday string)
  *   role           — position/role string, or null for no-ask sports
  *   positivePlays  — array of viz-* slug strings (1–3)
@@ -44,7 +45,7 @@ export const PREGAME_SESSION_CACHE_KEY = "fv_pregame_session";
 
 // Mirrors the Sport union in sport-registry.ts. Extended as new sports land
 // so the session cache accepts every sport the pregame engine supports.
-type CachedSport = "hockey" | "basketball" | "baseball" | "golf" | "football" | "swimming" | "track-field" | "lacrosse";
+type CachedSport = "hockey" | "basketball" | "baseball" | "golf" | "football" | "swimming" | "track-field" | "lacrosse" | "soccer";
 type CachedPrayerStyle = "guided" | "self-guided";
 
 // Runtime allowlist mirroring the CachedSport union. A Set (not an inline
@@ -61,6 +62,7 @@ const VALID_CACHED_SPORTS = new Set<CachedSport>([
   "swimming",
   "track-field",
   "lacrosse",
+  "soccer",
 ]);
 
 // Hard ceiling on any stored string field. localStorage is attacker-adjacent
