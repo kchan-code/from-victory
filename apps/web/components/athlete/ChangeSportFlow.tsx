@@ -19,6 +19,7 @@ const SPORT_SUB: Record<Sport, string> = {
   basketball: "The court, your game, your role.",
   golf: "The course, your swing, your score.",
   football: "The field, the huddle, your position.",
+  baseball: "The diamond, your glove, the next pitch.",
 };
 
 function CheckIcon() {

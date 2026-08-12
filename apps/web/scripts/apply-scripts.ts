@@ -60,6 +60,7 @@ async function parseFallbackBodiesFromRegistry(): Promise<FallbackCurrent[]> {
   const constMap: Array<{ constName: string; sportLabel: string; fileSrc: string }> = [
     { constName: "AUDIO_SCRIPT", sportLabel: "Hockey", fileSrc: typesSrc },
     { constName: "BASKETBALL_AUDIO_SCRIPT", sportLabel: "Basketball", fileSrc: registrySrc },
+    { constName: "BASEBALL_AUDIO_SCRIPT", sportLabel: "Baseball", fileSrc: registrySrc },
     { constName: "GOLF_AUDIO_SCRIPT", sportLabel: "Golf", fileSrc: registrySrc },
     { constName: "FOOTBALL_AUDIO_SCRIPT", sportLabel: "Football", fileSrc: registrySrc },
     { constName: "SWIMMING_AUDIO_SCRIPT", sportLabel: "Swimming", fileSrc: registrySrc },

@@ -90,6 +90,7 @@ button in chrome. The single top-left affordance exits via sign-out.
 | Subcopy | `Your content trains around your game.` |
 | Hockey label / sub | `Hockey` / `Ice, skates, the full shift.` |
 | Basketball label / sub | `Basketball` / `The court, your game, your role.` |
+| Baseball label / sub | `Baseball` / `The diamond, your glove, the next pitch.` |
 | Primary CTA | `CONTINUE` |
 | Exit affordance (aria-label) | `Sign out` |
 | Error (inline) | `Couldn't save your sport — try again.` |

@@ -33,7 +33,7 @@ const EXPECTED_COUNTS: Record<string, number> = {
   DL: 7,
   LB: 7,
   DB: 7,
-  // Baseball (FV-424) — DORMANT until the FV-100 go-live
+  // Baseball (FV-424) — live (FV-98/FV-100 go-live, 2026-08-11)
   Pitcher: 7,
   Catcher: 7,
   Infield: 7,
@@ -42,7 +42,7 @@ const EXPECTED_COUNTS: Record<string, number> = {
 
 describe("POSITIVE_PLAYS library", () => {
   it("has all 150 plays", () => {
-    // 73 (hockey/basketball/golf) + 49 football (FV-423) + 28 baseball (FV-424), dormant sports until wiring/go-live
+    // 73 (hockey/basketball/golf) + 49 football (FV-423, dormant) + 28 baseball (FV-424, live)
     expect(POSITIVE_PLAYS).toHaveLength(150);
   });
 

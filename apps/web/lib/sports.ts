@@ -1,7 +1,8 @@
 // Supported sports — the single source of truth for the athlete `sport`
 // dimension. Must match the `sport_valid_values` CHECK constraint in
 // supabase/migrations/20260602000000_athlete_sport.sql (widened for golf in
-// 20260613020000_golf_db_enablement.sql) AND training_sessions_catalog.sport.
+// 20260613020000_golf_db_enablement.sql; widened for baseball via the FV-97
+// migration, already applied in prod) AND training_sessions_catalog.sport.
 // To add a sport: add it here and extend the DB CHECK in a migration — keep the
 // two in lockstep. Adding a sport here forces a typecheck failure on every
 // `Record<Sport, …>` (SportPicker / ChangeSportFlow meta) until it gets an
@@ -11,12 +12,15 @@
 // founder gate). Football goes live per the 2026-07-19 KC launch directive
 // (FV-206) — app-side wiring only; the DB sport CHECK widening is owned
 // separately by the lead (FV-205; must land before football is truly usable
-// end-to-end). Baseball stays DORMANT — content authored, not
-// athlete-selectable — so it is intentionally absent here.
+// end-to-end). Baseball goes live per the 2026-08-11 KC launch directive
+// (FV-100 GO) — content + hard-moment/viz clips were already authored and
+// rendered (FV-94/FV-95); this app-side wiring (FV-98) makes it
+// athlete-selectable. The DB sport CHECK was widened separately (FV-97,
+// already applied in prod).
 //
 // Plain module (no "use server"): safe to import from server actions and
 // client components alike (e.g. the FV-33 onboarding sport selector).
-export const SUPPORTED_SPORTS = ["hockey", "basketball", "golf", "football"] as const;
+export const SUPPORTED_SPORTS = ["hockey", "basketball", "golf", "football", "baseball"] as const;
 export type Sport = (typeof SUPPORTED_SPORTS)[number];
 
 // The interim default until the FV-33 onboarding selector ships. Hockey is the

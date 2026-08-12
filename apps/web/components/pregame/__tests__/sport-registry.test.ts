@@ -156,16 +156,19 @@ describe("BASKETBALL_CONFIG.cellSlugFor", () => {
 
 // ---------------------------------------------------------------------------
 // B-baseball. BASEBALL_CONFIG.cellSlugFor — positional (Pitcher/Catcher/Infield/
-// Outfield), FV-94. Special cases: Pitcher × benched → pulled, Pitcher × hbp →
-// hit-batter, Catcher × hbp → foul-tip. (Pitcher ships 9 — no fielding-error
-// cell; the two throwing-yips cells are authored but withheld from the picker.)
+// Outfield), FV-94/FV-98. Special cases: Pitcher × benched → pulled, Pitcher ×
+// hbp → hit-batter, Catcher × hbp → foul-tip. (Pitcher ships 9 — no
+// fielding-error cell; the two throwing-yips cells are authored but withheld
+// from the picker.) Baseball is COMPOSITIONAL-ONLY (golf/football precedent —
+// FV-98): cellSlugFor returns the hm-bsb-* hard-moment clip directly. There is
+// no baked bsb-* composite — zero exist in the rendered catalog.
 // ---------------------------------------------------------------------------
 
 describe("BASEBALL_CONFIG.cellSlugFor", () => {
   const roles = ["Pitcher", "Catcher", "Infield", "Outfield"] as const;
   const special = new Set(["Pitcher|benched", "Pitcher|hbp", "Pitcher|error", "Catcher|hbp"]);
 
-  it("produces bsb-{role.toLowerCase()}-{frag} for every role × adversity (minus special cases)", () => {
+  it("produces hm-bsb-{role.toLowerCase()}-{frag} for every role × adversity (minus special cases)", () => {
     const unexpected: string[] = [];
     for (const role of roles) {
       for (const adversity of BASEBALL_CONFIG.adversities) {
@@ -175,7 +178,7 @@ describe("BASEBALL_CONFIG.cellSlugFor", () => {
           continue;
         }
         if (special.has(`${role}|${frag}`)) continue; // covered separately below
-        const expected = `bsb-${role.toLowerCase()}-${frag}`;
+        const expected = `hm-bsb-${role.toLowerCase()}-${frag}`;
         const actual = BASEBALL_CONFIG.cellSlugFor(adversity, role);
         if (actual !== expected) {
           unexpected.push(`[${role} × "${adversity}"] expected "${expected}" but got "${actual}"`);
@@ -186,15 +189,15 @@ describe("BASEBALL_CONFIG.cellSlugFor", () => {
   });
 
   it("Pitcher special cases: benched → pulled, hbp → hit-batter, error → strikeout (9-cell)", () => {
-    expect(BASEBALL_CONFIG.cellSlugFor("I get benched.", "Pitcher")).toBe("bsb-pitcher-pulled");
-    expect(BASEBALL_CONFIG.cellSlugFor("I get hit by a pitch.", "Pitcher")).toBe("bsb-pitcher-hit-batter");
+    expect(BASEBALL_CONFIG.cellSlugFor("I get benched.", "Pitcher")).toBe("hm-bsb-pitcher-pulled");
+    expect(BASEBALL_CONFIG.cellSlugFor("I get hit by a pitch.", "Pitcher")).toBe("hm-bsb-pitcher-hit-batter");
     // Pitcher drops the fielding-error cell (ships 9); the never-shown combo
     // redirects to an existing clip so the exhaustive matrix stays 39 distinct.
-    expect(BASEBALL_CONFIG.cellSlugFor("I make an error.", "Pitcher")).toBe("bsb-pitcher-strikeout");
+    expect(BASEBALL_CONFIG.cellSlugFor("I make an error.", "Pitcher")).toBe("hm-bsb-pitcher-strikeout");
   });
 
-  it("Catcher × 'I get hit by a pitch.' → bsb-catcher-foul-tip", () => {
-    expect(BASEBALL_CONFIG.cellSlugFor("I get hit by a pitch.", "Catcher")).toBe("bsb-catcher-foul-tip");
+  it("Catcher × 'I get hit by a pitch.' → hm-bsb-catcher-foul-tip", () => {
+    expect(BASEBALL_CONFIG.cellSlugFor("I get hit by a pitch.", "Catcher")).toBe("hm-bsb-catcher-foul-tip");
   });
 
   it("all 10 adversity strings have a fragment in adversitySlugFragments", () => {
@@ -207,6 +210,55 @@ describe("BASEBALL_CONFIG.cellSlugFor", () => {
 
   it("getSportConfig('baseball') returns BASEBALL_CONFIG", () => {
     expect(getSportConfig("baseball")).toBe(BASEBALL_CONFIG);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// B-baseball-2. The "I lose my command." throwing-yips withhold (FV-93 §5/§6,
+// the FV-119 / lacrosse-yips / golf-first-tee pattern). Catcher + Infield
+// withhold it from the picker (the throwing yips); Pitcher relabels it
+// ("I lose the zone.") and keeps offering it (a pitcher losing the zone is
+// the routine failure mode, not a clinical yips episode); Outfield offers it
+// unrelabeled via the flat-list fallback — for an outfielder this key means a
+// bad relay throw, not the yips, so there is no clinical reason to withhold it.
+// ---------------------------------------------------------------------------
+
+describe("BASEBALL_CONFIG — the 'I lose my command.' throwing-yips withhold (FV-93 §5/§6)", () => {
+  const LOSE_COMMAND = "I lose my command.";
+
+  it("Catcher and Infield do NOT offer it in their Hard Moment picker", () => {
+    const offered: string[] = [];
+    for (const role of ["Catcher", "Infield"] as const) {
+      const keys = adversityOptionsFor(BASEBALL_CONFIG, role).map((o) => o.key);
+      if (keys.includes(LOSE_COMMAND)) offered.push(role);
+    }
+    expect(
+      offered,
+      `"${LOSE_COMMAND}" must stay picker-withheld for Catcher/Infield; offered for: ${offered.join(", ")}`,
+    ).toEqual([]);
+  });
+
+  it("Pitcher DOES offer it, relabeled 'I lose the zone.'", () => {
+    const opts = adversityOptionsFor(BASEBALL_CONFIG, "Pitcher");
+    const match = opts.find((o) => o.key === LOSE_COMMAND);
+    expect(match).toBeDefined();
+    expect(match?.label).toBe("I lose the zone.");
+  });
+
+  it("Outfield DOES offer it via the flat fallback (a bad throw, not the yips — no roleAdversities override)", () => {
+    const opts = adversityOptionsFor(BASEBALL_CONFIG, "Outfield");
+    const match = opts.find((o) => o.key === LOSE_COMMAND);
+    expect(match).toBeDefined();
+    expect(match?.label).toBe(LOSE_COMMAND);
+  });
+
+  it("the two gated cells still resolve via cellSlugFor (authored + rendered, just picker-withheld)", () => {
+    expect(BASEBALL_CONFIG.cellSlugFor(LOSE_COMMAND, "Catcher")).toBe("hm-bsb-catcher-lose-command");
+    expect(BASEBALL_CONFIG.cellSlugFor(LOSE_COMMAND, "Infield")).toBe("hm-bsb-infield-lose-command");
+  });
+
+  it("the key stays in the flat adversities array (grid parity — authored, not offered for every role)", () => {
+    expect(BASEBALL_CONFIG.adversities).toContain(LOSE_COMMAND);
   });
 });
 

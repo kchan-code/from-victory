@@ -171,7 +171,8 @@ describe("Registry roles vs DB CHECK union", () => {
     "Forward", "Defense", "Goalie",
     // Basketball
     "Guard", "Wing", "Big",
-    // Baseball (v2)
+    // Baseball (FV-98 go-live — matches SportConfig.roles + POSITIVE_PLAYS'
+    // role field + the rendered clip slugs)
     "Pitcher", "Catcher", "Infield", "Outfield",
     // Golf (v2) — non-positional; the "position" column stores the player
     // profile. The real profiles_position_values CHECK migration extending the
