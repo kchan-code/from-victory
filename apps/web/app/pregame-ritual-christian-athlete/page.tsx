@@ -4,9 +4,8 @@
 // reproduced word-for-word from docs/gtm/pages/fv-crrc-w1-page.html
 // (KC-approved, Delvox GTM Engine). Do NOT edit, trim, reflow, or
 // "improve" any of the copy in this file. The one change from the
-// source: the "Join the waitlist" anchor now points at the internal
-// waitlist section (with a `source` param) instead of the bare
-// production domain — see docs/gtm/README.md for the contract.
+// source: the trial CTA points at the internal /signup path instead
+// of the bare production domain — see docs/gtm/README.md for the contract.
 //
 // Server Component — no client code except the reused AttributionCapture.
 
@@ -258,14 +257,11 @@ export default function PregameRitualPage() {
               </p>
               <p className={P}>
                 This is the ritual From Victory is built around. Play hard,
-                fearless, and free. From Victory is pre-launch.{" "}
-                <Link
-                  href="/?source=pregame-ritual#waitlist"
-                  className={LINK_CLS}
-                >
-                  Join the waitlist
+                fearless, and free.{" "}
+                <Link href="/signup" className={LINK_CLS}>
+                  Start your athlete&apos;s 14-day free trial
                 </Link>
-                .
+                . $5/mo or $49/yr after, cancel anytime.
               </p>
 
               <h2 className={H2}>Common questions</h2>

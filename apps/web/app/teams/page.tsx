@@ -114,7 +114,7 @@ const athleteGets = [
   {
     icon: "anchor" as const,
     title: "Sport-specific tracks",
-    body: "The core training is built for Christian athletes across sports. Hockey and basketball are the first sport-specific tracks available at launch, with additional sports in development.",
+    body: "The core training is built for Christian athletes across sports. Hockey, basketball, golf, football, baseball, and lacrosse are live now. More sports are in development — we build each one fully before releasing it.",
   },
 ];
 

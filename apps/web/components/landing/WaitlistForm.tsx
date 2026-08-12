@@ -23,8 +23,9 @@ const ROLE_LABELS: Record<(typeof ROLES)[number], string> = {
   Other: "Other",
 };
 
-// Hockey, Basketball, Golf, and Football are the live sports. All others join a
-// per-sport waitlist. The display labels make this clear in the dropdown.
+// Hockey, Basketball, Golf, Football, Baseball, and Lacrosse are the live
+// sports. All others join a per-sport waitlist. The display labels make this
+// clear in the dropdown.
 const SPORTS = [
   { value: "Hockey", label: "Hockey — available now" },
   { value: "Basketball", label: "Basketball — available now" },
