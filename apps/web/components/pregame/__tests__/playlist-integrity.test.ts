@@ -30,6 +30,7 @@ import {
   HOCKEY_CONFIG,
   BASKETBALL_CONFIG,
   GOLF_CONFIG,
+  LACROSSE_CONFIG,
   SPORT_REGISTRY,
   type Sport,
 } from "../sport-registry";
@@ -511,7 +512,7 @@ describe("hockey compositional template matrix", () => {
   const POSITIONS = HOCKEY_CONFIG.roles ?? [];
   const ADVERSITIES = HOCKEY_CONFIG.adversities;
 
-  it("manifest has exactly 200 templates (hockey 30 + basketball 30 + golf 30 + football 70 + baseball 40)", () => {
+  it("manifest has exactly 250 templates (hockey 30 + basketball 30 + golf 30 + football 70 + baseball 40 + lacrosse 50)", () => {
     // 30 hockey (Forward/Defense/Goalie) + 30 basketball (Guard/Wing/Big)
     // + 30 golf (Bomber/Ballstriker/Scrambler) = 90.
     // FV-113 added the basketball arm; FV-266 added the golf arm; FV-98 added
@@ -520,25 +521,34 @@ describe("hockey compositional template matrix", () => {
     // even though baseball's cell resolves directly via cellSlugFor rather than
     // a stitched-from-template hockey-style cell — the row exists so the
     // personalization sentinels (anchor/selfTalk/cueWord) inject correctly).
-    expect(manifest.templates).toHaveLength(200);
+    // FV-407 added the lacrosse arm (Attack/Midfield/Defense/FOGO/Goalie × 10 = 50).
+    expect(manifest.templates).toHaveLength(250);
   });
 
-  it("every (position × adversity) combination has exactly one template", () => {
+  it("every (position × adversity) combination has exactly one HOCKEY template", () => {
     const missing: string[] = [];
 
     // Guard against a vacuous pass if the registry roles axis is ever emptied.
     expect(POSITIONS.length).toBeGreaterThan(0);
 
+    // FV-407: filter on sport === "hockey" — hockey's Defense/Goalie positions
+    // collide with lacrosse's identically-named positions, so an unfiltered
+    // (position × adversity) match would double-count once lacrosse rows
+    // exist. See the dedicated "per-sport template matrix" describe block
+    // below for the generalized, all-sport version of this check.
     for (const position of POSITIONS) {
       for (const adversity of ADVERSITIES) {
         const matches = manifest.templates.filter(
-          (t) => t.position === position && t.adversity === adversity,
+          (t) =>
+            t.sport === "hockey" &&
+            t.position === position &&
+            t.adversity === adversity,
         );
         if (matches.length === 0) {
-          missing.push(`missing template for [${position} × "${adversity}"]`);
+          missing.push(`missing template for [hockey × ${position} × "${adversity}"]`);
         } else if (matches.length > 1) {
           missing.push(
-            `duplicate templates (${matches.length}) for [${position} × "${adversity}"]`,
+            `duplicate templates (${matches.length}) for [hockey × ${position} × "${adversity}"]`,
           );
         }
       }
@@ -547,12 +557,18 @@ describe("hockey compositional template matrix", () => {
     expect(missing).toEqual([]);
   });
 
-  it("goalie × 'I get benched.' template uses the goalie-pulled clip (not goalie-benched)", () => {
+  it("goalie × 'I get benched.' template (hockey) uses the goalie-pulled clip (not goalie-benched)", () => {
     // The special case: a goalie isn't "benched," they're "pulled."
     // The template for Goalie × "I get benched." must reference hm-goalie-pulled,
     // not the non-existent hm-goalie-benched.
+    // FV-407: filter on sport === "hockey" — lacrosse also has a Goalie ×
+    // "I get benched." row (hm-lax-goalie-pulled), which would otherwise be
+    // an ambiguous match for this hockey-specific assertion.
     const template = manifest.templates.find(
-      (t) => t.position === "Goalie" && t.adversity === "I get benched.",
+      (t) =>
+        t.sport === "hockey" &&
+        t.position === "Goalie" &&
+        t.adversity === "I get benched.",
     );
 
     expect(template).toBeDefined();
@@ -562,6 +578,76 @@ describe("hockey compositional template matrix", () => {
 
     // hm-goalie-benched must NOT appear (it doesn't exist and would break resolution)
     expect(template!.clips).not.toContain("hm-goalie-benched");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 6b. Per-sport (sport × position × adversity) template matrix — FV-407
+//     bugfix. manifest.templates was historically keyed by (position ×
+//     adversity) ONLY — no sport — so position names that collide across
+//     sports (hockey vs. lacrosse Defense/Goalie) made the dimensional
+//     lookup in audio-playlist.ts order-dependent: a live hockey Defense/
+//     Goalie athlete could resolve a lacrosse template. This block asserts,
+//     for EVERY sport rendered into the manifest (manifest.practiceState),
+//     that the (sport × position × adversity) grid is exactly one-to-one,
+//     and that sport-filtering eliminates every cross-sport collision.
+// ---------------------------------------------------------------------------
+
+describe("per-sport (sport × position × adversity) template matrix (FV-407)", () => {
+  const sportsInManifest = Object.keys(
+    manifest.practiceState ?? {},
+  ) as Sport[];
+
+  it("manifest.practiceState is non-empty and includes hockey + lacrosse (sanity)", () => {
+    expect(sportsInManifest.length).toBeGreaterThan(0);
+    expect(sportsInManifest).toEqual(
+      expect.arrayContaining(["hockey", "lacrosse"]),
+    );
+  });
+
+  it.each(sportsInManifest)(
+    "%s: every (position × adversity) combination has exactly one template tagged with this sport",
+    (sportKey) => {
+      const config = SPORT_REGISTRY[sportKey];
+      const positions = config.roles ?? [];
+      const adversities = config.adversities;
+
+      // Guard against a vacuous pass if a sport's axes are ever emptied.
+      expect(positions.length).toBeGreaterThan(0);
+      expect(adversities.length).toBeGreaterThan(0);
+
+      const missing: string[] = [];
+      for (const position of positions) {
+        for (const adversity of adversities) {
+          const matches = manifest.templates.filter(
+            (t) =>
+              t.sport === sportKey &&
+              t.position === position &&
+              t.adversity === adversity,
+          );
+          if (matches.length !== 1) {
+            missing.push(
+              `[${sportKey} × ${position} × "${adversity}"]: found ${matches.length} template(s), expected 1`,
+            );
+          }
+        }
+      }
+
+      expect(missing).toEqual([]);
+    },
+  );
+
+  it("no (sport × position × adversity) triple resolves to more than one template (zero cross-sport collisions once sport-filtered)", () => {
+    const counts = new Map<string, number>();
+    for (const t of manifest.templates) {
+      const key = `${t.sport}::${t.position}::${t.adversity}`;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    const dupes = [...counts.entries()]
+      .filter(([, count]) => count > 1)
+      .map(([key, count]) => `${key} → ${count} templates`);
+
+    expect(dupes).toEqual([]);
   });
 });
 
@@ -705,7 +791,25 @@ describe("resolvePlaylist — real manifest (version-drift guard)", () => {
     // athlete's pregame falls back to the legacy two-<audio> path (FV-113).
     for (const position of BASKETBALL_CONFIG.roles ?? []) {
       for (const adversity of BASKETBALL_CONFIG.adversities) {
-        const playlist = resolvePlaylist("Calm", position, adversity, manifest);
+        // sport arg required since templates became sport-keyed (FV-407) —
+        // omitting it would fall back to the hockey default and find no row.
+        const playlist = resolvePlaylist(
+          "Calm", position, adversity, manifest, null, null, null, "basketball",
+        );
+        expect(playlist, `${position} × "${adversity}"`).not.toBeNull();
+      }
+    }
+  });
+
+  it("resolves the FULL lacrosse matrix (every position × adversity) to a non-null playlist (FV-407)", () => {
+    // 5 positions × 10 adversities = 50 — includes the cellSlugFor reroutes
+    // (FOGO/Goalie special cases, Attack dodged→turnover) and proves every
+    // lacrosse template + referenced clip is catalog-resident post-render.
+    for (const position of LACROSSE_CONFIG.roles ?? []) {
+      for (const adversity of LACROSSE_CONFIG.adversities) {
+        const playlist = resolvePlaylist(
+          "Calm", position, adversity, manifest, null, null, null, "lacrosse",
+        );
         expect(playlist, `${position} × "${adversity}"`).not.toBeNull();
       }
     }
@@ -935,23 +1039,24 @@ describe("shared sport-neutral openers (FV-466)", () => {
 // ---------------------------------------------------------------------------
 
 describe("catalog count (multi-sport, FV-266)", () => {
-  it("catalog is fully categorized (no orphans) and totals 552 entries", () => {
+  it("catalog is fully categorized (no orphans) and totals 658 entries", () => {
     const keys = Object.keys(catalog);
     const n = (re: RegExp) => keys.filter((k) => re.test(k)).length;
     const breakdown = {
-      viz: n(/^viz-/), //                         170 — profile + positive-play viz (all sports)
-      //                                                 +21 golf viz (FV-294), +7 football flagship (FV-203), +49 football plays (FV-423), +28 baseball plays (FV-424)
+      viz: n(/^viz-/), //                         210 — profile + positive-play viz (all sports)
+      //                                                 +21 golf viz (FV-294), +7 football flagship (FV-203), +49 football plays (FV-423), +28 baseball plays (FV-424), +40 lacrosse (5 flagships + 35 plays, FV-406/407)
       hmHockey: n(/^hm-(forward|defense|goalie)-/), // 30 — hockey hard-moment cells
       hmBball: n(/^hm-bb-/), //                     30 — basketball compositional cells
       bbalBaked: n(/^bb-/), //                      30 — legacy baked basketball composites
       hmBaseball: n(/^hm-bsb-/), //                 39 — baseball cells (FV-94)
       hmGolf: n(/^hm-glf-/), //                     30 — golf cells (FV-266)
-      hmFootball: n(/^hm-ftb-/), //                 67 — football cells (FV-203, dormant sport)
-      practice: n(/^pp-/), //                       68 — pre-practice clips (all sports + variations)
+      hmFootball: n(/^hm-ftb-/), //                 67 — football cells (FV-203)
+      hmLacrosse: n(/^hm-lax-/), //                 50 — lacrosse cells incl. 3 withheld yips (FV-407)
+      practice: n(/^pp-/), //                       80 — pre-practice clips (all sports + variations; +12 pp-lax-* FV-407)
       openers: n(/^opener-/), //                    29 — need openers (incl. basketball variants + 10 shared sport-neutral, FV-466)
       cueWord: n(/^cw-/), //                        20 — cue-word reset/sendoff
-      anchor: n(/^anc-/), //                        17 — reset-anchor clips (+3 golf anc-glf-* FV-303, +3 football anc-ftb-* FV-468, +2 baseball FV-98)
-      selfTalk: n(/^st-/), //                       12 — self-talk clips (+st-glf-01/02 FV-303/294, +st-ftb-01 FV-468, +st-bsb-01 FV-98)
+      anchor: n(/^anc-/), //                        20 — reset-anchor clips (+3 golf anc-glf-* FV-303, +3 football anc-ftb-* FV-468, +2 baseball FV-98, +3 lacrosse anc-lax-* FV-407)
+      selfTalk: n(/^st-/), //                       13 — self-talk clips (+st-glf-01/02 FV-303/294, +st-ftb-01 FV-468, +st-bsb-01 FV-98, +st-lax-01 FV-407)
       shared: n(/^shared-/), //                     10 — shared scaffold clips (+3 section intros, #232)
     };
     const sum = Object.values(breakdown).reduce((a, b) => a + b, 0);
@@ -961,7 +1066,7 @@ describe("catalog count (multi-sport, FV-266)", () => {
     // Every catalog key falls into exactly one bucket — catches typos/orphans.
     expect(uncategorized, `uncategorized clips: ${uncategorized.join(", ")}`).toEqual([]);
     expect(sum).toBe(keys.length);
-    expect(keys).toHaveLength(552);
+    expect(keys).toHaveLength(658);
   });
 });
 

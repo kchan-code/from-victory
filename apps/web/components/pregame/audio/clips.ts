@@ -5602,6 +5602,57 @@ export const CLIP_ST_BSB_01_SCRIPT: AudioScript = {
   ],
 };
 
+// ── Lacrosse personalization clips (FV-407) ──────────────────────────────────
+// 3 lacrosse-specific anchor clips + 1 self-talk clip. These voice the
+// LACROSSE_CONFIG picker options so the FV-301 coverage gate passes at
+// go-live with empty KNOWN_UNVOICED_* allowlists. Slug-map wiring in
+// audio-mapping.ts lands in the same PR as the render (the FV-303 golf /
+// FV-468 football pattern).
+
+export const CLIP_ANC_LAX_TAP_STICK_SCRIPT: AudioScript = {
+  slug: "anc-lax-tap-stick",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Tap your stick." },
+  ],
+};
+
+export const CLIP_ANC_LAX_GLOVE_TAP_SHAFT_SCRIPT: AudioScript = {
+  slug: "anc-lax-glove-tap-shaft",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Glove tap on the shaft." },
+  ],
+};
+
+export const CLIP_ANC_LAX_RESET_AT_X_SCRIPT: AudioScript = {
+  slug: "anc-lax-reset-at-x",
+  voice: "ash",
+  instructions: ANCHOR_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "Reset at the X." },
+  ],
+};
+
+export const CLIP_ST_LAX_01_SCRIPT: AudioScript = {
+  slug: "st-lax-01",
+  voice: "ash",
+  instructions: SELFTALK_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    { type: "speech", text: "You're okay. Next whistle." },
+  ],
+};
+
 // ── Golf personalization clips (FV-303) ──────────────────────────────────────
 // 3 golf-specific anchor clips + 1 self-talk clip. These complete the golf
 // pregame option set. Their slug-map wiring in audio-mapping.ts
@@ -6264,6 +6315,11 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   CLIP_ANC_TAP_BAT_TWICE_SCRIPT,
   CLIP_ANC_LOOK_AT_THE_PITCHER_SCRIPT,
   CLIP_ST_BSB_01_SCRIPT,
+  // Lacrosse personalization clips (FV-407 go-live render).
+  CLIP_ANC_LAX_TAP_STICK_SCRIPT,
+  CLIP_ANC_LAX_GLOVE_TAP_SHAFT_SCRIPT,
+  CLIP_ANC_LAX_RESET_AT_X_SCRIPT,
+  CLIP_ST_LAX_01_SCRIPT,
   // Pre-practice focus — hockey "Talk every shift" (FV-121)
   CLIP_PP_FOCUS_TALK_EVERY_SHIFT_SCRIPT,
   // Pre-practice + pregame prayer clips (sport-neutral, Issue 1)

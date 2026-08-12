@@ -48,6 +48,15 @@ export type PlaylistTemplate = {
    *  Absent in p2 manifests where the opener is resolved from the need
    *  separately and templates are keyed by (position × adversity) only. */
   need?: string;
+  /**
+   * FV-407 bugfix: templates were keyed by (position × adversity) ONLY — no
+   * sport — so position names that collide across sports (hockey vs.
+   * lacrosse Defense/Goalie) made the dimensional lookup order-dependent.
+   * Optional so a stale/older manifest generated before this fix (which
+   * carries no `sport` field and no lacrosse rows, so no collision exists)
+   * still resolves correctly — see the lookup in resolvePlaylist() below.
+   */
+  sport?: string;
   position: string;
   adversity: string;
   clips: string[]; // ordered slug list; p2 does NOT include the opener slug
@@ -218,8 +227,11 @@ export function resolvePlaylist(
   cueWord?: string | null,
   /**
    * The athlete's sport. Defaults to "hockey" for backward compat with all
-   * existing call sites. Used only to resolve the opener slug so basketball
-   * gets sport-keyed openers (FV-117 / FV-116).
+   * existing call sites. Resolves the opener slug (sport-keyed openers,
+   * FV-117 / FV-116) AND — since FV-407 — gates the dimensional template
+   * lookup, because template rows are sport-keyed (lacrosse "Defense"/"Goalie"
+   * collide with hockey's position tokens). Callers for non-hockey sports
+   * MUST pass this or the lookup returns null.
    */
   sport: Sport = "hockey",
   /**
@@ -247,6 +259,8 @@ export function resolvePlaylist(
   if (manifest.version === "p1") {
     // ── p1 / legacy: exact three-way match (need + position + adversity) ──────
     // Only the original p1 manifests carried a `need` field on each template.
+    // No `sport` filter needed here: p1 predates every sport but hockey, so
+    // its templates carry zero cross-sport position collisions (FV-407).
     const template = manifest.templates.find(
       (t) =>
         t.need === need &&
@@ -276,8 +290,19 @@ export function resolvePlaylist(
     const openerSlug = resolveOpenerSlug(need, sport);
     if (!openerSlug) return null;
 
+    // FV-407 bugfix: position names collide across sports (hockey vs.
+    // lacrosse both have "Defense"/"Goalie"), so the lookup must also match
+    // sport — otherwise it's order-dependent and a live hockey athlete could
+    // resolve a lacrosse template (or vice versa). `t.sport === undefined` is
+    // a deliberate stale-manifest fallback: a manifest generated before this
+    // fix carries no `sport` field on any row and also carries no lacrosse
+    // rows, so degrading to today's (position × adversity)-only match is safe
+    // and collision-free for that manifest.
     const template = manifest.templates.find(
-      (t) => t.position === position && t.adversity === adversity,
+      (t) =>
+        (t.sport === undefined || t.sport === sport) &&
+        t.position === position &&
+        t.adversity === adversity,
     );
     if (!template) return null;
 

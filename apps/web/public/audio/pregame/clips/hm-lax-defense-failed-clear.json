@@ -1,0 +1,10 @@
+{
+  "slug": "hm-lax-defense-failed-clear",
+  "durationSec": 60.516,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

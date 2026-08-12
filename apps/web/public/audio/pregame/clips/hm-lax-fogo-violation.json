@@ -1,0 +1,10 @@
+{
+  "slug": "hm-lax-fogo-violation",
+  "durationSec": 52.812,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

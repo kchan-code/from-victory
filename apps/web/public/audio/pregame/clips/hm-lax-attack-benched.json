@@ -1,0 +1,10 @@
+{
+  "slug": "hm-lax-attack-benched",
+  "durationSec": 55.284,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

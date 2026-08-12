@@ -1,0 +1,10 @@
+{
+  "slug": "hm-lax-attack-penalty",
+  "durationSec": 53.34,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}
