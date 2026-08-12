@@ -210,6 +210,11 @@ screenshots — not required for the scaffold to build.
 
 ## Follow-ups (not in this PR)
 
+- Soften the MVP “no native iOS/Android” lines in `CLAUDE.md` / `AGENTS.md` to
+  match this additive-shell constraint (deferred from the scaffold PR so the
+  `privacy-verdict` gate is not blocked on a cloud-agent `cursor[bot]` comment —
+  that gate only accepts OWNER/MEMBER/COLLABORATOR authors). README + this doc
+  already state the rule: PWA primary; native shell only; no native-only features.
 - iOS `PrivacyInfo.xcprivacy` host-app manifest before App Store submission
 - Play Families / Data Safety pre-flight before Play Console app creation
 - Decide whether to commit `ios/App/Podfile.lock` for reproducible CocoaPods
