@@ -208,6 +208,15 @@ screenshots — not required for the scaffold to build.
 
 ---
 
+## Follow-ups (not in this PR)
+
+- iOS `PrivacyInfo.xcprivacy` host-app manifest before App Store submission
+- Play Families / Data Safety pre-flight before Play Console app creation
+- Decide whether to commit `ios/App/Podfile.lock` for reproducible CocoaPods
+- Extend `athlete-no-tracking` CI to scan `apps/native` manifests/deps
+- Enable R8/ProGuard minify for release AABs before first Play upload
+- Rename Capacitor sample unit/instrumented tests off `com.getcapacitor.myapp`
+
 ## What this PR does *not* do
 
 - Store listing copy, screenshots, or marketing claims

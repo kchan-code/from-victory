@@ -68,11 +68,6 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
-try {
-    def servicesJSON = file('google-services.json')
-    if (servicesJSON.text) {
-        apply plugin: 'com.google.gms.google-services'
-    }
-} catch(Exception e) {
-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
-}
+// Intentionally no google-services plugin apply. Push Notifications /
+// Firebase are out of the native plugin allowlist (Web Push remains the
+// MVP path). Do not reintroduce without product + privacy review.

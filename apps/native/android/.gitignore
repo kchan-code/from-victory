@@ -61,8 +61,11 @@ keystore.properties
 .externalNativeBuild
 .cxx/
 
-# Google Services (e.g. APIs or Firebase)
-# google-services.json
+# Google Services / Firebase — never commit. Adding google-services.json
+# (or applying the Google Services Gradle plugin) requires a fresh
+# product-strategist + kids-privacy-officer review: Firebase Analytics
+# must not activate on minor (13-17) accounts.
+google-services.json
 
 # Freeline
 freeline.py
