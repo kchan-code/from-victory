@@ -32,7 +32,7 @@ afterEach(() => cleanup());
 describe("PositivePlaysScreen (FV-144)", () => {
   it("renders every play for the athlete's position", () => {
     render(<PositivePlaysScreen state={forwardState()} set={vi.fn()} sportConfig={HOCKEY_CONFIG} />);
-    for (const { title } of positivePlaysFor("Forward")) {
+    for (const { title } of positivePlaysFor("hockey", "Forward")) {
       expect(screen.getByRole("button", { name: title })).toBeInTheDocument();
     }
   });

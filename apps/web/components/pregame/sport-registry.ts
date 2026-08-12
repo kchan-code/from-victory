@@ -2217,12 +2217,17 @@ export const TRACKFIELD_CONFIG: SportConfig = {
 // `adversities` and NO roleAdversities entry carries it, so it is fully
 // unreachable from the picker. Re-enabling is a KC + clinical decision.
 //
-// VIZ library (FV-404 §2 two-libraries rule): TEN viz clips — 2 per position,
-// viz-lax-<position>-<theme> (clips-lacrosse.ts), matching the FV-405 book
-// slug-for-slug. There is NO flagship viz-lax-<position> clip; at go-live the
-// 10 themes wire into POSITIVE_PLAYS (positive-plays.ts) as each position's
-// selectable play list — no entries until the audio renders (dormant
-// precedent), so sportHasPositivePlays() keeps the picker step gated off.)
+// VIZ library (FV-404 §2 → expanded at FV-406 to the flagship + 7-per-role
+// positive-play contract every live sport ships): a flagship viz-lax-<role>
+// clip per position PLUS 35 viz-lax-<role>-<theme> positive plays (7 per
+// role), matching docs/scripts/lacrosse.md slug-for-slug. All 35 positive
+// plays are wired into POSITIVE_PLAYS (positive-plays.ts, sport: "lacrosse")
+// — content-complete, so sportHasPositivePlays() now returns true for
+// lacrosse (same as any live sport). Dormancy is NOT enforced by that
+// gate here — it is enforced by lacrosse's absence from SUPPORTED_SPORTS
+// (lib/sports.ts): no athlete can ever have sport: "lacrosse", so
+// PregameFlow never resolves a lacrosse session, rendered clips or not.
+// The FV-407 render pass makes the (already-wired) clips real.
 // ---------------------------------------------------------------------------
 
 const LACROSSE_ADVERSITY_SLUG_FRAGMENTS: Record<string, string> = {
@@ -2427,26 +2432,30 @@ export const LACROSSE_CONFIG: SportConfig = {
     return `hm-lax-${token}-${frag}`;
   },
 
-  // Pre-practice focus presets (FV-404 Appendix — slugs declared now so the
-  // registry is complete; clips land with the audio render / FV-405).
+  // Pre-practice focus presets — derived 1:1 from the spoken focus-cue lines in
+  // docs/scripts/pre-practice.md (## Lacrosse Pre-Practice Clips). The book
+  // SUPERSEDES the FV-404 Appendix's placeholder list (KC handback
+  // 2026-08-10, wired at FV-406) — the Appendix stays ratified for everything
+  // else. Label = spoken cue with the trailing period dropped = slug suffix
+  // (the football convention; see FOOTBALL_CONFIG above).
   practiceFocusOptions: [
-    "Win my one-on-one",
-    "Full motor, both ends",
-    "Ground balls win games",
-    "Talk on defense",
-    "Next whistle, next play",
-    "Move off-ball",
-    "Take care of the ball",
+    "Run through every ground ball",
+    "Move first when the ball is loose",
+    "Two hands through the ground ball",
+    "Call the slide early",
+    "Finish the rep, then reset",
+    "Protect the stick through traffic",
+    "Finish with your hands free",
   ] as const,
 
   practiceFocusSlugs: {
-    "Win my one-on-one": "pp-lax-focus-win-my-one-on-one",
-    "Full motor, both ends": "pp-lax-focus-full-motor-both-ends",
-    "Ground balls win games": "pp-lax-focus-ground-balls-win-games",
-    "Talk on defense": "pp-lax-focus-talk-on-defense",
-    "Next whistle, next play": "pp-lax-focus-next-whistle-next-play",
-    "Move off-ball": "pp-lax-focus-move-off-ball",
-    "Take care of the ball": "pp-lax-focus-take-care-of-the-ball",
+    "Run through every ground ball": "pp-lax-focus-run-through-every-ground-ball",
+    "Move first when the ball is loose": "pp-lax-focus-move-first",
+    "Two hands through the ground ball": "pp-lax-focus-two-hands-through",
+    "Call the slide early": "pp-lax-focus-call-the-slide-early",
+    "Finish the rep, then reset": "pp-lax-focus-finish-the-rep",
+    "Protect the stick through traffic": "pp-lax-focus-protect-the-stick-through-traffic",
+    "Finish with your hands free": "pp-lax-focus-finish-hands-free",
   },
 
   // FV-117 per-sport picker lists. "Better puck decisions" → "Better decisions

@@ -457,10 +457,15 @@ function humanTitle(slug: string): string {
     return "Lacrosse · " + position + " · " + rest.slice(1).join("-");
   }
   if (slug.startsWith("viz-lax-")) {
-    // viz-lax-<position>-<theme> — two library themes per position (FV-404 §2).
+    // viz-lax-<position> (flagship) or viz-lax-<position>-<theme> (one of the
+    // 7-per-role positive-play library, FV-406 — supersedes the old
+    // "2 themes, no flagship" FV-404 §2 shape).
     const p0 = parts[2] ?? "";
     const position = p0 === "fogo" ? "FOGO" : p0.charAt(0).toUpperCase() + p0.slice(1);
-    return "Lacrosse · " + position + " · VIZ — " + parts.slice(3).join("-");
+    const theme = parts.slice(3).join("-");
+    return theme.length > 0
+      ? "Lacrosse · " + position + " · VIZ — " + theme
+      : "Lacrosse · " + position + " · VIZ (flagship)";
   }
   if (slug.startsWith("opener-bb-")) return "Basketball Opener · " + parts.slice(2).join("-");
   if (slug.startsWith("opener-")) return "Hockey Opener · " + parts.slice(1).join("-");
@@ -767,11 +772,18 @@ async function main() {
   );
 
   // ── Lacrosse ────────────────────────────────────────────────────────────────
+  // FV-406: the FV-404/FV-405 "2 themes, no flagship" library was superseded —
+  // lacrosse now ships a flagship viz-lax-<role> PLUS 7 positive-play
+  // viz-lax-<role>-<theme> clips per role (docs/scripts/lacrosse.md headers:
+  // "## VIZ Clips — Flagships (position)" / "## VIZ Clips — Positive Plays
+  // (position × library)"), matching every other live sport's contract.
   const laxScripts = buckets.get("lacrosse")!;
+  const LAX_FLAGSHIP_SLUGS = ["viz-lax-attack", "viz-lax-midfield", "viz-lax-defense", "viz-lax-fogo", "viz-lax-goalie"];
   const laxStats = await writeBook(
     "lacrosse.md", "Lacrosse", true,
     [
-      { header: "VIZ Clips (position)", scripts: laxScripts.filter((s) => s.slug.startsWith("viz-lax-")) },
+      { header: "VIZ Clips — Flagships (position)", scripts: laxScripts.filter((s) => LAX_FLAGSHIP_SLUGS.includes(s.slug)) },
+      { header: "VIZ Clips — Positive Plays (position × library)", scripts: laxScripts.filter((s) => s.slug.startsWith("viz-lax-") && !LAX_FLAGSHIP_SLUGS.includes(s.slug)) },
       { header: "Hard Moment Clips", scripts: laxScripts.filter((s) => s.slug.startsWith("hm-lax-")) },
     ],
     "Lacrosse",
@@ -782,10 +794,12 @@ async function main() {
   const ppStats = await writeBook(
     "pre-practice.md", "Pre-Practice", false,
     [
-      { header: "Hockey Pre-Practice Clips", scripts: ppScripts.filter((s) => !s.slug.startsWith("pp-bb-") && !s.slug.startsWith("pp-baseball-") && !s.slug.startsWith("pp-golf-")) },
+      { header: "Hockey Pre-Practice Clips", scripts: ppScripts.filter((s) => !s.slug.startsWith("pp-bb-") && !s.slug.startsWith("pp-baseball-") && !s.slug.startsWith("pp-golf-") && !s.slug.startsWith("pp-football-") && !s.slug.startsWith("pp-lax-")) },
       { header: "Basketball Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-bb-")) },
       { header: "Baseball Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-baseball-")) },
       { header: "Golf Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-golf-")) },
+      { header: "Football Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-football-")) },
+      { header: "Lacrosse Pre-Practice Clips", scripts: ppScripts.filter((s) => s.slug.startsWith("pp-lax-")) },
     ],
   );
 

@@ -526,7 +526,7 @@ export function PositivePlaysScreen({
   set: SetFn;
   sportConfig: SportConfig;
 }) {
-  const plays = positivePlaysFor(state.role);
+  const plays = positivePlaysFor(sportConfig.sportKey, state.role);
   const picked = state.positivePlays;
   const atCap = picked.length >= MAX_POSITIVE_PLAYS;
 

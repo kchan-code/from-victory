@@ -561,9 +561,18 @@ possession")*, "Breathe. Do your job.", "Stay steady. Make the next play.",
 "You don't need to do too much.", "Compete, recover, go again.",
 "Your identity is secure. Play free.".
 
-**`practiceFocusOptions` (→ `pp-lax-focus-*`):** "Win my one-on-one",
+**`practiceFocusOptions` (→ `pp-lax-focus-*`):** ~~"Win my one-on-one",
 "Full motor, both ends", "Ground balls win games", "Talk on defense",
-"Next whistle, next play", "Move off-ball", "Take care of the ball".
+"Next whistle, next play", "Move off-ball", "Take care of the ball"~~ —
+**SUPERSEDED by the merged `docs/scripts/pre-practice.md` pre-practice book
+section (KC handback 2026-08-10, wired at FV-406).** The book is now the
+source of truth for these 7 (label = spoken cue = slug, minus the trailing
+period, per the football convention): "Run through every ground ball",
+"Move first when the ball is loose", "Two hands through the ground ball",
+"Call the slide early", "Finish the rep, then reset", "Protect the stick
+through traffic", "Finish with your hands free". The rest of this Appendix
+(needs, anchors, selfTalkOptions, fragment map, special-case slugs) stays
+ratified as written.
 
 **`cueWordHelper`:** "The one you'd say to yourself on the ride back / at the X."
 **`cardShareHint`:** "Screenshot it. Open it before the first faceoff."

@@ -1097,9 +1097,16 @@ describe("hockey focus parity — pp-focus-talk-every-shift (FV-121)", () => {
 // ---------------------------------------------------------------------------
 
 describe("positive-play library integrity (FV-144)", () => {
-  it(`all ${POSITIVE_PLAYS.length} selectable positive plays are in the catalog with real non-zero files`, () => {
+  it(`all ${POSITIVE_PLAYS.length} selectable positive plays are in the catalog with real non-zero files (for sports whose audio has rendered)`, () => {
+    // FV-406: a sport with no manifest.practiceState entry has no audio
+    // render yet (the RENDERED_SPORT_CONFIGS gate below), so its viz-* clips
+    // cannot exist in the catalog no matter what POSITIVE_PLAYS declares —
+    // skip the file-resolution assert for those entries (lacrosse today; this
+    // auto-activates the moment FV-407 lands lacrosse's practiceState tail).
+    // Slug/role shape is still checked unconditionally by the next test.
     const broken: string[] = [];
-    for (const { slug } of POSITIVE_PLAYS) {
+    for (const { slug, sport } of POSITIVE_PLAYS) {
+      if (manifest.practiceState?.[sport] == null) continue; // not rendered — shape-only
       const err = catalogFileErr(slug);
       if (err) broken.push(`${slug}: ${err}`);
     }
@@ -1111,10 +1118,13 @@ describe("positive-play library integrity (FV-144)", () => {
     // matching GOLF_CONFIG.cellSlugFor — role.toLowerCase().replace(/-/g,"")),
     // so we strip hyphens from the role before building the expected prefix.
     // FV-423: later sports namespace their viz slugs with the sport token from
-    // the module-map slug scheme (football "ftb", lacrosse "lax", …) to keep
-    // the catalog collision-free: viz-{sportToken}-{role}-{play}. Legacy
-    // hockey/basketball/golf slugs stay un-namespaced (viz-{role}-{play}).
-    const SPORT_SLUG_TOKENS = ["ftb", "bsb"];
+    // the module-map slug scheme (football "ftb", baseball "bsb", lacrosse
+    // "lax", …) to keep the catalog collision-free:
+    // viz-{sportToken}-{role}-{play}. Legacy hockey/basketball/golf slugs stay
+    // un-namespaced (viz-{role}-{play}). This shape check runs unconditionally
+    // — including for dormant sports whose files don't exist yet (the test
+    // above) — so a malformed dormant entry still fails CI immediately.
+    const SPORT_SLUG_TOKENS = ["ftb", "bsb", "lax"];
     const mismatches: string[] = [];
     for (const { slug, role } of POSITIVE_PLAYS) {
       const roleToken = role.toLowerCase().replace(/-/g, "");
@@ -1133,7 +1143,7 @@ describe("positive-play library integrity (FV-144)", () => {
     const empty: string[] = [];
     for (const config of [HOCKEY_CONFIG, BASKETBALL_CONFIG, GOLF_CONFIG]) {
       for (const role of config.roles ?? []) {
-        if (positivePlaysFor(role).length === 0) empty.push(`${config.sportKey}/${role}`);
+        if (positivePlaysFor(config.sportKey, role).length === 0) empty.push(`${config.sportKey}/${role}`);
       }
     }
     expect(empty).toEqual([]);
@@ -1174,7 +1184,7 @@ describe("positive-play library integrity (FV-144)", () => {
       const need = config.needs[0]!; // "Confidence" — has an opener in all three supported sports
       const adversity = config.adversities[0]!;
       for (const role of config.roles ?? []) {
-        const plays = positivePlaysFor(role);
+        const plays = positivePlaysFor(config.sportKey, role);
         const picks = plays.slice(0, 2).map((p) => p.slug);
 
         const resolved = resolvePlaylist(
@@ -1226,7 +1236,7 @@ describe("viz content contract (FV-428) — live sports have positive-play libra
       const config = SPORT_REGISTRY[sport as Sport];
       expect(config, `no registry config for live sport "${sport}"`).toBeDefined();
       for (const role of config.roles ?? []) {
-        const n = positivePlaysFor(role).length;
+        const n = positivePlaysFor(sport as Sport, role).length;
         if (n < MIN_PLAYS_PER_ROLE) {
           failures.push(`${sport}/${role}: ${n} plays (< ${MIN_PLAYS_PER_ROLE})`);
         }
