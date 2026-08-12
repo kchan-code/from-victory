@@ -5,6 +5,13 @@ This document specifies the pack grouping strategy, manifest schema extension,
 and MANIFEST_VERSION parity model for the native iOS shell. It is input to the
 next PR (NativeCacheStrategy implementation + Filesystem download flow).
 
+> **Premise check (2026-08):** `apps/native` currently loads the hosted Next.js
+> app over HTTPS (`server.url`), not bundled `capacitor://` assets. On that
+> model the service worker and Cache Storage may work as on the PWA — which
+> could delete the need for this Filesystem pack workstream. Re-validate
+> empirically in the Capacitor WebView before implementing `NativeCacheStrategy`.
+> See `docs/native-capacitor.md`.
+
 ---
 
 ## 1. Problem

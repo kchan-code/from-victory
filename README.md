@@ -7,7 +7,7 @@ See [CLAUDE.md](./CLAUDE.md) for full mission, scope, and non-negotiable constra
 ## Tech stack
 
 - **Frontend:** Next.js 14 (App Router), Tailwind CSS, TypeScript strict
-- **Mobile delivery:** PWA (no native iOS/Android in MVP)
+- **Mobile delivery:** PWA (primary). Capacitor native shells in `apps/native` are an additive App Store / Play path around the same web app — scaffolding only; store listings are not live. See [docs/native-capacitor.md](./docs/native-capacitor.md).
 - **Backend:** Supabase (Postgres + Auth + Storage)
 - **Payments:** Stripe Billing
 - **Hosting:** Vercel (auto-deploy from `main`)
@@ -16,7 +16,8 @@ See [CLAUDE.md](./CLAUDE.md) for full mission, scope, and non-negotiable constra
 
 ```
 from-victory/
-├── apps/web/             # Next.js app
+├── apps/web/             # Next.js app (Vercel)
+├── apps/native/          # Capacitor Android + iOS shell (store distribution)
 ├── supabase/             # Migrations
 └── .github/              # CI gates (build, typecheck, lint, audio-cache-bust, privacy-verdict)
 ```
@@ -102,6 +103,24 @@ Run from the repo root:
 | `npm run typecheck`| Run `tsc --noEmit` against `apps/web`         |
 | `npm run lint`     | Run `next lint`                               |
 | `npm test`         | Run tests across workspaces (when present)    |
+
+## Native shells (Capacitor)
+
+The web app stays on Vercel. `apps/native` wraps the **hosted** production URL
+in a Capacitor WebView for Play / App Store distribution. It does not replace
+the PWA and must not add tracking SDKs.
+
+```bash
+cd apps/native
+npx cap sync
+npm run build:android:debug    # needs Android SDK; see docs/native-capacitor.md
+# iOS archive requires macOS + Xcode — steps in docs/native-capacitor.md
+```
+
+**Before store submission, KC must confirm** the package/bundle id
+(`com.fromvictory.app` is a placeholder), enroll in Apple Developer / Google
+Play Console, and decide Apple 3.1.1 (Stripe vs IAP / Android-first). Full
+runbook + privacy rules: [docs/native-capacitor.md](./docs/native-capacitor.md).
 
 ## Workflow rules
 

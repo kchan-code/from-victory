@@ -46,6 +46,18 @@ apps/web/test-results/
 
 # Vitest coverage (FV-380)
 apps/web/coverage/
+
+# Native / Capacitor — never commit signing material or local SDK paths
+*.jks
+*.keystore
+*.mobileprovision
+*.p12
+apps/native/android/local.properties
+apps/native/android/keystore.properties
+apps/native/android/app/build/
+apps/native/android/build/
+apps/native/ios/App/Pods/
+apps/native/ios/DerivedData/
 # Untracked local marker of unknown provenance (contents 808e3331, mtime
 # 2026-06-22) — excluded from the Codex mirror commit until its producer is
 # identified (FV-432 / KC decision 2026-07-20). Do not regenerate or interpret.

@@ -1,0 +1,32 @@
+# Capacitor / native build outputs — keep source projects committed
+node_modules/
+.capacitor/
+*.log
+
+# Android
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/captures/
+android/*.iml
+android/.idea/
+android/app/*.iml
+*.keystore
+*.jks
+*.key
+
+# iOS
+ios/App/Pods/
+ios/App/Podfile.lock
+ios/DerivedData/
+ios/App/App.xcworkspace/xcuserdata/
+ios/App/App.xcodeproj/xcuserdata/
+ios/App/App.xcodeproj/project.xcworkspace/xcuserdata/
+*.mobileprovision
+*.p12
+*.cer
+
+# Local override for pointing the shell at staging/dev
+.env
+.env.local
