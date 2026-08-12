@@ -980,8 +980,8 @@ describe("FV-294 — sportHasPositivePlays gates the picker so no athlete is tra
     // Regression guard for the bug the `sport` field fixed: before FV-406,
     // positivePlaysFor(role) filtered on role alone, so hockey's Defense/
     // Goalie picker could leak lacrosse's Defense/Goalie plays (or vice
-    // versa) once lacrosse went live. lacrosse stays dormant, but the fix is
-    // verifiable now.
+    // versa) once lacrosse went live. Lacrosse is now live (FV-407), so this
+    // guard is load-bearing, not just verifiable-in-advance.
     const hockeyDefense = positivePlaysFor("hockey", "Defense");
     const laxDefense = positivePlaysFor("lacrosse", "Defense");
     const hockeyGoalie = positivePlaysFor("hockey", "Goalie");
@@ -994,13 +994,11 @@ describe("FV-294 — sportHasPositivePlays gates the picker so no athlete is tra
 });
 
 // ---------------------------------------------------------------------------
-// FV-406: LACROSSE_CONFIG — dormant registry wiring integrity.
+// FV-406/FV-407: LACROSSE_CONFIG — registry wiring integrity.
 //
-// Lacrosse is v2 DORMANT (docs/lacrosse-module-map.md, FV-404 KC-ratified):
-// wired into the registry, NOT athlete-selectable. These tests assert
-// config-internal consistency only (the FV-301 pattern for a dormant sport —
-// no manifest/audio requirement; the FV-301 SUPPORTED_SPORTS loops above
-// pick lacrosse up automatically if it ever goes live). The grid: 5 positions
+// Lacrosse went LIVE per the 2026-08-11 KC launch directive (FV-407):
+// docs/lacrosse-module-map.md, FV-404 KC-ratified taxonomy, athlete-
+// selectable via SUPPORTED_SPORTS (lib/sports.ts). The grid: 5 positions
 // × 10 shared adversities → 47 distinct cells; + 3 clinically WITHHELD
 // yips-class cells (FV-404 §4, the FV-119 pattern) = 50 authored.
 // ---------------------------------------------------------------------------
@@ -1008,9 +1006,9 @@ describe("FV-294 — sportHasPositivePlays gates the picker so no athlete is tra
 import { LACROSSE_PREGAME_CLIP_SCRIPTS } from "../audio/clips-lacrosse";
 import { LACROSSE_VIZ_CLIP_SCRIPTS } from "../audio/clips-viz-lacrosse";
 
-describe("FV-406: lacrosse stays DORMANT", () => {
-  it("lacrosse is NOT in SUPPORTED_SPORTS (not athlete-selectable)", () => {
-    expect(SUPPORTED_SPORTS as readonly string[]).not.toContain("lacrosse");
+describe("FV-407: lacrosse is LIVE", () => {
+  it("lacrosse IS in SUPPORTED_SPORTS (athlete-selectable)", () => {
+    expect(SUPPORTED_SPORTS as readonly string[]).toContain("lacrosse");
   });
 
   it("getSportConfig('lacrosse') returns LACROSSE_CONFIG with sportKey 'lacrosse'", () => {
@@ -1018,13 +1016,11 @@ describe("FV-406: lacrosse stays DORMANT", () => {
     expect(LACROSSE_CONFIG.sportKey).toBe("lacrosse");
   });
 
-  it("lacrosse's positive-play content is complete (FV-406) — dormancy is enforced by SUPPORTED_SPORTS, not this gate", () => {
+  it("lacrosse's positive-play content is complete (FV-406) — sportHasPositivePlays gates the picker, same as any live sport", () => {
     // FV-406 wired all 35 lacrosse POSITIVE_PLAYS entries (7 per role), so
-    // sportHasPositivePlays now returns true — same as any live sport. That's
-    // fine: lacrosse athletes can never exist (absent from SUPPORTED_SPORTS
-    // above), so PregameFlow never reaches this gate for lacrosse regardless
-    // of its value. The FV-294 trap this gate exists to prevent (an athlete
-    // stranded on an empty picker) requires a reachable athlete first.
+    // sportHasPositivePlays returns true — the FV-294 trap this gate exists
+    // to prevent (an athlete stranded on an empty picker) is now a live
+    // concern for lacrosse, and this assertion is load-bearing.
     expect(sportHasPositivePlays(LACROSSE_CONFIG.sportKey, LACROSSE_CONFIG.roles)).toBe(true);
   });
 });
@@ -1184,9 +1180,11 @@ describe("LACROSSE_CONFIG — practice + picker field completeness", () => {
 });
 
 // ---------------------------------------------------------------------------
-// FV-406: registry ↔ clip-script coverage (config-internal; no manifest/audio
-// requirement — lacrosse is dormant, so the playlist-integrity file-existence
-// loops exclude it until the render lands it in manifest.practiceState).
+// FV-406/FV-407: registry ↔ clip-script coverage. These assert config-internal
+// script authoring only; file-existence + manifest coverage are asserted in
+// playlist-integrity.test.ts (which now includes lacrosse in
+// RENDERED_SPORT_CONFIGS since the FV-407 render populated
+// manifest.practiceState.lacrosse).
 //
 // FV-406 UPDATE: the FV-404/FV-405 "two library themes, no flagship" VIZ
 // contract was superseded during FV-406 wiring — lacrosse now ships the same

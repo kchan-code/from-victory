@@ -257,8 +257,8 @@ export const POSITIVE_PLAYS: readonly PositivePlay[] = [
   { slug: "viz-scrambler-grind-out-par", sport: "golf", role: "Scrambler", title: "Grind out a par after a wild drive" },
   { slug: "viz-scrambler-four-footer", sport: "golf", role: "Scrambler", title: "Drain the four-footer to keep the round alive" },
 
-  // ── Attack — Lacrosse (7) — FV-406. DORMANT: lacrosse is not in
-  // SUPPORTED_SPORTS; these entries become reachable at the FV-407 go-live.
+  // ── Attack — Lacrosse (7) — FV-406, live per FV-407
+  // (KC 2026-08-11 go-live).
   { slug: "viz-lax-attack-beat-your-man", sport: "lacrosse", role: "Attack", title: "Beat your man" },
   { slug: "viz-lax-attack-see-the-field", sport: "lacrosse", role: "Attack", title: "See the field" },
   { slug: "viz-lax-attack-finish-on-crease", sport: "lacrosse", role: "Attack", title: "Finish on the crease" },
@@ -267,8 +267,8 @@ export const POSITIVE_PLAYS: readonly PositivePlay[] = [
   { slug: "viz-lax-attack-man-up-finish", sport: "lacrosse", role: "Attack", title: "Bury the man-up look" },
   { slug: "viz-lax-attack-next-look-clean", sport: "lacrosse", role: "Attack", title: "Miss the doorstep, bury the next" },
 
-  // ── Midfield — Lacrosse (7) — FV-406. DORMANT: lacrosse is not in
-  // SUPPORTED_SPORTS; these entries become reachable at the FV-407 go-live.
+  // ── Midfield — Lacrosse (7) — FV-406, live per FV-407
+  // (KC 2026-08-11 go-live).
   { slug: "viz-lax-midfield-push-the-ball", sport: "lacrosse", role: "Midfield", title: "Push the ball" },
   { slug: "viz-lax-midfield-cover-both-ends", sport: "lacrosse", role: "Midfield", title: "Cover both ends" },
   { slug: "viz-lax-midfield-shoot-on-the-run", sport: "lacrosse", role: "Midfield", title: "Shoot it on the run" },
@@ -277,8 +277,8 @@ export const POSITIVE_PLAYS: readonly PositivePlay[] = [
   { slug: "viz-lax-midfield-slide-and-rotate", sport: "lacrosse", role: "Midfield", title: "Slide early, rotate, get the stop" },
   { slug: "viz-lax-midfield-next-clear-clean", sport: "lacrosse", role: "Midfield", title: "Cough one up, clear the next clean" },
 
-  // ── Defense — Lacrosse (7) — FV-406. DORMANT: lacrosse is not in
-  // SUPPORTED_SPORTS; these entries become reachable at the FV-407 go-live.
+  // ── Defense — Lacrosse (7) — FV-406, live per FV-407
+  // (KC 2026-08-11 go-live).
   { slug: "viz-lax-defense-lock-him-down", sport: "lacrosse", role: "Defense", title: "Lock him down" },
   { slug: "viz-lax-defense-take-it-the-other-way", sport: "lacrosse", role: "Defense", title: "Take it the other way" },
   { slug: "viz-lax-defense-shutdown-1v1-x", sport: "lacrosse", role: "Defense", title: "Shut down the 1v1 at X" },
@@ -287,8 +287,8 @@ export const POSITIVE_PLAYS: readonly PositivePlay[] = [
   { slug: "viz-lax-defense-man-down-hold", sport: "lacrosse", role: "Defense", title: "Man-down, hold the middle" },
   { slug: "viz-lax-defense-win-next-matchup", sport: "lacrosse", role: "Defense", title: "Beaten once, win the next matchup" },
 
-  // ── FOGO — Lacrosse (7) — FV-406. DORMANT: lacrosse is not in
-  // SUPPORTED_SPORTS; these entries become reachable at the FV-407 go-live.
+  // ── FOGO — Lacrosse (7) — FV-406, live per FV-407
+  // (KC 2026-08-11 go-live).
   { slug: "viz-lax-fogo-win-the-clamp", sport: "lacrosse", role: "FOGO", title: "Win the clamp" },
   { slug: "viz-lax-fogo-win-the-wing", sport: "lacrosse", role: "FOGO", title: "Win the wing" },
   { slug: "viz-lax-fogo-counter-the-clamp", sport: "lacrosse", role: "FOGO", title: "Counter and win the pull" },
@@ -297,8 +297,8 @@ export const POSITIVE_PLAYS: readonly PositivePlay[] = [
   { slug: "viz-lax-fogo-read-and-adjust", sport: "lacrosse", role: "FOGO", title: "Read the counter and adjust" },
   { slug: "viz-lax-fogo-win-the-next-one", sport: "lacrosse", role: "FOGO", title: "Win the next one clean" },
 
-  // ── Goalie — Lacrosse (7) — FV-406. DORMANT: lacrosse is not in
-  // SUPPORTED_SPORTS; these entries become reachable at the FV-407 go-live.
+  // ── Goalie — Lacrosse (7) — FV-406, live per FV-407
+  // (KC 2026-08-11 go-live).
   { slug: "viz-lax-goalie-make-the-save", sport: "lacrosse", role: "Goalie", title: "Make the save" },
   { slug: "viz-lax-goalie-start-the-clear", sport: "lacrosse", role: "Goalie", title: "Start the clear" },
   { slug: "viz-lax-goalie-doorstep", sport: "lacrosse", role: "Goalie", title: "Stone the doorstep" },
