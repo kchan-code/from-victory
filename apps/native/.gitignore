@@ -26,6 +26,7 @@ ios/App/App.xcodeproj/project.xcworkspace/xcuserdata/
 *.mobileprovision
 *.p12
 *.cer
+AuthKey*.p8
 
 # Local override for pointing the shell at staging/dev
 .env

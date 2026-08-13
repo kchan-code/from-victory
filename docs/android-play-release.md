@@ -45,7 +45,7 @@ Bubblewrap / TWA — Capacitor is the Android track.
 | Billing in the APK | **None.** Stripe on the web product. Do not add Play Billing / IAP in this pass. |
 | Tracking / ads / crash SDKs | **None.** Do not add them to satisfy Play. |
 | Age floor | 13+. Minors 13–17 are parent-managed. Not a kids app. |
-| iOS / App Store | Deferred (Apple Developer enrollment not started). |
+| iOS / App Store | Separate track: [docs/ios-app-store-release.md](./ios-app-store-release.md). Checklist ready; enrollment not started. |
 
 ---
 
@@ -515,8 +515,9 @@ Web deploys do **not** need a new AAB. Ship a new bundle when you change:
 
 This checklist does **not** include:
 
-- **iOS / App Store** — Apple Developer enrollment, TestFlight, IAP 3.1.1, 4.2
-  minimum-functionality, `PrivacyInfo.xcprivacy`
+- **iOS / App Store** — separate checklist:
+  [docs/ios-app-store-release.md](./ios-app-store-release.md) (enrollment not
+  started; TestFlight-first)
 - **Google Play Billing / IAP implementation** — Stripe stays the web billing
   path until KC + counsel say otherwise
 - **Swimming or other v2 sport content**, listing claims for sports that are not
