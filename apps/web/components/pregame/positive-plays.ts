@@ -307,8 +307,8 @@ export const POSITIVE_PLAYS: readonly PositivePlay[] = [
   { slug: "viz-lax-goalie-command-the-defense", sport: "lacrosse", role: "Goalie", title: "Command the defense, no shot" },
   { slug: "viz-lax-goalie-next-save", sport: "lacrosse", role: "Goalie", title: "Soft one behind you, next save" },
 
-  // ── Forward — Soccer (7) — FV-76 prerequisite wiring. DORMANT: soccer
-  // stays out of SUPPORTED_SPORTS until FV-78/79 go-live.
+  // ── Forward — Soccer (7) — FV-76 wiring; athlete-selectable as of
+  // FV-78/FV-79 go-live.
   { slug: "viz-soc-fwd-run-in-behind", sport: "soccer", role: "Forward", title: "Run in behind" },
   { slug: "viz-soc-fwd-near-post-finish", sport: "soccer", role: "Forward", title: "Attack the near post" },
   { slug: "viz-soc-fwd-take-on", sport: "soccer", role: "Forward", title: "Take on the fullback" },

@@ -77,7 +77,7 @@ describe("POSITIVE_PLAYS library", () => {
   it("has all 213 plays", () => {
     // 73 (hockey/basketball/golf) + 49 football (FV-423, live) + 28 baseball
     // (FV-424, live) + 35 lacrosse (FV-406, live) + 28 soccer (FV-76,
-    // dormant until FV-78/79 go-live).
+    // live as of FV-78/79 go-live).
     expect(POSITIVE_PLAYS).toHaveLength(213);
   });
 

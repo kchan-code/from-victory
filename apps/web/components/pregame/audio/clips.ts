@@ -6610,11 +6610,10 @@ export const CLIP_SCRIPTS: AudioScript[] = [
   // overridden at render.
   ...LACROSSE_PREGAME_CLIP_SCRIPTS,
   ...LACROSSE_VIZ_CLIP_SCRIPTS,
-  // Soccer pregame clips (FV-76 prerequisite wiring, v2 DORMANT) — 32 VIZ
+  // Soccer pregame clips (FV-76 render + FV-78/FV-79 go-live) — 32 VIZ
   // clips in clips-viz-soccer.ts (4 position flagships + 28 positive-play
   // library entries, 7 per position) + 45 hard-moment cells (40 grid + 5
-  // withheld, module map §4). Same deferred-render staging; prose is book-
-  // overridden at render. Soccer stays out of SUPPORTED_SPORTS until FV-78/79.
+  // withheld, module map §4). Prose is book-overridden at render.
   ...SOCCER_PREGAME_CLIP_SCRIPTS,
   ...SOCCER_VIZ_CLIP_SCRIPTS,
   // FV-136: Cue-word scaffold preamble clips (audio before the {insert word} token)

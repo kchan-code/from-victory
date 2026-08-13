@@ -21,6 +21,7 @@ const SPORT_SUB: Record<Sport, string> = {
   football: "The field, the huddle, your position.",
   baseball: "The diamond, your glove, the next pitch.",
   lacrosse: "Turf, your stick, the next whistle.",
+  soccer: "The pitch, your first touch, the next ball.",
 };
 
 function CheckIcon() {

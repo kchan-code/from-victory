@@ -1,12 +1,11 @@
-// Soccer positive-play VIZ library (FV-76 prerequisite wiring) — 32
-// athlete-facing visualization clips: 4 position flagships (fwd/mid/def/gk)
+// Soccer positive-play VIZ library (FV-76 wiring; live as of FV-78/FV-79)
+// — 32 athlete-facing visualization clips: 4 position flagships (fwd/mid/def/gk)
 // + 28 athlete-chooseable rehearsal scenarios, 7 per position. Authored by
 // the content trio, verified against docs/soccer-module-map.md, KC prose-
 // gated in docs/scripts/soccer.md. The FV-144 model: the athlete picks up
 // to 3 plays and resolvePlaylist() plays them IN PLACE of the flagship
 // viz-soc-{pos} clip (flagship = nothing-picked fallback). Registered in
-// components/pregame/positive-plays.ts; the sport stays DORMANT (not in
-// SUPPORTED_SPORTS) until the FV-78/79 go-live gate. Prose source of truth:
+// components/pregame/positive-plays.ts. Prose source of truth:
 // docs/scripts/soccer.md ("VIZ Clips — Flagships" + "VIZ Clips — Positive
 // Plays") — the book wins at render time (FV-302).
 //
