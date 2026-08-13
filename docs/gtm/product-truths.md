@@ -10,6 +10,27 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-08-13 — Soccer is live: seventh sport, full parity
+
+Soccer is athlete-selectable in production (KC launch directive 2026-08-13,
+FV-78/FV-79; audio #425, DB #426, app wiring #427, postgame #428). Live
+sports are now hockey, basketball, golf, football, baseball, lacrosse, and
+soccer. A soccer athlete picks a position (Forward, Midfielder, Defender,
+Goalkeeper) and gets the full surface: 30 days of daily training, the
+audio-guided pregame session (position-specific visualization with a
+28-play positive-play library — 7 per position — and a position×adversity
+hard-moment grid), the pre-practice "Lock In" session, and the text-only
+post-game debrief. Same price, same plan — one subscription covers every
+live sport and an athlete can switch sports in settings.
+
+Why it matters to a buyer: soccer families can buy today instead of
+waitlisting; the hockey-soccer two-sport athlete (a common pairing)
+covers both seasons with one subscription.
+
+Scope note: boys' and girls' soccer are the same game and share one
+taxonomy. Claims discipline unchanged: no testimonials, ratings, user
+counts, or retention claims until a launch cohort exists.
+
 ## 2026-08-12 — Lacrosse is live: sixth sport, full parity
 
 Lacrosse (boys'/men's field lacrosse) is athlete-selectable in production

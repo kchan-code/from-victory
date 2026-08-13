@@ -54,7 +54,7 @@ const whatItIsCards = [
   {
     icon: "user" as const,
     title: "For parents and adult athletes.",
-    body: "A parent creates and manages a younger athlete’s account, or an adult athlete signs up to train on their own. Either way, the training stays private. Hockey, basketball, golf, football, baseball, and lacrosse are live now, with more sports coming sport by sport.",
+    body: "A parent creates and manages a younger athlete’s account, or an adult athlete signs up to train on their own. Either way, the training stays private. Hockey, basketball, golf, football, baseball, lacrosse, and soccer are live now, with more sports coming sport by sport.",
   },
 ];
 
