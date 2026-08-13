@@ -115,6 +115,7 @@ function makeSubscription(
         {
           id: "si_test",
           object: "subscription_item",
+          current_period_end,
           price: { id: priceId, object: "price" },
         },
       ],
@@ -131,10 +132,29 @@ function makeInvoice(
   overrides: Partial<{
     id: string;
     subscription: string | Stripe.Subscription | null;
+    legacySubscription: string | Stripe.Subscription | null;
   }> = {},
 ): Stripe.Invoice {
-  const { id = "in_test", subscription = null } = overrides;
-  return { id, object: "invoice", subscription } as unknown as Stripe.Invoice;
+  const { id = "in_test", subscription, legacySubscription } = overrides;
+  const invoice: Record<string, unknown> = {
+    id,
+    object: "invoice",
+    parent: null,
+  };
+
+  if (subscription != null) {
+    invoice.parent = {
+      type: "subscription_details",
+      subscription_details: { subscription },
+      quote_details: null,
+    };
+  }
+
+  if (legacySubscription !== undefined) {
+    invoice.subscription = legacySubscription;
+  }
+
+  return invoice as unknown as Stripe.Invoice;
 }
 
 /**
@@ -337,6 +357,7 @@ describe("POST /api/webhooks/stripe", () => {
 
   // -------------------------------------------------------------------------
   // 8. invoice.payment_failed with unexpanded subscription ID → 200, no upsert
+  //     (basil: parent.subscription_details.subscription is a string)
   // -------------------------------------------------------------------------
   it("returns 200 and skips upsert when invoice.subscription is a string ID", async () => {
     const invoice = makeInvoice({ subscription: "sub_unexpanded_id" });
@@ -352,6 +373,7 @@ describe("POST /api/webhooks/stripe", () => {
 
   // -------------------------------------------------------------------------
   // 9. invoice.payment_failed with inline subscription object → 200, upsert called
+  //     (basil: parent.subscription_details.subscription is an object)
   // -------------------------------------------------------------------------
   it("returns 200 and upserts when invoice.subscription is an inline object", async () => {
     serviceMockImpl = makeServiceMock({
@@ -373,6 +395,40 @@ describe("POST /api/webhooks/stripe", () => {
     expect(upsertCalls).toHaveLength(1);
     const upsertedRow = upsertCalls[0] as Record<string, unknown>;
     expect(upsertedRow.parent_id).toBe("parent-uuid-004");
+  });
+
+  it("returns 200 and skips upsert when a pre-basil invoice.subscription is a string ID", async () => {
+    const invoice = makeInvoice({ legacySubscription: "sub_legacy_id" });
+    const event = makeEvent("invoice.payment_failed", invoice, 2000);
+    constructEventMock.mockReturnValueOnce(event);
+
+    const req = makeRequest("raw_body", { "stripe-signature": "sig_valid" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(upsertCalls).toHaveLength(0);
+  });
+
+  it("returns 200 and upserts when a pre-basil invoice.subscription is an inline object", async () => {
+    serviceMockImpl = makeServiceMock({
+      existingRow: { parent_id: "parent-uuid-004b", last_stripe_event_at: null },
+    });
+
+    const sub = makeSubscription({
+      customer: "cus_legacy_inline",
+      status: "past_due",
+    });
+    const invoice = makeInvoice({ legacySubscription: sub });
+    const event = makeEvent("invoice.payment_failed", invoice, 2000);
+    constructEventMock.mockReturnValueOnce(event);
+
+    const req = makeRequest("raw_body", { "stripe-signature": "sig_valid" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(upsertCalls).toHaveLength(1);
+    const upsertedRow = upsertCalls[0] as Record<string, unknown>;
+    expect(upsertedRow.parent_id).toBe("parent-uuid-004b");
   });
 
   // -------------------------------------------------------------------------

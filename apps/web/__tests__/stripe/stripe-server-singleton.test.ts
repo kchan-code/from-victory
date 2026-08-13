@@ -61,6 +61,13 @@ describe("getStripe singleton", () => {
 
     expect(() => getStripe()).toThrow(/STRIPE_SECRET_KEY is not set/);
   });
+
+  it("pins outbound Stripe-Version to 2024-06-20 (not the SDK's LatestApiVersion)", () => {
+    process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
+
+    const stripe = getStripe();
+    expect(stripe.getApiField("version")).toBe("2024-06-20");
+  });
 });
 
 describe("__resetStripeForTests environment guard (FV-183)", () => {

@@ -13,11 +13,19 @@ import "server-only";
 
 import Stripe from "stripe";
 
-// Stripe API version pinned to the version shipped with stripe@16.x.
-// Bump only with a deliberate review of changelog breaking changes — do not let
-// the SDK silently choose a version.
-// The `LatestApiVersion` type in stripe@16.12.0 is '2024-06-20'.
-const STRIPE_API_VERSION: Stripe.LatestApiVersion = "2024-06-20";
+/**
+ * Outbound `Stripe-Version` header for API requests this process makes
+ * (Checkout, retrieve, cancel, quantity updates).
+ *
+ * stripe@22 types `LatestApiVersion` as only the SDK pin (`2026-07-29.dahlia`).
+ * Runtime still honors an older pin: the constructor copies `apiVersion` onto
+ * the request header. Keep `2024-06-20` until FV-473 migrates request +
+ * Dashboard webhook endpoint versions together.
+ *
+ * Webhook *payload* shapes are NOT controlled by this pin — they follow the
+ * API version configured on the Stripe Dashboard webhook endpoint.
+ */
+const STRIPE_API_VERSION = "2024-06-20";
 
 let _stripe: Stripe | null = null;
 
@@ -43,7 +51,9 @@ export function getStripe(): Stripe {
   }
 
   _stripe = new Stripe(secretKey, {
-    apiVersion: STRIPE_API_VERSION,
+    // stripe@22's StripeConfig.apiVersion only types the SDK pin; runtime
+    // still sends whatever string we pass as Stripe-Version.
+    apiVersion: STRIPE_API_VERSION as Stripe.LatestApiVersion,
     // Identify our platform in Stripe dashboard logs.
     appInfo: {
       name: "From Victory",

@@ -113,10 +113,57 @@ export function rowFromSubscription(sub: Stripe.Subscription): SubscriptionRow {
     stripe_subscription_id: sub.id,
     status: toSubscriptionStatus(sub.status),
     price_id: priceId,
-    current_period_end: unixToIso(sub.current_period_end),
+    current_period_end: unixToIso(periodEndUnix(sub)),
     cancel_at_period_end: sub.cancel_at_period_end,
   };
 }
+
+/**
+ * Resolves the subscription reference on an invoice.
+ *
+ * Stripe API 2025-03-31.basil removed `Invoice.subscription` in favor of
+ * `invoice.parent.subscription_details.subscription` (when `parent.type ===
+ * "subscription_details"`). Dashboard webhook endpoints still pinned to
+ * `2024-06-20` send the legacy top-level field. Read the basil location
+ * first, then fall back so an expanded object is not missed under either
+ * payload shape.
+ *
+ * Returns the expanded Subscription object, a subscription ID string, or
+ * null when the invoice is not subscription-generated.
+ */
+export function subscriptionFromInvoice(
+  invoice: Stripe.Invoice,
+): string | Stripe.Subscription | null {
+  if (invoice.parent?.type === "subscription_details") {
+    const fromParent = invoice.parent.subscription_details?.subscription;
+    if (fromParent) return fromParent;
+  }
+
+  const legacy = (invoice as InvoiceWithLegacySubscription).subscription;
+  return legacy ?? null;
+}
+
+/**
+ * Stripe API 2025-03-31.basil moved `current_period_end` from the
+ * Subscription object onto each SubscriptionItem. Webhook payloads on
+ * `2024-06-20` still send it on the subscription. Prefer the typed
+ * item-level field, then the legacy subscription-level field.
+ */
+function periodEndUnix(sub: Stripe.Subscription): number | null | undefined {
+  const fromItem = sub.items?.data?.[0]?.current_period_end;
+  if (typeof fromItem === "number") return fromItem;
+  return (sub as SubscriptionWithLegacyPeriodEnd).current_period_end;
+}
+
+/** Pre-basil Invoice still carried `subscription` at the top level. */
+type InvoiceWithLegacySubscription = Stripe.Invoice & {
+  subscription?: string | Stripe.Subscription | null;
+};
+
+/** Pre-basil Subscription still carried `current_period_end` at the top level. */
+type SubscriptionWithLegacyPeriodEnd = Stripe.Subscription & {
+  current_period_end?: number | null;
+};
 
 /**
  * Builds a SubscriptionRow from a `checkout.session.completed` event.
