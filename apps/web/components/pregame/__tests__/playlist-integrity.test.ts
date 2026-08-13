@@ -531,7 +531,7 @@ describe("hockey compositional template matrix", () => {
   const POSITIONS = HOCKEY_CONFIG.roles ?? [];
   const ADVERSITIES = HOCKEY_CONFIG.adversities;
 
-  it("manifest has exactly 250 templates (hockey 30 + basketball 30 + golf 30 + football 70 + baseball 40 + lacrosse 50)", () => {
+  it("manifest has exactly 290 templates (hockey 30 + basketball 30 + golf 30 + football 70 + baseball 40 + lacrosse 50 + soccer 40)", () => {
     // 30 hockey (Forward/Defense/Goalie) + 30 basketball (Guard/Wing/Big)
     // + 30 golf (Bomber/Ballstriker/Scrambler) = 90.
     // FV-113 added the basketball arm; FV-266 added the golf arm; FV-98 added
@@ -541,7 +541,8 @@ describe("hockey compositional template matrix", () => {
     // a stitched-from-template hockey-style cell — the row exists so the
     // personalization sentinels (anchor/selfTalk/cueWord) inject correctly).
     // FV-407 added the lacrosse arm (Attack/Midfield/Defense/FOGO/Goalie × 10 = 50).
-    expect(manifest.templates).toHaveLength(250);
+    // FV-76 added the soccer arm (Forward/Midfielder/Defender/Goalkeeper × 10 = 40).
+    expect(manifest.templates).toHaveLength(290);
   });
 
   it("every (position × adversity) combination has exactly one HOCKEY template", () => {
@@ -1058,12 +1059,12 @@ describe("shared sport-neutral openers (FV-466)", () => {
 // ---------------------------------------------------------------------------
 
 describe("catalog count (multi-sport, FV-266)", () => {
-  it("catalog is fully categorized (no orphans) and totals 658 entries", () => {
+  it("catalog is fully categorized (no orphans) and totals 747 entries", () => {
     const keys = Object.keys(catalog);
     const n = (re: RegExp) => keys.filter((k) => re.test(k)).length;
     const breakdown = {
-      viz: n(/^viz-/), //                         210 — profile + positive-play viz (all sports)
-      //                                                 +21 golf viz (FV-294), +7 football flagship (FV-203), +49 football plays (FV-423), +28 baseball plays (FV-424), +40 lacrosse (5 flagships + 35 plays, FV-406/407)
+      viz: n(/^viz-/), //                         242 — profile + positive-play viz (all sports)
+      //                                                 +21 golf viz (FV-294), +7 football flagship (FV-203), +49 football plays (FV-423), +28 baseball plays (FV-424), +40 lacrosse (5 flagships + 35 plays, FV-406/407), +32 soccer (4 flagships + 28 plays, FV-76)
       hmHockey: n(/^hm-(forward|defense|goalie)-/), // 30 — hockey hard-moment cells
       hmBball: n(/^hm-bb-/), //                     30 — basketball compositional cells
       bbalBaked: n(/^bb-/), //                      30 — legacy baked basketball composites
@@ -1071,7 +1072,8 @@ describe("catalog count (multi-sport, FV-266)", () => {
       hmGolf: n(/^hm-glf-/), //                     30 — golf cells (FV-266)
       hmFootball: n(/^hm-ftb-/), //                 67 — football cells (FV-203)
       hmLacrosse: n(/^hm-lax-/), //                 50 — lacrosse cells incl. 3 withheld yips (FV-407)
-      practice: n(/^pp-/), //                       80 — pre-practice clips (all sports + variations; +12 pp-lax-* FV-407)
+      hmSoccer: n(/^hm-soc-/), //                   45 — soccer cells incl. 5 withheld (4 shootout + GK handling-yips, FV-76)
+      practice: n(/^pp-/), //                       92 — pre-practice clips (all sports + variations; +12 pp-lax-* FV-407, +12 pp-soc-* FV-76)
       openers: n(/^opener-/), //                    29 — need openers (incl. basketball variants + 10 shared sport-neutral, FV-466)
       cueWord: n(/^cw-/), //                        20 — cue-word reset/sendoff
       anchor: n(/^anc-/), //                        20 — reset-anchor clips (+3 golf anc-glf-* FV-303, +3 football anc-ftb-* FV-468, +2 baseball FV-98, +3 lacrosse anc-lax-* FV-407)
@@ -1085,7 +1087,7 @@ describe("catalog count (multi-sport, FV-266)", () => {
     // Every catalog key falls into exactly one bucket — catches typos/orphans.
     expect(uncategorized, `uncategorized clips: ${uncategorized.join(", ")}`).toEqual([]);
     expect(sum).toBe(keys.length);
-    expect(keys).toHaveLength(658);
+    expect(keys).toHaveLength(747);
   });
 });
 

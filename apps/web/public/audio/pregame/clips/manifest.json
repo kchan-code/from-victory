@@ -12403,6 +12403,686 @@
         "{{cueSendoff}}",
         "shared-sendoff"
       ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Forward",
+      "adversity": "I give the ball away.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-fwd",
+        "hm-soc-fwd-giveaway",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Forward",
+      "adversity": "I miss a big chance.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-fwd",
+        "hm-soc-fwd-sitter",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Forward",
+      "adversity": "I get beaten one-v-one.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-fwd",
+        "hm-soc-fwd-marked-out",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Forward",
+      "adversity": "I get booked.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-fwd",
+        "hm-soc-fwd-booked",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Forward",
+      "adversity": "The goal is on me.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-fwd",
+        "hm-soc-fwd-goal-on-me",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Forward",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-fwd",
+        "hm-soc-fwd-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Forward",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-fwd",
+        "hm-soc-fwd-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Forward",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-fwd",
+        "hm-soc-fwd-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Forward",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-fwd",
+        "hm-soc-fwd-drought",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Forward",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-fwd",
+        "hm-soc-fwd-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Midfielder",
+      "adversity": "I give the ball away.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-mid",
+        "hm-soc-mid-giveaway",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Midfielder",
+      "adversity": "I miss a big chance.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-mid",
+        "hm-soc-mid-missed-chance",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Midfielder",
+      "adversity": "I get beaten one-v-one.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-mid",
+        "hm-soc-mid-beaten",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Midfielder",
+      "adversity": "I get booked.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-mid",
+        "hm-soc-mid-booked",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Midfielder",
+      "adversity": "The goal is on me.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-mid",
+        "hm-soc-mid-goal-on-me",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Midfielder",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-mid",
+        "hm-soc-mid-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Midfielder",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-mid",
+        "hm-soc-mid-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Midfielder",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-mid",
+        "hm-soc-mid-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Midfielder",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-mid",
+        "hm-soc-mid-cant-get-into-it",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Midfielder",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-mid",
+        "hm-soc-mid-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Defender",
+      "adversity": "I give the ball away.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-def",
+        "hm-soc-def-giveaway",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Defender",
+      "adversity": "I miss a big chance.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-def",
+        "hm-soc-def-missed-chance",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Defender",
+      "adversity": "I get beaten one-v-one.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-def",
+        "hm-soc-def-turned",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Defender",
+      "adversity": "I get booked.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-def",
+        "hm-soc-def-booked",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Defender",
+      "adversity": "The goal is on me.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-def",
+        "hm-soc-def-goal-on-me",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Defender",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-def",
+        "hm-soc-def-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Defender",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-def",
+        "hm-soc-def-benched",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Defender",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-def",
+        "hm-soc-def-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Defender",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-def",
+        "hm-soc-def-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Defender",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-def",
+        "hm-soc-def-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Goalkeeper",
+      "adversity": "I give the ball away.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-gk",
+        "hm-soc-gk-played-into-trouble",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Goalkeeper",
+      "adversity": "I miss a big chance.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-gk",
+        "hm-soc-gk-dropped-cross",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Goalkeeper",
+      "adversity": "I get beaten one-v-one.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-gk",
+        "hm-soc-gk-beaten-near-post",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Goalkeeper",
+      "adversity": "I get booked.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-gk",
+        "hm-soc-gk-penalty-conceded",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Goalkeeper",
+      "adversity": "The goal is on me.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-gk",
+        "hm-soc-gk-soft-goal",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Goalkeeper",
+      "adversity": "Coach yells.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-gk",
+        "hm-soc-gk-coach-yells",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Goalkeeper",
+      "adversity": "I get benched.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-gk",
+        "hm-soc-gk-dropped",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Goalkeeper",
+      "adversity": "I feel nervous.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-gk",
+        "hm-soc-gk-nervous",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Goalkeeper",
+      "adversity": "I start slow.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-gk",
+        "hm-soc-gk-start-slow",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
+    },
+    {
+      "sport": "soccer",
+      "position": "Goalkeeper",
+      "adversity": "We fall behind early.",
+      "clips": [
+        "shared-opening",
+        "viz-soc-gk",
+        "hm-soc-gk-fall-behind-early",
+        "{{anchor}}",
+        "{{selfTalk}}",
+        "{{cueReset}}",
+        "shared-reset-plan",
+        "shared-prayer",
+        "{{cueSendoff}}",
+        "shared-sendoff"
+      ]
     }
   ],
   "practiceState": {
