@@ -295,7 +295,7 @@ Main store listing).
 approval gate. Canonical public tagline if you need a locked line: **Your
 Identity Is Secure. Compete From Victory.** No testimonials, ratings, user
 counts, or “on the App Store.” Live sports only (hockey, basketball, golf,
-football, baseball, lacrosse — not soccer or other v2 books).
+football, baseball, lacrosse, soccer — not swimming or other v2 books).
 
 | Asset | Play requirement | From Victory notes |
 |---|---|---|
@@ -519,7 +519,7 @@ This checklist does **not** include:
   minimum-functionality, `PrivacyInfo.xcprivacy`
 - **Google Play Billing / IAP implementation** — Stripe stays the web billing
   path until KC + counsel say otherwise
-- **Soccer or other v2 sport content**, listing claims for sports that are not
+- **Swimming or other v2 sport content**, listing claims for sports that are not
   live, or rewriting lacrosse/hockey (or any) training copy
 - **Growth** — ASO campaigns, ads, influencer seeding, “we’re on Play” GTM
   claims, user-count proof

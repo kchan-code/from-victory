@@ -14,8 +14,9 @@
  *   - No journal <textarea> on / — guards against the journal being
  *     re-wired into the landing page while it remains descoped (FV-135). The
  *     waitlist's optional-note field (#w-note) is the one allowed textarea.
- *   - The available-sports labels ("Hockey" and "Basketball") render in the
- *     sport dropdown so the MVP sport set stays truthful.
+ *   - The available-sports labels render in the sport dropdown so the live
+ *     sport set stays truthful (hockey, basketball, golf, football, baseball,
+ *     lacrosse, soccer).
  *   - The "Other sports — join the waitlist" signal renders, confirming the
  *     non-live sports are not advertised as available.
  *
@@ -96,24 +97,30 @@ test.describe("Landing page — truthfulness regression guards", () => {
   // Available-sports labels
   // -------------------------------------------------------------------------
 
-  test("sport dropdown shows Hockey and Basketball as available now", async ({
+  test("sport dropdown shows live sports as available now", async ({
     page,
   }) => {
     // The waitlist form sport dropdown is the canonical place where sport
-    // availability is communicated. These labels confirm the MVP live set.
-    const hockeyOption = page.locator('option[value="Hockey"]');
-    const basketballOption = page.locator('option[value="Basketball"]');
+    // availability is communicated. These labels confirm the live set.
+    const liveSports = [
+      "Hockey",
+      "Basketball",
+      "Golf",
+      "Football",
+      "Baseball",
+      "Lacrosse",
+      "Soccer",
+    ];
 
-    await expect(hockeyOption).toBeAttached();
-    await expect(basketballOption).toBeAttached();
-
-    // The label text must explicitly say "available now" so visitors are not
-    // misled about which sports they can access today.
-    const hockeyLabel = await hockeyOption.innerText();
-    expect(hockeyLabel.toLowerCase()).toContain("available now");
-
-    const basketballLabel = await basketballOption.innerText();
-    expect(basketballLabel.toLowerCase()).toContain("available now");
+    for (const sport of liveSports) {
+      const option = page.locator(`option[value="${sport}"]`);
+      await expect(option).toBeAttached();
+      const label = await option.innerText();
+      expect(
+        label.toLowerCase(),
+        `${sport} must be labeled available now`,
+      ).toContain("available now");
+    }
   });
 
   test("waitlist section signals that other sports are not yet live", async ({
