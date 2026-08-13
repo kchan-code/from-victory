@@ -278,14 +278,13 @@ const SPORT_CELL_EXPECTATIONS: Record<
       forbiddenSlug: "hm-lax-goalie-benched",
     },
   },
-  // Soccer (v2 DORMANT — FV-76 prerequisite wiring; audio render deferred).
+  // Soccer (LIVE — FV-76 audio render + FV-78/FV-79 enablement).
   // 4 positions × 10 shared adversities, uniform grid, no drops → 40 distinct
   // cells. The 5 clinically withheld cells (4 shootout + GK handling-yips,
   // module map §4) live OUTSIDE this grid — their umbrella keys are not in
   // `adversities` (covered in sport-registry.test.ts). Compositional-only
-  // (golf/lacrosse model). EXCLUDED from RENDERED_SPORT_CONFIGS until the
-  // audio render lands soccer in manifest.practiceState — this entry only
-  // satisfies the Record<Sport, …> exhaustiveness type until then.
+  // (golf/lacrosse model). Included in RENDERED_SPORT_CONFIGS because
+  // manifest.practiceState.soccer was populated at the FV-76 render.
   soccer: {
     cellCount: 40,
     slugPrefix: "hm-soc-",

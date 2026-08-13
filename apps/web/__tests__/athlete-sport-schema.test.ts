@@ -112,8 +112,16 @@ describe("SelectSportSchema — invalid inputs", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects a future hypothetical sport not yet in SUPPORTED_SPORTS", () => {
+  it("accepts 'soccer' (FV-78/FV-79 go-live)", () => {
     const result = parse("soccer");
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.sport).toBe("soccer");
+    }
+  });
+
+  it("rejects a future hypothetical sport not yet in SUPPORTED_SPORTS", () => {
+    const result = parse("curling");
     expect(result.success).toBe(false);
   });
 

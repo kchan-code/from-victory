@@ -21,11 +21,17 @@
 // first audio render were already authored (FV-404/FV-405/FV-406, then
 // rendered at FV-407); this app-side wiring makes it athlete-selectable.
 // The DB sport CHECK widening ships in the same PR chain via the
-// 20260812010000 migration.
+// 20260812010000 migration. Soccer goes live per the 2026-08-13 KC
+// launch directive (FV-78/FV-79; FV-81 founder gate) — content, hard-
+// moment/viz clips, and the first audio render were already authored
+// (FV-76, #422/#425); this app-side wiring makes it athlete-selectable.
+// The DB sport CHECK widening already landed via #426 (squash 56844c00,
+// 20260812230000_soccer_db_enablement.sql + daily 1–30 seed). Merge this
+// app PR after #426 (already merged).
 //
 // Plain module (no "use server"): safe to import from server actions and
 // client components alike (e.g. the FV-33 onboarding sport selector).
-export const SUPPORTED_SPORTS = ["hockey", "basketball", "golf", "football", "baseball", "lacrosse"] as const;
+export const SUPPORTED_SPORTS = ["hockey", "basketball", "golf", "football", "baseball", "lacrosse", "soccer"] as const;
 export type Sport = (typeof SUPPORTED_SPORTS)[number];
 
 // The interim default until the FV-33 onboarding selector ships. Hockey is the

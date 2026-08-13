@@ -2572,13 +2572,13 @@ export const LACROSSE_CONFIG: SportConfig = {
 };
 
 // ---------------------------------------------------------------------------
-// Soccer config (v2 DORMANT — FV-76 prerequisite wiring; taxonomy =
-// docs/soccer-module-map.md, KC-ratified 2026-08-10, soccer-expert
-// authored. Content authored, NOT athlete-selectable — absent from
-// SUPPORTED_SPORTS in lib/sports.ts and from the DB sport CHECK until
-// FV-78/79 go-live. Outdoor 11-a-side, boys' and girls' (one taxonomy).
-// Genuinely positional: 4 positions (winger folds into Forward, fullback
-// into Defender, #6/#8/#10 into one Midfielder).
+// Soccer config (LIVE — KC launch directive 2026-08-13, FV-78/FV-79;
+// taxonomy = docs/soccer-module-map.md, KC-ratified 2026-08-10, soccer-expert
+// authored. Athlete-selectable — added to SUPPORTED_SPORTS (lib/sports.ts);
+// the DB sport CHECK widening already landed via #426 (squash 56844c00).
+// Outdoor 11-a-side, boys' and
+// girls' (one taxonomy). Genuinely positional: 4 positions (winger folds
+// into Forward, fullback into Defender, #6/#8/#10 into one Midfielder).
 //
 // ⚠⚠ CLINICAL GATE (module map §4 — the FV-119 pattern): five cells are
 // AUTHORED (clips-soccer.ts) but WITHHELD from the Step-02 picker until
@@ -2592,9 +2592,11 @@ export const LACROSSE_CONFIG: SportConfig = {
 // VIZ library (module map §2): a flagship viz-soc-<pos> clip per position
 // PLUS 28 viz-soc-<pos>-<theme> positive plays (7 per role), matching
 // docs/scripts/soccer.md slug-for-slug. All 28 positive plays are wired
-// into POSITIVE_PLAYS (positive-plays.ts, sport: "soccer"). Audio render
-// is FV-76; this wiring is what makes `audio:generate --slug viz-soc-…`
-// have something to render.
+// into POSITIVE_PLAYS (positive-plays.ts, sport: "soccer"). The FV-76
+// render pass made the (already-wired) clips real audio (89 clips;
+// manifest.practiceState.soccer populated); this go-live change
+// (SUPPORTED_SPORTS) is what actually lets an athlete reach soccer's
+// PregameFlow session.
 // ---------------------------------------------------------------------------
 
 // Soccer text-mode audio script (sport-correct body for segs 80/120/165).
@@ -2602,8 +2604,8 @@ export const LACROSSE_CONFIG: SportConfig = {
 // hockey/baseball/football AUDIO_SCRIPT). 80/120/165/275 are soccer-specific
 // (eyebrows from docs/soccer-module-map.md Appendix; bodies transcribed
 // from the flagship arrival + first-touch language in docs/scripts/soccer.md
-// — the book has no "## Text-mode fallback" section; FV-78/79 may replace
-// these at go-live). {{roleScenes}} in segment 165 is substituted at render
+// — the book has no "## Text-mode fallback" section; these bodies ship as
+// the live text-mode script). {{roleScenes}} in segment 165 is substituted at render
 // time via substituteSegment() reading sportConfig.roleContent.
 const SOCCER_AUDIO_SCRIPT: AudioSegment[] = [
   {
@@ -2898,9 +2900,10 @@ export const SOCCER_CONFIG: SportConfig = {
   ] as const satisfies readonly NeedToday[],
 
   // "Long exhale", "Press thumb to palm", "Say cue word" shared; the 3
-  // middle gestures are soccer-specific (module map Appendix; clips +
-  // slugs land with the audio render — they drop cleanly until then, the
-  // baseball/golf/football/lacrosse precedent).
+  // middle gestures are soccer-specific (module map Appendix). Clips +
+  // slugs are tracked in FV-475 — they drop cleanly until then (the
+  // baseball/golf/football/lacrosse precedent; listed in
+  // KNOWN_UNVOICED_ANCHORS so FV-301 stays honest).
   anchors: [
     "Long exhale",
     "Press thumb to palm",

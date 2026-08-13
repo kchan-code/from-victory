@@ -201,10 +201,10 @@ describe("Registry roles vs DB CHECK union", () => {
     // DB migration (20260812010000), bundled with the sport-enum enablement —
     // this mirror tracks the registry.
     "Attack", "Midfield", "FOGO",
-    // Soccer (v2 DORMANT — FV-76 prerequisite wiring; Forward shared with
+    // Soccer (LIVE — FV-78/FV-79, KC 2026-08-13 go-live; Forward shared with
     // hockey, listed once above). The real profiles_position_values CHECK
-    // widening ships with FV-78/79 go-live — this mirror tracks the registry
-    // only. Soccer stays out of SUPPORTED_SPORTS and the DB sport CHECK.
+    // widening landed in #426 (20260812230000, squash 56844c00) — this
+    // mirror tracks the registry.
     "Midfielder", "Defender", "Goalkeeper",
   ];
 

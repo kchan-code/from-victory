@@ -748,24 +748,29 @@ describe("FV-117: sport-keyed selfTalkOptions picker", () => {
 // HOCKEY_CONFIG.anchors DIRECTLY (config.anchors), not transitively through
 // RESET_ANCHORS (the FV-301 acceptance criterion).
 //
-// KNOWN_UNVOICED_* documents the one LIVE exception: golf shipped (it is in
-// SUPPORTED_SPORTS) with three sport-specific anchors + one self-talk phrase
-// whose audio clips were planned-but-never-rendered. Per GOLF_CONFIG they "drop
-// cleanly until then" — the Pre-Game Card + text mode still show the wording;
-// only the ~3s spoken reset clip is absent. Tracked for render-or-remove in
-// FV-303. Listing them keeps the guard green for the documented gap while still
-// failing on any NEW unmapped option (a real regression). The stale-entry test
-// forces this list to shrink the moment those clips render or the options drop.
+// KNOWN_UNVOICED_* documents LIVE exceptions: a selectable sport may ship
+// with sport-specific anchors / self-talk whose audio clips were planned-
+// but-never-rendered. Per the sport config they "drop cleanly until then"
+// — the Pre-Game Card + text mode still show the wording; only the ~3s
+// spoken reset clip is absent. Soccer is the current gap (FV-475). Listing
+// them keeps the guard green for the documented gap while still failing on
+// any NEW unmapped option (a real regression). The stale-entry test forces
+// this list to shrink the moment those clips render or the options drop.
 // ---------------------------------------------------------------------------
 
 const KNOWN_UNVOICED_ANCHORS: Partial<Record<Sport, readonly string[]>> = {
   // FV-303 — golf anchors rendered; FV-468 — football anchors rendered.
-  // No known unvoiced anchors remain.
+  // Soccer sport-specific gestures ship in the picker but have no
+  // anc-soc-* clips yet (FV-76 rendered HM/viz/pre-practice only).
+  // Tracked for render in FV-475 — they drop cleanly until then.
+  soccer: ["Touch the grass", "Reset on the walk back", "Clap your gloves"],
 };
 
 const KNOWN_UNVOICED_SELFTALK: Partial<Record<Sport, readonly string[]>> = {
   // FV-303 — golf self-talk rendered; FV-468 — football self-talk rendered.
-  // No known unvoiced self-talk remains.
+  // Soccer's next-rep line is first in the picker and still unvoiced
+  // (no st-soc-01). Tracked for render in FV-475.
+  soccer: ["You're okay. Next ball."],
 };
 
 describe("FV-301: every selectable sport voices its picker options", () => {
@@ -991,6 +996,15 @@ describe("FV-294 — sportHasPositivePlays gates the picker so no athlete is tra
     expect(laxDefense.every((p) => p.sport === "lacrosse")).toBe(true);
     expect(hockeyGoalie.every((p) => p.sport === "hockey")).toBe(true);
     expect(laxGoalie.every((p) => p.sport === "lacrosse")).toBe(true);
+  });
+
+  it("hockey and soccer 'Forward' role names don't collide across sports (FV-78/79)", () => {
+    const hockeyForward = positivePlaysFor("hockey", "Forward");
+    const socForward = positivePlaysFor("soccer", "Forward");
+    expect(hockeyForward.length).toBeGreaterThan(0);
+    expect(socForward.length).toBeGreaterThan(0);
+    expect(hockeyForward.every((p) => p.sport === "hockey")).toBe(true);
+    expect(socForward.every((p) => p.sport === "soccer")).toBe(true);
   });
 });
 
@@ -1262,18 +1276,18 @@ describe("FV-406: lacrosse VIZ library matches the flagship + 7-per-role positiv
 });
 
 // ---------------------------------------------------------------------------
-// FV-76: SOCCER_CONFIG — dormant registry wiring (lacrosse FV-406 analog).
+// FV-76/FV-78/FV-79: SOCCER_CONFIG — registry wiring integrity.
 //
-// Soccer is DORMANT: in the Sport union + SPORT_REGISTRY, clip scripts and
-// POSITIVE_PLAYS complete, NOT in SUPPORTED_SPORTS (lib/sports.ts). Audio
-// render is FV-76; go-live enablement is FV-78/79. The grid: 4 positions ×
-// 10 shared adversities → 40 distinct cells; + 5 clinically WITHHELD cells
+// Soccer went LIVE per the 2026-08-13 KC launch directive (FV-78/FV-79):
+// docs/soccer-module-map.md, KC-ratified taxonomy, athlete-selectable via
+// SUPPORTED_SPORTS (lib/sports.ts). The grid: 4 positions × 10 shared
+// adversities → 40 distinct cells; + 5 clinically WITHHELD cells
 // (4 shootout + GK handling-yips, module map §4) = 45 authored.
 // ---------------------------------------------------------------------------
 
-describe("FV-76: soccer is DORMANT (registry-wired, not athlete-selectable)", () => {
-  it("soccer is NOT in SUPPORTED_SPORTS (athlete-selectable set unchanged)", () => {
-    expect(SUPPORTED_SPORTS as readonly string[]).not.toContain("soccer");
+describe("FV-78/FV-79: soccer is LIVE", () => {
+  it("soccer IS in SUPPORTED_SPORTS (athlete-selectable)", () => {
+    expect(SUPPORTED_SPORTS as readonly string[]).toContain("soccer");
   });
 
   it("getSportConfig('soccer') returns SOCCER_CONFIG with sportKey 'soccer'", () => {
@@ -1281,12 +1295,11 @@ describe("FV-76: soccer is DORMANT (registry-wired, not athlete-selectable)", ()
     expect(SOCCER_CONFIG.sportKey).toBe("soccer");
   });
 
-  it("soccer's positive-play content is complete — sportHasPositivePlays would pass once live", () => {
+  it("soccer's positive-play content is complete — sportHasPositivePlays gates the picker, same as any live sport", () => {
     // Wired all 28 soccer POSITIVE_PLAYS entries (7 per role), so
-    // sportHasPositivePlays returns true. The picker is unreachable while
-    // soccer is absent from SUPPORTED_SPORTS; this assertion is load-bearing
-    // for the FV-78/79 go-live so the sport does not silently degrade to
-    // flagship-only (FV-294 trap).
+    // sportHasPositivePlays returns true — the FV-294 trap this gate exists
+    // to prevent (an athlete stranded on an empty picker) is now a live
+    // concern for soccer, and this assertion is load-bearing.
     expect(sportHasPositivePlays(SOCCER_CONFIG.sportKey, SOCCER_CONFIG.roles)).toBe(true);
   });
 });

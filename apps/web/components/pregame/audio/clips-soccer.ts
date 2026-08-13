@@ -1,4 +1,4 @@
-// Soccer pregame compositional clips (FV-76 prerequisite wiring, v2 DORMANT)
+// Soccer pregame compositional clips (FV-76 wiring; live as of FV-78/FV-79)
 // — 45 hard-moment cells, wired from the KC-ratified soccer taxonomy
 // (docs/soccer-module-map.md). The soccer analog of clips-lacrosse.ts /
 // clips-football.ts. Kept in a sibling file to stay out of the clips.ts hot
@@ -21,9 +21,8 @@
 // The five clinically gated cells (4 shootout + GK handling collapse)
 // carry a 7th worth-truth line. Slug scheme: hm-soc-{fwd|mid|def|gk}-{frag}
 // (soccer owns soc- / hm-soc- / viz-soc- / pp-soc-). Positions: Forward /
-// Midfielder / Defender / Goalkeeper. Audio render is DEFERRED (the sport
-// is DORMANT, not in SUPPORTED_SPORTS) — this file is the TTS INPUT, no
-// MP3s yet. FV-76 owns the render pass; FV-78/79 own go-live enablement.
+// Midfielder / Defender / Goalkeeper. The FV-76 render pass wrote the
+// MP3s; this file remains the TTS INPUT. FV-78/79 own go-live enablement.
 //
 // CLINICAL GATES (docs/soccer-module-map.md §4 — the FV-119 pattern):
 //   ⚠⚠ WITHHELD (authored here, absent from every roleAdversities array
