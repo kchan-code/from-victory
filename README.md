@@ -117,10 +117,11 @@ npm run build:android:debug    # needs Android SDK; see docs/native-capacitor.md
 # iOS archive requires macOS + Xcode — steps in docs/native-capacitor.md
 ```
 
-**Before store submission, KC must confirm** the package/bundle id
-(`com.fromvictory.app` is a placeholder), enroll in Apple Developer / Google
-Play Console, and decide Apple 3.1.1 (Stripe vs IAP / Android-first). Full
-runbook + privacy rules: [docs/native-capacitor.md](./docs/native-capacitor.md).
+Android application id is locked: `com.fromvictory.app`. Play Console enrollment,
+signing, Internal testing, and Data safety:
+[docs/android-play-release.md](./docs/android-play-release.md). Architecture +
+privacy rules: [docs/native-capacitor.md](./docs/native-capacitor.md). iOS / App
+Store remains deferred (Apple 3.1.1 / Stripe vs IAP).
 
 ## Workflow rules
 
