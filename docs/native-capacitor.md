@@ -3,6 +3,11 @@
 **Status:** scaffolding only. Store presence is NOT live. The product remains a
 PWA on Vercel; this package is an additive App Store / Play distribution shell.
 
+**Android Play (human checklist):** Kinny-executable steps — enrollment, signing,
+Internal testing, listing, Data safety — live in
+[docs/android-play-release.md](./android-play-release.md). iOS / App Store remains
+deferred.
+
 **Tier:** KC-gated (product-scope + privacy path). Do not auto-merge PRs that
 change native plugins, permissions, or WebView navigation policy.
 
@@ -60,16 +65,16 @@ target `apps/web` only — native is never part of the required CI build path.
 
 ---
 
-## IDs KC must confirm before store records exist
+## IDs
 
-| Field | Placeholder in repo | Notes |
+| Field | Value in repo | Notes |
 |---|---|---|
-| Android `applicationId` | `com.fromvictory.app` | Same string already in `assetlinks.json` / old TWA runbook. **Permanent once Play listing is created.** |
-| iOS bundle id | `com.fromvictory.app` | Confirm before App Store Connect app record. Owned domain is `fromvictoryapp.com` — reverse-DNS pairing is a KC call. |
+| Android `applicationId` | `com.fromvictory.app` | **Locked (Kinny).** Same string in `assetlinks.json` / old TWA runbook. **Permanent once the first AAB is uploaded to Play.** |
+| iOS bundle id | `com.fromvictory.app` | Same string in the scaffold. Confirm again before any App Store Connect record (Apple enrollment is deferred). |
 | Display name | `From Victory` | Locked to brand. |
 
-Do not create the Play Console or App Store Connect app until KC confirms the
-final ID. Changing it later means a new listing.
+Play Console app creation: follow [docs/android-play-release.md](./android-play-release.md).
+Do not create an App Store Connect app until Apple enrollment is a real next step.
 
 ---
 
@@ -94,8 +99,9 @@ privacy floor:
   caching lands.
 - App Store privacy nutrition labels and Play Data safety must declare
   **no tracking** and match reality.
-- Play “target audience” will include 13–17 (Families-adjacent obligations) —
-  KC decision at console setup time.
+- Play “target audience” includes 13–17 (Families-adjacent obligations). Console
+  answers and Designed-for-Families **non**-enrollment:
+  [docs/android-play-release.md](./android-play-release.md) §7–§9.
 - Do **not** claim “on the App Store / Google Play” in marketing until a listing
   is approved and live (`docs/gtm/product-truths.md` stays silent until then).
 
@@ -112,8 +118,9 @@ privacy floor:
 3. **Account deletion reachability** (Apple 5.1.1(v) + Play). Parent-controlled
    deletion exists in the product model — confirm the path is reachable from
    inside the shell before submission.
-4. **Developer accounts:** Apple Developer Program + Google Play Console
-   enrollment (paid) are human steps outside this repo.
+4. **Developer accounts:** Google Play Console enrollment is the next human
+   step — [docs/android-play-release.md](./android-play-release.md) §1. Apple
+   Developer Program remains deferred (Android-first).
 
 ---
 
@@ -157,15 +164,12 @@ npm run open:android
 
 ### Android — Play-ready release bundle (human + keystore)
 
-1. Create a release keystore **outside the repo** (never commit `.jks` /
-   `keystore.properties`). The TWA runbook’s keytool example still applies for
-   key generation; Capacitor is now the Android track that uses it.
-2. Wire signing in `android/app/build.gradle` (standard `signingConfigs.release`
-   from `keystore.properties`).
-3. Update `apps/web/public/.well-known/assetlinks.json` with the real SHA-256
-   fingerprint before Play review (placeholder zeros today).
-4. Build: `npm run build:android:bundle` → upload the `.aab` to Play Internal
-   Testing.
+Execute the ordered checklist in
+[docs/android-play-release.md](./android-play-release.md) (keystore,
+`keystore.properties`, `npm run build:android:bundle`, Internal testing).
+Keytool commands remain in [docs/android-twa-runbook.md](./android-twa-runbook.md)
+Steps 2–3. Digital Asset Links fingerprints are **not** a Capacitor WebView
+blocker; real SHA-256 values are a follow-up `apps/web` PR after Play App Signing.
 
 ### iOS — Mac follow-up (copy-paste)
 
@@ -216,11 +220,18 @@ screenshots — not required for the scaffold to build.
   that gate only accepts OWNER/MEMBER/COLLABORATOR authors). README + this doc
   already state the rule: PWA primary; native shell only; no native-only features.
 - iOS `PrivacyInfo.xcprivacy` host-app manifest before App Store submission
-- Play Families / Data Safety pre-flight before Play Console app creation
+- ~~Play Families / Data Safety pre-flight before Play Console app creation~~
+  → Kinny checklist: [docs/android-play-release.md](./android-play-release.md)
+  §7–§9. Console fill + [FV-211](https://linear.app/adeptiv/issue/FV-211)
+  kids-privacy-officer veto still required before a **public** track.
 - Decide whether to commit `ios/App/Podfile.lock` for reproducible CocoaPods
 - Extend `athlete-no-tracking` CI to scan `apps/native` manifests/deps
-- Enable R8/ProGuard minify for release AABs before first Play upload
+- Enable R8/ProGuard minify for release AABs before first **production** Play
+  upload ([docs/android-play-release.md](./android-play-release.md) §11)
 - Rename Capacitor sample unit/instrumented tests off `com.getcapacitor.myapp`
+- Replace placeholder zeros in `apps/web/public/.well-known/assetlinks.json`
+  with Play **app signing** SHA-256 (privacy-path PR; not a Capacitor
+  Internal-testing blocker)
 
 ## What this PR does *not* do
 

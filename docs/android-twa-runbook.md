@@ -2,8 +2,9 @@
 
 > **Status: evaluated alternative — not pursued.**
 > The active Android track is the Capacitor shell in `apps/native`
-> (see [docs/native-capacitor.md](./native-capacitor.md)). Keeping two Android
-> delivery paths (TWA + Capacitor) for the same package id
+> (see [docs/native-capacitor.md](./native-capacitor.md)). Play Console
+> enrollment and first AAB upload: [docs/android-play-release.md](./android-play-release.md).
+> Keeping two Android delivery paths (TWA + Capacitor) for the same package id
 > `com.fromvictory.app` would create conflicting Play listings. This runbook
 > is retained for historical context and for the keystore / Digital Asset
 > Links fingerprint steps, which still apply to the Capacitor track.
