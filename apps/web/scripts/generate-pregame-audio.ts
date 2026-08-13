@@ -1029,6 +1029,59 @@ const LACROSSE_PHASE2_ROWS: Phase2TemplateRow[] = [
   { position: "Goalie", adversity: "We fall behind early.", vizSlug: "viz-lax-goalie", hmSlug: "hm-lax-goalie-fall-behind-early" },
 ];
 
+// Soccer × 4 roles × 10 adversities each (40 rows).
+const SOCCER_PHASE2_ROWS: Phase2TemplateRow[] = [
+  // Soccer × 4 roles × 10 canonical adversities (FV-78/79 wiring; DORMANT
+  // until FV-81. SOCCER_CONFIG.adversities — the shared flat 10; the 2 gated
+  // umbrella fragments ("shootout", "lose-hands") are NOT in the 10, so they
+  // never enter this grid, matching cellSlugFor's picker-unreachable design
+  // (sport-registry.ts)). hmSlug = SOCCER_CONFIG.cellSlugFor(adversity, role)
+  // reproduced literally here (compositional-only sport — golf/football/
+  // lacrosse precedent). vizSlug is always the flagship viz-soc-<token>
+  // (fwd/mid/def/gk — NOT role.toLowerCase(); athlete picks replace it at
+  // runtime via FV-144, same as every other sport's default row).
+  { position: "Forward", adversity: "I give the ball away.", vizSlug: "viz-soc-fwd", hmSlug: "hm-soc-fwd-giveaway" },
+  { position: "Forward", adversity: "I miss a big chance.", vizSlug: "viz-soc-fwd", hmSlug: "hm-soc-fwd-sitter" },
+  { position: "Forward", adversity: "I get beaten one-v-one.", vizSlug: "viz-soc-fwd", hmSlug: "hm-soc-fwd-marked-out" },
+  { position: "Forward", adversity: "I get booked.", vizSlug: "viz-soc-fwd", hmSlug: "hm-soc-fwd-booked" },
+  { position: "Forward", adversity: "The goal is on me.", vizSlug: "viz-soc-fwd", hmSlug: "hm-soc-fwd-goal-on-me" },
+  { position: "Forward", adversity: "Coach yells.", vizSlug: "viz-soc-fwd", hmSlug: "hm-soc-fwd-coach-yells" },
+  { position: "Forward", adversity: "I get benched.", vizSlug: "viz-soc-fwd", hmSlug: "hm-soc-fwd-benched" },
+  { position: "Forward", adversity: "I feel nervous.", vizSlug: "viz-soc-fwd", hmSlug: "hm-soc-fwd-nervous" },
+  { position: "Forward", adversity: "I start slow.", vizSlug: "viz-soc-fwd", hmSlug: "hm-soc-fwd-drought" },
+  { position: "Forward", adversity: "We fall behind early.", vizSlug: "viz-soc-fwd", hmSlug: "hm-soc-fwd-fall-behind-early" },
+  { position: "Midfielder", adversity: "I give the ball away.", vizSlug: "viz-soc-mid", hmSlug: "hm-soc-mid-giveaway" },
+  { position: "Midfielder", adversity: "I miss a big chance.", vizSlug: "viz-soc-mid", hmSlug: "hm-soc-mid-missed-chance" },
+  { position: "Midfielder", adversity: "I get beaten one-v-one.", vizSlug: "viz-soc-mid", hmSlug: "hm-soc-mid-beaten" },
+  { position: "Midfielder", adversity: "I get booked.", vizSlug: "viz-soc-mid", hmSlug: "hm-soc-mid-booked" },
+  { position: "Midfielder", adversity: "The goal is on me.", vizSlug: "viz-soc-mid", hmSlug: "hm-soc-mid-goal-on-me" },
+  { position: "Midfielder", adversity: "Coach yells.", vizSlug: "viz-soc-mid", hmSlug: "hm-soc-mid-coach-yells" },
+  { position: "Midfielder", adversity: "I get benched.", vizSlug: "viz-soc-mid", hmSlug: "hm-soc-mid-benched" },
+  { position: "Midfielder", adversity: "I feel nervous.", vizSlug: "viz-soc-mid", hmSlug: "hm-soc-mid-nervous" },
+  { position: "Midfielder", adversity: "I start slow.", vizSlug: "viz-soc-mid", hmSlug: "hm-soc-mid-cant-get-into-it" },
+  { position: "Midfielder", adversity: "We fall behind early.", vizSlug: "viz-soc-mid", hmSlug: "hm-soc-mid-fall-behind-early" },
+  { position: "Defender", adversity: "I give the ball away.", vizSlug: "viz-soc-def", hmSlug: "hm-soc-def-giveaway" },
+  { position: "Defender", adversity: "I miss a big chance.", vizSlug: "viz-soc-def", hmSlug: "hm-soc-def-missed-chance" },
+  { position: "Defender", adversity: "I get beaten one-v-one.", vizSlug: "viz-soc-def", hmSlug: "hm-soc-def-turned" },
+  { position: "Defender", adversity: "I get booked.", vizSlug: "viz-soc-def", hmSlug: "hm-soc-def-booked" },
+  { position: "Defender", adversity: "The goal is on me.", vizSlug: "viz-soc-def", hmSlug: "hm-soc-def-goal-on-me" },
+  { position: "Defender", adversity: "Coach yells.", vizSlug: "viz-soc-def", hmSlug: "hm-soc-def-coach-yells" },
+  { position: "Defender", adversity: "I get benched.", vizSlug: "viz-soc-def", hmSlug: "hm-soc-def-benched" },
+  { position: "Defender", adversity: "I feel nervous.", vizSlug: "viz-soc-def", hmSlug: "hm-soc-def-nervous" },
+  { position: "Defender", adversity: "I start slow.", vizSlug: "viz-soc-def", hmSlug: "hm-soc-def-start-slow" },
+  { position: "Defender", adversity: "We fall behind early.", vizSlug: "viz-soc-def", hmSlug: "hm-soc-def-fall-behind-early" },
+  { position: "Goalkeeper", adversity: "I give the ball away.", vizSlug: "viz-soc-gk", hmSlug: "hm-soc-gk-played-into-trouble" },
+  { position: "Goalkeeper", adversity: "I miss a big chance.", vizSlug: "viz-soc-gk", hmSlug: "hm-soc-gk-dropped-cross" },
+  { position: "Goalkeeper", adversity: "I get beaten one-v-one.", vizSlug: "viz-soc-gk", hmSlug: "hm-soc-gk-beaten-near-post" },
+  { position: "Goalkeeper", adversity: "I get booked.", vizSlug: "viz-soc-gk", hmSlug: "hm-soc-gk-penalty-conceded" },
+  { position: "Goalkeeper", adversity: "The goal is on me.", vizSlug: "viz-soc-gk", hmSlug: "hm-soc-gk-soft-goal" },
+  { position: "Goalkeeper", adversity: "Coach yells.", vizSlug: "viz-soc-gk", hmSlug: "hm-soc-gk-coach-yells" },
+  { position: "Goalkeeper", adversity: "I get benched.", vizSlug: "viz-soc-gk", hmSlug: "hm-soc-gk-dropped" },
+  { position: "Goalkeeper", adversity: "I feel nervous.", vizSlug: "viz-soc-gk", hmSlug: "hm-soc-gk-nervous" },
+  { position: "Goalkeeper", adversity: "I start slow.", vizSlug: "viz-soc-gk", hmSlug: "hm-soc-gk-start-slow" },
+  { position: "Goalkeeper", adversity: "We fall behind early.", vizSlug: "viz-soc-gk", hmSlug: "hm-soc-gk-fall-behind-early" },
+];
+
 // Composed, sport-tagged catalog consumed by the manifest emitter below
 // (FV-407 bugfix — see the withSport() comment above for why every row now
 // carries a `sport` field).
@@ -1039,6 +1092,7 @@ const PHASE2_TEMPLATES: Array<Phase2TemplateRow & { sport: string }> = [
   ...withSport("football", FOOTBALL_PHASE2_ROWS),
   ...withSport("baseball", BASEBALL_PHASE2_ROWS),
   ...withSport("lacrosse", LACROSSE_PHASE2_ROWS),
+  ...withSport("soccer", SOCCER_PHASE2_ROWS),
 ];
 
 async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Promise<void> {
@@ -1378,7 +1432,7 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
   }
 
   // ── Step 3: Write Phase 3 manifest.json (version "p3").
-  // Templates: 250 entries keyed by (sport × position × adversity) — no
+  // Templates: 290 entries keyed by (sport × position × adversity) — no
   // `need`, no opener in clips list. Opener is prepended by resolver per-need.
   // FV-407 bugfix: `sport` is now carried into every emitted template row so
   // the runtime lookup in audio-playlist.ts can disambiguate positions that

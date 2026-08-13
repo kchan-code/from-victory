@@ -1,0 +1,10 @@
+{
+  "slug": "hm-soc-mid-missed-chance",
+  "durationSec": 60.492,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug": "hm-soc-fwd-drought",
+  "durationSec": 65.748,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

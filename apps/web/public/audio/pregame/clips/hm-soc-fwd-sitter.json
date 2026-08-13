@@ -1,0 +1,10 @@
+{
+  "slug": "hm-soc-fwd-sitter",
+  "durationSec": 63.42,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

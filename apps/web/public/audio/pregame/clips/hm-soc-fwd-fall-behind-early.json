@@ -1,0 +1,10 @@
+{
+  "slug": "hm-soc-fwd-fall-behind-early",
+  "durationSec": 61.908,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

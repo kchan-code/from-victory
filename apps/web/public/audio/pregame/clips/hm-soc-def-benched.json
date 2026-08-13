@@ -1,0 +1,10 @@
+{
+  "slug": "hm-soc-def-benched",
+  "durationSec": 60.324,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

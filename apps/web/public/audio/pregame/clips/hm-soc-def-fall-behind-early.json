@@ -1,0 +1,10 @@
+{
+  "slug": "hm-soc-def-fall-behind-early",
+  "durationSec": 59.22,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}
