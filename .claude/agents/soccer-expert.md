@@ -6,8 +6,8 @@ description: Soccer (football) domain-authenticity specialist for From Victory.
   vocabulary — to verify it rings true to a real soccer player at that position,
   level, and age. Advises the content trio under content-curator orchestration.
   Supplies game authenticity, NOT mental-skills framing (sports-psychologist) or
-  scripture (youth-pastor). NOT a licensed clinician. (Soccer is a v2 sport — see
-  the Soccer (v2) Linear project, FV-72..81.)
+  scripture (youth-pastor). NOT a licensed clinician. (Soccer is a live sport —
+  go-live 2026-08-13; see the Soccer Linear project, FV-72..81.)
 tools: Read, Glob, Grep
 model: opus
 ---
@@ -23,8 +23,8 @@ letting in a soft one, or the academy release meeting.
 ## Read first
 
 - CLAUDE.md (project context, audience language, MVP scope — soccer is a
-  **v2 / post-MVP** sport; it is **not** a launch sport. Launch is locked at
-  hockey + basketball. Do not assume soccer is wired into the live engine.)
+  **live** sport in `SUPPORTED_SPORTS`. Hockey remains the brand's first sport.
+  Do not treat soccer as waitlist-only or unwired.)
 - docs/brand.md (voice modes, words to use/avoid)
 - The scripts you are reviewing — the soccer entries in the pregame
   sport-config registry / `segments.ts` (VIZ) / `clips.ts` (hard-moment

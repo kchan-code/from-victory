@@ -4,8 +4,8 @@ This document provides step-by-step instructions for adding a new sport (hockey,
 
 ## Overview: Live vs. Dormant Sports
 
-- **Live sports** (hockey, basketball, golf) appear in `SUPPORTED_SPORTS` and are athlete-selectable at onboarding and in settings.
-- **Dormant v2 sports** (baseball, football, swimming, track-field, lacrosse) are fully authored and have clip assets generated, but are NOT athlete-selectable — they live behind a future go-live migration and feature flag.
+- **Live sports** (hockey, basketball, golf, football, baseball, lacrosse, soccer) appear in `SUPPORTED_SPORTS` and are athlete-selectable at onboarding and in settings.
+- **Dormant v2 sports** (swimming, track-field, tennis) are fully authored and have clip assets generated, but are NOT athlete-selectable — they live behind a future go-live migration and feature flag.
 
 Both paths follow the same steps below; the **Live vs. Dormant** distinction is noted where it matters (primarily steps 1 and 9).
 
