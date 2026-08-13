@@ -1,0 +1,10 @@
+{
+  "slug": "hm-soc-fwd-shootout",
+  "durationSec": 78.452,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug": "hm-soc-fwd-marked-out",
+  "durationSec": 64.236,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

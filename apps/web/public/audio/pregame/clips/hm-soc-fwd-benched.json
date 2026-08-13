@@ -1,0 +1,10 @@
+{
+  "slug": "hm-soc-fwd-benched",
+  "durationSec": 58.044,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

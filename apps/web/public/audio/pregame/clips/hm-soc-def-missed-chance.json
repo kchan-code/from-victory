@@ -1,0 +1,10 @@
+{
+  "slug": "hm-soc-def-missed-chance",
+  "durationSec": 62.22,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

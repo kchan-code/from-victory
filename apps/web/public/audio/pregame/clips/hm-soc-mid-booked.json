@@ -1,0 +1,10 @@
+{
+  "slug": "hm-soc-mid-booked",
+  "durationSec": 64.38,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}

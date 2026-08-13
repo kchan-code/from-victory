@@ -1,0 +1,10 @@
+{
+  "slug": "hm-soc-def-shootout",
+  "durationSec": 76.484,
+  "phases": [
+    {
+      "phase": "hardMoment",
+      "startSec": 0
+    }
+  ]
+}
