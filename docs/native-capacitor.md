@@ -129,7 +129,7 @@ privacy floor:
 ### Prerequisites
 
 - Node 20+ / npm 10+ (repo root)
-- **Android:** JDK 17+, Android SDK (platform 35), Android Studio optional
+- **Android:** JDK 21 (capacitor.build.gradle pins JavaVersion.VERSION_21; JDK 17 fails the build), Android SDK (platform 35), Android Studio optional
 - **iOS:** macOS + Xcode + CocoaPods (not available on Linux CI runners)
 
 ```bash

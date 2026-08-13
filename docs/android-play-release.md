@@ -203,7 +203,7 @@ and applies `signingConfigs.release` when that file exists. Without it,
 
 ## 4. Build a signed AAB — Kinny · Local (agent can run the commands)
 
-Prerequisites: Node 20+, JDK 17+, Android SDK platform 35, `ANDROID_HOME` /
+Prerequisites: Node 20+, JDK 21 (gradle sets sourceCompatibility 21 — JDK 17 fails with "invalid source release"), Android SDK platform 35, `ANDROID_HOME` /
 `android/local.properties` `sdk.dir`. Debug APK steps stay in
 [docs/native-capacitor.md](./native-capacitor.md).
 
