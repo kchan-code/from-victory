@@ -58,6 +58,7 @@ import { getStripe } from "@/lib/stripe/server";
 import {
   rowFromCheckoutSession,
   rowFromSubscription,
+  subscriptionFromInvoice,
 } from "@/lib/stripe/subscription-sync";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
@@ -356,6 +357,11 @@ async function handleSubscriptionDeleted(
  * with the updated status (typically `past_due`). We sync from the invoice's
  * embedded subscription if present, otherwise log and return — the subscription
  * update event will handle it.
+ *
+ * Basil (2025-03-31) moved the reference to
+ * `invoice.parent.subscription_details.subscription`. `subscriptionFromInvoice`
+ * also reads the pre-basil `invoice.subscription` field so a Dashboard webhook
+ * still pinned to 2024-06-20 keeps working.
  */
 async function handleInvoicePaymentFailed(
   invoice: Stripe.Invoice,
@@ -364,11 +370,11 @@ async function handleInvoicePaymentFailed(
   // The subscription object may be expanded on the invoice or may be an ID.
   // If it's an object, sync it directly. If it's just an ID, the accompanying
   // subscription.updated event will handle it — don't make an extra API call.
-  const subData = invoice.subscription;
+  const subData = subscriptionFromInvoice(invoice);
 
   if (typeof subData === "object" && subData !== null) {
     await handleSubscriptionUpsert(
-      subData as Stripe.Subscription,
+      subData,
       "invoice.payment_failed",
       eventCreated,
     );

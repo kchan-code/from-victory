@@ -13,6 +13,7 @@ import {
   rowFromSubscription,
   rowFromCheckoutSession,
   toSubscriptionStatus,
+  subscriptionFromInvoice,
 } from "@/lib/stripe/subscription-sync";
 
 // ---------------------------------------------------------------------------
@@ -43,7 +44,6 @@ function makeSubscription(
     object: "subscription",
     customer,
     status,
-    current_period_end,
     cancel_at_period_end,
     items: {
       object: "list",
@@ -51,6 +51,7 @@ function makeSubscription(
         {
           id: "si_test",
           object: "subscription_item",
+          current_period_end,
           price: {
             id: priceId,
             object: "price",
@@ -189,10 +190,21 @@ describe("rowFromSubscription", () => {
   });
 
   it("maps current_period_end unix timestamp to ISO-8601 string", () => {
-    // Unix 0 = 1970-01-01T00:00:00.000Z
+    // Unix 0 = 1970-01-01T00:00:00.000Z — basil: field lives on the item.
     const sub = makeSubscription({ current_period_end: 0 });
     const row = rowFromSubscription(sub);
     expect(row.current_period_end).toBe("1970-01-01T00:00:00.000Z");
+  });
+
+  it("falls back to pre-basil subscription.current_period_end when the item lacks it", () => {
+    const sub = makeSubscription({ current_period_end: 1800000000 });
+    delete (sub.items.data[0] as { current_period_end?: number }).current_period_end;
+    (sub as unknown as { current_period_end: number }).current_period_end = 1_700_000_000;
+
+    const row = rowFromSubscription(sub);
+    expect(row.current_period_end).toBe(
+      new Date(1_700_000_000 * 1000).toISOString(),
+    );
   });
 });
 
@@ -258,5 +270,93 @@ describe("rowFromCheckoutSession", () => {
     });
     const row = rowFromCheckoutSession(session);
     expect(row!.status).toBe("incomplete");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// subscriptionFromInvoice (basil parent field + pre-basil fallback)
+// ---------------------------------------------------------------------------
+
+describe("subscriptionFromInvoice", () => {
+  function makeInvoice(
+    overrides: Partial<{
+      parentSubscription: string | Stripe.Subscription | null;
+      parentType: "subscription_details" | "quote_details";
+      legacySubscription: string | Stripe.Subscription | null;
+    }> = {},
+  ): Stripe.Invoice {
+    const {
+      parentSubscription,
+      parentType = "subscription_details",
+      legacySubscription,
+    } = overrides;
+
+    const invoice: Record<string, unknown> = {
+      id: "in_test",
+      object: "invoice",
+      parent: null,
+    };
+
+    if (parentSubscription != null) {
+      invoice.parent = {
+        type: parentType,
+        subscription_details:
+          parentType === "subscription_details"
+            ? { subscription: parentSubscription }
+            : null,
+        quote_details: parentType === "quote_details" ? { quote: "qt_test" } : null,
+      };
+    }
+
+    if (legacySubscription !== undefined) {
+      invoice.subscription = legacySubscription;
+    }
+
+    return invoice as unknown as Stripe.Invoice;
+  }
+
+  it("returns the expanded object from parent.subscription_details", () => {
+    const sub = makeSubscription({ id: "sub_expanded" });
+    const found = subscriptionFromInvoice(
+      makeInvoice({ parentSubscription: sub }),
+    );
+    expect(found).toBe(sub);
+  });
+
+  it("returns a string ID from parent.subscription_details", () => {
+    const found = subscriptionFromInvoice(
+      makeInvoice({ parentSubscription: "sub_id_only" }),
+    );
+    expect(found).toBe("sub_id_only");
+  });
+
+  it("returns null when parent is not subscription_details", () => {
+    const found = subscriptionFromInvoice(
+      makeInvoice({
+        parentSubscription: "sub_ignored",
+        parentType: "quote_details",
+      }),
+    );
+    expect(found).toBeNull();
+  });
+
+  it("falls back to pre-basil invoice.subscription", () => {
+    const sub = makeSubscription({ id: "sub_legacy" });
+    const found = subscriptionFromInvoice(
+      makeInvoice({ legacySubscription: sub }),
+    );
+    expect(found).toBe(sub);
+  });
+
+  it("prefers the basil parent field over a legacy top-level subscription", () => {
+    const parentSub = makeSubscription({ id: "sub_parent" });
+    const legacySub = makeSubscription({ id: "sub_legacy" });
+    const found = subscriptionFromInvoice(
+      makeInvoice({
+        parentSubscription: parentSub,
+        legacySubscription: legacySub,
+      }),
+    );
+    expect(found).toBe(parentSub);
   });
 });
