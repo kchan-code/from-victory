@@ -23,15 +23,28 @@ const {
   maybeSingleMock,
   enforcementEnabledMock,
   accessLevelMock,
+  isNativeShellMock,
 } = vi.hoisted(() => ({
   requireSubscriberMock: vi.fn(),
   maybeSingleMock: vi.fn(),
   enforcementEnabledMock: vi.fn(() => false),
   accessLevelMock: vi.fn(async () => "full"),
+  // Default false (ordinary web/PWA request) — the FV-442 tests above must
+  // see today's unchanged behavior. The native-shell describe block below
+  // overrides this per test.
+  isNativeShellMock: vi.fn(() => false),
 }));
 
 vi.mock("@/lib/auth/guards", () => ({
   requireSubscriber: requireSubscriberMock,
+}));
+
+// Google Play "no in-app purchase" compliance (native-shell fix). Mocked
+// wholesale — not next/headers — so this file doesn't have to also stub
+// "server-only" (lib/native-shell.ts imports it) just to exercise unrelated
+// price-paragraph copy.
+vi.mock("@/lib/native-shell", () => ({
+  isNativeShell: isNativeShellMock,
 }));
 
 // FV-464: the page mirrors enforcement's bounce condition to avoid a dead
@@ -77,10 +90,11 @@ import SubscribePage from "@/app/subscribe/page";
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
-  // clearAllMocks keeps mockReturnValue overrides — restore the FV-464
-  // defaults so test order never matters.
+  // clearAllMocks keeps mockReturnValue overrides — restore the FV-464 /
+  // native-shell defaults so test order never matters.
   enforcementEnabledMock.mockReturnValue(false);
   accessLevelMock.mockResolvedValue("full");
+  isNativeShellMock.mockReturnValue(false);
 });
 
 describe("SubscribePage — price paragraph (parent vs adult)", () => {
@@ -174,5 +188,48 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
       container.querySelector('a[aria-label="Back to training"]'),
     ).toHaveAttribute("href", "/athlete");
     expect(container.querySelector('a[aria-label="Back to home"]')).toBeNull();
+  });
+});
+
+describe("SubscribePage — native shell (Google Play compliance)", () => {
+  it("shows no price, no SubscribeForm, and no Stripe mention when isNativeShell() is true", async () => {
+    requireSubscriberMock.mockResolvedValue({
+      userId: "parent-1",
+      profile: { id: "parent-1", role: "parent", first_name: "Kim" },
+    });
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    isNativeShellMock.mockReturnValue(true);
+
+    const { container, getByTestId, queryByTestId } = render(
+      await SubscribePage({ searchParams: {} }),
+    );
+    const text = container.textContent ?? "";
+
+    expect(
+      getByTestId("native-shell-subscribe-notice").textContent,
+    ).toContain(
+      "Subscribe to From Victory from a web browser at fromvictoryapp.com.",
+    );
+    expect(queryByTestId("subscribe-form-stub")).toBeNull();
+    expect(text).not.toMatch(/\$5|\$49|\$3|\$29/);
+    expect(text).not.toMatch(/stripe/i);
+    expect(container.querySelector('[data-testid="subscribe-submit"]')).toBeNull();
+  });
+
+  it("renders the normal plan selector + price copy when isNativeShell() is false", async () => {
+    requireSubscriberMock.mockResolvedValue({
+      userId: "parent-1",
+      profile: { id: "parent-1", role: "parent", first_name: "Kim" },
+    });
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    isNativeShellMock.mockReturnValue(false);
+
+    const { getByTestId, queryByTestId, container } = render(
+      await SubscribePage({ searchParams: {} }),
+    );
+
+    expect(getByTestId("subscribe-form-stub")).toBeTruthy();
+    expect(queryByTestId("native-shell-subscribe-notice")).toBeNull();
+    expect(container.textContent ?? "").toMatch(/\$5\/mo or \$49\/yr/);
   });
 });

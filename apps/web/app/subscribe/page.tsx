@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { requireSubscriber } from "@/lib/auth/guards";
 import { createCheckoutSession, createAdultCheckoutSession } from "@/lib/actions/subscription";
+import { isNativeShell } from "@/lib/native-shell";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { isSubscriptionEnforcementEnabled } from "@/lib/subscriptions/enforce";
 import { createClient } from "@/lib/supabase/server";
@@ -34,6 +35,12 @@ export default async function SubscribePage({ searchParams }: Props) {
   const trialEligible = subReadError === null && existingSub === null;
 
   const wasCanceled = searchParams.status === "canceled";
+
+  // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
+  // checkout.stripe.com has no reachable path (it's deliberately not in
+  // allowNavigation — see apps/native/capacitor.config.ts), so this page
+  // must not show a price, a checkout button, or a link toward Stripe.
+  const nativeShell = isNativeShell();
 
   // FV-442: reused below for the price paragraph and the SubscribeForm prop
   // so the adult_athlete check isn't recomputed in three places.
@@ -105,7 +112,13 @@ export default async function SubscribePage({ searchParams }: Props) {
             Train every day.
           </h1>
           <p className="font-body text-cream/70 text-[15px] leading-relaxed max-w-[42ch]">
-            {isAdult ? (
+            {nativeShell ? (
+              <>
+                Daily mental-toughness training with faith built
+                in&nbsp;&mdash; one session per day combining a mental skill
+                and a scripture foundation.
+              </>
+            ) : isAdult ? (
               <>
                 $5/mo or $49/yr. Cancel any time. Daily mental-toughness
                 training with faith built in&nbsp;&mdash; one session per day
@@ -122,18 +135,36 @@ export default async function SubscribePage({ searchParams }: Props) {
           </p>
         </section>
 
-        {/* Plan selector form — trialEligible controls the trial banner */}
-        <SubscribeForm
-          trialEligible={trialEligible}
-          action={checkoutAction}
-          isAdult={isAdult}
-        />
+        {/* Native-shell (Capacitor) compliance state: no price, no button, no
+            link toward Stripe Checkout — plain, non-tappable text only. See
+            lib/native-shell.ts. Outside the shell, behavior is unchanged. */}
+        {nativeShell ? (
+          <div
+            role="status"
+            data-testid="native-shell-subscribe-notice"
+            className="bg-charcoal border border-hairline rounded-xl px-5 py-5"
+          >
+            <p className="font-body text-cream/70 text-[15px] leading-relaxed">
+              Subscribe to From Victory from a web browser at
+              fromvictoryapp.com.
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Plan selector form — trialEligible controls the trial banner */}
+            <SubscribeForm
+              trialEligible={trialEligible}
+              action={checkoutAction}
+              isAdult={isAdult}
+            />
 
-        {/* Footer trust note */}
-        <p className="mt-8 font-body text-cream/40 text-[13px] text-center leading-relaxed">
-          Billed securely through Stripe. Cancel any time from your account
-          settings.
-        </p>
+            {/* Footer trust note */}
+            <p className="mt-8 font-body text-cream/40 text-[13px] text-center leading-relaxed">
+              Billed securely through Stripe. Cancel any time from your
+              account settings.
+            </p>
+          </>
+        )}
       </div>
     </main>
   );

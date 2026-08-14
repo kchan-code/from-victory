@@ -4,6 +4,7 @@ import Link from "next/link";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
+import { isNativeShell } from "@/lib/native-shell";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { createClient } from "@/lib/supabase/server";
 import { getAthleteMetadataMap, ZERO_RHYTHM } from "@/lib/dashboard/rhythm";
@@ -41,6 +42,12 @@ export default async function DashboardPage() {
   // Subscription access — used only to gate the subscribe CTA banner.
   // Enforcement (route-locking) is a separate issue; we do NOT block here.
   const accessLevel = await getParentAccessLevel(userId);
+
+  // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
+  // checkout.stripe.com has no reachable path (see
+  // apps/native/capacitor.config.ts), so the subscribe CTA below must not
+  // show a price or a link toward Stripe.
+  const nativeShell = isNativeShell();
 
   // FV-85: rhythm + session-count metadata. getAthleteMetadataMap() creates its
   // own auth-context client internally; RLS on athlete_session_metadata scopes
@@ -107,18 +114,32 @@ export default async function DashboardPage() {
                 Start training today.
               </p>
               <p className="font-body text-cream/60 text-[13px] leading-relaxed">
-                Daily mental-toughness training with faith built in. From
-                $5/mo for your first athlete &mdash; each additional at a
-                discount.
+                {nativeShell ? (
+                  <>
+                    Subscribe to From Victory from a web browser at
+                    fromvictoryapp.com.
+                  </>
+                ) : (
+                  <>
+                    Daily mental-toughness training with faith built in. From
+                    $5/mo for your first athlete &mdash; each additional at a
+                    discount.
+                  </>
+                )}
               </p>
             </div>
-            <Link
-              href="/subscribe"
-              data-testid="dashboard-subscribe-cta"
-              className="flex-shrink-0 inline-flex items-center justify-center font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 min-h-[44px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-            >
-              Choose a plan
-            </Link>
+            {/* Google Play compliance: inside the native shell,
+                checkout.stripe.com is unreachable (see lib/native-shell.ts) —
+                no tappable CTA, just the plain text above. */}
+            {nativeShell ? null : (
+              <Link
+                href="/subscribe"
+                data-testid="dashboard-subscribe-cta"
+                className="flex-shrink-0 inline-flex items-center justify-center font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 min-h-[44px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+              >
+                Choose a plan
+              </Link>
+            )}
           </section>
         ) : null}
 
