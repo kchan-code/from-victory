@@ -21,7 +21,8 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "dotenv -e .env.test -- playwright test",
     "test:e2e:ui": "dotenv -e .env.test -- playwright test --ui",
-    "test:e2e:debug": "dotenv -e .env.test -- playwright test --debug"
+    "test:e2e:debug": "dotenv -e .env.test -- playwright test --debug",
+    "provision:play-review": "node --experimental-strip-types scripts/provision-play-review-account.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

@@ -62,6 +62,11 @@ export const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
   "null",
   "undefined",
   "test",
+  // Google Play / App Store reviewer test athlete (FV-480). Reserved so a real
+  // athlete can never claim it: the provisioning script resolves the reviewer
+  // account by username alone, so a collision would let it overwrite a real
+  // minor's password — and let --teardown delete that real account.
+  "fvplayreview",
 ]);
 
 // ---------------------------------------------------------------------------
