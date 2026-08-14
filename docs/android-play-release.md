@@ -37,11 +37,11 @@ Bubblewrap / TWA — Capacitor is the Android track.
 
 | Fact | Value |
 |---|---|
-| Application id / package name | `com.fromvictory.app` — **permanent** once the first AAB is uploaded. Kinny locked this. |
+| Application id / package name | `com.fromvictoryapp.app` — **locked by Play Console** (immutable). |
 | Display name | `From Victory` |
 | Hosted WebView URL | `https://www.fromvictoryapp.com` (`capacitor.config.ts` `server.url`) |
 | Native project | `apps/native` (`@from-victory/native`) |
-| Current `versionCode` / `versionName` | `1` / `1.0.0` in `apps/native/android/app/build.gradle` |
+| Current `versionCode` / `versionName` | `2` / `1.0.0` in `apps/native/android/app/build.gradle` |
 | Billing in the APK | **None.** Stripe on the web product. Do not add Play Billing / IAP in this pass. |
 | Tracking / ads / crash SDKs | **None.** Do not add them to satisfy Play. |
 | Age floor | 13+. Minors 13–17 are parent-managed. Not a kids app. |
@@ -121,19 +121,18 @@ Play Console → **Create app**.
 | Free or paid | **Free** — users do not pay Google to *install*. Subscriptions are Stripe on the website. **Paid** would mean a download price; that is the wrong model. |
 | Declarations | Accept Play policies / US export. Ads: **No**. This is not a news or government app. |
 
-You do **not** type `com.fromvictory.app` on this screen. Play binds the
-application id from the **first AAB you upload**. That id is already set in:
+You do **not** type `com.fromvictoryapp.app` on this screen. Play already
+registered that package and binds the application id from the uploaded AAB.
+That id is already set in:
 
 - `apps/native/capacitor.config.ts` → `appId`
 - `apps/native/android/app/build.gradle` → `applicationId` / `namespace`
 - `apps/native/android/app/src/main/res/values/strings.xml` → `package_name`
 
-Scaffold comments in `capacitor.config.ts` / `build.gradle` may still say
-“PLACEHOLDER”; the string is locked. Do not change it.
-
-**Permanent:** if that first AAB is the wrong id, you cannot rename it. You
-would create a new Play app. Do not upload an AAB until you have confirmed the
-bundle’s application id is `com.fromvictory.app` (step 4).
+**Permanent:** Play locked `com.fromvictoryapp.app`. You cannot rename it.
+A signed AAB whose `applicationId` does not match is rejected (Internal
+testing already rejected the old `com.fromvictory.app` id). Confirm the
+bundle’s application id is `com.fromvictoryapp.app` (step 4).
 
 - [ ] App record created (listing not public; no AAB yet)
 
@@ -226,7 +225,7 @@ packages — Play will bind it permanently):
 
 ```bash
 grep applicationId apps/native/android/app/build.gradle
-# must print: applicationId "com.fromvictory.app"
+# must print: applicationId "com.fromvictoryapp.app"
 ```
 
 Do not export `CAPACITOR_SERVER_URL` for the Play AAB (production shell must
@@ -241,7 +240,7 @@ a **follow-up PR** before Production (see §11). Do not turn it on in an
 unsigned experiment and then forget to re-sign.
 
 - [ ] Signed `app-release.aab` exists locally
-- [ ] Application id is `com.fromvictory.app`
+- [ ] Application id is `com.fromvictoryapp.app`
 - [ ] `.aab` is not committed (android gitignore already excludes `*.aab`)
 
 ---
@@ -453,7 +452,7 @@ That is not a TWA. Chrome will not refuse the app if
 `/.well-known/assetlinks.json` still has placeholder fingerprints.
 
 The file today (`apps/web/public/.well-known/assetlinks.json`) already names
-`com.fromvictory.app` but lists a **placeholder SHA-256 of zeros**. The TWA
+`com.fromvictoryapp.app` (Play-locked) but lists a **placeholder SHA-256 of zeros**. The TWA
 runbook still describes how to format the JSON
 ([docs/android-twa-runbook.md](./android-twa-runbook.md) Step 4).
 
