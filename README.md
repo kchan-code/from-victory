@@ -117,8 +117,8 @@ npm run build:android:debug    # needs Android SDK; see docs/native-capacitor.md
 # iOS archive requires macOS + Xcode — see docs/ios-app-store-release.md
 ```
 
-Application / bundle id is locked: `com.fromvictory.app`. Play Console
-enrollment, signing, Internal testing, and Data safety:
+Application / bundle id is locked: `com.fromvictoryapp.app` (Play Console).
+Play enrollment, signing, Internal testing, and Data safety:
 [docs/android-play-release.md](./docs/android-play-release.md). iOS / App Store
 (TestFlight-first; enrollment not started):
 [docs/ios-app-store-release.md](./docs/ios-app-store-release.md). Architecture +

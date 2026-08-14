@@ -11,7 +11,7 @@ Android Play release (enrollment, keystore, signed AAB, Internal testing, Data
 safety): **[docs/android-play-release.md](../../docs/android-play-release.md)**.
 iOS / App Store (TestFlight-first; Apple enrollment not started):
 **[docs/ios-app-store-release.md](../../docs/ios-app-store-release.md)**.
-Application / bundle id is locked: `com.fromvictory.app`.
+Application / bundle id is locked: `com.fromvictoryapp.app` (Play Console).
 
 ```bash
 npm install          # from repo root

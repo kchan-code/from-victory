@@ -38,7 +38,7 @@ Architecture, plugin allowlist, debug/Mac copy-paste, and privacy floor:
 
 | Fact | Value |
 |---|---|
-| Bundle identifier | `com.fromvictory.app` — **permanent** once the App Store Connect app record exists. Same string Kinny locked for Android. Confirm it in Apple Developer Identifiers **before** creating the Connect app. Do not change it in a docs PR. |
+| Bundle identifier | `com.fromvictoryapp.app` — **permanent** once the App Store Connect app record exists. Play Console locked this string for Android (immutable); iOS stays in sync via Capacitor `appId`. Confirm it in Apple Developer Identifiers **before** creating the Connect app. Do not change it in a docs PR. |
 | Display name | `From Victory` (`CFBundleDisplayName` in `apps/native/ios/App/App/Info.plist`) |
 | Hosted WebView URL | `https://www.fromvictoryapp.com` (`capacitor.config.ts` `server.url`) |
 | Native project | `apps/native` (`@from-victory/native`) |
@@ -61,7 +61,7 @@ before any identifier change.
 
 ```
 1. Enroll Apple Developer Program ($99/yr)     Kinny · Console     ← you do not have this yet
-2. Confirm bundle id is exactly com.fromvictory.app
+2. Confirm bundle id is exactly com.fromvictoryapp.app
 3. Create the App Store Connect app record     AFTER step 2
 4. Mac: Team + automatic signing, Archive, upload
 5. Testers install via TestFlight (internal)
@@ -73,7 +73,7 @@ before any identifier change.
 Internal TestFlight first. Do not submit for App Review / Production on day one.
 
 Steps 1 and 2 can happen the same day. Step 3 is blocked on both. Step 4 is
-blocked on a Mac + a Team that can sign `com.fromvictory.app`.
+blocked on a Mac + a Team that can sign `com.fromvictoryapp.app`.
 
 ---
 
@@ -126,25 +126,25 @@ government-id uploads, or D-U-N-S docs into the repo.
 Bundle ids are **permanent** on the App Store Connect app record. Confirm in
 the repo, then in Apple Developer, **then** create the Connect app.
 
-Repo sources of truth (already `com.fromvictory.app`):
+Repo sources of truth (already `com.fromvictoryapp.app`):
 
 - `apps/native/capacitor.config.ts` → `appId`
 - `apps/native/ios/App/App.xcodeproj/project.pbxproj` → `PRODUCT_BUNDLE_IDENTIFIER`
 - Android uses the same string (`applicationId`) — Kinny locked it for Play
 
 Apple Developer → **Certificates, Identifiers & Profiles** → **Identifiers** →
-register an **App ID** (explicit) with Bundle ID `com.fromvictory.app`.
+register an **App ID** (explicit) with Bundle ID `com.fromvictoryapp.app`.
 
 Xcode automatic signing can register the App ID for you on first archive. That
 is fine **only if** you have already verified the Xcode target’s bundle id is
-exactly `com.fromvictory.app` (step 4). Prefer registering it in the portal so
+exactly `com.fromvictoryapp.app` (step 4). Prefer registering it in the portal so
 you see the string before Connect.
 
 **Permanent:** if the first App Store Connect app is created with the wrong
 bundle id, you cannot rename it. You would create a new app. Do not create the
 Connect record until this string is confirmed.
 
-- [ ] Portal App ID (or Xcode target) is exactly `com.fromvictory.app`
+- [ ] Portal App ID (or Xcode target) is exactly `com.fromvictoryapp.app`
 - [ ] No surprise prefix became part of the bundle id itself
 - [ ] You have **not** created the Connect app yet (next step)
 
@@ -160,11 +160,11 @@ Connect record until this string is confirmed.
 | Platforms | **iOS** (do not add macOS / tvOS / visionOS in this pass) |
 | Name | `From Victory` (the App Store name; 30 characters) |
 | Primary language | English (U.S.) |
-| Bundle ID | **`com.fromvictory.app`** — pick the Identifier from §2. This dropdown is the permanent bind. |
+| Bundle ID | **`com.fromvictoryapp.app`** — pick the Identifier from §2. This dropdown is the permanent bind. |
 | SKU | Internal, not user-visible. Something stable such as `fromvictory`. Not marketing copy. |
 | User access | Full Access is fine for a solo Account Holder |
 
-You do **not** type a different reverse-DNS id on this screen. If `com.fromvictory.app`
+You do **not** type a different reverse-DNS id on this screen. If `com.fromvictoryapp.app`
 is missing from the Bundle ID list, go back to §2. Do not invent a new one.
 
 - [ ] App record created (listing not public; no build yet)
@@ -184,7 +184,7 @@ On the Mac, after `npx cap open ios` (step 5):
 1. Select the **App** target → **Signing & Capabilities**.
 2. Check **Automatically manage signing**.
 3. Set **Team** to the From Victory Apple Developer team from §1.
-4. Confirm **Bundle Identifier** = `com.fromvictory.app`.
+4. Confirm **Bundle Identifier** = `com.fromvictoryapp.app`.
 
 Xcode creates the Development cert, Distribution cert, and App Store profile in
 the developer portal and installs them in the local Keychain. That is the
@@ -260,7 +260,7 @@ docs change.
 
 - [ ] Archive succeeded
 - [ ] Build appeared in App Store Connect → TestFlight (processing finished)
-- [ ] Bundle id on that build is `com.fromvictory.app`
+- [ ] Bundle id on that build is `com.fromvictoryapp.app`
 
 ---
 
