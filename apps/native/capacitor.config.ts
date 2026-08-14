@@ -35,15 +35,21 @@ const config: CapacitorConfig = {
     // Keep this narrow — a trusted-shell WebView that can roam the open web
     // is a minor-safety hole. Do not add analytics or ad domains.
     allowNavigation: ["www.fromvictoryapp.com", "fromvictoryapp.com"],
-    // Google Play "no in-app purchase" compliance: identifies WebView
-    // requests as coming from the native shell so the Next.js app (server-
-    // side, via apps/web/lib/native-shell.ts) can suppress any UI path to
-    // Stripe Checkout — checkout.stripe.com is intentionally NOT in
-    // allowNavigation above, so a real Stripe link would fall through to the
-    // system browser, which Play Payments policy rejects for subscriptions.
-    // Do not add a Stripe domain to allowNavigation to "fix" that instead.
-    appendUserAgent: "FVNativeShell/1",
   },
+  // Google Play "no in-app purchase" compliance: identifies WebView requests
+  // as coming from the native shell so the Next.js app (server-side, via
+  // apps/web/lib/native-shell.ts) can suppress any UI path to Stripe
+  // Checkout — checkout.stripe.com is intentionally NOT in allowNavigation
+  // above, so a real Stripe link would fall through to the system browser,
+  // which Play Payments policy rejects for subscriptions. Do not add a Stripe
+  // domain to allowNavigation to "fix" that instead.
+  //
+  // MUST stay at the TOP LEVEL of CapacitorConfig (or under `android`/`ios`).
+  // It is NOT a key of `server` — Capacitor silently ignores unknown keys
+  // there, so nesting it inside `server` compiles fine, ships, and does
+  // nothing. That shipped once (FV-478) and left the whole compliance fix
+  // inert on a real device while every server-side test still passed.
+  appendUserAgent: "FVNativeShell/1",
   plugins: {
     SplashScreen: {
       backgroundColor: "#050505",
