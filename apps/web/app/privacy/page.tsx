@@ -398,6 +398,17 @@ export default function PrivacyPage() {
           record does not contain names, email addresses, birthdates, or any session content.
         </p>
         <p className="mt-3">
+          For step-by-step deletion instructions — including the path for a minor athlete — see
+          our{" "}
+          <Link
+            href="/delete-account"
+            className="text-cream underline underline-offset-2 hover:text-gold"
+          >
+            Delete Your Account
+          </Link>{" "}
+          page. This page is publicly available and does not require signing in.
+        </p>
+        <p className="mt-3">
           You may also request deletion of waitlist information at any time by contacting us at{" "}
           <PrivacyEmailLink />.
         </p>

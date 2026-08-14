@@ -22,6 +22,7 @@ const companyLinks = [
   { href: "/contact", label: "Contact" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
+  { href: "/delete-account", label: "Delete Account" },
 ];
 
 export function Footer() {
