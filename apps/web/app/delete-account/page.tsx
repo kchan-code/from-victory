@@ -121,8 +121,8 @@ export default function DeleteAccountPage() {
           <strong>What happens:</strong> the athlete&rsquo;s account, sign-in
           credentials, and training history are deleted immediately. Your
           parent account and any other athletes you manage are not affected.
-          If the athlete is also linked to a co-parent, their data stays on
-          that parent&rsquo;s account.
+          This removes the athlete&rsquo;s account outright, including for any
+          other adult who manages them.
         </p>
       </Section>
 
@@ -135,7 +135,8 @@ export default function DeleteAccountPage() {
           <li>Type DELETE to confirm, then select &ldquo;Delete my account&rdquo; again.</li>
         </ol>
         <p className="mb-4">
-          <strong>What happens:</strong> your subscription is canceled, every
+          <strong>What happens:</strong> your subscription, if you have one, is
+          canceled, every
           athlete you solely manage is deleted, and your parent account is
           deleted &mdash; all immediately. An athlete also linked to a
           co-parent is kept on that parent&rsquo;s account, not deleted.
@@ -150,8 +151,9 @@ export default function DeleteAccountPage() {
           <li>Type DELETE to confirm, then select &ldquo;Delete my account&rdquo; again.</li>
         </ol>
         <p>
-          <strong>What happens:</strong> your subscription is canceled and
-          your account and training history are deleted immediately. There is
+          <strong>What happens:</strong> your subscription, if you have one, is
+          canceled and your account and training history are deleted
+          immediately. There is
           no parent or guardian on an adult-athlete account, so this deletes
           everything tied to you.
         </p>
