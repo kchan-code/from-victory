@@ -29,6 +29,7 @@ import { SendResetLinkButton } from "@/components/dashboard/SendResetLinkButton"
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireParent } from "@/lib/auth/guards";
 import { getDigestOptOut } from "@/lib/actions/digest-preferences";
+import { isNativeShell } from "@/lib/native-shell";
 import { createClient } from "@/lib/supabase/server";
 import { priceIdToLabel } from "@/lib/subscriptions/plans";
 
@@ -81,6 +82,13 @@ function statusLabel(status: string): string {
 
 export default async function DashboardSettingsPage() {
   const { userId } = await requireParent();
+
+  // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
+  // checkout.stripe.com has no reachable path (it's deliberately not in
+  // allowNavigation — see apps/native/capacitor.config.ts), so neither the
+  // Billing Portal button nor the "Choose a plan" link below may render as
+  // tappable, Stripe-bound UI. See lib/native-shell.ts.
+  const nativeShell = isNativeShell();
 
   // Read the parent's own email from the authenticated session. This is the
   // parent's real account email — not an athlete synthetic address. We read it
@@ -254,30 +262,61 @@ export default async function DashboardSettingsPage() {
                 ) : null}
               </div>
 
-              {/* Manage subscription CTA */}
+              {/* Manage subscription CTA. In-shell, checkout.stripe.com is
+                  unreachable (Google Play compliance — see
+                  lib/native-shell.ts), so BillingPortalButton is replaced by
+                  neutral, non-tappable text — same pattern as the other
+                  native-shell notices (app/subscribe/page.tsx,
+                  app/athlete/paused/page.tsx). */}
               <div className="pt-4">
                 <p className="font-body text-cream/50 text-[13px] leading-relaxed mb-4">
                   Update your payment method, change your plan, or cancel —
                   all in the secure Stripe portal.
                 </p>
-                <BillingPortalButton />
+                {nativeShell ? (
+                  <div
+                    role="status"
+                    data-testid="billing-portal-native-shell-notice"
+                    className="bg-onyx border border-hairline rounded-xl px-5 py-5"
+                  >
+                    <p className="font-body text-cream/70 text-[15px] leading-relaxed">
+                      Manage your From Victory subscription from a web
+                      browser at fromvictoryapp.com.
+                    </p>
+                  </div>
+                ) : (
+                  <BillingPortalButton />
+                )}
               </div>
             </>
           ) : (
-            /* No subscription row */
+            /* No subscription row. In-shell, checkout.stripe.com is
+               unreachable (Google Play compliance — see lib/native-shell.ts),
+               so the "Choose a plan" link is dropped for plain text — same
+               treatment as the dashboard subscribe CTA
+               (app/dashboard/page.tsx). */
             <div className="py-2">
               <p
                 className="font-body text-cream/70 text-[15px] leading-relaxed mb-4"
                 data-testid="no-subscription"
               >
-                No active subscription.
+                {nativeShell ? (
+                  <>
+                    Subscribe to From Victory from a web browser at
+                    fromvictoryapp.com.
+                  </>
+                ) : (
+                  <>No active subscription.</>
+                )}
               </p>
-              <Link
-                href="/subscribe"
-                className="inline-flex items-center justify-center font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 min-h-[44px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-              >
-                Choose a plan
-              </Link>
+              {nativeShell ? null : (
+                <Link
+                  href="/subscribe"
+                  className="inline-flex items-center justify-center font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 min-h-[44px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+                >
+                  Choose a plan
+                </Link>
+              )}
             </div>
           )}
         </section>

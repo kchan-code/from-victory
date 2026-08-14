@@ -20,6 +20,9 @@
  *      a minor athlete session is rejected the same way requireSubscriber()
  *      rejects it in guards.test.ts — the stub throws to mimic redirect()
  *      throwing NEXT_REDIRECT in production.
+ *   6. Native-shell belt-and-braces (Google Play "no in-app purchase"
+ *      compliance): isNativeShell() === true refuses before touching auth or
+ *      Stripe at all — requireSubscriber/create-session are never called.
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -51,6 +54,19 @@ let requireSubscriberImpl: () => Promise<SubscriberResult> = async () => ({
 });
 vi.mock("@/lib/auth/guards", () => ({
   requireSubscriber: () => requireSubscriberImpl(),
+}));
+
+// Google Play "no in-app purchase" compliance (native-shell belt-and-braces).
+// Defaults to false (ordinary web/PWA request); the dedicated describe block
+// below overrides it per test. vi.hoisted() avoids a "Cannot access before
+// initialization" TDZ error — vi.mock() factories run when the module graph
+// resolves, which can be earlier than this file's own top-to-bottom const
+// evaluation order.
+const { isNativeShellMock } = vi.hoisted(() => ({
+  isNativeShellMock: vi.fn(() => false),
+}));
+vi.mock("@/lib/native-shell", () => ({
+  isNativeShell: isNativeShellMock,
 }));
 
 // Monitoring: fire-and-forget; not under test here.
@@ -125,6 +141,9 @@ const emptyFormData = new FormData();
 describe("openBillingPortal", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // clearAllMocks keeps mockReturnValue overrides — restore the
+    // native-shell default so test order never matters.
+    isNativeShellMock.mockReturnValue(false);
     // Default: env var set for stable test env
     process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
     // Default: a parent payer session (individual tests override as needed).
@@ -345,6 +364,49 @@ describe("openBillingPortal", () => {
       );
       expect(billingPortalCreateMock).not.toHaveBeenCalled();
       expect(redirectMock).not.toHaveBeenCalled();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Case 6: native-shell belt-and-braces (Google Play compliance)
+  // -------------------------------------------------------------------------
+  describe("native-shell belt-and-braces (Google Play compliance)", () => {
+    it("refuses before touching auth or Stripe when isNativeShell() is true", async () => {
+      isNativeShellMock.mockReturnValue(true);
+      // Poison pill: if the action reached requireSubscriber() before
+      // checking isNativeShell(), this makes that ordering bug obvious
+      // instead of silently passing.
+      requireSubscriberImpl = async () => {
+        throw new Error("requireSubscriber() should not be called in-shell");
+      };
+
+      const result = (await openBillingPortal(
+        null,
+        emptyFormData,
+      )) as BillingPortalActionState;
+
+      expect(result?.ok).toBe(false);
+      if (result?.ok === false) {
+        expect(result.code).toBe("native_shell_unavailable");
+        expect(result.error).toContain("fromvictoryapp.com");
+      }
+      expect(billingPortalCreateMock).not.toHaveBeenCalled();
+      expect(redirectMock).not.toHaveBeenCalled();
+    });
+
+    it("proceeds normally (unaffected) when isNativeShell() is false", async () => {
+      isNativeShellMock.mockReturnValue(false);
+      supabaseMockImpl = makeSupabaseMock({ stripe_customer_id: "cus_notshell" });
+      billingPortalCreateMock.mockResolvedValue({
+        url: "https://billing.stripe.com/session/bps_notshell",
+      });
+
+      const result = await openBillingPortal(null, emptyFormData);
+
+      expect(result).toBeUndefined();
+      expect(redirectMock).toHaveBeenCalledWith(
+        "https://billing.stripe.com/session/bps_notshell",
+      );
     });
   });
 });

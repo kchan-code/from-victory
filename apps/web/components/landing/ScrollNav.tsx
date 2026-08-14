@@ -65,6 +65,14 @@ export function ScrollNav() {
             >
               For Teams &amp; Churches
             </Link>
+            {/* Google Play "no in-app purchase" compliance: inside the
+                native shell, /pricing itself redirects through the
+                entry-point router before any marketing content renders (see
+                lib/native-shell-router.ts / middleware.ts) — this ordinary
+                Link needs no shell-specific branching, since Next.js
+                middleware intercepts the navigation (hard load, client
+                soft-nav, and prefetch alike) before the destination page is
+                ever produced. */}
             <Link
               href="/pricing"
               className="hidden sm:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"

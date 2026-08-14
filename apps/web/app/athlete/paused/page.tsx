@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireAthlete } from "@/lib/auth/guards";
+import { isNativeShell } from "@/lib/native-shell";
 
 export const metadata = {
   title: "Training Paused",
@@ -40,6 +41,12 @@ export default async function AthletePausedPage() {
   // adult to /subscribe — they should never land here. But if one navigates here
   // directly, show a self-remedy path instead of "ask your parent".
   const isAdult = profile.role === "adult_athlete";
+  // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
+  // checkout.stripe.com has no reachable path (see
+  // apps/native/capacitor.config.ts), so the adult reactivate link below must
+  // not render as a tappable link toward Stripe. Never affects the minor
+  // branch above — minors never see a reactivate link at all.
+  const nativeShell = isNativeShell();
 
   return (
     <main className="min-h-screen bg-onyx flex flex-col px-5 pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
@@ -89,15 +96,31 @@ export default async function AthletePausedPage() {
         </p>
 
         {/* Adult self-payer only: a direct path back to checkout. NEVER shown to
-            a minor athlete — no pricing/Stripe for minors (privacy boundary). */}
+            a minor athlete — no pricing/Stripe for minors (privacy boundary).
+            Inside the native shell, checkout.stripe.com is unreachable (Google
+            Play compliance — see lib/native-shell.ts), so this becomes plain,
+            non-tappable text instead of a link. */}
         {isAdult ? (
-          <Link
-            href="/subscribe"
-            data-testid="paused-reactivate-link"
-            className="inline-flex items-center justify-center rounded-[12px] border border-gold bg-gold px-5 py-4 font-heading text-[15px] font-semibold text-onyx transition-colors duration-fast ease-out hover:bg-gold-bright hover:text-onyx focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.99] w-full mb-3"
-          >
-            Reactivate subscription
-          </Link>
+          nativeShell ? (
+            <div
+              role="status"
+              data-testid="paused-native-shell-notice"
+              className="rounded-[12px] border border-hairline bg-charcoal px-5 py-4 mb-3"
+            >
+              <p className="font-body text-[14px] leading-relaxed text-cream/70">
+                Manage your From Victory subscription from a web browser at
+                fromvictoryapp.com.
+              </p>
+            </div>
+          ) : (
+            <Link
+              href="/subscribe"
+              data-testid="paused-reactivate-link"
+              className="inline-flex items-center justify-center rounded-[12px] border border-gold bg-gold px-5 py-4 font-heading text-[15px] font-semibold text-onyx transition-colors duration-fast ease-out hover:bg-gold-bright hover:text-onyx focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.99] w-full mb-3"
+            >
+              Reactivate subscription
+            </Link>
+          )
         ) : null}
 
         {/* Settings link — secondary action, in-body, thumb-reachable */}
