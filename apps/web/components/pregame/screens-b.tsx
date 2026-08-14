@@ -27,7 +27,7 @@ import {
 } from "./types";
 import { audioAssetUrl, cellSrcFor, cellSlugFor, openerSrcFor } from "./audio-mapping";
 import type { Sport, SportConfig } from "./sport-registry";
-import { HOCKEY_CONFIG, adversityLabelFor } from "./sport-registry";
+import { HOCKEY_CONFIG, adversityLabelFor, getSportConfig } from "./sport-registry";
 import { positivePlayTitle } from "./positive-plays";
 import { verseForCueWord } from "./cue-word-verses";
 import type { AudioTimeline, Phase } from "./audio/types";
@@ -465,8 +465,10 @@ export function ReviewScreen({
 
   return (
     <ScreenBody>
+      {/* FV-486: "Save for the rink" → sport-neutral. The step label is a
+          terse chip; "later" carries the meaning without a venue noun. */}
       <SectionLabel>
-        {mode === "prepare" ? "Review · Save for the rink" : "Step 10 · Review"}
+        {mode === "prepare" ? "Review · Save for later" : "Step 10 · Review"}
       </SectionLabel>
       <h1 className="mb-1 font-heading text-[26px] font-bold leading-[1.15] text-cream">
         {mode === "prepare"
@@ -475,7 +477,7 @@ export function ReviewScreen({
       </h1>
       <p className="mb-5 font-body text-[14px] text-cream/50">
         {mode === "prepare"
-          ? "We’ll download the audio so it’s ready at the rink — no signal needed."
+          ? `We’ll download the audio so it’s ready at ${sportConfig.venue} — no signal needed.`
           : "Five minutes of guided audio. You can close your eyes the whole way."}
       </p>
 
@@ -534,6 +536,7 @@ export function ReviewScreen({
             cached={cacheProgress.cached}
             total={cacheProgress.total}
             onTap={handleDownloadTap}
+            venue={sportConfig.venue}
           />
         </>
       )}
@@ -563,11 +566,14 @@ function OfflineDownloadControl({
   cached,
   total,
   onTap,
+  venue,
 }: {
   state: "idle" | "loading" | "ready" | "partial" | "retrying";
   cached: number;
   total: number;
   onTap: () => void;
+  /** FV-486: `SportConfig.venue` — "the rink" / "the gym" / "the field". */
+  venue: string;
 }) {
   // "ready" — confirmed cached. Gold badge, no action needed.
   if (state === "ready") {
@@ -615,7 +621,7 @@ function OfflineDownloadControl({
     ariaLabel = "Retry offline audio download";
   } else {
     primary = "Download for offline";
-    subtext = "Plays with no signal at the rink. Uses a few MB.";
+    subtext = `Plays with no signal at ${venue}. Uses a few MB.`;
     ariaLabel = "Download audio for offline play";
   }
 
@@ -667,7 +673,7 @@ function OfflineDownloadControl({
 // State machine matches OfflineDownloadControl for consistency:
 //   "idle"     → starting download (brief; auto-start fires on mount)
 //   "loading"  → download in progress; shows live "Saving… X / Y" progress
-//   "ready"    → download confirmed complete; shows "You're ready for the rink."
+//   "ready"    → download confirmed complete; shows "You're ready for {venue}."
 //   "partial"  → incomplete download; shows retry
 //   "retrying" → retry in progress (same UI as loading)
 //
@@ -696,6 +702,9 @@ export function PrepareDownloadScreen({
     total: 0,
   });
   const cancelledRef = useRef(false);
+  // FV-486: this screen already receives `sport`, so it resolves its own venue
+  // rather than taking a fourth prop.
+  const venue = getSportConfig(sport).venue;
 
   // ── Auto-start download on mount ───────────────────────────────────────
   // The prepare flow exists specifically to download — auto-start is correct
@@ -815,7 +824,7 @@ export function PrepareDownloadScreen({
             ? `Saving audio, ${progress.cached} of ${progress.total}`
             : "Saving audio for offline play"
           : dlState === "ready"
-            ? "You're ready for the rink. Audio saved for offline play."
+            ? `You're ready for ${venue}. Audio saved for offline play.`
             : dlState === "partial"
               ? `Download didn't finish — ${progress.cached} of ${progress.total} clips saved. Tap to retry.`
               : ""}
@@ -852,10 +861,10 @@ export function PrepareDownloadScreen({
       {dlState === "ready" && (
         <>
           <h1 className="mb-2 font-heading text-[26px] font-bold leading-[1.15] text-cream">
-            You&rsquo;re ready for the rink.
+            You&rsquo;re ready for {venue}.
           </h1>
           <p className="mb-6 font-body text-[14px] text-cream/50">
-            Saved for offline. At the rink, tap{" "}
+            Saved for offline. At {venue}, tap{" "}
             <span className="text-cream/80">&ldquo;Play saved offline session&rdquo;</span>{" "}
             — no signal needed.
           </p>
@@ -884,7 +893,7 @@ export function PrepareDownloadScreen({
               </span>
             </div>
             <p className="font-body text-[14px] leading-[1.5] text-cream/70">
-              Your picks and audio are ready. When you&rsquo;re at the rink with
+              Your picks and audio are ready. When you&rsquo;re at {venue} with
               no signal, open From Victory and tap{" "}
               <span className="text-cream/80">&ldquo;Play saved offline session&rdquo;</span>.
             </p>
@@ -1008,22 +1017,29 @@ function findActivePhaseFromTimeline(
 // Text-mode stage labels (reading mode — eyes open by definition)
 // ---------------------------------------------------------------------------
 
+// Only entries whose LABEL differs from the eyebrow belong here — anything
+// unmapped falls through to the eyebrow itself (see eyebrowToStageLabel), which
+// is already sport-correct because each sport's audioScript writes its own
+// ("See the rink" / "See the gym" / "See the field").
+//
+// FV-486: "Play your role" previously mapped to "First shift". Both HOCKEY and
+// BASKETBALL use that eyebrow for seg-165, so a BASKETBALL athlete in text mode
+// was shown a hockey stage label. It also made hockey render "First shift"
+// twice (seg-120 "Your first shift" AND seg-165). "Your role" fixes both.
 const STAGE_LABELS: Record<string, string> = {
   Identity: "Receive",
-  Settle: "Settle",
-  "Breathe in": "Breathe in",
-  "Long exhale": "Long exhale",
-  "See the rink": "See the rink",
   "Your first shift": "First shift",
-  "Play your role": "First shift",
+  "Play your role": "Your role",
   "If this happens": "The hard moment",
   "Coach yourself": "Reset and go again",
-  "Send-off": "Send-off",
 };
 
 // Eyebrow text → athlete-facing stage label. Goalie-aware for firstShift.
 // role is string | null (PregameState.role); "Goalie" check is still a string comparison.
-function eyebrowToStageLabel(eyebrow: string, role: PregameState["role"]): string {
+// Exported for the FV-486 regression test — a pure function over every sport's
+// audioScript eyebrows is the cheapest way to prove no sport resolves to a
+// hockey stage label.
+export function eyebrowToStageLabel(eyebrow: string, role: PregameState["role"]): string {
   // Strip the role suffix from "Play your role · Forward" etc.
   const base = eyebrow.split("·")[0]?.trim() ?? eyebrow;
   if (base === "Your first shift") {
@@ -1046,9 +1062,13 @@ function substituteSegment(
   // may not be in the map (e.g. a custom string). Fall back to generic scenes.
   const roleContent = sportConfig.roleContent ?? {};
   const roleEntry = role ? (roleContent[role] ?? null) : null;
+  // FV-486 (was FV-215 item 1): the no-roleContent fallback used to be
+  // hockey-flavored ("Win the next puck race…"). Unreachable today — every
+  // registry sport declares roleContent for every role it offers — but it is
+  // the exact latent leak this sweep exists to close.
   const roleScenes = roleEntry
     ? roleEntry.scenes.join(" ")
-    : "Win the next puck race. Make the next read. Recover and go again.";
+    : "Compete for the next one. Make the next read. Recover and go again.";
 
   const replace = (s: string) =>
     s

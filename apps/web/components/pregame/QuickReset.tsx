@@ -4,15 +4,34 @@ import { useState } from "react";
 
 import { BreathingSphere } from "./BreathingSphere";
 import { Button, Eyebrow, Icon } from "./shared";
+import {
+  DEFAULT_QUICK_RESET,
+  HOCKEY_CONFIG,
+  type SportConfig,
+} from "./sport-registry";
 import { DEFAULTS, type PregameState } from "./types";
 
-// 5-step compressed flow: Identity → Breath → First Shift → Mistake Reset →
+// 5-step compressed flow: Identity → Breath → step-on → Mistake Reset →
 // Cue Word. Reuses the BreathingSphere with rounds=2 so it stays under ~3
 // minutes total. Pulls the user's cueWord from state if set, otherwise
 // "Faithful".
+//
+// FV-487: the middle "step on" beat and the closing cue line are the only
+// sport-shaped copy here; both resolve from `sportConfig.quickReset` (falling
+// back to the sport-neutral DEFAULT_QUICK_RESET). Before FV-487 they were
+// hardcoded hockey — every athlete, whatever their sport, was told "First
+// Shift / Three hard strides / Say it between shifts."
+
+/**
+ * FV-487: the single source of truth for this flow's name. Previously "Quick
+ * Locker Room Reset" — renamed because "reset" next to a room read as "reset
+ * the app / wipe my data," and because "locker room" is team-sport-flavored
+ * (a golfer has no locker-room moment before a round). Imported by the pregame
+ * start screen so the label exists in exactly one place.
+ */
+export const QUICK_RESET_TITLE = "Quick Mental Reset";
 
 const TOTAL = 5;
-const STEP_LABELS = ["Identity", "Breath", "First Shift", "Mistake Reset", "Cue Word"];
 const MISTAKE_STEPS = [
   { n: "01", t: "Breathe." },
   { n: "02", t: "Truth." },
@@ -22,12 +41,26 @@ const MISTAKE_STEPS = [
 export function QuickReset({
   state,
   onClose,
+  sportConfig = HOCKEY_CONFIG,
 }: {
   state: PregameState;
   onClose: () => void;
+  /**
+   * Sport config for the athlete. Defaults to hockey ONLY to keep the prop
+   * optional for existing tests; PregameFlow always passes the real config.
+   */
+  sportConfig?: SportConfig;
 }) {
   const [step, setStep] = useState(0);
   const cueWord = state.cueWord || DEFAULTS.cueWord;
+  const copy = sportConfig.quickReset ?? DEFAULT_QUICK_RESET;
+  const stepLabels = [
+    "Identity",
+    "Breath",
+    copy.stepLabel,
+    "Mistake Reset",
+    "Cue Word",
+  ];
 
   const next = () => {
     if (step >= TOTAL - 1) {
@@ -60,10 +93,10 @@ export function QuickReset({
         </button>
         <div className="min-w-0 flex-1">
           <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.22em] text-gold">
-            Quick Locker Room Reset
+            {QUICK_RESET_TITLE}
           </div>
           <div className="mt-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-cream/50">
-            {step + 1} / {TOTAL} · {STEP_LABELS[step]}
+            {step + 1} / {TOTAL} · {stepLabels[step]}
           </div>
         </div>
         <button
@@ -117,12 +150,12 @@ export function QuickReset({
 
       {step === 2 && (
         <div className="flex flex-1 flex-col justify-center px-6">
-          <Eyebrow className="!tracking-[0.26em] !text-gold">First Shift</Eyebrow>
+          <Eyebrow className="!tracking-[0.26em] !text-gold">{copy.stepLabel}</Eyebrow>
           <h2 className="m-0 mb-6 mt-3 font-heading text-[24px] font-bold leading-[1.2] text-cream">
-            Step on.
+            {copy.heading}
           </h2>
           <div className="flex flex-col gap-3.5">
-            {["Three hard strides.", "Eyes up.", "Simple strong play."].map((l, i) => (
+            {copy.lines.map((l, i) => (
               <div key={i} className="flex items-center gap-3.5">
                 <div className="h-1.5 w-1.5 flex-none rounded-full bg-gold" />
                 <span className="font-display text-[26px] font-extrabold uppercase tracking-[0.02em] text-cream">
@@ -180,7 +213,7 @@ export function QuickReset({
             {cueWord}
           </div>
           <p className="mt-7 font-heading text-[16px] font-medium text-cream">
-            Say it between shifts.
+            {copy.cueLine}
           </p>
           <p className="mt-2 font-body text-[14px] text-cream/50">Play from victory.</p>
         </div>

@@ -70,6 +70,43 @@ export const DEFAULT_POSITIVE_PLAYS_COPY: PositivePlaysCopy = {
   empty: "Choose 1 to {MAX} plays to rehearse before we step on.",
 };
 
+/**
+ * Copy for the Quick Mental Reset — the ~3-minute compressed flow reached from
+ * the pregame start screen (FV-487). Only the sport-shaped beat varies: the
+ * "step on" step (its label, heading, and three cues) and the closing line that
+ * tells the athlete WHEN to say their cue word. Everything else in QuickReset
+ * (identity, breath, mistake reset) is sport-neutral and stays hardcoded.
+ *
+ * Every string here is drawn from vocabulary already ratified in that sport's
+ * own registry entry — `audioScript` seg-120 ("Your first ___"), `roleContent`
+ * scenes, and `cueWordHelper`. This is recombination of expert-verified
+ * language, not new invention. See `SportConfig.quickReset`.
+ */
+export type QuickResetCopy = {
+  /** Step chip, e.g. "First Shift" / "First Possession". */
+  stepLabel: string;
+  /** Step heading, e.g. "Step on." */
+  heading: string;
+  /** Exactly three imperative cues, rendered as a bulleted stack. */
+  lines: readonly [string, string, string];
+  /** Closing line under the cue word, e.g. "Say it between shifts." */
+  cueLine: string;
+};
+
+/**
+ * Sport-neutral fallback used when a SportConfig declares no `quickReset`.
+ * Only reachable by the DORMANT registry sports (swimming, track-field) — every
+ * live sport authors its own block. Deliberately venue-free and position-free
+ * so a dormant sport that goes live before its copy is authored degrades to
+ * something merely generic, never to something hockey.
+ */
+export const DEFAULT_QUICK_RESET: QuickResetCopy = {
+  stepLabel: "First Move",
+  heading: "Step on.",
+  lines: ["One slow breath.", "Eyes up.", "Compete for the next one."],
+  cueLine: "Say it when you need it.",
+};
+
 // ---------------------------------------------------------------------------
 // SportConfig shape
 // ---------------------------------------------------------------------------
@@ -190,6 +227,31 @@ export type SportConfig = {
    * Basketball: "Screenshot it. Open it before tip-off."
    */
   cardShareHint: string;
+
+  /**
+   * Where this sport is played, as a noun phrase dropped into SHARED pregame
+   * SHELL copy — "ready at {venue}", "Plays with no signal at {venue}",
+   * "You're ready for {venue}." Includes the article ("the rink", not "rink")
+   * so it substitutes into a sentence unchanged, and carries no trailing
+   * punctuation.
+   *
+   * The value is the same noun the sport's OWN `audioScript` seg-80 already
+   * uses ("See the rink" / "See the gym" / "See the field"), so the shell
+   * speaks the venue the narration speaks. Required — a sport with no venue
+   * would silently fall back to hockey's, which is the exact bug FV-486 fixes.
+   * Mirrors the `cueWordHelper` / `cardShareHint` per-sport-copy pattern.
+   */
+  venue: string;
+
+  /**
+   * OPTIONAL per-sport copy for the Quick Mental Reset (FV-487). Absent →
+   * DEFAULT_QUICK_RESET (sport-neutral). Every LIVE sport declares one; the
+   * dormant sports (swimming, track-field) take the neutral default until
+   * their copy is authored at go-live. Before FV-487 this flow was hardcoded
+   * hockey ("First Shift" / "Three hard strides." / "Say it between shifts.")
+   * for every athlete regardless of sport.
+   */
+  quickReset?: QuickResetCopy;
 
   /**
    * OPTIONAL per-sport copy for the positive-plays picker (FV-294). Lets an
@@ -376,6 +438,18 @@ export const HOCKEY_CONFIG: SportConfig = {
   // FV-175: sport-specific copy for the cue-word picker and the pregame card.
   cueWordHelper: "The one you’d say to yourself between shifts.",
   cardShareHint: "Screenshot it. Open it before puck drop.",
+
+  // FV-486: the noun hockey's own seg-80 already uses ("See the rink").
+  venue: "the rink",
+
+  // FV-487: verbatim from the pre-FV-487 hardcoded QuickReset — hockey is
+  // byte-identical, every other sport stops seeing hockey's copy.
+  quickReset: {
+    stepLabel: "First Shift",
+    heading: "Step on.",
+    lines: ["Three hard strides.", "Eyes up.", "Simple strong play."],
+    cueLine: "Say it between shifts.",
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -607,6 +681,17 @@ export const BASKETBALL_CONFIG: SportConfig = {
   // FV-175: sport-specific copy for the cue-word picker and the pregame card.
   cueWordHelper: "The one you'd say to yourself at the line.",
   cardShareHint: "Screenshot it. Open it before tip-off.",
+
+  venue: "the gym",
+
+  // Sourced from BASKETBALL_AUDIO_SCRIPT seg-120 ("You check in at the
+  // scorer's table. Sprint the lane. Eyes up.") + cueWordHelper ("at the line").
+  quickReset: {
+    stepLabel: "First Possession",
+    heading: "Check in.",
+    lines: ["Sprint the lane.", "Eyes up.", "Simple strong play."],
+    cueLine: "Say it at the line.",
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -892,6 +977,17 @@ export const BASEBALL_CONFIG: SportConfig = {
 
   cueWordHelper: "The one you'd step up to the plate with.",
   cardShareHint: "Screenshot it. Open it before first pitch.",
+
+  venue: "the field",
+
+  // Sourced from BASEBALL_AUDIO_SCRIPT seg-120 ("Slow breath. Get set. Eyes on
+  // the ball... Compete for this one pitch.").
+  quickReset: {
+    stepLabel: "First Pitch",
+    heading: "Step in.",
+    lines: ["Slow breath.", "Eyes on the ball.", "Compete for this pitch."],
+    cueLine: "Say it before every pitch.",
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -1166,6 +1262,17 @@ export const GOLF_CONFIG: SportConfig = {
 
   cueWordHelper: "The one you'd say to yourself on the walk to the next shot.",
   cardShareHint: "Screenshot it. Open it before your tee time.",
+
+  venue: "the course",
+
+  // Sourced from GOLF_AUDIO_SCRIPT seg-120 ("Pick your target, commit to the
+  // number, and make one free, committed swing.") + Bomber roleContent scenes.
+  quickReset: {
+    stepLabel: "First Tee",
+    heading: "Step up.",
+    lines: ["Pick your target.", "Commit to the number.", "One free swing."],
+    cueLine: "Say it on the walk to your next shot.",
+  },
 
   // FV-294: golf rehearses "shots," not team "plays." Dormant until the golf
   // positive plays land (the picker step is skipped while golf ships no plays);
@@ -1579,6 +1686,17 @@ export const FOOTBALL_CONFIG: SportConfig = {
 
   cueWordHelper: "The one you'd say to yourself walking back to the huddle.",
   cardShareHint: "Screenshot it. Open it before kickoff.",
+
+  venue: "the field",
+
+  // Sourced from FOOTBALL_AUDIO_SCRIPT seg-120 ("Eyes up, read your keys, do
+  // your job full speed, finish to the whistle.") + cueWordHelper.
+  quickReset: {
+    stepLabel: "First Snap",
+    heading: "Line up.",
+    lines: ["Eyes up, read your keys.", "Do your job full speed.", "Finish to the whistle."],
+    cueLine: "Say it walking back to the huddle.",
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -1872,6 +1990,12 @@ export const SWIMMING_CONFIG: SportConfig = {
 
   cueWordHelper: "The one you'd say behind the blocks.",
   cardShareHint: "Screenshot it. Open it before they call your heat.",
+
+  venue: "the pool",
+
+  // No `quickReset` — swimming is DORMANT (not in SUPPORTED_SPORTS), so it
+  // takes DEFAULT_QUICK_RESET. Author the block as part of go-live, alongside
+  // the render + enablement work.
 };
 
 // ---------------------------------------------------------------------------
@@ -2198,6 +2322,11 @@ export const TRACKFIELD_CONFIG: SportConfig = {
 
   cueWordHelper: "The one you'd say to yourself in the blocks.",
   cardShareHint: "Screenshot it. Open it before they call your heat.",
+
+  venue: "the track",
+
+  // No `quickReset` — track-field is DORMANT (not in SUPPORTED_SPORTS), so it
+  // takes DEFAULT_QUICK_RESET. Author the block as part of go-live.
 };
 
 // ---------------------------------------------------------------------------
@@ -2569,6 +2698,17 @@ export const LACROSSE_CONFIG: SportConfig = {
 
   cueWordHelper: "The one you'd say to yourself on the ride back.",
   cardShareHint: "Screenshot it. Open it before the first faceoff.",
+
+  venue: "the field",
+
+  // Sourced from LACROSSE_AUDIO_SCRIPT seg-120 ("Run hard to your spot. Eyes
+  // up. Win your first touch...") + cueWordHelper ("on the ride back").
+  quickReset: {
+    stepLabel: "First Touch",
+    heading: "Step on.",
+    lines: ["Run hard to your spot.", "Eyes up.", "Win your first touch."],
+    cueLine: "Say it on the ride back.",
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -2940,6 +3080,20 @@ export const SOCCER_CONFIG: SportConfig = {
 
   cueWordHelper: "The one you'd say to yourself on the walk back to halfway.",
   cardShareHint: "Screenshot it. Open it before kick-off.",
+
+  // Matches SOCCER_AUDIO_SCRIPT seg-80 ("See the field") — the soccer module
+  // map / soccer-expert ratified "field" over "pitch" for this US audience, so
+  // the shell agrees with the narration rather than introducing a second noun.
+  venue: "the field",
+
+  // Sourced from SOCCER_AUDIO_SCRIPT seg-120 ("Check your shoulder. First touch
+  // out of your feet, simple and forward. Recover your shape.") + cueWordHelper.
+  quickReset: {
+    stepLabel: "First Touch",
+    heading: "Step on.",
+    lines: ["Check your shoulder.", "First touch out of your feet.", "Recover your shape."],
+    cueLine: "Say it on the walk back to halfway.",
+  },
 };
 
 // ---------------------------------------------------------------------------

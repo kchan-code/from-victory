@@ -460,7 +460,9 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   if (view.kind === "quick") {
     return (
       <PregameShell>
-        <QuickReset state={data} onClose={goStart} />
+        {/* FV-487: sportConfig threads the sport's own "step on" beat + cue
+            line so a non-hockey athlete never sees "First Shift". */}
+        <QuickReset state={data} onClose={goStart} sportConfig={sportConfig} />
       </PregameShell>
     );
   }
