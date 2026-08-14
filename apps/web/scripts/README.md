@@ -8,6 +8,26 @@ Dev-time tooling. Not bundled into the deployed app; runs locally only.
 > scripts switch to a newer Node first (e.g. `nvm use 22`). Running them on
 > Node 20 fails with an unknown-flag / unsupported-syntax error.
 
+## provision-play-review-account.ts
+
+Provisions the Google Play Console "App access" reviewer test account: one
+parent + one linked 13-17 minor athlete, entitled via a durable `access_grants`
+comp row (no Stripe checkout, works regardless of `ENFORCE_SUBSCRIPTION_GATING`).
+**Tier-2, prod-user-data — KC runs this or explicitly approves the run.** See
+the script's header comment for the full design rationale and
+`docs/play-review-access-grant.sql` for the SQL-only grant revoke/re-grant
+companion.
+
+```sh
+npm run provision:play-review -- --dry-run       # preview, no writes
+npm run provision:play-review                    # create/update both accounts + grant
+npm run provision:play-review -- --revoke-grant   # turn off entitlement, keep both accounts
+npm run provision:play-review -- --teardown       # delete both accounts (irreversible)
+```
+
+Requires `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` in
+`apps/web/.env.local` (or exported), pointed at the target project.
+
 ## generate-pregame-audio.ts
 
 Generates pregame audio MP3s + sidecar JSON timelines from typed
