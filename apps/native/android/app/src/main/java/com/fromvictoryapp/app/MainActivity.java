@@ -1,4 +1,4 @@
-package com.fromvictory.app;
+package com.fromvictoryapp.app;
 
 import com.getcapacitor.BridgeActivity;
 

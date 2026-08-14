@@ -69,8 +69,8 @@ target `apps/web` only — native is never part of the required CI build path.
 
 | Field | Value in repo | Notes |
 |---|---|---|
-| Android `applicationId` | `com.fromvictory.app` | **Locked (Kinny).** Same string in `assetlinks.json` / old TWA runbook. **Permanent once the first AAB is uploaded to Play.** |
-| iOS bundle id | `com.fromvictory.app` | Same string in the scaffold. Confirm again before any App Store Connect record (Apple enrollment is deferred). |
+| Android `applicationId` | `com.fromvictoryapp.app` | **Locked by Play Console.** Same string in `assetlinks.json` / Capacitor `appId`. Immutable. |
+| iOS bundle id | `com.fromvictoryapp.app` | Kept in sync with Capacitor `appId` so one `cap sync` does not fork platforms. Confirm again before any App Store Connect record (Apple enrollment is deferred; no App Store record yet). |
 | Display name | `From Victory` | Locked to brand. |
 
 Play Console app creation: follow [docs/android-play-release.md](./android-play-release.md).
@@ -189,8 +189,9 @@ In Xcode:
 
 1. Select the **App** target → **Signing & Capabilities**.
 2. Set Team to the From Victory Apple Developer team.
-3. Confirm Bundle Identifier = the KC-approved id (placeholder
-   `com.fromvictory.app`).
+3. Confirm Bundle Identifier = Capacitor `appId` / Play-locked package
+   (`com.fromvictoryapp.app`). No App Store record yet — keep iOS in sync
+   so `cap sync` does not fork the two platforms.
 4. Add capabilities only when product+privacy approve them (Associated Domains
    later; **do not** add Push Notifications yet).
 5. Product → Archive → Distribute App → App Store Connect.

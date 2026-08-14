@@ -9,7 +9,7 @@ prerequisites: **[docs/native-capacitor.md](../../docs/native-capacitor.md)**.
 
 Android Play release (enrollment, keystore, signed AAB, Internal testing, Data
 safety): **[docs/android-play-release.md](../../docs/android-play-release.md)**.
-Application id is locked: `com.fromvictory.app`.
+Application id is locked: `com.fromvictoryapp.app` (Play Console).
 
 ```bash
 npm install          # from repo root

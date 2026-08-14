@@ -5,7 +5,7 @@
 > (see [docs/native-capacitor.md](./native-capacitor.md)). Play Console
 > enrollment and first AAB upload: [docs/android-play-release.md](./android-play-release.md).
 > Keeping two Android delivery paths (TWA + Capacitor) for the same package id
-> `com.fromvictory.app` would create conflicting Play listings. This runbook
+> `com.fromvictoryapp.app` would create conflicting Play listings. This runbook
 > is retained for historical context and for the keystore / Digital Asset
 > Links fingerprint steps, which still apply to the Capacitor track.
 
@@ -150,7 +150,7 @@ placeholder value with your real fingerprint:
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.fromvictory.app",
+      "package_name": "com.fromvictoryapp.app",
       "sha256_cert_fingerprints": [
         "AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67"
       ]
@@ -183,7 +183,7 @@ Bubblewrap will ask several questions. Use these answers:
 
 | Prompt | Answer |
 |---|---|
-| Application package name | `com.fromvictory.app` |
+| Application package name | `com.fromvictoryapp.app` |
 | Application name | `From Victory` |
 | Short name | `FromVictory` |
 | Application version | `1` (increment for every Play update) |
@@ -319,10 +319,9 @@ run `bubblewrap build`, and upload the new AAB to a new Play release.
 
 ## Package name note
 
-The package name `com.fromvictory.app` is used throughout this runbook and is
-baked into the `assetlinks.json` file. If KC decides on a different package name
-(e.g., `com.fromvictoryapp.android`), update both `assetlinks.json` and the
-Bubblewrap init answers, then regenerate.
+Play locked `com.fromvictoryapp.app`. That package is used throughout this
+runbook and is baked into the `assetlinks.json` file. Do not invent a
+different package name — Play cannot rename an existing app.
 
 ---
 

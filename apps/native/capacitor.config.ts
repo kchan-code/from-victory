@@ -10,9 +10,10 @@ import type { CapacitorConfig } from "@capacitor/cli";
  *   without a rearchitecture. The local `www/` folder is only a cold-start /
  *   offline fallback page.
  *
- * App ID is a PLACEHOLDER. KC must confirm `com.fromvictory.app` (or a
- * reverse-DNS id under the owned domain) BEFORE creating the App Store
- * Connect or Play Console app record — package/bundle IDs are permanent.
+ * App ID is locked to `com.fromvictoryapp.app`. Play Console already
+ * registered that package (immutable). Keep Android applicationId, iOS
+ * PRODUCT_BUNDLE_IDENTIFIER, and this appId identical so `cap sync`
+ * does not fork the platforms.
  *
  * Plugin allowlist (product-strategist): core, app, splash-screen, status-bar,
  * android, ios. No push-notifications (device token), analytics, ads, or
@@ -23,8 +24,8 @@ const serverUrl =
   process.env.CAPACITOR_SERVER_URL ?? "https://www.fromvictoryapp.com";
 
 const config: CapacitorConfig = {
-  // PLACEHOLDER — confirm with KC before store submission.
-  appId: "com.fromvictory.app",
+  // Play Console locked this package (immutable).
+  appId: "com.fromvictoryapp.app",
   appName: "From Victory",
   webDir: "www",
   server: {
