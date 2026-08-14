@@ -114,14 +114,15 @@ the PWA and must not add tracking SDKs.
 cd apps/native
 npx cap sync
 npm run build:android:debug    # needs Android SDK; see docs/native-capacitor.md
-# iOS archive requires macOS + Xcode — steps in docs/native-capacitor.md
+# iOS archive requires macOS + Xcode — see docs/ios-app-store-release.md
 ```
 
-Android application id is locked: `com.fromvictoryapp.app` (Play Console). Play enrollment,
-signing, Internal testing, and Data safety:
-[docs/android-play-release.md](./docs/android-play-release.md). Architecture +
-privacy rules: [docs/native-capacitor.md](./docs/native-capacitor.md). iOS / App
-Store remains deferred (Apple 3.1.1 / Stripe vs IAP).
+Application / bundle id is locked: `com.fromvictoryapp.app` (Play Console).
+Play enrollment, signing, Internal testing, and Data safety:
+[docs/android-play-release.md](./docs/android-play-release.md). iOS / App Store
+(TestFlight-first; enrollment not started):
+[docs/ios-app-store-release.md](./docs/ios-app-store-release.md). Architecture +
+privacy rules: [docs/native-capacitor.md](./docs/native-capacitor.md).
 
 ## Workflow rules
 

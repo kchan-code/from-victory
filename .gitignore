@@ -52,6 +52,7 @@ apps/web/coverage/
 *.keystore
 *.mobileprovision
 *.p12
+AuthKey*.p8
 apps/native/android/local.properties
 apps/native/android/keystore.properties
 apps/native/android/app/build/

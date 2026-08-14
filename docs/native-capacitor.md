@@ -5,8 +5,12 @@ PWA on Vercel; this package is an additive App Store / Play distribution shell.
 
 **Android Play (human checklist):** Kinny-executable steps — enrollment, signing,
 Internal testing, listing, Data safety — live in
-[docs/android-play-release.md](./android-play-release.md). iOS / App Store remains
-deferred.
+[docs/android-play-release.md](./android-play-release.md).
+
+**iOS / App Store (human checklist):** TestFlight-first steps — enrollment,
+signing, archive, nutrition labels — live in
+[docs/ios-app-store-release.md](./ios-app-store-release.md). Checklist ready;
+Apple Developer enrollment is **not** started. Not a live listing.
 
 **Tier:** KC-gated (product-scope + privacy path). Do not auto-merge PRs that
 change native plugins, permissions, or WebView navigation policy.
@@ -70,11 +74,12 @@ target `apps/web` only — native is never part of the required CI build path.
 | Field | Value in repo | Notes |
 |---|---|---|
 | Android `applicationId` | `com.fromvictoryapp.app` | **Locked by Play Console.** Same string in `assetlinks.json` / Capacitor `appId`. Immutable. |
-| iOS bundle id | `com.fromvictoryapp.app` | Kept in sync with Capacitor `appId` so one `cap sync` does not fork platforms. Confirm again before any App Store Connect record (Apple enrollment is deferred; no App Store record yet). |
+| iOS bundle id | `com.fromvictoryapp.app` | Kept in sync with Capacitor `appId` so one `cap sync` does not fork platforms. Confirm in Apple Developer Identifiers **before** any App Store Connect record (permanent; enrollment not started). |
 | Display name | `From Victory` | Locked to brand. |
 
 Play Console app creation: follow [docs/android-play-release.md](./android-play-release.md).
-Do not create an App Store Connect app until Apple enrollment is a real next step.
+App Store Connect app creation: follow [docs/ios-app-store-release.md](./ios-app-store-release.md)
+after enrollment and bundle-id confirmation.
 
 ---
 
@@ -101,7 +106,9 @@ privacy floor:
   **no tracking** and match reality.
 - Play “target audience” includes 13–17 (Families-adjacent obligations). Console
   answers and Designed-for-Families **non**-enrollment:
-  [docs/android-play-release.md](./android-play-release.md) §7–§9.
+  [docs/android-play-release.md](./android-play-release.md) §7–§9. App Store
+  nutrition labels + 13+ / not Kids Category:
+  [docs/ios-app-store-release.md](./ios-app-store-release.md) §9–§10.
 - Do **not** claim “on the App Store / Google Play” in marketing until a listing
   is approved and live (`docs/gtm/product-truths.md` stays silent until then).
 
@@ -118,9 +125,10 @@ privacy floor:
 3. **Account deletion reachability** (Apple 5.1.1(v) + Play). Parent-controlled
    deletion exists in the product model — confirm the path is reachable from
    inside the shell before submission.
-4. **Developer accounts:** Google Play Console enrollment is the next human
-   step — [docs/android-play-release.md](./android-play-release.md) §1. Apple
-   Developer Program remains deferred (Android-first).
+4. **Developer accounts:** Google Play Console — [docs/android-play-release.md](./android-play-release.md)
+   §1. Apple Developer Program — [docs/ios-app-store-release.md](./ios-app-store-release.md)
+   §1. Play is executable today; iOS enrollment is **not started** (checklist
+   ready). Android-first remains a valid 3.1.1 option.
 
 ---
 
@@ -173,7 +181,12 @@ blocker; real SHA-256 values are a follow-up `apps/web` PR after Play App Signin
 
 ### iOS — Mac follow-up (copy-paste)
 
-This runner scaffolds `apps/native/ios/` but cannot archive. On a Mac:
+This runner scaffolds `apps/native/ios/` but cannot archive. **macOS + Xcode
+required; Linux CI cannot archive.** Ordered TestFlight checklist (enrollment,
+signing, Connect record, nutrition labels):
+[docs/ios-app-store-release.md](./ios-app-store-release.md).
+
+On a Mac:
 
 ```bash
 # one-time
@@ -185,24 +198,17 @@ npx cap sync ios
 npx cap open ios             # opens Xcode
 ```
 
-In Xcode:
+In Xcode (detail in the iOS checklist §4–§5):
 
 1. Select the **App** target → **Signing & Capabilities**.
-2. Set Team to the From Victory Apple Developer team.
+2. Set Team to the From Victory Apple Developer team (after enrollment).
 3. Confirm Bundle Identifier = Capacitor `appId` / Play-locked package
    (`com.fromvictoryapp.app`). No App Store record yet — keep iOS in sync
    so `cap sync` does not fork the two platforms.
 4. Add capabilities only when product+privacy approve them (Associated Domains
    later; **do not** add Push Notifications yet).
-5. Product → Archive → Distribute App → App Store Connect.
-
-App Store Connect prerequisites (human):
-
-- Enroll in Apple Developer Program
-- Create the app record **after** bundle id confirmation
-- Privacy nutrition labels = no tracking
-- Age rating / kids category decisions with counsel
-- Resolve 3.1.1 / 4.2 strategy above before first review submission
+5. Product → Archive → Distribute App → App Store Connect → TestFlight
+   (internal testers first; not Production).
 
 ### Icons / splash
 
@@ -220,12 +226,14 @@ screenshots — not required for the scaffold to build.
   `privacy-verdict` gate is not blocked on a cloud-agent `cursor[bot]` comment —
   that gate only accepts OWNER/MEMBER/COLLABORATOR authors). README + this doc
   already state the rule: PWA primary; native shell only; no native-only features.
-- iOS `PrivacyInfo.xcprivacy` host-app manifest before App Store submission
+- iOS `PrivacyInfo.xcprivacy` host-app manifest before App Review
+  ([docs/ios-app-store-release.md](./ios-app-store-release.md) §11)
 - ~~Play Families / Data Safety pre-flight before Play Console app creation~~
   → Kinny checklist: [docs/android-play-release.md](./android-play-release.md)
   §7–§9. Console fill + [FV-211](https://linear.app/adeptiv/issue/FV-211)
   kids-privacy-officer veto still required before a **public** track.
 - Decide whether to commit `ios/App/Podfile.lock` for reproducible CocoaPods
+  ([docs/ios-app-store-release.md](./ios-app-store-release.md) §11)
 - Extend `athlete-no-tracking` CI to scan `apps/native` manifests/deps
 - Enable R8/ProGuard minify for release AABs before first **production** Play
   upload ([docs/android-play-release.md](./android-play-release.md) §11)
