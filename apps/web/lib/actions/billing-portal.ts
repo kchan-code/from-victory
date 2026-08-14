@@ -22,6 +22,12 @@
  *   (a) No subscription row → returns { ok: false, code: "no_subscription" }.
  *   (b) billingPortal.sessions.create throws (e.g. portal not yet configured
  *       in the Stripe dashboard) → returns { ok: false, code: "portal_unavailable" }.
+ *   (c) Called from inside the native shell (Google Play "no in-app purchase"
+ *       compliance — see lib/native-shell.ts) → returns
+ *       { ok: false, code: "native_shell_unavailable" }. Belt-and-braces: the
+ *       UI never renders BillingPortalButton in-shell (both settings pages
+ *       swap it for neutral, non-tappable text instead), so this branch is a
+ *       defensive backstop, not the primary control.
  *   The UI maps these codes to calm, non-crashing messages (never a 500).
  */
 
@@ -32,6 +38,7 @@ import { redirect } from "next/navigation";
 import { requireSubscriber } from "@/lib/auth/guards";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
+import { isNativeShell } from "@/lib/native-shell";
 import { getStripe } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -40,7 +47,11 @@ import { createClient } from "@/lib/supabase/server";
 // ---------------------------------------------------------------------------
 
 export type BillingPortalActionState =
-  | { ok: false; code: "no_subscription" | "portal_unavailable"; error: string }
+  | {
+      ok: false;
+      code: "no_subscription" | "portal_unavailable" | "native_shell_unavailable";
+      error: string;
+    }
   | null;
 
 // ---------------------------------------------------------------------------
@@ -51,6 +62,19 @@ export async function openBillingPortal(
   _prev: BillingPortalActionState,
   _formData: FormData,
 ): Promise<BillingPortalActionState> {
+  // 0. Google Play "no in-app purchase" compliance: inside the Capacitor
+  //    shell, checkout.stripe.com has no reachable path (it's deliberately
+  //    not in allowNavigation — see apps/native/capacitor.config.ts). Refuse
+  //    before touching auth/Stripe at all — the UI already hides the button
+  //    that would call this action in-shell; this is the belt to that brace.
+  if (isNativeShell()) {
+    return {
+      ok: false,
+      code: "native_shell_unavailable",
+      error: "Manage your subscription from a web browser at fromvictoryapp.com.",
+    };
+  }
+
   // 1. Gate to an authenticated payer — a parent OR an adult_athlete (FV-440).
   //    Redirects to /signin if not authed or if the caller is a minor
   //    athlete. Never trust a client-passed parent_id.

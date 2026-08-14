@@ -43,13 +43,23 @@ vi.mock("react-dom", async (importOriginal) => {
   };
 });
 
-const { requireAthleteMock, maybeSingleMock } = vi.hoisted(() => ({
-  requireAthleteMock: vi.fn(),
-  maybeSingleMock: vi.fn(),
-}));
+const { requireAthleteMock, maybeSingleMock, isNativeShellMock } = vi.hoisted(
+  () => ({
+    requireAthleteMock: vi.fn(),
+    maybeSingleMock: vi.fn(),
+    // Google Play "no in-app purchase" compliance. Defaults to false
+    // (ordinary web/PWA request) — the native-shell describe block below
+    // overrides it per test.
+    isNativeShellMock: vi.fn(() => false),
+  }),
+);
 
 vi.mock("@/lib/auth/guards", () => ({
   requireAthlete: requireAthleteMock,
+}));
+
+vi.mock("@/lib/native-shell", () => ({
+  isNativeShell: isNativeShellMock,
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -79,6 +89,9 @@ import AthleteSettingsPage from "@/app/athlete/settings/page";
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  // clearAllMocks keeps mockReturnValue overrides — restore the
+  // native-shell default so test order never matters.
+  isNativeShellMock.mockReturnValue(false);
 });
 
 const BASE_PROFILE = {
@@ -160,5 +173,39 @@ describe("/athlete/settings — Subscription + Delete account gating (FV-441)", 
 
     fireEvent.change(confirmInput, { target: { value: "DELETE" } });
     expect(confirmButton).not.toBeDisabled();
+  });
+});
+
+describe("/athlete/settings — native-shell billing-portal suppression (Google Play compliance)", () => {
+  it("replaces BillingPortalButton with a neutral, non-tappable notice when isNativeShell() is true", async () => {
+    isNativeShellMock.mockReturnValue(true);
+    await renderSettings("adult_athlete");
+
+    expect(screen.queryByTestId("billing-portal-btn")).not.toBeInTheDocument();
+    const notice = screen.getByTestId("billing-portal-native-shell-notice");
+    expect(notice).toBeInTheDocument();
+    expect(notice).toHaveTextContent(
+      "Manage your From Victory subscription from a web browser at fromvictoryapp.com.",
+    );
+  });
+
+  it("still renders the real BillingPortalButton when isNativeShell() is false", async () => {
+    isNativeShellMock.mockReturnValue(false);
+    await renderSettings("adult_athlete");
+
+    expect(screen.getByTestId("billing-portal-btn")).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("billing-portal-native-shell-notice"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("a minor athlete never sees the native-shell notice either (no billing UI at all)", async () => {
+    isNativeShellMock.mockReturnValue(true);
+    await renderSettings("athlete");
+
+    expect(
+      screen.queryByTestId("billing-portal-native-shell-notice"),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("billing-portal-btn")).not.toBeInTheDocument();
   });
 });

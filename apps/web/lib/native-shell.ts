@@ -23,6 +23,23 @@ import { headers } from "next/headers";
 const NATIVE_SHELL_UA_TOKEN = "FVNativeShell/1";
 
 /**
+ * Pure token check against a raw User-Agent string.
+ *
+ * Exported separately from `isNativeShell()` below because Edge Middleware
+ * (see middleware.ts / lib/native-shell-router.ts, the entry-point router)
+ * reads the header directly off `NextRequest` rather than through
+ * `next/headers`' request-scoped `headers()` — `headers()` only works inside
+ * a rendered Server Component / Route Handler / Server Action, not
+ * Middleware. This function is the single source of truth for the token so
+ * both call sites can never drift.
+ */
+export function isNativeShellUserAgent(
+  userAgent: string | null | undefined,
+): boolean {
+  return (userAgent ?? "").includes(NATIVE_SHELL_UA_TOKEN);
+}
+
+/**
  * True when the current request's `User-Agent` header identifies the native
  * app shell.
  *
@@ -36,5 +53,5 @@ const NATIVE_SHELL_UA_TOKEN = "FVNativeShell/1";
  */
 export function isNativeShell(): boolean {
   const userAgent = headers().get("user-agent") ?? "";
-  return userAgent.includes(NATIVE_SHELL_UA_TOKEN);
+  return isNativeShellUserAgent(userAgent);
 }

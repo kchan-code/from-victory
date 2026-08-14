@@ -6,6 +6,7 @@ import { BillingPortalButton } from "@/components/dashboard/BillingPortalButton"
 import { DeleteAccountSection } from "@/components/dashboard/DeleteAccountSection";
 import { Icon } from "@/components/ui";
 import { requireAthlete } from "@/lib/auth/guards";
+import { isNativeShell } from "@/lib/native-shell";
 import { createClient } from "@/lib/supabase/server";
 import { SUPPORTED_SPORTS, sportLabel, type Sport } from "@/lib/sports";
 import { FOCUS_AREA_LABELS, isFocusAreaKey } from "@/lib/quiz-config";
@@ -35,6 +36,13 @@ export default async function AthleteSettingsPage({
   // Stripe/billing or self-delete UI — same boundary requireAthlete() itself
   // documents at app/athlete/paused/page.tsx:19-21.
   const isAdult = profile.role === "adult_athlete";
+
+  // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
+  // checkout.stripe.com has no reachable path (it's deliberately not in
+  // allowNavigation — see apps/native/capacitor.config.ts), so the Billing
+  // Portal button below (adult_athlete only) may not render as tappable,
+  // Stripe-bound UI. See lib/native-shell.ts.
+  const nativeShell = isNativeShell();
 
   // Load push subscription summary for the "Daily reminder" settings row.
   // Only fetch reminder_hour — never expose keys/endpoint to the page.
@@ -231,7 +239,25 @@ export default async function AthleteSettingsPage({
                 <p className="mb-4 font-body text-[13px] leading-snug text-cream/50">
                   Manage or cancel your subscription.
                 </p>
-                <BillingPortalButton />
+                {/* In-shell, checkout.stripe.com is unreachable (Google Play
+                    compliance — see lib/native-shell.ts), so
+                    BillingPortalButton is replaced by neutral, non-tappable
+                    text — same pattern as the other native-shell notices
+                    (app/subscribe/page.tsx, app/athlete/paused/page.tsx). */}
+                {nativeShell ? (
+                  <div
+                    role="status"
+                    data-testid="billing-portal-native-shell-notice"
+                    className="bg-onyx border border-hairline rounded-xl px-4 py-4"
+                  >
+                    <p className="font-body text-cream/70 text-[13px] leading-relaxed">
+                      Manage your From Victory subscription from a web
+                      browser at fromvictoryapp.com.
+                    </p>
+                  </div>
+                ) : (
+                  <BillingPortalButton />
+                )}
               </div>
             </section>
 
