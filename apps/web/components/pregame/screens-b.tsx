@@ -6,6 +6,7 @@ import {
   Button,
   Eyebrow,
   Icon,
+  PreparingIndicator,
   ScreenBody,
   SectionLabel,
   SelectCard,
@@ -1857,14 +1858,11 @@ export function AudioSessionScreen({
         )}
       </div>
 
-      {/* F3: polite live region announces when the clip player finishes
-          decoding. Screen readers pick this up without interrupting the
-          athlete; sighted users see the button enabled. This element is
-          always mounted (zero height, no layout shift) — content is empty
-          until loading resolves. */}
-      <div aria-live="polite" aria-atomic="true" className="sr-only">
-        {clipLoading ? "Preparing your session…" : ""}
-      </div>
+      {/* F3 + FV-488: polite live region announcing decode progress. Was
+          sr-only, so the athlete watching a dimmed play button had no idea
+          anything was happening; PreparingIndicator renders the same text
+          visibly and keeps the single announcement. */}
+      <PreparingIndicator loading={clipLoading} />
 
       <div className="flex flex-col gap-2.5">
         <button
