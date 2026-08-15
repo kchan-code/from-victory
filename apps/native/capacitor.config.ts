@@ -59,6 +59,21 @@ const config: CapacitorConfig = {
     StatusBar: {
       style: "DARK",
       backgroundColor: "#050505",
+      // FV-484: Android 15 (targetSdk 35, see android/variables.gradle)
+      // enforces edge-to-edge windowing app-wide — the OS no longer honors a
+      // plain "reserve the status bar" request at the window level on its
+      // own. Capacitor 7's Android bridge reads this flag and, when false,
+      // pads the WebView host view by the live system-bar inset itself, so
+      // the header renders below the status bar on every device/cutout shape
+      // without any web-side CSS change. Leaving this unset falls back to
+      // the plugin default (`true` = overlay), which let the WebView draw
+      // full-bleed under the status bar and caused the header/logo/"Sign in"
+      // pill collision this fixes. `false` also makes `backgroundColor`
+      // above actually render (it only paints a real, non-overlaid status
+      // bar strip) — it was inert before this. Native-shell-only key: the
+      // hosted Next.js app (apps/web) has no viewport-fit=cover / safe-area
+      // change, so browser and installed-PWA layout is unaffected.
+      overlaysWebView: false,
     },
   },
   android: {
