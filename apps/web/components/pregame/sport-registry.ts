@@ -1270,7 +1270,7 @@ export const GOLF_CONFIG: SportConfig = {
   quickReset: {
     stepLabel: "First Tee",
     heading: "Step up.",
-    lines: ["Pick your target.", "Commit to the number.", "One free swing."],
+    lines: ["Pick your target.", "Commit to the number.", "One committed swing."],
     cueLine: "Say it on the walk to your next shot.",
   },
 
