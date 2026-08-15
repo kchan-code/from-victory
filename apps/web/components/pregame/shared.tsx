@@ -387,6 +387,57 @@ export function BottomBar({
 }
 
 // ---------------------------------------------------------------------------
+// PreparingIndicator — FV-488
+// ---------------------------------------------------------------------------
+//
+// Shown on the two narrated surfaces (Game-Day Pregame, Pre-Practice) while the
+// clip player is fetching + decoding the session audio.
+//
+// Before FV-488 this state was announced ONLY to screen readers (an sr-only
+// aria-live region plus the play button's aria-label). A sighted athlete saw a
+// dimmed, unresponsive play button and no explanation — on a slow connection
+// the decode can run for many seconds (see the stall guard in useClipPlayer),
+// which reads as "the app is broken," not "the app is working." This element
+// replaces that sr-only region: same text, same single announcement, now
+// visible.
+//
+// Always mounted, at a fixed height:
+//   - the live region exists BEFORE its content changes, which is what makes
+//     the announcement reliable in VoiceOver/NVDA;
+//   - reserving the height means enabling Play doesn't shift the layout.
+export function PreparingIndicator({
+  loading,
+  label = "Preparing your session…",
+}: {
+  /** True while the session audio is still being fetched/decoded. */
+  loading: boolean;
+  /** Override only if a surface needs different wording. */
+  label?: string;
+}) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      data-testid="preparing-indicator"
+      className="flex h-[18px] items-center justify-center gap-2"
+    >
+      {loading && (
+        <>
+          <span
+            className="block h-1.5 w-1.5 animate-pulse rounded-full bg-gold/70 motion-reduce:animate-none"
+            aria-hidden="true"
+          />
+          <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-cream/50">
+            {label}
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // ScreenBody — scrollable content area above the BottomBar
 // ---------------------------------------------------------------------------
 

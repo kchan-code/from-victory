@@ -34,6 +34,7 @@ import {
   BottomBar,
   Icon,
   PregameShell,
+  PreparingIndicator,
   SectionLabel,
   ScreenBody,
   SelectCard,
@@ -573,10 +574,10 @@ function PracticeSessionScreen({
         </p>
       </div>
 
-      {/* Polite live region for screen readers — announces when decoding resolves. */}
-      <div aria-live="polite" aria-atomic="true" className="sr-only">
-        {clipLoading ? "Preparing your session…" : ""}
-      </div>
+      {/* FV-488: was an sr-only live region — the visible surface showed only a
+          dimmed play button while the audio decoded. Same text, same single
+          announcement, now visible. */}
+      <PreparingIndicator loading={clipLoading} />
 
       <div className="flex flex-col gap-2.5">
         {!renderCompleted && (
