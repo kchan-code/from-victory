@@ -8,6 +8,7 @@ import { getRequestIp, rateLimitGate } from "@/lib/actions/rate-limit-store";
 import { isAdultSignupEnabled } from "@/lib/flags";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
+import { isNativeShell } from "@/lib/native-shell";
 import { SUPPORTED_SPORTS } from "@/lib/sports";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -62,6 +63,13 @@ const SignUpAdultSchema = z
  * Post-signup flow: signup → /subscribe (adult checkout, FV-327) → success →
  * /athlete. The /subscribe page uses requireSubscriber() which accepts
  * adult_athlete, and passes createAdultCheckoutSession as the form action.
+ *
+ * Native-shell exception (FV-482): inside the Capacitor shell /subscribe is
+ * a no-purchase dead end (FV-478 — checkout.stripe.com isn't reachable
+ * in-shell, see lib/native-shell.ts), so an in-shell adult signup routes
+ * straight to /athlete instead. The existing paused/blocked state already
+ * carries the same no-purchase notice for an unsubscribed adult, so nothing
+ * new is introduced — the adult subscribes from a browser later.
  *
  * Gated by ENABLE_ADULT_SIGNUP — the entry link and route are also flag-gated;
  * this server-side check is defense-in-depth so the action cannot be invoked
@@ -159,5 +167,12 @@ export async function signUpAdultAthlete(
     };
   }
 
+  // Inside the native shell, /subscribe is a gated dead end (FV-478/FV-482):
+  // route home instead. redirect() throws internally and must not be called
+  // inside a try/catch — both branches below sit at the top level, matching
+  // the pattern in lib/actions/billing-portal.ts.
+  if (isNativeShell()) {
+    redirect("/athlete");
+  }
   redirect("/subscribe");
 }
