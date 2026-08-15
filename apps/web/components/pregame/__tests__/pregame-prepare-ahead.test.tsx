@@ -360,7 +360,7 @@ describe("PregameFlow — set-up-for-later (prepare flow)", () => {
     fireEvent.click(screen.getByRole("button", { name: /^continue$/i }));
 
     // Step 9 (last): Review in prepare mode.
-    expect(screen.getByText(/Review · Save for the rink/i)).toBeInTheDocument();
+    expect(screen.getByText(/Review · Save for later/i)).toBeInTheDocument();
 
     // The bottom bar CTA must read "SAVE & DOWNLOAD FOR LATER".
     expect(
@@ -436,7 +436,7 @@ describe("PregameFlow — set-up-for-later (prepare flow)", () => {
     fireEvent.click(screen.getByRole("button", { name: /^continue$/i }));
 
     // Review — click the SAVE & DOWNLOAD CTA to advance to PrepareDownloadScreen.
-    expect(screen.getByText(/Review · Save for the rink/i)).toBeInTheDocument();
+    expect(screen.getByText(/Review · Save for later/i)).toBeInTheDocument();
     const saveCta = screen.getByRole("button", { name: /save & download for later/i });
 
     await act(async () => {
@@ -485,7 +485,7 @@ describe("ReviewScreen mode (FV-229 prepare mode)", () => {
       screen.getByText(/Here.s what you.re saving\./i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Review · Save for the rink/i),
+      screen.getByText(/Review · Save for later/i),
     ).toBeInTheDocument();
 
     // The inline FV-129 download control must NOT appear.

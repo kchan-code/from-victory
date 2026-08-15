@@ -69,9 +69,12 @@ const STOP_COPY: Record<
     title: "Same as last time",
     body: "Jumps straight back into your last setup — a fast replay of the picks you already made.",
   },
+  // FV-486/FV-487: was "A fast reset for the locker room." — "locker room" is
+  // team-sport-flavored and this tour is shown to every sport. The value is
+  // the speed, not the place.
   "pregame-quick-reset-btn": {
     title: "Quick reset",
-    body: "No time for the full flow? A fast reset for the locker room.",
+    body: "No time for the full flow? A few minutes to settle your head before you go.",
   },
 };
 

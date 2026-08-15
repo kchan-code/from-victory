@@ -6,6 +6,7 @@ import { useCallback } from "react";
 import { BreathingSphere } from "./BreathingSphere";
 import { useBreathAudio } from "./audio/useBreathAudio";
 import { audioAssetUrl } from "./audio-mapping";
+import { QUICK_RESET_TITLE } from "./QuickReset";
 import {
   Button,
   Card,
@@ -169,8 +170,12 @@ export function PregameStart({
             <span className="font-heading text-[14px] font-semibold text-cream/90">
               Set up for later
             </span>
+            {/* FV-486: was "no rink signal needed" — a soccer athlete was
+                shown hockey's venue. The venue adds nothing here (the value
+                is "works without signal"), so the line is sport-neutral
+                rather than threaded. */}
             <span className="font-mono text-[11px] lowercase tracking-[0.04em] text-cream/45">
-              Make your picks + download — no rink signal needed.
+              Make your picks + download — no signal needed.
             </span>
           </button>
 
@@ -247,7 +252,7 @@ export function PregameStart({
             className="flex items-center justify-center gap-2 px-0 py-3 font-heading text-[14px] font-medium text-cream/70 transition-colors hover:text-cream"
           >
             <Icon name="bolt" size={14} className="text-gold" />
-            <span>Quick Locker Room Reset</span>
+            <span>{QUICK_RESET_TITLE}</span>
             <Icon name="arrowRight" size={14} />
           </button>
         </div>

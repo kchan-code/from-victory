@@ -260,9 +260,13 @@ export function PregameClientShell() {
         <h1 className="mb-3 font-display text-[28px] font-extrabold uppercase leading-[1.05] tracking-[0.03em] text-cream">
           Connect first
         </h1>
+        {/* FV-486: was "ready at the rink". This shell renders BEFORE the
+            athlete's sport is resolved (that's why we're here — no cache, no
+            network), so there is no SportConfig to thread. Sport-neutral is
+            the only correct answer. */}
         <p className="font-body text-[14px] leading-[1.55] text-cream/60">
-          Open the pregame session once while connected so it&rsquo;s ready at
-          the rink.
+          Open the pregame session once while connected so it&rsquo;s ready
+          when you have no signal.
         </p>
       </div>
     );
