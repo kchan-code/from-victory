@@ -78,3 +78,52 @@ describe("capacitor.config — native shell UA token (FV-483)", () => {
     expect(configSource.slice(start, end).toLowerCase()).not.toContain("stripe.com");
   });
 });
+
+/**
+ * FV-484 regression guard.
+ *
+ * On Android 15 (targetSdk 35, see apps/native/android/variables.gradle) the
+ * OS enforces edge-to-edge windowing app-wide, so the Capacitor `StatusBar`
+ * plugin's default (`overlaysWebView: true`) draws the WebView full-bleed
+ * under the system status bar — the app header (logo, "Sign in" pill)
+ * rendered underneath the clock/notification/battery icons. Explicitly
+ * setting `overlaysWebView: false` tells Capacitor's Android bridge to pad
+ * the WebView host view by the live system-bar inset instead, restoring a
+ * reserved (non-overlaid) status bar strip on every device/cutout shape.
+ *
+ * This is deliberately a native-shell-only config key — no change to
+ * apps/web's viewport meta or CSS was needed (or made), so browser and
+ * installed-PWA rendering is unaffected. See capacitor.config.ts for the
+ * full rationale.
+ */
+describe("capacitor.config — status bar does not overlay the WebView (FV-484)", () => {
+  const configSource = readFileSync(
+    resolve(__dirname, "../../native/capacitor.config.ts"),
+    "utf8",
+  );
+
+  /** Character range of a top-level `key: { ... }` block, via brace matching. */
+  function blockRange(source: string, key: string): { start: number; end: number } {
+    const start = source.indexOf(`${key}:`);
+    expect(start, `capacitor.config.ts should declare a \`${key}\` block`).toBeGreaterThan(-1);
+    const open = source.indexOf("{", start);
+    let depth = 0;
+    for (let i = open; i < source.length; i += 1) {
+      if (source[i] === "{") depth += 1;
+      else if (source[i] === "}") {
+        depth -= 1;
+        if (depth === 0) return { start, end: i };
+      }
+    }
+    throw new Error(`unbalanced braces in capacitor.config.ts \`${key}\` block`);
+  }
+
+  it("sets StatusBar.overlaysWebView to false so the header clears the status bar", () => {
+    const { start, end } = blockRange(configSource, "StatusBar");
+    const block = configSource.slice(start, end);
+    expect(
+      block,
+      "StatusBar.overlaysWebView must be false — the plugin default (true) lets the WebView draw under the Android system status bar once Android 15 edge-to-edge is enforced, colliding the app header with the clock/notification/battery icons (FV-484)",
+    ).toMatch(/overlaysWebView\s*:\s*false/);
+  });
+});
