@@ -18,6 +18,16 @@
  * Plus: a non-gated marketing route ("/teams") is never redirected even
  * in-shell, and a redirect carries forward any session-refresh cookie that
  * updateSession() wrote onto the response.
+ *
+ * FV-489 regression coverage: a shell response for one of these paths must
+ * never be cacheable anywhere (Cache-Control: no-store), and every response
+ * — shell or browser — must carry Vary: User-Agent so a shared cache (CDN,
+ * WebView HTTP cache, or this app's own Cache Storage safelist in
+ * public/sw.js) can never conflate a shell response with a browser response
+ * for the same URL. See public/sw.js's networkFirstWithOfflineFallback,
+ * which is the other half of this fix (it honors no-store before writing to
+ * Cache Storage) and __tests__/sw-route-strategy.test.ts / a dedicated sw.js
+ * cache-write test for that side.
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -103,6 +113,15 @@ describe.each(["/", "/pricing", "/parents"])(
       );
     });
 
+    it("in-shell (any auth state) → the redirect response is never cacheable and varies by User-Agent (FV-489)", async () => {
+      userResult = null;
+
+      const response = await middleware(makeRequest(path, NATIVE_SHELL_UA));
+
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(response.headers.get("vary")).toContain("User-Agent");
+    });
+
     it("in-shell + parent → redirects to /dashboard", async () => {
       userResult = { id: "parent-1" };
       profileResult = { role: "parent" };
@@ -157,6 +176,17 @@ describe.each(["/", "/pricing", "/parents"])(
       expect(response.status).toBe(200);
       expect(response.headers.get("location")).toBeNull();
     });
+
+    it("NOT in-shell → still carries Vary: User-Agent, but Cache-Control is left unchanged (browser/PWA caching unaffected, FV-489)", async () => {
+      userResult = null;
+
+      const response = await middleware(makeRequest(path, ORDINARY_UA));
+
+      expect(response.headers.get("vary")).toContain("User-Agent");
+      // Middleware itself never forces no-store for a browser request — that
+      // decision (if any) is left entirely to the page/route, unchanged.
+      expect(response.headers.get("cache-control")).not.toBe("no-store");
+    });
   },
 );
 
@@ -168,6 +198,15 @@ describe("middleware — native-shell entry router scope", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("does not add the FV-489 no-store/Vary treatment to a non-gated marketing route", async () => {
+    userResult = null;
+
+    const response = await middleware(makeRequest("/teams", NATIVE_SHELL_UA));
+
+    expect(response.headers.get("cache-control")).not.toBe("no-store");
+    expect(response.headers.get("vary")).toBeNull();
   });
 
   it("carries forward a session-refresh cookie onto the redirect response", async () => {

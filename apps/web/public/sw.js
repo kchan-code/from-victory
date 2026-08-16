@@ -39,7 +39,10 @@
  * SW audio cache so stale clips are evicted at activate.
  */
 
-const CACHE_VERSION = "fv-shell-v3"; // bumped: FV-107 adds pregame shell caching
+const CACHE_VERSION = "fv-shell-v4"; // bumped: FV-489 — evict any "/" entry a
+// pre-fix build may have written to Cache Storage for a native-shell
+// request (see networkFirstWithOfflineFallback below). The old cache is
+// deleted at activate() because it's no longer in OWNED_CACHES.
 
 /**
  * FV-142 — per-clip content-addressed filenames.
@@ -87,6 +90,27 @@ const OFFLINE_URL = "/offline";
  * authenticated or minor-PII HTML on shared devices).
  */
 const NAVIGATION_CACHE_SAFELIST = ["/", "/offline", "/privacy", "/terms"];
+
+/**
+ * FV-489 — mirrors NATIVE_SHELL_UA_TOKEN in apps/web/lib/native-shell.ts.
+ * Keep these two literal strings in sync (asserted in
+ * __tests__/sw-cache-control-no-store.test.ts).
+ *
+ * Why the SW needs its own copy of this check (in addition to the
+ * Cache-Control: no-store guard below): `fetch(request)` on a navigation
+ * request follows redirects transparently, and the RESULTING Response's
+ * `.headers` reflect the FINAL response (e.g. /signin), not the intermediate
+ * 307 that middleware.ts marks no-store. Detecting "am I the native shell"
+ * directly — via `self.navigator.userAgent`, which (unlike a Request's
+ * exposed Headers) is never stripped — means this app's Cache Storage never
+ * stores a "/" / "/offline" / "/privacy" / "/terms" entry for a shell
+ * WebView AT ALL, independent of which response headers survive a redirect
+ * chain. Browser/PWA caching for these pages is completely unaffected.
+ */
+const NATIVE_SHELL_UA_TOKEN = "FVNativeShell/1";
+const isNativeShellWebView = (self.navigator.userAgent || "").includes(
+  NATIVE_SHELL_UA_TOKEN
+);
 
 /**
  * FV-107 — pregame offline shell path.
@@ -601,6 +625,21 @@ async function cacheFirst(request) {
 //     and NEVER written to Cache Storage.
 //   - The /offline fallback is always served from the precached copy
 //     installed at SW boot — it is a static, PII-free page.
+//
+// FV-489 — two guards against the native shell ever caching these pages:
+//   1. isNativeShellWebView (module-level, see its own doc comment above) —
+//      the primary guard. Inside the shell, NEVER write "/" / "/offline" /
+//      "/privacy" / "/terms" to Cache Storage, full stop — the in-shell
+//      entry-point router (lib/native-shell-router.ts) must decide fresh,
+//      per request, where a shell visitor lands, and a cached "/" response
+//      replayed here would bypass that router entirely on a later cold start
+//      (the observed bug: sign-out lands on the marketing page and it
+//      survives force-stop + cold start).
+//   2. Cache-Control: no-store — defense in depth for the direct (non-
+//      redirected) 200 case, honoring the header middleware.ts sets on a
+//      native-shell response for these paths.
+//   Ordinary browser/PWA visits to these safelisted pages are unaffected by
+//   either guard — they still cache for offline use as designed.
 // ---------------------------------------------------------------------------
 async function networkFirstWithOfflineFallback(request) {
   const url = new URL(request.url);
@@ -608,11 +647,18 @@ async function networkFirstWithOfflineFallback(request) {
 
   try {
     const networkResponse = await fetch(request);
-    // Only write safelisted public pages to cache — never authenticated HTML.
+    const noStore = (networkResponse.headers.get("cache-control") || "")
+      .toLowerCase()
+      .includes("no-store");
+    // Only write safelisted public pages to cache — never authenticated
+    // HTML, never inside the native shell, and never a response the server
+    // explicitly marked no-store.
     if (
       isSafelisted &&
       networkResponse.ok &&
-      networkResponse.type !== "opaque"
+      networkResponse.type !== "opaque" &&
+      !isNativeShellWebView &&
+      !noStore
     ) {
       const cache = await caches.open(CACHE_VERSION);
       cache.put(request, networkResponse.clone());

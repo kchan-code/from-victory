@@ -98,6 +98,14 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
+// Native-shell detector (FV-489) — controllable per test. Default: browser
+// (not in-shell), matching every existing test below that asserts
+// redirect("/").
+const isNativeShellMock = vi.fn(() => false);
+vi.mock("@/lib/native-shell", () => ({
+  isNativeShell: () => isNativeShellMock(),
+}));
+
 // ---------------------------------------------------------------------------
 // Flexible service-client mock
 // ---------------------------------------------------------------------------
@@ -294,6 +302,7 @@ beforeEach(() => {
   requireParentMock.mockImplementation(async () => ({ userId: PARENT_ID }));
   requireSubscriberMock.mockImplementation(async () => ({ userId: PARENT_ID }));
   serviceMockImpl = makeServiceMock();
+  isNativeShellMock.mockReturnValue(false);
 });
 
 // ===========================================================================
@@ -505,6 +514,29 @@ describe("deleteAccount — wrong confirmation text", () => {
     expect(stripeCancelMock).not.toHaveBeenCalled();
     expect(signOutMock).not.toHaveBeenCalled();
     expect(redirectMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("deleteAccount — in-shell redirect target (FV-489)", () => {
+  it("redirects to /signin (not the gated marketing root) when isNativeShell() is true", async () => {
+    isNativeShellMock.mockReturnValue(true);
+    serviceMockImpl = makeServiceMock({ subscriptionRow: null, parentLinks: [] });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(signOutMock).toHaveBeenCalledOnce();
+    expect(redirectMock).toHaveBeenCalledWith("/signin");
+    expect(redirectMock).not.toHaveBeenCalledWith("/");
+  });
+
+  it("still redirects to / when isNativeShell() is false (browser/PWA unchanged)", async () => {
+    isNativeShellMock.mockReturnValue(false);
+    serviceMockImpl = makeServiceMock({ subscriptionRow: null, parentLinks: [] });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(redirectMock).toHaveBeenCalledWith("/");
+    expect(redirectMock).not.toHaveBeenCalledWith("/signin");
   });
 });
 

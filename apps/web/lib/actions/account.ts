@@ -13,6 +13,7 @@ import { isBenignCancelError } from "@/lib/stripe/cancel-errors";
 import { getStripe } from "@/lib/stripe/server";
 import { syncAthleteQuantity } from "@/lib/stripe/sync-athlete-quantity";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
+import { isNativeShell } from "@/lib/native-shell";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -354,5 +355,9 @@ export async function deleteAccount(
   // Clear the now-orphaned session cookies, then send them home.
   const supabase = createClient();
   await supabase.auth.signOut();
-  redirect("/");
+  // Same shell/browser split as signOut() in lib/actions/auth.ts (FV-489):
+  // "/" is the gated marketing root in-shell (real prices, trial CTA), a
+  // Play Payments violation on this account-deletion sign-out too. Browser
+  // behavior is unchanged.
+  redirect(isNativeShell() ? "/signin" : "/");
 }
