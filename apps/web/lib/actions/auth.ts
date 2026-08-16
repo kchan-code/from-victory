@@ -7,6 +7,7 @@ import { isSyntheticAthleteEmail } from "@/lib/auth/athlete-email";
 import { rateLimitGate, getRequestIp } from "@/lib/actions/rate-limit-store";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
+import { isNativeShell } from "@/lib/native-shell";
 import { createServiceClient } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
 
@@ -191,7 +192,13 @@ export async function signIn(
 export async function signOut() {
   const supabase = createClient();
   await supabase.auth.signOut();
-  redirect("/");
+  // Inside the native shell, "/" is the gated marketing root — real prices,
+  // "Start your athlete's 14-day free trial" — a Google Play Payments policy
+  // violation the moment it renders post-sign-out (FV-489). Route to /signin
+  // instead, mirroring the native-shell entry-point router's own signed-out
+  // target (NATIVE_SHELL_SIGNED_OUT_TARGET in lib/native-shell-router.ts).
+  // Browser/PWA sign-out is unchanged — still lands on "/".
+  redirect(isNativeShell() ? "/signin" : "/");
 }
 
 // -----------------------------------------------------------------------------

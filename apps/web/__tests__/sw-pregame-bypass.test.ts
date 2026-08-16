@@ -66,10 +66,17 @@ describe("SW pregame bypass (FV-107 / FV-126)", () => {
     expect(source).toContain("pregameShellNetworkFirst");
   });
 
-  it("sw.js bumped CACHE_VERSION to fv-shell-v3 (stale v2 pregame cache is evicted)", () => {
-    // The cache version must be bumped when adding new cached routes so stale
-    // pregame shell entries from the v2 cache are evicted on the next deploy.
-    expect(source).toContain('"fv-shell-v3"');
+  it("sw.js CACHE_VERSION has moved past the pre-pregame-cache v2 (stale v2 pregame cache stays evicted)", () => {
+    // The cache version was bumped past v2 when the pregame shell strategy
+    // was added (FV-107) so stale pregame shell entries from the v2 cache
+    // are evicted on the next deploy, and bumped again for FV-489 (evicts any
+    // "/" entry a pre-fix build may have written to Cache Storage for a
+    // native-shell request — see the FV-489 no-store guard in
+    // networkFirstWithOfflineFallback). Assert "not v1/v2" rather than pinning
+    // an exact string so this doesn't go stale on the next unrelated bump.
+    expect(source).not.toContain('"fv-shell-v1"');
+    expect(source).not.toContain('"fv-shell-v2"');
+    expect(source).toMatch(/const CACHE_VERSION = "fv-shell-v\d+"/);
   });
 
   it("pregameShellNetworkFirst guards against Set-Cookie before caching", () => {
