@@ -101,6 +101,16 @@ export const BYPASS_PREFIXES = [
 export const ICON_OR_FONT_RE = /\.(png|svg|ico|webmanifest|woff2|woff|ttf|otf)$/;
 
 /**
+ * Paths the native-shell entry router owns (FV-478 / FV-489). Must stay in
+ * sync with `NATIVE_SHELL_ROUTED_PATHS` in lib/native-shell-router.ts and with
+ * the same array in public/sw.js.
+ *
+ * The SW never intercepts a navigation to these — see the branch in
+ * decideStrategy() for why.
+ */
+export const NATIVE_SHELL_ENTRY_PATHS = ["/", "/pricing", "/parents"];
+
+/**
  * Inputs to the routing decision. These are the minimal facts sw.js derives
  * from the `FetchEvent` (`event.request` + `new URL(request.url)`):
  *
@@ -169,6 +179,25 @@ export function decideStrategy(input: SwRouteInput): SwStrategy {
   // 3. Brand asset files (icons + fonts) — cache-first.
   if (ICON_OR_FONT_RE.test(pathname)) {
     return "cache-first";
+  }
+
+  // 3b. Native-shell entry paths — passthrough, NEVER intercepted (FV-489).
+  //
+  // These are the paths middleware.ts redirects by auth state when the request
+  // carries Capacitor's appended `FVNativeShell/1` User-Agent. The SW must not
+  // handle them, because `event.respondWith(fetch(request))` re-issues the
+  // request from the ServiceWorkerGlobalScope, which does NOT carry that
+  // appended UA. The server then sees an ordinary browser, correctly returns
+  // the 200 marketing page instead of the 307, and the SW hands it to the
+  // page — showing prices inside the shell.
+  //
+  // Returning "passthrough" means no respondWith at all, so the browser
+  // performs the navigation itself with the real UA and middleware fires.
+  // This is deliberately NOT a UA check inside the SW: two prior attempts
+  // (#440, #441) failed on device because no UA signal reliably reaches this
+  // scope. Not intercepting is the only fix that doesn't depend on one.
+  if (isNavigate && NATIVE_SHELL_ENTRY_PATHS.includes(pathname)) {
+    return "passthrough";
   }
 
   // 4. Navigation requests — network-first with offline fallback.

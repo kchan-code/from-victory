@@ -41,7 +41,7 @@
  * SW audio cache so stale clips are evicted at activate.
  */
 
-const CACHE_VERSION = "fv-shell-v5"; // bumped: FV-489 round 2 — the round-1
+const CACHE_VERSION = "fv-shell-v6"; // bumped: FV-489 round 2 — the round-1
 // fix (isNativeShellWebView, reading self.navigator.userAgent inside the SW)
 // shipped in v4 and was verified on-device to do NOTHING: Capacitor's
 // appendUserAgent decorates the WebView's page requests but there is no
@@ -127,6 +127,11 @@ const OFFLINE_URL = "/offline";
  * them either.
  */
 const NAVIGATION_CACHE_SAFELIST = ["/offline", "/privacy", "/terms"];
+
+// Paths the native-shell entry router owns (FV-478 / FV-489). Mirrors
+// NATIVE_SHELL_ENTRY_PATHS in lib/sw/route-strategy.ts and
+// NATIVE_SHELL_ROUTED_PATHS in lib/native-shell-router.ts.
+const NATIVE_SHELL_ENTRY_PATHS = ["/", "/pricing", "/parents"];
 
 /**
  * FV-107 — pregame offline shell path.
@@ -243,6 +248,25 @@ function decideStrategy(pathname, isSameOrigin, isNavigate) {
   // 3. Brand asset files (icons + fonts) — cache-first.
   if (ICON_OR_FONT_RE.test(pathname)) {
     return "cache-first";
+  }
+
+  // 3b. Native-shell entry paths — passthrough, NEVER intercepted (FV-489).
+  //
+  // middleware.ts redirects these by auth state when the request carries
+  // Capacitor's appended `FVNativeShell/1` User-Agent. The SW must not handle
+  // them: event.respondWith(fetch(request)) re-issues the request from the
+  // ServiceWorkerGlobalScope, which does NOT carry that appended UA. The
+  // server then sees an ordinary browser, correctly returns the 200 marketing
+  // page instead of the 307, and the SW hands it straight to the page —
+  // showing prices inside the shell.
+  //
+  // "passthrough" means no respondWith at all, so the browser performs the
+  // navigation itself with the real UA and middleware fires. Deliberately NOT
+  // a UA check in here: two prior attempts (#440, #441) failed on device
+  // because no UA signal reliably reaches this scope. Not intercepting is the
+  // only fix that doesn't depend on one.
+  if (isNavigate && NATIVE_SHELL_ENTRY_PATHS.includes(pathname)) {
+    return "passthrough";
   }
 
   // 4. Navigation requests — network-first with offline fallback.

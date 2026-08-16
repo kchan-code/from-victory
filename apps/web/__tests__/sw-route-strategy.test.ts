@@ -23,6 +23,7 @@ import {
   BYPASS_PREFIXES,
   PREGAME_PATH,
   ICON_OR_FONT_RE,
+  NATIVE_SHELL_ENTRY_PATHS,
 } from "@/lib/sw/route-strategy";
 
 // ---------------------------------------------------------------------------
@@ -247,9 +248,24 @@ const CASES: Case[] = [
 
   // 4. navigation — network-first + offline fallback.
   {
-    name: "public navigation (/) → network-first-offline-fallback",
+    name: "native-shell entry path (/) navigation → passthrough (FV-489: SW must never respondWith, or its tokenless fetch gets the marketing page)",
     input: { pathname: "/", isSameOrigin: true, isNavigate: true },
-    expected: "network-first-offline-fallback",
+    expected: "passthrough",
+  },
+  {
+    name: "native-shell entry path (/pricing) navigation → passthrough (FV-489)",
+    input: { pathname: "/pricing", isSameOrigin: true, isNavigate: true },
+    expected: "passthrough",
+  },
+  {
+    name: "native-shell entry path (/parents) navigation → passthrough (FV-489)",
+    input: { pathname: "/parents", isSameOrigin: true, isNavigate: true },
+    expected: "passthrough",
+  },
+  {
+    name: "entry path as a NON-navigation (RSC fetch) → unchanged fall-through",
+    input: { pathname: "/pricing", isSameOrigin: true, isNavigate: false },
+    expected: "passthrough",
   },
   {
     name: "privacy navigation → network-first-offline-fallback",
@@ -389,6 +405,7 @@ function buildSwDecideStrategy(): (
     extractConst("PREGAME_PATH"),
     extractConst("BYPASS_PREFIXES"),
     extractConst("ICON_OR_FONT_RE"),
+    extractConst("NATIVE_SHELL_ENTRY_PATHS"),
     extractDecideStrategy(),
     "return decideStrategy;",
   ].join("\n");
@@ -443,5 +460,54 @@ describe("sw.js decideStrategy stays in sync with the TS source (FV-126)", () =>
     const swRe = new Function(`${decl}\nreturn ICON_OR_FONT_RE;`)() as RegExp;
     expect(swRe.source).toBe(ICON_OR_FONT_RE.source);
     expect(swRe.flags).toBe(ICON_OR_FONT_RE.flags);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-489 — the native-shell entry paths must NEVER be intercepted by the SW.
+//
+// Why this is its own block rather than just table rows: two prior fixes
+// (#440, #441) shipped green test suites and did nothing on a real device,
+// because both depended on a User-Agent signal that never reaches the
+// ServiceWorkerGlobalScope. The SW's own fetch() is tokenless, so the server
+// legitimately returns the 200 marketing page instead of the 307 — and the SW
+// hands it to the page. Not intercepting at all is the only fix that does not
+// depend on a signal we cannot observe from inside the worker.
+// ---------------------------------------------------------------------------
+describe("FV-489 — native-shell entry paths are never intercepted", () => {
+  it("covers exactly the paths middleware routes", () => {
+    expect(NATIVE_SHELL_ENTRY_PATHS).toEqual(["/", "/pricing", "/parents"]);
+  });
+
+  it.each(NATIVE_SHELL_ENTRY_PATHS)(
+    "navigation to %s → passthrough, never network-first-offline-fallback",
+    (pathname) => {
+      const strategy = decideStrategy({
+        pathname,
+        isSameOrigin: true,
+        isNavigate: true,
+      });
+      expect(strategy).toBe("passthrough");
+      // The specific regression: if this ever returns the network-first
+      // strategy again, sw.js calls event.respondWith() and re-fetches without
+      // the shell UA — which is precisely the bug.
+      expect(strategy).not.toBe("network-first-offline-fallback");
+    },
+  );
+
+  it("sw.js declares the same entry paths as the TS mirror", () => {
+    const swSource = fs.readFileSync(
+      path.join(process.cwd(), "public", "sw.js"),
+      "utf8",
+    );
+    const match = swSource.match(
+      /const NATIVE_SHELL_ENTRY_PATHS = (\[[^\]]*\]);/,
+    );
+    if (!match?.[1]) {
+      throw new Error("NATIVE_SHELL_ENTRY_PATHS not found in sw.js");
+    }
+    expect(JSON.parse(match[1].replace(/'/g, '"'))).toEqual(
+      NATIVE_SHELL_ENTRY_PATHS,
+    );
   });
 });
