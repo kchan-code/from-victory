@@ -3,8 +3,9 @@
  * FV-107 offline-tolerant pregame auth)
  *
  * Strategy matrix:
- *   SAFELIST navigations (/, /offline, /privacy, /terms) → network-first,
- *       response also written to cache (these pages contain NO user data)
+ *   SAFELIST navigations (/offline, /privacy, /terms) → network-first,
+ *       response also written to cache (these pages contain NO user data).
+ *       "/" is deliberately NOT in this list — see FV-489 round 2 below.
  *   /athlete/pregame navigation → network-first, cache the PII-free shell
  *       response, serve from cache when offline (FV-107). Also caches the
  *       RSC payload so client-side navigation works offline.
@@ -26,11 +27,12 @@
  *
  * No build-time manifest injection. No Workbox. Hand-written and auditable.
  * kids-privacy-officer: cache stores ONLY static build assets, the offline
- * fallback HTML, the four safelisted public pages (none contain PII), the
- * PII-free pregame shell (FV-107 — page contains no server-side user data;
- * auth + profile resolved entirely client-side), and pregame audio clip files
- * (public static assets, zero PII). All other authenticated /athlete/* pages
- * and the pairing flow (/pair) are NEVER written to cache. Cache is device-local
+ * fallback HTML, the three safelisted public pages (none contain PII; "/" is
+ * deliberately excluded — see FV-489 round 2 below), the PII-free pregame
+ * shell (FV-107 — page contains no server-side user data; auth + profile
+ * resolved entirely client-side), and pregame audio clip files (public
+ * static assets, zero PII). All other authenticated /athlete/* pages and the
+ * pairing flow (/pair) are NEVER written to cache. Cache is device-local
  * only (no sync/share surface).
  *
  * Bump CACHE_VERSION any time the shell layout or offline page changes.
@@ -39,10 +41,16 @@
  * SW audio cache so stale clips are evicted at activate.
  */
 
-const CACHE_VERSION = "fv-shell-v4"; // bumped: FV-489 — evict any "/" entry a
-// pre-fix build may have written to Cache Storage for a native-shell
-// request (see networkFirstWithOfflineFallback below). The old cache is
-// deleted at activate() because it's no longer in OWNED_CACHES.
+const CACHE_VERSION = "fv-shell-v5"; // bumped: FV-489 round 2 — the round-1
+// fix (isNativeShellWebView, reading self.navigator.userAgent inside the SW)
+// shipped in v4 and was verified on-device to do NOTHING: Capacitor's
+// appendUserAgent decorates the WebView's page requests but there is no
+// evidence it reaches the service worker's own global scope, so the SW-side
+// UA check silently evaluated false and never blocked the write. This
+// version removes "/" from NAVIGATION_CACHE_SAFELIST entirely (see below) —
+// a structural fix that needs no signal to reach the SW at all — and evicts
+// any "/" entry poisoned by a v3 or v4 build (the v4 guard did not clean up
+// its own miss).
 
 /**
  * FV-142 — per-clip content-addressed filenames.
@@ -84,33 +92,41 @@ const OFFLINE_URL = "/offline";
 
 /**
  * Navigation SAFELIST — the ONLY paths whose HTML response is written
- * to Cache Storage after a successful network fetch. All four are static,
+ * to Cache Storage after a successful network fetch. All three are static,
  * fully public pages with zero PII. Every other navigation goes
  * network-first but is NEVER cached (defense against persisting
  * authenticated or minor-PII HTML on shared devices).
- */
-const NAVIGATION_CACHE_SAFELIST = ["/", "/offline", "/privacy", "/terms"];
-
-/**
- * FV-489 — mirrors NATIVE_SHELL_UA_TOKEN in apps/web/lib/native-shell.ts.
- * Keep these two literal strings in sync (asserted in
- * __tests__/sw-cache-control-no-store.test.ts).
  *
- * Why the SW needs its own copy of this check (in addition to the
- * Cache-Control: no-store guard below): `fetch(request)` on a navigation
- * request follows redirects transparently, and the RESULTING Response's
- * `.headers` reflect the FINAL response (e.g. /signin), not the intermediate
- * 307 that middleware.ts marks no-store. Detecting "am I the native shell"
- * directly — via `self.navigator.userAgent`, which (unlike a Request's
- * exposed Headers) is never stripped — means this app's Cache Storage never
- * stores a "/" / "/offline" / "/privacy" / "/terms" entry for a shell
- * WebView AT ALL, independent of which response headers survive a redirect
- * chain. Browser/PWA caching for these pages is completely unaffected.
+ * FV-489 round 2 — "/" is deliberately EXCLUDED from this list, permanently.
+ * "/" is the one safelisted path whose content is auth-dependent inside the
+ * native shell: middleware.ts's entry-point router (lib/native-shell-router.ts)
+ * must decide fresh, per request, where a shell visitor lands (signed out →
+ * /signin, parent → /dashboard, athlete → /athlete, marketing content only
+ * for an ordinary browser). A cached "/" response — from ANY context, shell
+ * or browser — replayed on a later cold start would bypass that router
+ * entirely. That is the exact bug this file was previously patched for
+ * (round 1, FV-489) and that patch failed on-device: it tried to detect
+ * "am I the native shell" from inside the SW via `self.navigator.userAgent`,
+ * and there is no confirmed evidence that Capacitor's `appendUserAgent`
+ * (which decorates the WebView's own page requests) reaches the service
+ * worker's separate global scope or the `fetch()` it performs. Removing "/"
+ * from this list instead means the write this bug depends on can never
+ * happen, for any User-Agent, provable by reading this file — no signal
+ * needs to reach the SW at all. Cost: browser/PWA visitors lose *offline*
+ * access to the marketing homepage (a marketing page, not core function);
+ * an offline "/" visit now falls through to the branded OFFLINE_URL fallback
+ * below, same as any other uncached page. Do not re-add "/" here without a
+ * device-verified way to scope the cache write to non-shell, non-auth-
+ * dependent responses only.
+ *
+ * The remaining three pages (/offline, /privacy, /terms) carry no
+ * auth-dependent branching in the native-shell router (NATIVE_SHELL_ROUTED_PATHS
+ * in lib/native-shell-router.ts is just "/", "/pricing", "/parents") and are
+ * identical content regardless of who requests them, so caching them for a
+ * shell WebView is not a privacy or routing risk — no UA check is needed for
+ * them either.
  */
-const NATIVE_SHELL_UA_TOKEN = "FVNativeShell/1";
-const isNativeShellWebView = (self.navigator.userAgent || "").includes(
-  NATIVE_SHELL_UA_TOKEN
-);
+const NAVIGATION_CACHE_SAFELIST = ["/offline", "/privacy", "/terms"];
 
 /**
  * FV-107 — pregame offline shell path.
@@ -620,26 +636,29 @@ async function cacheFirst(request) {
 //
 // PRIVACY CONTRACT:
 //   - cache.put() is called ONLY when the request pathname is in
-//     NAVIGATION_CACHE_SAFELIST (/, /offline, /privacy, /terms).
+//     NAVIGATION_CACHE_SAFELIST (/offline, /privacy, /terms — NOT "/", see
+//     the safelist's own doc comment above for why "/" is permanently
+//     excluded, FV-489 round 2).
 //   - All other navigation responses are returned directly from the network
 //     and NEVER written to Cache Storage.
 //   - The /offline fallback is always served from the precached copy
 //     installed at SW boot — it is a static, PII-free page.
 //
-// FV-489 — two guards against the native shell ever caching these pages:
-//   1. isNativeShellWebView (module-level, see its own doc comment above) —
-//      the primary guard. Inside the shell, NEVER write "/" / "/offline" /
-//      "/privacy" / "/terms" to Cache Storage, full stop — the in-shell
-//      entry-point router (lib/native-shell-router.ts) must decide fresh,
-//      per request, where a shell visitor lands, and a cached "/" response
-//      replayed here would bypass that router entirely on a later cold start
-//      (the observed bug: sign-out lands on the marketing page and it
-//      survives force-stop + cold start).
-//   2. Cache-Control: no-store — defense in depth for the direct (non-
-//      redirected) 200 case, honoring the header middleware.ts sets on a
-//      native-shell response for these paths.
-//   Ordinary browser/PWA visits to these safelisted pages are unaffected by
-//   either guard — they still cache for offline use as designed.
+// FV-489 round 2 — the shell-vs-browser problem this used to solve for "/"
+// (a shell response replayed on cold start, bypassing the in-shell
+// entry-point router) is now solved structurally: "/" is never in
+// NAVIGATION_CACHE_SAFELIST, so `isSafelisted` is false for it and this
+// function cannot write it to Cache Storage for ANY User-Agent, shell or
+// browser. The round-1 fix's `isNativeShellWebView` check (reading
+// self.navigator.userAgent inside the SW) has been removed — it was
+// verified on-device to never evaluate true, i.e. it did nothing, because
+// there is no confirmed way for Capacitor's appendUserAgent (applied to the
+// WebView's page requests) to reach the service worker's own global scope.
+// No UA signal reaching the SW is required by this function anymore.
+//
+// The one remaining guard, Cache-Control: no-store, stays as ordinary
+// defense in depth (honored for ANY caller, shell or browser) in case a
+// future safelisted response is ever marked no-store server-side.
 // ---------------------------------------------------------------------------
 async function networkFirstWithOfflineFallback(request) {
   const url = new URL(request.url);
@@ -651,13 +670,12 @@ async function networkFirstWithOfflineFallback(request) {
       .toLowerCase()
       .includes("no-store");
     // Only write safelisted public pages to cache — never authenticated
-    // HTML, never inside the native shell, and never a response the server
-    // explicitly marked no-store.
+    // HTML, never "/" (permanently excluded from the safelist, see above),
+    // and never a response the server explicitly marked no-store.
     if (
       isSafelisted &&
       networkResponse.ok &&
       networkResponse.type !== "opaque" &&
-      !isNativeShellWebView &&
       !noStore
     ) {
       const cache = await caches.open(CACHE_VERSION);
