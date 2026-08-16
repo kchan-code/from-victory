@@ -503,8 +503,10 @@ describe("FV-489 — native-shell entry paths are never intercepted", () => {
     const match = swSource.match(
       /const NATIVE_SHELL_ENTRY_PATHS = (\[[^\]]*\]);/,
     );
-    expect(match, "NATIVE_SHELL_ENTRY_PATHS not found in sw.js").toBeTruthy();
-    expect(JSON.parse(match![1].replace(/'/g, '"'))).toEqual(
+    if (!match?.[1]) {
+      throw new Error("NATIVE_SHELL_ENTRY_PATHS not found in sw.js");
+    }
+    expect(JSON.parse(match[1].replace(/'/g, '"'))).toEqual(
       NATIVE_SHELL_ENTRY_PATHS,
     );
   });
