@@ -26,7 +26,7 @@
  *   1a-ii. /audio/beds/*                     → "audio-cache-first"
  *   1b. /athlete/pregame (and trailing "/")  → "pregame-shell-network-first"
  *   1c. bypass list                          → "passthrough"  (always network)
- *       (/api/, /auth/, /athlete, /dashboard/, /pair, /signin, /signup,
+ *       (/api/, /auth/, /athlete, /dashboard, /pair, /signin, /signup,
  *        /forgot-, /reset-, /subscribe, /audio/)
  *   2.  /_next/static/*                       → "cache-first"
  *   3.  icon/font file extensions             → "cache-first"
