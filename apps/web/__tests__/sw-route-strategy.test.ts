@@ -141,6 +141,19 @@ const CASES: Case[] = [
     expected: "passthrough",
   },
   {
+    // FV-493: the bare parent-dashboard navigation must bypass exactly like
+    // /dashboard/settings — an SW-intercepted navigation loses the shell's
+    // appended UA and renders web prices in-shell.
+    name: "/dashboard (bare, no trailing slash) → passthrough (FV-493)",
+    input: { pathname: "/dashboard", isSameOrigin: true, isNavigate: true },
+    expected: "passthrough",
+  },
+  {
+    name: "/dashboard/settings → passthrough",
+    input: { pathname: "/dashboard/settings", isSameOrigin: true, isNavigate: true },
+    expected: "passthrough",
+  },
+  {
     name: "/pair → passthrough",
     input: { pathname: "/pair", isSameOrigin: true, isNavigate: true },
     expected: "passthrough",
@@ -355,6 +368,10 @@ describe("decideStrategy (pure, lib/sw/route-strategy.ts)", () => {
   it("exported constants are the values the SW classification depends on", () => {
     expect(PREGAME_PATH).toBe("/athlete/pregame");
     expect(BYPASS_PREFIXES).toContain("/athlete");
+    // FV-493: no trailing slash — "/dashboard/" would miss the bare
+    // /dashboard navigation and let the SW strip the shell UA.
+    expect(BYPASS_PREFIXES).toContain("/dashboard");
+    expect(BYPASS_PREFIXES).not.toContain("/dashboard/");
     expect(BYPASS_PREFIXES).toContain("/audio/");
     expect(ICON_OR_FONT_RE.test("/icon-192.png")).toBe(true);
     expect(ICON_OR_FONT_RE.test("/_next/static/chunks/x.js")).toBe(false);

@@ -80,7 +80,10 @@ export const BYPASS_PREFIXES = [
   "/api/",
   "/auth/",
   "/athlete",
-  "/dashboard/",
+  // No trailing slash (FV-493): must cover bare /dashboard too. A navigation
+  // the SW intercepts loses the shell's appended UA (FV-489), so the unpaid
+  // parent dashboard would render web prices in-shell.
+  "/dashboard",
   "/pair",
   "/signin",
   "/signup",

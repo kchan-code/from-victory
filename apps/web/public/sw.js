@@ -41,16 +41,14 @@
  * SW audio cache so stale clips are evicted at activate.
  */
 
-const CACHE_VERSION = "fv-shell-v6"; // bumped: FV-489 round 2 — the round-1
-// fix (isNativeShellWebView, reading self.navigator.userAgent inside the SW)
-// shipped in v4 and was verified on-device to do NOTHING: Capacitor's
-// appendUserAgent decorates the WebView's page requests but there is no
-// evidence it reaches the service worker's own global scope, so the SW-side
-// UA check silently evaluated false and never blocked the write. This
-// version removes "/" from NAVIGATION_CACHE_SAFELIST entirely (see below) —
-// a structural fix that needs no signal to reach the SW at all — and evicts
-// any "/" entry poisoned by a v3 or v4 build (the v4 guard did not clean up
-// its own miss).
+const CACHE_VERSION = "fv-shell-v7"; // bumped: FV-493 — BYPASS_PREFIXES said
+// "/dashboard/" (trailing slash), so bare /dashboard missed the bypass and
+// went through the navigation strategy. event.respondWith(fetch(request))
+// re-issues from ServiceWorkerGlobalScope, which drops Capacitor's appended
+// FVNativeShell/1 UA (the FV-489 mechanism), so isNativeShell() was false
+// and an unpaid parent's dashboard rendered web prices + "Choose a plan"
+// in-shell. v6 (FV-489 round 2) removed "/" from NAVIGATION_CACHE_SAFELIST;
+// this bump ships the corrected bypass to installed shells.
 
 /**
  * FV-142 — per-clip content-addressed filenames.
@@ -174,7 +172,10 @@ const BYPASS_PREFIXES = [
   "/api/",
   "/auth/",
   "/athlete",
-  "/dashboard/",
+  // No trailing slash (FV-493): must cover bare /dashboard too. A navigation
+  // the SW intercepts loses the shell's appended UA (FV-489), so the unpaid
+  // parent dashboard would render web prices in-shell.
+  "/dashboard",
   "/pair",
   "/signin",
   "/signup",
