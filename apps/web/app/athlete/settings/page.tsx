@@ -236,9 +236,14 @@ export default async function AthleteSettingsPage({
                 Subscription
               </h2>
               <div className="rounded-[12px] border border-hairline bg-charcoal px-4 py-3.5">
-                <p className="mb-4 font-body text-[13px] leading-snug text-cream/50">
-                  Manage or cancel your subscription.
-                </p>
+                {/* In-shell, no manage CTA or helper line — reader-app
+                    compliance means the only subscription copy is the
+                    neutral browser notice below. */}
+                {nativeShell ? null : (
+                  <p className="mb-4 font-body text-[13px] leading-snug text-cream/50">
+                    Manage or cancel your subscription.
+                  </p>
+                )}
                 {/* In-shell, checkout.stripe.com is unreachable (Google Play
                     compliance — see lib/native-shell.ts), so
                     BillingPortalButton is replaced by neutral, non-tappable
