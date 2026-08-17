@@ -145,6 +145,43 @@ describe("/dashboard/settings — Billing Portal native-shell suppression", () =
   });
 });
 
+describe("/dashboard/settings — FV-492 no user-visible Stripe/portal wording in-shell", () => {
+  it("renders no visible 'Stripe' or 'portal' text in-shell (active subscription), keeping the browser notice", async () => {
+    isNativeShellMock.mockReturnValue(true);
+    maybeSingleMock.mockResolvedValue({
+      data: {
+        status: "active",
+        price_id: "price_test",
+        current_period_end: "2026-09-01T00:00:00Z",
+        cancel_at_period_end: false,
+      },
+      error: null,
+    });
+
+    const { container } = await renderPage();
+
+    // User-visible text only — data-testid attributes are allowed to say
+    // "portal", the rendered copy is not.
+    const visibleText = container.textContent ?? "";
+    expect(visibleText).not.toMatch(/stripe/i);
+    expect(visibleText).not.toMatch(/portal/i);
+    expect(
+      screen.getByTestId("billing-portal-native-shell-notice"),
+    ).toHaveTextContent(
+      "Manage your From Victory subscription from a web browser at fromvictoryapp.com.",
+    );
+  });
+
+  it("renders no visible 'Stripe' or 'portal' text in-shell with no subscription row", async () => {
+    isNativeShellMock.mockReturnValue(true);
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    const { container } = await renderPage();
+
+    expect(container.textContent ?? "").not.toMatch(/stripe|portal/i);
+  });
+});
+
 describe("/dashboard/settings — 'Choose a plan' native-shell gating (no subscription row)", () => {
   it("shows 'No active subscription.' + a 'Choose a plan' link to /subscribe when isNativeShell() is false", async () => {
     isNativeShellMock.mockReturnValue(false);

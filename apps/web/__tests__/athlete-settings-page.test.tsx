@@ -189,6 +189,21 @@ describe("/athlete/settings — native-shell billing-portal suppression (Google 
     );
   });
 
+  it("drops the 'Manage or cancel your subscription.' helper line in-shell (FV-492)", async () => {
+    isNativeShellMock.mockReturnValue(true);
+    const { container } = await renderSettings("adult_athlete");
+
+    expect(
+      screen.queryByText(/manage or cancel your subscription/i),
+    ).not.toBeInTheDocument();
+    // No user-visible Stripe/portal wording anywhere in-shell; the neutral
+    // browser notice is the only subscription copy.
+    expect(container.textContent ?? "").not.toMatch(/stripe|portal/i);
+    expect(
+      screen.getByTestId("billing-portal-native-shell-notice"),
+    ).toBeInTheDocument();
+  });
+
   it("still renders the real BillingPortalButton when isNativeShell() is false", async () => {
     isNativeShellMock.mockReturnValue(false);
     await renderSettings("adult_athlete");

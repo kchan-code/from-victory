@@ -269,10 +269,6 @@ export default async function DashboardSettingsPage() {
                   native-shell notices (app/subscribe/page.tsx,
                   app/athlete/paused/page.tsx). */}
               <div className="pt-4">
-                <p className="font-body text-cream/50 text-[13px] leading-relaxed mb-4">
-                  Update your payment method, change your plan, or cancel —
-                  all in the secure Stripe portal.
-                </p>
                 {nativeShell ? (
                   <div
                     role="status"
