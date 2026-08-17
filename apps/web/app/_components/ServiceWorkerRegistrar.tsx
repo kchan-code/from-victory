@@ -22,8 +22,15 @@
  * So on `controllerchange` for an ALREADY-CONTROLLED page (a deploy takeover,
  * never the first install's claim) we reload once, at a safe moment, so HTML,
  * JS runtime, prefetch cache, and Cache Storage agree again. "Safe moment"
- * means: never while guided audio is playing — a pregame/practice session is
- * not interrupted; the reload is deferred until the app is next hidden.
+ * means: never while a guided session is in progress. The clip player marks
+ * its <audio> element with data-fv-guided-session="active" for the session's
+ * whole lifetime — the marker survives OS-initiated pauses (phone call,
+ * Control Center) and screen lock, both of which this architecture treats as
+ * interruptions to resume from, NOT as the session being over (`paused` is
+ * deliberately not consulted here for that reason). A deferred reload fires
+ * once the session is over: on the clip player's "fv:guided-session-end"
+ * signal if the app is backgrounded, else on the next visibilitychange to
+ * hidden with no active session.
  *
  * Privacy: this component has NO analytics, NO fingerprinting, NO external
  * requests. It only calls navigator.serviceWorker.register(). Complies with
@@ -35,16 +42,16 @@ import { useEffect } from "react";
 import { reloadPage } from "@/lib/reload-page";
 
 /**
- * True while a guided session's audio is actually playing. The clip player
- * (useClipPlayer) appends a hidden <audio> element to document.body; any
- * audible element mid-playback means the athlete is inside a session.
+ * True while a guided pregame/practice session is in progress. The clip
+ * player (useClipPlayer) sets data-fv-guided-session="active" on its hidden
+ * <audio> element from creation until `ended`/unmount. Deliberately NOT a
+ * `paused` check: an OS-initiated pause (phone call, Control Center) or a
+ * screen lock leaves the session in progress by design.
  */
-function isGuidedAudioPlaying(): boolean {
-  const elements = document.querySelectorAll("audio");
-  for (const el of elements) {
-    if (!el.paused && !el.ended) return true;
-  }
-  return false;
+function isGuidedSessionActive(): boolean {
+  return (
+    document.querySelector('audio[data-fv-guided-session="active"]') !== null
+  );
 }
 
 export function ServiceWorkerRegistrar() {
@@ -71,16 +78,35 @@ export function ServiceWorkerRegistrar() {
         wasControlled = true;
         return;
       }
-      if (isGuidedAudioPlaying()) {
-        // Mid-session: never interrupt. Reload when the app is next hidden
-        // (backgrounded / closed), which is invisible to the athlete.
+      if (isGuidedSessionActive()) {
+        // Mid-session: never interrupt — not for a screen lock, not for a
+        // phone call. Defer until the session is over (see handlers below).
         reloadPending = true;
         return;
       }
       reloadNow();
     };
 
+    // Deferred-reload triggers. Both re-check the session marker so a screen
+    // lock (hidden + still playing) or an OS pause (athlete will resume)
+    // never yanks a live session:
+    //   - hidden + no active session → the app is backgrounded and nothing is
+    //     in flight; reload invisibly.
+    //   - session just ended while the app is hidden (finished in a pocket /
+    //     locked screen) → reload invisibly. If it ends in the foreground we
+    //     keep waiting for the next hidden so the completion screen isn't
+    //     snatched away.
     const onVisibilityChange = () => {
+      if (
+        reloadPending &&
+        document.visibilityState === "hidden" &&
+        !isGuidedSessionActive()
+      ) {
+        reloadNow();
+      }
+    };
+
+    const onGuidedSessionEnd = () => {
       if (reloadPending && document.visibilityState === "hidden") {
         reloadNow();
       }
@@ -91,12 +117,14 @@ export function ServiceWorkerRegistrar() {
       onControllerChange,
     );
     document.addEventListener("visibilitychange", onVisibilityChange);
+    document.addEventListener("fv:guided-session-end", onGuidedSessionEnd);
     return () => {
       navigator.serviceWorker.removeEventListener(
         "controllerchange",
         onControllerChange,
       );
       document.removeEventListener("visibilitychange", onVisibilityChange);
+      document.removeEventListener("fv:guided-session-end", onGuidedSessionEnd);
     };
   }, []);
 
