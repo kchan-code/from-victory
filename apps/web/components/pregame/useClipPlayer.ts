@@ -701,6 +701,15 @@ export function useClipPlayer({
       // still has no visible render output; the element is invisible and will
       // be removed on unmount.
       audio.hidden = true;
+      // FV-494 — stable "guided session in progress" contract for
+      // ServiceWorkerRegistrar's deploy-takeover reload. The marker means "do
+      // not reload this page out from under the athlete" and stays set through
+      // OS-initiated pauses (phone call, Control Center) and screen lock —
+      // `paused` is NOT a session-over signal in this architecture (see the
+      // intendedPlayingRef notes above). Removed on `ended` and on unmount,
+      // each of which also dispatches "fv:guided-session-end" so a deferred
+      // reload can fire at the next safe moment.
+      audio.setAttribute("data-fv-guided-session", "active");
       document.body.appendChild(audio);
       audioRef.current = audio;
 
@@ -732,6 +741,10 @@ export function useClipPlayer({
         setElapsedSec(totalDur);
         setPlaying(false);
         stopRaf();
+        // FV-494 — session over: clear the reload guard and tell the
+        // registrar, so a deploy that landed mid-session can complete.
+        audio.removeAttribute("data-fv-guided-session");
+        document.dispatchEvent(new Event("fv:guided-session-end"));
         onCompletedRef.current?.();
       });
 
@@ -837,9 +850,12 @@ export function useClipPlayer({
       if (audio) {
         audio.pause();
         audio.src = "";
-        // Remove from the DOM (mirrors the appendChild in Phase 0).
+        // Remove from the DOM (mirrors the appendChild in Phase 0). This also
+        // removes the data-fv-guided-session marker; dispatch the session-end
+        // signal so a deferred deploy-takeover reload (FV-494) is unblocked.
         audio.remove();
         audioRef.current = null;
+        document.dispatchEvent(new Event("fv:guided-session-end"));
       }
       if (blobUrlRef.current) {
         URL.revokeObjectURL(blobUrlRef.current);
