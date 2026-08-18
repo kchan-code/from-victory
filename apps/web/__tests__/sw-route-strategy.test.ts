@@ -24,6 +24,8 @@ import {
   PREGAME_PATH,
   ICON_OR_FONT_RE,
   NATIVE_SHELL_ENTRY_PATHS,
+  INTERCEPTABLE_METHODS,
+  isInterceptableMethod,
 } from "@/lib/sw/route-strategy";
 
 // ---------------------------------------------------------------------------
@@ -526,5 +528,95 @@ describe("FV-489 — native-shell entry paths are never intercepted", () => {
     expect(JSON.parse(match[1].replace(/'/g, '"'))).toEqual(
       NATIVE_SHELL_ENTRY_PATHS,
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-495 — the SW must never intercept non-GET/HEAD requests.
+//
+// Server Action POSTs to /athlete/pregame match pregame-shell-network-first
+// by pathname; before the method gate, that strategy's cache.put() — which
+// the Cache API REJECTS for any non-GET request — fired an unhandled
+// TypeError in the SW on every pregame run, leaving an un-drained
+// Response.clone() behind. The gate runs BEFORE decideStrategy, so no
+// strategy handler can ever see a mutating request.
+// ---------------------------------------------------------------------------
+describe("FV-495 — method gate: only GET and HEAD are interceptable", () => {
+  const METHOD_TABLE: Array<[string, boolean]> = [
+    ["GET", true],
+    ["HEAD", true], // audioCacheFirst answers HEAD probes from the cached GET
+    ["POST", false], // Server Actions (pregame logActivityEvent) — never touched
+    ["PUT", false],
+    ["PATCH", false],
+    ["DELETE", false],
+    ["OPTIONS", false],
+  ];
+
+  it("TS INTERCEPTABLE_METHODS is exactly GET + HEAD", () => {
+    expect([...INTERCEPTABLE_METHODS]).toEqual(["GET", "HEAD"]);
+  });
+
+  it.each(METHOD_TABLE)(
+    "TS isInterceptableMethod(%s) → %s",
+    (method, expected) => {
+      expect(isInterceptableMethod(method)).toBe(expected);
+    },
+  );
+
+  it("sw.js INTERCEPTABLE_METHODS equals the TS mirror (same set, same order)", () => {
+    const decl = extractConst("INTERCEPTABLE_METHODS");
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+    const swArr = new Function(
+      `${decl}\nreturn INTERCEPTABLE_METHODS;`,
+    )() as string[];
+    expect(swArr).toEqual([...INTERCEPTABLE_METHODS]);
+  });
+
+  it.each(METHOD_TABLE)(
+    "sw.js isInterceptableMethod(%s) matches TS → %s",
+    (method, expected) => {
+      const body = [
+        extractConst("INTERCEPTABLE_METHODS"),
+        swSource.match(/function isInterceptableMethod\([\s\S]*?\n}/m)?.[0] ??
+          (() => {
+            throw new Error("isInterceptableMethod not found in sw.js");
+          })(),
+        "return isInterceptableMethod;",
+      ].join("\n");
+      // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+      const swFn = new Function(body)() as (m: string) => boolean;
+      expect(swFn(method)).toBe(expected);
+      expect(swFn(method)).toBe(isInterceptableMethod(method));
+    },
+  );
+
+  it("sw.js fetch handler applies the method gate before decideStrategy", () => {
+    // Source-level pin: the gate must sit inside the fetch listener and run
+    // before the strategy decision, so no handler ever sees a mutating request.
+    const fetchHandler = swSource.match(
+      /addEventListener\("fetch",[\s\S]*?\n\}\);/m,
+    )?.[0];
+    if (!fetchHandler) throw new Error("fetch handler not found in sw.js");
+    const gateIdx = fetchHandler.indexOf("isInterceptableMethod(request.method)");
+    const decideIdx = fetchHandler.indexOf("decideStrategy(");
+    expect(gateIdx).toBeGreaterThan(-1);
+    expect(decideIdx).toBeGreaterThan(-1);
+    expect(gateIdx).toBeLessThan(decideIdx);
+  });
+
+  it("every cache.put in sw.js is followed by a rejection handler (.catch)", () => {
+    // FV-495 AC2: a rejected put (quota, eviction race) must never surface as
+    // an unhandled rejection. Count actual call sites (always `.put(request`
+    // or `.put(new Request` — comment prose says `cache.put()` with empty
+    // parens and must not count) and require one best-effort catch per site.
+    const putCallCount = (
+      swSource.match(/\.put\(\s*(?:request|new Request)/g) ?? []
+    ).length;
+    const catchCount = (
+      swSource.match(/\.catch\(\(\) => \{\/\* best-effort cache write \*\/\}\)/g) ??
+      []
+    ).length;
+    expect(putCallCount).toBeGreaterThan(0);
+    expect(catchCount).toBe(putCallCount);
   });
 });

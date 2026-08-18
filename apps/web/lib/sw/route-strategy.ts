@@ -114,6 +114,32 @@ export const ICON_OR_FONT_RE = /\.(png|svg|ico|webmanifest|woff2|woff|ttf|otf)$/
 export const NATIVE_SHELL_ENTRY_PATHS = ["/", "/pricing", "/parents"];
 
 /**
+ * The only request methods the service worker intercepts at all (FV-495).
+ * Mirrors `INTERCEPTABLE_METHODS` in sw.js.
+ *
+ * Everything else — POST/PUT/PATCH/DELETE/OPTIONS — is handed straight to the
+ * browser with no `respondWith`. This matters concretely for Next.js Server
+ * Action POSTs to `/athlete/pregame` (every pregame run's `logActivityEvent`
+ * calls): before this guard they matched the `pregame-shell-network-first`
+ * strategy by pathname, and its `cache.put()` — which the Cache API rejects
+ * for any non-GET request — fired an unhandled TypeError in the SW on every
+ * run, with an un-drained `Response.clone()` left behind.
+ *
+ * HEAD stays interceptable on purpose: screens-b.tsx probes audio files with
+ * HEAD, and `audioCacheFirst` answers those probes from the cached GET so the
+ * preflight works offline.
+ */
+export const INTERCEPTABLE_METHODS = ["GET", "HEAD"] as const;
+
+/**
+ * Method gate applied BEFORE the routing decision (FV-495). Pure; mirrored as
+ * `isInterceptableMethod` in sw.js's fetch handler (sync-tested).
+ */
+export function isInterceptableMethod(method: string): boolean {
+  return (INTERCEPTABLE_METHODS as readonly string[]).includes(method);
+}
+
+/**
  * Inputs to the routing decision. These are the minimal facts sw.js derives
  * from the `FetchEvent` (`event.request` + `new URL(request.url)`):
  *
@@ -121,10 +147,12 @@ export const NATIVE_SHELL_ENTRY_PATHS = ["/", "/pricing", "/parents"];
  * - `isSameOrigin` → `url.origin === self.location.origin`
  * - `isNavigate` → `request.mode === "navigate"`
  *
- * Method (GET/HEAD) is intentionally NOT an input: in sw.js the HEAD handling
- * lives INSIDE `audioCacheFirst`, not in the routing decision — a HEAD probe to
- * `/audio/pregame/*` still routes to `audio-cache-first`. Keeping method out of
- * this function preserves that and keeps the decision purely path-based.
+ * Method is intentionally NOT an input to `decideStrategy` itself: the fetch
+ * handler gates on `isInterceptableMethod` BEFORE dispatch (FV-495), and the
+ * GET-vs-HEAD distinction lives INSIDE `audioCacheFirst`, not in the routing
+ * decision — a HEAD probe to `/audio/pregame/*` still routes to
+ * `audio-cache-first`. Keeping method out of this function preserves that and
+ * keeps the decision purely path-based.
  */
 export interface SwRouteInput {
   /** The request URL's pathname, e.g. "/athlete/pregame". */
