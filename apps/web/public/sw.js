@@ -191,6 +191,25 @@ const BYPASS_PREFIXES = [
  */
 const ICON_OR_FONT_RE = /\.(png|svg|ico|webmanifest|woff2|woff|ttf|otf)$/;
 
+/**
+ * FV-495 — the only methods this SW intercepts at all. Mirrored from
+ * INTERCEPTABLE_METHODS in apps/web/lib/sw/route-strategy.ts (sync-tested).
+ *
+ * Non-GET/HEAD requests (Server Action POSTs, uploads, DELETEs) are handed
+ * straight to the browser with no respondWith: they are never cacheable, and
+ * Cache.put() REJECTS for any non-GET request — before this guard, a Server
+ * Action POST to /athlete/pregame matched pregame-shell-network-first by
+ * pathname and its cache.put() fired an unhandled TypeError on every pregame
+ * run. HEAD stays interceptable: audioCacheFirst answers screens-b.tsx's HEAD
+ * probes from the cached GET so the offline preflight works.
+ */
+const INTERCEPTABLE_METHODS = ["GET", "HEAD"];
+
+/** FV-495 — method gate applied before decideStrategy. Mirror of the TS. */
+function isInterceptableMethod(method) {
+  return INTERCEPTABLE_METHODS.includes(method);
+}
+
 // ---------------------------------------------------------------------------
 // FV-126 — route → cache-strategy DECISION (pure, mirror of the TS source).
 //
@@ -321,6 +340,14 @@ self.addEventListener("activate", (event) => {
 // ---------------------------------------------------------------------------
 self.addEventListener("fetch", (event) => {
   const { request } = event;
+
+  // FV-495 — method gate FIRST: only GET and HEAD are ever intercepted.
+  // Everything else (Server Action POSTs, etc.) gets no respondWith — the
+  // browser performs the request natively and nothing here can touch it.
+  if (!isInterceptableMethod(request.method)) {
+    return;
+  }
+
   const url = new URL(request.url);
 
   // FV-126 — single decision point. `decideStrategy` (mirror of the pure
@@ -542,10 +569,11 @@ async function audioCacheFirst(request) {
       networkResponse.type !== "opaque"
     ) {
       const cache = await caches.open(AUDIO_CACHE);
-      cache.put(
-        new Request(request.url, { method: "GET" }),
-        networkResponse.clone(),
-      );
+      // Best-effort background write (FV-495): a rejected put (quota, eviction
+      // race) must never surface as an unhandled rejection in the SW.
+      cache
+        .put(new Request(request.url, { method: "GET" }), networkResponse.clone())
+        .catch(() => {/* best-effort cache write */});
     }
 
     if (isHead) {
@@ -604,7 +632,10 @@ async function pregameShellNetworkFirst(request) {
       if (!hasCookies) {
         const cache = await caches.open(CACHE_VERSION);
         // clone() before consuming body in the cache.put() call.
-        cache.put(request, networkResponse.clone());
+        // Best-effort background write (FV-495): never an unhandled rejection.
+        cache
+          .put(request, networkResponse.clone())
+          .catch(() => {/* best-effort cache write */});
       }
     }
 
@@ -647,7 +678,10 @@ async function cacheFirst(request) {
       networkResponse.type !== "opaque"
     ) {
       const cache = await caches.open(CACHE_VERSION);
-      cache.put(request, networkResponse.clone());
+      // Best-effort background write (FV-495): never an unhandled rejection.
+      cache
+        .put(request, networkResponse.clone())
+        .catch(() => {/* best-effort cache write */});
     }
     return networkResponse;
   } catch {
@@ -704,7 +738,10 @@ async function networkFirstWithOfflineFallback(request) {
       !noStore
     ) {
       const cache = await caches.open(CACHE_VERSION);
-      cache.put(request, networkResponse.clone());
+      // Best-effort background write (FV-495): never an unhandled rejection.
+      cache
+        .put(request, networkResponse.clone())
+        .catch(() => {/* best-effort cache write */});
     }
     return networkResponse;
   } catch {
