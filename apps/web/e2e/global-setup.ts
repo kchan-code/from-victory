@@ -278,7 +278,9 @@ async function provisionTestAthlete(
     );
   }
 
-  // 4. Insert a one-time pairing code (24-hour TTL matches production default).
+  // 4. Insert a one-time pairing code. 24h here is just a comfortably-unexpired
+  //    fixture window — production TTL is 7 days (PAIRING_TTL_HOURS) and this
+  //    does not need to match it.
   const code = randomBytes(24).toString("base64url");
   const expiresAt = new Date(
     Date.now() + 24 * 60 * 60 * 1000,

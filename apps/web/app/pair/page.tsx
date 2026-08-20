@@ -84,7 +84,7 @@ function InvalidLink({
     used:
       "This pairing link has already been used. If this device is yours, head to sign in. Otherwise, ask your parent for a new link.",
     expired:
-      "This pairing link has expired. Ask your parent for a fresh one — they only last 24 hours.",
+      "This pairing link has expired. Ask your parent for a fresh one — they only last 7 days.",
   };
 
   return (

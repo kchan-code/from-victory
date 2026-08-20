@@ -16,7 +16,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const PAIRING_CODE_BYTES = 24; // ~32 chars base64url
-const PAIRING_TTL_HOURS = 24;
+const PAIRING_TTL_HOURS = 24 * 7;
 
 /**
  * Hash a raw pairing code for storage/lookup (FV-177).
@@ -128,7 +128,7 @@ export async function generatePairingCode(
   // audit trail the reaper ages out separately, and deleting them here would
   // also be a no-op for security (a consumed code can't be claimed again). A
   // failure here is non-fatal: worst case an older unused code stays live
-  // until its 24h TTL, so we log and proceed rather than block pairing.
+  // until its 7-day TTL, so we log and proceed rather than block pairing.
   const { error: voidError } = await service
     .from("device_pairings")
     .delete()
