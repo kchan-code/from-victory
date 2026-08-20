@@ -33,7 +33,7 @@
  *   /api/webhooks is). Session refresh is harmless here (no cookie present).
  *
  * Schedule: see vercel.json. Hourly alignment is unnecessary; daily is plenty
- * given the 24h TTL. A missed run is harmless — the next run catches up and
+ * given the 7-day TTL. A missed run is harmless — the next run catches up and
  * the rows are inert in the meantime (claim is gated on consumed_at/expires_at
  * regardless of whether the reaper has run).
  */
