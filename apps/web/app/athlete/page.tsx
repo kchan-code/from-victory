@@ -2,18 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { AthleteBottomNav } from "@/components/athlete/BottomNav";
 import CoachmarkTour from "@/components/athlete/CoachmarkTour";
 import InstallPrompt from "@/components/athlete/InstallPrompt";
-import { Icon, RhythmRing } from "@/components/ui";
-import { SignOutButton } from "@/components/auth/SignOutButton";
+import { Icon, RhythmRing, type IconName } from "@/components/ui";
 import { recordAppOpen } from "@/lib/activity/record";
 import { requireAthlete } from "@/lib/auth/guards";
 import { requireActiveAccess } from "@/lib/subscriptions/enforce";
 import { createClient } from "@/lib/supabase/server";
 import { loadDailySession, TOTAL_TRAINING_DAYS, DailySessionNotFoundError } from "@/lib/daily/progression";
 import { modulesForSport } from "@/lib/postgame/modules";
-import { dailyCardSubtitle } from "@/lib/quiz-config";
 
 export const metadata = {
   title: "Today",
@@ -73,8 +70,20 @@ export default async function AthleteHomePage() {
   // postgame modules in the registry. Pure code check, no DB call.
   const hasPostgameModules = modulesForSport(profile.sport).length > 0;
 
+  // Sport watermark — ICONS keys match the Sport union, so this assignment is
+  // the exhaustiveness check: a new sport without a glyph fails typecheck here.
+  const sportIcon: IconName = profile.sport;
+
   return (
-    <main className="min-h-screen bg-onyx pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
+    <main className="relative min-h-screen overflow-hidden bg-onyx pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
+      {/* ── Sport watermark — faint, decorative, behind all content. ── */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none select-none absolute -right-24 top-16 opacity-[0.05]"
+      >
+        <Icon name={sportIcon} size={420} color="var(--fv-gold)" strokeWidth={0.9} />
+      </div>
+
       {/* ── Header ── */}
       <header className="flex items-center justify-between px-5 pt-10 pb-8 sm:px-8 max-w-[640px] mx-auto">
         <div className="flex items-center gap-2">
@@ -95,18 +104,17 @@ export default async function AthleteHomePage() {
             priority
           />
         </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/athlete/settings"
-            aria-label="Settings"
-            className="flex h-[44px] w-[44px] items-center justify-center rounded-pill text-cream/70 transition-colors duration-fast ease-out hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-          >
-            <span className="flex h-[40px] w-[40px] items-center justify-center rounded-pill bg-charcoal border border-hairline">
-              <Icon name="settings" size={19} />
-            </span>
-          </Link>
-          <SignOutButton className="font-heading font-semibold text-[14px] text-cream/70 hover:text-cream bg-charcoal border border-hairline rounded-pill px-5 py-2.5 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx" />
-        </div>
+        {/* Sign-out lives in Settings — the hub header stays minimal (beta
+            feedback: too many things on the page). */}
+        <Link
+          href="/athlete/settings"
+          aria-label="Settings"
+          className="flex h-[44px] w-[44px] items-center justify-center rounded-pill text-cream/70 transition-colors duration-fast ease-out hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+        >
+          <span className="flex h-[40px] w-[40px] items-center justify-center rounded-pill bg-charcoal border border-hairline">
+            <Icon name="settings" size={19} />
+          </span>
+        </Link>
       </header>
 
       <div className="px-5 sm:px-8 max-w-[640px] mx-auto">
@@ -146,21 +154,20 @@ export default async function AthleteHomePage() {
           </div>
         </section>
 
-        {/* ── 4-card hub ──
-            The three training CTAs (Daily, Pregame, Pre-Practice) must be
-            visible near the top of a 375px viewport without scrolling. Cards
-            are compact (no paragraph body copy eating vertical space) so they
-            land above the fold. The 4th card (Journey — history, not a daily
-            action) is deliberately last and may fall below the fold on short
-            viewports; scrolling to it is an accepted trade (FV-190).
-            Trade: less description copy vs. "athlete in the moment" wins.
+        {/* ── Hub: hero + tile grid ──
+            Beta-tester feedback (2026-08-24): too many words, tiles too small.
+            One hero (Daily Training) + a grid of large icon-first tiles. No
+            subtitle/body copy on any card — context lives in the destination
+            screens and the first-run coachmark tour (FV-313).
+            Fold rule (FV-190) still holds: Daily, Pregame, and Pre-Practice
+            land above a 375px fold; Journey / Ride Home may scroll.
             a11y: card titles are intentionally <p>, not headings — each card is
             a full <Link> so AT users navigate them by link, and the page's single
             sr-only <h1> anchors heading order. Do NOT promote these to <h2> (it
             would collide with the daily screen's h1→h2 hierarchy).
         ── */}
         <section aria-label="Training sections" className="space-y-3">
-          {/* 1. Daily Training — primary / gold accent */}
+          {/* 1. Daily Training — hero / gold accent */}
           <Link
             href="/athlete/daily"
             data-coachmark="hub-daily-card"
@@ -170,170 +177,116 @@ export default async function AthleteHomePage() {
                 "linear-gradient(180deg,rgba(223,175,55,0.10),rgba(223,175,55,0)),var(--bg-elev-1)",
             }}
           >
-            <div className="px-5 py-4 flex items-center gap-4">
+            <div className="px-5 py-6 flex items-center gap-4">
               <span
-                className="flex-none flex items-center justify-center w-10 h-10 rounded-xl bg-gold/10 border border-gold/20"
+                className="flex-none flex items-center justify-center w-14 h-14 rounded-2xl bg-gold/10 border border-gold/20"
                 aria-hidden="true"
               >
-                <Icon name="book" size={20} color="var(--fv-gold)" />
+                <Icon name="book" size={28} color="var(--fv-gold)" />
               </span>
               <div className="flex-1 min-w-0">
-                <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold mb-0.5">
+                <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold mb-1">
                   Today
                 </p>
-                <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[18px] leading-[1.15]">
+                <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[22px] leading-[1.1]">
                   Daily Training
                 </p>
-                <p className="font-body text-cream/55 text-[13px] leading-snug mt-0.5">
-                  {dailyCardSubtitle(profile.focus_area)}
-                </p>
               </div>
-              <span aria-hidden="true" className="flex-none text-gold text-[20px] font-display">
+              <span aria-hidden="true" className="flex-none text-gold text-[22px] font-display">
                 →
               </span>
             </div>
           </Link>
 
-          {/* 2. Pregame */}
-          <Link
-            href="/athlete/pregame"
-            data-coachmark="hub-pregame-card"
-            className="group block rounded-2xl border border-[rgba(223,175,55,0.22)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.45)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-            style={{
-              background:
-                "linear-gradient(180deg,rgba(223,175,55,0.06),rgba(223,175,55,0)),var(--bg-elev-1)",
-            }}
-          >
-            <div className="px-5 py-4 flex items-center gap-4">
-              <span
-                className="flex-none flex items-center justify-center w-10 h-10 rounded-xl bg-gold/[0.08] border border-gold/[0.15]"
-                aria-hidden="true"
-              >
-                <Icon name="flame" size={20} color="var(--fv-gold)" />
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold/70 mb-0.5">
-                  Game day
-                </p>
-                <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[18px] leading-[1.15]">
-                  Start Pregame
-                </p>
-                <p className="font-body text-cream/55 text-[13px] leading-snug mt-0.5">
-                  Visualization, breath, and a settled identity before you step on.
-                </p>
-              </div>
-              <span aria-hidden="true" className="flex-none text-gold/70 text-[20px] font-display">
-                →
-              </span>
-            </div>
-          </Link>
-
-          {/* 3. Pre-practice */}
-          <Link
-            href="/athlete/practice"
-            className="group block rounded-2xl border border-[rgba(223,175,55,0.16)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.35)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-            style={{
-              background:
-                "linear-gradient(180deg,rgba(223,175,55,0.04),rgba(223,175,55,0)),var(--bg-elev-1)",
-            }}
-          >
-            <div className="px-5 py-4 flex items-center gap-4">
-              <span
-                className="flex-none flex items-center justify-center w-10 h-10 rounded-xl bg-gold/[0.05] border border-gold/[0.10]"
-                aria-hidden="true"
-              >
-                <Icon name="whistle" size={20} color="var(--fv-gold)" />
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold/60 mb-0.5">
-                  Practice day
-                </p>
-                <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[18px] leading-[1.15]">
-                  Start Pre-Practice
-                </p>
-                <p className="font-body text-cream/55 text-[13px] leading-snug mt-0.5">
-                  Two minutes to lock in &mdash; how you practice is how you play.
-                </p>
-              </div>
-              <span aria-hidden="true" className="flex-none text-gold/60 text-[20px] font-display">
-                →
-              </span>
-            </div>
-          </Link>
-
-          {/* 4. Journey — FV-190 */}
-          <Link
-            href="/athlete/journey"
-            className="group block rounded-2xl border border-[rgba(223,175,55,0.12)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.28)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-            style={{
-              background:
-                "linear-gradient(180deg,rgba(223,175,55,0.03),rgba(223,175,55,0)),var(--bg-elev-1)",
-            }}
-          >
-            <div className="px-5 py-4 flex items-center gap-4">
-              <span
-                className="flex-none flex items-center justify-center w-10 h-10 rounded-xl bg-gold/[0.04] border border-gold/[0.08]"
-                aria-hidden="true"
-              >
-                <Icon name="map" size={20} color="var(--fv-gold)" />
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold/50 mb-0.5">
-                  History
-                </p>
-                <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[18px] leading-[1.15]">
-                  Your Journey
-                </p>
-                <p className="font-body text-cream/55 text-[13px] leading-snug mt-0.5">
-                  Every session you&apos;ve completed &mdash; re-read, revisit, remember.
-                </p>
-              </div>
-              <span aria-hidden="true" className="flex-none text-gold/50 text-[20px] font-display">
-                →
-              </span>
-            </div>
-          </Link>
-
-          {/* 5. After the game — FV-225. Shown only when the athlete's sport
-              has postgame modules. Deliberately muted — this is a low-moment
-              surface, not a daily CTA. Sits below Journey (always a scroll,
-              never a fold — see comment on card 4).
-              AUTHOR: hub card subtitle line is frontend-engineer copy. */}
-          {hasPostgameModules && (
+          {/* Tile grid — big icon, one short title, nothing else. */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* 2. Pregame */}
             <Link
-              href="/athlete/postgame"
-              className="group block rounded-2xl border border-[rgba(223,175,55,0.09)] no-underline transition-[border-color,transform] duration-base ease-out motion-reduce:transition-none hover:border-[rgba(223,175,55,0.22)] motion-safe:active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+              href="/athlete/pregame"
+              data-coachmark="hub-pregame-card"
+              className="group flex flex-col items-center justify-center gap-3 py-8 px-3 rounded-2xl border border-[rgba(223,175,55,0.22)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.45)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
               style={{
                 background:
-                  "linear-gradient(180deg,rgba(223,175,55,0.02),rgba(223,175,55,0)),var(--bg-elev-1)",
+                  "linear-gradient(180deg,rgba(223,175,55,0.06),rgba(223,175,55,0)),var(--bg-elev-1)",
               }}
-              data-testid="hub-postgame-card"
             >
-              <div className="px-5 py-4 flex items-center gap-4">
+              <span
+                className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gold/[0.08] border border-gold/[0.15]"
+                aria-hidden="true"
+              >
+                <Icon name="flame" size={32} color="var(--fv-gold)" />
+              </span>
+              <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[17px] leading-[1.15] text-center">
+                Pregame
+              </p>
+            </Link>
+
+            {/* 3. Pre-practice */}
+            <Link
+              href="/athlete/practice"
+              className="group flex flex-col items-center justify-center gap-3 py-8 px-3 rounded-2xl border border-[rgba(223,175,55,0.16)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.35)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+              style={{
+                background:
+                  "linear-gradient(180deg,rgba(223,175,55,0.04),rgba(223,175,55,0)),var(--bg-elev-1)",
+              }}
+            >
+              <span
+                className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gold/[0.05] border border-gold/[0.10]"
+                aria-hidden="true"
+              >
+                <Icon name="whistle" size={32} color="var(--fv-gold)" />
+              </span>
+              <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[17px] leading-[1.15] text-center">
+                Pre-Practice
+              </p>
+            </Link>
+
+            {/* 4. Journey — FV-190. Spans the row when the sport has no
+                postgame modules, so the grid never ends on a lone half tile. */}
+            <Link
+              href="/athlete/journey"
+              className={`group flex flex-col items-center justify-center gap-3 py-8 px-3 rounded-2xl border border-[rgba(223,175,55,0.12)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.28)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx${hasPostgameModules ? "" : " col-span-2"}`}
+              style={{
+                background:
+                  "linear-gradient(180deg,rgba(223,175,55,0.03),rgba(223,175,55,0)),var(--bg-elev-1)",
+              }}
+            >
+              <span
+                className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gold/[0.04] border border-gold/[0.08]"
+                aria-hidden="true"
+              >
+                <Icon name="map" size={32} color="var(--fv-gold)" />
+              </span>
+              <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[17px] leading-[1.15] text-center">
+                Journey
+              </p>
+            </Link>
+
+            {/* 5. After the game — FV-225. Shown only when the athlete's sport
+                has postgame modules. Muted — a low-moment surface, not a daily
+                CTA. */}
+            {hasPostgameModules && (
+              <Link
+                href="/athlete/postgame"
+                className="group flex flex-col items-center justify-center gap-3 py-8 px-3 rounded-2xl border border-[rgba(223,175,55,0.09)] no-underline transition-[border-color,transform] duration-base ease-out motion-reduce:transition-none hover:border-[rgba(223,175,55,0.22)] motion-safe:active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+                style={{
+                  background:
+                    "linear-gradient(180deg,rgba(223,175,55,0.02),rgba(223,175,55,0)),var(--bg-elev-1)",
+                }}
+                data-testid="hub-postgame-card"
+              >
                 <span
-                  className="flex-none flex items-center justify-center w-10 h-10 rounded-xl bg-gold/[0.03] border border-gold/[0.07]"
+                  className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gold/[0.03] border border-gold/[0.07]"
                   aria-hidden="true"
                 >
-                  <Icon name="journal" size={20} color="var(--fv-gold)" />
+                  <Icon name="journal" size={32} color="var(--fv-gold)" />
                 </span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold/70 mb-0.5">
-                    After the game
-                  </p>
-                  <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[18px] leading-[1.15]">
-                    For the Ride Home
-                  </p>
-                  {/* AUTHOR: frontend-engineer — subtitle line */}
-                  <p className="font-body text-cream/50 text-[13px] leading-snug mt-0.5">
-                    The win, the loss, the bad night &mdash; read when you need it.
-                  </p>
-                </div>
-                <span aria-hidden="true" className="flex-none text-gold/40 text-[20px] font-display">
-                  →
-                </span>
-              </div>
-            </Link>
-          )}
+                <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[17px] leading-[1.15] text-center">
+                  Ride Home
+                </p>
+              </Link>
+            )}
+          </div>
         </section>
 
         {/* ── Install nudge (FV-258) — below cards so the Daily/Pregame/
@@ -343,8 +296,8 @@ export default async function AthleteHomePage() {
         <InstallPrompt />
       </div>
 
-      {/* ── Bottom nav (no tab active on the hub) ── */}
-      <AthleteBottomNav />
+      {/* No bottom nav on the hub — every destination is a tile (KC decision
+          2026-08-24, declutter pass). Inner screens keep AthleteBottomNav. */}
 
       {/* ── First-run coachmark tour (FV-313) ── */}
       <CoachmarkTour surface="hub" />

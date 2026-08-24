@@ -49,10 +49,6 @@ const STOP_COPY: Record<
     title: "Before a game",
     body: "Got a game? A five-minute audio session to get your head right — headphones in, sound on.",
   },
-  "hub-bottom-nav": {
-    title: "Get around",
-    body: "Your way around the app — jump to any part from here.",
-  },
   "pregame-begin-btn": {
     title: "Headphones, sound on",
     body: "Headphones in and sound on, then build today's session — shaped to your spot and your game.",
@@ -94,11 +90,12 @@ const STORAGE_KEYS: Record<Surface, string> = {
 
 /** data-coachmark slugs, in order, per surface. */
 const SURFACE_STOPS: Record<Surface, string[]> = {
+  // No bottom-nav stop: the hub dropped AthleteBottomNav in the 2026-08-24
+  // declutter pass — every destination is a tile the tour already covers.
   hub: [
     "hub-rhythm-ring",
     "hub-daily-card",
     "hub-pregame-card",
-    "hub-bottom-nav",
   ],
   pregame: [
     "pregame-begin-btn",
@@ -348,9 +345,6 @@ export default function CoachmarkTour({ surface }: { surface: Surface }) {
       setActive(false);
       // Restore scroll lock
       document.body.style.overflow = "";
-      // FV-313: clear the tour signal so sibling chrome (bottom nav) reverts.
-      document.body.removeAttribute("data-coachmark-tour");
-      window.dispatchEvent(new Event("fv:coachmark-change"));
       // Restore focus to pre-tour element
       if (priorFocusRef.current && "focus" in priorFocusRef.current) {
         (priorFocusRef.current as HTMLElement).focus();
@@ -413,10 +407,6 @@ export default function CoachmarkTour({ surface }: { surface: Surface }) {
         setActive(true);
         priorFocusRef.current = document.activeElement;
         document.body.style.overflow = "hidden";
-        // FV-313: signal sibling chrome (e.g. the bottom nav, hidden at the top
-        // of the hub) to reveal itself for the duration of the tour.
-        document.body.setAttribute("data-coachmark-tour", surface);
-        window.dispatchEvent(new Event("fv:coachmark-change"));
         return;
       }
     }
@@ -491,7 +481,6 @@ export default function CoachmarkTour({ surface }: { surface: Surface }) {
   useEffect(() => {
     return () => {
       document.body.style.overflow = "";
-      document.body.removeAttribute("data-coachmark-tour");
       if (measureTimeoutRef.current !== null) {
         clearTimeout(measureTimeoutRef.current);
       }
