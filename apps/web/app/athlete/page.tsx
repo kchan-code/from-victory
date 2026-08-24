@@ -294,6 +294,20 @@ export default async function AthleteHomePage() {
             The mb-4 gap lives on the card's own root, so dismissed/installed
             users see no phantom whitespace here. ── */}
         <InstallPrompt />
+
+        {/* ── Spine-verse anchor (KC 2026-08-24) — the home page's Hebrews
+            12:1-2 anchor per docs/brand.md, closing the screen on identity
+            rather than empty space. Whisper-weight on purpose: the tiles stay
+            the action layer. Canonical phrase — quote exactly, NIV, cited. ── */}
+        <div className="mt-9 px-2 text-center">
+          <p className="font-scripture italic text-[13.5px] leading-[1.55] text-cream/45">
+            &ldquo;&hellip;fixing our eyes on Jesus, the pioneer and perfecter
+            of faith.&rdquo;
+          </p>
+          <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.16em] text-gold/55 mt-2">
+            Hebrews 12:2 &middot; NIV
+          </p>
+        </div>
       </div>
 
       {/* No bottom nav on the hub — every destination is a tile (KC decision
