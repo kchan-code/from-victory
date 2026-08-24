@@ -10,7 +10,27 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
-## 2026-08-13 — Soccer is live: seventh sport, full parity
+## 2026-08-24 — Athlete home screen redesigned: icon-first tiles, spine verse on screen one
+
+The athlete home screen (hub) shipped a density redesign driven by TestFlight
+beta feedback (#461, #462). It is now one large "Daily Training" hero card plus
+a grid of four big icon-first tiles — "Pregame Visualization",
+"Pre-Practice Visualization", "Journey", and "Ride Home" — with no descriptive
+subtitle copy; each surface explains itself on its own screen and in the
+first-run coachmark tour (now 3 stops). The bottom tab bar was removed from the
+home screen only (inner screens keep it), sign-out moved to Settings, and the
+athlete's own sport is rendered as a faint gold line-art watermark behind the
+page (all seven live sports have a glyph). The screen now closes on the brand's
+spine verse — "…fixing our eyes on Jesus, the pioneer and perfecter of faith."
+— Hebrews 12:2 (NIV), quoted verbatim and cited. No data, pricing, or feature
+scope changed — presentation only. The iOS/Android native shells load the
+hosted app, so this reached all platforms on deploy with no store update.
+
+Why it matters to a buyer: the first screen an athlete sees is now visibly a
+faith-built training app — scripture on screen one — and reads clean and
+premium on a phone (a direct response to real beta-tester feedback, which
+marketing can honestly describe as "shaped by athlete beta feedback" without
+quoting or counting testers per the claims discipline).
 
 Soccer is athlete-selectable in production (KC launch directive 2026-08-13,
 FV-78/FV-79; audio #425, DB #426, app wiring #427, postgame #428). Live
