@@ -85,7 +85,7 @@ export default async function AthleteHomePage() {
       </div>
 
       {/* ── Header ── */}
-      <header className="flex items-center justify-between px-5 pt-10 pb-8 sm:px-8 max-w-[640px] mx-auto">
+      <header className="flex items-center justify-between px-5 pt-8 pb-6 sm:px-8 max-w-[640px] mx-auto">
         <div className="flex items-center gap-2">
           <Image
             src="/logo-icon.svg"
@@ -122,7 +122,7 @@ export default async function AthleteHomePage() {
         <h1 className="sr-only">Athlete Home</h1>
 
         {/* ── Greeting + rhythm ring ── */}
-        <section className="flex items-center gap-5 mb-8" aria-label="Your rhythm" data-coachmark="hub-rhythm-ring">
+        <section className="flex items-center gap-5 mb-6" aria-label="Your rhythm" data-coachmark="hub-rhythm-ring">
           {/*
            * Day-position center: shows "N / 30" so day 1 reads as a beginning,
            * not "0%". dayNumber starts at 1 — always a positive, forward frame.
@@ -177,7 +177,7 @@ export default async function AthleteHomePage() {
                 "linear-gradient(180deg,rgba(223,175,55,0.10),rgba(223,175,55,0)),var(--bg-elev-1)",
             }}
           >
-            <div className="px-5 py-6 flex items-center gap-4">
+            <div className="px-5 py-5 flex items-center gap-4">
               <span
                 className="flex-none flex items-center justify-center w-14 h-14 rounded-2xl bg-gold/10 border border-gold/20"
                 aria-hidden="true"
@@ -204,7 +204,7 @@ export default async function AthleteHomePage() {
             <Link
               href="/athlete/pregame"
               data-coachmark="hub-pregame-card"
-              className="group flex flex-col items-center justify-center gap-3 py-8 px-3 rounded-2xl border border-[rgba(223,175,55,0.22)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.45)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+              className="group flex flex-col items-center justify-center gap-3 py-6 px-3 rounded-2xl border border-[rgba(223,175,55,0.22)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.45)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
               style={{
                 background:
                   "linear-gradient(180deg,rgba(223,175,55,0.06),rgba(223,175,55,0)),var(--bg-elev-1)",
@@ -217,14 +217,14 @@ export default async function AthleteHomePage() {
                 <Icon name="flame" size={32} color="var(--fv-gold)" />
               </span>
               <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[17px] leading-[1.15] text-center">
-                Pregame
+                Pregame Visualization
               </p>
             </Link>
 
             {/* 3. Pre-practice */}
             <Link
               href="/athlete/practice"
-              className="group flex flex-col items-center justify-center gap-3 py-8 px-3 rounded-2xl border border-[rgba(223,175,55,0.16)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.35)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+              className="group flex flex-col items-center justify-center gap-3 py-6 px-3 rounded-2xl border border-[rgba(223,175,55,0.16)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.35)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
               style={{
                 background:
                   "linear-gradient(180deg,rgba(223,175,55,0.04),rgba(223,175,55,0)),var(--bg-elev-1)",
@@ -237,7 +237,7 @@ export default async function AthleteHomePage() {
                 <Icon name="whistle" size={32} color="var(--fv-gold)" />
               </span>
               <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[17px] leading-[1.15] text-center">
-                Pre-Practice
+                Pre-Practice Visualization
               </p>
             </Link>
 
@@ -245,7 +245,7 @@ export default async function AthleteHomePage() {
                 postgame modules, so the grid never ends on a lone half tile. */}
             <Link
               href="/athlete/journey"
-              className={`group flex flex-col items-center justify-center gap-3 py-8 px-3 rounded-2xl border border-[rgba(223,175,55,0.12)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.28)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx${hasPostgameModules ? "" : " col-span-2"}`}
+              className={`group flex flex-col items-center justify-center gap-3 py-6 px-3 rounded-2xl border border-[rgba(223,175,55,0.12)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.28)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx${hasPostgameModules ? "" : " col-span-2"}`}
               style={{
                 background:
                   "linear-gradient(180deg,rgba(223,175,55,0.03),rgba(223,175,55,0)),var(--bg-elev-1)",
@@ -268,7 +268,7 @@ export default async function AthleteHomePage() {
             {hasPostgameModules && (
               <Link
                 href="/athlete/postgame"
-                className="group flex flex-col items-center justify-center gap-3 py-8 px-3 rounded-2xl border border-[rgba(223,175,55,0.09)] no-underline transition-[border-color,transform] duration-base ease-out motion-reduce:transition-none hover:border-[rgba(223,175,55,0.22)] motion-safe:active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+                className="group flex flex-col items-center justify-center gap-3 py-6 px-3 rounded-2xl border border-[rgba(223,175,55,0.09)] no-underline transition-[border-color,transform] duration-base ease-out motion-reduce:transition-none hover:border-[rgba(223,175,55,0.22)] motion-safe:active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
                 style={{
                   background:
                     "linear-gradient(180deg,rgba(223,175,55,0.02),rgba(223,175,55,0)),var(--bg-elev-1)",
