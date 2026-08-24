@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { AthleteBottomNav } from "@/components/athlete/BottomNav";
 import CoachmarkTour from "@/components/athlete/CoachmarkTour";
 import InstallPrompt from "@/components/athlete/InstallPrompt";
 import { Icon, RhythmRing, type IconName } from "@/components/ui";
@@ -76,7 +75,7 @@ export default async function AthleteHomePage() {
   const sportIcon: IconName = profile.sport;
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-onyx pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
+    <main className="relative min-h-screen overflow-hidden bg-onyx pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
       {/* ── Sport watermark — faint, decorative, behind all content. ── */}
       <div
         aria-hidden="true"
@@ -297,8 +296,8 @@ export default async function AthleteHomePage() {
         <InstallPrompt />
       </div>
 
-      {/* ── Bottom nav (no tab active on the hub) ── */}
-      <AthleteBottomNav />
+      {/* No bottom nav on the hub — every destination is a tile (KC decision
+          2026-08-24, declutter pass). Inner screens keep AthleteBottomNav. */}
 
       {/* ── First-run coachmark tour (FV-313) ── */}
       <CoachmarkTour surface="hub" />
