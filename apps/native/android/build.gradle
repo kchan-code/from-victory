@@ -7,7 +7,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.7.2'
+        classpath 'com.android.tools.build:gradle:8.13.0'
         // Do NOT add com.google.gms:google-services here. That plugin path
         // enables Firebase / FCM and can activate Analytics on minor accounts.
         // Any Google Services / push / analytics SDK requires a fresh
