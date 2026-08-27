@@ -179,7 +179,7 @@ export default function PregameRitualPage() {
               <p className={P}>
                 <strong>
                   A Christian athlete&apos;s pregame ritual is breath,
-                  identity in Christ, a visualization of the first shift, a
+                  identity in Christ, a visualization of the first moment, a
                   hard-moment plan, then prayer. Five minutes. Same every
                   game. You do not read it. You put headphones on and run it.
                 </strong>

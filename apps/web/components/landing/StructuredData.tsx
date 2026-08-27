@@ -1,6 +1,6 @@
 const siteUrl = "https://www.fromvictoryapp.com";
 const siteDescription =
-  "See the first shift before you compete. Guided visualization for athletes 13+. Hockey first. Your identity is secure. Compete From Victory.";
+  "See the first moment before you compete. Guided visualization for athletes 13+ across seven sports. Your identity is secure. Compete From Victory.";
 
 function offerPriceValidUntil(): string {
   return new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)

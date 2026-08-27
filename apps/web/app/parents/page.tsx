@@ -45,7 +45,7 @@ const athleteGets = [
   {
     icon: "flame" as const,
     title: "Daily training session",
-    body: "A short daily session — mental skill plus Scripture foundation — that builds identity, discipline, and resilience over 30 days. Hockey first, then basketball, golf, football, baseball, lacrosse, and soccer.",
+    body: "A short daily session — mental skill plus Scripture foundation — that builds identity, discipline, and resilience over 30 days. Themed for hockey, basketball, golf, football, baseball, lacrosse, and soccer.",
   },
   {
     icon: "zap" as const,
@@ -118,7 +118,7 @@ export default function ParentsPage() {
             </h1>
             <p className="max-w-[52ch] mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
               Your athlete sees the first moment before they step in: first
-              shot, first possession, first tee. Hockey is first. Identity in
+              shot, first possession, first tee. Identity in
               Christ is the ground under that picture. You see they trained.
               Their private session stays private.{" "}
               <Link

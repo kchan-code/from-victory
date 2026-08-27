@@ -56,13 +56,13 @@ const fontVariables = [
 const siteUrl = "https://www.fromvictoryapp.com";
 const socialImage = `${siteUrl}/from-victory-social-preview.jpg`;
 const socialDescription =
-  "See the first shift before you compete. Guided visualization for athletes 13+. Hockey first. Your identity is secure. Compete From Victory.";
-const socialTitle = "From Victory | See the First Shift. Compete From Victory.";
+  "See the first moment before you compete. Guided visualization for athletes 13+ across seven sports. Your identity is secure. Compete From Victory.";
+const socialTitle = "From Victory | See the First Moment. Compete From Victory.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "From Victory | See the First Shift. Compete From Victory.",
+    default: "From Victory | See the First Moment. Compete From Victory.",
     template: "%s · From Victory",
   },
   description: socialDescription,

@@ -200,8 +200,8 @@ export default function ChristianAthleteAppsPage() {
               </p>
               <p className={P}>
                 If you want a daily reading habit tied to sport, start here.
-                A reading plan cannot reach the first shift. That is a
-                different job.
+                A reading plan cannot reach the first moment of a game. That
+                is a different job.
               </p>
 
               <h2 className={H2}>Core IV</h2>

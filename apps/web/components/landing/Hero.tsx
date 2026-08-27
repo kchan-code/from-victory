@@ -20,12 +20,12 @@ export function Hero() {
             <div className="inline-flex items-center gap-3 mb-7">
               <span className="fv-pulse-dot" />
               <span className="fv-eyebrow">
-                Guided visualization · Hockey first
+                Guided visualization · Seven sports
               </span>
             </div>
 
             <h1 className="fv-h-hero mb-[26px]">
-              See the first&nbsp;shift.
+              See the first&nbsp;moment.
               <br />
               Compete <em>from victory.</em>
             </h1>
