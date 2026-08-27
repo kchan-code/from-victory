@@ -36,6 +36,7 @@ describe("isAllowedAnalyticsPath — public marketing allowlist", () => {
       true,
     );
     expect(isAllowedAnalyticsPath("/christian-athlete-apps")).toBe(true);
+    expect(isAllowedAnalyticsPath("/hockey")).toBe(true);
   });
 
   it("allows resources article slugs (sub-path)", () => {

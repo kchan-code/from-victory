@@ -20,20 +20,23 @@ export function Hero() {
             <div className="inline-flex items-center gap-3 mb-7">
               <span className="fv-pulse-dot" />
               <span className="fv-eyebrow">
-                Athlete Mindset Training · Built on Scripture
+                Guided visualization · Seven sports
               </span>
             </div>
 
             <h1 className="fv-h-hero mb-[26px]">
-              Your identity is&nbsp;secure.
+              Visualize and compete
               <br />
-              Compete <em>from victory.</em>
+              <em>from victory.</em>
             </h1>
 
             <p className="max-w-[52ch] mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
-              A Christian athlete mindset app that helps you build daily
-              discipline, reset after mistakes, and compete with confidence —
-              rooted in Christ, not performance.
+              Guided visualization for athletes 13+. You run the first moment
+              — a goalie tracks the first shot, a guard sees the first
+              possession, a golfer stands over the first tee — not a quiet-room
+              highlight. Identity in Christ is the ground under that picture.
+              Daily training, pre-practice lock-in, and the ride home still
+              sit with it.
             </p>
 
             <div className="flex flex-wrap gap-3 mb-5">
@@ -52,8 +55,16 @@ export function Hero() {
                 See how it works
               </a>
             </div>
-            <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/40 font-semibold mb-10">
+            <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/40 font-semibold mb-4">
               14 days free for first-time subscribers &mdash; then $5/mo or $49/yr &mdash; cancel anytime
+            </p>
+            <p className="m-0">
+              <Link
+                href="/hockey"
+                className="font-body text-[15px] text-gold underline underline-offset-2 hover:text-gold-bright transition-colors duration-fast"
+              >
+                Hockey families: see the first shift →
+              </Link>
             </p>
 
           </Reveal>

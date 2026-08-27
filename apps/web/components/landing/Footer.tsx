@@ -6,6 +6,7 @@ import Link from "next/link";
 const productLinks = [
   { href: "/#how", label: "How it works" },
   { href: "/#app", label: "The app" },
+  { href: "/hockey", label: "Hockey" },
   { href: "/signup", label: "Start free trial" },
 ];
 

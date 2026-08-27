@@ -17,12 +17,35 @@ import Link from "next/link";
 //      production callers) and is intentionally NOT described as an active
 //      feature here. Revisit if/when it is wired.
 
+const siteUrl = "https://www.fromvictoryapp.com";
+const PAGE_DESCRIPTION =
+  "How From Victory collects, uses, stores, and protects information — across our website, the sport waitlist, and the From Victory app for parents and athletes (ages 13 and above).";
+
 export const metadata: Metadata = {
   alternates: { canonical: "/privacy" },
   title: "Privacy Policy",
-  description:
-    "How From Victory collects, uses, stores, and protects information — across our website, the sport waitlist, and the From Victory app for parents and athletes (ages 13 and above).",
+  description: PAGE_DESCRIPTION,
   robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    url: `${siteUrl}/privacy`,
+    siteName: "From Victory",
+    title: "Privacy Policy · From Victory",
+    description: PAGE_DESCRIPTION,
+    images: [
+      {
+        url: `${siteUrl}/from-victory-social-preview.jpg`,
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Privacy Policy · From Victory",
+    description: PAGE_DESCRIPTION,
+    images: [`${siteUrl}/from-victory-social-preview.jpg`],
+  },
 };
 
 // Effective date set to June 24, 2026 by KC (2026-06-25). Attorney sign-off

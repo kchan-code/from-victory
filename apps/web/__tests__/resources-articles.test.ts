@@ -164,17 +164,11 @@ describe('"kid/kids/kiddo/youngster" audience-language scan', () => {
     }
   });
 
-  // Article 4 is parent-facing. "Most kids who get cut" appears in the body.
-  // Per the audience table, parent-facing copy may use "kids" BUT the preferred
-  // terms are "your child"/"your athlete". This test documents the 1 occurrence
-  // rather than blocking — flag for KC / content-curator to rewrite.
-  it('article 4 (parent-facing) "kids" occurrence count === 1 — documents for KC review', () => {
+  it('article 4 (parent-facing) has no kid/kids/kiddo/youngster after FV-504 rewrite', () => {
     const body = getArticleBySlug("when-your-athlete-gets-cut-a-parents-guide")!
       .bodyMd;
     const matches = body.match(KID_RE);
-    // Currently exactly 1: "Most kids who get cut" — flag but do not fail.
-    // KC: ask content-curator to rewrite to "Most athletes who get cut" (count → 0).
-    expect(matches?.length ?? 0).toBe(1);
+    expect(matches).toBeNull();
   });
 });
 
@@ -182,29 +176,21 @@ describe('"kid/kids/kiddo/youngster" audience-language scan', () => {
 // Whole-body SHA-256 fidelity pins
 // ---------------------------------------------------------------------------
 //
-// These hashes pin the exact byte sequence of each article's bodyMd as
-// delivered by content review (2026-06-12).
-//
-// DO NOT edit the hash values without going back through content review.
-// Any bodyMd edit — even whitespace — is a regression against curator copy.
-//
-// byte-verbatim curator copy — any edit must go back through content review.
+// These hashes pin the exact byte sequence of each article's bodyMd
+// after the 2026-08-26 answer-first refresh (FV-504).
 
 describe("whole-body sha256 fidelity pins", () => {
   const PINS: Record<string, string> = {
     "bible-verses-for-athletes-before-a-game":
-      "19d6a824dc39a5a7ce21dbc21a205371982f7c05709e18c889bb9faa585f435b",
+      "5d73f78e92642c59aa3e978ea59148775505d055f65228e2e6346032ad580d63",
     "pre-game-nerves-christian-athlete-routine":
-      "233184d5bb8a388009797f6d741be9b5af8938981ab56c745b59e0bfaca26533",
+      "d3d2040919693acd08c9844c5d4fcbe8269adef943cc5da17ac52b91e6723332",
     "how-to-bounce-back-after-a-bad-game":
-      "6f0212bdc206eaec27a0e28f8a24828551eac65d3128a89944102f198f5c3622",
+      "d221a6398d56e455b0286d6b7e140a5251dc49a803319082bf3dbacfa45e30e8",
     "when-your-athlete-gets-cut-a-parents-guide":
-      "c7a9bc8238fbd09a9db83b6031c5164755fabc5102afc3c32cae9389245054b9",
-    // Pin updated FV-446 (2026-07-21): factual correction "ages 13-21" →
-    // "ages 13 and up" in the closing CTA paragraph (13-25 arc, no upper
-    // bound). Reviewed and authorized by KC as a factual-fix-lane edit.
+      "42070f1ab6ed4cb4fba9f097441209393c5652f2efb7af9487abfd64d629bf96",
     "sports-psychology-and-faith-do-they-mix":
-      "dd869bccedc7fff6623dc28fa2daabc3a56e92c1e73effbdc1b6e7a3c112acbd",
+      "56d1fa799fd5f0ff072a4371afa71d0f50117b9b87f1558be5141855f60a8afb",
   };
 
   for (const [slug, expectedHash] of Object.entries(PINS)) {

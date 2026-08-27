@@ -59,6 +59,7 @@ export const ATTRIBUTION_ELIGIBLE_PATHS: readonly string[] = [
   "/terms",
   "/pregame-ritual-christian-athlete",
   "/christian-athlete-apps",
+  "/hockey",
 ];
 
 /** Max length (chars) retained per attribution field value. */

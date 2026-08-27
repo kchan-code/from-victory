@@ -1,12 +1,35 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+const siteUrl = "https://www.fromvictoryapp.com";
+const PAGE_DESCRIPTION =
+  "Terms of Use governing your access to and use of the From Victory website, application, content, waitlist, communications, and related services.";
+
 export const metadata: Metadata = {
   alternates: { canonical: "/terms" },
   title: "Terms of Use",
-  description:
-    "Terms of Use governing your access to and use of the From Victory website, application, content, waitlist, communications, and related services.",
+  description: PAGE_DESCRIPTION,
   robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    url: `${siteUrl}/terms`,
+    siteName: "From Victory",
+    title: "Terms of Use · From Victory",
+    description: PAGE_DESCRIPTION,
+    images: [
+      {
+        url: `${siteUrl}/from-victory-social-preview.jpg`,
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Terms of Use · From Victory",
+    description: PAGE_DESCRIPTION,
+    images: [`${siteUrl}/from-victory-social-preview.jpg`],
+  },
 };
 
 const EFFECTIVE_DATE = "May 22, 2026";

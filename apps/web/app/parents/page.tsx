@@ -45,7 +45,7 @@ const athleteGets = [
   {
     icon: "flame" as const,
     title: "Daily training session",
-    body: "A short daily session — mental skill plus Scripture foundation — that builds identity, discipline, and resilience over 30 days. Hockey, basketball, golf, football, baseball, lacrosse, and soccer, with more sports coming.",
+    body: "A short daily session — mental skill plus Scripture foundation — that builds identity, discipline, and resilience over 30 days. Themed for hockey, basketball, golf, football, baseball, lacrosse, and soccer.",
   },
   {
     icon: "zap" as const,
@@ -117,9 +117,17 @@ export default function ParentsPage() {
               This builds the <em>foundation beneath it.</em>
             </h1>
             <p className="max-w-[52ch] mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
-              From Victory is a daily mental toughness training app for Christian
-              athletes ages 13 and above. Your athlete trains. You see the rhythm. Their
-              private words stay private.
+              Your athlete sees the first moment before they step in: first
+              shot, first possession, first tee. Identity in
+              Christ is the ground under that picture. You see they trained.
+              Their private session stays private.{" "}
+              <Link
+                href="/hockey"
+                className="text-gold underline underline-offset-2 hover:text-gold-bright transition-colors duration-fast"
+              >
+                See the first shift on the ice
+              </Link>
+              .
             </p>
             <div className="flex flex-wrap gap-3">
               <Link

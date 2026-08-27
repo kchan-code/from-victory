@@ -8,28 +8,60 @@ const siteUrl = "https://www.fromvictoryapp.com";
 // crawlers to ignore our lastmod entirely. Bump these when a page
 // meaningfully changes; article dates come from the registry.
 const MARKETING_UPDATED = new Date("2026-07-09");
-const LEGAL_UPDATED = new Date("2026-06-24");
+const SEO_REFRESH = new Date("2026-08-26");
+
+// Build-time only. A crawler once saw /sitemap.xml 500; keep this route
+// a static list with a hardcoded article fallback so it cannot throw.
+export const dynamic = "force-static";
+
+const ARTICLE_FALLBACK: { slug: string; dateModified: string }[] = [
+  {
+    slug: "bible-verses-for-athletes-before-a-game",
+    dateModified: "2026-08-26",
+  },
+  {
+    slug: "pre-game-nerves-christian-athlete-routine",
+    dateModified: "2026-08-26",
+  },
+  { slug: "how-to-bounce-back-after-a-bad-game", dateModified: "2026-08-26" },
+  {
+    slug: "when-your-athlete-gets-cut-a-parents-guide",
+    dateModified: "2026-08-26",
+  },
+  {
+    slug: "sports-psychology-and-faith-do-they-mix",
+    dateModified: "2026-08-26",
+  },
+];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const articleEntries: MetadataRoute.Sitemap = getAllArticles().map(
-    (article) => ({
+  let articleEntries: MetadataRoute.Sitemap;
+  try {
+    articleEntries = getAllArticles().map((article) => ({
       url: `${siteUrl}/resources/${article.slug}`,
       lastModified: new Date(article.dateModified),
       changeFrequency: "monthly" as const,
       priority: 0.8,
-    }),
-  );
+    }));
+  } catch {
+    articleEntries = ARTICLE_FALLBACK.map((article) => ({
+      url: `${siteUrl}/resources/${article.slug}`,
+      lastModified: new Date(article.dateModified),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    }));
+  }
 
   return [
     {
       url: siteUrl,
-      lastModified: MARKETING_UPDATED,
+      lastModified: SEO_REFRESH,
       changeFrequency: "weekly",
       priority: 1,
     },
     {
       url: `${siteUrl}/parents`,
-      lastModified: MARKETING_UPDATED,
+      lastModified: SEO_REFRESH,
       changeFrequency: "weekly",
       priority: 0.9,
     },
@@ -58,33 +90,39 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.4,
     },
     {
+      url: `${siteUrl}/hockey`,
+      lastModified: SEO_REFRESH,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${siteUrl}/resources`,
-      lastModified: MARKETING_UPDATED,
+      lastModified: SEO_REFRESH,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     ...articleEntries,
     {
       url: `${siteUrl}/pregame-ritual-christian-athlete`,
-      lastModified: MARKETING_UPDATED,
+      lastModified: SEO_REFRESH,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${siteUrl}/christian-athlete-apps`,
-      lastModified: MARKETING_UPDATED,
+      lastModified: SEO_REFRESH,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${siteUrl}/privacy`,
-      lastModified: LEGAL_UPDATED,
+      lastModified: SEO_REFRESH,
       changeFrequency: "yearly",
       priority: 0.4,
     },
     {
       url: `${siteUrl}/terms`,
-      lastModified: LEGAL_UPDATED,
+      lastModified: SEO_REFRESH,
       changeFrequency: "yearly",
       priority: 0.4,
     },
