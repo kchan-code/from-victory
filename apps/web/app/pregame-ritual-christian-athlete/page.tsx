@@ -1,13 +1,6 @@
-// /pregame-ritual-christian-athlete — GTM Engine page (FV-411).
-//
-// VERBATIM COPY: every heading, paragraph, and FAQ answer below is
-// reproduced word-for-word from docs/gtm/pages/fv-crrc-w1-page.html
-// (KC-approved, Delvox GTM Engine). Do NOT edit, trim, reflow, or
-// "improve" any of the copy in this file. The one change from the
-// source: the trial CTA points at the internal /signup path instead
-// of the bare production domain — see docs/gtm/README.md for the contract.
-//
-// Server Component — no client code except the reused AttributionCapture.
+// /pregame-ritual-christian-athlete — GTM page (FV-411, refreshed FV-504).
+// Answer-first lead. Training walkthrough. Article + FAQ JSON-LD.
+// Server Component.
 
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -21,27 +14,31 @@ import { getArticleBySlug } from "@/lib/resources/articles";
 import {
   CHRISTIAN_ATHLETE_APPS_HREF,
   CHRISTIAN_ATHLETE_APPS_TITLE,
+  PREGAME_RITUAL_DATE_MODIFIED,
+  PREGAME_RITUAL_DATE_PUBLISHED,
+  PREGAME_RITUAL_EXCERPT,
+  PREGAME_RITUAL_HREF,
+  PREGAME_RITUAL_TITLE,
 } from "@/lib/gtm/page-titles";
 
 const siteUrl = "https://www.fromvictoryapp.com";
 
-const PAGE_TITLE =
-  "A Pregame Ritual for the Christian Athlete: The Guided Visualization";
-
-// Verbatim single sentence from the approved lead paragraph.
-const PAGE_DESCRIPTION =
-  "A pregame ritual for the Christian athlete is a short, repeatable practice that carries your faith into the moment before you compete.";
+const PAGE_TITLE = PREGAME_RITUAL_TITLE;
+const PAGE_DESCRIPTION = PREGAME_RITUAL_EXCERPT;
+const PAGE_IMAGE = `${siteUrl}/images/blog/app-pregame-session.png`;
 
 export const metadata: Metadata = {
-  alternates: { canonical: "/pregame-ritual-christian-athlete" },
+  alternates: { canonical: PREGAME_RITUAL_HREF },
   title: PAGE_TITLE,
   description: PAGE_DESCRIPTION,
   openGraph: {
     type: "article",
-    url: `${siteUrl}/pregame-ritual-christian-athlete`,
+    url: `${siteUrl}${PREGAME_RITUAL_HREF}`,
     siteName: "From Victory",
     title: `${PAGE_TITLE} · From Victory`,
     description: PAGE_DESCRIPTION,
+    publishedTime: PREGAME_RITUAL_DATE_PUBLISHED,
+    modifiedTime: PREGAME_RITUAL_DATE_MODIFIED,
     images: [
       {
         url: `${siteUrl}/from-victory-social-preview.jpg`,
@@ -94,12 +91,39 @@ const FAQ_JSON_LD = {
   ],
 };
 
+const ARTICLE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: PAGE_TITLE,
+  description: PAGE_DESCRIPTION,
+  url: `${siteUrl}${PREGAME_RITUAL_HREF}`,
+  datePublished: PREGAME_RITUAL_DATE_PUBLISHED,
+  dateModified: PREGAME_RITUAL_DATE_MODIFIED,
+  author: {
+    "@type": "Organization",
+    name: "From Victory",
+    url: siteUrl,
+  },
+  image: [PAGE_IMAGE],
+  publisher: {
+    "@type": "Organization",
+    name: "From Victory",
+    url: siteUrl,
+  },
+};
+
 function PregameRitualJsonLd() {
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD) }}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ARTICLE_JSON_LD) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD) }}
+      />
+    </>
   );
 }
 
@@ -138,6 +162,11 @@ export default function PregameRitualPage() {
           </div>
           <div className="mx-auto max-w-[800px] px-5 sm:px-8">
             <Reveal>
+              <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 mb-7">
+                <time dateTime={PREGAME_RITUAL_DATE_MODIFIED}>
+                  Updated August 26, 2026
+                </time>
+              </p>
               <h1 className="fv-h-article mb-0 max-w-[30ch]">{PAGE_TITLE}</h1>
             </Reveal>
           </div>
@@ -149,24 +178,19 @@ export default function PregameRitualPage() {
             <div className="max-w-[68ch] space-y-6">
               <p className={P}>
                 <strong>
-                  A pregame ritual for the Christian athlete is a short,
-                  repeatable practice that carries your faith into the moment
-                  before you compete. From Victory guides it as audio:
-                  headphones on, eyes closed, about five minutes. A voice
-                  walks you through breath, a visualization built for your
-                  sport and your position, and who God says you are, then
-                  prays with you and sends you out. Everyone tells athletes
-                  to visualize. Almost no tool actually helps you do it. From
-                  Victory does, and you are not doing it alone.
+                  A Christian athlete&apos;s pregame ritual is breath,
+                  identity in Christ, a visualization of the first shift, a
+                  hard-moment plan, then prayer. Five minutes. Same every
+                  game. You do not read it. You put headphones on and run it.
                 </strong>
               </p>
 
               <p className={P}>
-                You believe in Christ. Your faith holds on Sunday. But before
-                the whistle on Saturday, most athletes leave it in the locker
-                room. Not because they want to. Because no one ever gave them
-                a way to run it, out loud, in the last few minutes before
-                they compete. Here is what the session is, start to finish.
+                A 13-year-old in a loud barn, a 16-year-old with a scout in
+                the stands, a 20-year-old in junior or college: the room
+                changes. The sequence does not. Here is the ritual, start to
+                finish, so you can use it tonight even if you never open the
+                app.
               </p>
 
               <h2 className={H2}>Headphones on, eyes closed</h2>

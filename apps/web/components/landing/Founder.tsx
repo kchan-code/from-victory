@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Reveal } from "./Reveal";
 
 // DRAFT FOR KC — this copy is verbatim from fv236-faq-copy.md.
@@ -29,8 +30,16 @@ export function Founder() {
             </p>
 
             {/* Tagline — italic / scripture-style per design system */}
-            <p className="font-scripture italic text-[clamp(16px,1.5vw,19px)] leading-[1.5] text-cream/80 m-0">
+            <p className="font-scripture italic text-[clamp(16px,1.5vw,19px)] leading-[1.5] text-cream/80 m-0 mb-6">
               Your Identity Is Secure. Compete From Victory.
+            </p>
+            <p className="m-0">
+              <Link
+                href="/hockey"
+                className="font-body text-[15px] text-gold underline underline-offset-2 hover:text-gold-bright transition-colors duration-fast"
+              >
+                Hockey families: how training works on the ice →
+              </Link>
             </p>
           </div>
         </Reveal>

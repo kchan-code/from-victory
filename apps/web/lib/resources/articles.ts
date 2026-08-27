@@ -1,14 +1,9 @@
 // Article registry for /resources SEO cornerstone section (FV-238).
 //
-// VERBATIM CONTENT: bodyMd fields are reproduced byte-for-byte from
-// /tmp/fv238-final-articles.md (curator revision pass, 2026-06-12).
-// Do NOT edit, trim, reflow, or re-wrap any bodyMd string. Scripture
-// quotes were reconciled character-for-character against NIV; any
-// diff from this source is a regression.
-//
-// AUTHORED HERE (flagged for KC review):
-//   - excerpt field (one sentence per article — see AUTHORED note)
-// All other fields come verbatim from the content source.
+// 2026-08-26 (FV-504): answer-first refresh of leads and excerpts so
+// these pages can index for the questions they already target.
+// Scripture quotes stay NIV-pinned. Do not grow the verse page into a
+// reference work. Closing CTAs stay secondary to the training.
 //
 // `related` (FV-413): optional cross-links rendered by the page/render
 // layer after the article body. `label` must be a verbatim reuse of the
@@ -65,24 +60,24 @@ const ARTICLES: Article[] = [
     slug: "bible-verses-for-athletes-before-a-game",
     title: "12 Bible Verses for Athletes to Read Before a Game",
     metaDescription:
-      "Twelve NIV Bible verses for athletes before a game, with short, identity-first reflections. Steady your nerves on who you already are in Christ.",
+      "The best pregame verses settle who you already are in Christ, not a charm to play better. Twelve NIV verses. Start with Hebrews 12:1-2.",
     // AUTHORED excerpt:
     excerpt:
-      "Twelve NIV verses with identity-first reflections — to settle your nerves on who you already are before the first whistle.",
+      "The best pregame verses settle who you already are in Christ, not a charm to play better. Start with Hebrews 12:1-2.",
     audience: "athlete",
     datePublished: "2026-06-12",
-    dateModified: "2026-07-10",
+    dateModified: "2026-08-26",
     image: {
       src: "/images/blog/bible-verses-before-a-game.jpg",
       alt: "Outdoor basketball hoop overlooking the sea in gray morning light",
       width: 1600,
       height: 1066,
     },
-    bodyMd: `Before the warmup, before the anthem, before the first whistle, a lot of athletes are looking for something to hold onto. A verse on a wristband. A line a coach taped to a locker. Something to quiet the noise.
+    bodyMd: `The verses that actually help before a game are the ones that settle who you already are in Christ, not a charm to play better. Start with Hebrews 12:1-2, then pick one more for nerves, effort, or the ride home.
 
-Here's the thing most pregame verse lists miss: Scripture before a game isn't a performance hack. It's not a spell you say to play better. The right verse doesn't make you a lock to win — it reminds you who you already are while you compete, win or lose.
+A verse on a wristband is fine. A spell you say to win is not what Scripture is for. The right line does not make you a lock. It reminds you who you already are while you compete, win or lose.
 
-That's the order that matters. **Your Identity Is Secure. Compete From Victory.** Not toward it. You're not playing to earn your standing tonight. You already have it. These verses are here to settle you back onto that ground.
+That's the order that matters. **Your Identity Is Secure. Compete From Victory.** Not toward it. You're not playing to earn your standing tonight. You already have it.
 
 Read a few before you lace up. Pick one to carry.
 
@@ -143,13 +138,13 @@ The worst game you ever play does not lower your standing with God. The best gam
     slug: "pre-game-nerves-christian-athlete-routine",
     title: "Pre-Game Nerves: A Christian Athlete's 5-Step Routine",
     metaDescription:
-      "A simple, repeatable pre-game routine for Christian athletes — breath, identity, visualization, a cue word — to settle nerves and compete free.",
+      "Pre-game nerves are energy, not a verdict. A five-step Christian athlete routine: longer exhales, identity, visualization, a cue word, then prayer.",
     // AUTHORED excerpt:
     excerpt:
-      "A five-step repeatable routine — breath, identity, visualization, cue word, prayer — so nerves stop writing the story and you compete free.",
+      "Pre-game nerves are energy, not a verdict. Five steps: longer exhales, identity, visualization, a cue word, then prayer.",
     audience: "athlete",
     datePublished: "2026-06-12",
-    dateModified: "2026-07-10",
+    dateModified: "2026-08-26",
     image: {
       src: "/images/blog/pre-game-nerves.jpg",
       alt: "Goalie pads and skates beside the net, pucks on the ice",
@@ -157,9 +152,9 @@ The worst game you ever play does not lower your standing with God. The best gam
       height: 1066,
     },
     related: [{ href: PREGAME_RITUAL_HREF, label: PREGAME_RITUAL_TITLE }],
-    bodyMd: `Nerves before a game aren't a malfunction. They're energy. Your body is getting ready. The problem isn't that you feel them — the problem is when nerves start writing a story about who you are. *I'm not ready. I'm going to get exposed. It's all on me.*
+    bodyMd: `Pre-game nerves are energy, not a verdict on you. Run the same five moves every time: longer exhales, name who you are in Christ, visualize one play and one reset, pick a cue word, then pray and go.
 
-You don't fix that with "just relax." You fix it with a routine — the same handful of moves, every time, so your mind has a rail to grab when the pressure climbs. Here's a five-step routine built on the same structure From Victory uses in its guided pregame session.
+The problem is not that you feel them. The problem is when they start writing a story about who you are. *I'm not ready. I'm going to get exposed. It's all on me.* You don't fix that with "just relax." You fix it with a routine — the same handful of moves, every time, so your mind has a rail to grab when the pressure climbs. Here's a five-step routine a 13-year-old, a 16-year-old, or a 20-year-old can run in the locker room.
 
 ### Step 1 — Breathe (settle the body first)
 
@@ -216,24 +211,24 @@ Same routine, every game. That's how it becomes yours.
     slug: "how-to-bounce-back-after-a-bad-game",
     title: "How to Bounce Back After a Bad Game",
     metaDescription:
-      "A bad game is information, not a verdict. A faith-grounded, no-shame way for athletes to reset, recover, and return after a rough night.",
+      "A bad game is information, not a verdict on you. Feel it, take one lesson, drop the rest, and take the next rep from a standing Christ already settled.",
     // AUTHORED excerpt:
     excerpt:
-      "A bad game is information, not a verdict. A faith-grounded, no-shame reset process for after the hard nights.",
+      "A bad game is information, not a verdict. Feel it, take one lesson, take the next rep.",
     audience: "athlete",
     datePublished: "2026-06-12",
-    dateModified: "2026-07-10",
+    dateModified: "2026-08-26",
     image: {
       src: "/images/blog/bounce-back.jpg",
       alt: "Basketball rim and net lit against a dark gym",
       width: 1600,
       height: 1068,
     },
-    bodyMd: `You know the ride home after a bad one. The replays running on a loop. The one turnover, the missed chance, the shift where everything went sideways. The quiet in the car that feels louder than the game did.
+    bodyMd: `A bad game is information, not a verdict on you. Feel it, name one real mistake, take one lesson, leave the rest, and take the next rep from a standing Christ already settled.
 
-First thing: that's normal. It means you care. You're not broken for feeling it.
+You know the ride home after a bad one. The replays running on a loop. The one turnover, the missed chance, the shift where everything went sideways. That's normal. It means you care. You're not broken for feeling it.
 
-But here's what the bad game is trying to do, and what you don't have to let it: it's trying to turn a performance into a verdict. It happened on the ice or the floor, and now it's whispering something about *you*. There's a difference, and the difference is everything.
+What you don't have to let it do: turn a performance into a sentence about *you*. The turnover was real. The line it is trying to write — *I'm not good enough, I don't belong, I let everyone down* — is not.
 
 ### A bad game is a performance event, not a verdict on you
 
@@ -275,24 +270,22 @@ The game is the game. You are not the game. You never were. Now go take the next
     slug: "when-your-athlete-gets-cut-a-parents-guide",
     title: "When Your Athlete Gets Cut: A Parent's Guide",
     metaDescription:
-      "Your athlete just got cut. A warm, practical guide for parents — what to say in the car, what to avoid, and how to anchor them in identity, not results.",
+      "When your athlete gets cut, sit with them first. The roster can tell them what happened. It cannot tell them who they are in Christ.",
     // AUTHORED excerpt:
     excerpt:
-      "What to say in the car, what to avoid, and how to anchor your athlete in identity — not results — after a cut.",
+      "Sit with them first. The roster can tell them what happened. It cannot tell them who they are in Christ.",
     audience: "parent",
     datePublished: "2026-06-12",
-    dateModified: "2026-07-09",
+    dateModified: "2026-08-26",
     image: {
       src: "/images/blog/when-your-athlete-gets-cut.jpg",
       alt: "Rows of empty arena seats",
       width: 1600,
       height: 1066,
     },
-    bodyMd: `The list went up, or the call came, and your athlete's name wasn't on it. Now you're the one holding it — driving home, sitting outside their room, trying to find words that help instead of hurt.
+    bodyMd: `When your athlete gets cut, sit with them first. Then hold the one true line: the roster can tell them what happened; it cannot tell them who they are in Christ.
 
-This is hard for them, and it's hard for you. You've watched the early mornings and the long drives and the hours they put in. Watching it not pay off the way they hoped aches in a particular way. So before anything else: it's okay that this hurts. For both of you.
-
-Here's a guide for the moments right after — grounded in the one thing your athlete most needs to know, which is that their worth was never on that list to begin with.
+The list went up, or the call came, and their name wasn't on it. You've watched the early mornings and the long drives. It's okay that this hurts. For both of you. Their worth was never on that list to begin with.
 
 ### First, just be there
 
@@ -330,7 +323,7 @@ A cut can tell them what happened. It cannot tell them who they are. That's the 
 
 ### When it's more than disappointment
 
-One honest note. Most kids who get cut hurt for a while and then, with support, find their feet. But if you see something heavier — hopelessness that doesn't lift, real withdrawal from people and things they love, anything beyond ordinary disappointment — don't try to carry that alone. Loop in a trusted adult, your family pastor, or your doctor. If it ever escalates to thoughts of self-harm, the 988 Suicide & Crisis Lifeline is there any hour. We're a training resource, not counselors or clinicians, and the loving move is to get real help when it's needed.
+One honest note. Most athletes who get cut hurt for a while and then, with support, find their feet. But if you see something heavier — hopelessness that doesn't lift, real withdrawal from people and things they love, anything beyond ordinary disappointment — don't try to carry that alone. Loop in a trusted adult, your family pastor, or your doctor. If it ever escalates to thoughts of self-harm, the 988 Suicide & Crisis Lifeline is there any hour. We're a training resource, not counselors or clinicians, and the loving move is to get real help when it's needed.
 
 ### The next faithful step
 
@@ -351,22 +344,22 @@ Your athlete is not the cut. They never were. **Your Identity Is Secure. Compete
     slug: "sports-psychology-and-faith-do-they-mix",
     title: "Sports Psychology and Faith: Do They Mix?",
     metaDescription:
-      "Can sports psychology and Christian faith work together? Yes — when faith is the foundation, not the decoration. An honest look at how, and the limits.",
+      "Yes: sports psychology and faith mix when faith is the foundation. Mental skills are useful. They cannot carry your worth. Not therapy.",
     // AUTHORED excerpt:
     excerpt:
-      "They mix well — but only when faith is the foundation the mental skills stand on, not the other way around. An honest look at how, and the limits.",
+      "Yes, when faith is the foundation and the mental skills sit on top of it. Not therapy.",
     audience: "parent",
     datePublished: "2026-06-12",
-    dateModified: "2026-07-09",
+    dateModified: "2026-08-26",
     image: {
       src: "/images/blog/sports-psychology-and-faith.jpg",
       alt: "Basketball court lines seen from above",
       width: 1600,
       height: 1066,
     },
-    bodyMd: `It's a fair question, and a lot of Christian families ask it: *Is mental training compatible with faith — or is it just secular self-help in disguise?* And from the other side: *Does bringing faith into sports psychology water down the actual mental skills?*
+    bodyMd: `Yes, sports psychology and Christian faith mix, when faith is the foundation and the mental skills sit on top of it. Breath, visualization, and cue words are useful. They cannot carry your worth.
 
-The short answer is that they mix well — but only when you get the order right. Faith isn't a decoration you add on top of mental training. It's the foundation the training stands on. Get that backwards and you end up with one of two weak products: self-help with a verse stapled to the end, or a devotional with sports clip-art. Neither is what a serious athlete needs.
+Families ask it both ways: *Is mental training just secular self-help in disguise?* And: *Does bringing faith in water down the skills?* Get the order backwards and you get one of two weak products: self-help with a verse stapled to the end, or a devotion with sports clip-art. Neither is what a serious 13-, 16-, or 20-year-old needs.
 
 ### The real difference: where your identity comes from
 

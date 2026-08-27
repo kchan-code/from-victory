@@ -32,6 +32,7 @@ const ALLOWED_PREFIXES: readonly string[] = [
   "/terms",
   "/pregame-ritual-christian-athlete",
   "/christian-athlete-apps",
+  "/hockey",
 ];
 
 /**

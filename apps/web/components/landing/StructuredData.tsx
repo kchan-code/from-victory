@@ -1,6 +1,12 @@
 const siteUrl = "https://www.fromvictoryapp.com";
 const siteDescription =
-  "A Christ-centered mindset app for athletes who compete from identity, not performance.";
+  "Mental-toughness training for athletes 13+. Hockey-first among live sports. Identity in Christ, not performance.";
+
+function offerPriceValidUntil(): string {
+  return new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0]!;
+}
 
 export const ORGANIZATION_JSON_LD = {
   "@context": "https://schema.org",
@@ -29,19 +35,46 @@ export const SOFTWARE_APPLICATION_JSON_LD = {
   offers: [
     {
       "@type": "Offer",
-      price: "5.00",
+      name: "14-day free trial",
+      description:
+        "14-day free trial for first-time subscribers. Then $5/month or $49/year for the first athlete. Cancel anytime.",
+      price: "0",
       priceCurrency: "USD",
-      priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
+      priceValidUntil: offerPriceValidUntil(),
     },
     {
       "@type": "Offer",
+      name: "Monthly — first athlete",
+      description:
+        "14-day free trial, then $5/month for the first athlete. Cancel anytime.",
+      price: "5.00",
+      priceCurrency: "USD",
+      priceValidUntil: offerPriceValidUntil(),
+    },
+    {
+      "@type": "Offer",
+      name: "Annual — first athlete",
+      description:
+        "14-day free trial, then $49/year for the first athlete. Cancel anytime.",
       price: "49.00",
       priceCurrency: "USD",
-      priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
+      priceValidUntil: offerPriceValidUntil(),
+    },
+    {
+      "@type": "Offer",
+      name: "Monthly — additional athlete",
+      description: "$3/month for each additional athlete on the same plan.",
+      price: "3.00",
+      priceCurrency: "USD",
+      priceValidUntil: offerPriceValidUntil(),
+    },
+    {
+      "@type": "Offer",
+      name: "Annual — additional athlete",
+      description: "$29/year for each additional athlete on the same plan.",
+      price: "29.00",
+      priceCurrency: "USD",
+      priceValidUntil: offerPriceValidUntil(),
     },
   ],
 };

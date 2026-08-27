@@ -1,13 +1,6 @@
-// /christian-athlete-apps — GTM Engine page (FV-411).
-//
-// VERBATIM COPY: every heading, paragraph, and FAQ answer below is
-// reproduced word-for-word from docs/gtm/pages/fv-believer-w1-page-comparison.html
-// (KC-approved, Delvox GTM Engine). Do NOT edit, trim, reflow, or
-// "improve" any of the copy in this file. The one change from the
-// source: the trial CTA points at the internal /signup path instead
-// of the bare production domain — see docs/gtm/README.md for the contract.
-//
-// Server Component — no client code except the reused AttributionCapture.
+// /christian-athlete-apps — comparison page (FV-411, refreshed FV-504).
+// Names the apps that actually win today's SERP. Honest store status.
+// Server Component.
 
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -18,28 +11,33 @@ import { LandingIconDefs } from "@/components/landing/icons";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
 import { ArticleFigure } from "@/components/marketing/ArticleFigure";
 import {
+  CHRISTIAN_ATHLETE_APPS_DATE_MODIFIED,
+  CHRISTIAN_ATHLETE_APPS_DATE_PUBLISHED,
+  CHRISTIAN_ATHLETE_APPS_EXCERPT,
+  CHRISTIAN_ATHLETE_APPS_HREF,
+  CHRISTIAN_ATHLETE_APPS_TITLE,
   PREGAME_RITUAL_HREF,
   PREGAME_RITUAL_TITLE,
 } from "@/lib/gtm/page-titles";
 
 const siteUrl = "https://www.fromvictoryapp.com";
 
-const PAGE_TITLE = "Three Apps for the Christian Athlete: What Each One Gets Right";
-
-// Verbatim single sentence from the approved lead paragraph.
-const PAGE_DESCRIPTION =
-  "A Christian athlete choosing an app is really weighing three kinds of tool: a free Scripture devotional, a sport-specific faith app, and a faith-based app that guides you through pregame visualization.";
+const PAGE_TITLE = CHRISTIAN_ATHLETE_APPS_TITLE;
+const PAGE_DESCRIPTION = CHRISTIAN_ATHLETE_APPS_EXCERPT;
+const PAGE_IMAGE = `${siteUrl}/images/blog/app-today-home.png`;
 
 export const metadata: Metadata = {
-  alternates: { canonical: "/christian-athlete-apps" },
+  alternates: { canonical: CHRISTIAN_ATHLETE_APPS_HREF },
   title: PAGE_TITLE,
   description: PAGE_DESCRIPTION,
   openGraph: {
     type: "article",
-    url: `${siteUrl}/christian-athlete-apps`,
+    url: `${siteUrl}${CHRISTIAN_ATHLETE_APPS_HREF}`,
     siteName: "From Victory",
     title: `${PAGE_TITLE} · From Victory`,
     description: PAGE_DESCRIPTION,
+    publishedTime: CHRISTIAN_ATHLETE_APPS_DATE_PUBLISHED,
+    modifiedTime: CHRISTIAN_ATHLETE_APPS_DATE_MODIFIED,
     images: [
       {
         url: `${siteUrl}/from-victory-social-preview.jpg`,
@@ -56,11 +54,6 @@ export const metadata: Metadata = {
   },
 };
 
-// ---------------------------------------------------------------------------
-// FAQPage JSON-LD — reproduced verbatim from the source HTML's inline
-// <script type="application/ld+json"> block.
-// ---------------------------------------------------------------------------
-
 const FAQ_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -70,7 +63,7 @@ const FAQ_JSON_LD = {
       name: "What is the best app for Christian athletes?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "It depends on what you need. A free devotional like FCA Challenge or YouVersion builds a daily Scripture habit. Play With Faith adds a sport-specific faith feed. From Victory guides you through pregame visualization, audio-led and specific to your sport and position, anchored in Scripture and who God says you are.",
+        text: "Parents asking that today usually hear Faithful Athlete, Playbook Devotional, or Core IV. Those three are listed on the App Store. From Victory is mental-toughness training with Scripture underneath, for athletes 13 and up, as a web app you can install. Not a daily devotion. Not therapy. Not on the App Store or Play yet.",
       },
     },
     {
@@ -78,33 +71,55 @@ const FAQ_JSON_LD = {
       name: "How is From Victory different from a devotional app?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "A devotional gives you a verse to read. From Victory guides you through a pregame visualization you run with your eyes closed, built for the on-field moment a reading plan cannot reach.",
+        text: "A devotion gives you a verse to read. From Victory is a training session you run: daily mental skill plus Scripture underneath, and a guided pregame visualization for your sport and position.",
       },
     },
     {
       "@type": "Question",
-      name: "Does From Victory help athletes actually visualize before a game?",
+      name: "Is From Victory on the App Store or Google Play?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes. Most tools tell you to visualize and leave you to do it alone. From Victory guides the visualization out loud, specific to your sport and position, and keeps returning you to who you are in Christ so you step in already secure, not trying to earn it.",
+        text: "Not yet. From Victory is a web app you can install to the home screen. Internal TestFlight and Play Closed Alpha only. Do not look for a public store listing.",
       },
     },
   ],
 };
 
+const ARTICLE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: PAGE_TITLE,
+  description: PAGE_DESCRIPTION,
+  url: `${siteUrl}${CHRISTIAN_ATHLETE_APPS_HREF}`,
+  datePublished: CHRISTIAN_ATHLETE_APPS_DATE_PUBLISHED,
+  dateModified: CHRISTIAN_ATHLETE_APPS_DATE_MODIFIED,
+  author: {
+    "@type": "Organization",
+    name: "From Victory",
+    url: siteUrl,
+  },
+  image: [PAGE_IMAGE],
+  publisher: {
+    "@type": "Organization",
+    name: "From Victory",
+    url: siteUrl,
+  },
+};
+
 function ChristianAthleteAppsJsonLd() {
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD) }}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ARTICLE_JSON_LD) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD) }}
+      />
+    </>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Shared typography — matches components/resources/ArticleBody.tsx classes
-// so this hand-authored longform page reads identically to /resources.
-// ---------------------------------------------------------------------------
 
 const H2 =
   "font-heading font-semibold text-cream text-[22px] sm:text-[24px] leading-snug tracking-[-0.01em] pt-4";
@@ -123,80 +138,110 @@ export default function ChristianAthleteAppsPage() {
       <ScrollNav />
 
       <main>
-        {/* ── Header ───────────────────────────────────────────────────── */}
         <section className="relative pt-[168px] md:pt-[140px] pb-12 overflow-hidden isolate">
           <div className="absolute inset-0 -z-10 pointer-events-none">
             <div className="absolute inset-0 fv-hero-bg" />
           </div>
           <div className="mx-auto max-w-[800px] px-5 sm:px-8">
             <Reveal>
+              <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 mb-7">
+                <time dateTime={CHRISTIAN_ATHLETE_APPS_DATE_MODIFIED}>
+                  Updated August 26, 2026
+                </time>
+              </p>
               <h1 className="fv-h-article mb-0 max-w-[30ch]">{PAGE_TITLE}</h1>
             </Reveal>
           </div>
         </section>
 
-        {/* ── Body ─────────────────────────────────────────────────────── */}
         <section className="py-12 sm:py-16 border-t border-hairline">
           <div className="mx-auto max-w-[800px] px-5 sm:px-8">
             <div className="max-w-[68ch] space-y-6">
               <p className={P}>
                 <strong>
-                  A Christian athlete choosing an app is really weighing
-                  three kinds of tool: a free Scripture devotional, a
-                  sport-specific faith app, and a faith-based app that
-                  guides you through pregame visualization. Each gets
-                  something right. Here is what each does well, and where
-                  From Victory fits.
+                  Parents asking for the best Christian athlete app today
+                  usually hear Faithful Athlete, Playbook Devotional, or Core
+                  IV. Those three are listed on the App Store. From Victory is
+                  different: mental-toughness training with Scripture
+                  underneath, for athletes 13 and up, as a web app you can
+                  install. Not a daily devotion. Not therapy. Not on the App
+                  Store or Play yet.
                 </strong>
               </p>
 
-              <h2 className={H2}>
-                The free devotional: FCA Challenge and YouVersion athlete
-                plans
-              </h2>
+              <h2 className={H2}>The three names that win the search today</h2>
               <p className={P}>
-                What they get right: they are free, trusted, and built on a
-                daily Scripture habit. The Fellowship of Christian Athletes
-                and YouVersion have discipled athletes for years, and their
-                reading plans are a solid foundation. If you want a verse in
-                front of you every morning, start here.
-              </p>
-              <p className={P}>
-                Where they stop: they are read-and-reflect. They give you
-                the verse and leave the rest to you. When the whistle blows,
-                a reading plan cannot reach the field.
+                If a parent types &quot;best Christian athlete app&quot; into
+                Google or an AI chat, those three names come back. They earned
+                that. They shipped store listings. We have not. Here is what
+                each one actually is, said plainly, and where From Victory
+                sits.
               </p>
 
-              <h2 className={H2}>
-                The sport-specific faith app: Play With Faith
-              </h2>
+              <h2 className={H2}>Faithful Athlete</h2>
               <p className={P}>
-                What it gets right: it is built for athletes, not the
-                masses. A daily verse, a short sport-specific breakdown, a
-                pregame mantra. It closes some of the gap between faith and
-                sport that the reading plans leave open.
+                Faithful Athlete is listed on the App Store. It is built around
+                daily mental check-ins, biblical affirmations, a prayer
+                journal, and verse saving. Sport personalization is broad. It
+                is a store app a family can download tonight.
               </p>
               <p className={P}>
-                Where it differs: it leads with mental-game reps and
-                gamified Scripture. That works for some athletes. What it
-                does not give you is a guided practice you actually run in
-                the last minute before you compete.
+                What it is not: a guided, position-specific pregame you run
+                with headphones on. If your athlete wants a check-in and a
+                verse in their pocket, this is a real option.
               </p>
 
-              <h2 className={H2}>From Victory: guided visualization for game day</h2>
+              <h2 className={H2}>Playbook Devotional</h2>
               <p className={P}>
-                Every coach tells athletes to visualize. Sports psychology
-                has said it for decades because it works. The problem has
-                always been the doing. Told to visualize, most athletes sit
-                in a quiet room and try to run the movie alone, and it falls
-                apart. From Victory guides it. Headphones on, eyes closed, a
-                voice walks you through the moment in about five minutes,
-                with prompts written for your sport and your position. A
-                goalie sees the first shot. A guard sees the first
-                possession.
+                Playbook Devotional is listed on the App Store. It is what it
+                says: 365 short devotionals for young athletes. A verse, a
+                reflection, a question. Built for a morning, a car ride, or
+                bedtime. Clean and easy to finish.
               </p>
-              {/* FV-416 — app screenshot (capture of the Today home
-                  screen). Layout only; no copy change. */}
+              <p className={P}>
+                If you want a daily reading habit tied to sport, start here.
+                A reading plan cannot reach the first shift. That is a
+                different job.
+              </p>
+
+              <h2 className={H2}>Core IV</h2>
+              <p className={P}>
+                Core IV Athlete is listed on the stores and sold as a
+                faith-and-performance wellness platform: assessments, content,
+                team and school dashboards. It is built for programs as much
+                as for one athlete. The NCCAA has named it a preferred vendor.
+              </p>
+              <p className={P}>
+                If a school or club wants a wellness dashboard, that is their
+                lane. From Victory is not that product. We do not assess
+                mental health. We do not sell a coach a view into an
+                athlete&apos;s private training.
+              </p>
+
+              <h2 className={H2}>The free-devotion category</h2>
+              <p className={P}>
+                FCA Challenge and YouVersion athlete plans are still the
+                free, trusted daily Scripture habit. Keep them. They
+                discipled athletes long before any of these apps shipped. They
+                stop at read-and-reflect. When the whistle blows, a reading
+                plan cannot run the moment with you.
+              </p>
+              <p className={P}>
+                Play With Faith sits nearer the sport-specific faith-feed
+                lane: a verse, a short breakdown, a pregame mantra. Useful for
+                some athletes. It is not a guided visualization you actually
+                run.
+              </p>
+
+              <h2 className={H2}>From Victory: training, not a devotion</h2>
+              <p className={P}>
+                From Victory is a daily mental-toughness session (one skill,
+                Scripture underneath) plus a ~5-minute guided pregame: breath,
+                identity in Christ, a visualization written for your sport and
+                position, a plan for the hard moment, prayer, send-off.
+                Hockey is first among seven live sports. Ages 13 and up. No
+                one under 13.
+              </p>
               <ArticleFigure
                 src="/images/blog/app-today-home.png"
                 alt="The From Victory home screen, showing the day's training and the pre-practice lock-in"
@@ -205,77 +250,75 @@ export default function ChristianAthleteAppsPage() {
                 variant="screen"
               />
               <p className={P}>
-                And the visualization is not self-reliant. You are not alone
-                in your own head trying to talk yourself into confidence.
-                The voice keeps returning you to who God says you are, so
-                the moment you step into is one where your worth is already
-                settled. That is what frees you to play hard. It runs on a
-                guided session you can call under pressure: breath, a
-                visualization built for your sport and position, and who
-                God says you are. No grind. No streaks. No shame. What it
-                refuses to say is part of the point. It does not turn faith
-                into a performance upgrade. It makes secure identity the
-                ground the whole thing stands on.
+                It is a web app. Install it to the home screen. It is not on
+                the App Store or Google Play yet. Internal TestFlight and Play
+                Closed Alpha only. Do not tell a parent they can download us
+                from a store tonight. That would be false.
+              </p>
+              <p className={P}>
+                We are not therapy. We are not a mental-health service. If an
+                athlete needs clinical care, that is a licensed professional,
+                a trusted adult, and 988. A training app sits beside that. It
+                does not replace it.
+              </p>
+              <p className={P}>
+                Identity is the ground, not a bonus track.{" "}
+                <strong>Your Identity Is Secure. Compete From Victory.</strong>{" "}
+                A win does not raise your standing with God. A loss does not
+                lower it.
               </p>
 
               <h2 className={H2}>Which one is for you</h2>
               <p className={P}>
-                Keep the free devotional; it is a good habit. If you want a
-                sport-specific faith feed, Play With Faith is worth a look.
-                If you have been told to visualize and never had a tool that
-                actually walks you through it, faith-anchored and specific
-                to your sport, that is what From Victory is built for. Play
-                hard, fearless, and free. From victory, not for victory.
+                Want a store download and a daily check-in? Faithful Athlete.
+                Want 365 short readings? Playbook Devotional. Want a program
+                wellness platform? Core IV. Want a free verse habit? FCA
+                Challenge or YouVersion. Want mental-toughness training with
+                Scripture underneath, and a pregame you can actually run?
+                That is From Victory. Play hard, fearless, and free.
               </p>
               <p className={P}>
                 <Link href="/signup" className={LINK_CLS}>
-                  Start your athlete&apos;s 14-day free trial
+                  Start a 14-day free trial
                 </Link>
-                . $5/mo or $49/yr after, cancel anytime.
+                . $5/mo or $49/yr after for the first athlete. $3/$29 add-on.
+                Cancel anytime.
               </p>
 
               <h2 className={H2}>Common questions</h2>
 
               <h3 className={H3}>What is the best app for Christian athletes?</h3>
               <p className={P}>
-                It depends on what you need. A free devotional like FCA
-                Challenge or YouVersion builds a daily Scripture habit. Play
-                With Faith adds a sport-specific faith feed. From Victory
-                guides you through pregame visualization, audio-led and
-                specific to your sport and position, anchored in Scripture
-                and who God says you are.
+                Parents asking that today usually hear Faithful Athlete,
+                Playbook Devotional, or Core IV. Those three are listed on
+                the App Store. From Victory is mental-toughness training with
+                Scripture underneath, for athletes 13 and up, as a web app
+                you can install. Not a daily devotion. Not therapy. Not on
+                the App Store or Play yet.
               </p>
 
               <h3 className={H3}>
                 How is From Victory different from a devotional app?
               </h3>
               <p className={P}>
-                A devotional gives you a verse to read. From Victory guides
-                you through a pregame visualization you run with your eyes
-                closed, built for the on-field moment a reading plan cannot
-                reach.
+                A devotion gives you a verse to read. From Victory is a
+                training session you run: daily mental skill plus Scripture
+                underneath, and a guided pregame visualization for your sport
+                and position.
               </p>
 
               <h3 className={H3}>
-                Does From Victory help athletes actually visualize before a
-                game?
+                Is From Victory on the App Store or Google Play?
               </h3>
               <p className={P}>
-                Yes. Most tools tell you to visualize and leave you to do it
-                alone. From Victory guides the visualization out loud,
-                specific to your sport and position, and keeps returning you
-                to who you are in Christ so you step in already secure, not
-                trying to earn it.
+                Not yet. From Victory is a web app you can install to the
+                home screen. Internal TestFlight and Play Closed Alpha only.
+                Do not look for a public store listing.
               </p>
             </div>
           </div>
         </section>
 
-        {/* ── Related reading (FV-413) ────────────────────────────────────
-            Cross-link only, added after the verbatim article copy above.
-            Link text is a verbatim reuse of the linked page's own title —
-            the "Related reading" label is a plain functional label, not
-            authored marketing copy. */}
         <section className="pb-16 sm:pb-20">
           <div className="mx-auto max-w-[800px] px-5 sm:px-8">
             <div className="max-w-[68ch] pt-8 border-t border-hairline">
@@ -286,6 +329,11 @@ export default function ChristianAthleteAppsPage() {
                 <li>
                   <Link href={PREGAME_RITUAL_HREF} className={LINK_CLS}>
                     {PREGAME_RITUAL_TITLE}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/hockey" className={LINK_CLS}>
+                    Hockey Mental Training for Athletes
                   </Link>
                 </li>
               </ul>
