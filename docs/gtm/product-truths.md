@@ -16,7 +16,7 @@ From Victory is a web app / installable PWA. It is not listed on the App Store o
 
 The public comparison page (`/christian-athlete-apps`) now names the three apps that currently win "best Christian athlete app" answers: Faithful Athlete, Playbook Devotional, and Core IV (all store-listed). FCA Challenge / YouVersion remain the free-devotion category; Play With Faith may still be mentioned as a sport-specific faith feed. From Victory differentiates as visualization you actually run, then compete from victory — 13+, not therapy, not a daily devotion, not a generic mindfulness app.
 
-Homepage title/meta no longer leads with "Christian Athlete Mindset App." Lead is visualization + Compete From Victory ("See the First Moment"), sport-generic across the seven live sports. Identity in Christ is the second beat, not the H1. Hockey specificity lives on the `/hockey` landing page, not the homepage.
+Homepage title/meta no longer leads with "Christian Athlete Mindset App." Lead is "Visualize and Compete From Victory" (homepage H1 and sitewide title), sport-generic across the seven live sports. Identity in Christ is the second beat, not the H1. Hockey specificity lives on the `/hockey` landing page, not the homepage.
 
 A hockey-specific marketing landing is live at `/hockey`. Spoken moments on that page are limited to lines the hockey audio actually runs (first shift; goalie first save). Seven sports remain live in the product, each with shipped visualization. No other sport landing pages shipped in this pass. No visualization blog series.
 

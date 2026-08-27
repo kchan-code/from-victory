@@ -62,10 +62,10 @@ describe("homepage title/meta (FV-504 Partner bound)", () => {
 
   it("leads with visualization + compete from victory, not a mindset-app ad title", () => {
     expect(layout).not.toMatch(/Christian Athlete Mindset App/);
-    expect(layout).toMatch(/See the First Moment\. Compete From Victory/);
+    expect(layout).toMatch(/Visualize and Compete From Victory/);
     expect(layout).toMatch(/athletes 13\+/);
     expect(hero).not.toMatch(/Christian athlete mindset app/i);
-    expect(hero).toMatch(/See the first/);
+    expect(hero).toMatch(/Visualize and compete/);
     expect(hero).toMatch(/from victory/i);
   });
 

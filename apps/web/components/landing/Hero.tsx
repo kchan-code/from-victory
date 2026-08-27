@@ -25,9 +25,9 @@ export function Hero() {
             </div>
 
             <h1 className="fv-h-hero mb-[26px]">
-              See the first&nbsp;moment.
+              Visualize and compete
               <br />
-              Compete <em>from victory.</em>
+              <em>from victory.</em>
             </h1>
 
             <p className="max-w-[52ch] mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
