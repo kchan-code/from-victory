@@ -55,16 +55,8 @@ export function Hero() {
                 See how it works
               </a>
             </div>
-            <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/40 font-semibold mb-4">
+            <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/40 font-semibold mb-10">
               14 days free for first-time subscribers &mdash; then $5/mo or $49/yr &mdash; cancel anytime
-            </p>
-            <p className="m-0">
-              <Link
-                href="/hockey"
-                className="font-body text-[15px] text-gold underline underline-offset-2 hover:text-gold-bright transition-colors duration-fast"
-              >
-                Hockey families: see the first shift →
-              </Link>
             </p>
 
           </Reveal>

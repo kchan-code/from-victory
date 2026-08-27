@@ -16,6 +16,12 @@ From Victory is a product of From Victory LLC (New Jersey). The founder is a hoc
 
 - [Home](https://www.fromvictoryapp.com/): Visualize and Compete From Victory. Guided visualization for athletes 13+ across seven sports.
 - [Hockey](https://www.fromvictoryapp.com/hockey): Hockey-first landing. Forward, Defense, Goalie. First shift and first save — moments the audio actually runs.
+- [Basketball](https://www.fromvictoryapp.com/basketball): Basketball landing. Guard, Wing, Big. First possession — feet set, shoot it — moments the audio actually runs.
+- [Golf](https://www.fromvictoryapp.com/golf): Golf landing. Bomber, Ball-Striker, Scrambler. First tee, one committed swing — moments the audio actually runs.
+- [Football](https://www.fromvictoryapp.com/football): Football landing. QB, RB, WR, OL, DL, LB, DB. First snap — break the huddle — moments the audio actually runs.
+- [Baseball](https://www.fromvictoryapp.com/baseball): Baseball landing. Pitcher, Catcher, Infield, Outfield. First pitch — own the mound — moments the audio actually runs.
+- [Lacrosse](https://www.fromvictoryapp.com/lacrosse): Lacrosse landing (boys' field). Attack, Midfield, Defense, FOGO, Goalie. Win the clamp — moments the audio actually runs.
+- [Soccer](https://www.fromvictoryapp.com/soccer): Soccer landing. Forward, Midfielder, Defender, Goalkeeper. First touch — time the run — moments the audio actually runs.
 - [Pricing](https://www.fromvictoryapp.com/pricing): 14 days free, then $49/yr or $5/mo for your first athlete — $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.
 - [For Parents](https://www.fromvictoryapp.com/parents): You invest in your athlete's physical training. From Victory builds the mental and spiritual foundation underneath it — visualization they run, daily training, and a private practice for resilience. You see the rhythm; they own the growth.
 - [For Teams, Churches & Sports Ministries](https://www.fromvictoryapp.com/teams): From Victory gives teams, clubs, FCA chapters, chaplains, and church youth groups a simple way to provide Scripture-rooted athlete mindset training to families — without managing accounts, monitoring athletes, or holding private data.
