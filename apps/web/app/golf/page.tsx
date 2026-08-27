@@ -50,7 +50,7 @@ const whatYouTrain = [
   {
     icon: "flame" as const,
     title: "Daily training",
-    body: "One mental skill, then a picture of tomorrow's first moment. About five minutes. Built for a school night, not a chapel hour.",
+    body: "One mental skill, then a picture of tomorrow's first tee. About five minutes. Built for a school night, not a chapel hour.",
   },
   {
     icon: "zap" as const,
@@ -95,7 +95,7 @@ export default function GolfPage() {
             <Reveal>
               <div className="inline-flex items-center gap-3 mb-7">
                 <span className="fv-pulse-dot" />
-                <span className="fv-eyebrow">Basketball</span>
+                <span className="fv-eyebrow">Golf</span>
               </div>
               <h1 className="fv-h-hero mb-[26px] max-w-[18ch]">
                 You&apos;ve already stood on the first&nbsp;tee.
@@ -144,8 +144,9 @@ export default function GolfPage() {
                   See it before the first swing.
                 </h2>
                 <p className="fv-lede">
-                  You pick Bomber, Ball-Striker, or Scrambler. The audio
-                  walks the first tee of that game, then the hard one: the
+                  You pick Bomber, Ball-Striker, or Scrambler, then up to
+                  three plays from your game&apos;s library. The audio walks
+                  the first tee of your round, then the hard one: the
                   three-putt, the blow-up hole, the ball out of bounds. You
                   have already been there once.
                 </p>
@@ -223,12 +224,13 @@ export default function GolfPage() {
                 </h2>
                 <p className="fv-lede mb-6 max-w-[52ch]">
                   A 13-year-old teeing off in front of a starter, a
-                  16-year-old grinding a junior-tour Monday, a 20-year-old
-                  qualifying for a college spot: the first moment is still a
-                  real shot. Identity in Christ is the ground under that
-                  picture, not the headline of every paragraph. A missed cut,
-                  a blow-up hole, or a lost qualifier does not reopen it. You
-                  play free because the standing is already settled.
+                  16-year-old grinding the second round of an AJGA event, a
+                  20-year-old playing to make the travel five: the first
+                  moment is still a real shot. Identity in Christ is the
+                  ground under that picture, not the headline of every
+                  paragraph. A missed cut, a blow-up hole, or a qualifier you
+                  didn&apos;t get through does not reopen it. You play free
+                  because the standing is already settled.
                 </p>
                 <p className="fv-lede mb-8 max-w-[52ch]">
                   This is visualization training, not a locker-room chapel
@@ -280,7 +282,7 @@ export default function GolfPage() {
                       href="/resources/when-your-athlete-gets-cut-a-parents-guide"
                       className="inline-flex items-center justify-center gap-2.5 bg-transparent text-cream border border-hairline-strong font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-onyx active:scale-[0.97]"
                     >
-                      When your athlete gets cut
+                      When your athlete gets cut from a team
                     </Link>
                   </div>
                 </div>

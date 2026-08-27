@@ -60,7 +60,7 @@ const whatYouTrain = [
   {
     icon: "target" as const,
     title: "Pre-practice lock-in",
-    body: "See one rep before you step on. One cue. Full effort. Tuesday practice uses the same picture as Friday night.",
+    body: "See one rep before you step on. One cue. Full effort. Wednesday practice uses the same picture as Friday night.",
   },
 ];
 
@@ -71,7 +71,7 @@ const positions = [
   },
   {
     title: "Wing",
-    body: "Spot up. The ball swings to you — feet set, shoot it. Sprint the lane, take the next open shot, no hesitation. Lock up your man and crash the glass. The clean look that rims out does not write the next one.",
+    body: "Spot up. The ball swings to you — feet set, shoot it. Sprint the lane, take the next open shot, no hesitation. Lock up your man and crash the glass. The clean look that comes up front rim does not write the next one.",
   },
   {
     title: "Big",
@@ -101,11 +101,11 @@ export default function BasketballPage() {
                 You&apos;ve already seen the first possession.
               </h1>
               <p className="max-w-[54ch] mb-6 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
-                The ball swings to you. Feet set, shoot it. A guard has
-                already pushed the pace, eyes up, strong with the ball. A big
-                has won the tip and owned the paint. The hard moment is named
-                before it happens. Identity in Christ is the ground under
-                that picture. Compete From Victory.
+                A wing has already caught the swing — feet set, shoot it. A
+                guard has pushed the pace, eyes up, strong with the ball. A
+                big has won the tip and owned the paint. The hard moment is
+                named before it happens. Identity in Christ is the ground
+                under that picture. Compete From Victory.
               </p>
               <p className="max-w-[54ch] mb-9 text-cream/70 text-[clamp(15px,1.3vw,17px)] leading-[1.55]">
                 Built by a hockey dad, for athletes 13 and up. The same
@@ -143,10 +143,12 @@ export default function BasketballPage() {
                   See it before the tip goes up.
                 </h2>
                 <p className="fv-lede">
-                  You pick Guard, Wing, or Big. The audio walks the first
+                  You pick Guard, Wing, or Big, then up to three plays from
+                  your position&apos;s library. The audio walks the first
                   possession of that job, then the hard one: the open shot
-                  that rims out, the pass that gets picked, the two quick
-                  fouls. You have already been there once.
+                  that rims out, the pass that gets picked, the two free
+                  throws with the gym silent. You have already been there
+                  once.
                 </p>
               </div>
             </Reveal>

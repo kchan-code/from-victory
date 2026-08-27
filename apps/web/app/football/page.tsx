@@ -55,12 +55,12 @@ const whatYouTrain = [
   {
     icon: "zap" as const,
     title: "Pregame under the lights",
-    body: "Five minutes, headphones on. The pads settle square on your shoulders. You break the huddle, get in your stance, eyes on your keys. The hard moment is named. The body knows the cue.",
+    body: "Five minutes, headphones on. The pads settle square on your shoulders. You break the huddle, get in your stance, eyes up. The hard moment is named. The body knows the cue.",
   },
   {
     icon: "target" as const,
     title: "Pre-practice lock-in",
-    body: "Start with what you can control: your stance, your feet, your eyes, and your effort. First individual period one rep at a time — feet moving, eyes up, assignment finished. First rep. Go.",
+    body: "Start with what you can control: your stance, your feet, your eyes, and your effort. Get through the first individual period one rep at a time — feet moving, eyes up, assignment finished. First rep. Go.",
   },
 ];
 
@@ -111,7 +111,7 @@ export default function FootballPage() {
             <Reveal>
               <div className="inline-flex items-center gap-3 mb-7">
                 <span className="fv-pulse-dot" />
-                <span className="fv-eyebrow">Basketball</span>
+                <span className="fv-eyebrow">Football</span>
               </div>
               <h1 className="fv-h-hero mb-[26px] max-w-[18ch]">
                 You&apos;ve already seen the first&nbsp;snap.
@@ -160,10 +160,10 @@ export default function FootballPage() {
                   See it before the snap.
                 </h2>
                 <p className="fv-lede">
-                  You pick your position, QB to DB. The audio walks the
-                  first snap of that job, then the hard one: the pick, the
-                  ball on the ground, the rep you lose. You have already been
-                  there once.
+                  You pick your position, QB to DB, then up to three plays
+                  from its library. The audio walks the first snap of that
+                  job, then the hard one: the pick, the ball on the ground,
+                  the rep you lose. You have already been there once.
                 </p>
               </div>
             </Reveal>
@@ -232,7 +232,7 @@ export default function FootballPage() {
                   The picture stands on settled ground.
                 </h2>
                 <p className="fv-lede mb-6 max-w-[52ch]">
-                  A 13-year-old in a first varsity camp, a 16-year-old
+                  A 13-year-old in a first year in pads, a 16-year-old
                   waiting on film day, a 20-year-old fighting for a
                   depth-chart spot: the first moment is still a real snap.
                   Identity in Christ is the ground under that picture, not

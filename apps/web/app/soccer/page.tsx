@@ -75,7 +75,7 @@ const positions = [
   },
   {
     title: "Defender",
-    body: "Set your line, check your shoulder, pick up the striker. Show the attacker the touchline and match the next touch. The runner who gains half a yard already has a recovery path back inside.",
+    body: "Set your line, check your shoulder, pick up the striker. Show the attacker the touchline and match the next touch. The runner who gains half a yard already has a recovery path back inside. And when the game asks you forward — overlap and deliver.",
   },
   {
     title: "Goalkeeper",
@@ -99,7 +99,7 @@ export default function SoccerPage() {
             <Reveal>
               <div className="inline-flex items-center gap-3 mb-7">
                 <span className="fv-pulse-dot" />
-                <span className="fv-eyebrow">Basketball</span>
+                <span className="fv-eyebrow">Soccer</span>
               </div>
               <h1 className="fv-h-hero mb-[26px] max-w-[18ch]">
                 You&apos;ve already seen the first&nbsp;touch.
@@ -148,7 +148,8 @@ export default function SoccerPage() {
                   See it before kickoff.
                 </h2>
                 <p className="fv-lede">
-                  You pick Forward, Midfielder, Defender, or Goalkeeper.
+                  You pick Forward, Midfielder, Defender, or Goalkeeper,
+                  then up to three plays from your position&apos;s library.
                   The audio walks the first touch of that job, then the hard
                   one: the giveaway, the missed chance, the goal that&apos;s
                   on you. You have already been there once.
@@ -188,7 +189,7 @@ export default function SoccerPage() {
             </Reveal>
             <Reveal>
               <h2 className="fv-h-section mb-14 max-w-[22ch]">
-                See the touch before it happens.
+                See the first ball before it comes.
               </h2>
             </Reveal>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">

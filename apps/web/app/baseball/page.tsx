@@ -67,7 +67,7 @@ const whatYouTrain = [
 const positions = [
   {
     title: "Pitcher",
-    body: "Step on the rubber, get your sign, come set. Get ahead, attack the zone, work downhill. Three-ball count, best hitter digging in? You don't try to be perfect \u2014 trust your stuff, hit your spot, get the soft ground ball.",
+    body: "Step on the rubber, get your sign, come set. Get ahead, attack the zone, work downhill. Runner on, three-ball count, best hitter digging in? You don't try to be perfect \u2014 trust your stuff, hit your spot, get the soft ground ball.",
   },
   {
     title: "Catcher",
@@ -99,7 +99,7 @@ export default function BaseballPage() {
             <Reveal>
               <div className="inline-flex items-center gap-3 mb-7">
                 <span className="fv-pulse-dot" />
-                <span className="fv-eyebrow">Basketball</span>
+                <span className="fv-eyebrow">Baseball</span>
               </div>
               <h1 className="fv-h-hero mb-[26px] max-w-[18ch]">
                 You&apos;ve already seen the first&nbsp;pitch.
@@ -148,9 +148,10 @@ export default function BaseballPage() {
                   See it before the first pitch.
                 </h2>
                 <p className="fv-lede">
-                  You pick Pitcher, Catcher, Infield, or Outfield. The
-                  audio walks the first pitch of that job, then the hard one:
-                  the strikeout, the error, the big hit you gave up. You have
+                  You pick Pitcher, Catcher, Infield, or Outfield, then up
+                  to three plays from your position&apos;s library. The audio
+                  walks the first pitch of that job, then the hard one: the
+                  strikeout, the slump, the big hit you gave up. You have
                   already been there once.
                 </p>
               </div>
@@ -221,7 +222,7 @@ export default function BaseballPage() {
                 </h2>
                 <p className="fv-lede mb-6 max-w-[52ch]">
                   A 13-year-old at a first travel-ball tryout, a 16-year-old
-                  in a showcase summer, a 20-year-old fighting for innings in
+                  in a showcase summer, a 20-year-old fighting for at-bats in
                   college: the first moment is still a real pitch. Identity
                   in Christ is the ground under that picture, not the
                   headline of every paragraph. A strikeout, an error, or a
