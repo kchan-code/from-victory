@@ -41,7 +41,7 @@ export function ScrollNav() {
               alt="From Victory"
               width={100}
               height={32}
-              className="block h-10 md:h-16 w-auto translate-y-[3px] md:translate-y-[5px]"
+              className="block h-11 md:h-[72px] w-auto translate-y-[3px] md:translate-y-[2px]"
               priority
             />
           </a>
