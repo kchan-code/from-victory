@@ -63,7 +63,7 @@ const FAQ_JSON_LD = {
       name: "What is the best app for Christian athletes?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Parents asking that today usually hear Faithful Athlete, Playbook Devotional, or Core IV. Those three are listed on the App Store. From Victory is mental-toughness training with Scripture underneath, for athletes 13 and up, as a web app you can install. Not a daily devotion. Not therapy. Not on the App Store or Play yet.",
+        text: "Parents asking that today usually hear Faithful Athlete, Playbook Devotional, or Core IV. Those three are listed on the App Store. From Victory is guided visualization you actually run — then compete from victory — for athletes 13 and up, as a web app you can install. Not a daily devotion. Not therapy. Not on the App Store or Play yet.",
       },
     },
     {
@@ -233,14 +233,22 @@ export default function ChristianAthleteAppsPage() {
                 run.
               </p>
 
-              <h2 className={H2}>From Victory: training, not a devotion</h2>
+              <h2 className={H2}>From Victory: see it, then compete from victory</h2>
               <p className={P}>
-                From Victory is a daily mental-toughness session (one skill,
-                Scripture underneath) plus a ~5-minute guided pregame: breath,
-                identity in Christ, a visualization written for your sport and
-                position, a plan for the hard moment, prayer, send-off.
-                Hockey is first among seven live sports. Ages 13 and up. No
-                one under 13.
+                Everyone tells athletes to visualize. Almost no tool actually
+                helps you do it. From Victory runs the first moment with you:
+                a hockey goalie tracks the first shot, a guard sees the first
+                possession, a golfer stands over the first tee. Then daily
+                training, pre-practice lock-in, and the ride home. Hockey
+                first among seven live sports. Ages 13 and up. No one under
+                13.
+              </p>
+              <p className={P}>
+                Identity in Christ is the ground under that picture, not a
+                chapel headline.{" "}
+                <strong>Your Identity Is Secure. Compete From Victory.</strong>{" "}
+                A win does not raise your standing with God. A loss does not
+                lower it.
               </p>
               <ArticleFigure
                 src="/images/blog/app-today-home.png"
@@ -262,10 +270,9 @@ export default function ChristianAthleteAppsPage() {
                 does not replace it.
               </p>
               <p className={P}>
-                Identity is the ground, not a bonus track.{" "}
-                <strong>Your Identity Is Secure. Compete From Victory.</strong>{" "}
-                A win does not raise your standing with God. A loss does not
-                lower it.
+                The comparison is visualization you actually run versus a
+                devotion you read. Faith-grounded training is the second
+                beat, so a parent who came for that still sees it.
               </p>
 
               <h2 className={H2}>Which one is for you</h2>
@@ -273,9 +280,9 @@ export default function ChristianAthleteAppsPage() {
                 Want a store download and a daily check-in? Faithful Athlete.
                 Want 365 short readings? Playbook Devotional. Want a program
                 wellness platform? Core IV. Want a free verse habit? FCA
-                Challenge or YouVersion. Want mental-toughness training with
-                Scripture underneath, and a pregame you can actually run?
-                That is From Victory. Play hard, fearless, and free.
+                Challenge or YouVersion. Want visualization you actually run,
+                then compete from victory? That is From Victory. Play hard,
+                fearless, and free.
               </p>
               <p className={P}>
                 <Link href="/signup" className={LINK_CLS}>
@@ -291,10 +298,10 @@ export default function ChristianAthleteAppsPage() {
               <p className={P}>
                 Parents asking that today usually hear Faithful Athlete,
                 Playbook Devotional, or Core IV. Those three are listed on
-                the App Store. From Victory is mental-toughness training with
-                Scripture underneath, for athletes 13 and up, as a web app
-                you can install. Not a daily devotion. Not therapy. Not on
-                the App Store or Play yet.
+                the App Store. From Victory is guided visualization you
+                actually run — then compete from victory — for athletes 13
+                and up, as a web app you can install. Not a daily devotion.
+                Not therapy. Not on the App Store or Play yet.
               </p>
 
               <h3 className={H3}>
@@ -333,7 +340,7 @@ export default function ChristianAthleteAppsPage() {
                 </li>
                 <li>
                   <Link href="/hockey" className={LINK_CLS}>
-                    Hockey Mental Training for Athletes
+                    Hockey Visualization Training for Athletes
                   </Link>
                 </li>
               </ul>

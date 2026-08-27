@@ -15,9 +15,9 @@ import { AttributionCapture } from "@/components/marketing/AttributionCapture";
 
 const siteUrl = "https://www.fromvictoryapp.com";
 
-const PAGE_TITLE = "Hockey Mental Training for Athletes";
+const PAGE_TITLE = "Hockey Visualization Training for Athletes";
 const PAGE_DESCRIPTION =
-  "Mental-toughness training for hockey players 13+. Built by a hockey dad. Identity in Christ, not the scoreboard. Daily session plus guided pregame.";
+  "See the first shift before the puck drops. Goalie tracks the first shot. Hard moment named. Ages 13+. Compete From Victory.";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/hockey" },
@@ -49,32 +49,32 @@ const whatYouTrain = [
   {
     icon: "flame" as const,
     title: "Daily training",
-    body: "A short session: one mental skill plus a Scripture foundation. About five minutes. Built for a school-night, not a chapel hour.",
+    body: "One mental skill, then a picture of tomorrow's first moment. About five minutes. Built for a school night, not a chapel hour.",
   },
   {
     icon: "zap" as const,
     title: "Pregame on the ice",
-    body: "A ~5-minute guided audio: breath, who you are in Christ, a visualization for your position, a plan for the hard shift, prayer, send-off.",
+    body: "Five minutes, headphones on. Your line is called. Three hard strides. Eyes up. Shoulder check. Or you have already made the first save. The hard moment is named. The body knows the cue.",
   },
   {
     icon: "target" as const,
     title: "Pre-practice lock-in",
-    body: "A short mental warm-up before you step on. One focus. Full effort. Same identity on a Tuesday skate as on a Friday night.",
+    body: "See the first drill before you step on. One cue. Full effort. Tuesday skate uses the same picture as Friday night.",
   },
 ];
 
 const positions = [
   {
     title: "Forward",
-    body: "Win the wall. Finish the 2-on-1. Backcheck and strip. See the first shift before the puck drops, then reset after a turnover instead of carrying it for ten more.",
+    body: "Your line is called. Three hard strides. Eyes up. Shoulder check. Simple, strong play. Recover. Next action. The turnover is named before it happens, so you reset instead of carrying it.",
   },
   {
     title: "Defense",
-    body: "Gap up. Walk the blue line. Get it out on a long D-zone shift. The session names the pinch that goes wrong and walks you back to the next play.",
+    body: "Walk the blue line. Gap up and stand him up. Get it out on a long D-zone shift. The pinch that goes wrong already has a way back.",
   },
   {
     title: "Goalie",
-    body: "Track the first shot. Control the rebound to the corner. Hold your ground post to post. A bad goal does not reopen who you are.",
+    body: "Set your depth, quiet your hands, and track the puck all the way in. Make the first save, calm and big. A bad goal does not write the next one.",
   },
 ];
 
@@ -97,17 +97,20 @@ export default function HockeyPage() {
                 <span className="fv-eyebrow">Hockey</span>
               </div>
               <h1 className="fv-h-hero mb-[26px] max-w-[18ch]">
-                Hockey mental training, built by a hockey dad.
+                You&apos;ve already seen the first shift.
               </h1>
               <p className="max-w-[54ch] mb-6 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
-                From Victory is mental-toughness training for athletes 13 and
-                up. Hockey is first. Identity in Christ, not the last shift,
-                the depth chart, or the scoreboard. This is training you run,
-                not a devotion you read.
+                Your line is called. Three hard strides. Eyes up. Shoulder
+                check. A goalie has already set their depth, tracked the
+                puck, made the first save. The hard moment is named before it
+                happens. Identity in Christ is the ground under that picture.
+                Compete From Victory.
               </p>
               <p className="max-w-[54ch] mb-9 text-cream/70 text-[clamp(15px,1.3vw,17px)] leading-[1.55]">
-                Built hockey-first. Now live for seven sports: hockey,
-                basketball, golf, football, baseball, lacrosse, and soccer.
+                Built by a hockey dad, hockey first, for athletes 13 and up.
+                The same visualization now runs basketball (first
+                possession), golf (first tee), football (first snap),
+                baseball (first pitch), lacrosse and soccer (first touch).
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link
@@ -136,13 +139,13 @@ export default function HockeyPage() {
             <Reveal>
               <div className="grid gap-x-16 gap-y-10 items-end mb-14 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
                 <h2 className="fv-h-section">
-                  Same five minutes. Locker room or driveway.
+                  See it before the puck drops.
                 </h2>
                 <p className="fv-lede">
                   You pick Forward, Defense, or Goalie. The audio walks the
                   first moment of that job, then the hard one: the goal that
                   goes in, the turnover at your blue line, the shift you
-                  cannot get off.
+                  cannot get off. You have already been there once.
                 </p>
               </div>
             </Reveal>
@@ -212,21 +215,23 @@ export default function HockeyPage() {
                 <div className="mb-8">
                   <FlameMark size={48} />
                 </div>
-                <SectionMeta num="03" label="The order" />
+                <SectionMeta num="03" label="Under the picture" />
                 <h2 className="fv-h-section mb-6 max-w-[22ch]">
-                  Identity first. Then the next shift.
+                  The picture stands on settled ground.
                 </h2>
                 <p className="fv-lede mb-6 max-w-[52ch]">
                   A 13-year-old on a U15 bench, a 16-year-old watching the
-                  depth chart, a 20-year-old in junior or college: the
-                  pressure changes. The ground does not. You are loved before
-                  you lace up. A cut, a healthy scratch, or a loss does not
-                  reopen that.
+                  depth chart, a 20-year-old in junior or college: the first
+                  moment is still a real play. Identity in Christ is the
+                  ground under that picture, not the headline of every
+                  paragraph. A cut, a healthy scratch, or a loss does not
+                  reopen it. You play free because the standing is already
+                  settled.
                 </p>
                 <p className="fv-lede mb-8 max-w-[52ch]">
-                  This is not a locker-room chapel talk and not a kids app.
-                  It is athletic mental-performance training with Scripture
-                  underneath. Not therapy. Not for anyone under 13.
+                  This is visualization training, not a locker-room chapel
+                  talk and not a kids app. Not therapy. Not for anyone under
+                  13.
                 </p>
                 <div className="fv-faith-callout border border-hairline rounded-[20px] px-8 sm:px-9 py-8 max-w-[560px]">
                   <div className="font-mono text-[11px] tracking-[0.18em] uppercase text-gold font-semibold mb-3.5">
@@ -252,8 +257,8 @@ export default function HockeyPage() {
               <div className="grid gap-12 lg:gap-16 items-start grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
                 <div>
                   <h2 className="fv-h-section mb-6">
-                    You already sit in the rink. This trains what the ice
-                    cannot.
+                    You already sit in the rink. They see the first shift
+                    before they step on.
                   </h2>
                   <p className="fv-lede mb-8 max-w-[52ch]">
                     A parent buys and manages the account for athletes 13–17.

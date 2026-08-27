@@ -1,6 +1,6 @@
 const siteUrl = "https://www.fromvictoryapp.com";
 const siteDescription =
-  "Mental-toughness training for athletes 13+. Hockey-first among live sports. Identity in Christ, not performance.";
+  "See the first shift before you compete. Guided visualization for athletes 13+. Hockey first. Your identity is secure. Compete From Victory.";
 
 function offerPriceValidUntil(): string {
   return new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)

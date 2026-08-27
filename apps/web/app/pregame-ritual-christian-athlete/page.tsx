@@ -246,10 +246,12 @@ export default function PregameRitualPage() {
                 already secure, playing free instead of tight.
               </p>
               <p className={P}>
-                Everyone says visualize. The hard part has always been the
-                doing. Told to visualize, most athletes sit in a quiet room
-                and try to run the movie alone, and it falls apart. From
-                Victory runs it with you, out loud, so you actually do it.
+                Everyone tells athletes to visualize. Almost no tool
+                actually helps you do it. Told to visualize, most athletes
+                sit in a quiet room and try to run the movie alone, and it
+                falls apart. From Victory runs it with you, out loud, so you
+                actually do it. Identity in Christ is the ground under that
+                picture. Compete From Victory.
               </p>
 
               <h2 className={H2}>It names the hard moment before it comes</h2>

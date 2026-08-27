@@ -56,13 +56,13 @@ const fontVariables = [
 const siteUrl = "https://www.fromvictoryapp.com";
 const socialImage = `${siteUrl}/from-victory-social-preview.jpg`;
 const socialDescription =
-  "Mental-toughness training for athletes 13+. Hockey-first among live sports. Identity in Christ, not performance.";
-const socialTitle = "From Victory | Christian Athlete Mindset App";
+  "See the first shift before you compete. Guided visualization for athletes 13+. Hockey first. Your identity is secure. Compete From Victory.";
+const socialTitle = "From Victory | See the First Shift. Compete From Victory.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "From Victory | Christian Athlete Mindset App",
+    default: "From Victory | See the First Shift. Compete From Victory.",
     template: "%s · From Victory",
   },
   description: socialDescription,

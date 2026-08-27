@@ -38,7 +38,7 @@ export function Founder() {
                 href="/hockey"
                 className="font-body text-[15px] text-gold underline underline-offset-2 hover:text-gold-bright transition-colors duration-fast"
               >
-                Hockey families: how training works on the ice →
+                Hockey families: see the first shot before the puck drops →
               </Link>
             </p>
           </div>

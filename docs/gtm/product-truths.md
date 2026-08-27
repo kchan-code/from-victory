@@ -14,9 +14,11 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 From Victory is a web app / installable PWA. It is not listed on the App Store or Google Play. Internal TestFlight and Play Closed Alpha exist for native-shell QA. Do not tell a parent they can download From Victory from a public store tonight.
 
-The public comparison page (`/christian-athlete-apps`) now names the three apps that currently win "best Christian athlete app" answers: Faithful Athlete, Playbook Devotional, and Core IV (all store-listed). FCA Challenge / YouVersion remain the free-devotion category; Play With Faith may still be mentioned as a sport-specific faith feed. From Victory differentiates as mental-toughness training with Scripture underneath, 13+, not therapy, not a daily devotion.
+The public comparison page (`/christian-athlete-apps`) now names the three apps that currently win "best Christian athlete app" answers: Faithful Athlete, Playbook Devotional, and Core IV (all store-listed). FCA Challenge / YouVersion remain the free-devotion category; Play With Faith may still be mentioned as a sport-specific faith feed. From Victory differentiates as visualization you actually run (hockey first), then compete from victory — 13+, not therapy, not a daily devotion, not a generic mindfulness app.
 
-A hockey-first marketing landing is live at `/hockey`. Seven sports remain live in the product. No other sport landing pages shipped in this pass.
+Homepage title/meta no longer leads with "Christian Athlete Mindset App." Lead is visualization + Compete From Victory. Identity in Christ is the second beat, not the H1.
+
+A hockey-first marketing landing is live at `/hockey`. Spoken moments on that page are limited to lines the hockey audio actually runs (first shift; goalie first save). Seven sports remain live in the product, each with shipped visualization. No other sport landing pages shipped in this pass. No visualization blog series.
 
 Why it matters to a buyer: AI answers and parent search currently recommend the store apps. The site now states the category honestly and does not claim a store listing we do not have.
 

@@ -46,12 +46,44 @@ describe("sitemap (FV-504)", () => {
   });
 });
 
+describe("homepage title/meta (FV-504 Partner bound)", () => {
+  const layout = readFileSync(
+    resolve(__dirname, "../app/layout.tsx"),
+    "utf8",
+  );
+  const hero = readFileSync(
+    resolve(__dirname, "../components/landing/Hero.tsx"),
+    "utf8",
+  );
+  const hockey = readFileSync(
+    resolve(__dirname, "../app/hockey/page.tsx"),
+    "utf8",
+  );
+
+  it("leads with visualization + compete from victory, not a mindset-app ad title", () => {
+    expect(layout).not.toMatch(/Christian Athlete Mindset App/);
+    expect(layout).toMatch(/See the First Shift\. Compete From Victory/);
+    expect(layout).toMatch(/athletes 13\+/);
+    expect(hero).not.toMatch(/Christian athlete mindset app/i);
+    expect(hero).toMatch(/See the first/);
+    expect(hero).toMatch(/from victory/i);
+  });
+
+  it("does not invent first-shift gap and keeps identity off the H1", () => {
+    expect(hockey).not.toMatch(/first-shift gap/);
+    expect(hockey).toContain("Your line is called");
+    expect(hockey).toContain("Make the first save");
+    expect(hero).not.toMatch(/Your identity is&nbsp;secure/);
+  });
+});
+
 describe("comparison page copy pins (FV-504)", () => {
   it("names the three SERP apps and does not claim public stores", () => {
     expect(CHRISTIAN_ATHLETE_APPS_TITLE).toContain("Faithful Athlete");
     expect(CHRISTIAN_ATHLETE_APPS_TITLE).toContain("Playbook Devotional");
     expect(CHRISTIAN_ATHLETE_APPS_TITLE).toContain("Core IV");
     expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).toMatch(/Not in stores yet/);
+    expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).toMatch(/compete from victory/i);
   });
 });
 
