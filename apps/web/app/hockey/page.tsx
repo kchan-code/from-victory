@@ -230,8 +230,7 @@ export default function HockeyPage() {
                 </p>
                 <p className="fv-lede mb-8 max-w-[52ch]">
                   This is visualization training, not a locker-room chapel
-                  talk and not a kids app. Not therapy. Not for anyone under
-                  13.
+                  talk. Not therapy. Not for anyone under 13.
                 </p>
                 <div className="fv-faith-callout border border-hairline rounded-[20px] px-8 sm:px-9 py-8 max-w-[560px]">
                   <div className="font-mono text-[11px] tracking-[0.18em] uppercase text-gold font-semibold mb-3.5">

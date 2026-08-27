@@ -74,6 +74,7 @@ describe("homepage title/meta (FV-504 Partner bound)", () => {
     expect(hockey).toContain("Your line is called");
     expect(hockey).toContain("Make the first save");
     expect(hero).not.toMatch(/Your identity is&nbsp;secure/);
+    expect(hockey).not.toMatch(/\bkids?\b/i);
   });
 });
 
