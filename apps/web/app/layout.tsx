@@ -90,8 +90,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      // SVG is the source of truth for browsers that support it.
-      { url: "/app-icon.svg", type: "image/svg+xml" },
+      // SVG is the source of truth for browsers that support it. This is
+      // the icon-only mark (open-book V + centered flame) per
+      // docs/brand.md §8, which names favicon explicitly — not
+      // app-icon.svg, which is the flame alone.
+      { url: "/logo-icon.svg", type: "image/svg+xml" },
       // PNG fallbacks (and what the manifest route exposes as the
       // installable home-screen icon).
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
