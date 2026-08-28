@@ -552,6 +552,41 @@ This checklist does **not** include:
 
 ---
 
+## 13. DPLA constraints — every future release (§3.3.1(B)/(C), §6.8)
+
+Contract-derived rules for the live-wrap shell (FV-499, from the 2026-08-21
+full-DPLA legal review). The architecture — WebView loads the hosted web app,
+native seam for offline audio (FV-336) — is permitted, but three DPLA rules
+bound it. These are standing constraints, not one-time checklist items.
+
+### §3.3.1(B) — the interpreted-code envelope
+
+Remote web content is allowed, but it must not “change the primary purpose of
+the Application” relative to what Apple reviewed.
+
+- Routine web deploys: fine, no store action.
+- A **significant new feature surface visible in the shell** should coincide
+  with a store resubmission, so the reviewed app matches the shipped app.
+- **Never** gate iOS-shell-only behavior server-side to dodge review.
+- **Never** adopt a native code-push / live-update service (Appflow-style).
+  Native and plugin changes always go through the store.
+
+### §3.3.1(C) — no out-of-store feature unlocks
+
+No mechanism that unlocks app features outside the App Store. Subscription
+gating via the parent’s **web account is account state, not an unlock
+mechanism** — that distinction is deliberate; do not “fix” it into an in-app
+unlock path, and do not cite this rule to remove the web-account gating.
+
+### §6.8 — compatibility treadmill
+
+The app must stay compatible with each new iOS release or Apple may remove it.
+
+- **Each September** (new iOS release): smoke-pass the shell on the new iOS —
+  standing calendar item, same discipline as the Apple program-fee renewal
+  (Attachment 9).
+- Rebuild and resubmit when Xcode / SDK minimums move.
+
 ## Quick reference — commands
 
 ```bash

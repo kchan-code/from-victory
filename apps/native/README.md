@@ -11,6 +11,8 @@ Android Play release (enrollment, keystore, signed AAB, Internal testing, Data
 safety): **[docs/android-play-release.md](../../docs/android-play-release.md)**.
 iOS / App Store (TestFlight-first; Apple enrollment not started):
 **[docs/ios-app-store-release.md](../../docs/ios-app-store-release.md)**.
+DPLA release constraints for the live-wrap shell (no code-push, resubmit on
+significant shell-visible features, September iOS smoke pass): that doc's §13.
 Application / bundle id is locked: `com.fromvictoryapp.app` (Play Console).
 
 ```bash
