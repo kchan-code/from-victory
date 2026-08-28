@@ -480,15 +480,22 @@ not an open browser. Do not claim “made for kids.”
 
 ### `PrivacyInfo.xcprivacy`
 
-Not in the repo today. Apple requires a privacy manifest for App Store
-submission (and it will be needed before External TestFlight / App Review).
-Internal TestFlight can proceed without it. Add the host-app manifest in a
-**follow-up PR** (privacy path: it will live under `apps/native/ios/**`).
-Declare required-reason APIs the Capacitor shell actually uses; do not copy a
-generic template that claims APIs we do not call. Do not add tracking domains.
+**In the repo** as of 2026-08-28: `apps/native/ios/App/App/PrivacyInfo.xcprivacy`,
+wired into the App target's Resources build phase in `project.pbxproj`. It
+declares exactly the FV-211 facts (first name, parent email, birthdate as
+OtherDataTypes, completion metadata as ProductInteraction — all linked, none
+tracking, App Functionality only), `NSPrivacyTracking` false, empty
+tracking-domains array, and an intentionally empty `NSPrivacyAccessedAPITypes`
+(the stock AppDelegate calls no required-reason APIs; Capacitor 7 pods carry
+their own manifests). Keep it consistent with the Connect nutrition labels —
+label accuracy is a DPLA §3.1(b) representation.
 
-- [ ] Follow-up PR: `PrivacyInfo.xcprivacy` before App Review
-- [ ] Do not add crash-reporting “to fill the manifest”
+- [ ] Before the next archive: confirm in Xcode that `PrivacyInfo.xcprivacy`
+      shows target membership App and appears in Build Phases → Copy Bundle
+      Resources
+- [ ] Re-verify the manifest on any release that changes data collection
+- [ ] Do not add crash-reporting “to fill the manifest”; do not add tracking
+      domains
 
 ### `Podfile.lock`
 
