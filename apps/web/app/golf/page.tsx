@@ -11,6 +11,7 @@ import { ScrollNav } from "@/components/landing/ScrollNav";
 import { Footer } from "@/components/landing/Footer";
 import { Reveal } from "@/components/landing/Reveal";
 import { SectionMeta } from "@/components/landing/SectionMeta";
+import { SportWebPageJsonLd } from "@/components/landing/StructuredData";
 import { SvgIcon } from "@/components/landing/SvgIcon";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
 
@@ -82,6 +83,11 @@ const positions = [
 export default function GolfPage() {
   return (
     <>
+      <SportWebPageJsonLd
+        name={PAGE_TITLE}
+        description={PAGE_DESCRIPTION}
+        path="/golf"
+      />
       <AttributionCapture />
       <LandingIconDefs />
       <ScrollNav />
