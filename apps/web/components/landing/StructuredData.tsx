@@ -97,3 +97,49 @@ export function StructuredData() {
     </>
   );
 }
+
+// WebPage JSON-LD for the seven sport marketing landings. Sport pages are
+// not articles (no dates, no headline) — Article stays on the editorial
+// comparison / ritual / /resources pages. Publisher reuses the existing
+// Organization name + url only; do not invent fields here.
+export function sportWebPageJsonLd({
+  name,
+  description,
+  path,
+}: {
+  name: string;
+  description: string;
+  path: `/${string}`;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name,
+    description,
+    url: `${siteUrl}${path}`,
+    publisher: {
+      "@type": "Organization",
+      name: ORGANIZATION_JSON_LD.name,
+      url: ORGANIZATION_JSON_LD.url,
+    },
+  };
+}
+
+export function SportWebPageJsonLd({
+  name,
+  description,
+  path,
+}: {
+  name: string;
+  description: string;
+  path: `/${string}`;
+}) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(sportWebPageJsonLd({ name, description, path })),
+      }}
+    />
+  );
+}

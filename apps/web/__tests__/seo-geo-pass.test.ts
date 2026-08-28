@@ -2,7 +2,11 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, it, expect } from "vitest";
 import sitemap from "@/app/sitemap";
-import { SOFTWARE_APPLICATION_JSON_LD } from "@/components/landing/StructuredData";
+import {
+  ORGANIZATION_JSON_LD,
+  SOFTWARE_APPLICATION_JSON_LD,
+  sportWebPageJsonLd,
+} from "@/components/landing/StructuredData";
 import {
   CHRISTIAN_ATHLETE_APPS_EXCERPT,
   CHRISTIAN_ATHLETE_APPS_TITLE,
@@ -78,6 +82,44 @@ describe("sport landing pages (FV-506)", () => {
       expect(page).toContain(`canonical: "/${sport}"`);
       expect(page).toContain("Compete From Victory");
       expect(page).toContain("Hebrews 12:1");
+    });
+  }
+});
+
+describe("sport WebPage JSON-LD", () => {
+  it("emits WebPage with existing Organization name + url only", () => {
+    const schema = sportWebPageJsonLd({
+      name: "Hockey Visualization Training for Athletes",
+      description:
+        "See the first shift before the puck drops. Goalie tracks the first shot. Hard moment named. Ages 13+. Compete From Victory.",
+      path: "/hockey",
+    });
+    expect(schema["@context"]).toBe("https://schema.org");
+    expect(schema["@type"]).toBe("WebPage");
+    expect(schema.url).toBe("https://www.fromvictoryapp.com/hockey");
+    expect(schema.publisher).toEqual({
+      "@type": "Organization",
+      name: ORGANIZATION_JSON_LD.name,
+      url: ORGANIZATION_JSON_LD.url,
+    });
+    expect(Object.keys(schema.publisher)).toEqual(["@type", "name", "url"]);
+    expect(schema).not.toHaveProperty("headline");
+    expect(schema).not.toHaveProperty("datePublished");
+    expect(schema).not.toHaveProperty("dateModified");
+    expect(JSON.stringify(schema)).not.toMatch(/Biblica|Crossway|grant/i);
+  });
+
+  for (const sport of SPORT_SLUGS) {
+    const page = readFileSync(
+      resolve(__dirname, `../app/${sport}/page.tsx`),
+      "utf8",
+    );
+    it(`/${sport} mounts SportWebPageJsonLd and does not add Article`, () => {
+      expect(page).toContain("SportWebPageJsonLd");
+      expect(page).toContain(`path="/${sport}"`);
+      expect(page).toContain("name={PAGE_TITLE}");
+      expect(page).toContain("description={PAGE_DESCRIPTION}");
+      expect(page).not.toMatch(/"@type": "Article"/);
     });
   }
 });
