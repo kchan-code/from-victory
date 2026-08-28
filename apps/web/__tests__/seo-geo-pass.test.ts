@@ -28,12 +28,24 @@ describe("SoftwareApplication JSON-LD (FV-504)", () => {
   });
 });
 
-describe("sitemap (FV-504)", () => {
-  it("includes /hockey and 17 public URLs", () => {
+const SPORT_SLUGS = [
+  "hockey",
+  "basketball",
+  "golf",
+  "football",
+  "baseball",
+  "lacrosse",
+  "soccer",
+] as const;
+
+describe("sitemap (FV-504 / FV-506)", () => {
+  it("includes all seven sport pages and 23 public URLs", () => {
     const entries = sitemap();
     const urls = entries.map((e) => e.url);
-    expect(urls).toContain("https://www.fromvictoryapp.com/hockey");
-    expect(urls).toHaveLength(17);
+    for (const sport of SPORT_SLUGS) {
+      expect(urls).toContain(`https://www.fromvictoryapp.com/${sport}`);
+    }
+    expect(urls).toHaveLength(23);
     expect(urls).not.toContain("https://www.fromvictoryapp.com/blog");
   });
 
@@ -44,6 +56,30 @@ describe("sitemap (FV-504)", () => {
     const home = entries.find((e) => e.url === "https://www.fromvictoryapp.com");
     expect(home?.lastModified).toEqual(new Date("2026-08-26"));
   });
+
+  it("stamps the six new sport pages with the 2026-08-27 lastmod", () => {
+    const entries = sitemap();
+    for (const sport of SPORT_SLUGS.filter((s) => s !== "hockey")) {
+      const entry = entries.find((e) => e.url.endsWith(`/${sport}`));
+      expect(entry?.lastModified).toEqual(new Date("2026-08-27"));
+    }
+  });
+});
+
+describe("sport landing pages (FV-506)", () => {
+  for (const sport of SPORT_SLUGS) {
+    const page = readFileSync(
+      resolve(__dirname, `../app/${sport}/page.tsx`),
+      "utf8",
+    );
+    it(`/${sport} holds the audience-language pin and the brand close`, () => {
+      expect(page).not.toMatch(/\bkids?\b/i);
+      expect(page).not.toMatch(/\bkiddos?\b|\byoungsters?\b/i);
+      expect(page).toContain(`canonical: "/${sport}"`);
+      expect(page).toContain("Compete From Victory");
+      expect(page).toContain("Hebrews 12:1");
+    });
+  }
 });
 
 describe("homepage title/meta (FV-504 Partner bound)", () => {

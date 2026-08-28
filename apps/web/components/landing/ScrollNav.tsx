@@ -3,11 +3,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { SUPPORTED_SPORTS, sportLabel } from "@/lib/sports";
 import { SvgIcon } from "./SvgIcon";
 
 export function ScrollNav() {
   const [scrolled, setScrolled] = useState(false);
+  const [sportsOpen, setSportsOpen] = useState(false);
+  const sportsRef = useRef<HTMLDivElement>(null);
+  const sportsButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -15,6 +19,25 @@ export function ScrollNav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (!sportsOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!sportsRef.current?.contains(e.target as Node)) setSportsOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSportsOpen(false);
+        sportsButtonRef.current?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [sportsOpen]);
 
   return (
     <div className="fv-nav-wrap" data-scrolled={scrolled}>
@@ -47,6 +70,43 @@ export function ScrollNav() {
           </a>
           <div className="flex-1 min-w-2 sm:min-w-12 md:min-w-16" aria-hidden />
           <div className="flex items-center gap-1.5 font-heading text-[14px]">
+            <div ref={sportsRef} className="relative hidden sm:block">
+              {/* Disclosure of plain links, not an ARIA menu widget — no
+                  arrow-key/typeahead contract is implied or implemented. */}
+              <button
+                ref={sportsButtonRef}
+                type="button"
+                aria-expanded={sportsOpen}
+                aria-controls="nav-sports-links"
+                onClick={() => setSportsOpen((open) => !open)}
+                className="inline-flex items-center gap-1.5 bg-transparent border-0 cursor-pointer font-heading text-[14px] text-cream/70 hover:text-cream hover:bg-charcoal px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
+              >
+                Sports
+                <span
+                  aria-hidden
+                  className={`text-[10px] transition-transform duration-fast ${sportsOpen ? "rotate-180" : ""}`}
+                >
+                  ▾
+                </span>
+              </button>
+              {sportsOpen && (
+                <div
+                  id="nav-sports-links"
+                  className="absolute left-0 top-[calc(100%+8px)] min-w-[180px] bg-onyx border border-hairline-strong rounded-[16px] py-2 shadow-[0_16px_40px_rgba(0,0,0,0.45)]"
+                >
+                  {SUPPORTED_SPORTS.map((sport) => (
+                    <Link
+                      key={sport}
+                      href={`/${sport}`}
+                      onClick={() => setSportsOpen(false)}
+                      className="block text-cream/80 hover:text-cream hover:bg-charcoal no-underline px-5 py-2.5 font-medium transition-colors duration-fast ease-out"
+                    >
+                      {sportLabel(sport)}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
             <a
               href="/#how"
               className="hidden md:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"

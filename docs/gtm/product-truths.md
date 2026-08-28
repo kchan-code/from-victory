@@ -10,6 +10,14 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-08-27 — Sport landing pages for all seven live sports; Sports menu in the site nav
+
+Every live sport now has its own marketing landing page: `/hockey`, `/basketball`, `/golf`, `/football`, `/baseball`, `/lacrosse`, `/soccer`. Each page's spoken-moment copy is limited to lines that sport's pregame audio actually runs (per-position flagship visualizations, play library, hard moments), lists the real positions/player types the engine uses, keeps identity in Christ as the second beat, and closes on Compete From Victory. All seven are in the sitemap, `llms.txt`, and the analytics marketing-route allowlist.
+
+The site header now carries a "Sports" dropdown listing the seven live sports (driven by `SUPPORTED_SPORTS`, so it tracks the live set automatically). The homepage hero's "Hockey families: see the first shift →" link was removed in favor of that menu. The homepage remains sport-generic ("Visualize and Compete From Victory").
+
+Why it matters to a buyer: a basketball, golf, football, baseball, lacrosse, or soccer parent searching for their sport now lands on a page about their athlete's actual game, not a hockey pitch.
+
 ## 2026-08-26 — Public store listings are not live; marketing comparison names today's SERP apps
 
 From Victory is a web app / installable PWA. It is not listed on the App Store or Google Play. Internal TestFlight and Play Closed Alpha exist for native-shell QA. Do not tell a parent they can download From Victory from a public store tonight.

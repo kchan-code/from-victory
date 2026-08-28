@@ -9,6 +9,7 @@ const siteUrl = "https://www.fromvictoryapp.com";
 // meaningfully changes; article dates come from the registry.
 const MARKETING_UPDATED = new Date("2026-07-09");
 const SEO_REFRESH = new Date("2026-08-26");
+const SPORT_PAGES_ADDED = new Date("2026-08-27");
 
 // Build-time only. A crawler once saw /sitemap.xml 500; keep this route
 // a static list with a hardcoded article fallback so it cannot throw.
@@ -95,6 +96,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    ...(
+      ["basketball", "golf", "football", "baseball", "lacrosse", "soccer"] as const
+    ).map((sport) => ({
+      url: `${siteUrl}/${sport}`,
+      lastModified: SPORT_PAGES_ADDED,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
     {
       url: `${siteUrl}/resources`,
       lastModified: SEO_REFRESH,
