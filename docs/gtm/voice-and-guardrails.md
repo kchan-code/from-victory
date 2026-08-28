@@ -38,3 +38,9 @@ listings, and microcopy get written here. They follow the same rules.
    you do it; From Victory does — and you don't do it alone. (Don't dismiss
    visualization/mental training as hollow; that framing was rejected.)
 7. **Closing note:** "Play hard, fearless, and free." is KC's approved closing line.
+8. **Apple publicity restriction (added 2026-08-28, DPLA §9.4).** No press releases or
+   public statements about the Apple agreement or "the relationship of the parties"
+   without Apple's prior written approval. "Download on the App Store" badges used per
+   Apple's marketing guidelines are fine; "our partnership with Apple" or any framing
+   implying Apple endorsement is never allowed (also DPLA §2.6 trademark guidelines and
+   Exhibit C §12(d)).

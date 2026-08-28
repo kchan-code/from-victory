@@ -10,6 +10,23 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-08-28 — App Store is a channel, not the platform (DPLA posture)
+
+Recorded from the 2026-08-21 full-DPLA legal review (FV-500). Apple can remove the app
+from the App Store at any time, and its liability to us is capped at $50 (DPLA §6.9(b),
+Schedule 1 §6.3, §13). The installable PWA on fromvictoryapp.com therefore remains the
+primary distribution channel; the App Store is an acquisition and credibility channel
+on top of it.
+
+Marketing must never make commitments contingent on App Store presence: no launch dates
+tied to store approval, no "available on the App Store" as a promise in paid placements,
+no store-dependent guarantees. (See also voice-and-guardrails guardrail 8, the DPLA §9.4
+Apple publicity restriction.)
+
+Why it matters to a buyer: the product a parent buys lives on the web and keeps working
+regardless of what happens in any app store; store presence, when it arrives, is a
+convenience and a trust signal, not the product.
+
 ## 2026-08-27 — Sport landing pages for all seven live sports; Sports menu in the site nav
 
 Every live sport now has its own marketing landing page: `/hockey`, `/basketball`, `/golf`, `/football`, `/baseball`, `/lacrosse`, `/soccer`. Each page's spoken-moment copy is limited to lines that sport's pregame audio actually runs (per-position flagship visualizations, play library, hard moments), lists the real positions/player types the engine uses, keeps identity in Christ as the second beat, and closes on Compete From Victory. All seven are in the sitemap, `llms.txt`, and the analytics marketing-route allowlist.
