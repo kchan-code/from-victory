@@ -102,11 +102,13 @@ All are Tier-2 / KC-gated (public marketing surface) with the full gate chain: f
 
 After each ship: record the change in `docs/gtm/product-truths.md` (dated, factual).
 
-## 7. Open questions for KC
+## 7. KC decisions (recorded in session, 2026-08-29)
 
-1. **Beta quote:** approve the two-step path (ship "shaped by athlete beta feedback" now; add the quote after athlete permission + engine guardrail amendment)?
-2. **`ENABLE_ADULT_SIGNUP`** — confirm it is `true` in Vercel production.
-3. **Screenshots:** commit the updated live-app screenshots (which screens, what naming) so FV-C can use real product images.
-4. **Waitlist fields:** keep the role radio (GTM hand-raise signal) against the brief's email+sport-only rule?
-5. **Net-new headlines** for the parent-trust and pricing-summary strips: reuse existing lines, or run the Delvox engine for two short headings?
-6. **Mobile persistent CTA:** nav-bar trial pill (recommended, restrained) vs a scroll-triggered floating button (follow-up evaluation)?
+1. **Beta quote: ship now.** KC confirms the athlete's permission and attribution and approves amending guardrail 5 of `docs/gtm/voice-and-guardrails.md` plus a dated `product-truths.md` entry — both land in the FV-D PR before merge. The quote ships labeled as beta feedback, single treatment, attribution "Beta hockey athlete" (or the more specific non-identifying form if truthful), no implied performance outcomes, no carousel.
+2. **`ENABLE_ADULT_SIGNUP` verified `true` in production.** Functional check 2026-08-29: `https://www.fromvictoryapp.com/signup/athlete` returns 200 with the live 18+ signup form (18+ attestation, birthdate, all seven sports). FV-E is unblocked; keep all athlete-path UI rendered server-side behind the same flag.
+3. **Screenshots: KC attaches them in this session.** I place, optimize, and commit them as part of FV-C; FV-C stays blocked on the assets arriving.
+4. **Waitlist collects email + sport + role.** The role radio stays (ICP hand-raise signal; keeps the `/teams` coach deep-link working). First name and the optional note field are dropped.
+5. **Strip headlines: KC directs them to be written in-repo** (expert conversion copy, brand voice, no em-dashes, no banned words), overriding GTM rule 1 for these two headings; KC approval is recorded in this session and will be noted in the FV-D PR. Working candidates, final wording at FV-D review: parent-trust strip — "What you see, and what stays private."; pricing summary — "14 days free. Cancel anytime." with the price pair beneath.
+6. **Persistent mobile CTA: nav-bar gold trial pill** at every width, shipped in FV-B. No floating button.
+
+Issue deltas from these decisions: FV-B adds the always-visible trial pill (confirmed); FV-C consumes the in-session screenshots; FV-D includes the beta quote plus the guardrail/product-truths amendments and the two KC-directed headings; FV-G drops first name and the note field from the form and its server action schema.
