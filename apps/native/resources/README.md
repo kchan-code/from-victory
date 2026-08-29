@@ -4,7 +4,7 @@ Copied from `apps/web/public` PWA icons for later brand-asset generation:
 
 | File | Source |
 |---|---|
-| `icon.png` | `apps/web/public/logo-icon.svg`, rendered 1024×1024 on `#050505` at 78% canvas width |
+| `icon.png` | `apps/web/public/logo-icon.svg`, rendered 1024×1024 on `#050505` at 93% canvas width |
 | `icon-maskable.png` | `apps/web/public/icon-maskable.png` |
 | `splash.png` | `apps/web/public/logo-stacked.svg`, rendered 2732×2732 on `#050505` |
 
@@ -19,15 +19,16 @@ Capacitor scaffold icon (never replaced with a brand asset). Both are fixed:
 
 - **iOS** `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`
   — 1024×1024, opaque RGB (no alpha channel — Apple rejects one), logo-icon
-  centered at ~78% of canvas width on `#050505`. (First pass used ~56% —
-  KC tested on-device and it read too small against the home-screen mask;
-  iOS applies its own corner rounding, so unlike Android's adaptive icon
-  there's no safe-zone constraint forcing extra margin. The mark's own
-  bounding box is wide/short (viewBox ~305×168), so even at 78% width the
-  shape sits nowhere near the top/bottom corners — plenty of headroom
-  before this risks clipping.)
+  centered at ~93% of canvas width on `#050505`. (Went through several
+  passes on KC's on-device feedback: 56% -> 78% -> 93%. iOS applies its own
+  corner rounding, so unlike Android's adaptive icon there's no safe-zone
+  constraint forcing extra margin — the wing tips sit close to the raw
+  canvas edges at 93%, but at mid-height, well clear of where the corner
+  curve actually cuts in, so nothing clips. This is now a deliberately
+  tight, edge-to-edge look (KC's call, not the design-safe default — 78-82%
+  reads as more comfortable if this ever gets revisited).)
 - **Android legacy** `android/app/src/main/res/mipmap-*/ic_launcher.png` and
-  `ic_launcher_round.png` — same composition and 78% width as iOS, rendered
+  `ic_launcher_round.png` — same composition and 93% width as iOS, rendered
   per density (48/72/96/144/192px). Both files share one raster; there's no
   separate pre-circle-cropped variant.
 - **Android adaptive** `android/app/src/main/res/mipmap-*/ic_launcher_foreground.png`
