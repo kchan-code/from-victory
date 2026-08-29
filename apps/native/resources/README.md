@@ -4,7 +4,7 @@ Copied from `apps/web/public` PWA icons for later brand-asset generation:
 
 | File | Source |
 |---|---|
-| `icon.png` | `apps/web/public/logo-icon.svg`, rendered 1024×1024 on `#050505` |
+| `icon.png` | `apps/web/public/logo-icon.svg`, rendered 1024×1024 on `#050505` at 78% canvas width |
 | `icon-maskable.png` | `apps/web/public/icon-maskable.png` |
 | `splash.png` | `apps/web/public/logo-stacked.svg`, rendered 2732×2732 on `#050505` |
 
@@ -19,17 +19,24 @@ Capacitor scaffold icon (never replaced with a brand asset). Both are fixed:
 
 - **iOS** `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`
   — 1024×1024, opaque RGB (no alpha channel — Apple rejects one), logo-icon
-  centered at ~56% of canvas width on `#050505`.
+  centered at ~78% of canvas width on `#050505`. (First pass used ~56% —
+  KC tested on-device and it read too small against the home-screen mask;
+  iOS applies its own corner rounding, so unlike Android's adaptive icon
+  there's no safe-zone constraint forcing extra margin. The mark's own
+  bounding box is wide/short (viewBox ~305×168), so even at 78% width the
+  shape sits nowhere near the top/bottom corners — plenty of headroom
+  before this risks clipping.)
 - **Android legacy** `android/app/src/main/res/mipmap-*/ic_launcher.png` and
-  `ic_launcher_round.png` — same composition as iOS, rendered per density
-  (48/72/96/144/192px). Both files share one raster; there's no separate
-  pre-circle-cropped variant.
+  `ic_launcher_round.png` — same composition and 78% width as iOS, rendered
+  per density (48/72/96/144/192px). Both files share one raster; there's no
+  separate pre-circle-cropped variant.
 - **Android adaptive** `android/app/src/main/res/mipmap-*/ic_launcher_foreground.png`
-  — transparent background, logo-icon at ~48% of canvas width (kept inside
-  the ~66/108 adaptive-icon safe-zone circle so no OEM mask shape clips it),
-  paired with the solid-color background layer at
-  `android/app/src/main/res/values/ic_launcher_background.xml` (`#050505`,
-  was the Capacitor-default `#FFFFFF`).
+  — transparent background, logo-icon at ~52% of canvas width (the max
+  that stays inside the 66/108 adaptive-icon safe-zone circle for this
+  mark's aspect ratio, with a small buffer — bumped up from an initial,
+  overly conservative ~48%), paired with the solid-color background layer
+  at `android/app/src/main/res/values/ic_launcher_background.xml`
+  (`#050505`, was the Capacitor-default `#FFFFFF`).
 
 Regenerate from `logo-icon.svg` if the brand mark changes: render a large
 master (≥1024px) per variant (opaque `#050505` for iOS/legacy, transparent
