@@ -66,7 +66,7 @@ export default async function AthleteSettingsPage({
   const trainingUpdated = searchParams?.updated === "training";
 
   return (
-    <main className="min-h-screen bg-onyx pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
+    <main id="main-content" className="min-h-screen bg-onyx pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
       {/* ── Header ── */}
       <header className="flex items-center gap-3 px-5 pt-[58px] pb-6 sm:px-8 max-w-[640px] mx-auto">
         <Link

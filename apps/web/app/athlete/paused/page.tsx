@@ -49,7 +49,7 @@ export default async function AthletePausedPage() {
   const nativeShell = isNativeShell();
 
   return (
-    <main className="min-h-screen bg-onyx flex flex-col px-5 pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
+    <main id="main-content" className="min-h-screen bg-onyx flex flex-col px-5 pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
       {/* ── Logo lockup — top anchor ── */}
       <header className="flex items-center gap-2 pt-[52px] pb-0">
         <Image

@@ -146,9 +146,9 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h5 className="font-mono text-[10px] tracking-[0.20em] uppercase text-cream/50 font-semibold m-0 mb-[18px]">
+      <h3 className="font-mono text-[10px] tracking-[0.20em] uppercase text-cream/50 font-semibold m-0 mb-[18px]">
         {title}
-      </h5>
+      </h3>
       <ul className="list-none p-0 m-0 flex flex-col gap-3">
         {links.map((l) => {
           const isRoute = l.href.startsWith("/");

@@ -170,7 +170,7 @@ export default async function ArticlePage({
       <LandingIconDefs />
       <ScrollNav />
 
-      <main>
+      <main id="main-content">
         {/* ── Article header ──────────────────────────────────────────── */}
         <section className="relative pt-[168px] md:pt-[140px] pb-12 overflow-hidden isolate">
           <div className="absolute inset-0 -z-10 pointer-events-none">

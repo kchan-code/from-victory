@@ -125,7 +125,7 @@ export default async function DashboardSettingsPage() {
   const digestOptOut = await getDigestOptOut();
 
   return (
-    <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
+    <main id="main-content" className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
       <div className="mx-auto max-w-[640px]">
         {/* Header */}
         <header className="flex items-center justify-between mb-12">

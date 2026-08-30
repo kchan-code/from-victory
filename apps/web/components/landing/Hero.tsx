@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { FlameMark } from "@/components/ui";
 import { PhoneStatusBar } from "./PhoneStatusBar";
-import { Reveal } from "./Reveal";
 import { SvgIcon } from "./SvgIcon";
 
 export function Hero() {
@@ -15,8 +14,10 @@ export function Hero() {
 
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         <div className="grid gap-16 lg:gap-[72px] items-center grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-          {/* Left column: copy */}
-          <Reveal>
+          {/* Left column: copy — FV-511: no Reveal wrapper. The hero is
+              the LCP element; it must render fully visible in SSR HTML
+              with or without JS, not depend on IntersectionObserver. */}
+          <div>
             <div className="inline-flex items-center gap-3 mb-7">
               <span className="fv-pulse-dot" />
               <span className="fv-eyebrow">
@@ -59,10 +60,10 @@ export function Hero() {
               14 days free for first-time subscribers &mdash; then $5/mo or $49/yr &mdash; cancel anytime
             </p>
 
-          </Reveal>
+          </div>
 
-          {/* Right column: stacked phone mockups */}
-          <Reveal>
+          {/* Right column: stacked phone mockups — no Reveal wrapper (FV-511) */}
+          <div>
             <div className="fv-hero-phones" aria-hidden>
               {/* Back phone — verse */}
               <div className="fv-phone fv-phone-back">
@@ -244,7 +245,7 @@ export function Hero() {
                 </div>
               </div>
             </div>
-          </Reveal>
+          </div>
         </div>
       </div>
     </section>

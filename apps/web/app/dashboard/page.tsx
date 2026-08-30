@@ -55,7 +55,7 @@ export default async function DashboardPage() {
   const rhythmMap = await getAthleteMetadataMap();
 
   return (
-    <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
+    <main id="main-content" className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
       <div className="mx-auto max-w-[960px]">
         <header className="flex items-center justify-between mb-12">
           <div className="flex items-center gap-2.5 md:gap-3">

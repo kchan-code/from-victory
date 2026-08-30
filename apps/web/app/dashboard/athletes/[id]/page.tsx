@@ -62,7 +62,7 @@ export default async function AthleteDetailPage({ params }: Props) {
     : null;
 
   return (
-    <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
+    <main id="main-content" className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
       <div className="mx-auto max-w-[640px]">
 
         {/* Back link */}

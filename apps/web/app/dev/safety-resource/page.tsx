@@ -10,7 +10,7 @@ export const metadata = {
 // component from the journal save flow when detection fires.
 export default function SafetyResourcePreviewPage() {
   return (
-    <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
+    <main id="main-content" className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
       <div className="mx-auto max-w-[720px]">
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-cream/50 mb-4">
           Dev preview · /dev/safety-resource

@@ -103,11 +103,11 @@ export function WaitlistForm() {
         <div className="mx-auto mb-4 inline-block">
           <FlameMark size={40} />
         </div>
-        <h4 className="font-heading font-semibold text-[22px] tracking-[-0.01em] m-0 mb-2 text-cream">
+        <h3 className="font-heading font-semibold text-[22px] tracking-[-0.01em] m-0 mb-2 text-cream">
           {state.alreadyOnList
             ? "You're already on the list."
             : "You're on the list."}
-        </h4>
+        </h3>
         <p className="text-cream/70 m-0">
           {state.alreadyOnList
             ? "Glad you're with us. We'll reach out when your sport is ready."

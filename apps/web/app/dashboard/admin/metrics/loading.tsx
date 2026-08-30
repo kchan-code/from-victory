@@ -3,7 +3,7 @@
 // app/dashboard/loading.tsx.
 export default function Loading() {
   return (
-    <main className="min-h-screen bg-onyx">
+    <main id="main-content" className="min-h-screen bg-onyx">
       <div className="border-b border-hairline">
         <div className="mx-auto max-w-[1200px] px-5 sm:px-8 py-4 flex items-center justify-between">
           <div className="h-7 w-40 rounded bg-cream/[0.06] animate-pulse" />
