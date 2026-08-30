@@ -63,3 +63,6 @@ apps/native/ios/DerivedData/
 # 2026-06-22) — excluded from the Codex mirror commit until its producer is
 # identified (FV-432 / KC decision 2026-07-20). Do not regenerate or interpret.
 /.hash
+
+# Claude agent worktree sandboxes (transient, never committed)
+.claude/worktrees/
