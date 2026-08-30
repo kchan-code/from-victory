@@ -6,6 +6,16 @@ import { createClient } from "@/lib/supabase/server";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { sendWaitlistNotification } from "@/lib/email/waitlist-notification";
 
+// FV-517 dropped the first-name field and the optional note textarea from
+// the form (KC decision, docs/conversion-audit-2026-08-29.md §7.4) — only
+// email, role, and sport are collected now. `name` and `note` are no longer
+// read from formData below, so they are not validated here either.
+//
+// waitlist_signups.name is NOT NULL with no column default (see
+// supabase/migrations/20260522180000_waitlist_signups.sql) and this issue is
+// scoped to not touch migrations, so the insert below still writes an empty
+// string placeholder for `name` to satisfy the constraint. `note` is
+// nullable, so it is simply omitted from the insert.
 const WaitlistSchema = z.object({
   email: z
     .string()
@@ -13,11 +23,6 @@ const WaitlistSchema = z.object({
     .toLowerCase()
     .email("Enter a valid email.")
     .max(320, "Email is too long."),
-  name: z
-    .string()
-    .trim()
-    .min(1, "Name is required.")
-    .max(120, "Name is too long."),
   role: z.enum(["athlete", "parent", "coach", "other"], {
     message: "Pick a role.",
   }),
@@ -26,12 +31,6 @@ const WaitlistSchema = z.object({
     .trim()
     .min(1, "Sport is required.")
     .max(80, "Sport name is too long."),
-  note: z
-    .string()
-    .trim()
-    .max(1000, "Note is too long (max 1000 characters).")
-    .optional()
-    .transform((v) => (v && v.length > 0 ? v : undefined)),
   consent: z.literal("on", {
     message: "You need to agree to the Terms of Use and acknowledge the Privacy Policy.",
   }),
@@ -67,10 +66,8 @@ export async function submitWaitlist(
 ): Promise<WaitlistActionState> {
   const raw = {
     email: formData.get("email"),
-    name: formData.get("name"),
     role: (formData.get("role") as string | null)?.toLowerCase() ?? undefined,
     sport: formData.get("sport"),
-    note: formData.get("note") ?? undefined,
     consent: formData.get("consent") ?? undefined,
     source: formData.get("source") ?? undefined,
     intent: formData.get("intent") ?? undefined,
@@ -98,10 +95,12 @@ export async function submitWaitlist(
   const supabase = createClient();
   const { error } = await supabase.from("waitlist_signups").insert({
     email: data.email,
-    name: data.name,
+    // waitlist_signups.name is NOT NULL with no default — the form no
+    // longer collects a name (FV-517), so an empty string is written
+    // instead of a migration to relax the constraint.
+    name: "",
     role: data.role,
     sport: data.sport,
-    note: data.note ?? null,
   });
 
   if (error) {
@@ -125,10 +124,8 @@ export async function submitWaitlist(
   deliverInBackground(
     sendWaitlistNotification({
       email: data.email,
-      name: data.name,
       role: data.role,
       sport: data.sport,
-      note: data.note ?? null,
       source: data.source ?? null,
       intent: data.intent ?? null,
     }).then((result) => {

@@ -4,14 +4,20 @@
 //
 // Supports URL params for pre-filling from /teams CTA:
 //   ?role=coach&source=teams&intent=group-pricing
+// Also supports a `sport` param: a visitor who arrives with a live sport
+// (e.g. a stray link with ?sport=hockey) never sees that sport as a
+// selectable waitlist option (FV-517 removed live sports from the select),
+// so the form surfaces a routing notice to the trial instead of preselecting
+// anything.
 "use client";
 
 import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { FlameMark } from "@/components/ui";
 import { SvgIcon } from "./SvgIcon";
 import { submitWaitlist, type WaitlistActionState } from "@/lib/actions/waitlist";
+import { SUPPORTED_SPORTS, sportLabel } from "@/lib/sports";
 
 const ROLES = ["Athlete", "Parent", "Coach", "Other"] as const;
 
@@ -23,31 +29,36 @@ const ROLE_LABELS: Record<(typeof ROLES)[number], string> = {
   Other: "Other",
 };
 
-// Hockey, Basketball, Golf, Football, Baseball, Lacrosse, and Soccer are the
-// live sports. All others join a per-sport waitlist. Live sports are grouped
-// first (SUPPORTED_SPORTS order). The display labels make this clear in the
-// dropdown.
-const SPORTS = [
-  { value: "Hockey", label: "Hockey — available now" },
-  { value: "Basketball", label: "Basketball — available now" },
-  { value: "Golf", label: "Golf — available now" },
-  { value: "Football", label: "Football — available now" },
-  { value: "Baseball", label: "Baseball — available now" },
-  { value: "Lacrosse", label: "Lacrosse — available now" },
-  { value: "Soccer", label: "Soccer — available now" },
-  { value: "Swimming", label: "Swimming — coming soon" },
-  { value: "Wrestling", label: "Wrestling — coming soon" },
-  { value: "Volleyball", label: "Volleyball — coming soon" },
-  { value: "Track & field", label: "Track & field — coming soon" },
-  { value: "Tennis", label: "Tennis — coming soon" },
-  { value: "Other", label: "Other" },
+// Candidate sports for the waitlist select. Hockey, basketball, golf,
+// football, baseball, lacrosse, and soccer are live (SUPPORTED_SPORTS) — the
+// waitlist is for sports that are NOT yet live, so those are filtered out
+// below. A future live sport (added to SUPPORTED_SPORTS) is excluded here
+// automatically without touching this list.
+const WAITLIST_SPORT_CANDIDATES = [
+  "Swimming",
+  "Wrestling",
+  "Volleyball",
+  "Track & field",
+  "Tennis",
 ] as const;
 
-const TEAMS_DEFAULT_NOTE =
-  "Interested in group pricing for a team, church, or sports ministry.";
+const LIVE_SPORT_LABELS = new Set(
+  SUPPORTED_SPORTS.map((sport) => sportLabel(sport).toLowerCase()),
+);
 
-const TEAMS_NOTE_PLACEHOLDER =
-  "Example: I coach a 14U soccer team with 22 families, or I lead a church youth group with 40 sports families.";
+const SPORTS = [
+  ...WAITLIST_SPORT_CANDIDATES.filter(
+    (label) => !LIVE_SPORT_LABELS.has(label.toLowerCase()),
+  ),
+  "Other",
+] as const;
+
+function isLiveSportValue(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+  return SUPPORTED_SPORTS.some(
+    (sport) => sport === normalized || sportLabel(sport).toLowerCase() === normalized,
+  );
+}
 
 export function WaitlistForm() {
   const [state, formAction] = useFormState<WaitlistActionState, FormData>(
@@ -55,11 +66,10 @@ export function WaitlistForm() {
     null,
   );
   const [role, setRole] = useState<(typeof ROLES)[number]>("Athlete");
-  const [noteValue, setNoteValue] = useState("");
   const [isTeamsSource, setIsTeamsSource] = useState(false);
   const [hiddenSource, setHiddenSource] = useState("");
   const [hiddenIntent, setHiddenIntent] = useState("");
-  const noteUserEdited = useRef(false);
+  const [isLiveSportArrival, setIsLiveSportArrival] = useState(false);
 
   // Read URL params after mount — avoids SSR/hydration mismatch
   useEffect(() => {
@@ -67,7 +77,7 @@ export function WaitlistForm() {
     const paramRole = params.get("role");
     const paramSource = params.get("source");
     const paramIntent = params.get("intent");
-    const paramNote = params.get("note");
+    const paramSport = params.get("sport");
 
     if (paramRole === "coach") setRole("Coach");
 
@@ -76,17 +86,13 @@ export function WaitlistForm() {
 
     if (paramSource === "teams") {
       setIsTeamsSource(true);
-      if (!noteUserEdited.current) {
-        setNoteValue(paramNote ?? TEAMS_DEFAULT_NOTE);
-      }
-    } else if (paramNote && !noteUserEdited.current) {
-      setNoteValue(paramNote);
+    }
+
+    if (paramSport && isLiveSportValue(paramSport)) {
+      setIsLiveSportArrival(true);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Reset note pre-fill when form resets (e.g. after a failed submit)
-  // The noteUserEdited ref prevents overwriting what the user typed.
 
   if (state?.ok) {
     return (
@@ -144,6 +150,35 @@ export function WaitlistForm() {
         </div>
       )}
 
+      {/* Live-sport arrival notice — reuses approved copy verbatim
+          (Waitlist.tsx bullet + trial CTA link text). Routes to the trial
+          instead of preselecting a live sport that no longer appears in the
+          select below. */}
+      {isLiveSportArrival && (
+        <div
+          className="mb-5 rounded-[12px] px-4 py-3 flex items-start gap-3"
+          style={{
+            background: "rgba(223,175,55,0.07)",
+            border: "1px solid rgba(223,175,55,0.28)",
+          }}
+        >
+          <SvgIcon name="flame" size={14} className="text-gold flex-none mt-0.5" />
+          <p className="font-body text-[13px] leading-[1.5] text-cream/80 m-0">
+            <span className="text-gold font-semibold">
+              Hockey, basketball, golf, football, baseball, lacrosse, and
+              soccer — available now.
+            </span>{" "}
+            <Link
+              href="/signup"
+              className="text-cream underline underline-offset-2 hover:text-gold"
+            >
+              Start your athlete&rsquo;s 14-day free trial
+            </Link>
+            .
+          </p>
+        </div>
+      )}
+
       <div className="flex items-center gap-2.5 mb-[22px]">
         <FlameMark size={16} />
         <span className="fv-eyebrow gold">Sport waitlist</span>
@@ -152,34 +187,19 @@ export function WaitlistForm() {
         Notify me when my sport is ready.
       </h3>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-        <Field id="w-name" label="First name">
-          <input
-            id="w-name"
-            name="name"
-            type="text"
-            autoComplete="given-name"
-            placeholder="Jordan"
-            required
-            maxLength={120}
-            aria-invalid={errorField === "name"}
-            className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[15px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18]"
-          />
-        </Field>
-        <Field id="w-email" label="Email">
-          <input
-            id="w-email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            placeholder="you@email.com"
-            required
-            maxLength={320}
-            aria-invalid={errorField === "email"}
-            className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[15px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18]"
-          />
-        </Field>
-      </div>
+      <Field id="w-email" label="Email">
+        <input
+          id="w-email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          placeholder="you@email.com"
+          required
+          maxLength={320}
+          aria-invalid={errorField === "email"}
+          className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[15px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18]"
+        />
+      </Field>
 
       <fieldset className="mt-3.5">
         <legend className="font-mono text-[10px] tracking-[0.18em] uppercase text-cream/50 font-semibold mb-2">
@@ -191,7 +211,7 @@ export function WaitlistForm() {
             return (
               <label
                 key={r}
-                className={`px-2 py-2.5 rounded-[10px] text-center cursor-pointer select-none font-mono font-semibold text-[11px] tracking-[0.10em] transition-all duration-base ease-out ${
+                className={`min-h-[44px] flex items-center justify-center px-2 py-2.5 rounded-[10px] text-center cursor-pointer select-none font-mono font-semibold text-[11px] tracking-[0.10em] transition-all duration-base ease-out ${
                   checked
                     ? "text-gold"
                     : "border-hairline text-cream/70 hover:text-cream hover:border-hairline-strong"
@@ -224,42 +244,20 @@ export function WaitlistForm() {
         <select
           id="w-sport"
           name="sport"
-          defaultValue="Hockey"
+          required
+          defaultValue=""
+          aria-invalid={errorField === "sport"}
           className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[15px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18]"
         >
-          {SPORTS.map((s) => (
-            <option key={s.value} value={s.value}>
-              {s.label}
+          <option value="" disabled>
+            Choose your sport
+          </option>
+          {SPORTS.map((label) => (
+            <option key={label} value={label}>
+              {label}
             </option>
           ))}
         </select>
-      </Field>
-
-      <Field
-        id="w-note"
-        label="Optional note"
-        helper={
-          isTeamsSource
-            ? "You’re requesting group pricing. Tell us your organization, sport/community, and approximate number of athletes or families."
-            : undefined
-        }
-      >
-        <textarea
-          id="w-note"
-          name="note"
-          placeholder={
-            isTeamsSource
-              ? TEAMS_NOTE_PLACEHOLDER
-              : "What are you hoping this helps with?"
-          }
-          maxLength={1000}
-          value={noteValue}
-          onChange={(e) => {
-            noteUserEdited.current = true;
-            setNoteValue(e.target.value);
-          }}
-          className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[15px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18] resize-y min-h-20"
-        />
       </Field>
 
       {/* Hidden metadata — captured in admin email notification */}
