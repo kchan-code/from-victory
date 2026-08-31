@@ -97,7 +97,7 @@ export default async function OwnerMetricsPage({
   };
 
   return (
-    <main className="min-h-screen bg-onyx text-cream">
+    <main id="main-content" className="min-h-screen bg-onyx text-cream">
       {/* Sticky top bar */}
       <header className="sticky top-0 z-10 bg-onyx/90 backdrop-blur border-b border-hairline">
         <div className="mx-auto max-w-[1200px] px-5 sm:px-8 py-4 flex items-center justify-between gap-4">

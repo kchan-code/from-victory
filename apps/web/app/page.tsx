@@ -30,17 +30,19 @@ export default function LandingPage() {
       <LandingIconDefs />
       <ScrollNav />
       <a id="top" />
-      <Hero />
-      <PregameSample />
-      <Problem />
-      <Framework />
-      <HowItWorks />
-      <AppPreview />
-      <Faith />
-      <Testimonials />
-      <Founder />
-      <Faq />
-      <Waitlist />
+      <main id="main-content">
+        <Hero />
+        <PregameSample />
+        <Problem />
+        <Framework />
+        <HowItWorks />
+        <AppPreview />
+        <Faith />
+        <Testimonials />
+        <Founder />
+        <Faq />
+        <Waitlist />
+      </main>
       <Footer />
     </>
   );

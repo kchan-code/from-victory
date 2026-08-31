@@ -358,8 +358,13 @@ a:hover { color: var(--accent-hot); }
   }
   .fv-final-headline em { font-style: normal; color: var(--accent); }
 
-  /* Reveal-on-scroll wrapper */
-  .fv-reveal {
+  /* Reveal-on-scroll wrapper — FV-511: the hidden base state is
+     progressive enhancement only. It applies exclusively under `.js`,
+     the class the inline beforeInteractive script in app/layout.tsx adds
+     to <html> before hydration. No-JS visitors (and JS that hasn't run
+     yet) get every section fully visible; the IntersectionObserver
+     fade-in in Reveal.tsx only ever kicks in once `.js` is present. */
+  .js .fv-reveal {
     opacity: 0;
     transform: translateY(16px);
     transition:
@@ -371,7 +376,7 @@ a:hover { color: var(--accent-hot); }
     transform: none;
   }
   @media (prefers-reduced-motion: reduce) {
-    .fv-reveal { opacity: 1; transform: none; transition: none; }
+    .js .fv-reveal { opacity: 1; transform: none; transition: none; }
   }
 
   /* Hero watermark background — large flame SVG washed at low opacity */

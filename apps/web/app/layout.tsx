@@ -6,6 +6,7 @@ import {
   Sora,
   Source_Serif_4,
 } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { AnalyticsMount } from "./_components/AnalyticsMount";
 import { ServiceWorkerRegistrar } from "./_components/ServiceWorkerRegistrar";
@@ -114,8 +115,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={fontVariables}>
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
       <body className="min-h-screen bg-onyx text-cream antialiased">
+        {/* FV-511: first-party, non-tracking `js`-class script. Next.js
+            injects `beforeInteractive` scripts into <head> and runs them
+            before hydration regardless of tree position, so `.js
+            .fv-reveal` in globals.css can hide entrance-animated sections
+            only once JS is actually running — no-JS visitors never see
+            the hidden state. suppressHydrationWarning above scopes only
+            the <html> className mismatch this intentionally causes;
+            nothing else is suppressed. */}
+        <Script id="fv-js-class" strategy="beforeInteractive">
+          {"document.documentElement.classList.add('js');"}
+        </Script>
+        {/* FV-511: skip link — first focusable element in body, visually
+            hidden until keyboard-focused. Targets #main-content, which
+            every route's <main> carries. Cobalt per docs/brand.md §9
+            (UI interaction accent, never the logo). */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:inline-flex focus:min-h-[44px] focus:items-center focus:rounded-lg focus:bg-cobalt focus:px-5 focus:py-3 focus:font-heading focus:text-[15px] focus:font-semibold focus:text-cream focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-cobalt-bright focus:ring-offset-2 focus:ring-offset-onyx"
+        >
+          Skip to main content
+        </a>
         {children}
         {/* FV-105: service worker registration — runs after window load, renders nothing */}
         <ServiceWorkerRegistrar />

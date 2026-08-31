@@ -14,7 +14,7 @@ export default async function SubscribeSuccessPage() {
   const isAdult = profile.role === "adult_athlete";
 
   return (
-    <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8 flex flex-col">
+    <main id="main-content" className="min-h-screen bg-onyx px-5 py-10 sm:px-8 flex flex-col">
       <div className="mx-auto max-w-[560px] w-full flex-1 flex flex-col">
         {/* Header */}
         <header className="mb-12">

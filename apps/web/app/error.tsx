@@ -15,7 +15,7 @@ export default function ErrorBoundary({
   }, [error]);
 
   return (
-    <main className="min-h-[100dvh] bg-onyx text-cream flex flex-col items-center justify-center px-6 py-16 text-center">
+    <main id="main-content" className="min-h-[100dvh] bg-onyx text-cream flex flex-col items-center justify-center px-6 py-16 text-center">
       <div className="max-w-[360px] w-full">
         <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-gold mb-4">
           From Victory

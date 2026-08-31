@@ -15,6 +15,7 @@
 export default function OfflinePage() {
   return (
     <main
+      id="main-content"
       className="min-h-[100dvh] bg-onyx flex flex-col items-center justify-center px-6 py-16 text-center"
     >
       <div className="max-w-[320px] w-full flex flex-col items-center gap-6">

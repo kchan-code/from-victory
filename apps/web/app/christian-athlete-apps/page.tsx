@@ -137,7 +137,7 @@ export default function ChristianAthleteAppsPage() {
       <LandingIconDefs />
       <ScrollNav />
 
-      <main>
+      <main id="main-content">
         <section className="relative pt-[168px] md:pt-[140px] pb-12 overflow-hidden isolate">
           <div className="absolute inset-0 -z-10 pointer-events-none">
             <div className="absolute inset-0 fv-hero-bg" />

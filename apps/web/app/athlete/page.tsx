@@ -75,7 +75,7 @@ export default async function AthleteHomePage() {
   const sportIcon: IconName = profile.sport;
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-onyx pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
+    <main id="main-content" className="relative min-h-screen overflow-hidden bg-onyx pb-[calc(40px+env(safe-area-inset-bottom,0px))]">
       {/* ── Sport watermark — faint, decorative, behind all content. ── */}
       <div
         aria-hidden="true"
