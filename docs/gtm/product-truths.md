@@ -10,6 +10,31 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-08-31 — Signup handoff expectations set; 18+ athlete path surfaced from the homepage
+
+FV-515, the final change of the conversion-audit redesign, is live. Both
+signup pages now tell the buyer what happens next before they commit: the
+parent page (`/signup`) shows a three-step preview (Account, then Athlete,
+then Trial) with the line "After you create your account, add your athlete
+from your dashboard."; the 18+ athlete page (`/signup/athlete`) shows a
+two-step preview (Account, then Trial) with "After you create your
+account, you'll head to checkout." Each page also carries the trial and
+billing disclosure adjacent to the submit button — the same
+FTC-compliant card-required sentence already shown at checkout ("14 days
+free for first-time subscribers", card charged automatically at trial end
+unless canceled). The 18+ self-serve path is now discoverable from the
+homepage: a quiet text link under the hero CTA ("Are you the athlete, and
+18 or older? Create your own account") and a secondary card on `/signup`,
+both reusing the existing entry-link wording verbatim. The parent form
+remains the first and primary path on `/signup` — there is no blocking
+chooser. Both surfaces render only when adult self-serve is enabled in
+production; no signup fields, age rules, or billing behavior changed.
+
+Why it matters to a buyer: a parent knows before signing up that the
+athlete gets added afterward from the dashboard, an 18+ athlete can find
+their own path without digging, and nobody reaches checkout surprised
+that a card is required.
+
 ## 2026-08-31 — Homepage restructured to 8 sections; one approved beta quote now live
 
 FV-514, the centerpiece of the conversion-audit redesign, is live: the
