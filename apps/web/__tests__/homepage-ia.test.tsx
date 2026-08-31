@@ -99,7 +99,7 @@ afterEach(() => {
 const EXPECTED_HEADINGS: RegExp[] = [
   /Visualize and compete/i, // 1. Hero (h1)
   /Hear a pregame session/i, // 2. PregameSample
-  /Everyone says visualize\. Almost nobody helps you do it\./i, // 3. Visualization (FV-534)
+  /The picture only helps if someone runs it with you\./i, // 3. Visualization (FV-534)
   /A daily rhythm for the athlete.s mind and spirit\./i, // 4. Method
   /Built for the moments athletes actually face\./i, // 5. AppPreview
   /What you see, and what stays private\./i, // 6. ParentTrust

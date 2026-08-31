@@ -39,8 +39,14 @@ export function Visualization() {
         </Reveal>
         <Reveal>
           <div className="grid gap-x-16 gap-y-6 sm:gap-y-10 items-end mb-10 sm:mb-14 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
+            {/* H2 switched to the curator's alternate after KC's hero
+                thesis (FV-534) took the "Everyone..." framing — two
+                near-identical openers within two scrolls read as a tic.
+                The primary ("Everyone says visualize. Almost nobody helps
+                you do it.") remains the approved fallback if the hero
+                line changes again. */}
             <h2 className="fv-h-section">
-              Everyone says visualize. Almost nobody helps you do it.
+              The picture only helps if someone runs it with you.
             </h2>
             <p className="fv-lede">
               So we built the guided version, about five minutes of audio
