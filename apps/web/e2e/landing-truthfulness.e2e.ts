@@ -12,13 +12,18 @@
  *   - The post-game reset preview card no longer carries a "Coming soon"
  *     badge (FV-225 shipped the feature; FV-394 removed the caveat).
  *   - No journal <textarea> on / — guards against the journal being
- *     re-wired into the landing page while it remains descoped (FV-135). The
- *     waitlist's optional-note field (#w-note) is the one allowed textarea.
- *   - The available-sports labels render in the sport dropdown so the live
- *     sport set stays truthful (hockey, basketball, golf, football, baseball,
- *     lacrosse, soccer).
+ *     re-wired into the landing page while it remains descoped (FV-135).
+ *     FV-517 also removed the waitlist's optional-note textarea, so there is
+ *     now no legitimate textarea on the page at all.
+ *   - FV-517: the waitlist sport dropdown lists only non-live sports
+ *     (Swimming, Wrestling, Volleyball, Track & field, Tennis, Other) — no
+ *     live sport (hockey, basketball, golf, football, baseball, lacrosse,
+ *     soccer) appears as a selectable waitlist option, since those sports
+ *     are not waitlisted, they're live today.
  *   - The "Other sports — join the waitlist" signal renders, confirming the
  *     non-live sports are not advertised as available.
+ *   - A visitor arriving with a live-sport URL param (?sport=hockey) sees a
+ *     routing notice to the trial instead of a preselected live sport.
  *
  * Audience-language guard: asserts no "kid/kids/kiddo/youngster" in the
  * athlete-facing in-app preview region (#app). Scoped to athlete-facing copy
@@ -86,22 +91,24 @@ test.describe("Landing page — truthfulness regression guards", () => {
     page,
   }) => {
     // Journal was descoped from the daily flow (FV-135). A journal textarea on
-    // the landing page would mean it was accidentally re-wired. The waitlist's
-    // optional-note field (#w-note) is the one legitimate textarea, so we assert
-    // there is no OTHER textarea — a re-added journal entry box would trip this.
-    const otherTextareas = page.locator("textarea:not(#w-note)");
-    await expect(otherTextareas).toHaveCount(0);
+    // the landing page would mean it was accidentally re-wired. FV-517 removed
+    // the waitlist's optional-note field too, so there should be NO textarea
+    // anywhere on the page — a re-added journal entry box (or a re-added note
+    // field) would trip this.
+    const textareas = page.locator("textarea");
+    await expect(textareas).toHaveCount(0);
   });
 
   // -------------------------------------------------------------------------
-  // Available-sports labels
+  // Waitlist sport dropdown — non-live sports only (FV-517)
   // -------------------------------------------------------------------------
 
-  test("sport dropdown shows live sports as available now", async ({
+  test("waitlist sport dropdown lists only non-live sports, no live sport is selectable", async ({
     page,
   }) => {
-    // The waitlist form sport dropdown is the canonical place where sport
-    // availability is communicated. These labels confirm the live set.
+    // FV-517: the waitlist is for sports that are NOT yet live. A live sport
+    // appearing here (still offering to "notify" for a sport that already
+    // ships) would misrepresent availability.
     const liveSports = [
       "Hockey",
       "Basketball",
@@ -111,16 +118,29 @@ test.describe("Landing page — truthfulness regression guards", () => {
       "Lacrosse",
       "Soccer",
     ];
+    const sportSelect = page.locator("#w-sport");
+    await expect(sportSelect).toBeVisible();
 
     for (const sport of liveSports) {
-      const option = page.locator(`option[value="${sport}"]`);
-      await expect(option).toBeAttached();
-      const label = await option.innerText();
-      expect(
-        label.toLowerCase(),
-        `${sport} must be labeled available now`,
-      ).toContain("available now");
+      await expect(sportSelect.locator(`option[value="${sport}"]`)).toHaveCount(0);
     }
+
+    const nonLiveSports = [
+      "Swimming",
+      "Wrestling",
+      "Volleyball",
+      "Track & field",
+      "Tennis",
+      "Other",
+    ];
+    for (const sport of nonLiveSports) {
+      await expect(sportSelect.locator(`option[value="${sport}"]`)).toBeAttached();
+    }
+
+    // No default selection — the placeholder option is selected, disabled,
+    // and has an empty value, forcing an explicit choice.
+    const selectedValue = await sportSelect.inputValue();
+    expect(selectedValue).toBe("");
   });
 
   test("waitlist section signals that other sports are not yet live", async ({
@@ -135,6 +155,28 @@ test.describe("Landing page — truthfulness regression guards", () => {
     await expect(
       waitlistSection.getByText(/other sports/i),
     ).toBeVisible();
+  });
+
+  test("arriving with a live-sport param routes to the trial instead of the waitlist select", async ({
+    page,
+  }) => {
+    // FV-517: a visitor arriving with ?sport=hockey (a live sport) should not
+    // see it preselected in a dropdown that no longer offers it — instead the
+    // form area shows a routing notice pointing to the trial signup.
+    await page.goto("/?sport=hockey#waitlist");
+    const waitlistSection = page.locator("#waitlist");
+    await expect(waitlistSection).toBeVisible();
+    // Scoped to the notice's own container: the always-rendered bullet title
+    // also matches /available now/i, so an unscoped getByText resolves to two
+    // elements and trips Playwright strict mode.
+    const notice = waitlistSection.getByTestId("live-sport-arrival-notice");
+    await expect(notice).toBeVisible();
+    await expect(notice.getByText(/available now/i)).toBeVisible();
+    await expect(
+      notice.getByRole("link", {
+        name: /start your athlete.s 14-day free trial/i,
+      }),
+    ).toHaveAttribute("href", "/signup");
   });
 
   // -------------------------------------------------------------------------

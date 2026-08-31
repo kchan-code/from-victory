@@ -3,11 +3,13 @@ import { Reveal } from "./Reveal";
 import { SectionMeta } from "./SectionMeta";
 import { SvgIcon } from "./SvgIcon";
 import { WaitlistForm } from "./WaitlistForm";
+import { LIVE_SPORTS_PROSE } from "./live-sports-prose";
+
 
 const bullets = [
   {
     icon: "flame" as const,
-    title: "Hockey, basketball, golf, football, baseball, lacrosse, and soccer — available now",
+    title: `${LIVE_SPORTS_PROSE} — available now`,
     body: "The full app — daily training, pregame audio, pre-practice lock in — is live. Start your free trial today.",
   },
   {
@@ -40,7 +42,7 @@ export function Waitlist() {
               Start training from <em>secure identity.</em>
             </h2>
             <p className="fv-lede mb-8">
-              Hockey, basketball, golf, football, baseball, lacrosse, and soccer are live now — start your athlete&apos;s
+              {LIVE_SPORTS_PROSE} are live now — start your athlete&apos;s
               14-day free trial today. Playing something else? Select your sport
               below and we&rsquo;ll reach out when it launches.
             </p>
