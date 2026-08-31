@@ -44,6 +44,14 @@ vi.mock("@/components/landing/icons", () => ({
 vi.mock("@/components/landing/WaitlistForm", () => ({
   WaitlistForm: () => null,
 }));
+// FV-515: Hero now reads isAdultSignupEnabled() (lib/flags.ts), which itself
+// imports the `server-only` marker package — same transitive-throw issue as
+// WaitlistForm above (server-only throws unconditionally outside Next's RSC
+// bundler). Neutralize the marker package only (matches the existing pattern
+// in __tests__/actions/auth-adult.test.ts) so the real lib/flags.ts still
+// reads ENABLE_ADULT_SIGNUP — unset in this suite, so isAdultSignupEnabled()
+// is false and Hero renders its unmodified, flag-off markup.
+vi.mock("server-only", () => ({}));
 
 import LandingPage from "@/app/page";
 

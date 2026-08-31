@@ -53,6 +53,12 @@ vi.mock("@/components/marketing/AttributionCapture", () => ({
 vi.mock("@/components/landing/icons", () => ({
   LandingIconDefs: () => null,
 }));
+// FV-515: Hero now reads isAdultSignupEnabled() (lib/flags.ts), which
+// imports the `server-only` marker package — throws unconditionally outside
+// Next's RSC bundler resolution. Neutralize just the marker package (matches
+// __tests__/actions/auth-adult.test.ts) so real lib/flags.ts still reads
+// ENABLE_ADULT_SIGNUP — unset here, so Hero renders its flag-off markup.
+vi.mock("server-only", () => ({}));
 
 import LandingPage from "@/app/page";
 
