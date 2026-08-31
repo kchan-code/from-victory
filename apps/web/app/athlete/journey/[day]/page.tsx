@@ -85,7 +85,7 @@ export default async function JourneyDayPage({ params }: JourneyDayPageProps) {
 
         {/* Read-only badge */}
         <span
-          className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-cream/35 bg-charcoal border border-hairline rounded-pill px-3 py-1.5"
+          className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-cream/55 bg-charcoal border border-hairline rounded-pill px-3 py-1.5"
           aria-label="This session is read-only"
         >
           Read only
@@ -111,7 +111,7 @@ export default async function JourneyDayPage({ params }: JourneyDayPageProps) {
         ) : (
           <>
             {/* Completion timestamp */}
-            <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-cream/35 mb-6">
+            <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-cream/55 mb-6">
               Completed {formatDate(entry.completedAt)}
             </p>
 

@@ -115,7 +115,7 @@ export default function PricingPage() {
 
           {/* Trust strip */}
           <Reveal>
-            <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mt-10 font-mono text-[11px] tracking-[0.18em] uppercase text-cream/40 font-semibold">
+            <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mt-10 font-mono text-[11px] tracking-[0.18em] uppercase text-cream/55 font-semibold">
               <span>No ads</span>
               <span>·</span>
               <span>No data sold</span>
@@ -191,7 +191,7 @@ export default function PricingPage() {
                         className={`w-5 h-5 rounded-full flex items-center justify-center flex-none mt-0.5 ${
                           row.collected
                             ? "text-gold"
-                            : "text-cream/40"
+                            : "text-cream/55"
                         }`}
                         style={
                           row.collected
@@ -357,7 +357,7 @@ export default function PricingPage() {
               Start your athlete&apos;s 14-day free trial
               <SvgIcon name="arrow" size={17} />
             </Link>
-            <p className="mt-4 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/35 font-semibold">
+            <p className="mt-4 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 font-semibold">
               Cancel anytime &middot; No commitment
             </p>
           </Reveal>

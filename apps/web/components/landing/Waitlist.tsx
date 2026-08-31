@@ -56,7 +56,7 @@ export function Waitlist() {
                 Start your athlete&apos;s 14-day free trial
                 <SvgIcon name="arrow" size={16} />
               </Link>
-              <p className="mt-3 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/40 font-semibold">
+              <p className="mt-3 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 font-semibold">
                 14 days free for first-time subscribers &mdash; then $5/mo or $49/yr &mdash; cancel anytime
               </p>
             </div>

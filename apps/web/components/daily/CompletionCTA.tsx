@@ -69,7 +69,7 @@ export function CompletionCTA({ dayNumber, completedCount }: Props) {
         </p>
       )}
       {!saveFailed && (
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/40 text-center mb-3">
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/55 text-center mb-3">
           Ready to move forward?
         </p>
       )}
@@ -159,7 +159,7 @@ function CompletionMoment({
       )}
 
       {isPending && (
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-4 relative z-10">
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/55 mt-4 relative z-10">
           Saving…
         </p>
       )}

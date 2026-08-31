@@ -82,7 +82,7 @@ export function NextGamePrompt() {
   if (answeredWith !== null) {
     return (
       <p
-        className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/40 text-center mt-5"
+        className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/55 text-center mt-5"
         role="status"
         aria-live="polite"
       >
@@ -96,7 +96,7 @@ export function NextGamePrompt() {
       className="mt-5 pt-4 border-t border-hairline"
       data-testid="next-game-prompt"
     >
-      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/40 text-center mb-3">
+      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/55 text-center mb-3">
         When&apos;s your next game?
       </p>
       <div className="grid grid-cols-2 gap-2">

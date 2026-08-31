@@ -10,6 +10,25 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-08-31 — Site-wide visual hierarchy restored; desktop nav simplified
+
+A build bug had silently disabled every "dimmed text" style across the
+site (937 of them): secondary text rendered at full brightness and
+navigation links rendered gold instead of muted cream, which made the
+top bar read as a wall of gold. The bug is fixed, so the whole site now
+shows the muted hierarchy it was designed with, and low-contrast text
+was raised to meet WCAG AA accessibility contrast on every dark surface.
+The desktop nav is simpler: links no longer wrap to multiple lines,
+"For Teams & Churches" and "Resources" moved from the top bar to the
+footer (every page) and the mobile menu, the mobile menu now serves all
+screens below 1024px, and the gold "Start free trial" pill is the only
+gold element in the bar. No copy, pricing, or data facts changed.
+
+Why it matters to a buyer: the site looks calmer and more premium at
+first glance, the one gold call-to-action stands out instead of
+competing with gold links, and text is legible to accessibility
+standards.
+
 ## 2026-08-31 — Signup handoff expectations set; 18+ athlete path surfaced from the homepage
 
 FV-515, the final change of the conversion-audit redesign, is live. Both

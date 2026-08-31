@@ -93,7 +93,7 @@ export default function OfflinePage() {
         <div className="w-10 h-px bg-hairline" aria-hidden="true" />
 
         {/* Retry instruction — low-stimulation, no button that will fail */}
-        <p className="font-body text-[13px] text-cream/40 leading-[1.5]">
+        <p className="font-body text-[13px] text-cream/55 leading-[1.5]">
           When you have a connection, reopen From Victory.
         </p>
       </div>

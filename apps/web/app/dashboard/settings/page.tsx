@@ -191,7 +191,7 @@ export default async function DashboardSettingsPage() {
               </p>
             </div>
             {/* Email change is deferred (FV-192 AC-7). Show a muted note. */}
-            <span className="flex-shrink-0 font-heading text-[12px] text-cream/30 mt-1">
+            <span className="flex-shrink-0 font-heading text-[12px] text-cream/55 mt-1">
               Read only
             </span>
           </div>
@@ -357,7 +357,7 @@ export default async function DashboardSettingsPage() {
               >
                 <span>Terms of Use</span>
                 <span
-                  className="text-cream/30 group-hover:text-cream/60 transition-colors duration-fast ease-out"
+                  className="text-cream/55 group-hover:text-cream/60 transition-colors duration-fast ease-out"
                   aria-hidden="true"
                 >
                   &#8599;
@@ -373,7 +373,7 @@ export default async function DashboardSettingsPage() {
               >
                 <span>Privacy Policy</span>
                 <span
-                  className="text-cream/30 group-hover:text-cream/60 transition-colors duration-fast ease-out"
+                  className="text-cream/55 group-hover:text-cream/60 transition-colors duration-fast ease-out"
                   aria-hidden="true"
                 >
                   &#8599;

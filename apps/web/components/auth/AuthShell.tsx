@@ -45,7 +45,7 @@ export function AuthShell({ title, subtitle, children, footer, steps }: Props) {
               <li key={step.label} className="flex items-center gap-2">
                 <span
                   aria-current={step.current ? "step" : undefined}
-                  className={step.current ? "text-gold" : "text-cream/40"}
+                  className={step.current ? "text-gold" : "text-cream/55"}
                 >
                   {step.label}
                 </span>

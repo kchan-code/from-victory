@@ -50,6 +50,30 @@
   --fv-danger:        #E5564C;
   --fv-info:          var(--fv-cobalt-bright);
 
+  /* ---- RGB CHANNELS (Tailwind alpha support) ------------ */
+  /* Channel triplets for the solid palette colors above, consumed by
+     tailwind.config.ts as `rgb(var(--fv-*-rgb) / <alpha-value>)` so
+     opacity modifiers (text-cream/70, border-gold/40, ...) generate.
+     Keep each triplet in sync with its hex twin — they are the same
+     color stated twice. Colors already defined as rgba (hairline,
+     *-soft, mutes) need no channels. */
+  --fv-onyx-rgb:          5 5 5;
+  --fv-charcoal-rgb:      16 16 16;
+  --fv-surface-1-rgb:     21 21 21;
+  --fv-surface-2-rgb:     28 28 28;
+  --fv-white-rgb:         247 247 247;
+  --fv-silver-rgb:        217 220 225;
+  --fv-gold-rgb:          223 175 55;
+  --fv-gold-bright-rgb:   244 194 79;
+  --fv-gold-deep-rgb:     181 137 42;
+  --fv-cobalt-rgb:        36 91 255;
+  --fv-cobalt-bright-rgb: 61 114 255;
+  --fv-navy-rgb:          7 26 51;
+  --fv-purple-rgb:        36 17 63;
+  --fv-success-rgb:       79 199 138;
+  --fv-warning-rgb:       232 163 58;
+  --fv-danger-rgb:        229 86 76;
+
   /* ---- ROLE TOKENS (prefer these in components) --------- */
   --bg:               var(--fv-onyx);
   --bg-elev-1:        var(--fv-charcoal);

@@ -248,7 +248,7 @@ export function HBars({
 }) {
   const max = Math.max(1, ...data.map((d) => d.count));
   if (data.length === 0) {
-    return <p className="font-body text-cream/45 text-[13px]">{emptyLabel}</p>;
+    return <p className="font-body text-cream/55 text-[13px]">{emptyLabel}</p>;
   }
   return (
     <ul className="flex flex-col gap-2.5">
@@ -319,7 +319,7 @@ export function FunnelBars({ steps }: { steps: FunnelStep[] }) {
             <span className="font-mono text-cream/60 text-[12px] tabular-nums">
               {s.count.toLocaleString()}
               {i > 0 ? (
-                <span className="text-cream/40"> · {s.rateOfPrev}% of prev</span>
+                <span className="text-cream/55"> · {s.rateOfPrev}% of prev</span>
               ) : null}
             </span>
           </div>
@@ -377,14 +377,14 @@ export function WeekBars({
         {data.map((d) => (
           <span
             key={d.week}
-            className="flex-1 text-center font-mono text-[9px] text-cream/35 tabular-nums"
+            className="flex-1 text-center font-mono text-[9px] text-cream/55 tabular-nums"
           >
             {d.week.slice(5)}
           </span>
         ))}
       </div>
       {label ? (
-        <p className="font-body text-cream/45 text-[11px] mt-2 text-center">{label}</p>
+        <p className="font-body text-cream/55 text-[11px] mt-2 text-center">{label}</p>
       ) : null}
     </div>
   );
@@ -459,7 +459,7 @@ export function WaitingForEvents({ what }: { what: string }) {
 export function Suppressed({ note }: { note?: string }) {
   return (
     <div className="rounded-lg border border-dashed border-hairline-strong bg-cream/[0.02] px-4 py-5 text-center">
-      <p className="font-mono uppercase tracking-[0.14em] text-[10px] text-cream/40 mb-1">
+      <p className="font-mono uppercase tracking-[0.14em] text-[10px] text-cream/55 mb-1">
         Hidden
       </p>
       <p className="font-body text-cream/50 text-[12px] leading-snug">

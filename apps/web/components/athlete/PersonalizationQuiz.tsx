@@ -343,7 +343,7 @@ export default function PersonalizationQuiz({
               setPosition(null);
               setStep("focus");
             }}
-            className="mt-3 inline-flex w-full items-center justify-center rounded-[10px] border border-hairline bg-transparent px-[26px] py-3.5 font-heading text-[14px] font-semibold text-cream/40 transition-colors duration-fast ease-out hover:text-cream/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            className="mt-3 inline-flex w-full items-center justify-center rounded-[10px] border border-hairline bg-transparent px-[26px] py-3.5 font-heading text-[14px] font-semibold text-cream/55 transition-colors duration-fast ease-out hover:text-cream/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
           >
             {isEditMode ? `Clear ${roleLabelLower}` : "Skip for now"}
           </button>
@@ -431,7 +431,7 @@ export default function PersonalizationQuiz({
           <button
             type="submit"
             data-testid="quiz-skip-focus-btn"
-            className="mt-3 inline-flex w-full items-center justify-center rounded-[10px] border border-hairline bg-transparent px-[26px] py-3.5 font-heading text-[14px] font-semibold text-cream/40 transition-colors duration-fast ease-out hover:text-cream/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            className="mt-3 inline-flex w-full items-center justify-center rounded-[10px] border border-hairline bg-transparent px-[26px] py-3.5 font-heading text-[14px] font-semibold text-cream/55 transition-colors duration-fast ease-out hover:text-cream/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
           >
             {isEditMode ? "Clear my answers" : "Skip for now"}
           </button>

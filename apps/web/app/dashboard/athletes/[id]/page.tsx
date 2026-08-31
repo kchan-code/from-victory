@@ -91,7 +91,7 @@ export default async function AthleteDetailPage({ params }: Props) {
               </span>
             ) : null}
             {age !== null ? (
-              <span className="font-mono text-[12px] uppercase tracking-[0.14em] text-cream/40">
+              <span className="font-mono text-[12px] uppercase tracking-[0.14em] text-cream/55">
                 Age {age}
               </span>
             ) : null}
@@ -146,7 +146,7 @@ export default async function AthleteDetailPage({ params }: Props) {
                 data-testid="athlete-detail-sessions-completed"
               >
                 {detail.sessionsCompleted}
-                <span className="font-mono text-cream/40 text-[14px] ml-1.5">
+                <span className="font-mono text-cream/55 text-[14px] ml-1.5">
                   / {TOTAL_TRAINING_DAYS}
                 </span>
               </p>
@@ -205,7 +205,7 @@ export default async function AthleteDetailPage({ params }: Props) {
                     <span
                       className={[
                         "font-mono font-semibold text-[11px] leading-none",
-                        done ? "text-gold" : "text-cream/25",
+                        done ? "text-gold" : "text-cream/55",
                       ].join(" ")}
                     >
                       {day}

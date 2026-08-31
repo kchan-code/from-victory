@@ -102,7 +102,8 @@ export function MobileMenu({ open, onClose, triggerRef }: MobileMenuProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] md:hidden">
+    // lg:hidden matches the ScrollNav hamburger cutoff (FV-530; was md)
+    <div className="fixed inset-0 z-[60] lg:hidden">
       <div aria-hidden className="absolute inset-0 bg-onyx/80 backdrop-blur-sm" />
       <div
         ref={panelRef}
@@ -134,7 +135,7 @@ export function MobileMenu({ open, onClose, triggerRef }: MobileMenuProps) {
         </button>
 
         <nav aria-label="Mobile" className="flex flex-col gap-1 px-5 pt-2">
-          <p className="px-4 pb-1 pt-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-cream/45">
+          <p className="px-4 pb-1 pt-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-cream/55">
             Sports
           </p>
           {SUPPORTED_SPORTS.map((sport) => (

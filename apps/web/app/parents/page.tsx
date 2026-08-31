@@ -425,7 +425,7 @@ export default function ParentsPage() {
                     </div>
                   ))}
                 </div>
-                <div className="font-mono text-[10px] tracking-[0.16em] uppercase text-cream/40 font-semibold">
+                <div className="font-mono text-[10px] tracking-[0.16em] uppercase text-cream/55 font-semibold">
                   No ads · No data sold · Cancel anytime
                 </div>
               </div>
