@@ -100,7 +100,7 @@ const EXPECTED_HEADINGS: RegExp[] = [
   /Visualize and compete/i, // 1. Hero (h1)
   /Hear a pregame session/i, // 2. PregameSample
   /The picture only helps if someone runs it with you\./i, // 3. Visualization (FV-534)
-  /A daily rhythm for the athlete.s mind and spirit\./i, // 4. Method
+  /Rehearse it\. Reset from it\. Leave it with God\./i, // 4. Method (FV-538: pregame method)
   /Built for the moments athletes actually face\./i, // 5. AppPreview
   /What you see, and what stays private\./i, // 6. ParentTrust
   /14 days free\. Cancel anytime\./i, // 7. PricingSummary
@@ -223,7 +223,7 @@ describe("Homepage — Visualization section copy pins (FV-534)", () => {
   });
 });
 
-describe("Homepage — Method audio-angle pins (FV-534 qa-reviewer)", () => {
+describe("Homepage — Method pregame-method pins (FV-534/FV-538)", () => {
   it("the lede's hear-sentence names the pregame session, never the daily training", () => {
     const { container } = render(<LandingPage />);
     const text = container.textContent ?? "";
@@ -236,13 +236,35 @@ describe("Homepage — Method audio-angle pins (FV-534 qa-reviewer)", () => {
     expect(text).not.toMatch(/you hear it\b/i);
   });
 
-  it("CARRY claims the audio session runs a cue, not a carried-over one (no data link exists)", () => {
+  it("renders the four pregame-method steps in order (FV-538)", () => {
     const { container } = render(<LandingPage />);
     const text = container.textContent ?? "";
-    expect(text).toContain(
-      "Before you compete, the guided audio session runs one with you, eyes closed.",
-    );
-    expect(text).not.toContain("runs that cue");
+    const steps = [
+      "Set your session.",
+      "Hear the rep.",
+      "Practice the reset.",
+      "Leave it with God.",
+    ];
+    // Search forward from the previous step so the H2 (which ends with
+    // the same "Leave it with God." phrase) can't satisfy step 4 early.
+    let cursor = -1;
+    for (const step of steps) {
+      const at = text.indexOf(step, cursor + 1);
+      expect(at, `missing step in order: ${step}`).toBeGreaterThan(cursor);
+      cursor = at;
+    }
+  });
+
+  it("the prayer step describes the real session close and no outcome promise", () => {
+    const { container } = render(<LandingPage />);
+    const text = container.textContent ?? "";
+    // The shipped session genuinely ends in a spoken prayer
+    // (components/pregame/audio/segments.ts PRAYER_SEGMENTS) — the copy
+    // may say so, and must keep the leave-it-with-God framing rather
+    // than pray-to-win.
+    expect(text).toContain("The session ends in prayer");
+    expect(text).toContain("hand him what you cannot control");
+    expect(text.toLowerCase()).not.toContain("pray to win");
   });
 });
 
