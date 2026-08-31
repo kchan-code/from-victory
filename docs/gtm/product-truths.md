@@ -10,6 +10,16 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-08-31 — Homepage hero now shows a real app screenshot
+
+The phone in the homepage hero now displays a real capture of the app's
+home dashboard (the same reviewed screenshot the product-preview carousel
+uses) instead of a hand-built imitation of the UI. Every product image on
+the homepage is now a genuine screenshot. No copy or layout changed.
+
+Why it matters to a buyer: the first product visual a visitor sees is the
+actual app they would be buying, consistent with the carousel below it.
+
 ## 2026-08-31 — Site-wide visual hierarchy restored; desktop nav simplified
 
 A build bug had silently disabled every "dimmed text" style across the
