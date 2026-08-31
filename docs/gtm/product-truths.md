@@ -10,6 +10,16 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-08-31 — Conversion-audit wave 1 shipped: site-wide a11y foundation, one-card pricing page, waitlist trimmed to non-live sports
+
+Three changes from the 2026-08-29 marketing conversion audit are live (PRs #474/#475/#476):
+
+- The marketing site has a real accessibility foundation: a skip-to-content link on every route, main landmarks site-wide, and the homepage hero now renders in server HTML with or without JavaScript (previously the whole landing page was invisible until client scripts ran).
+- The pricing page shows one plan card with an annual/monthly toggle (annual default, both prices always visible) instead of two duplicated cards; the separate "Everything included" icon-grid section was removed as redundant. Pricing facts unchanged: $5/mo or $49/yr first athlete, $3/$29 additional, 14-day first-time trial, cancel anytime.
+- The waitlist now offers only non-live sports (Swimming, Wrestling, Volleyball, Track & field, Tennis, Other), derived from the live-sport registry so an 8th live sport updates it automatically; no default sport is preselected; a visitor arriving for a live sport is routed to the trial instead. The form collects email + sport + role only — the first-name field and free-text note were removed (privacy-positive: less PII).
+
+Why it matters to a buyer: the pricing page is materially shorter and clearer on mobile; a parent whose sport is live can no longer accidentally join a waitlist for a product they can buy today; campaigns pointing at the waitlist should target non-live sports only.
+
 ## 2026-08-27 — Sport landing pages for all seven live sports; Sports menu in the site nav
 
 Every live sport now has its own marketing landing page: `/hockey`, `/basketball`, `/golf`, `/football`, `/baseball`, `/lacrosse`, `/soccer`. Each page's spoken-moment copy is limited to lines that sport's pregame audio actually runs (per-position flagship visualizations, play library, hard moments), lists the real positions/player types the engine uses, keeps identity in Christ as the second beat, and closes on Compete From Victory. All seven are in the sitemap, `llms.txt`, and the analytics marketing-route allowlist.
