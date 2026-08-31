@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FlameMark } from "@/components/ui";
+import { isAdultSignupEnabled } from "@/lib/flags";
 import { PhoneStatusBar } from "./PhoneStatusBar";
 import { SvgIcon } from "./SvgIcon";
 
@@ -60,6 +61,23 @@ export function Hero() {
             <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/40 font-semibold mb-0">
               14 days free for first-time subscribers &mdash; then $5/mo or $49/yr &mdash; cancel anytime
             </p>
+
+            {/* FV-515: 18+ athlete path, flag-gated server-side — quiet
+                text-link treatment, not a second competing CTA. Copy reused
+                verbatim from the /signup entry link. Renders nothing when
+                ENABLE_ADULT_SIGNUP is off, so the hero stays byte-identical
+                to today. */}
+            {isAdultSignupEnabled() ? (
+              <p className="mt-4 font-body text-[13px] text-cream/50">
+                Are you the athlete, and 18 or older?{" "}
+                <Link
+                  href="/signup/athlete"
+                  className="text-gold hover:text-gold-bright no-underline"
+                >
+                  Create your own account
+                </Link>
+              </p>
+            ) : null}
 
           </div>
 
