@@ -166,13 +166,16 @@ test.describe("Landing page — truthfulness regression guards", () => {
     await page.goto("/?sport=hockey#waitlist");
     const waitlistSection = page.locator("#waitlist");
     await expect(waitlistSection).toBeVisible();
+    // Scoped to the notice's own container: the always-rendered bullet title
+    // also matches /available now/i, so an unscoped getByText resolves to two
+    // elements and trips Playwright strict mode.
+    const notice = waitlistSection.getByTestId("live-sport-arrival-notice");
+    await expect(notice).toBeVisible();
+    await expect(notice.getByText(/available now/i)).toBeVisible();
     await expect(
-      waitlistSection.getByText(/available now/i),
-    ).toBeVisible();
-    await expect(
-      waitlistSection.getByRole("link", {
+      notice.getByRole("link", {
         name: /start your athlete.s 14-day free trial/i,
-      }).first(),
+      }),
     ).toHaveAttribute("href", "/signup");
   });
 

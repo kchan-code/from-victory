@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
 import { useEffect, useState } from "react";
 import { FlameMark } from "@/components/ui";
+import { LIVE_SPORTS_PROSE } from "./live-sports-prose";
 import { SvgIcon } from "./SvgIcon";
 import { submitWaitlist, type WaitlistActionState } from "@/lib/actions/waitlist";
 import { SUPPORTED_SPORTS, sportLabel } from "@/lib/sports";
@@ -156,6 +157,7 @@ export function WaitlistForm() {
           select below. */}
       {isLiveSportArrival && (
         <div
+          data-testid="live-sport-arrival-notice"
           className="mb-5 rounded-[12px] px-4 py-3 flex items-start gap-3"
           style={{
             background: "rgba(223,175,55,0.07)",
@@ -165,8 +167,7 @@ export function WaitlistForm() {
           <SvgIcon name="flame" size={14} className="text-gold flex-none mt-0.5" />
           <p className="font-body text-[13px] leading-[1.5] text-cream/80 m-0">
             <span className="text-gold font-semibold">
-              Hockey, basketball, golf, football, baseball, lacrosse, and
-              soccer — available now.
+              {LIVE_SPORTS_PROSE} — available now.
             </span>{" "}
             <Link
               href="/signup"
