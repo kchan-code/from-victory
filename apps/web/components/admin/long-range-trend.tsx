@@ -61,7 +61,7 @@ export function LongRangeTrend({
           </div>
         ))}
       </div>
-      <div className="flex items-center justify-between mt-2 font-mono text-[10px] text-cream/40 tabular-nums">
+      <div className="flex items-center justify-between mt-2 font-mono text-[10px] text-cream/55 tabular-nums">
         <span>{first?.period}</span>
         <span>{last?.period}</span>
       </div>
@@ -85,7 +85,7 @@ export function LongRangeTrend({
           </span>
         ) : null}
       </div>
-      <p className="font-body text-cream/45 text-[11px] mt-3 leading-relaxed">
+      <p className="font-body text-cream/55 text-[11px] mt-3 leading-relaxed">
         Exact count(distinct athlete_id) per {data.grain} across all events —
         never a sum, never suppressed. Every other tab on this page stays
         capped at the last 90 days (raw activity_events); this is the only

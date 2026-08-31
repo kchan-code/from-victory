@@ -242,7 +242,7 @@ export function PregameClientShell() {
         <h1 className="sr-only">Loading pregame</h1>
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 rounded-full border border-gold/30 animate-pulse" />
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-cream/40">
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-cream/55">
             Loading&hellip;
           </p>
         </div>

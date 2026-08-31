@@ -278,7 +278,7 @@ export function BreathingSphere({
           {sub}
         </span>
         {!isDone && isPlaying && countdown > 0 && (
-          <span className="mt-2.5 font-mono text-[11px] tracking-[0.16em] text-cream/40">
+          <span className="mt-2.5 font-mono text-[11px] tracking-[0.16em] text-cream/55">
             {countdown}
           </span>
         )}

@@ -110,7 +110,7 @@ export default async function AthleteSettingsPage({
         <section aria-labelledby="settings-sport-heading" className="mb-9">
           <h2
             id="settings-sport-heading"
-            className="mb-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/40"
+            className="mb-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/55"
           >
             Sport
           </h2>
@@ -141,7 +141,7 @@ export default async function AthleteSettingsPage({
         <section aria-labelledby="settings-training-heading" className="mb-9">
           <h2
             id="settings-training-heading"
-            className="mb-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/40"
+            className="mb-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/55"
           >
             Training
           </h2>
@@ -174,7 +174,7 @@ export default async function AthleteSettingsPage({
         <section aria-labelledby="settings-reminder-heading" className="mb-9">
           <h2
             id="settings-reminder-heading"
-            className="mb-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/40"
+            className="mb-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/55"
           >
             Notifications
           </h2>
@@ -213,7 +213,7 @@ export default async function AthleteSettingsPage({
         >
           <h2
             id="settings-account-heading"
-            className="mb-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/40"
+            className="mb-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/55"
           >
             Account
           </h2>
@@ -231,7 +231,7 @@ export default async function AthleteSettingsPage({
             <section aria-labelledby="settings-subscription-heading" className="mb-9">
               <h2
                 id="settings-subscription-heading"
-                className="mb-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/40"
+                className="mb-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/55"
               >
                 Subscription
               </h2>

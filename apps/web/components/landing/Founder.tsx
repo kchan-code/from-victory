@@ -54,7 +54,7 @@ export function Founder() {
                 border: "1px solid var(--fv-hairline)",
               }}
             >
-              <div className="font-mono text-[10px] tracking-[0.20em] uppercase font-semibold text-cream/45 mb-4">
+              <div className="font-mono text-[10px] tracking-[0.20em] uppercase font-semibold text-cream/55 mb-4">
                 Beta feedback
               </div>
               <blockquote className="font-scripture italic text-[clamp(16px,1.5vw,19px)] leading-[1.55] text-cream/90 m-0 mb-4">

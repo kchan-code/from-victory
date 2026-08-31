@@ -650,14 +650,14 @@ function OfflineDownloadControl({
           )}
           <span
             className={`font-mono text-[11px] uppercase tracking-[0.14em] ${
-              state === "idle" ? "text-cream/50" : "text-cream/40"
+              state === "idle" ? "text-cream/50" : "text-cream/55"
             }`}
           >
             {primary}
           </span>
         </span>
         {subtext && (
-          <span className="font-body text-[11px] text-cream/30">{subtext}</span>
+          <span className="font-body text-[11px] text-cream/55">{subtext}</span>
         )}
       </button>
     </div>
@@ -943,7 +943,7 @@ export function PrepareDownloadScreen({
               type="button"
               onClick={onDone}
               data-testid="prepare-done-later-btn"
-              className="flex w-full min-h-[44px] items-center justify-center font-body text-[13px] text-cream/40 underline underline-offset-2 transition-colors duration-fast hover:text-cream/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx rounded-sm"
+              className="flex w-full min-h-[44px] items-center justify-center font-body text-[13px] text-cream/55 underline underline-offset-2 transition-colors duration-fast hover:text-cream/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx rounded-sm"
             >
               Done for now
             </button>
@@ -1742,7 +1742,7 @@ export function AudioSessionScreen({
                 three choices without phase-gating since eyes are open. */}
             <div className="mt-6 flex flex-col gap-3 border-t border-hairline pt-5">
               <div>
-                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/55">
                   Your Anchor
                 </p>
                 <p className="mt-0.5 line-clamp-2 font-heading text-[14px] font-medium leading-[1.35] text-cream/80">
@@ -1750,7 +1750,7 @@ export function AudioSessionScreen({
                 </p>
               </div>
               <div>
-                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/55">
                   Cue Word
                 </p>
                 <p className="mt-0.5 font-display text-[22px] font-extrabold uppercase tracking-[0.06em] text-gold">
@@ -1758,7 +1758,7 @@ export function AudioSessionScreen({
                 </p>
               </div>
               <div>
-                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/55">
                   Coach Yourself
                 </p>
                 <p className="mt-0.5 line-clamp-2 font-heading text-[14px] font-medium leading-[1.35] text-cream/80">
@@ -1767,7 +1767,7 @@ export function AudioSessionScreen({
               </div>
             </div>
 
-            <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-cream/40">
+            <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-cream/55">
               Reading mode · audio coming soon
             </p>
           </>
@@ -1805,7 +1805,7 @@ export function AudioSessionScreen({
                 <div className="mb-5 flex flex-col gap-4">
                   {/* Anchor */}
                   <div>
-                    <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                    <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/55">
                       Your Anchor
                     </p>
                     <p className="mt-1 line-clamp-2 font-heading text-[18px] font-semibold leading-[1.3] text-cream">
@@ -1815,7 +1815,7 @@ export function AudioSessionScreen({
 
                   {/* Self-talk */}
                   <div>
-                    <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                    <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/55">
                       Coach Yourself
                     </p>
                     <p className="mt-1 line-clamp-2 font-scripture text-[16px] italic leading-[1.45] text-cream/90">
@@ -1828,7 +1828,7 @@ export function AudioSessionScreen({
 
                   {/* Cue word — prominent focal element */}
                   <div>
-                    <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                    <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cream/55">
                       Cue Word
                     </p>
                     <p className="mt-1.5 font-display text-[44px] font-extrabold uppercase leading-[0.95] tracking-[0.05em] text-gold">
@@ -1849,19 +1849,19 @@ export function AudioSessionScreen({
               <div className="flex flex-col items-center justify-center py-4 text-center">
                 {state.prayerStyle === "self-guided" && activePhase === "prayer" ? (
                   <>
-                    <p className="mb-3 font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                    <p className="mb-3 font-mono text-[9px] uppercase tracking-[0.18em] text-cream/55">
                       Quiet moment
                     </p>
                     <p className="font-heading text-[32px] font-semibold leading-[1.1] text-cream">
                       Take your time.
                     </p>
-                    <p className="mt-4 font-body text-[13px] leading-[1.5] text-cream/45">
+                    <p className="mt-4 font-body text-[13px] leading-[1.5] text-cream/55">
                       Pray as long as you need. Tap done when you&rsquo;re ready.
                     </p>
                   </>
                 ) : (
                   <>
-                    <p className="mb-4 font-mono text-[9px] uppercase tracking-[0.18em] text-cream/40">
+                    <p className="mb-4 font-mono text-[9px] uppercase tracking-[0.18em] text-cream/55">
                       Cue Word
                     </p>
                     <p className="font-display text-[56px] font-extrabold uppercase leading-[0.9] tracking-[0.05em] text-gold">
@@ -1912,7 +1912,7 @@ export function AudioSessionScreen({
           <button
             type="button"
             onClick={() => setAudioMode("text")}
-            className="mx-auto font-body text-[12px] text-cream/40 underline underline-offset-2 hover:text-cream/70 transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx rounded-sm py-1 px-2"
+            className="mx-auto font-body text-[12px] text-cream/55 underline underline-offset-2 hover:text-cream/70 transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx rounded-sm py-1 px-2"
           >
             Read instead
           </button>
@@ -2679,7 +2679,7 @@ function ShareCardRow({
       ) : (
         /* No native share — show the screenshot hint from sport config */
         <p
-          className="text-center font-mono text-[10px] uppercase tracking-[0.14em] text-cream/40"
+          className="text-center font-mono text-[10px] uppercase tracking-[0.14em] text-cream/55"
           data-testid="share-screenshot-hint"
         >
           {shareHint}
@@ -2931,7 +2931,7 @@ export function PregameCardScreen({
         role="complementary"
         aria-label="Crisis resources"
       >
-        <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.16em] text-cream/40">
+        <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.16em] text-cream/55">
           You&rsquo;re not alone
         </p>
 
@@ -2940,7 +2940,7 @@ export function PregameCardScreen({
             <p className="font-heading text-[13px] font-semibold text-cream/70">
               988 Suicide &amp; Crisis Lifeline
             </p>
-            <p className="mt-0.5 font-body text-[12px] text-cream/40">
+            <p className="mt-0.5 font-body text-[12px] text-cream/55">
               Free, confidential support for anyone in crisis. 24/7.
             </p>
             <a
@@ -2955,7 +2955,7 @@ export function PregameCardScreen({
             <p className="font-heading text-[13px] font-semibold text-cream/70">
               Crisis Text Line
             </p>
-            <p className="mt-0.5 font-body text-[12px] text-cream/40">
+            <p className="mt-0.5 font-body text-[12px] text-cream/55">
               Free, 24/7, text-based crisis support.
             </p>
             <a
@@ -2970,14 +2970,14 @@ export function PregameCardScreen({
             <p className="font-heading text-[13px] font-semibold text-cream/70">
               Talk to someone you trust
             </p>
-            <p className="mt-0.5 font-body text-[12px] text-cream/40">
+            <p className="mt-0.5 font-body text-[12px] text-cream/55">
               A parent, coach, teammate, pastor, mentor, or counselor. You
               don&rsquo;t have to carry this alone.
             </p>
           </li>
         </ul>
 
-        <p className="mt-5 font-body text-[11px] leading-relaxed text-cream/30">
+        <p className="mt-5 font-body text-[11px] leading-relaxed text-cream/55">
           This screen is private &mdash; no one is notified, and nothing here
           is shared. From Victory is not a mental-health service. In an
           immediate emergency, call 911.

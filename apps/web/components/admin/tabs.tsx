@@ -93,7 +93,7 @@ export function OverviewTab({ m }: { m: AdminMetrics }) {
             action={<Badge tone="gold">parent buys → athlete trains</Badge>}
           />
           <FunnelBars steps={a.funnel} />
-          <p className="font-body text-cream/45 text-[11px] mt-4 leading-relaxed">
+          <p className="font-body text-cream/55 text-[11px] mt-4 leading-relaxed">
             Each step is the share of the previous one. A parent who pays but
             never creates the athlete account — or whose athlete never completes
             a first session — gets zero value. This funnel is where to fight
@@ -176,10 +176,10 @@ export function EngagementTab({ m }: { m: AdminMetrics }) {
             height={150}
             ariaLabel="Completions by training day 1 to 30"
           />
-          <div className="flex justify-between mt-1.5 font-mono text-[9px] text-cream/35">
+          <div className="flex justify-between mt-1.5 font-mono text-[9px] text-cream/55">
             <span>Day 1</span><span>Day 10</span><span>Day 20</span><span>Day 30</span>
           </div>
-          <p className="font-body text-cream/45 text-[11px] mt-3">
+          <p className="font-body text-cream/55 text-[11px] mt-3">
             Where the bars fall off is where athletes stop. Peak {maxCompleted} ·
             median {medianCompleted} completions/day.
           </p>
@@ -190,16 +190,16 @@ export function EngagementTab({ m }: { m: AdminMetrics }) {
         <SectionHeader eyebrow="by sport" title="Completion by sport" action={<Badge>N&lt;5 suppressed</Badge>} />
         <ul className="flex flex-col">
           {e.sportSegments.length === 0 ? (
-            <p className="font-body text-cream/45 text-[13px]">No sessions yet.</p>
+            <p className="font-body text-cream/55 text-[13px]">No sessions yet.</p>
           ) : (
             e.sportSegments.map((s) => (
               <div key={s.sport} className="flex items-center justify-between py-3 border-b border-hairline last:border-0">
                 <span className="font-mono uppercase tracking-[0.12em] text-[11px] text-cream/70">{s.sport}</span>
                 {s.suppressed ? (
-                  <span className="font-mono text-cream/40 text-[12px]">&lt;5 athletes</span>
+                  <span className="font-mono text-cream/55 text-[12px]">&lt;5 athletes</span>
                 ) : (
                   <span className="font-mono text-cream text-[13px] tabular-nums">
-                    {pctStr(s.completionRate)} <span className="text-cream/40">· {num(s.started)} started</span>
+                    {pctStr(s.completionRate)} <span className="text-cream/55">· {num(s.started)} started</span>
                   </span>
                 )}
               </div>
@@ -231,7 +231,7 @@ export function EngagementTab({ m }: { m: AdminMetrics }) {
               <SectionHeader eyebrow="last 8 weeks" title="Pregame completions / week" />
               <WeekBars data={inst.pregameCompletesWeekly} accent="gold" height={120} />
             </div>
-            <p className="font-body text-cream/45 text-[11px] mt-3">
+            <p className="font-body text-cream/55 text-[11px] mt-3">
               The funnel is the last {m.rangeDays} days (
               {pctStr(inst.pregameCompletionRate)} of started sessions finished the
               audio); the weekly chart always spans 8 weeks. Clip-vs-timer split is
@@ -251,7 +251,7 @@ export function EngagementTab({ m }: { m: AdminMetrics }) {
 
       {inst.hasEvents &&
       inst.practiceStarts + inst.postgameOpens + inst.pushClicks > 0 ? (
-        <p className="font-body text-cream/40 text-[11px]">
+        <p className="font-body text-cream/55 text-[11px]">
           Other surfaces — practice {num(inst.practiceStarts)} · postgame{" "}
           {num(inst.postgameOpens)} · push-clicks {num(inst.pushClicks)} (wiring is
           a follow-up; counts shown when present).
@@ -291,7 +291,7 @@ export function RetentionTab({ m }: { m: AdminMetrics }) {
         <Panel>
           <SectionHeader eyebrow="rhythm, not streaks" title="Rhythm depth distribution" />
           <HBars data={r.rhythmDistribution} accent="gold" />
-          <p className="font-body text-cream/45 text-[11px] mt-4">
+          <p className="font-body text-cream/55 text-[11px] mt-4">
             How many sessions each athlete has completed in their lifetime.
             &ldquo;Not started&rdquo; is the activation gap; the deeper buckets
             are the formed habit.
@@ -305,7 +305,7 @@ export function RetentionTab({ m }: { m: AdminMetrics }) {
             height={150}
             ariaLabel="Number of athletes by deepest day reached"
           />
-          <p className="font-body text-cream/45 text-[11px] mt-3">
+          <p className="font-body text-cream/55 text-[11px] mt-3">
             Athletes grouped by the furthest training day they&rsquo;ve reached.
             A wall at a given day flags content worth re-cutting.
           </p>
@@ -354,7 +354,7 @@ export function RevenueTab({ m }: { m: AdminMetrics }) {
         <StatRow label="Past due" value={num(rev.pastDue)} accent={rev.pastDue > 0 ? "warning" : undefined} />
         <StatRow label="Canceled" value={num(rev.canceled)} accent={rev.canceled > 0 ? "danger" : undefined} />
         <StatRow label="Scheduled to cancel" value={num(rev.cancelAtPeriodEnd)} />
-        <p className="font-body text-cream/45 text-[11px] mt-4 leading-relaxed">
+        <p className="font-body text-cream/55 text-[11px] mt-4 leading-relaxed">
           {rev.estimateBasis}
         </p>
       </Panel>
@@ -405,9 +405,9 @@ export function TrustTab({ m }: { m: AdminMetrics }) {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr>
-                  <th className="font-mono uppercase tracking-[0.12em] text-[10px] text-cream/40 py-2 pr-4">Week</th>
+                  <th className="font-mono uppercase tracking-[0.12em] text-[10px] text-cream/55 py-2 pr-4">Week</th>
                   {categories.map((c) => (
-                    <th key={c} className="font-mono uppercase tracking-[0.12em] text-[10px] text-cream/40 py-2 px-3">{c}</th>
+                    <th key={c} className="font-mono uppercase tracking-[0.12em] text-[10px] text-cream/55 py-2 px-3">{c}</th>
                   ))}
                 </tr>
               </thead>
@@ -419,7 +419,7 @@ export function TrustTab({ m }: { m: AdminMetrics }) {
                       const cell = t.safetyWeekly.find((x) => x.week === w && x.category === c);
                       return (
                         <td key={c} className="font-mono text-[13px] py-2 px-3 tabular-nums">
-                          {cell?.count === null ? <span className="text-cream/30">&lt;5</span> : <span className="text-cream">{cell?.count ?? 0}</span>}
+                          {cell?.count === null ? <span className="text-cream/55">&lt;5</span> : <span className="text-cream">{cell?.count ?? 0}</span>}
                         </td>
                       );
                     })}
@@ -435,7 +435,7 @@ export function TrustTab({ m }: { m: AdminMetrics }) {
         <Panel>
           <SectionHeader eyebrow="last 8 weeks" title="Account & athlete deletions" />
           <WeekBars data={t.deletionsWeekly} accent="danger" height={130} />
-          <p className="font-body text-cream/45 text-[11px] mt-3">
+          <p className="font-body text-cream/55 text-[11px] mt-3">
             The hard churn / trust signal. Parents control deletion; all data
             cascades within 30 days.
           </p>
@@ -443,11 +443,11 @@ export function TrustTab({ m }: { m: AdminMetrics }) {
         <Panel>
           <SectionHeader eyebrow={`last ${m.rangeDays} days`} title="Auth rate-limit hits" />
           {t.authAbuse.length === 0 ? (
-            <p className="font-body text-cream/45 text-[13px]">No rate-limit events — clean.</p>
+            <p className="font-body text-cream/55 text-[13px]">No rate-limit events — clean.</p>
           ) : (
             <HBars data={t.authAbuse} accent="warning" />
           )}
-          <p className="font-body text-cream/45 text-[11px] mt-3">
+          <p className="font-body text-cream/55 text-[11px] mt-3">
             A spike on sign-in or pairing means abuse or a broken client — an
             ops signal, not user analytics.
           </p>

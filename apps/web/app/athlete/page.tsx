@@ -300,7 +300,7 @@ export default async function AthleteHomePage() {
             rather than empty space. Whisper-weight on purpose: the tiles stay
             the action layer. Canonical phrase — quote exactly, NIV, cited. ── */}
         <div className="mt-9 px-2 text-center">
-          <p className="font-scripture italic text-[13.5px] leading-[1.55] text-cream/45">
+          <p className="font-scripture italic text-[13.5px] leading-[1.55] text-cream/55">
             &ldquo;&hellip;fixing our eyes on Jesus, the pioneer and perfecter
             of faith.&rdquo;
           </p>

@@ -103,7 +103,7 @@ export function PricingPlanCard() {
             >
               {opt.label}
               <span
-                className={selected ? "text-cream/85" : "text-cream/40"}
+                className={selected ? "text-cream/85" : "text-cream/55"}
                 aria-hidden={false}
               >
                 {opt.price}
@@ -205,7 +205,7 @@ export function PricingPlanCard() {
         </Link>
         <p
           data-testid="plan-cta-terms"
-          className="text-center font-mono text-[10px] tracking-[0.12em] uppercase text-cream/35 font-semibold mt-3"
+          className="text-center font-mono text-[10px] tracking-[0.12em] uppercase text-cream/55 font-semibold mt-3"
         >
           14 days free &mdash; cancel anytime
         </p>

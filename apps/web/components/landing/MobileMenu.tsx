@@ -135,7 +135,7 @@ export function MobileMenu({ open, onClose, triggerRef }: MobileMenuProps) {
         </button>
 
         <nav aria-label="Mobile" className="flex flex-col gap-1 px-5 pt-2">
-          <p className="px-4 pb-1 pt-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-cream/45">
+          <p className="px-4 pb-1 pt-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-cream/55">
             Sports
           </p>
           {SUPPORTED_SPORTS.map((sport) => (

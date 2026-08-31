@@ -159,7 +159,7 @@ export default async function SubscribePage({ searchParams }: Props) {
             />
 
             {/* Footer trust note */}
-            <p className="mt-8 font-body text-cream/40 text-[13px] text-center leading-relaxed">
+            <p className="mt-8 font-body text-cream/55 text-[13px] text-center leading-relaxed">
               Billed securely through Stripe. Cancel any time from your
               account settings.
             </p>

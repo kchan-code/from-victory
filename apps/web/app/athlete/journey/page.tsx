@@ -164,7 +164,7 @@ export default async function JourneyPage() {
                       {title}
                     </p>
                     {scriptureRef && (
-                      <p className="font-mono text-[11px] text-cream/45 mt-0.5 truncate">
+                      <p className="font-mono text-[11px] text-cream/55 mt-0.5 truncate">
                         {scriptureRef}
                       </p>
                     )}
