@@ -102,7 +102,8 @@ export function MobileMenu({ open, onClose, triggerRef }: MobileMenuProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] md:hidden">
+    // lg:hidden matches the ScrollNav hamburger cutoff (FV-530; was md)
+    <div className="fixed inset-0 z-[60] lg:hidden">
       <div aria-hidden className="absolute inset-0 bg-onyx/80 backdrop-blur-sm" />
       <div
         ref={panelRef}

@@ -5,28 +5,35 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        onyx: "var(--fv-onyx)",
-        charcoal: "var(--fv-charcoal)",
-        "surface-1": "var(--fv-surface-1)",
-        "surface-2": "var(--fv-surface-2)",
-        cream: "var(--fv-white)",
-        silver: "var(--fv-silver)",
+        // Solid palette colors use the --fv-*-rgb channel vars (defined
+        // beside their hex twins in globals.css) so Tailwind can generate
+        // opacity modifiers — a bare var(--fv-x) value can't take
+        // `<alpha-value>`, which silently drops every `text-cream/70`-style
+        // class from the build (FV-530). Colors whose source var is already
+        // rgba (hairline, *-soft) stay as plain vars: they carry their own
+        // alpha and aren't used with modifiers.
+        onyx: "rgb(var(--fv-onyx-rgb) / <alpha-value>)",
+        charcoal: "rgb(var(--fv-charcoal-rgb) / <alpha-value>)",
+        "surface-1": "rgb(var(--fv-surface-1-rgb) / <alpha-value>)",
+        "surface-2": "rgb(var(--fv-surface-2-rgb) / <alpha-value>)",
+        cream: "rgb(var(--fv-white-rgb) / <alpha-value>)",
+        silver: "rgb(var(--fv-silver-rgb) / <alpha-value>)",
         gold: {
-          DEFAULT: "var(--fv-gold)",
-          bright: "var(--fv-gold-bright)",
-          deep: "var(--fv-gold-deep)",
+          DEFAULT: "rgb(var(--fv-gold-rgb) / <alpha-value>)",
+          bright: "rgb(var(--fv-gold-bright-rgb) / <alpha-value>)",
+          deep: "rgb(var(--fv-gold-deep-rgb) / <alpha-value>)",
           soft: "var(--fv-gold-soft)",
         },
         cobalt: {
-          DEFAULT: "var(--fv-cobalt)",
-          bright: "var(--fv-cobalt-bright)",
+          DEFAULT: "rgb(var(--fv-cobalt-rgb) / <alpha-value>)",
+          bright: "rgb(var(--fv-cobalt-bright-rgb) / <alpha-value>)",
           soft: "var(--fv-cobalt-soft)",
         },
-        navy: "var(--fv-navy)",
-        purple: "var(--fv-purple)",
-        success: "var(--fv-success)",
-        warning: "var(--fv-warning)",
-        danger: "var(--fv-danger)",
+        navy: "rgb(var(--fv-navy-rgb) / <alpha-value>)",
+        purple: "rgb(var(--fv-purple-rgb) / <alpha-value>)",
+        success: "rgb(var(--fv-success-rgb) / <alpha-value>)",
+        warning: "rgb(var(--fv-warning-rgb) / <alpha-value>)",
+        danger: "rgb(var(--fv-danger-rgb) / <alpha-value>)",
         hairline: {
           DEFAULT: "var(--fv-hairline)",
           strong: "var(--fv-hairline-2)",

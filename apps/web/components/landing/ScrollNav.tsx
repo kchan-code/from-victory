@@ -54,12 +54,18 @@ export function ScrollNav() {
             aria-label="From Victory home"
             className="flex items-center gap-2 sm:gap-3 md:gap-4 text-cream no-underline shrink-0"
           >
+            {/* FV-530: the jumbo wordmark (72px) now waits for `xl`. At
+                lg widths the ~336px logo block left the link row less
+                width than its single-line minimum, pushing the trial pill
+                out of view once wrapping was fixed; the compact h-11
+                wordmark (~213px block) leaves the lg bar fitting with
+                margin. */}
             <Image
               src="/logo-icon.svg"
               alt=""
               width={64}
               height={36}
-              className="block h-8 sm:h-9 md:h-14 w-auto"
+              className="block h-8 sm:h-9 xl:h-14 w-auto"
               priority
             />
             <Image
@@ -67,19 +73,21 @@ export function ScrollNav() {
               alt="From Victory"
               width={100}
               height={32}
-              className="hidden min-[400px]:block h-9 min-[400px]:h-10 sm:h-11 md:h-[72px] w-auto translate-y-[3px] md:translate-y-[2px]"
+              className="hidden min-[400px]:block h-9 min-[400px]:h-10 sm:h-11 xl:h-[72px] w-auto translate-y-[3px] xl:translate-y-[2px]"
               priority
             />
           </a>
           <div className="flex-1 min-w-2 sm:min-w-12 md:min-w-16" aria-hidden />
           <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Desktop nav — unchanged behavior, gated behind `md` so the
-                hamburger drawer owns everything below that (FV-512). The
-                per-item hidden sm:/lg: classes below are pre-existing and
-                left as-is; they're redundant once the wrapper gates at
-                `md`, but harmless — this keeps "today"'s reveal order
-                intact for md-and-up widths exactly as it was. */}
-            <div className="hidden md:flex items-center gap-1.5 font-heading text-[14px]">
+            {/* Desktop nav — the hamburger drawer owns everything below
+                `lg` (FV-530; was `md` in FV-512). With link wrapping
+                fixed, the md–lg band cannot hold the desktop set on one
+                line (min-content ~1092px vs ≤1024 viewports), so tablets
+                get the drawer instead of a cut-off bar. The per-item
+                hidden sm:/md: classes below are pre-existing and left
+                as-is; they're redundant once the wrapper gates at `lg`,
+                but harmless. */}
+            <div className="hidden lg:flex items-center gap-1.5 font-heading text-[14px]">
               <div ref={sportsRef} className="relative">
                 {/* Disclosure of plain links, not an ARIA menu widget — no
                     arrow-key/typeahead contract is implied or implemented. */}
@@ -117,24 +125,30 @@ export function ScrollNav() {
                   </div>
                 )}
               </div>
+              {/* FV-530: whitespace-nowrap on each text link — without it
+                  the multi-word labels wrap to two/three lines when the bar
+                  tightens, which reads as clutter. The labels are short, so
+                  nowrap trades a little width for a single clean line. */}
               <a
                 href="/#how"
-                className="hidden md:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
+                className="hidden md:inline-flex whitespace-nowrap text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
               >
                 For the Athlete
               </a>
               <Link
                 href="/parents"
-                className="hidden md:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
+                className="hidden md:inline-flex whitespace-nowrap text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
               >
                 For Parents
               </Link>
-              <Link
-                href="/teams"
-                className="hidden lg:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
-              >
-                For Teams &amp; Churches
-              </Link>
+              {/* FV-530: "For Teams & Churches" and "Resources" are demoted
+                  out of the desktop bar. With wrapping fixed (nowrap), the
+                  full 9-item set measures ~1275px against the ~1180px the
+                  1240px container leaves — the two longest, lowest-intent
+                  links are the ones that pushed the trial pill out of view.
+                  Both remain one click away in the footer of every page and
+                  in the sub-md drawer (MobileMenu), which still lists all 8
+                  entries. */}
               {/* Google Play "no in-app purchase" compliance: inside the
                   native shell, /pricing itself redirects through the
                   entry-point router before any marketing content renders (see
@@ -145,15 +159,9 @@ export function ScrollNav() {
                   ever produced. */}
               <Link
                 href="/pricing"
-                className="hidden sm:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
+                className="hidden sm:inline-flex whitespace-nowrap text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
               >
                 Pricing
-              </Link>
-              <Link
-                href="/resources"
-                className="hidden lg:inline-flex text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
-              >
-                Resources
               </Link>
               <Link
                 href="/signin"
@@ -184,7 +192,7 @@ export function ScrollNav() {
               aria-controls="mobile-menu"
               aria-label="Menu"
               onClick={() => setMobileMenuOpen((open) => !open)}
-              className="flex h-[44px] w-[44px] items-center justify-center rounded-pill text-cream/80 transition-colors duration-fast ease-out hover:bg-charcoal hover:text-cream md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cobalt focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+              className="flex h-[44px] w-[44px] items-center justify-center rounded-pill text-cream/80 transition-colors duration-fast ease-out hover:bg-charcoal hover:text-cream lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cobalt focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
             >
               {mobileMenuOpen ? (
                 <svg
