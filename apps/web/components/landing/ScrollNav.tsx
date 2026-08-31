@@ -67,7 +67,7 @@ export function ScrollNav() {
               alt="From Victory"
               width={100}
               height={32}
-              className="block h-9 min-[390px]:h-10 sm:h-11 md:h-[72px] w-auto translate-y-[3px] md:translate-y-[2px]"
+              className="hidden min-[400px]:block h-9 min-[400px]:h-10 sm:h-11 md:h-[72px] w-auto translate-y-[3px] md:translate-y-[2px]"
               priority
             />
           </a>
@@ -184,7 +184,7 @@ export function ScrollNav() {
               aria-controls="mobile-menu"
               aria-label="Menu"
               onClick={() => setMobileMenuOpen((open) => !open)}
-              className="flex h-11 w-11 items-center justify-center rounded-pill text-cream/80 transition-colors duration-fast ease-out hover:bg-charcoal hover:text-cream md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cobalt focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+              className="flex h-[44px] w-[44px] items-center justify-center rounded-pill text-cream/80 transition-colors duration-fast ease-out hover:bg-charcoal hover:text-cream md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cobalt focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
             >
               {mobileMenuOpen ? (
                 <svg

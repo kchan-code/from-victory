@@ -16,6 +16,7 @@ const forLinks = [
   { href: "/teams", label: "For Teams & Churches" },
   { href: "/pricing", label: "Pricing" },
   { href: "/resources", label: "Resources" },
+  { href: "/signin", label: "Sign in" },
 ];
 
 const companyLinks = [
@@ -55,7 +56,7 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pt-8 border-t border-hairline font-mono text-[11px] tracking-[0.14em] uppercase text-cream/50 font-semibold">
           <div>© 2026 From Victory LLC · All rights reserved</div>
           {/* FV-512: 44px tap targets (was 18px icon + 14px gap). Padding
-              grows the hit area to h-11 w-11 without enlarging the icon
+              grows the hit area to 44x44px without enlarging the icon
               glyph itself, so the visual weight of the row barely moves. */}
           <div className="flex text-cream/50">
             <a
@@ -63,7 +64,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
-              className="inline-flex h-11 w-11 items-center justify-center hover:text-cream"
+              className="inline-flex h-[44px] w-[44px] items-center justify-center hover:text-cream"
             >
               <svg
                 width="18"
@@ -83,7 +84,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="X"
-              className="inline-flex h-11 w-11 items-center justify-center hover:text-cream"
+              className="inline-flex h-[44px] w-[44px] items-center justify-center hover:text-cream"
             >
               <svg
                 width="18"
@@ -101,7 +102,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="YouTube"
-              className="inline-flex h-11 w-11 items-center justify-center hover:text-cream"
+              className="inline-flex h-[44px] w-[44px] items-center justify-center hover:text-cream"
             >
               <svg
                 width="18"
@@ -120,7 +121,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="TikTok"
-              className="inline-flex h-11 w-11 items-center justify-center hover:text-cream"
+              className="inline-flex h-[44px] w-[44px] items-center justify-center hover:text-cream"
             >
               <svg
                 width="18"

@@ -133,3 +133,40 @@ describe("ScrollNav mobile menu (FV-512)", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });
+
+describe("ScrollNav mobile menu — focus-trap wrap (FV-512 qa-reviewer)", () => {
+  function focusables(dialog: HTMLElement): HTMLElement[] {
+    return Array.from(
+      dialog.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter((el) => !el.hasAttribute("disabled"));
+  }
+
+  it("Tab on the last focusable element wraps to the first", () => {
+    openMenu();
+    const dialog = screen.getByRole("dialog", { name: /menu/i });
+    const els = focusables(dialog);
+    els[els.length - 1]!.focus();
+    fireEvent.keyDown(document, { key: "Tab" });
+    expect(document.activeElement).toBe(els[0]);
+  });
+
+  it("Shift+Tab on the first focusable element wraps to the last", () => {
+    openMenu();
+    const dialog = screen.getByRole("dialog", { name: /menu/i });
+    const els = focusables(dialog);
+    els[0]!.focus();
+    fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
+    expect(document.activeElement).toBe(els[els.length - 1]);
+  });
+});
+
+describe("Footer — no-JS Sign in fallback (FV-512 qa-reviewer)", () => {
+  it("the footer carries a Sign in link so sub-md no-JS visitors keep a path to /signin", async () => {
+    const { Footer } = await import("@/components/landing/Footer");
+    render(<Footer />);
+    const signIn = screen.getByRole("link", { name: "Sign in" });
+    expect(signIn).toHaveAttribute("href", "/signin");
+  });
+});
