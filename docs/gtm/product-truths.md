@@ -10,6 +10,17 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-08-31 — Hero screenshot is now the Positive Plays pregame screen
+
+The homepage hero's phone now shows the pregame "Picture the plays
+you'll make" screen (Positive Plays, where the athlete picks up to three
+plays to rehearse) instead of the home dashboard. KC's call: the first
+product visual should show the visualization differentiator itself.
+
+Why it matters to a buyer: the hero image now demonstrates the guided
+visualization feature the product is differentiated on, not a generic
+dashboard.
+
 ## 2026-08-31 — Homepage hero now shows a real app screenshot
 
 The phone in the homepage hero now displays a real capture of the app's
