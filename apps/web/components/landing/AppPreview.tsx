@@ -1,10 +1,124 @@
-import { FlameMark } from "@/components/ui";
-import { PhoneStatusBar } from "./PhoneStatusBar";
+// client: tracks the active slide (scroll position via IntersectionObserver)
+// for the visible + aria-live "N of 5" progress readout, and drives the
+// prev/next buttons' programmatic scroll. Slides themselves are plain
+// next/image elements rendered in the initial (server) HTML — only the
+// progress/controls state is client-side.
+"use client";
+
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { Reveal } from "./Reveal";
 import { SectionMeta } from "./SectionMeta";
 import { SvgIcon } from "./SvgIcon";
 
+interface Slide {
+  id: string;
+  src: string;
+  /** Short, factual surface name shown under the phone. */
+  label: string;
+  /** Alt text carries the description — no fake UI is rendered for it. */
+  alt: string;
+}
+
+// Real product screenshots (1206x2622), reviewed and cleared for public use.
+// Order mirrors the athlete's actual path: home -> pregame setup -> guided
+// session -> pre-practice lock in.
+const SLIDES: Slide[] = [
+  {
+    id: "home",
+    src: "/images/screens/screen-home-dashboard.png",
+    label: "Home",
+    alt: "App home screen: daily training card, tiles for pregame visualization, pre-practice visualization, journey, and ride home, and a rhythm ring at day 1 of 30. Hebrews 12:2 at the bottom.",
+  },
+  {
+    id: "pregame-intro",
+    src: "/images/screens/screen-pregame-intro.png",
+    label: "Pre-Game Reset",
+    alt: "Pre-Game Reset intro screen reading Breathe. Focus. Compete. with a Begin button and an offline Set up for later option.",
+  },
+  {
+    id: "positive-plays",
+    src: "/images/screens/screen-pregame-positive-plays.png",
+    label: "Positive Plays",
+    alt: "Pregame step 4 of 11, Positive Plays: Picture the plays you'll make, with soccer play chips to pick one to three.",
+  },
+  {
+    id: "guided-session",
+    src: "/images/screens/screen-pregame-guided-session.png",
+    label: "Guided Session",
+    alt: "Pregame step 11 of 11 reading Five minutes. Eyes closed. An Isaiah 41:10 identity card with a gold play button.",
+  },
+  {
+    id: "pre-practice",
+    src: "/images/screens/screen-pre-practice-lockin.png",
+    label: "Pre-Practice Lock In",
+    alt: "Pre-Practice Lock In screen asking how you are showing up today, with Dialed in and Not feeling it options.",
+  },
+];
+
 export function AppPreview() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const slideRefs = useRef<Array<HTMLDivElement | null>>([]);
+
+  // Sync the progress readout to whatever slide is actually most visible —
+  // covers swipe/scroll as well as the buttons below.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (
+      !container ||
+      typeof window === "undefined" ||
+      !("IntersectionObserver" in window)
+    ) {
+      return;
+    }
+
+    const ratios = new Array<number>(SLIDES.length).fill(0);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const idx = Number((entry.target as HTMLElement).dataset.slideIndex);
+          if (!Number.isNaN(idx)) ratios[idx] = entry.intersectionRatio;
+        }
+        let bestIdx = 0;
+        let bestRatio = 0;
+        ratios.forEach((ratio, idx) => {
+          if (ratio > bestRatio) {
+            bestRatio = ratio;
+            bestIdx = idx;
+          }
+        });
+        if (bestRatio > 0.1) {
+          setActiveIndex((prev) => (prev === bestIdx ? prev : bestIdx));
+        }
+      },
+      { root: container, threshold: [0, 0.25, 0.5, 0.75, 1] },
+    );
+
+    slideRefs.current.forEach((el) => {
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  function goTo(index: number) {
+    const clamped = Math.max(0, Math.min(SLIDES.length - 1, index));
+    setActiveIndex(clamped);
+    const target = slideRefs.current[clamped];
+    const reducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    target?.scrollIntoView?.({
+      behavior: reducedMotion ? "auto" : "smooth",
+      inline: "start",
+      block: "nearest",
+    });
+  }
+
+  const isFirst = activeIndex === 0;
+  const isLast = activeIndex === SLIDES.length - 1;
+
   return (
     <section
       id="app"
@@ -31,582 +145,77 @@ export function AppPreview() {
 
       <div className="relative mx-auto max-w-[1240px] px-5 sm:px-8">
         <Reveal>
-          <div className="fv-preview-scroll">
-            {/* 1. Today Dashboard — reflects the real /athlete hub */}
-            <PreviewItem
-              lbl="01 / Today dashboard"
-              ttl="Everything you need, one tap away."
-              sub="Rhythm ring, daily training, pregame, pre-practice — all from the home screen."
-            >
-              <div className="fv-phone-screen">
-                <div className="fv-phone-notch" />
-                <PhoneStatusBar small />
-                <div className="px-[18px] pt-2 pb-5 flex-1 overflow-hidden">
-                  {/* Header */}
-                  <div className="flex justify-between items-center mb-3.5">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="relative w-12 h-12 flex-none"
-                        aria-hidden
-                      >
-                        <svg width="48" height="48" className="-rotate-90">
-                          <circle
-                            cx="24"
-                            cy="24"
-                            r="20"
-                            stroke="rgba(247,247,247,0.06)"
-                            strokeWidth="4"
-                            fill="none"
-                          />
-                          <circle
-                            cx="24"
-                            cy="24"
-                            r="20"
-                            stroke="var(--fv-cobalt)"
-                            strokeWidth="4"
-                            fill="none"
-                            strokeLinecap="round"
-                            strokeDasharray="125.7"
-                            strokeDashoffset="75.4"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <div className="font-display font-extrabold text-[11px] text-cream leading-none">
-                            8
-                            <span className="text-[7px] opacity-55">/30</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="font-display font-extrabold text-[20px] text-cream tracking-[-0.01em] leading-none">
-                          Hi Jordan.
-                        </div>
-                        <div className="font-body text-[10px] text-cream/50 mt-0.5">
-                          Keep your rhythm.
-                        </div>
-                      </div>
-                    </div>
-                    <div className="w-7 h-7 rounded-pill bg-charcoal border border-hairline inline-flex items-center justify-center text-cream/70">
-                      <SvgIcon name="bell" size={12} />
-                    </div>
-                  </div>
-
-                  {/* Nav cards */}
-                  <div className="flex flex-col gap-[6px]">
-                    {/* Daily Training — primary */}
-                    <div
-                      className="rounded-[13px] px-3 py-2.5 flex items-center gap-2.5"
-                      style={{
-                        background:
-                          "linear-gradient(180deg,rgba(223,175,55,0.12),rgba(223,175,55,0)),var(--bg-elev-1)",
-                        border: "1px solid rgba(223,175,55,0.42)",
-                      }}
-                    >
-                      <div
-                        className="w-7 h-7 rounded-[8px] flex items-center justify-center text-gold flex-none"
-                        style={{
-                          background: "var(--fv-gold-soft)",
-                          border: "1px solid rgba(223,175,55,0.28)",
-                        }}
-                      >
-                        <SvgIcon name="book" size={13} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-mono text-[8px] tracking-[0.16em] uppercase text-gold font-semibold">
-                          Today
-                        </div>
-                        <div className="font-display font-extrabold uppercase tracking-[0.02em] text-cream text-[12px] leading-[1.15]">
-                          Daily Training
-                        </div>
-                      </div>
-                      <div className="font-display text-gold text-[14px]">→</div>
-                    </div>
-
-                    {/* Pregame */}
-                    <div
-                      className="rounded-[13px] px-3 py-2.5 flex items-center gap-2.5"
-                      style={{
-                        background:
-                          "linear-gradient(180deg,rgba(223,175,55,0.07),rgba(223,175,55,0)),var(--bg-elev-1)",
-                        border: "1px solid rgba(223,175,55,0.22)",
-                      }}
-                    >
-                      <div
-                        className="w-7 h-7 rounded-[8px] flex items-center justify-center flex-none"
-                        style={{
-                          background: "rgba(223,175,55,0.06)",
-                          border: "1px solid rgba(223,175,55,0.16)",
-                        }}
-                      >
-                        <SvgIcon name="shield" size={13} className="text-gold" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-mono text-[8px] tracking-[0.16em] uppercase text-gold/70 font-semibold">
-                          Game day
-                        </div>
-                        <div className="font-display font-extrabold uppercase tracking-[0.02em] text-cream text-[12px] leading-[1.15]">
-                          Start Pregame
-                        </div>
-                      </div>
-                      <div className="font-display text-gold/70 text-[14px]">→</div>
-                    </div>
-
-                    {/* Pre-practice */}
-                    <div
-                      className="rounded-[13px] px-3 py-2.5 flex items-center gap-2.5"
-                      style={{
-                        background:
-                          "linear-gradient(180deg,rgba(223,175,55,0.04),rgba(223,175,55,0)),var(--bg-elev-1)",
-                        border: "1px solid rgba(223,175,55,0.16)",
-                      }}
-                    >
-                      <div
-                        className="w-7 h-7 rounded-[8px] flex items-center justify-center flex-none"
-                        style={{
-                          background: "rgba(223,175,55,0.04)",
-                          border: "1px solid rgba(223,175,55,0.10)",
-                        }}
-                      >
-                        <SvgIcon name="wind" size={13} className="text-gold/80" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-mono text-[8px] tracking-[0.16em] uppercase text-gold/55 font-semibold">
-                          Practice day
-                        </div>
-                        <div className="font-display font-extrabold uppercase tracking-[0.02em] text-cream text-[12px] leading-[1.15]">
-                          Lock In
-                        </div>
-                      </div>
-                      <div className="font-display text-gold/55 text-[14px]">→</div>
-                    </div>
-
-                    {/* Journey */}
-                    <div
-                      className="rounded-[13px] px-3 py-2.5 flex items-center gap-2.5"
-                      style={{
-                        background:
-                          "linear-gradient(180deg,rgba(223,175,55,0.02),rgba(223,175,55,0)),var(--bg-elev-1)",
-                        border: "1px solid rgba(223,175,55,0.10)",
-                      }}
-                    >
-                      <div
-                        className="w-7 h-7 rounded-[8px] flex items-center justify-center flex-none"
-                        style={{
-                          background: "rgba(223,175,55,0.03)",
-                          border: "1px solid rgba(223,175,55,0.07)",
-                        }}
-                      >
-                        <SvgIcon name="pen" size={13} className="text-gold/60" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-mono text-[8px] tracking-[0.16em] uppercase text-gold/40 font-semibold">
-                          History
-                        </div>
-                        <div className="font-display font-extrabold uppercase tracking-[0.02em] text-cream text-[12px] leading-[1.15]">
-                          Your Journey
-                        </div>
-                      </div>
-                      <div className="font-display text-gold/40 text-[14px]">→</div>
-                    </div>
-                  </div>
+          <div
+            ref={containerRef}
+            role="group"
+            aria-roledescription="carousel"
+            aria-label="From Victory app screens"
+            className="fv-preview-scroll"
+          >
+            {SLIDES.map((slide, index) => (
+              <div
+                key={slide.id}
+                ref={(el) => {
+                  slideRefs.current[index] = el;
+                }}
+                data-slide-index={index}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`${index + 1} of ${SLIDES.length}: ${slide.label}`}
+                className="flex-none flex flex-col gap-3 w-[268px] sm:w-[300px]"
+                style={{ scrollSnapAlign: "start" }}
+              >
+                <div className="rounded-[28px] border border-hairline-strong shadow-elev-3 overflow-hidden bg-onyx">
+                  <Image
+                    src={slide.src}
+                    width={1206}
+                    height={2622}
+                    alt={slide.alt}
+                    loading="lazy"
+                    sizes="(min-width: 640px) 300px, 268px"
+                    className="block w-full h-auto"
+                  />
                 </div>
+                <p className="font-mono text-[11px] tracking-[0.20em] uppercase text-gold font-semibold text-center m-0">
+                  {slide.label}
+                </p>
               </div>
-            </PreviewItem>
+            ))}
+          </div>
 
-            {/* 2. Daily Training Session — the real /athlete/daily screen */}
-            <PreviewItem
-              lbl="02 / Daily training"
-              ttl="Mental skill + scripture, every day."
-              sub="30 sessions of mental toughness training rooted in the Word. Read, reflect, complete."
+          <div className="flex items-center justify-center gap-6 mt-2">
+            <button
+              type="button"
+              onClick={() => goTo(activeIndex - 1)}
+              disabled={isFirst}
+              aria-label="Previous screen"
+              data-testid="app-preview-prev"
+              className="w-11 h-11 flex-none rounded-full border border-hairline-strong flex items-center justify-center text-cream transition-transform duration-fast ease-out active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cobalt focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal disabled:opacity-30 disabled:cursor-not-allowed disabled:pointer-events-none"
             >
-              <div className="fv-phone-screen">
-                <div className="fv-phone-notch" />
-                <PhoneStatusBar small />
-                <div className="px-[18px] pt-2 pb-5 flex-1 overflow-hidden">
-                  {/* Back + day label */}
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex items-center gap-1 text-cream/50">
-                      <SvgIcon name="chev" size={10} className="rotate-180" />
-                      <div className="font-mono text-[8.5px] tracking-[0.14em] uppercase font-semibold">
-                        Home
-                      </div>
-                    </div>
-                  </div>
-                  {/* Rhythm ring + day */}
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <div className="relative w-10 h-10 flex-none" aria-hidden>
-                      <svg width="40" height="40" className="-rotate-90">
-                        <circle
-                          cx="20"
-                          cy="20"
-                          r="16"
-                          stroke="rgba(247,247,247,0.06)"
-                          strokeWidth="3.5"
-                          fill="none"
-                        />
-                        <circle
-                          cx="20"
-                          cy="20"
-                          r="16"
-                          stroke="var(--fv-cobalt)"
-                          strokeWidth="3.5"
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeDasharray="100.5"
-                          strokeDashoffset="70.3"
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="font-display font-extrabold text-[9px] text-cream leading-none">
-                          8<span className="text-[6px] opacity-55">/30</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-mono text-[8.5px] tracking-[0.16em] uppercase text-gold font-semibold">
-                        Day 8 of 30
-                      </div>
-                      <div className="font-body text-[10px] text-cream/55">
-                        7 sessions complete.
-                      </div>
-                    </div>
-                  </div>
+              <SvgIcon name="chev" size={16} className="rotate-180" />
+            </button>
 
-                  {/* Session card */}
-                  <div className="bg-charcoal border border-hairline rounded-[14px] p-3 mb-2.5">
-                    <div className="font-mono text-[8px] tracking-[0.16em] uppercase text-gold font-semibold mb-1.5">
-                      Daily Training · Day 8
-                    </div>
-                    <div className="font-display font-extrabold uppercase tracking-[0.01em] text-cream text-[14px] leading-[1.1] mb-2">
-                      Control What You Can Control
-                    </div>
-                    <div className="font-body text-[10.5px] text-cream/65 leading-[1.5] mb-2.5">
-                      Every athlete faces moments where the outcome is out of
-                      their hands. Mental toughness is learning to own the
-                      process — not the result.
-                    </div>
-                    <div className="border-l-[2px] border-gold/50 pl-3">
-                      <div className="font-scripture text-[10.5px] leading-[1.45] text-cream italic">
-                        &ldquo;I can do all this through him who gives me
-                        strength.&rdquo;
-                      </div>
-                      <div className="font-mono text-[8px] tracking-[0.14em] uppercase text-gold mt-1">
-                        Philippians 4:13 · NIV
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Complete CTA */}
-                  <div
-                    className="rounded-[11px] py-2.5 text-center font-display font-extrabold uppercase tracking-[0.12em] text-[11px] text-onyx"
-                    style={{ background: "var(--fv-gold)" }}
-                  >
-                    Complete Day 8
-                  </div>
-                </div>
-              </div>
-            </PreviewItem>
-
-            {/* 3. Pregame — guided audio session */}
-            <PreviewItem
-              lbl="03 / Pregame audio"
-              ttl="A 5-minute guided reset before you step on."
-              sub="Personalized by sport and position. Breath, visualization, identity, and your focus cue — narrated."
+            <p
+              aria-live="polite"
+              data-testid="app-preview-progress"
+              className="font-mono text-[12px] tracking-[0.14em] text-cream/60 tabular-nums min-w-[68px] text-center m-0"
             >
-              <div className="fv-phone-screen" style={{ background: "#000" }}>
-                <div className="fv-phone-notch" />
-                <PhoneStatusBar small lightOnDark />
-                <div className="fv-pregame-bg absolute inset-0 pointer-events-none" />
-                <div
-                  className="absolute right-[-30px] top-[30px] pointer-events-none opacity-[0.08]"
-                  aria-hidden
-                >
-                  <FlameMark size={240} />
-                </div>
-                <div
-                  className="relative flex flex-col justify-between px-[22px] pt-1.5 pb-7 flex-1"
-                  style={{ overflow: "hidden" }}
-                >
-                  <div>
-                    <div className="mt-7 inline-flex items-center gap-2 font-mono text-[9.5px] tracking-[0.22em] uppercase text-gold font-semibold">
-                      <span className="w-[5px] h-[5px] rounded-pill bg-gold" />
-                      Pregame · 18 min out
-                    </div>
-                    <div className="mt-5 font-display font-extrabold text-[28px] leading-[0.95] tracking-[0.02em] uppercase text-cream">
-                      Breathe.
-                      <br />
-                      Focus.
-                      <br />
-                      Compete.
-                    </div>
-                    <div className="mt-2 font-body text-[10.5px] text-cream/55 leading-[1.45]">
-                      Defenseman · Adversity: getting benched
-                    </div>
-                  </div>
+              {activeIndex + 1} of {SLIDES.length}
+            </p>
 
-                  <div className="relative w-36 h-36 mx-auto flex items-center justify-center">
-                    <div
-                      className="absolute w-36 h-36 rounded-full"
-                      style={{ border: "1px solid rgba(36,91,255,0.18)" }}
-                    />
-                    <div
-                      className="absolute w-[108px] h-[108px] rounded-full"
-                      style={{ border: "1px solid rgba(36,91,255,0.32)" }}
-                    />
-                    <div
-                      className="w-[72px] h-[72px] rounded-full"
-                      style={{
-                        background:
-                          "radial-gradient(circle at 35% 30%,rgba(223,175,55,0.5),rgba(36,91,255,0.45) 60%,rgba(7,26,51,0.6) 100%)",
-                        boxShadow: "0 0 60px rgba(36,91,255,0.25)",
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <div className="font-mono text-[9px] tracking-[0.20em] uppercase text-cream/50 font-semibold mb-1.5">
-                      Your focus cue
-                    </div>
-                    <div
-                      className="rounded-[12px] px-3.5 py-3 font-heading font-medium text-[13px] text-cream mb-2.5"
-                      style={{
-                        background: "rgba(5,5,5,0.55)",
-                        backdropFilter: "blur(8px)",
-                        border: "1px solid rgba(247,247,247,0.14)",
-                      }}
-                    >
-                      First-shift effort. Body language steady.
-                    </div>
-                    <div className="bg-gold text-onyx font-display font-extrabold uppercase tracking-[0.14em] text-[12px] rounded-[10px] px-3.5 py-3 text-center">
-                      Start guided session
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </PreviewItem>
-
-            {/* 4. Post-game reset — the real /athlete/postgame debrief */}
-            <PreviewItem
-              lbl="04 / Post-game reset"
-              ttl="Won, lost, mistake, tough — every game has a reset."
-              sub="Reflection before recap — name it, release it, carry the lesson."
+            <button
+              type="button"
+              onClick={() => goTo(activeIndex + 1)}
+              disabled={isLast}
+              aria-label="Next screen"
+              data-testid="app-preview-next"
+              className="w-11 h-11 flex-none rounded-full border border-hairline-strong flex items-center justify-center text-cream transition-transform duration-fast ease-out active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cobalt focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal disabled:opacity-30 disabled:cursor-not-allowed disabled:pointer-events-none"
             >
-              <div className="fv-phone-screen">
-                <div className="fv-phone-notch" />
-                <PhoneStatusBar small />
-                <div className="px-[18px] pt-1.5 pb-[18px] flex-1 overflow-hidden">
-                  <div className="mb-3.5">
-                    <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-cream/50 font-semibold">
-                      Post-game reset
-                    </div>
-                    <div className="font-heading font-semibold text-[17px] text-cream mt-1 tracking-[-0.01em]">
-                      After the game
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-[7px]">
-                    <div
-                      className="rounded-[12px] px-3 py-3 text-cream"
-                      style={{
-                        background: "rgba(79,199,138,0.10)",
-                        border: "1px solid rgba(79,199,138,0.4)",
-                      }}
-                    >
-                      <div className="font-mono text-[8.5px] tracking-[0.16em] uppercase text-success font-semibold">
-                        Won
-                      </div>
-                      <div className="font-heading font-semibold text-[13px] mt-1">
-                        Stay grounded
-                      </div>
-                    </div>
-                    {[
-                      { label: "Lost", title: "Reset, not ruin" },
-                      { label: "Mistake", title: "Name & release" },
-                      { label: "Tough", title: "Carry the lesson" },
-                    ].map((opt) => (
-                      <div
-                        key={opt.label}
-                        className="bg-charcoal border border-hairline rounded-[12px] px-3 py-3"
-                      >
-                        <div className="font-mono text-[8.5px] tracking-[0.16em] uppercase text-cream/50 font-semibold">
-                          {opt.label}
-                        </div>
-                        <div className="font-heading font-semibold text-[13px] mt-1 text-cream">
-                          {opt.title}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 bg-charcoal border border-hairline rounded-[12px] p-3 text-center">
-                    <div className="font-body text-[11px] text-cream/55 leading-[1.45]">
-                      A short debrief that clears the emotion before it
-                      hardens into the story you tell yourself.
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </PreviewItem>
-
-            {/* 5. Pre-practice Lock In — the real /athlete/practice screen */}
-            <PreviewItem
-              lbl="05 / Pre-practice lock in"
-              ttl="Two minutes before you step on the practice ice."
-              sub="Self-report your state, pick one thing to own, then hear it narrated back."
-            >
-              <div className="fv-phone-screen" style={{ background: "#000" }}>
-                <div className="fv-phone-notch" />
-                <PhoneStatusBar small lightOnDark />
-                <div className="fv-pregame-bg absolute inset-0 pointer-events-none" />
-                <div
-                  className="relative flex flex-col px-[22px] pt-1.5 pb-7 flex-1"
-                  style={{ overflow: "hidden" }}
-                >
-                  <div className="mt-7 mb-5">
-                    <div className="inline-flex items-center gap-2 font-mono text-[9.5px] tracking-[0.22em] uppercase text-gold font-semibold mb-3">
-                      <span className="w-[5px] h-[5px] rounded-pill bg-gold" />
-                      Pre-practice · Lock in
-                    </div>
-                    <div className="font-display font-extrabold text-[22px] leading-[1.0] tracking-[0.02em] uppercase text-cream">
-                      How are you showing up today?
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2 mb-5">
-                    <div
-                      className="rounded-[12px] px-3.5 py-3"
-                      style={{
-                        background: "rgba(223,175,55,0.10)",
-                        border: "1px solid rgba(223,175,55,0.5)",
-                      }}
-                    >
-                      <div className="font-heading font-semibold text-[13px] text-cream">
-                        Dialed in
-                      </div>
-                      <div className="font-body text-[10.5px] text-cream/60 mt-0.5">
-                        Ready to work. Lock in and go.
-                      </div>
-                    </div>
-                    <div
-                      className="rounded-[12px] px-3.5 py-3"
-                      style={{
-                        background: "rgba(5,5,5,0.55)",
-                        backdropFilter: "blur(8px)",
-                        border: "1px solid rgba(247,247,247,0.14)",
-                      }}
-                    >
-                      <div className="font-heading font-semibold text-[13px] text-cream">
-                        Not feeling it
-                      </div>
-                      <div className="font-body text-[10.5px] text-cream/50 mt-0.5">
-                        Off, flat, dragging. You showed up anyway.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-auto">
-                    <div className="bg-gold text-onyx font-display font-extrabold uppercase tracking-[0.14em] text-[12px] rounded-[10px] px-3.5 py-3 text-center">
-                      Continue
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </PreviewItem>
-
-            {/* 6. Journey — the real /athlete/journey session history */}
-            <PreviewItem
-              lbl="06 / Your journey"
-              ttl="Every session you've completed."
-              sub="The road behind you — re-read, revisit, remember. No shame for gaps; returning is the goal."
-            >
-              <div className="fv-phone-screen">
-                <div className="fv-phone-notch" />
-                <PhoneStatusBar small />
-                <div className="px-[18px] pt-2 pb-[18px] flex-1 overflow-hidden">
-                  <div className="mb-3.5">
-                    <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-gold font-semibold">
-                      Jordan&apos;s Journey
-                    </div>
-                    <div className="font-display font-extrabold uppercase tracking-[0.03em] text-cream text-[18px] leading-[1.05]">
-                      The Road Behind You
-                    </div>
-                    <div className="font-body text-cream/55 text-[10.5px] mt-1">
-                      7 sessions complete. Each one is yours.
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-[6px]">
-                    {[
-                      { day: 7, title: "One More Rep", ref: "Heb 12:1-2" },
-                      { day: 6, title: "Quiet Confidence", ref: "Phil 4:7" },
-                      { day: 5, title: "After the Mistake", ref: "Rom 8:1" },
-                      { day: 4, title: "Control Your Effort", ref: "Col 3:23" },
-                    ].map((entry) => (
-                      <div
-                        key={entry.day}
-                        className="flex items-center gap-2.5 bg-charcoal border border-hairline rounded-[12px] px-2.5 py-2"
-                      >
-                        <div
-                          className="w-8 h-8 rounded-[8px] flex items-center justify-center flex-none"
-                          style={{
-                            background: "rgba(223,175,55,0.10)",
-                            border: "1px solid rgba(223,175,55,0.20)",
-                          }}
-                        >
-                          <div className="font-mono font-bold text-[10px] text-gold leading-none">
-                            {entry.day}
-                          </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[11px] leading-[1.2] truncate">
-                            {entry.title}
-                          </div>
-                          <div className="font-mono text-[8.5px] text-cream/40 mt-0.5">
-                            {entry.ref}
-                          </div>
-                        </div>
-                        <SvgIcon name="chev" size={10} className="text-gold/50 flex-none" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </PreviewItem>
+              <SvgIcon name="chev" size={16} />
+            </button>
           </div>
         </Reveal>
       </div>
     </section>
-  );
-}
-
-function PreviewItem({
-  children,
-  lbl,
-  ttl,
-  sub,
-}: {
-  children: React.ReactNode;
-  lbl: string;
-  ttl: string;
-  sub: string;
-}) {
-  return (
-    <div
-      className="flex-none flex flex-col gap-[18px] w-[268px]"
-      style={{ scrollSnapAlign: "start" }}
-    >
-      <div className="fv-phone fv-phone-sm">{children}</div>
-      <div className="flex flex-col gap-1">
-        <div className="font-mono text-[10px] tracking-[0.20em] uppercase text-gold font-semibold">
-          {lbl}
-        </div>
-        <h3 className="font-heading font-semibold text-[16px] text-cream tracking-[-0.005em] m-0">
-          {ttl}
-        </h3>
-        <p className="font-body text-[13px] text-cream/50 leading-[1.5] m-0">
-          {sub}
-        </p>
-      </div>
-    </div>
   );
 }
