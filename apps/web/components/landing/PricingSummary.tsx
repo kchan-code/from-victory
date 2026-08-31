@@ -4,7 +4,7 @@ import { SectionMeta } from "./SectionMeta";
 import { SvgIcon } from "./SvgIcon";
 
 // FV-514 homepage IA restructure — pricing summary strip. Heading is
-// KC-approved verbatim (audit doc §7 decision 1). Price line is the same
+// KC-approved verbatim (audit doc §7 decision 5). Price line is the same
 // sentence used verbatim on the pricing-page hero (app/pricing/page.tsx).
 
 export function PricingSummary() {

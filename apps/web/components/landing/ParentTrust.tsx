@@ -4,7 +4,7 @@ import { SectionMeta } from "./SectionMeta";
 import { SvgIcon } from "./SvgIcon";
 
 // FV-514 homepage IA restructure — parent trust strip. Heading is KC-approved
-// verbatim (audit doc §7 decision 1). Every bullet title/body below is reused
+// verbatim (audit doc §7 decision 5). Every bullet title/body below is reused
 // verbatim or near-verbatim (light trims only, no new claims) from copy
 // already approved and live on /parents and /pricing.
 

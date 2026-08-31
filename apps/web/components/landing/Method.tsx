@@ -5,9 +5,11 @@ import { SectionMeta } from "./SectionMeta";
 // the four consecutive thesis restatements (Problem, Framework, HowItWorks,
 // Faith). Every sentence below is reused verbatim from those four retired
 // components (see the build notes for the source map) — no new marketing
-// prose was written. The retired components' deeper content still lives on
-// /parents, /pricing, and the sport pages; the files themselves are removed
-// since nothing else imports them.
+// prose was written. The retired components' remaining copy (Problem's
+// pressure cards, Framework's pyramid framing, Faith's theme pills) was
+// retired with them, not relocated - recoverable from git history via this
+// PR's deletions; relocation is tracked in FV-528. The files themselves are
+// removed since nothing else imports them.
 
 const parts = [
   {
