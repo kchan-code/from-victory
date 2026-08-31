@@ -1,7 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-import { FlameMark } from "@/components/ui";
 import { isAdultSignupEnabled } from "@/lib/flags";
-import { PhoneStatusBar } from "./PhoneStatusBar";
 import { SvgIcon } from "./SvgIcon";
 
 export function Hero() {
@@ -81,146 +80,35 @@ export function Hero() {
 
           </div>
 
-          {/* Right column: single phone mockup (FV-514 — the back "verse"
-              phone was cut; its Hebrews 12:1-2 duplicate now lives once, in
-              the method section). Gold accents inside are dimmed so the
-              hero CTA above stays the one dominant gold in this viewport.
-              Hidden below `sm`: on the smallest phones the decorative
-              mockup was still the single biggest contributor to hero
-              height — dropping it there keeps the athlete's thumb on
-              copy + CTA instead of scrolling past chrome; the app preview
-              carousel (real screenshots) arrives two sections later. */}
+          {/* Right column: real product screenshot (FV-531) — the home
+              dashboard capture also used by the app-preview carousel
+              (FV-513), framed in the same phone chrome the old JSX mockup
+              used. The fake phone internals are gone: what the hero shows
+              is the actual app. Alt text reused verbatim from the
+              carousel's home slide. Hidden below `sm` (FV-514): on the
+              smallest phones the phone frame was the single biggest
+              contributor to hero height; the carousel arrives two
+              sections later. */}
           <div className="hidden sm:block">
-            <div className="fv-hero-phones fv-hero-phones--single" aria-hidden>
-              {/* Front phone — Today dashboard */}
+            <div className="fv-hero-phones fv-hero-phones--single">
               <div className="fv-phone fv-phone-front">
                 <div className="fv-phone-screen">
-                  <div className="fv-phone-notch" />
-                  <PhoneStatusBar />
-                  <div className="px-5 pt-2 pb-5 flex-1 overflow-hidden">
-                    <div className="flex justify-between items-start mt-2 mb-[18px]">
-                      <div>
-                        <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-cream/50 font-semibold">
-                          Tuesday · Mar 12
-                        </div>
-                        <div className="font-heading font-semibold text-[19px] text-cream mt-1 tracking-[-0.01em]">
-                          Good morning, Jordan
-                        </div>
-                      </div>
-                      <div className="w-8 h-8 rounded-pill border border-hairline inline-flex items-center justify-center text-cream relative">
-                        <SvgIcon name="bell" size={15} />
-                        <span className="absolute top-[7px] right-[8px] w-[5px] h-[5px] rounded-pill bg-gold" />
-                      </div>
-                    </div>
-
-                    <div className="inline-flex items-center gap-2 font-mono text-[9px] tracking-[0.20em] uppercase font-semibold text-gold">
-                      <FlameMark size={11} />
-                      From Victory
-                    </div>
-                    <div className="font-heading font-semibold text-[22px] leading-[1.15] text-cream tracking-[-0.01em] mt-2.5 mb-2">
-                      Your worth is not
-                      <br />
-                      on the scoreboard.
-                    </div>
-                    <div className="font-body text-[12.5px] leading-[1.5] text-cream/70 mb-[18px]">
-                      Today&apos;s game does not define you. Reset, breathe, and
-                      take the next faithful step.
-                    </div>
-
-                    <div className="fv-rhythm-card rounded-[18px] p-4 mb-2.5">
-                      <div className="flex items-center gap-3.5">
-                        <div
-                          className="w-16 h-16 rounded-[18px] flex items-center justify-center flex-none"
-                          style={{
-                            background:
-                              "linear-gradient(180deg,rgba(223,175,55,0.18),rgba(223,175,55,0.04))",
-                            border: "1px solid rgba(223,175,55,0.32)",
-                          }}
-                        >
-                          <FlameMark
-                            size={36}
-                            className="text-gold"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-mono text-[9px] tracking-[0.20em] uppercase text-cream/50 font-semibold">
-                            Today&apos;s rhythm · Up next
-                          </div>
-                          <div className="font-heading font-semibold text-[15px] text-cream mt-[3px]">
-                            Receive — anchor in truth
-                          </div>
-                          <div className="font-body text-[11.5px] text-cream/70 mt-0.5">
-                            A short Scripture to sit with. About two minutes.
-                          </div>
-                        </div>
-                      </div>
-                      <div className="h-px bg-hairline my-3.5" />
-                      {/* FV-514: dimmed from solid bg-gold to an outline —
-                          the hero's real CTA is the only solid gold in this
-                          viewport now. */}
-                      <div className="w-full border border-gold/40 text-gold/80 font-heading font-semibold text-[13px] rounded-pill px-3.5 py-2.5 flex items-center justify-center gap-1.5">
-                        Continue training
-                        <SvgIcon name="arrow" size={13} />
-                      </div>
-                    </div>
-
-                    <div className="bg-charcoal border border-hairline rounded-[14px] px-3.5 py-3 flex items-center gap-3 mb-[18px]">
-                      <div className="w-9 h-9 rounded-[10px] bg-gold/[0.08] flex items-center justify-center text-gold">
-                        <SvgIcon name="wind" size={16} />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-heading font-semibold text-[13px] text-cream">
-                          Pre-practice lock in
-                        </div>
-                        <div className="font-body text-[11px] text-cream/50">
-                          How you practice is how you play.
-                        </div>
-                      </div>
-                      <SvgIcon
-                        name="chev"
-                        size={14}
-                        className="text-cream/50"
-                      />
-                    </div>
-
-                    <div className="font-mono text-[9px] tracking-[0.20em] uppercase text-cream/50 font-semibold mb-2">
-                      Today&apos;s reps
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="bg-charcoal border border-hairline rounded-[14px] p-3 min-h-[88px] flex flex-col justify-between">
-                        <div
-                          className="w-7 h-7 rounded-[8px] flex items-center justify-center text-gold"
-                          style={{
-                            background: "var(--fv-gold-soft)",
-                            border: "1px solid rgba(223,175,55,0.28)",
-                          }}
-                        >
-                          <SvgIcon name="wind" size={16} />
-                        </div>
-                        <div className="flex justify-between items-end mt-3 gap-1.5">
-                          <div className="font-heading font-semibold text-[13px] text-cream">
-                            Center
-                          </div>
-                          <div className="font-mono text-[9px] tracking-[0.14em] uppercase text-gold font-semibold">
-                            Done
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-charcoal border border-hairline rounded-[14px] p-3 min-h-[88px] flex flex-col justify-between">
-                        <div className="w-7 h-7 rounded-[8px] bg-cream/[0.04] flex items-center justify-center text-cream/70">
-                          <SvgIcon name="book" size={16} />
-                        </div>
-                        <div className="flex justify-between items-end mt-3 gap-1.5">
-                          <div className="font-heading font-semibold text-[13px] text-cream">
-                            Truth
-                          </div>
-                          <div className="font-mono text-[9px] tracking-[0.14em] uppercase text-cream/50 font-semibold">
-                            2 min
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  {/* The 1206x2622 capture is a hair taller than the
+                      296x632 screen cutout (0.460 vs 0.468 aspect), so
+                      object-cover trims ~5px off the top and bottom
+                      edges instead of letterboxing. No `priority`: it
+                      would emit an unconditional head preload, and this
+                      image never renders below `sm` — mobile would pay
+                      ~100-200KB for nothing. In-viewport desktop loads
+                      start immediately after layout regardless. */}
+                  <Image
+                    src="/images/screens/screen-home-dashboard.png"
+                    width={1206}
+                    height={2622}
+                    alt="App home screen: daily training card, tiles for pregame visualization, pre-practice visualization, journey, and ride home, and a rhythm ring at day 1 of 30. Hebrews 12:2 at the bottom."
+                    sizes="296px"
+                    className="block w-full h-full object-cover"
+                  />
                 </div>
               </div>
             </div>
