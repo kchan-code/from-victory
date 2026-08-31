@@ -29,11 +29,15 @@ const parts = [
     // FV-534 revision (content-curator; KC direction: carry the
     // audio-prompted angle where it is true — the guided AUDIO surfaces
     // are pregame and pre-practice, daily training stays text, so the
-    // audio claim lives in CARRY, not TRAIN). Base text was verbatim
-    // HowItWorks steps[3] (was "04 · CARRY", relabeled "03" here).
+    // audio claim lives in CARRY, not TRAIN). "runs one with you", not
+    // "that cue": the pregame session's focus is chosen fresh at setup;
+    // there is no data link carrying the daily cue into the audio
+    // (qa-reviewer verified), so the copy claims the practice, not a
+    // pipeline. Base text was verbatim HowItWorks steps[3] (was
+    // "04 · CARRY", relabeled "03" here).
     num: "03 · CARRY",
     name: "Take one cue.",
-    body: "One focus cue into practice, school, training, or game day. Before you compete, the guided audio session runs that cue with you, eyes closed. One thing inside your control.",
+    body: "One focus cue into practice, school, training, or game day. Before you compete, the guided audio session runs one with you, eyes closed. One thing inside your control.",
   },
 ];
 
@@ -54,13 +58,15 @@ export function Method() {
               A daily rhythm for the athlete&apos;s mind and spirit.
             </h2>
             {/* First sentence verbatim from the retired Framework lede;
-                the read-vs-hear sentence is FV-534 content-curator copy
-                (daily training is text, the pregame/pre-practice sessions
-                are narrated — the line stays honest about which is which). */}
+                the read/hear sentences are FV-534 copy, reworded per
+                qa-reviewer: each sentence names its own object so "hear"
+                can only bind to the pregame session, never to the daily
+                training (which is text-only per FV-135 — the one product
+                fact this lede must not blur). */}
             <p className="fv-lede">
               From Victory is built on a simple truth: identity comes before
-              performance. You read the daily training. Before you compete,
-              you hear it.
+              performance. You read the daily training. You hear the pregame
+              session.
             </p>
           </div>
         </Reveal>

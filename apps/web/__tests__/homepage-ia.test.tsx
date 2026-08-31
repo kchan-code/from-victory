@@ -223,6 +223,29 @@ describe("Homepage — Visualization section copy pins (FV-534)", () => {
   });
 });
 
+describe("Homepage — Method audio-angle pins (FV-534 qa-reviewer)", () => {
+  it("the lede's hear-sentence names the pregame session, never the daily training", () => {
+    const { container } = render(<LandingPage />);
+    const text = container.textContent ?? "";
+    // Drift guard: daily training is text-only (FV-135). The read/hear
+    // pair must keep explicit objects so "hear" cannot be parsed as
+    // narrated daily training.
+    expect(text).toContain(
+      "You read the daily training. You hear the pregame session.",
+    );
+    expect(text).not.toMatch(/you hear it\b/i);
+  });
+
+  it("CARRY claims the audio session runs a cue, not a carried-over one (no data link exists)", () => {
+    const { container } = render(<LandingPage />);
+    const text = container.textContent ?? "";
+    expect(text).toContain(
+      "Before you compete, the guided audio session runs one with you, eyes closed.",
+    );
+    expect(text).not.toContain("runs that cue");
+  });
+});
+
 describe("Homepage — Testimonials no longer rendered (FV-514)", () => {
   it("app/page.tsx does not import the Testimonials component", () => {
     const page = readFileSync(resolve(__dirname, "../app/page.tsx"), "utf8");
