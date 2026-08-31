@@ -12,7 +12,7 @@ export function PricingSummary() {
     <section className="py-16 sm:py-20 md:py-28 bg-charcoal border-y border-hairline">
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         <Reveal>
-          <SectionMeta num="04" label="Simple, honest pricing" />
+          <SectionMeta num="05" label="Simple, honest pricing" />
         </Reveal>
         <Reveal>
           <div className="max-w-[620px]">

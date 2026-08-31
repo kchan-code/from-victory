@@ -1,11 +1,13 @@
 /**
  * @vitest-environment jsdom
  */
-// FV-514 — homepage IA restructure: 8-section order, CTA cadence, beta proof.
+// FV-514 — homepage IA restructure: section order, CTA cadence, beta proof.
+// FV-534 added the Visualization section (the audio-guided differentiator)
+// between PregameSample and Method — 9 sections now.
 //
 // Coverage:
-//   1. Exactly 8 sections render, in the audit's §4 target order (by
-//      heading text, in document order).
+//   1. Exactly 9 sections render, in order (FV-514 §4 order with the
+//      FV-534 Visualization section inserted third), by heading text.
 //   2. The Hebrews 12:1-2 spine verse appears exactly once on the page.
 //   3. The beta-athlete quote renders, labeled as beta feedback, with the
 //      non-identifying "Beta hockey athlete" attribution.
@@ -92,22 +94,23 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// Expected heading sequence (1 h1 + 8 h2s across the 8 audit §4 sections;
-// Faq + Waitlist are two components but one "section 8" per the audit).
+// Expected heading sequence (1 h1 + 9 h2s; Faq + Waitlist are two
+// components but one final section per the audit).
 const EXPECTED_HEADINGS: RegExp[] = [
   /Visualize and compete/i, // 1. Hero (h1)
   /Hear a pregame session/i, // 2. PregameSample
-  /A daily rhythm for the athlete.s mind and spirit\./i, // 3. Method
-  /Built for the moments athletes actually face\./i, // 4. AppPreview
-  /What you see, and what stays private\./i, // 5. ParentTrust
-  /14 days free\. Cancel anytime\./i, // 6. PricingSummary
-  /Built by a hockey dad/i, // 7. Founder (+ beta proof)
-  /Questions parents ask\./i, // 8a. Faq
-  /Start training from secure identity\./i, // 8b. Waitlist
+  /Everyone says visualize\. Almost nobody helps you do it\./i, // 3. Visualization (FV-534)
+  /A daily rhythm for the athlete.s mind and spirit\./i, // 4. Method
+  /Built for the moments athletes actually face\./i, // 5. AppPreview
+  /What you see, and what stays private\./i, // 6. ParentTrust
+  /14 days free\. Cancel anytime\./i, // 7. PricingSummary
+  /Built by a hockey dad/i, // 8. Founder (+ beta proof)
+  /Questions parents ask\./i, // 9a. Faq
+  /Start training from secure identity\./i, // 9b. Waitlist
 ];
 
-describe("Homepage — 8-section order (FV-514)", () => {
-  it("renders exactly one h1 and 8 h2s, in the audit's §4 order", () => {
+describe("Homepage — section order (FV-514 + FV-534)", () => {
+  it("renders exactly one h1 and 9 h2s, in order", () => {
     const { container } = render(<LandingPage />);
     const headings = Array.from(container.querySelectorAll("h1, h2"));
     expect(headings).toHaveLength(EXPECTED_HEADINGS.length);
@@ -178,6 +181,45 @@ describe("Homepage — CTA cadence: 4 conversion CTAs to /signup (FV-514)", () =
         /start your athlete.s 14-day free trial/i,
       );
     });
+  });
+});
+
+describe("Homepage — Visualization section copy pins (FV-534)", () => {
+  it("renders the three block headings and the honesty line", () => {
+    const { container } = render(<LandingPage />);
+    const text = container.textContent ?? "";
+    for (const heading of [
+      "Why the rep matters",
+      "Not a highlight reel",
+      "Eyes closed, phone down",
+    ]) {
+      expect(text).toContain(heading);
+    }
+    // The credibility-buying honesty line must survive copy edits.
+    expect(text).toContain("It does not replace training.");
+  });
+
+  it("makes no banned outcome or clinical claims in the section", () => {
+    const { container } = render(<LandingPage />);
+    const text = (container.textContent ?? "").toLowerCase();
+    for (const banned of [
+      "proven",
+      "clinically",
+      "science-backed",
+      "guaranteed",
+      "anxiety",
+      "stress relief",
+      "manifest",
+    ]) {
+      expect(text).not.toContain(banned);
+    }
+  });
+
+  it("carries no CTA of its own — the 4-CTA cadence pin above stays authoritative", () => {
+    const { container } = render(<LandingPage />);
+    const section = container.querySelector("#visualization");
+    expect(section).not.toBeNull();
+    expect(section!.querySelectorAll("a")).toHaveLength(0);
   });
 });
 

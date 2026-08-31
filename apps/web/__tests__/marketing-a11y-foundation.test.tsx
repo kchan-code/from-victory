@@ -34,6 +34,9 @@ vi.mock("@/components/landing/PregameSample", () => ({
   PregameSample: () => null,
 }));
 vi.mock("@/components/landing/Method", () => ({ Method: () => null }));
+vi.mock("@/components/landing/Visualization", () => ({
+  Visualization: () => null,
+}));
 vi.mock("@/components/landing/AppPreview", () => ({ AppPreview: () => null }));
 vi.mock("@/components/landing/ParentTrust", () => ({
   ParentTrust: () => null,
