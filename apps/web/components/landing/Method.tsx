@@ -1,43 +1,43 @@
 import { Reveal } from "./Reveal";
 import { SectionMeta } from "./SectionMeta";
 
-// FV-514 homepage IA restructure — one "three-part method" section replaces
-// the four consecutive thesis restatements (Problem, Framework, HowItWorks,
-// Faith). Every sentence below is reused verbatim from those four retired
-// components (see the build notes for the source map) — no new marketing
-// prose was written. The retired components' remaining copy (Problem's
-// pressure cards, Framework's pyramid framing, Faith's theme pills) was
-// retired with them, not relocated - recoverable from git history via this
-// PR's deletions; relocation is tracked in FV-528. The files themselves are
-// removed since nothing else imports them.
+// FV-538 — the Method section presents the PREGAME VISUALIZATION METHOD
+// (KC direction 2026-08-31: "focused, not on the daily training but the
+// pregame visualizations... customize it, hear it to rehearse the mental
+// skill, good and bad, practice the reset, and end with prayer and leave
+// it all to God. Fearless and free."). Copy by content-curator on KC's
+// skeleton; every step verified against the shipped session
+// (components/pregame/audio/segments.ts): setup = position + up to 3
+// plays + hard moment + focus; the audio rehearses plays AND the hard
+// moment; a reset plan follows the mistake; the session closes with a
+// real spoken prayer, then the send-off "You are secure. Now play from
+// victory." Step 4's "compete fearless and free" is a DELIBERATE verbatim
+// callback to KC's hero thesis, once. The page's one "Compete From
+// Victory" tagline use stays in Founder.tsx, so the send-off line itself
+// is not quoted here. The FV-514/FV-534 TRAIN/ANCHOR/CARRY daily-rhythm
+// copy is retired to git history (its read-plus-Scripture fact survives
+// in the lede and the FAQ).
 
 const parts = [
   {
-    // Verbatim: HowItWorks steps[0] ("01 · TRAIN" relabeled "01" for the
-    // three-part sequence — see build notes).
-    num: "01 · TRAIN",
-    name: "Read the mental skill.",
-    body: "A short, direct lesson in mental toughness — grounded in sport, not theory. Built for athletes 13 and above.",
+    num: "01 · SET",
+    name: "Set your session.",
+    body: "You start by telling the session who you are and what tonight actually asks of you: your position, the plays you want to see, the hard moment you expect, one focus to hold. Nothing about it is generic. The five minutes you hear are the five minutes you built.",
   },
   {
-    // Verbatim: HowItWorks steps[1].
-    num: "02 · ANCHOR",
-    name: "Anchor in Scripture.",
-    body: "One verse tied to the skill. Short enough to carry with you. Identity before performance.",
+    num: "02 · HEAR",
+    name: "Hear the rep.",
+    body: "A voice runs the plays you picked, one at a time, with room to actually see them. Then it takes you into the moment you would rather skip: the turnover, the missed assignment, the shift that gets away from you. You rehearse the mistake on purpose, before it can surprise you.",
   },
   {
-    // FV-534 revision (content-curator; KC direction: carry the
-    // audio-prompted angle where it is true — the guided AUDIO surfaces
-    // are pregame and pre-practice, daily training stays text, so the
-    // audio claim lives in CARRY, not TRAIN). "runs one with you", not
-    // "that cue": the pregame session's focus is chosen fresh at setup;
-    // there is no data link carrying the daily cue into the audio
-    // (qa-reviewer verified), so the copy claims the practice, not a
-    // pipeline. Base text was verbatim HowItWorks steps[3] (was
-    // "04 · CARRY", relabeled "03" here).
-    num: "03 · CARRY",
-    name: "Take one cue.",
-    body: "One focus cue into practice, school, training, or game day. Before you compete, the guided audio session runs one with you, eyes closed. One thing inside your control.",
+    num: "03 · RESET",
+    name: "Practice the reset.",
+    body: "Right after the mistake, the audio gives you the way back. Breathe, let it be finished, take the next rep. That is the part most athletes never actually train, and here you get reps at it while the stakes are still zero.",
+  },
+  {
+    num: "04 · PRAY",
+    name: "Leave it with God.",
+    body: "The session ends in prayer, spoken out loud, and it is a real one. You thank God that your worth is already secure, ask for freedom to play brave and loose, and hand him what you cannot control. Then you go compete fearless and free.",
   },
 ];
 
@@ -53,9 +53,8 @@ export function Method() {
         </Reveal>
         <Reveal>
           <div className="grid gap-x-16 gap-y-10 items-end mb-14 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
-            {/* Verbatim: HowItWorks h2. */}
             <h2 className="fv-h-section">
-              A daily rhythm for the athlete&apos;s mind and spirit.
+              Rehearse it. Reset from it. Leave it with God.
             </h2>
             {/* First sentence verbatim from the retired Framework lede;
                 the read/hear sentences are FV-534 copy, reworded per
@@ -72,15 +71,24 @@ export function Method() {
         </Reveal>
 
         <Reveal>
-          <div className="grid grid-cols-1 sm:grid-cols-3 border-t border-b border-hairline mb-16">
+          {/* Four steps: single column below sm, 2x2 at sm, one row at lg.
+              Border logic per breakpoint — below sm every non-last cell
+              gets a bottom hairline; in the 2x2, the left column gets a
+              right hairline and the first row a bottom one; at lg the
+              first three cells get right hairlines. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-b border-hairline mb-16">
             {parts.map((part, i) => (
               <div
                 key={part.num}
-                className={`px-7 py-9 transition-colors duration-base ease-out hover:bg-onyx ${
-                  i < parts.length - 1
-                    ? "sm:border-r border-hairline max-sm:border-b max-sm:border-hairline"
-                    : ""
-                }`}
+                className={[
+                  "px-5 py-6 sm:px-7 sm:py-9 transition-colors duration-base ease-out hover:bg-onyx border-hairline",
+                  i < parts.length - 1 ? "max-sm:border-b" : "",
+                  i % 2 === 0 ? "sm:border-r" : "",
+                  i === 1 ? "lg:border-r" : "",
+                  i < 2 ? "sm:max-lg:border-b" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
               >
                 <div className="font-display font-extrabold text-[13px] tracking-[0.12em] text-gold mb-5">
                   {part.num}

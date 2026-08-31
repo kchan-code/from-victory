@@ -10,6 +10,25 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-08-31 — Method section now presents the pregame session, step by step
+
+The homepage Method section no longer describes the daily-training rhythm
+(read the skill, anchor in Scripture, take one cue); it now walks the
+pregame visualization method in four steps under the heading "Rehearse
+it. Reset from it. Leave it with God.": set your session (position,
+chosen plays, hard moment, one focus), hear the rep (the guided audio
+runs the plays and the moment you would rather skip), practice the reset
+(the way back after the mistake), and leave it with God (the session
+truly ends in a spoken prayer; the copy describes it faithfully and ends
+"Then you go compete fearless and free", echoing the hero). The daily
+training still exists unchanged as a product; on the homepage it is
+described by the lede line "You read the daily training. You hear the
+pregame session." and the FAQ.
+
+Why it matters to a buyer: the homepage's "how it works" now describes
+the differentiating product (the customized, audio-guided pregame
+session, ending in real prayer) rather than the daily reading rhythm.
+
 ## 2026-08-31 — Homepage tells the visualization story; new hero thesis
 
 The homepage now makes the case for guided visualization directly. A new
