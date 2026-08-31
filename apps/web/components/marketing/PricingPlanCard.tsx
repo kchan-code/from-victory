@@ -45,19 +45,24 @@ export function PricingPlanCard() {
   const isAnnual = interval === "annual";
 
   // Arrow-key navigation within the radiogroup (ARIA radiogroup pattern —
-  // mirrors SubscribeForm.tsx:186-223).
+  // mirrors SubscribeForm.tsx:186-223, plus moving DOM focus to the newly
+  // selected radio so the roving tabIndex and the focus ring stay in sync).
+  const selectAndFocus = (id: Interval) => {
+    setInterval(id);
+    document.getElementById(`interval-${id}`)?.focus();
+  };
   const handleGroupKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const currentIndex = INTERVAL_IDS.indexOf(interval);
     if (e.key === "ArrowRight" || e.key === "ArrowDown") {
       e.preventDefault();
       const next = INTERVAL_IDS[(currentIndex + 1) % INTERVAL_IDS.length];
-      if (next != null) setInterval(next);
+      if (next != null) selectAndFocus(next);
     }
     if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
       e.preventDefault();
       const prev =
         INTERVAL_IDS[(currentIndex - 1 + INTERVAL_IDS.length) % INTERVAL_IDS.length];
-      if (prev != null) setInterval(prev);
+      if (prev != null) selectAndFocus(prev);
     }
   };
 

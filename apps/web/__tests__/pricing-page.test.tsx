@@ -154,3 +154,25 @@ describe("PricingPage — shared feature list stated once", () => {
     expect(screen.getAllByText("Pregame guided audio (~5 min)")).toHaveLength(1);
   });
 });
+
+describe("PricingPlanCard — keyboard radiogroup behavior (FV-516 qa-reviewer)", () => {
+  it("ArrowRight selects monthly and moves DOM focus to it", () => {
+    render(<PricingPage />);
+    const group = screen.getByTestId("interval-radiogroup");
+    fireEvent.keyDown(group, { key: "ArrowRight" });
+    const monthly = screen.getByTestId("interval-monthly");
+    expect(monthly).toHaveAttribute("aria-checked", "true");
+    expect(monthly).toHaveAttribute("tabindex", "0");
+    expect(document.activeElement).toBe(monthly);
+  });
+
+  it("ArrowLeft wraps back to annual and moves DOM focus with the selection", () => {
+    render(<PricingPage />);
+    const group = screen.getByTestId("interval-radiogroup");
+    fireEvent.keyDown(group, { key: "ArrowRight" });
+    fireEvent.keyDown(group, { key: "ArrowLeft" });
+    const annual = screen.getByTestId("interval-annual");
+    expect(annual).toHaveAttribute("aria-checked", "true");
+    expect(document.activeElement).toBe(annual);
+  });
+});
