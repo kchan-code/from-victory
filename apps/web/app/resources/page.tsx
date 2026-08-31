@@ -71,6 +71,8 @@ export default function ResourcesPage() {
       <LandingIconDefs />
       <ScrollNav />
 
+      <main id="main-content">
+
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="relative pt-[168px] md:pt-[140px] pb-20 overflow-hidden isolate">
         <div className="absolute inset-0 -z-10 pointer-events-none">
@@ -145,6 +147,8 @@ export default function ResourcesPage() {
           </div>
         </div>
       </section>
+
+      </main>
 
       <Footer />
     </>

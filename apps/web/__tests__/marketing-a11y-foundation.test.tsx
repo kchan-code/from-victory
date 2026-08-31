@@ -130,3 +130,24 @@ describe("app/layout.tsx — skip link (source-level, mirrors seo-geo-pass.test.
     expect(skipLinkIndex).toBeLessThan(childrenIndex);
   });
 });
+
+describe("Skip-link target exists on every route's <main> (source-level)", () => {
+  // FV-511 qa-reviewer finding: the skip link is a dead anchor on any route
+  // whose <main> lacks the id. Pin the contract for the marketing pages that
+  // ship their own <main> and for the shared AuthShell (10 auth routes).
+  const routes = [
+    "../app/about/page.tsx",
+    "../app/parents/page.tsx",
+    "../app/pricing/page.tsx",
+    "../app/teams/page.tsx",
+    "../app/contact/page.tsx",
+    "../app/resources/page.tsx",
+    "../components/auth/AuthShell.tsx",
+  ];
+  for (const rel of routes) {
+    it(`${rel} carries id="main-content" on its <main>`, () => {
+      const src = readFileSync(resolve(__dirname, rel), "utf8");
+      expect(src).toMatch(/<main id="main-content"/);
+    });
+  }
+});

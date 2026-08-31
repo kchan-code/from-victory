@@ -11,7 +11,7 @@ type Props = {
 
 export function AuthShell({ title, subtitle, children, footer }: Props) {
   return (
-    <main className="min-h-screen bg-onyx flex flex-col items-center justify-center px-5 py-12">
+    <main id="main-content" className="min-h-screen bg-onyx flex flex-col items-center justify-center px-5 py-12">
       <Link
         href="/"
         aria-label="From Victory home"
