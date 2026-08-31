@@ -5,7 +5,7 @@ import { SvgIcon } from "./SvgIcon";
 
 export function Hero() {
   return (
-    <section className="relative pt-[168px] md:pt-[132px] pb-24 overflow-hidden isolate">
+    <section className="relative pt-[112px] md:pt-[132px] pb-8 sm:pb-16 md:pb-24 overflow-hidden isolate">
       {/* Background washes + watermark */}
       <div className="absolute inset-0 -z-10 pointer-events-none">
         <div className="absolute inset-0 fv-hero-bg" />
@@ -13,7 +13,7 @@ export function Hero() {
       </div>
 
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
-        <div className="grid gap-16 lg:gap-[72px] items-center grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+        <div className="grid gap-10 lg:gap-[72px] items-center grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
           {/* Left column: copy — FV-511: no Reveal wrapper. The hero is
               the LCP element; it must render fully visible in SSR HTML
               with or without JS, not depend on IntersectionObserver. */}
@@ -31,13 +31,14 @@ export function Hero() {
               <em>from victory.</em>
             </h1>
 
+            {/* FV-514: trimmed one sentence (the surface list, now covered
+                by the three-part method section below) to cut hero height —
+                meaning preserved, duplication cut. */}
             <p className="max-w-[52ch] mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
               Guided visualization for athletes 13+. You run the first moment
               — a goalie tracks the first shot, a guard sees the first
               possession, a golfer stands over the first tee — not a quiet-room
               highlight. Identity in Christ is the ground under that picture.
-              Daily training, pre-practice lock-in, and the ride home still
-              sit with it.
             </p>
 
             <div className="flex flex-wrap gap-3 mb-5">
@@ -56,66 +57,23 @@ export function Hero() {
                 See how it works
               </a>
             </div>
-            <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/40 font-semibold mb-10">
+            <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/40 font-semibold mb-0">
               14 days free for first-time subscribers &mdash; then $5/mo or $49/yr &mdash; cancel anytime
             </p>
 
           </div>
 
-          {/* Right column: stacked phone mockups — no Reveal wrapper (FV-511) */}
-          <div>
-            <div className="fv-hero-phones" aria-hidden>
-              {/* Back phone — verse */}
-              <div className="fv-phone fv-phone-back">
-                <div className="fv-phone-screen">
-                  <div className="fv-phone-notch" />
-                  <PhoneStatusBar />
-                  <div className="px-5 pt-2 pb-5 flex-1 overflow-hidden">
-                    <div className="flex justify-between items-start mt-2 mb-[18px]">
-                      <div>
-                        <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-cream/50 font-semibold">
-                          Tuesday · Mar 12
-                        </div>
-                        <div className="font-heading font-semibold text-[19px] text-cream mt-1 tracking-[-0.01em]">
-                          Truth of the day
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="fv-card-verse border border-hairline rounded-lg p-[18px]">
-                      <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-gold font-semibold">
-                        HEBREWS 12:1-2
-                      </div>
-                      <div className="font-scripture text-[16px] leading-[1.5] text-cream mt-2.5">
-                        &ldquo;Run with perseverance the race marked out for
-                        us, fixing our eyes on Jesus.&rdquo;
-                      </div>
-                    </div>
-
-                    <div className="mt-[18px]">
-                      <div className="font-mono text-[9px] tracking-[0.20em] uppercase text-cream/50 font-semibold mb-2">
-                        Identity statement
-                      </div>
-                      <div className="font-heading font-medium text-[15px] leading-[1.35] text-cream">
-                        I&apos;m not what I did last shift.
-                        <br />
-                        I&apos;m secure. I show up again.
-                      </div>
-                    </div>
-
-                    <div className="mt-5">
-                      <div className="font-mono text-[9px] tracking-[0.20em] uppercase text-cream/50 font-semibold mb-2.5">
-                        Carry it
-                      </div>
-                      <div className="bg-charcoal border border-hairline rounded-xl px-3.5 py-3 font-body text-[12.5px] text-cream/70 leading-[1.5]">
-                        Three breaths before each shift. Body language stays
-                        steady.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
+          {/* Right column: single phone mockup (FV-514 — the back "verse"
+              phone was cut; its Hebrews 12:1-2 duplicate now lives once, in
+              the method section). Gold accents inside are dimmed so the
+              hero CTA above stays the one dominant gold in this viewport.
+              Hidden below `sm`: on the smallest phones the decorative
+              mockup was still the single biggest contributor to hero
+              height — dropping it there keeps the athlete's thumb on
+              copy + CTA instead of scrolling past chrome; the app preview
+              carousel (real screenshots) arrives two sections later. */}
+          <div className="hidden sm:block">
+            <div className="fv-hero-phones fv-hero-phones--single" aria-hidden>
               {/* Front phone — Today dashboard */}
               <div className="fv-phone fv-phone-front">
                 <div className="fv-phone-screen">
@@ -179,7 +137,10 @@ export function Hero() {
                         </div>
                       </div>
                       <div className="h-px bg-hairline my-3.5" />
-                      <div className="w-full bg-gold text-onyx font-heading font-semibold text-[13px] rounded-pill px-3.5 py-2.5 flex items-center justify-center gap-1.5">
+                      {/* FV-514: dimmed from solid bg-gold to an outline —
+                          the hero's real CTA is the only solid gold in this
+                          viewport now. */}
+                      <div className="w-full border border-gold/40 text-gold/80 font-heading font-semibold text-[13px] rounded-pill px-3.5 py-2.5 flex items-center justify-center gap-1.5">
                         Continue training
                         <SvgIcon name="arrow" size={13} />
                       </div>

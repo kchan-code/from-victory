@@ -10,6 +10,37 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-08-31 — Homepage restructured to 8 sections; one approved beta quote now live
+
+FV-514, the centerpiece of the conversion-audit redesign, is live: the
+homepage (`/`) goes from 10 sections to 8 — Hero; the playable pregame
+sample (context blurb now visible on mobile too, plus a contextual trial
+CTA); a new "three-part method" section (daily mental-skill training,
+Scripture as the foundation — the one Hebrews 12:1-2 quote on the page —
+and game-day/practice application) replacing four consecutive sections
+that each restated the same thesis; the app-screenshot preview (unchanged,
+plus a contextual trial CTA); a new parent-trust strip ("What you see, and
+what stays private") assembled from already-approved lines on /parents and
+/pricing; a new pricing summary ("14 days free. Cancel anytime.") linking
+to /pricing; the founder letter, now including one approved beta-athlete
+quote labeled "Beta feedback" with non-identifying attribution ("Beta
+hockey athlete"); and FAQ + waitlist (unchanged). The hero's second phone
+mockup and its duplicate verse quote are gone — one phone, dimmed gold
+accents, so the real trial CTA is the only solid-gold element in the first
+viewport. The homepage now carries exactly 4 conversion CTAs to the trial
+signup (hero, after-sample, after-preview, final), the same pattern used
+on /parents. Measured at 375×812: the hero is 50% shorter (1483px to
+736px, under 1.2 mobile viewports) and the full page is 20% shorter
+(12144px to 9712px) — the four-section consolidation alone cut close to
+30%, offset partly by the two new required trust/pricing sections. No
+facts changed: pricing, privacy promises, and the age floor are worded
+identically to /parents and /pricing, just relocated.
+
+Why it matters to a buyer: a parent or athlete arriving cold now sees the
+core pitch, a playable sample, and a live signup path much sooner, and the
+first credible third-party signal (beta feedback, clearly labeled as such)
+before FAQ instead of never.
+
 ## 2026-08-31 — Conversion-audit wave 1 shipped: site-wide a11y foundation, one-card pricing page, waitlist trimmed to non-live sports
 
 Three changes from the 2026-08-29 marketing conversion audit are live (PRs #474/#475/#476):

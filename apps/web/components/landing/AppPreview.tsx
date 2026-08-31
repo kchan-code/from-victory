@@ -6,6 +6,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Reveal } from "./Reveal";
 import { SectionMeta } from "./SectionMeta";
@@ -127,7 +128,7 @@ export function AppPreview() {
       <div className="fv-preview-bg absolute inset-0 pointer-events-none" />
       <div className="relative mx-auto max-w-[1240px] px-5 sm:px-8">
         <Reveal>
-          <SectionMeta num="04" label="The app" />
+          <SectionMeta num="02" label="The app" />
         </Reveal>
         <Reveal>
           <div className="grid gap-x-16 gap-y-10 items-end mb-6 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
@@ -213,6 +214,17 @@ export function AppPreview() {
             >
               <SvgIcon name="chev" size={16} />
             </button>
+          </div>
+
+          {/* Contextual CTA (FV-514 cadence #3) — compact, after the preview. */}
+          <div className="flex justify-center mt-10">
+            <Link
+              href="/signup"
+              className="inline-flex items-center justify-center gap-2 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-6 py-3.5 min-h-[44px] text-[14px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
+            >
+              Start your athlete&apos;s 14-day free trial
+              <SvgIcon name="arrow" size={14} />
+            </Link>
           </div>
         </Reveal>
       </div>

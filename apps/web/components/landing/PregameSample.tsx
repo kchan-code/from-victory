@@ -1,8 +1,10 @@
 // client: audio playback (HTMLAudioElement), play/pause state, progress tracking
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Reveal } from "./Reveal";
+import { SvgIcon } from "./SvgIcon";
 
 // ---------------------------------------------------------------------------
 // Clip selection — content-addressed URL from the clip manifest.
@@ -344,10 +346,21 @@ export function PregameSample() {
                 Every session is built around your position, your hard moment,
                 your cue word.
               </p>
+
+              {/* Contextual CTA (FV-514 cadence #2) — compact, thumb-reachable
+                  right after the player. */}
+              <Link
+                href="/signup"
+                className="mt-4 inline-flex items-center justify-center gap-2 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-5 py-3 min-h-[44px] text-[13.5px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
+              >
+                Start your athlete&apos;s 14-day free trial
+                <SvgIcon name="arrow" size={14} />
+              </Link>
             </div>
 
-            {/* Right: context blurb (hidden on mobile to keep it slim) */}
-            <div className="hidden lg:block flex-none max-w-[320px]">
+            {/* Right: context blurb — visible at all widths (FV-514; was
+                hidden below lg). */}
+            <div className="flex-none max-w-[320px]">
               <p className="font-body text-[14px] leading-[1.6] text-cream/60">
                 Before every game, athletes choose their need, their reset
                 anchor, and a cue word. The session builds around those

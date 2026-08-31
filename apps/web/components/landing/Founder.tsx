@@ -33,7 +33,7 @@ export function Founder() {
             <p className="font-scripture italic text-[clamp(16px,1.5vw,19px)] leading-[1.5] text-cream/80 m-0 mb-6">
               Your Identity Is Secure. Compete From Victory.
             </p>
-            <p className="m-0">
+            <p className="m-0 mb-10">
               <Link
                 href="/hockey"
                 className="font-body text-[15px] text-gold underline underline-offset-2 hover:text-gold-bright transition-colors duration-fast"
@@ -41,6 +41,31 @@ export function Founder() {
                 Hockey families: see the first shot before the puck drops →
               </Link>
             </p>
+
+            {/* FV-514: one approved beta-athlete quote, labeled as beta
+                feedback. Amended into docs/gtm/voice-and-guardrails.md
+                guardrail 5 in the same change — athlete permission confirmed
+                by KC (audit doc §7 decision 1). Restrained treatment: no
+                carousel, no stars, no performance-outcome framing. */}
+            <figure
+              className="rounded-[18px] px-7 py-7 m-0"
+              style={{
+                background: "var(--bg-elev-1)",
+                border: "1px solid var(--fv-hairline)",
+              }}
+            >
+              <div className="font-mono text-[10px] tracking-[0.20em] uppercase font-semibold text-cream/45 mb-4">
+                Beta feedback
+              </div>
+              <blockquote className="font-scripture italic text-[clamp(16px,1.5vw,19px)] leading-[1.55] text-cream/90 m-0 mb-4">
+                &ldquo;The pregame session helped me picture my first shift
+                and gave me one thing to focus on. I started using it before
+                games to dial in.&rdquo;
+              </blockquote>
+              <figcaption className="font-mono text-[11px] tracking-[0.18em] uppercase font-semibold text-gold">
+                Beta hockey athlete
+              </figcaption>
+            </figure>
           </div>
         </Reveal>
       </div>
