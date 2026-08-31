@@ -43,7 +43,7 @@ export function ParentTrust() {
     <section className="py-16 sm:py-20 md:py-28">
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         <Reveal>
-          <SectionMeta num="03" label="Trust and privacy" />
+          <SectionMeta num="04" label="Trust and privacy" />
         </Reveal>
         <Reveal>
           <div className="grid gap-x-16 gap-y-8 items-end mb-10 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">

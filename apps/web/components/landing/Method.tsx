@@ -26,10 +26,18 @@ const parts = [
     body: "One verse tied to the skill. Short enough to carry with you. Identity before performance.",
   },
   {
-    // Verbatim: HowItWorks steps[3] (was "04 · CARRY", relabeled "03" here).
+    // FV-534 revision (content-curator; KC direction: carry the
+    // audio-prompted angle where it is true — the guided AUDIO surfaces
+    // are pregame and pre-practice, daily training stays text, so the
+    // audio claim lives in CARRY, not TRAIN). "runs one with you", not
+    // "that cue": the pregame session's focus is chosen fresh at setup;
+    // there is no data link carrying the daily cue into the audio
+    // (qa-reviewer verified), so the copy claims the practice, not a
+    // pipeline. Base text was verbatim HowItWorks steps[3] (was
+    // "04 · CARRY", relabeled "03" here).
     num: "03 · CARRY",
     name: "Take one cue.",
-    body: "One focus cue into practice, school, training, or game day. One thing inside your control.",
+    body: "One focus cue into practice, school, training, or game day. Before you compete, the guided audio session runs one with you, eyes closed. One thing inside your control.",
   },
 ];
 
@@ -41,7 +49,7 @@ export function Method() {
     >
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         <Reveal>
-          <SectionMeta num="01" label="The method" />
+          <SectionMeta num="02" label="The method" />
         </Reveal>
         <Reveal>
           <div className="grid gap-x-16 gap-y-10 items-end mb-14 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
@@ -49,10 +57,16 @@ export function Method() {
             <h2 className="fv-h-section">
               A daily rhythm for the athlete&apos;s mind and spirit.
             </h2>
-            {/* Verbatim: Framework lede, first sentence. */}
+            {/* First sentence verbatim from the retired Framework lede;
+                the read/hear sentences are FV-534 copy, reworded per
+                qa-reviewer: each sentence names its own object so "hear"
+                can only bind to the pregame session, never to the daily
+                training (which is text-only per FV-135 — the one product
+                fact this lede must not blur). */}
             <p className="fv-lede">
               From Victory is built on a simple truth: identity comes before
-              performance.
+              performance. You read the daily training. You hear the pregame
+              session.
             </p>
           </div>
         </Reveal>

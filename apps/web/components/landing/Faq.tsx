@@ -67,7 +67,7 @@ export function Faq() {
 
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         <Reveal>
-          <SectionMeta num="05" label="Common questions" />
+          <SectionMeta num="06" label="Common questions" />
         </Reveal>
 
         <Reveal>

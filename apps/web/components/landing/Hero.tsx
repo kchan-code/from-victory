@@ -31,14 +31,17 @@ export function Hero() {
               <em>from victory.</em>
             </h1>
 
-            {/* FV-514: trimmed one sentence (the surface list, now covered
-                by the three-part method section below) to cut hero height —
-                meaning preserved, duplication cut. */}
+            {/* FV-534: KC-authored hero thesis (2026-08-31), applied
+                verbatim after efficacy review. The concrete sport imagery
+                the old paragraph carried (goalie/first shot, golfer/first
+                tee) now lives in the Visualization section one scroll
+                down and on the sport pages; the hero states the thesis.
+                Note: the hero no longer carries the "13+" age signal —
+                KC's call to restore is a one-word add. */}
             <p className="max-w-[52ch] mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
-              Guided visualization for athletes 13+. You run the first moment
-              — a goalie tracks the first shot, a guard sees the first
-              possession, a golfer stands over the first tee — not a quiet-room
-              highlight. Identity in Christ is the ground under that picture.
+              Everyone knows visualization matters. From Victory gives
+              athletes sport-specific audio guides, grounded in
+              Christ&rsquo;s victory, so they can compete fearless and free.
             </p>
 
             <div className="flex flex-wrap gap-3 mb-5">

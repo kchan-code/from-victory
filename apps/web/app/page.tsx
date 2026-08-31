@@ -11,6 +11,7 @@ import { PregameSample } from "@/components/landing/PregameSample";
 import { PricingSummary } from "@/components/landing/PricingSummary";
 import { ScrollNav } from "@/components/landing/ScrollNav";
 import { StructuredData } from "@/components/landing/StructuredData";
+import { Visualization } from "@/components/landing/Visualization";
 import { Waitlist } from "@/components/landing/Waitlist";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
 
@@ -20,13 +21,15 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-// FV-514 homepage IA restructure — 8 sections (was 10):
-//   1. Hero               4. AppPreview          7. Founder (+ beta quote)
-//   2. PregameSample       5. ParentTrust         8. Faq + Waitlist
-//   3. Method                 6. PricingSummary
-// The four consecutive thesis-restatement sections and the (empty) quote
-// carousel component no longer render here — see the build notes for what
-// moved where.
+// FV-514 homepage IA restructure (8 sections) + FV-534 (9 sections):
+//   1. Hero                4. Method              7. PricingSummary
+//   2. PregameSample       5. AppPreview          8. Founder (+ beta quote)
+//   3. Visualization       6. ParentTrust         9. Faq + Waitlist
+// Visualization (FV-534, KC direction: the audio-guided visualization
+// story is the differentiator) sits directly after the playable sample so
+// its "real pauses, game speed" claim is demonstrable one scroll up. The
+// four FV-514-retired thesis-restatement sections and the (empty) quote
+// carousel still do not render here.
 export default function LandingPage() {
   return (
     <>
@@ -38,6 +41,7 @@ export default function LandingPage() {
       <main id="main-content">
         <Hero />
         <PregameSample />
+        <Visualization />
         <Method />
         <AppPreview />
         <ParentTrust />

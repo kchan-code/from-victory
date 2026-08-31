@@ -10,6 +10,34 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-08-31 — Homepage tells the visualization story; new hero thesis
+
+The homepage now makes the case for guided visualization directly. A new
+section ("The mental rep", placed right after the playable audio sample)
+explains in three beats: why the mental rep matters (imagery is one of
+the most studied tools in sport; the honest boundary "It does not
+replace training" is stated), what a good rep looks like (first moments
+not highlight reels; the athlete picks up to three plays from their
+position's library plus a hard moment, so the mistake and the reset get
+rehearsed too), and the differentiator (guided audio, eyes closed, real
+pauses at game speed, phone in pocket). Claims were held to
+sports-psychologist-verified public-safe levels: no percentages, no
+"proven", no clinical or meditation-app register. The Method section now
+says the guided audio session runs a focus cue with the athlete before
+competing, and its lede reads "You read the daily training. You hear the
+pregame session." (daily training remains text; the narrated surfaces
+are pregame and pre-practice). The hero paragraph is KC's new thesis,
+verbatim: "Everyone knows visualization matters. From Victory gives
+athletes sport-specific audio guides, grounded in Christ's victory, so
+they can compete fearless and free." Note: the hero no longer carries
+the "13+" wording; the age floor still appears in onboarding and the
+waitlist section.
+
+Why it matters to a buyer: the differentiator (audio-guided,
+sport-specific visualization) is now argued explicitly on the homepage
+instead of implied, and every claim on the page is one the product and
+the research posture can back.
+
 ## 2026-08-31 — Hero screenshot is now the Positive Plays pregame screen
 
 The homepage hero's phone now shows the pregame "Picture the plays
