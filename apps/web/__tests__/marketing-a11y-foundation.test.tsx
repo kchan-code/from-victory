@@ -33,13 +33,13 @@ vi.mock("@/components/landing/Footer", () => ({ Footer: () => null }));
 vi.mock("@/components/landing/PregameSample", () => ({
   PregameSample: () => null,
 }));
-vi.mock("@/components/landing/Problem", () => ({ Problem: () => null }));
-vi.mock("@/components/landing/Framework", () => ({ Framework: () => null }));
-vi.mock("@/components/landing/HowItWorks", () => ({ HowItWorks: () => null }));
+vi.mock("@/components/landing/Method", () => ({ Method: () => null }));
 vi.mock("@/components/landing/AppPreview", () => ({ AppPreview: () => null }));
-vi.mock("@/components/landing/Faith", () => ({ Faith: () => null }));
-vi.mock("@/components/landing/Testimonials", () => ({
-  Testimonials: () => null,
+vi.mock("@/components/landing/ParentTrust", () => ({
+  ParentTrust: () => null,
+}));
+vi.mock("@/components/landing/PricingSummary", () => ({
+  PricingSummary: () => null,
 }));
 vi.mock("@/components/landing/Founder", () => ({ Founder: () => null }));
 vi.mock("@/components/landing/Faq", () => ({ Faq: () => null }));

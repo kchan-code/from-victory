@@ -34,6 +34,10 @@ listings, and microcopy get written here. They follow the same rules.
    retention claims until a real cohort exists. The CTA is the 14-day free trial
    ($5/mo or $49/yr first athlete); waitlist language only for not-yet-live sports.
    Buyers: parents for athletes 13-17; athletes 18+ self-serve (live 2026-07-22).
+   Amended 2026-08-31 (KC): one approved beta-athlete quote runs on the homepage,
+   labeled as beta feedback, non-identifying attribution (Beta hockey athlete);
+   athlete permission confirmed by KC. Everything else in this guardrail still
+   stands until a launch cohort exists.
 6. **Claim visualization, don't knock it.** Everyone says visualize; almost nobody helps
    you do it; From Victory does — and you don't do it alone. (Don't dismiss
    visualization/mental training as hollow; that framing was rejected.)
