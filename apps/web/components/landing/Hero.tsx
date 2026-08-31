@@ -80,15 +80,15 @@ export function Hero() {
 
           </div>
 
-          {/* Right column: real product screenshot (FV-531) — the home
-              dashboard capture also used by the app-preview carousel
-              (FV-513), framed in the same phone chrome the old JSX mockup
-              used. The fake phone internals are gone: what the hero shows
-              is the actual app. Alt text reused verbatim from the
-              carousel's home slide. Hidden below `sm` (FV-514): on the
-              smallest phones the phone frame was the single biggest
-              contributor to hero height; the carousel arrives two
-              sections later. */}
+          {/* Right column: real product screenshot — the Positive Plays
+              pregame capture (FV-533, KC decision: the hero visual should
+              show the visualization differentiator itself), also used by
+              the app-preview carousel (FV-513), framed in the phone
+              chrome the old JSX mockup used (FV-531). Alt text reused
+              verbatim from the carousel's positive-plays slide. Hidden
+              below `sm` (FV-514): on the smallest phones the phone frame
+              was the single biggest contributor to hero height; the
+              carousel arrives two sections later. */}
           <div className="hidden sm:block">
             <div className="fv-hero-phones fv-hero-phones--single">
               <div className="fv-phone fv-phone-front">
@@ -102,10 +102,10 @@ export function Hero() {
                       ~100-200KB for nothing. In-viewport desktop loads
                       start immediately after layout regardless. */}
                   <Image
-                    src="/images/screens/screen-home-dashboard.png"
+                    src="/images/screens/screen-pregame-positive-plays.png"
                     width={1206}
                     height={2622}
-                    alt="App home screen: daily training card, tiles for pregame visualization, pre-practice visualization, journey, and ride home, and a rhythm ring at day 1 of 30. Hebrews 12:2 at the bottom."
+                    alt="Pregame step 4 of 11, Positive Plays: Picture the plays you'll make, with soccer play chips to pick one to three."
                     sizes="296px"
                     className="block w-full h-full object-cover"
                   />
