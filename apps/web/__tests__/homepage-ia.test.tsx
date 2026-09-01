@@ -253,6 +253,17 @@ describe("Homepage — Method pregame-method pins (FV-539)", () => {
     }
   });
 
+  it("carries exactly one link — the pregame-ritual pointer, not a conversion CTA (FV-539)", () => {
+    const { container } = render(<LandingPage />);
+    const section = container.querySelector("#how");
+    expect(section).not.toBeNull();
+    const links = section!.querySelectorAll("a");
+    expect(links).toHaveLength(1);
+    expect(links[0]!.getAttribute("href")).toBe(
+      "/pregame-ritual-christian-athlete",
+    );
+  });
+
   it("the release phase describes the real session close and no outcome promise", () => {
     const { container } = render(<LandingPage />);
     const text = container.textContent ?? "";
