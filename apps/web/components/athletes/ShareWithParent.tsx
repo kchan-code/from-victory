@@ -24,9 +24,14 @@ export function ShareWithParent() {
       try {
         await navigator.share({ url });
         return;
-      } catch {
-        // User dismissed the sheet, or the share failed — fall through to
-        // the clipboard so the tap still produces something useful.
+      } catch (err) {
+        // A dismissed share sheet rejects with AbortError — that is the
+        // athlete choosing not to share, so do nothing (no surprise
+        // clipboard write, no misleading "Link copied"). Only a real
+        // failure falls through to the clipboard (qa-reviewer FV-545).
+        if (err instanceof DOMException && err.name === "AbortError") {
+          return;
+        }
       }
     }
     try {

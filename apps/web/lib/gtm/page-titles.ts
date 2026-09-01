@@ -1,6 +1,7 @@
-// Shared title/route/excerpt constants for the two live GTM Engine pages
-// (FV-411), extracted so FV-413's internal cross-links can reference a
-// single source of truth instead of duplicating literal strings.
+// Shared title/route/excerpt constants for pages that other surfaces
+// cross-link with verbatim labels (FV-413's rule: a link label is the
+// linked page's own title/h1). Originally the two live GTM Engine pages
+// (FV-411); FV-545 added the repo-owned /athletes page's constants.
 //
 // Every string below must exactly match the corresponding page's
 // local `PAGE_TITLE` / `PAGE_DESCRIPTION` constant and rendered <h1> in
