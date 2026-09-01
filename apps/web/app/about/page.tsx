@@ -24,7 +24,7 @@ export const metadata: Metadata = {
       "Daily mental toughness training for Christian athletes, rooted in the truth that identity precedes performance. Built by a hockey dad.",
     images: [
       {
-        url: `${siteUrl}/from-victory-social-preview.jpg`,
+        url: `${siteUrl}/og-website-1200x630.png`,
         width: 1200,
         height: 630,
       },
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     title: "About · From Victory",
     description:
       "Daily mental toughness training for Christian athletes, rooted in the truth that identity precedes performance. Built by a hockey dad.",
-    images: [`${siteUrl}/from-victory-social-preview.jpg`],
+    images: [`${siteUrl}/og-website-1200x630.png`],
   },
 };
 

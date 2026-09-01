@@ -35,7 +35,7 @@ export const metadata: Metadata = {
       "Articles on faith, mental toughness, and competing as a Christian athlete. Free evergreen resources from From Victory.",
     images: [
       {
-        url: `${siteUrl}/from-victory-social-preview.jpg`,
+        url: `${siteUrl}/og-website-1200x630.png`,
         width: 1200,
         height: 630,
       },
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     title: "Resources · From Victory",
     description:
       "Articles on faith, mental toughness, and competing as a Christian athlete.",
-    images: [`${siteUrl}/from-victory-social-preview.jpg`],
+    images: [`${siteUrl}/og-website-1200x630.png`],
   },
 };
 

@@ -25,7 +25,7 @@ export const metadata: Metadata = {
       "Equip athletes across every sport to compete from a secure identity in Christ. You fund access. Families create accounts. Athletes train privately.",
     images: [
       {
-        url: `${siteUrl}/from-victory-social-preview.jpg`,
+        url: `${siteUrl}/og-website-1200x630.png`,
         width: 1200,
         height: 630,
       },
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     title: "For Teams, Churches & Sports Ministries · From Victory",
     description:
       "Equip athletes across every sport to compete from a secure identity in Christ. You fund access. Families create accounts. Athletes train privately.",
-    images: [`${siteUrl}/from-victory-social-preview.jpg`],
+    images: [`${siteUrl}/og-website-1200x630.png`],
   },
 };
 

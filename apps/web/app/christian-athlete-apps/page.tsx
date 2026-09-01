@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     modifiedTime: CHRISTIAN_ATHLETE_APPS_DATE_MODIFIED,
     images: [
       {
-        url: `${siteUrl}/from-victory-social-preview.jpg`,
+        url: `${siteUrl}/og-website-1200x630.png`,
         width: 1200,
         height: 630,
       },
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${PAGE_TITLE} · From Victory`,
     description: PAGE_DESCRIPTION,
-    images: [`${siteUrl}/from-victory-social-preview.jpg`],
+    images: [`${siteUrl}/og-website-1200x630.png`],
   },
 };
 
