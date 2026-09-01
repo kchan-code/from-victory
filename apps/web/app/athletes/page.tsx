@@ -86,7 +86,7 @@ interface MomentStep {
 const beforeSteps: MomentStep[] = [
   {
     title: "Breathe",
-    body: "Four counts in, six counts out, twice. A longer exhale can help your body settle. Everything else stacks on top of it.",
+    body: "Four counts in, six counts out, twice. A longer exhale can help your body settle. Start there.",
   },
   {
     title: "Remember what is true",
@@ -153,7 +153,7 @@ const verses = [
     quote:
       "“His compassions never fail. They are new every morning; great is your faithfulness.”",
     gloss:
-      "However it goes, his mercy meets you again tomorrow, fresh, before you have earned it back.",
+      "However it goes, His mercy meets you again tomorrow, fresh because His faithfulness did not move with the result.",
   },
 ];
 
@@ -361,7 +361,7 @@ export default function AthletesPage() {
                   </h2>
                   <p className="font-body text-[15px] leading-[1.65] text-cream/70 m-0 max-w-[44ch]">
                     A rough result is information, not a verdict on you. The
-                    replay loop on the way home means you care. Let it sting
+                    replay loop often starts because you care. Let it sting
                     honestly, then work it instead of replaying it.
                   </p>
                   <SourceLink
@@ -472,8 +472,9 @@ export default function AthletesPage() {
                   </div>
                 ) : null}
 
-                {/* 13–17 — the parent is the buyer; the athlete's move is a
-                    zero-data share of the parents page. */}
+                {/* 13–17 — the parent is the buyer; the athlete's move is a share of
+                    the parents page. The share action collects and stores no
+                    athlete data. */}
                 <div className="border border-hairline-strong rounded-[16px] p-7 bg-onyx">
                   <div className="font-display font-extrabold text-[13px] tracking-[0.14em] text-gold mb-3">
                     13 – 17
@@ -483,8 +484,8 @@ export default function AthletesPage() {
                   </h3>
                   <p className="font-body text-[13.5px] leading-[1.6] text-cream/70 m-0 mb-5">
                     Training runs through a parent. They subscribe and create
-                    your athlete account. What you do inside a session stays
-                    yours. The{" "}
+                    your athlete account. Your parent can see your training
+                    rhythm, not the content of your sessions. The{" "}
                     <Link
                       href="/parents"
                       className="text-gold underline underline-offset-2 hover:text-gold-bright transition-colors duration-fast"

@@ -68,7 +68,9 @@ const ARTICLES: Article[] = [
       "The best pregame verses settle who you already are in Christ, not a charm to play better. Start with Hebrews 12:1-2.",
     audience: "athlete",
     datePublished: "2026-06-12",
-    dateModified: "2026-08-26",
+    // 2026-09-01 (FV-545, KC correction): Lamentations gloss reworded —
+    // mercy framed on God's unmoved faithfulness, not the athlete's earning.
+    dateModified: "2026-09-01",
     image: {
       src: "/images/blog/bible-verses-before-a-game.jpg",
       alt: "Outdoor basketball hoop overlooking the sea in gray morning light",
@@ -121,7 +123,7 @@ Read in context, this isn't a victory guarantee. Paul is talking about contentme
 ### Verses for after the final whistle
 
 **Lamentations 3:22-23** — *"Because of the Lord's great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness."*
-The writer says this from inside real ruin, not after it cleared. Notice the subject: it's the Lord's love that holds you, not your own bounce-back. However tonight goes, his mercy meets you again tomorrow — fresh, before you've earned it back.
+The writer says this from inside real ruin, not after it cleared. Notice the subject: it's the Lord's love that holds you, not your own bounce-back. However it goes, His mercy meets you again tomorrow, fresh because His faithfulness did not move with the result.
 
 **Romans 8:37** — *"No, in all these things we are more than conquerors through him who loved us."*
 Careful with this one. Read the verses right before it — "trouble or hardship or persecution or famine or nakedness or danger or sword" (8:35). *Those* are the "things." It's not a "we're going to win" line. Paul means none of that — not even loss — can separate you from the love of God. You're more than a conqueror even on the night you lose.

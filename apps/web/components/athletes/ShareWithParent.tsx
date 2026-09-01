@@ -6,10 +6,11 @@ import { useState } from "react";
 // FV-545 — "Send this to a parent". A minor cannot self-serve (parent is
 // the buyer for 13-17), so the athlete page's under-18 path is a pure
 // client-side share of the /parents page: native share sheet where the
-// browser has one, copy-link fallback everywhere else. Deliberately
-// collects NOTHING — no form, no prefilled contact fields, no analytics
-// event with personal data, nothing stored. The shared payload is the
-// /parents URL only (no composed message text = no new marketing copy).
+// browser has one, copy-link fallback everywhere else. The share action
+// collects and stores no athlete data — no form, no prefilled contact
+// fields, no analytics event, nothing persisted. (That statement is
+// scoped to this share action, not the complete product.) The shared
+// payload is the /parents URL only.
 
 const SHARE_PATH = "/parents";
 
