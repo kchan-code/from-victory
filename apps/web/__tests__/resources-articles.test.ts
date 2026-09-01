@@ -1,7 +1,7 @@
 // Unit tests for the /resources article registry (FV-238).
 //
 // Verifies:
-//  - registry has exactly 5 slugs, all unique
+//  - registry has exactly 6 slugs, all unique
 //  - every article has title / metaDescription (≤155 chars) / bodyMd
 //  - scripture byte-pins: exact NIV strings present in the right articles
 //  - "kid/kids/kiddo/youngster" scan: article 4 is parent-facing; flag if it appears in athlete-facing
@@ -21,8 +21,8 @@ import {
 // ---------------------------------------------------------------------------
 
 describe("resources article registry", () => {
-  it("has exactly 5 articles", () => {
-    expect(getAllArticles()).toHaveLength(5);
+  it("has exactly 6 articles", () => {
+    expect(getAllArticles()).toHaveLength(6);
   });
 
   it("all slugs are unique", () => {
@@ -191,6 +191,9 @@ describe("whole-body sha256 fidelity pins", () => {
       "42070f1ab6ed4cb4fba9f097441209393c5652f2efb7af9487abfd64d629bf96",
     "sports-psychology-and-faith-do-they-mix":
       "56d1fa799fd5f0ff072a4371afa71d0f50117b9b87f1558be5141855f60a8afb",
+    // FV-539 — KC-approved verbatim body (2026-09-01)
+    "does-visualization-work-for-athletes":
+      "0c510cdb5e07b481b3c383154a38e15b6e417938368cfd323851d85b3717d703",
   };
 
   for (const [slug, expectedHash] of Object.entries(PINS)) {
@@ -220,5 +223,37 @@ describe("not-therapy presence pins (article 5)", () => {
   it('contains "This is not treatment."', () => {
     const body = getArticleBySlug(ART5)!.bodyMd;
     expect(body).toContain("This is not treatment.");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-539 — evidence-discipline pins in article 6
+// ---------------------------------------------------------------------------
+//
+// The visualization article is the first written under
+// docs/content-evidence-standards.md. Two sentences carry its claim
+// discipline and must survive any edit: the anecdote-protocol close on the
+// Phelps passage, and the not-therapy boundary.
+
+describe("evidence-discipline pins (article 6, FV-539)", () => {
+  const ART6 = "does-visualization-work-for-athletes";
+
+  it("closes the Phelps anecdote with the illustration-not-proof sentence", () => {
+    const body = getArticleBySlug(ART6)!.bodyMd;
+    expect(body).toContain(
+      "illustration, not scientific proof that visualization caused the result",
+    );
+  });
+
+  it("carries the not-therapy boundary sentence", () => {
+    const body = getArticleBySlug(ART6)!.bodyMd;
+    expect(body).toContain(
+      "From Victory is mental training, not therapy, treatment, or clinical care.",
+    );
+  });
+
+  it('never uses "proven" as a claim', () => {
+    const body = getArticleBySlug(ART6)!.bodyMd;
+    expect(body.toLowerCase()).not.toContain("proven");
   });
 });

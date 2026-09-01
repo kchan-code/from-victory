@@ -56,13 +56,13 @@ const SPORT_SLUGS = [
 ] as const;
 
 describe("sitemap (FV-504 / FV-506)", () => {
-  it("includes all seven sport pages and 23 public URLs", () => {
+  it("includes all seven sport pages and 24 public URLs", () => {
     const entries = sitemap();
     const urls = entries.map((e) => e.url);
     for (const sport of SPORT_SLUGS) {
       expect(urls).toContain(`https://www.fromvictoryapp.com/${sport}`);
     }
-    expect(urls).toHaveLength(23);
+    expect(urls).toHaveLength(24);
     expect(urls).not.toContain("https://www.fromvictoryapp.com/blog");
   });
 

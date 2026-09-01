@@ -18,6 +18,10 @@ export const FAQ_ITEMS: FaqEntry[] = [
     a: "No. From Victory is mental-toughness and mindset training, not therapy, treatment, or clinical care. Think of it like strength work for the inner game — handling pressure, resetting after mistakes, competing from a settled identity. It’s built to sit alongside the people who already support your athlete: you, their coaches, their pastor. If your athlete needs clinical help, that’s a conversation for a licensed professional.",
   },
   {
+    q: "Does visualization actually work?",
+    a: "Often, as a supplement. Research reviews find encouraging average results, with real limits: findings vary by sport, task, and study quality, and the stronger evidence comes from imagery practiced repeatedly over weeks, not one session. It supports training. It never replaces physical reps, coaching, or film. From Victory’s guided audio is how we deliver a structured rehearsal: your athlete picks the plays and the hard moment, hears the reset that follows it, and the session closes with spoken prayer. No promises about tonight’s result.",
+  },
+  {
     q: "What does my athlete actually believe here?",
     a: "From Victory is rooted in historic Christian faith — evangelical, non-denominational Protestant. We read Scripture (NIV) and apply it to real athletic life: fear, failure, pressure, identity. The throughline is simple and central to the gospel — that an athlete’s worth is secure in Christ, not earned on the scoreboard. We stay accessible across Protestant traditions and don’t lean on any one denomination’s distinctives.",
   },

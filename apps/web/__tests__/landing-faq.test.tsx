@@ -47,7 +47,11 @@ describe("Faq — all questions render", () => {
     const { container } = render(<Faq />);
     const summaries = container.querySelectorAll("summary");
     expect(summaries).toHaveLength(FAQ_ITEMS.length);
-    expect(summaries).toHaveLength(8);
+    // Trip-wire pin (repo convention, see FV-539): bump this deliberately
+    // whenever an FAQ entry is added or removed, so the count change is a
+    // visible, reviewed diff rather than silent drift. 8 -> 9 for this PR's
+    // "Where do I find From Victory online?" entry.
+    expect(summaries).toHaveLength(9);
   });
 
   it("renders every question text in the DOM", () => {
@@ -124,12 +128,43 @@ describe("Faq — verbatim answer spot-pins", () => {
   });
 });
 
+// ── 2b. Visualization FAQ entry — evidence-claims guard (FV-539) ─────────────
+//
+// The "Does visualization actually work?" answer carries a research-adjacent
+// claim, so it is held to docs/content-evidence-standards.md: qualified
+// register, no proof badges. (The therapy entry legitimately uses "clinical
+// care" as boundary language, so this guard scopes to the one entry.)
+
+describe("Faq — visualization entry evidence guard (FV-539)", () => {
+  it("keeps the qualified register and no banned proof badges", () => {
+    const entry = FAQ_ITEMS.find(
+      (i) => i.q === "Does visualization actually work?",
+    );
+    expect(entry).toBeDefined();
+    const a = entry!.a.toLowerCase();
+    for (const banned of [
+      "proven",
+      "guaranteed",
+      "science-backed",
+      "clinically",
+    ]) {
+      expect(a).not.toContain(banned);
+    }
+    // The answer must keep its supplement framing and no-promise close.
+    expect(entry!.a).toContain("Often, as a supplement.");
+    expect(entry!.a).toContain("No promises about tonight’s result.");
+  });
+});
+
 // ── 3. JSON-LD parses and its questions array length === rendered list ───────
 
 describe("Faq — FAQ_JSON_LD structured data", () => {
   it("FAQ_JSON_LD.mainEntity has the same length as FAQ_ITEMS", () => {
     expect(FAQ_JSON_LD.mainEntity).toHaveLength(FAQ_ITEMS.length);
-    expect(FAQ_JSON_LD.mainEntity).toHaveLength(8);
+    // Trip-wire pin (repo convention, see FV-539): bump this deliberately
+    // whenever an FAQ entry is added or removed. 8 -> 9 for this PR's
+    // "Where do I find From Victory online?" entry.
+    expect(FAQ_JSON_LD.mainEntity).toHaveLength(9);
   });
 
   it("FAQ_JSON_LD is valid JSON (stringify/parse round-trip)", () => {
