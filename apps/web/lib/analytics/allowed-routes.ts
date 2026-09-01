@@ -24,6 +24,7 @@ const ALLOWED_EXACT_PATHS: readonly string[] = ["/"];
 const ALLOWED_PREFIXES: readonly string[] = [
   "/pricing",
   "/parents",
+  "/athletes", // FV-545
   "/teams",
   "/about",
   "/contact",

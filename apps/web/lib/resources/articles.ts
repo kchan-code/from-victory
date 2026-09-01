@@ -16,6 +16,8 @@
 // dateModified on the three articles were updated to match.
 
 import {
+  ATHLETES_HREF,
+  ATHLETES_H1,
   PREGAME_RITUAL_HREF,
   PREGAME_RITUAL_TITLE,
   PREGAME_RITUAL_EXCERPT,
@@ -66,13 +68,17 @@ const ARTICLES: Article[] = [
       "The best pregame verses settle who you already are in Christ, not a charm to play better. Start with Hebrews 12:1-2.",
     audience: "athlete",
     datePublished: "2026-06-12",
-    dateModified: "2026-08-26",
+    // 2026-09-01 (FV-545, KC correction): Lamentations gloss reworded —
+    // mercy framed on God's unmoved faithfulness, not the athlete's earning.
+    dateModified: "2026-09-01",
     image: {
       src: "/images/blog/bible-verses-before-a-game.jpg",
       alt: "Outdoor basketball hoop overlooking the sea in gray morning light",
       width: 1600,
       height: 1066,
     },
+    // FV-545 — back-link to the athlete wisdom page (verbatim-H1 label).
+    related: [{ href: ATHLETES_HREF, label: ATHLETES_H1 }],
     bodyMd: `The verses that actually help before a game are the ones that settle who you already are in Christ, not a charm to play better. Start with Hebrews 12:1-2, then pick one more for nerves, effort, or the ride home.
 
 A verse on a wristband is fine. A spell you say to win is not what Scripture is for. The right line does not make you a lock. It reminds you who you already are while you compete, win or lose.
@@ -117,7 +123,7 @@ Read in context, this isn't a victory guarantee. Paul is talking about contentme
 ### Verses for after the final whistle
 
 **Lamentations 3:22-23** — *"Because of the Lord's great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness."*
-The writer says this from inside real ruin, not after it cleared. Notice the subject: it's the Lord's love that holds you, not your own bounce-back. However tonight goes, his mercy meets you again tomorrow — fresh, before you've earned it back.
+The writer says this from inside real ruin, not after it cleared. Notice the subject: it's the Lord's love that holds you, not your own bounce-back. However it goes, His mercy meets you again tomorrow, fresh because His faithfulness did not move with the result.
 
 **Romans 8:37** — *"No, in all these things we are more than conquerors through him who loved us."*
 Careful with this one. Read the verses right before it — "trouble or hardship or persecution or famine or nakedness or danger or sword" (8:35). *Those* are the "things." It's not a "we're going to win" line. Paul means none of that — not even loss — can separate you from the love of God. You're more than a conqueror even on the night you lose.
@@ -151,7 +157,11 @@ The worst game you ever play does not lower your standing with God. The best gam
       width: 1600,
       height: 1066,
     },
-    related: [{ href: PREGAME_RITUAL_HREF, label: PREGAME_RITUAL_TITLE }],
+    related: [
+      { href: PREGAME_RITUAL_HREF, label: PREGAME_RITUAL_TITLE },
+      // FV-545 — back-link to the athlete wisdom page (verbatim-H1 label).
+      { href: ATHLETES_HREF, label: ATHLETES_H1 },
+    ],
     bodyMd: `Pre-game nerves are energy, not a verdict on you. Run the same five moves every time: longer exhales, name who you are in Christ, visualize one play and one reset, pick a cue word, then pray and go.
 
 The problem is not that you feel them. The problem is when they start writing a story about who you are. *I'm not ready. I'm going to get exposed. It's all on me.* You don't fix that with "just relax." You fix it with a routine — the same handful of moves, every time, so your mind has a rail to grab when the pressure climbs. Here's a five-step routine a 13-year-old, a 16-year-old, or a 20-year-old can run in the locker room.
@@ -224,6 +234,8 @@ Same routine, every game. That's how it becomes yours.
       width: 1600,
       height: 1068,
     },
+    // FV-545 — back-link to the athlete wisdom page (verbatim-H1 label).
+    related: [{ href: ATHLETES_HREF, label: ATHLETES_H1 }],
     bodyMd: `A bad game is information, not a verdict on you. Feel it, name one real mistake, take one lesson, leave the rest, and take the next rep from a standing Christ already settled.
 
 You know the ride home after a bad one. The replays running on a loop. The one turnover, the missed chance, the shift where everything went sideways. That's normal. It means you care. You're not broken for feeling it.
@@ -415,7 +427,11 @@ When you get that order right, you don't get a watered-down version of either. Y
     audience: "athlete",
     datePublished: "2026-09-01",
     dateModified: "2026-09-01",
-    related: [{ href: PREGAME_RITUAL_HREF, label: PREGAME_RITUAL_TITLE }],
+    related: [
+      { href: PREGAME_RITUAL_HREF, label: PREGAME_RITUAL_TITLE },
+      // FV-545 — back-link to the athlete wisdom page (verbatim-H1 label).
+      { href: ATHLETES_HREF, label: ATHLETES_H1 },
+    ],
     bodyMd: `Visualization can help, especially when it is specific, realistic, and practiced alongside physical training. Research reviews find encouraging average effects, with real limits: results vary by task, athlete, protocol, and study quality, and the stronger evidence comes from repeated practice, not a single session. So, does visualization work for athletes? Often, yes, as a supplement. It is a way to rehearse a plan, not a substitute for training and not a guarantee about tonight.
 
 ### What visualization means in sport

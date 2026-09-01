@@ -151,9 +151,10 @@ export function MobileMenu({ open, onClose, triggerRef }: MobileMenuProps) {
 
           <div className="my-2 border-t border-hairline" aria-hidden />
 
-          <a href="/#how" onClick={onClose} className={menuLinkClass}>
+          {/* FV-545: was the /#how homepage anchor; now the athlete page. */}
+          <Link href="/athletes" onClick={onClose} className={menuLinkClass}>
             For the Athlete
-          </a>
+          </Link>
           <Link href="/parents" onClick={onClose} className={menuLinkClass}>
             For Parents
           </Link>

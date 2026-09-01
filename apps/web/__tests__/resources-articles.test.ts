@@ -181,8 +181,9 @@ describe('"kid/kids/kiddo/youngster" audience-language scan', () => {
 
 describe("whole-body sha256 fidelity pins", () => {
   const PINS: Record<string, string> = {
+    // FV-545 (2026-09-01): Lamentations gloss reworded per KC.
     "bible-verses-for-athletes-before-a-game":
-      "5d73f78e92642c59aa3e978ea59148775505d055f65228e2e6346032ad580d63",
+      "cfee683760447a243c9f4512245c65d20fc8ad5ad97409e55438901a5e81ff53",
     "pre-game-nerves-christian-athlete-routine":
       "d3d2040919693acd08c9844c5d4fcbe8269adef943cc5da17ac52b91e6723332",
     "how-to-bounce-back-after-a-bad-game":

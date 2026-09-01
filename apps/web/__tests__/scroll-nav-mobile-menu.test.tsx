@@ -53,9 +53,10 @@ describe("ScrollNav mobile menu (FV-512)", () => {
       expect(link).toHaveAttribute("href", `/${sport}`);
     }
 
+    // FV-545: "For the Athlete" now points at the dedicated athlete page.
     expect(
       within(dialog).getByRole("link", { name: "For the Athlete" }),
-    ).toHaveAttribute("href", "/#how");
+    ).toHaveAttribute("href", "/athletes");
     expect(
       within(dialog).getByRole("link", { name: "For Parents" }),
     ).toHaveAttribute("href", "/parents");

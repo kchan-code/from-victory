@@ -10,6 +10,26 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-09-01 — Dedicated "For the Athlete" page live at /athletes
+
+The site nav's "For the Athlete" link now goes to a dedicated athlete page
+(/athletes) instead of a homepage anchor. It is a moment-based wisdom page
+(KC-approved design, H1 "The mental game, moment by moment."): practical
+guidance organized by when the athlete needs it — before competition
+(3-step nerves routine), the mental rep (3 rules, qualified research
+framing), after a performance you want back (3-step reset), and three NIV
+verse excerpts — each block condensed from a published athlete article and
+linking to it, with the articles linking back. Product beats: a labeled
+audio sample (the real hockey forward first-shift visualization clip), the
+one approved beta quote, and a two-path conversion: 18+ self-serve trial
+($5/mo or $49/yr after) shown only while adult signup is enabled, and a
+13-17 "Send this to a parent" native-share of /parents that collects no
+data from minors. Canonical close: "Play hard, fearless, and free."
+
+Why it matters to a buyer: athlete-intent traffic now has a landing surface
+in the athlete's own register that feeds both the resources library and the
+two live purchase paths, without implying minors can self-serve.
+
 ## 2026-09-01 — Visualization research article live; homepage sections 01/02 rewritten to KC's copy
 
 A sixth resources article is live: "Does Visualization Actually Work for

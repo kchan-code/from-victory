@@ -1,6 +1,7 @@
-// Shared title/route/excerpt constants for the two live GTM Engine pages
-// (FV-411), extracted so FV-413's internal cross-links can reference a
-// single source of truth instead of duplicating literal strings.
+// Shared title/route/excerpt constants for pages that other surfaces
+// cross-link with verbatim labels (FV-413's rule: a link label is the
+// linked page's own title/h1). Originally the two live GTM Engine pages
+// (FV-411); FV-545 added the repo-owned /athletes page's constants.
 //
 // Every string below must exactly match the corresponding page's
 // local `PAGE_TITLE` / `PAGE_DESCRIPTION` constant and rendered <h1> in
@@ -32,3 +33,13 @@ export const CHRISTIAN_ATHLETE_APPS_EXCERPT =
 
 export const CHRISTIAN_ATHLETE_APPS_DATE_PUBLISHED = "2026-07-09";
 export const CHRISTIAN_ATHLETE_APPS_DATE_MODIFIED = "2026-08-26";
+
+// FV-545 — the /athletes wisdom page. Not a GTM Engine page (repo-owned
+// marketing surface, KC-approved 2026-09-01), but its H1 is cross-linked
+// from the athlete articles' `related` entries, which require verbatim
+// reuse of the linked page's own title/h1 — hence the shared constants.
+// ATHLETES_H1 must exactly match the rendered <h1> in app/athletes/page.tsx.
+
+export const ATHLETES_HREF = "/athletes";
+
+export const ATHLETES_H1 = "The mental game, moment by moment.";
