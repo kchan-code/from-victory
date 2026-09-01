@@ -41,6 +41,10 @@ export const FAQ_ITEMS: FaqEntry[] = [
     q: "How does my athlete get the app?",
     a: "There’s nothing to download from an app store. From Victory is a web app your athlete installs straight from their phone’s browser. On iPhone: tap Share, then Add to Home Screen. On Android: tap Install when prompted. Once it’s on the Home Screen, it opens like any other app. One honest note: on iPhone, daily training reminders only work after it’s been added to the Home Screen.",
   },
+  {
+    q: "Where do I find From Victory online?",
+    a: "The product lives at fromvictoryapp.com. If you’re looking for From Victory on the web, that’s the URL to use.",
+  },
 ];
 
 // FAQPage JSON-LD — built from the same array so it can never drift.
