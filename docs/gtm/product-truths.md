@@ -10,6 +10,29 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-09-01 — Visualization research article live; homepage sections 01/02 rewritten to KC's copy
+
+A sixth resources article is live: "Does Visualization Actually Work for
+Athletes?" (/resources/does-visualization-work-for-athletes, athlete-facing).
+It gives the qualified answer — visualization can help as a supplement,
+with real limits — cited to modern systematic reviews (Liu 2025, Reinebo
+2024, Toth 2020, Simonsmeier 2021), describes PETTLEP as a framework,
+carries the Michael Phelps 2008 anecdote under an explicit
+illustration-not-proof close, and states what visualization cannot do.
+First article written under the binding evidence standard
+(docs/content-evidence-standards.md, FV-540). The homepage's "The mental
+rep" section was compressed to KC's own copy (headline "Picture the play.
+Prepare for pressure. Compete from Christ's strength.") with one pointer
+link to the article, and "The method" section restructured to KC's three
+phases (REHEARSE / RESET / RELEASE) with a pointer link to the Pregame
+Ritual guide. A new homepage FAQ entry answers "Does visualization
+actually work?" in the same qualified register.
+
+Why it matters to a buyer: the visualization differentiator now has an
+honest, citable research page marketing can link to, and every public
+claim about visualization efficacy is held to a written evidence standard
+— no overclaims for a skeptical parent or coach to catch.
+
 ## 2026-08-31 — Visualization section gains a locker-room background image
 
 The homepage's "The mental rep" section now has a darkened atmospheric

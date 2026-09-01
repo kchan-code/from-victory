@@ -99,7 +99,7 @@ afterEach(() => {
 const EXPECTED_HEADINGS: RegExp[] = [
   /Visualize and compete/i, // 1. Hero (h1)
   /Hear a pregame session/i, // 2. PregameSample
-  /The picture only helps if someone runs it with you\./i, // 3. Visualization (FV-534)
+  /Picture the play\. Prepare for pressure\./i, // 3. Visualization (FV-539: KC headline triple)
   /Rehearse it\. Reset from it\. Leave it with God\./i, // 4. Method (FV-538: pregame method)
   /Built for the moments athletes actually face\./i, // 5. AppPreview
   /What you see, and what stays private\./i, // 6. ParentTrust
@@ -184,19 +184,17 @@ describe("Homepage — CTA cadence: 4 conversion CTAs to /signup (FV-514)", () =
   });
 });
 
-describe("Homepage — Visualization section copy pins (FV-534)", () => {
-  it("renders the three block headings and the honesty line", () => {
+describe("Homepage — Visualization section copy pins (FV-539)", () => {
+  it("renders KC's three block headings", () => {
     const { container } = render(<LandingPage />);
     const text = container.textContent ?? "";
     for (const heading of [
-      "Why the rep matters",
-      "Not a highlight reel",
-      "Eyes closed, phone down",
+      "See your game, not a highlight reel.",
+      "Practice the response.",
+      "Remember what does not change.",
     ]) {
       expect(text).toContain(heading);
     }
-    // The credibility-buying honesty line must survive copy edits.
-    expect(text).toContain("It does not replace training.");
   });
 
   it("makes no banned outcome or clinical claims in the section", () => {
@@ -215,38 +213,38 @@ describe("Homepage — Visualization section copy pins (FV-534)", () => {
     }
   });
 
-  it("carries no CTA of its own — the 4-CTA cadence pin above stays authoritative", () => {
+  it("carries exactly one link — the article pointer, not a conversion CTA (FV-539)", () => {
     const { container } = render(<LandingPage />);
     const section = container.querySelector("#visualization");
     expect(section).not.toBeNull();
-    expect(section!.querySelectorAll("a")).toHaveLength(0);
+    const links = section!.querySelectorAll("a");
+    expect(links).toHaveLength(1);
+    expect(links[0]!.getAttribute("href")).toBe(
+      "/resources/does-visualization-work-for-athletes",
+    );
   });
 });
 
-describe("Homepage — Method pregame-method pins (FV-534/FV-538)", () => {
-  it("the lede's hear-sentence names the pregame session, never the daily training", () => {
+describe("Homepage — Method pregame-method pins (FV-539)", () => {
+  it("the lede names the phase count and length, and never implies audible daily training", () => {
     const { container } = render(<LandingPage />);
     const text = container.textContent ?? "";
-    // Drift guard: daily training is text-only (FV-135). The read/hear
-    // pair must keep explicit objects so "hear" cannot be parsed as
-    // narrated daily training.
-    expect(text).toContain(
-      "You read the daily training. You hear the pregame session.",
-    );
+    expect(text).toContain("Three phases. About five minutes.");
+    // Drift guard: daily training is text-only (FV-135). No copy may
+    // reattach "hear" to an unnamed object the reader could bind to it.
     expect(text).not.toMatch(/you hear it\b/i);
   });
 
-  it("renders the four pregame-method steps in order (FV-538)", () => {
+  it("renders the three pregame-method phases in order (FV-539: KC copy)", () => {
     const { container } = render(<LandingPage />);
     const text = container.textContent ?? "";
     const steps = [
-      "Set your session.",
-      "Hear the rep.",
-      "Practice the reset.",
+      "Choose it. Hear it.",
+      "Practice the way back.",
       "Leave it with God.",
     ];
     // Search forward from the previous step so the H2 (which ends with
-    // the same "Leave it with God." phrase) can't satisfy step 4 early.
+    // the same "Leave it with God." phrase) can't satisfy step 3 early.
     let cursor = -1;
     for (const step of steps) {
       const at = text.indexOf(step, cursor + 1);
@@ -255,15 +253,15 @@ describe("Homepage — Method pregame-method pins (FV-534/FV-538)", () => {
     }
   });
 
-  it("the prayer step describes the real session close and no outcome promise", () => {
+  it("the release phase describes the real session close and no outcome promise", () => {
     const { container } = render(<LandingPage />);
     const text = container.textContent ?? "";
     // The shipped session genuinely ends in a spoken prayer
     // (components/pregame/audio/segments.ts PRAYER_SEGMENTS) — the copy
-    // may say so, and must keep the leave-it-with-God framing rather
-    // than pray-to-win.
-    expect(text).toContain("The session ends in prayer");
-    expect(text).toContain("hand him what you cannot control");
+    // may say so, and must keep the release framing rather than
+    // pray-to-win.
+    expect(text).toContain("Close in prayer.");
+    expect(text).toContain("release the result you cannot control");
     expect(text.toLowerCase()).not.toContain("pray to win");
   });
 });

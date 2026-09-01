@@ -401,6 +401,82 @@ When you get that order right, you don't get a watered-down version of either. Y
 
 > **See how it works.** From Victory is a daily mental-toughness training app with faith as its foundation — for athletes ages 13 and up. **Start a free trial** and see the order for yourself: identity first, performance from it. [Start your free trial →](/pricing)`,
   },
+  // FV-539 (2026-09-01): KC-approved verbatim body (## headings converted
+  // to ### for the ArticleBody renderer; meta description trimmed 157->155
+  // for the registry limit). Citation set per docs/content-evidence-standards.md.
+  {
+    slug: "does-visualization-work-for-athletes",
+    title: "Does Visualization Actually Work for Athletes?",
+    metaDescription:
+      "Does visualization work for athletes? Reviews find encouraging but varied results. What a good mental rep includes, its limits, and how guided audio helps.",
+    // AUTHORED excerpt:
+    excerpt:
+      "Often, as a supplement. Reviews find encouraging average results with real limits, and the stronger evidence comes from repeated practice.",
+    audience: "athlete",
+    datePublished: "2026-09-01",
+    dateModified: "2026-09-01",
+    related: [{ href: PREGAME_RITUAL_HREF, label: PREGAME_RITUAL_TITLE }],
+    bodyMd: `Visualization can help, especially when it is specific, realistic, and practiced alongside physical training. Research reviews find encouraging average effects, with real limits: results vary by task, athlete, protocol, and study quality, and the stronger evidence comes from repeated practice, not a single session. So, does visualization work for athletes? Often, yes, as a supplement. It is a way to rehearse a plan, not a substitute for training and not a guarantee about tonight.
+
+### What visualization means in sport
+
+Visualization, also called imagery or mental rehearsal, is deliberately running a moment of your sport in your mind before you live it. A good rep includes what you would see and hear, how your body would feel, the emotion of the moment, the cues of the environment, and the action you intend to take. A striker might run the first touch under pressure, a shortstop the first defensive read, a golfer the routine on the opening tee shot.
+
+### Does visualization work for athletes?
+
+The modern reviews: it can, with caveats.
+
+A 2025 review of 86 studies covering 3,593 athletes found positive average effects but rated the performance evidence low in certainty, citing risk of bias, heterogeneity, and possible publication bias (Liu et al., 2025). A 2024 review found a moderate overall effect that was no longer statistically significant once non-randomized studies were removed (Reinebo et al., 2024). A large replication of the mental-practice literature found small average benefits, mostly from programs practiced over time (Toth et al., 2020), and a sport-specific meta-analysis reported positive average effects across performance and related outcomes (Simonsmeier et al., 2021).
+
+Read together, those reviews support a modest, honest claim. Mental rehearsal tends to beat no mental rehearsal. Physical practice remains essential. Results vary by sport, task, athlete, and protocol, and the research has methodological limits. The strongest performance evidence comes from imagery practiced repeatedly over days or weeks, not one pregame session. A single session does a smaller, useful job: rehearsing today's plan.
+
+### What makes a mental rep useful?
+
+PETTLEP, the most widely used framework for building imagery, is a model rather than a proof. It recommends making the rehearsal relevant: your setting, your sport and role, realistic sensory detail, the emotion of competing, and approximate real-time pacing where the task permits it (Holmes and Collins, 2001).
+
+A practical way to apply that is to rehearse a possible opening action: a point guard organizing the first possession, a pitcher working the first at-bat. You are not pre-experiencing the game. Live play is reactive and will not follow a script. You are rehearsing a plan you can carry into it, tuned to your current skill and role.
+
+### More than a highlight reel
+
+Positive-performance and mastery imagery have legitimate value, and the reviews above include them in what they measure. Seeing yourself execute well is a reasonable part of preparation; From Victory lets athletes choose up to three positive plays for that reason.
+
+Game-day preparation can go further. A fuller rep includes a successful opening action, one realistic hard moment, a controllable response, and the next action after the disruption. One small early study, a six-day putting experiment in which 30 college students repeatedly imagined made or narrowly missed putts, found the missed-putt group performed worse (Woolfolk, Parrish and Murphy, 1985). It did not test team-sport mistakes followed by a coping response. The narrow lesson: do not end the image at the mistake. Picture the disruption briefly, then mentally rehearse the response and the next action.
+
+Michael Phelps later wrote that his preparation included visualizing both ideal races and possible race problems, including his goggles filling with water. In the 200-meter butterfly final at the 2008 Beijing Olympics, that problem arrived: his goggles filled, and late in the race he could not see. He relied on his stroke count to finish, won gold, and set a world record. His response also depended on years of physical training and on knowing his rhythm and stroke count. Phelps's experience is an illustration, not scientific proof that visualization caused the result. The useful principle is simpler: do not end the mental rep at the problem. Rehearse the next action you can control.
+
+The same principle can be smaller: a guard rehearsing the next defensive possession after a turnover, or a golfer rehearsing the routine after a missed short putt.
+
+### Why From Victory uses guided audio
+
+Research has used written scripts, self-paced imagery, live guidance, recorded audio, and video-supported approaches (Cooley et al., 2013). Recorded audio is one legitimate method among several, not a superior one. From Victory uses guided audio as a product choice: to give the rehearsal structure and connect the hard moment to its reset.
+
+A session is built from your choices: sport- and role-specific cues, up to three positive plays, one realistic hard moment, and one focus cue. The voice gives the cue, then leaves enough space for you to generate the image. The hard moment is followed by a reset and a next action. The session closes with spoken prayer. Closing your eyes may help some athletes shut out distraction: a sensible option, not an established active ingredient.
+
+### What visualization cannot do
+
+Visualization does not guarantee better performance, calm, confidence, or focus. It can support learning, but it cannot replace physical reps, feedback, film, or coaching. There is no evidence that one five-minute session changes your opening minute, and no evidence that From Victory's exact format outperforms other imagery formats. From Victory is mental training, not therapy, treatment, or clinical care.
+
+What a session can honestly offer: a structured rehearsal of today's plan, including the moment you hope will not happen and the response you want ready if it does.
+
+### The foundation underneath
+
+Hebrews 12:1-2 frames how we run: with perseverance, eyes fixed on Jesus. Tonight's result matters, and it does not decide your standing with God. His completed work settles that before warmups. Your Identity Is Secure. Compete From Victory. Visualization is preparation, not how you earn anything.
+
+Try a five-minute guided pregame session. [Start your 14-day free trial](/pricing).
+
+### References
+
+- [Liu et al. (2025), systematic review and meta-analysis of imagery training in athletes, Behavioral Sciences](https://doi.org/10.3390/bs15050685)
+- [Reinebo et al. (2024), systematic review and meta-analysis of psychological interventions and athletic performance, Sports Medicine](https://doi.org/10.1007/s40279-023-01931-z)
+- [Toth et al. (2020), meta-analytic replication of the mental practice literature, Psychology of Sport and Exercise](https://doi.org/10.1016/j.psychsport.2020.101672)
+- [Simonsmeier et al. (2021), meta-analysis of imagery interventions in sport, International Review of Sport and Exercise Psychology](https://doi.org/10.1080/1750984X.2020.1780627)
+- [Holmes and Collins (2001), the PETTLEP approach to motor imagery, Journal of Applied Sport Psychology](https://doi.org/10.1080/10413200109339004)
+- [Cooley et al. (2013), review of imagery delivery methods, Journal of Imagery Research in Sport and Physical Activity](https://doi.org/10.1515/jirspa-2012-0005)
+- [Woolfolk, Parrish and Murphy (1985), positive and negative imagery in a putting task, Cognitive Therapy and Research](https://doi.org/10.1007/BF01183852)
+- [Michael Phelps with Alan Abrahamson, No Limits: The Will to Succeed](https://www.simonandschuster.com/books/No-Limits/Michael-Phelps/9781439141724)
+- [Official Olympic recording of the 2008 200-meter butterfly final](https://www.youtube.com/watch?v=fQ-1RydX0oU)
+- [Washington Post account of Phelps and Bob Bowman rehearsing possible race problems](https://www.washingtonpost.com/sports/2023/05/28/sally-jenkins-book-excerpt-michael-phelps/)`,
+  },
 ];
 
 // ---------------------------------------------------------------------------

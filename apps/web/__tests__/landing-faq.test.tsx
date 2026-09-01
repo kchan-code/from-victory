@@ -4,7 +4,7 @@
 // FV-236 — FAQ + Founder + Testimonials on the home page.
 //
 // Coverage:
-//   1. All 7 questions render in the FAQ section.
+//   1. All 8 questions render in the FAQ section.
 //   2. Answers match the source copy (spot-pin 3 verbatim sentences).
 //   3. JSON-LD parses and its questions array length === the rendered list.
 //   4. Testimonials renders nothing while the array is empty.
@@ -40,14 +40,14 @@ beforeAll(() => {
 
 afterEach(() => cleanup());
 
-// ── 1. All 7 questions render ────────────────────────────────────────────────
+// ── 1. All 8 questions render ────────────────────────────────────────────────
 
-describe("Faq — all 7 questions render", () => {
-  it("renders exactly 7 <summary> elements (one per FAQ entry)", () => {
+describe("Faq — all 8 questions render", () => {
+  it("renders exactly 8 <summary> elements (one per FAQ entry)", () => {
     const { container } = render(<Faq />);
     const summaries = container.querySelectorAll("summary");
     expect(summaries).toHaveLength(FAQ_ITEMS.length);
-    expect(summaries).toHaveLength(7);
+    expect(summaries).toHaveLength(8);
   });
 
   it("renders every question text in the DOM", () => {
@@ -114,14 +114,14 @@ describe("Faq — verbatim answer spot-pins", () => {
 describe("Faq — FAQ_JSON_LD structured data", () => {
   it("FAQ_JSON_LD.mainEntity has the same length as FAQ_ITEMS", () => {
     expect(FAQ_JSON_LD.mainEntity).toHaveLength(FAQ_ITEMS.length);
-    expect(FAQ_JSON_LD.mainEntity).toHaveLength(7);
+    expect(FAQ_JSON_LD.mainEntity).toHaveLength(8);
   });
 
   it("FAQ_JSON_LD is valid JSON (stringify/parse round-trip)", () => {
     const raw = JSON.stringify(FAQ_JSON_LD);
     const parsed = JSON.parse(raw) as typeof FAQ_JSON_LD;
     expect(parsed["@type"]).toBe("FAQPage");
-    expect(parsed.mainEntity).toHaveLength(7);
+    expect(parsed.mainEntity).toHaveLength(8);
   });
 
   it("each mainEntity entry has a name matching the corresponding FAQ_ITEMS question", () => {
@@ -145,7 +145,7 @@ describe("Faq — FAQ_JSON_LD structured data", () => {
       mainEntity: unknown[];
     };
     expect(parsed["@type"]).toBe("FAQPage");
-    expect(parsed.mainEntity).toHaveLength(7);
+    expect(parsed.mainEntity).toHaveLength(8);
   });
 });
 
