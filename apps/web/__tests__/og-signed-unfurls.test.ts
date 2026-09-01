@@ -17,9 +17,16 @@ describe("Kinny-signed OG unfurls", () => {
       resolve(webRoot, "app/resources/page.tsx"),
       "utf8",
     );
+    const athletes = readFileSync(
+      resolve(webRoot, "app/athletes/page.tsx"),
+      "utf8",
+    );
     expect(parents).toContain(`/og-website-1200x630.png`);
     expect(resources).toContain(`/og-website-1200x630.png`);
+    expect(athletes).toContain(`/og-website-1200x630.png`);
     expect(parents).not.toContain("/og-app-1200x630.png");
+    expect(athletes).not.toContain("/og-app-1200x630.png");
+    expect(athletes).not.toContain("from-victory-social-preview.jpg");
   });
 
   it("wires the app card on the texted session door (/pair) and /signin", () => {
