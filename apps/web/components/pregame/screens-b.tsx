@@ -1057,6 +1057,11 @@ function substituteSegment(
   seg: AudioSegment,
   state: PregameState,
   sportConfig: SportConfig = HOCKEY_CONFIG,
+  // FV-541: the need-specific verse (same NEED_VERSE[state.need] lookup audio
+  // mode uses), for the Identity segment's {{scriptureRef}}/{{scriptureText}}
+  // tokens. Defaults to the spine verse so existing no-arg callers/tests still
+  // resolve to Hebrews 12:1-2.
+  sessionVerse: NeedVerse = { reference: SCRIPTURE_REF, displayText: SCRIPTURE_TEXT },
 ): { eyebrow: string; body: string } {
   const role = state.role;
   // Guard: roleContent may be absent for no-ask sports, or the selected role
@@ -1081,7 +1086,9 @@ function substituteSegment(
         adversityLabelFor(sportConfig, role, state.adversity) ?? "the hard moment",
       )
       .replace(/\{\{anchor\}\}/g, state.anchor || DEFAULTS.anchor)
-      .replace(/\{\{selfTalk\}\}/g, state.selfTalk || DEFAULTS.selfTalk);
+      .replace(/\{\{selfTalk\}\}/g, state.selfTalk || DEFAULTS.selfTalk)
+      .replace(/\{\{scriptureRef\}\}/g, sessionVerse.reference)
+      .replace(/\{\{scriptureText\}\}/g, sessionVerse.displayText);
 
   return { eyebrow: replace(seg.eyebrow), body: replace(seg.body) };
 }
@@ -1531,8 +1538,8 @@ export function AudioSessionScreen({
     }
     const seg = segments[currentIdx];
     view = seg
-      ? substituteSegment(seg, state, sportConfig)
-      : { eyebrow: "Identity", body: SCRIPTURE_SHORT };
+      ? substituteSegment(seg, state, sportConfig, sessionVerse)
+      : { eyebrow: "Identity", body: sessionVerse.displayText };
     textModeStageLabel = eyebrowToStageLabel(view.eyebrow, state.role);
   }
 
