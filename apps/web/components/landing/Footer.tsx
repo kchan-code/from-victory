@@ -11,7 +11,8 @@ const productLinks = [
 ];
 
 const forLinks = [
-  { href: "/#how", label: "For the Athlete" },
+  // FV-545: was the /#how homepage anchor; now the athlete page.
+  { href: "/athletes", label: "For the Athlete" },
   { href: "/parents", label: "For Parents" },
   { href: "/teams", label: "For Teams & Churches" },
   { href: "/pricing", label: "Pricing" },

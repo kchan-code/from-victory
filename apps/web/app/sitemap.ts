@@ -67,6 +67,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      // FV-545 — the athlete wisdom page.
+      url: `${siteUrl}/athletes`,
+      lastModified: "2026-09-01",
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
       url: `${siteUrl}/pricing`,
       lastModified: MARKETING_UPDATED,
       changeFrequency: "weekly",

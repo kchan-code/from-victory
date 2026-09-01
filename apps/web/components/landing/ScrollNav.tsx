@@ -129,12 +129,14 @@ export function ScrollNav() {
                   the multi-word labels wrap to two/three lines when the bar
                   tightens, which reads as clutter. The labels are short, so
                   nowrap trades a little width for a single clean line. */}
-              <a
-                href="/#how"
+              {/* FV-545: was the /#how homepage anchor; now the dedicated
+                  athlete wisdom page. */}
+              <Link
+                href="/athletes"
                 className="hidden md:inline-flex whitespace-nowrap text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
               >
                 For the Athlete
-              </a>
+              </Link>
               <Link
                 href="/parents"
                 className="hidden md:inline-flex whitespace-nowrap text-cream/70 hover:text-cream hover:bg-charcoal no-underline px-3.5 py-2 rounded-pill font-medium transition-colors duration-fast ease-out"
