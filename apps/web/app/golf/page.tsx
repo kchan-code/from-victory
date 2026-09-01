@@ -108,7 +108,7 @@ export default function GolfPage() {
               </h1>
               <p className="max-w-[54ch] mb-6 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
                 You walk to the first tee. The grip settles into your
-                hands. A bomber tees it high — free, full, nothing held
+                hands. A bomber tees it high: free, full, nothing held
                 back. A ball-striker picks the smallest target and flushes
                 it. A scrambler sees the shot before hitting it. The hard
                 moment is named before it happens. Identity in Christ is the

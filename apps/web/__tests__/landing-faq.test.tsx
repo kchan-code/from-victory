@@ -97,7 +97,7 @@ describe("Faq — verbatim answer spot-pins", () => {
     render(<Faq />);
     // Curator-final copy: first-athlete + additional-athlete pricing line.
     const els = screen.getAllByText(
-      /\$5 a month, or \$49 a year for your first athlete — and \$3 a month, or \$29 a year, for each additional athlete in your household\./,
+      /\$5 a month, or \$49 a year for your first athlete, and \$3 a month, or \$29 a year, for each additional athlete in your household\./,
     );
     expect(els.length).toBeGreaterThan(0);
   });

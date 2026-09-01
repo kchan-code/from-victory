@@ -11,14 +11,14 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact" },
   title: "Contact",
   description:
-    "Questions about From Victory? Reach out — we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
+    "Questions about From Victory? Reach out, we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
   openGraph: {
     type: "website",
     url: `${siteUrl}/contact`,
     siteName: "From Victory",
     title: "Contact · From Victory",
     description:
-      "Questions about From Victory? Reach out — we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
+      "Questions about From Victory? Reach out, we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
     images: [
       {
         url: `${siteUrl}/og-website-1200x630.png`,
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Contact · From Victory",
     description:
-      "Questions about From Victory? Reach out — we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
+      "Questions about From Victory? Reach out, we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
     images: [`${siteUrl}/og-website-1200x630.png`],
   },
 };
@@ -60,7 +60,7 @@ export default function ContactPage() {
             </h1>
             <p className="max-w-[50ch] mb-12 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
               Questions about the app, pricing, sports, or group options for
-              teams and churches — we read every message and will get back to
+              teams and churches, we read every message and will get back to
               you.
             </p>
 

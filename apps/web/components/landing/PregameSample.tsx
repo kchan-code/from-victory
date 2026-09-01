@@ -92,7 +92,7 @@ export function PregameSample() {
               <p className="font-body text-[14px] leading-[1.6] text-cream/60">
                 Before every game, athletes choose their need, their reset
                 anchor, and a cue word. The session builds around those
-                choices — guided narration, about five minutes.
+                choices: guided narration, about five minutes.
               </p>
             </div>
           </div>

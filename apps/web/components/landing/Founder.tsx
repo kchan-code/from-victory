@@ -21,7 +21,7 @@ export function Founder() {
               style={{ color: "var(--fv-mute-1)" }}
             >
               I&apos;m a hockey dad. I&apos;ve sat in enough rinks to watch what
-              pressure does to young athletes — how quietly they start tying their
+              pressure does to young athletes: how quietly they start tying their
               worth to the last shift, the depth chart, the scoreboard. I built
               From Victory for my own kids, and for athletes like them: so
               they&apos;d learn to compete from a settled identity instead of

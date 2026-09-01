@@ -38,7 +38,7 @@ export default async function SignUpPage() {
             <TrialDisclosure>
               After you create your account, add your athlete from your
               dashboard. 14 days free for first-time subscribers, then
-              $5/mo or $49/yr, cancel anytime. Card required — it will be
+              $5/mo or $49/yr, cancel anytime. Card required. It will be
               charged automatically when the trial ends unless you cancel
               first.
             </TrialDisclosure>

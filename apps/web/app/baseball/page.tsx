@@ -61,7 +61,7 @@ const whatYouTrain = [
   {
     icon: "target" as const,
     title: "Pre-practice lock-in",
-    body: "Win the first round in the cage. First ten minutes, full — feet moving, first to every ground ball. The rep you give now is the at-bat you'll have with the game on the line.",
+    body: "Win the first round in the cage. First ten minutes, full: feet moving, first to every ground ball. The rep you give now is the at-bat you'll have with the game on the line.",
   },
 ];
 

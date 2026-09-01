@@ -19,7 +19,7 @@ export function PricingSummary() {
             <h2 className="fv-h-section mb-6">14 days free. Cancel anytime.</h2>
             {/* Verbatim: app/pricing/page.tsx hero sub-copy. */}
             <p className="fv-lede mb-8">
-              $49/yr or $5/mo for your first athlete &mdash; $29/yr or $3/mo
+              $49/yr or $5/mo for your first athlete, $29/yr or $3/mo
               for each additional. No ads, no data sold, cancel anytime.
             </p>
             <Link

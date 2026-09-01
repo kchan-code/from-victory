@@ -167,7 +167,7 @@ export function WaitlistForm() {
           <SvgIcon name="flame" size={14} className="text-gold flex-none mt-0.5" />
           <p className="font-body text-[13px] leading-[1.5] text-cream/80 m-0">
             <span className="text-gold font-semibold">
-              {LIVE_SPORTS_PROSE} — available now.
+              {LIVE_SPORTS_PROSE}: available now.
             </span>{" "}
             <Link
               href="/signup"

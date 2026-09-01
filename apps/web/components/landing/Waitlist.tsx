@@ -9,12 +9,12 @@ import { LIVE_SPORTS_PROSE } from "./live-sports-prose";
 const bullets = [
   {
     icon: "flame" as const,
-    title: `${LIVE_SPORTS_PROSE} — available now`,
-    body: "The full app — daily training, pregame audio, pre-practice lock in — is live. Start your free trial today.",
+    title: `${LIVE_SPORTS_PROSE}: available now`,
+    body: "The full app (daily training, pregame audio, pre-practice lock in) is live. Start your free trial today.",
   },
   {
     icon: "book" as const,
-    title: "Other sports — join the waitlist",
+    title: "Other sports: join the waitlist",
     body: "Swimming and more are coming sport-by-sport. Select your sport and we'll notify you when it's ready.",
   },
   {
@@ -42,7 +42,7 @@ export function Waitlist() {
               Start training from <em>secure identity.</em>
             </h2>
             <p className="fv-lede mb-8">
-              {LIVE_SPORTS_PROSE} are live now — start your athlete&apos;s
+              {LIVE_SPORTS_PROSE} are live now. Start your athlete&apos;s
               14-day free trial today. Playing something else? Select your sport
               below and we&rsquo;ll reach out when it launches.
             </p>
@@ -57,7 +57,7 @@ export function Waitlist() {
                 <SvgIcon name="arrow" size={16} />
               </Link>
               <p className="mt-3 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 font-semibold">
-                14 days free for first-time subscribers &mdash; then $5/mo or $49/yr &mdash; cancel anytime
+                14 days free for first-time subscribers, then $5/mo or $49/yr, cancel anytime
               </p>
             </div>
 

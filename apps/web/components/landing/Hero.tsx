@@ -61,7 +61,7 @@ export function Hero() {
               </a>
             </div>
             <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 font-semibold mb-0">
-              14 days free for first-time subscribers &mdash; then $5/mo or $49/yr &mdash; cancel anytime
+              14 days free for first-time subscribers, then $5/mo or $49/yr, cancel anytime
             </p>
 
             {/* FV-515: 18+ athlete path, flag-gated server-side — quiet

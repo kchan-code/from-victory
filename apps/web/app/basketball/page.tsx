@@ -68,15 +68,15 @@ const whatYouTrain = [
 const positions = [
   {
     title: "Guard",
-    body: "Push the pace, eyes up, take care of the rock. Get downhill, make the simple, strong play. Get back on defense — talk, be loud. The pass that gets picked is named before it happens, so you reset instead of carrying it.",
+    body: "Push the pace, eyes up, take care of the rock. Get downhill, make the simple, strong play. Get back on defense, talk, be loud. The pass that gets picked is named before it happens, so you reset instead of carrying it.",
   },
   {
     title: "Wing",
-    body: "Spot up. The ball swings to you — feet set, shoot it. Sprint the lane, take the next open shot, no hesitation. Lock up your man and crash the glass. The clean look that comes up front rim does not write the next one.",
+    body: "Spot up. The ball swings to you, feet set, shoot it. Sprint the lane, take the next open shot, no hesitation. Lock up your man and crash the glass. The clean look that comes up front rim does not write the next one.",
   },
   {
     title: "Big",
-    body: "Win the tip. Seal your man and post strong. Hit the glass — two hands, strong. Roll hard to the rim and finish. Protect the rim, straight up, no foul. Two quick whistles already have a way back.",
+    body: "Win the tip. Seal your man and post strong. Hit the glass, two hands, strong. Roll hard to the rim and finish. Protect the rim, straight up, no foul. Two quick whistles already have a way back.",
   },
 ];
 
@@ -107,7 +107,7 @@ export default function BasketballPage() {
                 You&apos;ve already seen the first possession.
               </h1>
               <p className="max-w-[54ch] mb-6 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
-                A wing has already caught the swing — feet set, shoot it. A
+                A wing has already caught the swing, feet set, shoot it. A
                 guard has pushed the pace, eyes up, strong with the ball. A
                 big has won the tip and owned the paint. The hard moment is
                 named before it happens. Identity in Christ is the ground
