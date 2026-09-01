@@ -227,6 +227,12 @@ describe("AudioSessionScreen audioScript — sport-correct segments (FV-175)", (
   // verse regardless of the athlete's selected need — the Identity segment's
   // body baked in SCRIPTURE_REF/SCRIPTURE_TEXT instead of resolving
   // NEED_VERSE[state.need] the way audio mode already did.
+  //
+  // The explicit "Five minutes. Read along." assertion in each test below
+  // pins the render to the text-mode path (matching the FV-175 test above) —
+  // without it, a future change to the audio/text gating logic could make
+  // these pass for the wrong reason (audio mode independently renders the
+  // same sessionVerse and would satisfy the verse assertions too).
   it("AudioSessionScreen text-mode reflects the selected need's verse, not the spine default", () => {
     render(
       <AudioSessionScreen
@@ -237,6 +243,22 @@ describe("AudioSessionScreen audioScript — sport-correct segments (FV-175)", (
         sport="hockey"
       />,
     );
+    expect(screen.getByText(/five minutes\. read along/i)).toBeInTheDocument();
+    expect(screen.getByText(/Philippians 4:6-7/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Hebrews 12:1-2/i)).not.toBeInTheDocument();
+  });
+
+  it("AudioSessionScreen text-mode reflects the selected need's verse for a non-hockey sport too", () => {
+    render(
+      <AudioSessionScreen
+        state={makeState({ need: "Calm" })}
+        set={vi.fn()}
+        onContinue={vi.fn()}
+        sportConfig={BASKETBALL_CONFIG}
+        sport="basketball"
+      />,
+    );
+    expect(screen.getByText(/five minutes\. read along/i)).toBeInTheDocument();
     expect(screen.getByText(/Philippians 4:6-7/i)).toBeInTheDocument();
     expect(screen.queryByText(/Hebrews 12:1-2/i)).not.toBeInTheDocument();
   });
@@ -251,6 +273,7 @@ describe("AudioSessionScreen audioScript — sport-correct segments (FV-175)", (
         sport="hockey"
       />,
     );
+    expect(screen.getByText(/five minutes\. read along/i)).toBeInTheDocument();
     expect(screen.getByText(/Hebrews 12:1-2/i)).toBeInTheDocument();
   });
 });
