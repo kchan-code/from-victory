@@ -117,7 +117,7 @@ export default function LacrossePage() {
               <p className="max-w-[54ch] mb-6 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
                 You set up at X with the ball and identify where the first
                 slide will come from. A middie crosses midfield on the run. A
-                FOGO sets up at the dot — down, set, clamp. A goalie steps
+                FOGO sets up at the dot: down, set, clamp. A goalie steps
                 into the cage and calls the hot defender. The hard moment is
                 named before it happens. Identity in Christ is the ground
                 under that picture. Compete From Victory.
@@ -158,8 +158,8 @@ export default function LacrossePage() {
                   See it before the whistle.
                 </h2>
                 <p className="fv-lede">
-                  You pick Attack, Midfield, Defense, FOGO — the face-off
-                  specialist — or Goalie, then up to three plays from your
+                  You pick Attack, Midfield, Defense, FOGO (the face-off
+                  specialist), or Goalie, then up to three plays from your
                   position&apos;s library. The audio walks the first
                   possession of that job, then the hard one: the turnover,
                   the bad penalty, getting shut off. You have already been

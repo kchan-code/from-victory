@@ -61,7 +61,7 @@ const whatYouTrain = [
   {
     icon: "target" as const,
     title: "Pre-practice lock-in",
-    body: "Start with what you can control: your stance, your feet, your eyes, and your effort. Get through the first individual period one rep at a time — feet moving, eyes up, assignment finished. First rep. Go.",
+    body: "Start with what you can control: your stance, your feet, your eyes, and your effort. Get through the first individual period one rep at a time: feet moving, eyes up, assignment finished. First rep. Go.",
   },
 ];
 

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/teams" },
   title: "For Teams, Churches & Sports Ministries",
   description:
-    "From Victory gives teams, clubs, FCA chapters, chaplains, and church youth groups a simple way to provide Scripture-rooted athlete mindset training to families — without managing accounts, monitoring athletes, or holding private data.",
+    "From Victory gives teams, clubs, FCA chapters, chaplains, and church youth groups a simple way to provide Scripture-rooted athlete mindset training to families, without managing accounts, monitoring athletes, or holding private data.",
   openGraph: {
     type: "website",
     url: `${siteUrl}/teams`,
@@ -78,13 +78,13 @@ const audiences = [
     label: "FCA chapters, chaplains, and sports ministries",
     heading: "Help athletes carry faith into the daily pressure of competition.",
     body: "A huddle, talk, or chapel can be powerful. But pressure shows up every day: tryouts, slumps, injuries, mistakes, rivalry games, and the fear of disappointing people. From Victory gives athletes a daily practice that connects Scripture, identity, and mental preparation between gatherings.",
-    note: "Non-denominational Protestant. Scripture-centered. Built as mindset training with faith at the foundation — not sports language added onto a generic devotional.",
+    note: "Non-denominational Protestant. Scripture-centered. Built as mindset training with faith at the foundation, not sports language added onto a generic devotional.",
   },
   {
     icon: "book" as const,
     label: "Church youth groups and family ministries",
     heading: "Serve sports families without becoming the system of record.",
-    body: "Many families in your church are navigating the pressure, identity questions, and time demands of youth sports. From Victory gives you a practical resource to place in their hands while keeping the family — not the church — in control of the account and data.",
+    body: "Many families in your church are navigating the pressure, identity questions, and time demands of youth sports. From Victory gives you a practical resource to place in their hands while keeping the family (not the church) in control of the account and data.",
     note: null,
   },
 ];
@@ -114,7 +114,7 @@ const athleteGets = [
   {
     icon: "anchor" as const,
     title: "Sport-specific tracks",
-    body: "The core training is built for Christian athletes across sports. Hockey, basketball, golf, football, baseball, lacrosse, and soccer are live now. More sports are in development — we build each one fully before releasing it.",
+    body: "The core training is built for Christian athletes across sports. Hockey, basketball, golf, football, baseball, lacrosse, and soccer are live now. More sports are in development. We build each one fully before releasing it.",
   },
 ];
 
@@ -122,15 +122,15 @@ const athleteGets = [
 const groupFaq = [
   {
     q: "Who owns the athlete accounts?",
-    a: "Families do. Each parent creates and controls their own account. From the moment they onboard, everything — accounts, data, deletion rights — belongs to them. Your organization distributed the access; it does not hold any of it.",
+    a: "Families do. Each parent creates and controls their own account. From the moment they onboard, everything (accounts, data, deletion rights) belongs to them. Your organization distributed the access; it does not hold any of it.",
   },
   {
     q: "Can I see how athletes are training?",
-    a: "No, and that's intentional. There is no coach dashboard and no team activity feed. The architecture does not support reading another athlete's session — by design, not by policy. What an athlete trains on and how they prepare is between them and their family account.",
+    a: "No, and that's intentional. There is no coach dashboard and no team activity feed. The architecture does not support reading another athlete's session, by design, not by policy. What an athlete trains on and how they prepare is between them and their family account.",
   },
   {
     q: "What athlete data does our organization hold?",
-    a: "None. Each athlete account holds only a first name and birthdate. No email address, no phone number, no photos, no behavioral analytics. The purchasing organization — your team, chapter, or church — has no access to any of it. Full deletion on the parent's request within 30 days.",
+    a: "None. Each athlete account holds only a first name and birthdate. No email address, no phone number, no photos, no behavioral analytics. The purchasing organization (your team, chapter, or church) has no access to any of it. Full deletion on the parent's request within 30 days.",
   },
   {
     q: "Is there ongoing admin work after we distribute codes?",
@@ -138,7 +138,7 @@ const groupFaq = [
   },
   {
     q: "What happens if a family leaves the program?",
-    a: "Their account belongs to the family, not the organization. If your group arrangement ends, families can continue with their own subscription at the standard rate. Nothing in the athlete's account changes — just who's paying.",
+    a: "Their account belongs to the family, not the organization. If your group arrangement ends, families can continue with their own subscription at the standard rate. Nothing in the athlete's account changes. The only change is who pays.",
   },
 ];
 
@@ -332,7 +332,7 @@ export default function TeamsPage() {
                   Group pricing
                 </div>
                 <p className="font-body text-[14px] leading-[1.55] text-cream/70 m-0">
-                  Team and group pricing is not self-serve yet — we size each
+                  Team and group pricing is not self-serve yet. We size each
                   arrangement individually. There are no published per-seat
                   numbers here on purpose: the right structure depends on your
                   group size and context. Access codes are issued as part of
@@ -485,7 +485,7 @@ export default function TeamsPage() {
             </h2>
             <p className="fv-lede max-w-[52ch] mx-auto mb-8">
               Give them a private, Scripture-rooted training rhythm they can
-              carry into practices, games, tryouts, pressure, and setbacks —
+              carry into practices, games, tryouts, pressure, and setbacks,
               without adding another dashboard for your organization to manage.
             </p>
             {/*

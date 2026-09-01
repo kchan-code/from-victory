@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/pricing" },
   title: "Pricing",
   description:
-    "14 days free, then $49/yr or $5/mo for your first athlete — $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
+    "14 days free, then $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
   openGraph: {
     type: "website",
     url: `${siteUrl}/pricing`,
@@ -44,15 +44,15 @@ export const metadata: Metadata = {
 const faq: { q: string; a: string }[] = [
   {
     q: "What happens after the 14-day trial?",
-    a: "If you do nothing, your subscription starts at the rate you selected — $49/yr or $5/mo for your first athlete — $29/yr or $3/mo for each additional. We will not charge you before the trial period ends. You can cancel any time in your account settings before the trial ends and you will not be billed. The free trial applies to first-time subscribers.",
+    a: "If you do nothing, your subscription starts at the rate you selected: $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. We will not charge you before the trial period ends. You can cancel any time in your account settings before the trial ends and you will not be billed. The free trial applies to first-time subscribers.",
   },
   {
     q: "What sports are available right now?",
-    a: "Hockey, basketball, golf, football, baseball, lacrosse, and soccer are live now. More sports are in development — all 30-day training content is sport-specific, so we build each one fully before releasing it.",
+    a: "Hockey, basketball, golf, football, baseball, lacrosse, and soccer are live now. More sports are in development. All 30-day training content is sport-specific, so we build each one fully before releasing it.",
   },
   {
     q: "Can I see what my athlete does inside their sessions?",
-    a: "No. The parent dashboard shows rhythm data — how often your athlete trained and total sessions completed. The choices they make inside a session, and anything they bring to prayer, stay theirs by design.",
+    a: "No. The parent dashboard shows rhythm data: how often your athlete trained and total sessions completed. The choices they make inside a session, and anything they bring to prayer, stay theirs by design.",
   },
   {
     q: "Can I cancel before the trial ends?",
@@ -98,7 +98,7 @@ export default function PricingPage() {
               Then <em>$49 per year.</em>
             </h1>
             <p className="max-w-[44ch] mx-auto mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
-              $49/yr or $5/mo for your first athlete &mdash; $29/yr or $3/mo
+              $49/yr or $5/mo for your first athlete, $29/yr or $3/mo
               for each additional. No ads, no data sold, cancel anytime.
               First-time subscribers train free for the first two weeks.
             </p>
@@ -160,7 +160,7 @@ export default function PricingPage() {
                     {
                       collected: true,
                       label: "Session participation",
-                      note: "Dates of completed sessions — shown on your parent dashboard as rhythm data.",
+                      note: "Dates of completed sessions, shown on your parent dashboard as rhythm data.",
                     },
                     {
                       collected: false,

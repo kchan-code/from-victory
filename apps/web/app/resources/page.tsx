@@ -92,7 +92,7 @@ export default function ResourcesPage() {
             {/* AUTHORED subhead: */}
             <p className="max-w-[50ch] text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
               Evergreen articles on the mental and spiritual side of
-              competition — for athletes and the parents raising them.
+              competition, for athletes and the parents raising them.
             </p>
           </Reveal>
         </div>

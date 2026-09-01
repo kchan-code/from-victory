@@ -46,7 +46,7 @@ export const SOFTWARE_APPLICATION_JSON_LD = {
     },
     {
       "@type": "Offer",
-      name: "Monthly — first athlete",
+      name: "Monthly: first athlete",
       description:
         "14-day free trial, then $5/month for the first athlete. Cancel anytime.",
       price: "5.00",
@@ -55,7 +55,7 @@ export const SOFTWARE_APPLICATION_JSON_LD = {
     },
     {
       "@type": "Offer",
-      name: "Annual — first athlete",
+      name: "Annual: first athlete",
       description:
         "14-day free trial, then $49/year for the first athlete. Cancel anytime.",
       price: "49.00",
@@ -64,7 +64,7 @@ export const SOFTWARE_APPLICATION_JSON_LD = {
     },
     {
       "@type": "Offer",
-      name: "Monthly — additional athlete",
+      name: "Monthly: additional athlete",
       description: "$3/month for each additional athlete on the same plan.",
       price: "3.00",
       priceCurrency: "USD",
@@ -72,7 +72,7 @@ export const SOFTWARE_APPLICATION_JSON_LD = {
     },
     {
       "@type": "Offer",
-      name: "Annual — additional athlete",
+      name: "Annual: additional athlete",
       description: "$29/year for each additional athlete on the same plan.",
       price: "29.00",
       priceCurrency: "USD",

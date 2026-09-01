@@ -33,9 +33,9 @@ const FEATURES = [
   "Daily training session (hockey, basketball, golf, football, baseball, lacrosse & soccer)",
   "Pregame guided audio (~5 min)",
   "Pre-practice lock-in",
-  "Journey view — 30-day session map",
+  "Journey view: 30-day session map",
   "Rhythm visualization (not a streak counter)",
-  "Parent dashboard — rhythm + session count",
+  "Parent dashboard: rhythm + session count",
   "14-day free trial",
   "Cancel anytime",
 ];
@@ -157,7 +157,7 @@ export function PricingPlanCard() {
             data-testid="plan-additional"
             className="font-body text-[13px] text-cream/55 mb-2"
           >
-            $49/yr for your first athlete &mdash; $29/yr each additional
+            $49/yr for your first athlete, $29/yr each additional
             athlete
           </div>
         ) : (
@@ -207,7 +207,7 @@ export function PricingPlanCard() {
           data-testid="plan-cta-terms"
           className="text-center font-mono text-[10px] tracking-[0.12em] uppercase text-cream/55 font-semibold mt-3"
         >
-          14 days free &mdash; cancel anytime
+          14 days free, cancel anytime
         </p>
       </div>
     </div>

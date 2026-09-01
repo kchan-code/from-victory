@@ -8,6 +8,8 @@ import { Reveal } from "@/components/landing/Reveal";
 import { SectionMeta } from "@/components/landing/SectionMeta";
 import { SvgIcon } from "@/components/landing/SvgIcon";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
+import { ATHLETES_HREF, ATHLETES_H1 } from "@/lib/gtm/page-titles";
+import { isAdultSignupEnabled } from "@/lib/flags";
 
 const siteUrl = "https://www.fromvictoryapp.com";
 
@@ -15,7 +17,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/parents" },
   title: "For Parents",
   description:
-    "You invest in your athlete's physical training. From Victory builds the mental and spiritual foundation underneath it — daily mindset training, pregame preparation, and a private practice for resilience. You see the rhythm; they own the growth.",
+    "Daily training is the foundation: a short session of mental skill and Scripture for your athlete. On game day, a five-minute guided pregame calls it up. You see the rhythm; their sessions stay theirs.",
   openGraph: {
     type: "website",
     url: `${siteUrl}/parents`,
@@ -45,27 +47,27 @@ const athleteGets = [
   {
     icon: "flame" as const,
     title: "Daily training session",
-    body: "A short daily session — mental skill plus Scripture foundation — that builds identity, discipline, and resilience over 30 days. Themed for hockey, basketball, golf, football, baseball, lacrosse, and soccer.",
+    body: "A short daily session of mental skill plus Scripture foundation, in a 30-day progression. Themed for hockey, basketball, golf, football, baseball, lacrosse, and soccer.",
   },
   {
     icon: "zap" as const,
     title: "Pregame guided audio",
-    body: "A ~5-minute guided audio session before a game: breathing, focus visualization, a plan for the hard moment, and a send-off. Built for the locker room, earbuds in.",
+    body: "A five-minute guided session before competition: breath, visualization, secure identity in Christ, a focus cue, and prayer. Earbuds in, phone away.",
   },
   {
     icon: "target" as const,
     title: "Pre-practice lock-in",
-    body: "A short mental warm-up before practice — reset, one focus cue, compete with full effort. Keeps the habit on non-game days too.",
+    body: "A short mental warm-up before practice: reset, one focus cue, compete with full effort. Keeps the habit going between competitions.",
   },
   {
     icon: "book" as const,
     title: "Journey view",
-    body: "A 30-day map showing where your athlete is in the training cycle — one session per day, one steady progression.",
+    body: "A 30-day map showing where your athlete is in the training cycle: one session per day, one steady progression.",
   },
   {
     icon: "shield" as const,
     title: "Rhythm, not a streak",
-    body: "Participation is visualized as a rhythm — not a streak. Returning after a missed day is celebrated, never shamed. No leaderboards. No comparison.",
+    body: "Participation is visualized as a rhythm, not a streak. Returning after a missed day is celebrated, never shamed. No leaderboards. No comparison.",
   },
 ];
 
@@ -73,7 +75,7 @@ const athleteGets = [
 const parentSees = [
   {
     title: "Rhythm summary",
-    body: "How often your athlete is training — days active, total sessions completed — so you can see the habit forming without reading over their shoulder.",
+    body: "How often your athlete is training: days active and total sessions completed, so you can see the habit forming without reading over their shoulder.",
   },
   {
     title: "Session count",
@@ -81,19 +83,30 @@ const parentSees = [
   },
   {
     title: "Never their private space",
-    body: "What happens inside a session stays your athlete's — the focus they pick, the hard moment they name, the prayer they bring. Not because we want to hide it from you, but because athletes need a space they genuinely own. Privacy is a feature, not a loophole.",
+    body: "What happens inside a session stays your athlete's: the focus they pick, the hard moment they name, the prayer they bring. Not because we want to hide it from you, but because we built the space to be genuinely theirs. Privacy is a feature, not a loophole.",
   },
 ];
 
 // ── Pricing summary ──────────────────────────────────────────────────────
-const pricingPoints = [
-  "14 days free for first-time subscribers — no charge until the trial ends",
-  "$5/mo or $49/yr for your first athlete, $3/mo or $29/yr for each additional",
-  "Cancel anytime from your account settings",
-  "No ads, no third-party tracking, no data sold",
-];
+// The 18+ self-serve half of the access bullet is real capability only
+// while ENABLE_ADULT_SIGNUP is on (lib/flags.ts; FV-328/329 gating) — the
+// same gate every other surface honors (Hero, /signup/athlete, /athletes).
+// Off-flag, the bullet states the parent-account path only, so this page
+// never claims a flow that would 404 (qa-reviewer FV-550 must-fix).
+function getPricingPoints(adultSignup: boolean): string[] {
+  return [
+    "14 days free for first-time subscribers: no charge until the trial ends",
+    "$5/mo or $49/yr for your first athlete, $3/mo or $29/yr for each additional",
+    adultSignup
+      ? "Athletes 13-17 train under your account; athletes 18+ can start their own 14-day trial, $5/mo or $49/yr"
+      : "Athletes 13-17 train under your account",
+    "Cancel anytime from your account settings",
+    "No ads, no third-party tracking, no data sold",
+  ];
+}
 
 export default function ParentsPage() {
+  const pricingPoints = getPricingPoints(isAdultSignupEnabled());
   return (
     <>
       <AttributionCapture />
@@ -114,22 +127,17 @@ export default function ParentsPage() {
               <span className="fv-eyebrow">For Parents</span>
             </div>
             <h1 className="fv-h-hero mb-[26px] max-w-[20ch]">
-              You invest in their body.
+              Daily training is the foundation.
               <br />
-              This builds the <em>foundation beneath it.</em>
+              Game day <em>calls it up.</em>
             </h1>
             <p className="max-w-[52ch] mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
-              Your athlete sees the first moment before they step in: first
-              shot, first possession, first tee. Identity in
-              Christ is the ground under that picture. You see they trained.
-              Their private session stays private.{" "}
-              <Link
-                href="/hockey"
-                className="text-gold underline underline-offset-2 hover:text-gold-bright transition-colors duration-fast"
-              >
-                See the first shift on the ice
-              </Link>
-              .
+              A short daily session of mental skill and Scripture for your
+              athlete. Before competition, a five-minute guided pregame
+              session calls the training up: breath, visualization, identity
+              in Christ, a focus cue, and prayer. You see the rhythm and
+              participation. What happens inside a session stays your
+              athlete&apos;s.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
@@ -162,9 +170,9 @@ export default function ParentsPage() {
                 Daily training built for the moments athletes actually face.
               </h2>
               <p className="fv-lede">
-                Not a devotional. Not a hype video. A short daily practice —
-                mental skill, Scripture foundation, and game-day preparation —
-                that builds discipline and resilience over time.
+                Not a devotional. Not a hype video. A short daily practice of
+                mental skill, Scripture foundation, and game-day preparation
+                that trains discipline and resilience over time.
               </p>
             </div>
           </Reveal>
@@ -209,10 +217,8 @@ export default function ParentsPage() {
               </h2>
               <p className="fv-lede">
                 Your dashboard shows you whether your athlete is building the
-                habit — not what they prayed about or worked through inside a
-                session. Privacy is a feature, not a limitation. Serious
-                athletes go deeper when they know their space is genuinely
-                theirs.
+                habit, not what they prayed about or worked through inside a
+                session. We built it that way on purpose.
               </p>
             </div>
           </Reveal>
@@ -269,11 +275,12 @@ export default function ParentsPage() {
                   </div>
                   <p className="font-body text-[14px] leading-[1.55] text-cream/70 m-0">
                     From Victory collects the minimum necessary to run the app:
-                    your athlete&apos;s first name and birthdate. No email
-                    address, no phone number, no photos. No behavioral
-                    analytics. No third-party tracking on any account. Your
-                    athlete&apos;s training data is yours to delete, on request,
-                    within 30 days.
+                    your athlete&apos;s first name, birthdate, and a
+                    self-chosen username (a made-up login handle, never shown
+                    to third parties). No email address, no phone number, no
+                    photos. No behavioral analytics. No third-party tracking
+                    on any account. Your athlete&apos;s training data is yours
+                    to delete, on request, within 30 days.
                   </p>
                   <p className="font-body text-[13px] leading-[1.55] text-cream/55 mt-3 m-0">
                     From Victory is a mindset training app, not a mental
@@ -297,14 +304,14 @@ export default function ParentsPage() {
               </div>
               <SectionMeta num="03" label="Faith foundation" />
               <h2 className="fv-h-section mb-6 max-w-[22ch]">
-                Mental toughness training — with the Word underneath.
+                Mental toughness training, with the Word underneath.
               </h2>
               <p className="fv-lede mb-8 max-w-[52ch]">
                 From Victory is not a devotional app with sports language
                 added. It is a mental toughness training app with faith as the
                 foundation. The ordering matters. Every session starts from
                 the truth that your athlete&apos;s identity in Christ is
-                already secure — then trains from there.
+                already secure, then trains from there.
               </p>
               <div
                 className="fv-faith-callout border border-hairline rounded-[20px] px-8 sm:px-9 py-8 max-w-[560px]"
@@ -318,7 +325,73 @@ export default function ParentsPage() {
                   faith.&rdquo;
                 </div>
               </div>
+              {/* Canonical tagline — exactly once on this page (CLAUDE.md). */}
+              <p className="font-heading font-semibold text-[17px] text-cream mt-8 mb-0">
+                Your Identity Is Secure. Compete From Victory.
+              </p>
             </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Reading for both of you (FV-550) ─────────────────────────── */}
+      <section className="py-20 sm:py-24 border-t border-hairline">
+        <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
+          <Reveal>
+            <SectionMeta num="04" label="For your athlete" />
+          </Reveal>
+          <Reveal>
+            <div className="grid gap-x-16 gap-y-10 items-end mb-12 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
+              <h2 className="fv-h-section">
+                Read it here. They train it in the app.
+              </h2>
+              <p className="fv-lede">
+                A page written for your athlete, and two reads for you. The
+                training itself lives in the app.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal>
+            <ul className="list-none m-0 p-0 flex flex-col border-t border-hairline max-w-[760px]">
+              {/* Link labels are the linked pages' own titles, verbatim
+                  (FV-413 convention). */}
+              {[
+                {
+                  href: ATHLETES_HREF,
+                  eyebrow: "For your athlete",
+                  label: ATHLETES_H1,
+                },
+                {
+                  href: "/resources/when-your-athlete-gets-cut-a-parents-guide",
+                  eyebrow: "For you",
+                  label: "When Your Athlete Gets Cut: A Parent's Guide",
+                },
+                {
+                  href: "/resources/sports-psychology-and-faith-do-they-mix",
+                  eyebrow: "For you",
+                  label: "Sports Psychology and Faith: Do They Mix?",
+                },
+              ].map((item) => (
+                <li key={item.href} className="border-b border-hairline">
+                  <Link
+                    href={item.href}
+                    className="group flex items-center justify-between gap-6 py-5 no-underline"
+                  >
+                    <span>
+                      <span className="block font-mono text-[10px] tracking-[0.18em] uppercase text-cream/50 font-semibold mb-1.5">
+                        {item.eyebrow}
+                      </span>
+                      <span className="font-heading font-semibold text-[18px] leading-[1.3] text-cream group-hover:text-gold transition-colors duration-fast">
+                        {item.label}
+                      </span>
+                    </span>
+                    <span className="text-gold flex-none" aria-hidden="true">
+                      <SvgIcon name="arrow" size={16} />
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </Reveal>
         </div>
       </section>
@@ -327,7 +400,7 @@ export default function ParentsPage() {
       <section className="py-20 sm:py-24 md:py-32 bg-charcoal border-t border-hairline">
         <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
           <Reveal>
-            <SectionMeta num="04" label="Simple, honest pricing" />
+            <SectionMeta num="05" label="Simple, honest pricing" />
           </Reveal>
           <Reveal>
             <div className="grid gap-12 lg:gap-16 items-start grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
@@ -400,7 +473,7 @@ export default function ParentsPage() {
                   </span>
                 </div>
                 <div className="font-body text-[13px] text-cream/50 mb-7">
-                  or $5 / month — billed monthly
+                  or $5 / month, billed monthly
                 </div>
                 <div className="h-px bg-hairline mb-7" />
                 <div className="flex flex-col gap-3 mb-8">

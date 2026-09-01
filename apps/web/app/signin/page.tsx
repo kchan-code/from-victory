@@ -112,7 +112,7 @@ export default async function SignInPage({ searchParams }: Props) {
           role="alert"
           className="mb-6 rounded-[10px] border border-[rgba(229,62,76,0.4)] bg-[rgba(229,62,76,0.08)] px-3.5 py-3 text-[13px] text-[#ffb3b9]"
         >
-          Your session was invalid — please sign in again.
+          Your session was invalid. Please sign in again.
         </div>
       ) : null}
       {/* FV-320: two-tab chooser — parent (email+password) or athlete

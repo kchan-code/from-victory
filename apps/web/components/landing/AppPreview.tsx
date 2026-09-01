@@ -138,7 +138,7 @@ export function AppPreview() {
             <p className="fv-lede">
               Before the game, between games, and every day in between. From
               Victory gives athletes a daily training session, a guided pregame
-              reset, and a pre-practice lock-in — all rooted in secure identity.
+              reset, and a pre-practice lock-in, all rooted in secure identity.
             </p>
           </div>
         </Reveal>

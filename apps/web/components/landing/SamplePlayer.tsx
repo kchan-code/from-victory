@@ -133,7 +133,7 @@ export function SamplePlayer({
       pendingPlayRef.current = false;
       setPlaying(true);
       setAnnounce(
-        `Playing — ${Math.round(audio.duration || durationSec)} second sample.`,
+        `Playing: ${Math.round(audio.duration || durationSec)} second sample.`,
       );
       startRaf();
     } catch {
@@ -258,7 +258,7 @@ export function SamplePlayer({
             </h2>
             <div className="font-body text-[12px] text-cream/50 mt-0.5">
               {failed ? (
-                "Sample unavailable right now — try again later."
+                "Sample unavailable right now. Try again later."
               ) : scrubReady ? (
                 <span>
                   {elapsed}

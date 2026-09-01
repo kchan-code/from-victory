@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about" },
   title: "About",
   description:
-    "From Victory is a daily mental toughness training app for Christian athletes — built on the conviction that identity precedes performance, and that athletes compete from Christ's victory, not toward one they're trying to earn.",
+    "From Victory is a daily mental toughness training app for Christian athletes: built on the conviction that identity precedes performance, and that athletes compete from Christ's victory, not toward one they're trying to earn.",
   openGraph: {
     type: "website",
     url: `${siteUrl}/about`,
@@ -44,12 +44,12 @@ const whatItIsCards = [
   {
     icon: "flame" as const,
     title: "A daily session",
-    body: "A short daily training session — one mental skill plus a Scripture foundation — that builds identity, discipline, and resilience over 30 days. About five minutes. Built to be picked up, used, and put down. Not another feed.",
+    body: "A short daily training session (one mental skill plus a Scripture foundation) that builds identity, discipline, and resilience over 30 days. About five minutes. Built to be picked up, used, and put down. Not another feed.",
   },
   {
     icon: "zap" as const,
     title: "Game-day and practice-day tools",
-    body: "An optional pregame guided audio session — breathing, focus, a plan for the hard moment, a send-off — plus a short pre-practice lock-in. Built for earbuds in the locker room.",
+    body: "An optional pregame guided audio session (breathing, focus, a plan for the hard moment, a send-off) plus a short pre-practice lock-in. Built for earbuds in the locker room.",
   },
   {
     icon: "user" as const,
@@ -62,15 +62,15 @@ const whatItIsCards = [
 const whatItIsNotPoints = [
   {
     title: "Not therapy or a mental-health service.",
-    body: "From Victory is mental toughness and mindset training — like strength work for the inner game. It is not therapy, treatment, or clinical care, and it doesn’t claim to be. It’s built to sit alongside the people who already support your athlete: you, their coaches, their pastor. If your athlete needs clinical help, that’s a conversation for a licensed professional.",
+    body: "From Victory is mental toughness and mindset training, like strength work for the inner game. It is not therapy, treatment, or clinical care, and it doesn’t claim to be. It’s built to sit alongside the people who already support your athlete: you, their coaches, their pastor. If your athlete needs clinical help, that’s a conversation for a licensed professional.",
   },
   {
     title: "Not a devotional with sports language bolted on.",
-    body: "The order matters to us. Faith is the foundation the training is built on — not a verse added at the end to make a workout sound spiritual. Your athlete enters daily training grounded in Scripture, not a devotional dressed up in jerseys.",
+    body: "The order matters to us. Faith is the foundation the training is built on, not a verse added at the end to make a workout sound spiritual. Your athlete enters daily training grounded in Scripture, not a devotional dressed up in jerseys.",
   },
   {
     title: "Not another app fighting for screen time.",
-    body: "No leaderboards. No comparing your athlete to anyone else. No streak guilt when they miss a day. We measure rhythm, not pressure — and an athlete who returns after a gap is met with encouragement, not a broken streak.",
+    body: "No leaderboards. No comparing your athlete to anyone else. No streak guilt when they miss a day. We measure rhythm, not pressure, and an athlete who returns after a gap is met with encouragement, not a broken streak.",
   },
 ];
 
@@ -78,11 +78,11 @@ const whatItIsNotPoints = [
 const parentPromise = [
   {
     title: "A private training space.",
-    body: "What happens inside a session stays your athlete’s — the focus they pick, the moment they work through, the prayer they bring. Not because we’re hiding it from you, but because athletes go deeper when the space is truly their own. On a parent-managed account, your dashboard shows their rhythm and participation — never the contents of a session.",
+    body: "What happens inside a session stays your athlete’s: the focus they pick, the moment they work through, the prayer they bring. Not because we’re hiding it from you, but because athletes go deeper when the space is truly their own. On a parent-managed account, your dashboard shows their rhythm and participation, never the contents of a session.",
   },
   {
     title: "The minimum data, on minors.",
-    body: "For account setup we collect your athlete’s first name and birthdate. No email, no phone number, no address, no photos. We confirm age at creation — there’s no account for anyone under 13.",
+    body: "For account setup we collect your athlete’s first name and birthdate. No email, no phone number, no address, no photos. We confirm age at creation: there’s no account for anyone under 13.",
   },
   {
     title: "No ads. No tracking. Ever.",
@@ -90,11 +90,11 @@ const parentPromise = [
   },
   {
     title: "Encouragement, not punishment.",
-    body: "No leaderboards, no comparison to other athletes, no shame for a missed day. We visualize rhythm — and when your athlete comes back after a gap, the app meets them with encouragement.",
+    body: "No leaderboards, no comparison to other athletes, no shame for a missed day. We visualize rhythm, and when your athlete comes back after a gap, the app meets them with encouragement.",
   },
   {
     title: "You stay in control.",
-    body: "On a parent-managed account, the parent sets up and manages everything, including billing, and can request deletion of all your athlete’s data at any time — we complete it within 30 days.",
+    body: "On a parent-managed account, the parent sets up and manages everything, including billing, and can request deletion of all your athlete’s data at any time: we complete it within 30 days.",
   },
 ];
 
@@ -169,7 +169,7 @@ export default function AboutPage() {
               <div className="flex flex-col gap-[1.4em] font-body text-[clamp(15px,1.25vw,17px)] leading-[1.7] text-cream/80">
                 <p>
                   I&apos;m a hockey dad. I&apos;ve sat in enough rinks to watch
-                  what pressure does to young athletes — how quietly they start
+                  what pressure does to young athletes: how quietly they start
                   tying their worth to the last shift, the depth chart, the
                   scoreboard.
                 </p>
@@ -178,8 +178,8 @@ export default function AboutPage() {
                   It is not only athletes who can get wrapped up in performance.
                   Parents can, too. A child&apos;s game can start to feel like a
                   verdict. Their playing time, their role, their mistakes, their
-                  success — all of it can quietly become heavier than it was ever
-                  meant to be.
+                  success: all of it can quietly become heavier than it was
+                  ever meant to be.
                 </p>
                 <p>That is part of what opened my eyes.</p>
                 <p>
@@ -252,7 +252,7 @@ export default function AboutPage() {
               <p className="fv-lede">
                 From Victory is built on one ordering that shapes everything:
                 it&apos;s a mental toughness training app with faith as the
-                foundation — not a devotional with sports language added on top.
+                foundation, not a devotional with sports language added on top.
                 The athlete opens &ldquo;today&apos;s training,&rdquo; not
                 &ldquo;today&apos;s devotional.&rdquo; Scripture is the ground
                 it stands on, not the wrapper around it.
@@ -325,7 +325,7 @@ export default function AboutPage() {
               </div>
               <p className="font-body text-[15px] leading-[1.6] text-cream/70 mb-6 max-w-[54ch]">
                 We run the race God marked out for us, eyes on the One who
-                already ran his. We compete from that finished work — not toward
+                already ran his. We compete from that finished work, not toward
                 a victory we&apos;re trying to earn.
               </p>
               <Link
@@ -393,7 +393,7 @@ export default function AboutPage() {
               </h2>
               <p className="fv-lede">
                 You&apos;re trusting us with your athlete. Here&apos;s how we
-                hold that trust — not as fine print, but as how the product is
+                hold that trust, not as fine print, but as how the product is
                 built. An adult athlete who signs up on their own gets the same
                 private training space and protections, managed by them.
               </p>
@@ -438,7 +438,7 @@ export default function AboutPage() {
               </h2>
               <p className="fv-lede mb-5">
                 From Victory is for the athlete who&apos;s done tying their
-                worth to the scoreboard — and for the parent who wants to hand
+                worth to the scoreboard, and for the parent who wants to hand
                 them something real. We&apos;re building it carefully, for the
                 long run. We&apos;d be glad to have you with us.
               </p>

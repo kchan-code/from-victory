@@ -29,7 +29,7 @@ export function ContactForm() {
           <FlameMark size={40} />
         </div>
         <h2 className="font-heading font-semibold text-[22px] tracking-[-0.01em] m-0 mb-2 text-cream">
-          Thanks — we&rsquo;ll be in touch.
+          Thanks. We&rsquo;ll be in touch.
         </h2>
         <p className="text-cream/70 m-0">
           We read every message and will get back to you.

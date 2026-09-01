@@ -33,7 +33,7 @@ export default async function AdultSignUpPage() {
           <TrialDisclosure>
             After you create your account, you&apos;ll head to checkout. 14
             days free for first-time subscribers, then $5/mo or $49/yr,
-            cancel anytime. Card required — it will be charged
+            cancel anytime. Card required. It will be charged
             automatically when the trial ends unless you cancel first.
           </TrialDisclosure>
         }

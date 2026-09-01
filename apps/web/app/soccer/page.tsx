@@ -76,7 +76,7 @@ const positions = [
   },
   {
     title: "Defender",
-    body: "Set your line, check your shoulder, pick up the striker. Show the attacker the touchline and match the next touch. The runner who gains half a yard already has a recovery path back inside. And when the game asks you forward — overlap and deliver.",
+    body: "Set your line, check your shoulder, pick up the striker. Show the attacker the touchline and match the next touch. The runner who gains half a yard already has a recovery path back inside. And when the game asks you forward: overlap and deliver.",
   },
   {
     title: "Goalkeeper",

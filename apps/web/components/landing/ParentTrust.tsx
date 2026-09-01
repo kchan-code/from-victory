@@ -13,14 +13,14 @@ const bullets = [
     icon: "shield" as const,
     // Verbatim: /parents parentSees[0].
     title: "Rhythm summary",
-    body: "How often your athlete is training — days active, total sessions completed — so you can see the habit forming without reading over their shoulder.",
+    body: "How often your athlete is training: days active and total sessions completed, so you can see the habit forming without reading over their shoulder.",
   },
   {
     icon: "check" as const,
     // Verbatim (trimmed to the first and last sentence): /parents
     // parentSees[2].
     title: "Never their private space",
-    body: "What happens inside a session stays your athlete's — the focus they pick, the hard moment they name, the prayer they bring. Privacy is a feature, not a loophole.",
+    body: "What happens inside a session stays your athlete's: the focus they pick, the hard moment they name, the prayer they bring. Privacy is a feature, not a loophole.",
   },
   {
     icon: "book" as const,
@@ -53,7 +53,7 @@ export function ParentTrust() {
             {/* Verbatim: /parents "What YOU see" lede, first sentence. */}
             <p className="fv-lede">
               Your dashboard shows you whether your athlete is building the
-              habit — not what they prayed about or worked through inside a
+              habit, not what they prayed about or worked through inside a
               session.
             </p>
           </div>
@@ -82,7 +82,7 @@ export function ParentTrust() {
         <Reveal>
           <p className="mt-7 font-body text-[13.5px] text-cream/60 m-0 max-w-[60ch]">
             {/* Verbatim: Faq.tsx FAQ_ITEMS[3].a, second sentence. */}
-            We confirm age at account creation — there’s no account for
+            We confirm age at account creation: there’s no account for
             anyone under 13.{" "}
             <Link
               href="/parents"
