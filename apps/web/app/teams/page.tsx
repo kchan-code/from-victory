@@ -138,7 +138,7 @@ const groupFaq = [
   },
   {
     q: "What happens if a family leaves the program?",
-    a: "Their account belongs to the family, not the organization. If your group arrangement ends, families can continue with their own subscription at the standard rate. Nothing in the athlete's account changes, just who's paying.",
+    a: "Their account belongs to the family, not the organization. If your group arrangement ends, families can continue with their own subscription at the standard rate. Nothing in the athlete's account changes. The only change is who pays.",
   },
 ];
 

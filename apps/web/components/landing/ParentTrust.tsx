@@ -13,7 +13,7 @@ const bullets = [
     icon: "shield" as const,
     // Verbatim: /parents parentSees[0].
     title: "Rhythm summary",
-    body: "How often your athlete is training (days active, total sessions completed) so you can see the habit forming without reading over their shoulder.",
+    body: "How often your athlete is training: days active and total sessions completed, so you can see the habit forming without reading over their shoulder.",
   },
   {
     icon: "check" as const,

@@ -9,6 +9,7 @@ import { SectionMeta } from "@/components/landing/SectionMeta";
 import { SvgIcon } from "@/components/landing/SvgIcon";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
 import { ATHLETES_HREF, ATHLETES_H1 } from "@/lib/gtm/page-titles";
+import { isAdultSignupEnabled } from "@/lib/flags";
 
 const siteUrl = "https://www.fromvictoryapp.com";
 
@@ -87,15 +88,25 @@ const parentSees = [
 ];
 
 // ── Pricing summary ──────────────────────────────────────────────────────
-const pricingPoints = [
-  "14 days free for first-time subscribers: no charge until the trial ends",
-  "$5/mo or $49/yr for your first athlete, $3/mo or $29/yr for each additional",
-  "Athletes 13-17 train under your account; athletes 18+ can start their own 14-day trial, $5/mo or $49/yr",
-  "Cancel anytime from your account settings",
-  "No ads, no third-party tracking, no data sold",
-];
+// The 18+ self-serve half of the access bullet is real capability only
+// while ENABLE_ADULT_SIGNUP is on (lib/flags.ts; FV-328/329 gating) — the
+// same gate every other surface honors (Hero, /signup/athlete, /athletes).
+// Off-flag, the bullet states the parent-account path only, so this page
+// never claims a flow that would 404 (qa-reviewer FV-550 must-fix).
+function getPricingPoints(adultSignup: boolean): string[] {
+  return [
+    "14 days free for first-time subscribers: no charge until the trial ends",
+    "$5/mo or $49/yr for your first athlete, $3/mo or $29/yr for each additional",
+    adultSignup
+      ? "Athletes 13-17 train under your account; athletes 18+ can start their own 14-day trial, $5/mo or $49/yr"
+      : "Athletes 13-17 train under your account",
+    "Cancel anytime from your account settings",
+    "No ads, no third-party tracking, no data sold",
+  ];
+}
 
 export default function ParentsPage() {
+  const pricingPoints = getPricingPoints(isAdultSignupEnabled());
   return (
     <>
       <AttributionCapture />

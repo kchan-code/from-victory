@@ -178,8 +178,8 @@ export default function AboutPage() {
                   It is not only athletes who can get wrapped up in performance.
                   Parents can, too. A child&apos;s game can start to feel like a
                   verdict. Their playing time, their role, their mistakes, their
-                  success, all of it can quietly become heavier than it was ever
-                  meant to be.
+                  success: all of it can quietly become heavier than it was
+                  ever meant to be.
                 </p>
                 <p>That is part of what opened my eyes.</p>
                 <p>

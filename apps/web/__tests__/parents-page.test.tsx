@@ -29,9 +29,14 @@ vi.mock("@/components/marketing/AttributionCapture", () => ({
 vi.mock("@/components/landing/icons", () => ({
   LandingIconDefs: () => null,
 }));
+// lib/flags imports the `server-only` marker package, which throws outside
+// Next's RSC boundary — neutralize the marker only (homepage-ia pattern) so
+// the real flag logic still reads ENABLE_ADULT_SIGNUP.
+vi.mock("server-only", () => ({}));
 
 import ParentsPage from "@/app/parents/page";
 import { ATHLETES_H1, ATHLETES_HREF } from "@/lib/gtm/page-titles";
+import { getArticleBySlug } from "@/lib/resources/articles";
 
 beforeEach(() => {
   Object.defineProperty(window, "matchMedia", {
@@ -62,6 +67,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
   vi.restoreAllMocks();
 });
 
@@ -122,7 +128,17 @@ describe("/parents — tagline and access (FV-550)", () => {
     expect(text.split(TAGLINE).length - 1).toBe(1);
   });
 
-  it("states both access paths: 13-17 under the parent account, 18+ self-serve", () => {
+  it("with adult signup off (default) it claims only the parent-account path", () => {
+    const { container } = render(<ParentsPage />);
+    const text = container.textContent ?? "";
+    expect(text).toContain("Athletes 13-17 train under your account");
+    // The 18+ self-serve flow is flag-gated (FV-328/329); off-flag the page
+    // must not claim a capability that would 404 (qa-reviewer FV-550).
+    expect(text).not.toContain("18+ can start their own");
+  });
+
+  it("with adult signup on it states both access paths", () => {
+    vi.stubEnv("ENABLE_ADULT_SIGNUP", "true");
     const { container } = render(<ParentsPage />);
     const text = container.textContent ?? "";
     expect(text).toContain("Athletes 13-17 train under your account");
@@ -157,6 +173,10 @@ describe('/parents — "Read it here. They train it in the app." links (FV-550)'
         container.querySelector(`a[href="${href}"]`),
         `missing link ${href}`,
       ).not.toBeNull();
+      // Regression guard: this block is parent reading — the linked
+      // articles must stay parent-audience.
+      const slug = href.replace("/resources/", "");
+      expect(getArticleBySlug(slug)!.audience).toBe("parent");
     }
   });
 });
