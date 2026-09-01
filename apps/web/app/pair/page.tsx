@@ -1,11 +1,36 @@
 import { createHash } from "crypto";
 
+import type { Metadata } from "next";
+
 import { AthleteClaimForm } from "@/components/auth/AthleteClaimForm";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { createServiceClient } from "@/lib/supabase/service";
 
-export const metadata = {
+const siteUrl = "https://www.fromvictoryapp.com";
+const appSocialImage = `${siteUrl}/og-app-1200x630.png`;
+
+// Pairing link (`/pair?code=`) is the URL a parent texts — the door into train.
+// Uses the Kinny-signed app card, not the marketing website card.
+export const metadata: Metadata = {
   title: "Welcome",
+  openGraph: {
+    type: "website",
+    url: `${siteUrl}/pair`,
+    siteName: "From Victory",
+    images: [
+      {
+        url: appSocialImage,
+        secureUrl: appSocialImage,
+        type: "image/png",
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: [appSocialImage],
+  },
 };
 
 type Search = {

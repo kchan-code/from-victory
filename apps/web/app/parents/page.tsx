@@ -25,7 +25,7 @@ export const metadata: Metadata = {
       "Daily mental toughness training for your athlete, rooted in faith. You see participation rhythm; your athlete owns their private training.",
     images: [
       {
-        url: `${siteUrl}/from-victory-social-preview.jpg`,
+        url: `${siteUrl}/og-website-1200x630.png`,
         width: 1200,
         height: 630,
       },
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     title: "For Parents · From Victory",
     description:
       "Daily mental toughness training for your athlete, rooted in faith. You see participation rhythm; your athlete owns their private training.",
-    images: [`${siteUrl}/from-victory-social-preview.jpg`],
+    images: [`${siteUrl}/og-website-1200x630.png`],
   },
 };
 

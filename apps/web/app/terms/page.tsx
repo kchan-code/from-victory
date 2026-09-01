@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     description: PAGE_DESCRIPTION,
     images: [
       {
-        url: `${siteUrl}/from-victory-social-preview.jpg`,
+        url: `${siteUrl}/og-website-1200x630.png`,
         width: 1200,
         height: 630,
       },
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Terms of Use · From Victory",
     description: PAGE_DESCRIPTION,
-    images: [`${siteUrl}/from-victory-social-preview.jpg`],
+    images: [`${siteUrl}/og-website-1200x630.png`],
   },
 };
 

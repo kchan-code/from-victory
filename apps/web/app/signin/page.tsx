@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { AthleteSignInForm } from "@/components/auth/AthleteSignInForm";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { ClearCacheOnMount } from "@/components/auth/ClearCacheOnMount";
@@ -6,8 +8,29 @@ import { getDeviceAthleteId } from "@/lib/auth/device";
 import { redirectIfAuthed } from "@/lib/auth/guards";
 import { createServiceClient } from "@/lib/supabase/service";
 
-export const metadata = {
+const siteUrl = "https://www.fromvictoryapp.com";
+const appSocialImage = `${siteUrl}/og-app-1200x630.png`;
+
+export const metadata: Metadata = {
   title: "Sign in",
+  openGraph: {
+    type: "website",
+    url: `${siteUrl}/signin`,
+    siteName: "From Victory",
+    images: [
+      {
+        url: appSocialImage,
+        secureUrl: appSocialImage,
+        type: "image/png",
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: [appSocialImage],
+  },
 };
 
 type Props = {

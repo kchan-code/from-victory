@@ -55,7 +55,10 @@ const fontVariables = [
 ].join(" ");
 
 const siteUrl = "https://www.fromvictoryapp.com";
-const socialImage = `${siteUrl}/from-victory-social-preview.jpg`;
+// Kinny-signed 1200×630 website card. Marketing/site routes inherit this
+// (homepage, /parents, /resources, sport landings, etc.). `/pair` and
+// `/signin` override with the app card — the door into train.
+const socialImage = `${siteUrl}/og-website-1200x630.png`;
 const socialDescription =
   "See the first moment before you compete. Guided visualization for athletes 13+ across seven sports. Your identity is secure. Compete From Victory.";
 const socialTitle = "From Victory | Visualize and Compete From Victory";
@@ -77,7 +80,7 @@ export const metadata: Metadata = {
       {
         url: socialImage,
         secureUrl: socialImage,
-        type: "image/jpeg",
+        type: "image/png",
         width: 1200,
         height: 630,
       },

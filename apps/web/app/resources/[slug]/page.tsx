@@ -49,7 +49,7 @@ export async function generateMetadata({
   // to the shared brand card for any article without an image.
   const ogImage = article.image
     ? `${siteUrl}${article.image.src.replace("/images/blog/", "/images/blog/og/")}`
-    : `${siteUrl}/from-victory-social-preview.jpg`;
+    : `${siteUrl}/og-website-1200x630.png`;
 
   return {
     title: article.title, // root layout template appends "· From Victory"

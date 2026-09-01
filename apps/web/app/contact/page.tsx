@@ -21,7 +21,7 @@ export const metadata: Metadata = {
       "Questions about From Victory? Reach out — we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
     images: [
       {
-        url: `${siteUrl}/from-victory-social-preview.jpg`,
+        url: `${siteUrl}/og-website-1200x630.png`,
         width: 1200,
         height: 630,
       },
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     title: "Contact · From Victory",
     description:
       "Questions about From Victory? Reach out — we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
-    images: [`${siteUrl}/from-victory-social-preview.jpg`],
+    images: [`${siteUrl}/og-website-1200x630.png`],
   },
 };
 
