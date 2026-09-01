@@ -12,6 +12,7 @@ export const ORGANIZATION_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "From Victory",
+  alternateName: ["FromVictory", "fromvictoryapp"],
   url: siteUrl,
   description: siteDescription,
   // PNG, not SVG — Google ignores SVG for Organization.logo (qa-reviewer, FV-397)
@@ -28,6 +29,7 @@ export const SOFTWARE_APPLICATION_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "From Victory",
+  alternateName: ["FromVictory", "fromvictoryapp"],
   applicationCategory: "LifestyleApplication",
   operatingSystem: "Web",
   url: siteUrl,

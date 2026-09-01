@@ -13,6 +13,19 @@ import {
 } from "@/lib/gtm/page-titles";
 
 describe("SoftwareApplication JSON-LD (FV-504)", () => {
+  it("keeps the product name From Victory and lists one-word brand aliases", () => {
+    expect(ORGANIZATION_JSON_LD.name).toBe("From Victory");
+    expect(SOFTWARE_APPLICATION_JSON_LD.name).toBe("From Victory");
+    expect(ORGANIZATION_JSON_LD.alternateName).toEqual([
+      "FromVictory",
+      "fromvictoryapp",
+    ]);
+    expect(SOFTWARE_APPLICATION_JSON_LD.alternateName).toEqual([
+      "FromVictory",
+      "fromvictoryapp",
+    ]);
+  });
+
   it("keeps LifestyleApplication and names the 14-day trial", () => {
     expect(SOFTWARE_APPLICATION_JSON_LD.applicationCategory).toBe(
       "LifestyleApplication",
@@ -174,6 +187,8 @@ describe("llms.txt (FV-504)", () => {
 
   it("names the LLC, hockey dad, and what it is not", () => {
     expect(llms).toContain("From Victory LLC");
+    expect(llms).toContain("https://www.fromvictoryapp.com");
+    expect(llms).toMatch(/FromVictory \/ fromvictoryapp/);
     expect(llms).toMatch(/hockey dad/i);
     expect(llms).toContain("Not therapy");
     expect(llms).toContain("Not a daily devotional");
