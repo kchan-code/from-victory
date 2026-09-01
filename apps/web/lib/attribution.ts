@@ -51,6 +51,7 @@ export const ATTRIBUTION_ELIGIBLE_PATHS: readonly string[] = [
   "/",
   "/pricing",
   "/parents",
+  "/athletes", // FV-545
   "/teams",
   "/about",
   "/contact",
