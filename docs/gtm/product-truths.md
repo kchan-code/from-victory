@@ -10,6 +10,28 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-09-01 — /parents recut to the foundation/game-day framing; sitewide em-dash sweep
+
+The parents page hero now leads "Daily training is the foundation. Game
+day calls it up." with the approved five-element pregame description
+(breath, visualization, identity in Christ, a focus cue, and prayer)
+used consistently. The privacy callout discloses the full collected set
+(first name, birthdate, self-chosen username, phrased "never shown to
+third parties" per the canonical FV-320 language). Access is stated per
+path: 13-17 train under the parent account; the 18+ self-serve trial
+line renders only while adult signup is enabled. The canonical tagline
+appears exactly once, and a "Read it here. They train it in the app."
+block cross-links the athlete page and the two parent-audience articles.
+Separately, 97 em dashes were removed from customer-facing copy across
+the marketing site (replaced with sentence punctuation, no claim
+changes); article bodies and the two GTM-engine pages were left as
+approved.
+
+Why it matters to a buyer: the parent page now states exactly what is
+collected, exactly who can buy which way, and the same product
+distinction the athlete page carries, with no dead-end capability
+claims.
+
 ## 2026-09-01 — Dedicated "For the Athlete" page live at /athletes
 
 The site nav's "For the Athlete" link now goes to a dedicated athlete page
