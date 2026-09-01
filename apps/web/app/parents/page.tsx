@@ -277,7 +277,7 @@ export default function ParentsPage() {
                     From Victory collects the minimum necessary to run the app:
                     your athlete&apos;s first name, birthdate, and a
                     self-chosen username (a made-up login handle, never shown
-                    to anyone else). No email address, no phone number, no
+                    to third parties). No email address, no phone number, no
                     photos. No behavioral analytics. No third-party tracking
                     on any account. Your athlete&apos;s training data is yours
                     to delete, on request, within 30 days.
