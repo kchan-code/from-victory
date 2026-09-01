@@ -11,6 +11,48 @@ sentence-classification ladder below is good practice there too.*
 *This file is repo-owned implementation guidance. Positioning and marketing
 copy ownership rules in CLAUDE.md ("GTM source of truth") are unchanged.*
 
+## Working principles (read first)
+
+The distilled lessons behind the rules below (KC-approved 2026-09-01,
+from the FV-539/FV-540/FV-545 arc). When a case the numbered sections do
+not cover comes up, decide by these:
+
+1. **Every factual sentence has a class, and the class dictates the
+   language.** Research finding, applied inference, product choice,
+   product fact, or anecdote — unclassifiable sentences are deleted
+   (§1). Athlete adoption is not efficacy; a narrow study is not a law;
+   a delivery format we chose is not one science crowned.
+2. **The qualified answer sells better than the confident one.** "Often,
+   as a supplement, with real limits" survives every reviewer and the
+   audience's bullshit detector; "yes, it works" survives none of them.
+   Honesty about limits is the credibility asset.
+3. **Scope every claim to exactly what is true.** "Collects no data"
+   becomes "the share action collects and stores no athlete data";
+   shortened Scripture is an "NIV excerpt," never verbatim; a sample's
+   label names the clip that actually plays. Precision is what keeps a
+   sentence defensible.
+4. **Verify public claims against the shipped code, not memory.** A
+   privacy claim is checked against the live RLS and queries; an asset
+   label is checked against the asset. If the code cannot back the
+   sentence, the sentence changes (§3, §8).
+5. **Sport-neutral by default; sport examples only as labeled examples,
+   plural.** Neutral vocabulary is competition, performance, action,
+   moment, result. One sport's word on a seven-sport surface is a leak
+   (§8).
+6. **Pages have jobs; content lives once and is extracted, not
+   repeated.** Depth lives in the article; other surfaces condense and
+   link it, both directions. A page that re-runs another page's job is
+   the design failure, whatever its polish.
+7. **The theology is held to the same precision as the science.** Ground
+   mercy and worth in God's character and Christ's finished work, never
+   in the athlete's earning; identity language opens from security,
+   never from athlete pain.
+8. **A standard counts only when written down and enforced
+   mechanically.** Encode rules here, bind them into the agents, and pin
+   them in CI: banned-term and em-dash scans, extract drift-pins against
+   source articles, sha256 body pins. The next piece starts at the bar
+   the last one had to be rewritten to reach.
+
 ## 1. The sentence-classification ladder
 
 Before keeping any factual sentence, classify it as exactly one of:
