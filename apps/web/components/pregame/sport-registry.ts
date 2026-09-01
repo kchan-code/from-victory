@@ -17,11 +17,7 @@
 //     sport-specific options so hockey-worded chips are never shown to a
 //     basketball athlete.
 
-import {
-  AUDIO_SCRIPT,
-  SCRIPTURE_REF,
-  SCRIPTURE_TEXT,
-} from "./types";
+import { AUDIO_SCRIPT } from "./types";
 import type { AudioSegment, NeedToday } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -480,7 +476,10 @@ const BASKETBALL_AUDIO_SCRIPT: AudioSegment[] = [
   {
     startSec: 0,
     eyebrow: "Identity",
-    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+    // FV-541: tokens resolve to the athlete's need-specific verse at render
+    // time (same source as audio mode) — do not bake SCRIPTURE_REF/TEXT back
+    // in here.
+    body: `{{scriptureRef}} — {{scriptureText}} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
   },
   {
     startSec: 35,
@@ -710,7 +709,10 @@ const BASEBALL_AUDIO_SCRIPT: AudioSegment[] = [
   {
     startSec: 0,
     eyebrow: "Identity",
-    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+    // FV-541: tokens resolve to the athlete's need-specific verse at render
+    // time (same source as audio mode) — do not bake SCRIPTURE_REF/TEXT back
+    // in here.
+    body: `{{scriptureRef}} — {{scriptureText}} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
   },
   {
     startSec: 35,
@@ -1018,7 +1020,10 @@ const GOLF_AUDIO_SCRIPT: AudioSegment[] = [
   {
     startSec: 0,
     eyebrow: "Identity",
-    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+    // FV-541: tokens resolve to the athlete's need-specific verse at render
+    // time (same source as audio mode) — do not bake SCRIPTURE_REF/TEXT back
+    // in here.
+    body: `{{scriptureRef}} — {{scriptureText}} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
   },
   {
     startSec: 35,
@@ -1347,7 +1352,10 @@ const FOOTBALL_AUDIO_SCRIPT: AudioSegment[] = [
   {
     startSec: 0,
     eyebrow: "Identity",
-    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+    // FV-541: tokens resolve to the athlete's need-specific verse at render
+    // time (same source as audio mode) — do not bake SCRIPTURE_REF/TEXT back
+    // in here.
+    body: `{{scriptureRef}} — {{scriptureText}} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
   },
   {
     startSec: 35,
@@ -1732,7 +1740,10 @@ const SWIMMING_AUDIO_SCRIPT: AudioSegment[] = [
   {
     startSec: 0,
     eyebrow: "Identity",
-    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+    // FV-541: tokens resolve to the athlete's need-specific verse at render
+    // time (same source as audio mode) — do not bake SCRIPTURE_REF/TEXT back
+    // in here.
+    body: `{{scriptureRef}} — {{scriptureText}} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
   },
   {
     startSec: 35,
@@ -2032,7 +2043,10 @@ const TRACKFIELD_AUDIO_SCRIPT: AudioSegment[] = [
   {
     startSec: 0,
     eyebrow: "Identity",
-    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+    // FV-541: tokens resolve to the athlete's need-specific verse at render
+    // time (same source as audio mode) — do not bake SCRIPTURE_REF/TEXT back
+    // in here.
+    body: `{{scriptureRef}} — {{scriptureText}} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
   },
   {
     startSec: 35,
@@ -2371,7 +2385,10 @@ const LACROSSE_AUDIO_SCRIPT: AudioSegment[] = [
   {
     startSec: 0,
     eyebrow: "Identity",
-    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+    // FV-541: tokens resolve to the athlete's need-specific verse at render
+    // time (same source as audio mode) — do not bake SCRIPTURE_REF/TEXT back
+    // in here.
+    body: `{{scriptureRef}} — {{scriptureText}} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
   },
   {
     startSec: 35,
@@ -2751,7 +2768,10 @@ const SOCCER_AUDIO_SCRIPT: AudioSegment[] = [
   {
     startSec: 0,
     eyebrow: "Identity",
-    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+    // FV-541: tokens resolve to the athlete's need-specific verse at render
+    // time (same source as audio mode) — do not bake SCRIPTURE_REF/TEXT back
+    // in here.
+    body: `{{scriptureRef}} — {{scriptureText}} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
   },
   {
     startSec: 35,

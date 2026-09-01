@@ -163,13 +163,23 @@ export function ScrollNav() {
               >
                 Pricing
               </Link>
-              <Link
-                href="/signin"
-                className="inline-flex items-center min-h-[44px] whitespace-nowrap bg-transparent text-cream border border-hairline-strong hover:border-cream/50 font-heading font-semibold text-[13px] rounded-pill px-3 sm:px-[18px] py-[11px] no-underline transition-colors duration-base ease-out"
-              >
-                Sign in
-              </Link>
             </div>
+
+            {/* Persistent "Sign in" link — visible at every width, not just
+                `lg:`+ (FV-542). FV-530 gated the whole desktop nav group
+                (including this link) behind `lg:`, so on tablet/phone the
+                only way back in was the hamburger drawer — KC caught this
+                on his own iPad/iPhone the day after that shipped. A plain
+                text link (no border, tighter padding than the old `lg:`
+                desktop treatment) costs little width, so it sits outside
+                the `lg:`-gated group instead of duplicating a second copy
+                once that group appears. */}
+            <Link
+              href="/signin"
+              className="inline-flex items-center min-h-[44px] whitespace-nowrap text-cream/70 hover:text-cream font-heading font-semibold text-[13px] rounded-pill px-2 sm:px-3 no-underline transition-colors duration-fast ease-out"
+            >
+              Sign in
+            </Link>
 
             {/* Persistent trial pill (FV-512, KC decision docs/conversion-
                 audit-2026-08-29.md §7.6) — the one gold element in the nav,
