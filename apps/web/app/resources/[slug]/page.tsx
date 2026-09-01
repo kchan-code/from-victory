@@ -1,6 +1,6 @@
 // /resources/[slug] — individual article page (FV-238).
 // Server Component. Public — no auth required.
-// generateStaticParams drives SSG for all five articles.
+// generateStaticParams drives SSG for every registered article slug.
 // AUTHORED copy in this file: internal-link labels and "More resources" label.
 
 import type { Metadata } from "next";

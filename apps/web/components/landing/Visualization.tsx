@@ -1,30 +1,32 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Reveal } from "./Reveal";
 import { SectionMeta } from "./SectionMeta";
 
-// FV-534 — the visualization differentiator section. KC direction
-// 2026-08-31: the homepage needs to say why visualization matters and how
-// the app delivers it (audio-guided, eyes closed, phone down). Copy
-// produced by the content trio: sports-psychologist raw material
-// (claims held to public-safe confidence levels — no percentages, no
-// "proven", no clinical register) integrated by content-curator; KC
-// approves at merge. Sits directly after the playable pregame sample so
-// "real pauses, game speed" is demonstrable one scroll up. Deliberately
-// carries NO /signup CTA: the homepage's 4-CTA cadence is test-pinned
-// (homepage-ia) and the after-sample CTA sits immediately above.
+// FV-539 — the visualization differentiator section, compressed. KC
+// direction 2026-09-01: the FV-534 long-form version was "way too verbose
+// for the home page"; the full research story (with citations) moved to
+// /resources/does-visualization-work-for-athletes and this section now
+// carries KC's own copy verbatim (headline triple, lede, three blocks)
+// plus one pointer link to the article. Research claims live in the
+// article under docs/content-evidence-standards.md; this section makes
+// product and identity statements only. Still deliberately carries NO
+// /signup CTA: the homepage's 4-CTA cadence is test-pinned (homepage-ia)
+// and the after-sample CTA sits immediately above. The article link is
+// the section's single link (also test-pinned).
 
 const blocks = [
   {
-    name: "Why the rep matters",
-    body: "Imagery is one of the most studied tools in sport, and athletes at the top level consistently say they use it. Run the opening moments ahead of time and the first minute of the game feels familiar instead of brand new. It does not replace training. It gets you ready to use what training already built.",
+    name: "See your game, not a highlight reel.",
+    body: "Choose up to three plays from your sport and role. A voice guides you through the cues, movement, and decisions that matter, one play at a time.",
   },
   {
-    name: "Not a highlight reel",
-    body: "A rep that transfers is the first shift, the first possession, the first tee shot, not a montage of your best plays. You pick up to three plays from your position's library and the hard moment you want to rehearse, so the turnover and the reset after it get a rep too. Sight, sound, and feel, at the speed the game actually moves.",
+    name: "Practice the response.",
+    body: "You picture a hard moment too, then rehearse the breath, truth, and next action that help you return to the play.",
   },
   {
-    name: "Eyes closed, phone down",
-    body: "Guided narration is the form this training has always taken. On your own before a game the picture drifts toward the thing you do not want to happen; a voice keeps it on the play and puts the reset right after the mistake. Real pauses, so the rep runs at game speed in the last few minutes before it counts, with the phone in your pocket instead of your hand.",
+    name: "Remember what does not change.",
+    body: "Your identity is secure in Christ before the result. Ask for His strength, then compete without making performance prove your worth.",
   },
 ];
 
@@ -61,18 +63,21 @@ export function Visualization() {
         </Reveal>
         <Reveal>
           <div className="grid gap-x-16 gap-y-6 sm:gap-y-10 items-end mb-10 sm:mb-14 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
-            {/* H2 switched to the curator's alternate after KC's hero
-                thesis (FV-534) took the "Everyone..." framing — two
-                near-identical openers within two scrolls read as a tic.
-                The primary ("Everyone says visualize. Almost nobody helps
-                you do it.") remains the approved fallback if the hero
-                line changes again. */}
+            {/* KC's stacked headline triple (2026-09-01), verbatim. The
+                trailing space inside the first two spans keeps the h2's
+                textContent readable as one sentence run for tests and
+                assistive tech; `block` display eats it visually. */}
             <h2 className="fv-h-section">
-              The picture only helps if someone runs it with you.
+              <span className="block">Picture the play. </span>
+              <span className="block">Prepare for pressure. </span>
+              <span className="block">
+                Compete from Christ&rsquo;s strength.
+              </span>
             </h2>
             <p className="fv-lede">
-              So we built the guided version, about five minutes of audio
-              before you compete, eyes closed, phone down.
+              From Victory brings all three into one guided pregame session,
+              built around your sport, your role, and what you need before
+              you compete.
             </p>
           </div>
         </Reveal>
@@ -99,12 +104,17 @@ export function Visualization() {
           </div>
         </Reveal>
 
-        {/* Quiet identity kicker — second beat, never the headline. The
-            page's one verse quote stays in Method (test-pinned). */}
+        {/* The section's one link — the research story, told honestly
+            (citations, limits), lives in the article (FV-539). Not a
+            conversion CTA; the 4-CTA /signup cadence is unaffected. */}
         <Reveal>
-          <p className="font-body text-[15px] leading-[1.6] text-cream/70 text-center max-w-[560px] mx-auto m-0">
-            You rehearse the play. Your worth was settled by Christ long
-            before the first whistle.
+          <p className="font-body text-[15px] leading-[1.6] text-center m-0">
+            <Link
+              href="/resources/does-visualization-work-for-athletes"
+              className="text-gold underline underline-offset-2 hover:text-gold-bright transition-colors duration-fast"
+            >
+              Read: Does visualization actually work? &rarr;
+            </Link>
           </p>
         </Reveal>
       </div>

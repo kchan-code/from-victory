@@ -1,43 +1,36 @@
+import Link from "next/link";
 import { Reveal } from "./Reveal";
 import { SectionMeta } from "./SectionMeta";
+import {
+  PREGAME_RITUAL_HREF,
+} from "@/lib/gtm/page-titles";
 
-// FV-538 — the Method section presents the PREGAME VISUALIZATION METHOD
-// (KC direction 2026-08-31: "focused, not on the daily training but the
-// pregame visualizations... customize it, hear it to rehearse the mental
-// skill, good and bad, practice the reset, and end with prayer and leave
-// it all to God. Fearless and free."). Copy by content-curator on KC's
-// skeleton; every step verified against the shipped session
-// (components/pregame/audio/segments.ts): setup = position + up to 3
-// plays + hard moment + focus; the audio rehearses plays AND the hard
-// moment; a reset plan follows the mistake; the session closes with a
-// real spoken prayer, then the send-off "You are secure. Now play from
-// victory." Step 4's "compete fearless and free" is a DELIBERATE verbatim
-// callback to KC's hero thesis, once. The page's one "Compete From
-// Victory" tagline use stays in Founder.tsx, so the send-off line itself
-// is not quoted here. The FV-514/FV-534 TRAIN/ANCHOR/CARRY daily-rhythm
-// copy is retired to git history (its read-plus-Scripture fact survives
-// in the lede and the FAQ).
+// FV-539 — the Method section, restructured to KC's three phases
+// (2026-09-01, copy verbatim): REHEARSE / RESET / RELEASE. Supersedes the
+// FV-538 four-step SET/HEAR/RESET/PRAY layout; the setup facts fold into
+// phase 01 and the lede. Every phase stays true to the shipped session
+// (components/pregame/audio/segments.ts): up to 3 plays + hard moment
+// selection, guided audio with real pauses, the reset right after the
+// mistake, and a real spoken closing prayer. The pointer link goes to the
+// Pregame Ritual guide — the standalone GTM page that walks these same
+// phases — mirroring the Visualization section's article-link pattern.
+// Not a conversion CTA; the 4-CTA /signup cadence is unaffected.
 
 const parts = [
   {
-    num: "01 · SET",
-    name: "Set your session.",
-    body: "You start by telling the session who you are and what tonight actually asks of you: your position, the plays you want to see, the hard moment you expect, one focus to hold. Nothing about it is generic. The five minutes you hear are the five minutes you built.",
+    num: "01 · REHEARSE",
+    name: "Choose it. Hear it.",
+    body: "Select up to three plays. With your eyes closed and your phone down, guided audio runs each one with sport-specific cues and real pauses.",
   },
   {
-    num: "02 · HEAR",
-    name: "Hear the rep.",
-    body: "A voice runs the plays you picked, one at a time, with room to actually see them. Then it takes you into the moment you would rather skip: the turnover, the missed assignment, the shift that gets away from you. You rehearse the mistake on purpose, before it can surprise you.",
+    num: "02 · RESET",
+    name: "Practice the way back.",
+    body: "The hard moment you selected enters the picture. Take the long exhale, remember what is true, and rehearse the next action you can control.",
   },
   {
-    num: "03 · RESET",
-    name: "Practice the reset.",
-    body: "Right after the mistake, the audio gives you the way back. Breathe, let it be finished, take the next rep. That is the part most athletes never actually train, and here you get reps at it while the stakes are still zero.",
-  },
-  {
-    num: "04 · PRAY",
+    num: "03 · RELEASE",
     name: "Leave it with God.",
-    body: "The session ends in prayer, spoken out loud, and it is a real one. You thank God that your worth is already secure, ask for freedom to play brave and loose, and hand him what you cannot control. Then you go compete fearless and free.",
+    body: "Close in prayer. Ask for Christ’s strength, remember that your identity is secure in Him, and release the result you cannot control.",
   },
 ];
 
@@ -53,42 +46,36 @@ export function Method() {
         </Reveal>
         <Reveal>
           <div className="grid gap-x-16 gap-y-10 items-end mb-14 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
+            {/* KC's stacked headline (2026-09-01) — same sentence as the
+                FV-538 H2, now displayed as three lines to mirror the
+                Visualization headline triple. Trailing spaces inside the
+                first two spans keep textContent readable as one run. */}
             <h2 className="fv-h-section">
-              Rehearse it. Reset from it. Leave it with God.
+              <span className="block">Rehearse it. </span>
+              <span className="block">Reset from it. </span>
+              <span className="block">Leave it with God.</span>
             </h2>
-            {/* First sentence verbatim from the retired Framework lede;
-                the read/hear sentences are FV-534 copy, reworded per
-                qa-reviewer: each sentence names its own object so "hear"
-                can only bind to the pregame session, never to the daily
-                training (which is text-only per FV-135 — the one product
-                fact this lede must not blur). */}
             <p className="fv-lede">
-              From Victory is built on a simple truth: identity comes before
-              performance. You read the daily training. You hear the pregame
-              session.
+              Three phases. About five minutes. Built from the plays you
+              choose, the pressure you expect, and the truth you need before
+              you compete.
             </p>
           </div>
         </Reveal>
 
         <Reveal>
-          {/* Four steps: single column below sm, 2x2 at sm, one row at lg.
-              Border logic per breakpoint — below sm every non-last cell
-              gets a bottom hairline; in the 2x2, the left column gets a
-              right hairline and the first row a bottom one; at lg the
-              first three cells get right hairlines. */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-b border-hairline mb-16">
+          {/* Three phases: single column below sm, one row at sm+. Every
+              non-last cell gets a bottom hairline below sm and a right
+              hairline at sm+. */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 border-t border-b border-hairline mb-8 sm:mb-12">
             {parts.map((part, i) => (
               <div
                 key={part.num}
-                className={[
-                  "px-5 py-6 sm:px-7 sm:py-9 transition-colors duration-base ease-out hover:bg-onyx border-hairline",
-                  i < parts.length - 1 ? "max-sm:border-b" : "",
-                  i % 2 === 0 ? "sm:border-r" : "",
-                  i === 1 ? "lg:border-r" : "",
-                  i < 2 ? "sm:max-lg:border-b" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
+                className={`px-5 py-6 sm:px-7 sm:py-9 transition-colors duration-base ease-out hover:bg-onyx ${
+                  i < parts.length - 1
+                    ? "sm:border-r border-hairline max-sm:border-b max-sm:border-hairline"
+                    : ""
+                }`}
               >
                 <div className="font-display font-extrabold text-[13px] tracking-[0.12em] text-gold mb-5">
                   {part.num}
@@ -102,6 +89,19 @@ export function Method() {
               </div>
             ))}
           </div>
+        </Reveal>
+
+        {/* The section's one link — the full ritual walk-through lives on
+            the Pregame Ritual guide page (FV-539). */}
+        <Reveal>
+          <p className="font-body text-[15px] leading-[1.6] text-center m-0 mb-16">
+            <Link
+              href={PREGAME_RITUAL_HREF}
+              className="text-gold underline underline-offset-2 hover:text-gold-bright transition-colors duration-fast"
+            >
+              Read: A pregame ritual for the Christian athlete &rarr;
+            </Link>
+          </p>
         </Reveal>
 
         {/* Verbatim: Faith.tsx quote callout — the one spine verse on the
