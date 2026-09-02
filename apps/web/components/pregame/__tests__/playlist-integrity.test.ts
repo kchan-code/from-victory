@@ -1079,10 +1079,11 @@ describe("catalog count (multi-sport, FV-266)", () => {
       anchor: n(/^anc-/), //                        20 — reset-anchor clips (+3 golf anc-glf-* FV-303, +3 football anc-ftb-* FV-468, +2 baseball FV-98, +3 lacrosse anc-lax-* FV-407)
       selfTalk: n(/^st-/), //                       13 — self-talk clips (+st-glf-01/02 FV-303/294, +st-ftb-01 FV-468, +st-bsb-01 FV-98, +st-lax-01 FV-407)
       shared: n(/^shared-/), //                     10 — shared scaffold clips (+3 section intros, #232)
+      truth: n(/^truth-/), //                       12 once rendered — rotating {{truth}} identity lines (FV-551); 0 until the render lands
     };
     const sum = Object.values(breakdown).reduce((a, b) => a + b, 0);
     const uncategorized = keys.filter(
-      (k) => !/^(viz-|hm-|bb-|pp-|opener-|cw-|anc-|st-|shared-)/.test(k),
+      (k) => !/^(viz-|hm-|bb-|pp-|opener-|cw-|anc-|st-|shared-|truth-)/.test(k),
     );
     // Every catalog key falls into exactly one bucket — catches typos/orphans.
     expect(uncategorized, `uncategorized clips: ${uncategorized.join(", ")}`).toEqual([]);
