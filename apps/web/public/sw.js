@@ -71,7 +71,7 @@ const CACHE_VERSION = "fv-shell-v7"; // bumped: FV-493 — BYPASS_PREFIXES said
  * update this string AND MANIFEST_VERSION in audio-mapping.ts in the same PR.
  * The `audio-cache-bust` CI job enforces this parity.
  */
-const MANIFEST_VERSION = "41ab7f22"; // sync with audio-mapping.ts:MANIFEST_VERSION
+const MANIFEST_VERSION = "639ba65f"; // sync with audio-mapping.ts:MANIFEST_VERSION
 const AUDIO_CACHE = `fv-audio-${MANIFEST_VERSION}`;
 
 /**

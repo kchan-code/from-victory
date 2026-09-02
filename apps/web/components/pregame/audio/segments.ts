@@ -30,7 +30,12 @@ import {
   VISUALIZATION_INSTRUCTIONS,
 } from "./instructions.ts";
 
-export const OPENING: Segment[] = [
+// ── OPENING sub-arrays — single source of truth for each phase of the shared
+// opening. Legacy cells import OPENING unchanged (breath + the original fixed
+// truth line). The clip generator renders ONLY the breath run as
+// shared-opening; the truth line that follows "Remember what is true." is a
+// rotating {{truth}} slot resolved at runtime from audio/truth-bank.ts.
+export const OPENING_BREATH_SEGMENTS: Segment[] = [
 
     // ── Regulate breath (Mentor, meditative)
     // Cell starts at breath section. Segment 1 (identity) is delivered by
@@ -79,6 +84,11 @@ export const OPENING: Segment[] = [
       instructions: NARRATIVE_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 0.8 },
+];
+
+// The original fixed truth line. Kept for the legacy baked cells only — the
+// compositional playlist plays a truth-NN clip from the bank in this slot.
+export const OPENING_TRUTH_SEGMENTS: Segment[] = [
     {
       type: "speech",
       text: "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
@@ -86,6 +96,13 @@ export const OPENING: Segment[] = [
       instructions: NARRATIVE_INSTRUCTIONS,
     },
     { type: "silence", durationSec: 1.0 }
+];
+
+// OPENING is the concatenation of the two sub-arrays. All legacy cells import
+// this unchanged — single source of truth preserved.
+export const OPENING: Segment[] = [
+  ...OPENING_BREATH_SEGMENTS,
+  ...OPENING_TRUTH_SEGMENTS,
 ];
 
 export const FORWARD_VIZ: Segment[] = [
@@ -551,7 +568,7 @@ export const SENDOFF_SEGMENTS: Segment[] = [
     // ── Send-off (Mentor)
     {
       type: "speech",
-      text: "You are secure. Now play from victory.",
+      text: "You are secure. Now go compete from victory.",
       speed: 1.1,
       mark: { phase: "done" },
     },

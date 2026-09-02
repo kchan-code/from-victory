@@ -5,7 +5,11 @@
 // `npm run audio:generate -- --mode clips`.
 //
 // Taxonomy slugs (locked contract — matches ClipManifest in audio-playlist.ts):
-//   shared-opening         OPENING from segments.ts
+//   shared-opening         OPENING_BREATH_SEGMENTS from segments.ts (breath +
+//                          "Remember what is true." — the truth line follows
+//                          as a {{truth}} slot)
+//   truth-NN               one clip per TRUTH_BANK line (audio/truth-bank.ts);
+//                          the resolver picks one per session
 //   viz-forward            FORWARD_VIZ from segments.ts
 //   viz-defense            DEFENSE_VIZ from segments.ts
 //   viz-goalie             GOALIE_VIZ from segments.ts
@@ -31,6 +35,7 @@ import type { AudioScript } from "./types";
 import {
   HARD_MOMENT_NARRATION_INSTRUCTIONS,
   HARD_MOMENT_TRUTH_INSTRUCTIONS,
+  NARRATIVE_INSTRUCTIONS,
   PRAYER_INSTRUCTIONS,
   SCRIPT_INSTRUCTIONS,
   VISUALIZATION_INSTRUCTIONS,
@@ -40,11 +45,12 @@ import {
   DEFENSE_VIZ,
   FORWARD_VIZ,
   GOALIE_VIZ,
-  OPENING,
+  OPENING_BREATH_SEGMENTS,
   PRAYER_SEGMENTS,
   RESET_PLAN_SEGMENTS,
   SENDOFF_SEGMENTS,
 } from "./segments.ts";
+import { TRUTH_BANK } from "./truth-bank.ts";
 
 // Basketball pregame VIZ segments (FV-115)
 import {
@@ -110,14 +116,39 @@ export { CLIP_LOUDNORM_FILTER } from "./loudnorm.ts";
 
 // ── Shared structural clips ──────────────────────────────────────────────────
 
+// Breath rounds + "Remember what is true." The identity line that used to
+// close this clip is now the {{truth}} slot (CLIP_TRUTH_SCRIPTS below), so the
+// athlete hears a different line each session instead of one fixed sentence.
 export const CLIP_SHARED_OPENING_SCRIPT: AudioScript = {
   slug: "shared-opening",
   voice: "ash",
   instructions: SCRIPT_INSTRUCTIONS,
   speed: 1.1,
   postFilter: CLIP_LOUDNORM_FILTER,
-  segments: [...OPENING],
+  segments: [...OPENING_BREATH_SEGMENTS],
 };
+
+// ── Truth bank — one short clip per line ─────────────────────────────────────
+// Plays immediately after shared-opening's "Remember what is true." Same
+// register as the line it replaces (Devotional guide, NARRATIVE_INSTRUCTIONS),
+// same 1.0s trailing gap before the viz intro. Text lives in truth-bank.ts so
+// the runtime resolver and this generator share one list.
+export const CLIP_TRUTH_SCRIPTS: AudioScript[] = TRUTH_BANK.map(({ slug, text }) => ({
+  slug,
+  voice: "ash",
+  instructions: SCRIPT_INSTRUCTIONS,
+  speed: 1.1,
+  postFilter: CLIP_LOUDNORM_FILTER,
+  segments: [
+    {
+      type: "speech",
+      text,
+      speed: 1.1,
+      instructions: NARRATIVE_INSTRUCTIONS,
+    },
+    { type: "silence", durationSec: 1.0 },
+  ],
+}));
 
 // ── VIZ clips — one per position ─────────────────────────────────────────────
 
@@ -6298,6 +6329,8 @@ export const CLIP_SHARED_SELFTALK_INTRO_SCRIPT: AudioScript = {
 export const CLIP_SCRIPTS: AudioScript[] = [
   // Shared structural
   CLIP_SHARED_OPENING_SCRIPT,
+  // Truth bank — the rotating {{truth}} slot after shared-opening
+  ...CLIP_TRUTH_SCRIPTS,
   // VIZ — all 3 positions
   CLIP_VIZ_FORWARD_SCRIPT,
   CLIP_VIZ_DEFENSE_SCRIPT,

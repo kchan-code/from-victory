@@ -68,7 +68,65 @@ _(pause: 4s)_
 _(pause: 6s)_
 6. Remember what is true.
 _(pause: 0.8s)_
-7. The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.
+### Shared · Truth 01
+<!-- slug: truth-01 | file: components/pregame/audio/truth-bank.ts -->
+
+1. Your standing with God does not rise or fall with performance.
+_(pause: 1s)_
+### Shared · Truth 02
+<!-- slug: truth-02 | file: components/pregame/audio/truth-bank.ts -->
+
+1. The outcome can change. Your place with God cannot.
+_(pause: 1s)_
+### Shared · Truth 03
+<!-- slug: truth-03 | file: components/pregame/audio/truth-bank.ts -->
+
+1. You were loved before this began. You will be loved afterward.
+_(pause: 1s)_
+### Shared · Truth 04
+<!-- slug: truth-04 | file: components/pregame/audio/truth-bank.ts -->
+
+1. Your worth was settled at the cross, not here.
+_(pause: 1s)_
+### Shared · Truth 05
+<!-- slug: truth-05 | file: components/pregame/audio/truth-bank.ts -->
+
+1. You are not earning belonging. In Christ, you already belong.
+_(pause: 1s)_
+### Shared · Truth 06
+<!-- slug: truth-06 | file: components/pregame/audio/truth-bank.ts -->
+
+1. Nothing today can add to or subtract from grace.
+_(pause: 1s)_
+### Shared · Truth 07
+<!-- slug: truth-07 | file: components/pregame/audio/truth-bank.ts -->
+
+1. The verdict over you is already spoken: loved, forgiven, and his.
+_(pause: 1s)_
+### Shared · Truth 08
+<!-- slug: truth-08 | file: components/pregame/audio/truth-bank.ts -->
+
+1. You have nothing to prove to God. Give everything you have.
+_(pause: 1s)_
+### Shared · Truth 09
+<!-- slug: truth-09 | file: components/pregame/audio/truth-bank.ts -->
+
+1. Your performance may be measured. Your identity is not.
+_(pause: 1s)_
+### Shared · Truth 10
+<!-- slug: truth-10 | file: components/pregame/audio/truth-bank.ts -->
+
+1. Success cannot crown you. Failure cannot condemn you.
+_(pause: 1s)_
+### Shared · Truth 11
+<!-- slug: truth-11 | file: components/pregame/audio/truth-bank.ts -->
+
+1. Christ finished the work. You are free to give your best.
+_(pause: 1s)_
+### Shared · Truth 12
+<!-- slug: truth-12 | file: components/pregame/audio/truth-bank.ts -->
+
+1. Whatever happens, you remain fully known and fully loved by God.
 _(pause: 1s)_
 ### Shared · Reset Plan
 <!-- slug: shared-reset-plan | file: components/pregame/audio/clips.ts -->
@@ -85,7 +143,7 @@ _(pause: 2s)_
 ### Shared · Send-off
 <!-- slug: shared-sendoff | file: components/pregame/audio/clips.ts -->
 
-1. You are secure. Now play from victory.
+1. You are secure. Now go compete from victory.
 ### Anchor · long-exhale
 <!-- slug: anc-long-exhale | file: components/pregame/audio/clips.ts -->
 

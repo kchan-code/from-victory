@@ -1,6 +1,6 @@
 {
   "slug": "shared-opening",
-  "durationSec": 48.568,
+  "durationSec": 37.56,
   "phases": [
     {
       "phase": "settle",
@@ -8,22 +8,22 @@
     },
     {
       "phase": "inhale",
-      "startSec": 5.36,
+      "startSec": 5.504,
       "round": 0
     },
     {
       "phase": "exhale",
-      "startSec": 11.736,
+      "startSec": 12.552,
       "round": 0
     },
     {
       "phase": "inhale",
-      "startSec": 19.2,
+      "startSec": 21.024,
       "round": 1
     },
     {
       "phase": "exhale",
-      "startSec": 24.544,
+      "startSec": 26.128,
       "round": 1
     }
   ]

@@ -25,6 +25,7 @@ import {
   SELFTALK_OPTION_SLUGS,
   resolveOpenerSlug,
 } from "./audio-mapping";
+import { TRUTH_SLUGS } from "./audio/truth-bank";
 import { HOCKEY_CONFIG, type Sport, type SportConfig } from "./sport-registry";
 
 // ---------------------------------------------------------------------------
@@ -209,6 +210,12 @@ export function manifestUrl(): string {
  *   - {{cueReset}}: looks up cueWord in CUEWORD_OPTION_SLUGS, appends
  *     "-reset". If absent, sentinel is dropped.
  *   - {{cueSendoff}}: same as above with "-sendoff".
+ *   - {{truth}}: the rotating identity line after shared-opening. Resolves to
+ *     TRUTH_SLUGS[truthIndex mod N] over the truth-* slugs the catalog
+ *     actually carries; if that pick equals avoidTruthSlug (the line the
+ *     athlete heard last time) and there is more than one candidate, the
+ *     next slug in rotation order is used instead. No truth clips in the
+ *     catalog (older manifest) → the sentinel is dropped.
  *
  *   Drop semantics mean the session plays slightly shorter if no matching
  *   personalization clip exists, rather than failing the whole resolution.
@@ -253,6 +260,19 @@ export function resolvePlaylist(
    * survive, the flagship is kept rather than producing a viz-less session.
    */
   positivePlays?: string[] | null,
+  /**
+   * Which truth-bank line fills the {{truth}} slot. Any integer — it is taken
+   * modulo the number of truth clips present in the catalog, so callers can
+   * pass a random pick (useClipPlayer) or a plain counter (precache warms every
+   * index). Undefined/null → index 0. See audio/truth-bank.ts.
+   */
+  truthIndex?: number | null,
+  /**
+   * The truth slug the athlete heard last session (from truth-rotation.ts).
+   * When the indexed pick lands on it and another line exists, the resolver
+   * advances one step so no line ever plays twice in a row.
+   */
+  avoidTruthSlug?: string | null,
 ): ResolvedClip[] | null {
   let slugs: string[];
 
@@ -347,6 +367,19 @@ export function resolvePlaylist(
             slugs.push("shared-cue-word-sendoff-pre");
           }
           slugs.push(`${base}-sendoff`);
+        }
+      } else if (raw === "{{truth}}") {
+        // Rotating identity line (truth bank). Only slugs the catalog carries
+        // are candidates, so a partially rendered bank still resolves, and a
+        // manifest with no truth clips at all drops the slot cleanly.
+        const candidates = TRUTH_SLUGS.filter((s) => manifest.clips[s]);
+        if (candidates.length > 0) {
+          const idx = Number.isFinite(truthIndex ?? NaN) ? Math.trunc(truthIndex as number) : 0;
+          let i = ((idx % candidates.length) + candidates.length) % candidates.length;
+          if (candidates.length > 1 && candidates[i] === avoidTruthSlug) {
+            i = (i + 1) % candidates.length;
+          }
+          slugs.push(candidates[i]!);
         }
       } else {
         slugs.push(raw);

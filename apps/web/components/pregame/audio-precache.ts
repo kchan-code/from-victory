@@ -209,6 +209,31 @@ async function resolveReachableUrls(
     urls.push(clip.url);
   }
 
+  // Truth bank: the {{truth}} line is picked per player mount, so the warmed
+  // set must cover EVERY truth-* clip the catalog carries or an offline
+  // session could miss its line. Re-resolve once per truth index and union
+  // the URLs (12 short clips; each resolve is a pure in-memory call).
+  const truthCount = Object.keys(manifest.clips).filter((s) => s.startsWith("truth-")).length;
+  for (let i = 1; i < truthCount; i++) {
+    const alt = resolvePlaylist(
+      params.need,
+      params.position ?? "",
+      params.adversity ?? "",
+      manifest,
+      params.anchor ?? null,
+      params.selfTalk ?? null,
+      params.cueWord ?? null,
+      params.sport,
+      params.prayerStyle ?? null,
+      params.positivePlays ?? null,
+      i,
+    );
+    if (!alt) continue;
+    for (const clip of alt) {
+      if (!urls.includes(clip.url)) urls.push(clip.url);
+    }
+  }
+
   // FV-227: if the athlete chose a bed, add its URL so it is warmed offline
   // alongside the clip files. Silence (null/undefined) → no extra URL.
   if (params.bedId) {

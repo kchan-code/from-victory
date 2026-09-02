@@ -5,13 +5,20 @@
     "Exhale.",
     "Inhale.",
     "Exhale.",
-    "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
-    "So now you are free.",
-    "Free to attack. Free to compete. Free to make the next play without carrying the last one.",
-    "Nothing to prove. Nothing to protect. Everything to give.",
-    "Play loose. Play brave. Step into the game free."
+    "Remember what is true."
   ],
+  "truth-01": ["Your standing with God does not rise or fall with performance."],
+  "truth-02": ["The outcome can change. Your place with God cannot."],
+  "truth-03": ["You were loved before this began. You will be loved afterward."],
+  "truth-04": ["Your worth was settled at the cross, not here."],
+  "truth-05": ["You are not earning belonging. In Christ, you already belong."],
+  "truth-06": ["Nothing today can add to or subtract from grace."],
+  "truth-07": ["The verdict over you is already spoken: loved, forgiven, and his."],
+  "truth-08": ["You have nothing to prove to God. Give everything you have."],
+  "truth-09": ["Your performance may be measured. Your identity is not."],
+  "truth-10": ["Success cannot crown you. Failure cannot condemn you."],
+  "truth-11": ["Christ finished the work. You are free to give your best."],
+  "truth-12": ["Whatever happens, you remain fully known and fully loved by God."],
   "viz-forward": [
     "Keep your eyes closed. See yourself running onto the ice.",
     "You smell the ice, the zamboni.",
@@ -337,10 +344,7 @@
     "Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen."
   ],
   "shared-sendoff": [
-    "You are secure.",
-    "Play free. Play brave.",
-    "Give everything.",
-    "Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "anc-long-exhale": [
     "Long exhale."
