@@ -10,6 +10,19 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-09-02 — Pregame audio now closes on the brand tagline
+
+The final spoken line of every guided pregame session (all seven live sports, the
+shared `shared-sendoff` clip after the prayer and cue word) now reads "You are
+secure. Now go compete from victory." It previously read "You are secure. Now play
+from victory." The self-guided-prayer path is unchanged: it still ends on the
+athlete's own 30-second prayer with no spoken send-off. The text-mode fallback
+send-offs still end "Amen. Play from victory."
+
+Why it matters to a buyer: the session's last words now match the public tagline
+("Your Identity Is Secure. Compete From Victory.") word for word, so the marketing
+promise and the in-app close are the same line.
+
 ## 2026-09-01 — /parents recut to the foundation/game-day framing; sitewide em-dash sweep
 
 The parents page hero now leads "Daily training is the foundation. Game

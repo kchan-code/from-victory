@@ -85,7 +85,7 @@ _(pause: 2s)_
 ### Shared · Send-off
 <!-- slug: shared-sendoff | file: components/pregame/audio/clips.ts -->
 
-1. You are secure. Now play from victory.
+1. You are secure. Now go compete from victory.
 ### Anchor · long-exhale
 <!-- slug: anc-long-exhale | file: components/pregame/audio/clips.ts -->
 

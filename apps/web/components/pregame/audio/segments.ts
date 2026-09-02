@@ -551,7 +551,7 @@ export const SENDOFF_SEGMENTS: Segment[] = [
     // ── Send-off (Mentor)
     {
       type: "speech",
-      text: "You are secure. Now play from victory.",
+      text: "You are secure. Now go compete from victory.",
       speed: 1.1,
       mark: { phase: "done" },
     },

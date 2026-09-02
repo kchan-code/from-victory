@@ -1414,10 +1414,7 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 
 **Shared Sendoff**  `shared-sendoff`
 
-1. You are secure.  [0.8s]
-2. Play free. Play brave.  [0.8s]
-3. Give everything.  [0.8s]
-4. Now play from victory.  [1s]
+1. You are secure. Now go compete from victory.
 
 
 **Cue Word Sendoff**  `shared-cue-word-sendoff`
