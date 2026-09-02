@@ -1875,7 +1875,7 @@ export function AudioSessionScreen({
                       {state.cueWord || DEFAULTS.cueWord}
                     </p>
                     <p className="mt-5 font-body text-[13px] leading-[1.5] text-cream/50">
-                      Play from victory.
+                      You are secure. Now go compete from victory.
                     </p>
                   </>
                 )}
