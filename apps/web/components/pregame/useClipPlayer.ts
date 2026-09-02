@@ -73,7 +73,9 @@ import {
 } from "./audio-playlist";
 import { assembleWavBlobWithBed } from "./audio/encode-wav";
 import { getBed, BED_MIX_GAIN } from "./audio/beds";
+import { isTruthSlug } from "./audio/truth-bank";
 import { getSportConfig, type Sport } from "./sport-registry";
+import { pickTruthIndex, readLastTruthSlug, rememberTruthSlug } from "./truth-rotation";
 import type { PrayerStyle } from "./types";
 import { selectCacheStrategy } from "@/lib/audio/cache-strategy";
 
@@ -317,6 +319,17 @@ export function useClipPlayer({
     );
   }
 
+  // Pregame {{truth}} slot — the rotating identity line after shared-opening.
+  // Same per-mount lazy-init pattern as the dialed-in opener above: the random
+  // index AND the "line heard last time" are captured once, so a mid-flow
+  // re-resolve (anchor/cue-word change) keeps the same line for this session.
+  const truthIndexRef = useRef<number>(-1);
+  const avoidTruthRef = useRef<string | null | undefined>(undefined);
+  if (truthIndexRef.current < 0) {
+    truthIndexRef.current = pickTruthIndex();
+    avoidTruthRef.current = readLastTruthSlug();
+  }
+
   // ── rAF loop ──
   // Reads audio.currentTime ~60fps. HTMLMediaElement.currentTime is the
   // authoritative position; we don't need the suspend-offset arithmetic that
@@ -496,6 +509,8 @@ export function useClipPlayer({
           sport,
           prayerStyle,
           positivePlays,
+          truthIndexRef.current,
+          avoidTruthRef.current ?? null,
         );
         if (!clips) {
           // No template for this combination — sentinel triggers legacy path.
@@ -503,6 +518,10 @@ export function useClipPlayer({
           setError("no template");
           return;
         }
+        // Remember which truth line this session plays so the next session
+        // on this device rotates away from it.
+        const truthClip = clips.find((c) => isTruthSlug(c.slug));
+        if (truthClip) rememberTruthSlug(truthClip.slug);
       }
       if (cancelled) return;
 

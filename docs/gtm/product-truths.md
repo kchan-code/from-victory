@@ -10,7 +10,7 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
-## 2026-09-02 — Pregame audio now closes on the brand tagline
+## 2026-09-02 — Pregame audio closes on the brand tagline; opening identity line now rotates
 
 The final spoken line of every guided pregame session (all seven live sports, the
 shared `shared-sendoff` clip after the prayer and cue word) now reads "You are
@@ -19,9 +19,22 @@ from victory." The self-guided-prayer path is unchanged: it still ends on the
 athlete's own 30-second prayer with no spoken send-off. The text-mode fallback
 send-offs still end "Amen. Play from victory."
 
+The identity line near the top of the session (after the two breath rounds and
+"Remember what is true.") is no longer one fixed sentence. It is drawn from a bank
+of twelve short, sport-neutral lines that all say the same thing — standing with
+God does not move with performance — from different angles (e.g. "The outcome can
+change. Your place with God cannot." / "Success cannot crown you. Failure cannot
+condemn you."). One line plays per session, chosen at random, never the same line
+two sessions in a row on the same device. The previous line ("…loved before you
+lace up. You are loved after the final horn.") was hockey-flavored and played
+verbatim every session in every sport. Sessions are about eight seconds shorter.
+
 Why it matters to a buyer: the session's last words now match the public tagline
-("Your Identity Is Secure. Compete From Victory.") word for word, so the marketing
-promise and the in-app close are the same line.
+("Your Identity Is Secure. Compete From Victory.") word for word, and the daily
+identity reminder stays fresh across a season instead of becoming background
+noise. Marketing may say the session "reminds the athlete who they are before
+they compete" and may quote any line from the bank; it should not describe the
+opening as a single fixed line.
 
 ## 2026-09-01 — /parents recut to the foundation/game-day framing; sitewide em-dash sweep
 

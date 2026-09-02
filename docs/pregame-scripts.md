@@ -1417,6 +1417,23 @@ _Section 1 = the FV-136 positive-play library (draft clips you're building). Sec
 1. You are secure. Now go compete from victory.
 
 
+**Truth Bank**  `truth-01` … `truth-12`
+_(the `{{truth}}` slot — plays right after `shared-opening` ends on "Remember what is true." One line per session, picked at random per player mount, never the same line two sessions in a row on the same device. Replaces the fixed "worst game / best game / loved before you lace up" line, which was hockey-flavored and played verbatim every session. Text approved by KC 2026-09-02; source of truth is `components/pregame/audio/truth-bank.ts`.)_
+
+1. Your standing with God does not rise or fall with performance.  [1s]
+2. The outcome can change. Your place with God cannot.  [1s]
+3. You were loved before this began. You will be loved afterward.  [1s]
+4. Your worth was settled at the cross, not here.  [1s]
+5. You are not earning belonging. In Christ, you already belong.  [1s]
+6. Nothing today can add to or subtract from grace.  [1s]
+7. The verdict over you is already spoken: loved, forgiven, and his.  [1s]
+8. You have nothing to prove to God. Give everything you have.  [1s]
+9. Your performance may be measured. Your identity is not.  [1s]
+10. Success cannot crown you. Failure cannot condemn you.  [1s]
+11. Christ finished the work. You are free to give your best.  [1s]
+12. Whatever happens, you remain fully known and fully loved by God.  [1s]
+
+
 **Cue Word Sendoff**  `shared-cue-word-sendoff`
 _(the very last beat — after the prayer / send-off)_
 

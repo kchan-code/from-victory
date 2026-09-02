@@ -72,6 +72,7 @@ function urlToAbsPath(url: string): string {
 // Sentinel strings used in p3 templates — these are substituted at runtime
 // and are NOT expected to be catalog slugs.
 const SENTINELS = new Set([
+  "{{truth}}",
   "{{anchor}}",
   "{{selfTalk}}",
   "{{cueReset}}",
