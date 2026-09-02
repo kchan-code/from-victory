@@ -144,9 +144,38 @@ export function setDeviceAthleteId(athleteId: string): void {
  * Deletes BOTH the __Host- production name and the plain dev/legacy name so
  * that a cookie written before FV-13 (or in a different environment) is also
  * cleared on sign-out / forgetDevice.
+ *
+ * __Host- cookies require EVERY Set-Cookie header for that name — including
+ * one that deletes it — to carry Secure, Path=/, and no Domain attribute, or
+ * a spec-conforming browser (WebKit/Safari, Chrome, Firefox all enforce this)
+ * rejects the whole Set-Cookie header and leaves the existing cookie
+ * untouched. Next.js's bare `store.delete(name)` only sets `value: ''` and an
+ * expired date — it does NOT add `secure`/`path`/`sameSite` — so it silently
+ * fails to clear __Host-fv_device_athlete_id in production, leaving the
+ * athlete signed back in on that device (the "Not {name}? Sign in as someone
+ * else" bug). Mirror the exact attributes used in setDeviceAthleteId()
+ * (secure: true, path: "/", no domain) via `.set(name, "", { ...options,
+ * maxAge: 0 })` so the deletion Set-Cookie is accepted.
  */
 export function clearDeviceAthleteId(): void {
   const store = cookies();
-  store.delete(COOKIE_NAME_PROD);
-  store.delete(COOKIE_NAME_DEV);
+
+  store.set(COOKIE_NAME_PROD, "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    maxAge: 0,
+    path: "/",
+    // NO `domain` attribute — required for __Host- prefix.
+  });
+
+  // Not __Host--prefixed, so a bare delete would work, but match path: "/"
+  // (and the other creation attributes) for consistency/robustness.
+  store.set(COOKIE_NAME_DEV, "", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    maxAge: 0,
+    path: "/",
+  });
 }
