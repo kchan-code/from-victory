@@ -12,7 +12,7 @@
 // is wrapped so a blocked or missing localStorage (private mode, SSR, native
 // webview quirks) degrades to "no memory", never to an error.
 
-import { TRUTH_SLUGS } from "./audio/truth-bank";
+import { TRUTH_SLUGS, isTruthSlug } from "./audio/truth-bank";
 
 const STORAGE_KEY = "fv_truth_last";
 
@@ -50,4 +50,35 @@ export function rememberTruthSlug(slug: string): void {
   } catch {
     // Storage unavailable or full — rotation simply has no memory this time.
   }
+}
+
+/** Minimal per-clip shape needed to locate the truth clip's start offset. */
+export type ClipDurationEntry = { slug: string; durationSec: number };
+
+/**
+ * FV-552 — pure decision helper for "has the truth clip actually started
+ * playing yet." Given the session's ordered clip list (each with its
+ * duration) and the current playhead position in seconds, returns the truth
+ * slug once playback has reached its segment of the assembled timeline, or
+ * null if playback hasn't gotten there yet (or the session has no truth
+ * clip). Clips assemble back-to-back in array order — see
+ * buildAssembledTimeline in audio-playlist.ts — so the truth clip's start
+ * offset is just the summed duration of every clip before it.
+ *
+ * Pure and side-effect free: no localStorage, no DOM. Called from the
+ * player's rAF loop (to decide when it's safe to call rememberTruthSlug)
+ * and exercised directly in tests without touching browser APIs.
+ */
+export function truthSlugAtPlayhead(
+  clips: readonly ClipDurationEntry[],
+  currentSec: number,
+): string | null {
+  let cursor = 0;
+  for (const clip of clips) {
+    if (isTruthSlug(clip.slug)) {
+      return currentSec >= cursor ? clip.slug : null;
+    }
+    cursor += clip.durationSec;
+  }
+  return null;
 }
