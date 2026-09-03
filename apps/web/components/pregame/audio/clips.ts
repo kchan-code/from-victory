@@ -2288,7 +2288,7 @@ export const CLIP_PP_OPENER_DIALED_IN_2_SCRIPT: AudioScript = {
     { type: "silence", durationSec: 1.2 },
     {
       type: "speech",
-      text: "Play from victory.",
+      text: "You are secure. Now go compete from victory.",
     },
   ],
 };

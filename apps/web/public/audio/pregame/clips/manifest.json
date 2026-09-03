@@ -1,6 +1,6 @@
 {
   "version": "p6",
-  "manifestVersion": "639ba65f",
+  "manifestVersion": "da23db2c",
   "clips": {
     "shared-opening": {
       "url": "/audio/pregame/clips/shared-opening.19f3dc6f.mp3",
@@ -575,8 +575,8 @@
       "phases": []
     },
     "pp-opener-dialed-in-2": {
-      "url": "/audio/pregame/clips/pp-opener-dialed-in-2.79751ecf.mp3",
-      "durationSec": 72.144,
+      "url": "/audio/pregame/clips/pp-opener-dialed-in-2.b3f6d305.mp3",
+      "durationSec": 75,
       "phases": []
     },
     "pp-opener-dialed-in-3": {
