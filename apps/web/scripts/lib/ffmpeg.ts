@@ -155,10 +155,35 @@ export async function reEncodeMp3(
   await runVoid("ffmpeg", args);
 }
 
+// Transcode an arbitrary MP3 (e.g. ElevenLabs' 44.1kHz output) down to
+// 24kHz mono — the sample rate the rest of the pipeline (silence MP3s,
+// concatMp3s' concat demuxer) requires. See scripts/lib/tts.ts's ElevenLabs
+// path (FV-285).
+export async function transcodeTo24kMonoMp3(
+  inPath: string,
+  outPath: string,
+): Promise<void> {
+  const args = [
+    "-y",
+    "-i",
+    inPath,
+    "-ar",
+    "24000",
+    "-ac",
+    "1",
+    "-c:a",
+    "libmp3lame",
+    "-b:a",
+    "128k",
+    outPath,
+  ];
+  await runVoid("ffmpeg", args);
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // Process helpers
 
-async function runVoid(cmd: string, args: string[]): Promise<void> {
+export async function runVoid(cmd: string, args: string[]): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const child = spawn(cmd, args, { stdio: ["ignore", "ignore", "pipe"] });
     let stderr = "";
