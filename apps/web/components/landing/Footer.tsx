@@ -8,6 +8,7 @@ const productLinks = [
   { href: "/#app", label: "The app" },
   { href: "/hockey", label: "Hockey" },
   { href: "/signup", label: "Start free trial" },
+  { href: "https://shop.fromvictoryapp.com/", label: "Shop" },
 ];
 
 const forLinks = [
@@ -170,7 +171,12 @@ function FooterColumn({
                   {l.label}
                 </Link>
               ) : (
-                <a href={l.href} className={className}>
+                <a
+                  href={l.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={className}
+                >
                   {l.label}
                 </a>
               )}
