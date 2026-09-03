@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   clampElevenLabsSpeed,
   estimateCostUsd,
+  resolveElevenLabsVoiceId,
   resolveProvider,
 } from "../scripts/lib/tts.ts";
 
@@ -105,5 +106,28 @@ describe("clampElevenLabsSpeed", () => {
     expect(clampElevenLabsSpeed(1.5)).toBe(1.2);
     expect(warnSpy).toHaveBeenCalled();
     warnSpy.mockRestore();
+  });
+});
+
+describe("resolveElevenLabsVoiceId", () => {
+  const saved = process.env.ELEVENLABS_VOICE_ID;
+  afterEach(() => {
+    if (saved === undefined) delete process.env.ELEVENLABS_VOICE_ID;
+    else process.env.ELEVENLABS_VOICE_ID = saved;
+  });
+
+  it("passes a non-OpenAI voice string through as an ElevenLabs voice ID", () => {
+    delete process.env.ELEVENLABS_VOICE_ID;
+    expect(resolveElevenLabsVoiceId("21m00Tcm4TlvDq8ikWAM")).toBe("21m00Tcm4TlvDq8ikWAM");
+  });
+
+  it("maps an OpenAI voice name (e.g. a committed script's \"ash\") to ELEVENLABS_VOICE_ID", () => {
+    process.env.ELEVENLABS_VOICE_ID = "voice-from-env";
+    expect(resolveElevenLabsVoiceId("ash")).toBe("voice-from-env");
+  });
+
+  it("throws a pointed error for an OpenAI voice name when ELEVENLABS_VOICE_ID is unset", () => {
+    delete process.env.ELEVENLABS_VOICE_ID;
+    expect(() => resolveElevenLabsVoiceId("ash")).toThrow(/ELEVENLABS_VOICE_ID is not set/);
   });
 });

@@ -233,6 +233,10 @@ type VariantResult = {
   costUsd: number | null;
   lufsI: number | null;
   truePeak: number | null;
+  // Set when the render for this variant failed (e.g. an invalid voice ID or
+  // a 4xx/5xx mid-run). The run continues so the README still reports every
+  // variant that did complete; main() exits 1 at the end if any failed.
+  error?: string;
 };
 
 type SlugResult = {
@@ -416,7 +420,13 @@ async function writeReadme(
     lines.push("");
     lines.push("| Variant | Duration (s) | Chars | Est. cost | LUFS-I | dBTP |");
     lines.push("|---|---|---|---|---|---|");
+    const failed: VariantResult[] = [];
     for (const v of variants) {
+      if (v.error) {
+        lines.push(`| ${v.label} | ERR | ${v.chars} | — | — | — |`);
+        failed.push(v);
+        continue;
+      }
       lines.push(
         `| ${v.label} | ${v.durationSec.toFixed(2)} | ${v.chars} | ${fmtCost(v.costUsd)} | ${fmtLufs(v.lufsI)} | ${fmtPeak(v.truePeak)} |`,
       );
@@ -425,6 +435,10 @@ async function writeReadme(
       prior.chars += v.chars;
       if (!v.isCurrent) prior.costUsd = (prior.costUsd ?? 0) + (v.costUsd ?? 0);
       totalsByLabel.set(v.label, prior);
+    }
+    for (const v of failed) {
+      lines.push("");
+      lines.push(`> ⚠ ${v.label}: render failed — ${v.error}`);
     }
     lines.push("");
   }
@@ -495,6 +509,7 @@ async function main(): Promise<void> {
   await mkdir(outDirAbs, { recursive: true });
 
   const results: SlugResult[] = [];
+  let failures = 0;
 
   for (const { script, segments } of resolved) {
     const slugDir = join(outDirAbs, script.slug);
@@ -508,8 +523,24 @@ async function main(): Promise<void> {
     if (currentMaster) variants.push(currentMaster);
 
     for (const voice of flags.voices) {
-      const result = await renderCandidate(script, segments, voice, flags.model, slugDir, workDir);
-      variants.push(result);
+      try {
+        const result = await renderCandidate(script, segments, voice, flags.model, slugDir, workDir);
+        variants.push(result);
+      } catch (err) {
+        const message = (err as Error).message;
+        failures += 1;
+        console.error(`\n[bakeoff] ERROR ${script.slug} × ${voice.label}: ${message}`);
+        variants.push({
+          label: voice.label,
+          isCurrent: false,
+          durationSec: 0,
+          chars: totalSpeechChars(segments),
+          costUsd: null,
+          lufsI: null,
+          truePeak: null,
+          error: message,
+        });
+      }
     }
 
     results.push({ slug: script.slug, variants });
@@ -529,10 +560,17 @@ async function main(): Promise<void> {
 
   console.log(`\n[bakeoff] Done. Candidates + README written to ${outDirAbs}/`);
   console.log(`[bakeoff] These MP3s are NOT committed (see root .gitignore) — listen locally.`);
+  if (failures > 0) {
+    console.error(`[bakeoff] ${failures} variant(s) FAILED — see the ⚠ rows in the README.`);
+    process.exit(1);
+  }
 }
 
 // import.meta guard (matches generate-pregame-audio.ts) so importing this
 // module for tests never fires main().
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
-  void main();
+  main().catch((err: unknown) => {
+    console.error(`\nbakeoff-voices: ${(err as Error).message}`);
+    process.exit(1);
+  });
 }

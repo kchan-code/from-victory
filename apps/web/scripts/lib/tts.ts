@@ -139,7 +139,8 @@ export function clampElevenLabsSpeed(speed: number): number {
   return clamped;
 }
 
-function resolveElevenLabsVoiceId(scriptVoice: string): string {
+/** ElevenLabs voice for a script: a non-OpenAI `voice` is taken as a voice ID; an OpenAI name falls back to ELEVENLABS_VOICE_ID. */
+export function resolveElevenLabsVoiceId(scriptVoice: string): string {
   if (!OPENAI_VOICE_NAMES.has(scriptVoice)) return scriptVoice;
   const fallback = process.env.ELEVENLABS_VOICE_ID;
   if (!fallback) {
