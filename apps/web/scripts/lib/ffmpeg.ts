@@ -2,7 +2,6 @@
 // (brew install ffmpeg). No npm deps.
 
 import { spawn } from "node:child_process";
-import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 export type ConcatInput =
@@ -64,16 +63,35 @@ export async function silenceMp3(
   return path;
 }
 
+// Short edge fade applied to every input before the join (see concatMp3s).
+// Long enough to guarantee no input can splice in/out on a non-zero,
+// non-decayed sample; short enough to be inaudible as a fade.
+const EDGE_FADE_SEC = 0.008;
+
 // Concatenate a sequence of MP3 inputs into one output file.
-// Uses ffmpeg's concat demuxer, which requires identical codec/sample-rate
-// across inputs — that's why silence is generated at 24kHz mono.
+//
+// PCM-domain join via ffmpeg's concat FILTER (`-filter_complex`), not the
+// concat DEMUXER's raw-frame stream copy. FV-285 follow-up: the demuxer
+// path spliced independently-encoded MP3 segments (TTS speech at 128k,
+// generated silence beds at 64k) at the compressed-frame level, which does
+// two bad things — (1) MP3 frame boundaries / LAME encoder delay+padding
+// don't line up cleanly across separately-encoded files the way the concat
+// demuxer handles them, and (2) a segment can end on a non-zero,
+// non-decayed sample (this is inaudible with OpenAI "ash", whose renders
+// happen to trail off near zero, but audible as a click/pop with some
+// ElevenLabs candidates, which can cut off mid-waveform). Decoding every
+// input as its own `-i` (not through the concat demuxer) lets ffmpeg apply
+// each file's own LAME gapless info correctly, and a short edge fade on
+// every input guarantees the join always crosses zero — even if a future
+// TTS provider's segment doesn't decay naturally. The fade is a no-op on
+// silence beds (already at 0 amplitude at their edges), so no caller needs
+// to tell us which inputs are "speech" vs "silence" file paths.
 export async function concatMp3s(
   inputs: ConcatInput[],
   outPath: string,
   workDir: string,
-  // Optional ffmpeg audio-filter chain. When set, the concatenated stream is
-  // re-encoded through this filter (24kHz mono, matching the TTS source)
-  // instead of being stream-copied — used to correct a render's tonal
+  // Optional ffmpeg audio-filter chain, applied once after the join (24kHz
+  // mono, matching the TTS source) — used to correct a render's tonal
   // balance (see AudioScript.postFilter).
   filter?: string,
 ): Promise<void> {
@@ -84,43 +102,47 @@ export async function concatMp3s(
     else resolved.push(await silenceMp3(inp.durationSec, workDir));
   }
 
-  const listPath = join(workDir, "concat-list.txt");
-  const listBody = resolved.map((p) => `file '${p.replace(/'/g, "'\\''")}'`).join("\n");
-  await writeFile(listPath, listBody);
+  if (resolved.length === 0) {
+    throw new Error("concatMp3s: no inputs to concatenate");
+  }
 
-  const args = filter
-    ? [
-        "-y",
-        "-f",
-        "concat",
-        "-safe",
-        "0",
-        "-i",
-        listPath,
-        "-af",
-        filter,
-        "-ar",
-        "24000",
-        "-ac",
-        "1",
-        "-c:a",
-        "libmp3lame",
-        "-b:a",
-        "128k",
-        outPath,
-      ]
-    : [
-        "-y",
-        "-f",
-        "concat",
-        "-safe",
-        "0",
-        "-i",
-        listPath,
-        "-c",
-        "copy",
-        outPath,
-      ];
+  const durations = await Promise.all(resolved.map((p) => probeDurationSec(p)));
+
+  const inputArgs: string[] = [];
+  const filterParts: string[] = [];
+  resolved.forEach((p, i) => {
+    inputArgs.push("-i", p);
+    const dur = durations[i] ?? 0;
+    // Clamp so in/out fades never overlap on a very short input.
+    const fade = Math.max(0, Math.min(EDGE_FADE_SEC, dur / 2));
+    const fadeOutStart = Math.max(0, dur - fade);
+    filterParts.push(
+      `[${i}:a]afade=t=in:st=0:d=${fade.toFixed(4)},` +
+        `afade=t=out:st=${fadeOutStart.toFixed(4)}:d=${fade.toFixed(4)}[a${i}]`,
+    );
+  });
+  const concatLabels = resolved.map((_, i) => `[a${i}]`).join("");
+  filterParts.push(`${concatLabels}concat=n=${resolved.length}:v=0:a=1[joined]`);
+  if (filter) filterParts.push(`[joined]${filter}[final]`);
+  const outLabel = filter ? "[final]" : "[joined]";
+
+  const args = [
+    "-y",
+    ...inputArgs,
+    "-filter_complex",
+    filterParts.join(";"),
+    "-map",
+    outLabel,
+    "-ar",
+    "24000",
+    "-ac",
+    "1",
+    "-c:a",
+    "libmp3lame",
+    "-b:a",
+    "128k",
+    outPath,
+  ];
   await runVoid("ffmpeg", args);
 }
 
@@ -157,8 +179,8 @@ export async function reEncodeMp3(
 
 // Transcode an arbitrary MP3 (e.g. ElevenLabs' 44.1kHz output) down to
 // 24kHz mono — the sample rate the rest of the pipeline (silence MP3s,
-// concatMp3s' concat demuxer) requires. See scripts/lib/tts.ts's ElevenLabs
-// path (FV-285).
+// concatMp3s' decode-and-join) requires. See scripts/lib/tts.ts's
+// ElevenLabs path (FV-285).
 export async function transcodeTo24kMonoMp3(
   inPath: string,
   outPath: string,
