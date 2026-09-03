@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- FV-502: brand onyx behind the WebView. With targetSdk 36 the OS
+         ignores window.setStatusBarColor entirely (edge-to-edge is mandatory,
+         see StatusBar.java shouldSetStatusBarColor in @capacitor/status-bar),
+         so the status-bar strip shows whatever is drawn behind it — this. -->
+    <color name="onyx">#050505</color>
+</resources>
