@@ -311,6 +311,11 @@ jobs:
         working-directory: apps/web
         env:
           CI: true
+          # Keep this `localhost`, not `127.0.0.1`: the production-mode server
+          # writes the device cookie as `__Host-…` with Secure=true, which
+          # Chromium only accepts over plain HTTP for `localhost` (a
+          # potentially-trustworthy origin). On 127.0.0.1 the cookie is silently
+          # dropped and any future device-cookie spec fails confusingly.
           E2E_BASE_URL: http://localhost:3000
           E2E_SUPABASE_URL: http://127.0.0.1:54321
           E2E_SUPABASE_ANON_KEY: ${{ steps.supabase.outputs.anon_key }}
