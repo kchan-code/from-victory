@@ -106,8 +106,9 @@ export const FOCUS_AREA_TO_NEED: Record<FocusAreaKey, string> = {
  * Returns the pregame NeedToday default for a given focus_area, or null
  * (no pre-selection) if the focus area is not set or not mappable.
  *
- * TODO FV-253: consumed by the pregame Today's Focus default — wire this into
- * the pregame setup flow to pre-select the athlete's mapped need on first open.
+ * Consumed by lib/pregame/profile-defaults.ts (FV-253), which additionally
+ * checks the mapped need against the athlete's sport `needs` list before the
+ * pregame Today's Focus picker pre-selects it.
  */
 export function pregameNeedDefault(focusArea: string | null | undefined): string | null {
   if (!focusArea || !isFocusAreaKey(focusArea)) return null;
