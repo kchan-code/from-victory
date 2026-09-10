@@ -68,9 +68,11 @@
 --     the SET columns, not SELECT, so this is unaffected by (and does not
 --     need to be narrower than) the SELECT column allowlist FV-361 already
 --     pinned. INSERT stays table-level too — the athlete-account-creation
---     service action and the self-serve 18+ signup path both write full
---     profiles rows (service-role for the former; `authenticated` briefly
---     during the 18+ self-serve flow per FV-325).
+--     service action writes athlete rows as service_role, while BOTH
+--     RLS-scoped signups self-insert their own row as `authenticated`:
+--     the parent signup (apps/web/lib/actions/auth.ts, role 'parent') and
+--     the 18+ self-serve signup (lib/actions/auth-adult.ts, per FV-325),
+--     each guarded by profiles_insert_own (id = auth.uid()).
 --   - `training_sessions_catalog` SELECT stays table-level because the
 --     content-catalog read call site uses `.select("*")` — a column
 --     allowlist would have to be kept in lockstep with every future content
