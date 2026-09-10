@@ -76,15 +76,26 @@ async function setQuiz(position: string | null, focusArea: string | null): Promi
 // Page helpers
 // ---------------------------------------------------------------------------
 
-/** Open the pregame start screen; dismiss the first-run coachmark tour if it renders. */
-async function openPregameStart(page: Page): Promise<void> {
-  await page.goto("/athlete/pregame");
-  await expect(page.getByTestId("set-up-for-later-btn")).toBeVisible({ timeout: 15_000 });
+/**
+ * Dismiss the first-run coachmark tour if it renders. Its backdrop
+ * (animate-coachmark-fade-in) intercepts pointer events on the start-screen
+ * buttons, so this must run after every load of the start screen — including
+ * a reload, where CI showed the tour again (first run of the E2E context).
+ */
+async function dismissCoachmark(page: Page): Promise<void> {
   const skipTour = page.getByTestId("coachmark-skip-btn");
   if (await skipTour.isVisible().catch(() => false)) {
     await skipTour.click();
     await expect(skipTour).toBeHidden();
   }
+  await expect(page.locator(".animate-coachmark-fade-in")).toHaveCount(0);
+}
+
+/** Open the pregame start screen; dismiss the first-run coachmark tour if it renders. */
+async function openPregameStart(page: Page): Promise<void> {
+  await page.goto("/athlete/pregame");
+  await expect(page.getByTestId("set-up-for-later-btn")).toBeVisible({ timeout: 15_000 });
+  await dismissCoachmark(page);
 }
 
 /** Enter the prepare-ahead flow — its first step is Today's Focus (no breath timer). */
@@ -218,6 +229,7 @@ test.describe("Pregame pre-selects the saved quiz answers via get_own_personaliz
     });
     await page.reload();
     await expect(page.getByTestId("set-up-for-later-btn")).toBeVisible({ timeout: 15_000 });
+    await dismissCoachmark(page);
 
     await page.getByRole("button", { name: /run it like last time/i }).click();
     await page.getByRole("button", { name: "Already settled" }).click();
