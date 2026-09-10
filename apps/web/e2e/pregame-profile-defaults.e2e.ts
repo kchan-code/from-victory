@@ -11,9 +11,11 @@
  * Fixture discipline: this spec MUTATES the shared seeded athlete's two quiz
  * columns and RESTORES them to null in afterAll (the seed default), so every
  * other spec keeps seeing the pre-FV-253 "nothing pre-selected" state. Specs
- * run serially (fullyParallel: false, workers: 1 on CI), and each test gets a
- * fresh context from athlete.storageState.json, so localStorage never leaks
- * between tests either. Position values used here ("Goalie", "Forward",
+ * run one file at a time on a single worker (fullyParallel: false, workers: 1
+ * on CI) — it is that single-worker completion guarantee (beforeAll → tests →
+ * afterAll before the next file starts), not file order, that protects the
+ * other specs — and each test gets a fresh context from
+ * athlete.storageState.json, so localStorage never leaks between tests either. Position values used here ("Goalie", "Forward",
  * "Guard") are all in the DB CHECK union (migration 20260613010000) — "Guard"
  * is deliberately a BASKETBALL role, i.e. DB-valid but invalid for the seeded
  * hockey athlete.
@@ -84,6 +86,10 @@ async function setQuiz(position: string | null, focusArea: string | null): Promi
  */
 async function dismissCoachmark(page: Page): Promise<void> {
   const skipTour = page.getByTestId("coachmark-skip-btn");
+  // CoachmarkTour paints nothing until its anchor measurement fires
+  // (setTimeout ~200ms), so an instant isVisible() check races it. Wait a
+  // bounded moment for the tour to mount; if it never does, move on.
+  await skipTour.waitFor({ state: "visible", timeout: 1_500 }).catch(() => null);
   if (await skipTour.isVisible().catch(() => false)) {
     await skipTour.click();
     await expect(skipTour).toBeHidden();
@@ -145,7 +151,10 @@ async function reviewValue(page: Page, label: string): Promise<string> {
 // Suite
 // ---------------------------------------------------------------------------
 
-test.describe.configure({ mode: "serial" });
+// Not serial on purpose: every test seeds its own quiz values and starts from
+// a fresh context, so one failure must not skip the others (Playwright serial
+// mode would). Single worker + fullyParallel:false still keep the shared
+// athlete row consistent within this file.
 
 test.describe("Pregame pre-selects the saved quiz answers via get_own_personalization (FV-253)", () => {
   test.beforeAll(async () => {
@@ -243,7 +252,10 @@ test.describe("Pregame pre-selects the saved quiz answers via get_own_personaliz
     expect(await reviewValue(page, "Position")).toBe("Goalie");
 
     // A fresh session from the same page still pre-selects the profile.
+    // Close remounts the start screen (and with it the tour) — dismiss again.
     await page.getByRole("button", { name: "Close", exact: true }).click();
+    await expect(page.getByTestId("set-up-for-later-btn")).toBeVisible();
+    await dismissCoachmark(page);
     await page.getByTestId("set-up-for-later-btn").click();
     await expect(page.getByText(/Step 02/)).toBeVisible();
     await expectPressed(page, "Calm", true);
