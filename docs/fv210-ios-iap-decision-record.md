@@ -1,18 +1,21 @@
 # FV-210 — iOS In-App Purchase architecture: decision record + spec
 
-**Status:** DRAFT v4 for KC + Codex. Design/spec only — no implementation of
-unresolved offering choices. Prepared under a hard release hold: **ALL work in
-this record — including every merge and deploy of any part of it — is held
-until KC lifts the hold.** No native sync/build, no App Store config, no
-production mutation, no new dependencies installed.
-v2 integrated three specialist design reviews. **v3 integrated Codex's
-reconciliation of this record against the live FV-210 contract (2026-09-11),
-which resolves blocker B1** — seven required corrections, plus the canonical
-downstream-contract mapping (Section 7: FV-570/571/572/573 exist; this record
-maps onto them and proposes nothing new). **v4 applies the backend + privacy
-re-reviews of those corrections** (grace-period time bound, supersession-safe
-upserts, watermark-claim scoping, allowlist data-protection definition,
-support-relink handling rules — Section 9).
+**Status:** DRAFT v5 for KC + Codex. Prepared under a hard release hold:
+**ALL work in this record — including every merge and deploy of any part of
+it — is held until KC lifts the hold.** No native sync/build, no App Store
+config, no production mutation.
+v2 integrated three specialist design reviews. v3 integrated Codex's
+FV-210 reconciliation (resolves B1; contracts map onto canonical
+FV-570/571/572/573). v4 applied the backend + privacy re-reviews of those
+corrections. **v5 records KC's OFFERING APPROVAL (recorded by Codex on
+FV-210/570/572/573): 7-day/1-athlete trials on both providers (existing
+trials keep their terms), Apple paid tiers 1–5 preserving first-athlete +
+sibling economics, no silent cap on >5-athlete Stripe families, and the
+parent-selects downgrade contract — plus the two pre-ship definitions KC
+required (safe no-selection handling; trial-to-family conversion timing +
+charge disclosure) and the remaining open decisions (Section 6: P2, P4, P7,
+P8; Section 10).** FV-570 implementation begins on its own branch under
+these terms.
 
 **Supersedes:** the reader-style / NO-IAP posture for **iOS only** (KC
 approval 2026-09-11, after Apple rejected iOS 1.0 (3) under Guideline 3.1.1).
@@ -274,8 +277,10 @@ begins (privacy review recorded no objection).
   supersession-safe upsert in 4.1); (d) Notifications V2 "Receiving
   notifications" ordering caveats and `signedDate` semantics;
   (e) JWSTransaction vs JWSRenewalInfo field authority; (f) sandbox
-  notification behavior — and encode the verified answers as code comments
-  + tests.
+  notification behavior; (g) upgrade-during-intro-offer behavior (trial
+  forfeiture + proration on in-group upgrade, backing §4.5's
+  trial-to-family conversion contract) — and encode the verified answers
+  as code comments + tests.
 
 **Paths:**
 1. **Purchase-time:** client submits the signed transaction JWS; server
@@ -344,44 +349,89 @@ begins (privacy review recorded no objection).
   instead of Stripe checkout.
 - No cross-provider server-side cancel exists (Apple forbids it).
 
-### 4.5 Trial eligibility (policy PENDING — architecture only)
+### 4.5 Trial policy (DECIDED by KC 2026-09-xx, recorded on FV-210/570/572/573)
 
-- Mechanism (architecture, not policy): the Stripe checkout's
-  trial-eligibility read extends to both mirrors with the exact PR-#185
-  fail-closed contract — **an Apple-mirror read error aborts checkout**.
-- **Trial POLICY across providers is PENDING KC** (P3, part of the Codex↔KC
-  interview): whether Apple products carry an intro offer, whether an
-  Apple-side history disqualifies the Stripe trial and vice versa. Nothing
-  is implemented until decided.
-- Whatever the policy, the iOS paywall shows trial copy ONLY from StoreKit
-  eligibility APIs (`isEligibleForIntroOffer`), never hardcoded — the UI can
-  never promise a trial Apple won't grant.
+- **New trials are SEVEN days for ONE athlete, on BOTH providers.** Apple:
+  a 7-day introductory free trial on the 1-athlete tier. Web/Stripe: the
+  checkout trial changes from 14 days to 7, and the trial covers one
+  athlete.
+- **Existing trials keep their promised duration and their existing seat
+  terms** — no retroactive shortening; the 7-day/1-athlete rule applies to
+  trials that START after the change ships.
+- **Cross-provider one-trial rule (mechanics):** trial-eligible ⇔ no Stripe
+  row has ever existed AND no Apple entitlement has ever existed for the
+  payer, with the exact PR-#185 fail-closed contract — **an Apple-mirror
+  read error aborts checkout**. (Apple-side intro-offer eligibility is
+  additionally Apple-enforced per Apple ID; the iOS paywall shows trial
+  copy ONLY from StoreKit eligibility APIs — `isEligibleForIntroOffer` —
+  never hardcoded.)
+- **Trial-to-family upgrade (defined pre-ship, per KC's requirement):**
+  adding a second athlete during an active trial **converts the
+  subscription to the paid multi-athlete tier immediately and ends the
+  trial**, on both providers — Apple forces this (an in-group upgrade
+  during an intro offer forfeits the remaining trial), and web matches for
+  cross-provider parity. **Charge disclosure is mandatory BEFORE the
+  confirming tap/click**: the add-athlete flow must show, on the
+  confirmation control itself, that the free trial ends now, the plan
+  charged, the amount, and the billing date ("Adding a second athlete
+  starts your paid N-athlete plan today and ends your free trial — you'll
+  be charged $X now"). No silent conversion, ever. (Verification that
+  Apple's upgrade-during-intro-offer proration behaves as documented is
+  item (g) on the FV-571 Apple-doc list.)
+- **Consequence flag (cross-system, KC/Codex):** public marketing copy and
+  the GTM artifacts state "14 days free" — the 7-day change must route
+  through the Delvox GTM engine per the GTM source-of-truth rule; app-side
+  `/subscribe` copy changes ride the web trial-policy work. See Section 10
+  (issue-split recommendation).
 
-### 4.6 Capacity (athlete count) — ceilings and downgrade PENDING
+### 4.6 Capacity (athlete count) — DECIDED (KC, recorded on FV-210/570/572/573)
 
-- Stripe: per-seat quantity + `syncAthleteQuantity` — unchanged, no ceiling.
-- Apple: no quantity on auto-renewables → **tier products in one
-  subscription group**. Ceilings and product ids are PENDING (P1/P2); the
-  architecture is ceiling-agnostic: a single test-pinned
-  `productCapacity(product_id) → maxAthletes` map is the only place ceilings
-  live.
+- Stripe: per-seat quantity + `syncAthleteQuantity` — unchanged, **no
+  ceiling. Explicit invariant + test AC: existing (and future) Stripe
+  families above five athletes are NEVER silently capped** — the capacity
+  ceiling is an Apple-tier concept only.
+- Comp grants: uncapped (no seat concept), unchanged.
+- **Apple paid tiers: 1–5 athletes**, one product per tier in one
+  subscription group, monthly + annual. **Pricing contract: retain the
+  current first-athlete/sibling economics as closely as available Apple
+  price points permit** — base $5/mo | $49/yr for athlete 1, +$3/mo |
+  +$29/yr per additional athlete. Proposed mapping (FINAL price points are
+  App Store Connect config, release-held, P2):
+  monthly ≈ $4.99 / $7.99 / $10.99 / $13.99 / $16.99;
+  annual ≈ $49.99 / $78.99 / $107.99 / $136.99 / $165.99.
+  The test-pinned `productCapacity(product_id) → maxAthletes` map remains
+  the single place ceilings live (1…5).
 - The athlete-add capacity gate is NET-NEW code (Section 2.3). Placement
   (proactive on `athletes/new` vs. inside `createAthlete()` before the
-  auth-user creation) is an FV-570 design point.
+  auth-user creation) is an FV-570 design point. At an Apple ceiling: iOS
+  shows the tier-upgrade prompt (Apple-prorated in-group upgrade);
+  web/Android shows "manage your plan on your iPhone."
 - **Blocked-Stripe-payer athlete creation stays UNCHANGED in this arc**
-  (FV-210 reconciliation — the formerly-open P6 is settled as a non-goal:
-  do not gate it here).
-- **Downgrade-below-current-athlete-count behavior is PENDING KC (P5) — no
-  default is assumed.** v2's "existing athletes keep unlimited seats after a
-  downgrade" is **not approved** and is withdrawn. Options to put to KC
-  (with Codex, alongside P1): (a) block the downgrade path in-app until the
-  parent removes athletes to fit the target tier (Apple still allows
-  downgrading via Settings — so a mismatch state must be handled
-  regardless); (b) honor the downgrade and place the account in an
-  over-capacity state where access degrades until athlete count fits;
-  (c) grandfather existing athletes, ceiling applies to new adds only.
-  Each option's enforcement point and copy differ materially — FV-570
-  implements only the chosen one.
+  (settled non-goal).
+- **Downgrade below current athlete count — DECIDED (was P5):**
+  - Existing paid access continues **until renewal** (Apple applies the
+    lower tier at the next renewal date — matching Apple's own downgrade
+    semantics).
+  - Before/at renewal, **the parent selects which athletes retain paid
+    access** under the smaller plan. **Never auto-select. Never delete.**
+    All athlete profiles, journals, and history are preserved regardless of
+    seat status — seat status affects entitlement only.
+  - **Safe no-selection handling (defined pre-ship, per KC's
+    requirement):** if renewal arrives with more athletes than the new
+    capacity and no parental selection recorded, the account enters a
+    fail-closed **selection-required state**: NO athlete is auto-chosen;
+    all of the payer's athletes see the existing paused/notice experience
+    (the `/athlete/paused` machinery — encouragement-framed, no data loss)
+    until the parent completes selection, which takes effect immediately
+    and reversibly. Rationale: any auto-selection rule (oldest? most
+    recent? first-created?) silently decides which child keeps training —
+    that is a family decision, not an algorithm's. The parent dashboard
+    surfaces the selection prompt prominently from the moment the
+    downgrade is scheduled (not just at renewal).
+  - Selection persistence (per-athlete seat designation, consulted ONLY in
+    over-capacity states) is FV-570 data design; the selection UI is
+    FV-572. Implementation of the seat-designation schema waits for KC's
+    ack of this no-selection contract (Section 10).
 - **Family Sharing is OFF** on all FV products (`familyShareable = false` in
   App Store Connect — config-time, release-held): Apple Family Sharing
   shares the PURCHASE across an Apple family; FV capacity is athlete seats
@@ -579,16 +629,18 @@ lifts; they do not authorize any action.
 
 ## 6. Pending decisions (owned by KC/Codex — DO NOT implement)
 
-| # | Decision | Owner | Blocking |
+| # | Decision | Owner | Status |
 |---|---|---|---|
-| P1 | Athlete tier ceilings (1–3 vs 1–5) and number of tiers | KC ↔ Codex interview (in flight) | Product creation, capacity map, paywall copy |
-| P2 | Apple product ids + price points (incl. annual) | KC/Codex after P1 | App Store Connect config |
-| P3 | Trial policy across providers (intro offer? cross-provider disqualification?) | KC | Trial mechanics + paywall copy |
-| P4 | Small Business Program enrollment status (15% vs 30%) | KC | Pricing economics only |
-| P5 | Downgrade-below-athlete-count behavior (4.6 options a/b/c) — **no default assumed** | KC | FV-570 capacity enforcement + copy |
+| P1 | Athlete tier ceilings | KC | **DECIDED: 1–5**, sibling economics preserved (4.6) |
+| P2 | Apple product ids + exact ASC price points (proposed mapping in 4.6) | KC/Codex | OPEN — App Store Connect config, release-held; does NOT block code prep |
+| P3 | Trial policy | KC | **DECIDED: 7 days / 1 athlete, both providers; existing trials keep terms** (4.5) |
+| P4 | Small Business Program enrollment status (15% vs 30%) | KC | OPEN — pricing economics only; explicitly NOT a blocker for code preparation |
+| P5 | Downgrade-below-count | KC | **DECIDED: paid until renewal; parent selects retained seats; never auto-select/delete; fail-closed selection-required state** (4.6) |
+| P7 | KC ack of the two pre-ship definitions this record supplies: the no-selection contract (4.6) and the trial-to-family immediate-conversion + disclosure contract (4.5) | KC | OPEN — gates the seat-designation schema + conversion UI slices |
+| P8 | "14 days free" → 7-day marketing copy | KC via Delvox GTM engine | OPEN — GTM-owned artifacts; app copy rides the trial-policy issue (Section 10) |
 
-(Resolved by FV-210 reconciliation: blocked-Stripe-payer athlete creation
-stays unchanged — a non-goal, formerly P6.)
+(Resolved earlier: blocked-Stripe-payer athlete creation stays unchanged —
+a non-goal, formerly P6.)
 
 ## 7. Mapping onto the canonical downstream contracts (FV-570…FV-573)
 
@@ -598,7 +650,7 @@ this mapping. Review-mandated acceptance criteria travel with their items.
 
 | Canonical issue | This record's scope that maps to it |
 |---|---|
-| **FV-570 — provider access/capacity** | `apple_subscriptions` migration (4.1: surrogate PK, per-environment uniqueness, Apple-native vocabulary, FV-507 grant pattern, harness file at next free index — expected `20_`, athlete-0-rows); opaque purchase UUID; `appleSubscriptionAccessLevel()` (time-aware, grace→full); resolver fold + environment-scoped reads (4.9a); cross-provider trial *mechanics* with PR-#185 fail-closed (policy pends P3); capacity map + net-new add-gate (pends P1/P5; blocked-Stripe path untouched); deletion access semantics incl. orphan-token rules (4.7) |
+| **FV-570 — provider access/capacity** | `apple_subscriptions` migration (4.1: surrogate PK, per-environment uniqueness, Apple-native vocabulary incl. `grace_period_expires_at`, FV-507 grant pattern, harness file at next free index — athlete-0-rows); allowlist + purchase-token tables (4.9/4.1, same RLS rigor); `appleSubscriptionAccessLevel()` (time-aware, status-conditional, grace→full); resolver fold + environment-scoped centralized accessor (4.9); cross-provider trial-HISTORY mechanics with PR-#185 fail-closed (7-day policy itself = the web trial-policy issue, §10); capacity map (tiers 1–5) + net-new add-gate + Stripe-never-capped invariant test; seat-designation schema for the downgrade selection contract (WAITS on P7 ack); deletion access semantics incl. orphan-token rules (4.7) |
 | **FV-571 — verification/lifecycle** | Purchase-submission action (always-persist, conflict warning, `notifyError`, environment policy 4.9); Notifications V2 route (snapshot upserts, `last_signed_date` watermark, first-seen creation for live tokens only, unmapped-token benign branch, 3-branch discipline, JWS-failure 400, redelivery runbook); reconciliation helper; **AC: verify ordering/`signedDate`/sandbox semantics against Apple authoritative docs** (4.2); `@apple/app-store-server-library` dependency (product-strategist approval; NOT installed in this arc) |
 | **FV-572 — native purchase/UI** | Shell capability signal (4.8: `ios.appendUserAgent` additive marker, `legacy-native` classification, FV-483 guard rewrite, UA-not-authorization); StoreKit 2 bridge plugin (post-#458 preferred); iOS paywall + management UI (full surface inventory incl. `auth-adult.ts` redirect; `/subscribe/success` decision; StoreKit-priced; restore flow; duplicate-billing UI both directions; net-new EULA/Privacy footer — FV-497 gates); role-gate / legacy-bit-identity / price-leak guards; `Vary: User-Agent`; deletion UX copy (4.7); `docs/fv211-app-store-privacy-pack.md` + `apps/web/app/privacy/page.tsx` updates |
 | **FV-573 — QA/submission** | Sandbox-tester allowlist runbook: KC-gated adds AND removals, periodic membership audit, external-TestFlight-tester policy stated up front (4.9); the allowlist table's RLS/grant/harness treatment travels with FV-570's migration work but its ops runbook lives here; support-relink verification method + SLA (4.7); TestFlight/App Review IAP test plan (needs a KC-authorized window — builds + ASC config are held); ASC configuration execution (products, `familyShareable=false`, Server API credentials, Notifications URL registration, agreements/tax/banking verification); submission itself |
@@ -690,4 +742,36 @@ remapped onto canonical FV-570…573 (§7).
   satisfied (§4.7). Items 2–4 of its review (deletion design, legacy-native
   classification, v2-commitment carry-through in the §7 remap) were
   confirmed clean.
-- Final confirmation passes on v4: recorded on the draft PR.
+- Final confirmation passes on v4: backend "SOUND TO HAND TO FV-570/571";
+  privacy design-stage VERDICT: APPROVED (both on the draft PR).
+
+**Offering approval → v5 (KC, recorded by Codex on FV-210/570/572/573):**
+P1/P3/P5 resolved as recorded in §4.5/§4.6; §6 table updated (P2/P4 remain
+open but non-blocking for code prep; P7 = KC ack of the two pre-ship
+definitions; P8 = GTM copy). FV-570 implementation authorized to proceed
+scoped, on its own branch, under the standing release hold.
+
+## 10. Issue-split recommendation + outstanding decisions (for Codex)
+
+- **Recommend a dedicated web trial-policy issue** (Codex to cut/assign —
+  not filed from here): Stripe checkout trial 14→7 days, one-athlete trial
+  semantics, trial-to-family immediate conversion + pre-confirmation charge
+  disclosure on the web add-athlete flow, `/subscribe` copy, and
+  coordination of the GTM "14 days free" copy change (P8). This is
+  web-checkout + marketing-surface work that fits none of FV-570
+  (provider access data/resolver), FV-571 (Apple verification), or FV-572
+  (iOS UI) cleanly — implementing it inside any of them would broaden an
+  untracked diff. FV-570 implements only the cross-provider
+  trial-HISTORY mechanics (4.5).
+- **Outstanding decisions:** P2 (ASC product ids/price points — config,
+  release-held), P4 (SBP status — economics only), P7 (KC ack of the
+  no-selection contract and the trial-conversion disclosure contract —
+  gates the seat-designation schema and conversion-UI slices), P8 (GTM
+  copy via the Delvox engine).
+- **Genuinely unresolved product choices flagged per KC's ask:** (i) the
+  post-renewal selection window's exact UX cadence (how loudly/when the
+  dashboard re-prompts during selection-required) — cosmetic latitude
+  inside the decided fail-closed contract, FV-572 can propose; (ii) whether
+  a scheduled-downgrade cancellation (parent re-upgrades before renewal)
+  clears recorded selections — recommend yes (selections are per-downgrade,
+  not durable preferences); encode at FV-570 seat-schema time under P7.
