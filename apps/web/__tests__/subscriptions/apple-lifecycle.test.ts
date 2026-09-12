@@ -184,8 +184,17 @@ type Row = {
 };
 
 function makeServiceMock(existingRow: Row | null) {
-  const updateEq = vi.fn().mockResolvedValue({ error: null });
-  const update = vi.fn((_payload: Record<string, unknown>) => ({ eq: updateEq }));
+  // Update chain mirrors production: .update(payload, {count:"exact"})
+  // .eq("id", ...).lt("last_signed_date", ...) → { error, count } — the
+  // atomic-watermark backstop (qa review, PR #515) re-checks the watermark
+  // inside the UPDATE's WHERE clause, so the mock must surface `count`.
+  const updateLt = vi.fn().mockResolvedValue({ error: null, count: 1 });
+  const updateEq = vi.fn(() => ({ lt: updateLt }));
+  const update = vi.fn(
+    (_payload: Record<string, unknown>, _opts?: Record<string, unknown>) => ({
+      eq: updateEq,
+    }),
+  );
   const insert = vi.fn((_payload: Record<string, unknown>) => Promise.resolve({ error: null }));
   const maybeSingle = vi.fn().mockResolvedValue({ data: existingRow, error: null });
   const eq2 = vi.fn(() => ({ maybeSingle }));
@@ -194,7 +203,7 @@ function makeServiceMock(existingRow: Row | null) {
 
   return {
     from: vi.fn(() => ({ select, update, insert })),
-    __spies: { update, updateEq, insert, maybeSingle },
+    __spies: { update, updateEq, updateLt, insert, maybeSingle },
   };
 }
 
@@ -301,10 +310,19 @@ describe("applyAppleSnapshot", () => {
           }),
         }),
         update: (payload: Record<string, unknown>) => ({
-          eq: async () => {
-            storedLastSignedDate = payload.last_signed_date as string;
-            return { error: null };
-          },
+          eq: () => ({
+            // Mirrors the production atomic guard: the "DB" applies the
+            // write only when the incoming watermark is strictly newer.
+            lt: async () => {
+              if (
+                (payload.last_signed_date as string) > storedLastSignedDate
+              ) {
+                storedLastSignedDate = payload.last_signed_date as string;
+                return { error: null, count: 1 };
+              }
+              return { error: null, count: 0 };
+            },
+          }),
         }),
         insert: vi.fn(),
       })),
@@ -332,6 +350,31 @@ describe("applyAppleSnapshot", () => {
     expect(older).toEqual({ applied: false, reason: "stale" });
     // Watermark (and therefore the applied status) is unchanged by the stale write.
     expect(storedLastSignedDate).toBe(new Date(1_900_000_000_000).toISOString());
+  });
+
+  it("RACE backstop (qa, PR #515): UPDATE matching 0 rows — a concurrent writer advanced the watermark between read and write — returns stale, never regresses", async () => {
+    // The read-path check passes (stored watermark is older), but by the
+    // time the UPDATE lands another writer has applied a newer payload: the
+    // atomic .lt guard makes the UPDATE match 0 rows. Must surface as the
+    // same stale drop as the read path — not applied, not a throw.
+    const service = makeServiceMock({
+      id: "row-1",
+      last_signed_date: new Date(1_600_000_000_000).toISOString(),
+    });
+    service.__spies.updateLt.mockResolvedValueOnce({ error: null, count: 0 });
+
+    const result = await applyAppleSnapshot(service as never, {
+      payerId: PAYER_ID,
+      ...buildSnapshotFields(
+        "subscribed",
+        makeTransaction({ signedDate: 1_700_000_000_000 }),
+        makeRenewal(),
+      ),
+    });
+
+    expect(result).toEqual({ applied: false, reason: "stale" });
+    expect(service.__spies.update).toHaveBeenCalledTimes(1);
+    expect(service.__spies.insert).not.toHaveBeenCalled();
   });
 
   it("preserves the existing app_account_token on UPDATE when the incoming payload omits one", async () => {
@@ -409,7 +452,8 @@ describe("reconcileAppleSubscription", () => {
 
     let selectCallCount = 0;
     const insert = vi.fn().mockResolvedValue({ error: null });
-    const updateEq = vi.fn().mockResolvedValue({ error: null });
+    const updateLt = vi.fn().mockResolvedValue({ error: null, count: 1 });
+    const updateEq = vi.fn(() => ({ lt: updateLt }));
     const update = vi.fn(() => ({ eq: updateEq }));
 
     const service = {

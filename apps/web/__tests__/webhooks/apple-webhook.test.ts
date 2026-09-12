@@ -384,13 +384,22 @@ describe("POST /api/webhooks/apple", () => {
               }),
             }),
             update: (payload: Record<string, unknown>) => ({
-              eq: async () => {
-                storedRow = {
-                  id: "row-1",
-                  last_signed_date: payload.last_signed_date as string,
-                };
-                return { error: null };
-              },
+              eq: () => ({
+                // Mirrors the production atomic guard (.lt on the UPDATE's
+                // WHERE): the "DB" applies the write only when the incoming
+                // watermark is strictly newer than the stored one.
+                lt: async () => {
+                  const stored = storedRow?.last_signed_date ?? "";
+                  if ((payload.last_signed_date as string) > stored) {
+                    storedRow = {
+                      id: "row-1",
+                      last_signed_date: payload.last_signed_date as string,
+                    };
+                    return { error: null, count: 1 };
+                  }
+                  return { error: null, count: 0 };
+                },
+              }),
             }),
             insert: async (payload: Record<string, unknown>) => {
               storedRow = { id: "row-1", last_signed_date: payload.last_signed_date as string };

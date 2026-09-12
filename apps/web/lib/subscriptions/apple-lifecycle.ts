@@ -12,6 +12,35 @@
  *
  * docs/fv210-ios-iap-decision-record.md Section 4.2 governs the watermark
  * discipline; Section 4.1 governs the supersession-safe upsert keying.
+ *
+ * APPLE-DOC VERIFIED ANSWERS (record Section 4.2 items a-g; checked against
+ * Apple's primary documentation 2026-09-12 — evidence archived with the
+ * FV-210 overnight report). These are the platform facts this module's
+ * behavior rests on; do not re-derive them from behavior:
+ *   a. Grace period = KEEP access: "Continue to provide access to the
+ *      subscription during the grace period." (in_grace_period maps to
+ *      full access while its own bound holds — apple-access-level.ts.)
+ *   b. transactionInfo.expiresDate is STATIC — it does NOT extend during
+ *      grace; a renewal creates a NEW transaction with a new expiresDate.
+ *      Hence grace_period_expires_at is a SEPARATE column sourced ONLY from
+ *      renewalInfo.gracePeriodExpiresDate (the renewal payload). The
+ *      access-level mapper fails closed (degraded) if the bound is ever
+ *      absent while status is in_grace_period.
+ *   c. Same-group UPGRADE "goes into effect immediately, starting a new
+ *      billing period, and the customer receives a prorated refund" — and
+ *      may mint a NEW originalTransactionId, which is why applyAppleSnapshot
+ *      keys on (payer_id, environment) and updates the OTID in place.
+ *   d. Notifications V2 retries: production retries failed deliveries five
+ *      times at 1, 12, 24, 48, and 72 hours; "in the sandbox environment,
+ *      the App Store server attempts to send the notification one time."
+ *      The webhook's 500-only-for-retryable discipline exists for this.
+ *   e. GRACE_PERIOD_EXPIRED means "turn off access"; billing retry can
+ *      continue up to 60 days (mapper: in_billing_retry, grace bound
+ *      cleared; time-aware access then blocks).
+ *   f. originalTransactionId is the durable subscription identity across
+ *      renewals — subject to the upgrade caveat in (c).
+ *   g. Missed-notification recovery = Get Notification History / Get All
+ *      Subscription Statuses (reconcileAppleSubscription below).
  */
 import "server-only";
 
@@ -241,15 +270,26 @@ export async function applyAppleSnapshot(
       updatePayload.app_account_token = input.appAccountToken;
     }
 
-    const { error: updateError } = await service
+    // Optimistic-concurrency backstop (qa review, PR #515): the SELECT above
+    // and this UPDATE are two round-trips, so a concurrent writer (action vs
+    // webhook, or two webhook deliveries) could apply a newer-or-equal
+    // signedDate in between. The `.lt` re-checks the watermark ATOMICALLY
+    // inside the UPDATE's own WHERE clause — the loser of the race matches
+    // 0 rows instead of regressing the row, and is treated exactly like the
+    // read-path stale drop.
+    const { error: updateError, count: updatedCount } = await service
       .from("apple_subscriptions")
-      .update(updatePayload)
-      .eq("id", existing.id);
+      .update(updatePayload, { count: "exact" })
+      .eq("id", existing.id)
+      .lt("last_signed_date", incomingSignedIso);
 
     if (updateError) {
       throw new Error(
         `[subscriptions/apple-lifecycle] apple_subscriptions update failed (payer=${input.payerId}): ${updateError.message}`,
       );
+    }
+    if (updatedCount === 0) {
+      return { applied: false, reason: "stale" };
     }
     return { applied: true, created: false };
   }
