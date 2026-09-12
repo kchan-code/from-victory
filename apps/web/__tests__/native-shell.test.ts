@@ -70,6 +70,18 @@ describe("isNativeShellUserAgent", () => {
     ).toBe(true);
   });
 
+  it("returns true when the User-Agent carries the iOS-marked token (FV-572)", () => {
+    // Pins the boolean at the call site Edge Middleware actually uses: an
+    // ios-iap classification must still count as "native shell". A future
+    // getShellCapability edit that special-cased the (ios) marker out of the
+    // boolean would fail here, not just in the classifier's own tests.
+    expect(
+      isNativeShellUserAgent(
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 FVNativeShell/1 (ios)",
+      ),
+    ).toBe(true);
+  });
+
   it("returns false for an ordinary browser User-Agent string", () => {
     expect(
       isNativeShellUserAgent(
