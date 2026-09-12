@@ -1,9 +1,20 @@
 # FV-573 — Apple billing: device QA & release checklist
 
-**Status: PREPARATION ONLY.** The FV-210 release hold governs every line of this
-document: no merge/auto-merge, no production deployment/migration/data change,
-no native sync/archive/install/build, no App Store Connect (ASC) mutation, no
-message to Apple. Each section below is either (a) a KC decision still open,
+**Status: PREPARATION + LOCAL-SIMULATOR ONLY.** KC narrowed the hold on
+2026-09-12: LOCAL simulator build/install/test is authorized; everything else
+stays held — no merge/auto-merge, no production deployment/migration/data
+change, no distribution archive/upload, no physical-device install, no App
+Store Connect (ASC) mutation, no message to Apple.
+
+**Local-simulator results (2026-09-12, PR #519 — Xcode 26.6, iOS 26.5,
+iPhone 17 Pro + iPad Pro 11"):** bridge compiled (zero fixes) + registered
+(FVBridgeViewController path); deployment target raised to 15.0; full local
+StoreKit matrix green with typed contract codes — products/purchase/cancel/
+PENDING (Ask-to-Buy)/restore/manage, plus immediate-UPGRADE and at-renewal-
+DOWNGRADE semantics observed live and post-upgrade single-entitlement
+supersession. Evidence: docs/fv573-evidence/ (on that branch); mechanics in
+docs/fv572-ios-bridge-notes.md. Local StoreKit JWS is NOT Apple-sandbox
+evidence — §6 remains required against sandbox on TestFlight builds. Each section below is either (a) a KC decision still open,
 (b) a KC-performed account/config action, or (c) an executable QA/release step
 that becomes runnable only after (a) and (b) and an explicit hold lift.
 
@@ -41,6 +52,7 @@ build/typecheck, 2476 unit tests, lint, RLS harness 20/20 incl.
 - [ ] One subscription group ("From Victory"). In-group tier ranking set so athlete-capacity order = upgrade order (tier 5 highest).
 - [ ] 10 products: tiers 1–5 × monthly/annual at the P2-approved price points.
 - [ ] Intro offer per §1 (recommendation: tier-1 only, 7-day free, per-Apple-ID eligibility asymmetry documented).
+- [ ] **Group-level ranking trap (demonstrated live, PR #519):** `groupNumber`/ASC subscription LEVEL — lower number = higher service level. Capacity order MUST map to level order (tier 5 = level 1 … tier 1 = level 5) or tier increases become at-renewal downgrades instead of immediate prorated upgrades. Verified both behaviors in the local StoreKit environment.
 - [ ] Localized display names/descriptions (parent-facing language rules: "athlete", never "kid").
 - [ ] App Privacy nutrition labels updated for IAP: "Purchases" data type becomes collected/linked — update the FV-211 privacy pack (`docs/fv211-app-store-privacy-pack.md`) BEFORE submission; kids-privacy-officer re-review of the pack delta.
 
@@ -63,9 +75,9 @@ Env vars consumed by `apps/web/lib/subscriptions/apple-server.ts` (all read lazi
 ## 5. Build & distribution prerequisites (ALL hold-gated)
 
 - [ ] Merge order: #506/#508 (FV-507/568) and #505 (FV-508) per their own gates → #511 (FV-570) → retarget + merge #515 (FV-571), #513 (FV-574) → #512 (FV-572 signal) → FV-572 UI slice PR. Re-run the #516-style integration stack green BEFORE the first merge if sources moved.
-- [ ] **Raise the iOS deployment target 14.0 → 15.0** in `project.pbxproj` + `Podfile` (StoreKit 2 requires iOS 15+; the FV-572 plugin is `@available(iOS 15, *)`-guarded — flagged by the FV-572 UI slice, PR #518). Check fielded-device impact before raising.
+- [x] **iOS deployment target 14.0 → 15.0** — DONE on the FV-573 branch (PR #519), pbxproj ×4 + Podfile. Fielded-impact check before release still owed (iOS 14 devices lose updates).
 - [ ] `npx cap sync ios` (first native sync since the pivot).
-- [ ] Add `FVAppleIAPPlugin.swift` to the Xcode project (one-time; see `docs/fv572-ios-bridge-notes.md`) — FIRST COMPILE of the plugin happens here; budget a fix loop. Verify Capacitor 7.4.3 CAPBridgedPlugin auto-registration actually picks it up (unverified while builds are held), the restore newest-first contract, `signedRenewalInfo` presence right after purchase, and the documented `transaction.finish()` timing tradeoff — all flagged in the notes doc.
+- [x] `FVAppleIAPPlugin.swift` in the Xcode project — DONE (PR #519); first compile passed with ZERO fixes. Registration answer: Capacitor 7 auto-registration does NOT pick up app-local plugins (CLI overwrites packageClassList) — registered via FVBridgeViewController subclass, verified working on iPhone + iPad. `signedRenewalInfo` WAS present right after purchase locally (keep optional server-side); restore returned the current entitlement; finish() timing showed no local issue — re-verify all three against Apple sandbox.
 - [ ] Archive → TestFlight internal build; bump build number past the rejected 1.0 (3).
 
 ## 6. Device QA matrix (FV-573 ACs; sandbox + disposable DB only — never production data)
