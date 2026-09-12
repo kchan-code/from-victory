@@ -3,11 +3,12 @@ import Link from "next/link";
 
 import { requireSubscriber } from "@/lib/auth/guards";
 import { createCheckoutSession, createAdultCheckoutSession } from "@/lib/actions/subscription";
-import { isNativeShell } from "@/lib/native-shell";
+import { getRequestShellCapability } from "@/lib/native-shell";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { isSubscriptionEnforcementEnabled } from "@/lib/subscriptions/enforce";
 import { createClient } from "@/lib/supabase/server";
 import { SubscribeForm } from "@/components/subscribe/SubscribeForm";
+import { AppleSubscribeSection } from "@/components/subscribe/AppleSubscribeSection";
 
 export const metadata = {
   title: "Subscribe",
@@ -20,6 +21,10 @@ type Props = {
 export default async function SubscribePage({ searchParams }: Props) {
   const { userId, profile } = await requireSubscriber();
 
+  // FV-442: reused below for the trial gate (FV-574), the price paragraph,
+  // and the SubscribeForm prop so the adult_athlete check isn't recomputed.
+  const isAdult = profile.role === "adult_athlete";
+
   // Derive trial eligibility server-side: no existing subscriptions row →
   // first-time subscriber → eligible. Reuses the same RLS-scoped client pattern
   // as the checkout action. We only need to know whether the row exists — we
@@ -30,21 +35,47 @@ export default async function SubscribePage({ searchParams }: Props) {
     .select("stripe_customer_id")
     .eq("parent_id", userId)
     .maybeSingle();
+
+  // FV-574: the 7-day trial applies only to one-athlete checkouts, so the
+  // banner (a consumer-protection disclosure — see SubscribeForm) must not
+  // promise it to a multi-athlete family. Mirror the checkout action's
+  // condition: parents qualify with at most one linked athlete (0 athletes
+  // floors to a 1-seat checkout); adults are always quantity 1. Fail closed
+  // on a count read error — never promise a trial the action (the
+  // authoritative gate) might not grant.
+  let trialQuantityEligible: boolean;
+  if (isAdult) {
+    trialQuantityEligible = true;
+  } else if (existingSub !== null || subReadError !== null) {
+    // Returning subscriber (or unreadable sub row): the banner is hidden
+    // regardless, so skip the count read entirely (qa perf note, PR #513).
+    trialQuantityEligible = false;
+  } else {
+    const athleteCountResult = await supabase
+      .from("parent_athlete_links")
+      .select("athlete_id", { count: "exact", head: true })
+      .eq("parent_id", userId);
+    trialQuantityEligible =
+      athleteCountResult.error === null &&
+      (athleteCountResult.count ?? 0) <= 1;
+  }
+
   // Fail closed on a read error: never promise a trial the action (the
   // authoritative gate) might not grant.
-  const trialEligible = subReadError === null && existingSub === null;
+  const trialEligible =
+    subReadError === null && existingSub === null && trialQuantityEligible;
 
   const wasCanceled = searchParams.status === "canceled";
 
   // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
   // checkout.stripe.com has no reachable path (it's deliberately not in
   // allowNavigation — see apps/native/capacitor.config.ts), so this page
-  // must not show a price, a checkout button, or a link toward Stripe.
-  const nativeShell = isNativeShell();
-
-  // FV-442: reused below for the price paragraph and the SubscribeForm prop
-  // so the adult_athlete check isn't recomputed in three places.
-  const isAdult = profile.role === "adult_athlete";
+  // must not show a price, a checkout button, or a link toward Stripe. FV-572
+  // additionally distinguishes an iOS build capable of a native StoreKit
+  // purchase surface ("ios-iap") from every other/older native shell
+  // ("legacy-native", restricted, unchanged) — see getRequestShellCapability().
+  const shellCapability = getRequestShellCapability();
+  const nativeShell = shellCapability !== null;
 
   // FV-464: when subscription enforcement would bounce this user straight
   // back here, the app targets below are a dead loop — send them to the
@@ -135,10 +166,14 @@ export default async function SubscribePage({ searchParams }: Props) {
           </p>
         </section>
 
-        {/* Native-shell (Capacitor) compliance state: no price, no button, no
-            link toward Stripe Checkout — plain, non-tappable text only. See
-            lib/native-shell.ts. Outside the shell, behavior is unchanged. */}
-        {nativeShell ? (
+        {/* Capability-based branch (FV-572, record §4.8):
+              - "legacy-native": today's Capacitor compliance notice — no
+                price, no button, no link toward Stripe Checkout. BYTE-
+                IDENTICAL to the prior single-branch copy (pinned by test).
+              - "ios-iap": an iOS build capable of the native StoreKit
+                purchase surface — render AppleSubscribeSection.
+              - null: ordinary web/PWA flow — completely unchanged. */}
+        {shellCapability === "legacy-native" ? (
           <div
             role="status"
             data-testid="native-shell-subscribe-notice"
@@ -149,6 +184,8 @@ export default async function SubscribePage({ searchParams }: Props) {
               fromvictoryapp.com.
             </p>
           </div>
+        ) : shellCapability === "ios-iap" ? (
+          <AppleSubscribeSection />
         ) : (
           <>
             {/* Plan selector form — trialEligible controls the trial banner */}

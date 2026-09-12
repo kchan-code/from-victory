@@ -10,6 +10,24 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-09-12 — New free trials become 7 days for one athlete (rides FV-574; effective when that PR deploys)
+
+KC approved a new offering (2026-09-11): new first-time trials are SEVEN days,
+granted only when the checkout starts with exactly one athlete. Multi-athlete
+first checkouts get no free trial. Existing subscribers and in-flight trials
+are grandfathered — their promised duration and seat terms do not change.
+Prices are unchanged ($5/mo or $49/yr first athlete, $3/$29 additional). The
+in-app checkout surfaces (/subscribe banner, signup disclosure) already say
+7 days in the same change; every marketing page still says "14-day free
+trial" until KC routes new copy through the engine.
+
+Why it matters to a buyer: every "14-day free trial" claim across the site
+(home, pricing, parents, sport pages, FAQ, structured data) becomes a 2x
+overclaim the moment this deploys — the engine must reconcile all trial copy
+to "7-day free trial (one athlete)" in the same launch window, not after.
+Context: this is part of the Apple-subscriptions-on-iOS arc (FV-210); the
+same 7-day/one-athlete trial will apply to Apple in-app purchases.
+
 ## 2026-09-02 — Pregame audio closes on the brand tagline; opening identity line now rotates
 
 The final spoken line of every guided pregame session (all seven live sports, the
