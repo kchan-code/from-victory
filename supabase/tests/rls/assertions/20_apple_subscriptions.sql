@@ -163,6 +163,27 @@ begin;
     exception
       when insufficient_privilege then null;  -- expected
     end;
+
+    -- UPDATE/DELETE too: the migration's REVOKE is a blanket revoke today,
+    -- but assert every verb so a future migration that narrows the REVOKE
+    -- to specific privileges cannot slip through undetected (qa delta
+    -- review, PR #511). The seeded row above makes these non-vacuous.
+    begin
+      update public.apple_purchase_tokens
+        set token = gen_random_uuid()
+        where payer_id = '10000000-0000-4000-8000-000000000001';
+      raise exception 'FV-570 FAIL: apple_purchase_tokens UPDATE by client unexpectedly SUCCEEDED';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+
+    begin
+      delete from public.apple_purchase_tokens
+        where payer_id = '10000000-0000-4000-8000-000000000001';
+      raise exception 'FV-570 FAIL: apple_purchase_tokens DELETE by client unexpectedly SUCCEEDED';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
   end $$;
 rollback;
 
@@ -191,6 +212,26 @@ begin;
       insert into public.apple_sandbox_testers (payer_id)
       values ('10000000-0000-4000-8000-000000000001');
       raise exception 'FV-570 FAIL: apple_sandbox_testers INSERT by client unexpectedly SUCCEEDED';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+
+    -- UPDATE/DELETE too — same every-verb rationale as apple_purchase_tokens
+    -- above (qa delta review, PR #511); the seeded row makes these
+    -- non-vacuous.
+    begin
+      update public.apple_sandbox_testers
+        set note = 'attacker note'
+        where payer_id = '70000000-0000-4000-8000-000000000001';
+      raise exception 'FV-570 FAIL: apple_sandbox_testers UPDATE by client unexpectedly SUCCEEDED';
+    exception
+      when insufficient_privilege then null;  -- expected
+    end;
+
+    begin
+      delete from public.apple_sandbox_testers
+        where payer_id = '70000000-0000-4000-8000-000000000001';
+      raise exception 'FV-570 FAIL: apple_sandbox_testers DELETE by client unexpectedly SUCCEEDED';
     exception
       when insufficient_privilege then null;  -- expected
     end;
@@ -224,3 +265,5 @@ begin;
     end;
   end $$;
 rollback;
+
+\echo '  [PASS] 20_apple_subscriptions (a: mirror write-denial, b: payer/cross-payer/athlete SELECT boundary, c: tokens zero-grant, d: allowlist zero-grant, e: anon)'
