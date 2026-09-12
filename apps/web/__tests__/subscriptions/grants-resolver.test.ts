@@ -732,11 +732,16 @@ describe("getParentAccessLevel — Apple provider fold (FV-570)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 8. Athlete enum-only privacy boundary — never touches apple_subscriptions
-//    columns beyond the enum (FV-210 record §4.1 named AC).
+// 8. Athlete return-boundary pin (FV-210 record §4.1 named AC): the athlete
+//    path's RETURN VALUE is the bare AccessLevel string enum and nothing
+//    else. The service-role read inside getParentAccessLevel necessarily
+//    touches apple_subscriptions columns — what this pins is that none of
+//    that row shape crosses the return boundary to the athlete caller. The
+//    enum contract is also compile-time enforced (Promise<AccessLevel>);
+//    this is the runtime pin against the signature being widened later.
 // ---------------------------------------------------------------------------
 
-describe("getAccessForCurrentUser — athlete path never leaks Apple billing shape (FV-570)", () => {
+describe("getAccessForCurrentUser — athlete path returns the bare AccessLevel enum (FV-570)", () => {
   beforeEach(() => {
     resetRlsState();
     setGrantNone();
