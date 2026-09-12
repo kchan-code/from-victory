@@ -305,3 +305,80 @@ export async function submitApplePurchase(
     return { ok: false, error: "internal_error" };
   }
 }
+
+// ---------------------------------------------------------------------------
+// beginApplePurchase — the sanctioned token handoff for the iOS bridge
+// ---------------------------------------------------------------------------
+
+export type BeginApplePurchaseResult =
+  | { ok: true; appAccountToken: string }
+  | { ok: false; error: "unauthenticated" | "not_authorized" | "internal_error" };
+
+/**
+ * Returns the signed-in payer's opaque `app_account_token` so the iOS
+ * StoreKit bridge can attach it to `purchase(appAccountToken:)` (FV-572).
+ *
+ * WHY THIS EXISTS (record Section 4.1): `apple_purchase_tokens` is
+ * deliberately zero-grant at the DB layer — a payer must never be able to
+ * BROWSE the binding table client-side. But the purchase flow requires the
+ * token to transit the client exactly once per purchase call, because Apple
+ * only echoes back what StoreKit was given. This action is the SOLE
+ * sanctioned handoff:
+ *   - role-gated to parent | adult_athlete (same privacy AC as
+ *     submitApplePurchase — and minting IS a write, so the gate precedes it);
+ *   - returns ONLY the caller's own token, resolved from the authenticated
+ *     session — there is no payer-id input to tamper with;
+ *   - the token is an opaque UUID with no meaning outside this backend; the
+ *     durable link key remains (original_transaction_id, environment).
+ *
+ * Mint-on-first-use: reuses getOrMintPurchaseToken (race-safe upsert), so a
+ * payer's first tap of the purchase button creates their token row.
+ */
+export async function beginApplePurchase(): Promise<BeginApplePurchaseResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { ok: false, error: "unauthenticated" };
+  }
+  const payerId = user.id;
+
+  // PRIVACY AC — role gate BEFORE the mint write, same rule as
+  // submitApplePurchase. Refusal logs role + payer id only.
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", payerId)
+    .single();
+
+  if (profileError || !profile) {
+    console.warn(
+      `[apple-subscription] beginApplePurchase profile lookup failed (payer=${payerId}) — refusing.`,
+    );
+    return { ok: false, error: "not_authorized" };
+  }
+  if (profile.role !== "parent" && profile.role !== "adult_athlete") {
+    console.warn(
+      `[apple-subscription] beginApplePurchase refused: role="${profile.role}" is not a payer role (payer=${payerId}). No write performed.`,
+    );
+    return { ok: false, error: "not_authorized" };
+  }
+
+  try {
+    const service = createServiceClient();
+    const token = await getOrMintPurchaseToken(service, payerId);
+    return { ok: true, appAccountToken: token };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(
+      `[apple-subscription] beginApplePurchase failed (payer=${payerId}): ${message}`,
+    );
+    deliverInBackground(
+      notifyError("[apple-subscription] beginApplePurchase failed", message, {
+        payer_id: payerId,
+      }),
+    );
+    return { ok: false, error: "internal_error" };
+  }
+}
