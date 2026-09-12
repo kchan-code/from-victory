@@ -1,7 +1,9 @@
 /**
  * Apple notification-type -> lifecycle-status mapping (pure, no I/O — unit
- * testable without mocking `server-only` or Supabase), plus the shared
- * snapshot-upsert function used by ALL THREE Apple write paths:
+ * testable without mocking `server-only` or Supabase), the action-path
+ * status derivation (`deriveActionSubmissionStatus`, for when there is no
+ * `notificationType` to map), plus the shared snapshot-upsert function used
+ * by ALL THREE Apple write paths:
  *   1. the purchase-submission action (lib/actions/apple-subscription.ts)
  *   2. the Notifications V2 webhook (app/api/webhooks/apple/route.ts)
  *   3. the reconciliation helper (`reconcileAppleSubscription`, below)
@@ -135,6 +137,66 @@ export function mapAppleStatusEnum(status: number): AppleSubscriptionStatus {
       );
       return "expired";
   }
+}
+
+// ---------------------------------------------------------------------------
+// Action-path status derivation — for the purchase-submission action ONLY.
+// The webhook always has an authoritative `notificationType` and must keep
+// using `mapAppleNotificationToStatus` for that; this function exists
+// because a client purchase/restore submission carries no notificationType
+// at all, so "always subscribed" (the FV-571 assumption this closes) is
+// wrong for a restore of a lapsed or revoked subscription.
+// ---------------------------------------------------------------------------
+
+/**
+ * Derives the lifecycle status for a CLIENT SUBMISSION (the purchase/restore
+ * action) from the verified transaction (+ optional renewal) alone — there is
+ * no `notificationType` on this path to hang a mapping on.
+ *
+ *   1. Revoked (record Section 4.2: a definitively closed state, never
+ *      re-opened) — either `revocationDate` or `revocationReason` present on
+ *      the verified transaction. Checked with `!= null` because
+ *      `revocationReason` legitimately carries `0`
+ *      (`REFUNDED_FOR_OTHER_REASON`), a valid-but-falsy value.
+ *   2. In grace — evidence-based, NOT notification-based: `apple-server.ts`
+ *      documents that `renewalInfo.gracePeriodExpiresDate` is populated ONLY
+ *      while Apple currently has the account in grace, so its presence is
+ *      itself the grace signal a client submission can safely use. Gated on
+ *      its OWN bound (`now <= gracePeriodExpiresDate`), never on
+ *      `expiresDate` — record Section 4.2's status-conditional time rule:
+ *      `expiresDate` has, by definition, already passed once grace begins,
+ *      so a restore submitted mid-grace must not be misread as "expired."
+ *      This is the one grace/billing-retry state this derivation can safely
+ *      infer. It deliberately NEVER returns `in_billing_retry`: a plain
+ *      lapse (grace never entered, or already exhausted) and an active
+ *      billing-retry are indistinguishable from a client submission alone —
+ *      that distinction is only ever knowable from a Notifications V2
+ *      `DID_FAIL_TO_RENEW` / `GRACE_PERIOD_EXPIRED` payload.
+ *   3. Expired — `expiresDate` strictly before `now` and neither of the
+ *      above applied. A restore of a lapsed subscription must mirror
+ *      truthfully rather than claim `subscribed` (the always-persist
+ *      principle, record Section 4.4, is about NEVER dropping a write, not
+ *      about what status the write records).
+ *   4. Otherwise — `subscribed`.
+ */
+export function deriveActionSubmissionStatus(
+  transaction: DecodedTransactionInfo,
+  renewal: DecodedRenewalInfo | null,
+  now: number = Date.now(),
+): AppleSubscriptionStatus {
+  if (transaction.revocationDate != null || transaction.revocationReason != null) {
+    return "revoked";
+  }
+
+  if (renewal?.gracePeriodExpiresDate != null && now <= renewal.gracePeriodExpiresDate) {
+    return "in_grace_period";
+  }
+
+  if (transaction.expiresDate < now) {
+    return "expired";
+  }
+
+  return "subscribed";
 }
 
 // ---------------------------------------------------------------------------
@@ -339,11 +401,18 @@ export type ReconcileAppleSubscriptionResult =
  *
  * SELECTION NOTE (FV-573 to refine): a payer's Get All Subscription Statuses
  * response can carry multiple subscription groups and multiple
- * lastTransactions. This slice takes the first-returned item as the
- * authoritative current state — sufficient for a single-group, single-tier
- * product line (the only shape FV-570/571 ship). A future multi-group /
- * multi-household reconciliation redesign is FV-573's runbook item, not a
- * gap introduced here.
+ * lastTransactions. Apple's array ordering is not a documented contract, so
+ * selection does not depend on it: candidates are filtered to those whose
+ * VERIFIED transaction environment matches the requested `environment`
+ * (defense-in-depth beyond the API credential's own environment scoping,
+ * record Section 4.9), then the one with the NEWEST transaction `signedDate`
+ * is applied (record Section 4.2 — `signedDate` is the payload-staleness
+ * watermark; `applyAppleSnapshot`'s watermark guard makes this safe even if
+ * selection were wrong, but selection should not rely on that backstop).
+ * This remains sufficient for a single-group, single-tier product line (the
+ * only shape FV-570/571 ship); a future multi-group / multi-household
+ * reconciliation redesign (picking the right GROUP, not just the right
+ * environment) is FV-573's runbook item, not a gap introduced here.
  */
 export async function reconcileAppleSubscription(
   service: ServiceClient,
@@ -370,14 +439,20 @@ export async function reconcileAppleSubscription(
     existing.original_transaction_id,
     environment,
   );
-  if (items.length === 0) {
+
+  // Keep only candidates whose VERIFIED transaction environment matches the
+  // environment we're reconciling for, then pick the one with the newest
+  // transaction signedDate — never Apple's array ordering (see SELECTION
+  // NOTE above).
+  const matching = items.filter((candidate) => candidate.transaction.environment === environment);
+  if (matching.length === 0) {
     return { ok: false, reason: "no_data" };
   }
 
-  const item = items[0];
-  if (!item) {
-    return { ok: false, reason: "no_data" };
-  }
+  const item = matching.reduce((newest, candidate) =>
+    candidate.transaction.signedDate > newest.transaction.signedDate ? candidate : newest,
+  );
+
   const status = mapAppleStatusEnum(item.status);
   const fields = buildSnapshotFields(status, item.transaction, item.renewal);
 

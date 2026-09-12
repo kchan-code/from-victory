@@ -246,6 +246,20 @@ describe("verifySignedTransaction", () => {
       /missing required fields/,
     );
   });
+
+  it("decodes revocationReason when present, including the valid-but-falsy 0 value", async () => {
+    verifyAndDecodeTransactionMock.mockResolvedValueOnce(
+      makeSdkTransaction({ revocationDate: 1_650_000_000_000, revocationReason: 0 }),
+    );
+    const result = await verifySignedTransaction(TRANSACTION_JWS);
+    expect(result.revocationReason).toBe(0);
+  });
+
+  it("defaults revocationReason to null when the payload omits it", async () => {
+    verifyAndDecodeTransactionMock.mockResolvedValueOnce(makeSdkTransaction());
+    const result = await verifySignedTransaction(TRANSACTION_JWS);
+    expect(result.revocationReason).toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------------------
