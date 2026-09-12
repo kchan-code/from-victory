@@ -35,7 +35,8 @@
 --     other two: NO policies — service-role only)
 --   - Section 6: GRANT layer, FV-507 pattern (explicit REVOKE ALL, then
 --     minimal re-GRANT) — see `20260909000000_subscriptions_client_write_revoke.sql`
---     for the precedent this mirrors.
+--     (FV-507, draft PR #506 — unmerged as of this writing) for the
+--     precedent this mirrors.
 --
 -- Privacy model (kids-privacy-officer review pending on the FV-570 PR):
 --   - `apple_subscriptions`: payer may read their OWN row only

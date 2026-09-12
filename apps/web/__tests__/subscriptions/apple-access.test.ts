@@ -102,6 +102,7 @@ function makeServiceMock() {
 import {
   getAppleAccessLevelForPayer,
   hasEverHeldAppleEntitlement,
+  getActiveAppleProductId,
 } from "@/lib/subscriptions/apple";
 
 const PAYER_ID = "dddddddd-0000-4000-8000-000000000004";
@@ -257,5 +258,85 @@ describe("hasEverHeldAppleEntitlement", () => {
     await expect(
       hasEverHeldAppleEntitlement(service as never, PAYER_ID),
     ).rejects.toThrow(/connection timeout/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getActiveAppleProductId — capacity-gate helper (qa-reviewer should-fix #1)
+// ---------------------------------------------------------------------------
+
+describe("getActiveAppleProductId", () => {
+  it("returns null when the payer has no Production row", async () => {
+    appleSubSingleRow = null;
+    appleSubSingleError = null;
+    const service = makeServiceMock();
+    expect(
+      await getActiveAppleProductId(service as never, PAYER_ID, NOW),
+    ).toBeNull();
+  });
+
+  it("returns the product_id for an active 'subscribed' row (within expires_at)", async () => {
+    appleSubSingleRow = {
+      environment: "Production",
+      status: "subscribed",
+      expires_at: FUTURE_ISO,
+      grace_period_expires_at: null,
+      product_id: "tier_1_1athlete",
+    };
+    const service = makeServiceMock();
+    expect(
+      await getActiveAppleProductId(service as never, PAYER_ID, NOW),
+    ).toBe("tier_1_1athlete");
+  });
+
+  it("returns null for a 'expired' row (stale ceiling must not apply)", async () => {
+    appleSubSingleRow = {
+      environment: "Production",
+      status: "expired",
+      expires_at: FUTURE_ISO, // even with a future expires_at — expired is unconditional
+      grace_period_expires_at: null,
+      product_id: "tier_2_2athletes",
+    };
+    const service = makeServiceMock();
+    expect(
+      await getActiveAppleProductId(service as never, PAYER_ID, NOW),
+    ).toBeNull();
+  });
+
+  it("returns null for a 'revoked' row", async () => {
+    appleSubSingleRow = {
+      environment: "Production",
+      status: "revoked",
+      expires_at: FUTURE_ISO,
+      grace_period_expires_at: null,
+      product_id: "tier_2_2athletes",
+    };
+    const service = makeServiceMock();
+    expect(
+      await getActiveAppleProductId(service as never, PAYER_ID, NOW),
+    ).toBeNull();
+  });
+
+  it("still returns the product_id for 'in_billing_retry' (degraded, not blocked)", async () => {
+    appleSubSingleRow = {
+      environment: "Production",
+      status: "in_billing_retry",
+      expires_at: FUTURE_ISO,
+      grace_period_expires_at: null,
+      product_id: "tier_3_3athletes",
+    };
+    const service = makeServiceMock();
+    expect(
+      await getActiveAppleProductId(service as never, PAYER_ID, NOW),
+    ).toBe("tier_3_3athletes");
+  });
+
+  it("returns null WITHOUT throwing on a DB error", async () => {
+    appleSubSingleRow = null;
+    appleSubSingleError = { message: "connection timeout" };
+    const service = makeServiceMock();
+    await expect(
+      getActiveAppleProductId(service as never, PAYER_ID, NOW),
+    ).resolves.toBeNull();
   });
 });
