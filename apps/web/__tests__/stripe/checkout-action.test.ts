@@ -1,5 +1,7 @@
 /**
- * Unit tests for `createCheckoutSession` (FV-217).
+ * Unit tests for `createCheckoutSession` (FV-217; FV-570 adds the
+ * cross-provider Apple trial-history mocks/tests at the bottom of this
+ * file).
  *
  * Verifies the 14-day free trial logic:
  *   (a) No subscriptions row → session includes trial_period_days:14 +
@@ -17,6 +19,10 @@
  *   - @/lib/auth/guards        → requireParent() returns fixed parent UUID
  *   - @/lib/stripe/server      → controlled sessions.create stub
  *   - @/lib/supabase/server    → chainable Supabase client stub
+ *   - @/lib/supabase/service   → stub service client (only used for the
+ *     Apple entitlement-history read, FV-570)
+ *   - @/lib/subscriptions/apple → hasEverHeldAppleEntitlement stub, defaults
+ *     to "never held" so all pre-existing tests above are unaffected
  *   - @/lib/monitoring/deliver → no-op
  *   - @/lib/monitoring/notify  → no-op
  */
@@ -64,6 +70,22 @@ vi.mock("@/lib/stripe/server", () => ({
 let supabaseMockImpl: ReturnType<typeof makeSubMock>;
 vi.mock("@/lib/supabase/server", () => ({
   createClient: () => supabaseMockImpl,
+}));
+
+// FV-570: the trial-history check also creates a service-role client. The
+// action only ever passes it straight to hasEverHeldAppleEntitlement (mocked
+// below), so an empty stub object is sufficient — no `.from()` shape needed.
+vi.mock("@/lib/supabase/service", () => ({
+  createServiceClient: () => ({}),
+}));
+
+// FV-570: Apple entitlement-history stub. Defaults to "never held" (resolved
+// per-test in beforeEach) so every pre-existing test in this file is
+// unaffected; the dedicated describe block below overrides it.
+const hasEverHeldAppleEntitlementMock = vi.fn();
+vi.mock("@/lib/subscriptions/apple", () => ({
+  hasEverHeldAppleEntitlement: (...args: unknown[]) =>
+    hasEverHeldAppleEntitlementMock(...args),
 }));
 
 // ---------------------------------------------------------------------------
@@ -124,6 +146,12 @@ function makeFormData(plan: "monthly" | "annual"): FormData {
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
+
+// File-level default (FV-570): every describe block below clears mocks in
+// its own beforeEach, which does not remove a previously-set
+// mockResolvedValue — so this only needs to run once. Individual FV-570
+// tests override it directly.
+hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
 
 describe("createCheckoutSession — 14-day trial logic (FV-217)", () => {
   beforeEach(() => {
@@ -500,5 +528,83 @@ describe("createAdultCheckoutSession (FV-327)", () => {
 
     // Must be 1, proving parent_athlete_links was never consulted.
     expect(lineItems[0]?.quantity).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-570: cross-provider trial-history mechanics (record Section 4.5)
+// ---------------------------------------------------------------------------
+
+describe("createCheckoutSession — cross-provider Apple trial history (FV-570)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
+    process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
+    process.env.STRIPE_PRICE_ID_MONTHLY = "price_monthly_500";
+    process.env.STRIPE_PRICE_ID_ANNUAL = "price_annual_4900";
+
+    sessionsCreateMock.mockResolvedValue({
+      url: "https://checkout.stripe.com/pay/cs_test",
+    });
+    // Default: never held an Apple entitlement. Individual tests override.
+    hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+  });
+
+  it("no Stripe row + apple-history=true → NO trial (Apple history blocks a fresh Stripe trial)", async () => {
+    supabaseMockImpl = makeSubMock(null); // no Stripe row → would be trial-eligible on Stripe alone
+    hasEverHeldAppleEntitlementMock.mockResolvedValue(true);
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(sessionsCreateMock).toHaveBeenCalledOnce();
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(
+      (params.subscription_data as Record<string, unknown>).trial_period_days,
+    ).toBeUndefined();
+    expect(params.payment_method_collection).toBeUndefined();
+  });
+
+  it("no Stripe row + apple-history=false → trial still granted (existing behavior preserved)", async () => {
+    supabaseMockImpl = makeSubMock(null);
+    hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(
+      (params.subscription_data as Record<string, unknown>).trial_period_days,
+    ).toBe(14);
+    expect(params.payment_method_collection).toBe("always");
+  });
+
+  it("fails CLOSED when the Apple entitlement-history read throws — no trial granted, no Stripe call", async () => {
+    // Mirrors the existing Stripe-read fail-closed test (PR #185 contract):
+    // a transient Apple-mirror read error must never risk granting a second
+    // trial — checkout aborts through the same user-facing error path.
+    supabaseMockImpl = makeSubMock(null);
+    hasEverHeldAppleEntitlementMock.mockRejectedValue(
+      new Error("apple_subscriptions read failed"),
+    );
+
+    const result = await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(result?.ok).toBe(false);
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it("existing Stripe row (any status) still blocks the trial even when apple-history=false", async () => {
+    // Regression: the AND semantics must not accidentally become OR in the
+    // other direction — an existing Stripe row alone is still sufficient to
+    // deny a trial.
+    supabaseMockImpl = makeSubMock({ stripe_customer_id: "cus_existing" });
+    hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(
+      (params.subscription_data as Record<string, unknown>).trial_period_days,
+    ).toBeUndefined();
   });
 });
