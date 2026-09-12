@@ -45,6 +45,10 @@ export default async function SubscribePage({ searchParams }: Props) {
   let trialQuantityEligible: boolean;
   if (isAdult) {
     trialQuantityEligible = true;
+  } else if (existingSub !== null || subReadError !== null) {
+    // Returning subscriber (or unreadable sub row): the banner is hidden
+    // regardless, so skip the count read entirely (qa perf note, PR #513).
+    trialQuantityEligible = false;
   } else {
     const athleteCountResult = await supabase
       .from("parent_athlete_links")
