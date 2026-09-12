@@ -263,3 +263,54 @@ describe("AppleSubscribeSection — configured + bridge available", () => {
     await waitFor(() => expect(manageSubscriptionsMock).toHaveBeenCalledTimes(1));
   });
 });
+
+describe("AppleSubscribeSection — qa follow-ups (PR #518)", () => {
+  const TWO_TIERS = [
+    { productId: "test.fv.tier1.monthly", athleteCapacity: 1, displayName: "1 Athlete" },
+    { productId: "test.fv.tier3.monthly", athleteCapacity: 3, displayName: "3 Athletes" },
+  ];
+
+  async function renderTwoTiers() {
+    getConfiguredAppleProductsMock.mockReturnValue(TWO_TIERS);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    render(<AppleSubscribeSection />);
+    await waitFor(() =>
+      expect(
+        screen.getByTestId("apple-plan-card-test.fv.tier3.monthly"),
+      ).toBeInTheDocument(),
+    );
+  }
+
+  it("arrow keys move the selection across plan cards (keyboard-only path)", async () => {
+    await renderTwoTiers();
+
+    const group = screen.getByRole("radiogroup");
+    const first = screen.getByTestId("apple-plan-card-test.fv.tier1.monthly");
+    const second = screen.getByTestId("apple-plan-card-test.fv.tier3.monthly");
+
+    fireEvent.click(first);
+    expect(first).toHaveAttribute("aria-checked", "true");
+
+    fireEvent.keyDown(group, { key: "ArrowDown" });
+    expect(second).toHaveAttribute("aria-checked", "true");
+    expect(first).toHaveAttribute("aria-checked", "false");
+
+    // Wraps from the last card back to the first.
+    fireEvent.keyDown(group, { key: "ArrowDown" });
+    expect(first).toHaveAttribute("aria-checked", "true");
+
+    fireEvent.keyDown(group, { key: "ArrowUp" });
+    expect(second).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("renders the presentational capacity label per card (singular and plural)", async () => {
+    await renderTwoTiers();
+
+    expect(
+      screen.getByTestId("apple-plan-capacity-test.fv.tier1.monthly").textContent,
+    ).toBe("1 athlete");
+    expect(
+      screen.getByTestId("apple-plan-capacity-test.fv.tier3.monthly").textContent,
+    ).toBe("Up to 3 athletes");
+  });
+});

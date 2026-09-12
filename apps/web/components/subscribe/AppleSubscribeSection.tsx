@@ -244,6 +244,27 @@ export function AppleSubscribeSection() {
         role="radiogroup"
         aria-label="Subscription plan"
         aria-required="true"
+        // Arrow-key navigation within the radiogroup (ARIA radiogroup
+        // pattern) — mirrors SubscribeForm's handleGroupKeyDown so a
+        // keyboard-only parent can reach every plan once P2 config ships
+        // more than one product (qa review, PR #518).
+        onKeyDown={(e) => {
+          const ids = products.map((p) => p.productId);
+          if (ids.length === 0) return;
+          const currentIndex = selectedProductId
+            ? ids.indexOf(selectedProductId)
+            : 0;
+          if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+            e.preventDefault();
+            const next = ids[(currentIndex + 1) % ids.length];
+            if (next != null) setSelectedProductId(next);
+          }
+          if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+            e.preventDefault();
+            const prev = ids[(currentIndex - 1 + ids.length) % ids.length];
+            if (prev != null) setSelectedProductId(prev);
+          }
+        }}
         className="flex flex-col gap-5 mb-7"
       >
         {products.map((product) => {
@@ -271,9 +292,21 @@ export function AppleSubscribeSection() {
               ].join(" ")}
             >
               <div className="flex items-start justify-between gap-4">
-                <p className="font-display font-bold uppercase tracking-[0.06em] text-cream text-[17px] leading-tight">
-                  {product.displayName ?? "From Victory"}
-                </p>
+                <div>
+                  <p className="font-display font-bold uppercase tracking-[0.06em] text-cream text-[17px] leading-tight">
+                    {product.displayName ?? "From Victory"}
+                  </p>
+                  {/* Presentational capacity label only — entitlement
+                      capacity is enforced server-side (apple-capacity.ts). */}
+                  <p
+                    data-testid={`apple-plan-capacity-${product.productId}`}
+                    className="mt-1 font-mono text-[11px] uppercase tracking-[0.12em] text-cream/50"
+                  >
+                    {product.athleteCapacity === 1
+                      ? "1 athlete"
+                      : `Up to ${product.athleteCapacity} athletes`}
+                  </p>
+                </div>
                 {product.livePrice ? (
                   <span className="flex-shrink-0 font-display font-extrabold text-cream text-[20px] leading-none">
                     {product.livePrice}

@@ -409,6 +409,84 @@ describe("submitApplePurchase", () => {
     expect(persisted.status).toBe("revoked");
   });
 
+  it("STATUS DERIVATION: restoring MID-GRACE (expiresDate past, grace bound live) persists status in_grace_period — not expired", async () => {
+    // qa delta review (PR #515): the glue case the pure-function tests can't
+    // see from the action layer — the renewal payload must reach the
+    // derivation, and the derived grace status must be what's persisted.
+    const graceBound = Date.now() + 500_000;
+    verifySignedTransactionMock.mockResolvedValueOnce(
+      makeTransaction({ expiresDate: Date.now() - 100_000 }),
+    );
+    verifySignedRenewalInfoMock.mockResolvedValueOnce({
+      originalTransactionId: "otid_1",
+      autoRenewStatus: true,
+      gracePeriodExpiresDate: graceBound,
+      signedDate: Date.now(),
+      environment: "Production",
+      appAccountToken: "MINTED_TOKEN",
+    });
+
+    const result = await submitApplePurchase({
+      signedTransactionInfo: "ey.fake.transaction",
+      signedRenewalInfo: "ey.fake.renewal",
+    });
+
+    expect(result).toEqual({ ok: true, applied: true });
+    expect(applyAppleSnapshotMock).toHaveBeenCalledTimes(1);
+    const persisted = applyAppleSnapshotMock.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(persisted.status).toBe("in_grace_period");
+  });
+
+  it("STATUS DERIVATION (real composition): deriveActionSubmissionStatus + buildSnapshotFields carry the grace bound through — and only for in_grace_period", async () => {
+    // The module-level buildSnapshotFields mock in this file nulls the grace
+    // bound, so this test composes the REAL pure functions (importActual) to
+    // guard the derive→snapshot seam against either side silently changing.
+    const actual = await vi.importActual<
+      typeof import("@/lib/subscriptions/apple-lifecycle")
+    >("@/lib/subscriptions/apple-lifecycle");
+
+    const now = 1_750_000_000_000;
+    const graceBound = now + 500_000;
+    const midGraceTxn = {
+      originalTransactionId: "otid_1",
+      transactionId: "txn_1",
+      productId: "test.fv.tier1.monthly",
+      bundleId: "com.fromvictoryapp.app",
+      expiresDate: now - 100_000,
+      appAccountToken: "11111111-1111-4111-8111-111111111111",
+      signedDate: now - 50_000,
+      environment: "Production" as const,
+      revocationDate: null,
+      revocationReason: null,
+    };
+    const renewal = {
+      originalTransactionId: "otid_1",
+      autoRenewStatus: true,
+      gracePeriodExpiresDate: graceBound,
+      signedDate: now - 50_000,
+      environment: "Production" as const,
+      appAccountToken: "11111111-1111-4111-8111-111111111111",
+    };
+
+    const graceStatus = actual.deriveActionSubmissionStatus(midGraceTxn, renewal, now);
+    expect(graceStatus).toBe("in_grace_period");
+    const graceFields = actual.buildSnapshotFields(graceStatus, midGraceTxn, renewal);
+    expect(graceFields.gracePeriodExpiresAt).toBe(graceBound);
+
+    // Exhausted grace bound → expired, and the snapshot clears the bound.
+    const lapsedStatus = actual.deriveActionSubmissionStatus(
+      midGraceTxn,
+      { ...renewal, gracePeriodExpiresDate: now - 1_000 },
+      now,
+    );
+    expect(lapsedStatus).toBe("expired");
+    const lapsedFields = actual.buildSnapshotFields(lapsedStatus, midGraceTxn, {
+      ...renewal,
+      gracePeriodExpiresDate: now - 1_000,
+    });
+    expect(lapsedFields.gracePeriodExpiresAt).toBeNull();
+  });
+
   it("DUPLICATE BILLING: persists the Apple row AND fires the ops alert when an active Stripe row also exists — never blocks", async () => {
     stripeStatus = "active";
 
