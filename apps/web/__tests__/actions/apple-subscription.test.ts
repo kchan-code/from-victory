@@ -58,6 +58,9 @@ let existingOwnerPayerId: string | null = null;
 let mintedTokenExisting: string | null = "MINTED_TOKEN";
 let mintedTokenAfterRace = "NEWLY_MINTED_TOKEN";
 let stripeStatus: string | null = null;
+// Counts ANY access to apple_purchase_tokens on the service client — the
+// beginApplePurchase role-gate test asserts the gate precedes the mint write.
+let tokenTableTouches = 0;
 
 function makeServiceMock() {
   return {
@@ -89,6 +92,7 @@ function makeServiceMock() {
         };
       }
       if (table === "apple_purchase_tokens") {
+        tokenTableTouches += 1;
         return {
           select: () => ({
             eq: () => ({
@@ -170,7 +174,10 @@ vi.mock("@/lib/monitoring/deliver", () => ({
 // Import after mocks
 // ---------------------------------------------------------------------------
 
-import { submitApplePurchase } from "@/lib/actions/apple-subscription";
+import {
+  submitApplePurchase,
+  beginApplePurchase,
+} from "@/lib/actions/apple-subscription";
 
 function makeTransaction(overrides: Record<string, unknown> = {}) {
   return {
@@ -352,3 +359,63 @@ describe("submitApplePurchase", () => {
     expect(notifyErrorMock).toHaveBeenCalledTimes(1);
   });
 });
+
+// ---------------------------------------------------------------------------
+// beginApplePurchase (FV-572 token handoff)
+// ---------------------------------------------------------------------------
+
+describe("beginApplePurchase — sanctioned token handoff (FV-572)", () => {
+  beforeEach(() => {
+    currentUser = { id: PAYER_ID };
+    profileRole = "parent";
+    mintedTokenExisting = "MINTED_TOKEN";
+  });
+
+  it("returns the payer's own token for a parent session", async () => {
+    const result = await beginApplePurchase();
+    expect(result).toEqual({ ok: true, appAccountToken: "MINTED_TOKEN" });
+  });
+
+  it("adult_athlete is also a payer role", async () => {
+    profileRole = "adult_athlete";
+    const result = await beginApplePurchase();
+    expect(result).toEqual({ ok: true, appAccountToken: "MINTED_TOKEN" });
+  });
+
+  it("PRIVACY AC: refuses an athlete-role session BEFORE the mint write", async () => {
+    profileRole = "athlete";
+    const result = await beginApplePurchaseWithMintSpy();
+    expect(result.result).toEqual({ ok: false, error: "not_authorized" });
+    expect(result.tokenTableTouched).toBe(false);
+  });
+
+  it("refuses an unauthenticated session", async () => {
+    currentUser = null;
+    const result = await beginApplePurchase();
+    expect(result).toEqual({ ok: false, error: "unauthenticated" });
+  });
+
+  it("mints on first use (no existing row) and returns the new token", async () => {
+    mintedTokenExisting = null; // no row yet -> upsert path mints
+    const result = await beginApplePurchase();
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(typeof result.appAccountToken).toBe("string");
+      expect(result.appAccountToken.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+/**
+ * Helper for the role-gate test: runs beginApplePurchase while watching
+ * whether the service client's apple_purchase_tokens table was touched at
+ * all (the gate must precede the mint write).
+ */
+async function beginApplePurchaseWithMintSpy(): Promise<{
+  result: Awaited<ReturnType<typeof beginApplePurchase>>;
+  tokenTableTouched: boolean;
+}> {
+  tokenTableTouches = 0;
+  const result = await beginApplePurchase();
+  return { result, tokenTableTouched: tokenTableTouches > 0 };
+}
