@@ -3,11 +3,12 @@ import Link from "next/link";
 
 import { requireSubscriber } from "@/lib/auth/guards";
 import { createCheckoutSession, createAdultCheckoutSession } from "@/lib/actions/subscription";
-import { isNativeShell } from "@/lib/native-shell";
+import { getRequestShellCapability } from "@/lib/native-shell";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { isSubscriptionEnforcementEnabled } from "@/lib/subscriptions/enforce";
 import { createClient } from "@/lib/supabase/server";
 import { SubscribeForm } from "@/components/subscribe/SubscribeForm";
+import { AppleSubscribeSection } from "@/components/subscribe/AppleSubscribeSection";
 
 export const metadata = {
   title: "Subscribe",
@@ -69,8 +70,12 @@ export default async function SubscribePage({ searchParams }: Props) {
   // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
   // checkout.stripe.com has no reachable path (it's deliberately not in
   // allowNavigation — see apps/native/capacitor.config.ts), so this page
-  // must not show a price, a checkout button, or a link toward Stripe.
-  const nativeShell = isNativeShell();
+  // must not show a price, a checkout button, or a link toward Stripe. FV-572
+  // additionally distinguishes an iOS build capable of a native StoreKit
+  // purchase surface ("ios-iap") from every other/older native shell
+  // ("legacy-native", restricted, unchanged) — see getRequestShellCapability().
+  const shellCapability = getRequestShellCapability();
+  const nativeShell = shellCapability !== null;
 
   // FV-464: when subscription enforcement would bounce this user straight
   // back here, the app targets below are a dead loop — send them to the
@@ -161,10 +166,14 @@ export default async function SubscribePage({ searchParams }: Props) {
           </p>
         </section>
 
-        {/* Native-shell (Capacitor) compliance state: no price, no button, no
-            link toward Stripe Checkout — plain, non-tappable text only. See
-            lib/native-shell.ts. Outside the shell, behavior is unchanged. */}
-        {nativeShell ? (
+        {/* Capability-based branch (FV-572, record §4.8):
+              - "legacy-native": today's Capacitor compliance notice — no
+                price, no button, no link toward Stripe Checkout. BYTE-
+                IDENTICAL to the prior single-branch copy (pinned by test).
+              - "ios-iap": an iOS build capable of the native StoreKit
+                purchase surface — render AppleSubscribeSection.
+              - null: ordinary web/PWA flow — completely unchanged. */}
+        {shellCapability === "legacy-native" ? (
           <div
             role="status"
             data-testid="native-shell-subscribe-notice"
@@ -175,6 +184,8 @@ export default async function SubscribePage({ searchParams }: Props) {
               fromvictoryapp.com.
             </p>
           </div>
+        ) : shellCapability === "ios-iap" ? (
+          <AppleSubscribeSection />
         ) : (
           <>
             {/* Plan selector form — trialEligible controls the trial banner */}

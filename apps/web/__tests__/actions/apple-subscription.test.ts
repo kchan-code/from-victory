@@ -58,6 +58,9 @@ let existingOwnerPayerId: string | null = null;
 let mintedTokenExisting: string | null = "MINTED_TOKEN";
 let mintedTokenAfterRace = "NEWLY_MINTED_TOKEN";
 let stripeStatus: string | null = null;
+// Counts ANY access to apple_purchase_tokens on the service client — the
+// beginApplePurchase role-gate test asserts the gate precedes the mint write.
+let tokenTableTouches = 0;
 
 function makeServiceMock() {
   return {
@@ -89,6 +92,7 @@ function makeServiceMock() {
         };
       }
       if (table === "apple_purchase_tokens") {
+        tokenTableTouches += 1;
         return {
           select: () => ({
             eq: () => ({
@@ -137,8 +141,41 @@ vi.mock("@/lib/subscriptions/apple-server", () => ({
 }));
 
 const applyAppleSnapshotMock = vi.fn();
+// Mirrors the REAL apple-lifecycle.deriveActionSubmissionStatus (unit-tested
+// independently in __tests__/subscriptions/apple-lifecycle.test.ts) so these
+// higher-level action tests can assert the action passes the DERIVED status
+// through to applyAppleSnapshot, not a hardcoded "subscribed".
+const deriveActionSubmissionStatusMock = vi.fn(
+  (
+    transaction: { expiresDate: number; revocationDate: number | null; revocationReason?: number | null },
+    renewal: { gracePeriodExpiresDate?: number | null } | null,
+    now: number = Date.now(),
+  ) => {
+    if (transaction.revocationDate != null || (transaction.revocationReason ?? null) != null) {
+      return "revoked";
+    }
+    if (renewal?.gracePeriodExpiresDate != null && now <= renewal.gracePeriodExpiresDate) {
+      return "in_grace_period";
+    }
+    if (transaction.expiresDate < now) {
+      return "expired";
+    }
+    return "subscribed";
+  },
+);
 vi.mock("@/lib/subscriptions/apple-lifecycle", () => ({
   applyAppleSnapshot: (...args: unknown[]) => applyAppleSnapshotMock(...args),
+  // A lazy wrapper (not a direct reference to `deriveActionSubmissionStatusMock`)
+  // — vi.mock factories are hoisted above the `const` below, so the wrapper
+  // body must only reference the mock when INVOKED, never at factory-object
+  // construction time (TDZ). Typed via `Parameters<...>` (erased at runtime,
+  // so no early evaluation) rather than `...args: unknown[]`, which can't be
+  // spread into the mock's strongly-typed (non-`any`) parameter list (TS2556).
+  deriveActionSubmissionStatus: (
+    transaction: Parameters<typeof deriveActionSubmissionStatusMock>[0],
+    renewal: Parameters<typeof deriveActionSubmissionStatusMock>[1],
+    now?: Parameters<typeof deriveActionSubmissionStatusMock>[2],
+  ) => deriveActionSubmissionStatusMock(transaction, renewal, now),
   buildSnapshotFields: (
     status: string,
     transaction: { environment: string; originalTransactionId: string; productId: string; expiresDate: number; appAccountToken: string | null; signedDate: number },
@@ -170,7 +207,10 @@ vi.mock("@/lib/monitoring/deliver", () => ({
 // Import after mocks
 // ---------------------------------------------------------------------------
 
-import { submitApplePurchase } from "@/lib/actions/apple-subscription";
+import {
+  submitApplePurchase,
+  beginApplePurchase,
+} from "@/lib/actions/apple-subscription";
 
 function makeTransaction(overrides: Record<string, unknown> = {}) {
   return {
@@ -183,6 +223,7 @@ function makeTransaction(overrides: Record<string, unknown> = {}) {
     signedDate: 1_700_000_000_000,
     environment: "Production",
     revocationDate: null,
+    revocationReason: null,
     ...overrides,
   };
 }
@@ -192,6 +233,7 @@ beforeEach(() => {
   profileRole = "parent";
   sandboxAllowlisted = false;
   existingOwnerPayerId = null;
+  deriveActionSubmissionStatusMock.mockClear();
   mintedTokenExisting = "MINTED_TOKEN";
   mintedTokenAfterRace = "NEWLY_MINTED_TOKEN";
   stripeStatus = null;
@@ -327,6 +369,46 @@ describe("submitApplePurchase", () => {
     expect(result).toEqual({ ok: true, applied: false });
   });
 
+  it("STATUS DERIVATION: a live purchase persists status subscribed", async () => {
+    verifySignedTransactionMock.mockResolvedValueOnce(
+      makeTransaction({ expiresDate: Date.now() + 100_000 }),
+    );
+
+    const result = await submitApplePurchase(VALID_INPUT);
+
+    expect(result).toEqual({ ok: true, applied: true });
+    expect(applyAppleSnapshotMock).toHaveBeenCalledTimes(1);
+    // applyAppleSnapshot(service, { payerId, ...fields }) — fields are arg[1].
+    const persisted = applyAppleSnapshotMock.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(persisted.status).toBe("subscribed");
+  });
+
+  it("STATUS DERIVATION: restoring a LAPSED subscription persists status expired, not subscribed — and still persists", async () => {
+    verifySignedTransactionMock.mockResolvedValueOnce(
+      makeTransaction({ expiresDate: Date.now() - 100_000 }),
+    );
+
+    const result = await submitApplePurchase(VALID_INPUT);
+
+    expect(result).toEqual({ ok: true, applied: true });
+    expect(applyAppleSnapshotMock).toHaveBeenCalledTimes(1);
+    const persisted = applyAppleSnapshotMock.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(persisted.status).toBe("expired");
+  });
+
+  it("STATUS DERIVATION: restoring a REVOKED subscription persists status revoked — and still persists", async () => {
+    verifySignedTransactionMock.mockResolvedValueOnce(
+      makeTransaction({ expiresDate: Date.now() + 100_000, revocationDate: Date.now() - 1_000 }),
+    );
+
+    const result = await submitApplePurchase(VALID_INPUT);
+
+    expect(result).toEqual({ ok: true, applied: true });
+    expect(applyAppleSnapshotMock).toHaveBeenCalledTimes(1);
+    const persisted = applyAppleSnapshotMock.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(persisted.status).toBe("revoked");
+  });
+
   it("DUPLICATE BILLING: persists the Apple row AND fires the ops alert when an active Stripe row also exists — never blocks", async () => {
     stripeStatus = "active";
 
@@ -352,3 +434,63 @@ describe("submitApplePurchase", () => {
     expect(notifyErrorMock).toHaveBeenCalledTimes(1);
   });
 });
+
+// ---------------------------------------------------------------------------
+// beginApplePurchase (FV-572 token handoff)
+// ---------------------------------------------------------------------------
+
+describe("beginApplePurchase — sanctioned token handoff (FV-572)", () => {
+  beforeEach(() => {
+    currentUser = { id: PAYER_ID };
+    profileRole = "parent";
+    mintedTokenExisting = "MINTED_TOKEN";
+  });
+
+  it("returns the payer's own token for a parent session", async () => {
+    const result = await beginApplePurchase();
+    expect(result).toEqual({ ok: true, appAccountToken: "MINTED_TOKEN" });
+  });
+
+  it("adult_athlete is also a payer role", async () => {
+    profileRole = "adult_athlete";
+    const result = await beginApplePurchase();
+    expect(result).toEqual({ ok: true, appAccountToken: "MINTED_TOKEN" });
+  });
+
+  it("PRIVACY AC: refuses an athlete-role session BEFORE the mint write", async () => {
+    profileRole = "athlete";
+    const result = await beginApplePurchaseWithMintSpy();
+    expect(result.result).toEqual({ ok: false, error: "not_authorized" });
+    expect(result.tokenTableTouched).toBe(false);
+  });
+
+  it("refuses an unauthenticated session", async () => {
+    currentUser = null;
+    const result = await beginApplePurchase();
+    expect(result).toEqual({ ok: false, error: "unauthenticated" });
+  });
+
+  it("mints on first use (no existing row) and returns the new token", async () => {
+    mintedTokenExisting = null; // no row yet -> upsert path mints
+    const result = await beginApplePurchase();
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(typeof result.appAccountToken).toBe("string");
+      expect(result.appAccountToken.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+/**
+ * Helper for the role-gate test: runs beginApplePurchase while watching
+ * whether the service client's apple_purchase_tokens table was touched at
+ * all (the gate must precede the mint write).
+ */
+async function beginApplePurchaseWithMintSpy(): Promise<{
+  result: Awaited<ReturnType<typeof beginApplePurchase>>;
+  tokenTableTouched: boolean;
+}> {
+  tokenTableTouches = 0;
+  const result = await beginApplePurchase();
+  return { result, tokenTableTouched: tokenTableTouches > 0 };
+}

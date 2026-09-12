@@ -124,3 +124,23 @@ export function isNativeShell(): boolean {
   const userAgent = headers().get("user-agent") ?? "";
   return isNativeShellUserAgent(userAgent);
 }
+
+/**
+ * The current request's shell CAPABILITY (not just the flat "is it the
+ * shell" boolean above) — `"ios-iap"` | `"legacy-native"` | `null`. Mirrors
+ * `isNativeShell()`'s exact shape (reads the raw `user-agent` request header
+ * via `next/headers`, safe only inside a rendered Server Component / Route
+ * Handler / Server Action) but routes through `getShellCapability()` so a
+ * checkout-adjacent Server Component (FV-572: `app/subscribe/page.tsx`) can
+ * branch three ways — render the iOS purchase surface, the legacy-native
+ * compliance notice, or the ordinary web flow — without re-deriving the
+ * classification logic at each call site.
+ *
+ * Same authorization caveat as `isNativeShell()`: this is a UI/presentation
+ * hint only, never an entitlement or authorization boundary (see
+ * `getShellCapability()`'s doc comment above).
+ */
+export function getRequestShellCapability(): ShellCapability | null {
+  const userAgent = headers().get("user-agent") ?? "";
+  return getShellCapability(userAgent);
+}

@@ -148,6 +148,7 @@ function makeTransaction(
     signedDate: 1_700_000_000_000,
     environment: "Production",
     revocationDate: null,
+    revocationReason: null,
     ...overrides,
   };
 }
