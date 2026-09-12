@@ -1,5 +1,5 @@
 /**
- * Unit tests for the comp-grant + entitlement resolver (FV-69 / FV-62).
+ * Unit tests for the comp-grant + entitlement resolver (FV-69 / FV-62 / FV-570).
  *
  * Tests cover:
  *   1. hasActiveCompGrant   — pure grant-table reader
@@ -7,6 +7,10 @@
  *   3. isSubscriptionEnforcementEnabled — flag helper
  *   4. requireActiveAccess  — enforcement guard (flag on/off, roles, levels)
  *   5. Athlete enum-only path — getAccessForCurrentUser returns only AccessLevel
+ *   6. getParentAccessLevel — Apple provider fold (FV-570): unless a test
+ *      opts in via the `setApple*` helpers, the apple_subscriptions /
+ *      apple_sandbox_testers mocks default to "no Apple entitlement", so all
+ *      pre-existing tests above exercise the Stripe-only path unchanged.
  *
  * The `server-only` guard and all Supabase clients are mocked so these tests
  * run under vitest's node environment without a real Supabase instance.
@@ -37,6 +41,20 @@ let subscriptionRow: {
 } | null = null;
 let subscriptionSelectError: { message: string } | null = null;
 
+// apple_subscriptions / apple_sandbox_testers state (FV-570 fold). Defaults
+// to "no Apple entitlement at all" so every pre-existing test above (which
+// never touches these helpers) exercises the Stripe-only path unchanged.
+type AppleSubRow = {
+  environment: "Sandbox" | "Production";
+  status: string;
+  expires_at: string;
+  grace_period_expires_at: string | null;
+};
+let appleSubRows: AppleSubRow[] = [];
+let appleSubSelectError: { message: string } | null = null;
+let appleAllowlistRow: { payer_id: string } | null = null;
+let appleAllowlistError: { message: string } | null = null;
+
 // The service mock returns different query chains based on the table name.
 function makeServiceMock() {
   return {
@@ -60,6 +78,27 @@ function makeServiceMock() {
           maybeSingle: vi.fn().mockResolvedValue({
             data: subscriptionRow,
             error: subscriptionSelectError,
+          }),
+        };
+      }
+      if (table === "apple_subscriptions") {
+        // getAppleAccessLevelForPayer reads via .select().eq() and awaits the
+        // chain directly (array result) — same thenable pattern as
+        // access_grants above.
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          then: (resolve: (v: { data: AppleSubRow[]; error: typeof appleSubSelectError }) => void) =>
+            resolve({ data: appleSubRows, error: appleSubSelectError }),
+        };
+      }
+      if (table === "apple_sandbox_testers") {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: appleAllowlistRow,
+            error: appleAllowlistError,
           }),
         };
       }
@@ -182,6 +221,54 @@ function resetRlsState() {
   rlsLinkError = null;
   rlsProfileError = null;
 }
+
+// --- Apple fold helpers (FV-570) ---
+function resetAppleState() {
+  appleSubRows = [];
+  appleSubSelectError = null;
+  appleAllowlistRow = null;
+  appleAllowlistError = null;
+}
+function setAppleNone() {
+  appleSubRows = [];
+  appleSubSelectError = null;
+}
+function setAppleProductionRow(status: string, opts?: { graceExpiresAt?: string | null }) {
+  appleSubRows = [
+    {
+      environment: "Production",
+      status,
+      expires_at: FUTURE_ISO,
+      grace_period_expires_at: opts?.graceExpiresAt ?? null,
+    },
+  ];
+  appleSubSelectError = null;
+}
+function setAppleSandboxRow(status: string, allowlisted: boolean) {
+  appleSubRows = [
+    {
+      environment: "Sandbox",
+      status,
+      expires_at: FUTURE_ISO,
+      grace_period_expires_at: null,
+    },
+  ];
+  appleSubSelectError = null;
+  appleAllowlistRow = allowlisted ? { payer_id: PARENT_ID } : null;
+  appleAllowlistError = null;
+}
+function setAppleError() {
+  appleSubRows = [];
+  appleSubSelectError = { message: "apple DB error" };
+}
+
+// File-level hook (runs before every test in this file, ahead of any
+// describe-scoped beforeEach): keeps the Apple mock state from leaking
+// between tests. Individual FV-570 fold tests opt into non-default Apple
+// state inside their own `it()` body via the setApple* helpers above.
+beforeEach(() => {
+  resetAppleState();
+});
 
 // ---------------------------------------------------------------------------
 // 1. hasActiveCompGrant
@@ -570,5 +657,101 @@ describe("getAccessForCurrentUser — adult_athlete (18+ self-serve) path", () =
     rlsLinkParentId = PARENT_ID; // would only matter on the athlete branch
     setSubscription("active");
     expect(await getAccessForCurrentUser()).toBe("full");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 7. getParentAccessLevel — Apple provider fold (FV-570)
+//
+// docs/fv210-ios-iap-decision-record.md Section 4.1: resolution order is
+// access_grants -> Stripe mirror -> Apple mirror, returning the BEST level
+// across providers. Section 4.9: a Sandbox row must never yield "full" for
+// a non-allowlisted payer.
+// ---------------------------------------------------------------------------
+
+describe("getParentAccessLevel — Apple provider fold (FV-570)", () => {
+  beforeEach(() => {
+    setGrantNone();
+    setSubscriptionNone();
+    resetAppleState();
+  });
+
+  it("comp grant short-circuit is unchanged — full even with Apple state present", async () => {
+    setGrantActive();
+    setAppleError(); // would otherwise be irrelevant — grant wins first
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("stripe-blocked + apple-full (Production, subscribed) -> full", async () => {
+    setSubscription("canceled"); // stripeLevel = blocked
+    setAppleProductionRow("subscribed");
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("stripe-full + apple-blocked (Production, revoked) -> full", async () => {
+    setSubscription("active"); // stripeLevel = full
+    setAppleProductionRow("revoked");
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("both blocked -> blocked", async () => {
+    setSubscriptionNone(); // stripeLevel = blocked
+    setAppleNone(); // appleLevel = blocked
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("blocked");
+  });
+
+  it("apple accessor DB error falls back to the Stripe level only", async () => {
+    setSubscription("active"); // stripeLevel = full
+    setAppleError();
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("apple accessor DB error does not upgrade a blocked Stripe level", async () => {
+    setSubscriptionNone(); // stripeLevel = blocked
+    setAppleError();
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("blocked");
+  });
+
+  it("a non-allowlisted payer's Sandbox row never yields full or degraded (record §4.9)", async () => {
+    setSubscriptionNone(); // stripeLevel = blocked
+    setAppleSandboxRow("subscribed", /* allowlisted */ false);
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("blocked");
+  });
+
+  it("an allowlisted payer's Sandbox row DOES grant access (record §4.9)", async () => {
+    setSubscriptionNone(); // stripeLevel = blocked
+    setAppleSandboxRow("subscribed", /* allowlisted */ true);
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("degraded Apple (in_billing_retry, Production) folds with blocked Stripe to degraded", async () => {
+    setSubscriptionNone(); // stripeLevel = blocked
+    setAppleProductionRow("in_billing_retry");
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("degraded");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 8. Athlete enum-only privacy boundary — never touches apple_subscriptions
+//    columns beyond the enum (FV-210 record §4.1 named AC).
+// ---------------------------------------------------------------------------
+
+describe("getAccessForCurrentUser — athlete path never leaks Apple billing shape (FV-570)", () => {
+  beforeEach(() => {
+    resetRlsState();
+    setGrantNone();
+    setSubscriptionNone();
+    resetAppleState();
+  });
+
+  it("returns only the AccessLevel enum when access derives from an Apple row", async () => {
+    rlsUserId = ATHLETE_ID;
+    rlsProfileRole = "athlete";
+    rlsLinkParentId = PARENT_ID;
+    setAppleProductionRow("subscribed");
+    const result = await getAccessForCurrentUser();
+    expect(result).toBe("full");
+    expect(typeof result).toBe("string");
+    expect(result).not.toBeInstanceOf(Object);
   });
 });

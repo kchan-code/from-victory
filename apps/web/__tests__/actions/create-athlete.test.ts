@@ -43,6 +43,14 @@ vi.mock("@/lib/monitoring/deliver", () => ({
   deliverInBackground: vi.fn(() => {}),
 }));
 
+// FV-570: the capacity gate is out of scope for these
+// created_as_adult_by_parent tests — stub it as always-inert (mirrors
+// syncAthleteQuantity's no-op treatment above) so this file doesn't need to
+// also fake apple_subscriptions query shapes on the service mock below.
+vi.mock("@/lib/subscriptions/apple-capacity", () => ({
+  assertAthleteCapacity: vi.fn(async () => ({ allowed: true })),
+}));
+
 // ---------------------------------------------------------------------------
 // Flexible service-client mock — captures the profiles insert payload.
 // ---------------------------------------------------------------------------
@@ -77,6 +85,11 @@ function makeServiceMock() {
       if (table === "parent_athlete_links") {
         return {
           insert: async () => ({ error: linkInsertError }),
+          // FV-570: the count read (currentAthleteCount, before the
+          // capacity gate) uses .select(..., { count, head }).eq(...).
+          select: () => ({
+            eq: async () => ({ count: 0, error: null }),
+          }),
         };
       }
       return {
