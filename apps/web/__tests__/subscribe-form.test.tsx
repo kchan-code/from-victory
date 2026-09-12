@@ -70,3 +70,25 @@ describe("SubscribeForm — value-prop reminder (parent vs adult)", () => {
     expect(reminder.textContent?.toLowerCase()).toContain("just for you");
   });
 });
+
+describe("SubscribeForm — 7-day trial banner (FV-574)", () => {
+  it("shows the 7-day banner and the auto-charge disclosure when trialEligible", () => {
+    render(<SubscribeForm trialEligible={true} action={noopAction} />);
+
+    const banner = screen.getByTestId("trial-eligible-banner");
+    expect(banner.textContent).toContain("7-day free trial");
+    expect(banner.textContent).not.toContain("14-day");
+    // Consumer-protection disclosure (FTC negative-option guidance; privacy
+    // finding on PR #185) must ride with the banner.
+    expect(
+      screen.getByTestId("trial-autocharge-disclosure").textContent,
+    ).toContain("charged automatically when the trial ends");
+  });
+
+  it("renders no trial banner at all when not trialEligible", () => {
+    render(<SubscribeForm trialEligible={false} action={noopAction} />);
+
+    expect(screen.queryByTestId("trial-eligible-banner")).toBeNull();
+    expect(screen.queryByTestId("trial-autocharge-disclosure")).toBeNull();
+  });
+});
