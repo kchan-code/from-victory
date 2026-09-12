@@ -63,8 +63,9 @@ Env vars consumed by `apps/web/lib/subscriptions/apple-server.ts` (all read lazi
 ## 5. Build & distribution prerequisites (ALL hold-gated)
 
 - [ ] Merge order: #506/#508 (FV-507/568) and #505 (FV-508) per their own gates → #511 (FV-570) → retarget + merge #515 (FV-571), #513 (FV-574) → #512 (FV-572 signal) → FV-572 UI slice PR. Re-run the #516-style integration stack green BEFORE the first merge if sources moved.
+- [ ] **Raise the iOS deployment target 14.0 → 15.0** in `project.pbxproj` + `Podfile` (StoreKit 2 requires iOS 15+; the FV-572 plugin is `@available(iOS 15, *)`-guarded — flagged by the FV-572 UI slice, PR #518). Check fielded-device impact before raising.
 - [ ] `npx cap sync ios` (first native sync since the pivot).
-- [ ] Add `FVAppleIAPPlugin.swift` to the Xcode project (one-time; see `docs/fv572-ios-bridge-notes.md` from the FV-572 UI slice) — first compile of the plugin happens here; budget a fix loop.
+- [ ] Add `FVAppleIAPPlugin.swift` to the Xcode project (one-time; see `docs/fv572-ios-bridge-notes.md`) — FIRST COMPILE of the plugin happens here; budget a fix loop. Verify Capacitor 7.4.3 CAPBridgedPlugin auto-registration actually picks it up (unverified while builds are held), the restore newest-first contract, `signedRenewalInfo` presence right after purchase, and the documented `transaction.finish()` timing tradeoff — all flagged in the notes doc.
 - [ ] Archive → TestFlight internal build; bump build number past the rejected 1.0 (3).
 
 ## 6. Device QA matrix (FV-573 ACs; sandbox + disposable DB only — never production data)
