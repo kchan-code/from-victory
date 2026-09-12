@@ -55,7 +55,11 @@ import {
   type DecodedTransactionInfo,
   type DecodedRenewalInfo,
 } from "@/lib/subscriptions/apple-server";
-import { applyAppleSnapshot, buildSnapshotFields } from "@/lib/subscriptions/apple-lifecycle";
+import {
+  applyAppleSnapshot,
+  buildSnapshotFields,
+  deriveActionSubmissionStatus,
+} from "@/lib/subscriptions/apple-lifecycle";
 
 // ---------------------------------------------------------------------------
 // Input / result types
@@ -266,12 +270,18 @@ export async function submitApplePurchase(
       return { ok: false, error: "token_mismatch" };
     }
 
-    // 6. Upsert — client purchase/restore submissions always represent a
-    //    currently-active entitlement snapshot from the payer's point of
-    //    view; the finer-grained lifecycle states (grace, billing retry) are
-    //    only ever learned from Apple's own Notifications V2 payloads, never
-    //    inferred here.
-    const fields = buildSnapshotFields("subscribed", transaction, renewal);
+    // 6. Upsert — a client submission carries no `notificationType`, so the
+    //    status is DERIVED from the verified payload itself
+    //    (deriveActionSubmissionStatus): revoked if Apple's revocation
+    //    fields are present; in_grace_period when the renewal payload's own
+    //    gracePeriodExpiresDate evidence says so; expired when a lapsed
+    //    subscription is restored (mirrors truthfully rather than claiming
+    //    subscribed); else subscribed. `in_billing_retry` is deliberately
+    //    NEVER inferred here — it is indistinguishable from a plain lapse
+    //    without a Notifications V2 `notificationType`, and is only ever
+    //    learned from Apple's own webhook payloads.
+    const derivedStatus = deriveActionSubmissionStatus(transaction, renewal);
+    const fields = buildSnapshotFields(derivedStatus, transaction, renewal);
     const result = await applyAppleSnapshot(service, { payerId, ...fields });
 
     // 7. Duplicate-billing guard (record Section 4.4) — warning only, never

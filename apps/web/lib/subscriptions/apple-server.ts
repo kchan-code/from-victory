@@ -71,6 +71,15 @@ export interface DecodedTransactionInfo {
   environment: AppleEnvironment;
   /** UNIX ms, or null if not revoked. */
   revocationDate: number | null;
+  /** Apple's `RevocationReason` enum (0|1), or null if the transaction isn't
+   *  revoked. Apple's docs describe this as accompanying `revocationDate` on
+   *  a refund; it is a defensive companion signal only — FV-571's
+   *  action-path status derivation (./apple-lifecycle's
+   *  `deriveActionSubmissionStatus`) treats EITHER field being non-null as
+   *  sufficient evidence of a revoked transaction, since `0` (
+   *  REFUNDED_FOR_OTHER_REASON) is a valid-but-falsy enum value that must
+   *  not be mistaken for "absent". */
+  revocationReason: number | null;
 }
 
 export interface DecodedRenewalInfo {
@@ -218,6 +227,8 @@ function toDecodedTransaction(
     signedDate: decoded.signedDate,
     environment: toDbEnvironment(decoded.environment as string | undefined),
     revocationDate: decoded.revocationDate ?? null,
+    revocationReason:
+      decoded.revocationReason === undefined ? null : Number(decoded.revocationReason),
   };
 }
 

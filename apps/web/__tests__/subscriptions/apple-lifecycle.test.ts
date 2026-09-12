@@ -9,11 +9,17 @@
  *     enum mapping used by reconciliation.
  *   - buildSnapshotFields (pure) — grace bound populated ONLY for
  *     in_grace_period, cleared for every other status.
+ *   - deriveActionSubmissionStatus (pure) — the action-path (no
+ *     notificationType) status derivation: revoked / in_grace_period
+ *     (evidence-based, from the renewal payload) / expired / subscribed.
  *   - applyAppleSnapshot — supersession-safe upsert (locate by payer+env,
  *     never by OTID), watermark-guarded (stale/duplicate/equal-signedDate
- *     drop), token-preserving updates, insert-requires-token invariant.
+ *     drop), token-preserving updates (record Section 4.7 — token
+ *     continuity), insert-requires-token invariant.
  *   - reconcileAppleSubscription — callable + tested with a mocked
- *     ./apple-server client (no_row / no_data / applied paths).
+ *     ./apple-server client (no_row / no_data / applied paths), including
+ *     environment-filtered, newest-signedDate selection across multiple
+ *     candidates.
  *
  * ./apple-server is mocked so no `@apple/app-store-server-library` code
  * path (and no network call to Apple) is ever reached from this file.
@@ -36,6 +42,7 @@ import {
   buildSnapshotFields,
   applyAppleSnapshot,
   reconcileAppleSubscription,
+  deriveActionSubmissionStatus,
 } from "@/lib/subscriptions/apple-lifecycle";
 import type { DecodedTransactionInfo, DecodedRenewalInfo } from "@/lib/subscriptions/apple-server";
 
@@ -52,6 +59,7 @@ function makeTransaction(overrides: Partial<DecodedTransactionInfo> = {}): Decod
     signedDate: 1_700_000_000_000,
     environment: "Production",
     revocationDate: null,
+    revocationReason: null,
     ...overrides,
   };
 }
@@ -171,6 +179,98 @@ describe("buildSnapshotFields", () => {
   it("defaults autoRenewStatus to true when there is no renewal payload", () => {
     const fields = buildSnapshotFields("subscribed", makeTransaction(), null);
     expect(fields.autoRenewStatus).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// deriveActionSubmissionStatus — the FV-571 gap closed here: a client
+// purchase/restore submission must not unconditionally write "subscribed".
+// ---------------------------------------------------------------------------
+
+describe("deriveActionSubmissionStatus", () => {
+  const NOW = 1_750_000_000_000;
+
+  it("live purchase (not revoked, not expired) writes subscribed", () => {
+    const status = deriveActionSubmissionStatus(
+      makeTransaction({ expiresDate: NOW + 1_000 }),
+      makeRenewal(),
+      NOW,
+    );
+    expect(status).toBe("subscribed");
+  });
+
+  it("revoked-restore writes revoked (revocationDate present)", () => {
+    const status = deriveActionSubmissionStatus(
+      makeTransaction({ expiresDate: NOW + 1_000, revocationDate: NOW - 1_000 }),
+      makeRenewal(),
+      NOW,
+    );
+    expect(status).toBe("revoked");
+  });
+
+  it("revoked-restore writes revoked on revocationReason alone (0 is a valid-but-falsy reason)", () => {
+    const status = deriveActionSubmissionStatus(
+      makeTransaction({
+        expiresDate: NOW + 1_000,
+        revocationDate: null,
+        revocationReason: 0,
+      }),
+      null,
+      NOW,
+    );
+    expect(status).toBe("revoked");
+  });
+
+  it("lapsed-restore (expiresDate in the past, no grace evidence) writes expired, not subscribed", () => {
+    const status = deriveActionSubmissionStatus(
+      makeTransaction({ expiresDate: NOW - 1_000 }),
+      null,
+      NOW,
+    );
+    expect(status).toBe("expired");
+  });
+
+  it("a lapsed transaction with LIVE grace evidence writes in_grace_period, not expired", () => {
+    // expiresDate has already passed (grace, by definition, begins after
+    // expiry — record Section 4.2), but the renewal payload's own
+    // gracePeriodExpiresDate is still in the future.
+    const status = deriveActionSubmissionStatus(
+      makeTransaction({ expiresDate: NOW - 1_000 }),
+      makeRenewal({ gracePeriodExpiresDate: NOW + 5_000 }),
+      NOW,
+    );
+    expect(status).toBe("in_grace_period");
+  });
+
+  it("a lapsed transaction with EXHAUSTED grace evidence writes expired, not in_grace_period", () => {
+    const status = deriveActionSubmissionStatus(
+      makeTransaction({ expiresDate: NOW - 10_000 }),
+      makeRenewal({ gracePeriodExpiresDate: NOW - 1_000 }),
+      NOW,
+    );
+    expect(status).toBe("expired");
+  });
+
+  it("revoked wins over grace evidence — a definitively closed state is never re-opened", () => {
+    const status = deriveActionSubmissionStatus(
+      makeTransaction({ expiresDate: NOW - 1_000, revocationDate: NOW - 500 }),
+      makeRenewal({ gracePeriodExpiresDate: NOW + 5_000 }),
+      NOW,
+    );
+    expect(status).toBe("revoked");
+  });
+
+  it("never infers in_billing_retry — that state needs a notificationType this path doesn't have", () => {
+    // A lapsed transaction with NO grace evidence at all (auto-renew off, or
+    // billing retry already exhausted its own window) still resolves to
+    // "expired", never "in_billing_retry".
+    const status = deriveActionSubmissionStatus(
+      makeTransaction({ expiresDate: NOW - 1_000 }),
+      makeRenewal({ gracePeriodExpiresDate: null }),
+      NOW,
+    );
+    expect(status).not.toBe("in_billing_retry");
+    expect(status).toBe("expired");
   });
 });
 
@@ -377,7 +477,7 @@ describe("applyAppleSnapshot", () => {
     expect(service.__spies.insert).not.toHaveBeenCalled();
   });
 
-  it("preserves the existing app_account_token on UPDATE when the incoming payload omits one", async () => {
+  it("token continuity: preserves the existing app_account_token on UPDATE when the incoming payload omits one (record §4.7 — the token is a durable audit trail, immutable on Apple's side; a payload that omits it is a defensive anomaly, never grounds to null it out)", async () => {
     const service = makeServiceMock({
       id: "row-1",
       last_signed_date: new Date(1_600_000_000_000).toISOString(),
@@ -445,7 +545,7 @@ describe("reconcileAppleSubscription", () => {
     expect(result).toEqual({ ok: false, reason: "no_data" });
   });
 
-  it("applies the first-returned item through the shared upsert path", async () => {
+  it("applies the single matching item through the shared upsert path", async () => {
     getAllSubscriptionStatusesMock.mockResolvedValueOnce([
       { status: 1, transaction: makeTransaction(), renewal: makeRenewal() },
     ]);
@@ -480,5 +580,92 @@ describe("reconcileAppleSubscription", () => {
     const result = await reconcileAppleSubscription(service as never, PAYER_ID, "Production");
     expect(result).toEqual({ ok: true, applied: true });
     expect(insert).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * Builds a service mock for a reconcile call whose initial read succeeds
+   * (returns an existing row with the given OTID) and whose applyAppleSnapshot
+   * upsert always inserts (no existing apple_subscriptions row) — isolates
+   * these tests to SELECTION behavior, not upsert behavior (already covered
+   * above).
+   */
+  function makeReconcileServiceMock(existingOtid: string) {
+    let selectCallCount = 0;
+    const insert = vi.fn().mockResolvedValue({ error: null });
+    const service = {
+      from: vi.fn(() => ({
+        select: () => {
+          selectCallCount += 1;
+          const callNumber = selectCallCount;
+          return {
+            eq: () => ({
+              eq: () => ({
+                maybeSingle: async () =>
+                  callNumber === 1
+                    ? { data: { original_transaction_id: existingOtid }, error: null }
+                    : { data: null, error: null },
+              }),
+            }),
+          };
+        },
+        update: vi.fn(),
+        insert,
+      })),
+    };
+    return { service, insert };
+  }
+
+  it("SELECTION: two-item array with older-first ordering picks the NEWER signedDate item, not Apple's array order", async () => {
+    const older = makeTransaction({ originalTransactionId: "otid_older", signedDate: 1_700_000_000_000 });
+    const newer = makeTransaction({ originalTransactionId: "otid_newer", signedDate: 1_800_000_000_000 });
+    getAllSubscriptionStatusesMock.mockResolvedValueOnce([
+      { status: 3, transaction: older, renewal: makeRenewal({ signedDate: 1_700_000_000_000 }) }, // older, listed FIRST
+      { status: 1, transaction: newer, renewal: makeRenewal({ signedDate: 1_800_000_000_000 }) }, // newer, listed SECOND
+    ]);
+    const { service, insert } = makeReconcileServiceMock("otid_older");
+
+    const result = await reconcileAppleSubscription(service as never, PAYER_ID, "Production");
+
+    expect(result).toEqual({ ok: true, applied: true });
+    const insertedRow = insert.mock.calls[0]?.[0] as Record<string, unknown>;
+    // The newer item's status (1 -> subscribed) and OTID won, not the
+    // first-listed older item's (3 -> in_billing_retry).
+    expect(insertedRow.status).toBe("subscribed");
+    expect(insertedRow.original_transaction_id).toBe("otid_newer");
+  });
+
+  it("SELECTION: ignores items whose verified environment does not match the requested environment", async () => {
+    const wrongEnv = makeTransaction({
+      originalTransactionId: "otid_sandbox",
+      environment: "Sandbox",
+      signedDate: 1_900_000_000_000, // newer, but wrong environment
+    });
+    const rightEnv = makeTransaction({
+      originalTransactionId: "otid_production",
+      environment: "Production",
+      signedDate: 1_700_000_000_000,
+    });
+    getAllSubscriptionStatusesMock.mockResolvedValueOnce([
+      { status: 1, transaction: wrongEnv, renewal: null },
+      { status: 1, transaction: rightEnv, renewal: null },
+    ]);
+    const { service, insert } = makeReconcileServiceMock("otid_production");
+
+    const result = await reconcileAppleSubscription(service as never, PAYER_ID, "Production");
+
+    expect(result).toEqual({ ok: true, applied: true });
+    const insertedRow = insert.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(insertedRow.original_transaction_id).toBe("otid_production");
+  });
+
+  it("SELECTION: no_data when every candidate's environment mismatches the requested environment", async () => {
+    getAllSubscriptionStatusesMock.mockResolvedValueOnce([
+      { status: 1, transaction: makeTransaction({ environment: "Sandbox" }), renewal: null },
+    ]);
+    const { service } = makeReconcileServiceMock("otid_1");
+
+    const result = await reconcileAppleSubscription(service as never, PAYER_ID, "Production");
+
+    expect(result).toEqual({ ok: false, reason: "no_data" });
   });
 });

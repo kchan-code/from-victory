@@ -141,8 +141,41 @@ vi.mock("@/lib/subscriptions/apple-server", () => ({
 }));
 
 const applyAppleSnapshotMock = vi.fn();
+// Mirrors the REAL apple-lifecycle.deriveActionSubmissionStatus (unit-tested
+// independently in __tests__/subscriptions/apple-lifecycle.test.ts) so these
+// higher-level action tests can assert the action passes the DERIVED status
+// through to applyAppleSnapshot, not a hardcoded "subscribed".
+const deriveActionSubmissionStatusMock = vi.fn(
+  (
+    transaction: { expiresDate: number; revocationDate: number | null; revocationReason?: number | null },
+    renewal: { gracePeriodExpiresDate?: number | null } | null,
+    now: number = Date.now(),
+  ) => {
+    if (transaction.revocationDate != null || (transaction.revocationReason ?? null) != null) {
+      return "revoked";
+    }
+    if (renewal?.gracePeriodExpiresDate != null && now <= renewal.gracePeriodExpiresDate) {
+      return "in_grace_period";
+    }
+    if (transaction.expiresDate < now) {
+      return "expired";
+    }
+    return "subscribed";
+  },
+);
 vi.mock("@/lib/subscriptions/apple-lifecycle", () => ({
   applyAppleSnapshot: (...args: unknown[]) => applyAppleSnapshotMock(...args),
+  // A lazy wrapper (not a direct reference to `deriveActionSubmissionStatusMock`)
+  // — vi.mock factories are hoisted above the `const` below, so the wrapper
+  // body must only reference the mock when INVOKED, never at factory-object
+  // construction time (TDZ). Typed via `Parameters<...>` (erased at runtime,
+  // so no early evaluation) rather than `...args: unknown[]`, which can't be
+  // spread into the mock's strongly-typed (non-`any`) parameter list (TS2556).
+  deriveActionSubmissionStatus: (
+    transaction: Parameters<typeof deriveActionSubmissionStatusMock>[0],
+    renewal: Parameters<typeof deriveActionSubmissionStatusMock>[1],
+    now?: Parameters<typeof deriveActionSubmissionStatusMock>[2],
+  ) => deriveActionSubmissionStatusMock(transaction, renewal, now),
   buildSnapshotFields: (
     status: string,
     transaction: { environment: string; originalTransactionId: string; productId: string; expiresDate: number; appAccountToken: string | null; signedDate: number },
@@ -190,6 +223,7 @@ function makeTransaction(overrides: Record<string, unknown> = {}) {
     signedDate: 1_700_000_000_000,
     environment: "Production",
     revocationDate: null,
+    revocationReason: null,
     ...overrides,
   };
 }
@@ -199,6 +233,7 @@ beforeEach(() => {
   profileRole = "parent";
   sandboxAllowlisted = false;
   existingOwnerPayerId = null;
+  deriveActionSubmissionStatusMock.mockClear();
   mintedTokenExisting = "MINTED_TOKEN";
   mintedTokenAfterRace = "NEWLY_MINTED_TOKEN";
   stripeStatus = null;
@@ -332,6 +367,46 @@ describe("submitApplePurchase", () => {
     applyAppleSnapshotMock.mockResolvedValueOnce({ applied: false, reason: "stale" });
     const result = await submitApplePurchase(VALID_INPUT);
     expect(result).toEqual({ ok: true, applied: false });
+  });
+
+  it("STATUS DERIVATION: a live purchase persists status subscribed", async () => {
+    verifySignedTransactionMock.mockResolvedValueOnce(
+      makeTransaction({ expiresDate: Date.now() + 100_000 }),
+    );
+
+    const result = await submitApplePurchase(VALID_INPUT);
+
+    expect(result).toEqual({ ok: true, applied: true });
+    expect(applyAppleSnapshotMock).toHaveBeenCalledTimes(1);
+    // applyAppleSnapshot(service, { payerId, ...fields }) — fields are arg[1].
+    const persisted = applyAppleSnapshotMock.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(persisted.status).toBe("subscribed");
+  });
+
+  it("STATUS DERIVATION: restoring a LAPSED subscription persists status expired, not subscribed — and still persists", async () => {
+    verifySignedTransactionMock.mockResolvedValueOnce(
+      makeTransaction({ expiresDate: Date.now() - 100_000 }),
+    );
+
+    const result = await submitApplePurchase(VALID_INPUT);
+
+    expect(result).toEqual({ ok: true, applied: true });
+    expect(applyAppleSnapshotMock).toHaveBeenCalledTimes(1);
+    const persisted = applyAppleSnapshotMock.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(persisted.status).toBe("expired");
+  });
+
+  it("STATUS DERIVATION: restoring a REVOKED subscription persists status revoked — and still persists", async () => {
+    verifySignedTransactionMock.mockResolvedValueOnce(
+      makeTransaction({ expiresDate: Date.now() + 100_000, revocationDate: Date.now() - 1_000 }),
+    );
+
+    const result = await submitApplePurchase(VALID_INPUT);
+
+    expect(result).toEqual({ ok: true, applied: true });
+    expect(applyAppleSnapshotMock).toHaveBeenCalledTimes(1);
+    const persisted = applyAppleSnapshotMock.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(persisted.status).toBe("revoked");
   });
 
   it("DUPLICATE BILLING: persists the Apple row AND fires the ops alert when an active Stripe row also exists — never blocks", async () => {
