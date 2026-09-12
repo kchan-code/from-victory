@@ -24,6 +24,7 @@
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		FA573001AAA1BBB2CCC3D005 /* FVStoreKitTest.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = FVStoreKitTest.storekit; sourceTree = "<group>"; };
 		FA573001AAA1BBB2CCC3D001 /* FVAppleIAPPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FVAppleIAPPlugin.swift; sourceTree = "<group>"; };
 		FA573001AAA1BBB2CCC3D003 /* FVBridgeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FVBridgeViewController.swift; sourceTree = "<group>"; };
 		504EC30C1FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -59,6 +60,7 @@
 		504EC2FB1FED79650016851F = {
 			isa = PBXGroup;
 			children = (
+				FA573001AAA1BBB2CCC3D005 /* FVStoreKitTest.storekit */,
 				504EC3061FED79650016851F /* App */,
 				504EC3051FED79650016851F /* Products */,
 				7F8756D8B27F46E3366F6CEA /* Pods */,

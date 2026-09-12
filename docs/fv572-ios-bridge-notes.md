@@ -133,3 +133,84 @@ verification items:
 The TS-side `"bridge_unavailable"` error code never comes from native — it's
 what `apps/web/lib/native/apple-iap.ts` returns locally when
 `window.Capacitor.Plugins.FVAppleIAPPlugin` isn't present at all.
+
+---
+
+## FV-573 simulator run findings (2026-09-12, KC-authorized local-simulator scope)
+
+Executed on: Xcode 26.6 (17F113), iOS 26.5 simulator runtime; iPhone 17 Pro
+(57886019-49EF-413F-9F1A-1EE42C27D8BD) and iPad Pro 11-inch (M5)
+(803DAFAD-464C-4BDB-9C81-F395AB032AE2); Capacitor pods 7.6.8; source
+7c8283d + the FV-573 native commits. Evidence: docs/fv573-evidence/.
+
+**Answers to this doc's open verification items:**
+1. **Plugin registration:** Capacitor 7's auto-registration reads ONLY the
+   generated capacitor.config.json `packageClassList`, and the CLI
+   OVERWRITES a user-supplied `packageClassList` from capacitor.config.ts
+   with its detected-npm-packages list on every sync/copy (verified
+   empirically). App-local plugins therefore register via the
+   `FVBridgeViewController` (CAPBridgeViewController subclass) hook, wired
+   in Main.storyboard — verified working: `window.Capacitor.Plugins
+   .FVAppleIAPPlugin` visible, all four methods callable, both devices.
+2. **First compile:** the draft Swift plugin compiled with ZERO fixes.
+3. **Restore ordering / renewal-info presence:** restore returned the
+   current entitlement; `signedRenewalInfo` WAS present immediately after
+   purchase in the local test environment (both JWS well-formed,
+   3 segments). Keep treating it as optional server-side regardless.
+4. **finish() timing:** no observable issue locally; still verify against
+   Apple sandbox at device QA.
+
+**StoreKit-configuration mechanics (hard-won; do not rediscover):**
+- `xcrun simctl launch` CANNOT apply a .storekit configuration — only an
+  Xcode scheme launch pushes it (storekitd log line "Saving Octane
+  configuration for <bundle>"; a run without a resolvable reference logs
+  "StoreKit/Octane/LegacyDeleteConfiguration" and CLEARS any config).
+- The scheme's `StoreKitConfigurationFileReference identifier` resolves
+  RELATIVE TO THE .xcodeproj BUNDLE — for a file sitting next to
+  App.xcodeproj the correct value is `../FVStoreKitTest.storekit`.
+  An ABSOLUTE path CRASHES Xcode (assertion in
+  dvt_stringByMakingAbsolutePathWithBasePath via
+  IDESchemeOptionReference.resolvedReference — SIGABRT, reproduced twice).
+- Xcode caches the loaded scheme: after editing the .xcscheme on disk,
+  RESTART Xcode (or close/reopen the workspace) before trusting a re-run.
+- Driving Xcode headlessly: the AppleScript dictionary works
+  (`set active run destination`, `run`, `stop`, `last scheme action
+  result`), with gotchas: variable names `rd`/`target` collide with
+  dictionary terms; same-named workspace documents ALIAS in AppleScript
+  addressing (close other App.xcworkspace docs first); `loaded of ws`
+  must be true before queries.
+- StoreKit test fixture format: numeric-string `internalID`/group `id`
+  and a UUID `identifier` are required — non-numeric IDs make Xcode
+  silently treat the file as unparseable (config deleted, no error
+  surfaced anywhere).
+- `groupNumber` = subscription LEVEL (lower number = higher service
+  level). Capacity order MUST map to level order or upgrades become
+  at-renewal downgrades — verified live both ways; the real ASC config
+  (P2) must rank tier5 highest…tier1 lowest.
+- Ask-to-Buy (`settings._askToBuyEnabled: true`) produces the PENDING
+  path ("Ask Permission" sheet → bridge returns
+  `{ok:false,error:"pending"}` — verified on iPad).
+
+**Local matrix results (all typed contract codes verified on-device-sim):**
+registration ✓ (both devices) · boot vs production site ✓ (read-only; the
+new `(ios)` UA classified native by LIVE prod middleware) · unavailable
+config → `{"products":[]}` ✓ · unknown-product purchase → `failed` ✓ ·
+purchase success → txn+renewal JWS ✓ · cancel → `cancelled` ✓ · pending →
+`pending` ✓ (iPad) · restore 0-state → `failed` after sign-in cancel ✓ ·
+restore with entitlement → 1 transaction ✓ · manage sheet ✓ · in-group
+immediate UPGRADE ("starts today, prorated refund") ✓ · in-group
+DOWNGRADE ("starts when current expires") ✓ · post-upgrade
+currentEntitlements = single (supersession) ✓.
+
+**NOT proven locally (honest limits):** local StoreKit test JWS is signed
+by a LOCAL test authority — it is NOT Apple-sandbox evidence and our
+server verifier (Apple root CAs) would correctly reject it, so the
+web-layer round-trip (beginApplePurchase → submitApplePurchase →
+apple_subscriptions row) remains unit-test-covered only until Apple
+sandbox QA; Notifications V2 delivery, renewals/expiry/refund lifecycle
+timing, physical-device behavior, and the real /subscribe UI in-shell
+(needs a served build of the FV-572 web slice + test backend) are all
+device-QA/sandbox items. Harness runs used a local static page via
+`CAPACITOR_SERVER_URL=http://localhost:8787` (existing env override) —
+production was never written to; the only prod interaction was read-only
+page loads.
