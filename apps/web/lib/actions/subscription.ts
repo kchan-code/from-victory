@@ -46,6 +46,21 @@
  *     payment_method_collection: "always"   ← card collected up front; auto-charges on day 14.
  *   When not eligible (row exists, any status): no trial fields emitted.
  *
+ * Cross-provider one-trial rule (FV-570, docs/fv210-ios-iap-decision-record.md
+ * Section 4.5):
+ *   Trial eligibility additionally requires that the account has NEVER held a
+ *   Production Apple entitlement (`hasEverHeldAppleEntitlement`, scoped to
+ *   Production only — see that function's doc comment for why Sandbox rows
+ *   don't count). This stops a payer who already had a real trial/subscription
+ *   on iOS from getting a second free trial on the web. The Apple-mirror read
+ *   uses the SAME fail-closed contract as the existing Stripe read immediately
+ *   below (PR #185): a read error aborts checkout through the identical
+ *   user-facing error path rather than risking a duplicate trial.
+ *   (The 7-day/1-athlete trial-DURATION change itself is a separate,
+ *   web-trial-policy issue per record Section 10 — this file implements only
+ *   the cross-provider trial-HISTORY mechanics; `trial_period_days: 14` below
+ *   is intentionally untouched.)
+ *
  * redirect() position:
  *   `redirect()` from next/navigation throws a NEXT_REDIRECT error internally.
  *   It must NOT be called inside a try/catch block that could swallow it. The
@@ -79,7 +94,9 @@ import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { getStripe } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { planToPriceEnvVar } from "@/lib/subscriptions/plans";
+import { hasEverHeldAppleEntitlement } from "@/lib/subscriptions/apple";
 
 // ---------------------------------------------------------------------------
 // First-touch UTM attribution (FV-396)
@@ -193,9 +210,38 @@ async function startSubscriptionCheckout(
   }
 
   const existingCustomerId = existingSub?.stripe_customer_id ?? null;
-  // Trial is ONLY offered when there is no existing row. If ANY row exists
-  // (any status — active, canceled, trialing) the account has already had a trial.
-  const isTrialEligible = existingSub === null;
+
+  // Cross-provider one-trial rule (FV-570, record Section 4.5): also check
+  // whether this account ever held a Production Apple entitlement. Same
+  // fail-CLOSED contract as the Stripe read above (PR #185) — a read error
+  // must never risk granting a trial the account shouldn't have, so it
+  // aborts checkout through the identical user-facing error path.
+  let appleEverHeld: boolean;
+  try {
+    const service = createServiceClient();
+    appleEverHeld = await hasEverHeldAppleEntitlement(service, accountId);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(
+      `[subscription.startSubscriptionCheckout] apple entitlement read failed (account=${accountId}): ${message}`,
+    );
+    deliverInBackground(
+      notifyError("[checkout] apple entitlement read failed", message, {
+        parent_id: accountId,
+      }),
+    );
+    return {
+      ok: false,
+      error: "Couldn't start checkout right now. Try again in a moment.",
+    };
+  }
+
+  // Trial is ONLY offered when there is no existing Stripe row AND the
+  // account never held a Production Apple entitlement. If ANY Stripe row
+  // exists (any status — active, canceled, trialing) OR Apple entitlement
+  // history exists, the account has already had a trial on one provider or
+  // the other.
+  const isTrialEligible = existingSub === null && !appleEverHeld;
 
   // 5. Build site URL for success/cancel redirects.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
