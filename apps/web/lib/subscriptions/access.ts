@@ -17,6 +17,20 @@
  *   subscription-status path as before. The `subscriptions` table is never
  *   modified by the grants feature — it remains a pure Stripe mirror.
  *
+ * APPLE PROVIDER FOLD (FV-570, docs/fv210-ios-iap-decision-record.md
+ * Section 4.1):
+ *   Resolution order is `access_grants` -> Stripe mirror -> Apple mirror,
+ *   returning the BEST level across providers (comp grants still
+ *   short-circuit to "full" before either billing provider is read — see
+ *   step 1 below). The Apple read goes through the single centralized
+ *   accessor in `./apple` (`getAppleAccessLevelForPayer`), which is
+ *   environment-scoped (Production-only unless allowlisted, record Section
+ *   4.9) — this module never queries `apple_subscriptions` directly. A
+ *   payer's entitlement provider (stripe | apple | comp | none) is
+ *   derivable, not stored. The enum-only athlete privacy boundary
+ *   (comment below) is unchanged: the athlete path still receives ONLY the
+ *   AccessLevel enum, regardless of which provider produced it.
+ *
  * ENFORCEMENT (FV-62):
  *   These helpers return a level; they do NOT redirect or throw by themselves.
  *   Enforcement (locking routes) lives in `./enforce`. When the flag
@@ -32,6 +46,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { hasActiveCompGrant } from "./grants";
+import { getAppleAccessLevelForPayer } from "./apple";
 import {
   subscriptionAccessLevel,
   type AccessLevel,
@@ -43,21 +58,46 @@ export { subscriptionAccessLevel };
 export type { AccessLevel, SubscriptionStatus };
 
 // ---------------------------------------------------------------------------
+// Best-of ordering (Stripe vs Apple, after the comp-grant short-circuit)
+// ---------------------------------------------------------------------------
+
+const LEVEL_RANK: Record<AccessLevel, number> = {
+  full: 2,
+  degraded: 1,
+  blocked: 0,
+};
+
+function bestOf(a: AccessLevel, b: AccessLevel): AccessLevel {
+  return LEVEL_RANK[a] >= LEVEL_RANK[b] ? a : b;
+}
+
+// ---------------------------------------------------------------------------
 // Server DB reader — by parent ID
 // ---------------------------------------------------------------------------
 
 /**
  * Returns the effective access level for a known parent UUID.
  *
- * Resolution order:
- *   1. If the parent has an active comp grant → "full" (bypasses Stripe check).
- *   2. Otherwise: read the subscription row and derive the level from status.
+ * Resolution order (FV-570 adds step 3 — the Apple fold):
+ *   1. If the parent has an active comp grant → "full" (bypasses both
+ *      billing-provider checks; comp grants still short-circuit first).
+ *   2. Otherwise: read the Stripe subscription row and derive a level from
+ *      status.
+ *   3. Read the Apple mirror via the centralized `./apple` accessor and
+ *      derive a second level. Return the BEST of the Stripe and Apple
+ *      levels (record Section 4.1: "return the best level across
+ *      providers") — this is what lets a payer who is `full` via Stripe on
+ *      the web and never purchased on Apple (or vice versa) keep full
+ *      access everywhere, and what makes the "always-persist" duplicate-
+ *      billing design (record Section 4.4) safe: whichever provider's row
+ *      is healthiest wins.
  *
  * Uses the service-role client for the grant check (the grant table has a
  * parent-own SELECT policy, but this function is called from both parent and
  * athlete paths — the athlete path does not hold a parent session).
  *
- * Returns `blocked` if no row exists in either table (pre-Stripe, no grant).
+ * Returns `blocked` if no row exists in any of the three sources (pre-Stripe,
+ * pre-Apple, no grant).
  *
  * @param parentId UUID of the parent's profile row.
  */
@@ -84,25 +124,31 @@ export async function getParentAccessLevel(
     .eq("parent_id", parentId)
     .maybeSingle();
 
+  let stripeLevel: AccessLevel;
   if (error) {
     console.error(
       `[subscriptions/access] Error fetching subscription for parent=${parentId}:`,
       error.message,
     );
     // Fail-closed: treat DB errors as blocked rather than granting access.
-    return "blocked";
-  }
-
-  if (!data) {
+    stripeLevel = "blocked";
+  } else if (!data) {
     // No subscription row — parent hasn't subscribed yet (and has no comp grant).
-    return "blocked";
+    stripeLevel = "blocked";
+  } else {
+    stripeLevel = subscriptionAccessLevel(
+      data.status as SubscriptionStatus,
+      data.cancel_at_period_end,
+      data.current_period_end,
+    );
   }
 
-  return subscriptionAccessLevel(
-    data.status as SubscriptionStatus,
-    data.cancel_at_period_end,
-    data.current_period_end,
-  );
+  // Step 3: Apple mirror path (FV-570). getAppleAccessLevelForPayer is
+  // itself fail-closed (returns "blocked" on any DB error) — no try/catch
+  // needed here. Return the BEST of the two billing-provider levels.
+  const appleLevel = await getAppleAccessLevelForPayer(service, parentId);
+
+  return bestOf(stripeLevel, appleLevel);
 }
 
 // ---------------------------------------------------------------------------
