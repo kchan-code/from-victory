@@ -24,7 +24,7 @@ const {
   athleteCountMock,
   enforcementEnabledMock,
   accessLevelMock,
-  isNativeShellMock,
+  shellCapabilityMock,
 } = vi.hoisted(() => ({
   requireSubscriberMock: vi.fn(),
   maybeSingleMock: vi.fn(),
@@ -41,22 +41,34 @@ const {
   ),
   enforcementEnabledMock: vi.fn(() => false),
   accessLevelMock: vi.fn(async () => "full"),
-  // Default false (ordinary web/PWA request) — the FV-442 tests above must
-  // see today's unchanged behavior. The native-shell describe block below
-  // overrides this per test.
-  isNativeShellMock: vi.fn(() => false),
+  // Default null (ordinary web/PWA request, no shell at all) — the FV-442
+  // tests above must see today's unchanged behavior. The shell-capability
+  // describe blocks below override this per test to "legacy-native" /
+  // "ios-iap".
+  shellCapabilityMock: vi.fn(
+    (): "ios-iap" | "legacy-native" | null => null,
+  ),
 }));
 
 vi.mock("@/lib/auth/guards", () => ({
   requireSubscriber: requireSubscriberMock,
 }));
 
-// Google Play "no in-app purchase" compliance (native-shell fix). Mocked
-// wholesale — not next/headers — so this file doesn't have to also stub
-// "server-only" (lib/native-shell.ts imports it) just to exercise unrelated
-// price-paragraph copy.
+// Google Play "no in-app purchase" compliance + FV-572 iOS-IAP capability
+// split. Mocked wholesale — not next/headers — so this file doesn't have to
+// also stub "server-only" (lib/native-shell.ts imports it) just to exercise
+// unrelated price-paragraph copy.
 vi.mock("@/lib/native-shell", () => ({
-  isNativeShell: isNativeShellMock,
+  getRequestShellCapability: shellCapabilityMock,
+}));
+
+// AppleSubscribeSection is a client component with its own dedicated test
+// file — stub it here so this page-level suite stays scoped to the page's
+// own branching logic.
+vi.mock("@/components/subscribe/AppleSubscribeSection", () => ({
+  AppleSubscribeSection: () => (
+    <div data-testid="apple-subscribe-section-stub" />
+  ),
 }));
 
 // FV-464: the page mirrors enforcement's bounce condition to avoid a dead
@@ -116,10 +128,10 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   // clearAllMocks keeps mockReturnValue overrides — restore the FV-464 /
-  // native-shell / FV-574 defaults so test order never matters.
+  // shell-capability / FV-574 defaults so test order never matters.
   enforcementEnabledMock.mockReturnValue(false);
   accessLevelMock.mockResolvedValue("full");
-  isNativeShellMock.mockReturnValue(false);
+  shellCapabilityMock.mockReturnValue(null);
   athleteCountMock.mockResolvedValue({ count: 1, error: null });
 });
 
@@ -217,38 +229,41 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
   });
 });
 
-describe("SubscribePage — native shell (Google Play compliance)", () => {
-  it("shows no price, no SubscribeForm, and no Stripe mention when isNativeShell() is true", async () => {
+describe("SubscribePage — legacy-native shell (Google Play compliance)", () => {
+  it("shows no price, no SubscribeForm, and no Stripe mention when the shell capability is legacy-native", async () => {
     requireSubscriberMock.mockResolvedValue({
       userId: "parent-1",
       profile: { id: "parent-1", role: "parent", first_name: "Kim" },
     });
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
-    isNativeShellMock.mockReturnValue(true);
+    shellCapabilityMock.mockReturnValue("legacy-native");
 
     const { container, getByTestId, queryByTestId } = render(
       await SubscribePage({ searchParams: {} }),
     );
     const text = container.textContent ?? "";
 
+    // Byte-identical pin (FV-572): this exact copy must never drift without
+    // an explicit, reviewed change — it is the Google Play compliance notice.
     expect(
       getByTestId("native-shell-subscribe-notice").textContent,
-    ).toContain(
+    ).toBe(
       "Subscribe to From Victory from a web browser at fromvictoryapp.com.",
     );
     expect(queryByTestId("subscribe-form-stub")).toBeNull();
+    expect(queryByTestId("apple-subscribe-section-stub")).toBeNull();
     expect(text).not.toMatch(/\$5|\$49|\$3|\$29/);
     expect(text).not.toMatch(/stripe/i);
     expect(container.querySelector('[data-testid="subscribe-submit"]')).toBeNull();
   });
 
-  it("renders the normal plan selector + price copy when isNativeShell() is false", async () => {
+  it("renders the normal plan selector + price copy when the shell capability is null (ordinary web/PWA)", async () => {
     requireSubscriberMock.mockResolvedValue({
       userId: "parent-1",
       profile: { id: "parent-1", role: "parent", first_name: "Kim" },
     });
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
-    isNativeShellMock.mockReturnValue(false);
+    shellCapabilityMock.mockReturnValue(null);
 
     const { getByTestId, queryByTestId, container } = render(
       await SubscribePage({ searchParams: {} }),
@@ -256,7 +271,32 @@ describe("SubscribePage — native shell (Google Play compliance)", () => {
 
     expect(getByTestId("subscribe-form-stub")).toBeTruthy();
     expect(queryByTestId("native-shell-subscribe-notice")).toBeNull();
+    expect(queryByTestId("apple-subscribe-section-stub")).toBeNull();
     expect(container.textContent ?? "").toMatch(/\$5\/mo or \$49\/yr/);
+  });
+});
+
+describe("SubscribePage — ios-iap shell capability (FV-572)", () => {
+  it("renders AppleSubscribeSection, not SubscribeForm or the legacy-native notice", async () => {
+    requireSubscriberMock.mockResolvedValue({
+      userId: "parent-1",
+      profile: { id: "parent-1", role: "parent", first_name: "Kim" },
+    });
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    shellCapabilityMock.mockReturnValue("ios-iap");
+
+    const { getByTestId, queryByTestId, container } = render(
+      await SubscribePage({ searchParams: {} }),
+    );
+    const text = container.textContent ?? "";
+
+    expect(getByTestId("apple-subscribe-section-stub")).toBeTruthy();
+    expect(queryByTestId("subscribe-form-stub")).toBeNull();
+    expect(queryByTestId("native-shell-subscribe-notice")).toBeNull();
+    // Same no-Stripe-pricing posture as legacy-native — the headline
+    // paragraph must not promise Stripe's dollar amounts on an IAP shell.
+    expect(text).not.toMatch(/\$5|\$49|\$3|\$29/);
+    expect(text).not.toMatch(/stripe/i);
   });
 });
 
