@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FV Bridge Harness</title>
+<style>
+  body { background:#050505; color:#f5f0e6; font-family:-apple-system, sans-serif; margin:0; padding:16px; }
+  h1 { font-size:18px; margin:8px 0; }
+  .status { font-size:15px; font-weight:700; margin:6px 0; }
+  button { display:block; width:100%; padding:14px; margin:8px 0; font-size:16px; font-weight:700;
+           background:#e0a92e; color:#050505; border:0; border-radius:12px; }
+  #log p { font-size:13px; margin:4px 0; border-bottom:1px solid #222; padding-bottom:4px; word-break:break-all; }
+</style>
+</head>
+<body>
+<h1>FV-573 BRIDGE HARNESS (local test only)</h1>
+<div class="status" id="cap-status">capacitor: checking</div>
+<div class="status" id="plugin-status">plugin: checking</div>
+<button id="btn-products" onclick="loadProducts()">Load Products</button>
+<button id="btn-buy1" onclick="buy('test.fv.tier1.monthly')">Purchase tier1</button>
+<button id="btn-buy3" onclick="buy('test.fv.tier3.monthly')">Purchase tier3</button>
+<button id="btn-restore" onclick="doRestore()">Restore</button>
+<button id="btn-manage" onclick="doManage()">Manage</button>
+<div id="log"></div>
+<script>
+// LOCAL TEST HARNESS ONLY — never shipped, never served in production.
+// Exercises the raw FVAppleIAPPlugin bridge contract with clearly-fake
+// product IDs and a fixed synthetic appAccountToken. The real web app path
+// (beginApplePurchase/submitApplePurchase server actions) is NOT exercised
+// here; local StoreKit test transactions are NOT Apple-sandbox evidence.
+var TEST_TOKEN = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeee0001";
+function log(msg) {
+  var p = document.createElement("p");
+  p.textContent = msg;
+  document.getElementById("log").prepend(p);
+}
+function plugin() {
+  return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.FVAppleIAPPlugin;
+}
+function summarizeJws(s) {
+  if (!s) return "none";
+  return s.slice(0, 24) + "... (" + s.length + " chars, " + (s.split(".").length) + " segments)";
+}
+window.addEventListener("load", function () {
+  document.getElementById("cap-status").textContent =
+    "capacitor: " + (window.Capacitor ? "INJECTED (native=" + (window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) + ")" : "MISSING");
+  document.getElementById("plugin-status").textContent =
+    "plugin: " + (plugin() ? "REGISTERED" : "MISSING");
+});
+async function loadProducts() {
+  try {
+    var r = await plugin().getProducts({ productIds: ["test.fv.tier1.monthly", "test.fv.tier3.monthly"] });
+    log("getProducts ok: " + JSON.stringify(r));
+  } catch (e) { log("getProducts ERROR: " + (e && e.message ? e.message : JSON.stringify(e))); }
+}
+async function buy(pid) {
+  try {
+    var r = await plugin().purchase({ productId: pid, appAccountToken: TEST_TOKEN });
+    if (r && r.ok) {
+      log("purchase " + pid + " OK: txn=" + summarizeJws(r.signedTransactionInfo) + " renewal=" + summarizeJws(r.signedRenewalInfo));
+    } else {
+      log("purchase " + pid + " NOT-OK: " + JSON.stringify(r));
+    }
+  } catch (e) { log("purchase " + pid + " ERROR: " + (e && e.message ? e.message : JSON.stringify(e))); }
+}
+async function doRestore() {
+  try {
+    var r = await plugin().restore({});
+    if (r && r.ok) {
+      log("restore OK: " + (r.transactions ? r.transactions.length : 0) + " transaction(s); first=" + summarizeJws(r.transactions && r.transactions[0] && r.transactions[0].signedTransactionInfo));
+    } else {
+      log("restore NOT-OK: " + JSON.stringify(r));
+    }
+  } catch (e) { log("restore ERROR: " + (e && e.message ? e.message : JSON.stringify(e))); }
+}
+async function doManage() {
+  try {
+    var r = await plugin().manageSubscriptions({});
+    log("manage returned: " + JSON.stringify(r));
+  } catch (e) { log("manage ERROR: " + (e && e.message ? e.message : JSON.stringify(e))); }
+}
+</script>
+</body>
+</html>
