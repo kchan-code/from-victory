@@ -214,3 +214,57 @@ device-QA/sandbox items. Harness runs used a local static page via
 `CAPACITOR_SERVER_URL=http://localhost:8787` (existing env override) —
 production was never written to; the only prod interaction was read-only
 page loads.
+
+---
+
+## FV-573 UI-in-shell pass (2026-09-13, PR #519 continuation — Codex-monitor directive)
+
+Actual `AppleSubscribeSection` (real component import, zero modifications)
+observed in-shell via the hard-gated `/dev/apple-iap-preview` route
+(NODE_ENV=development + FV_IAP_DEV_PREVIEW=1; structurally unreachable in any
+deployed build), served by a local Next dev server; shell pointed at it with
+the pre-existing `CAPACITOR_SERVER_URL` override. Runtime: Xcode 26.6,
+iOS 26.5, iPhone 17 Pro (57886019) + iPad Pro 11" (803DAFAD), commit range
+d66cca5..this commit.
+
+**Matrix (REAL component + REAL classifier + REAL bridge + REAL server
+action; synthetic product config only):**
+
+| Path | Result | Stubbed or real? |
+|---|---|---|
+| Render/layout, iPhone | PASS — cards, capacity labels, selection ring, buttons (`iphone17pro-ui-preview-cards.png`) | Real component; localized prices via REAL bridge getProducts from the .storekit fixture |
+| Render/layout, iPad | PASS (`ipadpro11-ui-preview-cards-probe.png`) | Same; probe line shows `MOUNT@318MS: BRIDGE PRESENT | RECHECK@1823MS: PRESENT` |
+| shellCapability in-shell | `ios-iap` on both devices (server-rendered from the real request UA) | Real |
+| Empty-product neutral state | PASS in-shell on iPhone (`iphone17pro-ui-preview-neutral-state.png`): no price, no purchase affordance, no external steering | Real component, env unset |
+| Selection interaction | PASS on-device tap moves aria-checked + ring (`iphone17pro-ui-preview-selection-and-real-action-error.png`) | Real |
+| Purchase tap → error presentation | PASS: REAL `beginApplePurchase` server-action round-trip (POST visible in dev-server log), refused `unauthenticated` by design → calm parent-facing error copy; ZERO writes | REAL action; auth refusal path — NOT a purchase-success path |
+| Loading presentation | Transient "Completing purchase…" disabled state exercised in the same flow | Real |
+| Cancel / pending presentation through the REAL component | NOT run here — requires an authed `beginApplePurchase` to reach `bridge.purchase` | See missing prerequisite below; both paths ARE proven at bridge level (this doc, 2026-09-12) and at component level with mocked actions (PR #518 RTL) |
+
+**iPad anomaly (recorded honestly):** the first two iPad runs rendered the
+SSR "unavailable" state despite `configuredProducts: 2`
+(`ipadpro11-ui-preview-unavailable-anomaly.png`), while the bridge harness on
+the same device showed `plugin: REGISTERED`. After the probe edit forced a
+dev-server recompile (new chunk hashes), the same page renders fully and the
+probe shows the bridge present AT MOUNT (318ms). Interpretation: dev-mode
+chunk staleness in the WKWebView cache on first-ever load (the iPad's first
+hit raced the route's first compile), NOT a bridge/registration defect and
+NOT a mount-time race — both alternative theories were tested and
+contradicted. Dev-server-only artifact; production builds serve immutable
+hashed assets. If it ever reproduces against a production build at FV-573
+sandbox QA, re-open.
+
+**Exact missing prerequisite for the untested composite** (authed real
+/subscribe page, and purchase→sheet→cancel/pending through the real
+component): a local/test Supabase backend + signed-in payer session. This
+host has NO container runtime (no local `supabase start`), the app has NO
+synthetic-auth mode (verified by grep — signin is the only path), and
+building one would weaken the production auth surface — out of bounds by
+directive. First honest opportunity: Apple-sandbox QA on TestFlight builds
+against a disposable Supabase project (checklist §6), or any dev machine
+with Docker where `supabase start` + a seeded parent makes the real
+/subscribe page loadable in-shell with zero app changes.
+
+**Distinction ledger:** everything above is LOCAL evidence — local StoreKit
+fixture, dev server, unauthenticated action refusals. None of it is Apple
+sandbox, App Store server, or real-backend verification evidence.

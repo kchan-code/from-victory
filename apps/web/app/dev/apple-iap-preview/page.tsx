@@ -4,6 +4,8 @@ import { getRequestShellCapability } from "@/lib/native-shell";
 import { getConfiguredAppleProducts } from "@/lib/subscriptions/apple-products";
 import { AppleSubscribeSection } from "@/components/subscribe/AppleSubscribeSection";
 
+import { BridgeProbe } from "./probe";
+
 export const metadata = {
   title: "Dev · Apple IAP Preview",
 };
@@ -78,6 +80,7 @@ export default function AppleIapPreviewPage() {
           >
             configuredProducts: {configuredProductCount}
           </p>
+          <BridgeProbe />
         </div>
 
         <AppleSubscribeSection />
