@@ -265,6 +265,64 @@ against a disposable Supabase project (checklist §6), or any dev machine
 with Docker where `supabase start` + a seeded parent makes the real
 /subscribe page loadable in-shell with zero app changes.
 
+### Recommended minimal setup for the authed in-shell pass (KC-gated: one new host install)
+
+**Host assessment (re-verified 2026-09-15):** this Mac has NO container
+runtime — no `docker`/`podman`/`colima`/`limactl`/`nerdctl`/`finch`
+binaries, no Docker/OrbStack/Rancher app in `/Applications`, no
+`/var/run/docker.sock`, no container brew formulae. Supabase CLI 2.75.0
+is installed and authenticated; the only cloud projects are
+`kc-command-center`, `Delvox`, and the linked PRODUCTION `from-victory`
+(`kumrgeosgzdlxgljbyju`) — no test/staging project exists. `supabase
+status` fails on the missing Docker daemon. The single missing
+prerequisite is a Docker-API-compatible container runtime — nothing else.
+
+**The one KC decision: install a runtime.** Smallest footprint:
+`brew install colima docker && colima start` (CLI-only, no license, no
+admin app). Alternatives: OrbStack or Docker Desktop. Nothing else needs
+installing and ZERO app-code changes are needed.
+
+**Once a runtime exists, every remaining step already exists in the repo:**
+- `supabase start` + `supabase db push --local` at the repo root — exactly
+  the CI plumbing in `.github/workflows/ci.yml`, which proves our
+  migrations run green on this stack.
+- Seed the synthetic parent with the EXISTING auth path —
+  `apps/web/e2e/global-setup.ts`: it creates a pre-confirmed `e2e-`-prefixed
+  test parent via `auth.admin.createUser` plus the parent `profiles` row
+  (mirroring the signup action), using env vars
+  `E2E_SUPABASE_URL`/`E2E_SUPABASE_ANON_KEY`/`E2E_SUPABASE_SERVICE_ROLE_KEY`
+  taken from `supabase status -o env`. Its `assertNotProd` guard hard-
+  refuses the production ref and any remote `*.supabase.co` host, and
+  teardown deletes all `e2e-` data — disposable by construction. This is
+  NOT a synthetic-auth bypass; the shell session comes from the real
+  signin flow.
+- Run the dev server on port 3573 with
+  `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` pointed at the
+  LOCAL stack (`http://127.0.0.1:54321`) plus `SUPABASE_SERVICE_ROLE_KEY`
+  from the local stack, and `NEXT_PUBLIC_APPLE_PRODUCTS` set to the
+  test-only fixture IDs (`test.fv.tier1.monthly` / `test.fv.tier3.monthly`).
+- `CAPACITOR_SERVER_URL=http://localhost:3573 npx cap copy ios` in
+  `apps/native` (ALWAYS print the synced URL from the generated config
+  afterwards — a failed command in a chain once silently skipped this),
+  build with the existing shared scheme (which applies
+  `FVStoreKitTest.storekit`), sign in in-shell as the seeded parent through
+  the real signin form, navigate to the real `/subscribe`.
+- Afterwards restore the synced config: re-run `npx cap copy ios` WITHOUT
+  the env override and confirm the printed URL is
+  `https://www.fromvictoryapp.com`.
+
+**Pre-declared honest outcomes** (so nobody later inflates the claim):
+- Purchase-sheet cancel and Ask-to-Buy PENDING through the REAL component =
+  valid LOCAL presentation evidence (closes the last two rows of the
+  matrix above).
+- A CONFIRMED purchase produces a JWS signed by the local StoreKit test
+  certificate; the Apple-root verifier behind `submitApplePurchase` MUST
+  reject it. The correct, expected result is a verification refusal
+  surfaced as the calm error copy — NOT entitlement success. Never relax
+  or stub verification to force a success; verified-entitlement evidence
+  remains Apple-sandbox/TestFlight scope (checklist §6).
+- All rows stay LOCAL evidence under the Distinction ledger below.
+
 **Distinction ledger:** everything above is LOCAL evidence — local StoreKit
 fixture, dev server, unauthenticated action refusals. None of it is Apple
 sandbox, App Store server, or real-backend verification evidence.
