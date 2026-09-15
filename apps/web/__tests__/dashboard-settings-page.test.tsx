@@ -39,14 +39,15 @@ vi.mock("react-dom", async (importOriginal) => {
 
 const {
   requireParentMock,
-  isNativeShellMock,
+  shellCapabilityMock,
   getUserMock,
   maybeSingleMock,
 } = vi.hoisted(() => ({
   requireParentMock: vi.fn(),
-  // Google Play "no in-app purchase" compliance. Defaults to false
-  // (ordinary web/PWA request) — individual tests override per case.
-  isNativeShellMock: vi.fn(() => false),
+  // Google Play "no in-app purchase" compliance + FV-572/577 capability.
+  // Defaults to null (ordinary web/PWA request) — individual tests override
+  // per case with "legacy-native" | "ios-iap" | null.
+  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
   getUserMock: vi.fn(async () => ({ data: { user: { email: "kim@example.com" } } })),
   maybeSingleMock: vi.fn(),
 }));
@@ -56,7 +57,7 @@ vi.mock("@/lib/auth/guards", () => ({
 }));
 
 vi.mock("@/lib/native-shell", () => ({
-  isNativeShell: isNativeShellMock,
+  getRequestShellCapability: shellCapabilityMock,
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -88,7 +89,7 @@ afterEach(() => {
   vi.clearAllMocks();
   // clearAllMocks keeps mockReturnValue overrides — restore defaults so
   // test order never matters.
-  isNativeShellMock.mockReturnValue(false);
+  shellCapabilityMock.mockReturnValue(null);
   getUserMock.mockResolvedValue({ data: { user: { email: "kim@example.com" } } });
 });
 
@@ -101,9 +102,9 @@ async function renderPage() {
   return render(jsx);
 }
 
-describe("/dashboard/settings — Billing Portal native-shell suppression", () => {
-  it("renders the real BillingPortalButton when isNativeShell() is false", async () => {
-    isNativeShellMock.mockReturnValue(false);
+describe("/dashboard/settings — Billing Portal shell-capability suppression", () => {
+  it("renders the real BillingPortalButton when capability is null (web)", async () => {
+    shellCapabilityMock.mockReturnValue(null);
     maybeSingleMock.mockResolvedValue({
       data: {
         status: "active",
@@ -122,8 +123,8 @@ describe("/dashboard/settings — Billing Portal native-shell suppression", () =
     ).not.toBeInTheDocument();
   });
 
-  it("replaces BillingPortalButton with a neutral, non-tappable notice when isNativeShell() is true", async () => {
-    isNativeShellMock.mockReturnValue(true);
+  it("replaces BillingPortalButton with a neutral, non-tappable notice when capability is 'legacy-native'", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
     maybeSingleMock.mockResolvedValue({
       data: {
         status: "active",
@@ -147,7 +148,7 @@ describe("/dashboard/settings — Billing Portal native-shell suppression", () =
 
 describe("/dashboard/settings — FV-492 no user-visible Stripe/portal wording in-shell", () => {
   it("renders no visible 'Stripe' or 'portal' text in-shell (active subscription), keeping the browser notice", async () => {
-    isNativeShellMock.mockReturnValue(true);
+    shellCapabilityMock.mockReturnValue("legacy-native");
     maybeSingleMock.mockResolvedValue({
       data: {
         status: "active",
@@ -173,7 +174,7 @@ describe("/dashboard/settings — FV-492 no user-visible Stripe/portal wording i
   });
 
   it("renders no visible 'Stripe' or 'portal' text in-shell with no subscription row", async () => {
-    isNativeShellMock.mockReturnValue(true);
+    shellCapabilityMock.mockReturnValue("legacy-native");
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
 
     const { container } = await renderPage();
@@ -182,9 +183,9 @@ describe("/dashboard/settings — FV-492 no user-visible Stripe/portal wording i
   });
 });
 
-describe("/dashboard/settings — 'Choose a plan' native-shell gating (no subscription row)", () => {
-  it("shows 'No active subscription.' + a 'Choose a plan' link to /subscribe when isNativeShell() is false", async () => {
-    isNativeShellMock.mockReturnValue(false);
+describe("/dashboard/settings — 'Choose a plan' shell-capability gating (no subscription row, FV-572/577)", () => {
+  it("shows 'No active subscription.' + a 'Choose a plan' link to /subscribe when capability is null (web)", async () => {
+    shellCapabilityMock.mockReturnValue(null);
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
 
     await renderPage();
@@ -196,8 +197,8 @@ describe("/dashboard/settings — 'Choose a plan' native-shell gating (no subscr
     expect(link).toHaveAttribute("href", "/subscribe");
   });
 
-  it("drops the 'Choose a plan' link and shows browser-subscribe copy when isNativeShell() is true", async () => {
-    isNativeShellMock.mockReturnValue(true);
+  it("drops the 'Choose a plan' link and shows browser-subscribe copy when capability is 'legacy-native'", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
 
     await renderPage();
@@ -208,5 +209,20 @@ describe("/dashboard/settings — 'Choose a plan' native-shell gating (no subscr
     expect(screen.getByTestId("no-subscription")).toHaveTextContent(
       "Subscribe to From Victory from a web browser at fromvictoryapp.com.",
     );
+  });
+
+  it("keeps the price-free 'Choose a plan' link to /subscribe when capability is 'ios-iap' (FV-577)", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    const { container } = await renderPage();
+
+    expect(screen.getByTestId("no-subscription")).toHaveTextContent(
+      "No active subscription.",
+    );
+    const link = screen.getByRole("link", { name: "Choose a plan" });
+    expect(link).toHaveAttribute("href", "/subscribe");
+    expect(container.textContent ?? "").not.toMatch(/web browser/i);
+    expect(container.textContent ?? "").not.toMatch(/\$/);
   });
 });

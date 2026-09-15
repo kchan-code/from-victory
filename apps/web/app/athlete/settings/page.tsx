@@ -6,7 +6,7 @@ import { BillingPortalButton } from "@/components/dashboard/BillingPortalButton"
 import { DeleteAccountSection } from "@/components/dashboard/DeleteAccountSection";
 import { Icon } from "@/components/ui";
 import { requireAthlete } from "@/lib/auth/guards";
-import { isNativeShell } from "@/lib/native-shell";
+import { getRequestShellCapability } from "@/lib/native-shell";
 import { createClient } from "@/lib/supabase/server";
 import { SUPPORTED_SPORTS, sportLabel, type Sport } from "@/lib/sports";
 import { FOCUS_AREA_LABELS, isFocusAreaKey } from "@/lib/quiz-config";
@@ -37,12 +37,18 @@ export default async function AthleteSettingsPage({
   // documents at app/athlete/paused/page.tsx:19-21.
   const isAdult = profile.role === "adult_athlete";
 
-  // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
-  // checkout.stripe.com has no reachable path (it's deliberately not in
-  // allowNavigation — see apps/native/capacitor.config.ts), so the Billing
+  // Google Play "no in-app purchase" compliance: inside the legacy-native
+  // shell, checkout.stripe.com has no reachable path (it's deliberately not
+  // in allowNavigation — see apps/native/capacitor.config.ts), so the Billing
   // Portal button below (adult_athlete only) may not render as tappable,
-  // Stripe-bound UI. See lib/native-shell.ts.
-  const nativeShell = isNativeShell();
+  // Stripe-bound UI. See lib/native-shell.ts. FV-577: an ios-iap shell can't
+  // use Stripe's portal either (Apple's IAP flow doesn't route through it),
+  // so it gets its own price-free /subscribe entry instead of
+  // BillingPortalButton — /subscribe renders AppleSubscribeSection (purchase
+  // + restore + manage) for that capability.
+  const shellCapability = getRequestShellCapability();
+  const legacyNative = shellCapability === "legacy-native";
+  const iosIap = shellCapability === "ios-iap";
 
   // Load push subscription summary for the "Daily reminder" settings row.
   // Only fetch reminder_hour — never expose keys/endpoint to the page.
@@ -236,20 +242,27 @@ export default async function AthleteSettingsPage({
                 Subscription
               </h2>
               <div className="rounded-[12px] border border-hairline bg-charcoal px-4 py-3.5">
-                {/* In-shell, no manage CTA or helper line — reader-app
-                    compliance means the only subscription copy is the
-                    neutral browser notice below. */}
-                {nativeShell ? null : (
+                {/* In legacy-native shell, no manage CTA or helper line —
+                    reader-app compliance means the only subscription copy is
+                    the neutral browser notice below. An ios-iap shell keeps
+                    the helper line — it's already price-free and applies
+                    equally to the /subscribe entry below (FV-577). */}
+                {legacyNative ? null : (
                   <p className="mb-4 font-body text-[13px] leading-snug text-cream/50">
                     Manage or cancel your subscription.
                   </p>
                 )}
-                {/* In-shell, checkout.stripe.com is unreachable (Google Play
-                    compliance — see lib/native-shell.ts), so
+                {/* In legacy-native shell, checkout.stripe.com is unreachable
+                    (Google Play compliance — see lib/native-shell.ts), so
                     BillingPortalButton is replaced by neutral, non-tappable
                     text — same pattern as the other native-shell notices
-                    (app/subscribe/page.tsx, app/athlete/paused/page.tsx). */}
-                {nativeShell ? (
+                    (app/subscribe/page.tsx, app/athlete/paused/page.tsx).
+                    FV-577: an ios-iap shell can't use Stripe's portal either,
+                    but it CAN reach the app's own purchase surface — a
+                    price-free link to /subscribe, where
+                    AppleSubscribeSection handles purchase, restore, and
+                    manage via StoreKit. */}
+                {legacyNative ? (
                   <div
                     role="status"
                     data-testid="billing-portal-native-shell-notice"
@@ -260,6 +273,14 @@ export default async function AthleteSettingsPage({
                       browser at fromvictoryapp.com.
                     </p>
                   </div>
+                ) : iosIap ? (
+                  <Link
+                    href="/subscribe"
+                    data-testid="settings-subscribe-btn"
+                    className="inline-flex items-center justify-center font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 min-h-[44px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+                  >
+                    Manage subscription
+                  </Link>
                 ) : (
                   <BillingPortalButton />
                 )}
