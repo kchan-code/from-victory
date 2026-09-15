@@ -295,18 +295,29 @@ installing and ZERO app-code changes are needed.
   refuses the production ref and any remote `*.supabase.co` host, and
   teardown deletes all `e2e-` data — disposable by construction. This is
   NOT a synthetic-auth bypass; the shell session comes from the real
-  signin flow.
+  signin flow. Running `global-setup.ts` wholesale also creates (and tears
+  down via the same `e2e-` cleanup) a synthetic test-athlete fixture
+  alongside the parent.
 - Run the dev server on port 3573 with
   `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` pointed at the
   LOCAL stack (`http://127.0.0.1:54321`) plus `SUPABASE_SERVICE_ROLE_KEY`
-  from the local stack, and `NEXT_PUBLIC_APPLE_PRODUCTS` set to the
-  test-only fixture IDs (`test.fv.tier1.monthly` / `test.fv.tier3.monthly`).
+  from the local stack, and `NEXT_PUBLIC_APPLE_PRODUCTS` set to the literal
+  value
+  `NEXT_PUBLIC_APPLE_PRODUCTS='[{"productId":"test.fv.tier1.monthly","athleteCapacity":1},{"productId":"test.fv.tier3.monthly","athleteCapacity":3}]'`.
+  `getConfiguredAppleProducts()`
+  (`apps/web/lib/subscriptions/apple-products.ts`) requires a JSON array
+  of objects (`{productId, athleteCapacity, displayName?}`) and silently
+  drops any entry missing a valid positive-integer `athleteCapacity`
+  (`console.warn` only, never a throw) — bare ID strings would render the
+  neutral "not available" state and waste the KC-gated window.
 - `CAPACITOR_SERVER_URL=http://localhost:3573 npx cap copy ios` in
   `apps/native` (ALWAYS print the synced URL from the generated config
   afterwards — a failed command in a chain once silently skipped this),
   build with the existing shared scheme (which applies
   `FVStoreKitTest.storekit`), sign in in-shell as the seeded parent through
-  the real signin form, navigate to the real `/subscribe`.
+  the real signin form, navigate to the real `/subscribe`. The sync writes
+  `apps/native/ios/App/App/capacitor.config.json` — verify the URL there
+  directly if the printed check was ever missed.
 - Afterwards restore the synced config: re-run `npx cap copy ios` WITHOUT
   the env override and confirm the printed URL is
   `https://www.fromvictoryapp.com`.
