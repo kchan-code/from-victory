@@ -337,3 +337,74 @@ installing and ZERO app-code changes are needed.
 **Distinction ledger:** everything above is LOCAL evidence — local StoreKit
 fixture, dev server, unauthenticated action refusals. None of it is Apple
 sandbox, App Store server, or real-backend verification evidence.
+
+## Authed in-shell pass — EXECUTED 2026-09-15 (KC-approved runtime install)
+
+KC approved installing a container runtime (`brew install colima docker &&
+colima start`), which cleared the sole missing prerequisite. The runbook
+above was then executed end-to-end: local Supabase stack up (migrations
+`db push --local` = "up to date", CI-parity), the `e2e-` parent seeded via
+the REAL `global-setup.ts` path (assertNotProd guard confirmed pointing at
+`http://127.0.0.1:54321`, never prod), dev server on 3573 pointed at the
+local stack + test fixture products, `cap copy` with the shell entry at
+`/subscribe`. Signed in in-shell as the seeded parent through the REAL
+signin form; the WKWebView session cookie then made the REAL authed
+`/subscribe` load in-shell (`GET /subscribe 200` with the session cookie,
+after the cookieless `307`). No synthetic-auth bypass; no verification
+weakened.
+
+Exact runtime: colima (Docker API) + Supabase CLI 2.75.0 local stack;
+Xcode 26.6 shared scheme (applies `FVStoreKitTest.storekit`); iPhone 17 Pro
+`57886019` + iPad Pro 11" M5 `803DAFAD`, iOS 26.5; branch head at test time
+019bed7 (+ this evidence commit). Test parent payer id
+`392666ee-9773-495c-9f13-14c8d52595b1`.
+
+**Matrix — REAL authed `/subscribe` + REAL component + REAL bridge + REAL
+server actions + local StoreKit fixture (disposable local data only):**
+
+| Path | iPhone | iPad | Result / evidence |
+|---|---|---|---|
+| Authed render (cards, capacity, selection ring, real-bridge $5.99/$11.99) | PASS | PASS | `*-authed-subscribe-cards.png`; server log `GET /subscribe 200` (cookie) |
+| Real StoreKit purchase sheet handoff (`beginApplePurchase` → `bridge.purchase`) | PASS | PASS | `iphone17pro-authed-storekit-sheet.png` ("Xcode" env, "For testing purposes only") |
+| Confirmed purchase → **Apple-root verifier REJECTS local-cert JWS** → calm error copy | PASS | PASS | `*-authed-verification-rejected.png`; server log `transaction JWS verification failed (payer=392666ee…)`; "We couldn't complete that purchase. Please try again." |
+| Zero entitlement written | PASS | PASS | `apple_subscriptions`=0, `subscriptions`=0 after every attempt; only write is the 1 sanctioned pre-purchase `apple_purchase_tokens` row |
+| Purchase-sheet cancel → quiet reset (no error) | PASS | (iPhone) | `iphone17pro-authed-cancel-quiet-reset.png` |
+| Ask-to-Buy PENDING → "Your purchase is waiting on approval. Check back soon." | PASS | (iPhone) | `iphone17pro-authed-pending-asktobuy.png` (fixture `_askToBuyEnabled` flipped true for this run, then reverted — fixture clean) |
+| Restore → sign-in-simulate cancel → distinct restore error copy | PASS | (iPhone) | `iphone17pro-authed-restore-cancelled-error.png` ("We couldn't check for a previous purchase…") |
+| Manage Subscription → OS "Edit Subscription [Xcode]" sheet, cancel subscription | PASS | (iPhone) | `iphone17pro-authed-manage-sheet.png` |
+
+The security property is the headline: StoreKit reports a LOCAL success
+("You're all set · [Environment: Xcode]") while the app's own result is the
+verification refusal — the local test certificate is correctly rejected by
+the `SignedDataVerifier` (Apple root CAs) with no dev bypass. Confirmed on
+BOTH devices.
+
+**Finding (not-yet-built wiring, → FV-573 follow-up):** the dashboard and
+settings both intentionally suppress the `/subscribe` link inside the
+native shell (Google Play "no IAP steering" compliance, which predates the
+Apple surface), so there is no in-shell nav entry-point to the Apple
+purchase UI yet. The authed pass reached `/subscribe` via the shell entry
+URL; production needs an iOS-shell-only entry-point wired in.
+
+**Still NOT proven here (honest boundary):** verified-entitlement SUCCESS
+(a real grant) — impossible locally by design, because the Apple-root
+verifier rejects the local test cert. That, plus Notifications V2 delivery,
+renewal/expiry/refund lifecycle timing, and physical-device behavior, all
+remain Apple-sandbox/TestFlight scope (checklist §6). iPad ran authed
+render + the purchase→rejection composite for device parity; the
+cancel/pending/restore/manage variants were exercised on iPhone (identical
+web/bridge code path across devices) and are not re-run on iPad
+unnecessarily.
+
+**iPad harness note:** the iPad Pro simulator initially punted the
+path-entry redirect to external Safari and showed a non-painting Stage
+Manager window; a clean reboot with Stage Manager disabled resolved it
+(simulator artifact, not a product defect). Recorded so the next runner
+disables Stage Manager on iPad sims first.
+
+**Distinction ledger (authed pass):** all rows above are LOCAL evidence —
+local StoreKit test certificate, local Supabase stack, dev server. The
+verification REJECTION is real backend behavior (the production verifier
+ran and correctly refused), but it is NOT a positive Apple-sandbox
+entitlement result. No production data was touched; all test data is
+disposable `e2e-` local rows.
