@@ -43,23 +43,23 @@ vi.mock("react-dom", async (importOriginal) => {
   };
 });
 
-const { requireAthleteMock, maybeSingleMock, isNativeShellMock } = vi.hoisted(
-  () => ({
+const { requireAthleteMock, maybeSingleMock, shellCapabilityMock } =
+  vi.hoisted(() => ({
     requireAthleteMock: vi.fn(),
     maybeSingleMock: vi.fn(),
-    // Google Play "no in-app purchase" compliance. Defaults to false
-    // (ordinary web/PWA request) — the native-shell describe block below
-    // overrides it per test.
-    isNativeShellMock: vi.fn(() => false),
-  }),
-);
+    // Google Play "no in-app purchase" compliance + FV-572/577 capability.
+    // Defaults to null (ordinary web/PWA request) — the shell-capability
+    // describe block below overrides it per test with
+    // "legacy-native" | "ios-iap" | null.
+    shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
+  }));
 
 vi.mock("@/lib/auth/guards", () => ({
   requireAthlete: requireAthleteMock,
 }));
 
 vi.mock("@/lib/native-shell", () => ({
-  isNativeShell: isNativeShellMock,
+  getRequestShellCapability: shellCapabilityMock,
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -91,7 +91,7 @@ afterEach(() => {
   vi.clearAllMocks();
   // clearAllMocks keeps mockReturnValue overrides — restore the
   // native-shell default so test order never matters.
-  isNativeShellMock.mockReturnValue(false);
+  shellCapabilityMock.mockReturnValue(null);
 });
 
 const BASE_PROFILE = {
@@ -176,12 +176,15 @@ describe("/athlete/settings — Subscription + Delete account gating (FV-441)", 
   });
 });
 
-describe("/athlete/settings — native-shell billing-portal suppression (Google Play compliance)", () => {
-  it("replaces BillingPortalButton with a neutral, non-tappable notice when isNativeShell() is true", async () => {
-    isNativeShellMock.mockReturnValue(true);
+describe("/athlete/settings — shell-capability billing-portal suppression (Google Play compliance, FV-572/577)", () => {
+  it("replaces BillingPortalButton with a neutral, non-tappable notice when capability is 'legacy-native'", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
     await renderSettings("adult_athlete");
 
     expect(screen.queryByTestId("billing-portal-btn")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("settings-subscribe-btn"),
+    ).not.toBeInTheDocument();
     const notice = screen.getByTestId("billing-portal-native-shell-notice");
     expect(notice).toBeInTheDocument();
     expect(notice).toHaveTextContent(
@@ -190,7 +193,7 @@ describe("/athlete/settings — native-shell billing-portal suppression (Google 
   });
 
   it("drops the 'Manage or cancel your subscription.' helper line in-shell (FV-492)", async () => {
-    isNativeShellMock.mockReturnValue(true);
+    shellCapabilityMock.mockReturnValue("legacy-native");
     const { container } = await renderSettings("adult_athlete");
 
     expect(
@@ -204,22 +207,50 @@ describe("/athlete/settings — native-shell billing-portal suppression (Google 
     ).toBeInTheDocument();
   });
 
-  it("still renders the real BillingPortalButton when isNativeShell() is false", async () => {
-    isNativeShellMock.mockReturnValue(false);
+  it("still renders the real BillingPortalButton when capability is null (web)", async () => {
+    shellCapabilityMock.mockReturnValue(null);
     await renderSettings("adult_athlete");
 
     expect(screen.getByTestId("billing-portal-btn")).toBeInTheDocument();
     expect(
       screen.queryByTestId("billing-portal-native-shell-notice"),
     ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("settings-subscribe-btn"),
+    ).not.toBeInTheDocument();
   });
 
   it("a minor athlete never sees the native-shell notice either (no billing UI at all)", async () => {
-    isNativeShellMock.mockReturnValue(true);
+    shellCapabilityMock.mockReturnValue("legacy-native");
     await renderSettings("athlete");
 
     expect(
       screen.queryByTestId("billing-portal-native-shell-notice"),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("billing-portal-btn")).not.toBeInTheDocument();
+  });
+
+  it("shows a price-free 'Manage subscription' entry to /subscribe when capability is 'ios-iap' (FV-577)", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    const { container } = await renderSettings("adult_athlete");
+
+    expect(screen.queryByTestId("billing-portal-btn")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("billing-portal-native-shell-notice"),
+    ).not.toBeInTheDocument();
+    const link = screen.getByTestId("settings-subscribe-btn");
+    expect(link).toHaveAttribute("href", "/subscribe");
+    expect(link).toHaveTextContent("Manage subscription");
+    expect(container.textContent ?? "").not.toMatch(/web browser/i);
+    expect(container.textContent ?? "").not.toMatch(/\$/);
+  });
+
+  it("a minor athlete never sees the ios-iap subscribe entry either (no billing UI at all)", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    await renderSettings("athlete");
+
+    expect(
+      screen.queryByTestId("settings-subscribe-btn"),
     ).not.toBeInTheDocument();
     expect(screen.queryByTestId("billing-portal-btn")).not.toBeInTheDocument();
   });
