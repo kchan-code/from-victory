@@ -31,7 +31,7 @@
  *   sources purely to detect a failure, and only defers to
  *   `getParentAccessLevel` — the single source of truth for the fold/
  *   decision logic, reused rather than re-derived, avoiding drift — once
- *   every read is known to have succeeded. See `anyUnderlyingReadErrored`.
+ *   every read is known to have succeeded. See `readUnderlyingSources`.
  *
  * SCOPE — `full` ONLY: record Section 4.4 says, verbatim, "a payer already
  * `full`." Whether a `degraded` payer (past_due / in_billing_retry / etc.)
