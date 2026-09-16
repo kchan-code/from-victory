@@ -14,7 +14,9 @@
  * (capacity gate), `lib/actions/subscription.ts` (trial-history check),
  * `app/dashboard/settings/page.tsx` (FV-578 — Apple-vs-Stripe manage-path
  * status read, via `getActiveAppleProductId`; FV-580 — error-visible status
- * display via `getActiveAppleProductIdResult`).
+ * display via `getActiveAppleProductIdResult`), and
+ * `app/athlete/settings/page.tsx` (FV-579 — adult_athlete provider-aware
+ * manage/buy status, via `getActiveAppleProductIdResult`).
  */
 import "server-only";
 
