@@ -77,15 +77,19 @@ export interface SubscribeEntitlementState {
 
 /**
  * Reads the same underlying sources `getParentAccessLevel` folds together
- * (comp grants, the Stripe mirror, the Apple mirror + sandbox allowlist)
- * purely to detect whether ANY of them errored. The results themselves are
- * discarded — this function answers exactly one question: "is it safe to
- * trust `getParentAccessLevel`'s answer for this payer right now?"
+ * (comp grants, the Stripe mirror, the Apple mirror + sandbox allowlist) to
+ * (1) detect whether ANY of them errored — "is it safe to trust
+ * `getParentAccessLevel`'s answer for this payer right now?" — and (2) carry
+ * the Stripe row's `status` forward so the provider-determination step can
+ * reuse it instead of re-reading `subscriptions` a second time. The other
+ * three results are discarded (only their `.error` matters here); the Apple
+ * provider decision goes through the centralized `getActiveAppleProductId`
+ * accessor (§4.9), never a raw row read from this batch.
  */
-async function anyUnderlyingReadErrored(
+async function readUnderlyingSources(
   service: ServiceClient,
   userId: string,
-): Promise<boolean> {
+): Promise<{ anyError: boolean; stripeStatus: SubscriptionStatus | null }> {
   const [grants, stripeSub, appleSubs, allowlist] = await Promise.all([
     // Mirrors hasActiveCompGrant's query (./grants.ts).
     service
@@ -105,7 +109,13 @@ async function anyUnderlyingReadErrored(
       .maybeSingle(),
   ]);
 
-  return Boolean(grants.error || stripeSub.error || appleSubs.error || allowlist.error);
+  const anyError = Boolean(
+    grants.error || stripeSub.error || appleSubs.error || allowlist.error,
+  );
+  // Only meaningful when anyError is false (caller returns "unknown" first
+  // otherwise, so a null-on-error status is never consulted).
+  const stripeStatus = (stripeSub.data?.status as SubscriptionStatus | undefined) ?? null;
+  return { anyError, stripeStatus };
 }
 
 // ---------------------------------------------------------------------------
@@ -133,7 +143,8 @@ export async function getSubscribeEntitlementState(
 ): Promise<SubscribeEntitlementState> {
   const service = createServiceClient();
 
-  if (await anyUnderlyingReadErrored(service, userId)) {
+  const { anyError, stripeStatus } = await readUnderlyingSources(service, userId);
+  if (anyError) {
     return { status: "unknown", provider: null };
   }
 
@@ -145,21 +156,15 @@ export async function getSubscribeEntitlementState(
     return { status: "not_entitled", provider: null };
   }
 
-  // Entitled — determine which provider is carrying it.
+  // Entitled — determine which provider is carrying it. Apple goes through
+  // the centralized accessor (§4.9); Stripe reuses the error-checked status
+  // already fetched above (no second read, no unchecked-error fall-through).
   const appleProductId = await getActiveAppleProductId(service, userId);
   if (appleProductId !== null) {
     return { status: "entitled", provider: "apple" };
   }
 
-  const { data: stripeRow } = await service
-    .from("subscriptions")
-    .select("status")
-    .eq("parent_id", userId)
-    .maybeSingle();
-  if (
-    stripeRow &&
-    subscriptionAccessLevel(stripeRow.status as SubscriptionStatus) === "full"
-  ) {
+  if (stripeStatus && subscriptionAccessLevel(stripeStatus) === "full") {
     return { status: "entitled", provider: "stripe" };
   }
 
