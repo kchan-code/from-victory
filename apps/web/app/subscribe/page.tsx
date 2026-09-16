@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -6,6 +7,7 @@ import { createCheckoutSession, createAdultCheckoutSession } from "@/lib/actions
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { isSubscriptionEnforcementEnabled } from "@/lib/subscriptions/enforce";
+import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { createClient } from "@/lib/supabase/server";
 import { SubscribeForm } from "@/components/subscribe/SubscribeForm";
 import { AppleSubscribeSection } from "@/components/subscribe/AppleSubscribeSection";
@@ -18,6 +20,29 @@ type Props = {
   searchParams: { status?: string };
 };
 
+/**
+ * Shared "calm status card" shell (role="status", charcoal/hairline card —
+ * the same pattern already used by the legacy-native notice and the Apple
+ * "unavailable" state) for the FV-581 entitled/unknown branches below.
+ */
+function StatusCard({
+  testId,
+  children,
+}: {
+  testId: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      role="status"
+      data-testid={testId}
+      className="bg-charcoal border border-hairline rounded-xl px-5 py-5"
+    >
+      {children}
+    </div>
+  );
+}
+
 export default async function SubscribePage({ searchParams }: Props) {
   const { userId, profile } = await requireSubscriber();
 
@@ -25,45 +50,59 @@ export default async function SubscribePage({ searchParams }: Props) {
   // and the SubscribeForm prop so the adult_athlete check isn't recomputed.
   const isAdult = profile.role === "adult_athlete";
 
-  // Derive trial eligibility server-side: no existing subscriptions row →
-  // first-time subscriber → eligible. Reuses the same RLS-scoped client pattern
-  // as the checkout action. We only need to know whether the row exists — we
-  // don't need any column values — so select a minimal field.
-  const supabase = createClient();
-  const { data: existingSub, error: subReadError } = await supabase
-    .from("subscriptions")
-    .select("stripe_customer_id")
-    .eq("parent_id", userId)
-    .maybeSingle();
+  // FV-581 (decision record §4.4 "duplicate-billing guard"): a payer already
+  // entitled through ANY provider must never see a fresh buy button — this
+  // single server-computed state branches the whole content region below
+  // into the purchase flow (not_entitled), management/status copy
+  // (entitled), or a neutral fail-safe (unknown — an underlying read
+  // errored; never treated as "go ahead and buy").
+  const entitlementState = await getSubscribeEntitlementState(userId);
 
-  // FV-574: the 7-day trial applies only to one-athlete checkouts, so the
-  // banner (a consumer-protection disclosure — see SubscribeForm) must not
-  // promise it to a multi-athlete family. Mirror the checkout action's
-  // condition: parents qualify with at most one linked athlete (0 athletes
-  // floors to a 1-seat checkout); adults are always quantity 1. Fail closed
-  // on a count read error — never promise a trial the action (the
-  // authoritative gate) might not grant.
-  let trialQuantityEligible: boolean;
-  if (isAdult) {
-    trialQuantityEligible = true;
-  } else if (existingSub !== null || subReadError !== null) {
-    // Returning subscriber (or unreadable sub row): the banner is hidden
-    // regardless, so skip the count read entirely (qa perf note, PR #513).
-    trialQuantityEligible = false;
-  } else {
-    const athleteCountResult = await supabase
-      .from("parent_athlete_links")
-      .select("athlete_id", { count: "exact", head: true })
-      .eq("parent_id", userId);
-    trialQuantityEligible =
-      athleteCountResult.error === null &&
-      (athleteCountResult.count ?? 0) <= 1;
+  // Trial-eligibility reads are a purchase-flow-only concern — an entitled
+  // or unknown-status payer never reaches the trial banner or SubscribeForm,
+  // so skip these reads entirely rather than run them for no reason.
+  let trialEligible = false;
+  if (entitlementState.status === "not_entitled") {
+    // Derive trial eligibility server-side: no existing subscriptions row →
+    // first-time subscriber → eligible. Reuses the same RLS-scoped client pattern
+    // as the checkout action. We only need to know whether the row exists — we
+    // don't need any column values — so select a minimal field.
+    const supabase = createClient();
+    const { data: existingSub, error: subReadError } = await supabase
+      .from("subscriptions")
+      .select("stripe_customer_id")
+      .eq("parent_id", userId)
+      .maybeSingle();
+
+    // FV-574: the 7-day trial applies only to one-athlete checkouts, so the
+    // banner (a consumer-protection disclosure — see SubscribeForm) must not
+    // promise it to a multi-athlete family. Mirror the checkout action's
+    // condition: parents qualify with at most one linked athlete (0 athletes
+    // floors to a 1-seat checkout); adults are always quantity 1. Fail closed
+    // on a count read error — never promise a trial the action (the
+    // authoritative gate) might not grant.
+    let trialQuantityEligible: boolean;
+    if (isAdult) {
+      trialQuantityEligible = true;
+    } else if (existingSub !== null || subReadError !== null) {
+      // Returning subscriber (or unreadable sub row): the banner is hidden
+      // regardless, so skip the count read entirely (qa perf note, PR #513).
+      trialQuantityEligible = false;
+    } else {
+      const athleteCountResult = await supabase
+        .from("parent_athlete_links")
+        .select("athlete_id", { count: "exact", head: true })
+        .eq("parent_id", userId);
+      trialQuantityEligible =
+        athleteCountResult.error === null &&
+        (athleteCountResult.count ?? 0) <= 1;
+    }
+
+    // Fail closed on a read error: never promise a trial the action (the
+    // authoritative gate) might not grant.
+    trialEligible =
+      subReadError === null && existingSub === null && trialQuantityEligible;
   }
-
-  // Fail closed on a read error: never promise a trial the action (the
-  // authoritative gate) might not grant.
-  const trialEligible =
-    subReadError === null && existingSub === null && trialQuantityEligible;
 
   const wasCanceled = searchParams.status === "canceled";
 
@@ -143,7 +182,11 @@ export default async function SubscribePage({ searchParams }: Props) {
             Train every day.
           </h1>
           <p className="font-body text-cream/70 text-[15px] leading-relaxed max-w-[42ch]">
-            {nativeShell ? (
+            {/* FV-581 price-leak guard: an already-entitled (or
+                unknown-status) payer must never see a dollar figure here —
+                same price-free copy the native shells already use. Only the
+                not_entitled purchase flow keeps today's priced copy. */}
+            {nativeShell || entitlementState.status !== "not_entitled" ? (
               <>
                 Daily mental-toughness training with faith built
                 in&nbsp;&mdash; one session per day combining a mental skill
@@ -166,14 +209,62 @@ export default async function SubscribePage({ searchParams }: Props) {
           </p>
         </section>
 
-        {/* Capability-based branch (FV-572, record §4.8):
-              - "legacy-native": today's Capacitor compliance notice — no
-                price, no button, no link toward Stripe Checkout. BYTE-
-                IDENTICAL to the prior single-branch copy (pinned by test).
-              - "ios-iap": an iOS build capable of the native StoreKit
-                purchase surface — render AppleSubscribeSection.
-              - null: ordinary web/PWA flow — completely unchanged. */}
-        {shellCapability === "legacy-native" ? (
+        {/* FV-581 (decision record §4.4 "duplicate-billing guard"): the main
+            content region below is keyed FIRST on server-computed
+            entitlement status, THEN (within not_entitled and entitled) on
+            shell capability. "unknown" (an underlying read errored) is
+            fail-safe: same neutral status on every shell, never a buy
+            affordance, never a false "you're subscribed." */}
+        {entitlementState.status === "unknown" ? (
+          <StatusCard testId="subscribe-status-unknown">
+            <p className="font-body text-cream/70 text-[15px] leading-relaxed">
+              We couldn&rsquo;t load your subscription status. Please try
+              again.
+            </p>
+          </StatusCard>
+        ) : entitlementState.status === "not_entitled" ? (
+          /* Capability-based branch (FV-572, record §4.8) — BYTE-IDENTICAL
+             to the pre-FV-581 purchase flow:
+               - "legacy-native": today's Capacitor compliance notice — no
+                 price, no button, no link toward Stripe Checkout. BYTE-
+                 IDENTICAL to the prior single-branch copy (pinned by test).
+               - "ios-iap": an iOS build capable of the native StoreKit
+                 purchase surface — render AppleSubscribeSection.
+               - null: ordinary web/PWA flow — completely unchanged. */
+          shellCapability === "legacy-native" ? (
+            <div
+              role="status"
+              data-testid="native-shell-subscribe-notice"
+              className="bg-charcoal border border-hairline rounded-xl px-5 py-5"
+            >
+              <p className="font-body text-cream/70 text-[15px] leading-relaxed">
+                Subscribe to From Victory from a web browser at
+                fromvictoryapp.com.
+              </p>
+            </div>
+          ) : shellCapability === "ios-iap" ? (
+            <AppleSubscribeSection />
+          ) : (
+            <>
+              {/* Plan selector form — trialEligible controls the trial banner */}
+              <SubscribeForm
+                trialEligible={trialEligible}
+                action={checkoutAction}
+                isAdult={isAdult}
+              />
+
+              {/* Footer trust note */}
+              <p className="mt-8 font-body text-cream/55 text-[13px] text-center leading-relaxed">
+                Billed securely through Stripe. Cancel any time from your
+                account settings.
+              </p>
+            </>
+          )
+        ) : /* entitlementState.status === "entitled" */
+        shellCapability === "legacy-native" ? (
+          /* An entitled legacy-native payer sees the SAME compliance notice
+             as a not_entitled one, for every provider — no in-shell link is
+             added (record §4.4 + Google Play "no in-app purchase" scope). */
           <div
             role="status"
             data-testid="native-shell-subscribe-notice"
@@ -185,22 +276,47 @@ export default async function SubscribePage({ searchParams }: Props) {
             </p>
           </div>
         ) : shellCapability === "ios-iap" ? (
-          <AppleSubscribeSection />
-        ) : (
-          <>
-            {/* Plan selector form — trialEligible controls the trial banner */}
-            <SubscribeForm
-              trialEligible={trialEligible}
-              action={checkoutAction}
-              isAdult={isAdult}
-            />
-
-            {/* Footer trust note */}
-            <p className="mt-8 font-body text-cream/55 text-[13px] text-center leading-relaxed">
-              Billed securely through Stripe. Cancel any time from your
-              account settings.
+          entitlementState.provider === "apple" ? (
+            <AppleSubscribeSection mode="manage" />
+          ) : entitlementState.provider === "stripe" ? (
+            <StatusCard testId="subscribe-status-entitled">
+              <p className="font-body text-cream/70 text-[15px] leading-relaxed">
+                You&rsquo;re already subscribed. Manage your subscription
+                from a web browser at fromvictoryapp.com.
+              </p>
+            </StatusCard>
+          ) : (
+            <StatusCard testId="subscribe-status-entitled">
+              <p className="font-body text-cream/70 text-[15px] leading-relaxed">
+                You&rsquo;re subscribed to From Victory.
+              </p>
+            </StatusCard>
+          )
+        ) : entitlementState.provider === "apple" ? (
+          <StatusCard testId="subscribe-status-entitled">
+            <p className="font-body text-cream/70 text-[15px] leading-relaxed">
+              You&rsquo;re subscribed through the App Store&nbsp;&mdash;
+              manage it on your iPhone.
             </p>
-          </>
+          </StatusCard>
+        ) : entitlementState.provider === "stripe" ? (
+          <StatusCard testId="subscribe-status-entitled">
+            <p className="font-body text-cream/70 text-[15px] leading-relaxed mb-4">
+              You&rsquo;re already subscribed.
+            </p>
+            <Link
+              href={isAdult ? "/athlete/settings" : "/dashboard/settings"}
+              className="inline-flex items-center justify-center font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 min-h-[44px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            >
+              Manage subscription
+            </Link>
+          </StatusCard>
+        ) : (
+          <StatusCard testId="subscribe-status-entitled">
+            <p className="font-body text-cream/70 text-[15px] leading-relaxed">
+              You&rsquo;re subscribed to From Victory.
+            </p>
+          </StatusCard>
         )}
       </div>
     </main>

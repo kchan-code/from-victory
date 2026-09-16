@@ -81,11 +81,26 @@
  *   (The 7-day/one-athlete trial-DURATION policy itself is FV-574 — see the
  *   trial-strategy section above.)
  *
+ * Duplicate-billing guard (FV-581, docs/fv210-ios-iap-decision-record.md
+ * Section 4.4):
+ *   Before creating a Checkout session, `startSubscriptionCheckout` asks
+ *   `getSubscribeEntitlementState` (lib/subscriptions/subscribe-guard.ts)
+ *   whether this account is already `full` via ANY provider (Stripe, Apple,
+ *   or a comp grant). If so, no Checkout session is created — the account is
+ *   redirected to `/subscribe`, which the frontend pass renders as an
+ *   already-subscribed state rather than a buy form ("Server decides; client
+ *   renders."). A read error from the entitlement check is treated as
+ *   `unknown`, NOT as "not entitled" — checkout is refused through the same
+ *   calm user-facing error path used elsewhere in this function, never
+ *   silently allowed to proceed and risk a double charge.
+ *
  * redirect() position:
  *   `redirect()` from next/navigation throws a NEXT_REDIRECT error internally.
  *   It must NOT be called inside a try/catch block that could swallow it. The
  *   session URL is captured in a variable before the try block exits, then
  *   redirect() is called at the top level after all try/catch blocks complete.
+ *   The entitlement-guard's `redirect("/subscribe")` (below) is likewise
+ *   called at the top level, before any try/catch in this function begins.
  *
  * First-touch UTM attribution (FV-396):
  *   If the client wrote a `fv_attribution` cookie (see
@@ -117,6 +132,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { planToPriceEnvVar } from "@/lib/subscriptions/plans";
 import { hasEverHeldAppleEntitlement } from "@/lib/subscriptions/apple";
+import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 
 // ---------------------------------------------------------------------------
 // First-touch UTM attribution (FV-396)
@@ -182,6 +198,39 @@ async function startSubscriptionCheckout(
    */
   trialQuantityEligible: boolean,
 ): Promise<SubscriptionActionState> {
+  // 2.5. Duplicate-billing guard (FV-581, record Section 4.4) — a payer
+  //      already `full` via any provider must never see a fresh Checkout
+  //      session created for them. Called BEFORE the price-id lookup so an
+  //      already-entitled payer never touches Stripe at all.
+  const entitlement = await getSubscribeEntitlementState(accountId);
+  if (entitlement.status === "entitled") {
+    // redirect() throws internally and must stay at the top level, outside
+    // any try/catch — see the "redirect() position" doc comment above. The
+    // explicit `return` below is defensive only (redirect() itself never
+    // returns in production) — it stops a non-throwing test double from
+    // silently falling through into Stripe checkout-session creation.
+    redirect("/subscribe");
+    return null;
+  }
+  if (entitlement.status === "unknown") {
+    // Fail CLOSED, same as the read-error branches below: a read failure
+    // must never be treated as "not entitled" and risk a double charge.
+    console.error(
+      `[subscription.startSubscriptionCheckout] entitlement check failed (account=${accountId}) — refusing checkout.`,
+    );
+    deliverInBackground(
+      notifyError(
+        "[checkout] entitlement check failed",
+        "getSubscribeEntitlementState returned unknown",
+        { parent_id: accountId },
+      ),
+    );
+    return {
+      ok: false,
+      error: "Couldn't start checkout right now. Try again in a moment.",
+    };
+  }
+
   // 3. Resolve the price ID from env. Both vars must be set before checkout
   //    can work; they are populated in .env.local by KC during Stripe setup.
   const envVar = planToPriceEnvVar(plan);

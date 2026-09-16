@@ -264,6 +264,99 @@ describe("AppleSubscribeSection — configured + bridge available", () => {
   });
 });
 
+describe("AppleSubscribeSection — mode='manage' (FV-581 duplicate-billing guard)", () => {
+  it("renders Manage + Restore, NOT plan cards or the Subscribe button, when the bridge is available", async () => {
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    // Manage mode must not depend on the product catalog — leave it
+    // unconfigured (today's shipped default) to prove that.
+    getConfiguredAppleProductsMock.mockReturnValue([]);
+
+    render(<AppleSubscribeSection mode="manage" />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-manage-status")).toBeInTheDocument(),
+    );
+    expect(screen.getByTestId("apple-manage-status").textContent).toBe(
+      "You’re subscribed. Manage or restore below.",
+    );
+    expect(screen.getByTestId("apple-manage-link")).toBeInTheDocument();
+    expect(screen.getByTestId("apple-restore-submit")).toBeInTheDocument();
+    expect(screen.queryByTestId("apple-purchase-submit")).toBeNull();
+    expect(screen.queryByRole("radiogroup")).toBeNull();
+    expect(getStoreKitProductsMock).not.toHaveBeenCalled();
+  });
+
+  it("still falls back to the calm unavailable state when the bridge is absent", async () => {
+    isAppleIapBridgeAvailableMock.mockReturnValue(false);
+    getConfiguredAppleProductsMock.mockReturnValue([]);
+
+    render(<AppleSubscribeSection mode="manage" />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-subscribe-unavailable")).toBeInTheDocument(),
+    );
+    expect(screen.queryByTestId("apple-manage-status")).toBeNull();
+    expect(screen.queryByTestId("apple-manage-link")).toBeNull();
+    expect(screen.queryByTestId("apple-restore-submit")).toBeNull();
+  });
+
+  it("manage tap calls the bridge's manageSubscriptions", async () => {
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    getConfiguredAppleProductsMock.mockReturnValue([]);
+
+    render(<AppleSubscribeSection mode="manage" />);
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-manage-link")).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByTestId("apple-manage-link"));
+
+    await waitFor(() => expect(manageSubscriptionsMock).toHaveBeenCalledTimes(1));
+  });
+
+  it("restore path works the same as purchase mode (success, empty, error)", async () => {
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    getConfiguredAppleProductsMock.mockReturnValue([]);
+    restoreMock.mockResolvedValue({
+      ok: true,
+      transactions: [{ signedTransactionInfo: "jws-newest" }],
+    });
+    submitApplePurchaseMock.mockResolvedValue({ ok: true, applied: true });
+
+    render(<AppleSubscribeSection mode="manage" />);
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-restore-submit")).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByTestId("apple-restore-submit"));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-subscribe-success")).toBeInTheDocument(),
+    );
+    expect(refreshMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("AppleSubscribeSection — mode default ('purchase') is unchanged", () => {
+  it("renders the purchase UI (plan cards + Subscribe) when mode is omitted", async () => {
+    await renderReady();
+
+    expect(screen.getByTestId("apple-purchase-submit")).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup")).toBeInTheDocument();
+    expect(screen.queryByTestId("apple-manage-status")).toBeNull();
+  });
+
+  it("renders the purchase UI identically when mode is explicitly 'purchase'", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue(ONE_TIER);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    render(<AppleSubscribeSection mode="purchase" />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId(`apple-plan-card-${ONE_TIER[0]!.productId}`)).toBeInTheDocument(),
+    );
+    expect(screen.getByTestId("apple-purchase-submit")).toBeInTheDocument();
+    expect(screen.queryByTestId("apple-manage-status")).toBeNull();
+  });
+});
+
 describe("AppleSubscribeSection — qa follow-ups (PR #518)", () => {
   const TWO_TIERS = [
     { productId: "test.fv.tier1.monthly", athleteCapacity: 1, displayName: "1 Athlete" },
