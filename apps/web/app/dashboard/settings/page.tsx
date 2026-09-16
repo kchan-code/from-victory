@@ -5,7 +5,10 @@
  *   - Account email (read-only; email change deferred — see AC-7).
  *   - Subscription status: plan label, status, renews/ends date (Stripe), OR
  *     a price-free Apple status + in-app manage entry for an Apple-entitled
- *     payer (FV-578, record §4.4 — Apple precedence over Stripe/comp).
+ *     payer (FV-578, record §4.4 — Apple precedence over Stripe/comp), OR a
+ *     neutral "try again" status if the Apple read fails and there is no
+ *     Stripe row to fall back on (FV-580 — never render a false "No active
+ *     subscription" when we simply couldn't confirm Apple status).
  *   - Manage subscription: Stripe Billing Portal (via BillingPortalButton),
  *     or the Apple in-app manage link for an Apple-entitled ios-iap payer.
  *   - Change password: sends a reset link to the signed-in parent's own email
@@ -35,7 +38,7 @@ import { getDigestOptOut } from "@/lib/actions/digest-preferences";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getActiveAppleProductId } from "@/lib/subscriptions/apple";
+import { getActiveAppleProductIdResult } from "@/lib/subscriptions/apple";
 import { priceIdToLabel } from "@/lib/subscriptions/plans";
 
 export const metadata = {
@@ -139,15 +142,25 @@ export default async function DashboardSettingsPage() {
   // Stripe/comp status on this page — the payer bought through Apple, so
   // Apple (not Stripe) manages their subscription. Reads via the ONE
   // centralized service-role accessor for `apple_subscriptions`
-  // (record §4.9 — `getActiveAppleProductId`); this is a presentation/status
-  // read for THIS page's branch selection only and does not touch the real
-  // access/entitlement gate (`requireActiveAccess()` /
-  // `lib/subscriptions/access.ts`), which is unchanged. Scoped to the
-  // ios-iap shell only — an ordinary web/PWA request never issues this read,
-  // matching the "web stays byte-identical" contract for this issue.
-  const appleActive = iosIap
-    ? (await getActiveAppleProductId(createServiceClient(), userId)) !== null
-    : false;
+  // (record §4.9). This is a presentation/status read for THIS page's
+  // branch selection only and does not touch the real access/entitlement
+  // gate (`requireActiveAccess()` / `lib/subscriptions/access.ts`), which is
+  // unchanged. Scoped to the ios-iap shell only — an ordinary web/PWA
+  // request never issues this read, matching the "web stays byte-identical"
+  // contract for this issue.
+  //
+  // FV-580: use the error-visible accessor (`getActiveAppleProductIdResult`)
+  // instead of the fail-open `getActiveAppleProductId` wrapper. A transient
+  // DB error must not silently read as "no Apple subscription" — that falsely
+  // told a genuinely Apple-billed parent (no Stripe row) "No active
+  // subscription / Choose a plan". `appleActive` keeps the EXACT same
+  // semantics as before (`productId !== null`, still requiring a successful
+  // read); `appleReadError` is new and drives a neutral branch below.
+  const appleResult = iosIap
+    ? await getActiveAppleProductIdResult(createServiceClient(), userId)
+    : { productId: null, readError: false };
+  const appleActive = appleResult.productId !== null;
+  const appleReadError = appleResult.readError;
 
   // Digest opt-out preference (FV-226).
   const digestOptOut = await getDigestOptOut();
@@ -344,6 +357,30 @@ export default async function DashboardSettingsPage() {
                 )}
               </div>
             </>
+          ) : iosIap && appleReadError ? (
+            /* FV-580: no Stripe row exists AND the Apple status read failed —
+               we genuinely don't know whether this payer is Apple-entitled.
+               Rendering the no-subscription "Choose a plan" branch here would
+               be a false negative for a real Apple subscriber (the exact
+               FV-580 bug); rendering the Apple-manage branch would be an
+               unverified false positive. Render a neutral, non-committal
+               status instead: no "No active subscription" claim, no buy CTA,
+               no price. This branch can only be reached when BOTH
+               `appleActive` is false (the read didn't succeed) AND
+               `hasSubscription` is false (no Stripe fallback) — see the
+               precedence order/rationale in the `appleResult` block above. */
+            <div className="py-2">
+              <div
+                role="status"
+                data-testid="subscription-status-unavailable"
+                className="bg-onyx border border-hairline rounded-xl px-5 py-5"
+              >
+                <p className="font-body text-cream/70 text-[15px] leading-relaxed">
+                  We couldn&rsquo;t load your subscription status. Please try
+                  again.
+                </p>
+              </div>
+            </div>
           ) : (
             /* No subscription row. In legacy-native shell, checkout.stripe.com
                is unreachable (Google Play compliance — see lib/native-shell.ts),
