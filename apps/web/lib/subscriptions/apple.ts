@@ -13,7 +13,8 @@
  * Allowed callers: `./access` (the resolver fold), `./apple-capacity`
  * (capacity gate), `lib/actions/subscription.ts` (trial-history check),
  * `app/dashboard/settings/page.tsx` (FV-578 — Apple-vs-Stripe manage-path
- * status read, via `getActiveAppleProductId`).
+ * status read, via `getActiveAppleProductId`; FV-580 — error-visible status
+ * display via `getActiveAppleProductIdResult`).
  */
 import "server-only";
 
@@ -183,21 +184,105 @@ export async function hasEverHeldAppleEntitlement(
 }
 
 // ---------------------------------------------------------------------------
-// getActiveAppleProductId — narrow helper for the capacity gate
+// getActiveAppleProductIdResult / getActiveAppleProductId
 // ---------------------------------------------------------------------------
 
 /**
+ * Result shape for `getActiveAppleProductIdResult` — distinguishes "no active
+ * row" from "we couldn't tell" so an error-visible caller (FV-580) can render
+ * an honest degraded-status message instead of silently reading as "no
+ * subscription."
+ */
+export type ActiveAppleProductIdResult = {
+  productId: string | null;
+  /** True when the DB read itself failed — `productId` is meaningless (not a
+   * trustworthy "no active row") in that case; it is always `null` on error
+   * so callers can't accidentally branch on a stale/default value. */
+  readError: boolean;
+};
+
+/**
  * Returns the `product_id` of the payer's active Production Apple
- * subscription row, or null if they don't have one. Used by
- * `./apple-capacity`'s `assertAthleteCapacity` to determine whether a payer
- * is on the Apple provider at all (a payer with no Production row is not an
- * Apple payer for capacity purposes, regardless of any Sandbox test rows —
- * capacity ceilings are a real-billing concept, matching the
- * `hasEverHeldAppleEntitlement` Production-only scoping above).
+ * subscription row (or null if they don't have one), PLUS whether the
+ * underlying DB read failed — error-visible, for callers that must not
+ * conflate "read failed" with "definitely no active subscription" (FV-580).
+ *
+ * Same query and the same "active" determination as `getActiveAppleProductId`
+ * below (this function does the real work; `getActiveAppleProductId`
+ * delegates to it and collapses the error case to fail-open `null`, which is
+ * the ORIGINAL, still-correct contract for its caller, the capacity gate).
  *
  * "Active" here means the row exists and its status maps to `full` or
  * `degraded` via `appleSubscriptionAccessLevel` — an `expired`/`revoked` row
- * should not hold the payer to a stale product's ceiling.
+ * should not hold the payer to a stale product's ceiling. This is the
+ * existing full/degraded determination carried over unchanged; it is not a
+ * degraded-payer POLICY decision made by this issue (record §4.4's
+ * degraded-payer treatment remains unresolved — see the file-level doc
+ * comment on `getActiveAppleProductId` below).
+ *
+ * @param service  Service-role Supabase client.
+ * @param payerId  UUID of the payer's profile row.
+ * @param now      Current time (injected for testability).
+ */
+export async function getActiveAppleProductIdResult(
+  service: ServiceClient,
+  payerId: string,
+  now: Date = new Date(),
+): Promise<ActiveAppleProductIdResult> {
+  const { data: row, error } = await service
+    .from("apple_subscriptions")
+    .select("product_id, status, expires_at, grace_period_expires_at")
+    .eq("payer_id", payerId)
+    .eq("environment", "Production")
+    .maybeSingle();
+
+  if (error) {
+    console.error(
+      `[subscriptions/apple] getActiveAppleProductIdResult read failed (payer=${payerId}):`,
+      error.message,
+    );
+    // Error-visible: never swallow to a false "no active row" — the caller
+    // decides how to fail (fail-open for the capacity gate via
+    // `getActiveAppleProductId` below; fail-safe/error-visible for a status
+    // display via this function directly).
+    return { productId: null, readError: true };
+  }
+
+  if (!row) return { productId: null, readError: false };
+
+  const level = appleSubscriptionAccessLevel(
+    row.status as AppleSubscriptionStatus,
+    row.expires_at,
+    row.grace_period_expires_at,
+    now,
+  );
+
+  return {
+    productId: level === "full" || level === "degraded" ? row.product_id : null,
+    readError: false,
+  };
+}
+
+/**
+ * Returns the `product_id` of the payer's active Production Apple
+ * subscription row, or null if they don't have one (including on a DB read
+ * error — FAIL-OPEN). Used by `./apple-capacity`'s `assertAthleteCapacity` to
+ * determine whether a payer is on the Apple provider at all (a payer with no
+ * Production row is not an Apple payer for capacity purposes, regardless of
+ * any Sandbox test rows — capacity ceilings are a real-billing concept,
+ * matching the `hasEverHeldAppleEntitlement` Production-only scoping above).
+ *
+ * FAIL-OPEN CONTRACT (unchanged by FV-580): this is correct for the capacity
+ * gate specifically — a transient read error must not spuriously CAP an
+ * otherwise-uncapped payer's athlete count, so it degrades to "not an Apple
+ * payer" rather than blocking. This is NOT the right contract for a
+ * status-DISPLAY caller (a transient error there must not silently read as
+ * "no subscription" — see `getActiveAppleProductIdResult` above, added for
+ * `app/dashboard/settings/page.tsx`, FV-580).
+ *
+ * Delegates to `getActiveAppleProductIdResult` for the query + the
+ * full/degraded determination; this wrapper only collapses `readError` to
+ * `null` to preserve the exact behavior every existing caller depends on.
  *
  * @param service  Service-role Supabase client.
  * @param payerId  UUID of the payer's profile row.
@@ -208,29 +293,10 @@ export async function getActiveAppleProductId(
   payerId: string,
   now: Date = new Date(),
 ): Promise<string | null> {
-  const { data: row, error } = await service
-    .from("apple_subscriptions")
-    .select("product_id, status, expires_at, grace_period_expires_at")
-    .eq("payer_id", payerId)
-    .eq("environment", "Production")
-    .maybeSingle();
-
-  if (error) {
-    console.error(
-      `[subscriptions/apple] getActiveAppleProductId read failed (payer=${payerId}):`,
-      error.message,
-    );
-    return null;
-  }
-
-  if (!row) return null;
-
-  const level = appleSubscriptionAccessLevel(
-    row.status as AppleSubscriptionStatus,
-    row.expires_at,
-    row.grace_period_expires_at,
+  const { productId, readError } = await getActiveAppleProductIdResult(
+    service,
+    payerId,
     now,
   );
-
-  return level === "full" || level === "degraded" ? row.product_id : null;
+  return readError ? null : productId;
 }

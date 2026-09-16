@@ -16,7 +16,15 @@
  * — an Apple-entitled ios-iap payer sees a price-free Apple status + in-app
  * manage link INSTEAD of the Stripe status/manage block, even when a Stripe
  * row also exists (Apple precedence). Discriminator is
- * `getActiveAppleProductId()` from `@/lib/subscriptions/apple`, mocked below.
+ * `getActiveAppleProductIdResult()` from `@/lib/subscriptions/apple`, mocked
+ * below.
+ *
+ * Also covers FV-580: when the Apple status read itself fails (`readError:
+ * true`), the page must never render the false "No active subscription /
+ * Choose a plan" — it renders a neutral "try again" status UNLESS a Stripe
+ * row exists, in which case the Stripe branch still renders (a genuine
+ * Stripe subscriber must not see a spurious error card just because the
+ * unrelated Apple read failed).
  *
  * Follows the async-server-component render pattern from
  * __tests__/subscribe-page.test.tsx and the react-dom useFormState shim from
@@ -48,7 +56,7 @@ const {
   shellCapabilityMock,
   getUserMock,
   maybeSingleMock,
-  getActiveAppleProductIdMock,
+  getActiveAppleProductIdResultMock,
 } = vi.hoisted(() => ({
   requireParentMock: vi.fn(),
   // Google Play "no in-app purchase" compliance + FV-572/577 capability.
@@ -57,9 +65,16 @@ const {
   shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
   getUserMock: vi.fn(async () => ({ data: { user: { email: "kim@example.com" } } })),
   maybeSingleMock: vi.fn(),
-  // FV-578 — the centralized `apple_subscriptions` accessor. Defaults to
-  // "no active Apple entitlement"; individual tests override per case.
-  getActiveAppleProductIdMock: vi.fn(async () => null as string | null),
+  // FV-578/FV-580 — the centralized `apple_subscriptions` accessor. Defaults
+  // to "no active Apple entitlement, read succeeded"; individual tests
+  // override per case, including the FV-580 `readError: true` case.
+  getActiveAppleProductIdResultMock: vi.fn(
+    async () =>
+      ({ productId: null, readError: false }) as {
+        productId: string | null;
+        readError: boolean;
+      },
+  ),
 }));
 
 vi.mock("@/lib/auth/guards", () => ({
@@ -83,16 +98,16 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
-// FV-578 — the page never issues a raw `apple_subscriptions` query itself;
-// it calls the ONE centralized service-role accessor. Mocking the whole
-// module keeps this test file from needing real Supabase env/service-role
-// wiring for a status read.
+// FV-578/FV-580 — the page never issues a raw `apple_subscriptions` query
+// itself; it calls the ONE centralized service-role accessor. Mocking the
+// whole module keeps this test file from needing real Supabase env/
+// service-role wiring for a status read.
 vi.mock("@/lib/supabase/service", () => ({
   createServiceClient: () => ({}),
 }));
 
 vi.mock("@/lib/subscriptions/apple", () => ({
-  getActiveAppleProductId: getActiveAppleProductIdMock,
+  getActiveAppleProductIdResult: getActiveAppleProductIdResultMock,
 }));
 
 vi.mock("@/lib/actions/digest-preferences", () => ({
@@ -113,7 +128,10 @@ afterEach(() => {
   // test order never matters.
   shellCapabilityMock.mockReturnValue(null);
   getUserMock.mockResolvedValue({ data: { user: { email: "kim@example.com" } } });
-  getActiveAppleProductIdMock.mockResolvedValue(null);
+  getActiveAppleProductIdResultMock.mockResolvedValue({
+    productId: null,
+    readError: false,
+  });
 });
 
 async function renderPage() {
@@ -253,7 +271,10 @@ describe("/dashboard/settings — 'Choose a plan' shell-capability gating (no su
 describe("/dashboard/settings — FV-578 Apple manage-path precedence (record §4.4)", () => {
   it("shows the Apple manage entry (price-free, accurate status) when ios-iap and Apple-entitled with no Stripe row", async () => {
     shellCapabilityMock.mockReturnValue("ios-iap");
-    getActiveAppleProductIdMock.mockResolvedValue("com.fromvictoryapp.app.plan1");
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: "com.fromvictoryapp.app.plan1",
+      readError: false,
+    });
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
 
     const { container } = await renderPage();
@@ -275,7 +296,10 @@ describe("/dashboard/settings — FV-578 Apple manage-path precedence (record §
 
   it("Apple precedence: shows the Apple manage entry even when a Stripe subscription row ALSO exists (dual-provider)", async () => {
     shellCapabilityMock.mockReturnValue("ios-iap");
-    getActiveAppleProductIdMock.mockResolvedValue("com.fromvictoryapp.app.plan1");
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: "com.fromvictoryapp.app.plan1",
+      readError: false,
+    });
     maybeSingleMock.mockResolvedValue({
       data: {
         status: "active",
@@ -299,7 +323,10 @@ describe("/dashboard/settings — FV-578 Apple manage-path precedence (record §
 
   it("ios-iap + Stripe-only (no Apple entitlement): unchanged browser notice, no Apple manage link", async () => {
     shellCapabilityMock.mockReturnValue("ios-iap");
-    getActiveAppleProductIdMock.mockResolvedValue(null);
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: null,
+      readError: false,
+    });
     maybeSingleMock.mockResolvedValue({
       data: {
         status: "active",
@@ -320,7 +347,10 @@ describe("/dashboard/settings — FV-578 Apple manage-path precedence (record §
 
   it("ios-iap + no subscription at all: unchanged FV-577 'Choose a plan' entry", async () => {
     shellCapabilityMock.mockReturnValue("ios-iap");
-    getActiveAppleProductIdMock.mockResolvedValue(null);
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: null,
+      readError: false,
+    });
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
 
     await renderPage();
@@ -338,7 +368,7 @@ describe("/dashboard/settings — FV-578 Apple manage-path precedence (record §
 
     // The new branch is scoped to `iosIap` only — legacy-native must never
     // even issue the service-role Apple read.
-    expect(getActiveAppleProductIdMock).not.toHaveBeenCalled();
+    expect(getActiveAppleProductIdResultMock).not.toHaveBeenCalled();
     expect(screen.queryByTestId("settings-apple-manage")).not.toBeInTheDocument();
     expect(screen.getByTestId("no-subscription")).toHaveTextContent(
       "Subscribe to From Victory from a web browser at fromvictoryapp.com.",
@@ -351,10 +381,105 @@ describe("/dashboard/settings — FV-578 Apple manage-path precedence (record §
 
     await renderPage();
 
-    expect(getActiveAppleProductIdMock).not.toHaveBeenCalled();
+    expect(getActiveAppleProductIdResultMock).not.toHaveBeenCalled();
     expect(screen.queryByTestId("settings-apple-manage")).not.toBeInTheDocument();
     expect(screen.getByTestId("no-subscription")).toHaveTextContent(
       "No active subscription.",
     );
+  });
+});
+
+describe("/dashboard/settings — FV-580 Apple status read-error visibility", () => {
+  it("shows a neutral 'try again' status when ios-iap, the Apple read fails, and there is NO Stripe row (the FV-580 false-negative case)", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: null,
+      readError: true,
+    });
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    const { container } = await renderPage();
+
+    const notice = screen.getByTestId("subscription-status-unavailable");
+    expect(notice).toBeInTheDocument();
+    expect(notice).toHaveAttribute("role", "status");
+    expect(notice).toHaveTextContent(
+      "We couldn’t load your subscription status. Please try again.",
+    );
+
+    const visibleText = container.textContent ?? "";
+    expect(visibleText).not.toMatch(/no active subscription/i);
+    expect(visibleText).not.toMatch(/choose a plan/i);
+    expect(visibleText).not.toMatch(/\$/);
+    expect(
+      screen.queryByRole("link", { name: "Choose a plan" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("settings-apple-manage")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("no-subscription")).not.toBeInTheDocument();
+  });
+
+  it("prefers the Stripe branch over the neutral status when the Apple read fails but a Stripe row EXISTS (precedence pin)", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: null,
+      readError: true,
+    });
+    maybeSingleMock.mockResolvedValue({
+      data: {
+        status: "active",
+        price_id: "price_test",
+        current_period_end: "2026-09-01T00:00:00Z",
+        cancel_at_period_end: false,
+      },
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(
+      screen.queryByTestId("subscription-status-unavailable"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId("subscription-status")).toHaveTextContent("Active");
+    expect(screen.getByTestId("subscription-period-end")).toBeInTheDocument();
+  });
+
+  it("ios-iap + Apple active (readError false) still shows the Apple manage branch, not the neutral status", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: "com.fromvictoryapp.app.plan1",
+      readError: false,
+    });
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    await renderPage();
+
+    expect(screen.getByTestId("settings-apple-manage")).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("subscription-status-unavailable"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("legacy-native shell never consults the Apple read, so it can never show the neutral status", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    await renderPage();
+
+    expect(getActiveAppleProductIdResultMock).not.toHaveBeenCalled();
+    expect(
+      screen.queryByTestId("subscription-status-unavailable"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("web (capability null) never consults the Apple read, so it can never show the neutral status", async () => {
+    shellCapabilityMock.mockReturnValue(null);
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    await renderPage();
+
+    expect(getActiveAppleProductIdResultMock).not.toHaveBeenCalled();
+    expect(
+      screen.queryByTestId("subscription-status-unavailable"),
+    ).not.toBeInTheDocument();
   });
 });
