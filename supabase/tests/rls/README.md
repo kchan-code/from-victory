@@ -14,7 +14,7 @@ Run as role-scoped clients against a freshly-migrated local Supabase:
 | (a) | athlete A cannot SELECT athlete B's `journal_entries` rows |
 | (b) | parent (and anon) cannot SELECT `journal_entries` at all |
 | (c) | `athlete_session_metadata` returns aggregates only — column set is pinned, and parents see only linked athletes' aggregates, never content |
-| (d) | client roles cannot INSERT or UPDATE `subscriptions` (and athletes can't read them) |
+| (d) | client roles cannot write `subscriptions` at all (INSERT/UPDATE/DELETE, own row or cross-account; and athletes can't read them). Pins the grant layer directly (`has_table_privilege` matrix per role) as a pre-check, then diagnoses any UPDATE/DELETE fall-through by row-count effect (real mutation vs. zero-row RLS no-op), with a `service_role` positive control proving the harness can observe a real mutation — see `assertions/03_subscriptions.sql` (FV-507) |
 | (e) | `device_pairings` not readable by any client role (cross-user or own) |
 | (f) | `safety_events` unreadable by both athlete and parent roles |
 | (g) | FV-443: `adult_athlete` (18+ self-serve payer/trainee) is invisible to every parent, can never appear in `parent_athlete_links` on either side, cannot reach another profile / another account's `subscriptions` row / any `parent_athlete_links` row, CAN read (but not write) its own `subscriptions` row, and its private-column self-read (`get_own_personalization()`) carries no wider grant than the existing athlete pattern — see `assertions/18_adult_athlete_boundary.sql` |
@@ -43,6 +43,24 @@ for this harness.
 `pgTAP` was considered; its in-transaction role-reset semantics fight the
 per-role transaction structure here, and it adds an extension dependency for no
 extra coverage.
+
+### Grant layer vs RLS layer (FV-507)
+
+Postgres checks two independent layers before a client statement runs: the
+GRANT layer (does the role hold the privilege at all?) and, only if that
+passes, the RLS POLICY layer (which rows does the policy allow?). A table
+with no write policy denies writes via RLS's default-deny **only if the role
+also lacks the write grant** — with the grant present, a denied UPDATE/DELETE
+is a silent, successful, zero-row no-op, not an error, because the RLS
+`USING` clause just filters the target rows to nothing. This bit us for real:
+a Postgres image bump changed the local stack's default privileges out from
+under `subscriptions` with zero repo changes, and the harness's old
+error-shape-only assertion (`when insufficient_privilege`) had no branch for
+"succeeded and changed nothing," so it silently stopped testing what it
+claimed to test. Migrations must pin every client-write-sensitive table's
+grants explicitly (don't rely on a stack's default-privilege inheritance);
+assertions must check `has_table_privilege` **and** row-count effect, never
+the SQLSTATE alone.
 
 ## Layout
 
