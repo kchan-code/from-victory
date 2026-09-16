@@ -13,8 +13,14 @@
  *   - duplicate-billing: active Stripe + Apple submission -> Apple row
  *     persisted AND the ops alert fires (never blocked)
  *
- * All Supabase clients, ./apple-server, and ./apple-lifecycle are mocked —
- * no real DB, no real JWS verification, no network call to Apple.
+ * Also covers beginApplePurchase's FV-581 duplicate-billing guard:
+ *   - already entitled (any provider) -> already_subscribed, no mint
+ *   - entitlement check errors (unknown) -> internal_error, no mint
+ *   - not entitled -> existing mint behavior preserved byte-identical
+ *
+ * All Supabase clients, ./apple-server, ./apple-lifecycle, and
+ * ./subscribe-guard are mocked — no real DB, no real JWS verification, no
+ * network call to Apple.
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -203,6 +209,21 @@ vi.mock("@/lib/monitoring/deliver", () => ({
   },
 }));
 
+// FV-581: entitlement-guard stub. Defaults to "not_entitled" so every
+// pre-existing test in this file (written before the guard existed) is
+// unaffected; the dedicated describe block below overrides it per case.
+const getSubscribeEntitlementStateMock = vi.fn(
+  async (..._args: unknown[]) =>
+    ({ status: "not_entitled", provider: null }) as {
+      status: "entitled" | "not_entitled" | "unknown";
+      provider: "apple" | "stripe" | "comp" | null;
+    },
+);
+vi.mock("@/lib/subscriptions/subscribe-guard", () => ({
+  getSubscribeEntitlementState: (...args: unknown[]) =>
+    getSubscribeEntitlementStateMock(...args),
+}));
+
 // ---------------------------------------------------------------------------
 // Import after mocks
 // ---------------------------------------------------------------------------
@@ -243,6 +264,11 @@ beforeEach(() => {
   notifyErrorMock.mockClear();
   verifySignedTransactionMock.mockResolvedValue(makeTransaction());
   applyAppleSnapshotMock.mockResolvedValue({ applied: true, created: true });
+  getSubscribeEntitlementStateMock.mockReset();
+  getSubscribeEntitlementStateMock.mockResolvedValue({
+    status: "not_entitled",
+    provider: null,
+  });
 });
 
 const VALID_INPUT = { signedTransactionInfo: "ey.fake.transaction" };
@@ -478,6 +504,60 @@ describe("beginApplePurchase — sanctioned token handoff (FV-572)", () => {
       expect(typeof result.appAccountToken).toBe("string");
       expect(result.appAccountToken.length).toBeGreaterThan(0);
     }
+  });
+
+  // -------------------------------------------------------------------------
+  // FV-581: duplicate-billing guard
+  // -------------------------------------------------------------------------
+
+  it("FV-581: already entitled via Apple -> already_subscribed, no mint", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "apple",
+    });
+    const result = await beginApplePurchaseWithMintSpy();
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+  });
+
+  it("FV-581: already entitled via Stripe -> already_subscribed, no mint", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "stripe",
+    });
+    const result = await beginApplePurchaseWithMintSpy();
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+  });
+
+  it("FV-581: already entitled via a comp grant -> already_subscribed, no mint", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "comp",
+    });
+    const result = await beginApplePurchaseWithMintSpy();
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+  });
+
+  it("FV-581: entitlement check errors (unknown) -> internal_error, no mint, fails SAFE", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "unknown",
+      provider: null,
+    });
+    const result = await beginApplePurchaseWithMintSpy();
+    expect(result.result).toEqual({ ok: false, error: "internal_error" });
+    expect(result.tokenTableTouched).toBe(false);
+    expect(notifyErrorMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("FV-581: not entitled -> existing mint behavior preserved byte-identical", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "not_entitled",
+      provider: null,
+    });
+    const result = await beginApplePurchase();
+    expect(result).toEqual({ ok: true, appAccountToken: "MINTED_TOKEN" });
   });
 });
 
