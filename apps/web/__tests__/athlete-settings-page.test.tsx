@@ -352,6 +352,31 @@ describe("/athlete/settings — ios-iap provider-aware, error-visible subscripti
     expect(screen.getByText(/manage or cancel your subscription/i)).toBeInTheDocument();
   });
 
+  it("Stripe DEGRADED status (no Apple) → still counts as active, shows browser manage notice (pins full/degraded-both-active semantics)", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: null,
+      readError: false,
+    });
+    subscriptionsMaybeSingleMock.mockResolvedValue({
+      data: { status: "past_due" },
+      error: null,
+    });
+
+    await renderSettings("adult_athlete");
+
+    const notice = screen.getByTestId("settings-stripe-manage-notice");
+    expect(notice).toHaveAttribute("role", "status");
+    expect(notice).toHaveTextContent(
+      "Manage your From Victory subscription from a web browser at fromvictoryapp.com.",
+    );
+    expect(screen.queryByTestId("settings-subscribe-btn")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("settings-choose-plan")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("settings-subscription-status-unavailable"),
+    ).not.toBeInTheDocument();
+  });
+
   it("Apple precedence: dual-provider (Apple-active AND Stripe-active) still shows the Apple manage link", async () => {
     shellCapabilityMock.mockReturnValue("ios-iap");
     getActiveAppleProductIdResultMock.mockResolvedValue({
@@ -430,15 +455,20 @@ describe("/athlete/settings — ios-iap provider-aware, error-visible subscripti
       error: { message: "boom" },
     });
 
-    await renderSettings("adult_athlete");
+    const { container } = await renderSettings("adult_athlete");
 
     expect(
       screen.getByTestId("settings-subscription-status-unavailable"),
     ).toBeInTheDocument();
     expect(screen.queryByTestId("settings-choose-plan")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("settings-subscribe-btn")).not.toBeInTheDocument();
     expect(
       screen.queryByTestId("settings-stripe-manage-notice"),
     ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/manage or cancel your subscription/i),
+    ).not.toBeInTheDocument();
+    expect(container.textContent ?? "").not.toMatch(/\$/);
   });
 
   it("web (capability null): reads are NOT consulted, BillingPortalButton unchanged", async () => {
