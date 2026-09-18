@@ -8,7 +8,7 @@ import { getRequestIp, rateLimitGate } from "@/lib/actions/rate-limit-store";
 import { isAdultSignupEnabled } from "@/lib/flags";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
-import { isNativeShell } from "@/lib/native-shell";
+import { getRequestShellCapability } from "@/lib/native-shell";
 import { SUPPORTED_SPORTS } from "@/lib/sports";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -64,12 +64,16 @@ const SignUpAdultSchema = z
  * /athlete. The /subscribe page uses requireSubscriber() which accepts
  * adult_athlete, and passes createAdultCheckoutSession as the form action.
  *
- * Native-shell exception (FV-482): inside the Capacitor shell /subscribe is
- * a no-purchase dead end (FV-478 — checkout.stripe.com isn't reachable
- * in-shell, see lib/native-shell.ts), so an in-shell adult signup routes
+ * Native-shell exception (FV-482): inside the legacy-native shell /subscribe
+ * is a no-purchase dead end (FV-478 — checkout.stripe.com isn't reachable
+ * in-shell, see lib/native-shell.ts), so a legacy-native adult signup routes
  * straight to /athlete instead. The existing paused/blocked state already
  * carries the same no-purchase notice for an unsubscribed adult, so nothing
  * new is introduced — the adult subscribes from a browser later.
+ *
+ * FV-577: an `ios-iap` shell (an iOS build with the StoreKit purchase
+ * bridge, FV-572) is NOT a dead end — it routes to /subscribe like web, where
+ * AppleSubscribeSection renders the real StoreKit purchase surface.
  *
  * Gated by ENABLE_ADULT_SIGNUP — the entry link and route are also flag-gated;
  * this server-side check is defense-in-depth so the action cannot be invoked
@@ -167,11 +171,14 @@ export async function signUpAdultAthlete(
     };
   }
 
-  // Inside the native shell, /subscribe is a gated dead end (FV-478/FV-482):
-  // route home instead. redirect() throws internally and must not be called
-  // inside a try/catch — both branches below sit at the top level, matching
-  // the pattern in lib/actions/billing-portal.ts.
-  if (isNativeShell()) {
+  // Inside the legacy-native shell, /subscribe is a gated dead end
+  // (FV-478/FV-482): route home instead. An ios-iap shell (FV-577) is NOT a
+  // dead end — it falls through to /subscribe like web, where
+  // AppleSubscribeSection renders the real StoreKit purchase surface.
+  // redirect() throws internally and must not be called inside a try/catch —
+  // both branches below sit at the top level, matching the pattern in
+  // lib/actions/billing-portal.ts.
+  if (getRequestShellCapability() === "legacy-native") {
     redirect("/athlete");
   }
   redirect("/subscribe");

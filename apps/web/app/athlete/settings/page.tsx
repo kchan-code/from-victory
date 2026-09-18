@@ -6,8 +6,14 @@ import { BillingPortalButton } from "@/components/dashboard/BillingPortalButton"
 import { DeleteAccountSection } from "@/components/dashboard/DeleteAccountSection";
 import { Icon } from "@/components/ui";
 import { requireAthlete } from "@/lib/auth/guards";
-import { isNativeShell } from "@/lib/native-shell";
+import { getRequestShellCapability } from "@/lib/native-shell";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
+import {
+  subscriptionAccessLevel,
+  type SubscriptionStatus,
+} from "@/lib/subscriptions/access-level";
+import { getActiveAppleProductIdResult } from "@/lib/subscriptions/apple";
 import { SUPPORTED_SPORTS, sportLabel, type Sport } from "@/lib/sports";
 import { FOCUS_AREA_LABELS, isFocusAreaKey } from "@/lib/quiz-config";
 import { formatHour } from "@/lib/push/format";
@@ -37,12 +43,59 @@ export default async function AthleteSettingsPage({
   // documents at app/athlete/paused/page.tsx:19-21.
   const isAdult = profile.role === "adult_athlete";
 
-  // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
-  // checkout.stripe.com has no reachable path (it's deliberately not in
-  // allowNavigation — see apps/native/capacitor.config.ts), so the Billing
+  // Google Play "no in-app purchase" compliance: inside the legacy-native
+  // shell, checkout.stripe.com has no reachable path (it's deliberately not
+  // in allowNavigation — see apps/native/capacitor.config.ts), so the Billing
   // Portal button below (adult_athlete only) may not render as tappable,
-  // Stripe-bound UI. See lib/native-shell.ts.
-  const nativeShell = isNativeShell();
+  // Stripe-bound UI. See lib/native-shell.ts. FV-577: an ios-iap shell can't
+  // use Stripe's portal either (Apple's IAP flow doesn't route through it),
+  // so it gets its own price-free /subscribe entry instead of
+  // BillingPortalButton — /subscribe renders AppleSubscribeSection (purchase
+  // + restore + manage) for that capability.
+  const shellCapability = getRequestShellCapability();
+  const legacyNative = shellCapability === "legacy-native";
+  const iosIap = shellCapability === "ios-iap";
+
+  // FV-579: an adult_athlete is their own payer, so the ios-iap subscription
+  // control must be provider-aware and error-visible — mirroring the
+  // FV-578/FV-580 pattern on app/dashboard/settings/page.tsx (Apple
+  // precedence over Stripe; a neutral status instead of a false "no
+  // subscription" when a read fails). Both reads below are gated to
+  // `isAdult && iosIap` ONLY: a minor never reaches this branch (the whole
+  // Subscription section is `isAdult`-gated below), and web/legacy-native
+  // stay byte-identical to their pre-FV-579 behavior — neither issues either
+  // read.
+  const readSubscriptionStatus = isAdult && iosIap;
+
+  // Apple: via the ONE centralized service-role accessor for
+  // `apple_subscriptions` (see lib/subscriptions/apple.ts). Uses the
+  // error-visible variant (FV-580) so a transient DB error never reads as a
+  // false "no Apple subscription".
+  const appleResult = readSubscriptionStatus
+    ? await getActiveAppleProductIdResult(createServiceClient(), userId)
+    : { productId: null, readError: false };
+  const appleActive = appleResult.productId !== null;
+  const appleReadError = appleResult.readError;
+
+  // Stripe: the adult_athlete is their own payer, so `subscriptions.parent_id`
+  // is this athlete's own userId — same key app/dashboard/settings/page.tsx
+  // uses for a parent payer. RLS-scoped read via the page's existing session
+  // client (`supabase`), not the service client.
+  const { data: subRow, error: subReadError } = readSubscriptionStatus
+    ? await supabase
+        .from("subscriptions")
+        .select("status")
+        .eq("parent_id", userId)
+        .maybeSingle()
+    : { data: null, error: null };
+  const stripeReadError = subReadError != null;
+  // "Active" here means full OR degraded (has a subscription to manage) —
+  // NOT the `full`-only duplicate-purchase guard from a different concern
+  // (FV-581). Degraded/past_due still counts as "has a sub to manage" for
+  // this manage-vs-buy display.
+  const stripeActive =
+    subRow != null &&
+    subscriptionAccessLevel(subRow.status as SubscriptionStatus) !== "blocked";
 
   // Load push subscription summary for the "Daily reminder" settings row.
   // Only fetch reminder_hour — never expose keys/endpoint to the page.
@@ -236,20 +289,43 @@ export default async function AthleteSettingsPage({
                 Subscription
               </h2>
               <div className="rounded-[12px] border border-hairline bg-charcoal px-4 py-3.5">
-                {/* In-shell, no manage CTA or helper line — reader-app
-                    compliance means the only subscription copy is the
-                    neutral browser notice below. */}
-                {nativeShell ? null : (
+                {/* In legacy-native shell, no manage CTA or helper line —
+                    reader-app compliance means the only subscription copy is
+                    the neutral browser notice below. On web, the helper line
+                    always applies (BillingPortalButton is always a manage
+                    affordance). In ios-iap (FV-579), the helper line only
+                    applies when the rendered control is itself a MANAGE
+                    affordance (Apple or Stripe) — the no-sub "Choose a plan"
+                    and the read-error neutral status have nothing to manage,
+                    so the line is suppressed for those. */}
+                {legacyNative || (iosIap && !appleActive && !stripeActive) ? null : (
                   <p className="mb-4 font-body text-[13px] leading-snug text-cream/50">
                     Manage or cancel your subscription.
                   </p>
                 )}
-                {/* In-shell, checkout.stripe.com is unreachable (Google Play
-                    compliance — see lib/native-shell.ts), so
+                {/* In legacy-native shell, checkout.stripe.com is unreachable
+                    (Google Play compliance — see lib/native-shell.ts), so
                     BillingPortalButton is replaced by neutral, non-tappable
                     text — same pattern as the other native-shell notices
-                    (app/subscribe/page.tsx, app/athlete/paused/page.tsx). */}
-                {nativeShell ? (
+                    (app/subscribe/page.tsx, app/athlete/paused/page.tsx).
+                    FV-577/FV-579: an ios-iap shell can't use Stripe's portal
+                    either, so it branches by provider (mirrors
+                    app/dashboard/settings/page.tsx's FV-578/FV-580 pattern):
+                      1. Apple-active → in-app manage link to /subscribe
+                         (AppleSubscribeSection handles purchase, restore, and
+                         manage via StoreKit) — Apple precedence, record §4.4.
+                      2. else Stripe-active (bought on web, opened the app on
+                         iOS) → a neutral browser-manage notice. Apple permits
+                         pointing an externally-purchased subscription back to
+                         its original purchase channel; there is no in-shell
+                         Stripe portal to open.
+                      3. else a read failed → a neutral "couldn't load" status
+                         (FV-580 pattern) — never render a false "no
+                         subscription" when we simply couldn't confirm either
+                         provider.
+                      4. else no subscription at all → a price-free "Choose a
+                         plan" entry to /subscribe. */}
+                {legacyNative ? (
                   <div
                     role="status"
                     data-testid="billing-portal-native-shell-notice"
@@ -260,6 +336,46 @@ export default async function AthleteSettingsPage({
                       browser at fromvictoryapp.com.
                     </p>
                   </div>
+                ) : iosIap ? (
+                  appleActive ? (
+                    <Link
+                      href="/subscribe"
+                      data-testid="settings-subscribe-btn"
+                      className="inline-flex items-center justify-center font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 min-h-[44px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+                    >
+                      Manage subscription
+                    </Link>
+                  ) : stripeActive ? (
+                    <div
+                      role="status"
+                      data-testid="settings-stripe-manage-notice"
+                      className="bg-onyx border border-hairline rounded-xl px-4 py-4"
+                    >
+                      <p className="font-body text-cream/70 text-[13px] leading-relaxed">
+                        Manage your From Victory subscription from a web
+                        browser at fromvictoryapp.com.
+                      </p>
+                    </div>
+                  ) : appleReadError || stripeReadError ? (
+                    <div
+                      role="status"
+                      data-testid="settings-subscription-status-unavailable"
+                      className="bg-onyx border border-hairline rounded-xl px-4 py-4"
+                    >
+                      <p className="font-body text-cream/70 text-[13px] leading-relaxed">
+                        We couldn&rsquo;t load your subscription status.
+                        Please try again.
+                      </p>
+                    </div>
+                  ) : (
+                    <Link
+                      href="/subscribe"
+                      data-testid="settings-choose-plan"
+                      className="inline-flex items-center justify-center font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 min-h-[44px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+                    >
+                      Choose a plan
+                    </Link>
+                  )
                 ) : (
                   <BillingPortalButton />
                 )}
