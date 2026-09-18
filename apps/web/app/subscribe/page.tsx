@@ -5,10 +5,14 @@ import Link from "next/link";
 import { requireSubscriber } from "@/lib/auth/guards";
 import { createCheckoutSession, createAdultCheckoutSession } from "@/lib/actions/subscription";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { getActiveAppleProductId } from "@/lib/subscriptions/apple";
+import { capacityForAppleProduct } from "@/lib/subscriptions/apple-capacity";
+import { getConfiguredAppleProducts } from "@/lib/subscriptions/apple-products";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { isSubscriptionEnforcementEnabled } from "@/lib/subscriptions/enforce";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { SubscribeForm } from "@/components/subscribe/SubscribeForm";
 import { AppleSubscribeSection } from "@/components/subscribe/AppleSubscribeSection";
 
@@ -136,6 +140,36 @@ export default async function SubscribePage({ searchParams }: Props) {
   const checkoutAction = isAdult
     ? createAdultCheckoutSession
     : createCheckoutSession;
+
+  // FV-586 (KC decision D3, 2026-09-17): an Apple-entitled payer on the
+  // ios-iap shell may upgrade to a strictly-higher-capacity product — see
+  // AppleSubscribeSection's "upgrade" mode. Resolved here, not in the
+  // component, because both the current product's capacity
+  // (getActiveAppleProductId + capacityForAppleProduct) and the configured
+  // product catalog are server-side/env concerns. `null` (unmapped current
+  // product, or no configured product actually exceeds it) falls back to the
+  // existing "manage" state — never a buy affordance without a real upgrade
+  // to offer.
+  let appleUpgradeCapacity: number | null = null;
+  if (
+    shellCapability === "ios-iap" &&
+    entitlementState.status === "entitled" &&
+    entitlementState.provider === "apple"
+  ) {
+    const service = createServiceClient();
+    const currentProductId = await getActiveAppleProductId(service, userId);
+    const currentCapacity = currentProductId
+      ? capacityForAppleProduct(currentProductId)
+      : null;
+    if (currentCapacity !== null) {
+      const hasUpgradeProduct = getConfiguredAppleProducts().some(
+        (product) => product.athleteCapacity > currentCapacity,
+      );
+      if (hasUpgradeProduct) {
+        appleUpgradeCapacity = currentCapacity;
+      }
+    }
+  }
 
   return (
     <main id="main-content" className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
@@ -277,7 +311,14 @@ export default async function SubscribePage({ searchParams }: Props) {
           </div>
         ) : shellCapability === "ios-iap" ? (
           entitlementState.provider === "apple" ? (
-            <AppleSubscribeSection mode="manage" />
+            appleUpgradeCapacity !== null ? (
+              <AppleSubscribeSection
+                mode="upgrade"
+                currentAppleCapacity={appleUpgradeCapacity}
+              />
+            ) : (
+              <AppleSubscribeSection mode="manage" />
+            )
           ) : entitlementState.provider === "stripe" ? (
             <StatusCard testId="subscribe-status-entitled">
               <p className="font-body text-cream/70 text-[15px] leading-relaxed">

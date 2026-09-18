@@ -224,6 +224,16 @@ vi.mock("@/lib/subscriptions/subscribe-guard", () => ({
     getSubscribeEntitlementStateMock(...args),
 }));
 
+// FV-586 (KC decision D3): the upgrade-allowance check consulted by
+// beginApplePurchase. Defaults to `false` so every pre-existing test in this
+// file (written before D3 existed) is unaffected; the dedicated "D3 upgrade
+// allowance" describe block below overrides it per case.
+const isStrictAppleCapacityUpgradeMock = vi.fn(async (..._args: unknown[]) => false);
+vi.mock("@/lib/subscriptions/apple-capacity", () => ({
+  isStrictAppleCapacityUpgrade: (...args: unknown[]) =>
+    isStrictAppleCapacityUpgradeMock(...args),
+}));
+
 // ---------------------------------------------------------------------------
 // Import after mocks
 // ---------------------------------------------------------------------------
@@ -269,6 +279,8 @@ beforeEach(() => {
     status: "not_entitled",
     provider: null,
   });
+  isStrictAppleCapacityUpgradeMock.mockReset();
+  isStrictAppleCapacityUpgradeMock.mockResolvedValue(false);
 });
 
 const VALID_INPUT = { signedTransactionInfo: "ey.fake.transaction" };
@@ -590,16 +602,101 @@ describe("beginApplePurchase — sanctioned token handoff (FV-572)", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// FV-586 (KC decision D3): Apple upgrade allowance
+// ---------------------------------------------------------------------------
+
+describe("beginApplePurchase — D3 upgrade allowance (FV-586)", () => {
+  beforeEach(() => {
+    currentUser = { id: PAYER_ID };
+    profileRole = "parent";
+    mintedTokenExisting = "MINTED_TOKEN";
+  });
+
+  it("apple-entitled + isStrictAppleCapacityUpgrade=true + requestedProductId -> allowed, mints a token", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "apple",
+    });
+    isStrictAppleCapacityUpgradeMock.mockResolvedValueOnce(true);
+
+    const result = await beginApplePurchase("tier_5_athletes");
+
+    expect(result).toEqual({ ok: true, appAccountToken: "MINTED_TOKEN" });
+    expect(isStrictAppleCapacityUpgradeMock).toHaveBeenCalledWith(
+      expect.anything(),
+      PAYER_ID,
+      "tier_5_athletes",
+    );
+  });
+
+  it("apple-entitled + isStrictAppleCapacityUpgrade=false (same/lower/unmapped product) -> already_subscribed, no mint", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "apple",
+    });
+    isStrictAppleCapacityUpgradeMock.mockResolvedValueOnce(false);
+
+    const result = await beginApplePurchaseWithMintSpy("tier_1_athlete");
+
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+  });
+
+  it("apple-entitled + NO requestedProductId supplied -> already_subscribed (pre-D3 refusal preserved byte-identical)", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "apple",
+    });
+
+    const result = await beginApplePurchaseWithMintSpy();
+
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+    // The capacity-upgrade check must never even run without a requested
+    // product id — nothing to evaluate.
+    expect(isStrictAppleCapacityUpgradeMock).not.toHaveBeenCalled();
+  });
+
+  it("stripe-entitled + requestedProductId supplied -> still already_subscribed (upgrade allowance is Apple-only)", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "stripe",
+    });
+
+    const result = await beginApplePurchaseWithMintSpy("tier_5_athletes");
+
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+    expect(isStrictAppleCapacityUpgradeMock).not.toHaveBeenCalled();
+  });
+
+  it("comp-entitled + requestedProductId supplied -> still already_subscribed (upgrade allowance is Apple-only)", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "comp",
+    });
+
+    const result = await beginApplePurchaseWithMintSpy("tier_5_athletes");
+
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+    expect(isStrictAppleCapacityUpgradeMock).not.toHaveBeenCalled();
+  });
+});
+
 /**
  * Helper for the role-gate test: runs beginApplePurchase while watching
  * whether the service client's apple_purchase_tokens table was touched at
  * all (the gate must precede the mint write).
  */
-async function beginApplePurchaseWithMintSpy(): Promise<{
+async function beginApplePurchaseWithMintSpy(
+  requestedProductId?: string,
+): Promise<{
   result: Awaited<ReturnType<typeof beginApplePurchase>>;
   tokenTableTouched: boolean;
 }> {
   tokenTableTouches = 0;
-  const result = await beginApplePurchase();
+  const result = await beginApplePurchase(requestedProductId);
   return { result, tokenTableTouched: tokenTableTouches > 0 };
 }

@@ -45,6 +45,16 @@
  * (canceled / incomplete_expired / no row at all) remains `not_entitled` and
  * free to (re)purchase.
  *
+ * D3 EXCEPTION (FV-586, KC decision 2026-09-17): this module's `entitled`
+ * verdict is unchanged by D3 — it still means "already full or degraded,
+ * don't start a fresh purchase." The one carve-out (an Apple payer buying a
+ * strictly higher-capacity product is an upgrade, not a duplicate purchase)
+ * lives entirely in the CALLER (`beginApplePurchase`, via
+ * `isStrictAppleCapacityUpgrade` in `./apple-capacity`), which consults this
+ * module's `entitled`/`provider` verdict first and then decides whether to
+ * override the refusal for that one Apple-upgrade case. This module itself
+ * never needs to know about product ids or capacity ceilings.
+ *
  * Allowed callers: `lib/actions/apple-subscription.ts`,
  * `lib/actions/subscription.ts`. The frontend `/subscribe` page +
  * `AppleSubscribeSection` display pass is a separate follow-up

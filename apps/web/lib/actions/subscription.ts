@@ -58,10 +58,16 @@
  *   creation changes. Existing trials keep their promised duration and seat
  *   terms.
  *
- *   GATED — deliberately NOT implemented (FV-574 AC4, awaiting KC): trial-to-
- *   family conversion behavior (adding an athlete mid-trial). Mid-trial
- *   quantity-sync behavior on a trialing subscription is byte-identical to
- *   before this change.
+ *   DECIDED (FV-574 AC4, resolved by KC decision D3 / FV-586, 2026-09-17):
+ *   trial-to-family conversion (adding an athlete mid-trial) requires
+ *   EXPLICIT parent confirmation that ends the trial and starts the paid
+ *   family plan IMMEDIATELY — never a silent conversion or charge. That
+ *   guard is NOT in this file: it lives in `lib/actions/athletes.ts`'s
+ *   `createAthlete` (the add happens there, not in checkout), backed by
+ *   `lib/subscriptions/trial-conversion.ts`'s read-side state/quote helpers.
+ *   This file's checkout-creation flow is unaffected — mid-trial
+ *   quantity-sync behavior on an already-trialing subscription remains
+ *   byte-identical to before FV-586.
  *
  *   When trial-eligible:
  *     subscription_data.trial_period_days: 7

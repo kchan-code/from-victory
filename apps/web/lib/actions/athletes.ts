@@ -1,5 +1,23 @@
 "use server";
 
+/**
+ * FV-586 (KC decision D3, 2026-09-17) — trial-to-family explicit
+ * confirmation: adding a second (or later) athlete while the parent's Stripe
+ * subscription is `trialing` (FV-574's 7-day one-athlete trial) requires the
+ * frontend confirming control to resubmit this form with
+ * `trialConversionConfirmed: "true"` — see the guard inline below, and
+ * `lib/subscriptions/trial-conversion.ts` for the read-side state/quote this
+ * decision is based on. PARTIAL-FAILURE WINDOW (accepted, not mitigated): if
+ * the Stripe conversion (trial_end + quantity bump) succeeds but
+ * `auth.admin.createUser` fails immediately after, the subscription is left
+ * active at the bumped quantity with one fewer athlete than that quantity
+ * implies. We deliberately do NOT attempt to refund or roll back the Stripe
+ * charge — the parent's retry creates the missing athlete on the normal
+ * (non-trial) path, and the next `syncAthleteQuantity` call reconciles
+ * quantity to the real athlete count. This mirrors the codebase's existing
+ * non-blocking-Stripe-sync philosophy (see sync-athlete-quantity.ts).
+ */
+
 import { randomBytes, randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -9,9 +27,12 @@ import { ATHLETE_SYNTHETIC_EMAIL_DOMAIN } from "@/lib/auth/athlete-email";
 import { requireParent } from "@/lib/auth/guards";
 import { SUPPORTED_SPORTS } from "@/lib/sports";
 import { syncAthleteQuantity } from "@/lib/stripe/sync-athlete-quantity";
+import { getStripe } from "@/lib/stripe/server";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
+import { notifyError } from "@/lib/monitoring/notify";
 import { createServiceClient } from "@/lib/supabase/service";
 import { assertAthleteCapacity } from "@/lib/subscriptions/apple-capacity";
+import { getTrialConversionState } from "@/lib/subscriptions/trial-conversion";
 
 const MIN_ATHLETE_AGE = 13;
 
@@ -51,7 +72,18 @@ export type CreateAthleteState =
       // FV-570: set only on the Apple-tier capacity gate. UI copy for this
       // case is FV-572's; the server keeps `error` a plain, code-shaped
       // string rather than user-facing prose.
-      code?: "capacity_reached";
+      //
+      // FV-586 (KC decision D3): `trial_conversion_required` — this add
+      // would silently convert the parent's Stripe trial and needs the
+      // confirming control's explicit confirmation (resubmit with
+      // `trialConversionConfirmed: "true"`). `trial_conversion_payment_failed`
+      // — the parent confirmed, but Stripe's `error_if_incomplete` charge
+      // failed (e.g. a card requiring 3DS, or a decline); no athlete was
+      // created and the trial is untouched.
+      code?:
+        | "capacity_reached"
+        | "trial_conversion_required"
+        | "trial_conversion_payment_failed";
     }
   | null;
 
@@ -104,6 +136,130 @@ export async function createAthlete(
       error: "capacity_reached",
       code: capacity.reason,
     };
+  }
+
+  // FV-586 (KC decision D3, 2026-09-17): adding an athlete during the 7-day
+  // one-athlete Stripe FREE TRIAL (FV-574) requires EXPLICIT parent
+  // confirmation that ENDS the trial and STARTS the paid family plan
+  // IMMEDIATELY — never a silent conversion or charge. Read the trial state
+  // BEFORE any write below.
+  const trialConversionState = await getTrialConversionState(service, parentId);
+
+  // Fail CLOSED: a state-read failure must never let a silent mid-trial
+  // conversion through undetected. Refuse the same way an un-confirmed
+  // trial-crossing add is refused — the parent retries, which re-reads a
+  // (hopefully by-then-healthy) state.
+  if (trialConversionState.kind === "unknown") {
+    return {
+      ok: false,
+      error: "trial_conversion_required",
+      code: "trial_conversion_required",
+    };
+  }
+
+  // "apple" is informational only here (see trial-conversion.ts's module
+  // doc) — Apple trial-to-family conversion is handled entirely by the
+  // FV-581/584 duplicate-purchase guard's D3 upgrade allowance
+  // (beginApplePurchase), not by this Stripe-specific flow. Only a Stripe
+  // trial that this add would cross into family territory (currentAthleteCount
+  // >= 1, i.e. this is the SECOND-or-later athlete) needs confirmation — the
+  // one-athlete trial itself (currentAthleteCount === 0, the FIRST athlete)
+  // is not a conversion.
+  if (
+    trialConversionState.kind === "stripe_trial" &&
+    trialConversionState.currentAthleteCount >= 1
+  ) {
+    const trialConversionConfirmed =
+      formData.get("trialConversionConfirmed") === "true";
+
+    if (!trialConversionConfirmed) {
+      return {
+        ok: false,
+        error: "trial_conversion_required",
+        code: "trial_conversion_required",
+      };
+    }
+
+    // Confirmed — perform the Stripe conversion FIRST, before creating the
+    // athlete. `payment_behavior: "error_if_incomplete"` is load-bearing:
+    // unlike the default `allow_incomplete`, Stripe applies the update ONLY
+    // if the charge succeeds; a failed charge (incl. a card requiring 3DS,
+    // which this payment_behavior does not support — see module doc) leaves
+    // the subscription untouched and returns an error we catch below. There
+    // is deliberately no 3DS handling here: a card that requires it fails
+    // this call, and the parent is told to update their card in the billing
+    // portal and retry.
+    let stripe;
+    try {
+      stripe = getStripe();
+    } catch (err) {
+      console.error(
+        `[athletes.createAthlete] Stripe not configured for trial conversion (parentId=${parentId}): ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+      return {
+        ok: false,
+        error: "trial_conversion_payment_failed",
+        code: "trial_conversion_payment_failed",
+      };
+    }
+
+    try {
+      const stripeSub = await stripe.subscriptions.retrieve(
+        trialConversionState.stripeSubscriptionId,
+      );
+      const item = stripeSub.items.data[0];
+      if (!item) {
+        throw new Error(
+          `subscription ${trialConversionState.stripeSubscriptionId} has no items`,
+        );
+      }
+
+      await stripe.subscriptions.update(
+        trialConversionState.stripeSubscriptionId,
+        {
+          trial_end: "now",
+          items: [
+            {
+              id: item.id,
+              quantity: trialConversionState.currentAthleteCount + 1,
+            },
+          ],
+          payment_behavior: "error_if_incomplete",
+        },
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(
+        `[athletes.createAthlete] trial-conversion Stripe update failed (parentId=${parentId} sub=${trialConversionState.stripeSubscriptionId}): ${message}`,
+      );
+      deliverInBackground(
+        notifyError(
+          "[athletes] trial-conversion Stripe update failed",
+          message,
+          { parent_id: parentId, stripe_subscription_id: trialConversionState.stripeSubscriptionId },
+        ),
+      );
+      // No athlete created; the trial is untouched (Stripe guarantees no
+      // partial update on an error_if_incomplete failure).
+      return {
+        ok: false,
+        error: "trial_conversion_payment_failed",
+        code: "trial_conversion_payment_failed",
+      };
+    }
+
+    // Success — the subscription is now active at quantity
+    // (currentAthleteCount + 1). Proceed to create the athlete below.
+    // syncAthleteQuantity (called at the end of this function, unchanged)
+    // becomes a no-op since Stripe's quantity already matches. If
+    // auth.admin.createUser fails AFTER this point, the subscription is
+    // still active with the bumped quantity but the athlete row was never
+    // created — a rare partial-failure window we deliberately do NOT try to
+    // refund/undo (see module doc); the parent's retry goes through the
+    // normal (non-trial, "not_trialing") path and the next syncAthleteQuantity
+    // call reconciles quantity to the real athlete count.
   }
 
   const email = `athlete-${randomUUID()}@${ATHLETE_SYNTHETIC_EMAIL_DOMAIN}`;
