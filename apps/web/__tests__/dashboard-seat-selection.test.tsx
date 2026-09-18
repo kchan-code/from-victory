@@ -47,6 +47,10 @@ vi.mock("@/lib/auth/guards", () => ({
 
 vi.mock("@/lib/native-shell", () => ({
   isNativeShell: isNativeShellMock,
+  // Forward-compatible with the FV-577 dashboard (3-way shell capability):
+  // null = plain web, so these tests exercise the web branch regardless of
+  // which shell-detection API the page under test calls.
+  getRequestShellCapability: () => null,
 }));
 
 vi.mock("@/lib/subscriptions/access", () => ({
