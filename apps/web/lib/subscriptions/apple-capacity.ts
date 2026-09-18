@@ -11,7 +11,13 @@
  *
  * This module is `server-only` transitively (it imports `./apple`, which is
  * `server-only`) — it is only ever used from server actions
- * (`lib/actions/athletes.ts`).
+ * (`lib/actions/athletes.ts`, and — for the D3 upgrade allowance below —
+ * `lib/actions/apple-subscription.ts`).
+ *
+ * Also home to `isStrictAppleCapacityUpgrade` (FV-586, KC decision D3): the
+ * mirror-image "may this Apple payer purchase a HIGHER-capacity product"
+ * check consulted by the FV-581/584 duplicate-purchase guard. See that
+ * function's doc comment.
  */
 import "server-only";
 
@@ -172,4 +178,58 @@ export async function assertAthleteCapacity(
   }
 
   return { allowed: true };
+}
+
+// ---------------------------------------------------------------------------
+// isStrictAppleCapacityUpgrade — D3 upgrade allowance for the duplicate-
+// purchase guard (FV-586, KC decision D3)
+// ---------------------------------------------------------------------------
+
+/**
+ * D3 (FV-586, KC decision 2026-09-17): Apple's server-side purchase pipeline
+ * gives us no equivalent of Stripe's `trial_end: "now"` conversion call — the
+ * ONLY mechanism to add athletes to an Apple-billed family mid-cycle is the
+ * parent purchasing a higher-capacity product through Apple's OWN purchase
+ * sheet, which is itself the "explicit confirmation" D3 requires (Apple, not
+ * us, shows the price and charges the card). So for Apple — and Apple only —
+ * the FV-581/584 duplicate-purchase guard in `beginApplePurchase`
+ * (lib/actions/apple-subscription.ts) carves out a strict upgrade: a
+ * currently-entitled Apple payer purchasing a product whose capacity ceiling
+ * is STRICTLY GREATER than their current product's ceiling may mint a fresh
+ * purchase token. Any other purchase attempt by an Apple-entitled payer — the
+ * same product (accidental re-tap), a lower/equal product (a downgrade —
+ * that's the separate, gated seat-selection flow in `./seat-state.ts`, not a
+ * purchase), or a product either side can't resolve a ceiling for — is
+ * refused.
+ *
+ * FAIL-CLOSED (the OPPOSITE of `capacityForAppleProduct`'s fail-OPEN
+ * default): a `null` ceiling on EITHER side — no active current product, or
+ * either product id missing from `APPLE_PRODUCT_CAPACITY` — refuses the
+ * upgrade. `capacityForAppleProduct`'s fail-open stance exists so a config
+ * lag never blocks an athlete ADD for a real paying family; here the
+ * asymmetric risk runs the other way — minting a purchase token we can't
+ * prove is actually a capacity increase risks a same-or-lower "upgrade"
+ * slipping past the duplicate-purchase guard. Refusing is always safe (the
+ * payer's existing entitlement is untouched either way), and once real
+ * product ids are assigned (Open Item P2) genuine upgrades work immediately
+ * with no code change.
+ *
+ * @param service            Service-role Supabase client.
+ * @param payerId            UUID of the payer's profile row.
+ * @param requestedProductId The Apple product id the payer is attempting to
+ *                            purchase right now.
+ */
+export async function isStrictAppleCapacityUpgrade(
+  service: ServiceClient,
+  payerId: string,
+  requestedProductId: string,
+): Promise<boolean> {
+  const currentProductId = await getActiveAppleProductId(service, payerId);
+  if (!currentProductId) return false;
+
+  const currentCeiling = capacityForAppleProduct(currentProductId);
+  const requestedCeiling = capacityForAppleProduct(requestedProductId);
+  if (currentCeiling === null || requestedCeiling === null) return false;
+
+  return requestedCeiling > currentCeiling;
 }
