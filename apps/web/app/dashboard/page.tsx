@@ -6,10 +6,12 @@ import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
 import { isNativeShell } from "@/lib/native-shell";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
+import { getPayerSeatStateForCurrentParent } from "@/lib/subscriptions/seat-state";
 import { createClient } from "@/lib/supabase/server";
 import { getAthleteMetadataMap, ZERO_RHYTHM } from "@/lib/dashboard/rhythm";
 import { DeleteAccountSection } from "@/components/dashboard/DeleteAccountSection";
 import { DeleteAthleteButton } from "@/components/dashboard/DeleteAthleteButton";
+import { SeatSelectionPanel } from "@/components/dashboard/SeatSelectionPanel";
 import { RhythmRing } from "@/components/ui";
 
 export const metadata = {
@@ -53,6 +55,20 @@ export default async function DashboardPage() {
   // own auth-context client internally; RLS on athlete_session_metadata scopes
   // results to this parent's linked athletes. NEVER reads journal_entries.
   const rhythmMap = await getAthleteMetadataMap();
+
+  // FV-585 (KC decision D2): seat-selection state. A capacity-selection
+  // moment, never a payment failure — this is layered ON TOP of (never
+  // instead of) the billing banner above. `readError` means the read itself
+  // failed; render a neutral notice and never guess who should be paused.
+  const seatState = await getPayerSeatStateForCurrentParent();
+  const overCapacity =
+    seatState.status === "selection_required" || seatState.status === "selected";
+  // Only athletes that actually render as a card below (valid birthdate) are
+  // offered in the selector, so the panel's count always matches what the
+  // parent sees on screen.
+  const seatEligibleAthletes = linkedAthletes
+    .filter((a) => a.birthdate)
+    .map((a) => ({ id: a.id, firstName: a.first_name }));
 
   return (
     <main id="main-content" className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
@@ -143,6 +159,46 @@ export default async function DashboardPage() {
           </section>
         ) : null}
 
+        {/* Seat-selection banner (FV-585, KC decision D2) — a plan downgrade
+            left this account over its athlete capacity. Distinct from the
+            billing banner above: this is capacity selection, not a payment
+            problem, and never reads as punishment. Nothing is deleted; every
+            profile and its history stays saved regardless of the choice. */}
+        {seatState.readError ? (
+          <section
+            aria-label="Plan spots"
+            className="mb-10 bg-charcoal border border-hairline rounded-2xl px-5 py-4"
+          >
+            <p className="font-body text-cream/60 text-[13px] leading-relaxed">
+              Couldn&rsquo;t check plan spots right now.
+            </p>
+          </section>
+        ) : overCapacity && seatState.capacity !== null ? (
+          <section
+            aria-label="Plan spots"
+            data-testid="seat-selection-banner"
+            className="mb-10 bg-charcoal border border-hairline rounded-2xl px-5 py-6"
+          >
+            <p className="font-mono font-semibold uppercase tracking-[0.18em] text-[10px] text-gold mb-2">
+              Plan spots
+            </p>
+            <p className="font-display font-bold uppercase tracking-[0.04em] text-cream text-[18px] leading-tight mb-2">
+              Choose who stays active.
+            </p>
+            <p className="font-body text-cream/60 text-[13px] leading-relaxed">
+              Your plan covers {seatState.capacity} athlete
+              {seatState.capacity === 1 ? "" : "s"}. This account has{" "}
+              {seatState.athleteCount}. Everyone&rsquo;s profile and history
+              stays saved.
+            </p>
+            <SeatSelectionPanel
+              athletes={seatEligibleAthletes}
+              capacity={seatState.capacity}
+              initialActiveIds={seatState.activeAthleteIds}
+            />
+          </section>
+        ) : null}
+
         <section className="mb-10">
           <div className="flex items-baseline justify-between mb-5">
             <h2 className="font-display font-bold uppercase tracking-[0.08em] text-cream text-[18px]">
@@ -187,11 +243,34 @@ export default async function DashboardPage() {
                         <p className="font-display font-bold text-cream text-[18px] leading-tight group-hover:text-gold transition-colors duration-fast ease-out">
                           {a.first_name}
                         </p>
-                        {age !== null ? (
-                          <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-cream/50 mt-1">
-                            Age {age}
-                          </p>
-                        ) : null}
+                        <div className="flex items-center gap-2 mt-1">
+                          {age !== null ? (
+                            <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-cream/50">
+                              Age {age}
+                            </p>
+                          ) : null}
+                          {/* Seat pills (FV-585) — only shown while the account is
+                              over capacity; no pills at all in the normal
+                              (uncapped / within-capacity) state, so this never
+                              adds noise to the common case. */}
+                          {overCapacity ? (
+                            seatState.activeAthleteIds.includes(a.id) ? (
+                              <span
+                                data-testid={`seat-pill-active-${a.id}`}
+                                className="inline-flex items-center font-mono text-[10px] uppercase tracking-[0.14em] px-2.5 py-1 rounded-pill border border-gold/50 text-gold"
+                              >
+                                Active
+                              </span>
+                            ) : (
+                              <span
+                                data-testid={`seat-pill-paused-${a.id}`}
+                                className="inline-flex items-center font-mono text-[10px] uppercase tracking-[0.14em] px-2.5 py-1 rounded-pill border border-hairline text-cream/50"
+                              >
+                                Paused
+                              </span>
+                            )
+                          ) : null}
+                        </div>
                       </Link>
                       <div className="flex items-center gap-2">
                         <Link

@@ -482,16 +482,21 @@ export type Database = {
           athlete_id: string
           created_at: string
           parent_id: string
+          // FV-585 (KC decision D2): seat-selection flag — see
+          // 20260918090000_seat_selection.sql's column comment.
+          seat_active: boolean
         }
         Insert: {
           athlete_id: string
           created_at?: string
           parent_id: string
+          seat_active?: boolean
         }
         Update: {
           athlete_id?: string
           created_at?: string
           parent_id?: string
+          seat_active?: boolean
         }
         Relationships: [
           {
