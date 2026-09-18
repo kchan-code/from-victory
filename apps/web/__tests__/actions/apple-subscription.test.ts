@@ -559,6 +559,35 @@ describe("beginApplePurchase — sanctioned token handoff (FV-572)", () => {
     const result = await beginApplePurchase();
     expect(result).toEqual({ ok: true, appAccountToken: "MINTED_TOKEN" });
   });
+
+  // -------------------------------------------------------------------------
+  // FV-584 (KC decision D1): a DEGRADED payer is entitled too. This action
+  // only consults `getSubscribeEntitlementState`'s status/provider fields —
+  // the full-vs-degraded distinction is resolved entirely inside
+  // subscribe-guard.ts (see subscribe-guard.test.ts) — so these assert the
+  // same "entitled -> already_subscribed, no mint" behavior the guard now
+  // also returns for a degraded Apple/Stripe payer, not a new code path.
+  // -------------------------------------------------------------------------
+
+  it("FV-584: already entitled via a DEGRADED Apple subscription -> already_subscribed, no mint", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "apple",
+    });
+    const result = await beginApplePurchaseWithMintSpy();
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+  });
+
+  it("FV-584: already entitled via a DEGRADED Stripe subscription (e.g. past_due) -> already_subscribed, no mint", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "stripe",
+    });
+    const result = await beginApplePurchaseWithMintSpy();
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+  });
 });
 
 /**

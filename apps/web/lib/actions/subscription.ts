@@ -82,14 +82,16 @@
  *   trial-strategy section above.)
  *
  * Duplicate-billing guard (FV-581, docs/fv210-ios-iap-decision-record.md
- * Section 4.4):
+ * Section 4.4; broadened to `degraded` by KC decision D1 / FV-584):
  *   Before creating a Checkout session, `startSubscriptionCheckout` asks
  *   `getSubscribeEntitlementState` (lib/subscriptions/subscribe-guard.ts)
- *   whether this account is already `full` via ANY provider (Stripe, Apple,
- *   or a comp grant). If so, no Checkout session is created — the account is
- *   redirected to `/subscribe`, which the frontend pass renders as an
- *   already-subscribed state rather than a buy form ("Server decides; client
- *   renders."). A read error from the entitlement check is treated as
+ *   whether this account is already `full` OR `degraded` via ANY provider
+ *   (Stripe, Apple, or a comp grant) — a degraded payer (past_due/paused/
+ *   etc.) already has a subscription to fix, not a reason to start a second
+ *   one. If so, no Checkout session is created — the account is redirected
+ *   to `/subscribe`, which the frontend pass renders as an already-
+ *   subscribed / manage state rather than a buy form ("Server decides;
+ *   client renders."). A read error from the entitlement check is treated as
  *   `unknown`, NOT as "not entitled" — checkout is refused through the same
  *   calm user-facing error path used elsewhere in this function, never
  *   silently allowed to proceed and risk a double charge.
@@ -198,10 +200,12 @@ async function startSubscriptionCheckout(
    */
   trialQuantityEligible: boolean,
 ): Promise<SubscriptionActionState> {
-  // 2.5. Duplicate-billing guard (FV-581, record Section 4.4) — a payer
-  //      already `full` via any provider must never see a fresh Checkout
-  //      session created for them. Called BEFORE the price-id lookup so an
-  //      already-entitled payer never touches Stripe at all.
+  // 2.5. Duplicate-billing guard (FV-581, record Section 4.4; broadened by
+  //      FV-584 / KC decision D1) — a payer already `full` OR `degraded`
+  //      (past_due/paused/etc.) via any provider must never see a fresh
+  //      Checkout session created for them; a degraded payer manages their
+  //      EXISTING subscription instead. Called BEFORE the price-id lookup so
+  //      an already-entitled payer never touches Stripe at all.
   const entitlement = await getSubscribeEntitlementState(accountId);
   if (entitlement.status === "entitled") {
     // redirect() throws internally and must stay at the top level, outside
