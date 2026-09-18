@@ -4,7 +4,9 @@
  * docs/fv210-ios-iap-decision-record.md Section 4.4 ("Duplicate-billing
  * guard"): "iOS purchase UI is HIDDEN behind a server-computed flag: a payer
  * already `full` via Stripe or comp sees management/status copy, never a buy
- * button. (Server decides; client renders.)" This module is the single
+ * button. (Server decides; client renders.)" KC decision D1 (2026-09-17,
+ * FV-584) extends this to `degraded` payers too — see the SCOPE note below.
+ * This module is the single
  * shared SERVER decision both purchase-INITIATION entry points consult
  * before starting a brand-new purchase flow:
  *   - `beginApplePurchase` (lib/actions/apple-subscription.ts) — refuses to
@@ -33,12 +35,15 @@
  *   decision logic, reused rather than re-derived, avoiding drift — once
  *   every read is known to have succeeded. See `readUnderlyingSources`.
  *
- * SCOPE — `full` ONLY: record Section 4.4 says, verbatim, "a payer already
- * `full`." Whether a `degraded` payer (past_due / in_billing_retry / etc.)
- * should also be refused a fresh purchase is NOT decided by this record —
- * inventing that policy here would go beyond what KC recorded. A `degraded`
- * payer therefore reads as `not_entitled` and is allowed to (re)purchase,
- * same as today.
+ * SCOPE — `full` OR `degraded` (KC decision D1, 2026-09-17, FV-584): a
+ * `degraded` payer (past_due / paused / etc. — see access-level.ts) already
+ * HAS a subscription that needs fixing/managing, not a fresh purchase. FV-584
+ * extends the FV-581 guard from `full`-only to any access level that is NOT
+ * `"blocked"` — i.e. `getParentAccessLevel(userId) !== "blocked"` — so a
+ * degraded payer is `entitled` (blocked from starting a second purchase) and
+ * routed to the SAME manage/status copy as a `full` payer. Only `"blocked"`
+ * (canceled / incomplete_expired / no row at all) remains `not_entitled` and
+ * free to (re)purchase.
  *
  * Allowed callers: `lib/actions/apple-subscription.ts`,
  * `lib/actions/subscription.ts`. The frontend `/subscribe` page +
@@ -125,11 +130,15 @@ async function readUnderlyingSources(
 /**
  * Returns the current payer's subscribe-button entitlement state.
  *
- *   - `"entitled"`     — already `full` via some provider. Callers MUST
- *                         refuse to start a new purchase/checkout flow.
- *                         `provider` names which one.
+ *   - `"entitled"`     — already `full` OR `degraded` via some provider (KC
+ *                         decision D1, FV-584: a degraded payer has an
+ *                         existing subscription to fix/manage, not a reason
+ *                         to buy a second one). Callers MUST refuse to start
+ *                         a new purchase/checkout flow. `provider` names
+ *                         which one.
  *   - `"not_entitled"` — free to purchase; every underlying read succeeded
- *                         and the fold is below `full`.
+ *                         and the fold is `blocked` (canceled /
+ *                         incomplete_expired / no subscription row at all).
  *   - `"unknown"`      — at least one underlying read failed. Callers MUST
  *                         treat this as "refuse to start a new purchase"
  *                         (fail safe) — NEVER as `"not_entitled"`.
@@ -151,23 +160,33 @@ export async function getSubscribeEntitlementState(
   // Every underlying read just succeeded — safe to trust the fold. Reused
   // rather than re-derived, so the entitlement decision has exactly one
   // source of truth (record Section 4.1's resolver-fold logic).
+  //
+  // FV-584 (KC decision D1): entitled on ANY non-blocked level, not just
+  // `full` — a `degraded` payer (past_due/paused/etc.) already has a
+  // subscription that needs fixing, not a fresh purchase.
   const level = await getParentAccessLevel(userId);
-  if (level !== "full") {
+  if (level === "blocked") {
     return { status: "not_entitled", provider: null };
   }
 
-  // Entitled — determine which provider is carrying it. Apple goes through
-  // the centralized accessor (§4.9); Stripe reuses the error-checked status
-  // already fetched above (no second read, no unchecked-error fall-through).
+  // Entitled (full or degraded) — determine which provider is carrying it.
+  // Apple goes through the centralized accessor (§4.9), which already
+  // resolves to a product id for a full OR degraded Apple row (see
+  // getActiveAppleProductId's doc comment); Stripe reuses the error-checked
+  // status already fetched above (no second read, no unchecked-error
+  // fall-through), broadened the same way so a degraded Stripe payer
+  // resolves provider "stripe" rather than falling through to "comp".
   const appleProductId = await getActiveAppleProductId(service, userId);
   if (appleProductId !== null) {
     return { status: "entitled", provider: "apple" };
   }
 
-  if (stripeStatus && subscriptionAccessLevel(stripeStatus) === "full") {
+  if (stripeStatus && subscriptionAccessLevel(stripeStatus) !== "blocked") {
     return { status: "entitled", provider: "stripe" };
   }
 
-  // full, but neither Apple nor Stripe is the source -> a comp grant.
+  // full or degraded, but neither Apple nor Stripe is the source -> a comp
+  // grant (comp grants are always "full" — see hasActiveCompGrant/access.ts;
+  // there is no "degraded" comp state).
   return { status: "entitled", provider: "comp" };
 }
