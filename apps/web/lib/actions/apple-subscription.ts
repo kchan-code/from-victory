@@ -345,13 +345,16 @@ export type BeginApplePurchaseResult =
  *   - the token is an opaque UUID with no meaning outside this backend; the
  *     durable link key remains (original_transaction_id, environment).
  *
- * DUPLICATE-BILLING GUARD (FV-581, record Section 4.4): after the role gate
- * and BEFORE any mint write, a payer already `full` via Stripe, Apple, or a
+ * DUPLICATE-BILLING GUARD (FV-581, record Section 4.4; broadened to
+ * `degraded` by KC decision D1 / FV-584): after the role gate and BEFORE any
+ * mint write, a payer already `full` OR `degraded` via Stripe, Apple, or a
  * comp grant is refused with `already_subscribed` — no token minted, no row
- * touched. The refusal is an event-only log line (payer id + provider), same
- * privacy shape as the role-gate refusal above. A read error from the
- * entitlement check fails SAFE to `internal_error` (never silently treated
- * as "not subscribed" — see subscribe-guard.ts's module doc for why).
+ * touched. (A degraded payer has an existing subscription to fix, not a
+ * reason to start a second one.) The refusal is an event-only log line
+ * (payer id + provider), same privacy shape as the role-gate refusal above.
+ * A read error from the entitlement check fails SAFE to `internal_error`
+ * (never silently treated as "not subscribed" — see subscribe-guard.ts's
+ * module doc for why).
  *
  * Mint-on-first-use: reuses getOrMintPurchaseToken (race-safe upsert), so a
  * payer's first tap of the purchase button creates their token row.

@@ -547,6 +547,38 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
     });
   });
 
+  // FV-584 (KC decision D1): a DEGRADED payer (e.g. past_due Stripe, or an
+  // Apple row in in_billing_retry) now resolves to `status: "entitled"` too
+  // — this page only ever branches on status/provider, never on the
+  // underlying full-vs-degraded level (that fold lives in
+  // subscribe-guard.ts, see subscribe-guard.test.ts), so a degraded payer
+  // renders the exact same manage/status branch as a full one. This block
+  // just pins that the page has no separate/missing branch for it.
+  describe("status: entitled from a DEGRADED subscription (FV-584)", () => {
+    it("provider stripe (degraded, e.g. past_due) → manage/status copy, not a buy form", async () => {
+      asParent();
+      entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "stripe" });
+
+      const { getByTestId, queryByTestId, text } = await renderPage();
+
+      const card = getByTestId("subscribe-status-entitled");
+      expect(card.textContent).toContain("You’re already subscribed.");
+      expectNoBuyAffordances(queryByTestId, text);
+    });
+
+    it("provider apple (degraded, e.g. in_billing_retry) → AppleSubscribeSection in manage mode, no Subscribe button", async () => {
+      asParent();
+      shellCapabilityMock.mockReturnValue("ios-iap");
+      entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "apple" });
+
+      const { getByTestId, queryByTestId, text } = await renderPage();
+
+      const stub = getByTestId("apple-subscribe-section-stub");
+      expect(stub).toHaveAttribute("data-mode", "manage");
+      expectNoBuyAffordances(queryByTestId, text);
+    });
+  });
+
   describe("status: entitled — legacy-native shell (any provider)", () => {
     it("shows the SAME unchanged compliance notice as a not_entitled legacy-native payer — no in-shell link added", async () => {
       asParent();

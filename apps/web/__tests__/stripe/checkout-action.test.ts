@@ -795,6 +795,36 @@ describe("startSubscriptionCheckout — duplicate-billing guard (FV-581)", () =>
     expect(redirectMock).toHaveBeenCalledWith("/subscribe");
   });
 
+  // FV-584 (KC decision D1): a DEGRADED payer is entitled too. This action
+  // only consults `getSubscribeEntitlementState`'s status/provider fields —
+  // the full-vs-degraded distinction is resolved entirely inside
+  // subscribe-guard.ts (see subscribe-guard.test.ts) — so these assert the
+  // same "entitled -> redirect, no Checkout session" behavior the guard now
+  // also returns for a degraded Apple/Stripe payer, not a new code path.
+  it("FV-584: already entitled via a DEGRADED Apple subscription → redirect(/subscribe), no Checkout session created", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "apple",
+    });
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).toHaveBeenCalledWith("/subscribe");
+  });
+
+  it("FV-584: already entitled via a DEGRADED Stripe subscription (e.g. past_due) → redirect(/subscribe), no Checkout session created", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "stripe",
+    });
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).toHaveBeenCalledWith("/subscribe");
+  });
+
   it("entitlement check errors (unknown) → refuses checkout, no session, no redirect to Stripe", async () => {
     getSubscribeEntitlementStateMock.mockResolvedValueOnce({
       status: "unknown",

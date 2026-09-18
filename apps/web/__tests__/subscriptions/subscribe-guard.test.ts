@@ -12,7 +12,13 @@
  *   - entitled via Apple (Production, subscribed)
  *   - entitled via Stripe (active row)
  *   - entitled via a comp grant (no Stripe row, no Apple row)
+ *   - entitled via a DEGRADED Stripe row (past_due) and a DEGRADED Apple row
+ *     (in_billing_retry) — KC decision D1 / FV-584: `degraded` is entitled,
+ *     same as `full`, so a payer with a subscription that needs fixing is
+ *     blocked from starting a second one
  *   - not entitled (no subscription anywhere)
+ *   - not entitled: a BLOCKED Stripe row (canceled) — the one level that
+ *     still reads as not_entitled after FV-584
  *   - read errors on EACH of the four underlying sources -> "unknown", never
  *     silently treated as "not_entitled"
  */
@@ -205,6 +211,50 @@ describe("getSubscribeEntitlementState", () => {
 
     const result = await getSubscribeEntitlementState(PAYER_ID);
     expect(result).toEqual({ status: "not_entitled", provider: null });
+  });
+
+  // -------------------------------------------------------------------------
+  // FV-584 (KC decision D1): degraded is entitled too
+  // -------------------------------------------------------------------------
+
+  it("entitled via Stripe: past_due subscriptions row (degraded, FV-584)", async () => {
+    subscriptionsResult = { data: { status: "past_due" }, error: null };
+
+    const result = await getSubscribeEntitlementState(PAYER_ID);
+    expect(result).toEqual({ status: "entitled", provider: "stripe" });
+  });
+
+  it("entitled via Stripe: paused subscriptions row (degraded, FV-584)", async () => {
+    subscriptionsResult = { data: { status: "paused" }, error: null };
+
+    const result = await getSubscribeEntitlementState(PAYER_ID);
+    expect(result).toEqual({ status: "entitled", provider: "stripe" });
+  });
+
+  it("entitled via Apple: Production row with status=in_billing_retry (degraded, FV-584)", async () => {
+    appleSubsListResult = {
+      data: [
+        {
+          environment: "Production",
+          status: "in_billing_retry",
+          expires_at: FUTURE_ISO,
+          grace_period_expires_at: null,
+        },
+      ],
+      error: null,
+    };
+    appleSubsProductionSingleResult = {
+      data: {
+        product_id: "tier_1_1athlete",
+        status: "in_billing_retry",
+        expires_at: FUTURE_ISO,
+        grace_period_expires_at: null,
+      },
+      error: null,
+    };
+
+    const result = await getSubscribeEntitlementState(PAYER_ID);
+    expect(result).toEqual({ status: "entitled", provider: "apple" });
   });
 
   it("prefers apple as the reported provider when BOTH Apple and Stripe are active (duplicate billing)", async () => {
