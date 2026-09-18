@@ -357,6 +357,98 @@ describe("AppleSubscribeSection — mode default ('purchase') is unchanged", () 
   });
 });
 
+describe("AppleSubscribeSection — mode='upgrade' (FV-586, KC decision D3)", () => {
+  const THREE_TIERS = [
+    { productId: "test.fv.tier1.monthly", athleteCapacity: 1, displayName: "1 Athlete" },
+    { productId: "test.fv.tier3.monthly", athleteCapacity: 3, displayName: "3 Athletes" },
+    { productId: "test.fv.tier5.monthly", athleteCapacity: 5, displayName: "5 Athletes" },
+  ];
+
+  it("offers only strictly-higher-capacity products, with the disclosure and an Add Athletes button", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue(THREE_TIERS);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+
+    render(<AppleSubscribeSection mode="upgrade" currentAppleCapacity={1} />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByTestId("apple-plan-card-test.fv.tier3.monthly"),
+      ).toBeInTheDocument(),
+    );
+
+    // The equal-or-lower tier is filtered out entirely.
+    expect(
+      screen.queryByTestId("apple-plan-card-test.fv.tier1.monthly"),
+    ).toBeNull();
+    expect(
+      screen.getByTestId("apple-plan-card-test.fv.tier5.monthly"),
+    ).toBeInTheDocument();
+
+    expect(screen.getByTestId("apple-upgrade-disclosure").textContent).toBe(
+      "Confirming with Apple switches you to this plan right away and ends any free trial. Apple charges the new plan price now.",
+    );
+    expect(screen.getByTestId("apple-upgrade-submit")).toHaveTextContent(
+      "Add Athletes",
+    );
+    expect(screen.queryByTestId("apple-purchase-submit")).toBeNull();
+  });
+
+  it("selects the first eligible (lowest strictly-higher) product by default", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue(THREE_TIERS);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+
+    render(<AppleSubscribeSection mode="upgrade" currentAppleCapacity={1} />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByTestId("apple-plan-card-test.fv.tier3.monthly"),
+      ).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByTestId("apple-plan-card-test.fv.tier3.monthly"),
+    ).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("falls back to the unavailable state when no configured product exceeds the current capacity", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue([THREE_TIERS[2]!]); // capacity 5
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+
+    render(<AppleSubscribeSection mode="upgrade" currentAppleCapacity={5} />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-subscribe-unavailable")).toBeInTheDocument(),
+    );
+    expect(screen.queryByTestId("apple-upgrade-submit")).toBeNull();
+  });
+
+  it("purchasing an upgrade passes the selected product id through beginApplePurchase and shows upgrade success copy", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue(THREE_TIERS);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    beginApplePurchaseMock.mockResolvedValue({ ok: true, appAccountToken: "token-abc" });
+    purchaseMock.mockResolvedValue({
+      ok: true,
+      signedTransactionInfo: "jws-txn",
+      signedRenewalInfo: undefined,
+    });
+    submitApplePurchaseMock.mockResolvedValue({ ok: true, applied: true });
+
+    render(<AppleSubscribeSection mode="upgrade" currentAppleCapacity={1} />);
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-upgrade-submit")).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByTestId("apple-upgrade-submit"));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-subscribe-success")).toBeInTheDocument(),
+    );
+    expect(beginApplePurchaseMock).toHaveBeenCalledWith("test.fv.tier3.monthly");
+    expect(screen.getByTestId("apple-subscribe-success").textContent).toBe(
+      "You’re upgraded. Welcome to your family plan.",
+    );
+    expect(refreshMock).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("AppleSubscribeSection — qa follow-ups (PR #518)", () => {
   const TWO_TIERS = [
     { productId: "test.fv.tier1.monthly", athleteCapacity: 1, displayName: "1 Athlete" },

@@ -29,6 +29,7 @@ import {
   capacityForAppleProduct,
   payerCapacityCeiling,
   assertAthleteCapacity,
+  isStrictAppleCapacityUpgrade,
   type AppleTierCeiling,
 } from "@/lib/subscriptions/apple-capacity";
 
@@ -141,5 +142,45 @@ describe("assertAthleteCapacity", () => {
     const service = { marker: "service" };
     await assertAthleteCapacity(service as never, PAYER_ID, 0);
     expect(getActiveAppleProductIdMock).toHaveBeenCalledWith(service, PAYER_ID);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isStrictAppleCapacityUpgrade (FV-586, KC decision D3) — fail-closed with
+// the current empty APPLE_PRODUCT_CAPACITY map. A true "real upgrade" case
+// needs a populated map (Open Item P2, not yet decided) — the caller-facing
+// allow/refuse behavior with real product ids is covered by the mocked unit
+// tests in __tests__/actions/apple-subscription.test.ts.
+// ---------------------------------------------------------------------------
+
+describe("isStrictAppleCapacityUpgrade", () => {
+  it("refuses (false) when the payer has no active Apple product", async () => {
+    getActiveAppleProductIdMock.mockResolvedValue(null);
+    const result = await isStrictAppleCapacityUpgrade(
+      {} as never,
+      PAYER_ID,
+      "tier_5_athletes",
+    );
+    expect(result).toBe(false);
+  });
+
+  it("refuses (false) when both the current and requested product ids are unmapped (fail-closed, empty map today)", async () => {
+    getActiveAppleProductIdMock.mockResolvedValue("tier_1_athlete");
+    const result = await isStrictAppleCapacityUpgrade(
+      {} as never,
+      PAYER_ID,
+      "tier_5_athletes",
+    );
+    expect(result).toBe(false);
+  });
+
+  it("refuses (false) requesting the SAME product id the payer already holds", async () => {
+    getActiveAppleProductIdMock.mockResolvedValue("tier_1_athlete");
+    const result = await isStrictAppleCapacityUpgrade(
+      {} as never,
+      PAYER_ID,
+      "tier_1_athlete",
+    );
+    expect(result).toBe(false);
   });
 });
