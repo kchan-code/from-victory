@@ -97,7 +97,7 @@ afterEach(() => {
 // Expected heading sequence (1 h1 + 9 h2s; Faq + Waitlist are two
 // components but one final section per the audit).
 const EXPECTED_HEADINGS: RegExp[] = [
-  /Visualize and compete/i, // 1. Hero (h1)
+  /Visualize and Compete\s*From Victory\s*$/, // 1. Hero (h1) — Kinny lock, no period
   /Hear a pregame session/i, // 2. PregameSample
   /Picture the play\. Prepare for pressure\./i, // 3. Visualization (FV-539: KC headline triple)
   /Rehearse it\. Reset from it\. Leave it with God\./i, // 4. Method (FV-538: pregame method)
