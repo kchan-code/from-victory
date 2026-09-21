@@ -89,7 +89,11 @@ export default defineConfig({
     // ------------------------------------------------------------------
     {
       name: "chromium-mobile-parent",
-      testMatch: /multi-athlete\.e2e\.ts$/,
+      // FV-587: subscribe-guard.e2e.ts seeds + signs in as its OWN parents
+      // (see that file's module doc) rather than using this project's
+      // default storageState below, so it can safely share this project
+      // with multi-athlete.e2e.ts.
+      testMatch: [/multi-athlete\.e2e\.ts$/, /subscribe-guard\.e2e\.ts$/],
       use: {
         ...devices["iPhone 14"],
         storageState: path.join(__dirname, "e2e", ".auth", "parent.storageState.json"),
@@ -141,7 +145,10 @@ export default defineConfig({
     // ------------------------------------------------------------------
     {
       name: "pixel7",
-      testMatch: /multi-athlete\.e2e\.ts$/,
+      // FV-587: subscribe-guard.e2e.ts seeds + signs in as its OWN parents
+      // (project-suffixed emails — see that file's module doc), so it runs
+      // safely alongside chromium-mobile-parent's copy in parallel.
+      testMatch: [/multi-athlete\.e2e\.ts$/, /subscribe-guard\.e2e\.ts$/],
       use: {
         ...devices["Pixel 7"],
         storageState: path.join(
