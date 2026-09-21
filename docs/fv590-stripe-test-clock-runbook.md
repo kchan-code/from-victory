@@ -137,3 +137,8 @@ per this task's constraints. Everything above the "Manual step" section
 the harness's own guard/assertion unit tests (mocked Stripe client), but the
 real provider evidence itself still needs to be captured by whoever holds
 the test-mode key, using the commands in this runbook.
+
+## EXECUTED 2026-09-21 (Stripe TEST MODE; restricted test key; local Supabase)
+- Harness: Scenario A PASS (active, trial_end = update instant, qty 2, invoice `subscription_update` paid 800¢, PI succeeded, 1 charged + 1 zero-amount trial invoice); Scenario B PASS (StripeCardError 402; trialing, qty 1, trial_end unchanged, 0 charged invoices). OVERALL PASS.
+- Manual athlete-creation step through the real app: SUCCESS parent → confirm block ($8.00 today) → checkbox → submit → athlete created (2 links) + Stripe active/qty 2/paid 800¢. DECLINE parent → "Your card was declined or needs extra verification…" → no athlete row; Stripe still trialing/qty 1/0 charged. Local `subscriptions.status` stays `trialing` without a local webhook (expected).
+- Two harness corrections came from the first real run: issuer-decline test cards cannot be attached to a Customer (use `pm_card_chargeCustomerFail`); a trial start creates a $0 `paid` invoice (count charged invoices only).
