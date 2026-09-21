@@ -1,0 +1,69 @@
+{
+  "identifier": "A1B2C3D4-5E6F-4A7B-8C9D-0E1F2A3B4C5D",
+  "nonRenewingSubscriptions": [],
+  "products": [],
+  "settings": {
+    "_failTransactionsEnabled": false,
+    "_locale": "en_US",
+    "_storefront": "USA",
+    "_storeKitErrors": [],
+    "_askToBuyEnabled": false
+  },
+  "subscriptionGroups": [
+    {
+      "id": "99990001",
+      "localizations": [],
+      "name": "FV Test Subscriptions LOCAL ONLY",
+      "subscriptions": [
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "5.99",
+          "familyShareable": false,
+          "groupNumber": 2,
+          "internalID": "6449900001",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "description": "LOCAL TEST ONLY - 1 athlete",
+              "displayName": "FV Test Tier 1",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "test.fv.tier1.monthly",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "test tier1 monthly",
+          "subscriptionGroupID": "99990001",
+          "type": "RecurringSubscription",
+          "winbackOffers": []
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "11.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "6449900003",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "description": "LOCAL TEST ONLY - up to 3 athletes",
+              "displayName": "FV Test Tier 3",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "test.fv.tier3.monthly",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "test tier3 monthly",
+          "subscriptionGroupID": "99990001",
+          "type": "RecurringSubscription",
+          "winbackOffers": []
+        }
+      ]
+    }
+  ],
+  "version": {
+    "major": 3,
+    "minor": 0
+  }
+}
