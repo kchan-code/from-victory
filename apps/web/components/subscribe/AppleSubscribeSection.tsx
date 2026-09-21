@@ -50,8 +50,8 @@
  *     `currentAppleCapacity` below). Offers ONLY the configured products
  *     whose presentational `athleteCapacity` exceeds `currentAppleCapacity`
  *     as "add athletes" cards, with a disclosure that confirming ends any
- *     trial and charges immediately. The real capacity-increase gate is
- *     server-side (`isStrictAppleCapacityUpgrade`, consulted by
+ *     trial and switches billing to the new plan. The real capacity-increase
+ *     gate is server-side (`isStrictAppleCapacityUpgrade`, consulted by
  *     `beginApplePurchase`) — this mode's product filtering is presentational
  *     only, same as every other use of `athleteCapacity` in this file.
  */
@@ -93,7 +93,7 @@ const RESTORE_SUCCESS_COPY = "Your subscription is restored.";
 // FV-586 (KC decision D3): worded to Apple's verified behavior only — never
 // claims WE charge, never promises proration details we can't verify.
 const UPGRADE_DISCLOSURE_COPY =
-  "Confirming with Apple switches you to this plan right away and ends any free trial. Apple charges the new plan price now.";
+  "Confirming with Apple switches you to this plan right away and ends any free trial. Apple bills the new plan on its own schedule and shows the price before you confirm.";
 const UPGRADE_SUCCESS_COPY = "You’re upgraded. Welcome to your family plan.";
 
 // ---------------------------------------------------------------------------

@@ -385,7 +385,7 @@ describe("AppleSubscribeSection — mode='upgrade' (FV-586, KC decision D3)", ()
     ).toBeInTheDocument();
 
     expect(screen.getByTestId("apple-upgrade-disclosure").textContent).toBe(
-      "Confirming with Apple switches you to this plan right away and ends any free trial. Apple charges the new plan price now.",
+      "Confirming with Apple switches you to this plan right away and ends any free trial. Apple bills the new plan on its own schedule and shows the price before you confirm.",
     );
     expect(screen.getByTestId("apple-upgrade-submit")).toHaveTextContent(
       "Add Athletes",
