@@ -73,7 +73,7 @@ npm run stripe:test-clock:d3 -- --with-3ds
    `latest_invoice.amount_paid: 800`, `latest_invoice.payment_intent.status:
    "succeeded"`, and exactly one paid invoice of 800 cents for the customer.
 5. **Scenario B (decline):** a fresh customer on the **same** clock with
-   `pm_card_chargeDeclined` → same trialing subscription → same D3 update →
+   `pm_card_chargeCustomerFail` (attach succeeds, charge fails; Stripe forbids attaching issuer-decline test cards) → same trialing subscription → same D3 update →
    asserts the update **throws** a `StripeCardError` (HTTP 402), and that the
    subscription is left untouched (`status: "trialing"`, `quantity: 1`,
    `trial_end` unchanged) with no paid invoice for that customer.
@@ -120,7 +120,7 @@ through the real app, run this manually:
    subscription converts (as Scenario A proved) and the athlete row is
    created.
 4. Repeat with a parent/subscription pointed at a **declined** customer
-   (`pm_card_chargeDeclined`, per Scenario B). Expect: `createAthlete`
+   (`pm_card_chargeCustomerFail` (attach succeeds, charge fails; Stripe forbids attaching issuer-decline test cards), per Scenario B). Expect: `createAthlete`
    returns `{ ok: false, error: "trial_conversion_payment_failed" }`, the
    Stripe subscription is left untouched, and **no** athlete row is created.
 

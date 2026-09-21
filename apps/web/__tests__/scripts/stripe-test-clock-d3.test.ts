@@ -250,7 +250,10 @@ function makeFakeStripeForScenarioA() {
     },
     invoices: {
       list: async () => ({
-        data: [{ id: "in_A1234567", status: "paid", amount_paid: 800 }],
+        data: [
+          { id: "in_A0trial00", status: "paid", amount_paid: 0 },
+          { id: "in_A1234567", status: "paid", amount_paid: 800 },
+        ],
       }),
     },
   };
@@ -290,7 +293,10 @@ function makeFakeStripeForScenarioB(opts: { throwsCardError: boolean }) {
     },
     invoices: {
       list: async () => ({
-        data: [{ id: "in_B1234567", status: "open", amount_paid: 0 }],
+        data: [
+          { id: "in_B0trial00", status: "paid", amount_paid: 0 },
+          { id: "in_B1234567", status: "open", amount_paid: 0 },
+        ],
       }),
     },
   };
@@ -305,7 +311,9 @@ describe("runScenarioA (success) against a fake Stripe client", () => {
     expect(result.failures).toEqual([]);
     expect(result.evidence.amountPaidCents).toBe(800);
     expect(result.evidence.paymentIntentStatus).toBe("succeeded");
-    expect(result.evidence.paidInvoiceCount).toBe(1);
+    expect(result.evidence.paidInvoiceCount).toBe(2);
+    expect(result.evidence.chargedInvoiceCount).toBe(1);
+    expect(result.evidence.zeroAmountTrialInvoiceCount).toBe(1);
   });
 
   it("fails when the post-update quantity is wrong", async () => {
@@ -349,7 +357,8 @@ describe("runScenarioB (decline) against a fake Stripe client", () => {
     expect(result.passed).toBe(true);
     expect(result.failures).toEqual([]);
     expect(String(result.evidence.updateError)).toContain("StripeCardError");
-    expect(result.evidence.paidInvoiceCount).toBe(0);
+    expect(result.evidence.paidInvoiceCount).toBe(1);
+    expect(result.evidence.chargedInvoiceCount).toBe(0);
   });
 
   it("fails when the D3 update unexpectedly succeeds (no throw)", async () => {

@@ -96,7 +96,14 @@ export const TIER_REST_UNIT_AMOUNT_CENTS = 300;
 // outcomes without going through Elements/Checkout.
 // https://docs.stripe.com/testing#payment-methods
 export const PM_VISA_SUCCESS = "pm_card_visa";
-export const PM_CHARGE_DECLINED = "pm_card_chargeDeclined";
+// Stripe: "You can't attach cards that simulate issuer declines to a Customer
+// object" — so pm_card_*chargeDeclined* fails at customers.create, before any
+// subscription exists. The documented "Decline after attaching" token is
+// pm_card_chargeCustomerFail (card 4000 0000 0000 0341): "Attaching this card to
+// a Customer object succeeds, but attempts to charge the customer fail." That is
+// the production shape for D3 (card saved at Checkout, declined at trial_end=now).
+// https://docs.stripe.com/testing#declined-payments
+export const PM_CHARGE_DECLINED = "pm_card_chargeCustomerFail";
 export const PM_AUTHENTICATION_REQUIRED = "pm_card_authenticationRequired";
 
 // ---------------------------------------------------------------------------
@@ -189,7 +196,7 @@ export function buildPlan(opts: { with3ds: boolean }): string {
     "      latest_invoice.amount_paid=800, latest_invoice.payment_intent.status=succeeded",
     "    - assert exactly one paid invoice of 800 cents exists for the customer",
     "  Scenario B (decline):",
-    "    - fresh customer on the SAME clock, default payment method pm_card_chargeDeclined",
+    "    - fresh customer on the SAME clock, default payment method pm_card_chargeCustomerFail (attach succeeds, charge fails)",
     "    - same trialing subscription, same D3 update -> EXPECT a thrown StripeCardError (402)",
     "    - assert: status=trialing, quantity=1, trial_end unchanged, no paid invoice for the customer",
     opts.with3ds
@@ -432,14 +439,21 @@ export async function runScenarioA(
     }
   }
 
+  // Stripe: a trial start "still" creates an immediate invoice "but the amount
+  // is 0" (docs.stripe.com/billing/subscriptions/trials/free-trials); a $0
+  // invoice carries status "paid". So distinguish CHARGED invoices
+  // (amount_paid > 0) from the documented $0 trial invoice.
   const invoices = await stripe.invoices.list({ customer: customer.id, limit: 10 });
   const paidInvoices = invoices.data.filter((inv) => inv.status === "paid");
+  const chargedInvoices = paidInvoices.filter((inv) => inv.amount_paid > 0);
   evidence.paidInvoiceCount = paidInvoices.length;
-  const onlyPaidInvoice = paidInvoices[0];
-  if (paidInvoices.length !== 1 || !onlyPaidInvoice) {
-    failures.push(`expected exactly 1 paid invoice for the customer, found ${paidInvoices.length}`);
-  } else if (onlyPaidInvoice.amount_paid !== 800) {
-    failures.push(`the one paid invoice has amount_paid ${onlyPaidInvoice.amount_paid}, expected 800`);
+  evidence.zeroAmountTrialInvoiceCount = paidInvoices.length - chargedInvoices.length;
+  evidence.chargedInvoiceCount = chargedInvoices.length;
+  const onlyChargedInvoice = chargedInvoices[0];
+  if (chargedInvoices.length !== 1 || !onlyChargedInvoice) {
+    failures.push(`expected exactly 1 CHARGED (amount_paid > 0) invoice for the customer, found ${chargedInvoices.length}`);
+  } else if (onlyChargedInvoice.amount_paid !== 800) {
+    failures.push(`the charged invoice has amount_paid ${onlyChargedInvoice.amount_paid}, expected 800`);
   }
 
   return { scenario: "A", label: "success", passed: failures.length === 0, failures, evidence };
@@ -504,14 +518,19 @@ export async function runScenarioB(
   }
   evidence.trialEnd = toIso(refreshed.trial_end);
 
+  // See Scenario A: the $0 trial-start invoice is "paid" by construction; what
+  // must NOT exist after a refused update is any CHARGED invoice (amount_paid > 0).
   const invoices = await stripe.invoices.list({ customer: customer.id, limit: 10 });
   const paidInvoices = invoices.data.filter((inv) => inv.status === "paid");
+  const chargedInvoices = paidInvoices.filter((inv) => inv.amount_paid > 0);
   evidence.paidInvoiceCount = paidInvoices.length;
+  evidence.zeroAmountTrialInvoiceCount = paidInvoices.length - chargedInvoices.length;
+  evidence.chargedInvoiceCount = chargedInvoices.length;
   evidence.openOrDraftInvoiceCount = invoices.data.filter(
     (inv) => inv.status === "open" || inv.status === "draft" || inv.status === "void",
   ).length;
-  if (paidInvoices.length !== 0) {
-    failures.push(`expected no paid invoices for the customer, found ${paidInvoices.length}`);
+  if (chargedInvoices.length !== 0) {
+    failures.push(`expected no CHARGED (amount_paid > 0) invoices for the customer, found ${chargedInvoices.length}`);
   }
 
   return { scenario: "B", label: "decline", passed: failures.length === 0, failures, evidence };
@@ -646,9 +665,12 @@ export async function runScenarios(
   const results: ScenarioResult[] = [];
   try {
     results.push(await runScenarioA(stripe, testClock.id, priceId));
+    printEvidence(results.slice(-1));
     results.push(await runScenarioB(stripe, testClock.id, priceId));
+    printEvidence(results.slice(-1));
     if (opts.with3ds) {
       results.push(await runScenarioC(stripe, testClock.id, priceId));
+      printEvidence(results.slice(-1));
     }
   } finally {
     await cleanup(stripe, { testClockId: testClock.id, productId, priceId });
