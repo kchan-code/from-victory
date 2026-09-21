@@ -15,7 +15,8 @@
 //
 // DORMANT-SAFE BY CONSTRUCTION:
 //   - Refuses to run (exit 2, no network call) unless STRIPE_SECRET_KEY
-//     starts with "sk_test_". A live key is refused outright.
+//     starts with "sk_test_" or "rk_test_" (a restricted TEST-MODE key is
+//     preferred — least privilege). Any live key is refused outright.
 //   - Refuses to run (exit 2, no network call) if NEXT_PUBLIC_SUPABASE_URL
 //     points at a live Supabase project (*.supabase.co) — this harness never
 //     touches Supabase at all, but fails loudly if the environment looks
@@ -56,7 +57,7 @@
 //   npm run stripe:test-clock:d3 -- --with-3ds
 //
 // Prerequisite for a REAL run: apps/web/.env.stripe-test containing
-//   STRIPE_SECRET_KEY=sk_test_...
+//   STRIPE_SECRET_KEY=sk_test_...   (or a restricted rk_test_... key)
 // (a Stripe TEST-MODE secret key; live keys are refused). Nothing else is
 // required — this harness never touches Supabase. See
 // docs/fv590-stripe-test-clock-runbook.md for the full runbook, including
@@ -112,18 +113,22 @@ export class GuardFailure extends Error {
 }
 
 export const MISSING_OR_LIVE_KEY_MESSAGE =
-  "Prerequisite: a Stripe TEST-MODE secret key (sk_test_…) in apps/web/.env.stripe-test as STRIPE_SECRET_KEY. Live keys are refused.";
+  "Prerequisite: a Stripe TEST-MODE key (sk_test_… or a restricted rk_test_…) in apps/web/.env.stripe-test as STRIPE_SECRET_KEY. Live keys are refused.";
 
 export const SUPABASE_URL_REFUSAL_MESSAGE =
   "Refusing to run: NEXT_PUBLIC_SUPABASE_URL points at a live Supabase project (*.supabase.co). This harness never touches Supabase, but refuses to run in an environment pointed at a live project. Unset NEXT_PUBLIC_SUPABASE_URL or point it at a placeholder value before running.";
 
 /**
- * Validates STRIPE_SECRET_KEY is present and TEST-MODE (`sk_test_...`).
+ * Validates STRIPE_SECRET_KEY is present and TEST-MODE (`sk_test_...` or a
+ * restricted `rk_test_...` key). Live keys (`sk_live_`/`rk_live_`) are refused.
  * No network call. Throws `GuardFailure` (exit code 2) otherwise; never
  * logs the key value itself, only its presence/shape.
  */
 export function assertTestModeStripeKey(secretKey: string | undefined): string {
-  if (!secretKey || !secretKey.startsWith("sk_test_")) {
+  if (
+    !secretKey ||
+    !(secretKey.startsWith("sk_test_") || secretKey.startsWith("rk_test_"))
+  ) {
     throw new GuardFailure(MISSING_OR_LIVE_KEY_MESSAGE);
   }
   return secretKey;
@@ -165,7 +170,7 @@ export function buildPlan(opts: { with3ds: boolean }): string {
     "FV-590 Stripe test-clock harness — DRY RUN (no network calls, no key required)",
     "",
     "Prerequisites for a REAL run:",
-    "  - apps/web/.env.stripe-test containing STRIPE_SECRET_KEY=sk_test_... (refused if missing or live)",
+    "  - apps/web/.env.stripe-test containing STRIPE_SECRET_KEY=sk_test_... or rk_test_... (refused if missing or live)",
     "  - NEXT_PUBLIC_SUPABASE_URL must NOT point at *.supabase.co (this harness never touches Supabase)",
     "",
     "Plan:",

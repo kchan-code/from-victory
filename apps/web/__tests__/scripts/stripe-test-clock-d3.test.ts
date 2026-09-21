@@ -73,6 +73,14 @@ describe("assertTestModeStripeKey", () => {
     }
   });
 
+  it("accepts a restricted TEST-MODE key (rk_test_…)", () => {
+    expect(assertTestModeStripeKey("rk_test_abc123")).toBe("rk_test_abc123");
+  });
+
+  it("refuses a restricted LIVE key (rk_live_x)", () => {
+    expect(() => assertTestModeStripeKey("rk_live_x")).toThrowError(GuardFailure);
+  });
+
   it("refuses a key that merely contains sk_test_ but doesn't start with it", () => {
     expect(() => assertTestModeStripeKey("prefix_sk_test_123")).toThrowError(GuardFailure);
   });

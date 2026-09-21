@@ -54,7 +54,7 @@ npm run stripe:test-clock:d3 -- --with-3ds
 
 | Condition | Behavior |
 |---|---|
-| `STRIPE_SECRET_KEY` missing or doesn't start with `sk_test_` | Exit 2, no network call. Message: `Prerequisite: a Stripe TEST-MODE secret key (sk_test_…) in apps/web/.env.stripe-test as STRIPE_SECRET_KEY. Live keys are refused.` |
+| `STRIPE_SECRET_KEY` missing or not a test-mode key (`sk_test_` or restricted `rk_test_`) | Exit 2, no network call. Message: `Prerequisite: a Stripe TEST-MODE secret key (sk_test_… or rk_test_…) in apps/web/.env.stripe-test as STRIPE_SECRET_KEY. Live keys are refused.` |
 | `NEXT_PUBLIC_SUPABASE_URL` points at `*.supabase.co` | Exit 2, no network call. The harness never touches Supabase either way — this is a defensive tripwire against running in a production-shaped environment by mistake. |
 | `--dry-run` passed | Prints the plan and exits 0. Checked **first**, before either guard above — dry-run makes no network call and reads no secret, so it is safe to run on a machine with no Stripe key configured at all (this is how the script was developed and smoke-tested without ever holding a live or test key). |
 
