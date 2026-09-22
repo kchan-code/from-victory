@@ -108,11 +108,25 @@ import {
   verifySignedRenewalInfo,
   verifyAndDecodeNotification,
   getAllSubscriptionStatuses,
+  describeVerificationFailure,
 } from "@/lib/subscriptions/apple-server";
 
 const TRANSACTION_JWS = "ey.fake.transaction";
 const RENEWAL_JWS = "ey.fake.renewal";
 const NOTIFICATION_JWS = "ey.fake.notification";
+
+/**
+ * Builds a syntactically-real-shaped (but unsigned) JWS string whose middle
+ * segment decodes to `body` — used to exercise `peekNotificationEnvironment`
+ * (an UNVERIFIED read of the payload's own `environment` claim), independent
+ * of the (mocked) `verifyAndDecodeNotificationMock`'s return value. The
+ * header/signature segments are never inspected by the peek, so they're
+ * placeholders.
+ */
+function makeFakeSignedPayload(body: Record<string, unknown>): string {
+  const encoded = Buffer.from(JSON.stringify(body)).toString("base64url");
+  return `fake-header.${encoded}.fake-signature`;
+}
 
 function makeSdkTransaction(overrides: Record<string, unknown> = {}) {
   return {
@@ -337,6 +351,112 @@ describe("verifyAndDecodeNotification", () => {
     );
 
     await expect(verifyAndDecodeNotification(NOTIFICATION_JWS)).rejects.toThrow();
+  });
+
+  // -------------------------------------------------------------------------
+  // FV-598 regression: peek-then-single-verify, no Production-first fallback.
+  //
+  // A real Apple-signed Sandbox notification carries no `appAppleId`, so
+  // running it through the OLD Production-first fallback threw
+  // INVALID_APP_IDENTIFIER (status 3) — never INVALID_ENVIRONMENT — and the
+  // Sandbox retry never triggered. The fix peeks the payload's own
+  // (unverified) `environment` claim to pick ONE verifier up front and never
+  // retries against the other one.
+  // -------------------------------------------------------------------------
+
+  it("a Sandbox-shaped payload (data.environment=Sandbox) verifies in a SINGLE pass — no Production attempt first", async () => {
+    const sandboxPayload = makeFakeSignedPayload({ data: { environment: "Sandbox" } });
+    verifyAndDecodeNotificationMock.mockResolvedValueOnce({
+      notificationType: "TEST",
+      subtype: undefined,
+      notificationUUID: "uuid-sandbox",
+      signedDate: 1_700_000_000_500,
+      data: { environment: "Sandbox" },
+    });
+
+    const result = await verifyAndDecodeNotification(sandboxPayload);
+
+    expect(result.notificationType).toBe("TEST");
+    expect(result.environment).toBe("Sandbox");
+    // Exactly one verification attempt — the OLD fallback design would have
+    // needed two (Production fails, then Sandbox) to reach this outcome.
+    expect(verifyAndDecodeNotificationMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("a Production-shaped payload (data.environment=Production) verifies via the Production verifier in a single pass", async () => {
+    const productionPayload = makeFakeSignedPayload({ data: { environment: "Production" } });
+    verifyAndDecodeNotificationMock.mockResolvedValueOnce({
+      notificationType: "DID_RENEW",
+      subtype: undefined,
+      notificationUUID: "uuid-prod",
+      signedDate: 1_700_000_000_500,
+      data: { environment: "Production" },
+    });
+
+    const result = await verifyAndDecodeNotification(productionPayload);
+
+    expect(result.environment).toBe("Production");
+    expect(verifyAndDecodeNotificationMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("a wrong-bundleId Sandbox-shaped payload is rejected — no fallback retry to Production", async () => {
+    const sandboxPayload = makeFakeSignedPayload({ data: { environment: "Sandbox" } });
+    verifyAndDecodeNotificationMock.mockRejectedValueOnce(
+      new FakeVerificationException(FakeVerificationStatus.INVALID_APP_IDENTIFIER),
+    );
+
+    await expect(verifyAndDecodeNotification(sandboxPayload)).rejects.toThrow();
+    expect(verifyAndDecodeNotificationMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("a wrong-bundleId Production-shaped payload is rejected — no fallback retry to Sandbox", async () => {
+    const productionPayload = makeFakeSignedPayload({ data: { environment: "Production" } });
+    verifyAndDecodeNotificationMock.mockRejectedValueOnce(
+      new FakeVerificationException(FakeVerificationStatus.INVALID_APP_IDENTIFIER),
+    );
+
+    await expect(verifyAndDecodeNotification(productionPayload)).rejects.toThrow();
+    expect(verifyAndDecodeNotificationMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("defaults the peek to Production for a malformed/unparseable payload (fails like any other bad payload)", async () => {
+    verifyAndDecodeNotificationMock.mockRejectedValueOnce(
+      new FakeVerificationException(FakeVerificationStatus.FAILURE),
+    );
+
+    await expect(verifyAndDecodeNotification("not-a-real-jws")).rejects.toThrow();
+    expect(verifyAndDecodeNotificationMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// describeVerificationFailure — webhook log-line formatting (FV-598)
+// ---------------------------------------------------------------------------
+
+describe("describeVerificationFailure", () => {
+  it("formats a VerificationException as `status=<n> <ENUM_NAME>`", () => {
+    const err = new FakeVerificationException(FakeVerificationStatus.INVALID_APP_IDENTIFIER);
+    expect(describeVerificationFailure(err)).toBe("status=3 INVALID_APP_IDENTIFIER");
+  });
+
+  it("formats INVALID_ENVIRONMENT (status 4) by name too", () => {
+    const err = new FakeVerificationException(FakeVerificationStatus.INVALID_ENVIRONMENT);
+    expect(describeVerificationFailure(err)).toBe("status=4 INVALID_ENVIRONMENT");
+  });
+
+  it("falls back to the error's message for a plain (non-VerificationException) Error", () => {
+    expect(describeVerificationFailure(new Error("boom"))).toBe("boom");
+  });
+
+  it("falls back to String(err) for a non-Error value", () => {
+    expect(describeVerificationFailure("weird")).toBe("weird");
+  });
+
+  it("never includes payload content — VerificationException carries none to leak", () => {
+    const err = new FakeVerificationException(FakeVerificationStatus.VERIFICATION_FAILURE);
+    const formatted = describeVerificationFailure(err);
+    expect(formatted).not.toContain("ey.");
+    expect(formatted).toBe("status=1 VERIFICATION_FAILURE");
   });
 });
 
