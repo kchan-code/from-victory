@@ -25,6 +25,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 
 import { getActiveAppleProductId } from "./apple";
+import { catalogCapacityMap, isAppleCatalogActive } from "./apple-product-catalog";
 
 type ServiceClient = SupabaseClient<Database>;
 
@@ -36,36 +37,58 @@ type ServiceClient = SupabaseClient<Database>;
 export type AppleTierCeiling = 1 | 2 | 3 | 4 | 5;
 
 /**
- * Maps an Apple product id (App Store Connect config, Open Item P2) to its
- * athlete-count ceiling. Starts EMPTY: product ids are not assigned yet
- * (release-held App Store Connect config). The shape (string keys, values
- * constrained to 1-5) is test-pinned now so wiring in real product ids later
- * is a pure data change with no code change.
+ * Returns the CURRENT product-id -> athlete-capacity ceiling map, computed
+ * fresh on every call (FV-593):
+ *   - `isAppleCatalogActive()` false (default — server env
+ *     `APPLE_CATALOG_ACTIVE` unset or anything other than `"1"`): empty map,
+ *     byte-identical to the pre-FV-593 default. The capacity gate (FV-570),
+ *     the FV-585 seat-selection pause, and `isStrictAppleCapacityUpgrade`
+ *     (FV-586, D3) all stay INERT.
+ *   - `isAppleCatalogActive()` true: the 10-entry catalog from
+ *     `apple-product-catalog.ts` (`docs/fv210-apple-product-config-PROPOSAL-2026-09-17.md`,
+ *     KC-approved configuration policy).
  *
- * This is the SINGLE place ceilings live — do not duplicate this map or
- * hardcode a ceiling value anywhere else.
+ * This is the SINGLE place ceilings are derived from — do not duplicate this
+ * lookup or hardcode a ceiling value anywhere else. Prefer this function (or
+ * `capacityForAppleProduct`, which calls it) over the `APPLE_PRODUCT_CAPACITY`
+ * constant below in any new code — the constant is a load-time snapshot kept
+ * only for back-compat.
+ */
+export function getAppleProductCapacity(): Readonly<Record<string, AppleTierCeiling>> {
+  return isAppleCatalogActive() ? catalogCapacityMap() : Object.freeze({});
+}
+
+/**
+ * @deprecated Back-compat only. This is a SNAPSHOT taken once, at module
+ * load time — it does NOT reflect a later change to `APPLE_CATALOG_ACTIVE`
+ * within the same running process (activation is a deploy-time flag, not a
+ * live toggle; see `apple-product-catalog.ts`'s file header). No code in
+ * this repo reads this constant for a gating decision — `capacityForAppleProduct`
+ * calls `getAppleProductCapacity()` fresh instead. Kept only in case an
+ * external caller imports it directly; grep before removing.
  */
 export const APPLE_PRODUCT_CAPACITY: Readonly<Record<string, AppleTierCeiling>> =
-  Object.freeze({});
+  getAppleProductCapacity();
 
 /**
  * Looks up the athlete-count ceiling for an Apple product id.
  *
  * Returns `null` for an unknown product id — this is a deliberate
- * FAIL-OPEN-FOR-ADDS choice, not a bug: with the map currently empty (P2 not
- * yet decided), every real Apple product id is "unknown" today, and a payer
- * who legitimately purchased a real Apple subscription must not be blocked
- * from adding an athlete because our internal config lag hasn't caught up
- * yet. Blocking a paying family's athlete-add on a mapping gap would punish
- * them for OUR config debt, not theirs. Callers MUST treat a `null` return
- * as "no ceiling data — do not block" and log a warning so the gap is
- * visible operationally.
+ * FAIL-OPEN-FOR-ADDS choice, not a bug: with the catalog inactive by default
+ * (`APPLE_CATALOG_ACTIVE` unset — Open Item P2 config not live yet), every
+ * real Apple product id is "unknown" today, and a payer who legitimately
+ * purchased a real Apple subscription must not be blocked from adding an
+ * athlete because our internal config lag hasn't caught up yet. Blocking a
+ * paying family's athlete-add on a mapping gap would punish them for OUR
+ * config debt, not theirs. Callers MUST treat a `null` return as "no
+ * ceiling data — do not block" and log a warning so the gap is visible
+ * operationally.
  *
  * @param productId  The Apple product/price identifier from the payer's
  *                    active `apple_subscriptions` row.
  */
 export function capacityForAppleProduct(productId: string): number | null {
-  const ceiling = APPLE_PRODUCT_CAPACITY[productId];
+  const ceiling = getAppleProductCapacity()[productId];
   if (ceiling === undefined) {
     console.warn(
       `[subscriptions/apple-capacity] Unknown Apple product id "${productId}" — no ceiling data, not blocking (fail-open-for-adds).`,
@@ -136,9 +159,10 @@ export type AssertAthleteCapacityResult =
  * never capped by this function regardless of athlete count, per the
  * invariant above.
  *
- * With `APPLE_PRODUCT_CAPACITY` currently empty, this function is INERT: no
- * Apple product id maps to a ceiling yet, so `capacityForAppleProduct`
- * always returns `null` and every call resolves `{ allowed: true }`.
+ * With the Apple catalog inactive by default (`isAppleCatalogActive()` false
+ * — see `apple-product-catalog.ts`), this function is INERT: no Apple
+ * product id maps to a ceiling, so `capacityForAppleProduct` always returns
+ * `null` and every call resolves `{ allowed: true }`.
  *
  * @param service             Service-role Supabase client.
  * @param payerId             UUID of the payer's profile row.
@@ -204,15 +228,16 @@ export async function assertAthleteCapacity(
  *
  * FAIL-CLOSED (the OPPOSITE of `capacityForAppleProduct`'s fail-OPEN
  * default): a `null` ceiling on EITHER side — no active current product, or
- * either product id missing from `APPLE_PRODUCT_CAPACITY` — refuses the
- * upgrade. `capacityForAppleProduct`'s fail-open stance exists so a config
- * lag never blocks an athlete ADD for a real paying family; here the
+ * either product id unresolvable via `getAppleProductCapacity()` (always the
+ * case while the catalog is inactive, `isAppleCatalogActive()` false) —
+ * refuses the upgrade. `capacityForAppleProduct`'s fail-open stance exists so
+ * a config lag never blocks an athlete ADD for a real paying family; here the
  * asymmetric risk runs the other way — minting a purchase token we can't
  * prove is actually a capacity increase risks a same-or-lower "upgrade"
  * slipping past the duplicate-purchase guard. Refusing is always safe (the
- * payer's existing entitlement is untouched either way), and once real
- * product ids are assigned (Open Item P2) genuine upgrades work immediately
- * with no code change.
+ * payer's existing entitlement is untouched either way), and once the
+ * catalog is activated (Open Item P2 config + `APPLE_CATALOG_ACTIVE=1`)
+ * genuine upgrades work immediately with no code change.
  *
  * @param service            Service-role Supabase client.
  * @param payerId            UUID of the payer's profile row.
