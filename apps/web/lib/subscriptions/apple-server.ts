@@ -13,19 +13,41 @@
  * with no APPLE_* env configured. The verifier/API-client instances are
  * built and cached on first real use only.
  *
- * Verify-both-environments fallback (docs/fv210-ios-iap-decision-record.md
+ * Verify-both-environments strategy (docs/fv210-ios-iap-decision-record.md
  * Section 4.9): `SignedDataVerifier` is constructed against a SINGLE fixed
- * environment and throws `INVALID_ENVIRONMENT` if the decoded payload's
- * `environment` field doesn't match it. Because this backend must accept
- * BOTH Sandbox (TestFlight / App Review) and Production submissions from one
- * endpoint, every verify call tries the Production verifier first and falls
- * back to the Sandbox verifier only on an `INVALID_ENVIRONMENT` failure —
- * Apple's own documented pattern for this exact situation. This fallback
- * determines WHICH environment signed the payload; it is never used to grant
- * access — the environment wall (Production-only unless allowlisted) is
- * enforced entirely by application code in `lib/actions/apple-subscription.ts`
- * and the Notifications V2 webhook, reading the VERIFIED payload's own
- * `environment` field.
+ * environment. Because this backend must accept BOTH Sandbox (TestFlight /
+ * App Review) and Production submissions from one endpoint, two DIFFERENT
+ * strategies are used depending on payload shape:
+ *
+ *   - Transactions and renewal-info JWS (`verifySignedTransaction`,
+ *     `verifySignedRenewalInfo`): try the Production verifier first and fall
+ *     back to the Sandbox verifier only on an `INVALID_ENVIRONMENT` failure
+ *     (`verifyWithFallback`, below) — Apple's own documented pattern. These
+ *     payloads carry no `appAppleId` check, so `INVALID_ENVIRONMENT` really is
+ *     the only failure mode a wrong-environment verifier produces.
+ *
+ *   - App Store Server Notifications V2 (`verifyAndDecodeNotification`): the
+ *     SDK checks bundleId and (Production-verifier only) `appAppleId` BEFORE
+ *     it checks environment. A Sandbox notification carries no `appAppleId`,
+ *     so running it through the Production-first fallback above throws
+ *     `INVALID_APP_IDENTIFIER` (status 3) — never `INVALID_ENVIRONMENT` — and
+ *     the fallback to Sandbox never triggers. Every real Sandbox App Store
+ *     Server Notification was rejected with HTTP 400 as a result (proven with
+ *     a real Apple-signed Sandbox TEST notification, FV-598, 2026-09-22).
+ *     Fix: `peekNotificationEnvironment` reads the payload's OWN `environment`
+ *     claim WITHOUT verifying it first, purely to pick which single verifier
+ *     to run — a selection hint, not a trust decision. The chosen verifier
+ *     then does the real work in one pass: it verifies the signature AND
+ *     re-checks that SAME environment claim (plus bundleId) after signature
+ *     verification succeeds, so a forged or mismatched claim is rejected by
+ *     the verifier itself, never by the peek. A malformed/unparseable payload
+ *     defaults the peek to Production, where it fails the verifier's own
+ *     signature or identifier check like any other bad payload.
+ *
+ * Neither fallback is ever used to grant access — the environment wall
+ * (Production-only unless allowlisted) is enforced entirely by application
+ * code in `lib/actions/apple-subscription.ts` and the Notifications V2
+ * webhook, reading the VERIFIED payload's own `environment` field.
  *
  * Root-CA certificate loading: configurable via `APPLE_ROOT_CA_PATHS` (a
  * comma-separated list of absolute file paths to DER-encoded Apple root CA
@@ -186,6 +208,72 @@ function isInvalidEnvironment(err: unknown): boolean {
   );
 }
 
+// Numeric VerificationStatus -> enum name, maintained by hand rather than via
+// reverse-enum indexing (`VerificationStatus[n]`) — the real SDK enum has a
+// generated reverse map, but that's an implementation detail we don't want
+// this log-formatting helper to depend on. Values per
+// @apple/app-store-server-library's VerificationStatus (0-7).
+const VERIFICATION_STATUS_NAMES: Record<number, string> = {
+  0: "OK",
+  1: "VERIFICATION_FAILURE",
+  2: "RETRYABLE_VERIFICATION_FAILURE",
+  3: "INVALID_APP_IDENTIFIER",
+  4: "INVALID_ENVIRONMENT",
+  5: "INVALID_CHAIN_LENGTH",
+  6: "INVALID_CERTIFICATE",
+  7: "FAILURE",
+};
+
+/**
+ * Formats a verification failure for a log line: `status=<n> <ENUM_NAME>`
+ * (plus `: <cause message>` when the SDK attached a wrapped low-level error,
+ * e.g. a cert-parsing failure) when `err` is a `VerificationException`, else
+ * the plain error message. NEVER includes payload content —
+ * `VerificationException` carries no payload data, only a status code and an
+ * optional wrapped diagnostic error. Exported so callers outside this module
+ * (the Notifications V2 webhook route) can log a triage-useful status code
+ * without importing `@apple/app-store-server-library` themselves — this file
+ * stays the ONE module that imports that package.
+ */
+export function describeVerificationFailure(err: unknown): string {
+  if (err instanceof VerificationException) {
+    const name = VERIFICATION_STATUS_NAMES[err.status] ?? "UNKNOWN";
+    const causeSuffix = err.cause instanceof Error ? `: ${err.cause.message}` : "";
+    return `status=${err.status} ${name}${causeSuffix}`;
+  }
+  return err instanceof Error ? err.message : String(err);
+}
+
+/**
+ * Peeks a Notifications V2 `signedPayload`'s UNVERIFIED `environment` claim
+ * (checking `data.environment`, then `summary.environment`, then
+ * `appData.environment` — the shapes the SDK itself recognizes, in the same
+ * precedence order) purely to choose which single `SignedDataVerifier` to
+ * run against it. See the file header for why this replaces the
+ * Production-first fallback for notifications specifically. This is a
+ * selection hint only: no signature has been checked yet, so the returned
+ * value must never be trusted for anything beyond "which verifier to try" —
+ * the chosen verifier re-derives and re-checks this same claim (and
+ * bundleId) AFTER verifying the signature. Defaults to Production when the
+ * payload is malformed, has no recognizable data/summary/appData shape, or
+ * the claim isn't literally `"Sandbox"`.
+ */
+function peekNotificationEnvironment(signedPayload: string): Environment {
+  try {
+    const payloadSegment = signedPayload.split(".")[1];
+    if (!payloadSegment) return Environment.PRODUCTION;
+    const body = JSON.parse(Buffer.from(payloadSegment, "base64url").toString("utf8")) as {
+      data?: { environment?: string };
+      summary?: { environment?: string };
+      appData?: { environment?: string };
+    };
+    const raw = body.data?.environment ?? body.summary?.environment ?? body.appData?.environment;
+    return raw === Environment.SANDBOX ? Environment.SANDBOX : Environment.PRODUCTION;
+  } catch {
+    return Environment.PRODUCTION;
+  }
+}
+
 /**
  * Verify-both-environments fallback — see file header. Tries Production
  * first; on `INVALID_ENVIRONMENT` only, retries against Sandbox. Any other
@@ -287,13 +375,24 @@ export async function verifySignedRenewalInfo(
  * `data.signedRenewalInfo` JWS strings (each independently signed) so the
  * caller receives fully-verified transaction/renewal snapshots, not merely
  * the outer envelope. Throws on ANY verification failure (outer or nested).
+ *
+ * Single verification pass (see file header, FV-598): peeks the payload's
+ * unverified `environment` claim to pick ONE verifier (Production or
+ * Sandbox), then lets that verifier enforce signature + bundleId +
+ * environment together. No fallback retry — a wrong-environment guess still
+ * fails correctly, because the chosen verifier re-checks the real claim
+ * post-signature-verification and a forged claim can't pass signature
+ * verification in the first place.
  */
 export async function verifyAndDecodeNotification(
   signedPayload: string,
 ): Promise<DecodedNotification> {
-  const decoded: ResponseBodyV2DecodedPayload = await verifyWithFallback((v) =>
-    v.verifyAndDecodeNotification(signedPayload),
-  );
+  const verifier =
+    peekNotificationEnvironment(signedPayload) === Environment.SANDBOX
+      ? getSandboxVerifier()
+      : getProductionVerifier();
+  const decoded: ResponseBodyV2DecodedPayload =
+    await verifier.verifyAndDecodeNotification(signedPayload);
 
   const transactionJws = decoded.data?.signedTransactionInfo ?? null;
   const renewalJws = decoded.data?.signedRenewalInfo ?? null;
