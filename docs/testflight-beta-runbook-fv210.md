@@ -22,7 +22,8 @@ until a real sandbox transaction is observed (see "Payment QA — PENDING").
 | Sandbox tester Apple ID | PENDING (KC, ASC UI) | none exists (`/v2/sandboxTesters` empty) |
 | Sandbox notification URL | PENDING (KC, ASC UI) | `https://beta.fromvictoryapp.com/api/webhooks/apple`, Version 2 |
 | Billing grace period | PENDING (KC scope decision) | app record exists, optIn=false; 16 days approved; scope All vs Paid-to-Paid not chosen |
-| **Payment QA** | **PENDING — no sandbox transaction observed yet** | see §6 |
+| **Payment QA** | **PARTIAL** — first sandbox purchase verified end to end (15:28Z); Apple TEST notification accepted (19:12Z, after FV-598); pending: Restore, renewal event (≈2026-09-23 15:28Z), D2/D3 | see §6 |
+| Beta-found defects | FV-595 (Settings status) DONE · FV-596 (Manage/Restore/upgrade for allowlisted testers) DONE · FV-598 (webhook rejected sandbox notifications) DONE — all qa+privacy APPROVED, folded into RC **d5b1df6** | PRs #539 · #540 · #541 |
 | Small Business Program (P4) | **UNCONFIRMED** | see §4 — a price-point proceeds figure is not enrollment evidence |
 
 Source of record: native `chore/fv-594-testflight-beta-build` @ `4c45345` (native content = #533 tip `8d8d1f8` + build bump; later commits are docs-only); web RC `test/release-candidate-fv210-web-native` @ `d2f76d6` (qa + privacy APPROVED; E2E 61/61 executed at that head). Team CYQ2836PYN; bundle `com.fromvictoryapp.app`; **App Apple ID 6804743047**.
