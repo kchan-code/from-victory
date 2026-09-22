@@ -16,7 +16,7 @@ until a real sandbox transaction is observed (see "Payment QA — PENDING").
 | Beta parent account (synthetic, local DB only) | DONE | `beta-parent@fromvictory.test`, role parent, allowlisted in `apple_sandbox_testers` (payer `efb69805-…`) |
 | ASC subscription group | DONE | 22404772 "From Victory Family" + en-US localization (its creation succeeded → Paid Apps Agreement is Active) |
 | ASC 10 subscriptions | DONE (metadata incomplete) | ids below; periods, `familySharable=false`, levels verified read-only; state MISSING_METADATA |
-| USA prices + availability | **PENDING (KC runs `prices --apply`)** | first attempt failed — diagnosis in §4; script corrected to Apple's schema |
+| USA prices + availability | **DONE** (KC-run, 14:55 PT; verified read-only) | USA only, `availableInNewTerritories=false`; prices: 1.m $5.00 · 1.y $49.00 · 2.m $8.00 · 2.y $78.00 · 3.m $11.00 · 3.y $106.99 · 4.m $14.00 · 4.y $135.99 · 5.m $17.00 · 5.y $164.99 — every one ≤ the web price (7 of 10 exactly equal; three yearly tiers one cent below because no exact point exists). API-reported proceeds = 85% in year 1 and year 2 for all ten (see P4, unconfirmed) |
 | 7-day free trial on `family.1.*` | PENDING (KC runs `offers --apply`) | 0 introductory offers exist today |
 | Review screenshot on each product | PENDING (KC runs `screens … --apply`) | 0 screenshots exist today (an earlier draft of this doc said "Uploaded" — that was wrong) |
 | Sandbox tester Apple ID | PENDING (KC, ASC UI) | none exists (`/v2/sandboxTesters` empty) |
