@@ -76,3 +76,12 @@ Sign in (test parent) → dashboard → Choose a plan → 10 products render fro
 - **DNS record NOT created by the agent** (tool policy refused DNS changes). KC runs once: `cloudflared tunnel route dns fv-beta beta.fromvictoryapp.com` → one proxied CNAME in the fromvictoryapp.com zone. Reversible; no other records touched.
 - Local RC web server (`rc-web-local`, :3590, tree `d2f76d6`) restarted with beta env: `NEXT_PUBLIC_SITE_URL=https://beta.fromvictoryapp.com`, `NEXT_PUBLIC_APPLE_PRODUCTS` = FV-593 10-product JSON, `APPLE_CATALOG_ACTIVE=1` (local only), `APPLE_BUNDLE_ID`, `APPLE_APP_APPLE_ID=6804743047`, `APPLE_ROOT_CA_PATHS` = G3 + G2, LOCAL Supabase demo keys only. Production Supabase/Vercel untouched.
 - Synthetic beta parent seeded in the LOCAL disposable Supabase (`beta-parent@fromvictory.test`, profile role parent, first name "Beta") and allowlisted in `apple_sandbox_testers` (payer `efb69805-…`, note "KC iPhone TestFlight beta 1.0 (4)"). Local DB only; wiped on the next `supabase db reset`.
+- **In-App Purchase API key NOT required for the beta purchase/restore test** (verified in code, RC `d2f76d6`): purchase completion (`lib/actions/apple-subscription.ts`) uses `verifySignedTransaction` / `verifySignedRenewalInfo` and the webhook uses `verifyAndDecodeNotification` — all root-CA JWS verification. The only App Store Server API caller is `getAllSubscriptionStatuses` → `reconcileAppleSubscription`, which has no production caller in this slice. `APPLE_IAP_*` stays unset for the beta.
+- Sandbox App Store Server Notifications URL (ASC → app → App Information → App Store Server Notifications → Sandbox Server URL): `https://beta.fromvictoryapp.com/api/webhooks/apple` (Version 2). ASC UI step; not exposed by the API.
+
+## Remaining KC steps before upload (2026-09-22)
+1. `cloudflared tunnel route dns fv-beta beta.fromvictoryapp.com` (creates the one CNAME; agent tool policy refused DNS changes).
+2. `node ~/.private_keys/fv-asc-config.mjs group` → `subs` → `prices --apply` → `offers --apply` (agent's ASC mutations refused twice by its approval reviewer). Paste output back for policy verification. `grace` waits for the scope choice.
+3. Create a Sandbox Apple ID for the iPhone (ASC → Users and Access → Sandbox → Testers → +), and sign it in on the phone under Settings → App Store → Sandbox Account.
+4. Set the Sandbox notification URL above.
+Then the agent: verifies `https://beta.fromvictoryapp.com` from outside, re-exports the archive with `destination=upload`, and confirms processing + "First testers" availability via the API.
