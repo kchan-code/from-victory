@@ -11,8 +11,10 @@
  * Security contract:
  *   - Every request's `signedPayload` is verified via
  *     ./apple-server.ts:verifyAndDecodeNotification() before any processing.
- *     Verification failure -> 400, no processing, NEVER logs the raw payload
- *     (only that verification failed).
+ *     Verification failure -> 400, no processing. The failure log line
+ *     includes the verification status (numeric + enum name, via
+ *     ./apple-server.ts:describeVerificationFailure()) for on-call triage —
+ *     it NEVER logs the raw payload or any payload content.
  *   - No PII, and NO purchase content, is ever logged. Only opaque
  *     identifiers (payer id, notificationType/subtype, environment,
  *     original_transaction_id) may appear in logs — matching the existing
@@ -50,7 +52,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 
-import { verifyAndDecodeNotification } from "@/lib/subscriptions/apple-server";
+import {
+  verifyAndDecodeNotification,
+  describeVerificationFailure,
+} from "@/lib/subscriptions/apple-server";
 import type { DecodedNotification, DecodedTransactionInfo } from "@/lib/subscriptions/apple-server";
 import {
   applyAppleSnapshot,
@@ -86,9 +91,9 @@ export async function POST(req: NextRequest) {
   try {
     decoded = await verifyAndDecodeNotification(parsedBody.data.signedPayload);
   } catch (err) {
-    // Verification failure — NEVER log the raw payload, only that it failed.
-    const message = err instanceof Error ? err.message : String(err);
-    console.warn(`[apple/webhook] signature verification failed: ${message}`);
+    // Verification failure — NEVER log the raw payload, only the status.
+    const status = describeVerificationFailure(err);
+    console.warn(`[apple/webhook] signature verification failed: ${status}`);
     return NextResponse.json({ error: "Verification failed." }, { status: 400 });
   }
 
