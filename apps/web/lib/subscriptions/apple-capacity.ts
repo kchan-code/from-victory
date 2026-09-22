@@ -125,8 +125,9 @@ export type AssertAthleteCapacityResult =
 /**
  * Server-side add-gate: determines whether a payer may add another athlete.
  *
- * Resolves the payer's provider by checking for an active Production Apple
- * subscription row via the centralized `./apple` accessor
+ * Resolves the payer's provider by checking for an active Apple subscription
+ * row (Production, or Sandbox for allowlisted payers — `apple_sandbox_testers`,
+ * record §4.9) via the centralized `./apple` accessor
  * (`getActiveAppleProductId`) — the ONLY allowed reader of
  * `apple_subscriptions` outside `./apple` itself. A payer with no active
  * Apple row is treated as "apple: none" for this gate — this function does
@@ -196,7 +197,11 @@ export async function assertAthleteCapacity(
  * (lib/actions/apple-subscription.ts) carves out a strict upgrade: a
  * currently-entitled Apple payer purchasing a product whose capacity ceiling
  * is STRICTLY GREATER than their current product's ceiling may mint a fresh
- * purchase token. Any other purchase attempt by an Apple-entitled payer — the
+ * purchase token. "Currently-entitled" here resolves via `getActiveAppleProductId`
+ * (Production, or Sandbox for allowlisted payers — record §4.9, FV-596), so a
+ * non-allowlisted Sandbox row is invisible to this check (no current product
+ * -> refused below) exactly as it is to every other Apple decision. Any
+ * other purchase attempt by an Apple-entitled payer — the
  * same product (accidental re-tap), a lower/equal product (a downgrade —
  * that's the separate, gated seat-selection flow in `./seat-state.ts`, not a
  * purchase), or a product either side can't resolve a ceiling for — is

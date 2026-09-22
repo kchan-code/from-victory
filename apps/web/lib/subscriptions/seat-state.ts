@@ -11,8 +11,10 @@
  *
  * CAPACITY: reuses the existing Apple-tier capacity resolution EXACTLY as
  * `apple-capacity.ts`'s `assertAthleteCapacity` does it — the sanctioned
- * `getActiveAppleProductId` accessor (`./apple`, record Section 4.9) feeds
- * `payerCapacityCeiling`. Stripe and comp payers are NEVER capped (the
+ * `getActiveAppleProductId` accessor (`./apple`, record Section 4.9; FV-596:
+ * Production, or Sandbox for allowlisted payers — `apple_sandbox_testers`,
+ * same rule as the entitlement gate) feeds `payerCapacityCeiling`. Stripe
+ * and comp payers are NEVER capped (the
  * §4.6 invariant) — for them (and for any payer with no active Apple
  * product) capacity resolves to `null` ("uncapped"), so this module never
  * pauses a Stripe family. Do not add a second capacity source here.
@@ -162,8 +164,9 @@ export type PayerSeatState = SeatState & {
  *
  * Capacity resolution mirrors `assertAthleteCapacity` exactly: the
  * sanctioned `getActiveAppleProductId` accessor determines whether this
- * payer is on the Apple provider at all; `payerCapacityCeiling` maps that to
- * a numeric ceiling (or `null` for stripe/comp/none/unmapped-Apple-product,
+ * payer is on the Apple provider at all — Production, or Sandbox for an
+ * allowlisted payer (record §4.9, FV-596); `payerCapacityCeiling` maps that
+ * to a numeric ceiling (or `null` for stripe/comp/none/unmapped-Apple-product,
  * per the §4.6 invariant). `getActiveAppleProductId` itself never throws —
  * it logs and returns `null` on any read error — so a transient
  * `apple_subscriptions` hiccup here already resolves to "uncapped" by
