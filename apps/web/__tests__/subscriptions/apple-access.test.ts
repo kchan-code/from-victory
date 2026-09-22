@@ -104,6 +104,7 @@ import {
   hasEverHeldAppleEntitlement,
   getActiveAppleProductId,
   getActiveAppleProductIdResult,
+  getDisplayedAppleProductIdResult,
 } from "@/lib/subscriptions/apple";
 
 const PAYER_ID = "dddddddd-0000-4000-8000-000000000004";
@@ -428,5 +429,136 @@ describe("getActiveAppleProductIdResult", () => {
     await expect(
       getActiveAppleProductId(service as never, PAYER_ID, NOW),
     ).resolves.toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getDisplayedAppleProductIdResult — STATUS-DISPLAY-ONLY accessor (FV-595)
+// ---------------------------------------------------------------------------
+
+describe("getDisplayedAppleProductIdResult", () => {
+  it("returns the product_id for an allowlisted payer's subscribed Sandbox row", async () => {
+    appleSubRows = [
+      {
+        environment: "Sandbox",
+        status: "subscribed",
+        expires_at: FUTURE_ISO,
+        grace_period_expires_at: null,
+        product_id: "tier_1_1athlete",
+      },
+    ];
+    allowlistRow = { payer_id: PAYER_ID };
+    const service = makeServiceMock();
+    expect(
+      await getDisplayedAppleProductIdResult(service as never, PAYER_ID, NOW),
+    ).toEqual({ productId: "tier_1_1athlete", readError: false });
+  });
+
+  it("returns null for a NON-allowlisted payer's Sandbox row (record §4.9 mirrored)", async () => {
+    appleSubRows = [
+      {
+        environment: "Sandbox",
+        status: "subscribed",
+        expires_at: FUTURE_ISO,
+        grace_period_expires_at: null,
+        product_id: "tier_1_1athlete",
+      },
+    ];
+    allowlistRow = null; // not allowlisted
+    const service = makeServiceMock();
+    expect(
+      await getDisplayedAppleProductIdResult(service as never, PAYER_ID, NOW),
+    ).toEqual({ productId: null, readError: false });
+  });
+
+  it("returns the product_id for a Production row regardless of allowlist status", async () => {
+    appleSubRows = [
+      {
+        environment: "Production",
+        status: "subscribed",
+        expires_at: FUTURE_ISO,
+        grace_period_expires_at: null,
+        product_id: "tier_2_2athletes",
+      },
+    ];
+    allowlistRow = null;
+    const service = makeServiceMock();
+    expect(
+      await getDisplayedAppleProductIdResult(service as never, PAYER_ID, NOW),
+    ).toEqual({ productId: "tier_2_2athletes", readError: false });
+  });
+
+  it("prefers the Production row when both an active Production and an allowlisted Sandbox row exist", async () => {
+    appleSubRows = [
+      {
+        environment: "Sandbox",
+        status: "subscribed",
+        expires_at: FUTURE_ISO,
+        grace_period_expires_at: null,
+        product_id: "tier_1_1athlete",
+      },
+      {
+        environment: "Production",
+        status: "subscribed",
+        expires_at: FUTURE_ISO,
+        grace_period_expires_at: null,
+        product_id: "tier_2_2athletes",
+      },
+    ];
+    allowlistRow = { payer_id: PAYER_ID };
+    const service = makeServiceMock();
+    expect(
+      await getDisplayedAppleProductIdResult(service as never, PAYER_ID, NOW),
+    ).toEqual({ productId: "tier_2_2athletes", readError: false });
+  });
+
+  it("returns readError:true (never a silent null) on an apple_subscriptions DB error", async () => {
+    appleSubSelectError = { message: "connection timeout" };
+    const service = makeServiceMock();
+    expect(
+      await getDisplayedAppleProductIdResult(service as never, PAYER_ID, NOW),
+    ).toEqual({ productId: null, readError: true });
+  });
+
+  it("returns readError:true (never a silent null) on an allowlist DB error", async () => {
+    appleSubRows = [
+      {
+        environment: "Sandbox",
+        status: "subscribed",
+        expires_at: FUTURE_ISO,
+        grace_period_expires_at: null,
+        product_id: "tier_1_1athlete",
+      },
+    ];
+    allowlistError = { message: "allowlist read failed" };
+    const service = makeServiceMock();
+    expect(
+      await getDisplayedAppleProductIdResult(service as never, PAYER_ID, NOW),
+    ).toEqual({ productId: null, readError: true });
+  });
+
+  it("returns null for an expired/revoked row even when the payer is allowlisted", async () => {
+    appleSubRows = [
+      {
+        environment: "Sandbox",
+        status: "revoked",
+        expires_at: FUTURE_ISO,
+        grace_period_expires_at: null,
+        product_id: "tier_1_1athlete",
+      },
+    ];
+    allowlistRow = { payer_id: PAYER_ID };
+    const service = makeServiceMock();
+    expect(
+      await getDisplayedAppleProductIdResult(service as never, PAYER_ID, NOW),
+    ).toEqual({ productId: null, readError: false });
+  });
+
+  it("returns null when no rows exist at all", async () => {
+    appleSubRows = [];
+    const service = makeServiceMock();
+    expect(
+      await getDisplayedAppleProductIdResult(service as never, PAYER_ID, NOW),
+    ).toEqual({ productId: null, readError: false });
   });
 });
