@@ -13,7 +13,7 @@ import {
   subscriptionAccessLevel,
   type SubscriptionStatus,
 } from "@/lib/subscriptions/access-level";
-import { getActiveAppleProductIdResult } from "@/lib/subscriptions/apple";
+import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
 import { SUPPORTED_SPORTS, sportLabel, type Sport } from "@/lib/sports";
 import { FOCUS_AREA_LABELS, isFocusAreaKey } from "@/lib/quiz-config";
 import { formatHour } from "@/lib/push/format";
@@ -71,8 +71,14 @@ export default async function AthleteSettingsPage({
   // `apple_subscriptions` (see lib/subscriptions/apple.ts). Uses the
   // error-visible variant (FV-580) so a transient DB error never reads as a
   // false "no Apple subscription".
+  //
+  // FV-595: switched to `getDisplayedAppleProductIdResult`, the
+  // sandbox-allowlist-aware STATUS-DISPLAY accessor — an allowlisted Sandbox
+  // tester now sees this page agree with the real entitlement gate instead of
+  // a false "no Apple subscription." Display-only; never feeds a
+  // capacity/trial/purchase decision (see the accessor's doc comment).
   const appleResult = readSubscriptionStatus
-    ? await getActiveAppleProductIdResult(createServiceClient(), userId)
+    ? await getDisplayedAppleProductIdResult(createServiceClient(), userId)
     : { productId: null, readError: false };
   const appleActive = appleResult.productId !== null;
   const appleReadError = appleResult.readError;

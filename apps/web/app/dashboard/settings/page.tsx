@@ -38,7 +38,7 @@ import { getDigestOptOut } from "@/lib/actions/digest-preferences";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getActiveAppleProductIdResult } from "@/lib/subscriptions/apple";
+import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
 import { priceIdToLabel } from "@/lib/subscriptions/plans";
 
 export const metadata = {
@@ -149,15 +149,21 @@ export default async function DashboardSettingsPage() {
   // request never issues this read, matching the "web stays byte-identical"
   // contract for this issue.
   //
-  // FV-580: use the error-visible accessor (`getActiveAppleProductIdResult`)
-  // instead of the fail-open `getActiveAppleProductId` wrapper. A transient
-  // DB error must not silently read as "no Apple subscription" — that falsely
-  // told a genuinely Apple-billed parent (no Stripe row) "No active
-  // subscription / Choose a plan". `appleActive` keeps the EXACT same
-  // semantics as before (`productId !== null`, still requiring a successful
-  // read); `appleReadError` is new and drives a neutral branch below.
+  // FV-580: use the error-visible accessor instead of the fail-open
+  // `getActiveAppleProductId` wrapper. A transient DB error must not
+  // silently read as "no Apple subscription" — that falsely told a
+  // genuinely Apple-billed parent (no Stripe row) "No active subscription /
+  // Choose a plan". `appleActive` keeps the EXACT same semantics as before
+  // (`productId !== null`, still requiring a successful read); `appleReadError`
+  // drives a neutral branch below.
+  //
+  // FV-595: switched to `getDisplayedAppleProductIdResult`, the
+  // sandbox-allowlist-aware STATUS-DISPLAY accessor — an allowlisted Sandbox
+  // tester now sees this page agree with the real entitlement gate instead of
+  // a false "No active subscription." Display-only; never feeds a
+  // capacity/trial/purchase decision (see the accessor's doc comment).
   const appleResult = iosIap
-    ? await getActiveAppleProductIdResult(createServiceClient(), userId)
+    ? await getDisplayedAppleProductIdResult(createServiceClient(), userId)
     : { productId: null, readError: false };
   const appleActive = appleResult.productId !== null;
   const appleReadError = appleResult.readError;
