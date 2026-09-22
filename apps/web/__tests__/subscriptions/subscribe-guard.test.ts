@@ -321,4 +321,29 @@ describe("getSubscribeEntitlementState", () => {
     const result = await getSubscribeEntitlementState(PAYER_ID);
     expect(result).toEqual({ status: "unknown", provider: null });
   });
+
+  // -------------------------------------------------------------------------
+  // FV-596: the Apple provider decision now goes through the sandbox-
+  // allowlist-aware `getActiveAppleProductId` accessor — a non-allowlisted
+  // Sandbox row must remain invisible to the subscribe-button guard exactly
+  // as it is to the entitlement gate.
+  // -------------------------------------------------------------------------
+
+  it("not entitled: a NON-allowlisted payer's Sandbox row is invisible to both the entitlement gate and the Apple provider check (FV-596)", async () => {
+    appleSubsListResult = {
+      data: [
+        {
+          environment: "Sandbox",
+          status: "subscribed",
+          expires_at: FUTURE_ISO,
+          grace_period_expires_at: null,
+        },
+      ],
+      error: null,
+    };
+    // allowlistResult stays at its default { data: null, error: null } — not allowlisted.
+
+    const result = await getSubscribeEntitlementState(PAYER_ID);
+    expect(result).toEqual({ status: "not_entitled", provider: null });
+  });
 });

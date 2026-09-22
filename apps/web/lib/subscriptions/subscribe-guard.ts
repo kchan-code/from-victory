@@ -22,7 +22,8 @@
  * WHY NOT JUST CALL `getParentAccessLevel` DIRECTLY:
  *   `getParentAccessLevel` (./access) and its constituent reads
  *   (`hasActiveCompGrant`, the Stripe `subscriptions` read,
- *   `getAppleAccessLevelForPayer`) are all deliberately FAIL-CLOSED for
+ *   `getAppleAccessLevelForPayer` — Production, or Sandbox for an
+ *   allowlisted payer, record §4.9) are all deliberately FAIL-CLOSED for
  *   access-GATING call sites: a DB read error degrades to "blocked" rather
  *   than risk granting training-content access on a read failure. That is
  *   the right default for gating content, but it is the WRONG default for a
@@ -99,7 +100,8 @@ export interface SubscribeEntitlementState {
  * reuse it instead of re-reading `subscriptions` a second time. The other
  * three results are discarded (only their `.error` matters here); the Apple
  * provider decision goes through the centralized `getActiveAppleProductId`
- * accessor (§4.9), never a raw row read from this batch.
+ * accessor (§4.9 — Production, or Sandbox for an allowlisted payer, FV-596),
+ * never a raw row read from this batch.
  */
 async function readUnderlyingSources(
   service: ServiceClient,
@@ -180,7 +182,8 @@ export async function getSubscribeEntitlementState(
   }
 
   // Entitled (full or degraded) — determine which provider is carrying it.
-  // Apple goes through the centralized accessor (§4.9), which already
+  // Apple goes through the centralized accessor (§4.9 — Production, or
+  // Sandbox for an allowlisted payer, FV-596), which already
   // resolves to a product id for a full OR degraded Apple row (see
   // getActiveAppleProductId's doc comment); Stripe reuses the error-checked
   // status already fetched above (no second read, no unchecked-error

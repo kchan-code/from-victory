@@ -6,18 +6,37 @@
  *
  * No other file may query `apple_subscriptions` directly. This module is
  * `server-only` and always reads via the service-role client — the
- * environment wall (Production-only unless allowlisted) is APPLICATION
- * CODE, not RLS (record Section 4.9: "Enforcement locus is application
- * code, not RLS — centralize it").
+ * environment wall (Production, or Sandbox for allowlisted payers —
+ * `apple_sandbox_testers`, record §4.9) is APPLICATION CODE, not RLS
+ * (record Section 4.9: "Enforcement locus is application code, not RLS —
+ * centralize it").
+ *
+ * FV-596: every decision accessor in this module (`getActiveAppleProductId`
+ * / `getActiveAppleProductIdResult`) now applies the exact same environment
+ * rule as the entitlement gate (`getAppleAccessLevelForPayer`): Production
+ * rows always count; a Sandbox row counts only for an allowlisted payer;
+ * Production is preferred when both exist; a read error on either the
+ * allowlist or the subscriptions table is error-visible
+ * (`{ productId: null, readError: true }`), never a silent "no
+ * subscription." Previously these accessors were Production-only, which
+ * meant an allowlisted Sandbox tester could pass the entitlement gate but
+ * still get refused/uncapped/etc. by capacity, seat-state, the
+ * subscribe-button guard, and trial-conversion — all of which read through
+ * this accessor. That disagreement is now closed. The sole, deliberate
+ * exception is `hasEverHeldAppleEntitlement` below — trial history stays
+ * Production-only; see its doc comment for why.
  *
  * Allowed callers: `./access` (the resolver fold), `./apple-capacity`
- * (capacity gate), `lib/actions/subscription.ts` (trial-history check),
+ * (capacity gate), `./seat-state` (seat/capacity read), `./subscribe-guard`
+ * (duplicate-purchase guard), `./trial-conversion` (trial-history/quote
+ * read), `lib/actions/subscription.ts` (trial-history check),
+ * `app/subscribe/page.tsx` (D3 upgrade-capacity resolution),
  * `app/dashboard/settings/page.tsx` (FV-578 — Apple-vs-Stripe manage-path
- * status read; FV-580 — error-visible status display; FV-595 — switched to
- * the sandbox-allowlist-aware `getDisplayedAppleProductIdResult`), and
- * `app/athlete/settings/page.tsx` (FV-579 — adult_athlete provider-aware
- * manage/buy status; FV-595 — same switch to
- * `getDisplayedAppleProductIdResult`).
+ * status read; FV-580 — error-visible status display; FV-595/FV-596 —
+ * status display reads through the shared accessor via the
+ * `getDisplayedAppleProductIdResult` alias), and `app/athlete/settings/page.tsx`
+ * (FV-579 — adult_athlete provider-aware manage/buy status; FV-595/FV-596 —
+ * same alias).
  */
 import "server-only";
 
@@ -51,16 +70,16 @@ function bestLevel(a: AccessLevel, b: AccessLevel): AccessLevel {
 // ---------------------------------------------------------------------------
 
 /**
- * Reads `apple_sandbox_testers` membership for a payer. Factored out so both
- * `getAppleAccessLevelForPayer` (entitlement gate) and
- * `getDisplayedAppleProductIdResult` (status display, FV-595) apply the exact
- * same allowlist rule instead of two independently-maintained copies of the
- * same query.
+ * Reads `apple_sandbox_testers` membership for a payer. Factored out so
+ * `getAppleAccessLevelForPayer` (entitlement gate), `getActiveAppleProductIdResult`
+ * (the decision accessor, FV-596), and its `getDisplayedAppleProductIdResult`
+ * alias (FV-595/FV-596) all apply the exact same allowlist rule instead of
+ * independently-maintained copies of the same query.
  *
  * Behavior is unchanged from the inline version this replaces: an error here
  * does not throw — callers decide how to treat `readError` (the entitlement
- * gate fails closed to "not allowlisted"; a display-only caller may prefer to
- * surface the error instead of guessing).
+ * gate fails closed to "not allowlisted"; `getActiveAppleProductIdResult`
+ * surfaces the error instead of guessing — see its doc comment).
  */
 async function readSandboxAllowlistMembership(
   service: ServiceClient,
@@ -235,23 +254,37 @@ export type ActiveAppleProductIdResult = {
 };
 
 /**
- * Returns the `product_id` of the payer's active Production Apple
- * subscription row (or null if they don't have one), PLUS whether the
+ * Returns the `product_id` of the payer's active Apple subscription row
+ * (Production, or Sandbox for allowlisted payers — `apple_sandbox_testers`,
+ * record §4.9 — Production preferred when both exist), PLUS whether the
  * underlying DB read failed — error-visible, for callers that must not
  * conflate "read failed" with "definitely no active subscription" (FV-580).
  *
- * Same query and the same "active" determination as `getActiveAppleProductId`
- * below (this function does the real work; `getActiveAppleProductId`
- * delegates to it and collapses the error case to fail-open `null`, which is
- * the ORIGINAL, still-correct contract for its caller, the capacity gate).
+ * FV-596: this applies the SAME eligibility rule as the entitlement gate
+ * (`getAppleAccessLevelForPayer` above) — every downstream decision that
+ * used to read Production-only through this accessor (capacity, seat-state,
+ * the subscribe-button guard, trial-conversion, all via
+ * `getActiveAppleProductId` below) now agrees with what actually grants
+ * access, so an allowlisted Sandbox tester (QA, or an App Reviewer)
+ * exercises the real decision surface end to end instead of only the
+ * entitlement gate. This function absorbed the sandbox-allowlist logic that
+ * previously lived only in `getDisplayedAppleProductIdResult` (FV-595),
+ * which is now a thin alias of this function (see below).
  *
- * "Active" here means the row exists and its status maps to `full` or
- * `degraded` via `appleSubscriptionAccessLevel` — an `expired`/`revoked` row
- * should not hold the payer to a stale product's ceiling. This is the
+ * "Active" here means an eligible row exists and its status maps to `full`
+ * or `degraded` via `appleSubscriptionAccessLevel` — an `expired`/`revoked`
+ * row should not hold the payer to a stale product's ceiling. This is the
  * existing full/degraded determination carried over unchanged; it is not a
  * degraded-payer POLICY decision made by this issue (record §4.4's
  * degraded-payer treatment remains unresolved — see the file-level doc
  * comment on `getActiveAppleProductId` below).
+ *
+ * Error-visible: a DB read error on EITHER the allowlist read or the
+ * subscriptions read returns `{ productId: null, readError: true }` — never
+ * a silent "no subscription." `getActiveAppleProductId` below collapses this
+ * to fail-open `null`; a status-display caller reading this function (or its
+ * `getDisplayedAppleProductIdResult` alias) directly gets the honest
+ * error-visible contract.
  *
  * @param service  Service-role Supabase client.
  * @param payerId  UUID of the payer's profile row.
@@ -262,137 +295,13 @@ export async function getActiveAppleProductIdResult(
   payerId: string,
   now: Date = new Date(),
 ): Promise<ActiveAppleProductIdResult> {
-  const { data: row, error } = await service
-    .from("apple_subscriptions")
-    .select("product_id, status, expires_at, grace_period_expires_at")
-    .eq("payer_id", payerId)
-    .eq("environment", "Production")
-    .maybeSingle();
-
-  if (error) {
-    console.error(
-      `[subscriptions/apple] getActiveAppleProductIdResult read failed (payer=${payerId}):`,
-      error.message,
-    );
-    // Error-visible: never swallow to a false "no active row" — the caller
-    // decides how to fail (fail-open for the capacity gate via
-    // `getActiveAppleProductId` below; fail-safe/error-visible for a status
-    // display via this function directly).
-    return { productId: null, readError: true };
-  }
-
-  if (!row) return { productId: null, readError: false };
-
-  const level = appleSubscriptionAccessLevel(
-    row.status as AppleSubscriptionStatus,
-    row.expires_at,
-    row.grace_period_expires_at,
-    now,
-  );
-
-  return {
-    productId: level === "full" || level === "degraded" ? row.product_id : null,
-    readError: false,
-  };
-}
-
-/**
- * Returns the `product_id` of the payer's active Production Apple
- * subscription row, or null if they don't have one (including on a DB read
- * error — FAIL-OPEN). Used by `./apple-capacity`'s `assertAthleteCapacity` to
- * determine whether a payer is on the Apple provider at all (a payer with no
- * Production row is not an Apple payer for capacity purposes, regardless of
- * any Sandbox test rows — capacity ceilings are a real-billing concept,
- * matching the `hasEverHeldAppleEntitlement` Production-only scoping above).
- *
- * FAIL-OPEN CONTRACT (unchanged by FV-580): this is correct for the capacity
- * gate specifically — a transient read error must not spuriously CAP an
- * otherwise-uncapped payer's athlete count, so it degrades to "not an Apple
- * payer" rather than blocking. This is NOT the right contract for a
- * status-DISPLAY caller (a transient error there must not silently read as
- * "no subscription" — see `getActiveAppleProductIdResult` above, added for
- * `app/dashboard/settings/page.tsx`, FV-580; superseded on that page by the
- * sandbox-allowlist-aware `getDisplayedAppleProductIdResult` below, FV-595).
- *
- * Delegates to `getActiveAppleProductIdResult` for the query + the
- * full/degraded determination; this wrapper only collapses `readError` to
- * `null` to preserve the exact behavior every existing caller depends on.
- *
- * @param service  Service-role Supabase client.
- * @param payerId  UUID of the payer's profile row.
- * @param now      Current time (injected for testability).
- */
-export async function getActiveAppleProductId(
-  service: ServiceClient,
-  payerId: string,
-  now: Date = new Date(),
-): Promise<string | null> {
-  const { productId, readError } = await getActiveAppleProductIdResult(
-    service,
-    payerId,
-    now,
-  );
-  return readError ? null : productId;
-}
-
-// ---------------------------------------------------------------------------
-// getDisplayedAppleProductIdResult — STATUS-DISPLAY-ONLY accessor (FV-595)
-// ---------------------------------------------------------------------------
-
-/**
- * *** STATUS-DISPLAY SURFACES ONLY (e.g. Settings pages). ***
- *
- * This accessor must NEVER feed a capacity, trial-eligibility,
- * subscribe-guard, seat-state, or any other purchase/entitlement DECISION.
- * Those all remain on the Production-only accessors above
- * (`getActiveAppleProductId`, `getActiveAppleProductIdResult`,
- * `hasEverHeldAppleEntitlement`) — that scoping is deliberate (see their doc
- * comments) and unaffected by this function.
- *
- * Root cause this fixes: the entitlement gate (`getAppleAccessLevelForPayer`
- * above, consumed by `./access`) already grants access from Production rows
- * PLUS Sandbox rows when the payer is allowlisted in `apple_sandbox_testers`.
- * A status-display accessor that instead reads Production-only (as
- * `getActiveAppleProductIdResult` does for capacity-adjacent purposes)
- * disagrees with that grant: an allowlisted sandbox tester (QA, or an App
- * Reviewer running a sandbox purchase) would see "subscribed" from the real
- * entitlement gate but "No active subscription" on a Settings-style status
- * page. This function makes status displays agree with the entitlement
- * gate's own environment rule:
- *
- *   1. Read `apple_sandbox_testers` membership (reuses
- *      `readSandboxAllowlistMembership`, the same check the entitlement gate
- *      uses).
- *   2. Read the payer's `apple_subscriptions` rows (at most one per
- *      environment — UNIQUE (payer_id, environment)).
- *   3. Eligible rows: Production rows always count; a Sandbox row counts
- *      ONLY when the payer is allowlisted.
- *   4. Among eligible rows whose status maps to `full`/`degraded` via
- *      `appleSubscriptionAccessLevel`, a Production row is preferred over a
- *      Sandbox row when both are active — a real subscription is never
- *      shadowed by test debris on a status page.
- *
- * Error-visible: a DB read error on EITHER the allowlist read or the
- * subscriptions read returns `{ productId: null, readError: true }` — never
- * a silent "no subscription." The caller decides how to render that
- * (typically a neutral "couldn't load your subscription status" note, never
- * a buy CTA on error).
- *
- * @param service  Service-role Supabase client (bypasses RLS by design).
- * @param payerId  UUID of the payer's profile row.
- * @param now      Current time (injected for testability).
- */
-export async function getDisplayedAppleProductIdResult(
-  service: ServiceClient,
-  payerId: string,
-  now: Date = new Date(),
-): Promise<ActiveAppleProductIdResult> {
   const { isAllowlisted, readError: allowlistReadError } =
     await readSandboxAllowlistMembership(service, payerId);
 
   if (allowlistReadError) {
-    // Error-visible: don't guess "not allowlisted" for a display surface —
-    // that could hide a real, allowlisted sandbox tester's active status.
+    // Error-visible: don't guess "not allowlisted" — that could hide a real,
+    // allowlisted sandbox tester's active status from a decision that should
+    // see it (see module doc, FV-596).
     return { productId: null, readError: true };
   }
 
@@ -405,9 +314,13 @@ export async function getDisplayedAppleProductIdResult(
 
   if (subsError) {
     console.error(
-      `[subscriptions/apple] getDisplayedAppleProductIdResult read failed (payer=${payerId}):`,
+      `[subscriptions/apple] getActiveAppleProductIdResult read failed (payer=${payerId}):`,
       subsError.message,
     );
+    // Error-visible: never swallow to a false "no active row" — the caller
+    // decides how to fail (fail-open for the capacity gate via
+    // `getActiveAppleProductId` below; fail-safe/error-visible for a status
+    // display via this function directly).
     return { productId: null, readError: true };
   }
 
@@ -442,3 +355,70 @@ export async function getDisplayedAppleProductIdResult(
 
   return { productId: null, readError: false };
 }
+
+/**
+ * Returns the `product_id` of the payer's active Apple subscription row
+ * (Production, or Sandbox for allowlisted payers — record §4.9), or null if
+ * they don't have one (including on a DB read error — FAIL-OPEN). Used by
+ * `./apple-capacity`'s `assertAthleteCapacity` / `isStrictAppleCapacityUpgrade`,
+ * `./seat-state`'s `getPayerSeatState`, `./subscribe-guard`'s
+ * `getSubscribeEntitlementState`, and `./trial-conversion`'s
+ * `getTrialConversionState` to determine whether a payer is on the Apple
+ * provider at all (and, for capacity/upgrade purposes, which product).
+ *
+ * FAIL-OPEN CONTRACT (unchanged by FV-580/FV-596): this is correct for the
+ * capacity gate specifically — a transient read error must not spuriously
+ * CAP an otherwise-uncapped payer's athlete count, so it degrades to "not an
+ * Apple payer" rather than blocking. This is NOT the right contract for a
+ * status-DISPLAY caller (a transient error there must not silently read as
+ * "no subscription" — see `getActiveAppleProductIdResult` above, which this
+ * function delegates to; a display surface should read that function, or
+ * its `getDisplayedAppleProductIdResult` alias, directly instead of through
+ * this fail-open wrapper).
+ *
+ * Delegates to `getActiveAppleProductIdResult` for the query + the
+ * full/degraded + environment-eligibility determination; this wrapper only
+ * collapses `readError` to `null` to preserve the exact behavior every
+ * existing caller depends on.
+ *
+ * @param service  Service-role Supabase client.
+ * @param payerId  UUID of the payer's profile row.
+ * @param now      Current time (injected for testability).
+ */
+export async function getActiveAppleProductId(
+  service: ServiceClient,
+  payerId: string,
+  now: Date = new Date(),
+): Promise<string | null> {
+  const { productId, readError } = await getActiveAppleProductIdResult(
+    service,
+    payerId,
+    now,
+  );
+  return readError ? null : productId;
+}
+
+// ---------------------------------------------------------------------------
+// getDisplayedAppleProductIdResult — status-display alias (FV-595/FV-596)
+// ---------------------------------------------------------------------------
+
+/**
+ * *** STATUS-DISPLAY SURFACES (e.g. Settings pages). ***
+ *
+ * FV-596: originally a separate sandbox-allowlist-aware implementation
+ * (FV-595), added because the decision accessors above were Production-only
+ * and disagreed with the entitlement gate's environment rule. That gap is
+ * now closed — `getActiveAppleProductIdResult` applies the identical rule
+ * (Production, or Sandbox for allowlisted payers, Production preferred when
+ * both exist, error-visible on any read failure) — so this name is now a
+ * thin alias of `getActiveAppleProductIdResult`, kept only so the two
+ * Settings pages (`app/dashboard/settings/page.tsx`,
+ * `app/athlete/settings/page.tsx`) and their existing tests keep compiling
+ * under the display-specific name. New callers should prefer
+ * `getActiveAppleProductIdResult` directly.
+ *
+ * @param service  Service-role Supabase client (bypasses RLS by design).
+ * @param payerId  UUID of the payer's profile row.
+ * @param now      Current time (injected for testability).
+ */
+export const getDisplayedAppleProductIdResult = getActiveAppleProductIdResult;
