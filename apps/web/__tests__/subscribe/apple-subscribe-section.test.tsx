@@ -256,6 +256,25 @@ describe("AppleSubscribeSection — configured + bridge available", () => {
     );
   });
 
+  it("restore cancellation (dismissing the sign-in prompt) resets quietly — no error shown", async () => {
+    restoreMock.mockResolvedValue({ ok: false, error: "cancelled" });
+
+    await renderReady();
+    fireEvent.click(screen.getByTestId("apple-restore-submit"));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-restore-submit").textContent).toBe(
+        "Restore Purchases",
+      ),
+    );
+
+    expect(screen.queryByTestId("apple-subscribe-error")).toBeNull();
+    expect(screen.queryByTestId("apple-restore-empty")).toBeNull();
+    expect(screen.queryByTestId("apple-subscribe-success")).toBeNull();
+    expect(submitApplePurchaseMock).not.toHaveBeenCalled();
+    expect(refreshMock).not.toHaveBeenCalled();
+  });
+
   it("manage invocation calls bridge.manageSubscriptions", async () => {
     await renderReady();
     fireEvent.click(screen.getByTestId("apple-manage-link"));
