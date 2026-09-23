@@ -263,6 +263,12 @@ export function AppleSubscribeSection({
       const restoreResult = await restoreWithBridge();
 
       if (!restoreResult.ok) {
+        if (restoreResult.error === "cancelled") {
+          // Quiet reset — dismissing the sign-in prompt mid-restore is not
+          // an error state (mirrors purchase cancellation above).
+          setActionState(IDLE);
+          return;
+        }
         setActionState({ kind: "restore-error", message: RESTORE_ERROR_COPY });
         return;
       }
