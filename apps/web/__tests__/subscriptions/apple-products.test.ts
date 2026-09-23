@@ -138,6 +138,41 @@ describe("getConfiguredAppleProducts", () => {
     process.env[ENV_KEY] = JSON.stringify(["nope", 1, null, []]);
     expect(getConfiguredAppleProducts()).toEqual([]);
   });
+
+  // FV-600: optional `interval` field (Monthly/Yearly selector label source).
+  it("allows interval to be omitted", () => {
+    process.env[ENV_KEY] = JSON.stringify([
+      { productId: "test.fv.tier1.monthly", athleteCapacity: 1 },
+    ]);
+    expect(getConfiguredAppleProducts()).toEqual([
+      { productId: "test.fv.tier1.monthly", athleteCapacity: 1 },
+    ]);
+  });
+
+  it("parses a valid 'month' interval", () => {
+    process.env[ENV_KEY] = JSON.stringify([
+      { productId: "test.fv.tier1.monthly", athleteCapacity: 1, interval: "month" },
+    ]);
+    expect(getConfiguredAppleProducts()).toEqual([
+      { productId: "test.fv.tier1.monthly", athleteCapacity: 1, interval: "month" },
+    ]);
+  });
+
+  it("parses a valid 'year' interval", () => {
+    process.env[ENV_KEY] = JSON.stringify([
+      { productId: "test.fv.tier1.yearly", athleteCapacity: 1, interval: "year" },
+    ]);
+    expect(getConfiguredAppleProducts()).toEqual([
+      { productId: "test.fv.tier1.yearly", athleteCapacity: 1, interval: "year" },
+    ]);
+  });
+
+  it("drops an entry with an invalid interval value", () => {
+    process.env[ENV_KEY] = JSON.stringify([
+      { productId: "test.fv.tier1.monthly", athleteCapacity: 1, interval: "weekly" },
+    ]);
+    expect(getConfiguredAppleProducts()).toEqual([]);
+  });
 });
 
 describe("apple-products.ts — no hardcoded production Apple product ids", () => {
