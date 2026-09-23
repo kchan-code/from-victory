@@ -152,6 +152,14 @@ export default async function SubscribePage({ searchParams }: Props) {
   // above. `null` (unmapped current product, or no configured product
   // actually exceeds it) falls back to the existing "manage" state — never a
   // buy affordance without a real upgrade to offer.
+  //
+  // FV-600: `appleCurrentProductId`/`appleCurrentCapacity` are hoisted out of
+  // the upgrade-only check below (no new reads — both were already computed
+  // unconditionally whenever this whole block runs) so the "Current plan"
+  // block in AppleSubscribeSection's manage/upgrade view has the same data
+  // regardless of whether an upgrade happens to be available.
+  let appleCurrentProductId: string | null = null;
+  let appleCurrentCapacity: number | null = null;
   let appleUpgradeCapacity: number | null = null;
   if (
     shellCapability === "ios-iap" &&
@@ -159,16 +167,19 @@ export default async function SubscribePage({ searchParams }: Props) {
     entitlementState.provider === "apple"
   ) {
     const service = createServiceClient();
-    const currentProductId = await getActiveAppleProductId(service, userId);
-    const currentCapacity = currentProductId
-      ? capacityForAppleProduct(currentProductId)
+    appleCurrentProductId = await getActiveAppleProductId(service, userId);
+    appleCurrentCapacity = appleCurrentProductId
+      ? capacityForAppleProduct(appleCurrentProductId)
       : null;
-    if (currentCapacity !== null) {
+    if (appleCurrentCapacity !== null) {
+      // Narrow to a local `const` so the closure below can't be flagged as
+      // possibly-null (`let` narrowing doesn't cross a function boundary).
+      const capacity = appleCurrentCapacity;
       const hasUpgradeProduct = getConfiguredAppleProducts().some(
-        (product) => product.athleteCapacity > currentCapacity,
+        (product) => product.athleteCapacity > capacity,
       );
       if (hasUpgradeProduct) {
-        appleUpgradeCapacity = currentCapacity;
+        appleUpgradeCapacity = capacity;
       }
     }
   }
@@ -317,9 +328,14 @@ export default async function SubscribePage({ searchParams }: Props) {
               <AppleSubscribeSection
                 mode="upgrade"
                 currentAppleCapacity={appleUpgradeCapacity}
+                currentAppleProductId={appleCurrentProductId ?? undefined}
               />
             ) : (
-              <AppleSubscribeSection mode="manage" />
+              <AppleSubscribeSection
+                mode="manage"
+                currentAppleCapacity={appleCurrentCapacity ?? undefined}
+                currentAppleProductId={appleCurrentProductId ?? undefined}
+              />
             )
           ) : entitlementState.provider === "stripe" ? (
             <StatusCard testId="subscribe-status-entitled">
