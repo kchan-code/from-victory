@@ -183,23 +183,33 @@ function capacityLabel(count: number): string {
 }
 
 /**
- * Billing-period label for the plan summary / current-plan display. Prefers
- * the injected config's `interval` field (see apple-products.ts) — StoreKit's
- * `getProducts` bridge call returns only a price/name string, never a
- * machine-readable period, so it is NEVER parsed from StoreKit.
+ * Resolves a product's billing period. Prefers the injected config's
+ * `interval` field (see apple-products.ts) — StoreKit's `getProducts` bridge
+ * call returns only a price/name string, never a machine-readable period, so
+ * it is NEVER parsed from StoreKit.
  *
  * FALLBACK ONLY: when `interval` isn't configured yet (App Store Connect
  * config, Open Item P2), best-effort-parses the product id's suffix so the
- * summary still reads sensibly during that gap. Display-only — it never
- * changes which product a selection resolves to.
+ * plan summary / Current-plan block still reads sensibly during that gap,
+ * and so the FV-600 same-interval "Change plan" filter (below) still has
+ * something to compare against. Used for both display AND the upgrade
+ * filter — unlike the old display-only fallback, an unresolvable interval
+ * here now means "don't offer this as an upgrade" (fail closed), so this
+ * function itself stays comment-flagged as a best-effort guess, never
+ * authoritative.
  */
-function intervalLabelFor(interval: Interval | undefined, productId: string): string | null {
-  if (interval === "month") return "Monthly";
-  if (interval === "year") return "Yearly";
+function resolveInterval(interval: Interval | undefined, productId: string): Interval | null {
+  if (interval === "month" || interval === "year") return interval;
   if (!productId) return null;
   const id = productId.toLowerCase();
-  if (id.includes("year") || id.includes("annual")) return "Yearly";
-  if (id.includes("month")) return "Monthly";
+  if (id.includes("year") || id.includes("annual")) return "year";
+  if (id.includes("month")) return "month";
+  return null;
+}
+
+function intervalDisplayLabel(interval: Interval | null): string | null {
+  if (interval === "month") return "Monthly";
+  if (interval === "year") return "Yearly";
   return null;
 }
 
@@ -222,8 +232,17 @@ function computeDefaults(catalog: DisplayProduct[]): {
   return { capacity, interval };
 }
 
-/** Arrow-key navigation within a `role="radiogroup"` selector (ARIA radiogroup
- * pattern) — a keyboard-only parent can move the selection without a mouse. */
+/**
+ * Arrow-key navigation within a `role="radiogroup"` selector (ARIA
+ * radiogroup / roving-tabindex pattern) — a keyboard-only parent can move
+ * the selection without a mouse. Per the roving-tabindex pattern, moving the
+ * selection MUST also move DOM focus to the newly-selected option (not just
+ * update its `aria-checked`/`tabIndex`) — otherwise focus visibly stays
+ * behind on the deselected control. The radio buttons render in the same
+ * order as `options`, so the newly-selected DOM node is found by index
+ * within the group container (`event.currentTarget`) rather than via a
+ * second ref/id lookup.
+ */
 function makeArrowKeyHandler<T>(
   options: T[],
   selected: T | null,
@@ -232,15 +251,20 @@ function makeArrowKeyHandler<T>(
   return (event) => {
     if (options.length === 0) return;
     const currentIndex = selected != null ? options.indexOf(selected) : 0;
+    let nextIndex: number | null = null;
     if (event.key === "ArrowDown" || event.key === "ArrowRight") {
       event.preventDefault();
-      const next = options[(currentIndex + 1) % options.length];
-      if (next !== undefined) onSelect(next);
+      nextIndex = (currentIndex + 1) % options.length;
     } else if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
       event.preventDefault();
-      const prev = options[(currentIndex - 1 + options.length) % options.length];
-      if (prev !== undefined) onSelect(prev);
+      nextIndex = (currentIndex - 1 + options.length) % options.length;
     }
+    if (nextIndex === null) return;
+    const nextValue = options[nextIndex];
+    if (nextValue === undefined) return;
+    onSelect(nextValue);
+    const radios = event.currentTarget.querySelectorAll<HTMLElement>('[role="radio"]');
+    radios[nextIndex]?.focus();
   };
 }
 
@@ -386,7 +410,7 @@ function PlanSummary({
   unavailable: boolean;
 }) {
   if (athleteCount == null) return null;
-  const label = intervalLabelFor(product?.interval, product?.productId ?? "");
+  const label = intervalDisplayLabel(resolveInterval(product?.interval, product?.productId ?? ""));
 
   return (
     <div
@@ -453,11 +477,17 @@ export function AppleSubscribeSection({
   const [currentProductLive, setCurrentProductLive] = useState<{ displayPrice?: string } | null>(
     null,
   );
+  // FV-600: the payer's CURRENT billing interval, resolved from the
+  // configured catalog entry matching `currentAppleProductId` (falling back
+  // to `resolveInterval`'s id-suffix guess) — used both to label "Current
+  // plan" and to constrain "Change plan" to the SAME interval only.
+  const [currentInterval, setCurrentInterval] = useState<Interval | null>(null);
   const [changePlanOpen, setChangePlanOpen] = useState(false);
   const [actionState, setActionState] = useState<ActionState>(IDLE);
 
   useEffect(() => {
     let catalog: DisplayProduct[] = [];
+    let resolvedCurrentInterval: Interval | null = null;
 
     if (mode === "manage" || mode === "upgrade") {
       // Manage/Restore need only the native bridge, NOT the product catalog
@@ -466,16 +496,45 @@ export function AppleSubscribeSection({
       // (NEXT_PUBLIC_APPLE_PRODUCTS). See AppleSubscribeSectionProps doc.
       if (!isAppleIapBridgeAvailable()) return;
 
-      if (mode === "upgrade") {
-        // FV-586 "upgrade" mode: offer ONLY products whose presentational
-        // athleteCapacity strictly exceeds the payer's current one.
-        catalog = getConfiguredAppleProducts().filter(
-          (product) => product.athleteCapacity > (currentAppleCapacity ?? Infinity),
-        );
-        if (catalog.length === 0) {
-          // Nothing to offer — stay in the calm unavailable state rather
-          // than rendering an empty change-plan disclosure.
-          return;
+      // Resolve the payer's CURRENT billing interval — needed for the
+      // "Current plan" label (FV-600) and, in "upgrade" mode, to constrain
+      // "Change plan" to the SAME interval (below). Reading the full
+      // catalog here is presentational-only and never gates Manage/Restore
+      // — skipped entirely when there's no current product id to look up
+      // (e.g. the base "manage" mode test with no upgrade data at all), so
+      // manage mode still never depends on the catalog for anything but
+      // this cosmetic lookup.
+      if (mode === "upgrade" || currentAppleProductId) {
+        const configured = getConfiguredAppleProducts();
+        if (currentAppleProductId) {
+          const currentEntry = configured.find(
+            (product) => product.productId === currentAppleProductId,
+          );
+          resolvedCurrentInterval = resolveInterval(currentEntry?.interval, currentAppleProductId);
+        }
+
+        if (mode === "upgrade") {
+          // FV-586 "upgrade" mode + FV-600 same-interval narrowing: offer
+          // ONLY products whose capacity strictly exceeds the payer's
+          // current one AND whose interval matches the payer's CURRENT
+          // interval — a monthly<->yearly switch is Manage Subscription's
+          // job, never this surface's (see PlanSelector's doc: "no monthly
+          // <-> yearly switch"). If the current interval can't be resolved
+          // at all, fail CLOSED — offer nothing rather than risk a
+          // cross-interval "upgrade" (mirrors isStrictAppleCapacityUpgrade's
+          // fail-closed stance in apple-capacity.ts).
+          catalog = resolvedCurrentInterval
+            ? configured.filter(
+                (product) =>
+                  product.athleteCapacity > (currentAppleCapacity ?? Infinity) &&
+                  resolveInterval(product.interval, product.productId) === resolvedCurrentInterval,
+              )
+            : [];
+          if (catalog.length === 0) {
+            // Nothing to offer — stay in the calm unavailable state rather
+            // than rendering an empty change-plan disclosure.
+            return;
+          }
         }
       }
     } else {
@@ -487,6 +546,7 @@ export function AppleSubscribeSection({
       }
     }
 
+    setCurrentInterval(resolvedCurrentInterval);
     setProducts(catalog);
     const defaults = computeDefaults(catalog);
     setSelectedAthleteCount(defaults.capacity);
@@ -673,9 +733,7 @@ export function AppleSubscribeSection({
   // -------------------------------------------------------------------------
 
   if (mode === "manage" || mode === "upgrade") {
-    const currentIntervalLabel = currentAppleProductId
-      ? intervalLabelFor(undefined, currentAppleProductId)
-      : null;
+    const currentIntervalLabel = intervalDisplayLabel(currentInterval);
     const hasCurrentPlanInfo =
       currentAppleCapacity != null || currentProductLive?.displayPrice != null;
 

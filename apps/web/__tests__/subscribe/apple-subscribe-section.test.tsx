@@ -68,6 +68,20 @@ const ONE_TIER_LIVE = [
   { productId: "test.fv.tier1.monthly", displayPrice: "$4.99", displayName: "1 Athlete" },
 ];
 
+// The real target shape (5 athlete-count tiers x 2 intervals = 10 products)
+// per FV-600's `com.fromvictoryapp.app.family.<n>.<monthly|yearly>` naming —
+// used to prove the selector resolves every combination to exactly one
+// product id, and that "Change plan" never offers a cross-interval switch.
+const FULL_CATALOG = [1, 2, 3, 4, 5].flatMap((n) => [
+  { productId: `test.fv.family.${n}.monthly`, athleteCapacity: n, interval: "month" as const },
+  { productId: `test.fv.family.${n}.yearly`, athleteCapacity: n, interval: "year" as const },
+]);
+const FULL_CATALOG_LIVE = FULL_CATALOG.map((product, index) => ({
+  productId: product.productId,
+  displayPrice: `$${index + 1}.99`,
+  displayName: product.productId,
+}));
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
@@ -413,9 +427,60 @@ describe("AppleSubscribeSection — selector (FV-600)", () => {
     expect(screen.getByTestId("apple-athlete-count-3")).toHaveAttribute("aria-checked", "true");
   });
 
+  it("moves DOM focus to the newly-selected option on arrow-key navigation (roving tabindex)", async () => {
+    await renderSelector();
+
+    const group = screen.getByRole("radiogroup", { name: "Athletes" });
+    const first = screen.getByTestId("apple-athlete-count-1");
+    const second = screen.getByTestId("apple-athlete-count-3");
+
+    // The selector starts on option 1, but focus must be moved there
+    // explicitly by a real user tabbing in — fireEvent.keyDown alone
+    // doesn't imply focus, so start from a known focused state.
+    first.focus();
+    expect(document.activeElement).toBe(first);
+
+    fireEvent.keyDown(group, { key: "ArrowRight" });
+    expect(second).toHaveAttribute("aria-checked", "true");
+    // Regression (QA finding): aria-checked/tabIndex updating is not enough
+    // — real keyboard focus must track the selection too, or a
+    // keyboard-only parent's focus ring visibly lags behind.
+    expect(document.activeElement).toBe(second);
+
+    fireEvent.keyDown(group, { key: "ArrowLeft" });
+    expect(first).toHaveAttribute("aria-checked", "true");
+    expect(document.activeElement).toBe(first);
+  });
+
   it("hides the athlete-count/interval pickers entirely for a single-tier catalog", async () => {
     await renderReady();
     expect(screen.queryByRole("radiogroup")).toBeNull();
+  });
+
+  it("resolves the correct product id for every combination in a full 5-capacity x 2-interval catalog", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue(FULL_CATALOG);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    getStoreKitProductsMock.mockResolvedValue(FULL_CATALOG_LIVE);
+    beginApplePurchaseMock.mockResolvedValue({ ok: true, appAccountToken: "token-abc" });
+    // "cancelled" quietly resets to idle after each check so the button is
+    // re-enabled for the next combination in the loop.
+    purchaseMock.mockResolvedValue({ ok: false, error: "cancelled" });
+
+    render(<AppleSubscribeSection />);
+    await waitFor(() => expect(screen.getByTestId("apple-purchase-submit")).not.toBeDisabled());
+
+    for (const capacity of [1, 2, 3, 4, 5] as const) {
+      fireEvent.click(screen.getByTestId(`apple-athlete-count-${capacity}`));
+      for (const interval of ["month", "year"] as const) {
+        fireEvent.click(screen.getByTestId(`apple-interval-${interval}`));
+        const expectedId = `test.fv.family.${capacity}.${interval === "month" ? "monthly" : "yearly"}`;
+        fireEvent.click(screen.getByTestId("apple-purchase-submit"));
+        await waitFor(() => expect(beginApplePurchaseMock).toHaveBeenLastCalledWith(expectedId));
+        await waitFor(() => expect(screen.getByTestId("apple-purchase-submit")).not.toBeDisabled());
+      }
+    }
+
+    expect(beginApplePurchaseMock).toHaveBeenCalledTimes(10);
   });
 });
 
@@ -516,6 +581,29 @@ describe("AppleSubscribeSection — mode='manage' (FV-581 duplicate-billing guar
     expect(screen.queryByTestId("apple-manage-status")).toBeNull();
   });
 
+  it("prefers the catalog's declared interval over the id-suffix guess for the Current Plan block", async () => {
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    // "legacy" has no "month"/"year" substring — an id-suffix guess would
+    // resolve nothing. The catalog's declared `interval: "year"` must win.
+    getConfiguredAppleProductsMock.mockReturnValue([
+      { productId: "apple.tier3.legacy", athleteCapacity: 3, interval: "year" },
+    ]);
+    getStoreKitProductsMock.mockResolvedValue([
+      { productId: "apple.tier3.legacy", displayPrice: "$89.99", displayName: "3 Athletes" },
+    ]);
+
+    render(
+      <AppleSubscribeSection
+        mode="manage"
+        currentAppleCapacity={3}
+        currentAppleProductId="apple.tier3.legacy"
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByTestId("apple-current-plan")).toBeInTheDocument());
+    expect(screen.getByTestId("apple-current-plan").textContent).toContain("Yearly");
+  });
+
   it("degrades calmly (no invented capacity) when neither capacity nor product id is known", async () => {
     isAppleIapBridgeAvailableMock.mockReturnValue(true);
     getConfiguredAppleProductsMock.mockReturnValue([]);
@@ -575,7 +663,13 @@ describe("AppleSubscribeSection — mode='upgrade' (FV-586, KC decision D3; FV-6
     isAppleIapBridgeAvailableMock.mockReturnValue(true);
     getStoreKitProductsMock.mockResolvedValue(THREE_TIERS_LIVE);
 
-    render(<AppleSubscribeSection mode="upgrade" currentAppleCapacity={1} />);
+    render(
+      <AppleSubscribeSection
+        mode="upgrade"
+        currentAppleCapacity={1}
+        currentAppleProductId="test.fv.tier1.monthly"
+      />,
+    );
 
     await waitFor(() =>
       expect(screen.getByTestId("apple-change-plan-toggle")).toBeInTheDocument(),
@@ -593,7 +687,13 @@ describe("AppleSubscribeSection — mode='upgrade' (FV-586, KC decision D3; FV-6
     isAppleIapBridgeAvailableMock.mockReturnValue(true);
     getStoreKitProductsMock.mockResolvedValue(THREE_TIERS_LIVE);
 
-    render(<AppleSubscribeSection mode="upgrade" currentAppleCapacity={1} />);
+    render(
+      <AppleSubscribeSection
+        mode="upgrade"
+        currentAppleCapacity={1}
+        currentAppleProductId="test.fv.tier1.monthly"
+      />,
+    );
     await openChangePlan();
 
     // The equal-or-lower tier is filtered out entirely.
@@ -612,7 +712,13 @@ describe("AppleSubscribeSection — mode='upgrade' (FV-586, KC decision D3; FV-6
     isAppleIapBridgeAvailableMock.mockReturnValue(true);
     getStoreKitProductsMock.mockResolvedValue(THREE_TIERS_LIVE);
 
-    render(<AppleSubscribeSection mode="upgrade" currentAppleCapacity={1} />);
+    render(
+      <AppleSubscribeSection
+        mode="upgrade"
+        currentAppleCapacity={1}
+        currentAppleProductId="test.fv.tier1.monthly"
+      />,
+    );
     await openChangePlan();
 
     expect(screen.getByTestId("apple-athlete-count-3")).toHaveAttribute("aria-checked", "true");
@@ -622,7 +728,13 @@ describe("AppleSubscribeSection — mode='upgrade' (FV-586, KC decision D3; FV-6
     getConfiguredAppleProductsMock.mockReturnValue([THREE_TIERS[2]!]); // capacity 5
     isAppleIapBridgeAvailableMock.mockReturnValue(true);
 
-    render(<AppleSubscribeSection mode="upgrade" currentAppleCapacity={5} />);
+    render(
+      <AppleSubscribeSection
+        mode="upgrade"
+        currentAppleCapacity={5}
+        currentAppleProductId="test.fv.tier5.monthly"
+      />,
+    );
 
     await waitFor(() =>
       expect(screen.getByTestId("apple-subscribe-unavailable")).toBeInTheDocument(),
@@ -643,7 +755,13 @@ describe("AppleSubscribeSection — mode='upgrade' (FV-586, KC decision D3; FV-6
     });
     submitApplePurchaseMock.mockResolvedValue({ ok: true, applied: true });
 
-    render(<AppleSubscribeSection mode="upgrade" currentAppleCapacity={1} />);
+    render(
+      <AppleSubscribeSection
+        mode="upgrade"
+        currentAppleCapacity={1}
+        currentAppleProductId="test.fv.tier1.monthly"
+      />,
+    );
     await openChangePlan();
     fireEvent.click(screen.getByTestId("apple-upgrade-submit"));
 
@@ -678,5 +796,38 @@ describe("AppleSubscribeSection — mode='upgrade' (FV-586, KC decision D3; FV-6
     );
     expect(screen.getByTestId("apple-current-plan").textContent).toContain("1 athlete");
     expect(screen.getByTestId("apple-current-plan").textContent).toContain("$4.99");
+  });
+
+  it("Change plan offers only the SAME interval as the current product, even in a mixed-interval catalog (FV-600 narrowing)", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue(FULL_CATALOG);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    getStoreKitProductsMock.mockResolvedValue(FULL_CATALOG_LIVE);
+    beginApplePurchaseMock.mockResolvedValue({ ok: true, appAccountToken: "token-abc" });
+    purchaseMock.mockResolvedValue({ ok: false, error: "cancelled" });
+
+    render(
+      <AppleSubscribeSection
+        mode="upgrade"
+        currentAppleCapacity={2}
+        currentAppleProductId="test.fv.family.2.monthly"
+      />,
+    );
+    await openChangePlan();
+
+    // Same-interval, strictly-higher capacities are offered...
+    expect(screen.getByTestId("apple-athlete-count-3")).toBeInTheDocument();
+    expect(screen.getByTestId("apple-athlete-count-4")).toBeInTheDocument();
+    expect(screen.getByTestId("apple-athlete-count-5")).toBeInTheDocument();
+    // ...but capacity 1-2 (equal-or-lower) is filtered out...
+    expect(screen.queryByTestId("apple-athlete-count-1")).toBeNull();
+    expect(screen.queryByTestId("apple-athlete-count-2")).toBeNull();
+    // ...and no yearly product at ANY capacity — this surface never offers
+    // a monthly<->yearly switch (that's Manage Subscription's job).
+    expect(screen.queryByRole("radiogroup", { name: "Billing interval" })).toBeNull();
+    expect(screen.queryByTestId("apple-interval-year")).toBeNull();
+
+    fireEvent.click(screen.getByTestId("apple-upgrade-submit"));
+    await waitFor(() => expect(beginApplePurchaseMock).toHaveBeenCalled());
+    expect(beginApplePurchaseMock).toHaveBeenCalledWith("test.fv.family.3.monthly");
   });
 });
