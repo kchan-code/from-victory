@@ -141,6 +141,16 @@ describe("restore", () => {
     expect(await restore()).toEqual({ ok: true, transactions: [] });
   });
 
+  it("passes through cancelled (dismissed sign-in/re-auth prompt) without treating it as failed", async () => {
+    installBridge({ restore: vi.fn(async () => ({ ok: false, error: "cancelled" })) });
+    expect(await restore()).toEqual({ ok: false, error: "cancelled" });
+  });
+
+  it("coerces an unrecognized native error string to failed", async () => {
+    installBridge({ restore: vi.fn(async () => ({ ok: false, error: "some_unmapped_code" })) });
+    expect(await restore()).toEqual({ ok: false, error: "failed" });
+  });
+
   it("returns failed and does not throw when the native call rejects", async () => {
     installBridge({
       restore: vi.fn(async () => {
