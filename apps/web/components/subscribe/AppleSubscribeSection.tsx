@@ -119,10 +119,12 @@ const RESTORE_ERROR_COPY =
   "We couldn’t check for a previous purchase. Please try again.";
 const RESTORE_EMPTY_COPY = "No previous purchase was found for this Apple ID.";
 const RESTORE_SUCCESS_COPY = "Your subscription is restored.";
-// FV-586 (KC decision D3): worded to Apple's verified behavior only — never
-// claims WE charge, never promises proration details we can't verify.
+// FV-586 (KC decision D3, KC-audited correction 6c7ec96): worded to Apple's
+// verified behavior only — never claims WE charge, never promises proration
+// details we can't verify, and never asserts a charge timing Apple doesn't
+// actually guarantee.
 const UPGRADE_DISCLOSURE_COPY =
-  "Confirming with Apple switches you to this plan right away and ends any free trial. Apple charges the new plan price now.";
+  "Confirming with Apple switches you to this plan right away and ends any free trial. Apple bills the new plan on its own schedule and shows the price before you confirm.";
 const UPGRADE_SUCCESS_COPY = "You’re upgraded. Welcome to your family plan.";
 
 // ---------------------------------------------------------------------------
@@ -222,9 +224,14 @@ function computeDefaults(catalog: DisplayProduct[]): {
     (a, b) => a - b,
   );
   const capacity = capacities[0] ?? null;
+  // FV-600: route through `resolveInterval` (config first, id-suffix
+  // fallback) rather than the raw `interval` field — a catalog served
+  // without `interval` set (e.g. today's FV-593 catalog emitter) must still
+  // default to Monthly rather than silently defaulting to `null`/whatever
+  // happens to sort first.
   const intervalsForCapacity = catalog
     .filter((product) => product.athleteCapacity === capacity)
-    .map((product) => product.interval)
+    .map((product) => resolveInterval(product.interval, product.productId))
     .filter((value): value is Interval => value != null);
   const interval = intervalsForCapacity.includes("month")
     ? "month"
@@ -330,9 +337,16 @@ function PlanSelector({
   const athleteCountOptions = Array.from(
     new Set(products.map((product) => product.athleteCapacity)),
   ).sort((a, b) => a - b);
+  // FV-600: route through `resolveInterval` (config first, id-suffix
+  // fallback) rather than the raw `interval` field — the live catalog
+  // (FV-593 emitter) doesn't set `interval` yet, so reading the raw field
+  // here would hide the Monthly/Yearly control entirely and strand yearly
+  // plans as unreachable.
   const intervalOptions = Array.from(
     new Set(
-      products.map((product) => product.interval).filter((value): value is Interval => value != null),
+      products
+        .map((product) => resolveInterval(product.interval, product.productId))
+        .filter((value): value is Interval => value != null),
     ),
   ).sort();
 
@@ -597,8 +611,14 @@ export function AppleSubscribeSection({
   const selectedProduct =
     products.find((product) => {
       if (product.athleteCapacity !== selectedAthleteCount) return false;
-      if (selectedInterval != null && product.interval != null) {
-        return product.interval === selectedInterval;
+      // FV-600: resolve via `resolveInterval` (config first, id-suffix
+      // fallback) — a catalog without `interval` set (FV-593 emitter) must
+      // still resolve the exact selected product, not fall through to "any
+      // product at this capacity" (which would silently ignore the
+      // athlete's Monthly/Yearly choice).
+      const productInterval = resolveInterval(product.interval, product.productId);
+      if (selectedInterval != null && productInterval != null) {
+        return productInterval === selectedInterval;
       }
       return true;
     }) ?? null;

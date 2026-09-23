@@ -82,6 +82,21 @@ const FULL_CATALOG_LIVE = FULL_CATALOG.map((product, index) => ({
   displayName: product.productId,
 }));
 
+// The LIVE beta shape today: the FV-593 catalog emitter serves real
+// `com.fromvictoryapp.app.family.<n>.<monthly|yearly>` ids but does NOT set
+// an `interval` field yet — `resolveInterval`'s id-suffix fallback is the
+// only thing standing between this catalog and a missing Monthly/Yearly
+// control (yearly plans unreachable).
+const NO_INTERVAL_FIELD_CATALOG = [1, 2, 3, 4, 5].flatMap((n) => [
+  { productId: `com.fromvictoryapp.app.family.${n}.monthly`, athleteCapacity: n },
+  { productId: `com.fromvictoryapp.app.family.${n}.yearly`, athleteCapacity: n },
+]);
+const NO_INTERVAL_FIELD_CATALOG_LIVE = NO_INTERVAL_FIELD_CATALOG.map((product, index) => ({
+  productId: product.productId,
+  displayPrice: `$${index + 1}.99`,
+  displayName: product.productId,
+}));
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
@@ -482,6 +497,36 @@ describe("AppleSubscribeSection — selector (FV-600)", () => {
 
     expect(beginApplePurchaseMock).toHaveBeenCalledTimes(10);
   });
+
+  it("exposes both Monthly and Yearly and resolves the exact product id even when the catalog has no `interval` field (FV-593 emitter gap)", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue(NO_INTERVAL_FIELD_CATALOG);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    getStoreKitProductsMock.mockResolvedValue(NO_INTERVAL_FIELD_CATALOG_LIVE);
+    beginApplePurchaseMock.mockResolvedValue({ ok: true, appAccountToken: "token-abc" });
+    purchaseMock.mockResolvedValue({ ok: false, error: "cancelled" });
+
+    render(<AppleSubscribeSection />);
+    await waitFor(() => expect(screen.getByTestId("apple-purchase-submit")).not.toBeDisabled());
+
+    // Both interval options render — the missing `interval` field must not
+    // hide the toggle and strand yearly plans as unreachable.
+    expect(screen.getByTestId("apple-interval-month")).toBeInTheDocument();
+    expect(screen.getByTestId("apple-interval-year")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("apple-athlete-count-3"));
+    fireEvent.click(screen.getByTestId("apple-interval-year"));
+
+    const expectedProductId = "com.fromvictoryapp.app.family.3.yearly";
+    const expectedPrice = NO_INTERVAL_FIELD_CATALOG_LIVE.find(
+      (product) => product.productId === expectedProductId,
+    )!.displayPrice;
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-plan-summary-price")).toHaveTextContent(expectedPrice),
+    );
+
+    fireEvent.click(screen.getByTestId("apple-purchase-submit"));
+    await waitFor(() => expect(beginApplePurchaseMock).toHaveBeenCalledWith(expectedProductId));
+  });
 });
 
 describe("AppleSubscribeSection — mode='manage' (FV-581 duplicate-billing guard)", () => {
@@ -702,7 +747,7 @@ describe("AppleSubscribeSection — mode='upgrade' (FV-586, KC decision D3; FV-6
     expect(screen.getByTestId("apple-athlete-count-5")).toBeInTheDocument();
 
     expect(screen.getByTestId("apple-upgrade-disclosure").textContent).toBe(
-      "Confirming with Apple switches you to this plan right away and ends any free trial. Apple charges the new plan price now.",
+      "Confirming with Apple switches you to this plan right away and ends any free trial. Apple bills the new plan on its own schedule and shows the price before you confirm.",
     );
     expect(screen.getByTestId("apple-upgrade-submit")).toHaveTextContent("Add Athletes");
   });
