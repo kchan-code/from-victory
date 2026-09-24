@@ -302,3 +302,58 @@ export async function getActiveAppleProductId(
   );
   return readError ? null : productId;
 }
+
+// ---------------------------------------------------------------------------
+// getPendingAppleRenewalProductId — FV-602 read side for a SCHEDULED (not
+// yet effective) renewal-product change.
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the payer's PENDING Apple renewal product id — the product a
+ * scheduled downgrade (DID_CHANGE_RENEWAL_PREF, subtype DOWNGRADE) will
+ * apply at the payer's NEXT renewal — or `null` when there is no scheduled
+ * change (including on a DB read error: fail-open, since this is purely
+ * informational).
+ *
+ * This is DELIBERATELY separate from, and never folded into,
+ * `getActiveAppleProductId`/`getActiveAppleProductIdResult`: those two
+ * answer "what does the payer's CURRENT entitlement allow," and nothing
+ * about a scheduled-but-not-yet-effective product may ever reduce (or
+ * otherwise change) that answer or any capacity ceiling derived from it
+ * (`./apple-capacity.ts`) — the FV-602 acceptance criteria are explicit that
+ * this issue makes no capacity/seat-logic change. Callers wanting to render
+ * "you're changing to X at your next renewal" (e.g. a future FV-585 seat
+ * prompt) call this ADDITIONALLY, alongside the existing active-product
+ * read, never as a replacement for it.
+ *
+ * Production-scoped only, matching every other read in this module — a
+ * Sandbox test row's scheduled-change state is never surfaced as if it were
+ * real.
+ *
+ * @param service  Service-role Supabase client.
+ * @param payerId  UUID of the payer's profile row.
+ */
+export async function getPendingAppleRenewalProductId(
+  service: ServiceClient,
+  payerId: string,
+): Promise<string | null> {
+  const { data: row, error } = await service
+    .from("apple_subscriptions")
+    .select("auto_renew_product_id")
+    .eq("payer_id", payerId)
+    .eq("environment", "Production")
+    .maybeSingle();
+
+  if (error) {
+    console.error(
+      `[subscriptions/apple] getPendingAppleRenewalProductId read failed (payer=${payerId}):`,
+      error.message,
+    );
+    // Fail-open: this is informational only (never a capacity/gating
+    // decision), so a transient read error degrades to "nothing scheduled"
+    // rather than throwing.
+    return null;
+  }
+
+  return row?.auto_renew_product_id ?? null;
+}

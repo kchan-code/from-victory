@@ -266,4 +266,64 @@ begin;
   end $$;
 rollback;
 
-\echo '  [PASS] 20_apple_subscriptions (a: mirror write-denial, b: payer/cross-payer/athlete SELECT boundary, c: tokens zero-grant, d: allowlist zero-grant, e: anon)'
+-- ---------------------------------------------------------------------------
+-- (f) FV-602: apple_subscriptions.auto_renew_product_id (added by
+--     20260924120000_apple_pending_renewal_product.sql) rides the SAME
+--     table-level policy/grant as every other column on this table — no new
+--     column-level grant or policy was added for it, so this section proves
+--     that holds rather than assuming it: the owning payer can read it
+--     (positive control) and a cross-payer/anon read still returns 0 rows /
+--     is denied by the exact same boundary as section (b)/(e) above, not a
+--     silently-widened one.
+-- ---------------------------------------------------------------------------
+begin;
+  insert into public.apple_subscriptions
+    (payer_id, environment, original_transaction_id, product_id, status,
+     expires_at, app_account_token, last_signed_date, auto_renew_product_id)
+  values
+    ('10000000-0000-4000-8000-000000000001', 'Production', 'rls-otid-p-1',
+     'fv.test.tier2.monthly', 'subscribed',
+     now() + interval '30 days',
+     'aaaaaaaa-0000-4000-8000-000000000001', now(),
+     'fv.test.tier1.monthly');
+
+  -- Positive control: the owning payer P can read the pending column.
+  set local request.jwt.claims to '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated"}';
+  set local role authenticated;
+  do $$
+  declare pending text;
+  begin
+    select auto_renew_product_id into pending
+      from public.apple_subscriptions
+      where payer_id = '10000000-0000-4000-8000-000000000001';
+    assert pending = 'fv.test.tier1.monthly',
+      format('FV-602 FAIL: payer P should read their own auto_renew_product_id, got %L', pending);
+  end $$;
+
+  -- Cross-payer: adult_athlete AA sees 0 rows (same boundary as section (b)).
+  set local request.jwt.claims to '{"sub":"70000000-0000-4000-8000-000000000001","role":"authenticated"}';
+  set local role authenticated;
+  do $$
+  declare visible int;
+  begin
+    select count(*) into visible
+      from public.apple_subscriptions
+      where auto_renew_product_id is not null;
+    assert visible = 0,
+      format('FV-602 FAIL: cross-payer leak via auto_renew_product_id — AA sees %s row(s)', visible);
+  end $$;
+
+  -- anon: denied outright (same boundary as section (e)).
+  set local role anon;
+  do $$
+  begin
+    begin
+      perform auto_renew_product_id from public.apple_subscriptions;
+      raise exception 'FV-602 FAIL: apple_subscriptions.auto_renew_product_id SELECT by anon unexpectedly SUCCEEDED';
+    exception
+      when insufficient_privilege then null;  -- expected: no anon grant
+    end;
+  end $$;
+rollback;
+
+\echo '  [PASS] 20_apple_subscriptions (a: mirror write-denial, b: payer/cross-payer/athlete SELECT boundary, c: tokens zero-grant, d: allowlist zero-grant, e: anon, f: FV-602 auto_renew_product_id rides the same boundary)'

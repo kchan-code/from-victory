@@ -16,6 +16,13 @@
  *     never by OTID), watermark-guarded (stale/duplicate/equal-signedDate
  *     drop), token-preserving updates (record Section 4.7 — token
  *     continuity), insert-requires-token invariant.
+ *   - FV-602 DID_CHANGE_RENEWAL_PREF: mapAppleNotificationToStatus's UPGRADE
+ *     (subscribed) vs DOWNGRADE/empty-subtype (null, scheduled-only) split;
+ *     buildSnapshotFields's autoRenewProductId derivation (pending target vs
+ *     collapse-to-null when absent or equal to productId); the narrow
+ *     applyPendingRenewalProduct upsert (schedule / clear, watermark-guarded,
+ *     never touches product_id/status/expires_at, no-row when there's no
+ *     existing snapshot to schedule against).
  *   - reconcileAppleSubscription — callable + tested with a mocked
  *     ./apple-server client (no_row / no_data / applied paths), including
  *     environment-filtered, newest-signedDate selection across multiple
@@ -41,6 +48,7 @@ import {
   mapAppleStatusEnum,
   buildSnapshotFields,
   applyAppleSnapshot,
+  applyPendingRenewalProduct,
   reconcileAppleSubscription,
   deriveActionSubmissionStatus,
 } from "@/lib/subscriptions/apple-lifecycle";
@@ -72,6 +80,7 @@ function makeRenewal(overrides: Partial<DecodedRenewalInfo> = {}): DecodedRenewa
     signedDate: 1_700_000_000_000,
     environment: "Production",
     appAccountToken: "11111111-1111-4111-8111-111111111111",
+    autoRenewProductId: null,
     ...overrides,
   };
 }
@@ -130,6 +139,20 @@ describe("mapAppleNotificationToStatus", () => {
     expect(mapAppleNotificationToStatus("CONSUMPTION_REQUEST", undefined)).toBeNull();
   });
 
+  it("DID_CHANGE_RENEWAL_PREF + subtype UPGRADE -> subscribed (immediately effective)", () => {
+    expect(mapAppleNotificationToStatus("DID_CHANGE_RENEWAL_PREF", "UPGRADE")).toBe(
+      "subscribed",
+    );
+  });
+
+  it("DID_CHANGE_RENEWAL_PREF + subtype DOWNGRADE -> null (scheduled-only, not an entitlement change)", () => {
+    expect(mapAppleNotificationToStatus("DID_CHANGE_RENEWAL_PREF", "DOWNGRADE")).toBeNull();
+  });
+
+  it("DID_CHANGE_RENEWAL_PREF with an empty subtype (cancellation) -> null", () => {
+    expect(mapAppleNotificationToStatus("DID_CHANGE_RENEWAL_PREF", null)).toBeNull();
+  });
+
   it("returns null for a genuinely unknown notificationType", () => {
     expect(mapAppleNotificationToStatus("SOMETHING_NEW_APPLE_ADDED", undefined)).toBeNull();
   });
@@ -179,6 +202,42 @@ describe("buildSnapshotFields", () => {
   it("defaults autoRenewStatus to true when there is no renewal payload", () => {
     const fields = buildSnapshotFields("subscribed", makeTransaction(), null);
     expect(fields.autoRenewStatus).toBe(true);
+  });
+
+  // -------------------------------------------------------------------------
+  // FV-602: autoRenewProductId derivation
+  // -------------------------------------------------------------------------
+
+  it("autoRenewProductId: null when there is no renewal payload", () => {
+    const fields = buildSnapshotFields("subscribed", makeTransaction(), null);
+    expect(fields.autoRenewProductId).toBeNull();
+  });
+
+  it("autoRenewProductId: null when renewal carries no autoRenewProductId", () => {
+    const fields = buildSnapshotFields(
+      "subscribed",
+      makeTransaction({ productId: "tier_1_1athlete" }),
+      makeRenewal({ autoRenewProductId: null }),
+    );
+    expect(fields.autoRenewProductId).toBeNull();
+  });
+
+  it("autoRenewProductId: null when it equals the transaction's own productId (nothing scheduled)", () => {
+    const fields = buildSnapshotFields(
+      "subscribed",
+      makeTransaction({ productId: "tier_1_1athlete" }),
+      makeRenewal({ autoRenewProductId: "tier_1_1athlete" }),
+    );
+    expect(fields.autoRenewProductId).toBeNull();
+  });
+
+  it("autoRenewProductId: carries the pending target when it differs from productId", () => {
+    const fields = buildSnapshotFields(
+      "subscribed",
+      makeTransaction({ productId: "tier_2_2athletes" }),
+      makeRenewal({ autoRenewProductId: "tier_1_1athlete" }),
+    );
+    expect(fields.autoRenewProductId).toBe("tier_1_1athlete");
   });
 });
 
@@ -491,6 +550,166 @@ describe("applyAppleSnapshot", () => {
       ),
     });
     const updatedRow = service.__spies.update.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(updatedRow).not.toHaveProperty("app_account_token");
+  });
+
+  // -------------------------------------------------------------------------
+  // FV-602: auto_renew_product_id on the full-snapshot apply path — always
+  // OVERWRITTEN (unlike the token's preserve-if-absent rule above), since a
+  // full snapshot is always the current authoritative state.
+  // -------------------------------------------------------------------------
+
+  it("FV-602: an UPGRADE apply (subscribed, new product) writes auto_renew_product_id = null, clearing any stale scheduled downgrade", async () => {
+    // The row previously had a downgrade scheduled — irrelevant here, since
+    // applyAppleSnapshot never reads the existing auto_renew_product_id; it
+    // always writes whatever buildSnapshotFields computed for THIS payload.
+    const service = makeServiceMock({
+      id: "row-1",
+      last_signed_date: new Date(1_600_000_000_000).toISOString(),
+    });
+    await applyAppleSnapshot(service as never, {
+      payerId: PAYER_ID,
+      ...buildSnapshotFields(
+        "subscribed",
+        makeTransaction({ productId: "tier_3_3athletes" }),
+        makeRenewal({ autoRenewProductId: null }),
+      ),
+    });
+    const updatedRow = service.__spies.update.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(updatedRow.auto_renew_product_id).toBeNull();
+  });
+
+  it("FV-602: a full apply persists a genuinely pending scheduled target (pass-through from buildSnapshotFields)", async () => {
+    const service = makeServiceMock({
+      id: "row-1",
+      last_signed_date: new Date(1_600_000_000_000).toISOString(),
+    });
+    await applyAppleSnapshot(service as never, {
+      payerId: PAYER_ID,
+      ...buildSnapshotFields(
+        "subscribed",
+        makeTransaction({ productId: "tier_2_2athletes" }),
+        makeRenewal({ autoRenewProductId: "tier_1_1athlete" }),
+      ),
+    });
+    const updatedRow = service.__spies.update.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(updatedRow.auto_renew_product_id).toBe("tier_1_1athlete");
+  });
+
+  it("FV-602: insert path writes auto_renew_product_id (null on first-seen with nothing pending)", async () => {
+    const service = makeServiceMock(null);
+    await applyAppleSnapshot(service as never, {
+      payerId: PAYER_ID,
+      ...buildSnapshotFields("subscribed", makeTransaction(), makeRenewal()),
+    });
+    const insertedRow = service.__spies.insert.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(insertedRow.auto_renew_product_id).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// applyPendingRenewalProduct (FV-602) — the narrow, SCHEDULED-only sibling of
+// applyAppleSnapshot. Never touches product_id/status/expires_at.
+// ---------------------------------------------------------------------------
+
+describe("applyPendingRenewalProduct", () => {
+  it("schedules a downgrade target on an existing row, without touching any entitlement column", async () => {
+    const service = makeServiceMock({
+      id: "row-1",
+      last_signed_date: new Date(1_600_000_000_000).toISOString(),
+    });
+    const result = await applyPendingRenewalProduct(service as never, {
+      payerId: PAYER_ID,
+      environment: "Production",
+      autoRenewProductId: "tier_1_1athlete",
+      signedDate: 1_700_000_000_000,
+    });
+    expect(result).toEqual({ applied: true });
+    expect(service.__spies.update).toHaveBeenCalledTimes(1);
+    const updatedRow = service.__spies.update.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(updatedRow).toEqual({
+      auto_renew_product_id: "tier_1_1athlete",
+      last_signed_date: new Date(1_700_000_000_000).toISOString(),
+    });
+    expect(service.__spies.insert).not.toHaveBeenCalled();
+  });
+
+  it("clears a scheduled downgrade (cancellation) by writing null", async () => {
+    const service = makeServiceMock({
+      id: "row-1",
+      last_signed_date: new Date(1_600_000_000_000).toISOString(),
+    });
+    const result = await applyPendingRenewalProduct(service as never, {
+      payerId: PAYER_ID,
+      environment: "Production",
+      autoRenewProductId: null,
+      signedDate: 1_700_000_000_000,
+    });
+    expect(result).toEqual({ applied: true });
+    const updatedRow = service.__spies.update.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(updatedRow.auto_renew_product_id).toBeNull();
+  });
+
+  it("no_row: never inserts — a renewal-pref change with no existing snapshot has nothing to schedule against", async () => {
+    const service = makeServiceMock(null);
+    const result = await applyPendingRenewalProduct(service as never, {
+      payerId: PAYER_ID,
+      environment: "Production",
+      autoRenewProductId: "tier_1_1athlete",
+      signedDate: 1_700_000_000_000,
+    });
+    expect(result).toEqual({ applied: false, reason: "no_row" });
+    expect(service.__spies.insert).not.toHaveBeenCalled();
+    expect(service.__spies.update).not.toHaveBeenCalled();
+  });
+
+  it("WATERMARK: drops a stale payload (older/equal signedDate) — no write", async () => {
+    const service = makeServiceMock({
+      id: "row-1",
+      last_signed_date: new Date(1_700_000_000_000).toISOString(),
+    });
+    const result = await applyPendingRenewalProduct(service as never, {
+      payerId: PAYER_ID,
+      environment: "Production",
+      autoRenewProductId: "tier_1_1athlete",
+      signedDate: 1_700_000_000_000, // equal to stored
+    });
+    expect(result).toEqual({ applied: false, reason: "stale" });
+    expect(service.__spies.update).not.toHaveBeenCalled();
+  });
+
+  it("RACE backstop: UPDATE matching 0 rows (a concurrent writer advanced the watermark) returns stale, never regresses", async () => {
+    const service = makeServiceMock({
+      id: "row-1",
+      last_signed_date: new Date(1_600_000_000_000).toISOString(),
+    });
+    service.__spies.updateLt.mockResolvedValueOnce({ error: null, count: 0 });
+    const result = await applyPendingRenewalProduct(service as never, {
+      payerId: PAYER_ID,
+      environment: "Production",
+      autoRenewProductId: "tier_1_1athlete",
+      signedDate: 1_700_000_000_000,
+    });
+    expect(result).toEqual({ applied: false, reason: "stale" });
+  });
+
+  it("never touches product_id, status, or expires_at in its update payload", async () => {
+    const service = makeServiceMock({
+      id: "row-1",
+      last_signed_date: new Date(1_600_000_000_000).toISOString(),
+    });
+    await applyPendingRenewalProduct(service as never, {
+      payerId: PAYER_ID,
+      environment: "Production",
+      autoRenewProductId: "tier_1_1athlete",
+      signedDate: 1_700_000_000_000,
+    });
+    const updatedRow = service.__spies.update.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(updatedRow).not.toHaveProperty("product_id");
+    expect(updatedRow).not.toHaveProperty("status");
+    expect(updatedRow).not.toHaveProperty("expires_at");
+    expect(updatedRow).not.toHaveProperty("grace_period_expires_at");
+    expect(updatedRow).not.toHaveProperty("auto_renew_status");
     expect(updatedRow).not.toHaveProperty("app_account_token");
   });
 });

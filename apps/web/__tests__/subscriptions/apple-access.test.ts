@@ -27,6 +27,7 @@ type AppleSubRow = {
   expires_at: string;
   grace_period_expires_at: string | null;
   product_id?: string;
+  auto_renew_product_id?: string | null;
 };
 
 let appleSubRows: AppleSubRow[] = [];
@@ -104,6 +105,7 @@ import {
   hasEverHeldAppleEntitlement,
   getActiveAppleProductId,
   getActiveAppleProductIdResult,
+  getPendingAppleRenewalProductId,
 } from "@/lib/subscriptions/apple";
 
 const PAYER_ID = "dddddddd-0000-4000-8000-000000000004";
@@ -427,6 +429,62 @@ describe("getActiveAppleProductIdResult", () => {
     const service = makeServiceMock();
     await expect(
       getActiveAppleProductId(service as never, PAYER_ID, NOW),
+    ).resolves.toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getPendingAppleRenewalProductId (FV-602) — read side for a SCHEDULED
+// (not-yet-effective) renewal-product change. Deliberately separate from,
+// and never folded into, getActiveAppleProductId(Result) above.
+// ---------------------------------------------------------------------------
+
+describe("getPendingAppleRenewalProductId", () => {
+  it("returns null when the payer has no Production row", async () => {
+    appleSubSingleRow = null;
+    appleSubSingleError = null;
+    const service = makeServiceMock();
+    expect(
+      await getPendingAppleRenewalProductId(service as never, PAYER_ID),
+    ).toBeNull();
+  });
+
+  it("returns null when the row has nothing scheduled", async () => {
+    appleSubSingleRow = {
+      environment: "Production",
+      status: "subscribed",
+      expires_at: FUTURE_ISO,
+      grace_period_expires_at: null,
+      product_id: "tier_2_2athletes",
+      auto_renew_product_id: null,
+    };
+    const service = makeServiceMock();
+    expect(
+      await getPendingAppleRenewalProductId(service as never, PAYER_ID),
+    ).toBeNull();
+  });
+
+  it("returns the pending target product id when a downgrade is scheduled", async () => {
+    appleSubSingleRow = {
+      environment: "Production",
+      status: "subscribed",
+      expires_at: FUTURE_ISO,
+      grace_period_expires_at: null,
+      product_id: "tier_2_2athletes",
+      auto_renew_product_id: "tier_1_1athlete",
+    };
+    const service = makeServiceMock();
+    expect(
+      await getPendingAppleRenewalProductId(service as never, PAYER_ID),
+    ).toBe("tier_1_1athlete");
+  });
+
+  it("fails open to null (never throws) on a DB error — purely informational, not a capacity/gating decision", async () => {
+    appleSubSingleRow = null;
+    appleSubSingleError = { message: "connection timeout" };
+    const service = makeServiceMock();
+    await expect(
+      getPendingAppleRenewalProductId(service as never, PAYER_ID),
     ).resolves.toBeNull();
   });
 });

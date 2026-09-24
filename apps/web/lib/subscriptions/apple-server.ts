@@ -113,6 +113,13 @@ export interface DecodedRenewalInfo {
   signedDate: number;
   environment: AppleEnvironment;
   appAccountToken: string | null;
+  /** The product id this subscription will renew INTO at its next renewal
+   *  (Apple: renewalInfo.autoRenewProductId), or null when the payload
+   *  doesn't carry one — which per Apple's docs means "no scheduled
+   *  product change" (renewing into the same product). FV-602: the
+   *  SCHEDULED (not-yet-effective) signal for a DID_CHANGE_RENEWAL_PREF
+   *  DOWNGRADE. */
+  autoRenewProductId: string | null;
 }
 
 export interface DecodedNotification {
@@ -336,6 +343,7 @@ function toDecodedRenewal(
     signedDate: decoded.signedDate,
     environment: toDbEnvironment(decoded.environment as string | undefined),
     appAccountToken: decoded.appAccountToken ?? null,
+    autoRenewProductId: decoded.autoRenewProductId ?? null,
   };
 }
 
