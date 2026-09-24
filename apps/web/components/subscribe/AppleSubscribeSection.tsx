@@ -503,7 +503,7 @@ function PlanSummary({
  */
 function AppleLegalLinks() {
   return (
-    <p className="mt-2 mb-2 text-center font-body text-[12px] text-cream/45 leading-relaxed">
+    <p className="mt-2 mb-2 text-center font-body text-[12px] text-cream/55 leading-relaxed">
       <Link
         href="/privacy"
         data-testid="apple-legal-privacy"
