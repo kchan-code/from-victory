@@ -14,6 +14,11 @@
  *     apple_subscriptions row creates one
  *   - grace mapping: DID_FAIL_TO_RENEW/GRACE_PERIOD sets the grace bound;
  *     GRACE_PERIOD_EXPIRED clears it and demotes to in_billing_retry
+ *   - FV-602 DID_CHANGE_RENEWAL_PREF: subtype UPGRADE routes through the
+ *     generic full-snapshot path (applyAppleSnapshot); subtype DOWNGRADE and
+ *     an empty/cancelled subtype route instead to the narrow
+ *     applyPendingRenewalProduct path (never applyAppleSnapshot), through
+ *     the SAME payer-resolution/Sandbox-allowlist/role gates
  *
  * ./apple-server and ./apple-lifecycle are mocked — no real JWS
  * verification, no network call to Apple.
@@ -38,6 +43,7 @@ vi.mock("@/lib/subscriptions/apple-server", () => ({
 }));
 
 const applyAppleSnapshotMock = vi.fn();
+const applyPendingRenewalProductMock = vi.fn();
 vi.mock("@/lib/subscriptions/apple-lifecycle", async () => {
   const actual = await vi.importActual<
     typeof import("@/lib/subscriptions/apple-lifecycle")
@@ -45,6 +51,7 @@ vi.mock("@/lib/subscriptions/apple-lifecycle", async () => {
   return {
     ...actual,
     applyAppleSnapshot: (...args: unknown[]) => applyAppleSnapshotMock(...args),
+    applyPendingRenewalProduct: (...args: unknown[]) => applyPendingRenewalProductMock(...args),
   };
 });
 
@@ -180,8 +187,10 @@ beforeEach(() => {
   verifyAndDecodeNotificationMock.mockReset();
   describeVerificationFailureMock.mockClear();
   applyAppleSnapshotMock.mockReset();
+  applyPendingRenewalProductMock.mockReset();
   notifyErrorMock.mockClear();
   applyAppleSnapshotMock.mockResolvedValue({ applied: true, created: true });
+  applyPendingRenewalProductMock.mockResolvedValue({ applied: true });
 });
 
 describe("POST /api/webhooks/apple", () => {
@@ -474,5 +483,185 @@ describe("POST /api/webhooks/apple", () => {
     expect(olderResult).toEqual({ applied: false, reason: "stale" });
     const afterOlder = storedRow as unknown as { last_signed_date: string };
     expect(afterOlder.last_signed_date).toBe(new Date(1_900_000_000_000).toISOString());
+  });
+
+  // ---------------------------------------------------------------------------
+  // FV-602: DID_CHANGE_RENEWAL_PREF — SCHEDULED (DOWNGRADE/cancelled) vs
+  // EFFECTIVE (UPGRADE) routing.
+  // ---------------------------------------------------------------------------
+
+  it("UPGRADE: routes through the generic full-snapshot path (applyAppleSnapshot), never applyPendingRenewalProduct", async () => {
+    verifyAndDecodeNotificationMock.mockResolvedValueOnce(
+      makeDecodedNotification({
+        notificationType: "DID_CHANGE_RENEWAL_PREF",
+        subtype: "UPGRADE",
+        transaction: makeTransaction({ productId: "tier_3_3athletes" }),
+        renewal: null,
+      }),
+    );
+
+    const res = await POST(makeRequest({ signedPayload: "ey.fake" }));
+
+    expect(res.status).toBe(200);
+    expect(applyAppleSnapshotMock).toHaveBeenCalledTimes(1);
+    expect(applyPendingRenewalProductMock).not.toHaveBeenCalled();
+    const call = applyAppleSnapshotMock.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(call.status).toBe("subscribed");
+    expect(call.productId).toBe("tier_3_3athletes");
+    // An UPGRADE clears any stale scheduled downgrade.
+    expect(call.autoRenewProductId).toBeNull();
+  });
+
+  it("DOWNGRADE: routes to applyPendingRenewalProduct with the scheduled target — never touches applyAppleSnapshot", async () => {
+    verifyAndDecodeNotificationMock.mockResolvedValueOnce(
+      makeDecodedNotification({
+        notificationType: "DID_CHANGE_RENEWAL_PREF",
+        subtype: "DOWNGRADE",
+        transaction: makeTransaction({ productId: "tier_5_5athletes", signedDate: 1_750_000_000_000 }),
+        renewal: {
+          originalTransactionId: "otid_1",
+          autoRenewStatus: true,
+          gracePeriodExpiresDate: null,
+          signedDate: 1_750_000_000_000,
+          environment: "Production",
+          appAccountToken: "TOKEN_1",
+          autoRenewProductId: "tier_1_1athlete",
+        },
+      }),
+    );
+
+    const res = await POST(makeRequest({ signedPayload: "ey.fake" }));
+
+    expect(res.status).toBe(200);
+    expect(applyAppleSnapshotMock).not.toHaveBeenCalled();
+    expect(applyPendingRenewalProductMock).toHaveBeenCalledTimes(1);
+    const call = applyPendingRenewalProductMock.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(call.payerId).toBe(PAYER_ID);
+    expect(call.environment).toBe("Production");
+    expect(call.autoRenewProductId).toBe("tier_1_1athlete");
+    expect(call.signedDate).toBe(1_750_000_000_000);
+  });
+
+  it("DOWNGRADE: a target equal to the current productId collapses to null (nothing actually scheduled)", async () => {
+    verifyAndDecodeNotificationMock.mockResolvedValueOnce(
+      makeDecodedNotification({
+        notificationType: "DID_CHANGE_RENEWAL_PREF",
+        subtype: "DOWNGRADE",
+        transaction: makeTransaction({ productId: "tier_1_1athlete" }),
+        renewal: {
+          originalTransactionId: "otid_1",
+          autoRenewStatus: true,
+          gracePeriodExpiresDate: null,
+          signedDate: 1_700_000_000_000,
+          environment: "Production",
+          appAccountToken: "TOKEN_1",
+          autoRenewProductId: "tier_1_1athlete",
+        },
+      }),
+    );
+
+    const res = await POST(makeRequest({ signedPayload: "ey.fake" }));
+
+    expect(res.status).toBe(200);
+    const call = applyPendingRenewalProductMock.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(call.autoRenewProductId).toBeNull();
+  });
+
+  it("CANCELLATION: empty subtype clears the pending product (autoRenewProductId null)", async () => {
+    verifyAndDecodeNotificationMock.mockResolvedValueOnce(
+      makeDecodedNotification({
+        notificationType: "DID_CHANGE_RENEWAL_PREF",
+        subtype: null,
+        renewal: null,
+      }),
+    );
+
+    const res = await POST(makeRequest({ signedPayload: "ey.fake" }));
+
+    expect(res.status).toBe(200);
+    expect(applyAppleSnapshotMock).not.toHaveBeenCalled();
+    expect(applyPendingRenewalProductMock).toHaveBeenCalledTimes(1);
+    const call = applyPendingRenewalProductMock.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(call.autoRenewProductId).toBeNull();
+  });
+
+  it("DOWNGRADE: no transaction payload -> warn, no write (fail-safe)", async () => {
+    verifyAndDecodeNotificationMock.mockResolvedValueOnce(
+      makeDecodedNotification({
+        notificationType: "DID_CHANGE_RENEWAL_PREF",
+        subtype: "DOWNGRADE",
+        transaction: null,
+        renewal: null,
+      }),
+    );
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const res = await POST(makeRequest({ signedPayload: "ey.fake" }));
+
+    expect(res.status).toBe(200);
+    expect(applyPendingRenewalProductMock).not.toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  it("DOWNGRADE: unmapped token is a benign no-op (same payer-resolution gate as the full-snapshot path)", async () => {
+    tokenRowsByToken = {}; // token maps to nothing
+    verifyAndDecodeNotificationMock.mockResolvedValueOnce(
+      makeDecodedNotification({
+        notificationType: "DID_CHANGE_RENEWAL_PREF",
+        subtype: "DOWNGRADE",
+      }),
+    );
+
+    const res = await POST(makeRequest({ signedPayload: "ey.fake" }));
+
+    expect(res.status).toBe(200);
+    expect(applyPendingRenewalProductMock).not.toHaveBeenCalled();
+  });
+
+  it("DOWNGRADE: non-allowlisted Sandbox payer is a benign no-op (same Sandbox gate as the full-snapshot path)", async () => {
+    sandboxAllowlistedPayers = new Set(); // not allowlisted
+    verifyAndDecodeNotificationMock.mockResolvedValueOnce(
+      makeDecodedNotification({
+        notificationType: "DID_CHANGE_RENEWAL_PREF",
+        subtype: "DOWNGRADE",
+        environment: "Sandbox",
+        transaction: makeTransaction({ environment: "Sandbox" }),
+      }),
+    );
+
+    const res = await POST(makeRequest({ signedPayload: "ey.fake" }));
+
+    expect(res.status).toBe(200);
+    expect(applyPendingRenewalProductMock).not.toHaveBeenCalled();
+  });
+
+  it("DOWNGRADE: PRIVACY AC — a payer whose role isn't parent|adult_athlete is refused, no write", async () => {
+    profileRolesByPayer[PAYER_ID] = "athlete";
+    verifyAndDecodeNotificationMock.mockResolvedValueOnce(
+      makeDecodedNotification({
+        notificationType: "DID_CHANGE_RENEWAL_PREF",
+        subtype: "DOWNGRADE",
+      }),
+    );
+
+    const res = await POST(makeRequest({ signedPayload: "ey.fake" }));
+
+    expect(res.status).toBe(200);
+    expect(applyPendingRenewalProductMock).not.toHaveBeenCalled();
+  });
+
+  it("DOWNGRADE: a genuine internal failure (500) still routes through applyPendingRenewalProduct's own error path", async () => {
+    verifyAndDecodeNotificationMock.mockResolvedValueOnce(
+      makeDecodedNotification({
+        notificationType: "DID_CHANGE_RENEWAL_PREF",
+        subtype: "DOWNGRADE",
+      }),
+    );
+    applyPendingRenewalProductMock.mockRejectedValueOnce(new Error("db exploded"));
+
+    const res = await POST(makeRequest({ signedPayload: "ey.fake" }));
+
+    expect(res.status).toBe(500);
+    expect(notifyErrorMock).toHaveBeenCalledTimes(1);
   });
 });

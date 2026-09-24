@@ -504,6 +504,7 @@ describe("submitApplePurchase", () => {
       signedDate: now - 50_000,
       environment: "Production" as const,
       appAccountToken: "11111111-1111-4111-8111-111111111111",
+      autoRenewProductId: null,
     };
 
     const graceStatus = actual.deriveActionSubmissionStatus(midGraceTxn, renewal, now);

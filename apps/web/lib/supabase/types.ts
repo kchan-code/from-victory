@@ -236,6 +236,9 @@ export type Database = {
           expires_at: string
           grace_period_expires_at: string | null
           auto_renew_status: boolean
+          // FV-602: hand-added (20260924120000_apple_pending_renewal_product.sql).
+          // Null = "same as product_id" (no scheduled renewal-product change).
+          auto_renew_product_id: string | null
           app_account_token: string
           last_signed_date: string
           created_at: string
@@ -251,6 +254,7 @@ export type Database = {
           expires_at: string
           grace_period_expires_at?: string | null
           auto_renew_status?: boolean
+          auto_renew_product_id?: string | null
           app_account_token: string
           last_signed_date: string
           created_at?: string
@@ -266,6 +270,7 @@ export type Database = {
           expires_at?: string
           grace_period_expires_at?: string | null
           auto_renew_status?: boolean
+          auto_renew_product_id?: string | null
           app_account_token?: string
           last_signed_date?: string
           created_at?: string

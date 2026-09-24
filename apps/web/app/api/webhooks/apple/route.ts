@@ -43,6 +43,21 @@
  *         act on (mapAppleNotificationToStatus returns null).
  *   500 — a genuine internal failure (DB error) so Apple retries (5 retries
  *         at 1/12/24/48/72h in production).
+ *
+ * DID_CHANGE_RENEWAL_PREF (FV-602) — SCHEDULED vs EFFECTIVE:
+ *   - subtype UPGRADE: an in-group upgrade takes effect IMMEDIATELY (Apple's
+ *     signedTransactionInfo on this payload is the new, already-effective
+ *     transaction) — mapAppleNotificationToStatus maps this to "subscribed"
+ *     and it runs through the exact same full-snapshot `applyAppleSnapshot`
+ *     path as SUBSCRIBED/DID_RENEW, same gates (payer resolution, Sandbox
+ *     allowlist, role check) included.
+ *   - subtype DOWNGRADE, or empty subtype (a scheduled downgrade being
+ *     cancelled): SCHEDULED only, never effective yet. Routed instead to
+ *     `processRenewalPreferenceChange`, which persists (or clears)
+ *     ONLY `apple_subscriptions.auto_renew_product_id` via
+ *     `applyPendingRenewalProduct` — product_id/status/expires_at/capacity
+ *     are never touched by this branch. The actual entitlement change
+ *     happens later, when Apple's DID_RENEW for that cycle arrives.
  */
 
 export const runtime = "nodejs";
@@ -59,6 +74,7 @@ import {
 import type { DecodedNotification, DecodedTransactionInfo } from "@/lib/subscriptions/apple-server";
 import {
   applyAppleSnapshot,
+  applyPendingRenewalProduct,
   buildSnapshotFields,
   mapAppleNotificationToStatus,
 } from "@/lib/subscriptions/apple-lifecycle";
@@ -120,6 +136,19 @@ export async function POST(req: NextRequest) {
 // ---------------------------------------------------------------------------
 
 async function processNotification(decoded: DecodedNotification): Promise<void> {
+  // FV-602: DID_CHANGE_RENEWAL_PREF with subtype DOWNGRADE (schedule) or an
+  // empty subtype (a scheduled downgrade being cancelled) is SCHEDULED-only
+  // — it must never flow through the full-snapshot entitlement path, even
+  // though mapAppleNotificationToStatus returns null for it (which every
+  // OTHER null case treats as "ignore"). Routed here BEFORE the generic
+  // mapAppleNotificationToStatus branch below. (subtype UPGRADE is NOT
+  // handled here — it's an immediately-effective entitlement change and
+  // falls through to the generic path, where mapAppleNotificationToStatus
+  // maps it to "subscribed".)
+  if (decoded.notificationType === "DID_CHANGE_RENEWAL_PREF" && decoded.subtype !== "UPGRADE") {
+    return processRenewalPreferenceChange(decoded);
+  }
+
   const mappedStatus = mapAppleNotificationToStatus(
     decoded.notificationType,
     decoded.subtype,
@@ -147,14 +176,85 @@ async function processNotification(decoded: DecodedNotification): Promise<void> 
   const { transaction, renewal } = decoded;
   const service = createServiceClient();
 
+  const gate = await resolveAndGatePayer(service, decoded.notificationType, transaction);
+  if (!gate) return;
+  const { payerId } = gate;
+
+  const fields = buildSnapshotFields(mappedStatus, transaction, renewal);
+  const result = await applyAppleSnapshot(service, { payerId, ...fields });
+
+  if (!result.applied) {
+    console.info(
+      `[apple/webhook] dropped stale/duplicate notificationType="${decoded.notificationType}" for payer=${payerId} — newer state already applied.`,
+    );
+  }
+}
+
+/**
+ * DID_CHANGE_RENEWAL_PREF, subtype DOWNGRADE or empty (FV-602) — persists
+ * ONLY `auto_renew_product_id`, through the SAME payer-resolution/Sandbox-
+ * allowlist/role gates as the full-snapshot path, but via
+ * `applyPendingRenewalProduct` instead of `applyAppleSnapshot` — never
+ * product_id/status/expires_at/capacity.
+ */
+async function processRenewalPreferenceChange(decoded: DecodedNotification): Promise<void> {
+  if (!decoded.transaction) {
+    console.warn(
+      `[apple/webhook] notificationType="DID_CHANGE_RENEWAL_PREF" subtype="${decoded.subtype ?? ""}" carried no transaction payload — nothing to schedule.`,
+    );
+    return;
+  }
+
+  const { transaction, renewal } = decoded;
+  const service = createServiceClient();
+
+  const gate = await resolveAndGatePayer(service, decoded.notificationType, transaction);
+  if (!gate) return;
+  const { payerId } = gate;
+
+  // subtype DOWNGRADE: renewal.autoRenewProductId carries the SCHEDULED
+  // target. Empty subtype (cancellation) or a target equal to the current
+  // product both collapse to null — "no scheduled change" (mirrors
+  // buildSnapshotFields's own collapse rule for the full-snapshot path, so
+  // the two write paths agree on what "nothing scheduled" means).
+  const targetProductId = renewal?.autoRenewProductId ?? null;
+  const autoRenewProductId =
+    targetProductId && targetProductId !== transaction.productId ? targetProductId : null;
+
+  const result = await applyPendingRenewalProduct(service, {
+    payerId,
+    environment: transaction.environment,
+    autoRenewProductId,
+    signedDate: transaction.signedDate,
+  });
+
+  if (!result.applied) {
+    console.info(
+      `[apple/webhook] renewal-preference update not applied (${result.reason}) for payer=${payerId} — notificationType="DID_CHANGE_RENEWAL_PREF" subtype="${decoded.subtype ?? ""}".`,
+    );
+  }
+}
+
+/**
+ * Shared gate for both write paths (full-snapshot and renewal-preference-
+ * only): resolves the payer, applies the Sandbox-allowlist policy, and
+ * verifies the PRIVACY AC role check — all BEFORE either caller performs any
+ * write. Returns `null` when any gate fails (the caller has already logged
+ * the reason); returns `{ payerId }` when clear to write.
+ */
+async function resolveAndGatePayer(
+  service: ReturnType<typeof createServiceClient>,
+  notificationType: string,
+  transaction: DecodedTransactionInfo,
+): Promise<{ payerId: string } | null> {
   const payerId = await resolvePayerId(service, transaction);
   if (!payerId) {
     // Unmapped token: benign no-op. No row creation, no relink, ever
     // (record Section 4.2/4.7 — deleted-account renewals, unknown tokens).
     console.info(
-      `[apple/webhook] notificationType="${decoded.notificationType}" environment="${transaction.environment}" — no payer resolved (unmapped token or deleted account). Benign no-op.`,
+      `[apple/webhook] notificationType="${notificationType}" environment="${transaction.environment}" — no payer resolved (unmapped token or deleted account). Benign no-op.`,
     );
-    return;
+    return null;
   }
 
   // Sandbox policy (record Section 4.9): only upsert for an allowlisted payer.
@@ -171,7 +271,7 @@ async function processNotification(decoded: DecodedNotification): Promise<void> 
       console.info(
         `[apple/webhook] Sandbox notification for non-allowlisted payer=${payerId} — benign no-op (record Section 4.9).`,
       );
-      return;
+      return null;
     }
   }
 
@@ -189,17 +289,10 @@ async function processNotification(decoded: DecodedNotification): Promise<void> 
     console.warn(
       `[apple/webhook] resolved payer role is not parent|adult_athlete — refusing write (payer=${payerId}). No write performed.`,
     );
-    return;
+    return null;
   }
 
-  const fields = buildSnapshotFields(mappedStatus, transaction, renewal);
-  const result = await applyAppleSnapshot(service, { payerId, ...fields });
-
-  if (!result.applied) {
-    console.info(
-      `[apple/webhook] dropped stale/duplicate notificationType="${decoded.notificationType}" for payer=${payerId} — newer state already applied.`,
-    );
-  }
+  return { payerId };
 }
 
 /**
