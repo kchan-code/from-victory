@@ -21,7 +21,7 @@ Merge bottom-up so each PR's base is already on `main`; every PR is qa + privacy
    lists the folds) — **TBD: produce the explicit list at merge time**.
 2. #527 FV-584 → #528 FV-585 (migration `20260918090000_seat_selection.sql`) → #529 FV-586 → #538 FV-593 (dormant catalog).
 3. #539 FV-595 → #540 FV-596.
-4. #541 FV-598 → (FV-602, in progress).
+4. #541 FV-598 → #545 FV-602 (migration `20260924120000_apple_pending_renewal_product.sql`).
 5. #543 FV-600 → #544 FV-601.
 6. Native: #519 FV-573 → #532 FV-588 → #533 FV-589 → #537 FV-594 → #542 FV-599 (build 1.0 (5) content).
 7. RC #534 stays unmerged (validation branch). After merges, re-run the full gates on `main`.
@@ -67,5 +67,5 @@ when FV-600 lands (recorded on FV-600).
   standard EULA) and Privacy Policy linked on the screen.
 
 ## G. Open items before the packet is final
-- FV-602 merged/validated; D2 downgrade evidence; D3 trial-eligible-account evidence; FV-597 allowlist hygiene; real
+- FV-602 reviewed + folded (RC 20f1249) — D2 downgrade evidence; D3 trial-eligible-account evidence; FV-597 allowlist hygiene; real
   review screenshots; Purchase Options + grace scope decisions; production notification URL; enumerated #516 PR list.
