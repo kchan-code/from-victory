@@ -113,6 +113,11 @@ On the iPhone (sandbox Apple ID signed in): install 1.0 (4) from TestFlight → 
 - Fold lesson: after any fold, diff copy constants against the pre-fold RC and screenshot the live RC before asking KC to test.
 - **Device-validated 15:52 PT (KC recording, 94 s, 1.0 (5) on RC efbeb65): "looks good."** Frames: Settings Active → Manage your plan → Current plan "1 athlete · Monthly $5.00" (real StoreKit price) → Manage Subscription / Restore Purchases / Change plan. FV-600 closing AC met.
 
+### 6e. FV-601 legal links on the subscription surface (2026-09-24)
+- KC-authorized. PR #544 (`feat/fv-601-subscription-legal-links`, base FV-600): 9c67a5f + contrast fix 58602db. Terms of Use ↗ → Apple standard EULA (FV-497 LOCKED; external, `noopener noreferrer`, sr-only "(opens in your browser)"); Privacy Policy → `/privacy` in-app. qa: SUGGEST_REVISION (contrast 4.31:1 at 12px) → fixed to cream/55 → privacy APPROVED @ 58602db. Folded into RC → **c0c0905** (typecheck/lint clean; vitest 2865/2865 at e0e1e4d + focused 55/55 after the fix).
+- **Served verification via `https://beta.fromvictoryapp.com` (shell UA, 390×844):** both states render the links with the exact hrefs/attributes; first purchase: Subscribe 703 px, Restore 764 px, legal line 815 px (all inside 844); manage: 536 / 597 / 648. In-shell same-origin navigation: tapping Privacy Policy → `/privacy` ("From Victory Privacy Policy", "← Back to home" present). External Terms link cannot be exercised headlessly; Capacitor's `createWebViewWith` → `UIApplication.shared.open` confirmed in code — one phone check requested from KC (Terms opens Apple's EULA in Safari; "◀ From Victory" returns).
+- Sandbox data preserved (no DB reset; beta row `family.5.monthly` intact). E2E + RC privacy re-pin at c0c0905 running.
+
 ## 7. Context kept for the record
 - App Review: the App Store version 1.0 is REJECTED — the known Guideline 3.1.1 rejection of 1.0 (3) on 2026-09-11 (submission `26267c34-c178-4dff-818a-fb18d080d28c`): externally purchased digital plans not purchasable via IAP. Only one review submission exists; no newer message is visible via the API (message bodies are ASC-UI only). This beta exists to fix that.
 - Paid Apps Agreement: Active (evidenced by successful subscription-group creation on 2026-09-22; KC also completed the W-9). Banking status not API-visible.
