@@ -118,6 +118,112 @@ async function renderReady() {
   await waitFor(() => expect(screen.getByTestId("apple-purchase-submit")).not.toBeDisabled());
 }
 
+describe("AppleSubscribeSection — legal links (FV-601, App Review 3.1.2)", () => {
+  it("purchase mode: renders Privacy Policy (in-app) and Terms of Use (Apple's EULA, external)", async () => {
+    await renderReady();
+
+    const privacyLink = screen.getByTestId("apple-legal-privacy");
+    expect(privacyLink).toHaveAttribute("href", "/privacy");
+    expect(privacyLink).not.toHaveAttribute("target");
+    expect(privacyLink).toHaveAccessibleName("Privacy Policy");
+
+    const termsLink = screen.getByTestId("apple-legal-terms");
+    expect(termsLink).toHaveAttribute(
+      "href",
+      "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/",
+    );
+    expect(termsLink).toHaveAttribute("target", "_blank");
+    expect(termsLink).toHaveAttribute("rel", "noopener noreferrer");
+    // Visible label reads exactly "Terms of Use"; a visually-hidden suffix
+    // additionally warns screen-reader users the link leaves the app.
+    expect(termsLink.textContent).toContain("Terms of Use");
+    expect(termsLink.textContent).toContain("(opens in your browser)");
+    expect(screen.getByRole("link", { name: /^Terms of Use/ })).toBe(termsLink);
+
+    // Never claims free/trial in this line either.
+    const text = document.body.textContent ?? "";
+    expect(text).not.toMatch(/free|trial/i);
+  });
+
+  it("does not push Subscribe/Restore out of the primary action cluster order", async () => {
+    await renderReady();
+    // The legal line renders as a sibling AFTER Restore Purchases, not
+    // before Subscribe — confirms it's below the primary CTA cluster.
+    const container = screen.getByTestId("apple-purchase-submit").parentElement!;
+    const order = Array.from(container.querySelectorAll("[data-testid]")).map((node) =>
+      node.getAttribute("data-testid"),
+    );
+    const subscribeIndex = order.indexOf("apple-purchase-submit");
+    const restoreIndex = order.indexOf("apple-restore-submit");
+    const privacyIndex = order.indexOf("apple-legal-privacy");
+    const termsIndex = order.indexOf("apple-legal-terms");
+    expect(subscribeIndex).toBeGreaterThanOrEqual(0);
+    expect(restoreIndex).toBeGreaterThan(subscribeIndex);
+    expect(privacyIndex).toBeGreaterThan(restoreIndex);
+    expect(termsIndex).toBeGreaterThan(privacyIndex);
+  });
+
+  it("manage mode: renders both legal links below Restore Purchases", async () => {
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    getConfiguredAppleProductsMock.mockReturnValue([]);
+
+    render(<AppleSubscribeSection mode="manage" />);
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-restore-submit")).toBeInTheDocument(),
+    );
+
+    const privacyLink = screen.getByTestId("apple-legal-privacy");
+    expect(privacyLink).toHaveAttribute("href", "/privacy");
+    expect(privacyLink).toHaveAccessibleName("Privacy Policy");
+
+    const termsLink = screen.getByTestId("apple-legal-terms");
+    expect(termsLink).toHaveAttribute(
+      "href",
+      "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/",
+    );
+    expect(termsLink).toHaveAttribute("target", "_blank");
+    expect(termsLink).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("upgrade mode: renders the legal links below Restore, above the Change plan toggle", async () => {
+    const THREE_TIERS = [
+      { productId: "test.fv.tier1.monthly", athleteCapacity: 1 },
+      { productId: "test.fv.tier3.monthly", athleteCapacity: 3 },
+    ];
+    getConfiguredAppleProductsMock.mockReturnValue(THREE_TIERS);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    getStoreKitProductsMock.mockResolvedValue([
+      { productId: "test.fv.tier1.monthly", displayPrice: "$4.99", displayName: "1 Athlete" },
+      { productId: "test.fv.tier3.monthly", displayPrice: "$8.99", displayName: "3 Athletes" },
+    ]);
+
+    render(
+      <AppleSubscribeSection
+        mode="upgrade"
+        currentAppleCapacity={1}
+        currentAppleProductId="test.fv.tier1.monthly"
+      />,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-change-plan-toggle")).toBeInTheDocument(),
+    );
+
+    expect(screen.getByTestId("apple-legal-privacy")).toBeInTheDocument();
+    expect(screen.getByTestId("apple-legal-terms")).toBeInTheDocument();
+
+    const container = screen.getByTestId("apple-restore-submit").parentElement!;
+    const order = Array.from(container.querySelectorAll("[data-testid]")).map((node) =>
+      node.getAttribute("data-testid"),
+    );
+    const restoreIndex = order.indexOf("apple-restore-submit");
+    const privacyIndex = order.indexOf("apple-legal-privacy");
+    const changePlanIndex = order.indexOf("apple-change-plan-toggle");
+    expect(privacyIndex).toBeGreaterThan(restoreIndex);
+    expect(changePlanIndex).toBeGreaterThan(privacyIndex);
+  });
+});
+
 describe("AppleSubscribeSection — unavailable state", () => {
   it("shows the calm unavailable state with no price when no products are configured", async () => {
     getConfiguredAppleProductsMock.mockReturnValue([]);
