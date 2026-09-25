@@ -26,6 +26,9 @@ const {
   accessLevelMock,
   shellCapabilityMock,
   entitlementStateMock,
+  activeAppleProductIdMock,
+  capacityForAppleProductMock,
+  getConfiguredAppleProductsMock,
 } = vi.hoisted(() => ({
   requireSubscriberMock: vi.fn(),
   maybeSingleMock: vi.fn(),
@@ -59,6 +62,14 @@ const {
       provider: "apple" | "stripe" | "comp" | null;
     }> => ({ status: "not_entitled", provider: null }),
   ),
+  // FV-586 (KC decision D3): defaults preserve "no upgrade available" for
+  // every test written before the upgrade wiring existed — not an Apple
+  // payer / no mapped product / no configured product ever exceeds it.
+  activeAppleProductIdMock: vi.fn(async (): Promise<string | null> => null),
+  capacityForAppleProductMock: vi.fn((): number | null => null),
+  getConfiguredAppleProductsMock: vi.fn(
+    (): { productId: string; athleteCapacity: number; displayName?: string }[] => [],
+  ),
 }));
 
 vi.mock("@/lib/auth/guards", () => ({
@@ -83,14 +94,38 @@ vi.mock("@/lib/native-shell", () => ({
 // AppleSubscribeSection is a client component with its own dedicated test
 // file — stub it here so this page-level suite stays scoped to the page's
 // own branching logic. The stub echoes the `mode` prop it was given
-// (data-mode) so the FV-581 matrix below can assert purchase vs manage.
+// (data-mode) so the FV-581 matrix below can assert purchase vs manage, and
+// (FV-586) `currentAppleCapacity` so the D3 upgrade-wiring tests can assert
+// the page computed the right ceiling.
 vi.mock("@/components/subscribe/AppleSubscribeSection", () => ({
-  AppleSubscribeSection: ({ mode }: { mode?: "purchase" | "manage" }) => (
+  AppleSubscribeSection: ({
+    mode,
+    currentAppleCapacity,
+  }: {
+    mode?: "purchase" | "manage" | "upgrade";
+    currentAppleCapacity?: number;
+  }) => (
     <div
       data-testid="apple-subscribe-section-stub"
       data-mode={mode ?? "purchase"}
+      data-current-apple-capacity={String(currentAppleCapacity ?? null)}
     />
   ),
+}));
+
+// FV-586 (KC decision D3) upgrade-wiring reads — mocked wholesale, same
+// rationale as the FV-581 duplicate-billing guard mock above.
+vi.mock("@/lib/subscriptions/apple", () => ({
+  getActiveAppleProductId: activeAppleProductIdMock,
+}));
+vi.mock("@/lib/subscriptions/apple-capacity", () => ({
+  capacityForAppleProduct: capacityForAppleProductMock,
+}));
+vi.mock("@/lib/subscriptions/apple-products", () => ({
+  getConfiguredAppleProducts: getConfiguredAppleProductsMock,
+}));
+vi.mock("@/lib/supabase/service", () => ({
+  createServiceClient: () => ({}),
 }));
 
 // FV-464: the page mirrors enforcement's bounce condition to avoid a dead
@@ -156,6 +191,9 @@ afterEach(() => {
   shellCapabilityMock.mockReturnValue(null);
   athleteCountMock.mockResolvedValue({ count: 1, error: null });
   entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
+  activeAppleProductIdMock.mockResolvedValue(null);
+  capacityForAppleProductMock.mockReturnValue(null);
+  getConfiguredAppleProductsMock.mockReturnValue([]);
 });
 
 describe("SubscribePage — price paragraph (parent vs adult)", () => {
@@ -606,5 +644,88 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
       expect(getByTestId("subscribe-form-stub")).toBeTruthy();
       expect(text).toMatch(/\$5\/mo or \$49\/yr/);
     });
+  });
+});
+
+describe("SubscribePage — Apple upgrade wiring (FV-586, KC decision D3)", () => {
+  const asParent = () =>
+    requireSubscriberMock.mockResolvedValue({
+      userId: "parent-1",
+      profile: { id: "parent-1", role: "parent", first_name: "Kim" },
+    });
+
+  const renderPage = async () => {
+    const { container, getByTestId } = render(await SubscribePage({ searchParams: {} }));
+    return { container, getByTestId, text: container.textContent ?? "" };
+  };
+
+  it("no mapped current product: stays in manage mode, never computes a capacity", async () => {
+    asParent();
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "apple" });
+    activeAppleProductIdMock.mockResolvedValue(null);
+
+    const { getByTestId } = await renderPage();
+
+    const stub = getByTestId("apple-subscribe-section-stub");
+    expect(stub).toHaveAttribute("data-mode", "manage");
+    expect(stub).toHaveAttribute("data-current-apple-capacity", "null");
+    expect(capacityForAppleProductMock).not.toHaveBeenCalled();
+  });
+
+  it("mapped product but no configured product exceeds it: stays in manage mode", async () => {
+    asParent();
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "apple" });
+    activeAppleProductIdMock.mockResolvedValue("apple.tier3.monthly");
+    capacityForAppleProductMock.mockReturnValue(3);
+    getConfiguredAppleProductsMock.mockReturnValue([
+      { productId: "apple.tier1.monthly", athleteCapacity: 1 },
+      { productId: "apple.tier3.monthly", athleteCapacity: 3 },
+    ]);
+
+    const { getByTestId } = await renderPage();
+
+    const stub = getByTestId("apple-subscribe-section-stub");
+    expect(stub).toHaveAttribute("data-mode", "manage");
+  });
+
+  it("mapped product with a strictly-higher configured product: renders upgrade mode with the current capacity", async () => {
+    asParent();
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "apple" });
+    activeAppleProductIdMock.mockResolvedValue("apple.tier1.monthly");
+    capacityForAppleProductMock.mockReturnValue(1);
+    getConfiguredAppleProductsMock.mockReturnValue([
+      { productId: "apple.tier1.monthly", athleteCapacity: 1 },
+      { productId: "apple.tier3.monthly", athleteCapacity: 3 },
+    ]);
+
+    const { getByTestId } = await renderPage();
+
+    const stub = getByTestId("apple-subscribe-section-stub");
+    expect(stub).toHaveAttribute("data-mode", "upgrade");
+    expect(stub).toHaveAttribute("data-current-apple-capacity", "1");
+  });
+
+  it("stripe-provider entitled payers never trigger the Apple capacity reads", async () => {
+    asParent();
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "stripe" });
+
+    await renderPage();
+
+    expect(activeAppleProductIdMock).not.toHaveBeenCalled();
+  });
+
+  it("a not_entitled payer never triggers the Apple capacity reads", async () => {
+    asParent();
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
+
+    await renderPage();
+
+    expect(activeAppleProductIdMock).not.toHaveBeenCalled();
   });
 });
