@@ -27,16 +27,20 @@ vi.mock("@/lib/subscriptions/apple", () => ({
 import {
   APPLE_PRODUCT_CAPACITY,
   capacityForAppleProduct,
+  getAppleProductCapacity,
   payerCapacityCeiling,
   assertAthleteCapacity,
   isStrictAppleCapacityUpgrade,
   type AppleTierCeiling,
 } from "@/lib/subscriptions/apple-capacity";
+import { APPLE_PRODUCT_CATALOG } from "@/lib/subscriptions/apple-product-catalog";
 
 const PAYER_ID = "eeeeeeee-0000-4000-8000-000000000005";
+const CATALOG_FLAG = "APPLE_CATALOG_ACTIVE";
 
 beforeEach(() => {
   getActiveAppleProductIdMock.mockReset();
+  delete process.env[CATALOG_FLAG];
 });
 
 // ---------------------------------------------------------------------------
@@ -182,5 +186,96 @@ describe("isStrictAppleCapacityUpgrade", () => {
       "tier_1_athlete",
     );
     expect(result).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-593 — catalog activation via APPLE_CATALOG_ACTIVE
+// ---------------------------------------------------------------------------
+
+function catalogProductId(capacity: AppleTierCeiling, interval: "month" | "year"): string {
+  const entry = APPLE_PRODUCT_CATALOG.find(
+    (e) => e.athleteCapacity === capacity && e.interval === interval,
+  );
+  if (!entry) throw new Error(`no catalog entry for capacity ${capacity}/${interval}`);
+  return entry.productId;
+}
+
+describe("getAppleProductCapacity / capacityForAppleProduct — flag unset (default)", () => {
+  it("getAppleProductCapacity() is an empty, frozen object", () => {
+    const map = getAppleProductCapacity();
+    expect(Object.keys(map)).toHaveLength(0);
+    expect(Object.isFrozen(map)).toBe(true);
+  });
+
+  it("every catalog product id resolves to null", () => {
+    for (const entry of APPLE_PRODUCT_CATALOG) {
+      expect(capacityForAppleProduct(entry.productId)).toBeNull();
+    }
+  });
+
+  it("assertAthleteCapacity stays { allowed: true } for a payer holding a real catalog product id, at any count", async () => {
+    getActiveAppleProductIdMock.mockResolvedValue(catalogProductId(1, "month"));
+    const result = await assertAthleteCapacity({} as never, PAYER_ID, 50);
+    expect(result).toEqual({ allowed: true });
+  });
+});
+
+describe("getAppleProductCapacity / capacityForAppleProduct — flag set to \"1\"", () => {
+  beforeEach(() => {
+    process.env[CATALOG_FLAG] = "1";
+  });
+
+  it("capacityForAppleProduct returns the catalog capacity for every catalog id", () => {
+    for (const entry of APPLE_PRODUCT_CATALOG) {
+      expect(capacityForAppleProduct(entry.productId)).toBe(entry.athleteCapacity);
+    }
+  });
+
+  it("capacityForAppleProduct still returns null for an unknown id", () => {
+    expect(capacityForAppleProduct("not.a.real.product")).toBeNull();
+  });
+
+  it("assertAthleteCapacity blocks at the ceiling and allows below it", async () => {
+    const oneAthleteProduct = catalogProductId(1, "month");
+    getActiveAppleProductIdMock.mockResolvedValue(oneAthleteProduct);
+
+    const atCeiling = await assertAthleteCapacity({} as never, PAYER_ID, 1);
+    expect(atCeiling).toEqual({ allowed: false, reason: "capacity_reached" });
+
+    const belowCeiling = await assertAthleteCapacity({} as never, PAYER_ID, 0);
+    expect(belowCeiling).toEqual({ allowed: true });
+  });
+
+  describe("isStrictAppleCapacityUpgrade semantics (D3)", () => {
+    it("1 -> 2 athletes is an allowed upgrade", async () => {
+      getActiveAppleProductIdMock.mockResolvedValue(catalogProductId(1, "month"));
+      const result = await isStrictAppleCapacityUpgrade(
+        {} as never,
+        PAYER_ID,
+        catalogProductId(2, "month"),
+      );
+      expect(result).toBe(true);
+    });
+
+    it("2 -> 1 athletes is refused (a downgrade, not an upgrade)", async () => {
+      getActiveAppleProductIdMock.mockResolvedValue(catalogProductId(2, "month"));
+      const result = await isStrictAppleCapacityUpgrade(
+        {} as never,
+        PAYER_ID,
+        catalogProductId(1, "month"),
+      );
+      expect(result).toBe(false);
+    });
+
+    it("2 -> 2 athletes (e.g. monthly -> yearly crossgrade) is refused (not strictly greater)", async () => {
+      getActiveAppleProductIdMock.mockResolvedValue(catalogProductId(2, "month"));
+      const result = await isStrictAppleCapacityUpgrade(
+        {} as never,
+        PAYER_ID,
+        catalogProductId(2, "year"),
+      );
+      expect(result).toBe(false);
+    });
   });
 });
