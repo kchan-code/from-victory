@@ -50,14 +50,12 @@ Also merge-adjacent: the RC-only test edit to `__tests__/dev-apple-iap-preview.t
 when FV-600 lands (recorded on FV-600).
 
 ## C. Hosted backend readiness (production Supabase + Vercel) — TO PREPARE, NOT EXECUTE
-- Migrations not yet on `main`/prod: `20260909000000_subscriptions_client_write_revoke.sql`, `20260910133456_client_grant_matrix_pin.sql`,
+- Migrations APPLIED to production 2026-09-25 (supabase db push --linked from RC 0c84827; remote list verified): `20260909000000_subscriptions_client_write_revoke.sql`, `20260910133456_client_grant_matrix_pin.sql`,
   `20260911120000_apple_provider_access.sql` (apple_subscriptions, apple_purchase_tokens, apple_sandbox_testers, RLS),
   `20260918090000_seat_selection.sql`, plus FV-602's `auto_renew_product_id` migration. CI auto-applies migrations on merge
   (memory: "CI auto-applies migrations"); confirm with the RLS harness green on the merged head.
 - Production env (Vercel, names only): `APPLE_BUNDLE_ID=com.fromvictoryapp.app`, `APPLE_APP_APPLE_ID=6804743047`,
-  `APPLE_ROOT_CA_PATHS` (Apple Root CA G3 + G2 — commit the public DER files under a server-readable path or load from
-  a secure store; decide at deploy), `NEXT_PUBLIC_APPLE_PRODUCTS` = FV-593 `catalogToPublicProductsJson()` output (10 products;
-  add `interval` once emitted), `APPLE_CATALOG_ACTIVE=1` (activation = Tier-2; run the FV-597 gate in `docs/apple-catalog-activation-runbook.md` first — read-only check must return 0 rows; the prepared allowlist SQL there is review-only until then),
+  `APPLE_ROOT_CA_BASE64` (FV-603 #547; SET in production from the G3+G2 public DER files), `NEXT_PUBLIC_APPLE_PRODUCTS` = FV-593 `catalogToPublicProductsJson()` output (10 products; SET in production), `APPLE_CATALOG_ACTIVE=1` (activation = Tier-2; run the FV-597 gate in `docs/apple-catalog-activation-runbook.md` first — read-only check must return 0 rows; the prepared allowlist SQL there is review-only until then),
   `APPLE_IAP_KEY_ID/ISSUER_ID/SIGNING_KEY_PATH` only if the App Store Server API reconcile path is enabled (not needed
   for purchase/webhook).
 - App Store Server Notifications: set the **Production** Server URL in ASC to `https://www.fromvictoryapp.com/api/webhooks/apple`
@@ -77,12 +75,14 @@ when FV-600 lands (recorded on FV-600).
 - Group 22404772 "From Victory Family"; 10 subscriptions with USA prices at/below web, availability USA, 7-day trial on
   family.1.*; localizations; review screenshots present (illustrative — **replace with real device captures before
   submission**: use KC's 1.0 (5) screenshots/recording frames of the FV-600 screen; upload via `screens … --apply` after
-  swapping the file). Purchase Options: set to App Store only (KC decision pending). Grace period: 16 days, scope pending.
+  swapping the file). Purchase Options: set to App Store only (KC decision pending). Grace period: SET 2026-09-25 via API — optIn, SIXTEEN_DAYS, PAID_TO_PAID_ONLY (sandboxOptIn true).
 - Subscription review notes per product are set; the group needs an App Store-facing display name (done: "From Victory Family").
 
 ## F. Reviewer access + instructions (draft)
-- Demo account: a production parent account, allowlisted in `apple_sandbox_testers` for App Review's sandbox purchases.
-  Credentials go in the App Review Information "Sign-in required" fields — **create at submission time; never in this repo**.
+- Demo account: CREATED 2026-09-25 in production — parent profile "Reviewer", payer id `b015a012-2518-4f02-b983-b7afaf0e1e8a`,
+  allowlisted in `apple_sandbox_testers` (note: remove after approval per the FV-597 runbook). FV-597 read-only check at insert
+  time: 0 collisions. Credentials live only in `~/.private_keys/fv-app-review-account.env` (never in this repo); they go into
+  App Review Information → Sign-in required.
 - Steps for the reviewer: Sign in → Dashboard → Settings → Manage subscription → choose athletes/interval → Subscribe (Apple
   sandbox sheet) → return → Settings shows Active; Restore Purchases and Manage Subscription available; Terms of Use (Apple
   standard EULA) and Privacy Policy linked on the screen.
