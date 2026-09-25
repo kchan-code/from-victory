@@ -18,11 +18,12 @@ import "@testing-library/jest-dom/vitest";
 
 vi.mock("server-only", () => ({}));
 
-const { requireAthleteMock, isNativeShellMock } = vi.hoisted(() => ({
+const { requireAthleteMock, shellCapabilityMock } = vi.hoisted(() => ({
   requireAthleteMock: vi.fn(),
-  // Google Play "no in-app purchase" compliance. Defaults to false
-  // (ordinary web/PWA request) — individual tests override per case.
-  isNativeShellMock: vi.fn(() => false),
+  // Google Play "no in-app purchase" compliance + FV-572/577 capability.
+  // Defaults to null (ordinary web/PWA request) — individual tests override
+  // per case with "legacy-native" | "ios-iap" | null.
+  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
 }));
 
 vi.mock("@/lib/auth/guards", () => ({
@@ -30,7 +31,7 @@ vi.mock("@/lib/auth/guards", () => ({
 }));
 
 vi.mock("@/lib/native-shell", () => ({
-  isNativeShell: isNativeShellMock,
+  getRequestShellCapability: shellCapabilityMock,
 }));
 
 // SignOutButton pulls in localStorage-clearing helpers + the signOut server
@@ -47,21 +48,24 @@ afterEach(() => {
   vi.clearAllMocks();
   // clearAllMocks keeps mockReturnValue overrides — restore the
   // native-shell default so test order never matters.
-  isNativeShellMock.mockReturnValue(false);
+  shellCapabilityMock.mockReturnValue(null);
 });
 
-async function renderPage(role: "athlete" | "adult_athlete") {
+async function renderPage(
+  role: "athlete" | "adult_athlete",
+  searchParams?: { reason?: string | string[] },
+) {
   requireAthleteMock.mockResolvedValue({
     userId: "athlete-1",
     profile: { id: "athlete-1", role, first_name: "Jordan" },
   });
-  const jsx = await AthletePausedPage();
+  const jsx = await AthletePausedPage({ searchParams });
   return render(jsx);
 }
 
-describe("/athlete/paused — reactivate-link native-shell branch (adult_athlete)", () => {
-  it("shows the real 'Reactivate subscription' link to /subscribe when isNativeShell() is false", async () => {
-    isNativeShellMock.mockReturnValue(false);
+describe("/athlete/paused — reactivate-link shell-capability branch (adult_athlete, FV-572/577)", () => {
+  it("shows the real 'Reactivate subscription' link to /subscribe when capability is null (web)", async () => {
+    shellCapabilityMock.mockReturnValue(null);
 
     await renderPage("adult_athlete");
 
@@ -73,8 +77,8 @@ describe("/athlete/paused — reactivate-link native-shell branch (adult_athlete
     ).not.toBeInTheDocument();
   });
 
-  it("replaces the reactivate link with a neutral, non-tappable notice when isNativeShell() is true", async () => {
-    isNativeShellMock.mockReturnValue(true);
+  it("replaces the reactivate link with a neutral, non-tappable notice when capability is 'legacy-native'", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
 
     await renderPage("adult_athlete");
 
@@ -87,11 +91,26 @@ describe("/athlete/paused — reactivate-link native-shell branch (adult_athlete
       "Manage your From Victory subscription from a web browser at fromvictoryapp.com.",
     );
   });
+
+  it("keeps the real, price-free 'Reactivate subscription' link to /subscribe when capability is 'ios-iap'", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+
+    const { container } = await renderPage("adult_athlete");
+
+    const link = screen.getByTestId("paused-reactivate-link");
+    expect(link).toHaveAttribute("href", "/subscribe");
+    expect(link).toHaveTextContent("Reactivate subscription");
+    expect(
+      screen.queryByTestId("paused-native-shell-notice"),
+    ).not.toBeInTheDocument();
+    expect(container.textContent ?? "").not.toMatch(/web browser/i);
+    expect(container.textContent ?? "").not.toMatch(/\$/);
+  });
 });
 
-describe("/athlete/paused — minor athlete boundary (untouched by native-shell branching)", () => {
+describe("/athlete/paused — minor athlete boundary (untouched by shell-capability branching)", () => {
   it("a minor athlete sees neither the reactivate link nor the native-shell notice, in-shell or not", async () => {
-    isNativeShellMock.mockReturnValue(true);
+    shellCapabilityMock.mockReturnValue("legacy-native");
     await renderPage("athlete");
 
     expect(
@@ -100,5 +119,50 @@ describe("/athlete/paused — minor athlete boundary (untouched by native-shell 
     expect(
       screen.queryByTestId("paused-native-shell-notice"),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("/athlete/paused — seat-pause copy variant (FV-585, KC decision D2)", () => {
+  it("shows the seat-pause copy for a minor athlete when reason=seats", async () => {
+    await renderPage("athlete", { reason: "seats" });
+
+    expect(screen.getByTestId("paused-body-copy")).toHaveTextContent(
+      "Your family's plan has fewer spots right now. Ask your parent to choose who's active from their dashboard.",
+    );
+    // Never billing details for a seat pause.
+    expect(screen.queryByText(/\$/)).not.toBeInTheDocument();
+    expect(screen.getByText("Your data is safe. Nothing has been removed.")).toBeInTheDocument();
+  });
+
+  it("keeps the default copy unchanged when there is no reason param", async () => {
+    await renderPage("athlete");
+
+    expect(screen.getByTestId("paused-body-copy")).toHaveTextContent(
+      "Your training is on hold right now. To get back in, ask your parent to reactivate access from their dashboard.",
+    );
+  });
+
+  it("keeps the default copy unchanged for an unrecognized reason value", async () => {
+    await renderPage("athlete", { reason: "billing" });
+
+    expect(screen.getByTestId("paused-body-copy")).toHaveTextContent(
+      "Your training is on hold right now. To get back in, ask your parent to reactivate access from their dashboard.",
+    );
+  });
+
+  it("an adult_athlete falls back to the existing adult copy even if reason=seats reaches them defensively", async () => {
+    await renderPage("adult_athlete", { reason: "seats" });
+
+    expect(screen.getByTestId("paused-body-copy")).toHaveTextContent(
+      "Your training is on hold right now. You can reactivate any time from your subscription.",
+    );
+  });
+
+  it("never uses 'kid' in the seat-pause copy (audience-language guard)", async () => {
+    await renderPage("athlete", { reason: "seats" });
+
+    expect(screen.getByTestId("paused-body-copy").textContent).not.toMatch(
+      /\bkid\b/i,
+    );
   });
 });
