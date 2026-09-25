@@ -71,6 +71,18 @@ type ServiceClient = SupabaseClient<Database>;
  *     -> subscribed (this also covers a same-group UPGRADE, which Apple
  *        delivers as SUBSCRIBED with subtype UPGRADE — the supersession-safe
  *        OTID update happens in applyAppleSnapshot, not here)
+ *   DID_CHANGE_RENEWAL_PREF + subtype UPGRADE -> subscribed (FV-602: a
+ *     same-group UPGRADE takes effect IMMEDIATELY — Apple's
+ *     signedTransactionInfo on this payload is the new, already-effective
+ *     transaction, so it is applied through this exact same full-snapshot
+ *     path, not treated as a scheduled change)
+ *   DID_CHANGE_RENEWAL_PREF + subtype DOWNGRADE, or empty subtype (a
+ *     scheduled downgrade being cancelled) -> null. Unlike every other null
+ *     case below, the webhook does NOT simply ignore these — a DOWNGRADE is
+ *     SCHEDULED, not effective, so it is routed to the narrow
+ *     `applyPendingRenewalProduct` path (auto_renew_product_id only) instead
+ *     of this function's full-snapshot caller. See the webhook route's
+ *     `processRenewalPreferenceChange`.
  *   DID_FAIL_TO_RENEW + subtype GRACE_PERIOD -> in_grace_period
  *   DID_FAIL_TO_RENEW (any other/no subtype) -> in_billing_retry
  *   GRACE_PERIOD_EXPIRED -> in_billing_retry (grace bound cleared by the
@@ -80,9 +92,10 @@ type ServiceClient = SupabaseClient<Database>;
  *
  * Returns `null` for every other notificationType — these are either
  * genuinely unknown or recognized-but-intentionally-not-acted-on (e.g.
- * DID_CHANGE_RENEWAL_PREF, PRICE_INCREASE, CONSUMPTION_REQUEST, TEST, …).
- * The caller (the webhook) treats `null` as the "200 + warn, no write"
- * branch — never a processing failure.
+ * PRICE_INCREASE, CONSUMPTION_REQUEST, TEST, …). The caller (the webhook)
+ * treats `null` as the "200 + warn, no write" branch for those — never a
+ * processing failure. (DID_CHANGE_RENEWAL_PREF non-UPGRADE is the one
+ * exception, handled specially — see above.)
  */
 export function mapAppleNotificationToStatus(
   notificationType: string,
@@ -94,6 +107,13 @@ export function mapAppleNotificationToStatus(
     case "DID_CHANGE_RENEWAL_STATUS":
     case "OFFER_REDEEMED":
       return "subscribed";
+
+    case "DID_CHANGE_RENEWAL_PREF":
+      // Only an UPGRADE is an immediately-effective entitlement change.
+      // DOWNGRADE (and cancellation, empty subtype) is SCHEDULED-only and is
+      // handled by the webhook's separate applyPendingRenewalProduct path —
+      // see the doc comment above.
+      return subtype === "UPGRADE" ? "subscribed" : null;
 
     case "DID_FAIL_TO_RENEW":
       return subtype === "GRACE_PERIOD" ? "in_grace_period" : "in_billing_retry";
@@ -221,6 +241,19 @@ export interface AppleSnapshotFields {
   appAccountToken: string | null;
   /** UNIX ms — the payload-staleness watermark (record Section 4.2). */
   signedDate: number;
+  /** FV-602: the product this subscription is scheduled to renew INTO at
+   *  its next renewal, or null when there is none (renewing into the same
+   *  product this snapshot already carries as `productId`). Derived from
+   *  `renewal.autoRenewProductId`, collapsed to null whenever it's absent OR
+   *  equal to `productId` — a full-snapshot apply is always the current
+   *  authoritative state, so this always OVERWRITES any previously-persisted
+   *  value (never preserved-if-absent, unlike appAccountToken above): an
+   *  UPGRADE (whose signedTransactionInfo already reflects the new product)
+   *  correctly clears a stale scheduled downgrade, and a DID_RENEW that just
+   *  made a scheduled downgrade effective correctly clears it too, since by
+   *  then `renewal.autoRenewProductId` (if still present at all) equals the
+   *  just-renewed `productId`. */
+  autoRenewProductId: string | null;
 }
 
 /**
@@ -248,6 +281,10 @@ export function buildSnapshotFields(
     autoRenewStatus: renewal?.autoRenewStatus ?? true,
     appAccountToken: transaction.appAccountToken,
     signedDate: transaction.signedDate,
+    autoRenewProductId:
+      renewal?.autoRenewProductId && renewal.autoRenewProductId !== transaction.productId
+        ? renewal.autoRenewProductId
+        : null,
   };
 }
 
@@ -325,6 +362,14 @@ export async function applyAppleSnapshot(
       expires_at: expiresIso,
       grace_period_expires_at: graceIso,
       auto_renew_status: input.autoRenewStatus,
+      // FV-602: always overwrite (never preserve-if-absent) — a full
+      // snapshot apply is always the current authoritative state, so any
+      // previously-scheduled renewal-product change is resolved by it
+      // (superseded by an UPGRADE, or made effective by the DID_RENEW that
+      // follows it). See AppleSnapshotFields.autoRenewProductId's doc
+      // comment for why buildSnapshotFields already collapsed this to null
+      // whenever there's nothing to schedule.
+      auto_renew_product_id: input.autoRenewProductId,
       last_signed_date: incomingSignedIso,
     };
     // Only overwrite the token if this payload actually carried one.
@@ -371,6 +416,7 @@ export async function applyAppleSnapshot(
     expires_at: expiresIso,
     grace_period_expires_at: graceIso,
     auto_renew_status: input.autoRenewStatus,
+    auto_renew_product_id: input.autoRenewProductId,
     app_account_token: input.appAccountToken,
     last_signed_date: incomingSignedIso,
   });
@@ -381,6 +427,108 @@ export async function applyAppleSnapshot(
     );
   }
   return { applied: true, created: true };
+}
+
+// ---------------------------------------------------------------------------
+// applyPendingRenewalProduct — the narrow, SCHEDULED-only sibling of
+// applyAppleSnapshot (FV-602). Used exclusively by the webhook's
+// DID_CHANGE_RENEWAL_PREF handling for subtype DOWNGRADE (schedule) and
+// empty subtype (cancellation) — see mapAppleNotificationToStatus's doc
+// comment. NEVER touches product_id / status / expires_at / grace bound /
+// auto_renew_status / app_account_token: a scheduled renewal-product change
+// is explicitly NOT an entitlement change (record: capacity and access-level
+// are derived only from status/expires_at, which this function leaves
+// untouched).
+// ---------------------------------------------------------------------------
+
+export type ApplyPendingRenewalProductResult =
+  | { applied: true }
+  | { applied: false; reason: "stale" | "no_row" };
+
+/**
+ * Persists (or clears) `apple_subscriptions.auto_renew_product_id` for a
+ * (payer, environment) row, WITHOUT touching any entitlement column.
+ *
+ * Mirrors applyAppleSnapshot's watermark discipline exactly (same stale/
+ * duplicate/equal-signedDate drop, same atomic re-check via `.lt` on the
+ * UPDATE's own WHERE clause to close the same read-then-write race) so the
+ * two write paths — full-snapshot and renewal-preference-only — can never
+ * let an out-of-order Apple delivery regress `last_signed_date` against each
+ * other; they share one watermark column.
+ *
+ * Unlike applyAppleSnapshot, this function never creates a row: a renewal-
+ * preference change for a (payer, environment) with no existing subscription
+ * snapshot is not a state this product models (there is nothing to schedule
+ * a change relative to) — returns `{ applied: false, reason: "no_row" }`
+ * rather than inserting a partial row.
+ *
+ * Throws on any DB error, matching applyAppleSnapshot's contract — the
+ * caller (the webhook) catches and maps to its own 500 handling.
+ *
+ * @param input.autoRenewProductId  The value to persist: a target product id
+ *   (DOWNGRADE scheduled) or `null` (no scheduled change / cancellation) —
+ *   the caller has already resolved which one applies.
+ * @param input.signedDate          UNIX ms — the payload-staleness watermark
+ *   for this write (the transaction's own signedDate, the same clock/column
+ *   applyAppleSnapshot watermarks against).
+ */
+export async function applyPendingRenewalProduct(
+  service: ServiceClient,
+  input: {
+    payerId: string;
+    environment: AppleEnvironment;
+    autoRenewProductId: string | null;
+    signedDate: number;
+  },
+): Promise<ApplyPendingRenewalProductResult> {
+  const { data: existing, error: readError } = await service
+    .from("apple_subscriptions")
+    .select("id, last_signed_date")
+    .eq("payer_id", input.payerId)
+    .eq("environment", input.environment)
+    .maybeSingle();
+
+  if (readError) {
+    throw new Error(
+      `[subscriptions/apple-lifecycle] apple_subscriptions read failed (renewal-pref, payer=${input.payerId}): ${readError.message}`,
+    );
+  }
+
+  if (!existing) {
+    return { applied: false, reason: "no_row" };
+  }
+
+  const incomingSignedIso = new Date(input.signedDate).toISOString();
+  const storedMs = Date.parse(existing.last_signed_date);
+  if (Number.isFinite(storedMs) && input.signedDate <= storedMs) {
+    // Stale, duplicate, or equal-signedDate replay — drop it. No write.
+    return { applied: false, reason: "stale" };
+  }
+
+  const updatePayload: Database["public"]["Tables"]["apple_subscriptions"]["Update"] = {
+    auto_renew_product_id: input.autoRenewProductId,
+    last_signed_date: incomingSignedIso,
+  };
+
+  // Same atomic-watermark backstop as applyAppleSnapshot (qa review, PR
+  // #515): re-checks the watermark inside the UPDATE's own WHERE clause so a
+  // concurrent writer between the SELECT and this UPDATE can't regress the
+  // row — the loser matches 0 rows and is treated as stale.
+  const { error: updateError, count: updatedCount } = await service
+    .from("apple_subscriptions")
+    .update(updatePayload, { count: "exact" })
+    .eq("id", existing.id)
+    .lt("last_signed_date", incomingSignedIso);
+
+  if (updateError) {
+    throw new Error(
+      `[subscriptions/apple-lifecycle] apple_subscriptions update failed (renewal-pref, payer=${input.payerId}): ${updateError.message}`,
+    );
+  }
+  if (updatedCount === 0) {
+    return { applied: false, reason: "stale" };
+  }
+  return { applied: true };
 }
 
 // ---------------------------------------------------------------------------
