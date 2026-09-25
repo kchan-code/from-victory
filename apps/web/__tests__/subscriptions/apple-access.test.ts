@@ -523,6 +523,74 @@ describe("getActiveAppleProductIdResult", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// FV-597: pin the Production-over-Sandbox preference when BOTH rows are
+// subscribed/active, even when the Sandbox row's expiry is LATER than the
+// Production row's — order (Production sorted first) decides, not recency.
+// Guards the FV-596 activation-hygiene concern: a stale allowlist entry must
+// not let a longer-lived Sandbox row outrank a real Production purchase.
+// ---------------------------------------------------------------------------
+
+describe("getActiveAppleProductIdResult / getActiveAppleProductId — Production preferred over a later-expiring Sandbox row (FV-597)", () => {
+  const LATER_ISO = new Date(NOW.getTime() + 90 * 24 * 60 * 60 * 1000).toISOString();
+
+  it("getActiveAppleProductIdResult returns the Production product_id even though the Sandbox row expires later", async () => {
+    appleSubRows = [
+      {
+        environment: "Production",
+        status: "subscribed",
+        expires_at: FUTURE_ISO,
+        grace_period_expires_at: null,
+        product_id: "tier_2_2athletes", // product A
+      },
+      {
+        environment: "Sandbox",
+        status: "subscribed",
+        expires_at: LATER_ISO, // later expiry than Production
+        grace_period_expires_at: null,
+        product_id: "tier_1_1athlete", // product B
+      },
+    ];
+    allowlistRow = { payer_id: PAYER_ID };
+    const service = makeServiceMock();
+    expect(
+      await getActiveAppleProductIdResult(service as never, PAYER_ID, NOW),
+    ).toEqual({ productId: "tier_2_2athletes", readError: false });
+  });
+
+  it("getActiveAppleProductId (fail-open wrapper) also returns the Production product_id in the same scenario", async () => {
+    appleSubRows = [
+      {
+        environment: "Production",
+        status: "subscribed",
+        expires_at: FUTURE_ISO,
+        grace_period_expires_at: null,
+        product_id: "tier_2_2athletes", // product A
+      },
+      {
+        environment: "Sandbox",
+        status: "subscribed",
+        expires_at: LATER_ISO, // later expiry than Production
+        grace_period_expires_at: null,
+        product_id: "tier_1_1athlete", // product B
+      },
+    ];
+    allowlistRow = { payer_id: PAYER_ID };
+    const service = makeServiceMock();
+    expect(
+      await getActiveAppleProductId(service as never, PAYER_ID, NOW),
+    ).toBe("tier_2_2athletes");
+  });
+
+  // Corollary already established by the "falls through" test above: this
+  // preference is NOT "Production wins unconditionally" — it only applies
+  // when both rows are eligible+active. A non-active (expired/revoked)
+  // Production row is skipped in favor of an active allowlisted Sandbox row
+  // (see "falls through to an active allowlisted Sandbox row when the
+  // Production row is expired (inverse case)" above) — not re-pinned here to
+  // avoid duplicating that existing coverage.
+});
+
 describe("getActiveAppleProductId", () => {
   it("returns null when the payer has no active row", async () => {
     appleSubRows = [];
