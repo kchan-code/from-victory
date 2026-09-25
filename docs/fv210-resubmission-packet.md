@@ -75,5 +75,5 @@ when FV-600 lands (recorded on FV-600).
   standard EULA) and Privacy Policy linked on the screen.
 
 ## G. Open items before the packet is final
-- FV-602 reviewed + folded (RC 20f1249); D2 part 1 proven (scheduled downgrade recorded), part 2 = DID_RENEW 2026-09-25 19:53:49Z; D3 trial-eligible-account evidence; FV-597 allowlist hygiene; real
-  review screenshots; Purchase Options + grace scope decisions; production notification URL; (#516 PR list enumerated above — one open check: `feat/fv-572-ui-base` ≙ #512 head).
+- FV-602 reviewed + folded (RC 20f1249); D2 fully proven 2026-09-25 (scheduled downgrade → renewal applied → FV-585 selection); D3 proven (sandbox tester trial → immediate upgrade); D3 trial-eligible-account evidence; FV-597 allowlist hygiene; real
+  review screenshots; Purchase Options + grace scope decisions; production notification URL; (#516 PR list enumerated above). **Open:** `feat/fv-572-ui-base` (8de8791) is NOT an ancestor of the #512 head (87fa369) — #518's base must be re-derived before merge (likely retarget #518 onto #512 or `main` and re-verify its diff).
