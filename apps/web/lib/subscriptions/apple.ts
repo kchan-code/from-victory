@@ -13,10 +13,11 @@
  * Allowed callers: `./access` (the resolver fold), `./apple-capacity`
  * (capacity gate), `lib/actions/subscription.ts` (trial-history check),
  * `app/dashboard/settings/page.tsx` (FV-578 — Apple-vs-Stripe manage-path
- * status read, via `getActiveAppleProductId`; FV-580 — error-visible status
- * display via `getActiveAppleProductIdResult`), and
+ * status read; FV-580 — error-visible status display; FV-595 — switched to
+ * the sandbox-allowlist-aware `getDisplayedAppleProductIdResult`), and
  * `app/athlete/settings/page.tsx` (FV-579 — adult_athlete provider-aware
- * manage/buy status, via `getActiveAppleProductIdResult`).
+ * manage/buy status; FV-595 — same switch to
+ * `getDisplayedAppleProductIdResult`).
  */
 import "server-only";
 
@@ -43,6 +44,47 @@ const LEVEL_RANK: Record<AccessLevel, number> = {
 
 function bestLevel(a: AccessLevel, b: AccessLevel): AccessLevel {
   return LEVEL_RANK[a] >= LEVEL_RANK[b] ? a : b;
+}
+
+// ---------------------------------------------------------------------------
+// Sandbox-allowlist membership — shared read (FV-595 factor-out)
+// ---------------------------------------------------------------------------
+
+/**
+ * Reads `apple_sandbox_testers` membership for a payer. Factored out so both
+ * `getAppleAccessLevelForPayer` (entitlement gate) and
+ * `getDisplayedAppleProductIdResult` (status display, FV-595) apply the exact
+ * same allowlist rule instead of two independently-maintained copies of the
+ * same query.
+ *
+ * Behavior is unchanged from the inline version this replaces: an error here
+ * does not throw — callers decide how to treat `readError` (the entitlement
+ * gate fails closed to "not allowlisted"; a display-only caller may prefer to
+ * surface the error instead of guessing).
+ */
+async function readSandboxAllowlistMembership(
+  service: ServiceClient,
+  payerId: string,
+): Promise<{ isAllowlisted: boolean; readError: boolean }> {
+  const { data: allowlistRow, error: allowlistError } = await service
+    .from("apple_sandbox_testers")
+    .select("payer_id")
+    .eq("payer_id", payerId)
+    .maybeSingle();
+
+  if (allowlistError) {
+    console.error(
+      `[subscriptions/apple] allowlist read failed (payer=${payerId}):`,
+      allowlistError.message,
+    );
+    // Fail closed: on error, treat as NOT allowlisted (the more restrictive
+    // branch) rather than accidentally widening Sandbox access.
+  }
+
+  return {
+    isAllowlisted: !allowlistError && allowlistRow !== null,
+    readError: Boolean(allowlistError),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -79,21 +121,10 @@ export async function getAppleAccessLevelForPayer(
   payerId: string,
   now: Date = new Date(),
 ): Promise<AccessLevel> {
-  const { data: allowlistRow, error: allowlistError } = await service
-    .from("apple_sandbox_testers")
-    .select("payer_id")
-    .eq("payer_id", payerId)
-    .maybeSingle();
-
-  if (allowlistError) {
-    console.error(
-      `[subscriptions/apple] allowlist read failed (payer=${payerId}):`,
-      allowlistError.message,
-    );
-    // Fail closed: on error, treat as NOT allowlisted (the more restrictive
-    // branch) rather than accidentally widening Sandbox access.
-  }
-  const isAllowlisted = !allowlistError && allowlistRow !== null;
+  const { isAllowlisted } = await readSandboxAllowlistMembership(
+    service,
+    payerId,
+  );
 
   const { data: rows, error: subsError } = await service
     .from("apple_subscriptions")
@@ -280,7 +311,8 @@ export async function getActiveAppleProductIdResult(
  * payer" rather than blocking. This is NOT the right contract for a
  * status-DISPLAY caller (a transient error there must not silently read as
  * "no subscription" — see `getActiveAppleProductIdResult` above, added for
- * `app/dashboard/settings/page.tsx`, FV-580).
+ * `app/dashboard/settings/page.tsx`, FV-580; superseded on that page by the
+ * sandbox-allowlist-aware `getDisplayedAppleProductIdResult` below, FV-595).
  *
  * Delegates to `getActiveAppleProductIdResult` for the query + the
  * full/degraded determination; this wrapper only collapses `readError` to
@@ -301,4 +333,112 @@ export async function getActiveAppleProductId(
     now,
   );
   return readError ? null : productId;
+}
+
+// ---------------------------------------------------------------------------
+// getDisplayedAppleProductIdResult — STATUS-DISPLAY-ONLY accessor (FV-595)
+// ---------------------------------------------------------------------------
+
+/**
+ * *** STATUS-DISPLAY SURFACES ONLY (e.g. Settings pages). ***
+ *
+ * This accessor must NEVER feed a capacity, trial-eligibility,
+ * subscribe-guard, seat-state, or any other purchase/entitlement DECISION.
+ * Those all remain on the Production-only accessors above
+ * (`getActiveAppleProductId`, `getActiveAppleProductIdResult`,
+ * `hasEverHeldAppleEntitlement`) — that scoping is deliberate (see their doc
+ * comments) and unaffected by this function.
+ *
+ * Root cause this fixes: the entitlement gate (`getAppleAccessLevelForPayer`
+ * above, consumed by `./access`) already grants access from Production rows
+ * PLUS Sandbox rows when the payer is allowlisted in `apple_sandbox_testers`.
+ * A status-display accessor that instead reads Production-only (as
+ * `getActiveAppleProductIdResult` does for capacity-adjacent purposes)
+ * disagrees with that grant: an allowlisted sandbox tester (QA, or an App
+ * Reviewer running a sandbox purchase) would see "subscribed" from the real
+ * entitlement gate but "No active subscription" on a Settings-style status
+ * page. This function makes status displays agree with the entitlement
+ * gate's own environment rule:
+ *
+ *   1. Read `apple_sandbox_testers` membership (reuses
+ *      `readSandboxAllowlistMembership`, the same check the entitlement gate
+ *      uses).
+ *   2. Read the payer's `apple_subscriptions` rows (at most one per
+ *      environment — UNIQUE (payer_id, environment)).
+ *   3. Eligible rows: Production rows always count; a Sandbox row counts
+ *      ONLY when the payer is allowlisted.
+ *   4. Among eligible rows whose status maps to `full`/`degraded` via
+ *      `appleSubscriptionAccessLevel`, a Production row is preferred over a
+ *      Sandbox row when both are active — a real subscription is never
+ *      shadowed by test debris on a status page.
+ *
+ * Error-visible: a DB read error on EITHER the allowlist read or the
+ * subscriptions read returns `{ productId: null, readError: true }` — never
+ * a silent "no subscription." The caller decides how to render that
+ * (typically a neutral "couldn't load your subscription status" note, never
+ * a buy CTA on error).
+ *
+ * @param service  Service-role Supabase client (bypasses RLS by design).
+ * @param payerId  UUID of the payer's profile row.
+ * @param now      Current time (injected for testability).
+ */
+export async function getDisplayedAppleProductIdResult(
+  service: ServiceClient,
+  payerId: string,
+  now: Date = new Date(),
+): Promise<ActiveAppleProductIdResult> {
+  const { isAllowlisted, readError: allowlistReadError } =
+    await readSandboxAllowlistMembership(service, payerId);
+
+  if (allowlistReadError) {
+    // Error-visible: don't guess "not allowlisted" for a display surface —
+    // that could hide a real, allowlisted sandbox tester's active status.
+    return { productId: null, readError: true };
+  }
+
+  const { data: rows, error: subsError } = await service
+    .from("apple_subscriptions")
+    .select(
+      "environment, product_id, status, expires_at, grace_period_expires_at",
+    )
+    .eq("payer_id", payerId);
+
+  if (subsError) {
+    console.error(
+      `[subscriptions/apple] getDisplayedAppleProductIdResult read failed (payer=${payerId}):`,
+      subsError.message,
+    );
+    return { productId: null, readError: true };
+  }
+
+  if (!rows || rows.length === 0) {
+    return { productId: null, readError: false };
+  }
+
+  const eligibleRows = rows.filter(
+    (row) =>
+      row.environment === "Production" ||
+      (row.environment === "Sandbox" && isAllowlisted),
+  );
+
+  // Production preferred over Sandbox when both are eligible+active — order
+  // Production first so the loop below returns it first.
+  const ordered = [...eligibleRows].sort((a, b) => {
+    if (a.environment === b.environment) return 0;
+    return a.environment === "Production" ? -1 : 1;
+  });
+
+  for (const row of ordered) {
+    const level = appleSubscriptionAccessLevel(
+      row.status as AppleSubscriptionStatus,
+      row.expires_at,
+      row.grace_period_expires_at,
+      now,
+    );
+    if (level === "full" || level === "degraded") {
+      return { productId: row.product_id, readError: false };
+    }
+  }
+
+  return { productId: null, readError: false };
 }
