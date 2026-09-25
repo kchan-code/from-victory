@@ -1,5 +1,6 @@
 import UIKit
 import Capacitor
+import os
 
 /**
  * FV-573: app-local plugin registration.
@@ -24,5 +25,10 @@ class FVBridgeViewController: CAPBridgeViewController {
         if #available(iOS 15.0, *) {
             bridge?.registerPluginInstance(FVAppleIAPPlugin())
         }
+        // FV-589: CLI-verifiable evidence (via unified log, not stdout)
+        // that the storyboard's FVBridgeViewController actually ran under
+        // the new SceneDelegate and finished plugin registration.
+        os.Logger(subsystem: Bundle.main.bundleIdentifier ?? "app", category: "scene")
+            .info("FVBridgeViewController.capacitorDidLoad: registered FVAppleIAPPlugin")
     }
 }
