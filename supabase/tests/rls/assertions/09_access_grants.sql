@@ -118,15 +118,26 @@ begin;
   end $$;
 
   -- -------------------------------------------------------------------------
-  -- (f) Client UPDATE is denied.
+  -- (f) Client UPDATE is denied. FV-568: on fall-through (statement executes
+  --     without error), distinguish an actual mutation from a zero-row RLS
+  --     no-op via GET DIAGNOSTICS, same as 03_subscriptions.sql AC(d) — a
+  --     future regression here is diagnosed by name (grant-layer gap vs.
+  --     policy gap) rather than re-investigated from scratch.
   -- -------------------------------------------------------------------------
   do $$
+  declare
+    n int;
   begin
     begin
       update public.access_grants
         set reason = 'tampered'
        where id = 'f0000000-0000-4000-8000-000000000091';
-      raise exception 'AC(f) FAIL: access_grants UPDATE by client unexpectedly SUCCEEDED';
+      get diagnostics n = row_count;
+      if n > 0 then
+        raise exception 'AC(f) FAIL: access_grants UPDATE CHANGED % ROW(S) — RLS/policy gap, client can mutate grant state', n;
+      else
+        raise exception 'AC(f) FAIL: access_grants UPDATE was a zero-row RLS no-op — grant layer missing (authenticated holds UPDATE); two-layer denial regressed — check 20260910133456_client_grant_matrix_pin.sql';
+      end if;
     exception
       when insufficient_privilege then
         null;  -- expected
@@ -134,14 +145,22 @@ begin;
   end $$;
 
   -- -------------------------------------------------------------------------
-  -- (g) Client DELETE is denied.
+  -- (g) Client DELETE is denied. FV-568: same row_count fall-through
+  --     diagnosis as (f).
   -- -------------------------------------------------------------------------
   do $$
+  declare
+    n int;
   begin
     begin
       delete from public.access_grants
        where id = 'f0000000-0000-4000-8000-000000000091';
-      raise exception 'AC(g) FAIL: access_grants DELETE by client unexpectedly SUCCEEDED';
+      get diagnostics n = row_count;
+      if n > 0 then
+        raise exception 'AC(g) FAIL: access_grants DELETE REMOVED % ROW(S) — RLS/policy gap, client can delete grant state', n;
+      else
+        raise exception 'AC(g) FAIL: access_grants DELETE was a zero-row RLS no-op — grant layer missing (authenticated holds DELETE); two-layer denial regressed — check 20260910133456_client_grant_matrix_pin.sql';
+      end if;
     exception
       when insufficient_privilege then
         null;  -- expected
