@@ -37,8 +37,9 @@ vi.mock("@/lib/auth/guards", () => ({
 }));
 
 vi.mock("@/lib/stripe/sync-athlete-quantity", () => ({
-  syncAthleteQuantity: vi.fn(async () => {}),
+  syncAthleteQuantity: (...args: unknown[]) => syncAthleteQuantityMock(...args),
 }));
+const syncAthleteQuantityMock = vi.fn(async (..._args: unknown[]) => {});
 vi.mock("@/lib/monitoring/deliver", () => ({
   deliverInBackground: vi.fn(() => {}),
 }));
@@ -54,6 +55,46 @@ let assertAthleteCapacityResult:
   | { allowed: false; reason: "capacity_reached" } = { allowed: true };
 vi.mock("@/lib/subscriptions/apple-capacity", () => ({
   assertAthleteCapacity: vi.fn(async () => assertAthleteCapacityResult),
+}));
+
+// FV-586: the D3 trial-conversion guard is out of scope for the
+// created_as_adult_by_parent + capacity-gate tests above — default to
+// "not_trialing" (a no-op for this guard) so those tests don't need to also
+// fake a `subscriptions` row on the service mock below. The dedicated
+// "trial-conversion guard" describe block further down overrides
+// `trialConversionStateResult` to exercise stripe_trial/unknown branches.
+let trialConversionStateResult:
+  | { kind: "not_trialing" }
+  | { kind: "apple" }
+  | { kind: "unknown" }
+  | {
+      kind: "stripe_trial";
+      stripeSubscriptionId: string;
+      currentAthleteCount: number;
+      trialEndsAt: string | null;
+    } = { kind: "not_trialing" };
+const getTrialConversionStateMock = vi.fn(async (..._args: unknown[]) => trialConversionStateResult);
+vi.mock("@/lib/subscriptions/trial-conversion", () => ({
+  getTrialConversionState: (...args: unknown[]) => getTrialConversionStateMock(...args),
+}));
+
+// FV-586: Stripe client mock for the trial-conversion Stripe update. Default
+// happy-path retrieve/update; the guard's own describe block below
+// overrides `stripeSubscriptionsUpdateMock` to simulate a payment failure.
+const stripeSubscriptionsRetrieveMock = vi.fn(async (..._args: unknown[]) => ({
+  items: { data: [{ id: "si_existing_item" }] },
+}));
+let stripeSubscriptionsUpdateMock = vi.fn(async (..._args: unknown[]) => ({}));
+vi.mock("@/lib/stripe/server", () => ({
+  getStripe: () => ({
+    subscriptions: {
+      retrieve: (...args: unknown[]) => stripeSubscriptionsRetrieveMock(...args),
+      update: (...args: unknown[]) => stripeSubscriptionsUpdateMock(...args),
+    },
+  }),
+}));
+vi.mock("@/lib/monitoring/notify", () => ({
+  notifyError: vi.fn(async () => {}),
 }));
 
 // ---------------------------------------------------------------------------
@@ -127,7 +168,12 @@ import { createAthlete } from "@/lib/actions/athletes";
 // ---------------------------------------------------------------------------
 
 function makeFormData(
-  fields: { first_name?: string; birthdate?: string; sport?: string } = {},
+  fields: {
+    first_name?: string;
+    birthdate?: string;
+    sport?: string;
+    trialConversionConfirmed?: string;
+  } = {},
 ) {
   const defaults = {
     first_name: "Jordan",
@@ -144,6 +190,14 @@ beforeEach(() => {
   profileInsertError = null;
   linkInsertError = null;
   assertAthleteCapacityResult = { allowed: true };
+  trialConversionStateResult = { kind: "not_trialing" };
+  getTrialConversionStateMock.mockClear();
+  syncAthleteQuantityMock.mockClear();
+  stripeSubscriptionsRetrieveMock.mockClear();
+  stripeSubscriptionsRetrieveMock.mockResolvedValue({
+    items: { data: [{ id: "si_existing_item" }] },
+  });
+  stripeSubscriptionsUpdateMock = vi.fn(async (..._args: unknown[]) => ({}));
 });
 
 // ===========================================================================
@@ -230,5 +284,145 @@ describe("createAthlete — Apple-tier capacity gate (FV-570)", () => {
     // No auth user means no profile insert either — confirms nothing was
     // created downstream of the blocked gate.
     expect(profileInsertPayload).toBeNull();
+  });
+});
+
+// ===========================================================================
+// FV-586 — trial-to-family explicit confirmation (KC decision D3)
+// ===========================================================================
+
+describe("createAthlete — trial-conversion guard (FV-586, KC decision D3)", () => {
+  it("stripe_trial + count>=1 + NOT confirmed -> trial_conversion_required, no createUser, no Stripe call, no sync", async () => {
+    trialConversionStateResult = {
+      kind: "stripe_trial",
+      stripeSubscriptionId: "sub_trial_123",
+      currentAthleteCount: 1,
+      trialEndsAt: "2026-09-25T00:00:00Z",
+    };
+
+    const result = await createAthlete(null, makeFormData());
+
+    expect(result).toEqual({
+      ok: false,
+      error: "trial_conversion_required",
+      code: "trial_conversion_required",
+    });
+    expect(lastServiceMockInstance?.auth.admin.createUser).not.toHaveBeenCalled();
+    expect(stripeSubscriptionsRetrieveMock).not.toHaveBeenCalled();
+    expect(stripeSubscriptionsUpdateMock).not.toHaveBeenCalled();
+    expect(syncAthleteQuantityMock).not.toHaveBeenCalled();
+    expect(profileInsertPayload).toBeNull();
+  });
+
+  it("stripe_trial + count>=1 + CONFIRMED -> Stripe update called with exact params BEFORE createUser, then athlete created", async () => {
+    trialConversionStateResult = {
+      kind: "stripe_trial",
+      stripeSubscriptionId: "sub_trial_123",
+      currentAthleteCount: 1,
+      trialEndsAt: "2026-09-25T00:00:00Z",
+    };
+    const callOrder: string[] = [];
+    stripeSubscriptionsUpdateMock = vi.fn(async (..._args: unknown[]) => {
+      callOrder.push("stripe_update");
+      return {};
+    });
+    stripeSubscriptionsRetrieveMock.mockImplementationOnce(async (..._args: unknown[]) => {
+      callOrder.push("stripe_retrieve");
+      return { items: { data: [{ id: "si_existing_item" }] } };
+    });
+
+    await expect(
+      createAthlete(null, makeFormData({ trialConversionConfirmed: "true" })),
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    const createUserCalled = Boolean(
+      (lastServiceMockInstance?.auth.admin.createUser as ReturnType<typeof vi.fn>)
+        ?.mock.calls.length,
+    );
+    expect(createUserCalled).toBe(true);
+    callOrder.push("create_user_returned");
+
+    expect(stripeSubscriptionsRetrieveMock).toHaveBeenCalledWith("sub_trial_123");
+    expect(stripeSubscriptionsUpdateMock).toHaveBeenCalledWith("sub_trial_123", {
+      trial_end: "now",
+      items: [{ id: "si_existing_item", quantity: 2 }],
+      payment_behavior: "error_if_incomplete",
+    });
+    // Stripe conversion happens BEFORE createUser.
+    expect(callOrder).toEqual(["stripe_retrieve", "stripe_update", "create_user_returned"]);
+    expect(profileInsertPayload).not.toBeNull();
+  });
+
+  it("Stripe error (e.g. 402 card_error) on conversion -> trial_conversion_payment_failed, no createUser, no athlete created", async () => {
+    trialConversionStateResult = {
+      kind: "stripe_trial",
+      stripeSubscriptionId: "sub_trial_123",
+      currentAthleteCount: 1,
+      trialEndsAt: null,
+    };
+    stripeSubscriptionsUpdateMock = vi.fn(async (..._args: unknown[]) => {
+      throw new Error("Your card was declined.");
+    });
+
+    const result = await createAthlete(
+      null,
+      makeFormData({ trialConversionConfirmed: "true" }),
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: "trial_conversion_payment_failed",
+      code: "trial_conversion_payment_failed",
+    });
+    expect(lastServiceMockInstance?.auth.admin.createUser).not.toHaveBeenCalled();
+    expect(profileInsertPayload).toBeNull();
+  });
+
+  it("trial-conversion state 'unknown' (read error) -> refused, fail closed, no createUser", async () => {
+    trialConversionStateResult = { kind: "unknown" };
+
+    const result = await createAthlete(null, makeFormData());
+
+    expect(result).toEqual({
+      ok: false,
+      error: "trial_conversion_required",
+      code: "trial_conversion_required",
+    });
+    expect(lastServiceMockInstance?.auth.admin.createUser).not.toHaveBeenCalled();
+  });
+
+  it("not_trialing -> unchanged path, no Stripe call, athlete created normally", async () => {
+    trialConversionStateResult = { kind: "not_trialing" };
+
+    await expect(createAthlete(null, makeFormData())).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(stripeSubscriptionsRetrieveMock).not.toHaveBeenCalled();
+    expect(stripeSubscriptionsUpdateMock).not.toHaveBeenCalled();
+    expect(profileInsertPayload).not.toBeNull();
+  });
+
+  it("apple -> unchanged path (informational only), no Stripe call, athlete created normally", async () => {
+    trialConversionStateResult = { kind: "apple" };
+
+    await expect(createAthlete(null, makeFormData())).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(stripeSubscriptionsRetrieveMock).not.toHaveBeenCalled();
+    expect(stripeSubscriptionsUpdateMock).not.toHaveBeenCalled();
+    expect(profileInsertPayload).not.toBeNull();
+  });
+
+  it("stripe_trial + count 0 (the FIRST athlete) -> no conversion needed, athlete created normally, no Stripe call", async () => {
+    trialConversionStateResult = {
+      kind: "stripe_trial",
+      stripeSubscriptionId: "sub_trial_123",
+      currentAthleteCount: 0,
+      trialEndsAt: "2026-09-25T00:00:00Z",
+    };
+
+    await expect(createAthlete(null, makeFormData())).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(stripeSubscriptionsRetrieveMock).not.toHaveBeenCalled();
+    expect(stripeSubscriptionsUpdateMock).not.toHaveBeenCalled();
+    expect(profileInsertPayload).not.toBeNull();
   });
 });

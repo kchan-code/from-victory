@@ -21,6 +21,21 @@
  *   - Degraded (past_due etc.) → no redirect; returns the level so the caller
  *     can render a "fix your payment" banner if desired.
  *
+ * SEAT OVERLAY (FV-585, KC decision D2): a minor athlete whose BILLING level
+ * is full/degraded (the payer is entitled) can still be individually PAUSED
+ * because the family is over their Apple seat capacity with no (or an
+ * over-sized) selection made — see `./seat-state`'s `deriveSeatState`. This
+ * is layered ON TOP of the existing billing gate, never replacing it: a
+ * `blocked` payer still redirects to `/athlete/paused` with no reason
+ * (the existing behavior). A billing-entitled-but-seat-paused athlete
+ * redirects to `/athlete/paused?reason=seats` instead of passing through.
+ * This overlay is athlete-only — it never applies to the parent or
+ * adult_athlete path (adult_athlete never appears in
+ * `parent_athlete_links`, so it can never be paused this way).
+ *
+ * The overlay's own reads fail OPEN (see `./seat-state`'s module doc) — a
+ * transient error resolves to "active", never manufacturing an extra block.
+ *
  * SCOPE:
  *   Wired onto athlete VALUE surfaces: hub (/athlete), daily, practice,
  *   postgame, journey. /athlete/pregame is intentionally NOT gated here — it
@@ -40,6 +55,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { getAccessForCurrentUser } from "./access";
 import type { AccessLevel } from "./access-level";
+import { getAthleteSeatStatusForCurrentUser } from "./seat-state";
 
 // ---------------------------------------------------------------------------
 // Flag helper — exported so tests can assert it reads the right env var
@@ -97,6 +113,18 @@ export async function requireActiveAccess(opts: {
   const level = await getAccessForCurrentUser();
 
   if (level === "full" || level === "degraded") {
+    // Seat overlay (FV-585): only the minor athlete path can be individually
+    // paused this way — a billing-entitled payer (parent/adult_athlete) is
+    // never gated here regardless of seat state. Fails open on any read
+    // error (see ./seat-state's module doc), so this can only ever ADD a
+    // redirect on top of an already-non-blocked billing level, never remove
+    // one.
+    if (opts.role === "athlete") {
+      const seatStatus = await getAthleteSeatStatusForCurrentUser();
+      if (seatStatus !== "active") {
+        redirect("/athlete/paused?reason=seats");
+      }
+    }
     // "degraded" is not a hard block. Callers may inspect the returned level
     // to show a payment-fix banner but must NOT gate content behind it.
     return level;

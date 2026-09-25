@@ -21,12 +21,39 @@
  * the product-card view only after mount confirms both a configured product
  * list AND a live native bridge.
  *
- * GATED — DO NOT BUILD HERE (unresolved KC policy, record §4.6 "P5"/§4.5
- * trial-to-family, decision record Section 10 "P7"): seat-designation /
- * downgrade-selection UI, trial-to-family conversion UI or charge-disclosure
- * copy, and any Apple trial/intro-offer eligibility display
- * (`isEligibleForIntroOffer`). This component is purchase / restore / manage
- * ONLY.
+ * STILL GATED — DO NOT BUILD HERE (unresolved KC policy, record §4.6 "P5"):
+ * seat-designation / downgrade-selection UI, and any Apple trial/intro-offer
+ * eligibility display (`isEligibleForIntroOffer`). This component is
+ * purchase / restore / manage / upgrade ONLY.
+ *
+ * Trial-to-family conversion UI for Apple IS built here (FV-586, KC decision
+ * D3, 2026-09-17) as the `"upgrade"` mode below — Apple's own purchase sheet
+ * (which shows Apple's own price and charges the card) IS the explicit
+ * confirmation D3 requires for this provider; our server has no other
+ * mechanism to end an Apple trial (see
+ * `lib/subscriptions/trial-conversion.ts`'s module doc). This mode is a
+ * purchase of a specific higher-capacity product, not a generic
+ * charge-disclosure surface — it still doesn't show Apple trial/intro-offer
+ * eligibility.
+ *
+ * `mode` prop (FV-581, decision record §4.4 "duplicate-billing guard"):
+ *   - "purchase" (default) — today's behavior, byte-identical. Every
+ *     existing call site (`app/subscribe/page.tsx`'s not_entitled branch)
+ *     omits the prop and is unaffected.
+ *   - "manage" — rendered ONLY for a payer app/subscribe/page.tsx has
+ *     already determined is entitled via Apple. No plan cards, no Subscribe
+ *     button (a fresh purchase must never be offered to an already-full
+ *     payer) — just a status line plus the existing Manage/Restore actions.
+ *   - "upgrade" (FV-586, KC decision D3) — rendered ONLY for a payer
+ *     app/subscribe/page.tsx has determined is Apple-entitled AND for whom a
+ *     strictly-higher-capacity product is configured (see
+ *     `currentAppleCapacity` below). Offers ONLY the configured products
+ *     whose presentational `athleteCapacity` exceeds `currentAppleCapacity`
+ *     as "add athletes" cards, with a disclosure that confirming ends any
+ *     trial and switches billing to the new plan. The real capacity-increase
+ *     gate is server-side (`isStrictAppleCapacityUpgrade`, consulted by
+ *     `beginApplePurchase`) — this mode's product filtering is presentational
+ *     only, same as every other use of `athleteCapacity` in this file.
  */
 
 import { useEffect, useState, useTransition } from "react";
@@ -54,6 +81,7 @@ import {
 // ---------------------------------------------------------------------------
 
 const UNAVAILABLE_COPY = "Subscriptions aren’t available in this version yet.";
+const MANAGE_STATUS_COPY = "You’re subscribed. Manage or restore below.";
 const PURCHASE_ERROR_COPY = "We couldn’t complete that purchase. Please try again.";
 const PURCHASE_PENDING_COPY =
   "Your purchase is waiting on approval. Check back soon.";
@@ -62,12 +90,33 @@ const RESTORE_ERROR_COPY =
   "We couldn’t check for a previous purchase. Please try again.";
 const RESTORE_EMPTY_COPY = "No previous purchase was found for this Apple ID.";
 const RESTORE_SUCCESS_COPY = "Your subscription is restored.";
+// FV-586 (KC decision D3): worded to Apple's verified behavior only — never
+// claims WE charge, never promises proration details we can't verify.
+const UPGRADE_DISCLOSURE_COPY =
+  "Confirming with Apple switches you to this plan right away and ends any free trial. Apple bills the new plan on its own schedule and shows the price before you confirm.";
+const UPGRADE_SUCCESS_COPY = "You’re upgraded. Welcome to your family plan.";
 
 // ---------------------------------------------------------------------------
 // Local types
 // ---------------------------------------------------------------------------
 
 type Phase = "unavailable" | "ready";
+
+export interface AppleSubscribeSectionProps {
+  /** Defaults to "purchase" so every existing call site is unaffected. */
+  mode?: "purchase" | "manage" | "upgrade";
+  /**
+   * Only meaningful when `mode === "upgrade"`: the payer's CURRENT Apple
+   * product's athlete-capacity ceiling, resolved server-side
+   * (`getActiveAppleProductId` + `capacityForAppleProduct` in
+   * app/subscribe/page.tsx). Configured products whose presentational
+   * `athleteCapacity` is not strictly greater than this value are filtered
+   * out of the upgrade catalog. Presentational filtering only — the real
+   * capacity-increase gate is server-side, re-checked at purchase time by
+   * `beginApplePurchase` via `isStrictAppleCapacityUpgrade`.
+   */
+  currentAppleCapacity?: number;
+}
 
 type DisplayProduct = AppleProductConfig & { livePrice?: string };
 
@@ -87,7 +136,10 @@ const IDLE: ActionState = { kind: "idle" };
 // Component
 // ---------------------------------------------------------------------------
 
-export function AppleSubscribeSection() {
+export function AppleSubscribeSection({
+  mode = "purchase",
+  currentAppleCapacity,
+}: AppleSubscribeSectionProps = {}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -99,23 +151,44 @@ export function AppleSubscribeSection() {
   const [actionState, setActionState] = useState<ActionState>(IDLE);
 
   useEffect(() => {
+    if (mode === "manage") {
+      // Manage/Restore need only the native bridge, NOT the product catalog
+      // — an already-entitled payer must never be stranded from managing or
+      // restoring their subscription by an unrelated product-config gap
+      // (NEXT_PUBLIC_APPLE_PRODUCTS). See AppleSubscribeSectionProps doc.
+      if (!isAppleIapBridgeAvailable()) return;
+      setPhase("ready");
+      return;
+    }
+
     const configured = getConfiguredAppleProducts();
-    if (configured.length === 0 || !isAppleIapBridgeAvailable()) {
+    // FV-586 "upgrade" mode: offer ONLY products whose presentational
+    // athleteCapacity strictly exceeds the payer's current one. Purchase
+    // mode is unaffected (currentAppleCapacity is undefined there, so this
+    // filter is a no-op — every configured product passes).
+    const catalog =
+      mode === "upgrade"
+        ? configured.filter(
+            (product) => product.athleteCapacity > (currentAppleCapacity ?? Infinity),
+          )
+        : configured;
+
+    if (catalog.length === 0 || !isAppleIapBridgeAvailable()) {
       // Shipped state today: NEXT_PUBLIC_APPLE_PRODUCTS is unset, so this is
       // the branch every production render takes. See apple-products.ts.
       return;
     }
 
-    setSelectedProductId(configured[0]?.productId ?? null);
+    setSelectedProductId(catalog[0]?.productId ?? null);
     setPhase("ready");
 
     let cancelled = false;
-    void getStoreKitProducts(configured.map((product) => product.productId)).then(
+    void getStoreKitProducts(catalog.map((product) => product.productId)).then(
       (live) => {
         if (cancelled) return;
         const priceById = new Map(live.map((product) => [product.productId, product]));
         setProducts(
-          configured.map((product) => ({
+          catalog.map((product) => ({
             ...product,
             livePrice: priceById.get(product.productId)?.displayPrice,
             displayName: priceById.get(product.productId)?.displayName ?? product.displayName,
@@ -127,17 +200,21 @@ export function AppleSubscribeSection() {
     return () => {
       cancelled = true;
     };
-    // Intentionally empty deps — config + bridge presence are stable for the
-    // lifetime of this mount; re-checking on every render would re-fire the
-    // StoreKit network call for no reason.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // `mode`/`currentAppleCapacity` are stable props for the lifetime of this
+    // mount (the parent Server Component never toggles them), so this still
+    // only fires once per mount, same as before.
+  }, [mode, currentAppleCapacity]);
 
   function handlePurchase() {
     if (!selectedProductId) return;
     setActionState({ kind: "purchasing" });
     startTransition(async () => {
-      const tokenResult = await beginApplePurchase();
+      // FV-586 (KC decision D3): passing the product id enables the server's
+      // one-exception upgrade allowance for an already-entitled Apple payer
+      // (isStrictAppleCapacityUpgrade). It's a no-op for "purchase" mode's
+      // not_entitled payer — the server only consults it when the payer is
+      // already entitled.
+      const tokenResult = await beginApplePurchase(selectedProductId);
       if (!tokenResult.ok) {
         setActionState({ kind: "purchase-error", message: PURCHASE_ERROR_COPY });
         return;
@@ -172,7 +249,10 @@ export function AppleSubscribeSection() {
         return;
       }
 
-      setActionState({ kind: "success", message: PURCHASE_SUCCESS_COPY });
+      setActionState({
+        kind: "success",
+        message: mode === "upgrade" ? UPGRADE_SUCCESS_COPY : PURCHASE_SUCCESS_COPY,
+      });
       router.refresh();
     });
   }
@@ -183,6 +263,12 @@ export function AppleSubscribeSection() {
       const restoreResult = await restoreWithBridge();
 
       if (!restoreResult.ok) {
+        if (restoreResult.error === "cancelled") {
+          // Quiet reset — dismissing the sign-in prompt mid-restore is not
+          // an error state (mirrors purchase cancellation above).
+          setActionState(IDLE);
+          return;
+        }
         setActionState({ kind: "restore-error", message: RESTORE_ERROR_COPY });
         return;
       }
@@ -235,6 +321,80 @@ export function AppleSubscribeSection() {
   }
 
   // -------------------------------------------------------------------------
+  // Render — manage mode (FV-581): an already Apple-entitled payer. No plan
+  // cards, no Subscribe button — a fresh purchase must never be offered to a
+  // payer app/subscribe/page.tsx already determined is entitled. Reuses the
+  // same handleManage/handleRestore + restore-path action-state rendering as
+  // purchase mode; the purchase-only states (purchasing/purchase-pending/
+  // purchase-error) can never occur here since handlePurchase is never
+  // wired to a button in this mode.
+  // -------------------------------------------------------------------------
+
+  if (mode === "manage") {
+    return (
+      <div>
+        <p
+          role="status"
+          data-testid="apple-manage-status"
+          className="mb-6 font-body text-cream/70 text-[15px] leading-relaxed"
+        >
+          {MANAGE_STATUS_COPY}
+        </p>
+
+        {actionState.kind === "restore-error" ? (
+          <p
+            role="alert"
+            data-testid="apple-subscribe-error"
+            className="mb-5 font-body text-[14px] text-danger leading-snug"
+          >
+            {actionState.message}
+          </p>
+        ) : null}
+
+        {actionState.kind === "restore-empty" ? (
+          <p
+            role="status"
+            data-testid="apple-restore-empty"
+            className="mb-5 font-body text-[14px] text-cream/60 leading-snug"
+          >
+            {RESTORE_EMPTY_COPY}
+          </p>
+        ) : null}
+
+        {actionState.kind === "success" ? (
+          <p
+            role="status"
+            data-testid="apple-subscribe-success"
+            className="mb-5 font-body text-[14px] text-gold leading-snug"
+          >
+            {actionState.message}
+          </p>
+        ) : null}
+
+        <button
+          type="button"
+          data-testid="apple-manage-link"
+          disabled={isPending}
+          onClick={handleManage}
+          className="w-full bg-gold text-onyx border border-gold font-heading font-semibold text-[16px] rounded-pill px-6 min-h-[56px] transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx mb-4"
+        >
+          Manage Subscription
+        </button>
+
+        <button
+          type="button"
+          data-testid="apple-restore-submit"
+          disabled={isPending}
+          onClick={handleRestore}
+          className="w-full bg-charcoal text-cream border border-hairline font-heading font-semibold text-[14px] rounded-pill px-6 py-3 transition-colors duration-fast ease-out hover:border-hairline-strong disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {actionState.kind === "restoring" ? "Restoring…" : "Restore Purchases"}
+        </button>
+      </div>
+    );
+  }
+
+  // -------------------------------------------------------------------------
   // Render — product cards + purchase / restore / manage
   // -------------------------------------------------------------------------
 
@@ -242,7 +402,7 @@ export function AppleSubscribeSection() {
     <div>
       <div
         role="radiogroup"
-        aria-label="Subscription plan"
+        aria-label={mode === "upgrade" ? "Add athletes" : "Subscription plan"}
         aria-required="true"
         // Arrow-key navigation within the radiogroup (ARIA radiogroup
         // pattern) — mirrors SubscribeForm's handleGroupKeyDown so a
@@ -369,14 +529,33 @@ export function AppleSubscribeSection() {
         </p>
       ) : null}
 
+      {/* FV-586 (KC decision D3) — upgrade-only disclosure: worded to
+          Apple's verified behavior, never claiming WE charge or promising
+          proration details. Shown above the confirming tap so a parent
+          reads it before committing, not after. */}
+      {mode === "upgrade" ? (
+        <p
+          data-testid="apple-upgrade-disclosure"
+          className="mb-4 font-body text-cream/55 text-[13px] leading-relaxed"
+        >
+          {UPGRADE_DISCLOSURE_COPY}
+        </p>
+      ) : null}
+
       <button
         type="button"
-        data-testid="apple-purchase-submit"
+        data-testid={mode === "upgrade" ? "apple-upgrade-submit" : "apple-purchase-submit"}
         disabled={isPending || !selectedProductId}
         onClick={handlePurchase}
         className="w-full bg-gold text-onyx border border-gold font-heading font-semibold text-[16px] rounded-pill px-6 min-h-[56px] transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx mb-4"
       >
-        {actionState.kind === "purchasing" ? "Completing purchase…" : "Subscribe"}
+        {actionState.kind === "purchasing"
+          ? mode === "upgrade"
+            ? "Confirming with Apple…"
+            : "Completing purchase…"
+          : mode === "upgrade"
+            ? "Add Athletes"
+            : "Subscribe"}
       </button>
 
       <button

@@ -53,6 +53,19 @@ vi.mock("@/lib/subscriptions/access", () => ({
   getParentAccessLevel: accessLevelMock,
 }));
 
+// FV-585 (KC decision D2): the seat-selection banner is out of scope for this
+// file (dashboard-seat-selection.test.tsx owns it) — stub the "everyone
+// active" default so these native-shell tests never render it.
+vi.mock("@/lib/subscriptions/seat-state", () => ({
+  getPayerSeatStateForCurrentParent: vi.fn(async () => ({
+    status: "uncapped",
+    capacity: null,
+    athleteCount: 0,
+    activeAthleteIds: [],
+    pausedAthleteIds: [],
+  })),
+}));
+
 // No linked athletes for these tests — keeps RhythmRing / DeleteAthleteButton
 // out of scope; DeleteAccountSection still renders regardless (page bottom).
 vi.mock("@/lib/supabase/server", () => ({
