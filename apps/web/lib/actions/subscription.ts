@@ -32,19 +32,41 @@
  *   checkout.session.completed. We do NOT create a Customer ourselves here —
  *   Checkout does it, the webhook records it.
  *
- * 14-day free trial strategy:
+ * 7-day / one-athlete free trial strategy (FV-574; originally 14-day, FV-217):
  *   The trial is applied conditionally in code — NOT baked into the Stripe Price
  *   object — so we can enforce a one-trial-per-account rule. An account is
- *   trial-eligible if and only if they have NO `subscriptions` row at checkout
- *   time. The webhook writes the row when checkout.session.completed fires, so
- *   any subsequent checkout attempt (cancel-and-resubscribe, plan change) finds
- *   an existing row and receives no trial. We reuse the `existingSub` read —
- *   no second DB query.
+ *   trial-eligible if and only if:
+ *     (a) they have NO `subscriptions` row at checkout time — the webhook
+ *         writes the row when checkout.session.completed fires, so any
+ *         subsequent checkout attempt (cancel-and-resubscribe, plan change)
+ *         finds an existing row and receives no trial (we reuse the
+ *         `existingSub` read — no second DB query);
+ *     (b) they have never held a Production Apple entitlement (cross-provider
+ *         one-trial rule, FV-570 — see next section); and
+ *     (c) the checkout starts with exactly ONE athlete seat (KC-approved
+ *         offering, FV-574: new trials are seven days for one athlete).
+ *         Multi-athlete first checkouts receive no trial fields. Callers pass
+ *         `trialQuantityEligible` explicitly; the parent action derives it
+ *         FAIL-CLOSED — an athlete-count read error still lets checkout
+ *         proceed at the quantity floor of 1, but disables the trial, so the
+ *         fallback can never hand a multi-athlete family a trial (PR #185
+ *         contract). The adult self-serve flow is always quantity 1 and
+ *         passes true.
+ *
+ *   Grandfathering is structural (FV-574 AC2): nothing here touches existing
+ *   subscriptions, trials, or any Stripe object — only NEW checkout-session
+ *   creation changes. Existing trials keep their promised duration and seat
+ *   terms.
+ *
+ *   GATED — deliberately NOT implemented (FV-574 AC4, awaiting KC): trial-to-
+ *   family conversion behavior (adding an athlete mid-trial). Mid-trial
+ *   quantity-sync behavior on a trialing subscription is byte-identical to
+ *   before this change.
  *
  *   When trial-eligible:
- *     subscription_data.trial_period_days: 14
- *     payment_method_collection: "always"   ← card collected up front; auto-charges on day 14.
- *   When not eligible (row exists, any status): no trial fields emitted.
+ *     subscription_data.trial_period_days: 7
+ *     payment_method_collection: "always"   ← card collected up front; auto-charges on day 7.
+ *   When not eligible: no trial fields emitted.
  *
  * Cross-provider one-trial rule (FV-570, docs/fv210-ios-iap-decision-record.md
  * Section 4.5):
@@ -56,10 +78,8 @@
  *   uses the SAME fail-closed contract as the existing Stripe read immediately
  *   below (PR #185): a read error aborts checkout through the identical
  *   user-facing error path rather than risking a duplicate trial.
- *   (The 7-day/1-athlete trial-DURATION change itself is a separate,
- *   web-trial-policy issue per record Section 10 — this file implements only
- *   the cross-provider trial-HISTORY mechanics; `trial_period_days: 14` below
- *   is intentionally untouched.)
+ *   (The 7-day/one-athlete trial-DURATION policy itself is FV-574 — see the
+ *   trial-strategy section above.)
  *
  * redirect() position:
  *   `redirect()` from next/navigation throws a NEXT_REDIRECT error internally.
@@ -152,6 +172,15 @@ async function startSubscriptionCheckout(
   accountId: string,
   quantity: number,
   plan: "monthly" | "annual",
+  /**
+   * FV-574: whether the checkout's seat count qualifies for the 7-day/
+   * one-athlete trial. Passed explicitly (rather than derived from
+   * `quantity`) because the parent action's quantity FALLS BACK to 1 on an
+   * athlete-count read error — the trial gate must fail closed in that case
+   * while checkout itself still proceeds. Adults are always quantity 1 and
+   * pass true.
+   */
+  trialQuantityEligible: boolean,
 ): Promise<SubscriptionActionState> {
   // 3. Resolve the price ID from env. Both vars must be set before checkout
   //    can work; they are populated in .env.local by KC during Stripe setup.
@@ -237,11 +266,14 @@ async function startSubscriptionCheckout(
   }
 
   // Trial is ONLY offered when there is no existing Stripe row AND the
-  // account never held a Production Apple entitlement. If ANY Stripe row
-  // exists (any status — active, canceled, trialing) OR Apple entitlement
-  // history exists, the account has already had a trial on one provider or
-  // the other.
-  const isTrialEligible = existingSub === null && !appleEverHeld;
+  // account never held a Production Apple entitlement AND the checkout
+  // starts with exactly one athlete seat (FV-574). If ANY Stripe row exists
+  // (any status — active, canceled, trialing) OR Apple entitlement history
+  // exists, the account has already had a trial on one provider or the
+  // other; if the checkout is multi-athlete, the KC-approved offering grants
+  // no trial.
+  const isTrialEligible =
+    existingSub === null && !appleEverHeld && trialQuantityEligible;
 
   // 5. Build site URL for success/cancel redirects.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -283,16 +315,16 @@ async function startSubscriptionCheckout(
       client_reference_id: accountId,
     };
 
-    // 14-day free trial — first-time subscribers only.
-    // No row exists → isTrialEligible → add trial fields.
-    // Row exists (any status) → no trial (prevents repeat trials on
-    // cancel-and-resubscribe flows).
+    // 7-day free trial (FV-574) — first-time, one-athlete subscribers only.
+    // No row, no Apple history, one seat → isTrialEligible → add trial
+    // fields. Otherwise (row exists any status, Apple history, or a
+    // multi-athlete first checkout) → no trial fields.
     if (isTrialEligible) {
       sessionParams.subscription_data = {
         ...sessionParams.subscription_data,
-        trial_period_days: 14,
+        trial_period_days: 7,
       };
-      // Collect card up front so it auto-charges on day 14.
+      // Collect card up front so it auto-charges on day 7.
       sessionParams.payment_method_collection = "always";
     }
 
@@ -390,7 +422,12 @@ export async function createCheckoutSession(
     );
   }
 
-  return startSubscriptionCheckout(userId, quantity, plan);
+  // FV-574 trial gate — FAIL CLOSED on the count read: the quantity fallback
+  // above keeps checkout working, but a count we couldn't read must never
+  // qualify the account for the one-athlete trial (PR #185 contract).
+  const trialQuantityEligible = !athleteCountResult.error && quantity === 1;
+
+  return startSubscriptionCheckout(userId, quantity, plan, trialQuantityEligible);
 }
 
 // ---------------------------------------------------------------------------
@@ -422,6 +459,7 @@ export async function createAdultCheckoutSession(
   }
   const { plan } = parsed.data;
 
-  // Adults always buy exactly 1 seat — no athlete roster, no count query.
-  return startSubscriptionCheckout(userId, 1, plan);
+  // Adults always buy exactly 1 seat — no athlete roster, no count query —
+  // so the FV-574 one-athlete trial condition is satisfied by construction.
+  return startSubscriptionCheckout(userId, 1, plan, true);
 }

@@ -1,14 +1,16 @@
 /**
  * Unit tests for `createCheckoutSession` (FV-217; FV-570 adds the
- * cross-provider Apple trial-history mocks/tests at the bottom of this
- * file).
+ * cross-provider Apple trial-history mocks/tests, and FV-574 the
+ * 7-day/one-athlete policy block, at the bottom of this file).
  *
- * Verifies the 14-day free trial logic:
- *   (a) No subscriptions row → session includes trial_period_days:14 +
- *       payment_method_collection:"always".
+ * Verifies the 7-day free trial logic (FV-574; originally 14-day, FV-217):
+ *   (a) No subscriptions row (one-athlete checkout) → session includes
+ *       trial_period_days:7 + payment_method_collection:"always".
  *   (b) Row exists with status "canceled" → NO trial fields.
  *   (c) Row exists with status "active"   → NO trial fields + existing
  *       behavior preserved (customer reuse, redirect).
+ *   (d) Multi-athlete first checkout (quantity ≥ 2) → NO trial fields
+ *       (KC-approved offering: new trials are 7 days for ONE athlete).
  *
  * Also confirms existing behavior: customer reuse, redirect on success,
  * plan env-var resolution, and Stripe-API-error handling.
@@ -153,7 +155,7 @@ function makeFormData(plan: "monthly" | "annual"): FormData {
 // tests override it directly.
 hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
 
-describe("createCheckoutSession — 14-day trial logic (FV-217)", () => {
+describe("createCheckoutSession — 7-day trial logic (FV-217, duration+gate FV-574)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
@@ -170,7 +172,7 @@ describe("createCheckoutSession — 14-day trial logic (FV-217)", () => {
   // -------------------------------------------------------------------------
   // (a) No subscriptions row → trial fields present
   // -------------------------------------------------------------------------
-  it("(a) includes trial_period_days:14 and payment_method_collection:'always' when no row exists", async () => {
+  it("(a) includes trial_period_days:7 and payment_method_collection:'always' when no row exists", async () => {
     supabaseMockImpl = makeSubMock(null); // no row → first-time subscriber
 
     await createCheckoutSession(null, makeFormData("monthly"));
@@ -181,7 +183,7 @@ describe("createCheckoutSession — 14-day trial logic (FV-217)", () => {
     // Trial fields must be present.
     expect(
       (params.subscription_data as Record<string, unknown>).trial_period_days,
-    ).toBe(14);
+    ).toBe(7);
     expect(params.payment_method_collection).toBe("always");
   });
 
@@ -193,7 +195,7 @@ describe("createCheckoutSession — 14-day trial logic (FV-217)", () => {
     const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(
       (params.subscription_data as Record<string, unknown>).trial_period_days,
-    ).toBe(14);
+    ).toBe(7);
     expect(params.payment_method_collection).toBe("always");
   });
 
@@ -208,7 +210,7 @@ describe("createCheckoutSession — 14-day trial logic (FV-217)", () => {
     expect((subData.metadata as Record<string, unknown>).parent_id).toBe(
       "parent-uuid-test",
     );
-    expect(subData.trial_period_days).toBe(14);
+    expect(subData.trial_period_days).toBe(7);
   });
 
   // -------------------------------------------------------------------------
@@ -462,7 +464,7 @@ describe("createAdultCheckoutSession (FV-327)", () => {
   // -------------------------------------------------------------------------
   // (a) No row → trial + payment_method_collection + quantity 1 + metadata
   // -------------------------------------------------------------------------
-  it("(a) no row → trial_period_days:14, payment_method_collection:'always', quantity:1, metadata.parent_id is adult uuid", async () => {
+  it("(a) no row → trial_period_days:7, payment_method_collection:'always', quantity:1, metadata.parent_id is adult uuid", async () => {
     supabaseMockImpl = makeSubMock(null);
 
     await createAdultCheckoutSession(null, makeFormData("monthly"));
@@ -473,7 +475,7 @@ describe("createAdultCheckoutSession (FV-327)", () => {
     // Trial fields.
     expect(
       (params.subscription_data as Record<string, unknown>).trial_period_days,
-    ).toBe(14);
+    ).toBe(7);
     expect(params.payment_method_collection).toBe("always");
 
     // Quantity is always 1 for adults.
@@ -573,7 +575,7 @@ describe("createCheckoutSession — cross-provider Apple trial history (FV-570)"
     const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(
       (params.subscription_data as Record<string, unknown>).trial_period_days,
-    ).toBe(14);
+    ).toBe(7);
     expect(params.payment_method_collection).toBe("always");
   });
 
@@ -599,6 +601,110 @@ describe("createCheckoutSession — cross-provider Apple trial history (FV-570)"
     // deny a trial.
     supabaseMockImpl = makeSubMock({ stripe_customer_id: "cus_existing" });
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(
+      (params.subscription_data as Record<string, unknown>).trial_period_days,
+    ).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-574: 7-day / one-athlete trial gate (KC-approved offering)
+// ---------------------------------------------------------------------------
+
+describe("createCheckoutSession — one-athlete trial gate (FV-574)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
+    process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
+    process.env.STRIPE_PRICE_ID_MONTHLY = "price_monthly_500";
+    process.env.STRIPE_PRICE_ID_ANNUAL = "price_annual_4900";
+
+    sessionsCreateMock.mockResolvedValue({
+      url: "https://checkout.stripe.com/pay/cs_test",
+    });
+    hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+  });
+
+  it("multi-athlete first checkout (3 athletes) → quantity 3 but NO trial fields", async () => {
+    supabaseMockImpl = makeSubMock(null, 3); // first-time, but 3 athletes
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(sessionsCreateMock).toHaveBeenCalledOnce();
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    const lineItems = params.line_items as Array<{ quantity: number }>;
+
+    // Checkout itself proceeds at the full quantity...
+    expect(lineItems[0]?.quantity).toBe(3);
+    // ...but the KC-approved offering grants no trial beyond one athlete.
+    expect(
+      (params.subscription_data as Record<string, unknown>).trial_period_days,
+    ).toBeUndefined();
+    expect(params.payment_method_collection).toBeUndefined();
+  });
+
+  it("two-athlete first checkout → NO trial fields (boundary just above 1)", async () => {
+    supabaseMockImpl = makeSubMock(null, 2);
+
+    await createCheckoutSession(null, makeFormData("annual"));
+
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(
+      (params.subscription_data as Record<string, unknown>).trial_period_days,
+    ).toBeUndefined();
+    expect(params.payment_method_collection).toBeUndefined();
+  });
+
+  it("zero linked athletes (quantity floors to 1) → 7-day trial granted", async () => {
+    supabaseMockImpl = makeSubMock(null, 0); // signup-then-subscribe path
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(
+      (params.subscription_data as Record<string, unknown>).trial_period_days,
+    ).toBe(7);
+    expect(params.payment_method_collection).toBe("always");
+  });
+
+  it("athlete-count read error → checkout proceeds at quantity 1 but trial FAILS CLOSED", async () => {
+    // The quantity fallback (error → 1) keeps checkout working, but a count
+    // we couldn't read must never qualify the account for the one-athlete
+    // trial (PR #185 fail-closed contract extended to FV-574).
+    supabaseMockImpl = makeSubMock(null, null); // count query errors
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(sessionsCreateMock).toHaveBeenCalledOnce();
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    const lineItems = params.line_items as Array<{ quantity: number }>;
+
+    expect(lineItems[0]?.quantity).toBe(1);
+    expect(
+      (params.subscription_data as Record<string, unknown>).trial_period_days,
+    ).toBeUndefined();
+    expect(params.payment_method_collection).toBeUndefined();
+  });
+
+  it("adult self-serve checkout (always one seat) → 7-day trial granted", async () => {
+    supabaseMockImpl = makeSubMock(null);
+
+    await createAdultCheckoutSession(null, makeFormData("annual"));
+
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(
+      (params.subscription_data as Record<string, unknown>).trial_period_days,
+    ).toBe(7);
+    expect(params.payment_method_collection).toBe("always");
+  });
+
+  it("one athlete but prior Apple history → still NO trial (FV-570 AND-semantics preserved)", async () => {
+    supabaseMockImpl = makeSubMock(null, 1);
+    hasEverHeldAppleEntitlementMock.mockResolvedValue(true);
 
     await createCheckoutSession(null, makeFormData("monthly"));
 
