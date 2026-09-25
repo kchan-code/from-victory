@@ -26,9 +26,15 @@ import type { DecodedTransactionInfo } from "@/lib/subscriptions/apple-server";
 vi.mock("server-only", () => ({}));
 
 const verifyAndDecodeNotificationMock = vi.fn();
+const describeVerificationFailureMock = vi.fn();
+describeVerificationFailureMock.mockImplementation((err: unknown) =>
+  err instanceof Error ? err.message : String(err),
+);
 vi.mock("@/lib/subscriptions/apple-server", () => ({
   verifyAndDecodeNotification: (...args: unknown[]) =>
     verifyAndDecodeNotificationMock(...args),
+  describeVerificationFailure: (...args: unknown[]) =>
+    describeVerificationFailureMock(...args),
 }));
 
 const applyAppleSnapshotMock = vi.fn();
@@ -172,6 +178,7 @@ beforeEach(() => {
   sandboxAllowlistedPayers = new Set();
   profileRolesByPayer = { [PAYER_ID]: "parent" };
   verifyAndDecodeNotificationMock.mockReset();
+  describeVerificationFailureMock.mockClear();
   applyAppleSnapshotMock.mockReset();
   notifyErrorMock.mockClear();
   applyAppleSnapshotMock.mockResolvedValue({ applied: true, created: true });
@@ -200,6 +207,22 @@ describe("POST /api/webhooks/apple", () => {
     expect(applyAppleSnapshotMock).not.toHaveBeenCalled();
     const logged = warnSpy.mock.calls.map((c) => c.join(" ")).join("\n");
     expect(logged).not.toContain("ey.fake");
+    warnSpy.mockRestore();
+  });
+
+  it("returns 400 on verification failure and logs the verification status (numeric + enum name), never payload content", async () => {
+    const verificationError = new Error("underlying SDK error");
+    verifyAndDecodeNotificationMock.mockRejectedValueOnce(verificationError);
+    describeVerificationFailureMock.mockReturnValueOnce("status=3 INVALID_APP_IDENTIFIER");
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const res = await POST(makeRequest({ signedPayload: "ey.super-secret-payload" }));
+
+    expect(res.status).toBe(400);
+    expect(describeVerificationFailureMock).toHaveBeenCalledWith(verificationError);
+    const logged = warnSpy.mock.calls.map((c) => c.join(" ")).join("\n");
+    expect(logged).toContain("status=3 INVALID_APP_IDENTIFIER");
+    expect(logged).not.toContain("ey.super-secret-payload");
     warnSpy.mockRestore();
   });
 
