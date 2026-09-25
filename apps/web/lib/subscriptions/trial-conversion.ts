@@ -29,8 +29,10 @@
  *     an Apple-billed family mid-cycle is the parent purchasing a
  *     higher-capacity product through Apple's OWN purchase sheet (which
  *     Apple itself treats as the explicit confirmation). So `kind: "apple"`
- *     here is a coarse "this payer is on the Apple provider" signal, NOT a
- *     trial-specific one — we cannot reliably read Apple trial-ness at all,
+ *     here is a coarse "this payer is on the Apple provider" signal (via
+ *     `getActiveAppleProductId` — Production, or Sandbox for an allowlisted
+ *     payer, record §4.9, FV-596), NOT a trial-specific one — we cannot
+ *     reliably read Apple trial-ness at all,
  *     and the caller doesn't need to: the existing Apple athlete-capacity
  *     gate (`./apple-capacity`'s `assertAthleteCapacity`) already stops an
  *     over-ceiling add, and the FV-581/584 duplicate-purchase guard (see

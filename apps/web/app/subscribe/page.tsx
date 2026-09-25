@@ -146,10 +146,12 @@ export default async function SubscribePage({ searchParams }: Props) {
   // AppleSubscribeSection's "upgrade" mode. Resolved here, not in the
   // component, because both the current product's capacity
   // (getActiveAppleProductId + capacityForAppleProduct) and the configured
-  // product catalog are server-side/env concerns. `null` (unmapped current
-  // product, or no configured product actually exceeds it) falls back to the
-  // existing "manage" state — never a buy affordance without a real upgrade
-  // to offer.
+  // product catalog are server-side/env concerns. getActiveAppleProductId
+  // resolves Production, or Sandbox for an allowlisted payer (record §4.9,
+  // FV-596) — same rule the entitlement gate used to grant `entitlementState`
+  // above. `null` (unmapped current product, or no configured product
+  // actually exceeds it) falls back to the existing "manage" state — never a
+  // buy affordance without a real upgrade to offer.
   let appleUpgradeCapacity: number | null = null;
   if (
     shellCapability === "ios-iap" &&
