@@ -58,6 +58,7 @@ import {
 } from "@/lib/pregame/athlete-cache";
 import { PregameFlow } from "./PregameFlow";
 import { SUPPORTED_SPORTS, type Sport } from "@/lib/sports";
+import type { PregamePersonalization } from "@/lib/pregame/profile-defaults";
 
 // clearAthleteCache is re-exported from lib/pregame/athlete-cache.
 // It is no longer defined here — import it from there for sign-out / re-pair
@@ -92,7 +93,18 @@ function isNetworkError(err: unknown): boolean {
 
 type ShellState =
   | { kind: "loading" }
-  | { kind: "ready"; sport: Sport; firstName: string }
+  | {
+      kind: "ready";
+      sport: Sport;
+      firstName: string;
+      /**
+       * FV-253: saved quiz answers for the pregame pre-selections. Null on
+       * the offline path (not part of fv_athlete_cache — an offline athlete
+       * simply gets no pre-selection, the pre-FV-253 behaviour) and when the
+       * RPC fails (non-fatal).
+       */
+      personalization: PregamePersonalization | null;
+    }
   | { kind: "offline-no-cache" }
   | { kind: "error"; message: string };
 
@@ -195,7 +207,42 @@ export function PregameClientShell() {
         // Cache for future offline use (device-local, non-network).
         writeAthleteCache({ sport, firstName });
 
-        setState({ kind: "ready", sport, firstName });
+        // FV-253: read the athlete's saved quiz answers (position +
+        // focus_area) for the pregame pre-selections. These are athlete-
+        // private columns (FV-361): `authenticated` has NO column SELECT on
+        // profiles.position / profiles.focus_area, so they must NOT be added
+        // to the profile select above — the SECURITY DEFINER
+        // get_own_personalization() RPC (scoped to auth.uid() internally) is
+        // the only read path. Failure is non-fatal: pre-selection is
+        // supplementary, never auth-critical, so any error → null (no
+        // pre-selection) rather than blocking the pregame. Own try/catch so a
+        // thrown RPC error can never be mistaken for the offline path.
+        let personalization: PregamePersonalization | null = null;
+        try {
+          const { data: quiz, error: quizError } = await supabase
+            .rpc("get_own_personalization")
+            .maybeSingle();
+          if (cancelled) return;
+          if (quizError) {
+            console.warn(
+              "[pregame] get_own_personalization failed:",
+              quizError.message,
+            );
+          } else if (quiz) {
+            personalization = {
+              position: quiz.position ?? null,
+              focusArea: quiz.focus_area ?? null,
+            };
+          }
+        } catch (err) {
+          if (cancelled) return;
+          console.warn(
+            "[pregame] get_own_personalization threw:",
+            err instanceof Error ? err.message : String(err),
+          );
+        }
+
+        setState({ kind: "ready", sport, firstName, personalization });
       } catch (err) {
         if (cancelled) return;
 
@@ -207,6 +254,7 @@ export function PregameClientShell() {
               kind: "ready",
               sport: cached.sport,
               firstName: cached.firstName,
+              personalization: null,
             });
           } else {
             // No cache: athlete has never loaded this page online on this
@@ -294,6 +342,7 @@ export function PregameClientShell() {
     <PregameFlow
       athleteFirstName={state.firstName}
       sport={state.sport}
+      personalization={state.personalization}
     />
   );
 }
