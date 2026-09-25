@@ -60,6 +60,7 @@ import {
   buildSnapshotFields,
   deriveActionSubmissionStatus,
 } from "@/lib/subscriptions/apple-lifecycle";
+import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 
 // ---------------------------------------------------------------------------
 // Input / result types
@@ -322,7 +323,10 @@ export async function submitApplePurchase(
 
 export type BeginApplePurchaseResult =
   | { ok: true; appAccountToken: string }
-  | { ok: false; error: "unauthenticated" | "not_authorized" | "internal_error" };
+  | {
+      ok: false;
+      error: "unauthenticated" | "not_authorized" | "already_subscribed" | "internal_error";
+    };
 
 /**
  * Returns the signed-in payer's opaque `app_account_token` so the iOS
@@ -340,6 +344,14 @@ export type BeginApplePurchaseResult =
  *     session — there is no payer-id input to tamper with;
  *   - the token is an opaque UUID with no meaning outside this backend; the
  *     durable link key remains (original_transaction_id, environment).
+ *
+ * DUPLICATE-BILLING GUARD (FV-581, record Section 4.4): after the role gate
+ * and BEFORE any mint write, a payer already `full` via Stripe, Apple, or a
+ * comp grant is refused with `already_subscribed` — no token minted, no row
+ * touched. The refusal is an event-only log line (payer id + provider), same
+ * privacy shape as the role-gate refusal above. A read error from the
+ * entitlement check fails SAFE to `internal_error` (never silently treated
+ * as "not subscribed" — see subscribe-guard.ts's module doc for why).
  *
  * Mint-on-first-use: reuses getOrMintPurchaseToken (race-safe upsert), so a
  * payer's first tap of the purchase button creates their token row.
@@ -373,6 +385,31 @@ export async function beginApplePurchase(): Promise<BeginApplePurchaseResult> {
       `[apple-subscription] beginApplePurchase refused: role="${profile.role}" is not a payer role (payer=${payerId}). No write performed.`,
     );
     return { ok: false, error: "not_authorized" };
+  }
+
+  // FV-581 duplicate-billing guard (record Section 4.4) — BEFORE any mint
+  // write. A payer already `full` via any provider must never be handed a
+  // fresh purchase token: "a payer already full ... sees management/status
+  // copy, never a buy button." A read error fails SAFE (never minted).
+  const entitlement = await getSubscribeEntitlementState(payerId);
+  if (entitlement.status === "entitled") {
+    console.warn(
+      `[apple-subscription] beginApplePurchase refused: payer=${payerId} already entitled via provider=${entitlement.provider}. No token minted.`,
+    );
+    return { ok: false, error: "already_subscribed" };
+  }
+  if (entitlement.status === "unknown") {
+    console.error(
+      `[apple-subscription] beginApplePurchase entitlement check failed (payer=${payerId}) — refusing to mint (fail safe).`,
+    );
+    deliverInBackground(
+      notifyError(
+        "[apple-subscription] entitlement check failed",
+        "getSubscribeEntitlementState returned unknown",
+        { payer_id: payerId },
+      ),
+    );
+    return { ok: false, error: "internal_error" };
   }
 
   try {
