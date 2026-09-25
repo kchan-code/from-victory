@@ -15,6 +15,12 @@
  * Also confirms existing behavior: customer reuse, redirect on success,
  * plan env-var resolution, and Stripe-API-error handling.
  *
+ * FV-581 adds the duplicate-billing entitlement guard at the top of
+ * `startSubscriptionCheckout`: already entitled -> redirect("/subscribe"),
+ * no Checkout session created; entitlement read errors (unknown) -> refuse
+ * checkout through the existing calm error path; not entitled -> every test
+ * above is unaffected (see the default mock below).
+ *
  * Mocks:
  *   - server-only              → no-op (Next.js guard not in vitest/node)
  *   - next/navigation          → captures redirect() without throwing
@@ -25,6 +31,9 @@
  *     Apple entitlement-history read, FV-570)
  *   - @/lib/subscriptions/apple → hasEverHeldAppleEntitlement stub, defaults
  *     to "never held" so all pre-existing tests above are unaffected
+ *   - @/lib/subscriptions/subscribe-guard → getSubscribeEntitlementState
+ *     stub, defaults to "not_entitled" so all pre-existing tests above are
+ *     unaffected (FV-581)
  *   - @/lib/monitoring/deliver → no-op
  *   - @/lib/monitoring/notify  → no-op
  */
@@ -88,6 +97,14 @@ const hasEverHeldAppleEntitlementMock = vi.fn();
 vi.mock("@/lib/subscriptions/apple", () => ({
   hasEverHeldAppleEntitlement: (...args: unknown[]) =>
     hasEverHeldAppleEntitlementMock(...args),
+}));
+
+// FV-581: entitlement-guard stub. Defaults to "not_entitled" (set per-test
+// below) so every pre-existing test in this file is unaffected.
+const getSubscribeEntitlementStateMock = vi.fn();
+vi.mock("@/lib/subscriptions/subscribe-guard", () => ({
+  getSubscribeEntitlementState: (...args: unknown[]) =>
+    getSubscribeEntitlementStateMock(...args),
 }));
 
 // ---------------------------------------------------------------------------
@@ -154,6 +171,14 @@ function makeFormData(plan: "monthly" | "annual"): FormData {
 // mockResolvedValue — so this only needs to run once. Individual FV-570
 // tests override it directly.
 hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+
+// File-level default (FV-581): same rationale — "not_entitled" so every
+// pre-existing test proceeds through checkout exactly as before. The
+// dedicated describe block at the bottom of this file overrides it.
+getSubscribeEntitlementStateMock.mockResolvedValue({
+  status: "not_entitled",
+  provider: null,
+});
 
 describe("createCheckoutSession — 7-day trial logic (FV-217, duration+gate FV-574)", () => {
   beforeEach(() => {
@@ -712,5 +737,130 @@ describe("createCheckoutSession — one-athlete trial gate (FV-574)", () => {
     expect(
       (params.subscription_data as Record<string, unknown>).trial_period_days,
     ).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-581: duplicate-billing entitlement guard
+// ---------------------------------------------------------------------------
+
+describe("startSubscriptionCheckout — duplicate-billing guard (FV-581)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
+    process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
+    process.env.STRIPE_PRICE_ID_MONTHLY = "price_monthly_500";
+    process.env.STRIPE_PRICE_ID_ANNUAL = "price_annual_4900";
+
+    sessionsCreateMock.mockResolvedValue({
+      url: "https://checkout.stripe.com/pay/cs_test",
+    });
+    hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+    supabaseMockImpl = makeSubMock(null);
+  });
+
+  it("already entitled via Apple → redirect(/subscribe), no Checkout session created", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "apple",
+    });
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).toHaveBeenCalledWith("/subscribe");
+  });
+
+  it("already entitled via Stripe → redirect(/subscribe), no Checkout session created", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "stripe",
+    });
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).toHaveBeenCalledWith("/subscribe");
+  });
+
+  it("already entitled via a comp grant → redirect(/subscribe), no Checkout session created", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "comp",
+    });
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).toHaveBeenCalledWith("/subscribe");
+  });
+
+  // FV-584 (KC decision D1): a DEGRADED payer is entitled too. This action
+  // only consults `getSubscribeEntitlementState`'s status/provider fields —
+  // the full-vs-degraded distinction is resolved entirely inside
+  // subscribe-guard.ts (see subscribe-guard.test.ts) — so these assert the
+  // same "entitled -> redirect, no Checkout session" behavior the guard now
+  // also returns for a degraded Apple/Stripe payer, not a new code path.
+  it("FV-584: already entitled via a DEGRADED Apple subscription → redirect(/subscribe), no Checkout session created", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "apple",
+    });
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).toHaveBeenCalledWith("/subscribe");
+  });
+
+  it("FV-584: already entitled via a DEGRADED Stripe subscription (e.g. past_due) → redirect(/subscribe), no Checkout session created", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "stripe",
+    });
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).toHaveBeenCalledWith("/subscribe");
+  });
+
+  it("entitlement check errors (unknown) → refuses checkout, no session, no redirect to Stripe", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "unknown",
+      provider: null,
+    });
+
+    const result = await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(result?.ok).toBe(false);
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it("not entitled → existing NEW-subscriber checkout flow proceeds unchanged", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "not_entitled",
+      provider: null,
+    });
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(sessionsCreateMock).toHaveBeenCalledOnce();
+    expect(redirectMock).toHaveBeenCalledWith(
+      "https://checkout.stripe.com/pay/cs_test",
+    );
+  });
+
+  it("adult self-serve checkout is also guarded: already entitled → redirect(/subscribe), no session", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "apple",
+    });
+
+    await createAdultCheckoutSession(null, makeFormData("annual"));
+
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).toHaveBeenCalledWith("/subscribe");
   });
 });

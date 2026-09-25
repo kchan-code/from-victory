@@ -43,16 +43,22 @@
  *   window.Capacitor.Plugins.FVAppleIAPPlugin.restore()
  *     => Promise<
  *          | { ok: true; transactions: { signedTransactionInfo: string; signedRenewalInfo?: string }[] }
- *          | { ok: false; error: "failed" }
+ *          | { ok: false; error: "cancelled" | "failed" }
  *        >
- *     Runs `AppStore.sync()` then reads `Transaction.currentEntitlements`
- *     natively. ORDERING CONTRACT: the native side returns `transactions`
- *     sorted NEWEST-FIRST by purchase date — callers that need "the current
- *     transaction" (there is normally at most one live entitlement in our
- *     single subscription group) read `transactions[0]`, never re-sort here.
- *     An empty `transactions` array (with `ok: true`) means "no purchase
- *     found for this Apple ID," which is a calm, expected empty state, not
- *     an error.
+ *     Attempts `AppStore.sync()` as a best-effort refresh (NOT a
+ *     precondition) then reads `Transaction.currentEntitlements` natively.
+ *     If the user dismisses the sign-in/re-auth prompt `AppStore.sync()` can
+ *     surface, the native side resolves `{ ok: false, error: "cancelled" }`
+ *     — a calm, expected outcome, never an alarming error. Any OTHER sync
+ *     failure (network, transient auth trouble, etc.) is logged natively and
+ *     does NOT stop the restore — a device that already holds the
+ *     entitlement locally still resolves `ok: true`. ORDERING CONTRACT: the
+ *     native side returns `transactions` sorted NEWEST-FIRST by purchase
+ *     date — callers that need "the current transaction" (there is normally
+ *     at most one live entitlement in our single subscription group) read
+ *     `transactions[0]`, never re-sort here. An empty `transactions` array
+ *     (with `ok: true`) means "no purchase found for this Apple ID," which
+ *     is a calm, expected empty state, not an error.
  *
  *   window.Capacitor.Plugins.FVAppleIAPPlugin.manageSubscriptions()
  *     => Promise<{ ok: true } | { ok: false; error: "failed" }>
@@ -156,14 +162,32 @@ export interface AppleRestoreTransaction {
   signedRenewalInfo?: string;
 }
 
+/**
+ * Restore never resolves `"pending"` — that's a purchase-only outcome (Ask
+ * to Buy / SCA on a fresh purchase). `"cancelled"` here means the user
+ * dismissed the sign-in/re-auth prompt `AppStore.sync()` can surface — a
+ * calm, expected outcome, not an alarming error.
+ */
+export type AppleRestoreError = "failed" | "cancelled" | "bridge_unavailable";
+
 export type AppleRestoreResult =
   | { ok: true; transactions: AppleRestoreTransaction[] }
-  | { ok: false; error: ApplePurchaseError };
+  | { ok: false; error: AppleRestoreError };
 
 export type AppleManageResult = { ok: true } | { ok: false; error: ApplePurchaseError };
 
 function coercePurchaseError(value: string | undefined): ApplePurchaseError {
   if (value === "cancelled" || value === "pending" || value === "failed") {
+    return value;
+  }
+  // Unknown/missing error string from a native payload we don't control —
+  // fail closed to the generic, still-calm "failed" bucket rather than
+  // guessing or letting `undefined` leak into UI copy.
+  return "failed";
+}
+
+function coerceRestoreError(value: string | undefined): AppleRestoreError {
+  if (value === "cancelled" || value === "failed") {
     return value;
   }
   // Unknown/missing error string from a native payload we don't control —
@@ -219,10 +243,14 @@ export async function purchase(input: ApplePurchaseInput): Promise<ApplePurchase
 }
 
 /**
- * Restores prior purchases: `AppStore.sync()` + `Transaction.currentEntitlements`
+ * Restores prior purchases: attempts `AppStore.sync()` as a best-effort
+ * refresh (NOT a precondition), then reads `Transaction.currentEntitlements`
  * on the native side. `transactions` is ordered NEWEST-FIRST (see the plugin
  * contract above) — callers wanting "the current one" read `transactions[0]`.
  * An empty, `ok: true` array is a calm "nothing found" outcome, not an error.
+ * `error: "cancelled"` means the user dismissed the sign-in/re-auth prompt
+ * sync surfaced — also calm, never alarming; any other sync trouble is
+ * logged natively and does NOT stop the restore.
  */
 export async function restore(): Promise<AppleRestoreResult> {
   const bridge = getBridge();
@@ -235,7 +263,7 @@ export async function restore(): Promise<AppleRestoreResult> {
         transactions: Array.isArray(result.transactions) ? result.transactions : [],
       };
     }
-    return { ok: false, error: coercePurchaseError(result?.ok === false ? result.error : undefined) };
+    return { ok: false, error: coerceRestoreError(result?.ok === false ? result.error : undefined) };
   } catch (err) {
     logBridgeWarning("restore", err);
     return { ok: false, error: "failed" };

@@ -60,6 +60,8 @@ import {
   buildSnapshotFields,
   deriveActionSubmissionStatus,
 } from "@/lib/subscriptions/apple-lifecycle";
+import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
+import { isStrictAppleCapacityUpgrade } from "@/lib/subscriptions/apple-capacity";
 
 // ---------------------------------------------------------------------------
 // Input / result types
@@ -322,7 +324,10 @@ export async function submitApplePurchase(
 
 export type BeginApplePurchaseResult =
   | { ok: true; appAccountToken: string }
-  | { ok: false; error: "unauthenticated" | "not_authorized" | "internal_error" };
+  | {
+      ok: false;
+      error: "unauthenticated" | "not_authorized" | "already_subscribed" | "internal_error";
+    };
 
 /**
  * Returns the signed-in payer's opaque `app_account_token` so the iOS
@@ -341,10 +346,43 @@ export type BeginApplePurchaseResult =
  *   - the token is an opaque UUID with no meaning outside this backend; the
  *     durable link key remains (original_transaction_id, environment).
  *
+ * DUPLICATE-BILLING GUARD (FV-581, record Section 4.4; broadened to
+ * `degraded` by KC decision D1 / FV-584): after the role gate and BEFORE any
+ * mint write, a payer already `full` OR `degraded` via Stripe, Apple, or a
+ * comp grant is refused with `already_subscribed` — no token minted, no row
+ * touched. (A degraded payer has an existing subscription to fix, not a
+ * reason to start a second one.) The refusal is an event-only log line
+ * (payer id + provider), same privacy shape as the role-gate refusal above.
+ * A read error from the entitlement check fails SAFE to `internal_error`
+ * (never silently treated as "not subscribed" — see subscribe-guard.ts's
+ * module doc for why).
+ *
+ * D3 UPGRADE ALLOWANCE (FV-586, KC decision 2026-09-17) — the ONE exception
+ * to the guard above: an Apple-entitled payer purchasing a product whose
+ * `lib/subscriptions/apple-capacity.ts` capacity ceiling is STRICTLY GREATER
+ * than their current product's ceiling is an upgrade, not a duplicate
+ * purchase — Apple's own purchase sheet (which shows Apple's own price and
+ * charges the card) IS the explicit trial-to-family confirmation D3
+ * requires for this provider; our server has no other way to convert an
+ * Apple-billed family (see `lib/subscriptions/trial-conversion.ts`'s module
+ * doc). Callers pass the product id they're about to purchase as
+ * `requestedProductId`; omitting it (every call site today) preserves the
+ * pre-D3 refusal byte-for-byte. See `isStrictAppleCapacityUpgrade`'s doc
+ * comment for the fail-closed contract. Same/lower/equal products, a
+ * non-Apple provider, or an unresolvable ceiling on either side all keep the
+ * existing `already_subscribed` refusal.
+ *
  * Mint-on-first-use: reuses getOrMintPurchaseToken (race-safe upsert), so a
  * payer's first tap of the purchase button creates their token row.
+ *
+ * @param requestedProductId The Apple product id the payer is about to
+ *                            purchase, if known — enables the D3 upgrade
+ *                            allowance above. Optional; omitted call sites
+ *                            get the pre-D3 behavior unchanged.
  */
-export async function beginApplePurchase(): Promise<BeginApplePurchaseResult> {
+export async function beginApplePurchase(
+  requestedProductId?: string,
+): Promise<BeginApplePurchaseResult> {
   const supabase = createClient();
   const {
     data: { user },
@@ -373,6 +411,48 @@ export async function beginApplePurchase(): Promise<BeginApplePurchaseResult> {
       `[apple-subscription] beginApplePurchase refused: role="${profile.role}" is not a payer role (payer=${payerId}). No write performed.`,
     );
     return { ok: false, error: "not_authorized" };
+  }
+
+  // FV-581 duplicate-billing guard (record Section 4.4) — BEFORE any mint
+  // write. A payer already `full` via any provider must never be handed a
+  // fresh purchase token: "a payer already full ... sees management/status
+  // copy, never a buy button." A read error fails SAFE (never minted).
+  const entitlement = await getSubscribeEntitlementState(payerId);
+  if (entitlement.status === "entitled") {
+    // D3 (FV-586) upgrade allowance — see this function's doc comment. Only
+    // an Apple provider with a supplied requestedProductId is even eligible;
+    // every other entitled case keeps the pre-D3 refusal.
+    const service = createServiceClient();
+    const isUpgrade =
+      entitlement.provider === "apple" &&
+      requestedProductId !== undefined &&
+      (await isStrictAppleCapacityUpgrade(service, payerId, requestedProductId));
+
+    if (!isUpgrade) {
+      console.warn(
+        `[apple-subscription] beginApplePurchase refused: payer=${payerId} already entitled via provider=${entitlement.provider}. No token minted.`,
+      );
+      return { ok: false, error: "already_subscribed" };
+    }
+
+    console.warn(
+      `[apple-subscription] beginApplePurchase ALLOWED as a D3 capacity upgrade (payer=${payerId} requestedProductId=${requestedProductId}). Minting a fresh purchase token.`,
+    );
+    // Falls through to the mint below — an upgrade purchase still needs a
+    // fresh appAccountToken for the new StoreKit purchase() call.
+  }
+  if (entitlement.status === "unknown") {
+    console.error(
+      `[apple-subscription] beginApplePurchase entitlement check failed (payer=${payerId}) — refusing to mint (fail safe).`,
+    );
+    deliverInBackground(
+      notifyError(
+        "[apple-subscription] entitlement check failed",
+        "getSubscribeEntitlementState returned unknown",
+        { payer_id: payerId },
+      ),
+    );
+    return { ok: false, error: "internal_error" };
   }
 
   try {

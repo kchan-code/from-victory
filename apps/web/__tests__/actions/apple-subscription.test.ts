@@ -13,8 +13,14 @@
  *   - duplicate-billing: active Stripe + Apple submission -> Apple row
  *     persisted AND the ops alert fires (never blocked)
  *
- * All Supabase clients, ./apple-server, and ./apple-lifecycle are mocked —
- * no real DB, no real JWS verification, no network call to Apple.
+ * Also covers beginApplePurchase's FV-581 duplicate-billing guard:
+ *   - already entitled (any provider) -> already_subscribed, no mint
+ *   - entitlement check errors (unknown) -> internal_error, no mint
+ *   - not entitled -> existing mint behavior preserved byte-identical
+ *
+ * All Supabase clients, ./apple-server, ./apple-lifecycle, and
+ * ./subscribe-guard are mocked — no real DB, no real JWS verification, no
+ * network call to Apple.
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -203,6 +209,31 @@ vi.mock("@/lib/monitoring/deliver", () => ({
   },
 }));
 
+// FV-581: entitlement-guard stub. Defaults to "not_entitled" so every
+// pre-existing test in this file (written before the guard existed) is
+// unaffected; the dedicated describe block below overrides it per case.
+const getSubscribeEntitlementStateMock = vi.fn(
+  async (..._args: unknown[]) =>
+    ({ status: "not_entitled", provider: null }) as {
+      status: "entitled" | "not_entitled" | "unknown";
+      provider: "apple" | "stripe" | "comp" | null;
+    },
+);
+vi.mock("@/lib/subscriptions/subscribe-guard", () => ({
+  getSubscribeEntitlementState: (...args: unknown[]) =>
+    getSubscribeEntitlementStateMock(...args),
+}));
+
+// FV-586 (KC decision D3): the upgrade-allowance check consulted by
+// beginApplePurchase. Defaults to `false` so every pre-existing test in this
+// file (written before D3 existed) is unaffected; the dedicated "D3 upgrade
+// allowance" describe block below overrides it per case.
+const isStrictAppleCapacityUpgradeMock = vi.fn(async (..._args: unknown[]) => false);
+vi.mock("@/lib/subscriptions/apple-capacity", () => ({
+  isStrictAppleCapacityUpgrade: (...args: unknown[]) =>
+    isStrictAppleCapacityUpgradeMock(...args),
+}));
+
 // ---------------------------------------------------------------------------
 // Import after mocks
 // ---------------------------------------------------------------------------
@@ -243,6 +274,13 @@ beforeEach(() => {
   notifyErrorMock.mockClear();
   verifySignedTransactionMock.mockResolvedValue(makeTransaction());
   applyAppleSnapshotMock.mockResolvedValue({ applied: true, created: true });
+  getSubscribeEntitlementStateMock.mockReset();
+  getSubscribeEntitlementStateMock.mockResolvedValue({
+    status: "not_entitled",
+    provider: null,
+  });
+  isStrictAppleCapacityUpgradeMock.mockReset();
+  isStrictAppleCapacityUpgradeMock.mockResolvedValue(false);
 });
 
 const VALID_INPUT = { signedTransactionInfo: "ey.fake.transaction" };
@@ -409,6 +447,84 @@ describe("submitApplePurchase", () => {
     expect(persisted.status).toBe("revoked");
   });
 
+  it("STATUS DERIVATION: restoring MID-GRACE (expiresDate past, grace bound live) persists status in_grace_period — not expired", async () => {
+    // qa delta review (PR #515): the glue case the pure-function tests can't
+    // see from the action layer — the renewal payload must reach the
+    // derivation, and the derived grace status must be what's persisted.
+    const graceBound = Date.now() + 500_000;
+    verifySignedTransactionMock.mockResolvedValueOnce(
+      makeTransaction({ expiresDate: Date.now() - 100_000 }),
+    );
+    verifySignedRenewalInfoMock.mockResolvedValueOnce({
+      originalTransactionId: "otid_1",
+      autoRenewStatus: true,
+      gracePeriodExpiresDate: graceBound,
+      signedDate: Date.now(),
+      environment: "Production",
+      appAccountToken: "MINTED_TOKEN",
+    });
+
+    const result = await submitApplePurchase({
+      signedTransactionInfo: "ey.fake.transaction",
+      signedRenewalInfo: "ey.fake.renewal",
+    });
+
+    expect(result).toEqual({ ok: true, applied: true });
+    expect(applyAppleSnapshotMock).toHaveBeenCalledTimes(1);
+    const persisted = applyAppleSnapshotMock.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(persisted.status).toBe("in_grace_period");
+  });
+
+  it("STATUS DERIVATION (real composition): deriveActionSubmissionStatus + buildSnapshotFields carry the grace bound through — and only for in_grace_period", async () => {
+    // The module-level buildSnapshotFields mock in this file nulls the grace
+    // bound, so this test composes the REAL pure functions (importActual) to
+    // guard the derive→snapshot seam against either side silently changing.
+    const actual = await vi.importActual<
+      typeof import("@/lib/subscriptions/apple-lifecycle")
+    >("@/lib/subscriptions/apple-lifecycle");
+
+    const now = 1_750_000_000_000;
+    const graceBound = now + 500_000;
+    const midGraceTxn = {
+      originalTransactionId: "otid_1",
+      transactionId: "txn_1",
+      productId: "test.fv.tier1.monthly",
+      bundleId: "com.fromvictoryapp.app",
+      expiresDate: now - 100_000,
+      appAccountToken: "11111111-1111-4111-8111-111111111111",
+      signedDate: now - 50_000,
+      environment: "Production" as const,
+      revocationDate: null,
+      revocationReason: null,
+    };
+    const renewal = {
+      originalTransactionId: "otid_1",
+      autoRenewStatus: true,
+      gracePeriodExpiresDate: graceBound,
+      signedDate: now - 50_000,
+      environment: "Production" as const,
+      appAccountToken: "11111111-1111-4111-8111-111111111111",
+    };
+
+    const graceStatus = actual.deriveActionSubmissionStatus(midGraceTxn, renewal, now);
+    expect(graceStatus).toBe("in_grace_period");
+    const graceFields = actual.buildSnapshotFields(graceStatus, midGraceTxn, renewal);
+    expect(graceFields.gracePeriodExpiresAt).toBe(graceBound);
+
+    // Exhausted grace bound → expired, and the snapshot clears the bound.
+    const lapsedStatus = actual.deriveActionSubmissionStatus(
+      midGraceTxn,
+      { ...renewal, gracePeriodExpiresDate: now - 1_000 },
+      now,
+    );
+    expect(lapsedStatus).toBe("expired");
+    const lapsedFields = actual.buildSnapshotFields(lapsedStatus, midGraceTxn, {
+      ...renewal,
+      gracePeriodExpiresDate: now - 1_000,
+    });
+    expect(lapsedFields.gracePeriodExpiresAt).toBeNull();
+  });
+
   it("DUPLICATE BILLING: persists the Apple row AND fires the ops alert when an active Stripe row also exists — never blocks", async () => {
     stripeStatus = "active";
 
@@ -479,6 +595,172 @@ describe("beginApplePurchase — sanctioned token handoff (FV-572)", () => {
       expect(result.appAccountToken.length).toBeGreaterThan(0);
     }
   });
+
+  // -------------------------------------------------------------------------
+  // FV-581: duplicate-billing guard
+  // -------------------------------------------------------------------------
+
+  it("FV-581: already entitled via Apple -> already_subscribed, no mint", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "apple",
+    });
+    const result = await beginApplePurchaseWithMintSpy();
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+  });
+
+  it("FV-581: already entitled via Stripe -> already_subscribed, no mint", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "stripe",
+    });
+    const result = await beginApplePurchaseWithMintSpy();
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+  });
+
+  it("FV-581: already entitled via a comp grant -> already_subscribed, no mint", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "comp",
+    });
+    const result = await beginApplePurchaseWithMintSpy();
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+  });
+
+  it("FV-581: entitlement check errors (unknown) -> internal_error, no mint, fails SAFE", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "unknown",
+      provider: null,
+    });
+    const result = await beginApplePurchaseWithMintSpy();
+    expect(result.result).toEqual({ ok: false, error: "internal_error" });
+    expect(result.tokenTableTouched).toBe(false);
+    expect(notifyErrorMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("FV-581: not entitled -> existing mint behavior preserved byte-identical", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "not_entitled",
+      provider: null,
+    });
+    const result = await beginApplePurchase();
+    expect(result).toEqual({ ok: true, appAccountToken: "MINTED_TOKEN" });
+  });
+
+  // -------------------------------------------------------------------------
+  // FV-584 (KC decision D1): a DEGRADED payer is entitled too. This action
+  // only consults `getSubscribeEntitlementState`'s status/provider fields —
+  // the full-vs-degraded distinction is resolved entirely inside
+  // subscribe-guard.ts (see subscribe-guard.test.ts) — so these assert the
+  // same "entitled -> already_subscribed, no mint" behavior the guard now
+  // also returns for a degraded Apple/Stripe payer, not a new code path.
+  // -------------------------------------------------------------------------
+
+  it("FV-584: already entitled via a DEGRADED Apple subscription -> already_subscribed, no mint", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "apple",
+    });
+    const result = await beginApplePurchaseWithMintSpy();
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+  });
+
+  it("FV-584: already entitled via a DEGRADED Stripe subscription (e.g. past_due) -> already_subscribed, no mint", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "stripe",
+    });
+    const result = await beginApplePurchaseWithMintSpy();
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-586 (KC decision D3): Apple upgrade allowance
+// ---------------------------------------------------------------------------
+
+describe("beginApplePurchase — D3 upgrade allowance (FV-586)", () => {
+  beforeEach(() => {
+    currentUser = { id: PAYER_ID };
+    profileRole = "parent";
+    mintedTokenExisting = "MINTED_TOKEN";
+  });
+
+  it("apple-entitled + isStrictAppleCapacityUpgrade=true + requestedProductId -> allowed, mints a token", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "apple",
+    });
+    isStrictAppleCapacityUpgradeMock.mockResolvedValueOnce(true);
+
+    const result = await beginApplePurchase("tier_5_athletes");
+
+    expect(result).toEqual({ ok: true, appAccountToken: "MINTED_TOKEN" });
+    expect(isStrictAppleCapacityUpgradeMock).toHaveBeenCalledWith(
+      expect.anything(),
+      PAYER_ID,
+      "tier_5_athletes",
+    );
+  });
+
+  it("apple-entitled + isStrictAppleCapacityUpgrade=false (same/lower/unmapped product) -> already_subscribed, no mint", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "apple",
+    });
+    isStrictAppleCapacityUpgradeMock.mockResolvedValueOnce(false);
+
+    const result = await beginApplePurchaseWithMintSpy("tier_1_athlete");
+
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+  });
+
+  it("apple-entitled + NO requestedProductId supplied -> already_subscribed (pre-D3 refusal preserved byte-identical)", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "apple",
+    });
+
+    const result = await beginApplePurchaseWithMintSpy();
+
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+    // The capacity-upgrade check must never even run without a requested
+    // product id — nothing to evaluate.
+    expect(isStrictAppleCapacityUpgradeMock).not.toHaveBeenCalled();
+  });
+
+  it("stripe-entitled + requestedProductId supplied -> still already_subscribed (upgrade allowance is Apple-only)", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "stripe",
+    });
+
+    const result = await beginApplePurchaseWithMintSpy("tier_5_athletes");
+
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+    expect(isStrictAppleCapacityUpgradeMock).not.toHaveBeenCalled();
+  });
+
+  it("comp-entitled + requestedProductId supplied -> still already_subscribed (upgrade allowance is Apple-only)", async () => {
+    getSubscribeEntitlementStateMock.mockResolvedValueOnce({
+      status: "entitled",
+      provider: "comp",
+    });
+
+    const result = await beginApplePurchaseWithMintSpy("tier_5_athletes");
+
+    expect(result.result).toEqual({ ok: false, error: "already_subscribed" });
+    expect(result.tokenTableTouched).toBe(false);
+    expect(isStrictAppleCapacityUpgradeMock).not.toHaveBeenCalled();
+  });
 });
 
 /**
@@ -486,11 +768,13 @@ describe("beginApplePurchase — sanctioned token handoff (FV-572)", () => {
  * whether the service client's apple_purchase_tokens table was touched at
  * all (the gate must precede the mint write).
  */
-async function beginApplePurchaseWithMintSpy(): Promise<{
+async function beginApplePurchaseWithMintSpy(
+  requestedProductId?: string,
+): Promise<{
   result: Awaited<ReturnType<typeof beginApplePurchase>>;
   tokenTableTouched: boolean;
 }> {
   tokenTableTouches = 0;
-  const result = await beginApplePurchase();
+  const result = await beginApplePurchase(requestedProductId);
   return { result, tokenTableTouched: tokenTableTouches > 0 };
 }

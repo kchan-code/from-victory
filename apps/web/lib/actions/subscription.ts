@@ -58,10 +58,16 @@
  *   creation changes. Existing trials keep their promised duration and seat
  *   terms.
  *
- *   GATED — deliberately NOT implemented (FV-574 AC4, awaiting KC): trial-to-
- *   family conversion behavior (adding an athlete mid-trial). Mid-trial
- *   quantity-sync behavior on a trialing subscription is byte-identical to
- *   before this change.
+ *   DECIDED (FV-574 AC4, resolved by KC decision D3 / FV-586, 2026-09-17):
+ *   trial-to-family conversion (adding an athlete mid-trial) requires
+ *   EXPLICIT parent confirmation that ends the trial and starts the paid
+ *   family plan IMMEDIATELY — never a silent conversion or charge. That
+ *   guard is NOT in this file: it lives in `lib/actions/athletes.ts`'s
+ *   `createAthlete` (the add happens there, not in checkout), backed by
+ *   `lib/subscriptions/trial-conversion.ts`'s read-side state/quote helpers.
+ *   This file's checkout-creation flow is unaffected — mid-trial
+ *   quantity-sync behavior on an already-trialing subscription remains
+ *   byte-identical to before FV-586.
  *
  *   When trial-eligible:
  *     subscription_data.trial_period_days: 7
@@ -81,11 +87,28 @@
  *   (The 7-day/one-athlete trial-DURATION policy itself is FV-574 — see the
  *   trial-strategy section above.)
  *
+ * Duplicate-billing guard (FV-581, docs/fv210-ios-iap-decision-record.md
+ * Section 4.4; broadened to `degraded` by KC decision D1 / FV-584):
+ *   Before creating a Checkout session, `startSubscriptionCheckout` asks
+ *   `getSubscribeEntitlementState` (lib/subscriptions/subscribe-guard.ts)
+ *   whether this account is already `full` OR `degraded` via ANY provider
+ *   (Stripe, Apple, or a comp grant) — a degraded payer (past_due/paused/
+ *   etc.) already has a subscription to fix, not a reason to start a second
+ *   one. If so, no Checkout session is created — the account is redirected
+ *   to `/subscribe`, which the frontend pass renders as an already-
+ *   subscribed / manage state rather than a buy form ("Server decides;
+ *   client renders."). A read error from the entitlement check is treated as
+ *   `unknown`, NOT as "not entitled" — checkout is refused through the same
+ *   calm user-facing error path used elsewhere in this function, never
+ *   silently allowed to proceed and risk a double charge.
+ *
  * redirect() position:
  *   `redirect()` from next/navigation throws a NEXT_REDIRECT error internally.
  *   It must NOT be called inside a try/catch block that could swallow it. The
  *   session URL is captured in a variable before the try block exits, then
  *   redirect() is called at the top level after all try/catch blocks complete.
+ *   The entitlement-guard's `redirect("/subscribe")` (below) is likewise
+ *   called at the top level, before any try/catch in this function begins.
  *
  * First-touch UTM attribution (FV-396):
  *   If the client wrote a `fv_attribution` cookie (see
@@ -117,6 +140,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { planToPriceEnvVar } from "@/lib/subscriptions/plans";
 import { hasEverHeldAppleEntitlement } from "@/lib/subscriptions/apple";
+import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 
 // ---------------------------------------------------------------------------
 // First-touch UTM attribution (FV-396)
@@ -182,6 +206,41 @@ async function startSubscriptionCheckout(
    */
   trialQuantityEligible: boolean,
 ): Promise<SubscriptionActionState> {
+  // 2.5. Duplicate-billing guard (FV-581, record Section 4.4; broadened by
+  //      FV-584 / KC decision D1) — a payer already `full` OR `degraded`
+  //      (past_due/paused/etc.) via any provider must never see a fresh
+  //      Checkout session created for them; a degraded payer manages their
+  //      EXISTING subscription instead. Called BEFORE the price-id lookup so
+  //      an already-entitled payer never touches Stripe at all.
+  const entitlement = await getSubscribeEntitlementState(accountId);
+  if (entitlement.status === "entitled") {
+    // redirect() throws internally and must stay at the top level, outside
+    // any try/catch — see the "redirect() position" doc comment above. The
+    // explicit `return` below is defensive only (redirect() itself never
+    // returns in production) — it stops a non-throwing test double from
+    // silently falling through into Stripe checkout-session creation.
+    redirect("/subscribe");
+    return null;
+  }
+  if (entitlement.status === "unknown") {
+    // Fail CLOSED, same as the read-error branches below: a read failure
+    // must never be treated as "not entitled" and risk a double charge.
+    console.error(
+      `[subscription.startSubscriptionCheckout] entitlement check failed (account=${accountId}) — refusing checkout.`,
+    );
+    deliverInBackground(
+      notifyError(
+        "[checkout] entitlement check failed",
+        "getSubscribeEntitlementState returned unknown",
+        { parent_id: accountId },
+      ),
+    );
+    return {
+      ok: false,
+      error: "Couldn't start checkout right now. Try again in a moment.",
+    };
+  }
+
   // 3. Resolve the price ID from env. Both vars must be set before checkout
   //    can work; they are populated in .env.local by KC during Stripe setup.
   const envVar = planToPriceEnvVar(plan);

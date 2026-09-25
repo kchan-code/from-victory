@@ -29,11 +29,25 @@ export const metadata = {
  * visitor is authenticated; unauthenticated visitors hit the redirect
  * to /signin before they reach this page.
  *
+ * SEAT PAUSE (FV-585, KC decision D2): `enforce.ts`'s seat overlay redirects
+ * a billing-entitled-but-over-capacity minor athlete here with
+ * `?reason=seats`. This is a CAPACITY-SELECTION pause, not a billing
+ * problem — the copy must say so plainly and never mention money. A minor
+ * athlete cannot buy their way out of this either way, so the redirect is
+ * to the parent's dashboard action, same as the default copy. An
+ * adult_athlete is never seat-paused (see seat-state.ts's module doc), but
+ * the branch below still falls back to the existing adult copy defensively
+ * if `reason=seats` ever reached an adult session.
+ *
  * NOTE: The copy below may receive a content-curator polish pass before
  * launch. It is intentionally in Mentor voice (warm, direct, no shame).
  */
 
-export default async function AthletePausedPage() {
+export default async function AthletePausedPage({
+  searchParams,
+}: {
+  searchParams?: { reason?: string | string[] };
+}) {
   // Confirm the visitor is a signed-in athlete. If not signed in,
   // requireAthlete() redirects to /signin — no risk of sign-out loop.
   const { profile } = await requireAthlete();
@@ -41,6 +55,12 @@ export default async function AthletePausedPage() {
   // adult to /subscribe — they should never land here. But if one navigates here
   // directly, show a self-remedy path instead of "ask your parent".
   const isAdult = profile.role === "adult_athlete";
+  // FV-585: seat-selection pause variant. Adults are never seat-paused
+  // (seat-state.ts), so this only ever changes the copy for a minor athlete.
+  const reason = searchParams?.reason;
+  const isSeatPause =
+    (reason === "seats" || (Array.isArray(reason) && reason.includes("seats"))) &&
+    !isAdult;
   // Google Play "no in-app purchase" compliance: inside the legacy-native
   // shell, checkout.stripe.com has no reachable path (see
   // apps/native/capacitor.config.ts), so the adult reactivate link below must
@@ -88,11 +108,18 @@ export default async function AthletePausedPage() {
         </h1>
 
         {/* Body — warm, plain, no shame. Minor athlete: no pricing/checkout
-            (kids-privacy boundary). Adult self-payer: a self-remedy path. */}
-        <p className="font-body text-cream/75 text-[16px] leading-relaxed mb-3">
-          {isAdult
-            ? "Your training is on hold right now. You can reactivate any time from your subscription."
-            : "Your training is on hold right now. To get back in, ask your parent to reactivate access from their dashboard."}
+            (kids-privacy boundary). Adult self-payer: a self-remedy path.
+            Seat pause (FV-585): a capacity-selection moment, not billing —
+            no amounts, no plan details, just what to do next. */}
+        <p
+          className="font-body text-cream/75 text-[16px] leading-relaxed mb-3"
+          data-testid="paused-body-copy"
+        >
+          {isSeatPause
+            ? "Your family's plan has fewer spots right now. Ask your parent to choose who's active from their dashboard."
+            : isAdult
+              ? "Your training is on hold right now. You can reactivate any time from your subscription."
+              : "Your training is on hold right now. To get back in, ask your parent to reactivate access from their dashboard."}
         </p>
         <p className="font-body text-cream/50 text-[14px] leading-relaxed mb-10">
           Your data is safe. Nothing has been removed.

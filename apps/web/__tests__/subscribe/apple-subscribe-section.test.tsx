@@ -256,11 +256,215 @@ describe("AppleSubscribeSection — configured + bridge available", () => {
     );
   });
 
+  it("restore cancellation (dismissing the sign-in prompt) resets quietly — no error shown", async () => {
+    restoreMock.mockResolvedValue({ ok: false, error: "cancelled" });
+
+    await renderReady();
+    fireEvent.click(screen.getByTestId("apple-restore-submit"));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-restore-submit").textContent).toBe(
+        "Restore Purchases",
+      ),
+    );
+
+    expect(screen.queryByTestId("apple-subscribe-error")).toBeNull();
+    expect(screen.queryByTestId("apple-restore-empty")).toBeNull();
+    expect(screen.queryByTestId("apple-subscribe-success")).toBeNull();
+    expect(submitApplePurchaseMock).not.toHaveBeenCalled();
+    expect(refreshMock).not.toHaveBeenCalled();
+  });
+
   it("manage invocation calls bridge.manageSubscriptions", async () => {
     await renderReady();
     fireEvent.click(screen.getByTestId("apple-manage-link"));
 
     await waitFor(() => expect(manageSubscriptionsMock).toHaveBeenCalledTimes(1));
+  });
+});
+
+describe("AppleSubscribeSection — mode='manage' (FV-581 duplicate-billing guard)", () => {
+  it("renders Manage + Restore, NOT plan cards or the Subscribe button, when the bridge is available", async () => {
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    // Manage mode must not depend on the product catalog — leave it
+    // unconfigured (today's shipped default) to prove that.
+    getConfiguredAppleProductsMock.mockReturnValue([]);
+
+    render(<AppleSubscribeSection mode="manage" />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-manage-status")).toBeInTheDocument(),
+    );
+    expect(screen.getByTestId("apple-manage-status").textContent).toBe(
+      "You’re subscribed. Manage or restore below.",
+    );
+    expect(screen.getByTestId("apple-manage-link")).toBeInTheDocument();
+    expect(screen.getByTestId("apple-restore-submit")).toBeInTheDocument();
+    expect(screen.queryByTestId("apple-purchase-submit")).toBeNull();
+    expect(screen.queryByRole("radiogroup")).toBeNull();
+    expect(getStoreKitProductsMock).not.toHaveBeenCalled();
+  });
+
+  it("still falls back to the calm unavailable state when the bridge is absent", async () => {
+    isAppleIapBridgeAvailableMock.mockReturnValue(false);
+    getConfiguredAppleProductsMock.mockReturnValue([]);
+
+    render(<AppleSubscribeSection mode="manage" />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-subscribe-unavailable")).toBeInTheDocument(),
+    );
+    expect(screen.queryByTestId("apple-manage-status")).toBeNull();
+    expect(screen.queryByTestId("apple-manage-link")).toBeNull();
+    expect(screen.queryByTestId("apple-restore-submit")).toBeNull();
+  });
+
+  it("manage tap calls the bridge's manageSubscriptions", async () => {
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    getConfiguredAppleProductsMock.mockReturnValue([]);
+
+    render(<AppleSubscribeSection mode="manage" />);
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-manage-link")).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByTestId("apple-manage-link"));
+
+    await waitFor(() => expect(manageSubscriptionsMock).toHaveBeenCalledTimes(1));
+  });
+
+  it("restore path works the same as purchase mode (success, empty, error)", async () => {
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    getConfiguredAppleProductsMock.mockReturnValue([]);
+    restoreMock.mockResolvedValue({
+      ok: true,
+      transactions: [{ signedTransactionInfo: "jws-newest" }],
+    });
+    submitApplePurchaseMock.mockResolvedValue({ ok: true, applied: true });
+
+    render(<AppleSubscribeSection mode="manage" />);
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-restore-submit")).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByTestId("apple-restore-submit"));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-subscribe-success")).toBeInTheDocument(),
+    );
+    expect(refreshMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("AppleSubscribeSection — mode default ('purchase') is unchanged", () => {
+  it("renders the purchase UI (plan cards + Subscribe) when mode is omitted", async () => {
+    await renderReady();
+
+    expect(screen.getByTestId("apple-purchase-submit")).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup")).toBeInTheDocument();
+    expect(screen.queryByTestId("apple-manage-status")).toBeNull();
+  });
+
+  it("renders the purchase UI identically when mode is explicitly 'purchase'", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue(ONE_TIER);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    render(<AppleSubscribeSection mode="purchase" />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId(`apple-plan-card-${ONE_TIER[0]!.productId}`)).toBeInTheDocument(),
+    );
+    expect(screen.getByTestId("apple-purchase-submit")).toBeInTheDocument();
+    expect(screen.queryByTestId("apple-manage-status")).toBeNull();
+  });
+});
+
+describe("AppleSubscribeSection — mode='upgrade' (FV-586, KC decision D3)", () => {
+  const THREE_TIERS = [
+    { productId: "test.fv.tier1.monthly", athleteCapacity: 1, displayName: "1 Athlete" },
+    { productId: "test.fv.tier3.monthly", athleteCapacity: 3, displayName: "3 Athletes" },
+    { productId: "test.fv.tier5.monthly", athleteCapacity: 5, displayName: "5 Athletes" },
+  ];
+
+  it("offers only strictly-higher-capacity products, with the disclosure and an Add Athletes button", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue(THREE_TIERS);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+
+    render(<AppleSubscribeSection mode="upgrade" currentAppleCapacity={1} />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByTestId("apple-plan-card-test.fv.tier3.monthly"),
+      ).toBeInTheDocument(),
+    );
+
+    // The equal-or-lower tier is filtered out entirely.
+    expect(
+      screen.queryByTestId("apple-plan-card-test.fv.tier1.monthly"),
+    ).toBeNull();
+    expect(
+      screen.getByTestId("apple-plan-card-test.fv.tier5.monthly"),
+    ).toBeInTheDocument();
+
+    expect(screen.getByTestId("apple-upgrade-disclosure").textContent).toBe(
+      "Confirming with Apple switches you to this plan right away and ends any free trial. Apple bills the new plan on its own schedule and shows the price before you confirm.",
+    );
+    expect(screen.getByTestId("apple-upgrade-submit")).toHaveTextContent(
+      "Add Athletes",
+    );
+    expect(screen.queryByTestId("apple-purchase-submit")).toBeNull();
+  });
+
+  it("selects the first eligible (lowest strictly-higher) product by default", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue(THREE_TIERS);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+
+    render(<AppleSubscribeSection mode="upgrade" currentAppleCapacity={1} />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByTestId("apple-plan-card-test.fv.tier3.monthly"),
+      ).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByTestId("apple-plan-card-test.fv.tier3.monthly"),
+    ).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("falls back to the unavailable state when no configured product exceeds the current capacity", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue([THREE_TIERS[2]!]); // capacity 5
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+
+    render(<AppleSubscribeSection mode="upgrade" currentAppleCapacity={5} />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-subscribe-unavailable")).toBeInTheDocument(),
+    );
+    expect(screen.queryByTestId("apple-upgrade-submit")).toBeNull();
+  });
+
+  it("purchasing an upgrade passes the selected product id through beginApplePurchase and shows upgrade success copy", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue(THREE_TIERS);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    beginApplePurchaseMock.mockResolvedValue({ ok: true, appAccountToken: "token-abc" });
+    purchaseMock.mockResolvedValue({
+      ok: true,
+      signedTransactionInfo: "jws-txn",
+      signedRenewalInfo: undefined,
+    });
+    submitApplePurchaseMock.mockResolvedValue({ ok: true, applied: true });
+
+    render(<AppleSubscribeSection mode="upgrade" currentAppleCapacity={1} />);
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-upgrade-submit")).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByTestId("apple-upgrade-submit"));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("apple-subscribe-success")).toBeInTheDocument(),
+    );
+    expect(beginApplePurchaseMock).toHaveBeenCalledWith("test.fv.tier3.monthly");
+    expect(screen.getByTestId("apple-subscribe-success").textContent).toBe(
+      "You’re upgraded. Welcome to your family plan.",
+    );
+    expect(refreshMock).toHaveBeenCalledTimes(1);
   });
 });
 

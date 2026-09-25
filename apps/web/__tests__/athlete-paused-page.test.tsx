@@ -51,12 +51,15 @@ afterEach(() => {
   shellCapabilityMock.mockReturnValue(null);
 });
 
-async function renderPage(role: "athlete" | "adult_athlete") {
+async function renderPage(
+  role: "athlete" | "adult_athlete",
+  searchParams?: { reason?: string | string[] },
+) {
   requireAthleteMock.mockResolvedValue({
     userId: "athlete-1",
     profile: { id: "athlete-1", role, first_name: "Jordan" },
   });
-  const jsx = await AthletePausedPage();
+  const jsx = await AthletePausedPage({ searchParams });
   return render(jsx);
 }
 
@@ -116,5 +119,50 @@ describe("/athlete/paused — minor athlete boundary (untouched by shell-capabil
     expect(
       screen.queryByTestId("paused-native-shell-notice"),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("/athlete/paused — seat-pause copy variant (FV-585, KC decision D2)", () => {
+  it("shows the seat-pause copy for a minor athlete when reason=seats", async () => {
+    await renderPage("athlete", { reason: "seats" });
+
+    expect(screen.getByTestId("paused-body-copy")).toHaveTextContent(
+      "Your family's plan has fewer spots right now. Ask your parent to choose who's active from their dashboard.",
+    );
+    // Never billing details for a seat pause.
+    expect(screen.queryByText(/\$/)).not.toBeInTheDocument();
+    expect(screen.getByText("Your data is safe. Nothing has been removed.")).toBeInTheDocument();
+  });
+
+  it("keeps the default copy unchanged when there is no reason param", async () => {
+    await renderPage("athlete");
+
+    expect(screen.getByTestId("paused-body-copy")).toHaveTextContent(
+      "Your training is on hold right now. To get back in, ask your parent to reactivate access from their dashboard.",
+    );
+  });
+
+  it("keeps the default copy unchanged for an unrecognized reason value", async () => {
+    await renderPage("athlete", { reason: "billing" });
+
+    expect(screen.getByTestId("paused-body-copy")).toHaveTextContent(
+      "Your training is on hold right now. To get back in, ask your parent to reactivate access from their dashboard.",
+    );
+  });
+
+  it("an adult_athlete falls back to the existing adult copy even if reason=seats reaches them defensively", async () => {
+    await renderPage("adult_athlete", { reason: "seats" });
+
+    expect(screen.getByTestId("paused-body-copy")).toHaveTextContent(
+      "Your training is on hold right now. You can reactivate any time from your subscription.",
+    );
+  });
+
+  it("never uses 'kid' in the seat-pause copy (audience-language guard)", async () => {
+    await renderPage("athlete", { reason: "seats" });
+
+    expect(screen.getByTestId("paused-body-copy").textContent).not.toMatch(
+      /\bkid\b/i,
+    );
   });
 });

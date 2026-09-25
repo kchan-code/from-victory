@@ -39,8 +39,17 @@
 //    restore()
 //      -> { "ok": true, "transactions": [{ "signedTransactionInfo", "signedRenewalInfo"? }] }
 //         (NEWEST-FIRST by purchaseDate — the JS side relies on this order
-//         and does not re-sort)
+//         and does not re-sort). `AppStore.sync()` is attempted first as a
+//         best-effort refresh, but is NOT a precondition — a device that
+//         already holds the entitlement locally still resolves `ok: true`
+//         even if sync fails for a reason other than user cancellation
+//         (e.g. transient network/auth trouble mid-sign-in).
+//       | { "ok": false, "error": "cancelled" }
+//         (the user dismissed the "Sign in to Apple Account" / re-auth
+//         prompt that `AppStore.sync()` can surface — a calm, expected
+//         outcome, not an alarming error)
 //       | { "ok": false, "error": "failed" }
+//         (entitlement enumeration itself failed)
 //
 //    manageSubscriptions()
 //      -> { "ok": true } | { "ok": false, "error": "failed" }
@@ -53,12 +62,22 @@
 import Capacitor
 import Foundation
 import StoreKit
+import os
 
 @available(iOS 15.0, *)
 @objc(FVAppleIAPPlugin)
 public class FVAppleIAPPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "FVAppleIAPPlugin"
     public let jsName = "FVAppleIAPPlugin"
+
+    /// Mirrors the `os.Logger` pattern used in SceneDelegate.swift /
+    /// FVBridgeViewController.swift. NEVER log JWS payloads (transaction /
+    /// renewal info) here — only error types/descriptions, which carry no
+    /// purchase content.
+    private static let logger = os.Logger(
+        subsystem: Bundle.main.bundleIdentifier ?? "app",
+        category: "iap"
+    )
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "getProducts", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "purchase", returnType: CAPPluginReturnPromise),
@@ -184,36 +203,55 @@ public class FVAppleIAPPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func restore(_ call: CAPPluginCall) {
         Task {
+            // `AppStore.sync()` is a best-effort refresh, not a
+            // precondition — a device that already holds the entitlement
+            // locally (Transaction.currentEntitlements below) still
+            // restores correctly even when sync fails. The one outcome we
+            // treat as a real, calm "stop here" is the user dismissing the
+            // sign-in/re-auth prompt sync can surface.
             do {
                 try await AppStore.sync()
-
-                var entries: [(date: Date, payload: [String: String])] = []
-                for await verificationResult in Transaction.currentEntitlements {
-                    guard case .verified(let transaction) = verificationResult else {
-                        // Unverified entitlement — skip; never surfaced to
-                        // the server as if it were trustworthy.
-                        continue
-                    }
-                    var payload: [String: String] = [
-                        "signedTransactionInfo": verificationResult.jwsRepresentation,
-                    ]
-                    if let product = try? await Product.products(for: [transaction.productID]).first,
-                       let renewalJWS = await Self.currentRenewalInfoJWS(for: product) {
-                        payload["signedRenewalInfo"] = renewalJWS
-                    }
-                    entries.append((date: transaction.purchaseDate, payload: payload))
+            } catch let error as StoreKitError {
+                if case .userCancelled = error {
+                    call.resolve(["ok": false, "error": "cancelled"])
+                    return
                 }
-
-                // CONTRACT: newest-first — the JS wrapper reads
-                // transactions[0] as "the current one" and never re-sorts.
-                let transactions = entries
-                    .sorted { $0.date > $1.date }
-                    .map { $0.payload }
-
-                call.resolve(["ok": true, "transactions": transactions])
+                // Any other StoreKitError (network, system, not-entitled,
+                // unknown) — log and continue to local entitlements.
+                // Never log JWS payloads; only the error's type/description.
+                Self.logger.error(
+                    "restore: AppStore.sync() failed (continuing with local entitlements): \(String(describing: error), privacy: .public)"
+                )
             } catch {
-                call.resolve(["ok": false, "error": "failed"])
+                Self.logger.error(
+                    "restore: AppStore.sync() failed (continuing with local entitlements): \(String(describing: type(of: error)), privacy: .public) \(String(describing: error), privacy: .public)"
+                )
             }
+
+            var entries: [(date: Date, payload: [String: String])] = []
+            for await verificationResult in Transaction.currentEntitlements {
+                guard case .verified(let transaction) = verificationResult else {
+                    // Unverified entitlement — skip; never surfaced to
+                    // the server as if it were trustworthy.
+                    continue
+                }
+                var payload: [String: String] = [
+                    "signedTransactionInfo": verificationResult.jwsRepresentation,
+                ]
+                if let product = try? await Product.products(for: [transaction.productID]).first,
+                   let renewalJWS = await Self.currentRenewalInfoJWS(for: product) {
+                    payload["signedRenewalInfo"] = renewalJWS
+                }
+                entries.append((date: transaction.purchaseDate, payload: payload))
+            }
+
+            // CONTRACT: newest-first — the JS wrapper reads
+            // transactions[0] as "the current one" and never re-sorts.
+            let transactions = entries
+                .sorted { $0.date > $1.date }
+                .map { $0.payload }
+
+            call.resolve(["ok": true, "transactions": transactions])
         }
     }
 
