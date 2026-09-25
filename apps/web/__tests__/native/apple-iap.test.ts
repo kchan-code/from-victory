@@ -141,7 +141,7 @@ describe("restore", () => {
     expect(await restore()).toEqual({ ok: true, transactions: [] });
   });
 
-  it("passes through cancelled without treating it as failed", async () => {
+  it("passes through cancelled (dismissed sign-in/re-auth prompt) without treating it as failed", async () => {
     installBridge({ restore: vi.fn(async () => ({ ok: false, error: "cancelled" })) });
     expect(await restore()).toEqual({ ok: false, error: "cancelled" });
   });

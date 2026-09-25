@@ -207,16 +207,16 @@ describe("/dev/apple-iap-preview — renders the real AppleSubscribeSection", ()
     ).toBe("configuredProducts: 2");
   });
 
-  it("renders the real AppleSubscribeSection product cards (not a stub)", async () => {
+  it("renders the real AppleSubscribeSection plan summary (not a stub)", async () => {
     renderGated();
+    // FV-600: the per-product card list was replaced by a selector + ONE plan
+    // summary; pre-purchase there is nothing to manage, so no manage link.
     await waitFor(() =>
-      expect(
-        screen.getByTestId("apple-plan-card-test.fv.tier1.monthly"),
-      ).toBeInTheDocument(),
+      expect(screen.getByTestId("apple-plan-summary")).toBeInTheDocument(),
     );
     expect(screen.getByTestId("apple-purchase-submit")).toBeInTheDocument();
     expect(screen.getByTestId("apple-restore-submit")).toBeInTheDocument();
-    expect(screen.getByTestId("apple-manage-link")).toBeInTheDocument();
+    expect(screen.queryByTestId("apple-manage-link")).not.toBeInTheDocument();
   });
 
   it("renders the section's unavailable state when no products are configured (same component behavior as production)", async () => {

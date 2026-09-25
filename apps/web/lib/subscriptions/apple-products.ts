@@ -40,6 +40,20 @@
  *   - `displayName`     (optional string) — fallback label shown until/unless
  *                        `FVAppleIAPPlugin.getProducts` returns a localized
  *                        `displayName` from StoreKit for the same product id.
+ *   - `interval`        (optional, "month" | "year") — FV-600: the billing
+ *                        period this product bills on. StoreKit's
+ *                        `getProducts` bridge call returns only a
+ *                        `displayPrice`/`displayName` string, never a
+ *                        machine-readable subscription period, so the
+ *                        Monthly/Yearly selector and plan summary in
+ *                        `AppleSubscribeSection` read this field rather than
+ *                        parsing anything out of StoreKit. Omitted entirely
+ *                        until App Store Connect config (Open Item P2)
+ *                        assigns real product ids — the UI falls back to a
+ *                        best-effort guess parsed from the product id's
+ *                        suffix in that gap (see `AppleSubscribeSection`'s
+ *                        `intervalLabelFor` — display-only, never gates
+ *                        product resolution).
  *
  * NEVER hardcode a real Apple product id in this file or anywhere else in
  * production code — see the header above. Tests use obviously-fake ids
@@ -62,6 +76,8 @@ export interface AppleProductConfig {
   /** Presentational label only — see file header. Never a gating value. */
   athleteCapacity: number;
   displayName?: string;
+  /** Billing period, e.g. for the Monthly/Yearly selector — see file header. */
+  interval?: "month" | "year";
 }
 
 // ---------------------------------------------------------------------------
@@ -90,6 +106,14 @@ function isValidProductConfig(value: unknown): value is AppleProductConfig {
   if (
     candidate.displayName !== undefined &&
     typeof candidate.displayName !== "string"
+  ) {
+    return false;
+  }
+
+  if (
+    candidate.interval !== undefined &&
+    candidate.interval !== "month" &&
+    candidate.interval !== "year"
   ) {
     return false;
   }

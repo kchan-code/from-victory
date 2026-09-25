@@ -96,19 +96,26 @@ vi.mock("@/lib/native-shell", () => ({
 // own branching logic. The stub echoes the `mode` prop it was given
 // (data-mode) so the FV-581 matrix below can assert purchase vs manage, and
 // (FV-586) `currentAppleCapacity` so the D3 upgrade-wiring tests can assert
-// the page computed the right ceiling.
+// the page computed the right ceiling. (FV-600) `currentAppleProductId` is
+// echoed too, so the manage/upgrade wiring tests can assert the page passes
+// the same current-product id it resolved down to both branches (needed for
+// the component's "Current plan" block and its same-interval Change Plan
+// filter).
 vi.mock("@/components/subscribe/AppleSubscribeSection", () => ({
   AppleSubscribeSection: ({
     mode,
     currentAppleCapacity,
+    currentAppleProductId,
   }: {
     mode?: "purchase" | "manage" | "upgrade";
     currentAppleCapacity?: number;
+    currentAppleProductId?: string;
   }) => (
     <div
       data-testid="apple-subscribe-section-stub"
       data-mode={mode ?? "purchase"}
       data-current-apple-capacity={String(currentAppleCapacity ?? null)}
+      data-current-apple-product-id={String(currentAppleProductId ?? null)}
     />
   ),
 }));
@@ -670,10 +677,13 @@ describe("SubscribePage — Apple upgrade wiring (FV-586, KC decision D3)", () =
     const stub = getByTestId("apple-subscribe-section-stub");
     expect(stub).toHaveAttribute("data-mode", "manage");
     expect(stub).toHaveAttribute("data-current-apple-capacity", "null");
+    // No mapped product id either — the page must forward `null`, never
+    // fabricate one.
+    expect(stub).toHaveAttribute("data-current-apple-product-id", "null");
     expect(capacityForAppleProductMock).not.toHaveBeenCalled();
   });
 
-  it("mapped product but no configured product exceeds it: stays in manage mode", async () => {
+  it("mapped product but no configured product exceeds it: stays in manage mode, still forwards the current product id", async () => {
     asParent();
     shellCapabilityMock.mockReturnValue("ios-iap");
     entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "apple" });
@@ -688,6 +698,10 @@ describe("SubscribePage — Apple upgrade wiring (FV-586, KC decision D3)", () =
 
     const stub = getByTestId("apple-subscribe-section-stub");
     expect(stub).toHaveAttribute("data-mode", "manage");
+    // FV-600: the current product id is resolved regardless of whether an
+    // upgrade exists (needed by "manage" mode's own Current Plan block), so
+    // it's forwarded here even though there's no upgrade to offer.
+    expect(stub).toHaveAttribute("data-current-apple-product-id", "apple.tier3.monthly");
   });
 
   it("mapped product with a strictly-higher configured product: renders upgrade mode with the current capacity", async () => {
@@ -706,6 +720,7 @@ describe("SubscribePage — Apple upgrade wiring (FV-586, KC decision D3)", () =
     const stub = getByTestId("apple-subscribe-section-stub");
     expect(stub).toHaveAttribute("data-mode", "upgrade");
     expect(stub).toHaveAttribute("data-current-apple-capacity", "1");
+    expect(stub).toHaveAttribute("data-current-apple-product-id", "apple.tier1.monthly");
   });
 
   it("stripe-provider entitled payers never trigger the Apple capacity reads", async () => {
