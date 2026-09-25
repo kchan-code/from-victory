@@ -18,11 +18,12 @@ import "@testing-library/jest-dom/vitest";
 
 vi.mock("server-only", () => ({}));
 
-const { requireAthleteMock, isNativeShellMock } = vi.hoisted(() => ({
+const { requireAthleteMock, shellCapabilityMock } = vi.hoisted(() => ({
   requireAthleteMock: vi.fn(),
-  // Google Play "no in-app purchase" compliance. Defaults to false
-  // (ordinary web/PWA request) — individual tests override per case.
-  isNativeShellMock: vi.fn(() => false),
+  // Google Play "no in-app purchase" compliance + FV-572/577 capability.
+  // Defaults to null (ordinary web/PWA request) — individual tests override
+  // per case with "legacy-native" | "ios-iap" | null.
+  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
 }));
 
 vi.mock("@/lib/auth/guards", () => ({
@@ -30,7 +31,7 @@ vi.mock("@/lib/auth/guards", () => ({
 }));
 
 vi.mock("@/lib/native-shell", () => ({
-  isNativeShell: isNativeShellMock,
+  getRequestShellCapability: shellCapabilityMock,
 }));
 
 // SignOutButton pulls in localStorage-clearing helpers + the signOut server
@@ -47,7 +48,7 @@ afterEach(() => {
   vi.clearAllMocks();
   // clearAllMocks keeps mockReturnValue overrides — restore the
   // native-shell default so test order never matters.
-  isNativeShellMock.mockReturnValue(false);
+  shellCapabilityMock.mockReturnValue(null);
 });
 
 async function renderPage(role: "athlete" | "adult_athlete") {
@@ -59,9 +60,9 @@ async function renderPage(role: "athlete" | "adult_athlete") {
   return render(jsx);
 }
 
-describe("/athlete/paused — reactivate-link native-shell branch (adult_athlete)", () => {
-  it("shows the real 'Reactivate subscription' link to /subscribe when isNativeShell() is false", async () => {
-    isNativeShellMock.mockReturnValue(false);
+describe("/athlete/paused — reactivate-link shell-capability branch (adult_athlete, FV-572/577)", () => {
+  it("shows the real 'Reactivate subscription' link to /subscribe when capability is null (web)", async () => {
+    shellCapabilityMock.mockReturnValue(null);
 
     await renderPage("adult_athlete");
 
@@ -73,8 +74,8 @@ describe("/athlete/paused — reactivate-link native-shell branch (adult_athlete
     ).not.toBeInTheDocument();
   });
 
-  it("replaces the reactivate link with a neutral, non-tappable notice when isNativeShell() is true", async () => {
-    isNativeShellMock.mockReturnValue(true);
+  it("replaces the reactivate link with a neutral, non-tappable notice when capability is 'legacy-native'", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
 
     await renderPage("adult_athlete");
 
@@ -87,11 +88,26 @@ describe("/athlete/paused — reactivate-link native-shell branch (adult_athlete
       "Manage your From Victory subscription from a web browser at fromvictoryapp.com.",
     );
   });
+
+  it("keeps the real, price-free 'Reactivate subscription' link to /subscribe when capability is 'ios-iap'", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+
+    const { container } = await renderPage("adult_athlete");
+
+    const link = screen.getByTestId("paused-reactivate-link");
+    expect(link).toHaveAttribute("href", "/subscribe");
+    expect(link).toHaveTextContent("Reactivate subscription");
+    expect(
+      screen.queryByTestId("paused-native-shell-notice"),
+    ).not.toBeInTheDocument();
+    expect(container.textContent ?? "").not.toMatch(/web browser/i);
+    expect(container.textContent ?? "").not.toMatch(/\$/);
+  });
 });
 
-describe("/athlete/paused — minor athlete boundary (untouched by native-shell branching)", () => {
+describe("/athlete/paused — minor athlete boundary (untouched by shell-capability branching)", () => {
   it("a minor athlete sees neither the reactivate link nor the native-shell notice, in-shell or not", async () => {
-    isNativeShellMock.mockReturnValue(true);
+    shellCapabilityMock.mockReturnValue("legacy-native");
     await renderPage("athlete");
 
     expect(

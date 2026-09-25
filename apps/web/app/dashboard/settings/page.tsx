@@ -29,7 +29,7 @@ import { SendResetLinkButton } from "@/components/dashboard/SendResetLinkButton"
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireParent } from "@/lib/auth/guards";
 import { getDigestOptOut } from "@/lib/actions/digest-preferences";
-import { isNativeShell } from "@/lib/native-shell";
+import { getRequestShellCapability } from "@/lib/native-shell";
 import { createClient } from "@/lib/supabase/server";
 import { priceIdToLabel } from "@/lib/subscriptions/plans";
 
@@ -88,7 +88,15 @@ export default async function DashboardSettingsPage() {
   // allowNavigation — see apps/native/capacitor.config.ts), so neither the
   // Billing Portal button nor the "Choose a plan" link below may render as
   // tappable, Stripe-bound UI. See lib/native-shell.ts.
-  const nativeShell = isNativeShell();
+  //
+  // FV-577: `nativeShell` (both legacy-native and ios-iap) still gates the
+  // Billing Portal manage-subscription CTA below — Apple's IAP flow doesn't
+  // use Stripe's portal, so it stays suppressed for ios-iap too (out of this
+  // issue's entry-point scope). `legacyNative` / `iosIap` below scope the
+  // NEW three-way branch to the "no subscription yet" entry link only.
+  const shellCapability = getRequestShellCapability();
+  const nativeShell = shellCapability !== null;
+  const legacyNative = shellCapability === "legacy-native";
 
   // Read the parent's own email from the authenticated session. This is the
   // parent's real account email — not an athlete synthetic address. We read it
@@ -286,17 +294,20 @@ export default async function DashboardSettingsPage() {
               </div>
             </>
           ) : (
-            /* No subscription row. In-shell, checkout.stripe.com is
-               unreachable (Google Play compliance — see lib/native-shell.ts),
+            /* No subscription row. In legacy-native shell, checkout.stripe.com
+               is unreachable (Google Play compliance — see lib/native-shell.ts),
                so the "Choose a plan" link is dropped for plain text — same
                treatment as the dashboard subscribe CTA
-               (app/dashboard/page.tsx). */
+               (app/dashboard/page.tsx). FV-577: an ios-iap shell gets the same
+               price-free copy + /subscribe link as web — the existing web
+               copy here already carries no price, so it doubles as the
+               ios-iap entry point without any new string. */
             <div className="py-2">
               <p
                 className="font-body text-cream/70 text-[15px] leading-relaxed mb-4"
                 data-testid="no-subscription"
               >
-                {nativeShell ? (
+                {legacyNative ? (
                   <>
                     Subscribe to From Victory from a web browser at
                     fromvictoryapp.com.
@@ -305,7 +316,7 @@ export default async function DashboardSettingsPage() {
                   <>No active subscription.</>
                 )}
               </p>
-              {nativeShell ? null : (
+              {legacyNative ? null : (
                 <Link
                   href="/subscribe"
                   className="inline-flex items-center justify-center font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 min-h-[44px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
