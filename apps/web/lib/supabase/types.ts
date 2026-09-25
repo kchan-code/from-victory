@@ -222,6 +222,126 @@ export type Database = {
         }
         Relationships: []
       }
+      // FV-570: hand-added. Confirm shape via `supabase gen types typescript
+      // --linked` after `supabase db push` applies
+      // 20260911120000_apple_provider_access.sql to the linked project.
+      apple_subscriptions: {
+        Row: {
+          id: string
+          payer_id: string
+          environment: string
+          original_transaction_id: string
+          product_id: string
+          status: string
+          expires_at: string
+          grace_period_expires_at: string | null
+          auto_renew_status: boolean
+          app_account_token: string
+          last_signed_date: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          payer_id: string
+          environment: string
+          original_transaction_id: string
+          product_id: string
+          status: string
+          expires_at: string
+          grace_period_expires_at?: string | null
+          auto_renew_status?: boolean
+          app_account_token: string
+          last_signed_date: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          payer_id?: string
+          environment?: string
+          original_transaction_id?: string
+          product_id?: string
+          status?: string
+          expires_at?: string
+          grace_period_expires_at?: string | null
+          auto_renew_status?: boolean
+          app_account_token?: string
+          last_signed_date?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apple_subscriptions_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      // FV-570: hand-added. Confirm shape via `supabase gen types typescript
+      // --linked` after `supabase db push` applies
+      // 20260911120000_apple_provider_access.sql to the linked project.
+      // Service-role-only: RLS enabled, no policies (see migration comment).
+      apple_purchase_tokens: {
+        Row: {
+          payer_id: string
+          token: string
+          created_at: string
+        }
+        Insert: {
+          payer_id: string
+          token?: string
+          created_at?: string
+        }
+        Update: {
+          payer_id?: string
+          token?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apple_purchase_tokens_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      // FV-570: hand-added. Confirm shape via `supabase gen types typescript
+      // --linked` after `supabase db push` applies
+      // 20260911120000_apple_provider_access.sql to the linked project.
+      // Service-role-only: RLS enabled, no policies. KC-gated allowlist —
+      // see migration comment.
+      apple_sandbox_testers: {
+        Row: {
+          payer_id: string
+          note: string | null
+          added_at: string
+        }
+        Insert: {
+          payer_id: string
+          note?: string | null
+          added_at?: string
+        }
+        Update: {
+          payer_id?: string
+          note?: string | null
+          added_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apple_sandbox_testers_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       athlete_sessions: {
         Row: {
           athlete_id: string
