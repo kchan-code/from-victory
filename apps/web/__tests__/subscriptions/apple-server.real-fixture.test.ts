@@ -19,6 +19,12 @@
  *   3. A wrong bundleId is rejected under BOTH environment configurations —
  *      picking the "right" verifier via the environment claim never
  *      bypasses the bundleId check.
+ *   4. (FV-603) The same real fixture verifies when the root certs come from
+ *      a base64 round trip of these exact files (the `APPLE_ROOT_CA_BASE64`
+ *      route `loadRootCertificates()` uses in production) instead of a raw
+ *      file read (the `APPLE_ROOT_CA_PATHS` route used in beta/local dev) —
+ *      proving the two configuration sources are cryptographically
+ *      equivalent, not just superficially interchangeable.
  *
  * This file imports `@apple/app-store-server-library` directly (real
  * `SignedDataVerifier`, not `apple-server.ts`'s wrapper) for one reason:
@@ -127,6 +133,35 @@ describe("FV-598 real-fixture regression proof (real crypto, no SDK mocks)", () 
 
     expect(caught).toBeInstanceOf(VerificationException);
     expect(statusOf(caught)).toBe(VerificationStatus.INVALID_APP_IDENTIFIER);
+  });
+
+  it("FV-603: the same real fixture verifies when the root certs are base64-decoded (APPLE_ROOT_CA_BASE64 route) instead of read from disk (APPLE_ROOT_CA_PATHS route)", async () => {
+    // Simulates exactly what loadRootCertificates() does for
+    // APPLE_ROOT_CA_BASE64: base64-encode each DER cert (as an operator
+    // would when populating the env var), then decode back to a Buffer —
+    // proving the round trip preserves the real Apple root CA bytes closely
+    // enough for SignedDataVerifier to accept the real signed fixture.
+    const base64EncodedCertificates = ROOT_CERTIFICATES.map((cert) =>
+      cert.toString("base64"),
+    ).join(",");
+    const decodedCertificates = base64EncodedCertificates
+      .split(",")
+      .map((entry) => Buffer.from(entry, "base64"));
+
+    const sandboxVerifierFromBase64Roots = new SignedDataVerifier(
+      decodedCertificates,
+      false, // enableOnlineChecks — see file header.
+      Environment.SANDBOX,
+      REAL_BUNDLE_ID,
+    );
+
+    const decoded = await sandboxVerifierFromBase64Roots.verifyAndDecodeNotification(
+      REAL_SANDBOX_SIGNED_PAYLOAD,
+    );
+
+    expect(decoded.notificationType).toBe("TEST");
+    expect(decoded.data?.environment).toBe("Sandbox");
+    expect(decoded.data?.bundleId).toBe(REAL_BUNDLE_ID);
   });
 
   it("a wrong bundleId is ALSO rejected under the Production verifier — rejected in both environments", async () => {
