@@ -110,6 +110,7 @@ import {
   getAllSubscriptionStatuses,
   describeVerificationFailure,
 } from "@/lib/subscriptions/apple-server";
+import { readFileSync } from "node:fs";
 
 const TRANSACTION_JWS = "ey.fake.transaction";
 const RENEWAL_JWS = "ey.fake.renewal";
@@ -273,6 +274,79 @@ describe("verifySignedTransaction", () => {
     verifyAndDecodeTransactionMock.mockResolvedValueOnce(makeSdkTransaction());
     const result = await verifySignedTransaction(TRANSACTION_JWS);
     expect(result.revocationReason).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// loadRootCertificates — APPLE_ROOT_CA_BASE64 (FV-603)
+//
+// Exercised indirectly through verifySignedTransaction (which calls
+// buildVerifier -> loadRootCertificates), matching how APPLE_ROOT_CA_PATHS
+// is already covered in this file. node:fs stays mocked here (as for every
+// other test in this file) — the real-crypto BASE64 round trip against the
+// actual fixture certs is covered separately in
+// apple-server.real-fixture.test.ts.
+//
+// Each test here does `vi.resetModules()` + a fresh dynamic `import()` of
+// the module under test: `buildVerifier` caches `productionVerifier` at
+// module scope on first successful build (by design — see the module's
+// "SignedDataVerifier — lazily constructed, cached per environment"
+// section), and an earlier test in this file (`verifySignedTransaction`
+// "verifies against Production...") has already populated that cache. A
+// fresh module instance per test is the only way to actually re-exercise
+// `loadRootCertificates()` here rather than silently hitting the cache.
+// ---------------------------------------------------------------------------
+
+describe("loadRootCertificates — APPLE_ROOT_CA_BASE64", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it("wins over APPLE_ROOT_CA_PATHS (set to a nonexistent path) and is used to build the verifier", async () => {
+    const cert1 = Buffer.from("a".repeat(150)).toString("base64");
+    const cert2 = Buffer.from("b".repeat(150)).toString("base64");
+    process.env.APPLE_ROOT_CA_BASE64 = `${cert1},${cert2}`;
+    // Already set to a path that does not exist on disk (beforeEach); left
+    // in place to prove it is never consulted once BASE64 is set.
+    process.env.APPLE_ROOT_CA_PATHS = "/definitely/does/not/exist.cer";
+    verifyAndDecodeTransactionMock.mockResolvedValueOnce(makeSdkTransaction());
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    await fresh.verifySignedTransaction(TRANSACTION_JWS);
+
+    expect(readFileSync).not.toHaveBeenCalled();
+    const [roots] = signedDataVerifierCtorMock.mock.calls[0] as [Buffer[]];
+    expect(roots).toHaveLength(2);
+    expect(roots[0]?.equals(Buffer.from(cert1, "base64"))).toBe(true);
+    expect(roots[1]?.equals(Buffer.from(cert2, "base64"))).toBe(true);
+  });
+
+  it("rejects a malformed entry with an error naming APPLE_ROOT_CA_BASE64", async () => {
+    process.env.APPLE_ROOT_CA_BASE64 = "not-valid-base64!!!";
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    await expect(fresh.verifySignedTransaction(TRANSACTION_JWS)).rejects.toThrow(
+      /APPLE_ROOT_CA_BASE64/,
+    );
+  });
+
+  it("rejects an entry that decodes to fewer than 100 bytes", async () => {
+    process.env.APPLE_ROOT_CA_BASE64 = Buffer.from("too-short").toString("base64");
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    await expect(fresh.verifySignedTransaction(TRANSACTION_JWS)).rejects.toThrow(
+      /APPLE_ROOT_CA_BASE64/,
+    );
+  });
+
+  it("falls back to the existing APPLE_ROOT_CA_PATHS error when neither var is set", async () => {
+    delete process.env.APPLE_ROOT_CA_BASE64;
+    delete process.env.APPLE_ROOT_CA_PATHS;
+
+    const fresh = await import("@/lib/subscriptions/apple-server");
+    await expect(fresh.verifySignedTransaction(TRANSACTION_JWS)).rejects.toThrow(
+      /APPLE_ROOT_CA_PATHS is not configured/,
+    );
   });
 });
 

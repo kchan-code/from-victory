@@ -49,11 +49,26 @@
  * code in `lib/actions/apple-subscription.ts` and the Notifications V2
  * webhook, reading the VERIFIED payload's own `environment` field.
  *
- * Root-CA certificate loading: configurable via `APPLE_ROOT_CA_PATHS` (a
- * comma-separated list of absolute file paths to DER-encoded Apple root CA
- * certificates). This module only reads whatever is configured — it does not
- * fetch, embed, or rotate certificates itself. CA acquisition and rotation is
- * FV-573's runbook item.
+ * Root-CA certificate loading (FV-603): two supported sources, checked in
+ * this precedence order —
+ *
+ *   1. `APPLE_ROOT_CA_BASE64` — a comma-separated list of base64-encoded
+ *      DER Apple root CA certificates, decoded in-process. This is what
+ *      PRODUCTION uses (Vercel's serverless functions have no bundled
+ *      certificate files on disk to read at runtime).
+ *   2. `APPLE_ROOT_CA_PATHS` — a comma-separated list of absolute file
+ *      paths to DER-encoded Apple root CA certificates, read via
+ *      `readFileSync`. This is what BETA/LOCAL DEV use, where the certs
+ *      live on the filesystem.
+ *
+ * If `APPLE_ROOT_CA_BASE64` is set to a non-empty (post-trim) value it wins
+ * outright — `APPLE_ROOT_CA_PATHS` is never consulted, even if also set. If
+ * neither is set, `loadRootCertificates` throws the same clear
+ * "not configured" error as any other required env var.
+ *
+ * This module only reads whatever is configured — it does not fetch, embed,
+ * or rotate certificates itself. CA acquisition and rotation is FV-573's
+ * runbook item.
  */
 import "server-only";
 
@@ -157,7 +172,44 @@ function requiredEnv(name: string): string {
   return value;
 }
 
+/**
+ * Decodes one `APPLE_ROOT_CA_BASE64` list entry into a DER certificate
+ * `Buffer`, rejecting anything that isn't plausibly a real certificate:
+ * empty (post-trim), non-base64 characters, or a decoded length too small
+ * to be a real DER-encoded X.509 certificate (Apple's root CAs are several
+ * hundred bytes to ~1.5KB; 100 bytes is a generous floor that only catches
+ * garbage/truncated input, never a legitimate cert).
+ */
+function decodeBase64RootCertificate(entry: string, index: number): Buffer {
+  const position = `entry ${index + 1}`;
+  if (entry.length === 0) {
+    throw new Error(
+      `[subscriptions/apple-server] APPLE_ROOT_CA_BASE64 ${position} is empty.`,
+    );
+  }
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(entry)) {
+    throw new Error(
+      `[subscriptions/apple-server] APPLE_ROOT_CA_BASE64 ${position} is not valid base64.`,
+    );
+  }
+  const decoded = Buffer.from(entry, "base64");
+  if (decoded.length < 100) {
+    throw new Error(
+      `[subscriptions/apple-server] APPLE_ROOT_CA_BASE64 ${position} decoded to ${decoded.length} bytes, which is too small to be a valid DER certificate.`,
+    );
+  }
+  return decoded;
+}
+
 function loadRootCertificates(): Buffer[] {
+  const base64Raw = process.env.APPLE_ROOT_CA_BASE64;
+  if (base64Raw !== undefined && base64Raw.trim().length > 0) {
+    return base64Raw
+      .split(",")
+      .map((entry) => entry.trim())
+      .map((entry, index) => decodeBase64RootCertificate(entry, index));
+  }
+
   const raw = requiredEnv("APPLE_ROOT_CA_PATHS");
   const paths = raw
     .split(",")
