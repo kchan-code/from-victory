@@ -31,7 +31,7 @@ Merge bottom-up so each PR's base is already on `main`; every PR is qa + privacy
    - Docs (independent): #510 FV-210 spec · #517 FV-573 device QA checklist.
    Every stacked PR is retargeted to `main` once its base merges (GitHub does this automatically on merge of the base).
 2. #527 FV-584 → #528 FV-585 (migration `20260918090000_seat_selection.sql`) → #529 FV-586 → #538 FV-593 (dormant catalog).
-3. #539 FV-595 → #540 FV-596 (base of #539 is the #516 test branch — retarget to `main` after wave 1–2).
+3. #539 FV-595 → #540 FV-596 → #546 FV-597 (activation runbook + accessor pin; base of #539 is the #516 test branch — retarget to `main` after wave 1–2).
 4. #541 FV-598 → #545 FV-602 (migration `20260924120000_apple_pending_renewal_product.sql`; #541 base = #516 — retarget).
 5. #543 FV-600 → #544 FV-601 (#543 base = #516 — retarget).
 6. Native: #519 FV-573 (base #518) → #532 FV-588 → #533 FV-589 → #537 FV-594 → #542 FV-599 (build 1.0 (5) content).
@@ -48,14 +48,14 @@ when FV-600 lands (recorded on FV-600).
 - Production env (Vercel, names only): `APPLE_BUNDLE_ID=com.fromvictoryapp.app`, `APPLE_APP_APPLE_ID=6804743047`,
   `APPLE_ROOT_CA_PATHS` (Apple Root CA G3 + G2 — commit the public DER files under a server-readable path or load from
   a secure store; decide at deploy), `NEXT_PUBLIC_APPLE_PRODUCTS` = FV-593 `catalogToPublicProductsJson()` output (10 products;
-  add `interval` once emitted), `APPLE_CATALOG_ACTIVE=1` (activation = Tier-2, after FV-597 allowlist hygiene),
+  add `interval` once emitted), `APPLE_CATALOG_ACTIVE=1` (activation = Tier-2; run the FV-597 gate in `docs/apple-catalog-activation-runbook.md` first — read-only check must return 0 rows; the prepared allowlist SQL there is review-only until then),
   `APPLE_IAP_KEY_ID/ISSUER_ID/SIGNING_KEY_PATH` only if the App Store Server API reconcile path is enabled (not needed
   for purchase/webhook).
 - App Store Server Notifications: set the **Production** Server URL in ASC to `https://www.fromvictoryapp.com/api/webhooks/apple`
   (V2). Keep the Sandbox URL pointing at the beta tunnel only while the beta runs; afterwards point Sandbox at production
   too (Apple sends sandbox notifications for App Review purchases).
 - Sandbox isolation in production: `apple_sandbox_testers` allowlist (service-role only). Add the App Review account's
-  payer id before submission; remove QA entries (FV-597). Sandbox rows never grant access to non-allowlisted payers.
+  payer id before submission; remove QA entries — per the FV-597 runbook (#546). Sandbox rows never grant access to non-allowlisted payers.
 
 ## D. Review-eligible build plan (no Mac-dependent endpoint, not internal-only)
 - Build 1.0 (6) from the merged `main` native content: `CAPACITOR_SERVER_URL=https://www.fromvictoryapp.com` (default in
@@ -79,5 +79,5 @@ when FV-600 lands (recorded on FV-600).
   standard EULA) and Privacy Policy linked on the screen.
 
 ## G. Open items before the packet is final
-- FV-602 reviewed + folded (RC 20f1249); D2 fully proven 2026-09-25 (scheduled downgrade → renewal applied → FV-585 selection); D3 proven (sandbox tester trial → immediate upgrade); D3 trial-eligible-account evidence; FV-597 allowlist hygiene; real
+- FV-602 reviewed + folded (RC 20f1249); D2 fully proven 2026-09-25 (scheduled downgrade → renewal applied → FV-585 selection); D3 proven (sandbox tester trial → immediate upgrade); D3 trial-eligible-account evidence; FV-597 done (#546, folded); real
   review screenshots; Purchase Options + grace scope decisions; production notification URL; (#516 PR list enumerated above; #518 base dependency verified — see Wave C; an earlier note claiming a broken ancestry was a reversed check and is withdrawn).
