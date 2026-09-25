@@ -28,6 +28,11 @@ const config: CapacitorConfig = {
   appId: "com.fromvictoryapp.app",
   appName: "From Victory",
   webDir: "www",
+  // FV-502: WebView background. With targetSdk 36 (Android 16) the OS
+  // ignores StatusBar backgroundColor entirely — the edge-to-edge status-bar
+  // strip shows whatever is behind it, so the WebView (and the window, see
+  // android/app/src/main/res/values/styles.xml) must be brand onyx.
+  backgroundColor: "#050505",
   server: {
     url: serverUrl,
     androidScheme: "https",
@@ -51,6 +56,14 @@ const config: CapacitorConfig = {
   // inert on a real device while every server-side test still passed.
   appendUserAgent: "FVNativeShell/1",
   plugins: {
+    // FV-502: Capacitor 8 moved system-bar control into the core SystemBars
+    // plugin. "DARK" = dark bars with LIGHT icons. Without this it falls
+    // back to the device day/night mode (LIGHT by day = dark icons on our
+    // onyx strip). The legacy StatusBar block below stays for older-device
+    // (< Android 15) color painting.
+    SystemBars: {
+      style: "DARK",
+    },
     SplashScreen: {
       backgroundColor: "#050505",
       launchAutoHide: true,

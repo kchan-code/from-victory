@@ -7,16 +7,34 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <!-- FV-502: Capacitor 8's SystemBars resolves windowBackground via
+             the plugin context, which can land on this application-level
+             theme — keep it onyx here as well as on the launch theme. -->
+        <item name="android:windowBackground">@color/onyx</item>
     </style>
 
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-        <item name="android:background">@null</item>
+        <!-- FV-502: paint the window onyx so the edge-to-edge status-bar
+             strip matches the app (targetSdk 36 ignores setStatusBarColor;
+             the strip shows the window background). Replaces the template's
+             @null background. -->
+        <item name="android:windowBackground">@color/onyx</item>
     </style>
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="android:background">@drawable/splash</item>
+        <!-- FV-502: was @drawable/splash — a pure-white template PNG. The
+             branded dark splash the user sees is the SplashScreen PLUGIN
+             overlay (backgroundColor #050505 in capacitor.config.ts); this
+             theme background is what shows through the transparent status
+             bar under targetSdk 36 edge-to-edge, and it must be onyx. -->
+        <item name="android:background">@color/onyx</item>
+        <!-- FV-502: Capacitor 8's SystemBars paints the decor with THIS
+             theme's windowBackground (the launch theme stays active — there
+             is no postSplashScreenTheme swap), and with targetSdk 36 that is
+             what shows through the status-bar strip. Default was white. -->
+        <item name="android:windowBackground">@color/onyx</item>
     </style>
 </resources>
