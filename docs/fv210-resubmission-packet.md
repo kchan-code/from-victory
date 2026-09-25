@@ -21,9 +21,13 @@ Merge bottom-up so each PR's base is already on `main`; every PR is qa + privacy
    - Wave A (base `main`, independent): #505 FV-508 E2E harness · #506 FV-507 RLS grants · #508 FV-568 grant matrix ·
      #526 FV-583 E2E fixtures · #511 FV-570 Apple provider access · #512 FV-572 shell capability marker.
    - Wave B (base FV-570): #513 FV-574 web trial policy · #515 FV-571 verification + Notifications V2 lifecycle.
-   - Wave C (iOS purchase UI chain): #518 FV-572 purchase UI (base `feat/fv-572-ui-base` — **confirm at merge time that this
-     equals the #512 head**) → #521 FV-577 entry point → #522 FV-578 manage entry → #524 FV-580 error-visible status →
-     #525 FV-579 adult-athlete settings; and #523 FV-581 duplicate guard (base #518).
+   - Wave C (iOS purchase UI chain): #518 FV-572 purchase UI. Its base `feat/fv-572-ui-base` (8de8791) is an INTEGRATION
+     branch, not a PR: verified 2026-09-25 in kchan-code/from-victory that it = #512 head 87fa369 (merge-base) + merges of
+     #511 FV-570, #513 FV-574 and #515 FV-571 (the #518 diff against it is only the UI work). So #518 merges AFTER #512,
+     #511, #513, #515 are on `main`; then retarget #518 to `main` (if GitHub cannot, `git rebase --onto main 8de8791
+     feat/fv-572-ios-purchase-ui` in an isolated worktree, no force-push before re-review). Then #521 FV-577 entry point →
+     #522 FV-578 manage entry → #524 FV-580 error-visible status → #525 FV-579 adult-athlete settings; and #523 FV-581
+     duplicate guard (base #518).
    - Docs (independent): #510 FV-210 spec · #517 FV-573 device QA checklist.
    Every stacked PR is retargeted to `main` once its base merges (GitHub does this automatically on merge of the base).
 2. #527 FV-584 → #528 FV-585 (migration `20260918090000_seat_selection.sql`) → #529 FV-586 → #538 FV-593 (dormant catalog).
@@ -76,4 +80,4 @@ when FV-600 lands (recorded on FV-600).
 
 ## G. Open items before the packet is final
 - FV-602 reviewed + folded (RC 20f1249); D2 fully proven 2026-09-25 (scheduled downgrade → renewal applied → FV-585 selection); D3 proven (sandbox tester trial → immediate upgrade); D3 trial-eligible-account evidence; FV-597 allowlist hygiene; real
-  review screenshots; Purchase Options + grace scope decisions; production notification URL; (#516 PR list enumerated above). **Open:** `feat/fv-572-ui-base` (8de8791) is NOT an ancestor of the #512 head (87fa369) — #518's base must be re-derived before merge (likely retarget #518 onto #512 or `main` and re-verify its diff).
+  review screenshots; Purchase Options + grace scope decisions; production notification URL; (#516 PR list enumerated above; #518 base dependency verified — see Wave C; an earlier note claiming a broken ancestry was a reversed check and is withdrawn).
