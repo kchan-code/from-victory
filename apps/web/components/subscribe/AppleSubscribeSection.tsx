@@ -74,6 +74,7 @@
  */
 
 import { useEffect, useState, useTransition, type KeyboardEvent, type ReactNode } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import {
@@ -126,6 +127,17 @@ const RESTORE_SUCCESS_COPY = "Your subscription is restored.";
 const UPGRADE_DISCLOSURE_COPY =
   "Confirming with Apple switches you to this plan right away and ends any free trial. Apple bills the new plan on its own schedule and shows the price before you confirm.";
 const UPGRADE_SUCCESS_COPY = "You’re upgraded. Welcome to your family plan.";
+
+// FV-601 (App Review Guideline 3.1.2): the iOS in-app-purchase surface must
+// link to the binding Terms of Use and the Privacy Policy. Destinations are
+// LOCKED by FV-497 — do not change without a fresh product/legal decision:
+//   - Terms of Use -> Apple's OWN standard EULA. The iOS binary's purchase
+//     agreement is Apple's standard EULA, not the web signup Terms of Use at
+//     `/terms` (that page stays the web/parent signup agreement).
+//   - Privacy Policy -> the app's own `/privacy` page, same origin, opened
+//     in-app (not the system browser) so the existing in-page "Back to home"
+//     link (see app/privacy/page.tsx) returns the payer to the app normally.
+const APPLE_EULA_URL = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
 
 // ---------------------------------------------------------------------------
 // Local types
@@ -466,6 +478,56 @@ function PlanSummary({
         </p>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * FV-601 (App Review Guideline 3.1.2): a compact legal line rendered in BOTH
+ * the first-purchase state and the manage/upgrade state, directly below the
+ * primary action cluster. One short line, muted, 44px tap targets via
+ * padding — must never push Subscribe/Restore below the fold.
+ *
+ * - Privacy Policy -> `/privacy`, same-tab in-app `next/link` navigation
+ *   (no `target="_blank"`) so the Capacitor WebView stays in the app; the
+ *   page's own "Back to home" link (app/privacy/page.tsx) returns the payer.
+ * - Terms of Use -> Apple's own standard EULA (APPLE_EULA_URL, locked by
+ *   FV-497), `target="_blank" rel="noopener noreferrer"` mirroring the
+ *   external-link pattern on app/dashboard/settings/page.tsx. apple.com is
+ *   NOT in the Capacitor shell's `allowNavigation` allowlist
+ *   (apps/native/capacitor.config.ts), so this new-window navigation is
+ *   handled by @capacitor/ios's WebViewDelegationHandler.createWebViewWith,
+ *   which opens it via `UIApplication.shared.open` in the system browser
+ *   rather than inside the app's WebView — iOS then shows the
+ *   "< From Victory" back-to-app affordance. A visually-hidden suffix warns
+ *   screen-reader users the link leaves the app.
+ */
+function AppleLegalLinks() {
+  return (
+    <p className="mt-2 mb-2 text-center font-body text-[12px] text-cream/55 leading-relaxed">
+      <Link
+        href="/privacy"
+        data-testid="apple-legal-privacy"
+        className="inline-block min-h-[44px] py-3 px-1 underline underline-offset-2 hover:text-cream/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx rounded"
+      >
+        Privacy Policy
+      </Link>
+      <span aria-hidden className="mx-2 text-cream/30">
+        ·
+      </span>
+      <a
+        href={APPLE_EULA_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        data-testid="apple-legal-terms"
+        className="inline-block min-h-[44px] py-3 px-1 underline underline-offset-2 hover:text-cream/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx rounded"
+      >
+        Terms of Use
+        <span aria-hidden className="ml-1 text-cream/30">
+          &#8599;
+        </span>
+        <span className="sr-only"> (opens in your browser)</span>
+      </a>
+    </p>
   );
 }
 
@@ -843,6 +905,8 @@ export function AppleSubscribeSection({
           {actionState.kind === "restoring" ? "Restoring…" : "Restore Purchases"}
         </button>
 
+        <AppleLegalLinks />
+
         {mode === "upgrade" ? (
           <div className="mt-6">
             <button
@@ -1019,6 +1083,8 @@ export function AppleSubscribeSection({
       >
         {actionState.kind === "restoring" ? "Restoring…" : "Restore Purchases"}
       </button>
+
+      <AppleLegalLinks />
     </div>
   );
 }
