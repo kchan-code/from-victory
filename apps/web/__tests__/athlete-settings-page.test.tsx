@@ -43,16 +43,43 @@ vi.mock("react-dom", async (importOriginal) => {
   };
 });
 
-const { requireAthleteMock, maybeSingleMock, shellCapabilityMock } =
-  vi.hoisted(() => ({
-    requireAthleteMock: vi.fn(),
-    maybeSingleMock: vi.fn(),
-    // Google Play "no in-app purchase" compliance + FV-572/577 capability.
-    // Defaults to null (ordinary web/PWA request) — the shell-capability
-    // describe block below overrides it per test with
-    // "legacy-native" | "ios-iap" | null.
-    shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
-  }));
+const {
+  requireAthleteMock,
+  maybeSingleMock,
+  subscriptionsMaybeSingleMock,
+  shellCapabilityMock,
+  getActiveAppleProductIdResultMock,
+} = vi.hoisted(() => ({
+  requireAthleteMock: vi.fn(),
+  // push_subscriptions read (the "Daily reminder" row).
+  maybeSingleMock: vi.fn(),
+  // FV-579: subscriptions read (`.eq("parent_id", userId)`), consulted ONLY
+  // when `isAdult && iosIap` — see subscriptions-read-gating tests below.
+  // Defaults to "no Stripe row" so tests that don't care about the Stripe
+  // branch don't need to stub it explicitly.
+  subscriptionsMaybeSingleMock: vi.fn(
+    async () =>
+      ({ data: null, error: null }) as {
+        data: { status: string } | null;
+        error: { message: string } | null;
+      },
+  ),
+  // Google Play "no in-app purchase" compliance + FV-572/577 capability.
+  // Defaults to null (ordinary web/PWA request) — the shell-capability
+  // describe block below overrides it per test with
+  // "legacy-native" | "ios-iap" | null.
+  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
+  // FV-579/FV-580 — the centralized `apple_subscriptions` accessor. Defaults
+  // to "no active Apple entitlement, read succeeded"; individual tests
+  // override per case.
+  getActiveAppleProductIdResultMock: vi.fn(
+    async () =>
+      ({ productId: null, readError: false }) as {
+        productId: string | null;
+        readError: boolean;
+      },
+  ),
+}));
 
 vi.mock("@/lib/auth/guards", () => ({
   requireAthlete: requireAthleteMock,
@@ -64,14 +91,27 @@ vi.mock("@/lib/native-shell", () => ({
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: () => ({
-    from: () => ({
+    from: (table: string) => ({
       select: () => ({
         eq: () => ({
-          maybeSingle: maybeSingleMock,
+          maybeSingle:
+            table === "subscriptions" ? subscriptionsMaybeSingleMock : maybeSingleMock,
         }),
       }),
     }),
   }),
+}));
+
+// FV-579 — the page never issues a raw `apple_subscriptions` query itself;
+// it calls the ONE centralized service-role accessor. Mocking the whole
+// module keeps this test file from needing real Supabase env/service-role
+// wiring for a status read.
+vi.mock("@/lib/supabase/service", () => ({
+  createServiceClient: () => ({}),
+}));
+
+vi.mock("@/lib/subscriptions/apple", () => ({
+  getActiveAppleProductIdResult: getActiveAppleProductIdResultMock,
 }));
 
 // The BillingPortalButton and DeleteAccountSection Client Components import
@@ -89,9 +129,14 @@ import AthleteSettingsPage from "@/app/athlete/settings/page";
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
-  // clearAllMocks keeps mockReturnValue overrides — restore the
-  // native-shell default so test order never matters.
+  // clearAllMocks keeps mockReturnValue overrides — restore defaults so
+  // test order never matters.
   shellCapabilityMock.mockReturnValue(null);
+  subscriptionsMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+  getActiveAppleProductIdResultMock.mockResolvedValue({
+    productId: null,
+    readError: false,
+  });
 });
 
 const BASE_PROFILE = {
@@ -230,8 +275,12 @@ describe("/athlete/settings — shell-capability billing-portal suppression (Goo
     expect(screen.queryByTestId("billing-portal-btn")).not.toBeInTheDocument();
   });
 
-  it("shows a price-free 'Manage subscription' entry to /subscribe when capability is 'ios-iap' (FV-577)", async () => {
+  it("shows a price-free 'Manage subscription' entry to /subscribe when capability is 'ios-iap' and Apple-active (FV-577, gated by FV-579)", async () => {
     shellCapabilityMock.mockReturnValue("ios-iap");
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: "com.fromvictoryapp.app.plan1",
+      readError: false,
+    });
     const { container } = await renderSettings("adult_athlete");
 
     expect(screen.queryByTestId("billing-portal-btn")).not.toBeInTheDocument();
@@ -253,5 +302,218 @@ describe("/athlete/settings — shell-capability billing-portal suppression (Goo
       screen.queryByTestId("settings-subscribe-btn"),
     ).not.toBeInTheDocument();
     expect(screen.queryByTestId("billing-portal-btn")).not.toBeInTheDocument();
+  });
+});
+
+describe("/athlete/settings — ios-iap provider-aware, error-visible subscription control (FV-579)", () => {
+  it("Apple-active (no Stripe) → 'Manage subscription' link; no stripe-notice/choose-plan/neutral", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: "com.fromvictoryapp.app.plan1",
+      readError: false,
+    });
+    subscriptionsMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    await renderSettings("adult_athlete");
+
+    const link = screen.getByTestId("settings-subscribe-btn");
+    expect(link).toHaveAttribute("href", "/subscribe");
+    expect(link).toHaveTextContent("Manage subscription");
+    expect(
+      screen.queryByTestId("settings-stripe-manage-notice"),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("settings-choose-plan")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("settings-subscription-status-unavailable"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText(/manage or cancel your subscription/i)).toBeInTheDocument();
+  });
+
+  it("Stripe-active (no Apple) → browser manage notice; no manage link/choose-plan", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: null,
+      readError: false,
+    });
+    subscriptionsMaybeSingleMock.mockResolvedValue({
+      data: { status: "active" },
+      error: null,
+    });
+
+    await renderSettings("adult_athlete");
+
+    const notice = screen.getByTestId("settings-stripe-manage-notice");
+    expect(notice).toHaveAttribute("role", "status");
+    expect(notice).toHaveTextContent(
+      "Manage your From Victory subscription from a web browser at fromvictoryapp.com.",
+    );
+    expect(screen.queryByTestId("settings-subscribe-btn")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("settings-choose-plan")).not.toBeInTheDocument();
+    expect(screen.getByText(/manage or cancel your subscription/i)).toBeInTheDocument();
+  });
+
+  it("Stripe DEGRADED status (no Apple) → still counts as active, shows browser manage notice (pins full/degraded-both-active semantics)", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: null,
+      readError: false,
+    });
+    subscriptionsMaybeSingleMock.mockResolvedValue({
+      data: { status: "past_due" },
+      error: null,
+    });
+
+    await renderSettings("adult_athlete");
+
+    const notice = screen.getByTestId("settings-stripe-manage-notice");
+    expect(notice).toHaveAttribute("role", "status");
+    expect(notice).toHaveTextContent(
+      "Manage your From Victory subscription from a web browser at fromvictoryapp.com.",
+    );
+    expect(screen.queryByTestId("settings-subscribe-btn")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("settings-choose-plan")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("settings-subscription-status-unavailable"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("Apple precedence: dual-provider (Apple-active AND Stripe-active) still shows the Apple manage link", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: "com.fromvictoryapp.app.plan1",
+      readError: false,
+    });
+    subscriptionsMaybeSingleMock.mockResolvedValue({
+      data: { status: "active" },
+      error: null,
+    });
+
+    await renderSettings("adult_athlete");
+
+    expect(screen.getByTestId("settings-subscribe-btn")).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("settings-stripe-manage-notice"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("no subscription at all (both none, no errors) → 'Choose a plan'; no manage link, no notice, no helper line", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: null,
+      readError: false,
+    });
+    subscriptionsMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    await renderSettings("adult_athlete");
+
+    const link = screen.getByTestId("settings-choose-plan");
+    expect(link).toHaveAttribute("href", "/subscribe");
+    expect(link).toHaveTextContent("Choose a plan");
+    expect(screen.queryByTestId("settings-subscribe-btn")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("settings-stripe-manage-notice"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("settings-subscription-status-unavailable"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/manage or cancel your subscription/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("Apple read-error (no Stripe) → neutral 'couldn't load' status; no choose-plan, no $", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: null,
+      readError: true,
+    });
+    subscriptionsMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    const { container } = await renderSettings("adult_athlete");
+
+    const notice = screen.getByTestId("settings-subscription-status-unavailable");
+    expect(notice).toHaveAttribute("role", "status");
+    expect(notice).toHaveTextContent(
+      "We couldn’t load your subscription status. Please try again.",
+    );
+    expect(screen.queryByTestId("settings-choose-plan")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("settings-subscribe-btn")).not.toBeInTheDocument();
+    expect(container.textContent ?? "").not.toMatch(/\$/);
+    expect(
+      screen.queryByText(/manage or cancel your subscription/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("Stripe read-error (no Apple) → neutral 'couldn't load' status", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: null,
+      readError: false,
+    });
+    subscriptionsMaybeSingleMock.mockResolvedValue({
+      data: null,
+      error: { message: "boom" },
+    });
+
+    const { container } = await renderSettings("adult_athlete");
+
+    expect(
+      screen.getByTestId("settings-subscription-status-unavailable"),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("settings-choose-plan")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("settings-subscribe-btn")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("settings-stripe-manage-notice"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/manage or cancel your subscription/i),
+    ).not.toBeInTheDocument();
+    expect(container.textContent ?? "").not.toMatch(/\$/);
+  });
+
+  it("web (capability null): reads are NOT consulted, BillingPortalButton unchanged", async () => {
+    shellCapabilityMock.mockReturnValue(null);
+
+    await renderSettings("adult_athlete");
+
+    expect(getActiveAppleProductIdResultMock).not.toHaveBeenCalled();
+    expect(subscriptionsMaybeSingleMock).not.toHaveBeenCalled();
+    expect(screen.getByTestId("billing-portal-btn")).toBeInTheDocument();
+    expect(screen.getByText(/manage or cancel your subscription/i)).toBeInTheDocument();
+  });
+
+  it("legacy-native: reads are NOT consulted, browser notice unchanged", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
+
+    await renderSettings("adult_athlete");
+
+    expect(getActiveAppleProductIdResultMock).not.toHaveBeenCalled();
+    expect(subscriptionsMaybeSingleMock).not.toHaveBeenCalled();
+    expect(
+      screen.getByTestId("billing-portal-native-shell-notice"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/manage or cancel your subscription/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("minor athlete (role 'athlete') in ios-iap: Subscription section not rendered, reads never consulted", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+
+    await renderSettings("athlete");
+
+    expect(
+      screen.queryByRole("heading", { name: "Subscription" }),
+    ).not.toBeInTheDocument();
+    expect(getActiveAppleProductIdResultMock).not.toHaveBeenCalled();
+    expect(subscriptionsMaybeSingleMock).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("settings-subscribe-btn")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("settings-choose-plan")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("settings-stripe-manage-notice"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("settings-subscription-status-unavailable"),
+    ).not.toBeInTheDocument();
   });
 });
