@@ -408,3 +408,60 @@ verification REJECTION is real backend behavior (the production verifier
 ran and correctly refused), but it is NOT a positive Apple-sandbox
 entitlement result. No production data was touched; all test data is
 disposable `e2e-` local rows.
+
+## FV-588 — Xcode 27 raised its minimum supported deployment target to 15.0 (Podfile toolchain gotcha)
+
+The app target (`App.xcodeproj`, `Podfile` `platform :ios, '15.0'`) was
+already raised to iOS 15.0 (superseding the 14.0 pin flagged in §3 above).
+That alone was not enough: Capacitor's `assertDeploymentTarget(installer)`
+helper (invoked from `post_install` in the `Podfile`) only lifts pod
+*dependency* targets up to **14.0**, not 15.0. Xcode 27.0 (27A266a) dropped
+support for anything below iOS 15.0 — a plain `pod install` + build under
+Xcode 27 fails because the generated `Pods.xcodeproj` still carries
+`IPHONEOS_DEPLOYMENT_TARGET = 14.0` on every Capacitor pod target, which
+Xcode 27 now rejects outright (no CLI override was being passed; the
+project genuinely couldn't build clean).
+
+**Fix:** added a small raise-only floor immediately after
+`assertDeploymentTarget(installer)` in the `Podfile`'s `post_install`
+block that walks every pod target's build configurations and bumps
+`IPHONEOS_DEPLOYMENT_TARGET` up to `15.0` only when it is below `15.0`
+(never lowers a target that's already higher). This mirrors Capacitor's
+own helper shape rather than replacing it, so a future Capacitor upgrade
+that raises its own floor further won't be fought by this code — ours
+only guarantees the app's stated minimum (`platform :ios, '15.0'`) is
+actually honored by every dependency, which the stock helper doesn't do.
+
+**Verified (2026-09-21, Xcode 27.0/27A266a):**
+- `pod install` (not `pod update`) after the `Podfile` edit produced a
+  `Podfile.lock` with identical pod versions and identical
+  `SPEC CHECKSUMS` to a baseline install from the pre-fix `Podfile` (only
+  the `PODFILE CHECKSUM` line differs, as expected from the source-text
+  change) — confirms no dependency was bumped.
+- `grep -c "IPHONEOS_DEPLOYMENT_TARGET = 14" Pods/Pods.xcodeproj/project.pbxproj`
+  → `0`. All 14 `IPHONEOS_DEPLOYMENT_TARGET` occurrences in
+  `Pods.xcodeproj` read `15.0`; none were already higher than 15.0, so
+  nothing was lowered.
+- `xcodebuild -workspace App.xcworkspace -scheme App -configuration Debug
+  -sdk iphonesimulator -destination 'platform=iOS Simulator,id=<iPhone 17
+  Pro sim>' build` — clean `** BUILD SUCCEEDED **`, zero `error:` lines,
+  **no `IPHONEOS_DEPLOYMENT_TARGET=` command-line override** anywhere in
+  the invocation or build log.
+- Installed + launched the built `.app` on the iOS 26.5 simulator runtime
+  (`xcrun simctl install` / `launch`); the shell rendered the real
+  From Victory sign-in screen end to end against a local dev server —
+  proof the binary runs, not just compiles.
+- **FV-589 (iOS 27 UIScene launch crash) is explicitly NOT addressed
+  here** — `AppDelegate`/`Info.plist`/`SceneDelegate` were not touched.
+  This fix only proves a clean compile under Xcode 27; it says nothing
+  about launch behavior on an iOS 27 *runtime* (only the iOS 26.5
+  simulator runtime was exercised). Do not read this note as resolving
+  FV-589.
+
+**Toolchain gotcha for the next agent:** if `pod install` / a clean
+build starts failing again after a future Xcode bump, check first
+whether Xcode raised its *minimum supported* deployment target again —
+Capacitor's `assertDeploymentTarget` helper lags behind Xcode's floor by
+design (it targets the *previous* generation's minimum), so this
+raise-only `post_install` block will likely need its `15.0` constant
+bumped to match Xcode's new floor, not removed.
