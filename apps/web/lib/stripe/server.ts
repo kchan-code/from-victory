@@ -13,19 +13,7 @@ import "server-only";
 
 import Stripe from "stripe";
 
-/**
- * Outbound `Stripe-Version` header for API requests this process makes
- * (Checkout, retrieve, cancel, quantity updates).
- *
- * stripe@22 types `LatestApiVersion` as only the SDK pin (`2026-07-29.dahlia`).
- * Runtime still honors an older pin: the constructor copies `apiVersion` onto
- * the request header. Keep `2024-06-20` until FV-473 migrates request +
- * Dashboard webhook endpoint versions together.
- *
- * Webhook *payload* shapes are NOT controlled by this pin — they follow the
- * API version configured on the Stripe Dashboard webhook endpoint.
- */
-const STRIPE_API_VERSION = "2024-06-20";
+import { STRIPE_API_VERSION } from "@/lib/stripe/api-version";
 
 let _stripe: Stripe | null = null;
 
