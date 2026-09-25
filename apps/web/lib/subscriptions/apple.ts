@@ -11,7 +11,9 @@
  * code, not RLS — centralize it").
  *
  * Allowed callers: `./access` (the resolver fold), `./apple-capacity`
- * (capacity gate), `lib/actions/subscription.ts` (trial-history check).
+ * (capacity gate), `lib/actions/subscription.ts` (trial-history check),
+ * `app/dashboard/settings/page.tsx` (FV-578 — Apple-vs-Stripe manage-path
+ * status read, via `getActiveAppleProductId`).
  */
 import "server-only";
 
