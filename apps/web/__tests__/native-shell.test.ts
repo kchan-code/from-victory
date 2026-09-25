@@ -22,6 +22,7 @@ vi.mock("next/headers", () => ({
 }));
 
 import {
+  getRequestShellCapability,
   getShellCapability,
   isNativeShell,
   isNativeShellUserAgent,
@@ -170,6 +171,46 @@ describe("getShellCapability", () => {
     // The marker string contains the bare token as a substring, so a
     // bare-token-first implementation would wrongly return legacy-native here.
     expect(getShellCapability("FVNativeShell/1 (ios)")).toBe("ios-iap");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getRequestShellCapability — request-scoped equivalent of getShellCapability,
+// used by app/subscribe/page.tsx (FV-572) to branch three ways.
+// ---------------------------------------------------------------------------
+
+describe("getRequestShellCapability", () => {
+  afterEach(() => {
+    headerMap = {};
+  });
+
+  it("returns ios-iap for a request carrying the iOS capability marker", () => {
+    headerMap["user-agent"] =
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 FVNativeShell/1 (ios)";
+    expect(getRequestShellCapability()).toBe("ios-iap");
+  });
+
+  it("returns legacy-native for a request carrying only the bare token", () => {
+    headerMap["user-agent"] =
+      "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 FVNativeShell/1";
+    expect(getRequestShellCapability()).toBe("legacy-native");
+  });
+
+  it("returns null for an ordinary browser request", () => {
+    headerMap["user-agent"] =
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1";
+    expect(getRequestShellCapability()).toBe(null);
+  });
+
+  it("returns null when the User-Agent header is missing entirely", () => {
+    expect(getRequestShellCapability()).toBe(null);
+  });
+
+  it("stays in lockstep with getShellCapability() for the same header value", () => {
+    headerMap["user-agent"] = "some-browser FVNativeShell/1 (ios) extra-token";
+    expect(getRequestShellCapability()).toBe(
+      getShellCapability(headerMap["user-agent"]),
+    );
   });
 });
 
