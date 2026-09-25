@@ -62,6 +62,10 @@ import {
   type PregameSessionCache,
 } from "@/lib/pregame/session-cache";
 import { logActivityEvent } from "@/lib/actions/activity";
+import {
+  resolvePregameProfileDefaults,
+  type PregamePersonalization,
+} from "@/lib/pregame/profile-defaults";
 
 type Props = {
   athleteFirstName: string;
@@ -71,6 +75,16 @@ type Props = {
    * are unaffected until FV-27 wires athlete.sport from the DB.
    */
   sport?: Sport;
+  /**
+   * FV-253: the athlete's saved personalization-quiz answers (FV-228
+   * `profiles.position` / `profiles.focus_area`), read by the shell via the
+   * get_own_personalization RPC. Seeds the Today's Focus + Position pickers'
+   * INITIAL selection only — validated per sport in
+   * resolvePregameProfileDefaults, always editable in the flow, and never
+   * touches a restored "Run it like last time" session. Omitted / null /
+   * unmappable → nothing pre-selected (pre-FV-253 behaviour).
+   */
+  personalization?: PregamePersonalization | null;
 };
 
 type View =
@@ -111,8 +125,23 @@ async function isSavedSessionCached(
   return status.done;
 }
 
-export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
+export function PregameFlow({
+  athleteFirstName,
+  sport = "hockey",
+  personalization = null,
+}: Props) {
   const sportConfig: SportConfig = getSportConfig(sport);
+
+  // FV-253: the fresh-session starting state. INITIAL_STATE with the
+  // athlete's saved position + mapped focus-area need pre-selected when they
+  // validate against THIS sport's roles / needs; otherwise identical to
+  // INITIAL_STATE. Used wherever a session starts from scratch (mount +
+  // prepare-ahead). Every picker still writes through `set`, so a manual
+  // change in the flow wins over the pre-selection.
+  const startState: PregameState = {
+    ...INITIAL_STATE,
+    ...resolvePregameProfileDefaults(personalization, sportConfig),
+  };
 
   // Build the active flow by dropping steps the sport can't support:
   //  - "position": removed for no-ask sports (those that declare no roles).
@@ -145,7 +174,7 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   );
 
   const [view, setView] = useState<View>({ kind: "start" });
-  const [data, setData] = useState<PregameState>(INITIAL_STATE);
+  const [data, setData] = useState<PregameState>(startState);
 
   // FV-223: load saved session for the "Run it like last time" entry.
   // Null means no saved session, sport mismatch, unknown need, or invalid
@@ -294,10 +323,11 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
 
   // Prepare-ahead entry: start the PREPARE flow from step 0 of prepareFlow.
   // Resets state so the athlete starts fresh (no stale data from a prior run).
+  // "Fresh" = startState, so the FV-253 profile pre-selections apply here too.
   const beginPrepare = () => {
     fromSavedRef.current = false;
     completionFiredRef.current = false;
-    setData(INITIAL_STATE);
+    setData(startState);
     setView({ kind: "prepare-flow", index: 0 });
   };
 
