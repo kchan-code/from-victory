@@ -1,8 +1,17 @@
 # FV-210 App Review resubmission packet — DRAFT (2026-09-24)
 
-Purpose: everything needed to resubmit From Victory 1.0 to App Review with Apple in-app purchases, prepared
-ahead of the merge/deploy/submission decisions. **Nothing in this document is executed until KC decides:**
-no `main` merge, no auto-merge, no production change, no App Review submission.
+Purpose: everything needed to resubmit From Victory 1.0 to App Review with Apple in-app purchases.
+
+**KC APPROVAL 2026-09-25 (via Codex) — supersedes the FV-210 merge/deploy/submission hold, subject to passing gates:**
+1. All ten subscriptions App Store only; Apple Multiseat OFF; keep the 1–5-athlete plans; Family Sharing OFF.
+2. Grace period 16 days, PAID-TO-PAID renewals only; verify sandbox grace/access evidence before production activation.
+3. Real device captures for review screenshots (no personal account details); replace the illustrative placeholders.
+4. Merge the reviewed constituent PRs in verified order after required CI + QA/privacy; production migrations, configuration,
+   deployment, notification endpoints, reviewer allowlist, and release-build upload/testing authorized. Check heads,
+   migration/auto-deploy sequencing and rollback before merging; apply the FV-597 gate; never merge #516/#534 or unrelated PRs.
+5. After final checks: submit the review-eligible build + all ten subscriptions with reviewer access and an accurate 3.1.1
+   response. **Release type MANUAL; public release after approval is NOT authorized.**
+Prices and the 7-day one-athlete trial stay as configured. Stop on failed gates or materially new risks; no bypasses.
 
 ## A. What Apple rejected (3.1.1) and the response
 - Rejection: 1.0 (3), 2026-09-11, submission `26267c34-c178-4dff-818a-fb18d080d28c`, Guideline 3.1.1 — the app accessed
