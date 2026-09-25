@@ -3,13 +3,15 @@
  *
  * Runs once before the entire test suite. Responsibilities:
  *   1. REFUSE to run against the production Supabase project.
- *   2. Create a confirmed test parent account (service-role, bypasses email
- *      verification) and persist its storageState so specs start already
- *      signed in.
- *   3. Create a test athlete account linked to the parent, claim it through
- *      the /pair browser flow, and persist athlete.storageState.json.
- *   4. Register a teardown that deletes the parent + all child athletes
- *      created during the run so the run is idempotent.
+ *   2. Create confirmed test parent accounts (service-role, bypasses email
+ *      verification) — ONE PER parent-mutating project (see PARENT_FIXTURES,
+ *      FV-583) — and persist each one's storageState so specs start already
+ *      signed in without sharing a mutable athlete list across projects.
+ *   3. Create a test athlete account linked to the PRIMARY parent
+ *      (chromium-mobile-parent), claim it through the /pair browser flow,
+ *      and persist athlete.storageState.json.
+ *   4. Register a teardown that deletes every seeded parent + all child
+ *      athletes created during the run so the run is idempotent.
  *
  * All data created here is prefixed with "e2e-" so stray rows are
  * identifiable if cleanup ever fails mid-run.
@@ -89,17 +91,63 @@ export function assertNotProd(supabaseUrl: string): void {
 
 // ---------------------------------------------------------------------------
 // Test-parent credentials  (deterministic so they can be cleaned up reliably)
+//
+// FV-583: chromium-mobile-parent AND pixel7 both run multi-athlete.e2e.ts,
+// which MUTATES the signed-in parent's athlete list. Historically both
+// projects shared ONE seeded parent + storageState, so running them under
+// parallel workers (the local default) raced: both added "E2E Alpha" to the
+// SAME parent concurrently, producing a duplicate row and a Playwright
+// strict-mode violation. Each parent-mutating project now gets its OWN
+// seeded parent + storageState so their athlete lists never overlap, and
+// both can safely run in parallel.
 // ---------------------------------------------------------------------------
 
-export const TEST_PARENT_EMAIL = "e2e-parent@fromvictory.test";
-export const TEST_PARENT_PASSWORD = "e2e-TestParent-2024!";
-export const TEST_PARENT_FIRST_NAME = "E2E-Parent";
+export interface ParentFixture {
+  /** Playwright project name this fixture's storageState is wired to. */
+  projectName: string;
+  email: string;
+  password: string;
+  firstName: string;
+  storageStatePath: string;
+}
 
-export const STORAGE_STATE_PATH = path.join(
-  __dirname,
-  ".auth",
-  "parent.storageState.json",
-);
+// Named individually (rather than accessed via array index) so TypeScript's
+// noUncheckedIndexedAccess doesn't force `| undefined` on the back-compat
+// aliases below.
+const CHROMIUM_MOBILE_PARENT_FIXTURE: ParentFixture = {
+  projectName: "chromium-mobile-parent",
+  email: "e2e-parent@fromvictory.test",
+  password: "e2e-TestParent-2024!",
+  firstName: "E2E-Parent",
+  storageStatePath: path.join(__dirname, ".auth", "parent.storageState.json"),
+};
+
+const PIXEL7_PARENT_FIXTURE: ParentFixture = {
+  projectName: "pixel7",
+  email: "e2e-parent+pixel7@fromvictory.test",
+  password: "e2e-TestParent-2024!",
+  firstName: "E2E-Parent-Pixel7",
+  storageStatePath: path.join(
+    __dirname,
+    ".auth",
+    "parent-pixel7.storageState.json",
+  ),
+};
+
+export const PARENT_FIXTURES: ParentFixture[] = [
+  CHROMIUM_MOBILE_PARENT_FIXTURE,
+  PIXEL7_PARENT_FIXTURE,
+];
+
+// Back-compat aliases — the PRIMARY fixture (chromium-mobile-parent) is also
+// the parent the seeded test athlete (chromium-mobile-athlete's
+// storageState) is linked to, so other code that only needs "the" test
+// parent can keep referring to these.
+export const TEST_PARENT_EMAIL = CHROMIUM_MOBILE_PARENT_FIXTURE.email;
+export const TEST_PARENT_PASSWORD = CHROMIUM_MOBILE_PARENT_FIXTURE.password;
+export const TEST_PARENT_FIRST_NAME = CHROMIUM_MOBILE_PARENT_FIXTURE.firstName;
+export const STORAGE_STATE_PATH =
+  CHROMIUM_MOBILE_PARENT_FIXTURE.storageStatePath;
 
 // ---------------------------------------------------------------------------
 // Test-athlete credentials  (linked to the test parent)
@@ -150,22 +198,74 @@ async function globalSetup(_config: FullConfig): Promise<void> {
   // 1. Clean up any leftover e2e data from a previous interrupted run.
   // ------------------------------------------------------------------
   await cleanupExistingTestAthlete(service);
-  await cleanupExistingTestParent(service);
+  for (const fixture of PARENT_FIXTURES) {
+    await cleanupExistingTestParent(service, fixture.email);
+  }
 
   // ------------------------------------------------------------------
-  // 2. Create the test parent via auth.admin.createUser so the email is
-  //    pre-confirmed — no inbox required.
+  // 2. Create + sign in EACH seeded parent (one per parent-mutating
+  //    project — see PARENT_FIXTURES above for why).
   // ------------------------------------------------------------------
+  fs.mkdirSync(path.join(__dirname, ".auth"), { recursive: true });
+
+  const browser = await chromium.launch();
+  let primaryParentId: string | null = null;
+
+  try {
+    for (const fixture of PARENT_FIXTURES) {
+      const parentId = await createAndSignInParent(
+        service,
+        browser,
+        baseUrl,
+        fixture,
+      );
+      if (fixture.email === TEST_PARENT_EMAIL) {
+        primaryParentId = parentId;
+      }
+    }
+
+    if (!primaryParentId) {
+      throw new Error(
+        "[global-setup] Primary parent fixture (chromium-mobile-parent) was not seeded.",
+      );
+    }
+
+    // ------------------------------------------------------------------
+    // 3. Provision test athlete (linked to the PRIMARY parent only) and
+    //    save athlete storageState.
+    // ------------------------------------------------------------------
+    await provisionTestAthlete(service, primaryParentId, browser, baseUrl);
+  } finally {
+    await browser.close();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Parent provisioner
+//
+// Creates one seeded parent (auth user + profile), signs in through the real
+// /signin UI flow, and persists that fixture's storageState. Returns the new
+// parent's id.
+// ---------------------------------------------------------------------------
+
+async function createAndSignInParent(
+  service: ServiceClient,
+  browser: Browser,
+  baseUrl: string,
+  fixture: ParentFixture,
+): Promise<string> {
+  // Create the test parent via auth.admin.createUser so the email is
+  // pre-confirmed — no inbox required.
   const { data: created, error: createError } =
     await service.auth.admin.createUser({
-      email: TEST_PARENT_EMAIL,
-      password: TEST_PARENT_PASSWORD,
+      email: fixture.email,
+      password: fixture.password,
       email_confirm: true,
     });
 
   if (createError || !created.user) {
     throw new Error(
-      `[global-setup] Failed to create test parent: ${createError?.message ?? "unknown error"}`,
+      `[global-setup] Failed to create test parent (${fixture.projectName}): ${createError?.message ?? "unknown error"}`,
     );
   }
 
@@ -175,51 +275,45 @@ async function globalSetup(_config: FullConfig): Promise<void> {
   const { error: profileError } = await service.from("profiles").insert({
     id: parentId,
     role: "parent",
-    first_name: TEST_PARENT_FIRST_NAME,
+    first_name: fixture.firstName,
   });
 
   if (profileError) {
     // Roll back the auth user so the DB stays clean.
     await service.auth.admin.deleteUser(parentId);
     throw new Error(
-      `[global-setup] Failed to insert parent profile: ${profileError.message}`,
+      `[global-setup] Failed to insert parent profile (${fixture.projectName}): ${profileError.message}`,
     );
   }
 
-  // ------------------------------------------------------------------
-  // 3. Sign in through the app UI and save parent storageState.
-  //    Using the UI (not a direct Supabase token call) so the SSR cookie
-  //    session is wired exactly as the app expects it.
-  // ------------------------------------------------------------------
-  fs.mkdirSync(path.dirname(STORAGE_STATE_PATH), { recursive: true });
-
-  const browser = await chromium.launch();
+  // Sign in through the app UI and save this fixture's storageState.
+  // Using the UI (not a direct Supabase token call) so the SSR cookie
+  // session is wired exactly as the app expects it.
+  const parentPage = await browser.newPage();
 
   try {
-    const parentPage = await browser.newPage();
-
     await parentPage.goto(`${baseUrl}/signin`);
     await parentPage.waitForSelector('input[name="email"]');
 
-    await parentPage.fill('input[name="email"]', TEST_PARENT_EMAIL);
-    await parentPage.fill('input[name="password"]', TEST_PARENT_PASSWORD);
+    await parentPage.fill('input[name="email"]', fixture.email);
+    await parentPage.fill('input[name="password"]', fixture.password);
     await parentPage.click('button[type="submit"]');
 
     // After sign-in the app redirects parents to /dashboard.
     await parentPage.waitForURL("**/dashboard", { timeout: 15_000 });
 
-    await parentPage.context().storageState({ path: STORAGE_STATE_PATH });
-    await parentPage.close();
-
-    console.log("[global-setup] Test parent created and session saved.");
-
-    // ------------------------------------------------------------------
-    // 4. Provision test athlete and save athlete storageState.
-    // ------------------------------------------------------------------
-    await provisionTestAthlete(service, parentId, browser, baseUrl);
+    await parentPage
+      .context()
+      .storageState({ path: fixture.storageStatePath });
   } finally {
-    await browser.close();
+    await parentPage.close();
   }
+
+  console.log(
+    `[global-setup] Test parent created and session saved (${fixture.projectName}).`,
+  );
+
+  return parentId;
 }
 
 // ---------------------------------------------------------------------------
@@ -411,10 +505,11 @@ async function waitForClaimRedirect(page: Page): Promise<void> {
 
 export async function cleanupExistingTestParent(
   service: ServiceClient,
+  email: string,
 ): Promise<void> {
   // Find the parent by email.
   const { data: users } = await service.auth.admin.listUsers();
-  const existing = users?.users?.find((u) => u.email === TEST_PARENT_EMAIL);
+  const existing = users?.users?.find((u) => u.email === email);
   if (!existing) return;
 
   const parentId = existing.id;
