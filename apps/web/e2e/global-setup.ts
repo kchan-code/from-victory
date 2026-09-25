@@ -19,7 +19,12 @@ import { createHash, randomBytes } from "crypto";
 import fs from "fs";
 import path from "path";
 
-import { chromium, type Browser, type FullConfig } from "@playwright/test";
+import {
+  chromium,
+  type Browser,
+  type FullConfig,
+  type Page,
+} from "@playwright/test";
 import {
   createClient,
   type SupabaseClient as _SupabaseClient,
@@ -105,6 +110,10 @@ export const STORAGE_STATE_PATH = path.join(
 export const TEST_ATHLETE_EMAIL =
   "e2e-athlete@athletes.fromvictory.app";
 export const TEST_ATHLETE_PASSWORD = "e2e-TestAthlete-2024!";
+// FV-320: the /pair claim form requires a username (3-20 chars, [a-z0-9_],
+// not in RESERVED_USERNAMES). Deterministic so a re-claim after an
+// interrupted run resolves to the same athlete instead of a "taken" error.
+export const TEST_ATHLETE_USERNAME = "e2e_athlete";
 export const TEST_ATHLETE_FIRST_NAME = "E2E-Athlete";
 const TEST_ATHLETE_BIRTHDATE = "2007-06-15"; // ~18 y/o — safely above 13+ floor
 
@@ -325,19 +334,74 @@ async function provisionTestAthlete(
     // Wait for the claim form to be interactive.
     await page.waitForSelector('input[name="password"]', { timeout: 15_000 });
 
+    await page.fill('input[name="username"]', TEST_ATHLETE_USERNAME);
     await page.fill('input[name="password"]', TEST_ATHLETE_PASSWORD);
     await page.fill('input[name="password_confirm"]', TEST_ATHLETE_PASSWORD);
     await page.click('button[type="submit"]');
 
     // claimPairing redirects to /athlete on success (may further redirect to
     // /athlete/today or similar — the regex matches any /athlete* URL).
-    await page.waitForURL(/\/athlete/, { timeout: 15_000 });
+    //
+    // FV-508: race the redirect against the form's own error rendering. When
+    // the claim action rejects the submission (a new required field, a
+    // validation-message change, a burned code), the page stays on /pair and
+    // a bare waitForURL only ever reports "Timeout 15000ms exceeded" — which
+    // is exactly how the FV-320 username regression hid for months. Surfacing
+    // the alert text turns that into a one-line diagnosis.
+    await waitForClaimRedirect(page);
 
     await context.storageState({ path: ATHLETE_STORAGE_STATE_PATH });
 
     console.log("[global-setup] Test athlete created and session saved.");
   } finally {
     await context.close();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Claim-redirect waiter
+// ---------------------------------------------------------------------------
+
+/**
+ * Waits for the /pair claim to redirect to /athlete…, but fails FAST with the
+ * form's own error text if the claim action rejects the submission instead.
+ *
+ * Both field errors (components/auth/Field.tsx) and the form-level error
+ * (AthleteClaimForm.tsx) render with role="alert"; #__next-route-announcer__
+ * is Next.js's always-present live region and is excluded.
+ */
+async function waitForClaimRedirect(page: Page): Promise<void> {
+  const alert = page.locator('[role="alert"]:not(#__next-route-announcer__)');
+
+  const redirected = page
+    .waitForURL(/\/athlete/, { timeout: 15_000 })
+    .then(() => "redirected" as const);
+  const rejected = alert
+    .first()
+    .waitFor({ state: "visible", timeout: 15_000 })
+    .then(() => "rejected" as const);
+
+  // Whichever settles first wins; the loser's rejection is swallowed so it
+  // can't surface as an unhandled rejection after we've already thrown.
+  const outcome = await Promise.race([redirected, rejected]).catch(
+    (err: unknown) => {
+      throw new Error(
+        `[global-setup] /pair claim neither redirected to /athlete nor ` +
+          `rendered an error within 15s (still on ${page.url()}). ` +
+          `Original: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    },
+  );
+  void redirected.catch(() => {});
+  void rejected.catch(() => {});
+
+  if (outcome === "rejected") {
+    const messages = (await alert.allInnerTexts()).map((t) => t.trim());
+    throw new Error(
+      `[global-setup] /pair claim was rejected by the app (still on ` +
+        `${page.url()}): ${messages.join(" | ")}. ` +
+        `If the claim form gained a field, update provisionTestAthlete.`,
+    );
   }
 }
 
