@@ -31,22 +31,22 @@ vi.mock("react-dom", async (importOriginal) => {
   };
 });
 
-const { requireParentMock, isNativeShellMock, accessLevelMock } = vi.hoisted(
-  () => ({
+const { requireParentMock, shellCapabilityMock, accessLevelMock } =
+  vi.hoisted(() => ({
     requireParentMock: vi.fn(),
-    // Google Play "no in-app purchase" compliance. Defaults to false
-    // (ordinary web/PWA request) — individual tests override per case.
-    isNativeShellMock: vi.fn(() => false),
+    // Google Play "no in-app purchase" compliance + FV-572/577 capability.
+    // Defaults to null (ordinary web/PWA request) — individual tests
+    // override per case with "legacy-native" | "ios-iap" | null.
+    shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
     accessLevelMock: vi.fn(async () => "blocked"),
-  }),
-);
+  }));
 
 vi.mock("@/lib/auth/guards", () => ({
   requireParent: requireParentMock,
 }));
 
 vi.mock("@/lib/native-shell", () => ({
-  isNativeShell: isNativeShellMock,
+  getRequestShellCapability: shellCapabilityMock,
 }));
 
 vi.mock("@/lib/subscriptions/access", () => ({
@@ -103,7 +103,7 @@ afterEach(() => {
   vi.clearAllMocks();
   // clearAllMocks keeps mockReturnValue overrides — restore defaults so
   // test order never matters.
-  isNativeShellMock.mockReturnValue(false);
+  shellCapabilityMock.mockReturnValue(null);
   accessLevelMock.mockResolvedValue("blocked");
 });
 
@@ -116,9 +116,9 @@ async function renderPage() {
   return render(jsx);
 }
 
-describe("/dashboard — subscribe CTA native-shell branch (Google Play compliance)", () => {
-  it("shows the real 'Choose a plan' CTA with price copy when isNativeShell() is false", async () => {
-    isNativeShellMock.mockReturnValue(false);
+describe("/dashboard — subscribe CTA shell-capability branch (Google Play compliance, FV-572/577)", () => {
+  it("shows the real 'Choose a plan' CTA with price copy when capability is null (web)", async () => {
+    shellCapabilityMock.mockReturnValue(null);
 
     await renderPage();
 
@@ -130,8 +130,8 @@ describe("/dashboard — subscribe CTA native-shell branch (Google Play complian
     ).toBeInTheDocument();
   });
 
-  it("drops the CTA link and shows browser-subscribe copy when isNativeShell() is true", async () => {
-    isNativeShellMock.mockReturnValue(true);
+  it("drops the CTA link and shows browser-subscribe copy when capability is 'legacy-native'", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
 
     await renderPage();
 
@@ -146,9 +146,21 @@ describe("/dashboard — subscribe CTA native-shell branch (Google Play complian
     expect(screen.queryByText(/\$5\/mo for your first athlete/i)).toBeNull();
   });
 
-  it("never shows the subscribe CTA section at all when access is full, regardless of native-shell state", async () => {
+  it("shows a price-free in-app 'Choose a plan' entry to /subscribe when capability is 'ios-iap' (FV-577)", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+
+    const { container } = await renderPage();
+
+    const link = screen.getByTestId("dashboard-subscribe-cta");
+    expect(link).toHaveAttribute("href", "/subscribe");
+    expect(link).toHaveTextContent("Choose a plan");
+    expect(container.textContent ?? "").not.toMatch(/web browser/i);
+    expect(container.textContent ?? "").not.toMatch(/\$/);
+  });
+
+  it("never shows the subscribe CTA section at all when access is full, regardless of shell capability", async () => {
     accessLevelMock.mockResolvedValue("full");
-    isNativeShellMock.mockReturnValue(true);
+    shellCapabilityMock.mockReturnValue("legacy-native");
 
     await renderPage();
 

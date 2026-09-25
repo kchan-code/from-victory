@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireAthlete } from "@/lib/auth/guards";
-import { isNativeShell } from "@/lib/native-shell";
+import { getRequestShellCapability } from "@/lib/native-shell";
 
 export const metadata = {
   title: "Training Paused",
@@ -61,12 +61,15 @@ export default async function AthletePausedPage({
   const isSeatPause =
     (reason === "seats" || (Array.isArray(reason) && reason.includes("seats"))) &&
     !isAdult;
-  // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
-  // checkout.stripe.com has no reachable path (see
+  // Google Play "no in-app purchase" compliance: inside the legacy-native
+  // shell, checkout.stripe.com has no reachable path (see
   // apps/native/capacitor.config.ts), so the adult reactivate link below must
   // not render as a tappable link toward Stripe. Never affects the minor
-  // branch above — minors never see a reactivate link at all.
-  const nativeShell = isNativeShell();
+  // branch above — minors never see a reactivate link at all. FV-577: an
+  // ios-iap shell instead gets the same reactivate link as web — it already
+  // carries no price, so it doubles as the in-app entry to /subscribe, where
+  // AppleSubscribeSection renders the real StoreKit purchase surface.
+  const legacyNative = getRequestShellCapability() === "legacy-native";
 
   return (
     <main id="main-content" className="min-h-screen bg-onyx flex flex-col px-5 pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
@@ -124,11 +127,12 @@ export default async function AthletePausedPage({
 
         {/* Adult self-payer only: a direct path back to checkout. NEVER shown to
             a minor athlete — no pricing/Stripe for minors (privacy boundary).
-            Inside the native shell, checkout.stripe.com is unreachable (Google
-            Play compliance — see lib/native-shell.ts), so this becomes plain,
-            non-tappable text instead of a link. */}
+            Inside the legacy-native shell, checkout.stripe.com is unreachable
+            (Google Play compliance — see lib/native-shell.ts), so this becomes
+            plain, non-tappable text instead of a link. An ios-iap shell falls
+            through to the same reactivate link as web (FV-577). */}
         {isAdult ? (
-          nativeShell ? (
+          legacyNative ? (
             <div
               role="status"
               data-testid="paused-native-shell-notice"

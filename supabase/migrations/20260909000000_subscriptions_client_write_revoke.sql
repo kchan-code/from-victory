@@ -1,0 +1,84 @@
+-- =============================================================================
+-- Migration: 20260909000000_subscriptions_client_write_revoke.sql
+--
+-- Purpose: FV-507 — pin `subscriptions` to the intended two-layer denial model
+--   (no client write GRANT + no client write RLS policy) so client writes are
+--   denied deterministically on every stack, not just the ones whose default
+--   privileges happen to omit them.
+--
+-- Root cause: the RLS Harness CI job was green through 2026-08-24 (Supabase
+--   Postgres image 17.6.1.159) and went red on 2026-08-27 (image 17.6.1.165)
+--   with ZERO changes under supabase/ or ci.yml in between. The new local
+--   stack now reproduces Supabase's hosted-project default privileges (the
+--   platform's own `00000000000000-initial-schema.sql`:
+--   `alter default privileges in schema public grant all on tables to
+--   postgres, anon, authenticated, service_role`). Every table created by a
+--   `CREATE TABLE` in this repo's migrations therefore inherits
+--   `anon=arwdDxt/postgres` and `authenticated=arwdDxt/postgres` at creation
+--   time — including `subscriptions`. No migration in this repo ever granted
+--   INSERT/UPDATE/DELETE on `subscriptions` to a client role; the design
+--   comment in `20260520200000_baseline_profiles_links_subscriptions.sql`
+--   ("No INSERT / UPDATE / DELETE policies for clients... Restricting these
+--   operations to service role is intentional") assumed the ABSENCE of a
+--   grant would do the denying. `20260612000000_explicit_table_grants.sql`
+--   only ever added `grant select ... to authenticated` on this table — it
+--   never claimed to touch INSERT/UPDATE/DELETE, so it neither caused nor
+--   fixed this gap.
+--
+--   Net effect on a hosted-default stack: `authenticated` PASSES the grant
+--   check for UPDATE/DELETE/INSERT, so the request reaches the RLS layer.
+--   With no INSERT/UPDATE/DELETE policy on the table, RLS's default-deny
+--   applies row-by-row — every row is filtered out of the update/delete
+--   target set — so a client UPDATE/DELETE is a **zero-row no-op** (SQL
+--   succeeds, `0 rows affected`) rather than an error, and a client INSERT
+--   with a `with check` failure raises 42501 as expected via the policy
+--   engine, not the grant layer. No athlete/parent billing state was ever
+--   actually mutable this way (RLS still holds — this was never a real data
+--   exposure), but a harness that expects a hard SQLSTATE 42501 for ALL of
+--   INSERT/UPDATE/DELETE misreports the UPDATE/DELETE no-op as "unexpectedly
+--   SUCCEEDED", because it only checked error SHAPE, not EFFECT + privilege.
+--   (See the companion fix to `supabase/tests/rls/assertions/03_subscriptions.sql`
+--   and `18_adult_athlete_boundary.sql` AC(c6), which had the identical shape.)
+--
+-- Fix: make the grant-layer denial explicit and self-contained, exactly as
+--   `20260612000000_explicit_table_grants.sql` already does for SELECT on
+--   this table — REVOKE ALL first, then GRANT back only what's intended
+--   (SELECT to authenticated). PostgreSQL privileges are purely additive
+--   (there is no "deny" ACL entry, only the presence or absence of a grant),
+--   so an explicit REVOKE is the only way to pin the privilege set regardless
+--   of what a given stack's default-privilege inheritance handed the table at
+--   CREATE TABLE time. This statement is idempotent: revoking a privilege
+--   that isn't held is a no-op, and re-granting SELECT that's already held is
+--   a no-op.
+--
+-- Scope / non-goals:
+--   - No data change. No RLS policy change (the existing
+--     `subscriptions_select_own_parent` SELECT policy is untouched — this
+--     migration only touches the GRANT layer, which sits in front of RLS).
+--   - `service_role` is unaffected: `REVOKE ... FROM public, anon,
+--     authenticated` never names `service_role`, and
+--     `20260613040000_service_role_grants.sql` already grants it ALL on
+--     every table, including tables created afterward via its own
+--     `alter default privileges ... grant all on tables to service_role`.
+--     The Stripe webhook handler (`createServiceClient()`, the only writer
+--     of this table) is unaffected.
+--   - Safe to apply to the hosted project via the `db-migrate` workflow:
+--     that workflow runs migrations as the `postgres` role, which owns
+--     `public.subscriptions` (created by a prior `postgres`-run migration),
+--     so `REVOKE ALL ... FROM public, anon, authenticated` reaches every ACL
+--     entry on the table regardless of whether that entry came from an
+--     explicit GRANT or from `ALTER DEFAULT PRIVILEGES` inheritance at
+--     CREATE TABLE time — REVOKE operates on the object's actual ACL, not on
+--     the default-privileges delta that produced it.
+--   - `REVOKE ... FROM public` additionally strips any privilege PUBLIC may
+--     hold (Postgres does not grant PUBLIC anything on tables by default,
+--     unlike its EXECUTE-on-functions default — see
+--     `20260709000000_function_grant_default_deny.sql` for that unrelated
+--     mechanism — but naming `public` here costs nothing and closes that
+--     door too, matching the belt-and-suspenders posture of the sibling
+--     table-grants migration).
+-- =============================================================================
+
+revoke all privileges on table public.subscriptions from public, anon, authenticated;
+
+grant select on table public.subscriptions to authenticated;

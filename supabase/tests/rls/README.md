@@ -14,10 +14,11 @@ Run as role-scoped clients against a freshly-migrated local Supabase:
 | (a) | athlete A cannot SELECT athlete B's `journal_entries` rows |
 | (b) | parent (and anon) cannot SELECT `journal_entries` at all |
 | (c) | `athlete_session_metadata` returns aggregates only — column set is pinned, and parents see only linked athletes' aggregates, never content |
-| (d) | client roles cannot INSERT or UPDATE `subscriptions` (and athletes can't read them) |
+| (d) | client roles cannot write `subscriptions` at all (INSERT/UPDATE/DELETE, own row or cross-account; and athletes can't read them). Pins the grant layer directly (`has_table_privilege` matrix per role) as a pre-check, then diagnoses any UPDATE/DELETE fall-through by row-count effect (real mutation vs. zero-row RLS no-op), with a `service_role` positive control proving the harness can observe a real mutation — see `assertions/03_subscriptions.sql` (FV-507) |
 | (e) | `device_pairings` not readable by any client role (cross-user or own) |
 | (f) | `safety_events` unreadable by both athlete and parent roles |
 | (g) | FV-443: `adult_athlete` (18+ self-serve payer/trainee) is invisible to every parent, can never appear in `parent_athlete_links` on either side, cannot reach another profile / another account's `subscriptions` row / any `parent_athlete_links` row, CAN read (but not write) its own `subscriptions` row, and its private-column self-read (`get_own_personalization()`) carries no wider grant than the existing athlete pattern — see `assertions/18_adult_athlete_boundary.sql` |
+| (h) | FV-568: the FULL client-role grant matrix is pinned — every `public` relation × {anon, authenticated, service_role} × {SELECT, INSERT, UPDATE, DELETE} via `has_table_privilege`, the `profiles` column allowlist via `has_column_privilege`, the `activity_events_id_seq` sequence, every trigger/cron/RPC function via `has_function_privilege`, and a default-privilege probe (a table/sequence created inside a rolled-back transaction must not inherit client write grants). Effect probes with row-count diagnosis cover the service-role-only tables, plus service_role / athlete-self-write / anon-waitlist positive controls — see `assertions/19_client_grant_matrix.sql` |
 
 ## Why plain SQL (not supabase-js / pgTAP)
 
@@ -44,6 +45,34 @@ for this harness.
 per-role transaction structure here, and it adds an extension dependency for no
 extra coverage.
 
+### Grant layer vs RLS layer (FV-507)
+
+Postgres checks two independent layers before a client statement runs: the
+GRANT layer (does the role hold the privilege at all?) and, only if that
+passes, the RLS POLICY layer (which rows does the policy allow?). A table
+with no write policy denies writes via RLS's default-deny **only if the role
+also lacks the write grant** — with the grant present, a denied UPDATE/DELETE
+is a silent, successful, zero-row no-op, not an error, because the RLS
+`USING` clause just filters the target rows to nothing. This bit us for real:
+a Postgres image bump changed the local stack's default privileges out from
+under `subscriptions` with zero repo changes, and the harness's old
+error-shape-only assertion (`when insufficient_privilege`) had no branch for
+"succeeded and changed nothing," so it silently stopped testing what it
+claimed to test. Migrations must pin every client-write-sensitive table's
+grants explicitly (don't rely on a stack's default-privilege inheritance);
+assertions must check `has_table_privilege` **and** row-count effect, never
+the SQLSTATE alone.
+
+Supabase's platform default privileges for role `postgres` auto-grant
+SELECT/INSERT/UPDATE/DELETE (EXECUTE on functions, USAGE/SELECT/UPDATE on
+sequences) to `anon`, `authenticated`, and `service_role` on every new `public`
+object (docs: "Securing your API → Default privileges for new tables and
+functions"); `20260910133456_client_grant_matrix_pin.sql` applies the documented
+opt-out for the client roles and re-pins every existing object. The matrix in
+`19_client_grant_matrix.sql` is the single source of truth for client grants —
+adding a table, sequence, or function means adding its row there, and the
+migration that creates it must grant explicitly (never rely on inheritance).
+
 ## Layout
 
 ```
@@ -56,7 +85,8 @@ supabase/tests/rls/
 │   ├── 04_device_pairings.sql   # AC e
 │   ├── 05_safety_events.sql     # AC f
 │   ├── ...
-│   └── 18_adult_athlete_boundary.sql  # AC g (FV-443)
+│   ├── 18_adult_athlete_boundary.sql  # AC g (FV-443)
+│   └── 19_client_grant_matrix.sql     # AC h (FV-568) — the grant matrix of record
 ├── run.sh                 # seeds fixtures, then runs every assertions/*.sql
 └── README.md
 ```

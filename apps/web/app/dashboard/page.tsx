@@ -4,7 +4,7 @@ import Link from "next/link";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
-import { isNativeShell } from "@/lib/native-shell";
+import { getRequestShellCapability } from "@/lib/native-shell";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { getPayerSeatStateForCurrentParent } from "@/lib/subscriptions/seat-state";
 import { createClient } from "@/lib/supabase/server";
@@ -48,8 +48,13 @@ export default async function DashboardPage() {
   // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
   // checkout.stripe.com has no reachable path (see
   // apps/native/capacitor.config.ts), so the subscribe CTA below must not
-  // show a price or a link toward Stripe.
-  const nativeShell = isNativeShell();
+  // show a price or a link toward Stripe. FV-577: `legacy-native` keeps that
+  // exact suppression; `ios-iap` (an iOS build with the StoreKit purchase
+  // bridge, FV-572) instead gets a price-free in-app entry to /subscribe,
+  // where AppleSubscribeSection renders the real StoreKit purchase surface.
+  const shellCapability = getRequestShellCapability();
+  const legacyNative = shellCapability === "legacy-native";
+  const iosIap = shellCapability === "ios-iap";
 
   // FV-85: rhythm + session-count metadata. getAthleteMetadataMap() creates its
   // own auth-context client internally; RLS on athlete_session_metadata scopes
@@ -130,10 +135,16 @@ export default async function DashboardPage() {
                 Start training today.
               </p>
               <p className="font-body text-cream/60 text-[13px] leading-relaxed">
-                {nativeShell ? (
+                {legacyNative ? (
                   <>
                     Subscribe to From Victory from a web browser at
                     fromvictoryapp.com.
+                  </>
+                ) : iosIap ? (
+                  <>
+                    Daily mental-toughness training with faith built
+                    in&nbsp;&mdash; one session per day combining a mental
+                    skill and a scripture foundation.
                   </>
                 ) : (
                   <>
@@ -144,10 +155,12 @@ export default async function DashboardPage() {
                 )}
               </p>
             </div>
-            {/* Google Play compliance: inside the native shell,
+            {/* Google Play compliance: inside the legacy-native shell,
                 checkout.stripe.com is unreachable (see lib/native-shell.ts) —
-                no tappable CTA, just the plain text above. */}
-            {nativeShell ? null : (
+                no tappable CTA, just the plain text above. An ios-iap shell
+                gets the same /subscribe link as web — AppleSubscribeSection
+                renders the real StoreKit purchase surface there. */}
+            {legacyNative ? null : (
               <Link
                 href="/subscribe"
                 data-testid="dashboard-subscribe-cta"
