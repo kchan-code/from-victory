@@ -16,14 +16,22 @@ no `main` merge, no auto-merge, no production change, no App Review submission.
 
 ## B. Reviewed PR merge order (all currently DRAFT under the release hold)
 Merge bottom-up so each PR's base is already on `main`; every PR is qa + privacy APPROVED at its recorded SHA.
-1. The FV-210 web arc under `test/integration-fv210-arc-main` (#516 is TEST-ONLY — do not merge #516 itself). Enumerate
-   and merge its constituent issue PRs in base order (FV-570 … FV-583; `git log --first-parent origin/test/integration-fv210-arc-main`
-   lists the folds) — **TBD: produce the explicit list at merge time**.
+1. The FV-210 web arc under `test/integration-fv210-arc-main` (#516 is TEST-ONLY — never merged). Constituents, enumerated
+   2026-09-25 from `git log --first-parent origin/main..origin/test/integration-fv210-arc-main` + open-draft bases:
+   - Wave A (base `main`, independent): #505 FV-508 E2E harness · #506 FV-507 RLS grants · #508 FV-568 grant matrix ·
+     #526 FV-583 E2E fixtures · #511 FV-570 Apple provider access · #512 FV-572 shell capability marker.
+   - Wave B (base FV-570): #513 FV-574 web trial policy · #515 FV-571 verification + Notifications V2 lifecycle.
+   - Wave C (iOS purchase UI chain): #518 FV-572 purchase UI (base `feat/fv-572-ui-base` — **confirm at merge time that this
+     equals the #512 head**) → #521 FV-577 entry point → #522 FV-578 manage entry → #524 FV-580 error-visible status →
+     #525 FV-579 adult-athlete settings; and #523 FV-581 duplicate guard (base #518).
+   - Docs (independent): #510 FV-210 spec · #517 FV-573 device QA checklist.
+   Every stacked PR is retargeted to `main` once its base merges (GitHub does this automatically on merge of the base).
 2. #527 FV-584 → #528 FV-585 (migration `20260918090000_seat_selection.sql`) → #529 FV-586 → #538 FV-593 (dormant catalog).
-3. #539 FV-595 → #540 FV-596.
-4. #541 FV-598 → #545 FV-602 (migration `20260924120000_apple_pending_renewal_product.sql`).
-5. #543 FV-600 → #544 FV-601.
-6. Native: #519 FV-573 → #532 FV-588 → #533 FV-589 → #537 FV-594 → #542 FV-599 (build 1.0 (5) content).
+3. #539 FV-595 → #540 FV-596 (base of #539 is the #516 test branch — retarget to `main` after wave 1–2).
+4. #541 FV-598 → #545 FV-602 (migration `20260924120000_apple_pending_renewal_product.sql`; #541 base = #516 — retarget).
+5. #543 FV-600 → #544 FV-601 (#543 base = #516 — retarget).
+6. Native: #519 FV-573 (base #518) → #532 FV-588 → #533 FV-589 → #537 FV-594 → #542 FV-599 (build 1.0 (5) content).
+   Out of scope for this packet (not FV-210): #504/#507/#509/#514 (FV-253 / validation branches), #531 (marketing), #536 FV-590 (dormant Stripe harness, optional).
 7. RC #534 stays unmerged (validation branch). After merges, re-run the full gates on `main`.
 Also merge-adjacent: the RC-only test edit to `__tests__/dev-apple-iap-preview.test.tsx` must be replayed on the native line
 when FV-600 lands (recorded on FV-600).
@@ -67,5 +75,5 @@ when FV-600 lands (recorded on FV-600).
   standard EULA) and Privacy Policy linked on the screen.
 
 ## G. Open items before the packet is final
-- FV-602 reviewed + folded (RC 20f1249) — D2 downgrade evidence; D3 trial-eligible-account evidence; FV-597 allowlist hygiene; real
-  review screenshots; Purchase Options + grace scope decisions; production notification URL; enumerated #516 PR list.
+- FV-602 reviewed + folded (RC 20f1249); D2 part 1 proven (scheduled downgrade recorded), part 2 = DID_RENEW 2026-09-25 19:53:49Z; D3 trial-eligible-account evidence; FV-597 allowlist hygiene; real
+  review screenshots; Purchase Options + grace scope decisions; production notification URL; (#516 PR list enumerated above — one open check: `feat/fv-572-ui-base` ≙ #512 head).
