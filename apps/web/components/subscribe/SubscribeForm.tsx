@@ -151,9 +151,11 @@ function PlanCard({ plan, selected, onSelect }: PlanCardProps) {
 
 interface SubscribeFormProps {
   /**
-   * Whether this subscriber is eligible for the 14-day free trial.
-   * Derived server-side from the subscriptions row; passed as a prop so the
-   * trial banner is server-rendered and never shown to returning subscribers.
+   * Whether this subscriber is eligible for the 7-day free trial (FV-574:
+   * first-time, one-athlete checkouts only). Derived server-side from the
+   * subscriptions row + athlete count; passed as a prop so the trial banner
+   * is server-rendered and never shown to returning subscribers or
+   * multi-athlete first checkouts.
    */
   trialEligible: boolean;
   /**
@@ -222,14 +224,15 @@ export function SubscribeForm({
         ))}
       </div>
 
-      {/* 14-day free trial banner — shown ONLY for first-time subscribers.
-          The auto-charge line is a consumer-protection disclosure (FTC
-          negative-option guidance; kids-privacy-officer finding on PR #185) —
-          do not remove without privacy review. */}
+      {/* 7-day free trial banner (FV-574) — shown ONLY for first-time,
+          one-athlete subscribers. The auto-charge line is a
+          consumer-protection disclosure (FTC negative-option guidance;
+          kids-privacy-officer finding on PR #185) — do not remove without
+          privacy review. */}
       {trialEligible ? (
         <div data-testid="trial-eligible-banner" className="mb-4 text-center">
           <p className="font-body text-gold text-[14px] leading-relaxed">
-            14-day free trial &middot; cancel any time &middot; then{" "}
+            7-day free trial &middot; cancel any time &middot; then{" "}
             {selected === "annual" ? "$49/year" : "$5/month"}
           </p>
           <p

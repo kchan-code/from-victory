@@ -16,6 +16,21 @@
  *   Wrap every call in a void-and-catch or inside the helper itself (done
  *   below).
  *
+ * FV-586 (KC decision D3, 2026-09-17): a mid-trial athlete add that would
+ * cross a Stripe subscription into family territory (currentAthleteCount >=
+ * 1) is now intercepted UPSTREAM in `lib/actions/athletes.ts`'s
+ * `createAthlete`, before this function is ever called for that add — see
+ * `lib/subscriptions/trial-conversion.ts`. That guard performs its own
+ * `trial_end: "now"` + quantity Stripe update as part of the explicit
+ * confirmation, so by the time this function runs afterward the quantity
+ * already matches and this is a no-op (see the `item.quantity === quantity`
+ * early-return below). This function's BILLABLE_STATUSES / no-op contract is
+ * otherwise unchanged and still applies to every other caller — most
+ * notably a GRANDFATHERED multi-athlete trial (one created before FV-574's
+ * one-athlete trial policy) still syncs quantity down here when an athlete
+ * is deleted mid-trial; FV-586 only closes the silent-UPWARD-conversion gap
+ * on ADD, it does not change delete-time sync behavior.
+ *
  * NO-OP cases (handled silently, no error):
  *   - Parent has no subscriptions row  → pre-subscribe or trial-gap; skip.
  *   - subscriptions.status is not active/trialing → degraded/canceled; skip.

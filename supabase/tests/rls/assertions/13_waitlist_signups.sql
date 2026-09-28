@@ -41,6 +41,15 @@ begin;
   end $$;
 
   do $$
+  begin
+    -- FV-568: pin the grant layer directly first, so a regression is caught
+    -- by name immediately rather than only surfacing as "the SELECT succeeded"
+    -- below.
+    assert not has_table_privilege('anon', 'public.waitlist_signups', 'SELECT'),
+      'AC(b) FAIL: anon holds SELECT grant on waitlist_signups — grant layer regressed; check 20260910133456_client_grant_matrix_pin.sql';
+  end $$;
+
+  do $$
   declare
     ok boolean := false;
   begin

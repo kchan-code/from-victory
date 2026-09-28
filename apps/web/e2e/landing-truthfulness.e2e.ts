@@ -64,7 +64,11 @@ test.describe("Landing page — truthfulness regression guards", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
     // Wait for the main content to be present before making assertions.
-    await expect(page.locator("main, body")).toBeAttached();
+    // FV-508: `main, body` matched BOTH elements, which Playwright's strict
+    // mode rejects — every test in this file failed in beforeEach on CI.
+    // The landing page's <main id="main-content"> (app/page.tsx) is the
+    // single element we actually mean.
+    await expect(page.locator("#main-content")).toBeAttached();
   });
 
   // -------------------------------------------------------------------------

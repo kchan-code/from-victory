@@ -32,25 +32,83 @@
  *   checkout.session.completed. We do NOT create a Customer ourselves here —
  *   Checkout does it, the webhook records it.
  *
- * 14-day free trial strategy:
+ * 7-day / one-athlete free trial strategy (FV-574; originally 14-day, FV-217):
  *   The trial is applied conditionally in code — NOT baked into the Stripe Price
  *   object — so we can enforce a one-trial-per-account rule. An account is
- *   trial-eligible if and only if they have NO `subscriptions` row at checkout
- *   time. The webhook writes the row when checkout.session.completed fires, so
- *   any subsequent checkout attempt (cancel-and-resubscribe, plan change) finds
- *   an existing row and receives no trial. We reuse the `existingSub` read —
- *   no second DB query.
+ *   trial-eligible if and only if:
+ *     (a) they have NO `subscriptions` row at checkout time — the webhook
+ *         writes the row when checkout.session.completed fires, so any
+ *         subsequent checkout attempt (cancel-and-resubscribe, plan change)
+ *         finds an existing row and receives no trial (we reuse the
+ *         `existingSub` read — no second DB query);
+ *     (b) they have never held a Production Apple entitlement (cross-provider
+ *         one-trial rule, FV-570 — see next section); and
+ *     (c) the checkout starts with exactly ONE athlete seat (KC-approved
+ *         offering, FV-574: new trials are seven days for one athlete).
+ *         Multi-athlete first checkouts receive no trial fields. Callers pass
+ *         `trialQuantityEligible` explicitly; the parent action derives it
+ *         FAIL-CLOSED — an athlete-count read error still lets checkout
+ *         proceed at the quantity floor of 1, but disables the trial, so the
+ *         fallback can never hand a multi-athlete family a trial (PR #185
+ *         contract). The adult self-serve flow is always quantity 1 and
+ *         passes true.
+ *
+ *   Grandfathering is structural (FV-574 AC2): nothing here touches existing
+ *   subscriptions, trials, or any Stripe object — only NEW checkout-session
+ *   creation changes. Existing trials keep their promised duration and seat
+ *   terms.
+ *
+ *   DECIDED (FV-574 AC4, resolved by KC decision D3 / FV-586, 2026-09-17):
+ *   trial-to-family conversion (adding an athlete mid-trial) requires
+ *   EXPLICIT parent confirmation that ends the trial and starts the paid
+ *   family plan IMMEDIATELY — never a silent conversion or charge. That
+ *   guard is NOT in this file: it lives in `lib/actions/athletes.ts`'s
+ *   `createAthlete` (the add happens there, not in checkout), backed by
+ *   `lib/subscriptions/trial-conversion.ts`'s read-side state/quote helpers.
+ *   This file's checkout-creation flow is unaffected — mid-trial
+ *   quantity-sync behavior on an already-trialing subscription remains
+ *   byte-identical to before FV-586.
  *
  *   When trial-eligible:
- *     subscription_data.trial_period_days: 14
- *     payment_method_collection: "always"   ← card collected up front; auto-charges on day 14.
- *   When not eligible (row exists, any status): no trial fields emitted.
+ *     subscription_data.trial_period_days: 7
+ *     payment_method_collection: "always"   ← card collected up front; auto-charges on day 7.
+ *   When not eligible: no trial fields emitted.
+ *
+ * Cross-provider one-trial rule (FV-570, docs/fv210-ios-iap-decision-record.md
+ * Section 4.5):
+ *   Trial eligibility additionally requires that the account has NEVER held a
+ *   Production Apple entitlement (`hasEverHeldAppleEntitlement`, scoped to
+ *   Production only — see that function's doc comment for why Sandbox rows
+ *   don't count). This stops a payer who already had a real trial/subscription
+ *   on iOS from getting a second free trial on the web. The Apple-mirror read
+ *   uses the SAME fail-closed contract as the existing Stripe read immediately
+ *   below (PR #185): a read error aborts checkout through the identical
+ *   user-facing error path rather than risking a duplicate trial.
+ *   (The 7-day/one-athlete trial-DURATION policy itself is FV-574 — see the
+ *   trial-strategy section above.)
+ *
+ * Duplicate-billing guard (FV-581, docs/fv210-ios-iap-decision-record.md
+ * Section 4.4; broadened to `degraded` by KC decision D1 / FV-584):
+ *   Before creating a Checkout session, `startSubscriptionCheckout` asks
+ *   `getSubscribeEntitlementState` (lib/subscriptions/subscribe-guard.ts)
+ *   whether this account is already `full` OR `degraded` via ANY provider
+ *   (Stripe, Apple, or a comp grant) — a degraded payer (past_due/paused/
+ *   etc.) already has a subscription to fix, not a reason to start a second
+ *   one. If so, no Checkout session is created — the account is redirected
+ *   to `/subscribe`, which the frontend pass renders as an already-
+ *   subscribed / manage state rather than a buy form ("Server decides;
+ *   client renders."). A read error from the entitlement check is treated as
+ *   `unknown`, NOT as "not entitled" — checkout is refused through the same
+ *   calm user-facing error path used elsewhere in this function, never
+ *   silently allowed to proceed and risk a double charge.
  *
  * redirect() position:
  *   `redirect()` from next/navigation throws a NEXT_REDIRECT error internally.
  *   It must NOT be called inside a try/catch block that could swallow it. The
  *   session URL is captured in a variable before the try block exits, then
  *   redirect() is called at the top level after all try/catch blocks complete.
+ *   The entitlement-guard's `redirect("/subscribe")` (below) is likewise
+ *   called at the top level, before any try/catch in this function begins.
  *
  * First-touch UTM attribution (FV-396):
  *   If the client wrote a `fv_attribution` cookie (see
@@ -79,7 +137,10 @@ import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { getStripe } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { planToPriceEnvVar } from "@/lib/subscriptions/plans";
+import { hasEverHeldAppleEntitlement } from "@/lib/subscriptions/apple";
+import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 
 // ---------------------------------------------------------------------------
 // First-touch UTM attribution (FV-396)
@@ -135,7 +196,51 @@ async function startSubscriptionCheckout(
   accountId: string,
   quantity: number,
   plan: "monthly" | "annual",
+  /**
+   * FV-574: whether the checkout's seat count qualifies for the 7-day/
+   * one-athlete trial. Passed explicitly (rather than derived from
+   * `quantity`) because the parent action's quantity FALLS BACK to 1 on an
+   * athlete-count read error — the trial gate must fail closed in that case
+   * while checkout itself still proceeds. Adults are always quantity 1 and
+   * pass true.
+   */
+  trialQuantityEligible: boolean,
 ): Promise<SubscriptionActionState> {
+  // 2.5. Duplicate-billing guard (FV-581, record Section 4.4; broadened by
+  //      FV-584 / KC decision D1) — a payer already `full` OR `degraded`
+  //      (past_due/paused/etc.) via any provider must never see a fresh
+  //      Checkout session created for them; a degraded payer manages their
+  //      EXISTING subscription instead. Called BEFORE the price-id lookup so
+  //      an already-entitled payer never touches Stripe at all.
+  const entitlement = await getSubscribeEntitlementState(accountId);
+  if (entitlement.status === "entitled") {
+    // redirect() throws internally and must stay at the top level, outside
+    // any try/catch — see the "redirect() position" doc comment above. The
+    // explicit `return` below is defensive only (redirect() itself never
+    // returns in production) — it stops a non-throwing test double from
+    // silently falling through into Stripe checkout-session creation.
+    redirect("/subscribe");
+    return null;
+  }
+  if (entitlement.status === "unknown") {
+    // Fail CLOSED, same as the read-error branches below: a read failure
+    // must never be treated as "not entitled" and risk a double charge.
+    console.error(
+      `[subscription.startSubscriptionCheckout] entitlement check failed (account=${accountId}) — refusing checkout.`,
+    );
+    deliverInBackground(
+      notifyError(
+        "[checkout] entitlement check failed",
+        "getSubscribeEntitlementState returned unknown",
+        { parent_id: accountId },
+      ),
+    );
+    return {
+      ok: false,
+      error: "Couldn't start checkout right now. Try again in a moment.",
+    };
+  }
+
   // 3. Resolve the price ID from env. Both vars must be set before checkout
   //    can work; they are populated in .env.local by KC during Stripe setup.
   const envVar = planToPriceEnvVar(plan);
@@ -193,9 +298,41 @@ async function startSubscriptionCheckout(
   }
 
   const existingCustomerId = existingSub?.stripe_customer_id ?? null;
-  // Trial is ONLY offered when there is no existing row. If ANY row exists
-  // (any status — active, canceled, trialing) the account has already had a trial.
-  const isTrialEligible = existingSub === null;
+
+  // Cross-provider one-trial rule (FV-570, record Section 4.5): also check
+  // whether this account ever held a Production Apple entitlement. Same
+  // fail-CLOSED contract as the Stripe read above (PR #185) — a read error
+  // must never risk granting a trial the account shouldn't have, so it
+  // aborts checkout through the identical user-facing error path.
+  let appleEverHeld: boolean;
+  try {
+    const service = createServiceClient();
+    appleEverHeld = await hasEverHeldAppleEntitlement(service, accountId);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(
+      `[subscription.startSubscriptionCheckout] apple entitlement read failed (account=${accountId}): ${message}`,
+    );
+    deliverInBackground(
+      notifyError("[checkout] apple entitlement read failed", message, {
+        parent_id: accountId,
+      }),
+    );
+    return {
+      ok: false,
+      error: "Couldn't start checkout right now. Try again in a moment.",
+    };
+  }
+
+  // Trial is ONLY offered when there is no existing Stripe row AND the
+  // account never held a Production Apple entitlement AND the checkout
+  // starts with exactly one athlete seat (FV-574). If ANY Stripe row exists
+  // (any status — active, canceled, trialing) OR Apple entitlement history
+  // exists, the account has already had a trial on one provider or the
+  // other; if the checkout is multi-athlete, the KC-approved offering grants
+  // no trial.
+  const isTrialEligible =
+    existingSub === null && !appleEverHeld && trialQuantityEligible;
 
   // 5. Build site URL for success/cancel redirects.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -237,16 +374,16 @@ async function startSubscriptionCheckout(
       client_reference_id: accountId,
     };
 
-    // 14-day free trial — first-time subscribers only.
-    // No row exists → isTrialEligible → add trial fields.
-    // Row exists (any status) → no trial (prevents repeat trials on
-    // cancel-and-resubscribe flows).
+    // 7-day free trial (FV-574) — first-time, one-athlete subscribers only.
+    // No row, no Apple history, one seat → isTrialEligible → add trial
+    // fields. Otherwise (row exists any status, Apple history, or a
+    // multi-athlete first checkout) → no trial fields.
     if (isTrialEligible) {
       sessionParams.subscription_data = {
         ...sessionParams.subscription_data,
-        trial_period_days: 14,
+        trial_period_days: 7,
       };
-      // Collect card up front so it auto-charges on day 14.
+      // Collect card up front so it auto-charges on day 7.
       sessionParams.payment_method_collection = "always";
     }
 
@@ -344,7 +481,12 @@ export async function createCheckoutSession(
     );
   }
 
-  return startSubscriptionCheckout(userId, quantity, plan);
+  // FV-574 trial gate — FAIL CLOSED on the count read: the quantity fallback
+  // above keeps checkout working, but a count we couldn't read must never
+  // qualify the account for the one-athlete trial (PR #185 contract).
+  const trialQuantityEligible = !athleteCountResult.error && quantity === 1;
+
+  return startSubscriptionCheckout(userId, quantity, plan, trialQuantityEligible);
 }
 
 // ---------------------------------------------------------------------------
@@ -376,6 +518,7 @@ export async function createAdultCheckoutSession(
   }
   const { plan } = parsed.data;
 
-  // Adults always buy exactly 1 seat — no athlete roster, no count query.
-  return startSubscriptionCheckout(userId, 1, plan);
+  // Adults always buy exactly 1 seat — no athlete roster, no count query —
+  // so the FV-574 one-athlete trial condition is satisfied by construction.
+  return startSubscriptionCheckout(userId, 1, plan, true);
 }

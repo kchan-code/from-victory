@@ -83,6 +83,20 @@ const config: CapacitorConfig = {
     contentInset: "automatic",
     // Prefer HTTPS scheme parity with Android when Cap supports it.
     scheme: "From Victory",
+    // FV-572: additive, iOS-only capability marker. Capacitor's per-platform
+    // keys OVERRIDE the top-level `appendUserAgent` above for that platform
+    // only — Android is untouched and keeps shipping the bare, byte-identical
+    // token forever (FV-478/489/492/493 depend on it never changing). Only a
+    // NEW iOS build (one that ships the StoreKit 2 purchase bridge) carries
+    // this value; every already-fielded iOS/TestFlight binary keeps sending
+    // the bare top-level token above and is treated identically to Android by
+    // the server-side classifier (apps/web/lib/native-shell.ts
+    // getShellCapability(): "(ios)" marker present → `ios-iap`; bare token
+    // only → `legacy-native`, restricted reader-style, unchanged). See the
+    // FV-210 decision record §4.8 for the full contract. Do NOT touch the
+    // top-level key or add an `android.appendUserAgent` override to "fix"
+    // anything here.
+    appendUserAgent: "FVNativeShell/1 (ios)",
   },
 };
 

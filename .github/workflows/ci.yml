@@ -311,6 +311,11 @@ jobs:
         working-directory: apps/web
         env:
           CI: true
+          # Keep this `localhost`, not `127.0.0.1`: the production-mode server
+          # writes the device cookie as `__Host-…` with Secure=true, which
+          # Chromium only accepts over plain HTTP for `localhost` (a
+          # potentially-trustworthy origin). On 127.0.0.1 the cookie is silently
+          # dropped and any future device-cookie spec fails confusingly.
           E2E_BASE_URL: http://localhost:3000
           E2E_SUPABASE_URL: http://127.0.0.1:54321
           E2E_SUPABASE_ANON_KEY: ${{ steps.supabase.outputs.anon_key }}
@@ -320,6 +325,16 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ steps.supabase.outputs.anon_key }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ steps.supabase.outputs.service_role_key }}
           NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          # FV-508: the CI webServer is `next build && next start`, i.e.
+          # NODE_ENV=production, where lib/auth/device.ts and
+          # lib/actions/rate-limit-store.ts refuse their dev fallbacks and run
+          # DEGRADED (no signed device cookie; rate limiting fails open) while
+          # logging a production misconfiguration on every request. These are
+          # deterministic, throwaway, TEST-ONLY values — not secrets — so the
+          # suite exercises the real signed-cookie + rate-limit code paths
+          # against the disposable local stack. Never reuse them anywhere else.
+          DEVICE_COOKIE_HMAC_SECRET: fv-e2e-ci-device-cookie-hmac-not-a-secret
+          RATE_LIMIT_HASH_SECRET: fv-e2e-ci-rate-limit-hash-not-a-secret
 
       - name: Upload Playwright report on failure
         if: failure() && steps.lockfile.outputs.exists == 'true'

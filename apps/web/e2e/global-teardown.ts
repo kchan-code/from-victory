@@ -1,9 +1,11 @@
 /**
  * Playwright global-teardown.
  *
- * Runs once after the entire test suite. Deletes the test parent and any
- * athletes created during the run. Individual specs also clean up their own
- * athletes in afterEach, but this is a final safety sweep.
+ * Runs once after the entire test suite. Deletes the seeded test parents
+ * (one per parent-mutating project — see PARENT_FIXTURES in global-setup.ts,
+ * FV-583) and any athletes created during the run. Individual specs also
+ * clean up their own athletes in afterEach, but this is a final safety
+ * sweep.
  */
 
 // reason: unparameterised client matches ServiceClient in global-setup;
@@ -15,6 +17,7 @@ import {
   assertNotProd,
   cleanupExistingTestAthlete,
   cleanupExistingTestParent,
+  PARENT_FIXTURES,
 } from "./global-setup";
 
 async function globalTeardown(): Promise<void> {
@@ -43,7 +46,11 @@ async function globalTeardown(): Promise<void> {
 
   // Orphan guard: cleans up the athlete if provisionTestAthlete failed mid-run.
   await cleanupExistingTestAthlete(service);
-  await cleanupExistingTestParent(service);
+  // FV-583: delete BOTH seeded parents (one per parent-mutating project) so
+  // no orphan remains regardless of which projects ran this session.
+  for (const fixture of PARENT_FIXTURES) {
+    await cleanupExistingTestParent(service, fixture.email);
+  }
   console.log("[global-teardown] Cleanup complete.");
 }
 

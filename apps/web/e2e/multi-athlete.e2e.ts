@@ -33,7 +33,10 @@ function makeServiceClient() {
 
 /**
  * Deletes an athlete by first name that is prefixed with "E2E ".
- * Looks up by first_name; safe because test names are unique in the test run.
+ * Looks up by first_name only (not scoped to a parent) — safe because the
+ * caller always passes a project-suffixed name (see projectSuffix below),
+ * so names are unique per-project even when multiple parent-mutating
+ * projects run this same spec in parallel (FV-583).
  */
 async function deleteAthleteByFirstName(firstName: string): Promise<void> {
   const service = makeServiceClient();
@@ -60,6 +63,21 @@ const BIRTHDATE_ALPHA = "2005-06-15"; // ~19 years old at time of writing
 const BIRTHDATE_BRAVO = "2008-03-22"; // ~16 years old at time of writing
 
 // ---------------------------------------------------------------------------
+// FV-583: this project runs against its OWN seeded parent (see
+// PARENT_FIXTURES in global-setup.ts), so chromium-mobile-parent and pixel7
+// no longer touch the same athlete list. But `deleteAthleteByFirstName`
+// below matches by first_name + role only — NOT by parent — so if both
+// projects still created literally "E2E Alpha" in parallel, one project's
+// afterEach could delete the OTHER project's still-in-use athlete row.
+// Suffixing the name with the Playwright project name keeps every project's
+// fixture rows namespaced so cleanup can never cross projects.
+// ---------------------------------------------------------------------------
+
+function projectSuffix(projectName: string): string {
+  return ` [${projectName}]`;
+}
+
+// ---------------------------------------------------------------------------
 // Test
 // ---------------------------------------------------------------------------
 
@@ -76,7 +94,11 @@ test.describe("Multi-athlete flow", () => {
 
   test("parent can add two athletes and both appear on the dashboard without hitting a limit", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    const suffix = projectSuffix(testInfo.project.name);
+    const nameAlpha = `E2E Alpha${suffix}`;
+    const nameBravo = `E2E Bravo${suffix}`;
+
     // ------------------------------------------------------------------
     // Step 1: Navigate to the dashboard as the pre-authed parent.
     // ------------------------------------------------------------------
@@ -90,7 +112,7 @@ test.describe("Multi-athlete flow", () => {
     await expect(addAthleteLink).toBeVisible();
 
     // ------------------------------------------------------------------
-    // Step 2: Add the first athlete — "E2E Alpha".
+    // Step 2: Add the first athlete — nameAlpha.
     // ------------------------------------------------------------------
     await addAthleteLink.click();
     await expect(page).toHaveURL(/\/dashboard\/athletes\/new$/);
@@ -102,7 +124,7 @@ test.describe("Multi-athlete flow", () => {
     ).toHaveCount(0);
 
     // Fill the form fields.
-    await page.fill('input[name="first_name"]', "E2E Alpha");
+    await page.fill('input[name="first_name"]', nameAlpha);
     await page.fill('input[name="birthdate"]', BIRTHDATE_ALPHA);
 
     // Submit — the form action is a Next.js server action; after success it
@@ -111,13 +133,13 @@ test.describe("Multi-athlete flow", () => {
 
     // Wait for the redirect back to /dashboard.
     await expect(page).toHaveURL(/\/dashboard$/, { timeout: 15_000 });
-    createdAthletes.push("E2E Alpha");
+    createdAthletes.push(nameAlpha);
 
-    // "E2E Alpha" must appear in the athlete list.
-    await expect(page.getByText("E2E Alpha")).toBeVisible();
+    // nameAlpha must appear in the athlete list.
+    await expect(page.getByText(nameAlpha)).toBeVisible();
 
     // ------------------------------------------------------------------
-    // Step 3: Add the second athlete — "E2E Bravo" — from the same session.
+    // Step 3: Add the second athlete — nameBravo — from the same session.
     // ------------------------------------------------------------------
     // The "Add athlete" link must still be present after adding the first.
     const addAthleteLinkAfterOne = page.getByRole("link", {
@@ -132,25 +154,25 @@ test.describe("Multi-athlete flow", () => {
       page.locator('[role="alert"]:not(#__next-route-announcer__)'),
     ).toHaveCount(0);
 
-    await page.fill('input[name="first_name"]', "E2E Bravo");
+    await page.fill('input[name="first_name"]', nameBravo);
     await page.fill('input[name="birthdate"]', BIRTHDATE_BRAVO);
 
     await page.click('button[type="submit"]');
 
     await expect(page).toHaveURL(/\/dashboard$/, { timeout: 15_000 });
-    createdAthletes.push("E2E Bravo");
+    createdAthletes.push(nameBravo);
 
     // ------------------------------------------------------------------
     // Step 4: Assert both athletes are visible simultaneously.
     // ------------------------------------------------------------------
-    await expect(page.getByText("E2E Alpha")).toBeVisible();
-    await expect(page.getByText("E2E Bravo")).toBeVisible();
+    await expect(page.getByText(nameAlpha)).toBeVisible();
+    await expect(page.getByText(nameBravo)).toBeVisible();
 
     // The athlete list uses <ul> with <li> items. global-setup seeds an
     // E2E-Athlete linked to this same parent, so the count is ≥3, not 2.
     // Check that both newly created athletes appear; don't hard-code total.
     const athleteList = page.locator("ul").filter({
-      has: page.getByText("E2E Alpha"),
+      has: page.getByText(nameAlpha),
     });
     const listItems = athleteList.locator("li");
     expect(await listItems.count()).toBeGreaterThanOrEqual(2);

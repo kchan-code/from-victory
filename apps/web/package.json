@@ -25,6 +25,7 @@
     "provision:play-review": "node --experimental-strip-types scripts/provision-play-review-account.ts"
   },
   "dependencies": {
+    "@apple/app-store-server-library": "3.1.0",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
     "@vercel/analytics": "^2.0.1",
