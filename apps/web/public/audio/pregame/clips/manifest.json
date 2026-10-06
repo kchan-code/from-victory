@@ -1,10 +1,10 @@
 {
   "version": "p6",
-  "manifestVersion": "da23db2c",
+  "manifestVersion": "fd0b4d17",
   "clips": {
     "shared-opening": {
-      "url": "/audio/pregame/clips/shared-opening.19f3dc6f.mp3",
-      "durationSec": 37.56,
+      "url": "/audio/pregame/clips/shared-opening.24b61670.mp3",
+      "durationSec": 38.928,
       "phases": [
         {
           "phase": "settle",
@@ -12,22 +12,22 @@
         },
         {
           "phase": "inhale",
-          "offsetSec": 5.504,
+          "offsetSec": 5.096,
           "round": 0
         },
         {
           "phase": "exhale",
-          "offsetSec": 12.552,
+          "offsetSec": 11.736,
           "round": 0
         },
         {
           "phase": "inhale",
-          "offsetSec": 21.024,
+          "offsetSec": 20.304,
           "round": 1
         },
         {
           "phase": "exhale",
-          "offsetSec": 26.128,
+          "offsetSec": 26.824,
           "round": 1
         }
       ]
