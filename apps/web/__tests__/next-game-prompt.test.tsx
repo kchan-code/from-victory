@@ -14,6 +14,8 @@
  *   7. Pending save disables options, shows saving status, and blocks a second tap
  *   8. Returned and thrown failures keep the options and show a retryable error
  *   9. A later successful tap confirms only after that save succeeds
+ *  10. An expired session (action resolves undefined, or rejects with a
+ *      redirect) does not flash the save error or reject an unhandled promise
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
@@ -269,5 +271,55 @@ describe("NextGamePrompt", () => {
     expect(saveNextGameMock).toHaveBeenCalledTimes(2);
     expect(screen.queryByTestId("next-game-error")).not.toBeInTheDocument();
     expect(screen.queryByText(/remind you/i)).not.toBeInTheDocument();
+  });
+
+  it("does not flash a save error when an expired session resolves undefined", async () => {
+    // Next 14.2 follows redirect("/signin") and resolves the action to undefined.
+    saveNextGameMock.mockResolvedValue(undefined);
+
+    render(<NextGamePrompt />);
+    fireEvent.click(screen.getByTestId("next-game-option-tonight"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("next-game-option-tonight")).toBeEnabled();
+    });
+    expect(screen.queryByTestId("next-game-error")).not.toBeInTheDocument();
+    expect(screen.queryByText(/remind you/i)).not.toBeInTheDocument();
+    expect(screen.getByTestId("next-game-prompt")).toBeInTheDocument();
+  });
+
+  it("swallows a rejected redirect without an unhandled rejection or save error", async () => {
+    const reasons: unknown[] = [];
+    const onProcess = (reason: unknown) => {
+      reasons.push(reason);
+    };
+    const onWindow = (event: PromiseRejectionEvent) => {
+      reasons.push(event.reason);
+      event.preventDefault();
+    };
+    process.on("unhandledRejection", onProcess);
+    window.addEventListener("unhandledrejection", onWindow);
+
+    const redirectError = new Error("NEXT_REDIRECT");
+    (redirectError as Error & { digest: string }).digest =
+      "NEXT_REDIRECT;replace;/signin;303;";
+    saveNextGameMock.mockRejectedValue(redirectError);
+
+    try {
+      render(<NextGamePrompt />);
+      fireEvent.click(screen.getByTestId("next-game-option-tomorrow"));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("next-game-option-tomorrow")).toBeEnabled();
+      });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(reasons).toEqual([]);
+      expect(screen.queryByTestId("next-game-error")).not.toBeInTheDocument();
+      expect(screen.queryByText(/remind you/i)).not.toBeInTheDocument();
+    } finally {
+      process.off("unhandledRejection", onProcess);
+      window.removeEventListener("unhandledrejection", onWindow);
+    }
   });
 });

@@ -61,22 +61,33 @@ function confirmationText(answer: NextGameAnswer): string {
 
 const SAVE_ERROR = "Couldn't save. Tap an answer to try again.";
 
-/** Next.js redirect()/notFound() must keep propagating from a server action. */
-function isNextControlFlow(error: unknown): boolean {
+/**
+ * Next 14.2 follows redirect() inside a server action (expired session goes
+ * to /signin) and resolves the client call to undefined. A thrown redirect
+ * is the other shape. Either way the router is already navigating, so this
+ * must not read result.ok or rethrow from the detached async call.
+ */
+function isActionRedirect(error: unknown): boolean {
   if (typeof error !== "object" || error === null) return false;
-  const digest = "digest" in error ? error.digest : undefined;
-  if (typeof digest === "string") {
-    return (
-      digest.startsWith("NEXT_REDIRECT") || digest.startsWith("NEXT_NOT_FOUND")
-    );
+  if (
+    "digest" in error &&
+    typeof error.digest === "string" &&
+    error.digest.startsWith("NEXT_REDIRECT")
+  ) {
+    return true;
   }
-  if (error instanceof Error) {
-    return (
-      error.message.startsWith("NEXT_REDIRECT") ||
-      error.message.startsWith("NEXT_NOT_FOUND")
-    );
-  }
-  return false;
+  return error instanceof Error && error.message.startsWith("NEXT_REDIRECT");
+}
+
+function isSaveResult(
+  result: unknown,
+): result is { ok: true } | { ok: false; error: string } {
+  return (
+    typeof result === "object" &&
+    result !== null &&
+    "ok" in result &&
+    typeof result.ok === "boolean"
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -100,13 +111,15 @@ export function NextGamePrompt() {
     void (async () => {
       try {
         const result = await saveNextGame(value, tz);
+        // undefined: Next already followed the /signin redirect.
+        if (!isSaveResult(result)) return;
         if (!result.ok) {
           setSaveError(true);
           return;
         }
         setAnsweredWith(value);
       } catch (error) {
-        if (isNextControlFlow(error)) throw error;
+        if (isActionRedirect(error)) return;
         setSaveError(true);
       } finally {
         inFlight.current = false;
