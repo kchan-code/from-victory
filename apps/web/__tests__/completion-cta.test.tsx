@@ -7,8 +7,8 @@
  * the tap.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
 const { completeDailySessionMock } = vi.hoisted(() => ({
@@ -31,6 +31,10 @@ import {
 beforeEach(() => {
   completeDailySessionMock.mockReset();
   completeDailySessionMock.mockResolvedValue(undefined);
+});
+
+afterEach(() => {
+  cleanup();
 });
 
 describe("CompletionCTA", () => {
