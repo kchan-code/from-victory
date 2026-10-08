@@ -8,10 +8,8 @@
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
+import { SignOutButton } from "@/components/auth/SignOutButton";
 import { selectSport } from "@/lib/actions/athlete-sport";
-import { signOut } from "@/lib/actions/auth";
-import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
-import { clearPregameSession } from "@/lib/pregame/session-cache";
 import { SUPPORTED_SPORTS, type Sport } from "@/lib/sports";
 
 interface SportOption {
@@ -77,25 +75,6 @@ function CheckIcon() {
   );
 }
 
-function ArrowLeftIcon() {
-  return (
-    <svg
-      width={16}
-      height={16}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M19 12H5" />
-      <path d="M11 6l-6 6 6 6" />
-    </svg>
-  );
-}
-
 type SelectSportFormState = { ok: false; error: string } | null;
 
 // Submit button — isolated so useFormStatus sees the enclosing <form> and
@@ -133,28 +112,13 @@ export default function SportPicker({ currentSport }: { currentSport: Sport }) {
 
   return (
     <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[480px] flex-col bg-onyx text-cream">
-      <div className="flex items-center px-5 pb-3 pt-[58px]">
-        <form
-          action={signOut}
-          onSubmit={() => {
-            // signOut redirects to "/", which never mounts ClearCacheOnMount —
-            // both caches must clear synchronously here (FV-223 parity).
-            clearAthleteCache();
-            clearPregameSession();
-          }}
-        >
-          <button
-            type="submit"
-            aria-label="Sign out"
-            data-testid="sport-picker-sign-out-btn"
-            className="flex h-[44px] w-[44px] -m-[5px] items-center justify-center rounded-pill text-cream/70 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx hover:text-cream"
-          >
-            <span className="flex h-[34px] w-[34px] items-center justify-center rounded-pill border border-hairline">
-              <ArrowLeftIcon />
-            </span>
-          </button>
-        </form>
-      </div>
+      {/* First-run gate: the athlete is already signed in, and Settings is
+          unreachable until a sport is saved, so this screen still needs an
+          exit. It is a labeled Sign out (FV-611). A back arrow has nowhere
+          to go and used to sign the athlete out without saying so. */}
+      <header className="flex items-center px-5 pb-3 pt-[58px]">
+        <SignOutButton className="inline-flex min-h-[44px] items-center justify-center rounded-pill border border-hairline bg-charcoal px-4 font-heading text-[13px] font-semibold text-cream/70 transition-colors duration-fast ease-out hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx" />
+      </header>
 
       <div className="flex-1 overflow-y-auto px-5 pb-[140px] pt-6">
         <p className="mb-4 font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">
