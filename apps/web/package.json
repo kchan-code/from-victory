@@ -22,7 +22,8 @@
     "test:e2e": "dotenv -e .env.test -- playwright test",
     "test:e2e:ui": "dotenv -e .env.test -- playwright test --ui",
     "test:e2e:debug": "dotenv -e .env.test -- playwright test --debug",
-    "provision:play-review": "node --experimental-strip-types scripts/provision-play-review-account.ts"
+    "provision:play-review": "node --experimental-strip-types scripts/provision-play-review-account.ts",
+    "stripe:test-clock:d3": "dotenv -e .env.stripe-test -- node --experimental-strip-types scripts/stripe-test-clock-d3.ts"
   },
   "dependencies": {
     "@apple/app-store-server-library": "3.1.0",
