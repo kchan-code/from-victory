@@ -11,7 +11,8 @@
  *
  * UX principles applied:
  *   - Skippable: rendered as a quiet optional block, never a wall.
- *   - Disappears once answered — single-tap, done.
+ *   - Disappears only after the save succeeds. A failed save keeps the
+ *     options up, with an inline error, so the athlete can retry.
  *   - Tap-first: four big pill buttons, no keyboard required.
  *   - Bottom-anchored within the card for thumb reach.
  *   - Calm: muted palette, small eyebrow, no animation on this secondary surface.
@@ -23,7 +24,7 @@
  *     promising one would be false.)
  */
 
-import { useState, useTransition } from "react";
+import { useRef, useState } from "react";
 
 import { saveNextGame } from "@/lib/actions/next-game";
 import {
@@ -58,25 +59,60 @@ function confirmationText(answer: NextGameAnswer): string {
   return "Got it — we’ll remind you.";
 }
 
+const SAVE_ERROR = "Couldn't save. Tap an answer to try again.";
+
+/** Next.js redirect()/notFound() must keep propagating from a server action. */
+function isNextControlFlow(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false;
+  const digest = "digest" in error ? error.digest : undefined;
+  if (typeof digest === "string") {
+    return (
+      digest.startsWith("NEXT_REDIRECT") || digest.startsWith("NEXT_NOT_FOUND")
+    );
+  }
+  if (error instanceof Error) {
+    return (
+      error.message.startsWith("NEXT_REDIRECT") ||
+      error.message.startsWith("NEXT_NOT_FOUND")
+    );
+  }
+  return false;
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export function NextGamePrompt() {
   const [answeredWith, setAnsweredWith] = useState<NextGameAnswer | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  // State updates lag a same-tick double tap. This ref closes that gap.
+  const inFlight = useRef(false);
 
   function handleAnswer(value: NextGameAnswer) {
-    // Optimistically collapse — the UI responds immediately regardless of
-    // save outcome. If it fails, the worst outcome is the athlete doesn't
-    // receive a game-day nudge (no data loss, no harmful state).
-    setAnsweredWith(value);
-    startTransition(async () => {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      await saveNextGame(value, tz);
-      // No error handling beyond silent failure — this is an optional
-      // convenience feature, not a critical data path.
-    });
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setSaveError(false);
+    setPending(true);
+
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    void (async () => {
+      try {
+        const result = await saveNextGame(value, tz);
+        if (!result.ok) {
+          setSaveError(true);
+          return;
+        }
+        setAnsweredWith(value);
+      } catch (error) {
+        if (isNextControlFlow(error)) throw error;
+        setSaveError(true);
+      } finally {
+        inFlight.current = false;
+        setPending(false);
+      }
+    })();
   }
 
   if (answeredWith !== null) {
@@ -95,16 +131,35 @@ export function NextGamePrompt() {
     <div
       className="mt-5 pt-4 border-t border-hairline"
       data-testid="next-game-prompt"
+      aria-busy={pending}
     >
       <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/55 text-center mb-3">
         When&apos;s your next game?
       </p>
+      {pending && (
+        <p
+          className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/55 text-center mb-3"
+          role="status"
+          data-testid="next-game-saving"
+        >
+          Saving…
+        </p>
+      )}
+      {saveError && (
+        <p
+          className="font-mono text-[10px] uppercase tracking-[0.18em] text-danger text-center mb-3"
+          role="alert"
+          data-testid="next-game-error"
+        >
+          {SAVE_ERROR}
+        </p>
+      )}
       <div className="grid grid-cols-2 gap-2">
         {OPTIONS.map(({ label, value }) => (
           <button
             key={value}
             type="button"
-            disabled={isPending}
+            disabled={pending}
             onClick={() => handleAnswer(value)}
             data-testid={`next-game-option-${value}`}
             className="min-h-[44px] font-heading font-semibold text-[13px] text-cream/80 bg-onyx border border-hairline rounded-pill px-4 py-2.5 transition-colors duration-fast ease-out hover:border-gold/40 hover:text-cream active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"

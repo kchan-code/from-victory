@@ -38,15 +38,15 @@ import { requireAthlete } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
 import {
   computeNextGameDate,
-  NextGameAnswer,
   NEXT_GAME_ANSWERS,
 } from "@/lib/daily/next-game-shared";
 
-// Re-export so callers that need only the action file don't have to split
-// their imports. The "use server" constraint applies to exports from THIS
-// file — the shared module is plain TS and has no such constraint.
-export type { NextGameAnswer };
-export { NEXT_GAME_ANSWERS, computeNextGameDate };
+// This file is "use server". Next.js validates every runtime export when the
+// action runs and throws if any export is not a function
+// (`A "use server" file can only export async functions, found object.`).
+// Re-exporting NEXT_GAME_ANSWERS (an array) or computeNextGameDate (sync)
+// from here made saveNextGame fail on tap. Those helpers stay in
+// lib/daily/next-game-shared.ts. Do not re-export them from this module.
 
 // ---------------------------------------------------------------------------
 // Schema
