@@ -47,6 +47,11 @@ apps/web/test-results/
 # Vitest coverage (FV-380)
 apps/web/coverage/
 
+# ElevenLabs voice bake-off candidates (FV-285) — rendered locally for
+# by-ear A/B, never committed. The README.md the tool writes alongside them
+# IS committable (not excluded by this pattern).
+**/docs/audio-ab-*/**/*.mp3
+
 # Native / Capacitor — never commit signing material or local SDK paths
 *.jks
 *.keystore
