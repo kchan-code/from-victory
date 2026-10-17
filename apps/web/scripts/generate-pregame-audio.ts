@@ -170,7 +170,11 @@ async function findHashedMp3(dir: string, slug: string): Promise<string | null> 
   return match ? join(dir, match) : null;
 }
 
-const SCRIPTS: AudioScript[] = [
+// Exported (FV-285) so bakeoff-voices.ts can resolve a backbone slug (e.g.
+// "breath-threshold", "opener-shared-confidence") to its source AudioScript
+// without duplicating this list. Importing this module does not run main()
+// (see the import.meta.url guard at the bottom of the file).
+export const SCRIPTS: AudioScript[] = [
   BREATH_THRESHOLD_SCRIPT,
   // Need-specific identity openers — stitched at runtime in front of
   // the cell-specific session MP3. Selected by athlete's "today's focus"
