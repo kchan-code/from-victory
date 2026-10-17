@@ -58,7 +58,10 @@ vi.mock("@/lib/actions/apple-subscription", () => ({
   submitApplePurchase: submitApplePurchaseMock,
 }));
 
-import { AppleSubscribeSection } from "@/components/subscribe/AppleSubscribeSection";
+import {
+  AppleSubscribeSection,
+  STOREKIT_PRODUCT_RETRY_DELAYS_MS,
+} from "@/components/subscribe/AppleSubscribeSection";
 
 // A single-tier catalog: no interval field, no ambiguity to pick between —
 // the athlete-count/interval pickers hide entirely and only the plan
@@ -309,14 +312,50 @@ describe("AppleSubscribeSection — first purchase, single-tier catalog", () => 
     getConfiguredAppleProductsMock.mockReturnValue(ONE_TIER);
     isAppleIapBridgeAvailableMock.mockReturnValue(true);
     getStoreKitProductsMock.mockResolvedValue([]);
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      render(<AppleSubscribeSection />);
 
-    render(<AppleSubscribeSection />);
+      // FV-615: the unavailable state only settles after every bounded retry
+      // has also come back empty.
+      await vi.advanceTimersByTimeAsync(
+        STOREKIT_PRODUCT_RETRY_DELAYS_MS.reduce((sum, ms) => sum + ms, 0) + 100,
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId("apple-product-unavailable")).toBeInTheDocument(),
+      );
+      expect(getStoreKitProductsMock).toHaveBeenCalledTimes(STOREKIT_PRODUCT_RETRY_DELAYS_MS.length + 1);
+      expect(screen.getByTestId("apple-purchase-submit")).toBeDisabled();
+      expect(screen.queryByTestId("apple-plan-summary-price")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 
-    await waitFor(() =>
-      expect(screen.getByTestId("apple-product-unavailable")).toBeInTheDocument(),
-    );
-    expect(screen.getByTestId("apple-purchase-submit")).toBeDisabled();
-    expect(screen.queryByTestId("apple-plan-summary-price")).toBeNull();
+  it("FV-615: retries the StoreKit product lookup after an empty first answer and shows the live price once it arrives", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue(ONE_TIER);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    getStoreKitProductsMock
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+      .mockResolvedValue(ONE_TIER_LIVE);
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      render(<AppleSubscribeSection />);
+
+      expect(screen.queryByTestId("apple-product-unavailable")).toBeNull();
+      await vi.advanceTimersByTimeAsync(
+        STOREKIT_PRODUCT_RETRY_DELAYS_MS.slice(0, 2).reduce((sum, ms) => sum + ms, 0) + 100,
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId("apple-plan-summary-price")).toHaveTextContent("$4.99"),
+      );
+      expect(getStoreKitProductsMock).toHaveBeenCalledTimes(3);
+      expect(screen.queryByTestId("apple-product-unavailable")).toBeNull();
+      expect(screen.getByTestId("apple-purchase-submit")).not.toBeDisabled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("happy path: calls beginApplePurchase, then bridge.purchase, then submitApplePurchase, in order, then shows success and refreshes", async () => {
