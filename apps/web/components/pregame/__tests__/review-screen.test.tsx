@@ -31,7 +31,12 @@ import {
 } from "@testing-library/react";
 
 import { ReviewScreen } from "@/components/pregame/screens-b";
-import { INITIAL_STATE, type PregameState } from "@/components/pregame/types";
+import {
+  INITIAL_STATE,
+  NEED_VERSE,
+  SCRIPTURE_SHORT,
+  type PregameState,
+} from "@/components/pregame/types";
 
 // Hoisted mock fns — created before vi.mock is hoisted to the top of the module.
 const { checkPregameAudioCached, precachePregameAudio } = vi.hoisted(() => ({
@@ -321,5 +326,39 @@ describe("ReviewScreen offline download (FV-129 / FV-132)", () => {
     const btn = await screen.findByRole("button", { name: DOWNLOAD_BTN });
     expect(btn).toHaveTextContent(/download for offline/i);
     expect(screen.queryByText(/ready offline/i)).not.toBeInTheDocument();
+  });
+});
+
+// FV-543: Review was hardcoded to SCRIPTURE_SHORT (the spine line) even after
+// the athlete picked a need. AudioSessionScreen and PregameCardScreen already
+// resolve NEED_VERSE[state.need].
+describe("ReviewScreen verse (FV-543)", () => {
+  beforeEach(() => {
+    checkPregameAudioCached.mockResolvedValue({
+      cached: 0,
+      total: 0,
+      done: false,
+      error: null,
+    });
+  });
+
+  it("play mode shows the chosen need's verse, not the spine line", () => {
+    render(<ReviewScreen state={makeState({ need: "Calm" })} mode="play" />);
+
+    expect(screen.getByText(NEED_VERSE.Calm.displayText)).toBeInTheDocument();
+    expect(screen.queryByText(SCRIPTURE_SHORT)).not.toBeInTheDocument();
+  });
+
+  it("prepare mode shows the chosen need's verse, not the spine line", () => {
+    render(<ReviewScreen state={makeState({ need: "Hope" })} mode="prepare" />);
+
+    expect(screen.getByText(NEED_VERSE.Hope.displayText)).toBeInTheDocument();
+    expect(screen.queryByText(SCRIPTURE_SHORT)).not.toBeInTheDocument();
+  });
+
+  it("falls back to the spine verse when no need is selected", () => {
+    render(<ReviewScreen state={makeState({ need: null })} />);
+
+    expect(screen.getByText(SCRIPTURE_SHORT)).toBeInTheDocument();
   });
 });

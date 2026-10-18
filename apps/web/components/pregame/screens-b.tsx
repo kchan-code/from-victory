@@ -464,6 +464,14 @@ export function ReviewScreen({
     { label: "Close", value: closeLabel },
   ];
 
+  // FV-543: the line under the summary is the verse for the need the athlete
+  // chose, same lookup AudioSessionScreen and PregameCardScreen already use.
+  // No need selected keeps the spine line this screen already showed.
+  const sessionVerse: NeedVerse =
+    state.need != null
+      ? NEED_VERSE[state.need]
+      : { reference: SCRIPTURE_REF, displayText: SCRIPTURE_SHORT };
+
   return (
     <ScreenBody>
       {/* FV-486: "Save for the rink" → sport-neutral. The step label is a
@@ -507,7 +515,7 @@ export function ReviewScreen({
       </div>
 
       <p className="mt-5 text-center font-scripture text-[15px] italic leading-[1.5] text-cream/70">
-        {SCRIPTURE_SHORT}
+        {sessionVerse.displayText}
       </p>
 
       {/* FV-129: the inline offline-download control is for the PLAY path only.
