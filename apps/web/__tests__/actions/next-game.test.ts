@@ -60,9 +60,9 @@ import {
   computeNextGameDate,
 } from "@/lib/daily/next-game-shared";
 
-import {
-  saveNextGame,
-} from "@/lib/actions/next-game";
+import * as nextGameAction from "@/lib/actions/next-game";
+
+const { saveNextGame } = nextGameAction;
 
 // ---------------------------------------------------------------------------
 // computeNextGameDate — pure function, no mocks needed
@@ -134,6 +134,19 @@ describe("computeNextGameDate", () => {
 // ---------------------------------------------------------------------------
 // saveNextGame — action with mocked Supabase
 // ---------------------------------------------------------------------------
+
+describe("next-game action module", () => {
+  it("exports only async functions at runtime", () => {
+    const runtimeExports = Object.entries(nextGameAction).filter(
+      ([key]) => key !== "__esModule" && key !== "default",
+    );
+    expect(runtimeExports.map(([key]) => key).sort()).toEqual(["saveNextGame"]);
+    for (const [, value] of runtimeExports) {
+      expect(typeof value).toBe("function");
+      expect(value.constructor.name).toBe("AsyncFunction");
+    }
+  });
+});
 
 describe("saveNextGame", () => {
   beforeEach(() => {

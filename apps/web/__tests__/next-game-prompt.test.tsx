@@ -6,11 +6,16 @@
  * Cases:
  *   1. Renders four answer buttons with correct labels
  *   2. Tapping an answer calls saveNextGame with the correct value
- *   3. After tap (stored answer), collapses to "Got it — we'll remind you."
- *   4. After tapping "Not sure", shows "All good — ask me again anytime."
+ *   3. After a successful stored-answer save, collapses to the reminder confirmation.
+ *   4. After a successful "Not sure" save, shows the no-reminder confirmation.
  *      (no reminder promised because nothing is stored)
  *   5. If the athlete does NOT tap, the prompt remains visible (skip = no store)
  *   6. Buttons have accessible labels (data-testid present; min-height in CSS)
+ *   7. Pending save disables options, shows saving status, and blocks a second tap
+ *   8. Returned and thrown failures keep the options and show a retryable error
+ *   9. A later successful tap confirms only after that save succeeds
+ *  10. An expired session (action resolves undefined, or rejects with a
+ *      redirect) does not flash the save error or reject an unhandled promise
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
@@ -175,5 +180,146 @@ describe("NextGamePrompt", () => {
     render(<NextGamePrompt />);
     const btn = screen.getByTestId("next-game-option-tonight");
     expect(btn).toHaveAttribute("type", "button");
+  });
+
+  it("shows saving status, blocks a second tap, and confirms only after success", async () => {
+    let resolveSave: (value: { ok: true }) => void = () => {};
+    saveNextGameMock.mockReturnValue(
+      new Promise((resolve) => {
+        resolveSave = resolve;
+      }),
+    );
+
+    render(<NextGamePrompt />);
+    fireEvent.click(screen.getByTestId("next-game-option-tonight"));
+
+    expect(screen.getByTestId("next-game-saving")).toHaveTextContent("Saving…");
+    expect(screen.getByTestId("next-game-prompt")).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
+    expect(screen.getByTestId("next-game-option-tonight")).toBeDisabled();
+    expect(screen.queryByText(/remind you/i)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("next-game-option-tomorrow"));
+    expect(saveNextGameMock).toHaveBeenCalledTimes(1);
+
+    resolveSave({ ok: true });
+
+    await waitFor(() => {
+      expect(screen.getByRole("status").textContent).toMatch(/remind you/i);
+    });
+    expect(screen.queryByTestId("next-game-prompt")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("next-game-error")).not.toBeInTheDocument();
+  });
+
+  it("keeps the options and shows an inline error when the save returns ok:false", async () => {
+    saveNextGameMock.mockResolvedValue({
+      ok: false,
+      error: "Couldn't save — tap to try again.",
+    });
+
+    render(<NextGamePrompt />);
+    fireEvent.click(screen.getByTestId("next-game-option-this_weekend"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("next-game-error")).toHaveTextContent(
+        "Couldn't save. Tap an answer to try again.",
+      );
+    });
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(screen.getByTestId("next-game-option-this_weekend")).toBeEnabled();
+    expect(screen.queryByText(/remind you/i)).not.toBeInTheDocument();
+  });
+
+  it("keeps the options and shows an inline error when the save throws", async () => {
+    saveNextGameMock.mockRejectedValue(
+      new Error(
+        'A "use server" file can only export async functions, found object.',
+      ),
+    );
+
+    render(<NextGamePrompt />);
+    fireEvent.click(screen.getByTestId("next-game-option-tonight"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("next-game-error")).toHaveTextContent(
+        "Couldn't save. Tap an answer to try again.",
+      );
+    });
+    expect(screen.getByTestId("next-game-option-tonight")).toBeEnabled();
+    expect(screen.queryByText(/remind you/i)).not.toBeInTheDocument();
+  });
+
+  it("retries after a failure and confirms only when the next save succeeds", async () => {
+    saveNextGameMock
+      .mockResolvedValueOnce({ ok: false, error: "nope" })
+      .mockResolvedValueOnce({ ok: true });
+
+    render(<NextGamePrompt />);
+    fireEvent.click(screen.getByTestId("next-game-option-tonight"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("next-game-error")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId("next-game-option-not_sure"));
+
+    await waitFor(() => {
+      expect(screen.getByRole("status").textContent).toMatch(/ask me again/i);
+    });
+    expect(saveNextGameMock).toHaveBeenCalledTimes(2);
+    expect(screen.queryByTestId("next-game-error")).not.toBeInTheDocument();
+    expect(screen.queryByText(/remind you/i)).not.toBeInTheDocument();
+  });
+
+  it("does not flash a save error when an expired session resolves undefined", async () => {
+    // Next 14.2 follows redirect("/signin") and resolves the action to undefined.
+    saveNextGameMock.mockResolvedValue(undefined);
+
+    render(<NextGamePrompt />);
+    fireEvent.click(screen.getByTestId("next-game-option-tonight"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("next-game-option-tonight")).toBeEnabled();
+    });
+    expect(screen.queryByTestId("next-game-error")).not.toBeInTheDocument();
+    expect(screen.queryByText(/remind you/i)).not.toBeInTheDocument();
+    expect(screen.getByTestId("next-game-prompt")).toBeInTheDocument();
+  });
+
+  it("swallows a rejected redirect without an unhandled rejection or save error", async () => {
+    const reasons: unknown[] = [];
+    const onProcess = (reason: unknown) => {
+      reasons.push(reason);
+    };
+    const onWindow = (event: PromiseRejectionEvent) => {
+      reasons.push(event.reason);
+      event.preventDefault();
+    };
+    process.on("unhandledRejection", onProcess);
+    window.addEventListener("unhandledrejection", onWindow);
+
+    const redirectError = new Error("NEXT_REDIRECT");
+    (redirectError as Error & { digest: string }).digest =
+      "NEXT_REDIRECT;replace;/signin;303;";
+    saveNextGameMock.mockRejectedValue(redirectError);
+
+    try {
+      render(<NextGamePrompt />);
+      fireEvent.click(screen.getByTestId("next-game-option-tomorrow"));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("next-game-option-tomorrow")).toBeEnabled();
+      });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(reasons).toEqual([]);
+      expect(screen.queryByTestId("next-game-error")).not.toBeInTheDocument();
+      expect(screen.queryByText(/remind you/i)).not.toBeInTheDocument();
+    } finally {
+      process.off("unhandledRejection", onProcess);
+      window.removeEventListener("unhandledrejection", onWindow);
+    }
   });
 });
