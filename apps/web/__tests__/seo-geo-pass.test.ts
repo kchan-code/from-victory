@@ -156,8 +156,10 @@ describe("homepage title/meta (FV-504 Partner bound)", () => {
     expect(layout).toMatch(/Visualize and Compete From Victory/);
     expect(layout).toMatch(/athletes 13\+/);
     expect(hero).not.toMatch(/Christian athlete mindset app/i);
-    expect(hero).toMatch(/Visualize and compete/);
-    expect(hero).toMatch(/from victory/i);
+    // Kinny H1 lock: Title Case, brand-capital From Victory, no period.
+    expect(hero).toMatch(/Visualize and Compete/);
+    expect(hero).toMatch(/<em>From Victory<\/em>/);
+    expect(hero).not.toMatch(/from victory\./i);
   });
 
   it("does not invent first-shift gap and keeps identity off the H1", () => {
