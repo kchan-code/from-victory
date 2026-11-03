@@ -628,3 +628,468 @@ _(pause: 2s)_
 _(pause: 2s)_
 6. Play your game, not the scoreboard's. See the shot, soft hands, good speed, commit to the smart target. One shot, then the next.
 _(pause: 2s)_
+
+## Positive-play visualizations and golf self-talk (FV-315)
+
+<!-- Exact transcription of shipped FV-294 scripts (PR #270); speech and pauses unchanged. -->
+
+### Golf · viz-bomber-stripe-the-fairway
+<!-- slug: viz-bomber-stripe-the-fairway | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See yourself on the tee, driver in hand, and know this one splits the middle.
+_(pause: 2s)_
+2. The fairway opens wide in front of you. You tee it high.
+_(pause: 2s)_
+3. One slow breath, and you pick your line — a target way out past the bunkers.
+_(pause: 2.5s)_
+4. Into your routine. No steering, no holding back.
+_(pause: 2s)_
+5. Free, full release. You let it go.
+_(pause: 2.5s)_
+6. You catch it flush — the strike runs all the way up the shaft.
+_(pause: 3s)_
+7. The ball climbs, holds your line, and splits the middle.
+_(pause: 2s)_
+8. It runs out forever. Dead center, miles down there.
+_(pause: 2s)_
+9. You pick up your tee and walk off easy. That's the one you came for.
+_(pause: 3s)_
+
+### Golf · viz-bomber-walk-up-tall
+<!-- slug: viz-bomber-walk-up-tall | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See the group's balls already out in the fairway, and know yours flies past them all.
+_(pause: 2s)_
+2. You're up. You don't try to do too much — you just commit.
+_(pause: 2s)_
+3. Pick your line. Slow breath. Tee it high.
+_(pause: 2.5s)_
+4. Free, full swing. You turn through it and let it fly.
+_(pause: 2s)_
+5. Flush. The ball jumps off the face and keeps climbing.
+_(pause: 2.5s)_
+6. It carries past every other ball out there.
+_(pause: 3s)_
+7. You don't say a word. You don't need to.
+_(pause: 2s)_
+8. You pick up your tee and walk up the fairway, tall and easy. Longest one out here.
+_(pause: 3s)_
+
+### Golf · viz-bomber-high-draw
+<!-- slug: viz-bomber-high-draw | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See the dogleg bending left, and know you're going to turn the corner.
+_(pause: 2s)_
+2. The hole bends left around the trees. You pick your start line, out over the corner.
+_(pause: 2s)_
+3. You set up for the draw, a touch closed, and trust the shape.
+_(pause: 2.5s)_
+4. Slow breath. Into your swing, free and full.
+_(pause: 2s)_
+5. You release it hard, right-to-left.
+_(pause: 2.5s)_
+6. The ball starts at the corner, climbs, and turns over.
+_(pause: 3s)_
+7. It draws around the trees and lands in the heart of the fairway.
+_(pause: 2s)_
+8. You cut the hole in half. Just a wedge from here.
+_(pause: 2s)_
+9. You called the shape, and the ball did exactly what you saw.
+_(pause: 3s)_
+
+### Golf · viz-bomber-long-iron-par5
+<!-- slug: viz-bomber-long-iron-par5 | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See the green sitting out there in two, and know you've got the number to get home.
+_(pause: 2s)_
+2. A big drive left you a long way back, but the green is reachable.
+_(pause: 2s)_
+3. Long iron, maybe a hybrid. You pick the fat of the green, away from trouble.
+_(pause: 2.5s)_
+4. Slow breath. Smooth and full, no lunge at it.
+_(pause: 2s)_
+5. You sweep it off the turf, flush.
+_(pause: 2.5s)_
+6. The ball comes off low and hot, then climbs.
+_(pause: 3s)_
+7. It carries the front, lands soft, and settles on the green.
+_(pause: 2s)_
+8. On in two. An eagle look, two-putt birdie at worst.
+_(pause: 2s)_
+9. You stayed patient and let the swing do it.
+_(pause: 3s)_
+
+### Golf · viz-bomber-wedge-tap-in
+<!-- slug: viz-bomber-wedge-tap-in | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See the flag close in front of you, and know this wedge stops next to it.
+_(pause: 2s)_
+2. Your drive left a perfect number — full wedge, nothing in between.
+_(pause: 2s)_
+3. You check the flag, the wind, and pick a landing spot short of the pin.
+_(pause: 2.5s)_
+4. Slow breath. A controlled, committed swing.
+_(pause: 2s)_
+5. You nip it clean, ball then turf.
+_(pause: 2.5s)_
+6. It flies on the flag, takes one hop, and checks.
+_(pause: 3s)_
+7. The ball drifts toward the hole and stops a foot away.
+_(pause: 2s)_
+8. Tap-in birdie. You barely have to mark it.
+_(pause: 2s)_
+9. Bombed and dialed in. The whole hole, yours.
+_(pause: 3s)_
+
+### Golf · viz-bomber-rip-it-first-tee
+<!-- slug: viz-bomber-rip-it-first-tee | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See yourself on the first tee, locked onto your line, and know it's flying straight.
+_(pause: 2s)_
+2. First tee of the round. You feel the buzz, and you go anyway.
+_(pause: 2s)_
+3. You pick a target down the left side and lock onto it.
+_(pause: 2.5s)_
+4. Tee it high. One slow breath. Quiet hands.
+_(pause: 2s)_
+5. Into your swing — you don't kill it, you just start it on line.
+_(pause: 2.5s)_
+6. Free, full release. You rip it.
+_(pause: 3s)_
+7. The ball comes off pure and tracks your line, dead center.
+_(pause: 2s)_
+8. You're off and running. The hardest tee shot of the day, behind you.
+_(pause: 2s)_
+9. You stepped up and committed. First swing of the day, flushed.
+_(pause: 3s)_
+
+### Golf · viz-bomber-take-your-medicine
+<!-- slug: viz-bomber-take-your-medicine | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See yourself in the trees, already planning the smart way out, and know you save par.
+_(pause: 2s)_
+2. You walk in and look. The hero shot through the gap isn't there.
+_(pause: 2s)_
+3. You don't chase it. You take your medicine.
+_(pause: 2.5s)_
+4. You find the safe gap back to the fairway and commit to it.
+_(pause: 2s)_
+5. Punch out, low and clean. Back in play.
+_(pause: 2.5s)_
+6. Now a wedge, a number you own. You knock it onto the green.
+_(pause: 2s)_
+7. Two putts. You walk off with a par you stole.
+_(pause: 2s)_
+8. One swing contained. No snowman, no spiral, just a smart par.
+_(pause: 3s)_
+
+### Golf · viz-ballstriker-small-target
+<!-- slug: viz-ballstriker-small-target | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See the smallest target out there, and know the ball flies dead on that line.
+_(pause: 2s)_
+2. You stand behind it and narrow your aim — not the fairway, one branch on a far tree.
+_(pause: 2s)_
+3. You pick the smallest target and commit to it.
+_(pause: 2.5s)_
+4. Into your setup. Tempo, balance, nothing forced. Slow breath.
+_(pause: 2s)_
+5. One smooth swing.
+_(pause: 2.5s)_
+6. You flush it — pure contact, ball then ground.
+_(pause: 3s)_
+7. The ball flies dead on your line.
+_(pause: 2s)_
+8. It lands in the short grass, right where you looked.
+_(pause: 2s)_
+9. Exactly the shot you saw. Small target, smooth swing.
+_(pause: 3s)_
+
+### Golf · viz-ballstriker-fat-of-the-green
+<!-- slug: viz-ballstriker-fat-of-the-green | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See the fat of the green, and know your iron finds it again.
+_(pause: 2s)_
+2. The pin is tucked, trouble short and right. The flag is bait, and you don't take it.
+_(pause: 2s)_
+3. You aim at the fat of the green — middle, safe, plenty of room.
+_(pause: 2.5s)_
+4. Slow breath. Your same smooth swing.
+_(pause: 2s)_
+5. You stripe the iron, flush off the turf.
+_(pause: 2.5s)_
+6. It flies on your number and lands safely on the green.
+_(pause: 3s)_
+7. Thirty feet, uphill, an easy two-putt.
+_(pause: 2s)_
+8. Green in regulation. And you'll do it on the next one too.
+_(pause: 2s)_
+9. Boring, repeatable golf. That's how the round stacks up.
+_(pause: 3s)_
+
+### Golf · viz-ballstriker-stick-it-pin-high
+<!-- slug: viz-ballstriker-stick-it-pin-high | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See a number you love, and know this iron finishes pin high.
+_(pause: 2s)_
+2. Perfect distance. The exact club, the exact swing you've made a thousand times.
+_(pause: 2s)_
+3. You pick your line at the flag and trust the number.
+_(pause: 2.5s)_
+4. Slow breath. Tempo and balance.
+_(pause: 2s)_
+5. One smooth swing. You catch it flush.
+_(pause: 2.5s)_
+6. The ball leaves on a tight, boring flight, straight at the stick.
+_(pause: 3s)_
+7. It lands pin high, takes a hop, and settles.
+_(pause: 2s)_
+8. Ten feet, dead level. A clean look at birdie.
+_(pause: 2s)_
+9. Pin high, the right distance. The flush strike said so.
+_(pause: 3s)_
+
+### Golf · viz-ballstriker-knockdown
+<!-- slug: viz-ballstriker-knockdown | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See the wind in the trees, and know you're flighting this one under it.
+_(pause: 2s)_
+2. The wind is up, into your face. So you take it out of the air.
+_(pause: 2s)_
+3. Ball back, hands forward, one more club. You know this shot.
+_(pause: 2.5s)_
+4. Slow breath. A shorter, controlled swing — chest leads, hands quiet.
+_(pause: 2s)_
+5. You pinch it off the turf, low and pure.
+_(pause: 2.5s)_
+6. The ball comes out flat, boring under the wind.
+_(pause: 3s)_
+7. It bores through, lands, and chases toward the flag.
+_(pause: 2s)_
+8. Pin high. The wind never touched it.
+_(pause: 2s)_
+9. You took one more club and swung easy. That's command.
+_(pause: 3s)_
+
+### Golf · viz-ballstriker-two-putt-walk
+<!-- slug: viz-ballstriker-two-putt-walk | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See the long putt ahead, calm and unhurried over the ball, and know two putts is plenty.
+_(pause: 2s)_
+2. You striped it on, but you're forty feet away. This isn't about holing it — it's speed.
+_(pause: 2s)_
+3. You read the slope, pick your line, and see the ball dying near the cup.
+_(pause: 2.5s)_
+4. Slow breath. Soft hands, smooth stroke.
+_(pause: 2s)_
+5. You roll it on your line with perfect pace.
+_(pause: 2.5s)_
+6. The ball tracks up, slows, and trickles to a foot.
+_(pause: 3s)_
+7. You tap in for par. Stress-free, clean.
+_(pause: 2s)_
+8. No three-jack. Your number stays intact.
+_(pause: 2s)_
+9. Striped it, lagged it, walked. A round that holds.
+_(pause: 3s)_
+
+### Golf · viz-ballstriker-let-it-go
+<!-- slug: viz-ballstriker-let-it-go | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See yourself settled over the next ball, the last shot already gone, and know this one's pure.
+_(pause: 2s)_
+2. You let it go. One shot doesn't touch the rest of the round.
+_(pause: 2s)_
+3. No tinkering, no fixing, no chasing it. You trust your stock swing.
+_(pause: 2.5s)_
+4. You step to this ball clean, a small target picked out. Slow breath.
+_(pause: 2s)_
+5. The same smooth tempo as always.
+_(pause: 2.5s)_
+6. You flush it, dead on line.
+_(pause: 3s)_
+7. Right back to striping it.
+_(pause: 2s)_
+8. The next swing is the only one that matters, and you made it count.
+_(pause: 3s)_
+
+### Golf · viz-ballstriker-paint-the-fairway
+<!-- slug: viz-ballstriker-paint-the-fairway | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See the tight fairway ahead, and know you commit instead of steer.
+_(pause: 2s)_
+2. Tight tee shot, trouble both sides. You don't steer — steering is how you miss.
+_(pause: 2s)_
+3. You pick a small target down the middle and aim hard at it.
+_(pause: 2.5s)_
+4. Slow breath. Your normal, free, smooth swing.
+_(pause: 2s)_
+5. You make a full, committed pass — no flinch, no holding off.
+_(pause: 2.5s)_
+6. You flush it. The ball flies your line and never wavers.
+_(pause: 3s)_
+7. It paints the fairway, dead center.
+_(pause: 2s)_
+8. Tight hole, full commit, fairway found.
+_(pause: 2s)_
+9. You trusted the swing instead of protecting it.
+_(pause: 3s)_
+
+### Golf · viz-scrambler-up-and-down-short-sided
+<!-- slug: viz-scrambler-up-and-down-short-sided | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See yourself short-sided off the green, already seeing the shot, and know you get up and down.
+_(pause: 2s)_
+2. Little green to work with. This is your ground.
+_(pause: 2s)_
+3. You walk up and look. You see the shot before you hit it.
+_(pause: 2.5s)_
+4. You pick your landing spot, feel the speed, soft hands.
+_(pause: 2s)_
+5. Slow breath. A smooth, accelerating little swing.
+_(pause: 2.5s)_
+6. You slide the club under it. The ball pops up soft.
+_(pause: 3s)_
+7. It lands on your spot, checks, and trickles toward the hole.
+_(pause: 2s)_
+8. It settles two feet away. You tap in for par.
+_(pause: 2s)_
+9. Up and down, the way you find a way.
+_(pause: 3s)_
+
+### Golf · viz-scrambler-roll-in-the-breaker
+<!-- slug: viz-scrambler-roll-in-the-breaker | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See yourself reading the break, calm and certain over the line, and know it drops.
+_(pause: 2s)_
+2. Twelve feet for par — right to left, downhill.
+_(pause: 2s)_
+3. You crouch behind it and read the slope. You see the break.
+_(pause: 2.5s)_
+4. You pick your spot up the hill and trust it. Soft hands.
+_(pause: 2s)_
+5. Smooth stroke. You start it on your line with perfect pace.
+_(pause: 2.5s)_
+6. The ball rolls out, holds the line, then takes the break.
+_(pause: 3s)_
+7. It curls down toward the hole and drops, dead center.
+_(pause: 2s)_
+8. Par saved.
+_(pause: 2s)_
+9. You read it, trusted it, and rolled it pure.
+_(pause: 3s)_
+
+### Golf · viz-scrambler-hole-the-bunker-shot
+<!-- slug: viz-scrambler-hole-the-bunker-shot | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See yourself stepping into the bunker, the shot already pictured, and know it's a save.
+_(pause: 2s)_
+2. Greenside bunker, good lie, the flag close. You love this shot.
+_(pause: 2s)_
+3. You dig your feet in, open the face, and pick your spot in the sand.
+_(pause: 2.5s)_
+4. Slow breath. You commit and accelerate through.
+_(pause: 2s)_
+5. You splash the sand. The ball rides out on a cushion.
+_(pause: 2.5s)_
+6. It floats up soft, lands just on the green, and releases.
+_(pause: 3s)_
+7. It tracks toward the flag — and drops.
+_(pause: 2s)_
+8. Holed it. Par from the sand.
+_(pause: 2s)_
+9. There's always a way to par. Even from down there.
+_(pause: 3s)_
+
+### Golf · viz-scrambler-lag-it-stone-dead
+<!-- slug: viz-scrambler-lag-it-stone-dead | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See the long putt across the green, hands soft, all your focus on speed — and know it dies by the hole.
+_(pause: 2s)_
+2. Fifty feet, two tiers. This is all feel. You're going to cozy it up.
+_(pause: 2s)_
+3. You walk the line, feel the slope through your feet, see the ball dying by the cup.
+_(pause: 2.5s)_
+4. Slow breath. Soft hands. Let the speed match the green.
+_(pause: 2s)_
+5. You roll it with a smooth, free stroke.
+_(pause: 2.5s)_
+6. The ball climbs the tier, crests, and feeds down the slope.
+_(pause: 3s)_
+7. It dies right next to the hole. Stone dead.
+_(pause: 2s)_
+8. A tap-in from there. No three-putt.
+_(pause: 2s)_
+9. That touch is yours. You felt it the whole way.
+_(pause: 3s)_
+
+### Golf · viz-scrambler-chip-in-from-rough
+<!-- slug: viz-scrambler-chip-in-from-rough | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See yourself in the rough by the green, calm, finding the way — and know this one goes in.
+_(pause: 2s)_
+2. Thick stuff, a tough lie. You don't get tight. You get creative.
+_(pause: 2s)_
+3. You read the lie, see the ball pop out and release down the slope to the cup.
+_(pause: 2.5s)_
+4. You pick your landing spot, soft hands, feel the speed.
+_(pause: 2s)_
+5. Slow breath. A committed swing through the grass.
+_(pause: 2.5s)_
+6. The ball comes out, carries onto the green, and starts rolling.
+_(pause: 3s)_
+7. It tracks down the slope, breaks toward the hole — and disappears.
+_(pause: 2s)_
+8. Chipped in from trouble. Par, out of nowhere.
+_(pause: 2s)_
+9. There's always a shot. You found it.
+_(pause: 3s)_
+
+### Golf · viz-scrambler-grind-out-par
+<!-- slug: viz-scrambler-grind-out-par | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See yourself already mapping your way to par, calm, and know you grind one out.
+_(pause: 2s)_
+2. You're scrambling now. This is where you live — one smart shot at a time, no hero stuff.
+_(pause: 2s)_
+3. You punch out to a number you love. Back in play.
+_(pause: 2.5s)_
+4. Now a wedge — you pick your spot, soft hands, and pitch it on.
+_(pause: 2s)_
+5. It lands soft and settles fifteen feet below the hole.
+_(pause: 2.5s)_
+6. Slow breath. You read the putt, trust your speed, and roll it pure.
+_(pause: 3s)_
+7. It drops in the side door. Par.
+_(pause: 2s)_
+8. Wild drive, scrappy par. You stole one.
+_(pause: 2s)_
+9. You don't need it perfect. You find a way and sign for the number.
+_(pause: 3s)_
+
+### Golf · viz-scrambler-four-footer
+<!-- slug: viz-scrambler-four-footer | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. See yourself over the short putt, settled, certain it's going in — and know it does.
+_(pause: 2s)_
+2. Four feet for par. The kind you make.
+_(pause: 2s)_
+3. You don't rush it and you don't freeze. You go through your routine.
+_(pause: 2.5s)_
+4. You read the little break, pick the edge, and see it falling.
+_(pause: 2s)_
+5. Slow breath. Quiet hands, eyes still.
+_(pause: 2.5s)_
+6. You make a smooth, confident stroke.
+_(pause: 3s)_
+7. The ball rolls true, catches the edge you picked.
+_(pause: 2s)_
+8. And it drops. Center cut, bottom of the cup.
+_(pause: 2s)_
+9. Par holds. The round stays alive.
+_(pause: 3s)_
+
+### Golf · st-glf-02
+<!-- slug: st-glf-02 | file: components/pregame/audio/clips-viz-golf.ts -->
+
+1. Stay steady. Play the next shot.
