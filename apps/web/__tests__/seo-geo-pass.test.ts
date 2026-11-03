@@ -189,7 +189,7 @@ describe("comparison page copy pins (FV-504)", () => {
     expect(CHRISTIAN_ATHLETE_APPS_TITLE).toContain("Faithful Athlete");
     expect(CHRISTIAN_ATHLETE_APPS_TITLE).toContain("Playbook Devotional");
     expect(CHRISTIAN_ATHLETE_APPS_TITLE).toContain("Core IV");
-    expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).toMatch(/available on the App Store/);
+    expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).toMatch(/available on the US App Store/);
     expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).not.toMatch(/Not in stores yet/);
     expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).not.toMatch(/Google Play/);
     expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).toMatch(/compete from victory/i);

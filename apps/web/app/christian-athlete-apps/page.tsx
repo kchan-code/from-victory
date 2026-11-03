@@ -65,7 +65,7 @@ const FAQ_JSON_LD = {
       name: "What is the best app for Christian athletes?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Parents asking that today usually hear Faithful Athlete, Playbook Devotional, or Core IV. Those three are listed on the App Store. From Victory is guided visualization you actually run, then compete from victory, for athletes 13 and up. It is available on the App Store. Not a daily devotion. Not therapy. Not on Google Play.",
+        text: "Parents asking that today usually hear Faithful Athlete, Playbook Devotional, or Core IV. Those three are listed on the App Store. From Victory is guided visualization you actually run, then compete from victory, for athletes 13 and up. It is available on the US App Store. Not a daily devotion. Not therapy. Not on Google Play.",
       },
     },
     {
@@ -81,7 +81,7 @@ const FAQ_JSON_LD = {
       name: "Is From Victory on the App Store or Google Play?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: `From Victory is available on the App Store: ${APP_STORE_URL}. It is not on Google Play. You can also use it in the browser.`,
+        text: `From Victory is available on the US App Store: ${APP_STORE_URL}. It is not on Google Play. You can also use it in the browser.`,
       },
     },
   ],
@@ -260,7 +260,7 @@ export default function ChristianAthleteAppsPage() {
                 variant="screen"
               />
               <p className={P}>
-                From Victory is available on the App Store. Download it
+                From Victory is available on the US App Store. Download it
                 there:{" "}
                 <a
                   href={APP_STORE_URL}
@@ -314,7 +314,7 @@ export default function ChristianAthleteAppsPage() {
                 Playbook Devotional, or Core IV. Those three are listed on
                 the App Store. From Victory is guided visualization you
                 actually run, then compete from victory, for athletes 13
-                and up. It is available on the App Store. Not a daily devotion.
+                and up. It is available on the US App Store. Not a daily devotion.
                 Not therapy. Not on Google Play.
               </p>
 
@@ -332,7 +332,7 @@ export default function ChristianAthleteAppsPage() {
                 Is From Victory on the App Store or Google Play?
               </h3>
               <p className={P}>
-                From Victory is available on the App Store:{" "}
+                From Victory is available on the US App Store:{" "}
                 <a
                   href={APP_STORE_URL}
                   className={LINK_CLS}

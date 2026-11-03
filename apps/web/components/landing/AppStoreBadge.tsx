@@ -41,10 +41,10 @@ export function AppStoreAvailabilityCard() {
     <>
       <div className="flex items-center gap-2.5 mb-5">
         <FlameMark size={16} />
-        <span className="fv-eyebrow gold">On the App Store</span>
+        <span className="fv-eyebrow gold">On the US App Store</span>
       </div>
       <p className="font-body text-[15px] leading-[1.6] text-cream/80 m-0">
-        From Victory is available on the App Store. It is not on Google Play.
+        From Victory is available on the US App Store. It is not on Google Play.
         You can also open it in the browser.
       </p>
       {/* 16px is more than one-quarter of the 44px badge. */}

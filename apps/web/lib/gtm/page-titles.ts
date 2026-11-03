@@ -29,7 +29,7 @@ export const CHRISTIAN_ATHLETE_APPS_TITLE =
   "Christian Athlete Apps Compared: Faithful Athlete, Playbook Devotional, Core IV";
 
 export const CHRISTIAN_ATHLETE_APPS_EXCERPT =
-  "Faithful Athlete, Playbook Devotional, and Core IV lead stores. From Victory is available on the App Store: see the first shot, then compete from victory.";
+  "Faithful Athlete, Playbook Devotional, and Core IV lead stores. From Victory is available on the US App Store: see the first shot, then compete from victory.";
 
 export const CHRISTIAN_ATHLETE_APPS_DATE_PUBLISHED = "2026-07-09";
 export const CHRISTIAN_ATHLETE_APPS_DATE_MODIFIED = "2026-11-03";
