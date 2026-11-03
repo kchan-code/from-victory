@@ -215,14 +215,20 @@ describe("capacitor.config — Capacitor 8 system-bar keys (FV-502)", () => {
     "utf8",
   );
 
-  it("keeps the top-level WebView backgroundColor at brand onyx", () => {
-    // Top-level (not the SplashScreen/StatusBar copies): Bridge paints the
-    // WebView itself with this. Match at line start to avoid the plugin
-    // blocks' indented backgroundColor keys.
+  it("keeps the Android WebView backgroundColor at brand onyx, Android-scoped", () => {
+    // Inside the `android` block (CapConfig reads android.backgroundColor ??
+    // backgroundColor): Bridge paints the WebView itself with this.
+    const start = configSource.indexOf("\n  android: {");
+    expect(start, "capacitor.config.ts should declare an `android` block").toBeGreaterThan(-1);
+    const block = configSource.slice(start, configSource.indexOf("\n  },", start));
     expect(
-      configSource,
-      "top-level backgroundColor must stay #050505 — with targetSdk 36 the status-bar strip shows what is behind it, and a missing WebView background falls back to white",
-    ).toMatch(/\n {2}backgroundColor: "#050505",/);
+      block,
+      "android.backgroundColor must stay #050505 — with targetSdk 36 the status-bar strip shows what is behind it, and a missing WebView background falls back to white",
+    ).toMatch(/\n {4}backgroundColor: "#050505",/);
+  });
+
+  it("does not set a top-level backgroundColor (would repaint the live iOS WebView)", () => {
+    expect(configSource).not.toMatch(/\n {2}backgroundColor:/);
   });
 
   it("keeps SystemBars.style DARK so bar icons stay light on onyx", () => {

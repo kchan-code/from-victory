@@ -28,11 +28,6 @@ const config: CapacitorConfig = {
   appId: "com.fromvictoryapp.app",
   appName: "From Victory",
   webDir: "www",
-  // FV-502: WebView background. With targetSdk 36 (Android 16) the OS
-  // ignores StatusBar backgroundColor entirely — the edge-to-edge status-bar
-  // strip shows whatever is behind it, so the WebView (and the window, see
-  // android/app/src/main/res/values/styles.xml) must be brand onyx.
-  backgroundColor: "#050505",
   server: {
     url: serverUrl,
     androidScheme: "https",
@@ -91,6 +86,13 @@ const config: CapacitorConfig = {
   },
   android: {
     allowMixedContent: false,
+    // FV-502: WebView background. With targetSdk 36 (Android 16) the OS
+    // ignores StatusBar backgroundColor entirely — the edge-to-edge status-bar
+    // strip shows whatever is behind it, so the WebView (and the window, see
+    // android/app/src/main/res/values/styles.xml) must be brand onyx.
+    // Android-scoped on purpose: a top-level key would also repaint the live
+    // iOS WKWebView (ios.backgroundColor ?? backgroundColor) on its next build.
+    backgroundColor: "#050505",
   },
   ios: {
     contentInset: "automatic",
