@@ -174,3 +174,41 @@ describe("/dashboard — subscribe CTA shell-capability branch (Google Play comp
     ).not.toBeInTheDocument();
   });
 });
+
+describe("/dashboard — Add athlete shell-capability branch (FV-622, Android Path A)", () => {
+  it("legacy-native: plain website text instead of the Add athlete link", async () => {
+    accessLevelMock.mockResolvedValue("full");
+    shellCapabilityMock.mockReturnValue("legacy-native");
+
+    await renderPage();
+
+    const notice = screen.getByTestId("add-athlete-native-shell-notice");
+    expect(notice).toHaveTextContent(
+      "Add athletes from a web browser at fromvictoryapp.com.",
+    );
+    expect(notice.querySelector("a")).toBeNull();
+    expect(
+      screen
+        .queryAllByRole("link")
+        .filter((a) => a.getAttribute("href") === "/dashboard/athletes/new"),
+    ).toHaveLength(0);
+  });
+
+  it.each(["ios-iap", null] as const)(
+    "%s: unchanged — the Add athlete link is present",
+    async (capability) => {
+      accessLevelMock.mockResolvedValue("full");
+      shellCapabilityMock.mockReturnValue(capability);
+
+      await renderPage();
+
+      expect(screen.getByRole("link", { name: "Add athlete" })).toHaveAttribute(
+        "href",
+        "/dashboard/athletes/new",
+      );
+      expect(
+        screen.queryByTestId("add-athlete-native-shell-notice"),
+      ).toBeNull();
+    },
+  );
+});

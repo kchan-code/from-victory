@@ -30,6 +30,7 @@ import { syncAthleteQuantity } from "@/lib/stripe/sync-athlete-quantity";
 import { getStripe } from "@/lib/stripe/server";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
+import { getRequestShellCapability } from "@/lib/native-shell";
 import { createServiceClient } from "@/lib/supabase/service";
 import { assertAthleteCapacity } from "@/lib/subscriptions/apple-capacity";
 import { getTrialConversionState } from "@/lib/subscriptions/trial-conversion";
@@ -91,6 +92,20 @@ export async function createAthlete(
   _prev: CreateAthleteState,
   formData: FormData,
 ): Promise<CreateAthleteState> {
+  // FV-622 (Android Path A, KC 2026-11-03): the legacy-native shell (every
+  // Android build) is consumption-only. Adding an athlete can change Stripe
+  // billing (syncAthleteQuantity's tiered quantity bump, or the FV-586 trial
+  // conversion), so ALL adds are refused in-shell before any DB read/write or
+  // Stripe call — families add athletes on the website. The UA is a hint, not
+  // authorization; this branch only ever removes an action. ios-iap and
+  // web/PWA are unchanged.
+  if (getRequestShellCapability() === "legacy-native") {
+    return {
+      ok: false,
+      error: "Add athletes from a web browser at fromvictoryapp.com.",
+    };
+  }
+
   const parsed = CreateAthleteSchema.safeParse({
     first_name: formData.get("first_name"),
     birthdate: formData.get("birthdate"),

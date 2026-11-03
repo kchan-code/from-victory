@@ -1,6 +1,7 @@
 import { AuthShell } from "@/components/auth/AuthShell";
 import { AthleteForm, type TrialConversionInfo } from "@/components/dashboard/AthleteForm";
 import { requireParent } from "@/lib/auth/guards";
+import { getRequestShellCapability } from "@/lib/native-shell";
 import { createServiceClient } from "@/lib/supabase/service";
 import { capacityForAppleProduct } from "@/lib/subscriptions/apple-capacity";
 import { getActiveAppleProductId } from "@/lib/subscriptions/apple";
@@ -32,6 +33,27 @@ function formatTotalDueToday(cents: number, currency: string): string {
 
 export default async function NewAthletePage() {
   const { userId: parentId } = await requireParent();
+
+  // FV-622 (Android Path A): the legacy-native shell is consumption-only and
+  // adding an athlete can change Stripe billing, so a deep link here renders
+  // the plain, non-tappable website notice instead of the form — and skips the
+  // trial-quote (Stripe) read entirely. ios-iap and web are unchanged.
+  if (getRequestShellCapability() === "legacy-native") {
+    return (
+      <AuthShell title="Add an athlete">
+        <div
+          role="status"
+          data-testid="add-athlete-native-shell-notice"
+          className="bg-charcoal border border-hairline rounded-xl px-5 py-5"
+        >
+          <p className="font-body text-cream/70 text-[15px] leading-relaxed">
+            Add athletes from a web browser at fromvictoryapp.com.
+          </p>
+        </div>
+      </AuthShell>
+    );
+  }
+
   const service = createServiceClient();
 
   // FV-586 (KC decision D3, 2026-09-17): adding a second (or later) athlete
