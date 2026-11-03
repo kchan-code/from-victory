@@ -20,7 +20,8 @@ name: Athlete no-tracking guard
 # Dependency-free: plain Node CommonJS using only built-ins. No `npm install`.
 # Runs in ~1-2 seconds.
 #
-# TRIGGER: pull_request events that touch apps/web/**.
+# TRIGGER: pull_request events that touch apps/web/**, or this guard's own
+# workflow/script (so a change to the guard runs the guard).
 # On a direct push to main (merge) the job does not re-run because the
 # guaranteeing PR run would have gated it. If a bypass is ever needed, the
 # script can also be invoked locally:
@@ -31,13 +32,17 @@ on:
     branches: [main]
     paths:
       - 'apps/web/**'
+      - '.github/workflows/athlete-no-tracking.yml'
+      - '.github/scripts/check-athlete-no-tracking.cjs'
 
 jobs:
   athlete-no-tracking:
     name: Athlete surfaces — no tracking SDKs
     runs-on: ubuntu-latest
-    # Fast: no npm install, no build, just a Node script reading source files.
-    timeout-minutes: 3
+    # The scan itself takes ~1s (no npm install, no build). FV-627: the budget
+    # covers actions/checkout too, which has taken 3+ minutes on slow runners;
+    # a 3-minute limit cancelled the job before (or seconds into) the scan.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
 
