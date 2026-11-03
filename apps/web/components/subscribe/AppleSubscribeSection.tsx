@@ -110,6 +110,13 @@ const CHANGE_PLAN_LABEL = "Change plan";
 // sheet is the sole source of trial/price/terms claims (no trial/eligibility
 // copy is ever rendered by this component itself).
 const APPLE_TERMS_NOTE = "Apple shows the final price and terms before you confirm.";
+/**
+ * FV-615: backoff between StoreKit product-lookup attempts when the previous
+ * attempt returned no products. Total extra wait ≈ 7s before the screen
+ * settles on PRODUCT_UNAVAILABLE_COPY. Exported for tests.
+ */
+export const STOREKIT_PRODUCT_RETRY_DELAYS_MS: readonly number[] = [1000, 2000, 4000];
+
 const PRODUCT_UNAVAILABLE_COPY =
   "This plan isn’t available right now. Please try again in a moment.";
 const PURCHASE_ERROR_COPY = "We couldn’t complete that purchase. Please try again.";
@@ -640,7 +647,23 @@ export function AppleSubscribeSection({
     }
 
     let cancelled = false;
-    void getStoreKitProducts(priceIds).then((live) => {
+    // FV-615 (App Review rejection 2026-10-16): StoreKit's product lookup can
+    // come back empty on a first attempt (the native bridge resolves `[]` on
+    // ANY error), and a single empty answer used to leave every plan stuck on
+    // PRODUCT_UNAVAILABLE_COPY for the life of the screen. Retry a bounded
+    // number of times with a short backoff before settling. Display-only:
+    // purchase validation and the server-side gates are unchanged.
+    const fetchWithRetry = async (): Promise<Awaited<ReturnType<typeof getStoreKitProducts>>> => {
+      let live = await getStoreKitProducts(priceIds);
+      for (const delayMs of STOREKIT_PRODUCT_RETRY_DELAYS_MS) {
+        if (cancelled || live.length > 0) break;
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        if (cancelled) break;
+        live = await getStoreKitProducts(priceIds);
+      }
+      return live;
+    };
+    void fetchWithRetry().then((live) => {
       if (cancelled) return;
       const priceById = new Map(live.map((product) => [product.productId, product]));
 
