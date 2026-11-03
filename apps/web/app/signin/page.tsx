@@ -6,6 +6,7 @@ import { ClearCacheOnMount } from "@/components/auth/ClearCacheOnMount";
 import { SignInChooser } from "@/components/auth/SignInChooser";
 import { getDeviceAthleteId } from "@/lib/auth/device";
 import { redirectIfAuthed } from "@/lib/auth/guards";
+import { getRequestShellCapability } from "@/lib/native-shell";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const siteUrl = "https://www.fromvictoryapp.com";
@@ -119,8 +120,12 @@ export default async function SignInPage({ searchParams }: Props) {
           (username+password on any device). The device-cookie path above
           short-circuits before we get here, so this is only shown for
           no-cookie visitors. Default tab is "Parent" — the more common
-          no-cookie scenario. */}
-      <SignInChooser />
+          no-cookie scenario. FV-621: in the legacy-native shell (Android,
+          consumption-only) the parent tab swaps the /signup link for plain
+          website guidance; ios-iap and web are unchanged. */}
+      <SignInChooser
+        legacyNative={getRequestShellCapability() === "legacy-native"}
+      />
     </AuthShell>
   );
 }
