@@ -196,3 +196,61 @@ describe("capacitor.config — status bar does not overlay the WebView (FV-484)"
     ).toMatch(/overlaysWebView\s*:\s*false/);
   });
 });
+
+/**
+ * FV-502 regression guard.
+ *
+ * With targetSdk 36 (Android 16, apps/native/android/variables.gradle) the OS
+ * ignores `window.setStatusBarColor` entirely — the status-bar strip shows
+ * whatever is drawn behind it. Capacitor 8's core SystemBars plugin paints
+ * the decor from the active theme's `windowBackground` and styles the bar
+ * icons from `plugins.SystemBars.style`; the legacy `StatusBar` keys no
+ * longer control either on Android 15+. Both keys below are silent-failure
+ * landmines of the same class as FV-478/FV-484: removing them compiles,
+ * ships, and quietly renders a white status bar with invisible icons.
+ */
+describe("capacitor.config — Capacitor 8 system-bar keys (FV-502)", () => {
+  const configSource = readFileSync(
+    resolve(__dirname, "../../native/capacitor.config.ts"),
+    "utf8",
+  );
+
+  it("keeps the Android WebView backgroundColor at brand onyx, Android-scoped", () => {
+    // Inside the `android` block (CapConfig reads android.backgroundColor ??
+    // backgroundColor): Bridge paints the WebView itself with this.
+    const start = configSource.indexOf("\n  android: {");
+    expect(start, "capacitor.config.ts should declare an `android` block").toBeGreaterThan(-1);
+    const block = configSource.slice(start, configSource.indexOf("\n  },", start));
+    expect(
+      block,
+      "android.backgroundColor must stay #050505 — with targetSdk 36 the status-bar strip shows what is behind it, and a missing WebView background falls back to white",
+    ).toMatch(/\n {4}backgroundColor: "#050505",/);
+  });
+
+  it("does not set a top-level backgroundColor (would repaint the live iOS WebView)", () => {
+    expect(configSource).not.toMatch(/\n {2}backgroundColor:/);
+  });
+
+  it("keeps SystemBars.style DARK so bar icons stay light on onyx", () => {
+    const start = configSource.indexOf("SystemBars:");
+    expect(start, "capacitor.config.ts should declare a `SystemBars` block").toBeGreaterThan(-1);
+    const open = configSource.indexOf("{", start);
+    let depth = 0;
+    let end = -1;
+    for (let i = open; i < configSource.length; i += 1) {
+      if (configSource[i] === "{") depth += 1;
+      else if (configSource[i] === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          end = i;
+          break;
+        }
+      }
+    }
+    expect(end).toBeGreaterThan(-1);
+    expect(
+      configSource.slice(start, end),
+      "plugins.SystemBars.style must be DARK — Capacitor 8's core SystemBars plugin (not the legacy StatusBar block) controls bar-icon appearance on Android 15+, and its default follows device day/night mode: dark icons, invisible against the onyx strip",
+    ).toMatch(/style\s*:\s*"DARK"/);
+  });
+});
