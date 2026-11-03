@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AppStoreBadge } from "./AppStoreBadge";
 
 import { SUPPORTED_SPORTS, sportLabel } from "@/lib/sports";
 
@@ -55,6 +56,10 @@ export function Footer() {
               Fueled by the Spirit.
               <br />
               Built for Victory.
+            </div>
+            {/* 24px clear space above the badge, under the lockup. */}
+            <div className="mt-6">
+              <AppStoreBadge />
             </div>
           </div>
           <FooterColumn title="Product" links={productLinks} />
@@ -145,6 +150,10 @@ export function Footer() {
             </a>
           </div>
         </div>
+        <p className="m-0 mt-4 max-w-[68ch] font-body text-[12px] font-normal normal-case tracking-normal text-cream/40 leading-[1.5]">
+          Apple, the Apple logo, and App Store are trademarks of Apple Inc.,
+          registered in the U.S. and other countries.
+        </p>
       </div>
     </footer>
   );

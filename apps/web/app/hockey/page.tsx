@@ -10,6 +10,7 @@ import { ScrollNav } from "@/components/landing/ScrollNav";
 import { Footer } from "@/components/landing/Footer";
 import { Reveal } from "@/components/landing/Reveal";
 import { SectionMeta } from "@/components/landing/SectionMeta";
+import { AppStoreAvailabilityCard } from "@/components/landing/AppStoreBadge";
 import { SportWebPageJsonLd } from "@/components/landing/StructuredData";
 import { SvgIcon } from "@/components/landing/SvgIcon";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
@@ -296,19 +297,7 @@ export default function HockeyPage() {
                     border: "1px solid rgba(223,175,55,0.2)",
                   }}
                 >
-                  <div className="flex items-center gap-2.5 mb-5">
-                    <FlameMark size={16} />
-                    <span className="fv-eyebrow gold">Web app · PWA</span>
-                  </div>
-                  <p className="font-body text-[15px] leading-[1.6] text-cream/80 m-0 mb-6">
-                    From Victory runs in the browser and installs to the home
-                    screen. It is not listed on the App Store or Google Play
-                    yet. Internal TestFlight and Play Closed Alpha only. Do
-                    not look for a public store listing.
-                  </p>
-                  <p className="font-body text-[15px] leading-[1.6] text-cream/80 m-0">
-                    Play hard, fearless, and free.
-                  </p>
+                  <AppStoreAvailabilityCard />
                 </div>
               </div>
             </Reveal>

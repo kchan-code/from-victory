@@ -10,6 +10,12 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-03 — iOS app is available on the US App Store
+
+From Victory iOS app v1.0 is available on the US App Store: https://apps.apple.com/us/app/from-victory/id6804743047. It went live on 2026-11-03 via manual release after App Review approval. US App Store only. iOS only. It is not available on Google Play; there is no Android store listing. The web app (installable PWA) still works in the browser. The marketing site now links the listing with Apple's unmodified "Download on the App Store" badge. This supersedes the 2026-08-26 entry that said the app is not listed on any public store.
+
+Why it matters to a buyer: a parent on iPhone can now download the app from the US App Store. An Android parent cannot get it from a store; they use it in the browser.
+
 ## 2026-09-12 — New free trials become 7 days for one athlete (rides FV-574; effective when that PR deploys)
 
 KC approved a new offering (2026-09-11): new first-time trials are SEVEN days,
@@ -293,6 +299,8 @@ The site header now carries a "Sports" dropdown listing the seven live sports (d
 Why it matters to a buyer: a basketball, golf, football, baseball, lacrosse, or soccer parent searching for their sport now lands on a page about their athlete's actual game, not a hockey pitch.
 
 ## 2026-08-26 — Public store listings are not live; marketing comparison names today's SERP apps
+
+*Superseded 2026-11-03: the iOS app is now on the US App Store. See the 2026-11-03 entry above. It is not on Google Play.*
 
 From Victory is a web app / installable PWA. It is not listed on the App Store or Google Play. Internal TestFlight and Play Closed Alpha exist for native-shell QA. Do not tell a parent they can download From Victory from a public store tonight.
 

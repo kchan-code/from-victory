@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { isAdultSignupEnabled } from "@/lib/flags";
+import { AppStoreBadge } from "./AppStoreBadge";
 import { SvgIcon } from "./SvgIcon";
 
 export function Hero() {
@@ -63,6 +64,10 @@ export function Hero() {
             <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 font-semibold mb-0">
               14 days free for first-time subscribers, then $5/mo or $49/yr, cancel anytime
             </p>
+            {/* 16px clear space is more than one-quarter of the 44px badge. */}
+            <div className="mt-4">
+              <AppStoreBadge />
+            </div>
 
             {/* FV-515: 18+ athlete path, flag-gated server-side — quiet
                 text-link treatment, not a second competing CTA. Copy reused
