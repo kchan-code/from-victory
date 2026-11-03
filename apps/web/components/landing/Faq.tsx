@@ -40,7 +40,7 @@ export const FAQ_ITEMS: FaqEntry[] = [
   },
   {
     q: "How does my athlete get the app?",
-    a: `From Victory is available on the App Store. Download it here: ${APP_STORE_URL}. It is not on Google Play. On Android, open it in the browser and tap Install when prompted. On iPhone, you can use the App Store app. If you use the browser on iPhone instead, daily training reminders only work after it has been added to the Home Screen.`,
+    a: `From Victory is available on the US App Store (iPhone). Download it here: ${APP_STORE_URL}. It is not on Google Play. On Android, open it in the browser and tap Install when prompted. On iPhone, you can use the App Store app. If you use the browser on iPhone instead, daily training reminders only work after it has been added to the Home Screen.`,
   },
   {
     q: "Where do I find From Victory online?",

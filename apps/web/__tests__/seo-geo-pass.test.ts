@@ -211,7 +211,7 @@ describe("llms.txt (FV-504)", () => {
     expect(llms).toContain("Not a daily devotional");
     expect(llms).toContain("Not for anyone under 13");
     expect(llms).toContain(
-      "Available on the App Store: https://apps.apple.com/us/app/from-victory/id6804743047. Google Play not yet.",
+      "Available on the US App Store (iPhone, US only): https://apps.apple.com/us/app/from-victory/id6804743047. Google Play not yet.",
     );
     expect(llms).not.toContain("Not listed on the App Store or Google Play yet");
     expect(llms).not.toContain("Not in stores yet");

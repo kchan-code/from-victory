@@ -109,7 +109,7 @@ describe("Faq — verbatim answer spot-pins", () => {
     );
     expect(entry).toBeDefined();
     expect(entry!.a).toContain(APP_STORE_URL);
-    expect(entry!.a).toMatch(/available on the App Store/);
+    expect(entry!.a).toMatch(/available on the US App Store \(iPhone\)/);
     expect(entry!.a).toMatch(/not on Google Play/);
     expect(entry!.a).not.toMatch(/nothing to download/i);
     expect(entry!.a).not.toMatch(/—/);
