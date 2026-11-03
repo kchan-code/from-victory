@@ -17,12 +17,35 @@ import Link from "next/link";
 //      production callers) and is intentionally NOT described as an active
 //      feature here. Revisit if/when it is wired.
 
+const siteUrl = "https://www.fromvictoryapp.com";
+const PAGE_DESCRIPTION =
+  "How From Victory collects, uses, stores, and protects information — across our website, the sport waitlist, and the From Victory app for parents and athletes (ages 13 and above).";
+
 export const metadata: Metadata = {
   alternates: { canonical: "/privacy" },
   title: "Privacy Policy",
-  description:
-    "How From Victory collects, uses, stores, and protects information — across our website, the sport waitlist, and the From Victory app for parents and athletes (ages 13 and above).",
+  description: PAGE_DESCRIPTION,
   robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    url: `${siteUrl}/privacy`,
+    siteName: "From Victory",
+    title: "Privacy Policy · From Victory",
+    description: PAGE_DESCRIPTION,
+    images: [
+      {
+        url: `${siteUrl}/og-website-1200x630.png`,
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Privacy Policy · From Victory",
+    description: PAGE_DESCRIPTION,
+    images: [`${siteUrl}/og-website-1200x630.png`],
+  },
 };
 
 // Effective date set to June 24, 2026 by KC (2026-06-25). Attorney sign-off
@@ -32,7 +55,7 @@ const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto max-w-[760px] px-5 sm:px-8 pt-24 pb-20 text-cream">
+    <main id="main-content" className="mx-auto max-w-[760px] px-5 sm:px-8 pt-24 pb-20 text-cream">
       <header className="mb-10">
         <p className="fv-eyebrow gold mb-3">Privacy</p>
         <h1 className="font-heading font-bold text-[40px] sm:text-[52px] leading-[1.05] tracking-[-0.02em] m-0 mb-3">

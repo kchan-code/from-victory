@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { useFormState } from "react-dom";
 
 import { signUpAdultAthlete } from "@/lib/actions/auth-adult";
@@ -12,7 +13,13 @@ import { SubmitButton } from "./SubmitButton";
 
 const initialState: AuthActionState = null;
 
-export function AdultSignUpForm() {
+type Props = {
+  /** Optional content rendered directly below the submit button (e.g. the
+   * trial/billing expectation line) — pure presentation, page decides. */
+  afterSubmit?: ReactNode;
+};
+
+export function AdultSignUpForm({ afterSubmit }: Props = {}) {
   const [state, formAction] = useFormState(signUpAdultAthlete, initialState);
   const fieldError = (name: string) =>
     state && !state.ok && state.field === name ? state.error : undefined;
@@ -169,6 +176,7 @@ export function AdultSignUpForm() {
       <SubmitButton pendingLabel="Creating account…">
         Create athlete account
       </SubmitButton>
+      {afterSubmit}
       <p className="mt-6 font-body text-[14px] text-cream/60 text-center">
         Already have an account?{" "}
         <Link

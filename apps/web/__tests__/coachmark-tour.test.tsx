@@ -94,7 +94,6 @@ const HUB_STOPS = [
   "hub-rhythm-ring",
   "hub-daily-card",
   "hub-pregame-card",
-  "hub-bottom-nav",
 ];
 const PREGAME_STOPS = [
   "pregame-begin-btn",
@@ -166,9 +165,8 @@ afterEach(() => {
   removeAnchors();
   vi.clearAllMocks();
   vi.useRealTimers();
-  // Restore body overflow + tour signal if tests left them set
+  // Restore body overflow if tests left it set
   document.body.style.overflow = "";
-  document.body.removeAttribute("data-coachmark-tour");
 });
 
 // ---------------------------------------------------------------------------
@@ -184,36 +182,12 @@ describe("CoachmarkTour — hub surface", () => {
     expect(screen.getByTestId("coachmark-tooltip")).toBeInTheDocument();
   });
 
-  it("shows step 1 of 4 on first render", async () => {
+  it("shows step 1 of 3 on first render", async () => {
     injectHubAnchors();
     render(<CoachmarkTour surface="hub" />);
     await act(async () => { vi.runAllTimers(); });
     const tooltip = screen.getByTestId("coachmark-tooltip");
-    expect(within(tooltip).getByText(/step 1 of 4/i)).toBeInTheDocument();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// FV-313 regression: the hub tour reveals the bottom nav (hidden at scrollY 0
-// with scroll locked) by signalling a body attribute that BottomNav reads.
-// ---------------------------------------------------------------------------
-
-describe("CoachmarkTour — bottom-nav reveal signal (FV-313)", () => {
-  it("sets data-coachmark-tour=\"hub\" on the body while the hub tour is active", async () => {
-    injectHubAnchors();
-    render(<CoachmarkTour surface="hub" />);
-    await act(async () => { vi.runAllTimers(); });
-    expect(document.body.getAttribute("data-coachmark-tour")).toBe("hub");
-  });
-
-  it("clears the body signal when the tour is skipped", async () => {
-    injectHubAnchors();
-    render(<CoachmarkTour surface="hub" />);
-    await act(async () => { vi.runAllTimers(); });
-    await act(async () => {
-      fireEvent.click(screen.getByTestId("coachmark-skip-btn"));
-    });
-    expect(document.body.getAttribute("data-coachmark-tour")).toBeNull();
+    expect(within(tooltip).getByText(/step 1 of 3/i)).toBeInTheDocument();
   });
 });
 
@@ -242,18 +216,18 @@ describe("CoachmarkTour — flag already set", () => {
 // ---------------------------------------------------------------------------
 
 describe("CoachmarkTour — complete all stops sets flag", () => {
-  it("hub: progresses through 4 steps and writes flag on Finish", async () => {
+  it("hub: progresses through 3 steps and writes flag on Finish", async () => {
     injectHubAnchors();
     render(<CoachmarkTour surface="hub" />);
     await act(async () => { vi.runAllTimers(); });
 
-    // Step 1→2→3→4 by clicking "Next"
-    for (let i = 0; i < 3; i++) {
+    // Step 1→2→3 by clicking "Next"
+    for (let i = 0; i < 2; i++) {
       const nextBtn = screen.getByTestId("coachmark-next-btn");
       await act(async () => { fireEvent.click(nextBtn); vi.runAllTimers(); });
     }
 
-    // On step 4 the button reads "Compete from victory" (TOUR_DONE_LINE) — click to finish
+    // On step 3 the button reads "Compete from victory" (TOUR_DONE_LINE) — click to finish
     const finishBtn = screen.getByTestId("coachmark-next-btn");
     expect(finishBtn).toHaveTextContent(/compete from victory/i);
     await act(async () => { fireEvent.click(finishBtn); });
@@ -444,8 +418,8 @@ describe("CoachmarkTour — missing anchors", () => {
   });
 
   it("skips a missing intermediate stop and shows next available one", async () => {
-    // Inject only 3 of 4 hub anchors — skip hub-daily-card
-    const slugs = ["hub-rhythm-ring", "hub-pregame-card", "hub-bottom-nav"];
+    // Inject only 2 of 3 hub anchors — skip hub-daily-card
+    const slugs = ["hub-rhythm-ring", "hub-pregame-card"];
     slugs.forEach(injectAnchor);
 
     render(<CoachmarkTour surface="hub" />);
@@ -455,7 +429,7 @@ describe("CoachmarkTour — missing anchors", () => {
     expect(screen.getByTestId("coachmark-tooltip")).toBeInTheDocument();
     // Step counter reflects the available stops count implicitly
     // (the step label counts position in the original stops array)
-    expect(screen.getByText(/step 1 of 4/i)).toBeInTheDocument();
+    expect(screen.getByText(/step 1 of 3/i)).toBeInTheDocument();
   });
 });
 
@@ -507,6 +481,6 @@ describe("CoachmarkTour — ARIA attributes", () => {
       .getByTestId("coachmark-tooltip")
       .querySelector("[aria-live='polite']");
     expect(liveRegion).not.toBeNull();
-    expect(liveRegion?.textContent).toMatch(/step 1 of 4/i);
+    expect(liveRegion?.textContent).toMatch(/step 1 of 3/i);
   });
 });

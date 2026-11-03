@@ -51,6 +51,7 @@ export const ATTRIBUTION_ELIGIBLE_PATHS: readonly string[] = [
   "/",
   "/pricing",
   "/parents",
+  "/athletes", // FV-545
   "/teams",
   "/about",
   "/contact",
@@ -59,6 +60,13 @@ export const ATTRIBUTION_ELIGIBLE_PATHS: readonly string[] = [
   "/terms",
   "/pregame-ritual-christian-athlete",
   "/christian-athlete-apps",
+  "/hockey",
+  "/basketball",
+  "/golf",
+  "/football",
+  "/baseball",
+  "/lacrosse",
+  "/soccer",
 ];
 
 /** Max length (chars) retained per attribution field value. */

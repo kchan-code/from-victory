@@ -1,6 +1,6 @@
 // /resources/[slug] — individual article page (FV-238).
 // Server Component. Public — no auth required.
-// generateStaticParams drives SSG for all five articles.
+// generateStaticParams drives SSG for every registered article slug.
 // AUTHORED copy in this file: internal-link labels and "More resources" label.
 
 import type { Metadata } from "next";
@@ -49,7 +49,7 @@ export async function generateMetadata({
   // to the shared brand card for any article without an image.
   const ogImage = article.image
     ? `${siteUrl}${article.image.src.replace("/images/blog/", "/images/blog/og/")}`
-    : `${siteUrl}/from-victory-social-preview.jpg`;
+    : `${siteUrl}/og-website-1200x630.png`;
 
   return {
     title: article.title, // root layout template appends "· From Victory"
@@ -170,7 +170,7 @@ export default async function ArticlePage({
       <LandingIconDefs />
       <ScrollNav />
 
-      <main>
+      <main id="main-content">
         {/* ── Article header ──────────────────────────────────────────── */}
         <section className="relative pt-[168px] md:pt-[140px] pb-12 overflow-hidden isolate">
           <div className="absolute inset-0 -z-10 pointer-events-none">

@@ -444,6 +444,8 @@ docs/brand.md "Voice Modes" for the full table. Default mode is Mentor.
 - Examples drawn from the live sports (hockey, basketball, golf,
   football, baseball, lacrosse, soccer) for MVP. Underlying content structure is
   sport-agnostic so adding more sports in v2 is trivial.
+- Public research-adjacent claims (resources articles, marketing, FAQ)
+  follow `docs/content-evidence-standards.md` (binding — FV-540).
 
 ### Visual Design
 - Dark-mode-first across all athlete-facing surfaces. Light mode is

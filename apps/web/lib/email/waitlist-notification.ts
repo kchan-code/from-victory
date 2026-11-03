@@ -1,12 +1,12 @@
 import "server-only";
 import { getResendClient } from "./resend";
 
+// FV-517 dropped the name + optional note fields from the waitlist form —
+// the notification email now identifies the signup by email instead.
 type WaitlistNotificationPayload = {
   email: string;
-  name: string;
   role: string;
   sport: string;
-  note: string | null;
   source?: string | null;
   intent?: string | null;
 };
@@ -36,12 +36,8 @@ export async function sendWaitlistNotification(
 
   const isGroupPricing = payload.source === "teams" || payload.intent === "group-pricing";
   const subject = isGroupPricing
-    ? `⭐ GROUP PRICING REQUEST · From Victory waitlist · ${payload.name}`
-    : `From Victory waitlist · ${payload.name} (${payload.role})`;
-
-  const noteBlock = payload.note
-    ? `<p style="margin:0 0 8px 0"><strong>Note</strong></p><p style="margin:0 0 16px 0; white-space:pre-wrap">${escapeHtml(payload.note)}</p>`
-    : "";
+    ? `⭐ GROUP PRICING REQUEST · From Victory waitlist · ${payload.email}`
+    : `From Victory waitlist · ${payload.email} (${payload.role})`;
 
   const metaRows = [
     payload.source ? `<tr><td style="padding:4px 12px 4px 0"><strong>Source</strong></td><td>${escapeHtml(payload.source)}</td></tr>` : "",
@@ -53,26 +49,22 @@ export async function sendWaitlistNotification(
   ${isGroupPricing ? '<div style="background:#fffbe6;border:1px solid #ffe066;border-radius:6px;padding:8px 14px;margin-bottom:16px;font-weight:600;color:#7a5c00">⭐ Group pricing request from /teams page</div>' : ""}
   <h2 style="margin:0 0 16px 0">New From Victory waitlist signup</h2>
   <table style="border-collapse:collapse">
-    <tr><td style="padding:4px 12px 4px 0"><strong>Name</strong></td><td>${escapeHtml(payload.name)}</td></tr>
     <tr><td style="padding:4px 12px 4px 0"><strong>Email</strong></td><td>${escapeHtml(payload.email)}</td></tr>
     <tr><td style="padding:4px 12px 4px 0"><strong>Role</strong></td><td>${escapeHtml(payload.role)}</td></tr>
     <tr><td style="padding:4px 12px 4px 0"><strong>Sport</strong></td><td>${escapeHtml(payload.sport)}</td></tr>
     ${metaRows}
   </table>
-  ${noteBlock ? `<div style="margin-top:16px">${noteBlock}</div>` : ""}
 </body></html>`;
 
   const text = [
     isGroupPricing ? "⭐ GROUP PRICING REQUEST" : null,
     `New From Victory waitlist signup`,
     ``,
-    `Name:  ${payload.name}`,
     `Email: ${payload.email}`,
     `Role:  ${payload.role}`,
     `Sport: ${payload.sport}`,
     payload.source ? `Source: ${payload.source}` : null,
     payload.intent ? `Intent: ${payload.intent}` : null,
-    payload.note ? `\nNote:\n${payload.note}` : null,
   ]
     .filter(Boolean)
     .join("\n");

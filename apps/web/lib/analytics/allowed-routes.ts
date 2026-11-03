@@ -24,6 +24,7 @@ const ALLOWED_EXACT_PATHS: readonly string[] = ["/"];
 const ALLOWED_PREFIXES: readonly string[] = [
   "/pricing",
   "/parents",
+  "/athletes", // FV-545
   "/teams",
   "/about",
   "/contact",
@@ -32,6 +33,13 @@ const ALLOWED_PREFIXES: readonly string[] = [
   "/terms",
   "/pregame-ritual-christian-athlete",
   "/christian-athlete-apps",
+  "/hockey",
+  "/basketball",
+  "/golf",
+  "/football",
+  "/baseball",
+  "/lacrosse",
+  "/soccer",
 ];
 
 /**

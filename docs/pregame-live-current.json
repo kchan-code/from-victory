@@ -5,13 +5,20 @@
     "Exhale.",
     "Inhale.",
     "Exhale.",
-    "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
-    "So now you are free.",
-    "Free to attack. Free to compete. Free to make the next play without carrying the last one.",
-    "Nothing to prove. Nothing to protect. Everything to give.",
-    "Play loose. Play brave. Step into the game free."
+    "Remember what is true."
   ],
+  "truth-01": ["Your standing with God does not rise or fall with performance."],
+  "truth-02": ["The outcome can change. Your place with God cannot."],
+  "truth-03": ["You were loved before this began. You will be loved afterward."],
+  "truth-04": ["Your worth was settled at the cross, not here."],
+  "truth-05": ["You are not earning belonging. In Christ, you already belong."],
+  "truth-06": ["Nothing today can add to or subtract from grace."],
+  "truth-07": ["The verdict over you is already spoken: loved, forgiven, and his."],
+  "truth-08": ["You have nothing to prove to God. Give everything you have."],
+  "truth-09": ["Your performance may be measured. Your identity is not."],
+  "truth-10": ["Success cannot crown you. Failure cannot condemn you."],
+  "truth-11": ["Christ finished the work. You are free to give your best."],
+  "truth-12": ["Whatever happens, you remain fully known and fully loved by God."],
   "viz-forward": [
     "Keep your eyes closed. See yourself running onto the ice.",
     "You smell the ice, the zamboni.",
@@ -337,10 +344,7 @@
     "Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen."
   ],
   "shared-sendoff": [
-    "You are secure.",
-    "Play free. Play brave.",
-    "Give everything.",
-    "Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "anc-long-exhale": [
     "Long exhale."
@@ -556,7 +560,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -585,7 +589,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-guard-missed-shot": [
     "Now, take two breaths. Four in. Six out.",
@@ -594,7 +598,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -623,7 +627,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-guard-got-cooked": [
     "Now, take two breaths. Four in. Six out.",
@@ -632,7 +636,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -661,7 +665,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-guard-foul-trouble": [
     "Now, take two breaths. Four in. Six out.",
@@ -670,7 +674,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -699,7 +703,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-guard-coach-yells": [
     "Now, take two breaths. Four in. Six out.",
@@ -708,7 +712,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -737,7 +741,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-guard-benched": [
     "Now, take two breaths. Four in. Six out.",
@@ -746,7 +750,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -775,7 +779,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-guard-nervous": [
     "Now, take two breaths. Four in. Six out.",
@@ -784,7 +788,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -813,7 +817,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-guard-missed-fts": [
     "Now, take two breaths. Four in. Six out.",
@@ -822,7 +826,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -851,7 +855,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-guard-start-slow": [
     "Now, take two breaths. Four in. Six out.",
@@ -860,7 +864,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -889,7 +893,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-guard-fall-behind-early": [
     "Now, take two breaths. Four in. Six out.",
@@ -898,7 +902,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -927,7 +931,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-wing-turnover": [
     "Now, take two breaths. Four in. Six out.",
@@ -936,7 +940,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -965,7 +969,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-wing-missed-shot": [
     "Now, take two breaths. Four in. Six out.",
@@ -974,7 +978,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1003,7 +1007,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-wing-got-cooked": [
     "Now, take two breaths. Four in. Six out.",
@@ -1012,7 +1016,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1041,7 +1045,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-wing-foul-trouble": [
     "Now, take two breaths. Four in. Six out.",
@@ -1050,7 +1054,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1079,7 +1083,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-wing-coach-yells": [
     "Now, take two breaths. Four in. Six out.",
@@ -1088,7 +1092,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1117,7 +1121,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-wing-benched": [
     "Now, take two breaths. Four in. Six out.",
@@ -1126,7 +1130,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1155,7 +1159,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-wing-nervous": [
     "Now, take two breaths. Four in. Six out.",
@@ -1164,7 +1168,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1193,7 +1197,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-wing-missed-fts": [
     "Now, take two breaths. Four in. Six out.",
@@ -1202,7 +1206,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1231,7 +1235,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-wing-start-slow": [
     "Now, take two breaths. Four in. Six out.",
@@ -1240,7 +1244,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1269,7 +1273,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-wing-fall-behind-early": [
     "Now, take two breaths. Four in. Six out.",
@@ -1278,7 +1282,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1307,7 +1311,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-big-turnover": [
     "Now, take two breaths. Four in. Six out.",
@@ -1316,7 +1320,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1345,7 +1349,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-big-missed-shot": [
     "Now, take two breaths. Four in. Six out.",
@@ -1354,7 +1358,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1383,7 +1387,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-big-got-cooked": [
     "Now, take two breaths. Four in. Six out.",
@@ -1392,7 +1396,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1421,7 +1425,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-big-foul-trouble": [
     "Now, take two breaths. Four in. Six out.",
@@ -1430,7 +1434,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1459,7 +1463,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-big-coach-yells": [
     "Now, take two breaths. Four in. Six out.",
@@ -1468,7 +1472,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1497,7 +1501,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-big-fouled-out": [
     "Now, take two breaths. Four in. Six out.",
@@ -1506,7 +1510,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1535,7 +1539,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-big-nervous": [
     "Now, take two breaths. Four in. Six out.",
@@ -1544,7 +1548,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1573,7 +1577,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-big-missed-fts": [
     "Now, take two breaths. Four in. Six out.",
@@ -1582,7 +1586,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1611,7 +1615,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-big-start-slow": [
     "Now, take two breaths. Four in. Six out.",
@@ -1620,7 +1624,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1649,7 +1653,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "bb-big-fall-behind-early": [
     "Now, take two breaths. Four in. Six out.",
@@ -1658,7 +1662,7 @@
     "Inhale.",
     "Exhale.",
     "Remember what is true.",
-    "The worst game you ever play does not lower your standing with God. The best game you ever play does not raise it. You are loved before you lace up. You are loved after the final horn.",
+    "{{truth}}",
     "Keep your eyes closed. See yourself walking into the gym.",
     "You hear the ball on the floor in warmups.",
     "Hear the squeak of shoes, the rim after a shot.",
@@ -1687,7 +1691,7 @@
     "This is the move. Every time. Whatever happens tonight.",
     "See it. Feel it. Breathe. Speak truth. Take the next faithful action.",
     "Let's pray. Father, thank you that my worth was settled before this game and will hold after it. Help me compete with courage. Help me respond well when it gets hard. Help me serve my team. Whatever happens out there, help me to glorify you. In Jesus' name, Amen",
-    "You are secure. Now play from victory."
+    "You are secure. Now go compete from victory."
   ],
   "viz-guard": [
     "Keep your eyes closed. See yourself walking into the gym.",

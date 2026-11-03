@@ -174,7 +174,7 @@ export function PregameStart({
                 shown hockey's venue. The venue adds nothing here (the value
                 is "works without signal"), so the line is sport-neutral
                 rather than threaded. */}
-            <span className="font-mono text-[11px] lowercase tracking-[0.04em] text-cream/45">
+            <span className="font-mono text-[11px] lowercase tracking-[0.04em] text-cream/55">
               Make your picks + download — no signal needed.
             </span>
           </button>
@@ -239,7 +239,7 @@ export function PregameStart({
               <span className="font-heading text-[14px] font-semibold text-cream/90">
                 Run it like last time
               </span>
-              <span className="font-mono text-[11px] lowercase tracking-[0.04em] text-cream/45">
+              <span className="font-mono text-[11px] lowercase tracking-[0.04em] text-cream/55">
                 {savedSummary}
               </span>
             </button>

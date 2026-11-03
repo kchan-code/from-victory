@@ -348,7 +348,7 @@ export default function ReminderSettings({
 
         {/* Helper text below toggle */}
         {!iosGate && !(!pushSupported && !iosGate) && (
-          <p className="mt-3 font-body text-[13px] leading-snug text-cream/45">
+          <p className="mt-3 font-body text-[13px] leading-snug text-cream/55">
             {enabled
               ? "On — we'll nudge you once a day at the time you pick."
               : "Off — no reminders. You can turn this on anytime."}
@@ -361,7 +361,7 @@ export default function ReminderSettings({
         <div className="mb-6 rounded-[14px] border border-hairline bg-charcoal px-4 py-4">
           <label
             htmlFor="reminder-hour"
-            className="mb-3 block font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/40"
+            className="mb-3 block font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/55"
           >
             Remind me at
           </label>
@@ -433,7 +433,7 @@ export default function ReminderSettings({
       {isPending && (
         <p
           aria-live="polite"
-          className="mb-4 font-body text-[13px] text-cream/40"
+          className="mb-4 font-body text-[13px] text-cream/55"
         >
           {pendingLabel}
         </p>

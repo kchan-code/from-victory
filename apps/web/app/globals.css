@@ -50,6 +50,30 @@
   --fv-danger:        #E5564C;
   --fv-info:          var(--fv-cobalt-bright);
 
+  /* ---- RGB CHANNELS (Tailwind alpha support) ------------ */
+  /* Channel triplets for the solid palette colors above, consumed by
+     tailwind.config.ts as `rgb(var(--fv-*-rgb) / <alpha-value>)` so
+     opacity modifiers (text-cream/70, border-gold/40, ...) generate.
+     Keep each triplet in sync with its hex twin — they are the same
+     color stated twice. Colors already defined as rgba (hairline,
+     *-soft, mutes) need no channels. */
+  --fv-onyx-rgb:          5 5 5;
+  --fv-charcoal-rgb:      16 16 16;
+  --fv-surface-1-rgb:     21 21 21;
+  --fv-surface-2-rgb:     28 28 28;
+  --fv-white-rgb:         247 247 247;
+  --fv-silver-rgb:        217 220 225;
+  --fv-gold-rgb:          223 175 55;
+  --fv-gold-bright-rgb:   244 194 79;
+  --fv-gold-deep-rgb:     181 137 42;
+  --fv-cobalt-rgb:        36 91 255;
+  --fv-cobalt-bright-rgb: 61 114 255;
+  --fv-navy-rgb:          7 26 51;
+  --fv-purple-rgb:        36 17 63;
+  --fv-success-rgb:       79 199 138;
+  --fv-warning-rgb:       232 163 58;
+  --fv-danger-rgb:        229 86 76;
+
   /* ---- ROLE TOKENS (prefer these in components) --------- */
   --bg:               var(--fv-onyx);
   --bg-elev-1:        var(--fv-charcoal);
@@ -358,8 +382,13 @@ a:hover { color: var(--accent-hot); }
   }
   .fv-final-headline em { font-style: normal; color: var(--accent); }
 
-  /* Reveal-on-scroll wrapper */
-  .fv-reveal {
+  /* Reveal-on-scroll wrapper — FV-511: the hidden base state is
+     progressive enhancement only. It applies exclusively under `.js`,
+     the class the inline beforeInteractive script in app/layout.tsx adds
+     to <html> before hydration. No-JS visitors (and JS that hasn't run
+     yet) get every section fully visible; the IntersectionObserver
+     fade-in in Reveal.tsx only ever kicks in once `.js` is present. */
+  .js .fv-reveal {
     opacity: 0;
     transform: translateY(16px);
     transition:
@@ -371,7 +400,7 @@ a:hover { color: var(--accent-hot); }
     transform: none;
   }
   @media (prefers-reduced-motion: reduce) {
-    .fv-reveal { opacity: 1; transform: none; transition: none; }
+    .js .fv-reveal { opacity: 1; transform: none; transition: none; }
   }
 
   /* Hero watermark background — large flame SVG washed at low opacity */
@@ -613,12 +642,6 @@ a:hover { color: var(--accent-hot); }
     align-items: center;
     justify-content: center;
   }
-  .fv-phone-back {
-    position: absolute;
-    transform: translate(-130px, 24px) rotate(-7deg);
-    opacity: 0.62;
-    filter: blur(0.5px);
-  }
   .fv-phone-front {
     position: absolute;
     transform: translate(64px, 0) rotate(2deg);
@@ -629,13 +652,37 @@ a:hover { color: var(--accent-hot); }
   }
   @media (max-width: 980px) {
     .fv-hero-phones { height: 600px; }
-    .fv-phone-back  { transform: translate(-150px, 24px) rotate(-8deg); }
     .fv-phone-front { transform: translate(80px, 0) rotate(3deg); }
   }
   @media (max-width: 560px) {
     .fv-hero-phones { height: 540px; }
-    .fv-phone-back  { transform: translate(-90px, 20px) rotate(-8deg); opacity: 0.55; }
     .fv-phone-front { transform: translate(40px, 0) rotate(3deg); }
+  }
+
+  /* FV-514: single-phone hero variant — the back "verse" phone was cut, so
+     this replaces the two-phone stack's absolute offset+rotate composition
+     with one centered phone. The mockup itself is hidden below `sm`
+     (Hero.tsx wraps it in `hidden sm:block`) since it was still the single
+     biggest contributor to mobile hero height even alone — so only the
+     tablet (640-980px) scale-down is reachable; there is no <560px rule
+     here because nothing in this class renders at that width. */
+  .fv-hero-phones--single {
+    position: relative;
+    height: 680px;
+    display: block;
+  }
+  .fv-hero-phones--single .fv-phone-front {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  @media (max-width: 980px) {
+    .fv-hero-phones--single { height: 600px; }
+    .fv-hero-phones--single .fv-phone-front {
+      transform: translateX(-50%) scale(0.9);
+      transform-origin: top center;
+    }
   }
 
   /* ── Audio session card phase-swap fade-in ──────────────────────────────

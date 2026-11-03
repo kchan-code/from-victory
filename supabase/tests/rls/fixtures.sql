@@ -18,6 +18,14 @@
 --                       links to anyone as a parent). Added FV-443 for the RLS harness's
 --                       adult_athlete-vs-athlete boundary assertions
 --                       (assertions/18_adult_athlete_boundary.sql).
+--   PARENT         Q  — role=parent, COMPLETELY UNRELATED to P/A/B: no
+--                       parent_athlete_links row on either side, no
+--                       subscriptions row. Added FV-585 so the seat-selection
+--                       RLS assertions (assertions/21_seat_selection.sql) can
+--                       prove an unrelated parent reads zero rows of another
+--                       parent's `seat_active` column, distinct from "0 rows
+--                       because the query filters by an id that doesn't
+--                       exist" — Q is a real, live parent session.
 --
 -- The "P linked to A but NOT B" shape lets the assertions prove the
 -- parent-linked read path (athlete_sessions / metadata view) without ever
@@ -36,6 +44,7 @@
 --   JOURNAL_B      50000000-0000-4000-8000-00000000000b
 --   SAFETY_A       60000000-0000-4000-8000-00000000000a
 --   ADULT_ATHLETE  70000000-0000-4000-8000-000000000001
+--   PARENT_Q       10000000-0000-4000-8000-000000000002
 -- =============================================================================
 
 begin;
@@ -51,7 +60,8 @@ values
   ('10000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'parent@rls.test',   '{}', '{}', now(), now()),
   ('20000000-0000-4000-8000-00000000000a', 'authenticated', 'authenticated', 'athlete-a@rls.test', '{}', '{}', now(), now()),
   ('20000000-0000-4000-8000-00000000000b', 'authenticated', 'authenticated', 'athlete-b@rls.test', '{}', '{}', now(), now()),
-  ('70000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'adult-athlete@rls.test', '{}', '{}', now(), now())
+  ('70000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'adult-athlete@rls.test', '{}', '{}', now(), now()),
+  ('10000000-0000-4000-8000-000000000002', 'authenticated', 'authenticated', 'parent-q@rls.test', '{}', '{}', now(), now())
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
@@ -69,7 +79,8 @@ values
   ('10000000-0000-4000-8000-000000000001', 'parent',        'Parent', null,                null),
   ('20000000-0000-4000-8000-00000000000a', 'athlete',       'Ava',    date '2010-01-01',   'hockey'),
   ('20000000-0000-4000-8000-00000000000b', 'athlete',       'Ben',    date '2010-02-02',   'basketball'),
-  ('70000000-0000-4000-8000-000000000001', 'adult_athlete', 'Alex',   date '2000-03-15',   'golf')
+  ('70000000-0000-4000-8000-000000000001', 'adult_athlete', 'Alex',   date '2000-03-15',   'golf'),
+  ('10000000-0000-4000-8000-000000000002', 'parent',        'Quinn',  null,                null)
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------

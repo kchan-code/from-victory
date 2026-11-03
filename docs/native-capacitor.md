@@ -213,8 +213,9 @@ In Xcode (detail in the iOS checklist §4–§5):
 ### Icons / splash
 
 Source PNGs live in `apps/native/resources/` (copied from the PWA icons).
-Default Capacitor launcher assets ship in `android/` / `ios/`; regenerate brand
-assets on a Mac/dev machine with `@capacitor/assets` when preparing store
+Brand-rendered launcher/splash assets ship in `android/` / `ios/` (see
+`apps/native/resources/README.md` for what's derived from which brand SVG);
+regenerate with `@capacitor/assets` on a Mac/dev machine when preparing store
 screenshots — not required for the scaffold to build.
 
 ---

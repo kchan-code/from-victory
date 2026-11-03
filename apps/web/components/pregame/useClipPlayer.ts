@@ -74,6 +74,12 @@ import {
 import { assembleWavBlobWithBed } from "./audio/encode-wav";
 import { getBed, BED_MIX_GAIN } from "./audio/beds";
 import { getSportConfig, type Sport } from "./sport-registry";
+import {
+  pickTruthIndex,
+  readLastTruthSlug,
+  rememberTruthSlug,
+  truthSlugAtPlayhead,
+} from "./truth-rotation";
 import type { PrayerStyle } from "./types";
 import { selectCacheStrategy } from "@/lib/audio/cache-strategy";
 
@@ -317,6 +323,24 @@ export function useClipPlayer({
     );
   }
 
+  // Pregame {{truth}} slot — the rotating identity line after shared-opening.
+  // Same per-mount lazy-init pattern as the dialed-in opener above: the random
+  // index AND the "line heard last time" are captured once, so a mid-flow
+  // re-resolve (anchor/cue-word change) keeps the same line for this session.
+  const truthIndexRef = useRef<number>(-1);
+  const avoidTruthRef = useRef<string | null | undefined>(undefined);
+  if (truthIndexRef.current < 0) {
+    truthIndexRef.current = pickTruthIndex();
+    avoidTruthRef.current = readLastTruthSlug();
+  }
+  // FV-552 — guards rememberTruthSlug so it fires exactly once, on confirmed
+  // playback start of the truth clip (not at resolve time — see the rAF loop
+  // below). A session that fails or is abandoned before the truth clip plays
+  // never flips this, so `fv_truth_last` stays untouched. Reset whenever a
+  // fresh clip list resolves (see clipsRef.current assignment below) so a
+  // mid-flow re-resolve doesn't inherit a stale "already remembered" state.
+  const truthRememberedRef = useRef(false);
+
   // ── rAF loop ──
   // Reads audio.currentTime ~60fps. HTMLMediaElement.currentTime is the
   // authoritative position; we don't need the suspend-offset arithmetic that
@@ -342,7 +366,18 @@ export function useClipPlayer({
         return;
       }
       if (!audio.paused) {
-        setElapsedSec(audio.currentTime);
+        const t = audio.currentTime;
+        setElapsedSec(t);
+        // FV-552 — remember the truth slug only once playback has actually
+        // reached its segment of the assembled clip timeline (never at
+        // resolve time). Guarded so it fires once per session.
+        if (!truthRememberedRef.current) {
+          const slug = truthSlugAtPlayhead(clipsRef.current, t);
+          if (slug) {
+            rememberTruthSlug(slug);
+            truthRememberedRef.current = true;
+          }
+        }
       }
       rafRef.current = requestAnimationFrame(loop);
     };
@@ -496,6 +531,8 @@ export function useClipPlayer({
           sport,
           prayerStyle,
           positivePlays,
+          truthIndexRef.current,
+          avoidTruthRef.current ?? null,
         );
         if (!clips) {
           // No template for this combination — sentinel triggers legacy path.
@@ -507,6 +544,12 @@ export function useClipPlayer({
       if (cancelled) return;
 
       clipsRef.current = clips;
+      // FV-552 — a fresh resolve starts a new (potential) playback attempt;
+      // rememberTruthSlug fires once playback reaches the truth clip (rAF
+      // loop above), not here. Reset the guard so a re-resolve mid-flow
+      // (anchor/cue-word change before playback starts) doesn't inherit a
+      // stale "already remembered" flag from an earlier attempt.
+      truthRememberedRef.current = false;
 
       // 3. Build assembled timeline (before decode so UI can show phase info early).
       const assembled = buildAssembledTimeline(clips);

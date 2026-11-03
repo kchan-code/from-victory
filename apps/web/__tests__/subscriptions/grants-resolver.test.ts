@@ -1,5 +1,5 @@
 /**
- * Unit tests for the comp-grant + entitlement resolver (FV-69 / FV-62).
+ * Unit tests for the comp-grant + entitlement resolver (FV-69 / FV-62 / FV-570).
  *
  * Tests cover:
  *   1. hasActiveCompGrant   — pure grant-table reader
@@ -7,6 +7,10 @@
  *   3. isSubscriptionEnforcementEnabled — flag helper
  *   4. requireActiveAccess  — enforcement guard (flag on/off, roles, levels)
  *   5. Athlete enum-only path — getAccessForCurrentUser returns only AccessLevel
+ *   6. getParentAccessLevel — Apple provider fold (FV-570): unless a test
+ *      opts in via the `setApple*` helpers, the apple_subscriptions /
+ *      apple_sandbox_testers mocks default to "no Apple entitlement", so all
+ *      pre-existing tests above exercise the Stripe-only path unchanged.
  *
  * The `server-only` guard and all Supabase clients are mocked so these tests
  * run under vitest's node environment without a real Supabase instance.
@@ -20,6 +24,33 @@ import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
+
+// FV-585: seat-overlay tests need a controllable numeric Apple capacity,
+// which the real (currently-empty) APPLE_PRODUCT_CAPACITY map can never
+// produce. Override only these two named exports via importOriginal so
+// every OTHER test in this file (e.g. the section-7 Apple provider fold,
+// which exercises the real getAppleAccessLevelForPayer) is unaffected.
+// Both default to "no active Apple product / no ceiling", so the seat
+// overlay is dormant for every pre-existing test that never opts in.
+const getActiveAppleProductIdMock = vi.fn(() => Promise.resolve<string | null>(null));
+vi.mock("@/lib/subscriptions/apple", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/subscriptions/apple")>();
+  return {
+    ...actual,
+    getActiveAppleProductId: (...args: unknown[]) =>
+      getActiveAppleProductIdMock(...(args as [])),
+  };
+});
+
+const payerCapacityCeilingMock = vi.fn(() => null as number | null);
+vi.mock("@/lib/subscriptions/apple-capacity", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/subscriptions/apple-capacity")>();
+  return {
+    ...actual,
+    payerCapacityCeiling: (...args: unknown[]) =>
+      payerCapacityCeilingMock(...(args as [])),
+  };
+});
 
 // ---------------------------------------------------------------------------
 // Grant table state — hasActiveCompGrant now selects an array (not maybeSingle)
@@ -36,6 +67,39 @@ let subscriptionRow: {
   current_period_end: string | null;
 } | null = null;
 let subscriptionSelectError: { message: string } | null = null;
+
+// apple_subscriptions / apple_sandbox_testers state (FV-570 fold). Defaults
+// to "no Apple entitlement at all" so every pre-existing test above (which
+// never touches these helpers) exercises the Stripe-only path unchanged.
+type AppleSubRow = {
+  environment: "Sandbox" | "Production";
+  status: string;
+  expires_at: string;
+  grace_period_expires_at: string | null;
+};
+let appleSubRows: AppleSubRow[] = [];
+let appleSubSelectError: { message: string } | null = null;
+let appleAllowlistRow: { payer_id: string } | null = null;
+let appleAllowlistError: { message: string } | null = null;
+
+// FV-585: parent_athlete_links rows as read by lib/subscriptions/seat-state.ts
+// via the SERVICE-ROLE client (distinct from the RLS-scoped `rlsLinkParentId`
+// single-row mock below, which access.ts's athlete branch reads via the
+// session client). Defaults to empty, which makes
+// getAthleteSeatStatusForCurrentUser() resolve "active" (fail open, no
+// matching link row) for every pre-existing test that never opts in via
+// `setSeatLinks` — the seat overlay is inert unless a test sets it.
+type SeatLinkRow = { parent_id: string; athlete_id: string; seat_active: boolean };
+let seatLinkRows: SeatLinkRow[] = [];
+let seatLinkSelectError: { message: string } | null = null;
+function resetSeatLinks() {
+  seatLinkRows = [];
+  seatLinkSelectError = null;
+}
+function setSeatLinks(rows: SeatLinkRow[]) {
+  seatLinkRows = rows;
+  seatLinkSelectError = null;
+}
 
 // The service mock returns different query chains based on the table name.
 function makeServiceMock() {
@@ -62,6 +126,59 @@ function makeServiceMock() {
             error: subscriptionSelectError,
           }),
         };
+      }
+      if (table === "apple_subscriptions") {
+        // getAppleAccessLevelForPayer reads via .select().eq() and awaits the
+        // chain directly (array result) — same thenable pattern as
+        // access_grants above.
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          then: (resolve: (v: { data: AppleSubRow[]; error: typeof appleSubSelectError }) => void) =>
+            resolve({ data: appleSubRows, error: appleSubSelectError }),
+        };
+      }
+      if (table === "apple_sandbox_testers") {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: appleAllowlistRow,
+            error: appleAllowlistError,
+          }),
+        };
+      }
+      if (table === "parent_athlete_links") {
+        // Supports BOTH read shapes seat-state.ts uses against the
+        // service-role client:
+        //   - .select("parent_id").eq("athlete_id", x).limit(1).maybeSingle()
+        //   - .select("athlete_id, seat_active").eq("parent_id", x)  (awaited
+        //     directly as a list — no .maybeSingle())
+        const filters: Record<string, string> = {};
+        const filtered = () =>
+          seatLinkRows.filter((row) =>
+            Object.entries(filters).every(
+              ([key, value]) => (row as Record<string, unknown>)[key] === value,
+            ),
+          );
+        const builder: Record<string, unknown> = {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn((field: string, value: string) => {
+            filters[field] = value;
+            return builder;
+          }),
+          limit: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn(() =>
+            Promise.resolve({
+              data: filtered()[0] ?? null,
+              error: seatLinkSelectError,
+            }),
+          ),
+          then: (
+            resolve: (v: { data: SeatLinkRow[]; error: typeof seatLinkSelectError }) => void,
+          ) => resolve({ data: filtered(), error: seatLinkSelectError }),
+        };
+        return builder;
       }
       return {
         select: vi.fn().mockReturnThis(),
@@ -146,6 +263,7 @@ import { redirect } from "next/navigation";
 const PARENT_ID = "aaaaaaaa-0000-4000-8000-000000000001";
 const ATHLETE_ID = "bbbbbbbb-0000-4000-8000-000000000002";
 const ADULT_ATHLETE_ID = "cccccccc-0000-4000-8000-000000000003";
+const OTHER_ATHLETE_ID = "bbbbbbbb-0000-4000-8000-000000000009";
 
 const FUTURE_ISO = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 const PAST_ISO   = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -182,6 +300,59 @@ function resetRlsState() {
   rlsLinkError = null;
   rlsProfileError = null;
 }
+
+// --- Apple fold helpers (FV-570) ---
+function resetAppleState() {
+  appleSubRows = [];
+  appleSubSelectError = null;
+  appleAllowlistRow = null;
+  appleAllowlistError = null;
+}
+function setAppleNone() {
+  appleSubRows = [];
+  appleSubSelectError = null;
+}
+function setAppleProductionRow(status: string, opts?: { graceExpiresAt?: string | null }) {
+  appleSubRows = [
+    {
+      environment: "Production",
+      status,
+      expires_at: FUTURE_ISO,
+      grace_period_expires_at: opts?.graceExpiresAt ?? null,
+    },
+  ];
+  appleSubSelectError = null;
+}
+function setAppleSandboxRow(status: string, allowlisted: boolean) {
+  appleSubRows = [
+    {
+      environment: "Sandbox",
+      status,
+      expires_at: FUTURE_ISO,
+      grace_period_expires_at: null,
+    },
+  ];
+  appleSubSelectError = null;
+  appleAllowlistRow = allowlisted ? { payer_id: PARENT_ID } : null;
+  appleAllowlistError = null;
+}
+function setAppleError() {
+  appleSubRows = [];
+  appleSubSelectError = { message: "apple DB error" };
+}
+
+// File-level hook (runs before every test in this file, ahead of any
+// describe-scoped beforeEach): keeps the Apple mock state from leaking
+// between tests. Individual FV-570 fold tests opt into non-default Apple
+// state inside their own `it()` body via the setApple* helpers above.
+beforeEach(() => {
+  resetAppleState();
+  resetSeatLinks();
+  getActiveAppleProductIdMock.mockReset();
+  getActiveAppleProductIdMock.mockResolvedValue(null);
+  payerCapacityCeilingMock.mockReset();
+  payerCapacityCeilingMock.mockReturnValue(null);
+});
 
 // ---------------------------------------------------------------------------
 // 1. hasActiveCompGrant
@@ -570,5 +741,236 @@ describe("getAccessForCurrentUser — adult_athlete (18+ self-serve) path", () =
     rlsLinkParentId = PARENT_ID; // would only matter on the athlete branch
     setSubscription("active");
     expect(await getAccessForCurrentUser()).toBe("full");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 7. getParentAccessLevel — Apple provider fold (FV-570)
+//
+// docs/fv210-ios-iap-decision-record.md Section 4.1: resolution order is
+// access_grants -> Stripe mirror -> Apple mirror, returning the BEST level
+// across providers. Section 4.9: a Sandbox row must never yield "full" for
+// a non-allowlisted payer.
+// ---------------------------------------------------------------------------
+
+describe("getParentAccessLevel — Apple provider fold (FV-570)", () => {
+  beforeEach(() => {
+    setGrantNone();
+    setSubscriptionNone();
+    resetAppleState();
+  });
+
+  it("comp grant short-circuit is unchanged — full even with Apple state present", async () => {
+    setGrantActive();
+    setAppleError(); // would otherwise be irrelevant — grant wins first
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("stripe-blocked + apple-full (Production, subscribed) -> full", async () => {
+    setSubscription("canceled"); // stripeLevel = blocked
+    setAppleProductionRow("subscribed");
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("stripe-full + apple-blocked (Production, revoked) -> full", async () => {
+    setSubscription("active"); // stripeLevel = full
+    setAppleProductionRow("revoked");
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("both blocked -> blocked", async () => {
+    setSubscriptionNone(); // stripeLevel = blocked
+    setAppleNone(); // appleLevel = blocked
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("blocked");
+  });
+
+  it("apple accessor DB error falls back to the Stripe level only", async () => {
+    setSubscription("active"); // stripeLevel = full
+    setAppleError();
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("apple accessor DB error does not upgrade a blocked Stripe level", async () => {
+    setSubscriptionNone(); // stripeLevel = blocked
+    setAppleError();
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("blocked");
+  });
+
+  it("a non-allowlisted payer's Sandbox row never yields full or degraded (record §4.9)", async () => {
+    setSubscriptionNone(); // stripeLevel = blocked
+    setAppleSandboxRow("subscribed", /* allowlisted */ false);
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("blocked");
+  });
+
+  it("an allowlisted payer's Sandbox row DOES grant access (record §4.9)", async () => {
+    setSubscriptionNone(); // stripeLevel = blocked
+    setAppleSandboxRow("subscribed", /* allowlisted */ true);
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("degraded Apple (in_billing_retry, Production) folds with blocked Stripe to degraded", async () => {
+    setSubscriptionNone(); // stripeLevel = blocked
+    setAppleProductionRow("in_billing_retry");
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("degraded");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 8. Athlete return-boundary pin (FV-210 record §4.1 named AC): the athlete
+//    path's RETURN VALUE is the bare AccessLevel string enum and nothing
+//    else. The service-role read inside getParentAccessLevel necessarily
+//    touches apple_subscriptions columns — what this pins is that none of
+//    that row shape crosses the return boundary to the athlete caller. The
+//    enum contract is also compile-time enforced (Promise<AccessLevel>);
+//    this is the runtime pin against the signature being widened later.
+// ---------------------------------------------------------------------------
+
+describe("getAccessForCurrentUser — athlete path returns the bare AccessLevel enum (FV-570)", () => {
+  beforeEach(() => {
+    resetRlsState();
+    setGrantNone();
+    setSubscriptionNone();
+    resetAppleState();
+  });
+
+  it("returns only the AccessLevel enum when access derives from an Apple row", async () => {
+    rlsUserId = ATHLETE_ID;
+    rlsProfileRole = "athlete";
+    rlsLinkParentId = PARENT_ID;
+    setAppleProductionRow("subscribed");
+    const result = await getAccessForCurrentUser();
+    expect(result).toBe("full");
+    expect(typeof result).toBe("string");
+    expect(result).not.toBeInstanceOf(Object);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 9. Seat overlay in requireActiveAccess (FV-585, KC decision D2) — layered
+//    ON TOP of the existing billing gate. Only ever ADDS a redirect for a
+//    minor athlete whose billing level is already full/degraded; never
+//    applies to parent/adult_athlete, never fires when the flag is off, and
+//    a fully-blocked athlete's redirect is unchanged (no `reason` param).
+// ---------------------------------------------------------------------------
+
+describe("requireActiveAccess — seat overlay (FV-585)", () => {
+  beforeEach(() => {
+    process.env.ENFORCE_SUBSCRIPTION_GATING = "true";
+    vi.mocked(redirect).mockClear();
+    resetRlsState();
+    resetSeatLinks();
+    setGrantNone();
+    setSubscriptionNone();
+    getActiveAppleProductIdMock.mockResolvedValue(null);
+    payerCapacityCeilingMock.mockReturnValue(null);
+  });
+
+  afterEach(() => {
+    delete process.env.ENFORCE_SUBSCRIPTION_GATING;
+  });
+
+  it("redirects a billing-entitled athlete to /athlete/paused?reason=seats when seats are over capacity with no selection", async () => {
+    rlsUserId = ATHLETE_ID;
+    rlsProfileRole = "athlete";
+    rlsLinkParentId = PARENT_ID;
+    setGrantActive(); // billing level: full
+    getActiveAppleProductIdMock.mockResolvedValue("apple.tier.one");
+    payerCapacityCeilingMock.mockReturnValue(1);
+    setSeatLinks([
+      { parent_id: PARENT_ID, athlete_id: ATHLETE_ID, seat_active: true },
+      { parent_id: PARENT_ID, athlete_id: OTHER_ATHLETE_ID, seat_active: true },
+    ]);
+
+    await requireActiveAccess({ role: "athlete" });
+
+    expect(redirect).toHaveBeenCalledWith("/athlete/paused?reason=seats");
+  });
+
+  it("does not redirect a billing-entitled athlete who is within capacity", async () => {
+    rlsUserId = ATHLETE_ID;
+    rlsProfileRole = "athlete";
+    rlsLinkParentId = PARENT_ID;
+    setGrantActive();
+    getActiveAppleProductIdMock.mockResolvedValue("apple.tier.one");
+    payerCapacityCeilingMock.mockReturnValue(1);
+    setSeatLinks([{ parent_id: PARENT_ID, athlete_id: ATHLETE_ID, seat_active: true }]);
+
+    const result = await requireActiveAccess({ role: "athlete" });
+
+    expect(result).toBe("full");
+    expect(redirect).not.toHaveBeenCalled();
+  });
+
+  it("does not redirect a billing-entitled athlete who was explicitly selected as active", async () => {
+    rlsUserId = ATHLETE_ID;
+    rlsProfileRole = "athlete";
+    rlsLinkParentId = PARENT_ID;
+    setGrantActive();
+    getActiveAppleProductIdMock.mockResolvedValue("apple.tier.one");
+    payerCapacityCeilingMock.mockReturnValue(1);
+    setSeatLinks([
+      { parent_id: PARENT_ID, athlete_id: ATHLETE_ID, seat_active: true },
+      { parent_id: PARENT_ID, athlete_id: OTHER_ATHLETE_ID, seat_active: false },
+    ]);
+
+    const result = await requireActiveAccess({ role: "athlete" });
+
+    expect(result).toBe("full");
+    expect(redirect).not.toHaveBeenCalled();
+  });
+
+  it("does not apply the seat overlay to a parent, even if the family is seat-paused", async () => {
+    rlsUserId = PARENT_ID;
+    rlsProfileRole = "parent";
+    setGrantActive();
+    getActiveAppleProductIdMock.mockResolvedValue("apple.tier.one");
+    payerCapacityCeilingMock.mockReturnValue(1);
+    setSeatLinks([
+      { parent_id: PARENT_ID, athlete_id: ATHLETE_ID, seat_active: true },
+      { parent_id: PARENT_ID, athlete_id: OTHER_ATHLETE_ID, seat_active: true },
+    ]);
+
+    const result = await requireActiveAccess({ role: "parent" });
+
+    expect(result).toBe("full");
+    expect(redirect).not.toHaveBeenCalled();
+  });
+
+  it("a fully-blocked athlete still redirects to /athlete/paused with NO reason param (unchanged behavior)", async () => {
+    rlsUserId = ATHLETE_ID;
+    rlsProfileRole = "athlete";
+    rlsLinkParentId = PARENT_ID;
+    setGrantNone();
+    setSubscriptionNone(); // billing level: blocked
+    getActiveAppleProductIdMock.mockResolvedValue("apple.tier.one");
+    payerCapacityCeilingMock.mockReturnValue(1);
+    setSeatLinks([
+      { parent_id: PARENT_ID, athlete_id: ATHLETE_ID, seat_active: true },
+      { parent_id: PARENT_ID, athlete_id: OTHER_ATHLETE_ID, seat_active: true },
+    ]);
+
+    await requireActiveAccess({ role: "athlete" });
+
+    expect(redirect).toHaveBeenCalledWith("/athlete/paused");
+    expect(redirect).not.toHaveBeenCalledWith("/athlete/paused?reason=seats");
+  });
+
+  it("flag off -> seat overlay never fires, even when the family is seat-paused", async () => {
+    delete process.env.ENFORCE_SUBSCRIPTION_GATING;
+    rlsUserId = ATHLETE_ID;
+    rlsProfileRole = "athlete";
+    rlsLinkParentId = PARENT_ID;
+    setGrantActive();
+    getActiveAppleProductIdMock.mockResolvedValue("apple.tier.one");
+    payerCapacityCeilingMock.mockReturnValue(1);
+    setSeatLinks([
+      { parent_id: PARENT_ID, athlete_id: ATHLETE_ID, seat_active: true },
+      { parent_id: PARENT_ID, athlete_id: OTHER_ATHLETE_ID, seat_active: true },
+    ]);
+
+    const result = await requireActiveAccess({ role: "athlete" });
+
+    expect(result).toBe("full");
+    expect(redirect).not.toHaveBeenCalled();
   });
 });

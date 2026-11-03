@@ -93,7 +93,7 @@ function GrantForm() {
             htmlFor="grant-parent-email"
             className="block font-display font-semibold uppercase tracking-[0.10em] text-[12px] text-cream/80 mb-2"
           >
-            Parent email <span aria-hidden="true" className="text-cream/40">(required)</span>
+            Parent email <span aria-hidden="true" className="text-cream/55">(required)</span>
           </label>
           <input
             id="grant-parent-email"
@@ -121,7 +121,7 @@ function GrantForm() {
             htmlFor="grant-reason"
             className="block font-display font-semibold uppercase tracking-[0.10em] text-[12px] text-cream/80 mb-2"
           >
-            Reason <span aria-hidden="true" className="text-cream/40">(required)</span>
+            Reason <span aria-hidden="true" className="text-cream/55">(required)</span>
           </label>
           <input
             id="grant-reason"
@@ -270,7 +270,7 @@ function GrantsList({ grants }: GrantsListProps) {
             )}
 
             {/* Dates row */}
-            <p className="font-body text-[12px] text-cream/40 mt-1.5">
+            <p className="font-body text-[12px] text-cream/55 mt-1.5">
               Granted {formatDate(grant.created_at)}
               {" · "}
               {grant.expires_at

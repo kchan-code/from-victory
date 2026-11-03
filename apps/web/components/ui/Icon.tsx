@@ -24,6 +24,23 @@ const ICONS = {
   whistle: "M14 6l8-4-2 6-6 1z M9 10a6 6 0 1 0 6 6",
   // journey / road-traveled (FV-190)
   map: "M9 4v16l6-3 6 3V7l-6-3-6 3z M9 4L3 7v16l6-3",
+  // Sport marks — keys match the Sport union in lib/sports.ts exactly, so the
+  // hub can render an athlete's sport glyph without a mapping table. Adding a
+  // sport to SUPPORTED_SPORTS without a glyph here fails typecheck at the
+  // hub's `IconName` assignment — same exhaustiveness net as SportPicker.
+  hockey:
+    "M6 3l6.2 13.1a2 2 0 0 0 1.8 1.1H18 M4 19.6a3.2 1.4 0 1 0 6.4 0a3.2 1.4 0 1 0-6.4 0",
+  basketball:
+    "M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18 M3 12h18 M12 3a13.5 13.5 0 0 1 0 18 M12 3a13.5 13.5 0 0 0 0 18",
+  golf: "M10 3v14 M10 3l7 3-7 3 M4 20c1.5-1.8 10.5-1.8 12 0",
+  football:
+    "M4 20C4 12 12 4 20 4c0 8-8 16-16 16z M9 15l6-6 M10 13.8l1.2 1.2 M12 11.8l1.2 1.2 M14 9.8l1.2 1.2",
+  baseball:
+    "M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18 M5.8 4.6C8.6 8 8.6 16 5.8 19.4 M18.2 4.6C15.4 8 15.4 16 18.2 19.4",
+  lacrosse:
+    "M13.2 10.8L3 21 M12 3c-1.8.8-3.5 3-3 5.5.5 2.6 3 3.8 5.3 2.8 2.4-1 3.8-3.9 3-6-.7-1.9-3.2-3.2-5.3-2.3z M10.5 5.5l4 5 M9.3 8l5 2.5",
+  soccer:
+    "M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18 M12 7.5l3.8 2.8-1.5 4.4h-4.6l-1.5-4.4z M12 3v4.5 M8.2 14.7l-3.7 2.6 M15.8 14.7l3.7 2.6 M4.5 9.5l3.7.8 M19.5 9.5l-3.7.8",
 } as const;
 
 export type IconName = keyof typeof ICONS;

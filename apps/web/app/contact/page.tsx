@@ -11,17 +11,17 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact" },
   title: "Contact",
   description:
-    "Questions about From Victory? Reach out — we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
+    "Questions about From Victory? Reach out, we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
   openGraph: {
     type: "website",
     url: `${siteUrl}/contact`,
     siteName: "From Victory",
     title: "Contact · From Victory",
     description:
-      "Questions about From Victory? Reach out — we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
+      "Questions about From Victory? Reach out, we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
     images: [
       {
-        url: `${siteUrl}/from-victory-social-preview.jpg`,
+        url: `${siteUrl}/og-website-1200x630.png`,
         width: 1200,
         height: 630,
       },
@@ -31,8 +31,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Contact · From Victory",
     description:
-      "Questions about From Victory? Reach out — we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
-    images: [`${siteUrl}/from-victory-social-preview.jpg`],
+      "Questions about From Victory? Reach out, we read every message. Parents, athletes, coaches, teams, and churches all welcome.",
+    images: [`${siteUrl}/og-website-1200x630.png`],
   },
 };
 
@@ -41,6 +41,8 @@ export default function ContactPage() {
     <>
       <LandingIconDefs />
       <ScrollNav />
+
+      <main id="main-content">
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section className="relative pt-[168px] md:pt-[140px] pb-24 overflow-hidden isolate">
@@ -58,7 +60,7 @@ export default function ContactPage() {
             </h1>
             <p className="max-w-[50ch] mb-12 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
               Questions about the app, pricing, sports, or group options for
-              teams and churches — we read every message and will get back to
+              teams and churches, we read every message and will get back to
               you.
             </p>
 
@@ -69,6 +71,8 @@ export default function ContactPage() {
           </Reveal>
         </div>
       </section>
+
+      </main>
 
       <Footer />
     </>

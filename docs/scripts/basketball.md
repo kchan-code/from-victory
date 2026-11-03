@@ -1455,7 +1455,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Guard · missed-shot (full session)
 <!-- slug: bb-guard-missed-shot | file: components/pregame/audio/session-guard-missed-shot.ts -->
 
@@ -1529,7 +1529,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Guard · got-cooked (full session)
 <!-- slug: bb-guard-got-cooked | file: components/pregame/audio/session-guard-got-cooked.ts -->
 
@@ -1603,7 +1603,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Guard · foul-trouble (full session)
 <!-- slug: bb-guard-foul-trouble | file: components/pregame/audio/session-guard-foul-trouble.ts -->
 
@@ -1677,7 +1677,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Guard · coach-yells (full session)
 <!-- slug: bb-guard-coach-yells | file: components/pregame/audio/session-guard-coach-yells.ts -->
 
@@ -1751,7 +1751,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Guard · benched (full session)
 <!-- slug: bb-guard-benched | file: components/pregame/audio/session-guard-benched.ts -->
 
@@ -1825,7 +1825,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Guard · nervous (full session)
 <!-- slug: bb-guard-nervous | file: components/pregame/audio/session-guard-nervous.ts -->
 
@@ -1899,7 +1899,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Guard · missed-fts (full session)
 <!-- slug: bb-guard-missed-fts | file: components/pregame/audio/session-guard-missed-fts.ts -->
 
@@ -1973,7 +1973,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Guard · start-slow (full session)
 <!-- slug: bb-guard-start-slow | file: components/pregame/audio/session-guard-start-slow.ts -->
 
@@ -2047,7 +2047,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Guard · fall-behind-early (full session)
 <!-- slug: bb-guard-fall-behind-early | file: components/pregame/audio/session-guard-fall-behind-early.ts -->
 
@@ -2121,7 +2121,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Wing · turnover (full session)
 <!-- slug: bb-wing-turnover | file: components/pregame/audio/session-wing-turnover.ts -->
 
@@ -2195,7 +2195,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Wing · missed-shot (full session)
 <!-- slug: bb-wing-missed-shot | file: components/pregame/audio/session-wing-missed-shot.ts -->
 
@@ -2269,7 +2269,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Wing · got-cooked (full session)
 <!-- slug: bb-wing-got-cooked | file: components/pregame/audio/session-wing-got-cooked.ts -->
 
@@ -2343,7 +2343,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Wing · foul-trouble (full session)
 <!-- slug: bb-wing-foul-trouble | file: components/pregame/audio/session-wing-foul-trouble.ts -->
 
@@ -2417,7 +2417,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Wing · coach-yells (full session)
 <!-- slug: bb-wing-coach-yells | file: components/pregame/audio/session-wing-coach-yells.ts -->
 
@@ -2491,7 +2491,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Wing · benched (full session)
 <!-- slug: bb-wing-benched | file: components/pregame/audio/session-wing-benched.ts -->
 
@@ -2565,7 +2565,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Wing · nervous (full session)
 <!-- slug: bb-wing-nervous | file: components/pregame/audio/session-wing-nervous.ts -->
 
@@ -2639,7 +2639,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Wing · missed-fts (full session)
 <!-- slug: bb-wing-missed-fts | file: components/pregame/audio/session-wing-missed-fts.ts -->
 
@@ -2713,7 +2713,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Wing · start-slow (full session)
 <!-- slug: bb-wing-start-slow | file: components/pregame/audio/session-wing-start-slow.ts -->
 
@@ -2787,7 +2787,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Wing · fall-behind-early (full session)
 <!-- slug: bb-wing-fall-behind-early | file: components/pregame/audio/session-wing-fall-behind-early.ts -->
 
@@ -2861,7 +2861,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Big · turnover (full session)
 <!-- slug: bb-big-turnover | file: components/pregame/audio/session-big-turnover.ts -->
 
@@ -2935,7 +2935,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Big · missed-shot (full session)
 <!-- slug: bb-big-missed-shot | file: components/pregame/audio/session-big-missed-shot.ts -->
 
@@ -3009,7 +3009,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Big · got-cooked (full session)
 <!-- slug: bb-big-got-cooked | file: components/pregame/audio/session-big-got-cooked.ts -->
 
@@ -3083,7 +3083,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Big · foul-trouble (full session)
 <!-- slug: bb-big-foul-trouble | file: components/pregame/audio/session-big-foul-trouble.ts -->
 
@@ -3157,7 +3157,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Big · coach-yells (full session)
 <!-- slug: bb-big-coach-yells | file: components/pregame/audio/session-big-coach-yells.ts -->
 
@@ -3231,7 +3231,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Big · fouled-out (full session)
 <!-- slug: bb-big-fouled-out | file: components/pregame/audio/session-big-fouled-out.ts -->
 
@@ -3305,7 +3305,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Big · nervous (full session)
 <!-- slug: bb-big-nervous | file: components/pregame/audio/session-big-nervous.ts -->
 
@@ -3379,7 +3379,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Big · missed-fts (full session)
 <!-- slug: bb-big-missed-fts | file: components/pregame/audio/session-big-missed-fts.ts -->
 
@@ -3453,7 +3453,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Big · start-slow (full session)
 <!-- slug: bb-big-start-slow | file: components/pregame/audio/session-big-start-slow.ts -->
 
@@ -3527,7 +3527,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Basketball · Big · fall-behind-early (full session)
 <!-- slug: bb-big-fall-behind-early | file: components/pregame/audio/session-big-fall-behind-early.ts -->
 
@@ -3601,4 +3601,4 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.

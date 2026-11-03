@@ -97,7 +97,7 @@ export default async function OwnerMetricsPage({
   };
 
   return (
-    <main className="min-h-screen bg-onyx text-cream">
+    <main id="main-content" className="min-h-screen bg-onyx text-cream">
       {/* Sticky top bar */}
       <header className="sticky top-0 z-10 bg-onyx/90 backdrop-blur border-b border-hairline">
         <div className="mx-auto max-w-[1200px] px-5 sm:px-8 py-4 flex items-center justify-between gap-4">
@@ -164,7 +164,7 @@ export default async function OwnerMetricsPage({
           <h1 className="font-display font-extrabold uppercase tracking-[0.04em] text-cream text-[30px] sm:text-[36px] leading-none">
             {TABS.find((t) => t.id === tab)?.label}
           </h1>
-          <p className="font-mono text-[11px] text-cream/40 tabular-nums">
+          <p className="font-mono text-[11px] text-cream/55 tabular-nums">
             Generated {new Date(metrics.generatedAt).toUTCString()}
           </p>
         </div>
@@ -185,7 +185,7 @@ export default async function OwnerMetricsPage({
         {tab === "trust" ? <TrustTab m={metrics} /> : null}
 
         <footer className="mt-12 pt-6 border-t border-hairline">
-          <p className="font-body text-cream/35 text-[11px] leading-relaxed max-w-[680px]">
+          <p className="font-body text-cream/55 text-[11px] leading-relaxed max-w-[680px]">
             Aggregate, server-side, owner-only. No journal content, no
             per-athlete rows, and no minor-identifying segment below {metrics.smallN}{" "}
             ever leave the server. True app-open DAU and the pregame funnel are now

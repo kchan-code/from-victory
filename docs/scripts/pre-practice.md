@@ -75,7 +75,7 @@ _(pause: 1.2s)_
 _(pause: 1.2s)_
 11. Give everything you have.
 _(pause: 1.2s)_
-12. Play from victory.
+12. You are secure. Now go compete from victory.
 ### Pre-Practice Hockey · opener-dialed-in-3
 <!-- slug: pp-opener-dialed-in-3 | file: components/pregame/audio/clips.ts -->
 

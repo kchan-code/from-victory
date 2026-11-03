@@ -2,7 +2,7 @@
 // so the page doesn't shift on hydration. (FV-111: updated from old 2-card layout)
 export default function AthleteLoading() {
   return (
-    <main className="min-h-screen bg-onyx pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
+    <main id="main-content" className="min-h-screen bg-onyx pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
       <div className="px-5 pt-10 pb-8 sm:px-8 max-w-[640px] mx-auto">
         {/* Header skeleton */}
         <div className="flex items-center justify-between mb-8">

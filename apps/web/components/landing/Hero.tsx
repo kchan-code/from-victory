@@ -1,12 +1,11 @@
+import Image from "next/image";
 import Link from "next/link";
-import { FlameMark } from "@/components/ui";
-import { PhoneStatusBar } from "./PhoneStatusBar";
-import { Reveal } from "./Reveal";
+import { isAdultSignupEnabled } from "@/lib/flags";
 import { SvgIcon } from "./SvgIcon";
 
 export function Hero() {
   return (
-    <section className="relative pt-[168px] md:pt-[132px] pb-24 overflow-hidden isolate">
+    <section className="relative pt-[112px] md:pt-[132px] pb-8 sm:pb-16 md:pb-24 overflow-hidden isolate">
       {/* Background washes + watermark */}
       <div className="absolute inset-0 -z-10 pointer-events-none">
         <div className="absolute inset-0 fv-hero-bg" />
@@ -14,26 +13,35 @@ export function Hero() {
       </div>
 
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
-        <div className="grid gap-16 lg:gap-[72px] items-center grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-          {/* Left column: copy */}
-          <Reveal>
+        <div className="grid gap-10 lg:gap-[72px] items-center grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+          {/* Left column: copy — FV-511: no Reveal wrapper. The hero is
+              the LCP element; it must render fully visible in SSR HTML
+              with or without JS, not depend on IntersectionObserver. */}
+          <div>
             <div className="inline-flex items-center gap-3 mb-7">
               <span className="fv-pulse-dot" />
               <span className="fv-eyebrow">
-                Athlete Mindset Training · Built on Scripture
+                Guided visualization · Seven sports
               </span>
             </div>
 
             <h1 className="fv-h-hero mb-[26px]">
-              Your identity is&nbsp;secure.
+              Visualize and compete
               <br />
-              Compete <em>from victory.</em>
+              <em>from victory.</em>
             </h1>
 
+            {/* FV-534: KC-authored hero thesis (2026-08-31), applied
+                verbatim after efficacy review. The concrete sport imagery
+                the old paragraph carried (goalie/first shot, golfer/first
+                tee) now lives in the Visualization section one scroll
+                down and on the sport pages; the hero states the thesis.
+                Note: the hero no longer carries the "13+" age signal —
+                KC's call to restore is a one-word add. */}
             <p className="max-w-[52ch] mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
-              A Christian athlete mindset app that helps you build daily
-              discipline, reset after mistakes, and compete with confidence —
-              rooted in Christ, not performance.
+              Everyone knows visualization matters. From Victory gives
+              athletes sport-specific audio guides, grounded in
+              Christ&rsquo;s victory, so they can compete fearless and free.
             </p>
 
             <div className="flex flex-wrap gap-3 mb-5">
@@ -52,196 +60,62 @@ export function Hero() {
                 See how it works
               </a>
             </div>
-            <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/40 font-semibold mb-10">
-              14 days free for first-time subscribers &mdash; then $5/mo or $49/yr &mdash; cancel anytime
+            <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 font-semibold mb-0">
+              14 days free for first-time subscribers, then $5/mo or $49/yr, cancel anytime
             </p>
 
-          </Reveal>
+            {/* FV-515: 18+ athlete path, flag-gated server-side — quiet
+                text-link treatment, not a second competing CTA. Copy reused
+                verbatim from the /signup entry link. Renders nothing when
+                ENABLE_ADULT_SIGNUP is off, so the hero stays byte-identical
+                to today. */}
+            {isAdultSignupEnabled() ? (
+              <p className="mt-4 font-body text-[13px] text-cream/50">
+                Are you the athlete, and 18 or older?{" "}
+                <Link
+                  href="/signup/athlete"
+                  className="text-gold hover:text-gold-bright no-underline"
+                >
+                  Create your own account
+                </Link>
+              </p>
+            ) : null}
 
-          {/* Right column: stacked phone mockups */}
-          <Reveal>
-            <div className="fv-hero-phones" aria-hidden>
-              {/* Back phone — verse */}
-              <div className="fv-phone fv-phone-back">
-                <div className="fv-phone-screen">
-                  <div className="fv-phone-notch" />
-                  <PhoneStatusBar />
-                  <div className="px-5 pt-2 pb-5 flex-1 overflow-hidden">
-                    <div className="flex justify-between items-start mt-2 mb-[18px]">
-                      <div>
-                        <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-cream/50 font-semibold">
-                          Tuesday · Mar 12
-                        </div>
-                        <div className="font-heading font-semibold text-[19px] text-cream mt-1 tracking-[-0.01em]">
-                          Truth of the day
-                        </div>
-                      </div>
-                    </div>
+          </div>
 
-                    <div className="fv-card-verse border border-hairline rounded-lg p-[18px]">
-                      <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-gold font-semibold">
-                        HEBREWS 12:1-2
-                      </div>
-                      <div className="font-scripture text-[16px] leading-[1.5] text-cream mt-2.5">
-                        &ldquo;Run with perseverance the race marked out for
-                        us, fixing our eyes on Jesus.&rdquo;
-                      </div>
-                    </div>
-
-                    <div className="mt-[18px]">
-                      <div className="font-mono text-[9px] tracking-[0.20em] uppercase text-cream/50 font-semibold mb-2">
-                        Identity statement
-                      </div>
-                      <div className="font-heading font-medium text-[15px] leading-[1.35] text-cream">
-                        I&apos;m not what I did last shift.
-                        <br />
-                        I&apos;m secure. I show up again.
-                      </div>
-                    </div>
-
-                    <div className="mt-5">
-                      <div className="font-mono text-[9px] tracking-[0.20em] uppercase text-cream/50 font-semibold mb-2.5">
-                        Carry it
-                      </div>
-                      <div className="bg-charcoal border border-hairline rounded-xl px-3.5 py-3 font-body text-[12.5px] text-cream/70 leading-[1.5]">
-                        Three breaths before each shift. Body language stays
-                        steady.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Front phone — Today dashboard */}
+          {/* Right column: real product screenshot — the Positive Plays
+              pregame capture (FV-533, KC decision: the hero visual should
+              show the visualization differentiator itself), also used by
+              the app-preview carousel (FV-513), framed in the phone
+              chrome the old JSX mockup used (FV-531). Alt text reused
+              verbatim from the carousel's positive-plays slide. Hidden
+              below `sm` (FV-514): on the smallest phones the phone frame
+              was the single biggest contributor to hero height; the
+              carousel arrives two sections later. */}
+          <div className="hidden sm:block">
+            <div className="fv-hero-phones fv-hero-phones--single">
               <div className="fv-phone fv-phone-front">
                 <div className="fv-phone-screen">
-                  <div className="fv-phone-notch" />
-                  <PhoneStatusBar />
-                  <div className="px-5 pt-2 pb-5 flex-1 overflow-hidden">
-                    <div className="flex justify-between items-start mt-2 mb-[18px]">
-                      <div>
-                        <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-cream/50 font-semibold">
-                          Tuesday · Mar 12
-                        </div>
-                        <div className="font-heading font-semibold text-[19px] text-cream mt-1 tracking-[-0.01em]">
-                          Good morning, Jordan
-                        </div>
-                      </div>
-                      <div className="w-8 h-8 rounded-pill border border-hairline inline-flex items-center justify-center text-cream relative">
-                        <SvgIcon name="bell" size={15} />
-                        <span className="absolute top-[7px] right-[8px] w-[5px] h-[5px] rounded-pill bg-gold" />
-                      </div>
-                    </div>
-
-                    <div className="inline-flex items-center gap-2 font-mono text-[9px] tracking-[0.20em] uppercase font-semibold text-gold">
-                      <FlameMark size={11} />
-                      From Victory
-                    </div>
-                    <div className="font-heading font-semibold text-[22px] leading-[1.15] text-cream tracking-[-0.01em] mt-2.5 mb-2">
-                      Your worth is not
-                      <br />
-                      on the scoreboard.
-                    </div>
-                    <div className="font-body text-[12.5px] leading-[1.5] text-cream/70 mb-[18px]">
-                      Today&apos;s game does not define you. Reset, breathe, and
-                      take the next faithful step.
-                    </div>
-
-                    <div className="fv-rhythm-card rounded-[18px] p-4 mb-2.5">
-                      <div className="flex items-center gap-3.5">
-                        <div
-                          className="w-16 h-16 rounded-[18px] flex items-center justify-center flex-none"
-                          style={{
-                            background:
-                              "linear-gradient(180deg,rgba(223,175,55,0.18),rgba(223,175,55,0.04))",
-                            border: "1px solid rgba(223,175,55,0.32)",
-                          }}
-                        >
-                          <FlameMark
-                            size={36}
-                            className="text-gold"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-mono text-[9px] tracking-[0.20em] uppercase text-cream/50 font-semibold">
-                            Today&apos;s rhythm · Up next
-                          </div>
-                          <div className="font-heading font-semibold text-[15px] text-cream mt-[3px]">
-                            Receive — anchor in truth
-                          </div>
-                          <div className="font-body text-[11.5px] text-cream/70 mt-0.5">
-                            A short Scripture to sit with. About two minutes.
-                          </div>
-                        </div>
-                      </div>
-                      <div className="h-px bg-hairline my-3.5" />
-                      <div className="w-full bg-gold text-onyx font-heading font-semibold text-[13px] rounded-pill px-3.5 py-2.5 flex items-center justify-center gap-1.5">
-                        Continue training
-                        <SvgIcon name="arrow" size={13} />
-                      </div>
-                    </div>
-
-                    <div className="bg-charcoal border border-hairline rounded-[14px] px-3.5 py-3 flex items-center gap-3 mb-[18px]">
-                      <div className="w-9 h-9 rounded-[10px] bg-gold/[0.08] flex items-center justify-center text-gold">
-                        <SvgIcon name="wind" size={16} />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-heading font-semibold text-[13px] text-cream">
-                          Pre-practice lock in
-                        </div>
-                        <div className="font-body text-[11px] text-cream/50">
-                          How you practice is how you play.
-                        </div>
-                      </div>
-                      <SvgIcon
-                        name="chev"
-                        size={14}
-                        className="text-cream/50"
-                      />
-                    </div>
-
-                    <div className="font-mono text-[9px] tracking-[0.20em] uppercase text-cream/50 font-semibold mb-2">
-                      Today&apos;s reps
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="bg-charcoal border border-hairline rounded-[14px] p-3 min-h-[88px] flex flex-col justify-between">
-                        <div
-                          className="w-7 h-7 rounded-[8px] flex items-center justify-center text-gold"
-                          style={{
-                            background: "var(--fv-gold-soft)",
-                            border: "1px solid rgba(223,175,55,0.28)",
-                          }}
-                        >
-                          <SvgIcon name="wind" size={16} />
-                        </div>
-                        <div className="flex justify-between items-end mt-3 gap-1.5">
-                          <div className="font-heading font-semibold text-[13px] text-cream">
-                            Center
-                          </div>
-                          <div className="font-mono text-[9px] tracking-[0.14em] uppercase text-gold font-semibold">
-                            Done
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-charcoal border border-hairline rounded-[14px] p-3 min-h-[88px] flex flex-col justify-between">
-                        <div className="w-7 h-7 rounded-[8px] bg-cream/[0.04] flex items-center justify-center text-cream/70">
-                          <SvgIcon name="book" size={16} />
-                        </div>
-                        <div className="flex justify-between items-end mt-3 gap-1.5">
-                          <div className="font-heading font-semibold text-[13px] text-cream">
-                            Truth
-                          </div>
-                          <div className="font-mono text-[9px] tracking-[0.14em] uppercase text-cream/50 font-semibold">
-                            2 min
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  {/* The 1206x2622 capture is a hair taller than the
+                      296x632 screen cutout (0.460 vs 0.468 aspect), so
+                      object-cover trims ~5px off the top and bottom
+                      edges instead of letterboxing. No `priority`: it
+                      would emit an unconditional head preload, and this
+                      image never renders below `sm` — mobile would pay
+                      ~100-200KB for nothing. In-viewport desktop loads
+                      start immediately after layout regardless. */}
+                  <Image
+                    src="/images/screens/screen-pregame-positive-plays.png"
+                    width={1206}
+                    height={2622}
+                    alt="Pregame step 4 of 11, Positive Plays: Picture the plays you'll make, with soccer play chips to pick one to three."
+                    sizes="296px"
+                    className="block w-full h-full object-cover"
+                  />
                 </div>
               </div>
             </div>
-          </Reveal>
+          </div>
         </div>
       </div>
     </section>

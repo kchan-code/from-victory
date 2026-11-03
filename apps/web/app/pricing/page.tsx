@@ -8,6 +8,7 @@ import { Reveal } from "@/components/landing/Reveal";
 import { SectionMeta } from "@/components/landing/SectionMeta";
 import { SvgIcon } from "@/components/landing/SvgIcon";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
+import { PricingPlanCard } from "@/components/marketing/PricingPlanCard";
 
 const siteUrl = "https://www.fromvictoryapp.com";
 
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/pricing" },
   title: "Pricing",
   description:
-    "14 days free, then $49/yr or $5/mo for your first athlete — $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
+    "14 days free, then $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
   openGraph: {
     type: "website",
     url: `${siteUrl}/pricing`,
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
       "14 days free, then $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
     images: [
       {
-        url: `${siteUrl}/from-victory-social-preview.jpg`,
+        url: `${siteUrl}/og-website-1200x630.png`,
         width: 1200,
         height: 630,
       },
@@ -36,33 +37,22 @@ export const metadata: Metadata = {
     title: "Pricing · From Victory",
     description:
       "14 days free, then $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
-    images: [`${siteUrl}/from-victory-social-preview.jpg`],
+    images: [`${siteUrl}/og-website-1200x630.png`],
   },
 };
-
-const annualFeatures = [
-  "Daily training session (hockey, basketball, golf, football, baseball, lacrosse & soccer)",
-  "Pregame guided audio (~5 min)",
-  "Pre-practice lock-in",
-  "Journey view — 30-day session map",
-  "Rhythm visualization (not a streak counter)",
-  "Parent dashboard — rhythm + session count",
-  "14-day free trial",
-  "Cancel anytime",
-];
 
 const faq: { q: string; a: string }[] = [
   {
     q: "What happens after the 14-day trial?",
-    a: "If you do nothing, your subscription starts at the rate you selected — $49/yr or $5/mo for your first athlete — $29/yr or $3/mo for each additional. We will not charge you before the trial period ends. You can cancel any time in your account settings before the trial ends and you will not be billed. The free trial applies to first-time subscribers.",
+    a: "If you do nothing, your subscription starts at the rate you selected: $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. We will not charge you before the trial period ends. You can cancel any time in your account settings before the trial ends and you will not be billed. The free trial applies to first-time subscribers.",
   },
   {
     q: "What sports are available right now?",
-    a: "Hockey, basketball, golf, football, baseball, lacrosse, and soccer are live now. More sports are in development — all 30-day training content is sport-specific, so we build each one fully before releasing it.",
+    a: "Hockey, basketball, golf, football, baseball, lacrosse, and soccer are live now. More sports are in development. All 30-day training content is sport-specific, so we build each one fully before releasing it.",
   },
   {
     q: "Can I see what my athlete does inside their sessions?",
-    a: "No. The parent dashboard shows rhythm data — how often your athlete trained and total sessions completed. The choices they make inside a session, and anything they bring to prayer, stay theirs by design.",
+    a: "No. The parent dashboard shows rhythm data: how often your athlete trained and total sessions completed. The choices they make inside a session, and anything they bring to prayer, stay theirs by design.",
   },
   {
     q: "Can I cancel before the trial ends?",
@@ -89,6 +79,8 @@ export default function PricingPage() {
       <LandingIconDefs />
       <ScrollNav />
 
+      <main id="main-content">
+
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="relative pt-[168px] md:pt-[140px] pb-24 overflow-hidden isolate">
         <div className="absolute inset-0 -z-10 pointer-events-none">
@@ -106,7 +98,7 @@ export default function PricingPage() {
               Then <em>$49 per year.</em>
             </h1>
             <p className="max-w-[44ch] mx-auto mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
-              $49/yr or $5/mo for your first athlete &mdash; $29/yr or $3/mo
+              $49/yr or $5/mo for your first athlete, $29/yr or $3/mo
               for each additional. No ads, no data sold, cancel anytime.
               First-time subscribers train free for the first two weeks.
             </p>
@@ -114,146 +106,16 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* ── Plans ─────────────────────────────────────────────────────── */}
+      {/* ── Plan ──────────────────────────────────────────────────────── */}
       <section className="pb-24 sm:pb-32">
         <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
           <Reveal>
-            <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 max-w-[760px] mx-auto">
-              {/* Annual — recommended */}
-              <div
-                className="rounded-[24px] p-8 flex flex-col relative"
-                style={{
-                  background:
-                    "linear-gradient(180deg,rgba(223,175,55,0.10),rgba(223,175,55,0)),var(--bg-elev-1)",
-                  border: "1px solid rgba(223,175,55,0.4)",
-                  boxShadow: "0 0 0 1px rgba(223,175,55,0.15)",
-                }}
-              >
-                {/* Recommended badge */}
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <div className="bg-gold text-onyx font-mono font-semibold text-[10px] tracking-[0.18em] uppercase px-3 py-1 rounded-pill whitespace-nowrap">
-                    Best value
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2.5 mb-5 pt-2">
-                  <FlameMark size={16} />
-                  <span className="fv-eyebrow gold">Annual plan</span>
-                </div>
-
-                <div className="mb-1">
-                  <span className="font-display font-extrabold text-[52px] leading-none text-cream tracking-[-0.02em]">
-                    $49
-                  </span>
-                  <span className="font-body text-[15px] text-cream/50 ml-1.5">
-                    / year
-                  </span>
-                </div>
-                <div className="font-body text-[13px] text-cream/55 mb-2">
-                  $49/yr for your first athlete &mdash; $29/yr each additional
-                  athlete
-                </div>
-                <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-gold font-semibold mb-7">
-                  14-day free trial
-                </div>
-
-                <div className="h-px bg-hairline mb-7" />
-
-                <ul className="flex flex-col gap-3 m-0 p-0 list-none flex-1 mb-8">
-                  {annualFeatures.map((feat) => (
-                    <li key={feat} className="flex items-start gap-3">
-                      <div
-                        className="w-4 h-4 rounded-full flex items-center justify-center text-gold flex-none mt-0.5"
-                        style={{ background: "var(--fv-gold-soft)" }}
-                        aria-hidden
-                      >
-                        <SvgIcon name="check" size={8} />
-                      </div>
-                      <span className="font-body text-[13.5px] text-cream/80 leading-[1.45]">
-                        {feat}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  href="/signup"
-                  className="w-full inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
-                >
-                  Start your athlete&apos;s free trial
-                  <SvgIcon name="arrow" size={16} />
-                </Link>
-                <p className="text-center font-mono text-[10px] tracking-[0.12em] uppercase text-cream/35 font-semibold mt-3">
-                  14 days free &mdash; cancel anytime
-                </p>
-              </div>
-
-              {/* Monthly */}
-              <div
-                className="rounded-[24px] p-8 flex flex-col"
-                style={{
-                  background: "var(--bg-elev-1)",
-                  border: "1px solid var(--fv-hairline-2)",
-                }}
-              >
-                <div className="flex items-center gap-2.5 mb-5">
-                  <span className="fv-eyebrow">Monthly plan</span>
-                </div>
-
-                <div className="mb-1">
-                  <span className="font-display font-extrabold text-[52px] leading-none text-cream tracking-[-0.02em]">
-                    $5
-                  </span>
-                  <span className="font-body text-[15px] text-cream/50 ml-1.5">
-                    / month
-                  </span>
-                </div>
-                <div className="font-body text-[13px] text-cream/50 mb-1">
-                  Billed monthly, $60 per year
-                </div>
-                <div className="font-body text-[13px] text-cream/55 mb-2">
-                  $3/mo each additional athlete
-                </div>
-                <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/50 font-semibold mb-7">
-                  14-day free trial
-                </div>
-
-                <div className="h-px bg-hairline mb-7" />
-
-                <ul className="flex flex-col gap-3 m-0 p-0 list-none flex-1 mb-8">
-                  {annualFeatures.map((feat) => (
-                    <li key={feat} className="flex items-start gap-3">
-                      <div
-                        className="w-4 h-4 rounded-full flex items-center justify-center text-cream/50 flex-none mt-0.5"
-                        style={{ background: "rgba(247,247,247,0.06)" }}
-                        aria-hidden
-                      >
-                        <SvgIcon name="check" size={8} />
-                      </div>
-                      <span className="font-body text-[13.5px] text-cream/70 leading-[1.45]">
-                        {feat}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  href="/signup"
-                  className="w-full inline-flex items-center justify-center gap-2.5 bg-transparent text-cream border border-hairline-strong font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-surface-1 active:scale-[0.97]"
-                >
-                  Start your athlete&apos;s free trial
-                  <SvgIcon name="arrow" size={16} />
-                </Link>
-                <p className="text-center font-mono text-[10px] tracking-[0.12em] uppercase text-cream/35 font-semibold mt-3">
-                  14 days free &mdash; cancel anytime
-                </p>
-              </div>
-            </div>
+            <PricingPlanCard />
           </Reveal>
 
           {/* Trust strip */}
           <Reveal>
-            <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mt-10 font-mono text-[11px] tracking-[0.18em] uppercase text-cream/40 font-semibold">
+            <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mt-10 font-mono text-[11px] tracking-[0.18em] uppercase text-cream/55 font-semibold">
               <span>No ads</span>
               <span>·</span>
               <span>No data sold</span>
@@ -266,89 +128,11 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* ── What's included ──────────────────────────────────────────── */}
-      <section className="py-20 sm:py-24 md:py-32 bg-charcoal border-y border-hairline">
-        <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
-          <Reveal>
-            <SectionMeta num="01" label="Everything included" />
-          </Reveal>
-          <Reveal>
-            <div className="grid gap-x-16 gap-y-10 items-end mb-14 grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
-              <h2 className="fv-h-section">
-                One price. Everything your athlete needs.
-              </h2>
-              <p className="fv-lede">
-                No tiers, no paywalled features. Both plans include everything —
-                the only difference is the billing interval.
-              </p>
-            </div>
-          </Reveal>
-
-          <Reveal>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-              {[
-                {
-                  icon: "flame" as const,
-                  title: "Daily training session",
-                  body: "30 days of sport-specific mental skill + Scripture foundation. Hockey, basketball, golf, football, baseball, lacrosse, and soccer available now.",
-                },
-                {
-                  icon: "zap" as const,
-                  title: "Pregame guided audio",
-                  body: "A real narrated ~5-minute pregame session — breathing, visualization, cue word, and send-off. Built for earbuds in the locker room.",
-                },
-                {
-                  icon: "target" as const,
-                  title: "Pre-practice lock-in",
-                  body: "A short mental warm-up before every practice, not just game days. One focus cue, full-effort frame.",
-                },
-                {
-                  icon: "book" as const,
-                  title: "Journey view",
-                  body: "A 30-day map showing progress through the training cycle. Clear, forward-moving, no shame on missed days.",
-                },
-                {
-                  icon: "wind" as const,
-                  title: "Rhythm visualization",
-                  body: "Your athlete sees their training rhythm — days active, returns after gaps — framed as consistency, never as a streak to protect.",
-                },
-                {
-                  icon: "shield" as const,
-                  title: "Parent dashboard",
-                  body: "Rhythm data and session counts for the parent. Never private reflection content. Privacy is the design.",
-                },
-              ].map((item) => (
-                <article
-                  key={item.title}
-                  className="bg-onyx border border-hairline rounded-lg p-7 transition-colors duration-base ease-out hover:border-hairline-strong h-full"
-                >
-                  <div
-                    className="w-9 h-9 rounded-md flex items-center justify-center text-gold mb-5"
-                    style={{
-                      background: "var(--fv-gold-soft)",
-                      border: "1px solid rgba(223,175,55,0.28)",
-                    }}
-                  >
-                    <SvgIcon name={item.icon} size={18} />
-                  </div>
-                  <h3 className="font-heading font-semibold text-[20px] leading-[1.2] text-cream tracking-[-0.005em] mb-2.5">
-                    {item.title}
-                  </h3>
-                  <p className="font-body text-[14.5px] leading-[1.55] text-cream/70 m-0">
-                    {item.body}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
       {/* ── Minor-data promises ──────────────────────────────────────── */}
       <section className="py-20 sm:py-24 md:py-32">
         <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
           <Reveal>
-            <SectionMeta num="02" label="Your athlete's data" />
+            <SectionMeta num="01" label="Your athlete's data" />
           </Reveal>
           <Reveal>
             <div className="grid gap-12 lg:gap-16 items-start grid-cols-1 lg:grid-cols-[1.1fr_0.9fr]">
@@ -376,7 +160,7 @@ export default function PricingPage() {
                     {
                       collected: true,
                       label: "Session participation",
-                      note: "Dates of completed sessions — shown on your parent dashboard as rhythm data.",
+                      note: "Dates of completed sessions, shown on your parent dashboard as rhythm data.",
                     },
                     {
                       collected: false,
@@ -407,7 +191,7 @@ export default function PricingPage() {
                         className={`w-5 h-5 rounded-full flex items-center justify-center flex-none mt-0.5 ${
                           row.collected
                             ? "text-gold"
-                            : "text-cream/40"
+                            : "text-cream/55"
                         }`}
                         style={
                           row.collected
@@ -515,7 +299,7 @@ export default function PricingPage() {
       <section className="py-20 sm:py-24 md:py-32 bg-charcoal border-t border-hairline">
         <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
           <Reveal>
-            <SectionMeta num="03" label="Common questions" />
+            <SectionMeta num="02" label="Common questions" />
           </Reveal>
           <Reveal>
             <div className="grid gap-x-20 gap-y-0 grid-cols-1 lg:grid-cols-[0.4fr_0.6fr]">
@@ -573,12 +357,14 @@ export default function PricingPage() {
               Start your athlete&apos;s 14-day free trial
               <SvgIcon name="arrow" size={17} />
             </Link>
-            <p className="mt-4 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/35 font-semibold">
+            <p className="mt-4 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 font-semibold">
               Cancel anytime &middot; No commitment
             </p>
           </Reveal>
         </div>
       </section>
+
+      </main>
 
       <Footer />
     </>

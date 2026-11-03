@@ -6,15 +6,19 @@ import Link from "next/link";
 const productLinks = [
   { href: "/#how", label: "How it works" },
   { href: "/#app", label: "The app" },
+  { href: "/hockey", label: "Hockey" },
   { href: "/signup", label: "Start free trial" },
+  { href: "https://shop.fromvictoryapp.com/", label: "Shop" },
 ];
 
 const forLinks = [
-  { href: "/#how", label: "For the Athlete" },
+  // FV-545: was the /#how homepage anchor; now the athlete page.
+  { href: "/athletes", label: "For the Athlete" },
   { href: "/parents", label: "For Parents" },
   { href: "/teams", label: "For Teams & Churches" },
   { href: "/pricing", label: "Pricing" },
   { href: "/resources", label: "Resources" },
+  { href: "/signin", label: "Sign in" },
 ];
 
 const companyLinks = [
@@ -53,13 +57,16 @@ export function Footer() {
 
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pt-8 border-t border-hairline font-mono text-[11px] tracking-[0.14em] uppercase text-cream/50 font-semibold">
           <div>© 2026 From Victory LLC · All rights reserved</div>
-          <div className="flex gap-3.5 text-cream/50">
+          {/* FV-512: 44px tap targets (was 18px icon + 14px gap). Padding
+              grows the hit area to 44x44px without enlarging the icon
+              glyph itself, so the visual weight of the row barely moves. */}
+          <div className="flex text-cream/50">
             <a
               href="https://www.instagram.com/fromvictory"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
-              className="inline-flex hover:text-cream"
+              className="inline-flex h-[44px] w-[44px] items-center justify-center hover:text-cream"
             >
               <svg
                 width="18"
@@ -79,7 +86,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="X"
-              className="inline-flex hover:text-cream"
+              className="inline-flex h-[44px] w-[44px] items-center justify-center hover:text-cream"
             >
               <svg
                 width="18"
@@ -97,7 +104,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="YouTube"
-              className="inline-flex hover:text-cream"
+              className="inline-flex h-[44px] w-[44px] items-center justify-center hover:text-cream"
             >
               <svg
                 width="18"
@@ -116,7 +123,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="TikTok"
-              className="inline-flex hover:text-cream"
+              className="inline-flex h-[44px] w-[44px] items-center justify-center hover:text-cream"
             >
               <svg
                 width="18"
@@ -145,14 +152,18 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h5 className="font-mono text-[10px] tracking-[0.20em] uppercase text-cream/50 font-semibold m-0 mb-[18px]">
+      <h3 className="font-mono text-[10px] tracking-[0.20em] uppercase text-cream/50 font-semibold m-0 mb-[18px]">
         {title}
-      </h5>
-      <ul className="list-none p-0 m-0 flex flex-col gap-3">
+      </h3>
+      {/* FV-512: 44px tap targets (was ~21px text-line links, gap-3
+          between). The old gap is dropped in favor of padding baked into
+          each link's own box, so the hit area — not just the glyph —
+          reaches 44px; the column runs somewhat taller as a result. */}
+      <ul className="list-none p-0 m-0 flex flex-col">
         {links.map((l) => {
           const isRoute = l.href.startsWith("/");
           const className =
-            "font-body text-[14px] text-cream/70 no-underline hover:text-cream transition-colors duration-fast ease-out";
+            "flex min-h-[44px] items-center font-body text-[14px] text-cream/70 no-underline hover:text-cream transition-colors duration-fast ease-out";
           return (
             <li key={l.label}>
               {isRoute ? (
@@ -160,7 +171,12 @@ function FooterColumn({
                   {l.label}
                 </Link>
               ) : (
-                <a href={l.href} className={className}>
+                <a
+                  href={l.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={className}
+                >
                   {l.label}
                 </a>
               )}

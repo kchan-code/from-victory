@@ -48,7 +48,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function ComponentsShowcase() {
   return (
-    <main className="mx-auto max-w-[420px] px-5 py-10">
+    <main id="main-content" className="mx-auto max-w-[420px] px-5 py-10">
       <header className="flex items-center gap-3 mb-8">
         <FlameMark size={24} />
         <div>

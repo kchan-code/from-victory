@@ -335,7 +335,11 @@ export const AUDIO_SCRIPT: AudioSegment[] = [
   {
     startSec: 0,
     eyebrow: "Identity",
-    body: `${SCRIPTURE_REF} — ${SCRIPTURE_TEXT} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
+    // FV-541: {{scriptureRef}}/{{scriptureText}} resolve to the athlete's
+    // need-specific verse (NEED_VERSE[state.need]) at render time — same
+    // source audio mode already uses. Do not bake SCRIPTURE_REF/TEXT back in
+    // here; that was the FV-541 bug (text mode stuck on Hebrews 12:1-2).
+    body: `{{scriptureRef}} — {{scriptureText}} You are not playing to become enough. In Christ, you are already loved. Receive that before you compete.`,
   },
   {
     startSec: 35,

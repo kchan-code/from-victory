@@ -36,6 +36,21 @@ describe("isAllowedAnalyticsPath — public marketing allowlist", () => {
       true,
     );
     expect(isAllowedAnalyticsPath("/christian-athlete-apps")).toBe(true);
+    expect(isAllowedAnalyticsPath("/hockey")).toBe(true);
+  });
+
+  it("allows all seven sport landing pages (FV-506)", () => {
+    for (const sport of [
+      "hockey",
+      "basketball",
+      "golf",
+      "football",
+      "baseball",
+      "lacrosse",
+      "soccer",
+    ]) {
+      expect(isAllowedAnalyticsPath(`/${sport}`)).toBe(true);
+    }
   });
 
   it("allows resources article slugs (sub-path)", () => {

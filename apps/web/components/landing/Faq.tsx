@@ -11,31 +11,39 @@ export interface FaqEntry {
 export const FAQ_ITEMS: FaqEntry[] = [
   {
     q: "Can I read what my athlete does inside a session?",
-    a: "No — and that’s by design. Your athlete trains privately. Your dashboard shows their rhythm and participation: which days they trained, how consistently they show up. It never shows what they selected or worked through inside a session. An athlete who knows no one is reading is free to be honest with God and with themselves. That honesty is where the real training happens.",
+    a: "No, and that’s by design. Your athlete trains privately. Your dashboard shows their rhythm and participation: which days they trained, how consistently they show up. It never shows what they selected or worked through inside a session. An athlete who knows no one is reading is free to be honest with God and with themselves. That honesty is where the real training happens.",
   },
   {
     q: "Is this therapy or counseling?",
-    a: "No. From Victory is mental-toughness and mindset training, not therapy, treatment, or clinical care. Think of it like strength work for the inner game — handling pressure, resetting after mistakes, competing from a settled identity. It’s built to sit alongside the people who already support your athlete: you, their coaches, their pastor. If your athlete needs clinical help, that’s a conversation for a licensed professional.",
+    a: "No. From Victory is mental-toughness and mindset training, not therapy, treatment, or clinical care. Think of it like strength work for the inner game: handling pressure, resetting after mistakes, competing from a settled identity. It’s built to sit alongside the people who already support your athlete: you, their coaches, their pastor. If your athlete needs clinical help, that’s a conversation for a licensed professional.",
+  },
+  {
+    q: "Does visualization actually work?",
+    a: "Often, as a supplement. Research reviews find encouraging average results, with real limits: findings vary by sport, task, and study quality, and the stronger evidence comes from imagery practiced repeatedly over weeks, not one session. It supports training. It never replaces physical reps, coaching, or film. From Victory’s guided audio is how we deliver a structured rehearsal: your athlete picks the plays and the hard moment, hears the reset that follows it, and the session closes with spoken prayer. No promises about tonight’s result.",
   },
   {
     q: "What does my athlete actually believe here?",
-    a: "From Victory is rooted in historic Christian faith — evangelical, non-denominational Protestant. We read Scripture (NIV) and apply it to real athletic life: fear, failure, pressure, identity. The throughline is simple and central to the gospel — that an athlete’s worth is secure in Christ, not earned on the scoreboard. We stay accessible across Protestant traditions and don’t lean on any one denomination’s distinctives.",
+    a: "From Victory is rooted in historic Christian faith: evangelical, non-denominational Protestant. We read Scripture (NIV) and apply it to real athletic life: fear, failure, pressure, identity. The throughline is simple and central to the gospel: an athlete’s worth is secure in Christ, not earned on the scoreboard. We stay accessible across Protestant traditions and don’t lean on any one denomination’s distinctives.",
   },
   {
     q: "How old does my athlete need to be?",
-    a: "Thirteen and up. We confirm age at account creation — there’s no account for anyone under 13. For every athlete aged 13 to 17, we apply minor protections by default: no ads, no behavioral analytics, and no third-party tracking, ever. Athletes 18 and older are adults and can create and pay for their own account, or train under a family subscription a parent manages.",
+    a: "Thirteen and up. We confirm age at account creation: there’s no account for anyone under 13. For every athlete aged 13 to 17, we apply minor protections by default: no ads, no behavioral analytics, and no third-party tracking, ever. Athletes 18 and older are adults and can create and pay for their own account, or train under a family subscription a parent manages.",
   },
   {
     q: "How much screen time is this?",
-    a: "Very little — and that’s intentional. The core is one daily training session, about five minutes. On game days, there’s an optional pregame audio session, also around five minutes. Some athletes add a short pre-practice read on practice days. That’s it. From Victory is built to be picked up, used, and put down — not scrolled. We’re after a daily rhythm, not another feed competing for your athlete’s attention.",
+    a: "Very little, and that’s intentional. The core is one daily training session, about five minutes. On game days, there’s an optional pregame audio session, also around five minutes. Some athletes add a short pre-practice read on practice days. That’s it. From Victory is built to be picked up, used, and put down, not scrolled. We’re after a daily rhythm, not another feed competing for your athlete’s attention.",
   },
   {
     q: "What does it cost, and can I cancel?",
-    a: "$5 a month, or $49 a year for your first athlete — and $3 a month, or $29 a year, for each additional athlete in your household. First-time subscribers get a 14-day free trial, so you can try the whole thing before you pay anything. You can cancel anytime from the billing portal — no calls, no friction. A household with more athletes pays less per athlete: that’s by design, because the same training serves your whole family.",
+    a: "$5 a month, or $49 a year for your first athlete, and $3 a month, or $29 a year, for each additional athlete in your household. First-time subscribers get a 14-day free trial, so you can try the whole thing before you pay anything. You can cancel anytime from the billing portal: no calls, no friction. A household with more athletes pays less per athlete: that’s by design, because the same training serves your whole family.",
   },
   {
     q: "How does my athlete get the app?",
     a: "There’s nothing to download from an app store. From Victory is a web app your athlete installs straight from their phone’s browser. On iPhone: tap Share, then Add to Home Screen. On Android: tap Install when prompted. Once it’s on the Home Screen, it opens like any other app. One honest note: on iPhone, daily training reminders only work after it’s been added to the Home Screen.",
+  },
+  {
+    q: "Where do I find From Victory online?",
+    a: "The product lives at fromvictoryapp.com. If you’re looking for From Victory on the web, that’s the URL to use.",
   },
 ];
 

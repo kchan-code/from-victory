@@ -24,6 +24,8 @@ import {
   AUDIO_CACHE_BUST,
 } from "../audio-mapping";
 
+import { TRUTH_SLUGS } from "../audio/truth-bank";
+
 // ---------------------------------------------------------------------------
 // Shared fixture helpers
 // ---------------------------------------------------------------------------
@@ -825,5 +827,131 @@ describe("findActivePhase", () => {
   it("returns null for an empty phases list", () => {
     const emptyTimeline: AssembledTimeline = { totalDurationSec: 0, phases: [] };
     expect(findActivePhase(emptyTimeline, 50)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// {{truth}} — the rotating identity line after shared-opening
+// ---------------------------------------------------------------------------
+
+describe("{{truth}} sentinel — rotating truth line", () => {
+  const T0 = TRUTH_SLUGS[0]!;
+  const T1 = TRUTH_SLUGS[1]!;
+  const T2 = TRUTH_SLUGS[2]!;
+
+  // Catalog carries only the first three bank lines (a partial render), so the
+  // resolver must rotate over exactly those three in bank order.
+  const truthManifest: ClipManifest = {
+    version: "p6",
+    clips: {
+      [REAL_OPENER_CONFIDENCE]: catalogEntry("/audio/opener-confidence.mp3", 60),
+      "shared-opening": catalogEntry("/audio/pregame/clips/shared-opening.aaaaaaaa.mp3", 40),
+      "session-forward-turnover": catalogEntry("/audio/session-forward-turnover.mp3", 240),
+      [T0]: catalogEntry(`/audio/pregame/clips/${T0}.11111111.mp3`, 5),
+      [T1]: catalogEntry(`/audio/pregame/clips/${T1}.22222222.mp3`, 5),
+      [T2]: catalogEntry(`/audio/pregame/clips/${T2}.33333333.mp3`, 5),
+    },
+    templates: [
+      {
+        sport: "hockey",
+        position: "Forward",
+        adversity: "I turn the puck over.",
+        clips: ["shared-opening", "{{truth}}", "session-forward-turnover"],
+      },
+    ],
+  };
+
+  const resolveWith = (truthIndex?: number | null, avoid?: string | null) =>
+    resolvePlaylist(
+      "Confidence",
+      "Forward",
+      "I turn the puck over.",
+      truthManifest,
+      null,
+      null,
+      null,
+      "hockey",
+      null,
+      null,
+      truthIndex,
+      avoid,
+    );
+
+  it("substitutes exactly one truth clip, in the slot right after shared-opening", () => {
+    const result = resolveWith(0);
+    expect(result).not.toBeNull();
+    const slugs = result!.map((c) => c.slug);
+    expect(slugs).toEqual([REAL_OPENER_CONFIDENCE, "shared-opening", T0, "session-forward-turnover"]);
+    expect(slugs.filter((s) => s.startsWith("truth-"))).toHaveLength(1);
+  });
+
+  it("indexes the bank in order and wraps modulo the clips the catalog carries", () => {
+    expect(resolveWith(1)![2]!.slug).toBe(T1);
+    expect(resolveWith(2)![2]!.slug).toBe(T2);
+    expect(resolveWith(3)![2]!.slug).toBe(T0); // 3 candidates → wraps
+    expect(resolveWith(11)![2]!.slug).toBe(T2); // a full-bank index still lands on a rendered clip
+    expect(resolveWith(-1)![2]!.slug).toBe(T2); // negative never throws or yields undefined
+  });
+
+  it("defaults to the first bank line when no index is supplied", () => {
+    expect(resolveWith(undefined)![2]!.slug).toBe(T0);
+    expect(resolveWith(null)![2]!.slug).toBe(T0);
+  });
+
+  it("skips the line heard last time and advances one step in rotation order", () => {
+    expect(resolveWith(1, T1)![2]!.slug).toBe(T2);
+    expect(resolveWith(2, T2)![2]!.slug).toBe(T0); // advance wraps too
+    // avoid only bites when the pick actually lands on it
+    expect(resolveWith(0, T1)![2]!.slug).toBe(T0);
+  });
+
+  it("still plays the only line when the catalog carries a single truth clip", () => {
+    const single: ClipManifest = {
+      ...truthManifest,
+      clips: {
+        [REAL_OPENER_CONFIDENCE]: truthManifest.clips[REAL_OPENER_CONFIDENCE]!,
+        "shared-opening": truthManifest.clips["shared-opening"]!,
+        "session-forward-turnover": truthManifest.clips["session-forward-turnover"]!,
+        [T0]: truthManifest.clips[T0]!,
+      },
+    };
+    const result = resolvePlaylist(
+      "Confidence", "Forward", "I turn the puck over.", single,
+      null, null, null, "hockey", null, null, 0, T0,
+    );
+    expect(result!.map((c) => c.slug)).toContain(T0);
+  });
+
+  it("drops the sentinel cleanly (no null) on a manifest with no truth clips", () => {
+    const noTruth: ClipManifest = {
+      ...truthManifest,
+      clips: {
+        [REAL_OPENER_CONFIDENCE]: truthManifest.clips[REAL_OPENER_CONFIDENCE]!,
+        "shared-opening": truthManifest.clips["shared-opening"]!,
+        "session-forward-turnover": truthManifest.clips["session-forward-turnover"]!,
+      },
+    };
+    const result = resolvePlaylist("Confidence", "Forward", "I turn the puck over.", noTruth);
+    expect(result).not.toBeNull();
+    expect(result!.map((c) => c.slug)).toEqual([REAL_OPENER_CONFIDENCE, "shared-opening", "session-forward-turnover"]);
+  });
+
+  it("is a no-op on a template without the sentinel (pre-truth manifests)", () => {
+    const legacy: ClipManifest = {
+      ...truthManifest,
+      templates: [
+        {
+          sport: "hockey",
+          position: "Forward",
+          adversity: "I turn the puck over.",
+          clips: ["shared-opening", "session-forward-turnover"],
+        },
+      ],
+    };
+    const result = resolvePlaylist(
+      "Confidence", "Forward", "I turn the puck over.", legacy,
+      null, null, null, "hockey", null, null, 5, null,
+    );
+    expect(result!.map((c) => c.slug)).toEqual([REAL_OPENER_CONFIDENCE, "shared-opening", "session-forward-turnover"]);
   });
 });

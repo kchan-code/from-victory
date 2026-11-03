@@ -69,7 +69,7 @@ export default async function JourneyDayPage({ params }: JourneyDayPageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-onyx pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
+    <main id="main-content" className="min-h-screen bg-onyx pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
       {/* ── Header ── */}
       <header className="flex items-center justify-between px-5 pt-10 pb-6 sm:px-8 max-w-[640px] mx-auto">
         <Link
@@ -85,7 +85,7 @@ export default async function JourneyDayPage({ params }: JourneyDayPageProps) {
 
         {/* Read-only badge */}
         <span
-          className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-cream/35 bg-charcoal border border-hairline rounded-pill px-3 py-1.5"
+          className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-cream/55 bg-charcoal border border-hairline rounded-pill px-3 py-1.5"
           aria-label="This session is read-only"
         >
           Read only
@@ -111,7 +111,7 @@ export default async function JourneyDayPage({ params }: JourneyDayPageProps) {
         ) : (
           <>
             {/* Completion timestamp */}
-            <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-cream/35 mb-6">
+            <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-cream/55 mb-6">
               Completed {formatDate(entry.completedAt)}
             </p>
 

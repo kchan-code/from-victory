@@ -31,7 +31,7 @@ const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
 export default function DeleteAccountPage() {
   return (
-    <main className="mx-auto max-w-[760px] px-5 sm:px-8 pt-24 pb-20 text-cream">
+    <main id="main-content" className="mx-auto max-w-[760px] px-5 sm:px-8 pt-24 pb-20 text-cream">
       <header className="mb-10">
         <p className="fv-eyebrow gold mb-3">Account Deletion</p>
         <h1 className="font-heading font-bold text-[40px] sm:text-[52px] leading-[1.05] tracking-[-0.02em] m-0 mb-3">

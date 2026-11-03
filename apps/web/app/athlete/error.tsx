@@ -19,7 +19,7 @@ export default function AthleteError({ error, reset }: ErrorProps) {
   }, [error]);
 
   return (
-    <main className="min-h-screen bg-onyx px-5 py-10 sm:px-8 flex items-center justify-center">
+    <main id="main-content" className="min-h-screen bg-onyx px-5 py-10 sm:px-8 flex items-center justify-center">
       <div className="mx-auto max-w-[480px] text-center">
         <h1 className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold mb-4">
           Something went wrong

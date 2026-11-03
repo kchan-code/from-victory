@@ -1438,6 +1438,8 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
   // the runtime lookup in audio-playlist.ts can disambiguate positions that
   // collide across sports (e.g. hockey vs. lacrosse Defense/Goalie).
   // Phase 3b adds personalization sentinels at lean-structure positions:
+  //   {{truth}} right after shared-opening (rotating identity line from the
+  //   truth bank — one truth-NN clip per session, see audio/truth-bank.ts);
   //   {{anchor}} {{selfTalk}} {{cueReset}} after the hm clip;
   //   {{cueSendoff}} between shared-prayer and shared-sendoff.
   // The resolver in audio-playlist.ts substitutes these with the athlete's
@@ -1449,6 +1451,7 @@ async function generateClips(flags: Flags, bookData: Map<string, BookEntry>): Pr
       adversity: t.adversity,
       clips: [
         "shared-opening",
+        "{{truth}}",
         t.vizSlug,
         t.hmSlug,
         "{{anchor}}",

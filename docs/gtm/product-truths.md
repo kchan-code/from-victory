@@ -10,7 +10,321 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
-## 2026-08-13 — Soccer is live: seventh sport, full parity
+## 2026-09-12 — New free trials become 7 days for one athlete (rides FV-574; effective when that PR deploys)
+
+KC approved a new offering (2026-09-11): new first-time trials are SEVEN days,
+granted only when the checkout starts with exactly one athlete. Multi-athlete
+first checkouts get no free trial. Existing subscribers and in-flight trials
+are grandfathered — their promised duration and seat terms do not change.
+Prices are unchanged ($5/mo or $49/yr first athlete, $3/$29 additional). The
+in-app checkout surfaces (/subscribe banner, signup disclosure) already say
+7 days in the same change; every marketing page still says "14-day free
+trial" until KC routes new copy through the engine.
+
+Why it matters to a buyer: every "14-day free trial" claim across the site
+(home, pricing, parents, sport pages, FAQ, structured data) becomes a 2x
+overclaim the moment this deploys — the engine must reconcile all trial copy
+to "7-day free trial (one athlete)" in the same launch window, not after.
+Context: this is part of the Apple-subscriptions-on-iOS arc (FV-210); the
+same 7-day/one-athlete trial will apply to Apple in-app purchases.
+
+## 2026-09-02 — Pregame audio closes on the brand tagline; opening identity line now rotates
+
+The final spoken line of every guided pregame session (all seven live sports, the
+shared `shared-sendoff` clip after the prayer and cue word) now reads "You are
+secure. Now go compete from victory." It previously read "You are secure. Now play
+from victory." The self-guided-prayer path is unchanged: it still ends on the
+athlete's own 30-second prayer with no spoken send-off. The text-mode fallback
+send-offs still end "Amen. Play from victory."
+
+The identity line near the top of the session (after the two breath rounds and
+"Remember what is true.") is no longer one fixed sentence. It is drawn from a bank
+of twelve short, sport-neutral lines that all say the same thing — standing with
+God does not move with performance — from different angles (e.g. "The outcome can
+change. Your place with God cannot." / "Success cannot crown you. Failure cannot
+condemn you."). One line plays per session, chosen at random, never the same line
+two sessions in a row on the same device. The previous line ("…loved before you
+lace up. You are loved after the final horn.") was hockey-flavored and played
+verbatim every session in every sport. Sessions are about eight seconds shorter.
+
+Why it matters to a buyer: the session's last words now match the public tagline
+("Your Identity Is Secure. Compete From Victory.") word for word, and the daily
+identity reminder stays fresh across a season instead of becoming background
+noise. Marketing may say the session "reminds the athlete who they are before
+they compete" and may quote any line from the bank; it should not describe the
+opening as a single fixed line.
+
+## 2026-09-01 — /parents recut to the foundation/game-day framing; sitewide em-dash sweep
+
+The parents page hero now leads "Daily training is the foundation. Game
+day calls it up." with the approved five-element pregame description
+(breath, visualization, identity in Christ, a focus cue, and prayer)
+used consistently. The privacy callout discloses the full collected set
+(first name, birthdate, self-chosen username, phrased "never shown to
+third parties" per the canonical FV-320 language). Access is stated per
+path: 13-17 train under the parent account; the 18+ self-serve trial
+line renders only while adult signup is enabled. The canonical tagline
+appears exactly once, and a "Read it here. They train it in the app."
+block cross-links the athlete page and the two parent-audience articles.
+Separately, 97 em dashes were removed from customer-facing copy across
+the marketing site (replaced with sentence punctuation, no claim
+changes); article bodies and the two GTM-engine pages were left as
+approved.
+
+Why it matters to a buyer: the parent page now states exactly what is
+collected, exactly who can buy which way, and the same product
+distinction the athlete page carries, with no dead-end capability
+claims.
+
+## 2026-09-01 — Dedicated "For the Athlete" page live at /athletes
+
+The site nav's "For the Athlete" link now goes to a dedicated athlete page
+(/athletes) instead of a homepage anchor. It is a moment-based wisdom page
+(KC-approved design, H1 "The mental game, moment by moment."): practical
+guidance organized by when the athlete needs it — before competition
+(3-step nerves routine), the mental rep (3 rules, qualified research
+framing), after a performance you want back (3-step reset), and three NIV
+verse excerpts — each block condensed from a published athlete article and
+linking to it, with the articles linking back. Product beats: a labeled
+audio sample (the real hockey forward first-shift visualization clip), the
+one approved beta quote, and a two-path conversion: 18+ self-serve trial
+($5/mo or $49/yr after) shown only while adult signup is enabled, and a
+13-17 "Send this to a parent" native-share of /parents that collects no
+data from minors. Canonical close: "Play hard, fearless, and free."
+
+Why it matters to a buyer: athlete-intent traffic now has a landing surface
+in the athlete's own register that feeds both the resources library and the
+two live purchase paths, without implying minors can self-serve.
+
+## 2026-09-01 — Visualization research article live; homepage sections 01/02 rewritten to KC's copy
+
+A sixth resources article is live: "Does Visualization Actually Work for
+Athletes?" (/resources/does-visualization-work-for-athletes, athlete-facing).
+It gives the qualified answer — visualization can help as a supplement,
+with real limits — cited to modern systematic reviews (Liu 2025, Reinebo
+2024, Toth 2020, Simonsmeier 2021), describes PETTLEP as a framework,
+carries the Michael Phelps 2008 anecdote under an explicit
+illustration-not-proof close, and states what visualization cannot do.
+First article written under the binding evidence standard
+(docs/content-evidence-standards.md, FV-540). The homepage's "The mental
+rep" section was compressed to KC's own copy (headline "Picture the play.
+Prepare for pressure. Compete from Christ's strength.") with one pointer
+link to the article, and "The method" section restructured to KC's three
+phases (REHEARSE / RESET / RELEASE) with a pointer link to the Pregame
+Ritual guide. A new homepage FAQ entry answers "Does visualization
+actually work?" in the same qualified register.
+
+Why it matters to a buyer: the visualization differentiator now has an
+honest, citable research page marketing can link to, and every public
+claim about visualization efficacy is held to a written evidence standard
+— no overclaims for a skeptical parent or coach to catch.
+
+## 2026-08-31 — Visualization section gains a locker-room background image
+
+The homepage's "The mental rep" section now has a darkened atmospheric
+background: a locker-room image of a player with eyes closed and
+headphones on (AI-generated by KC, not a photo of a real athlete),
+rendered at low opacity under dark gradients so it reads as mood, not a
+focal image. Text remains legible to WCAG AA over the brightest areas.
+No copy changed.
+
+Why it matters to a buyer: the section that argues for audio-guided
+visualization now looks like the moment it describes.
+
+## 2026-08-31 — Method section now presents the pregame session, step by step
+
+The homepage Method section no longer describes the daily-training rhythm
+(read the skill, anchor in Scripture, take one cue); it now walks the
+pregame visualization method in four steps under the heading "Rehearse
+it. Reset from it. Leave it with God.": set your session (position,
+chosen plays, hard moment, one focus), hear the rep (the guided audio
+runs the plays and the moment you would rather skip), practice the reset
+(the way back after the mistake), and leave it with God (the session
+truly ends in a spoken prayer; the copy describes it faithfully and ends
+"Then you go compete fearless and free", echoing the hero). The daily
+training still exists unchanged as a product; on the homepage it is
+described by the lede line "You read the daily training. You hear the
+pregame session." and the FAQ.
+
+Why it matters to a buyer: the homepage's "how it works" now describes
+the differentiating product (the customized, audio-guided pregame
+session, ending in real prayer) rather than the daily reading rhythm.
+
+## 2026-08-31 — Homepage tells the visualization story; new hero thesis
+
+The homepage now makes the case for guided visualization directly. A new
+section ("The mental rep", placed right after the playable audio sample)
+explains in three beats: why the mental rep matters (imagery is one of
+the most studied tools in sport; the honest boundary "It does not
+replace training" is stated), what a good rep looks like (first moments
+not highlight reels; the athlete picks up to three plays from their
+position's library plus a hard moment, so the mistake and the reset get
+rehearsed too), and the differentiator (guided audio, eyes closed, real
+pauses at game speed, phone in pocket). Claims were held to
+sports-psychologist-verified public-safe levels: no percentages, no
+"proven", no clinical or meditation-app register. The Method section now
+says the guided audio session runs a focus cue with the athlete before
+competing, and its lede reads "You read the daily training. You hear the
+pregame session." (daily training remains text; the narrated surfaces
+are pregame and pre-practice). The hero paragraph is KC's new thesis,
+verbatim: "Everyone knows visualization matters. From Victory gives
+athletes sport-specific audio guides, grounded in Christ's victory, so
+they can compete fearless and free." Note: the hero no longer carries
+the "13+" wording; the age floor still appears in onboarding and the
+waitlist section.
+
+Why it matters to a buyer: the differentiator (audio-guided,
+sport-specific visualization) is now argued explicitly on the homepage
+instead of implied, and every claim on the page is one the product and
+the research posture can back.
+
+## 2026-08-31 — Hero screenshot is now the Positive Plays pregame screen
+
+The homepage hero's phone now shows the pregame "Picture the plays
+you'll make" screen (Positive Plays, where the athlete picks up to three
+plays to rehearse) instead of the home dashboard. KC's call: the first
+product visual should show the visualization differentiator itself.
+
+Why it matters to a buyer: the hero image now demonstrates the guided
+visualization feature the product is differentiated on, not a generic
+dashboard.
+
+## 2026-08-31 — Homepage hero now shows a real app screenshot
+
+The phone in the homepage hero now displays a real capture of the app's
+home dashboard (the same reviewed screenshot the product-preview carousel
+uses) instead of a hand-built imitation of the UI. Every product image on
+the homepage is now a genuine screenshot. No copy or layout changed.
+
+Why it matters to a buyer: the first product visual a visitor sees is the
+actual app they would be buying, consistent with the carousel below it.
+
+## 2026-08-31 — Site-wide visual hierarchy restored; desktop nav simplified
+
+A build bug had silently disabled every "dimmed text" style across the
+site (937 of them): secondary text rendered at full brightness and
+navigation links rendered gold instead of muted cream, which made the
+top bar read as a wall of gold. The bug is fixed, so the whole site now
+shows the muted hierarchy it was designed with, and low-contrast text
+was raised to meet WCAG AA accessibility contrast on every dark surface.
+The desktop nav is simpler: links no longer wrap to multiple lines,
+"For Teams & Churches" and "Resources" moved from the top bar to the
+footer (every page) and the mobile menu, the mobile menu now serves all
+screens below 1024px, and the gold "Start free trial" pill is the only
+gold element in the bar. No copy, pricing, or data facts changed.
+
+Why it matters to a buyer: the site looks calmer and more premium at
+first glance, the one gold call-to-action stands out instead of
+competing with gold links, and text is legible to accessibility
+standards.
+
+## 2026-08-31 — Signup handoff expectations set; 18+ athlete path surfaced from the homepage
+
+FV-515, the final change of the conversion-audit redesign, is live. Both
+signup pages now tell the buyer what happens next before they commit: the
+parent page (`/signup`) shows a three-step preview (Account, then Athlete,
+then Trial) with the line "After you create your account, add your athlete
+from your dashboard."; the 18+ athlete page (`/signup/athlete`) shows a
+two-step preview (Account, then Trial) with "After you create your
+account, you'll head to checkout." Each page also carries the trial and
+billing disclosure adjacent to the submit button — the same
+FTC-compliant card-required sentence already shown at checkout ("14 days
+free for first-time subscribers", card charged automatically at trial end
+unless canceled). The 18+ self-serve path is now discoverable from the
+homepage: a quiet text link under the hero CTA ("Are you the athlete, and
+18 or older? Create your own account") and a secondary card on `/signup`,
+both reusing the existing entry-link wording verbatim. The parent form
+remains the first and primary path on `/signup` — there is no blocking
+chooser. Both surfaces render only when adult self-serve is enabled in
+production; no signup fields, age rules, or billing behavior changed.
+
+Why it matters to a buyer: a parent knows before signing up that the
+athlete gets added afterward from the dashboard, an 18+ athlete can find
+their own path without digging, and nobody reaches checkout surprised
+that a card is required.
+
+## 2026-08-31 — Homepage restructured to 8 sections; one approved beta quote now live
+
+FV-514, the centerpiece of the conversion-audit redesign, is live: the
+homepage (`/`) goes from 10 sections to 8 — Hero; the playable pregame
+sample (context blurb now visible on mobile too, plus a contextual trial
+CTA); a new "three-part method" section (daily mental-skill training,
+Scripture as the foundation — the one Hebrews 12:1-2 quote on the page —
+and game-day/practice application) replacing four consecutive sections
+that each restated the same thesis; the app-screenshot preview (unchanged,
+plus a contextual trial CTA); a new parent-trust strip ("What you see, and
+what stays private") assembled from already-approved lines on /parents and
+/pricing; a new pricing summary ("14 days free. Cancel anytime.") linking
+to /pricing; the founder letter, now including one approved beta-athlete
+quote labeled "Beta feedback" with non-identifying attribution ("Beta
+hockey athlete"); and FAQ + waitlist (unchanged). The hero's second phone
+mockup and its duplicate verse quote are gone — one phone, dimmed gold
+accents, so the real trial CTA is the only solid-gold element in the first
+viewport. The homepage now carries exactly 4 conversion CTAs to the trial
+signup (hero, after-sample, after-preview, final), the same pattern used
+on /parents. Measured at 375×812: the hero is 50% shorter (1483px to
+736px, under 1.2 mobile viewports) and the full page is 20% shorter
+(12144px to 9712px) — the four-section consolidation alone cut close to
+30%, offset partly by the two new required trust/pricing sections. No
+facts changed: pricing, privacy promises, and the age floor are worded
+identically to /parents and /pricing, just relocated.
+
+Why it matters to a buyer: a parent or athlete arriving cold now sees the
+core pitch, a playable sample, and a live signup path much sooner, and the
+first credible third-party signal (beta feedback, clearly labeled as such)
+before FAQ instead of never.
+
+## 2026-08-31 — Conversion-audit wave 1 shipped: site-wide a11y foundation, one-card pricing page, waitlist trimmed to non-live sports
+
+Three changes from the 2026-08-29 marketing conversion audit are live (PRs #474/#475/#476):
+
+- The marketing site has a real accessibility foundation: a skip-to-content link on every route, main landmarks site-wide, and the homepage hero now renders in server HTML with or without JavaScript (previously the whole landing page was invisible until client scripts ran).
+- The pricing page shows one plan card with an annual/monthly toggle (annual default, both prices always visible) instead of two duplicated cards; the separate "Everything included" icon-grid section was removed as redundant. Pricing facts unchanged: $5/mo or $49/yr first athlete, $3/$29 additional, 14-day first-time trial, cancel anytime.
+- The waitlist now offers only non-live sports (Swimming, Wrestling, Volleyball, Track & field, Tennis, Other), derived from the live-sport registry so an 8th live sport updates it automatically; no default sport is preselected; a visitor arriving for a live sport is routed to the trial instead. The form collects email + sport + role only — the first-name field and free-text note were removed (privacy-positive: less PII).
+
+Why it matters to a buyer: the pricing page is materially shorter and clearer on mobile; a parent whose sport is live can no longer accidentally join a waitlist for a product they can buy today; campaigns pointing at the waitlist should target non-live sports only.
+
+## 2026-08-27 — Sport landing pages for all seven live sports; Sports menu in the site nav
+
+Every live sport now has its own marketing landing page: `/hockey`, `/basketball`, `/golf`, `/football`, `/baseball`, `/lacrosse`, `/soccer`. Each page's spoken-moment copy is limited to lines that sport's pregame audio actually runs (per-position flagship visualizations, play library, hard moments), lists the real positions/player types the engine uses, keeps identity in Christ as the second beat, and closes on Compete From Victory. All seven are in the sitemap, `llms.txt`, and the analytics marketing-route allowlist.
+
+The site header now carries a "Sports" dropdown listing the seven live sports (driven by `SUPPORTED_SPORTS`, so it tracks the live set automatically). The homepage hero's "Hockey families: see the first shift →" link was removed in favor of that menu. The homepage remains sport-generic ("Visualize and Compete From Victory").
+
+Why it matters to a buyer: a basketball, golf, football, baseball, lacrosse, or soccer parent searching for their sport now lands on a page about their athlete's actual game, not a hockey pitch.
+
+## 2026-08-26 — Public store listings are not live; marketing comparison names today's SERP apps
+
+From Victory is a web app / installable PWA. It is not listed on the App Store or Google Play. Internal TestFlight and Play Closed Alpha exist for native-shell QA. Do not tell a parent they can download From Victory from a public store tonight.
+
+The public comparison page (`/christian-athlete-apps`) now names the three apps that currently win "best Christian athlete app" answers: Faithful Athlete, Playbook Devotional, and Core IV (all store-listed). FCA Challenge / YouVersion remain the free-devotion category; Play With Faith may still be mentioned as a sport-specific faith feed. From Victory differentiates as visualization you actually run, then compete from victory — 13+, not therapy, not a daily devotion, not a generic mindfulness app.
+
+Homepage title/meta no longer leads with "Christian Athlete Mindset App." Lead is "Visualize and Compete From Victory" (homepage H1 and sitewide title), sport-generic across the seven live sports. Identity in Christ is the second beat, not the H1. Hockey specificity lives on the `/hockey` landing page, not the homepage.
+
+A hockey-specific marketing landing is live at `/hockey`. Spoken moments on that page are limited to lines the hockey audio actually runs (first shift; goalie first save). Seven sports remain live in the product, each with shipped visualization. No other sport landing pages shipped in this pass. No visualization blog series.
+
+Why it matters to a buyer: AI answers and parent search currently recommend the store apps. The site now states the category honestly and does not claim a store listing we do not have.
+
+## 2026-08-24 — Athlete home screen redesigned: icon-first tiles, spine verse on screen one
+
+The athlete home screen (hub) shipped a density redesign driven by TestFlight
+beta feedback (#461, #462). It is now one large "Daily Training" hero card plus
+a grid of four big icon-first tiles — "Pregame Visualization",
+"Pre-Practice Visualization", "Journey", and "Ride Home" — with no descriptive
+subtitle copy; each surface explains itself on its own screen and in the
+first-run coachmark tour (now 3 stops). The bottom tab bar was removed from the
+home screen only (inner screens keep it), sign-out moved to Settings, and the
+athlete's own sport is rendered as a faint gold line-art watermark behind the
+page (all seven live sports have a glyph). The screen now closes on the brand's
+spine verse — "…fixing our eyes on Jesus, the pioneer and perfecter of faith."
+— Hebrews 12:2 (NIV), quoted verbatim and cited. No data, pricing, or feature
+scope changed — presentation only. The iOS/Android native shells load the
+hosted app, so this reached all platforms on deploy with no store update.
+
+Why it matters to a buyer: the first screen an athlete sees is now visibly a
+faith-built training app — scripture on screen one — and reads clean and
+premium on a phone (a direct response to real beta-tester feedback, which
+marketing can honestly describe as "shaped by athlete beta feedback" without
+quoting or counting testers per the claims discipline).
 
 Soccer is athlete-selectable in production (KC launch directive 2026-08-13,
 FV-78/FV-79; audio #425, DB #426, app wiring #427, postgame #428). Live

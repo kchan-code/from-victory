@@ -1483,7 +1483,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-35. You are secure. Now play from victory.
+35. You are secure. Now go compete from victory.
 ### Hockey · Forward · turnover (full session)
 <!-- slug: session-forward-turnover | file: components/pregame/audio/session-forward-turnover.ts -->
 
@@ -1555,7 +1555,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-35. You are secure. Now play from victory.
+35. You are secure. Now go compete from victory.
 ### Hockey · Forward · beaten-wide (full session)
 <!-- slug: session-forward-beaten-wide | file: components/pregame/audio/session-forward-beaten-wide.ts -->
 
@@ -1627,7 +1627,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-35. You are secure. Now play from victory.
+35. You are secure. Now go compete from victory.
 ### Hockey · Forward · bad-penalty (full session)
 <!-- slug: session-forward-bad-penalty | file: components/pregame/audio/session-forward-bad-penalty.ts -->
 
@@ -1701,7 +1701,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Hockey · Forward · coach-yells (full session)
 <!-- slug: session-forward-coach-yells | file: components/pregame/audio/session-forward-coach-yells.ts -->
 
@@ -1773,7 +1773,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-35. You are secure. Now play from victory.
+35. You are secure. Now go compete from victory.
 ### Hockey · Forward · benched (full session)
 <!-- slug: session-forward-benched | file: components/pregame/audio/session-forward-benched.ts -->
 
@@ -1845,7 +1845,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-35. You are secure. Now play from victory.
+35. You are secure. Now go compete from victory.
 ### Hockey · Forward · nervous (full session)
 <!-- slug: session-forward-nervous | file: components/pregame/audio/session-forward-nervous.ts -->
 
@@ -1917,7 +1917,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-35. You are secure. Now play from victory.
+35. You are secure. Now go compete from victory.
 ### Hockey · Forward · get-hit (full session)
 <!-- slug: session-forward-get-hit | file: components/pregame/audio/session-forward-get-hit.ts -->
 
@@ -1991,7 +1991,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Hockey · Forward · start-slow (full session)
 <!-- slug: session-forward-start-slow | file: components/pregame/audio/session-forward-start-slow.ts -->
 
@@ -2065,7 +2065,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Hockey · Forward · first-goal-against (full session)
 <!-- slug: session-forward-first-goal-against | file: components/pregame/audio/session-forward-first-goal-against.ts -->
 
@@ -2137,7 +2137,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-35. You are secure. Now play from victory.
+35. You are secure. Now go compete from victory.
 ### Hockey · Defense · beaten-wide (full session)
 <!-- slug: session-defense-beaten-wide | file: components/pregame/audio/session-defense-beaten-wide.ts -->
 
@@ -2211,7 +2211,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Hockey · Defense · turnover (full session)
 <!-- slug: session-defense-turnover | file: components/pregame/audio/session-defense-turnover.ts -->
 
@@ -2285,7 +2285,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Hockey · Defense · missed-chance (full session)
 <!-- slug: session-defense-missed-chance | file: components/pregame/audio/session-defense-missed-chance.ts -->
 
@@ -2357,7 +2357,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-35. You are secure. Now play from victory.
+35. You are secure. Now go compete from victory.
 ### Hockey · Defense · bad-penalty (full session)
 <!-- slug: session-defense-bad-penalty | file: components/pregame/audio/session-defense-bad-penalty.ts -->
 
@@ -2431,7 +2431,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Hockey · Defense · coach-yells (full session)
 <!-- slug: session-defense-coach-yells | file: components/pregame/audio/session-defense-coach-yells.ts -->
 
@@ -2503,7 +2503,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-35. You are secure. Now play from victory.
+35. You are secure. Now go compete from victory.
 ### Hockey · Defense · benched (full session)
 <!-- slug: session-defense-benched | file: components/pregame/audio/session-defense-benched.ts -->
 
@@ -2575,7 +2575,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-35. You are secure. Now play from victory.
+35. You are secure. Now go compete from victory.
 ### Hockey · Defense · nervous (full session)
 <!-- slug: session-defense-nervous | file: components/pregame/audio/session-defense-nervous.ts -->
 
@@ -2647,7 +2647,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 34. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-35. You are secure. Now play from victory.
+35. You are secure. Now go compete from victory.
 ### Hockey · Defense · get-hit (full session)
 <!-- slug: session-defense-get-hit | file: components/pregame/audio/session-defense-get-hit.ts -->
 
@@ -2721,7 +2721,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Hockey · Defense · start-slow (full session)
 <!-- slug: session-defense-start-slow | file: components/pregame/audio/session-defense-start-slow.ts -->
 
@@ -2795,7 +2795,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Hockey · Defense · first-goal-against (full session)
 <!-- slug: session-defense-first-goal-against | file: components/pregame/audio/session-defense-first-goal-against.ts -->
 
@@ -2869,7 +2869,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 35. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-36. You are secure. Now play from victory.
+36. You are secure. Now go compete from victory.
 ### Hockey · Goalie · coach-yells (full session)
 <!-- slug: session-goalie-coach-yells | file: components/pregame/audio/session-goalie-coach-yells.ts -->
 
@@ -2945,7 +2945,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 36. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-37. You are secure. Now play from victory.
+37. You are secure. Now go compete from victory.
 ### Hockey · Goalie · turnover (full session)
 <!-- slug: session-goalie-turnover | file: components/pregame/audio/session-goalie-turnover.ts -->
 
@@ -3023,7 +3023,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 37. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-38. You are secure. Now play from victory.
+38. You are secure. Now go compete from victory.
 ### Hockey · Goalie · missed-chance (full session)
 <!-- slug: session-goalie-missed-chance | file: components/pregame/audio/session-goalie-missed-chance.ts -->
 
@@ -3099,7 +3099,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 36. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-37. You are secure. Now play from victory.
+37. You are secure. Now go compete from victory.
 ### Hockey · Goalie · beaten-wide (full session)
 <!-- slug: session-goalie-beaten-wide | file: components/pregame/audio/session-goalie-beaten-wide.ts -->
 
@@ -3177,7 +3177,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 37. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-38. You are secure. Now play from victory.
+38. You are secure. Now go compete from victory.
 ### Hockey · Goalie · bad-penalty (full session)
 <!-- slug: session-goalie-bad-penalty | file: components/pregame/audio/session-goalie-bad-penalty.ts -->
 
@@ -3255,7 +3255,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 37. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-38. You are secure. Now play from victory.
+38. You are secure. Now go compete from victory.
 ### Hockey · Goalie · pulled (full session)
 <!-- slug: session-goalie-pulled | file: components/pregame/audio/session-goalie-pulled.ts -->
 
@@ -3331,7 +3331,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 36. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-37. You are secure. Now play from victory.
+37. You are secure. Now go compete from victory.
 ### Hockey · Goalie · nervous (full session)
 <!-- slug: session-goalie-nervous | file: components/pregame/audio/session-goalie-nervous.ts -->
 
@@ -3407,7 +3407,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 36. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-37. You are secure. Now play from victory.
+37. You are secure. Now go compete from victory.
 ### Hockey · Goalie · get-hit (full session)
 <!-- slug: session-goalie-get-hit | file: components/pregame/audio/session-goalie-get-hit.ts -->
 
@@ -3485,7 +3485,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 37. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-38. You are secure. Now play from victory.
+38. You are secure. Now go compete from victory.
 ### Hockey · Goalie · start-slow (full session)
 <!-- slug: session-goalie-start-slow | file: components/pregame/audio/session-goalie-start-slow.ts -->
 
@@ -3563,7 +3563,7 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 37. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-38. You are secure. Now play from victory.
+38. You are secure. Now go compete from victory.
 ### Hockey · Goalie · first-goal-against (full session)
 <!-- slug: session-goalie-first-goal-against | file: components/pregame/audio/session-goalie-first-goal-against.ts -->
 
@@ -3641,4 +3641,4 @@ _(pause: 1s)_
 _(pause: 1.5s)_
 37. Let's pray. Father, thank you that I do not have to earn my worth tonight. It is already secure in you. Free me to play brave, play loose, and give everything I have. When pressure comes, help me breathe, reset, and respond with faith. Help me serve my team, honor my coaches, and compete in a way that points back to you. In Jesus' name, Amen.
 _(pause: 2s)_
-38. You are secure. Now play from victory.
+38. You are secure. Now go compete from victory.

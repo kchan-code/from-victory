@@ -556,7 +556,7 @@ function PracticeSessionScreen({
             "radial-gradient(120% 80% at 30% 0%, rgba(223,175,55,0.07), transparent 60%), var(--fv-charcoal)",
         }}
       >
-        <p className="mb-3 font-mono text-[9px] uppercase tracking-[0.22em] text-cream/40">
+        <p className="mb-3 font-mono text-[9px] uppercase tracking-[0.22em] text-cream/55">
           Today&rsquo;s Focus
         </p>
         <p
@@ -569,7 +569,7 @@ function PracticeSessionScreen({
         >
           {focus}
         </p>
-        <p className="mt-5 font-body text-[13px] leading-[1.55] text-cream/45">
+        <p className="mt-5 font-body text-[13px] leading-[1.55] text-cream/55">
           Eyes closed. The audio carries you. Come back to this when it lands.
         </p>
       </div>

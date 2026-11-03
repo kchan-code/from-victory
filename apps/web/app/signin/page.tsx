@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { AthleteSignInForm } from "@/components/auth/AthleteSignInForm";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { ClearCacheOnMount } from "@/components/auth/ClearCacheOnMount";
@@ -6,8 +8,29 @@ import { getDeviceAthleteId } from "@/lib/auth/device";
 import { redirectIfAuthed } from "@/lib/auth/guards";
 import { createServiceClient } from "@/lib/supabase/service";
 
-export const metadata = {
+const siteUrl = "https://www.fromvictoryapp.com";
+const appSocialImage = `${siteUrl}/og-app-1200x630.png`;
+
+export const metadata: Metadata = {
   title: "Sign in",
+  openGraph: {
+    type: "website",
+    url: `${siteUrl}/signin`,
+    siteName: "From Victory",
+    images: [
+      {
+        url: appSocialImage,
+        secureUrl: appSocialImage,
+        type: "image/png",
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: [appSocialImage],
+  },
 };
 
 type Props = {
@@ -89,7 +112,7 @@ export default async function SignInPage({ searchParams }: Props) {
           role="alert"
           className="mb-6 rounded-[10px] border border-[rgba(229,62,76,0.4)] bg-[rgba(229,62,76,0.08)] px-3.5 py-3 text-[13px] text-[#ffb3b9]"
         >
-          Your session was invalid — please sign in again.
+          Your session was invalid. Please sign in again.
         </div>
       ) : null}
       {/* FV-320: two-tab chooser — parent (email+password) or athlete

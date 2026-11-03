@@ -6,6 +6,7 @@ import {
   Sora,
   Source_Serif_4,
 } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { AnalyticsMount } from "./_components/AnalyticsMount";
 import { ServiceWorkerRegistrar } from "./_components/ServiceWorkerRegistrar";
@@ -54,15 +55,18 @@ const fontVariables = [
 ].join(" ");
 
 const siteUrl = "https://www.fromvictoryapp.com";
-const socialImage = `${siteUrl}/from-victory-social-preview.jpg`;
+// Kinny-signed 1200×630 website card. Marketing/site routes inherit this
+// (homepage, /parents, /resources, sport landings, etc.). `/pair` and
+// `/signin` override with the app card — the door into train.
+const socialImage = `${siteUrl}/og-website-1200x630.png`;
 const socialDescription =
-  "A Christ-centered mindset app for athletes who compete from identity, not performance.";
-const socialTitle = "From Victory | Compete from Victory";
+  "See the first moment before you compete. Guided visualization for athletes 13+ across seven sports. Your identity is secure. Compete From Victory.";
+const socialTitle = "From Victory | Visualize and Compete From Victory";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "From Victory | Christian Athlete Mindset App",
+    default: "From Victory | Visualize and Compete From Victory",
     template: "%s · From Victory",
   },
   description: socialDescription,
@@ -76,7 +80,7 @@ export const metadata: Metadata = {
       {
         url: socialImage,
         secureUrl: socialImage,
-        type: "image/jpeg",
+        type: "image/png",
         width: 1200,
         height: 630,
       },
@@ -90,8 +94,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      // SVG is the source of truth for browsers that support it.
-      { url: "/app-icon.svg", type: "image/svg+xml" },
+      // SVG is the source of truth for browsers that support it. This is
+      // the icon-only mark (open-book V + centered flame) per
+      // docs/brand.md §8, which names favicon explicitly — not
+      // app-icon.svg, which is the flame alone.
+      { url: "/logo-icon.svg", type: "image/svg+xml" },
       // PNG fallbacks (and what the manifest route exposes as the
       // installable home-screen icon).
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
@@ -111,8 +118,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={fontVariables}>
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
       <body className="min-h-screen bg-onyx text-cream antialiased">
+        {/* FV-511: first-party, non-tracking `js`-class script. Next.js
+            injects `beforeInteractive` scripts into <head> and runs them
+            before hydration regardless of tree position, so `.js
+            .fv-reveal` in globals.css can hide entrance-animated sections
+            only once JS is actually running — no-JS visitors never see
+            the hidden state. suppressHydrationWarning above scopes only
+            the <html> className mismatch this intentionally causes;
+            nothing else is suppressed. */}
+        <Script id="fv-js-class" strategy="beforeInteractive">
+          {"document.documentElement.classList.add('js');"}
+        </Script>
+        {/* FV-511: skip link — first focusable element in body, visually
+            hidden until keyboard-focused. Targets #main-content, which
+            every route's <main> carries. Cobalt per docs/brand.md §9
+            (UI interaction accent, never the logo). */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:inline-flex focus:min-h-[44px] focus:items-center focus:rounded-lg focus:bg-cobalt focus:px-5 focus:py-3 focus:font-heading focus:text-[15px] focus:font-semibold focus:text-cream focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-cobalt-bright focus:ring-offset-2 focus:ring-offset-onyx"
+        >
+          Skip to main content
+        </a>
         {children}
         {/* FV-105: service worker registration — runs after window load, renders nothing */}
         <ServiceWorkerRegistrar />

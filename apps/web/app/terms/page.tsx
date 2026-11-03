@@ -1,12 +1,35 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+const siteUrl = "https://www.fromvictoryapp.com";
+const PAGE_DESCRIPTION =
+  "Terms of Use governing your access to and use of the From Victory website, application, content, waitlist, communications, and related services.";
+
 export const metadata: Metadata = {
   alternates: { canonical: "/terms" },
   title: "Terms of Use",
-  description:
-    "Terms of Use governing your access to and use of the From Victory website, application, content, waitlist, communications, and related services.",
+  description: PAGE_DESCRIPTION,
   robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    url: `${siteUrl}/terms`,
+    siteName: "From Victory",
+    title: "Terms of Use · From Victory",
+    description: PAGE_DESCRIPTION,
+    images: [
+      {
+        url: `${siteUrl}/og-website-1200x630.png`,
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Terms of Use · From Victory",
+    description: PAGE_DESCRIPTION,
+    images: [`${siteUrl}/og-website-1200x630.png`],
+  },
 };
 
 const EFFECTIVE_DATE = "May 22, 2026";
@@ -14,7 +37,7 @@ const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
 export default function TermsPage() {
   return (
-    <main className="mx-auto max-w-[760px] px-5 sm:px-8 pt-24 pb-20 text-cream">
+    <main id="main-content" className="mx-auto max-w-[760px] px-5 sm:px-8 pt-24 pb-20 text-cream">
       <header className="mb-10">
         <p className="fv-eyebrow gold mb-3">Terms</p>
         <h1 className="font-heading font-bold text-[40px] sm:text-[52px] leading-[1.05] tracking-[-0.02em] m-0 mb-3">

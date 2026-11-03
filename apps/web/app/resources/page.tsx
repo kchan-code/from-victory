@@ -35,7 +35,7 @@ export const metadata: Metadata = {
       "Articles on faith, mental toughness, and competing as a Christian athlete. Free evergreen resources from From Victory.",
     images: [
       {
-        url: `${siteUrl}/from-victory-social-preview.jpg`,
+        url: `${siteUrl}/og-website-1200x630.png`,
         width: 1200,
         height: 630,
       },
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     title: "Resources · From Victory",
     description:
       "Articles on faith, mental toughness, and competing as a Christian athlete.",
-    images: [`${siteUrl}/from-victory-social-preview.jpg`],
+    images: [`${siteUrl}/og-website-1200x630.png`],
   },
 };
 
@@ -71,6 +71,8 @@ export default function ResourcesPage() {
       <LandingIconDefs />
       <ScrollNav />
 
+      <main id="main-content">
+
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="relative pt-[168px] md:pt-[140px] pb-20 overflow-hidden isolate">
         <div className="absolute inset-0 -z-10 pointer-events-none">
@@ -90,7 +92,7 @@ export default function ResourcesPage() {
             {/* AUTHORED subhead: */}
             <p className="max-w-[50ch] text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
               Evergreen articles on the mental and spiritual side of
-              competition — for athletes and the parents raising them.
+              competition, for athletes and the parents raising them.
             </p>
           </Reveal>
         </div>
@@ -145,6 +147,8 @@ export default function ResourcesPage() {
           </div>
         </div>
       </section>
+
+      </main>
 
       <Footer />
     </>
