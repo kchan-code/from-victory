@@ -10,6 +10,8 @@ import { Reveal } from "@/components/landing/Reveal";
 import { LandingIconDefs } from "@/components/landing/icons";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
 import { ArticleFigure } from "@/components/marketing/ArticleFigure";
+import { AppStoreBadge } from "@/components/landing/AppStoreBadge";
+import { APP_STORE_URL } from "@/lib/marketing/app-store";
 import {
   CHRISTIAN_ATHLETE_APPS_DATE_MODIFIED,
   CHRISTIAN_ATHLETE_APPS_DATE_PUBLISHED,
@@ -63,7 +65,7 @@ const FAQ_JSON_LD = {
       name: "What is the best app for Christian athletes?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Parents asking that today usually hear Faithful Athlete, Playbook Devotional, or Core IV. Those three are listed on the App Store. From Victory is guided visualization you actually run — then compete from victory — for athletes 13 and up, as a web app you can install. Not a daily devotion. Not therapy. Not on the App Store or Play yet.",
+        text: "Parents asking that today usually hear Faithful Athlete, Playbook Devotional, or Core IV. Those three are listed on the App Store. From Victory is guided visualization you actually run, then compete from victory, for athletes 13 and up. It is available on the US App Store. Not a daily devotion. Not therapy. Not on Google Play.",
       },
     },
     {
@@ -79,7 +81,7 @@ const FAQ_JSON_LD = {
       name: "Is From Victory on the App Store or Google Play?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Not yet. From Victory is a web app you can install to the home screen. Internal TestFlight and Play Closed Alpha only. Do not look for a public store listing.",
+        text: `From Victory is available on the US App Store: ${APP_STORE_URL}. It is not on Google Play. You can also use it in the browser.`,
       },
     },
   ],
@@ -146,7 +148,7 @@ export default function ChristianAthleteAppsPage() {
             <Reveal>
               <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 mb-7">
                 <time dateTime={CHRISTIAN_ATHLETE_APPS_DATE_MODIFIED}>
-                  Updated August 26, 2026
+                  Updated November 3, 2026
                 </time>
               </p>
               <h1 className="fv-h-article mb-0 max-w-[30ch]">{PAGE_TITLE}</h1>
@@ -163,9 +165,9 @@ export default function ChristianAthleteAppsPage() {
                   usually hear Faithful Athlete, Playbook Devotional, or Core
                   IV. Those three are listed on the App Store. From Victory is
                   different: mental-toughness training with Scripture
-                  underneath, for athletes 13 and up, as a web app you can
-                  install. Not a daily devotion. Not therapy. Not on the App
-                  Store or Play yet.
+                  underneath, for athletes 13 and up. It is available on the
+                  US App Store. Not a daily devotion. Not therapy. Not on Google
+                  Play.
                 </strong>
               </p>
 
@@ -173,9 +175,9 @@ export default function ChristianAthleteAppsPage() {
               <p className={P}>
                 If a parent types &quot;best Christian athlete app&quot; into
                 Google or an AI chat, those three names come back. They earned
-                that. They shipped store listings. We have not. Here is what
-                each one actually is, said plainly, and where From Victory
-                sits.
+                that. They shipped store listings. From Victory is available
+                on the US App Store too. Here is what each one actually is, said
+                plainly, and where From Victory sits.
               </p>
 
               <h2 className={H2}>Faithful Athlete</h2>
@@ -258,11 +260,23 @@ export default function ChristianAthleteAppsPage() {
                 variant="screen"
               />
               <p className={P}>
-                It is a web app. Install it to the home screen. It is not on
-                the App Store or Google Play yet. Internal TestFlight and Play
-                Closed Alpha only. Do not tell a parent they can download us
-                from a store tonight. That would be false.
+                From Victory is available on the US App Store. Download it
+                there:{" "}
+                <a
+                  href={APP_STORE_URL}
+                  className={LINK_CLS}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {APP_STORE_URL}
+                </a>
+                . It is not on Google Play. You can also open it in the
+                browser and add it to the Home Screen.
               </p>
+              {/* 24px from space-y-6 is more than one-quarter of the badge. */}
+              <div>
+                <AppStoreBadge />
+              </div>
               <p className={P}>
                 We are not therapy. We are not a mental-health service. If an
                 athlete needs clinical care, that is a licensed professional,
@@ -277,7 +291,7 @@ export default function ChristianAthleteAppsPage() {
 
               <h2 className={H2}>Which one is for you</h2>
               <p className={P}>
-                Want a store download and a daily check-in? Faithful Athlete.
+                Want a daily check-in? Faithful Athlete.
                 Want 365 short readings? Playbook Devotional. Want a program
                 wellness platform? Core IV. Want a free verse habit? FCA
                 Challenge or YouVersion. Want visualization you actually run,
@@ -299,9 +313,9 @@ export default function ChristianAthleteAppsPage() {
                 Parents asking that today usually hear Faithful Athlete,
                 Playbook Devotional, or Core IV. Those three are listed on
                 the App Store. From Victory is guided visualization you
-                actually run — then compete from victory — for athletes 13
-                and up, as a web app you can install. Not a daily devotion.
-                Not therapy. Not on the App Store or Play yet.
+                actually run, then compete from victory, for athletes 13
+                and up. It is available on the US App Store. Not a daily devotion.
+                Not therapy. Not on Google Play.
               </p>
 
               <h3 className={H3}>
@@ -318,9 +332,17 @@ export default function ChristianAthleteAppsPage() {
                 Is From Victory on the App Store or Google Play?
               </h3>
               <p className={P}>
-                Not yet. From Victory is a web app you can install to the
-                home screen. Internal TestFlight and Play Closed Alpha only.
-                Do not look for a public store listing.
+                From Victory is available on the US App Store:{" "}
+                <a
+                  href={APP_STORE_URL}
+                  className={LINK_CLS}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {APP_STORE_URL}
+                </a>
+                . It is not on Google Play. You can also use it in the
+                browser.
               </p>
             </div>
           </div>

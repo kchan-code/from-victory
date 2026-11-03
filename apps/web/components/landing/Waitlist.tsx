@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AppStoreBadge } from "./AppStoreBadge";
 import { Reveal } from "./Reveal";
 import { SectionMeta } from "./SectionMeta";
 import { SvgIcon } from "./SvgIcon";
@@ -59,6 +60,10 @@ export function Waitlist() {
               <p className="mt-3 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 font-semibold">
                 14 days free for first-time subscribers, then $5/mo or $49/yr, cancel anytime
               </p>
+              {/* 16px clear space is more than one-quarter of the 44px badge. */}
+              <div className="mt-4">
+                <AppStoreBadge />
+              </div>
             </div>
 
             <div className="flex flex-col gap-3.5">
