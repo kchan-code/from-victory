@@ -196,6 +196,23 @@ describe("comparison page copy pins (FV-504)", () => {
   });
 });
 
+describe("US-only availability wording (#560)", () => {
+  // KC: every statement of From Victory's own availability says US App Store,
+  // and nothing promises Google Play. Competitor "listed on the App Store"
+  // lines are not availability statements for From Victory and are allowed.
+  const files = [
+    "../app/christian-athlete-apps/page.tsx",
+    "../public/llms.txt",
+    "../../../docs/gtm/product-truths.md",
+  ].map((f) => [f, readFileSync(resolve(__dirname, f), "utf8")] as const);
+
+  it.each(files)("%s has no unqualified availability or Google Play promise", (_f, raw) => {
+    const text = raw.replace(/\s+/g, " ");
+    expect(text).not.toMatch(/(?:available|download the app) (?:on|from) the App Store/i);
+    expect(text).not.toMatch(/Google Play (?:not yet|is still not live|coming)/i);
+  });
+});
+
 describe("llms.txt (FV-504)", () => {
   const llms = readFileSync(
     resolve(__dirname, "../public/llms.txt"),
@@ -211,7 +228,7 @@ describe("llms.txt (FV-504)", () => {
     expect(llms).toContain("Not a daily devotional");
     expect(llms).toContain("Not for anyone under 13");
     expect(llms).toContain(
-      "Available on the US App Store (iPhone, US only): https://apps.apple.com/us/app/from-victory/id6804743047. Google Play not yet.",
+      "Available on the US App Store (iPhone, US only): https://apps.apple.com/us/app/from-victory/id6804743047. Not on Google Play.",
     );
     expect(llms).not.toContain("Not listed on the App Store or Google Play yet");
     expect(llms).not.toContain("Not in stores yet");

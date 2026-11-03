@@ -166,7 +166,7 @@ export default function ChristianAthleteAppsPage() {
                   IV. Those three are listed on the App Store. From Victory is
                   different: mental-toughness training with Scripture
                   underneath, for athletes 13 and up. It is available on the
-                  App Store. Not a daily devotion. Not therapy. Not on Google
+                  US App Store. Not a daily devotion. Not therapy. Not on Google
                   Play.
                 </strong>
               </p>
@@ -176,7 +176,7 @@ export default function ChristianAthleteAppsPage() {
                 If a parent types &quot;best Christian athlete app&quot; into
                 Google or an AI chat, those three names come back. They earned
                 that. They shipped store listings. From Victory is available
-                on the App Store too. Here is what each one actually is, said
+                on the US App Store too. Here is what each one actually is, said
                 plainly, and where From Victory sits.
               </p>
 
