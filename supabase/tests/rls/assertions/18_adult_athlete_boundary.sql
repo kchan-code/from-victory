@@ -248,17 +248,31 @@ rollback;
 -- (c6) ADULT_ATHLETE cannot UPDATE even its OWN subscriptions row — no client
 --      UPDATE grant exists on subscriptions (service-role/webhook-only,
 --      same two-layer denial 03_subscriptions.sql AC(d) proves for a parent).
+--
+--      FV-507: on fall-through (statement executes without error), don't
+--      just report "unexpectedly SUCCEEDED" — distinguish an actual mutation
+--      from a zero-row RLS no-op via GET DIAGNOSTICS, same as
+--      03_subscriptions.sql AC(d), so a future regression here is diagnosed
+--      by name (grant-layer gap vs. policy gap) rather than re-investigated
+--      from scratch.
 -- ---------------------------------------------------------------------------
 begin;
   set local request.jwt.claims to '{"sub":"70000000-0000-4000-8000-000000000001","role":"authenticated"}';
   set local role authenticated;
   do $$
+  declare
+    n int;
   begin
     begin
       update public.subscriptions
          set status = 'canceled'
        where parent_id = '70000000-0000-4000-8000-000000000001';
-      raise exception 'AC(c6) FAIL: ADULT_ATHLETE UPDATE of own subscriptions row unexpectedly SUCCEEDED';
+      get diagnostics n = row_count;
+      if n > 0 then
+        raise exception 'AC(c6) FAIL: ADULT_ATHLETE UPDATE of own subscriptions row CHANGED % ROW(S) — RLS/policy gap, client can mutate billing state', n;
+      else
+        raise exception 'AC(c6) FAIL: ADULT_ATHLETE UPDATE of own subscriptions row was a zero-row RLS no-op — grant layer missing (authenticated holds UPDATE); two-layer denial regressed';
+      end if;
     exception
       when insufficient_privilege then
         null;  -- expected: no UPDATE grant on subscriptions for any client role

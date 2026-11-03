@@ -8,6 +8,14 @@
  * Auth projects:
  *   chromium-mobile-parent  — parent storageState (multi-athlete.e2e.ts)
  *   chromium-mobile-athlete — athlete storageState (practice-flow.e2e.ts)
+ *   pixel7                  — its OWN parent storageState (multi-athlete.e2e.ts)
+ *
+ * FV-583: chromium-mobile-parent and pixel7 both run multi-athlete.e2e.ts,
+ * which mutates the signed-in parent's athlete list. They used to share ONE
+ * seeded parent's storageState, which raced under parallel workers (both
+ * projects adding "E2E Alpha" to the same parent concurrently). Each now
+ * uses its own seeded parent (see PARENT_FIXTURES in e2e/global-setup.ts) so
+ * they can run in parallel safely.
  *
  * webServer: spins up `next dev` locally or `next build && next start` on CI.
  *   Env vars (NEXT_PUBLIC_SUPABASE_URL etc.) are injected by global-setup
@@ -125,13 +133,23 @@ export default defineConfig({
     // ------------------------------------------------------------------
     // Secondary: Pixel 7 — run explicitly with --project=pixel7
     // Parent-auth only (multi-athlete). Add pixel7-athlete if needed.
+    //
+    // FV-583: uses its OWN seeded parent's storageState (NOT the same file
+    // as chromium-mobile-parent) — both projects mutate the parent's
+    // athlete list, so sharing one parent/storageState races under
+    // parallel workers. See PARENT_FIXTURES in e2e/global-setup.ts.
     // ------------------------------------------------------------------
     {
       name: "pixel7",
       testMatch: /multi-athlete\.e2e\.ts$/,
       use: {
         ...devices["Pixel 7"],
-        storageState: path.join(__dirname, "e2e", ".auth", "parent.storageState.json"),
+        storageState: path.join(
+          __dirname,
+          "e2e",
+          ".auth",
+          "parent-pixel7.storageState.json",
+        ),
       },
       dependencies: ["setup"],
     },

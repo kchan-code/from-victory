@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireAthlete } from "@/lib/auth/guards";
-import { isNativeShell } from "@/lib/native-shell";
+import { getRequestShellCapability } from "@/lib/native-shell";
 
 export const metadata = {
   title: "Training Paused",
@@ -29,11 +29,25 @@ export const metadata = {
  * visitor is authenticated; unauthenticated visitors hit the redirect
  * to /signin before they reach this page.
  *
+ * SEAT PAUSE (FV-585, KC decision D2): `enforce.ts`'s seat overlay redirects
+ * a billing-entitled-but-over-capacity minor athlete here with
+ * `?reason=seats`. This is a CAPACITY-SELECTION pause, not a billing
+ * problem — the copy must say so plainly and never mention money. A minor
+ * athlete cannot buy their way out of this either way, so the redirect is
+ * to the parent's dashboard action, same as the default copy. An
+ * adult_athlete is never seat-paused (see seat-state.ts's module doc), but
+ * the branch below still falls back to the existing adult copy defensively
+ * if `reason=seats` ever reached an adult session.
+ *
  * NOTE: The copy below may receive a content-curator polish pass before
  * launch. It is intentionally in Mentor voice (warm, direct, no shame).
  */
 
-export default async function AthletePausedPage() {
+export default async function AthletePausedPage({
+  searchParams,
+}: {
+  searchParams?: { reason?: string | string[] };
+}) {
   // Confirm the visitor is a signed-in athlete. If not signed in,
   // requireAthlete() redirects to /signin — no risk of sign-out loop.
   const { profile } = await requireAthlete();
@@ -41,12 +55,21 @@ export default async function AthletePausedPage() {
   // adult to /subscribe — they should never land here. But if one navigates here
   // directly, show a self-remedy path instead of "ask your parent".
   const isAdult = profile.role === "adult_athlete";
-  // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
-  // checkout.stripe.com has no reachable path (see
+  // FV-585: seat-selection pause variant. Adults are never seat-paused
+  // (seat-state.ts), so this only ever changes the copy for a minor athlete.
+  const reason = searchParams?.reason;
+  const isSeatPause =
+    (reason === "seats" || (Array.isArray(reason) && reason.includes("seats"))) &&
+    !isAdult;
+  // Google Play "no in-app purchase" compliance: inside the legacy-native
+  // shell, checkout.stripe.com has no reachable path (see
   // apps/native/capacitor.config.ts), so the adult reactivate link below must
   // not render as a tappable link toward Stripe. Never affects the minor
-  // branch above — minors never see a reactivate link at all.
-  const nativeShell = isNativeShell();
+  // branch above — minors never see a reactivate link at all. FV-577: an
+  // ios-iap shell instead gets the same reactivate link as web — it already
+  // carries no price, so it doubles as the in-app entry to /subscribe, where
+  // AppleSubscribeSection renders the real StoreKit purchase surface.
+  const legacyNative = getRequestShellCapability() === "legacy-native";
 
   return (
     <main id="main-content" className="min-h-screen bg-onyx flex flex-col px-5 pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
@@ -85,11 +108,18 @@ export default async function AthletePausedPage() {
         </h1>
 
         {/* Body — warm, plain, no shame. Minor athlete: no pricing/checkout
-            (kids-privacy boundary). Adult self-payer: a self-remedy path. */}
-        <p className="font-body text-cream/75 text-[16px] leading-relaxed mb-3">
-          {isAdult
-            ? "Your training is on hold right now. You can reactivate any time from your subscription."
-            : "Your training is on hold right now. To get back in, ask your parent to reactivate access from their dashboard."}
+            (kids-privacy boundary). Adult self-payer: a self-remedy path.
+            Seat pause (FV-585): a capacity-selection moment, not billing —
+            no amounts, no plan details, just what to do next. */}
+        <p
+          className="font-body text-cream/75 text-[16px] leading-relaxed mb-3"
+          data-testid="paused-body-copy"
+        >
+          {isSeatPause
+            ? "Your family's plan has fewer spots right now. Ask your parent to choose who's active from their dashboard."
+            : isAdult
+              ? "Your training is on hold right now. You can reactivate any time from your subscription."
+              : "Your training is on hold right now. To get back in, ask your parent to reactivate access from their dashboard."}
         </p>
         <p className="font-body text-cream/50 text-[14px] leading-relaxed mb-10">
           Your data is safe. Nothing has been removed.
@@ -97,11 +127,12 @@ export default async function AthletePausedPage() {
 
         {/* Adult self-payer only: a direct path back to checkout. NEVER shown to
             a minor athlete — no pricing/Stripe for minors (privacy boundary).
-            Inside the native shell, checkout.stripe.com is unreachable (Google
-            Play compliance — see lib/native-shell.ts), so this becomes plain,
-            non-tappable text instead of a link. */}
+            Inside the legacy-native shell, checkout.stripe.com is unreachable
+            (Google Play compliance — see lib/native-shell.ts), so this becomes
+            plain, non-tappable text instead of a link. An ios-iap shell falls
+            through to the same reactivate link as web (FV-577). */}
         {isAdult ? (
-          nativeShell ? (
+          legacyNative ? (
             <div
               role="status"
               data-testid="paused-native-shell-notice"
