@@ -20,7 +20,8 @@ name: Athlete no-tracking guard
 # Dependency-free: plain Node CommonJS using only built-ins. No `npm install`.
 # Runs in ~1-2 seconds.
 #
-# TRIGGER: pull_request events that touch apps/web/**.
+# TRIGGER: pull_request events that touch apps/web/**, or this guard's own
+# workflow/script (so a change to the guard runs the guard).
 # On a direct push to main (merge) the job does not re-run because the
 # guaranteeing PR run would have gated it. If a bypass is ever needed, the
 # script can also be invoked locally:
@@ -31,15 +32,34 @@ on:
     branches: [main]
     paths:
       - 'apps/web/**'
+      - '.github/workflows/athlete-no-tracking.yml'
+      - '.github/scripts/check-athlete-no-tracking.cjs'
 
 jobs:
   athlete-no-tracking:
     name: Athlete surfaces — no tracking SDKs
     runs-on: ubuntu-latest
-    # Fast: no npm install, no build, just a Node script reading source files.
-    timeout-minutes: 3
+    # The scan itself takes ~1s (no npm install, no build). FV-627: the budget
+    # also covers actions/checkout. A full checkout took 3-10+ minutes on slow
+    # runners and cancelled the job; the sparse checkout below (~15s) is the
+    # real fix, and 10 minutes is headroom.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          # FV-627: a full checkout pulls ~820 MB of apps/web/public/audio and
+          # has taken 10+ minutes on slow runners. The scanner only reads
+          # source under apps/web (see SCAN_PATHS) plus its own script, so
+          # check out everything in .github and apps/web EXCEPT public/, and
+          # fetch blobs lazily. Non-cone on purpose: every current and future
+          # SCAN_PATH under apps/web stays covered (the scanner silently skips
+          # missing paths, so a narrow list could weaken it unnoticed).
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/
+            /apps/web/
+            !/apps/web/public/
 
       - name: Run athlete no-tracking guard (FV-350)
         run: node .github/scripts/check-athlete-no-tracking.cjs
