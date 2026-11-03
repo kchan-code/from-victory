@@ -23,7 +23,13 @@ type Tab = "parent" | "athlete";
  * keyboard-operable (Tab + Space/Enter), with state announced via aria-pressed.
  * Defaults to "Parent" — the most common no-cookie visitor.
  */
-export function SignInChooser() {
+export function SignInChooser({
+  legacyNative = false,
+}: {
+  /** Forwarded to SignInForm (FV-621). Athlete accounts are parent-created, so
+   *  the athlete tab has no signup link to suppress. */
+  legacyNative?: boolean;
+}) {
   const [active, setActive] = useState<Tab>("parent");
 
   const tabClass = (isActive: boolean) =>
@@ -62,7 +68,7 @@ export function SignInChooser() {
       </div>
 
       <div hidden={active !== "parent"}>
-        <SignInForm />
+        <SignInForm legacyNative={legacyNative} />
       </div>
       <div hidden={active !== "athlete"}>
         <AthleteUsernameSignInForm />

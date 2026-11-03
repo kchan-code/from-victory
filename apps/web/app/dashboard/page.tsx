@@ -217,12 +217,24 @@ export default async function DashboardPage() {
             <h2 className="font-display font-bold uppercase tracking-[0.08em] text-cream text-[18px]">
               Your athletes
             </h2>
-            <Link
-              href="/dashboard/athletes/new"
-              className="font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 py-2.5 no-underline hover:bg-gold-bright transition-colors duration-base ease-out"
-            >
-              Add athlete
-            </Link>
+            {/* FV-622 (Android Path A): adding an athlete can change Stripe
+                billing, so the legacy-native shell gets plain, non-tappable
+                website text instead of the link. ios-iap and web unchanged. */}
+            {legacyNative ? (
+              <p
+                data-testid="add-athlete-native-shell-notice"
+                className="font-body text-cream/60 text-[13px] text-right max-w-[60%]"
+              >
+                Add athletes from a web browser at fromvictoryapp.com.
+              </p>
+            ) : (
+              <Link
+                href="/dashboard/athletes/new"
+                className="font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 py-2.5 no-underline hover:bg-gold-bright transition-colors duration-base ease-out"
+              >
+                Add athlete
+              </Link>
+            )}
           </div>
 
           {linkedAthletes.length === 0 ? (

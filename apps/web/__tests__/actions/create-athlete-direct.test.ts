@@ -28,6 +28,12 @@ import { describe, it, expect, beforeEach, vi, type Mock } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
+// FV-622: web/PWA request (no native-shell token) — this file's cases are
+// unaffected by the legacy-native guard.
+vi.mock("@/lib/native-shell", () => ({
+  getRequestShellCapability: () => null,
+}));
+
 // next/navigation — notFound() is thrown by requireAdminParent for non-admins.
 vi.mock("next/navigation", () => ({
   notFound: vi.fn(() => {
