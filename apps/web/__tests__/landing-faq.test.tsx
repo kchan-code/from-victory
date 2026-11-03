@@ -16,6 +16,7 @@ import { describe, it, expect, beforeAll, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 
 import { Faq, FAQ_ITEMS, FAQ_JSON_LD } from "@/components/landing/Faq";
+import { APP_STORE_URL } from "@/lib/marketing/app-store";
 import { Founder } from "@/components/landing/Founder";
 import { Testimonials, TESTIMONIALS } from "@/components/landing/Testimonials";
 
@@ -100,6 +101,21 @@ describe("Faq — verbatim answer spot-pins", () => {
       /\$5 a month, or \$49 a year for your first athlete, and \$3 a month, or \$29 a year, for each additional athlete in your household\./,
     );
     expect(els.length).toBeGreaterThan(0);
+  });
+
+  it("get-the-app answer names the App Store listing and not Google Play", () => {
+    const entry = FAQ_ITEMS.find(
+      (item) => item.q === "How does my athlete get the app?",
+    );
+    expect(entry).toBeDefined();
+    expect(entry!.a).toContain(APP_STORE_URL);
+    expect(entry!.a).toMatch(/available on the App Store/);
+    expect(entry!.a).toMatch(/not on Google Play/);
+    expect(entry!.a).not.toMatch(/nothing to download/i);
+    expect(entry!.a).not.toMatch(/—/);
+    render(<Faq />);
+    const link = screen.getByRole("link", { name: APP_STORE_URL });
+    expect(link).toHaveAttribute("href", APP_STORE_URL);
   });
 
   it("brand-alias answer names fromvictoryapp.com without renaming the product", () => {

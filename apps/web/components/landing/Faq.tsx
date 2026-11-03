@@ -1,3 +1,4 @@
+import { APP_STORE_URL } from "@/lib/marketing/app-store";
 import { Reveal } from "./Reveal";
 import { SectionMeta } from "./SectionMeta";
 
@@ -39,7 +40,7 @@ export const FAQ_ITEMS: FaqEntry[] = [
   },
   {
     q: "How does my athlete get the app?",
-    a: "There’s nothing to download from an app store. From Victory is a web app your athlete installs straight from their phone’s browser. On iPhone: tap Share, then Add to Home Screen. On Android: tap Install when prompted. Once it’s on the Home Screen, it opens like any other app. One honest note: on iPhone, daily training reminders only work after it’s been added to the Home Screen.",
+    a: `From Victory is available on the App Store. Download it here: ${APP_STORE_URL}. It is not on Google Play. On Android, open it in the browser and tap Install when prompted. On iPhone, you can use the App Store app. If you use the browser on iPhone instead, daily training reminders only work after it has been added to the Home Screen.`,
   },
   {
     q: "Where do I find From Victory online?",
@@ -60,6 +61,25 @@ export const FAQ_JSON_LD = {
     },
   })),
 };
+
+function AnswerText({ text }: { text: string }) {
+  if (!text.includes(APP_STORE_URL)) return <>{text}</>;
+  const [before, after] = text.split(APP_STORE_URL);
+  return (
+    <>
+      {before}
+      <a
+        href={APP_STORE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-gold underline underline-offset-2 hover:text-gold-bright break-all"
+      >
+        {APP_STORE_URL}
+      </a>
+      {after}
+    </>
+  );
+}
 
 export function Faq() {
   return (
@@ -132,7 +152,7 @@ export function Faq() {
                     </svg>
                   </summary>
                   <p className="font-body text-[14.5px] leading-[1.6] text-cream/70 m-0 pb-5 pr-8">
-                    {item.a}
+                    <AnswerText text={item.a} />
                   </p>
                 </details>
               ))}

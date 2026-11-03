@@ -1,3 +1,5 @@
+import { APP_STORE_URL } from "@/lib/marketing/app-store";
+
 const siteUrl = "https://www.fromvictoryapp.com";
 const siteDescription =
   "See the first moment before you compete. Guided visualization for athletes 13+ across seven sports. Your identity is secure. Compete From Victory.";
@@ -31,7 +33,9 @@ export const SOFTWARE_APPLICATION_JSON_LD = {
   name: "From Victory",
   alternateName: ["FromVictory", "fromvictoryapp"],
   applicationCategory: "LifestyleApplication",
-  operatingSystem: "Web",
+  operatingSystem: "iOS",
+  downloadUrl: APP_STORE_URL,
+  sameAs: [APP_STORE_URL],
   url: siteUrl,
   description: siteDescription,
   offers: [
