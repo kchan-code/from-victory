@@ -252,7 +252,9 @@ jobs:
       - uses: supabase/setup-cli@v3
         if: steps.lockfile.outputs.exists == 'true'
         with:
-          version: latest
+          # FV-616: pinned. `latest` resolved to CLI v3.0.0 (2026-11-02), which rejects [inbucket] in
+          # supabase/config.toml and broke `supabase start`. Bump deliberately after migrating config to v3.
+          version: 2.122.1
 
       - name: Start Supabase local stack
         if: steps.lockfile.outputs.exists == 'true'
@@ -372,7 +374,9 @@ jobs:
 
       - uses: supabase/setup-cli@v3
         with:
-          version: latest
+          # FV-616: pinned. `latest` resolved to CLI v3.0.0 (2026-11-02), which rejects [inbucket] in
+          # supabase/config.toml and broke `supabase start`. Bump deliberately after migrating config to v3.
+          version: 2.122.1
 
       - name: Start Supabase local stack
         run: supabase start
