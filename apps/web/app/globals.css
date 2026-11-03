@@ -7,9 +7,7 @@
    FROM VICTORY — Brand tokens
    Dark-mode-first, premium athletic. Onyx black + warm gold.
    Lifted from docs/Claude Design System/colors_and_type.css.
-   Font loading (next/font/google) is deferred to a follow-up PR;
-   the system-stack fallbacks in the --font-* variables hold
-   until then.
+   Fonts are self-hosted via next/font/local (app/fonts, FV-617).
    ============================================================ */
 
 :root {
@@ -130,9 +128,18 @@
   --d-prayer: 720ms;
 
   /* ---- FONT FAMILIES ------------------------------------ */
-  /* Fonts self-hosted via next/font/google (see app/layout.tsx).
-     Each --font-<family> variable is injected as a class on <html>.
-     System-stack fallbacks remain in case a web font fails to load. */
+  /* Fonts self-hosted via next/font/local (app/fonts/index.ts, FV-617).
+     Each unicode subset is its own next/font/local family, whose
+     --font-<family>-<subset> variable is injected as a class on <html>.
+     These recombine them, latin first (matching the precedence the
+     next/font/google @font-face order gave), ending in a fallback face
+     with the metrics next/font/google generated (defined at the end of
+     this file). System-stack fallbacks remain in case a web font fails. */
+  --font-big-shoulders: var(--font-big-shoulders-latin), var(--font-big-shoulders-latin-ext), var(--font-big-shoulders-vietnamese), "FV Big Shoulders Display Fallback";
+  --font-sora: var(--font-sora-latin), var(--font-sora-latin-ext), "FV Sora Fallback";
+  --font-manrope: var(--font-manrope-latin), var(--font-manrope-latin-ext), var(--font-manrope-vietnamese), var(--font-manrope-greek), var(--font-manrope-cyrillic), var(--font-manrope-cyrillic-ext), "FV Manrope Fallback";
+  --font-source-serif: var(--font-source-serif-latin), var(--font-source-serif-latin-ext), var(--font-source-serif-vietnamese), var(--font-source-serif-greek), var(--font-source-serif-cyrillic), var(--font-source-serif-cyrillic-ext), "FV Source Serif 4 Fallback";
+  --font-jetbrains-mono: var(--font-jetbrains-mono-latin), var(--font-jetbrains-mono-latin-ext), var(--font-jetbrains-mono-vietnamese), var(--font-jetbrains-mono-greek), var(--font-jetbrains-mono-cyrillic), var(--font-jetbrains-mono-cyrillic-ext), "FV JetBrains Mono Fallback";
   --font-display:   var(--font-big-shoulders),   'Saira Condensed', Impact, sans-serif;
   --font-heading:   var(--font-sora),            system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-body:      var(--font-manrope),         system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -828,4 +835,51 @@ a:hover { color: var(--accent-hot); }
     -webkit-backdrop-filter: blur(14px) saturate(140%);
     border-bottom-color: var(--fv-hairline);
   }
+}
+
+/* FV-617: fallback faces with the exact size-adjust / ascent / descent
+   metrics next/font/google generated, so the swap looks the same. */
+@font-face {
+  font-family: "FV Big Shoulders Display Fallback";
+  src: local("Arial");
+  size-adjust: 67.07%;
+  ascent-override: 146.71%;
+  descent-override: 31.76%;
+  line-gap-override: 0.00%;
+}
+
+@font-face {
+  font-family: "FV Sora Fallback";
+  src: local("Arial");
+  size-adjust: 113.73%;
+  ascent-override: 85.29%;
+  descent-override: 25.50%;
+  line-gap-override: 0.00%;
+}
+
+@font-face {
+  font-family: "FV Manrope Fallback";
+  src: local("Arial");
+  size-adjust: 103.19%;
+  ascent-override: 103.31%;
+  descent-override: 29.07%;
+  line-gap-override: 0.00%;
+}
+
+@font-face {
+  font-family: "FV Source Serif 4 Fallback";
+  src: local("Times New Roman");
+  size-adjust: 117.91%;
+  ascent-override: 87.87%;
+  descent-override: 28.41%;
+  line-gap-override: 0.00%;
+}
+
+@font-face {
+  font-family: "FV JetBrains Mono Fallback";
+  src: local("Arial");
+  size-adjust: 134.59%;
+  ascent-override: 75.79%;
+  descent-override: 22.29%;
+  line-gap-override: 0.00%;
 }
