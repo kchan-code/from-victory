@@ -1,12 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { SUPPORTED_SPORTS, sportLabel } from "@/lib/sports";
+
 // Absolute /# form so these resolve to the homepage anchors from the
 // sub-pages (/parents, /pricing, /teams) that also render this footer.
+// Sport landings follow SUPPORTED_SPORTS (same order as llms.txt):
+// Hockey, Basketball, Golf, Football, Baseball, Lacrosse, Soccer.
 const productLinks = [
   { href: "/#how", label: "How it works" },
   { href: "/#app", label: "The app" },
-  { href: "/hockey", label: "Hockey" },
+  ...SUPPORTED_SPORTS.map((sport) => ({
+    href: `/${sport}`,
+    label: sportLabel(sport),
+  })),
   { href: "/signup", label: "Start free trial" },
   { href: "https://shop.fromvictoryapp.com/", label: "Shop" },
 ];

@@ -171,3 +171,35 @@ describe("Footer — no-JS Sign in fallback (FV-512 qa-reviewer)", () => {
     expect(signIn).toHaveAttribute("href", "/signin");
   });
 });
+
+describe("Footer — live sport landings", () => {
+  it("renders all 7 sport links in llms.txt order", async () => {
+    const { Footer } = await import("@/components/landing/Footer");
+    render(<Footer />);
+    // Same order as public/llms.txt and SUPPORTED_SPORTS.
+    const expected = [
+      ["Hockey", "/hockey"],
+      ["Basketball", "/basketball"],
+      ["Golf", "/golf"],
+      ["Football", "/football"],
+      ["Baseball", "/baseball"],
+      ["Lacrosse", "/lacrosse"],
+      ["Soccer", "/soccer"],
+    ] as const;
+
+    const hrefs = screen
+      .getAllByRole("link")
+      .map((el) => el.getAttribute("href"));
+    const sportHrefs = hrefs.filter((href) =>
+      expected.some(([, path]) => path === href),
+    );
+    expect(sportHrefs).toEqual(expected.map(([, path]) => path));
+
+    for (const [label, href] of expected) {
+      expect(screen.getByRole("link", { name: label })).toHaveAttribute(
+        "href",
+        href,
+      );
+    }
+  });
+});
