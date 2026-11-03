@@ -1,11 +1,11 @@
 # Android Play Store release checklist — From Victory
 
-**Owner:** Kinny (KC) · **Status:** ready to execute · **Store presence:** not live
+**Owner:** Kinny (KC) · **Status:** Internal/Closed testing (v7); production not started · **Store presence:** not public
 
 > **Current state — 2026-11-03 (read this first; it supersedes older lines below).**
 > - Play Console is enrolled as an organization (From Victory LLC). The app record exists. v7 (1.0.0) is on Closed testing ("Alpha") and Internal testing. **The next upload needs `versionCode` ≥ 8.**
 > - **Play requires targetSdk 36** for new uploads. That ships with Capacitor 8 in PR #458 (FV-502, held). Capacitor 8 needs **Node 22+** and **JDK 21**. `main` is still targetSdk 35 until #458 merges.
-> - **Android is consumption-only (KC Path A, FV-619/FV-620).** No Play Billing, no Stripe, no tappable checkout, signup-to-payment or add-athlete billing paths in the shell. Supporting PRs (held): #562 (FV-621), #563 (FV-622).
+> - **Android is consumption-only (KC Path A, FV-619/FV-620).** No Play Billing or embedded Stripe. The remaining in-shell signup link (FV-621) and add-athlete billing path (FV-622) are removed by #562 and #563 (both held), so they still exist in the shell until those merge. Don't upload a build for production review before then.
 > - **Preflight before every signed build:** `apps/native/scripts/android-release-preflight.sh [--aab <bundle>]`. It is read-only: it checks the toolchain, SDK levels, versionCode, applicationId, production shell config, manifest, and whether upload-key signing is wired. It never prints signing secrets.
 > - **Device evidence and the remaining device matrix:** FV-619 / FV-502 comments. The iOS on-device gate for the first Capacitor 8 iOS build is on FV-573.
 > - **Upload, submission and promotion are KC decisions.** Nothing in this doc authorizes them.

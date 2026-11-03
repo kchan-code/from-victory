@@ -19,13 +19,16 @@ MIN_VC=8
 AAB=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    --min-version-code) MIN_VC="$2"; shift 2 ;;
-    --aab) AAB="$2"; shift 2 ;;
+    --min-version-code|--aab)
+      [ $# -ge 2 ] || { echo "$1 needs a value" >&2; exit 2; }
+      if [ "$1" = --aab ]; then AAB="$2"; else MIN_VC="$2"; fi
+      shift 2 ;;
     *) echo "unknown arg: $1" >&2; exit 2 ;;
   esac
 done
 
 # FV_ROOT lets the same script inspect another checkout (e.g. a PR worktree).
+case "$MIN_VC" in ''|*[!0-9]*) echo "--min-version-code must be an integer" >&2; exit 2 ;; esac
 ROOT="${FV_ROOT:-$(cd "$(dirname "$0")/../../.." && pwd)}"
 NATIVE="$ROOT/apps/native"
 ANDROID="$NATIVE/android"
@@ -36,8 +39,11 @@ fail() { printf '  FAIL  %s\n' "$*"; fails=$((fails + 1)); }
 gradle_var() { sed -nE "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*'?([^' ]+)'?.*/\1/p" "$ANDROID/variables.gradle" | head -1; }
 
 echo "== Toolchain"
-jv=$(java -version 2>&1 | sed -nE 's/.*version "([0-9]+).*/\1/p' | head -1)
-if [ -n "$jv" ] && [ "$jv" -ge 21 ]; then ok "JDK $jv (>= 21)"; else fail "JDK 21+ required (found: ${jv:-none})"; fi
+# Gradle uses JAVA_HOME when set, so check that JDK first.
+JAVA_BIN=java; JAVA_SRC=PATH
+if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then JAVA_BIN="$JAVA_HOME/bin/java"; JAVA_SRC=JAVA_HOME; fi
+jv=$("$JAVA_BIN" -version 2>&1 | sed -nE 's/.*version "([0-9]+).*/\1/p' | head -1)
+if [ -n "$jv" ] && [ "$jv" -ge 21 ]; then ok "JDK $jv (>= 21, via $JAVA_SRC)"; else fail "JDK 21+ required (found: ${jv:-none} via $JAVA_SRC)"; fi
 nv=$(node -v 2>/dev/null | sed -E 's/^v([0-9]+).*/\1/')
 need_node=$(sed -nE 's/.*"node": ">=([0-9]+)".*/\1/p' "$NATIVE/package.json" | head -1)
 if [ -n "$nv" ] && [ "$nv" -ge "${need_node:-20}" ]; then ok "Node $nv (>= ${need_node:-20} per apps/native engines)"; else fail "Node >= ${need_node:-20} required (found: ${nv:-none})"; fi
@@ -84,6 +90,8 @@ if [ -f "$kp" ]; then
   ok "android/keystore.properties exists (gitignored)"
   if git -C "$ROOT" ls-files --error-unmatch "$kp" >/dev/null 2>&1; then fail "keystore.properties is TRACKED by git — remove it from the index"; fi
   store=$(sed -nE 's/^storeFile=(.*)$/\1/p' "$kp" | head -1)
+  # Gradle's file() resolves a relative storeFile against android/app/.
+  case "$store" in ''|/*) ;; *) store="$ANDROID/app/$store" ;; esac
   if [ -n "$store" ] && [ -f "$store" ]; then
     case "$store" in "$ROOT"/*) fail "keystore file lives inside the repo — move it outside (e.g. ~/fromvictory-android-keys/)";; *) ok "keystore file exists outside the repo";; esac
   else fail "storeFile in keystore.properties does not point at an existing file"; fi
@@ -96,7 +104,7 @@ if [ -n "$AAB" ]; then
   echo "== Bundle: $AAB"
   if [ ! -f "$AAB" ]; then fail "bundle not found"; else
     if unzip -l "$AAB" 2>/dev/null | grep -q 'base/manifest/AndroidManifest.xml'; then ok "valid bundle layout"; else fail "not an Android App Bundle"; fi
-    if unzip -l "$AAB" 2>/dev/null | grep -qE 'META-INF/.*\.(RSA|EC|DSA)$'; then ok "bundle carries a signature block (verify upload cert in Play Console after upload)"; else fail "bundle is UNSIGNED — Play rejects it"; fi
+    if unzip -l "$AAB" 2>/dev/null | grep -qE '[[:space:]]META-INF/[^/]+\.(RSA|EC|DSA)$'; then ok "bundle carries a signature block (verify upload cert in Play Console after upload)"; else fail "bundle is UNSIGNED — Play rejects it"; fi
   fi
 fi
 
