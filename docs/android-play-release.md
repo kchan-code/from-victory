@@ -2,6 +2,14 @@
 
 **Owner:** Kinny (KC) · **Status:** ready to execute · **Store presence:** not live
 
+> **Current state — 2026-11-03 (read this first; it supersedes older lines below).**
+> - Play Console is enrolled as an organization (From Victory LLC). The app record exists. v7 (1.0.0) is on Closed testing ("Alpha") and Internal testing. **The next upload needs `versionCode` ≥ 8.**
+> - **Play requires targetSdk 36** for new uploads. That ships with Capacitor 8 in PR #458 (FV-502, held). Capacitor 8 needs **Node 22+** and **JDK 21**. `main` is still targetSdk 35 until #458 merges.
+> - **Android is consumption-only (KC Path A, FV-619/FV-620).** No Play Billing, no Stripe, no tappable checkout, signup-to-payment or add-athlete billing paths in the shell. Supporting PRs (held): #562 (FV-621), #563 (FV-622).
+> - **Preflight before every signed build:** `apps/native/scripts/android-release-preflight.sh [--aab <bundle>]`. It is read-only: it checks the toolchain, SDK levels, versionCode, applicationId, production shell config, manifest, and whether upload-key signing is wired. It never prints signing secrets.
+> - **Device evidence and the remaining device matrix:** FV-619 / FV-502 comments. The iOS on-device gate for the first Capacitor 8 iOS build is on FV-573.
+> - **Upload, submission and promotion are KC decisions.** Nothing in this doc authorizes them.
+
 Android-first. The Capacitor shell in `apps/native` is scaffolding only until this
 checklist is done. The PWA on Vercel remains the primary product; Play is additive
 distribution of the same hosted app (`https://www.fromvictoryapp.com`).
@@ -41,7 +49,7 @@ Bubblewrap / TWA — Capacitor is the Android track.
 | Display name | `From Victory` |
 | Hosted WebView URL | `https://www.fromvictoryapp.com` (`capacitor.config.ts` `server.url`) |
 | Native project | `apps/native` (`@from-victory/native`) |
-| Current `versionCode` / `versionName` | `2` / `1.0.0` in `apps/native/android/app/build.gradle` |
+| Current `versionCode` / `versionName` | `2` / `1.0.0` in `apps/native/android/app/build.gradle` — **stale vs Play (v7 uploaded); the next upload needs ≥ 8** (preflight enforces `--min-version-code`, default 8) |
 | Billing in the APK | **None.** Stripe on the web product. Do not add Play Billing / IAP in this pass. |
 | Tracking / ads / crash SDKs | **None.** Do not add them to satisfy Play. |
 | Age floor | 13+. Minors 13–17 are parent-managed. Not a kids app. |
@@ -202,17 +210,26 @@ and applies `signingConfigs.release` when that file exists. Without it,
 
 ## 4. Build a signed AAB — Kinny · Local (agent can run the commands)
 
-Prerequisites: Node 20+, JDK 21 (gradle sets sourceCompatibility 21 — JDK 17 fails with "invalid source release"), Android SDK platform 35, `ANDROID_HOME` /
+Prerequisites: Node 22+ (Capacitor 8 CLI), JDK 21 (gradle sets sourceCompatibility 21 — JDK 17 fails with "invalid source release"), Android SDK platform 36 (targetSdk 36, PR #458), `ANDROID_HOME` /
 `android/local.properties` `sdk.dir`. Debug APK steps stay in
 [docs/native-capacitor.md](./native-capacitor.md).
 
 ```bash
-# from repo root
-npm install
+# from repo root — CAPACITOR_SERVER_URL must be UNSET (production shell)
+npm ci
+unset CAPACITOR_SERVER_URL
+apps/native/scripts/android-release-preflight.sh          # fix every FAIL first
 cd apps/native
 npx cap sync android
 npm run build:android:bundle
+cd ../..
+apps/native/scripts/android-release-preflight.sh \
+  --aab apps/native/android/app/build/outputs/bundle/release/app-release.aab
+# expect: PREFLIGHT: PASS — then the upload decision is KC's
 ```
+
+Never upload a bundle built for local testing (a `CAPACITOR_SERVER_URL` override
+or a cleartext manifest). The preflight fails both.
 
 That script is `cd android && ./gradlew bundleRelease`. Output:
 
@@ -506,7 +523,7 @@ Web deploys do **not** need a new AAB. Ship a new bundle when you change:
 - Signing config
 - R8 / packaging options
 
-- [ ] You know the next upload is `versionCode 2` (after this first `1`)
+- [ ] You know the next upload is `versionCode 8` or higher (Play already has 7; see the current-state note at the top)
 
 ---
 
