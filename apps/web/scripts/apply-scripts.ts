@@ -601,7 +601,7 @@ export async function syncFromBooks({ write }: { write: boolean }): Promise<Sync
         console.warn(
           `WARN: clip "${parsed.slug}" — .md has ${parsed.lines.length} numbered lines, ` +
           `TS source has ${current.speechTexts.length} speech segments. ` +
-          `The generator will fail fast on this mismatch at render time.`,
+          `Clip rendering uses the book-defined structure; opener-specific validation still applies.`,
         );
         totalClipCountMismatches++;
       }
