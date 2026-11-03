@@ -283,7 +283,8 @@ export function parseBook(content: string): ParsedBook {
       continue;
     }
 
-    const metaMatch = line.match(/<!--\s*slug:\s*([^\s|]+)\s*\|\s*file:\s*([^\s>]+)\s*-->/);
+    // Optional book annotations (e.g. adversity) do not change slug/file identity.
+    const metaMatch = line.match(/<!--\s*slug:\s*([^\s|]+)\s*\|\s*file:\s*([^\s>|]+)\s*(?:\|[^<>]*)?-->/);
     if (metaMatch?.[1] != null && metaMatch?.[2] != null) {
       currentClip = { slug: metaMatch[1]!, file: metaMatch[2]!, lines: [], pauses: [], items: [] };
       clips.push(currentClip);

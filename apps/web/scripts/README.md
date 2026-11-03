@@ -65,6 +65,12 @@ committed static assets.
 threshold script is ~200 chars → fractions of a cent per regeneration.
 The full 30 pregame combo set will be ~$0.03 total once it lands.
 
+ElevenLabs (see `bakeoff-voices.ts` below) is roughly two orders of magnitude
+more expensive per character: $0.10 per 1k characters (`eleven_multilingual_v2`
+/ `eleven_v3`) or $0.05 per 1k for the `eleven_flash_*` models. `estimateCostUsd`
+in `scripts/lib/tts.ts` takes an optional `provider` (+ `modelId` for the flash
+discount) to estimate either.
+
 ### Adding a new script
 
 1. Author the script as a typed `AudioScript` (see `audio/types.ts`).
@@ -113,3 +119,61 @@ pipeline's `-16 LUFS` target.
 Exits 1 if any clips were flagged or errored. This makes it suitable for
 non-blocking CI reporting (capture the report, emit it as an artifact, but do
 not block the build on a level warning — use a separate `|| true` step).
+
+## bakeoff-voices.ts
+
+ElevenLabs voice bake-off (FV-285). Renders a fixed backbone set of pregame
+`AudioScript`s — `breath-threshold`, `shared-opening`, `shared-prayer`,
+`shared-sendoff`, `hm-forward-nervous`, `opener-shared-confidence` — through
+one or more candidate ElevenLabs voices, level-matches each candidate against
+a loudnorm-passed copy of the currently-shipped ("ash", OpenAI) master, and
+writes a README with duration/chars/cost/LUFS-I/dBTP per variant so KC can A/B
+by ear. **Never calls OpenAI.** Only calls ElevenLabs, build-time, same as the
+rest of this pipeline — no athlete data is ever involved.
+
+Provider selection lives in `scripts/lib/tts.ts`: `synthesizeSpeech()` picks
+OpenAI (default, unchanged) or ElevenLabs via `TTS_PROVIDER=elevenlabs` env or
+an explicit `provider` field per call. `npm run audio:generate` is byte-for-byte
+unchanged unless `TTS_PROVIDER` is set. `bakeoff-voices.ts` always forces
+`provider: "elevenlabs"` per call, regardless of `TTS_PROVIDER`.
+
+### One-time setup
+
+```sh
+echo "ELEVENLABS_API_KEY=..." >> apps/web/.env.local
+```
+
+`ELEVENLABS_VOICE_ID` and `ELEVENLABS_MODEL_ID` are optional env defaults —
+`ELEVENLABS_VOICE_ID` is only used as a fallback when a script's `voice` field
+is an OpenAI voice name (e.g. running `TTS_PROVIDER=elevenlabs npm run
+audio:generate` directly, with no bake-off `--voices` override).
+
+### Run
+
+From `apps/web/` (Node ≥ 22.6 — `source ~/.nvm/nvm.sh; nvm use 22` or newer):
+
+```sh
+npm run audio:bakeoff -- --list-voices                      # browse ElevenLabs voice_id/name/labels/category
+npm run audio:bakeoff -- --dry-run                           # validate + print chars/cost per provider, no API calls, no key needed
+npm run audio:bakeoff -- --voices 21m00Tcm4TlvDq8ikWAM:Bella,pNInz6obpgDQGcFmaJgB:Adam
+npm run audio:bakeoff -- --voices <id>:<label> --model eleven_v3
+npm run audio:bakeoff -- --voices <id>:<label> --slugs breath-threshold,shared-opening
+npm run audio:bakeoff -- --voices <id>:<label> --out docs/audio-ab-fv285 --keep-segments
+```
+
+Output lands in `<repo>/docs/audio-ab-fv285/<slug>/` (default `--out`; a relative
+`--out` resolves against the repo root, not `apps/web/`, so the root `.gitignore`
+always covers the MP3s):
+
+- `current-ash.mp3` — the currently-shipped master, loudnorm-passed the same
+  way as the candidates
+- `<label>.mp3` — one file per `--voices` candidate
+- `README.md` at the top of `--out` — the run's summary table (committable;
+  the MP3s are gitignored, see root `.gitignore`)
+
+### How to listen
+
+Open the output folder and A/B each slug's files back-to-back, ideally on
+phone headphones (the actual delivery surface). The tool's numbers only rule
+out clipping (dBTP should be < 0) and gross level mismatches — the final
+quality call is by ear, and it's KC's.
