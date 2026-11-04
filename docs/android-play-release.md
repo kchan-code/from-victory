@@ -49,7 +49,7 @@ Bubblewrap / TWA — Capacitor is the Android track.
 | Display name | `From Victory` |
 | Hosted WebView URL | `https://www.fromvictoryapp.com` (`capacitor.config.ts` `server.url`) |
 | Native project | `apps/native` (`@from-victory/native`) |
-| Current `versionCode` / `versionName` | `2` / `1.0.0` in `apps/native/android/app/build.gradle` — **stale vs Play (v7 uploaded); the next upload needs ≥ 8** (preflight enforces `--min-version-code`, default 8) |
+| Current `versionCode` / `versionName` | `8` / `1.0.0` in `apps/native/android/app/build.gradle` — next upload after Play's v7 (preflight enforces `--min-version-code`, default 8; bump by 1 for every further upload) |
 | Billing in the APK | **None.** Stripe on the web product. Do not add Play Billing / IAP in this pass. |
 | Tracking / ads / crash SDKs | **None.** Do not add them to satisfy Play. |
 | Age floor | 13+. Minors 13–17 are parent-managed. Not a kids app. |
