@@ -12,7 +12,9 @@
 //
 // Also covers parseBook capturing the interleaved `items` order.
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { CLIP_HM_BSB_CATCHER_ERROR_SCRIPT, CLIP_HM_BSB_INFIELD_ERROR_SCRIPT, CLIP_HM_BSB_OUTFIELD_ERROR_SCRIPT } from "../audio/clips-baseball.ts";
 
 import { parseBook, type BookEntry, type BookItem } from "../../../scripts/apply-scripts.ts";
 import { applyBookProseOverrides } from "../../../scripts/generate-pregame-audio.ts";
@@ -271,5 +273,34 @@ describe("applyBookProseOverrides — book defines structure (counts differ)", (
     const silences = out.filter((s) => s.type === "silence") as Extract<Segment, { type: "silence" }>[];
     expect(silences).toHaveLength(3);
     expect(silences[2]!.durationSec).toBe(1); // no TS silence to inherit → 1s default
+  });
+});
+
+
+// FV-558: real edited books must render without forcing prose back into TS.
+describe("baseball error book overrides (FV-558)", () => {
+  it.each([
+    CLIP_HM_BSB_CATCHER_ERROR_SCRIPT,
+    CLIP_HM_BSB_INFIELD_ERROR_SCRIPT,
+    CLIP_HM_BSB_OUTFIELD_ERROR_SCRIPT,
+  ])("uses the complete approved book structure for $slug", (script) => {
+    const book = readFileSync(new URL("../../../../../docs/scripts/baseball.md", import.meta.url), "utf8");
+    const entry = parseBook(book).clips.find((clip) => clip.slug === script.slug)!;
+    expect(entry).toBeDefined();
+    expect(entry.lines).toHaveLength(6);
+    expect(script.segments.filter((seg) => seg.type === "speech")).toHaveLength(7);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const out = applyBookProseOverrides(script, new Map([[script.slug, entry]]));
+      expect(out.map((seg) => seg.type === "speech"
+        ? { type: "speech", text: seg.text }
+        : { type: "pause", durationSec: seg.durationSec })).toEqual(entry.items);
+      expect(out.filter((seg) => seg.type === "silence").map((seg) => seg.durationSec))
+        .toEqual([0.4, 1.5, 2, 2, 2, 2]);
+      expect(out.filter((seg) => seg.type === "speech" && seg.mark).map((seg) => seg.mark))
+        .toEqual([{ phase: "hardMoment" }]);
+    } finally {
+      warn.mockRestore();
+    }
   });
 });
