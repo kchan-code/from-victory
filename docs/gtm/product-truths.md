@@ -10,6 +10,15 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-04 — iPhone installation guidance points to the App Store
+
+The homepage FAQ and iPhone browser dashboard installation card direct users to
+the existing US App Store listing. The public AI/search description states that
+From Victory is also accessible in a browser, without the “installable PWA” label.
+Android browser installation instructions remain available. Existing browser
+support, installed web apps, and browser reminder settings are unchanged. The
+dashboard card remains dismissible and is hidden inside the native app.
+
 ## 2026-11-03 — iOS app is available on the US App Store
 
 From Victory iOS app v1.0 is available on the US App Store: https://apps.apple.com/us/app/from-victory/id6804743047. It went live on 2026-11-03 via manual release after App Review approval. US App Store only. iOS only. It is not available on Google Play; there is no Android store listing. The web app (installable PWA) still works in the browser. The marketing site now links the listing with Apple's unmodified "Download on the App Store" badge. This supersedes the 2026-08-26 entry that said the app is not listed on any public store.

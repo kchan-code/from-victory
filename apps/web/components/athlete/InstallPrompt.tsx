@@ -6,13 +6,13 @@
 /**
  * InstallPrompt (FV-258)
  *
- * A dismissible nudge card rendered on the athlete hub. Explains how to add
- * From Victory to the Home Screen and why it matters (iOS Web Push gate).
+ * A dismissible nudge card rendered on the athlete hub. Links iPhone users to
+ * the US App Store and offers Android Home Screen installation.
  *
  * Detection rules:
  *   - Already installed (standalone display mode or iOS navigator.standalone):
  *     render nothing.
- *   - iOS (iPhone/iPad UA), not installed: show static instructions.
+ *   - iOS (iPhone/iPad UA), not installed: show the US App Store link.
  *   - Android/Chromium, not installed: listen for `beforeinstallprompt`,
  *     render an "Install" button that calls the native prompt. If the event
  *     never fires (already installed / unsupported), render nothing.
@@ -26,6 +26,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { APP_STORE_URL } from "@/lib/marketing/app-store";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -110,11 +111,15 @@ export default function InstallPrompt() {
     // Guard: server-side render or already dismissed.
     if (isDismissed()) return;
 
+    // The Capacitor bridge is injected before app JavaScript in native shells.
+    // Never ask someone already using the native app to download it.
+    if (Object.prototype.hasOwnProperty.call(window, "Capacitor")) return;
+
     // Guard: already installed — nothing to prompt.
     if (isInstalled()) return;
 
     if (isIos()) {
-      // iOS Safari in browser (not installed): show static instructions.
+      // iOS Safari in browser (not installed): show the App Store link.
       setVariant("ios");
       return;
     }
@@ -166,7 +171,7 @@ export default function InstallPrompt() {
     <div
       data-testid="install-prompt-card"
       role="region"
-      aria-label="Add to Home Screen setup"
+      aria-label={variant === "ios" ? "Get the iPhone app" : "Add to Home Screen setup"}
       className="mb-4 rounded-[14px] border border-hairline bg-charcoal px-4 py-4"
     >
       {/* Eyebrow */}
@@ -179,17 +184,27 @@ export default function InstallPrompt() {
 
       {/* Heading */}
       <p className="mb-2 font-heading font-semibold text-[15px] text-cream">
-        Train from your Home Screen
+        {variant === "ios" ? "Get the iPhone app" : "Train from your Home Screen"}
       </p>
 
       {variant === "ios" && (
         <>
-          <p className="mb-1 font-body text-[14px] leading-[1.6] text-cream/75">
-            Tap <span className="font-semibold text-cream/90">Share</span>, then &ldquo;Add to Home Screen.&rdquo;
+          <p className="mb-3 font-body text-[14px] leading-[1.6] text-cream/75">
+            From Victory is available on the US App Store.
           </p>
-          <p className="mb-3 font-body text-[13px] leading-[1.55] text-cream/55">
-            Training reminders on iPhone only work once it&apos;s there.
-          </p>
+          <a
+            href={APP_STORE_URL}
+            className={[
+              "inline-flex min-h-[48px] items-center rounded-pill bg-gold px-5",
+              "font-heading font-semibold text-[14px] text-onyx",
+              "transition-colors duration-fast ease-out hover:bg-gold-bright active:scale-[0.97]",
+              "focus-visible:outline-none focus-visible:ring-2",
+              "focus-visible:ring-gold/50 focus-visible:ring-offset-2",
+              "focus-visible:ring-offset-charcoal motion-safe:transition-transform",
+            ].join(" ")}
+          >
+            Download on the App Store
+          </a>
         </>
       )}
 
@@ -218,7 +233,7 @@ export default function InstallPrompt() {
       )}
 
       {/* Dismiss */}
-      <div className={variant === "android" ? "mt-3" : "mt-0"}>
+      <div className="mt-3">
         <button
           type="button"
           onClick={handleDismiss}
