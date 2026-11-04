@@ -5,7 +5,7 @@
 //
 // Coverage:
 //  1. Already installed (standalone matchMedia true)  → renders nothing
-//  2. iOS, not installed                              → instruction text renders
+//  2. iOS, not installed                              → App Store link renders
 //  3. Android path: beforeinstallprompt fires         → Install button appears
 //                   clicking Install calls prompt()
 //  4. Dismissed flag in localStorage                  → renders nothing
@@ -25,6 +25,7 @@ import {
 import { render, screen, fireEvent, cleanup, act } from "@testing-library/react";
 
 import InstallPrompt from "@/components/athlete/InstallPrompt";
+import { APP_STORE_URL } from "@/lib/marketing/app-store";
 
 // ---------------------------------------------------------------------------
 // matchMedia stub
@@ -146,7 +147,7 @@ describe("InstallPrompt — already installed", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 2. iOS, not installed → shows install instructions
+// 2. iOS, not installed → shows App Store link
 // ---------------------------------------------------------------------------
 
 describe("InstallPrompt — iOS, not installed", () => {
@@ -157,18 +158,25 @@ describe("InstallPrompt — iOS, not installed", () => {
     stubMatchMedia(false);
   });
 
-  it("renders the card with correct instruction text", () => {
+  it("links to the US App Store without browser installation instructions", () => {
     render(<InstallPrompt />);
 
-    expect(screen.getByTestId("install-prompt-card")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Train from your Home Screen/i),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/Tap/i)).toBeInTheDocument();
-    expect(screen.getByText(/Add to Home Screen/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Training reminders on iPhone only work once it/i),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Get the iPhone app" })).toBeInTheDocument();
+    expect(screen.getByText(/available on the US App Store/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Download on the App Store" }))
+      .toHaveAttribute("href", APP_STORE_URL);
+    expect(screen.queryByText(/Home Screen/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Training reminders on iPhone/i)).not.toBeInTheDocument();
+  });
+
+  it("renders nothing inside the native app", () => {
+    Object.defineProperty(window, "Capacitor", { configurable: true, value: {} });
+    try {
+      const { container } = render(<InstallPrompt />);
+      expect(container).toBeEmptyDOMElement();
+    } finally {
+      Reflect.deleteProperty(window, "Capacitor");
+    }
   });
 
   it("renders a 'Not now' dismiss button", () => {

@@ -112,6 +112,8 @@ describe("Faq — verbatim answer spot-pins", () => {
     expect(entry!.a).toMatch(/available on the US App Store \(iPhone\)/);
     expect(entry!.a).toMatch(/not on Google Play/);
     expect(entry!.a).not.toMatch(/nothing to download/i);
+    expect(entry!.a).not.toMatch(/Home Screen|browser on iPhone/i);
+    expect(entry!.a).toContain("On Android, open it in the browser and tap Install when prompted.");
     expect(entry!.a).not.toMatch(/—/);
     render(<Faq />);
     const link = screen.getByRole("link", { name: APP_STORE_URL });
