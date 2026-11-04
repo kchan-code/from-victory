@@ -74,6 +74,19 @@ const CACHE_VERSION = "fv-shell-v7"; // bumped: FV-493 — BYPASS_PREFIXES said
 const MANIFEST_VERSION = "fd0b4d17"; // sync with audio-mapping.ts:MANIFEST_VERSION
 const AUDIO_CACHE = `fv-audio-${MANIFEST_VERSION}`;
 
+// FV-559: exact public audio objects; null manifest keeps runtime local.
+const AUDIO_STORAGE_BASE = "https://kumrgeosgzdlxgljbyju.supabase.co/storage/v1/object/public/pregame-audio";
+const AUDIO_STORAGE_MANIFEST = null;
+function isHostedAudioUrl(url) {
+  if (!url.startsWith(`${AUDIO_STORAGE_BASE}/`)) return false;
+  const key = url.slice(AUDIO_STORAGE_BASE.length + 1);
+  return /^(?:clips\/[a-z0-9-]+\.[0-9a-f]{8}\.mp3|manifests\/[0-9a-f]{8}\.[0-9a-f]{64}\.json)$/.test(key);
+}
+
+function shouldCacheHostedAudio(url, key = AUDIO_STORAGE_MANIFEST) {
+  return !!key && /^manifests\/[0-9a-f]{8}\.[0-9a-f]{64}\.json$/.test(key) && isHostedAudioUrl(url);
+}
+
 /**
  * Caches we own and are allowed to keep alive.
  * Any cache name NOT in this list is deleted on activate.
@@ -377,11 +390,13 @@ self.addEventListener("fetch", (event) => {
   //        NAVIGATION_CACHE_SAFELIST pages are written to cache.
   //   passthrough — cross-origin + non-cacheable chunks: no respondWith, the
   //        browser's default network fetch handles it (never cached).
-  const strategy = decideStrategy(
-    url.pathname,
-    url.origin === self.location.origin,
-    request.mode === "navigate"
-  );
+  const strategy = shouldCacheHostedAudio(request.url)
+    ? "audio-cache-first"
+    : decideStrategy(
+      url.pathname,
+      url.origin === self.location.origin,
+      request.mode === "navigate"
+    );
 
   switch (strategy) {
     case "audio-cache-first":
@@ -530,7 +545,8 @@ self.addEventListener("notificationclick", (event) => {
 //
 // 206 Partial Content is intentionally NOT cached — the `caches` API does not
 // support storing range responses, and attempting to do so in some browsers
-// throws or produces a corrupt entry. Range requests fall through to network.
+// throws or produces a corrupt entry. On a cache miss Range goes to network;
+// a cache hit retains the existing full-response behavior (no synthetic 206).
 // ---------------------------------------------------------------------------
 async function audioCacheFirst(request) {
   const isHead = request.method === "HEAD";
