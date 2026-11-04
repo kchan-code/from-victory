@@ -22,10 +22,14 @@ vi.mock("server-only", () => ({}));
 
 // Mutable constructEvent mock — replaced per test.
 const constructEventMock = vi.fn();
+const subscriptionsRetrieveMock = vi.fn();
 vi.mock("@/lib/stripe/server", () => ({
   getStripe: () => ({
     webhooks: {
       constructEvent: constructEventMock,
+    },
+    subscriptions: {
+      retrieve: subscriptionsRetrieveMock,
     },
   }),
 }));
@@ -215,6 +219,9 @@ describe("POST /api/webhooks/stripe", () => {
   beforeEach(() => {
     process.env.STRIPE_WEBHOOK_SECRET = DUMMY_SECRET;
     constructEventMock.mockReset();
+    subscriptionsRetrieveMock.mockReset();
+    // Default: retrieve returns an active subscription matching the checkout tests.
+    subscriptionsRetrieveMock.mockResolvedValue(makeSubscription());
     upsertCalls = [];
     // Default service mock: existing row present, all operations succeed.
     serviceMockImpl = makeServiceMock();
@@ -592,5 +599,132 @@ describe("POST /api/webhooks/stripe", () => {
     const res = await POST(req);
 
     expect(res.status).toBe(500);
+  });
+
+  // -------------------------------------------------------------------------
+  // 15. FV-182 — checkout/subscription.created race (compensating read)
+  // -------------------------------------------------------------------------
+  const raceSession = {
+    id: "cs_race",
+    object: "checkout.session",
+    customer: "cus_race",
+    subscription: "sub_race",
+    payment_status: "paid",
+    metadata: { parent_id: "parent-uuid-race" },
+  };
+
+  it("out-of-order: subscription.created with no row writes nothing; checkout then writes the real trialing row", async () => {
+    // 1. subscription.created first — no row yet.
+    serviceMockImpl = makeServiceMock({ existingRow: null });
+    const trialing = makeSubscription({
+      id: "sub_race",
+      customer: "cus_race",
+      status: "trialing",
+      priceId: "price_trial_49",
+      current_period_end: 1800000000,
+    });
+    constructEventMock.mockReturnValueOnce(
+      makeEvent("customer.subscription.created", trialing, 2000),
+    );
+    const res1 = await POST(
+      makeRequest("raw_body", { "stripe-signature": "sig_valid" }),
+    );
+    expect(res1.status).toBe(200);
+    expect(upsertCalls).toHaveLength(0);
+
+    // 2. checkout.session.completed — compensating read.
+    subscriptionsRetrieveMock.mockResolvedValueOnce(trialing);
+    constructEventMock.mockReturnValueOnce(
+      makeEvent("checkout.session.completed", raceSession, 2000),
+    );
+    const res2 = await POST(
+      makeRequest("raw_body", { "stripe-signature": "sig_valid" }),
+    );
+    expect(res2.status).toBe(200);
+    expect(subscriptionsRetrieveMock).toHaveBeenCalledWith("sub_race");
+    expect(upsertCalls).toHaveLength(1);
+    const row = upsertCalls[0] as Record<string, unknown>;
+    expect(row.parent_id).toBe("parent-uuid-race");
+    expect(row.stripe_customer_id).toBe("cus_race");
+    expect(row.stripe_subscription_id).toBe("sub_race");
+    expect(row.status).toBe("trialing");
+    expect(row.price_id).toBe("price_trial_49");
+    expect(row.current_period_end).toBe(
+      new Date(1800000000 * 1000).toISOString(),
+    );
+    expect(row.cancel_at_period_end).toBe(false);
+    expect(row).not.toHaveProperty("last_stripe_event_at");
+  });
+
+  it("normal order: checkout first, then a later subscription event still applies (watermark null)", async () => {
+    const trialing = makeSubscription({
+      id: "sub_race",
+      customer: "cus_race",
+      status: "trialing",
+    });
+    subscriptionsRetrieveMock.mockResolvedValueOnce(trialing);
+    constructEventMock.mockReturnValueOnce(
+      makeEvent("checkout.session.completed", raceSession, 2000),
+    );
+    const res1 = await POST(
+      makeRequest("raw_body", { "stripe-signature": "sig_valid" }),
+    );
+    expect(res1.status).toBe(200);
+    expect(upsertCalls).toHaveLength(1);
+    expect(upsertCalls[0]).not.toHaveProperty("last_stripe_event_at");
+
+    // Row now exists with a null watermark (checkout never advances it).
+    serviceMockImpl = makeServiceMock({
+      existingRow: { parent_id: "parent-uuid-race", last_stripe_event_at: null },
+    });
+    constructEventMock.mockReturnValueOnce(
+      makeEvent(
+        "customer.subscription.updated",
+        makeSubscription({ id: "sub_race", customer: "cus_race", status: "active" }),
+        1500, // even an "older" created time applies: watermark is null
+      ),
+    );
+    const res2 = await POST(
+      makeRequest("raw_body", { "stripe-signature": "sig_valid" }),
+    );
+    expect(res2.status).toBe(200);
+    expect(upsertCalls).toHaveLength(2);
+    const second = upsertCalls[1] as Record<string, unknown>;
+    expect(second.status).toBe("active");
+    expect(second.last_stripe_event_at).toBe(
+      new Date(1500 * 1000).toISOString(),
+    );
+  });
+
+  it("returns 500 and writes no row when the subscription retrieve fails (Stripe retries)", async () => {
+    subscriptionsRetrieveMock.mockRejectedValueOnce(new Error("stripe down"));
+    constructEventMock.mockReturnValueOnce(
+      makeEvent("checkout.session.completed", raceSession, 2000),
+    );
+    const res = await POST(
+      makeRequest("raw_body", { "stripe-signature": "sig_valid" }),
+    );
+    expect(res.status).toBe(500);
+    expect(upsertCalls).toHaveLength(0);
+  });
+
+  it("checkout session without a subscription skips the retrieve and behaves as before", async () => {
+    constructEventMock.mockReturnValueOnce(
+      makeEvent(
+        "checkout.session.completed",
+        { ...raceSession, subscription: null },
+        2000,
+      ),
+    );
+    const res = await POST(
+      makeRequest("raw_body", { "stripe-signature": "sig_valid" }),
+    );
+    expect(res.status).toBe(200);
+    expect(subscriptionsRetrieveMock).not.toHaveBeenCalled();
+    const row = upsertCalls[0] as Record<string, unknown>;
+    expect(row.status).toBe("active");
+    expect(row.price_id).toBeNull();
+    expect(row.stripe_subscription_id).toBeNull();
+    expect(row).not.toHaveProperty("last_stripe_event_at");
   });
 });
