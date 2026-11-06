@@ -1,11 +1,12 @@
 /**
- * Tests for FV-320: username in claimPairing + athleteUsernameSignIn.
+ * Tests for FV-320: athleteUsernameSignIn + the device-cookie athleteSignIn.
+ *
+ * (FV-630: the claimPairing username cases moved to
+ * __tests__/invites/invite-actions.test.ts — the claim is now one atomic RPC,
+ * and the username collision/rollback guarantee is pinned in SQL by
+ * supabase/tests/rls/assertions/22_athlete_invitations.sql.)
  *
  * Security guarantees tested here:
- *   1. claimPairing — username validated + uniqueness checked BEFORE consuming.
- *   2. claimPairing — taken username → field error + code NOT consumed.
- *   3. claimPairing — re-claim by same athlete (own username) succeeds.
- *   4. claimPairing — happy path sets username on profile via service role.
  *   5. athleteUsernameSignIn — happy path: username → email → signin → cookie.
  *   6. athleteUsernameSignIn — unknown username → generic error (same shape).
  *   7. athleteUsernameSignIn — wrong password → generic error (same shape).
@@ -15,7 +16,6 @@
  * Mocking strategy mirrors hash-pairing-codes.test.ts (same module layout).
  */
 
-import { createHash } from "crypto";
 import { describe, it, expect, beforeEach, vi, type Mock } from "vitest";
 
 // ---------------------------------------------------------------------------
@@ -275,7 +275,6 @@ vi.mock("@/lib/supabase/server", () => ({
 // ---------------------------------------------------------------------------
 
 import {
-  claimPairing,
   athleteSignIn,
   athleteUsernameSignIn,
 } from "@/lib/actions/pairings";
@@ -283,30 +282,6 @@ import {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function sha256Hex(s: string): string {
-  return createHash("sha256").update(s).digest("hex");
-}
-
-function claimFormData(
-  fields: {
-    code?: string;
-    username?: string;
-    password?: string;
-    password_confirm?: string;
-  } = {},
-) {
-  const defaults = {
-    code: "raw-pairing-code-abc123",
-    username: "jordan7",
-    password: "password123",
-    password_confirm: "password123",
-  };
-  const merged = { ...defaults, ...fields };
-  return {
-    get: (key: string) => merged[key as keyof typeof merged] ?? null,
-  } as unknown as FormData;
-}
 
 function usernameSignInFormData(
   fields: { username?: string; password?: string } = {},
@@ -338,157 +313,6 @@ beforeEach(() => {
   getDeviceAthleteIdMock.mockReturnValue(null);
   serviceMockImpl = makeServiceMock();
   serverMockImpl = makeServerMock();
-});
-
-// ===========================================================================
-// 1. claimPairing — happy path with username
-// ===========================================================================
-
-describe("claimPairing — FV-320 username path", () => {
-  it("happy path: redirects to /athlete after setting username + password", async () => {
-    let threw: Error | null = null;
-    try {
-      await claimPairing(null, claimFormData());
-    } catch (e) {
-      threw = e as Error;
-    }
-    expect(threw).toBe(REDIRECT_SENTINEL);
-  });
-
-  it("happy path: updates profile with normalized lowercase username", async () => {
-    try {
-      await claimPairing(null, claimFormData({ username: "Jordan7" }));
-    } catch {
-      // redirect throws — expected
-    }
-    expect(serviceMockImpl.__profilesUpdateCalled()).toBe(true);
-    expect(serviceMockImpl.__profilesUpdatePayload()).toEqual({
-      username: "jordan7",
-    });
-  });
-
-  it("happy path: sets device cookie with athlete id", async () => {
-    try {
-      await claimPairing(null, claimFormData());
-    } catch {
-      // redirect throws — expected
-    }
-    expect(setDeviceAthleteIdMock).toHaveBeenCalledWith("athlete-uuid-001");
-  });
-
-  it("happy path: consumes the pairing code (atomic UPDATE)", async () => {
-    try {
-      await claimPairing(null, claimFormData());
-    } catch {
-      // redirect throws — expected
-    }
-    expect(serviceMockImpl.__consumeCalled()).toBe(true);
-  });
-});
-
-// ===========================================================================
-// 2. claimPairing — taken username → field error, code NOT consumed
-// ===========================================================================
-
-describe("claimPairing — taken username does NOT burn the pairing code", () => {
-  it("returns a field error for 'username' when the username is taken by ANOTHER athlete", async () => {
-    // Simulate: username is taken by athlete-uuid-999 (different from the one
-    // this code belongs to, which is athlete-uuid-001).
-    serviceMockImpl = makeServiceMock({
-      takenProfileData: { id: "athlete-uuid-999" },
-      signInProfileData: { id: "athlete-uuid-999" }, // same mock path
-    });
-
-    const result = await claimPairing(null, claimFormData({ username: "taken_user" }));
-
-    expect(result).toMatchObject({
-      ok: false,
-      field: "username",
-      error: expect.stringMatching(/taken|not available/i),
-    });
-  });
-
-  it("does NOT consume the pairing code when the username is taken", async () => {
-    serviceMockImpl = makeServiceMock({
-      takenProfileData: { id: "athlete-uuid-999" },
-      signInProfileData: { id: "athlete-uuid-999" },
-    });
-
-    await claimPairing(null, claimFormData({ username: "taken_user" }));
-
-    // The atomic consume (UPDATE device_pairings SET consumed_at=...) must
-    // NOT have been called — the code is preserved for a retry.
-    expect(serviceMockImpl.__consumeCalled()).toBe(false);
-  });
-});
-
-// ===========================================================================
-// 3. claimPairing — re-claim by same athlete (own username is not "taken")
-// ===========================================================================
-
-describe("claimPairing — re-claim by same athlete", () => {
-  it("succeeds when the username is already owned by this same athlete (re-claim)", async () => {
-    // takenProfileData.id === peekedAthleteId ("athlete-uuid-001") → same athlete
-    serviceMockImpl = makeServiceMock({
-      takenProfileData: { id: "athlete-uuid-001" },
-      signInProfileData: { id: "athlete-uuid-001" },
-    });
-
-    let threw: Error | null = null;
-    try {
-      await claimPairing(null, claimFormData());
-    } catch (e) {
-      threw = e as Error;
-    }
-    // Should redirect, not return an error.
-    expect(threw).toBe(REDIRECT_SENTINEL);
-  });
-
-  it("consumes the code on a same-athlete re-claim", async () => {
-    serviceMockImpl = makeServiceMock({
-      takenProfileData: { id: "athlete-uuid-001" },
-      signInProfileData: { id: "athlete-uuid-001" },
-    });
-
-    try {
-      await claimPairing(null, claimFormData());
-    } catch {
-      // redirect throws
-    }
-    expect(serviceMockImpl.__consumeCalled()).toBe(true);
-  });
-});
-
-// ===========================================================================
-// 4. claimPairing — validation errors (username format)
-// ===========================================================================
-
-describe("claimPairing — username validation", () => {
-  it("rejects a missing username field", async () => {
-    const result = await claimPairing(
-      null,
-      claimFormData({ username: "" }),
-    );
-    expect(result).toMatchObject({ ok: false, field: "username" });
-  });
-
-  it("rejects a username that is too short", async () => {
-    const result = await claimPairing(null, claimFormData({ username: "ab" }));
-    expect(result).toMatchObject({ ok: false, field: "username" });
-  });
-
-  it("rejects a username with bad characters", async () => {
-    const result = await claimPairing(
-      null,
-      claimFormData({ username: "jordan-7" }),
-    );
-    expect(result).toMatchObject({ ok: false, field: "username" });
-  });
-
-  it("rejects a reserved username", async () => {
-    const result = await claimPairing(null, claimFormData({ username: "admin" }));
-    expect(result).toMatchObject({ ok: false, field: "username" });
-  });
 });
 
 // ===========================================================================

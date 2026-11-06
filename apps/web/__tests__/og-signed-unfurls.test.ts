@@ -32,6 +32,10 @@ describe("Kinny-signed OG unfurls", () => {
   it("wires the app card on the texted session door (/pair) and /signin", () => {
     const pair = readFileSync(resolve(webRoot, "app/pair/page.tsx"), "utf8");
     const signin = readFileSync(resolve(webRoot, "app/signin/page.tsx"), "utf8");
+    // FV-630: the invite link is the new texted door.
+    const invite = readFileSync(resolve(webRoot, "app/invite/page.tsx"), "utf8");
+    expect(invite).toContain(`/og-app-1200x630.png`);
+    expect(invite).not.toContain("/og-website-1200x630.png");
     expect(pair).toContain(`/og-app-1200x630.png`);
     expect(signin).toContain(`/og-app-1200x630.png`);
     expect(pair).not.toContain("/og-website-1200x630.png");
