@@ -1,0 +1,18 @@
+# Same preview packaging policy when the CLI is run from apps/web.
+.audio-renders/
+**/.audio-renders/
+public/audio/pregame/clips/*.mp3
+.env*
+**/.env*
+.vercel/
+**/.vercel/
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+.git/
+e2e/.auth/
+playwright-report/
+test-results/
+*.log
+**/*.log

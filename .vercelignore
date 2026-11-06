@@ -1,0 +1,32 @@
+# Preview packaging: local render receipts/raw audio must never be uploaded.
+.audio-renders/
+**/.audio-renders/
+# Hosted immutable clips are verified locally, then served from Storage.
+# Retain the manifest and legacy top-level Ash fallback audio.
+apps/web/public/audio/pregame/clips/*.mp3
+# Local credentials, tool state, caches, and test sessions.
+.env*
+**/.env*
+.vercel/
+**/.vercel/
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+.git/
+apps/web/e2e/.auth/
+apps/web/playwright-report/
+apps/web/test-results/
+*.log
+**/*.log
+# Web preview does not need native SDK/signing output or agent work products.
+apps/native/
+.codex/
+.agents/
+.claude/
+.pr-review/
+*.jks
+*.keystore
+*.mobileprovision
+*.p12
+AuthKey*.p8
