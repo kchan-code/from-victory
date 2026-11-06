@@ -1,9 +1,9 @@
-/** Public hosting contract. Activation requires verified upload and device evidence.
+/** Public hosting contract. This branch enables Brock for an isolated preview only.
  * No credentials belong here. Null keeps every production URL local.
  * Mirror constants and isHostedAudioUrl in public/sw.js; tests enforce parity.
  */
 export const AUDIO_STORAGE_BASE = "https://kumrgeosgzdlxgljbyju.supabase.co/storage/v1/object/public/pregame-audio";
-export const AUDIO_STORAGE_MANIFEST: string | null = null;
+export const AUDIO_STORAGE_MANIFEST: string | null = "manifests/7df251b1.5b6b75a49e07ee908266ee6c57990dca72eb919fe0aa0c31ddf62d31ca9d2497.json";
 const MANIFEST_KEY_RE = /^manifests\/[0-9a-f]{8}\.[0-9a-f]{64}\.json$/;
 
 export function hostedManifestUrl(key: string | null = AUDIO_STORAGE_MANIFEST): string | null {

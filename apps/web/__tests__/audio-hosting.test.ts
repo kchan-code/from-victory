@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { AUDIO_STORAGE_BASE, AUDIO_STORAGE_MANIFEST, hostedClipUrl, hostedManifestUrl, isHostedAudioUrl, shouldCacheHostedAudio } from "@/lib/audio/hosting";
 import { bustUrl, manifestUrl } from "@/components/pregame/audio-playlist";
+import { MANIFEST_VERSION } from "@/components/pregame/audio-mapping";
 
 const sw = fs.readFileSync(path.resolve(process.cwd(), "public/sw.js"), "utf8");
 const key = `manifests/fd0b4d17.${"a".repeat(64)}.json`;
@@ -23,16 +25,27 @@ const swContract = new Function(`${constants}\n${extract("isHostedAudioUrl")}\n$
   base: string; manifest: string | null; allow: (url: string) => boolean; route: (url: string, key?: string | null) => boolean;
 };
 
-describe("disabled public audio hosting contract", () => {
-  it("keeps local runtime and SW defaults in sync", () => {
-    expect(AUDIO_STORAGE_MANIFEST).toBeNull();
+describe("preview public audio hosting contract", () => {
+  it("pins the exact catalog and keeps hosted runtime and SW defaults in sync", () => {
+    const bytes = fs.readFileSync(path.resolve(process.cwd(), "public/audio/pregame/clips/manifest.json"));
+    const catalog = JSON.parse(bytes.toString()) as { manifestVersion: string };
+    const digest = createHash("sha256").update(bytes).digest("hex");
+    expect(catalog.manifestVersion).toBe(MANIFEST_VERSION);
+    expect(AUDIO_STORAGE_MANIFEST).toBe(`manifests/${MANIFEST_VERSION}.${digest}.json`);
+    expect(sw).toContain(`const MANIFEST_VERSION = "${MANIFEST_VERSION}";`);
     expect(swContract.base).toBe(AUDIO_STORAGE_BASE);
     expect(swContract.manifest).toBe(AUDIO_STORAGE_MANIFEST);
-    expect(manifestUrl()).toMatch(/^\/audio\/pregame\/clips\/manifest.json\?mv=/);
-    expect(bustUrl(local)).toBe(local);
-    expect(shouldCacheHostedAudio(remote)).toBe(false);
-    expect(swContract.route(remote)).toBe(false);
+    expect(manifestUrl()).toBe(`${AUDIO_STORAGE_BASE}/${AUDIO_STORAGE_MANIFEST}`);
+    expect(bustUrl(local)).toBe(remote);
+    expect(shouldCacheHostedAudio(remote)).toBe(true);
+    expect(swContract.route(remote)).toBe(true);
     expect(sw).toContain("const strategy = shouldCacheHostedAudio(request.url)");
+  });
+  it("explicitly disabling hosting preserves local URLs and bypasses external caching", () => {
+    expect(hostedManifestUrl(null)).toBeNull();
+    expect(hostedClipUrl(local, null)).toBe(local);
+    expect(shouldCacheHostedAudio(remote, null)).toBe(false);
+    expect(swContract.route(remote, null)).toBe(false);
   });
   it("maps immutable clips only when a valid versioned manifest is configured", () => {
     expect(hostedManifestUrl(key)).toBe(`${AUDIO_STORAGE_BASE}/${key}`);

@@ -71,12 +71,12 @@ const CACHE_VERSION = "fv-shell-v7"; // bumped: FV-493 — BYPASS_PREFIXES said
  * update this string AND MANIFEST_VERSION in audio-mapping.ts in the same PR.
  * The `audio-cache-bust` CI job enforces this parity.
  */
-const MANIFEST_VERSION = "fd0b4d17"; // sync with audio-mapping.ts:MANIFEST_VERSION
+const MANIFEST_VERSION = "7df251b1"; // sync with audio-mapping.ts:MANIFEST_VERSION
 const AUDIO_CACHE = `fv-audio-${MANIFEST_VERSION}`;
 
 // FV-559: exact public audio objects; null manifest keeps runtime local.
 const AUDIO_STORAGE_BASE = "https://kumrgeosgzdlxgljbyju.supabase.co/storage/v1/object/public/pregame-audio";
-const AUDIO_STORAGE_MANIFEST = null;
+const AUDIO_STORAGE_MANIFEST = "manifests/7df251b1.5b6b75a49e07ee908266ee6c57990dca72eb919fe0aa0c31ddf62d31ca9d2497.json";
 function isHostedAudioUrl(url) {
   if (!url.startsWith(`${AUDIO_STORAGE_BASE}/`)) return false;
   const key = url.slice(AUDIO_STORAGE_BASE.length + 1);
