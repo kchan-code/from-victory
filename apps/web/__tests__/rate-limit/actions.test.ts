@@ -1,7 +1,10 @@
 /**
- * Behavioral tests for FV-13 rate limiting wired into the five auth/pairing
- * server actions: signIn, signUp, athleteSignIn, claimPairing,
- * generatePairingCode.
+ * Behavioral tests for FV-13 rate limiting wired into the auth server actions:
+ * signIn, signUp, athleteSignIn, requestPasswordReset, updatePassword.
+ *
+ * (FV-630: the pairing generator/claim were replaced by the invite actions;
+ * their rate-limit-before-lookup/claim ordering is pinned in
+ * __tests__/invites/invite-actions.test.ts.)
  *
  * Mocking strategy (mirrors webhook-route.test.ts):
  *   - server-only            → no-op (Next.js guard not available in vitest/node)
@@ -101,11 +104,7 @@ import {
   requestPasswordReset,
   updatePassword,
 } from "@/lib/actions/auth";
-import {
-  generatePairingCode,
-  claimPairing,
-  athleteSignIn,
-} from "@/lib/actions/pairings";
+import { athleteSignIn } from "@/lib/actions/pairings";
 // FV-13b added HMAC signing to device cookies; verifyDeviceValue rejects plain
 // UUIDs. Use signDeviceValue with the well-known dev-fallback secret so the
 // test helper stores a value the real verifyDeviceValue accepts in non-prod.
@@ -568,191 +567,6 @@ describe("athleteSignIn — rate limiting", () => {
     });
     // Rate limit gate should not be called if the cookie guard fires first
     expect(rateLimitGateMock).not.toHaveBeenCalled();
-  });
-});
-
-// ===========================================================================
-// 4. claimPairing
-// ===========================================================================
-
-describe("claimPairing — rate limiting", () => {
-  function makeFormData(
-    code = "testcode123",
-    password = "password123",
-    password_confirm = "password123",
-    username = "testuser7", // FV-320: ClaimSchema now requires username
-  ) {
-    const fields: Record<string, string> = { code, password, password_confirm, username };
-    return { get: (key: string) => fields[key] ?? null } as FormData;
-  }
-
-  it("over-limit: returns throttle error BEFORE atomic consume (auth.admin NOT called)", async () => {
-    rateLimitGateMock.mockResolvedValue({ limited: true });
-
-    const result = await claimPairing(null, makeFormData());
-
-    expect(result).toMatchObject({
-      ok: false,
-      error: expect.stringMatching(/too many tries/i),
-    });
-    // The service client's update chain (atomic consume) must not be called
-    expect(serviceMockImpl.auth.admin.getUserById).not.toHaveBeenCalled();
-    expect(serviceMockImpl.auth.admin.updateUserById).not.toHaveBeenCalled();
-  });
-
-  it("under-limit: proceeds past rate check — atomic consume IS attempted", async () => {
-    rateLimitGateMock.mockResolvedValue({ limited: false });
-    // consumeData: null simulates an expired/invalid code (safe to trigger
-    // without the full claim flow completing)
-    serviceMockImpl = makeServiceMock({ consumeData: null });
-
-    const result = await claimPairing(null, makeFormData());
-
-    // The invalid-code error is fine — it means rate limit passed and the
-    // request proceeded to the atomic consume step.
-    expect(result).toMatchObject({
-      ok: false,
-      error: expect.stringMatching(/invalid|expired|used/i),
-    });
-  });
-
-  it("under-limit happy path: claim proceeds to redirect", async () => {
-    rateLimitGateMock.mockResolvedValue({ limited: false });
-    serviceMockImpl = makeServiceMock({
-      consumeData: { athlete_id: "athlete-uuid-001" },
-      consumeError: null,
-    });
-    serverMockImpl = makeServerMock({ signInError: null });
-
-    let threw: Error | null = null;
-    try {
-      await claimPairing(null, makeFormData());
-    } catch (e) {
-      threw = e as Error;
-    }
-
-    // The action either redirects (sentinel) or reaches auth steps.
-    expect(threw).toBe(REDIRECT_SENTINEL);
-  });
-
-  it("fail-open: rateLimitGate not-limited — request proceeds past rate check", async () => {
-    rateLimitGateMock.mockResolvedValue({ limited: false });
-    serviceMockImpl = makeServiceMock({ consumeData: null }); // invalid code = safe abort
-
-    const result = await claimPairing(null, makeFormData());
-
-    // Reached the consume step (invalid code aborts but rate limit passed).
-    expect(result).toMatchObject({
-      ok: false,
-      error: expect.stringMatching(/invalid|expired|used/i),
-    });
-  });
-
-  it("keys on request IP", async () => {
-    rateLimitGateMock.mockResolvedValue({ limited: true });
-    getRequestIpMock.mockResolvedValue("10.0.0.2");
-
-    await claimPairing(null, makeFormData());
-
-    expect(rateLimitGateMock).toHaveBeenCalledWith("claim_pairing", "10.0.0.2");
-  });
-
-  it("fails open when IP is null — still calls the gate with (claim_pairing, null), then proceeds to consume", async () => {
-    getRequestIpMock.mockResolvedValue(null);
-    rateLimitGateMock.mockResolvedValue({ limited: false }); // gate fails open on null
-    serviceMockImpl = makeServiceMock({ consumeData: null }); // invalid code = safe abort
-
-    const result = await claimPairing(null, makeFormData());
-
-    // Pin the call contract: the gate IS invoked even when IP is unavailable,
-    // and the request proceeds past the rate check to the atomic consume.
-    expect(rateLimitGateMock).toHaveBeenCalledWith("claim_pairing", null);
-    expect(result).toMatchObject({
-      ok: false,
-      error: expect.stringMatching(/invalid|expired|used/i),
-    });
-  });
-});
-
-// ===========================================================================
-// 5. generatePairingCode
-// ===========================================================================
-
-describe("generatePairingCode — rate limiting", () => {
-  // requireParent() is mocked at the top level (see vi.mock above) to resolve
-  // to a fixed parent UUID, so these tests exercise the rate-limit + link-check
-  // path without a real Supabase session.
-
-  function makeFormData(athleteId = "athlete-uuid-001") {
-    return {
-      get: (key: string) => (key === "athlete_id" ? athleteId : null),
-    } as FormData;
-  }
-
-  it("over-limit: returns throttle error WITHOUT calling the DB link check", async () => {
-    rateLimitGateMock.mockResolvedValue({ limited: true });
-
-    const result = await generatePairingCode(null, makeFormData());
-
-    expect(result).toMatchObject({
-      ok: false,
-      error: expect.stringMatching(/too many attempts/i),
-    });
-    // The service.from("parent_athlete_links")... chain should NOT be called
-    // We verify this indirectly: if the throttle error is returned the link
-    // check and insert could not have run.
-  });
-
-  it("under-limit: proceeds — link check IS consulted (no link row → error)", async () => {
-    rateLimitGateMock.mockResolvedValue({ limited: false });
-    // No link row → "You can't pair this athlete."
-    serviceMockImpl = makeServiceMock({ linkData: null });
-
-    const result = await generatePairingCode(null, makeFormData());
-
-    expect(result).toMatchObject({
-      ok: false,
-      error: expect.stringMatching(/can't pair/i),
-    });
-  });
-
-  it("under-limit happy path: link exists, code is generated and returned", async () => {
-    rateLimitGateMock.mockResolvedValue({ limited: false });
-    serviceMockImpl = makeServiceMock({
-      linkData: { athlete_id: "athlete-uuid-001" },
-      insertError: null,
-    });
-
-    const result = await generatePairingCode(null, makeFormData());
-
-    expect(result).toMatchObject({ ok: true });
-    if (result && result.ok) {
-      expect(typeof result.code).toBe("string");
-      expect(result.code.length).toBeGreaterThan(0);
-    }
-  });
-
-  it("fail-open: rateLimitGate not-limited — proceeds to link check", async () => {
-    rateLimitGateMock.mockResolvedValue({ limited: false });
-    serviceMockImpl = makeServiceMock({ linkData: null }); // no link = safe abort
-
-    const result = await generatePairingCode(null, makeFormData());
-
-    expect(result).toMatchObject({
-      ok: false,
-      error: expect.stringMatching(/can't pair/i),
-    });
-  });
-
-  it("keys on parentId (from requireParent, non-spoofable)", async () => {
-    rateLimitGateMock.mockResolvedValue({ limited: true });
-
-    await generatePairingCode(null, makeFormData());
-
-    expect(rateLimitGateMock).toHaveBeenCalledWith(
-      "generate_pairing_code",
-      "parent-uuid-001",
-    );
   });
 });
 

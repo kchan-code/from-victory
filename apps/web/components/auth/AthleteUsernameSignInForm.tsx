@@ -63,8 +63,9 @@ export function AthleteUsernameSignInForm() {
       ) : null}
       <SubmitButton pendingLabel="Signing in…">Sign in</SubmitButton>
       <p className="mt-6 font-body text-[13px] text-cream/55 leading-relaxed text-center">
-        Forgot your password? Ask your parent to send you a new pairing link
-        from their dashboard.
+        New here? Use the invite code your parent sent. Forgot your password?
+        Ask your parent for a reset code from their dashboard. Your username
+        stays the same.
       </p>
     </form>
   );

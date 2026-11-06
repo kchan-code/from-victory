@@ -10,6 +10,36 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-06 — Athlete invites replace device pairing links; password reset keeps the username (FV-630; effective when the PR deploys, iOS link-opening needs the next iOS build)
+
+A parent invites an athlete from the parent dashboard. The invite is a
+16-character code plus a link. Opening the link on an iPhone with the app
+installed opens the From Victory app (once the next iOS build ships); the
+athlete picks a username and password and lands in training, signed in, with no
+second sign-in. Without the app, the link page offers the App Store, shows the
+code to type into the app after installing ("I have an invite"), or continues in
+the browser. The App Store does not carry the invite through an install; the
+athlete enters the code.
+
+Each invite works once and expires in 7 days. Creating a new one turns the old
+one off. A code is shown only when it is created; to share it again later, the
+parent creates a new one. The dashboard shows each athlete as not invited,
+invite pending, or account ready. Athletes who were set up before usernames
+existed show as "needs username"; an invite lets them pick one (and a new
+password) and keeps their training history.
+
+Password reset is separate. For an athlete whose account is set up, the parent
+creates a reset code (works once, expires in 24 hours). It sets a new password
+and never changes the username. The reset page shows the username (read-only)
+to whoever opens the code, so an athlete who forgot it sees it there. Athletes sign in on any phone, including a new
+one, with their username and password. Old pairing links already sent keep
+working until they expire. No new athlete data is collected (no email, no phone
+number); nothing about subscriptions or prices changed.
+
+Why it matters to a buyer: getting an athlete from "parent paid" to "athlete
+training on their own phone" is one text message, and a forgotten password does
+not cost the athlete their username or history.
+
 ## 2026-11-04 — iPhone installation guidance points to the App Store
 
 The homepage FAQ and iPhone browser dashboard installation card direct users to

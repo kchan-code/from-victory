@@ -13,8 +13,8 @@ name: Athlete no-tracking guard
 # Athlete-facing surfaces scanned (see the script's SCAN_PATHS for the
 # authoritative list):
 #   apps/web/app/athlete/**, components/{pregame,postgame,athlete,daily}/**
-#   apps/web/app/{signin,pair,forgot-password,reset-password,auth}/**
-#   apps/web/components/auth/**
+#   apps/web/app/{signin,pair,invite,forgot-password,reset-password,auth}/**
+#   apps/web/components/{auth,native}/**, apps/web/lib/invites/**
 #   apps/web/app/layout.tsx
 #
 # Dependency-free: plain Node CommonJS using only built-ins. No `npm install`.
