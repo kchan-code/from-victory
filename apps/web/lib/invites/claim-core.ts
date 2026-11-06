@@ -20,8 +20,9 @@ import { createServiceClient } from "@/lib/supabase/service";
  *      username.
  *   2. Resolve the athlete's synthetic auth email.
  *   3. Set the password (Auth admin API — can't join the DB transaction).
- *      If 2 or 3 fail, release_athlete_invite un-consumes exactly this claim
- *      so the athlete can retry with the same code.
+ *      If 2 or 3 fail, release_athlete_invite undoes exactly this claim
+ *      (clears the username it set, revives the code) so the athlete can
+ *      retry with the same code.
  *   4. Bind the device cookie and sign in, then go straight to /athlete —
  *      no second sign-in.
  */
@@ -79,7 +80,14 @@ export async function completeInviteClaim(input: {
     // round-tripped through Date (that would drop microseconds and miss).
     const { data: released, error: releaseError } = await service.rpc(
       "release_athlete_invite",
-      { p_code_sha256: input.codeHash, p_consumed_at: claimed.consumed_at },
+      {
+        p_code_sha256: input.codeHash,
+        p_consumed_at: claimed.consumed_at,
+        // purpose 'invite' means THIS claim set the username: undo it too,
+        // so a retry can choose freely and the parent never sees "account
+        // ready" for an account that has no password.
+        p_clear_username: claimed.purpose === "invite",
+      },
     );
     console.error(
       `[invites.claim] ${reason} after claim (athleteId=${athleteId}); released=${released === true} ${releaseError ? `releaseError=${releaseError.message}` : ""}`,

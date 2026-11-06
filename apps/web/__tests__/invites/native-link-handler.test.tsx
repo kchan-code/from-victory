@@ -9,6 +9,7 @@ import { act, cleanup, render } from "@testing-library/react";
 
 import {
   NativeInviteLinkHandler,
+  linkDigest,
   markHandled,
   routeInviteLink,
   wasHandled,
@@ -40,22 +41,40 @@ afterEach(() => {
   delete (window as unknown as { Capacitor?: unknown }).Capacitor;
 });
 
-const flush = () => act(async () => { await Promise.resolve(); await Promise.resolve(); });
-
-describe("routeInviteLink", () => {
-  it("navigates a valid link once; a non-explicit repeat is ignored", () => {
-    const nav = vi.fn();
-    expect(routeInviteLink(LINK, { explicit: false }, nav)).toBe(true);
-    expect(routeInviteLink(LINK, { explicit: false }, nav)).toBe(false);
-    expect(nav).toHaveBeenCalledTimes(1);
-    expect(nav).toHaveBeenCalledWith(PATH);
-    expect(wasHandled(LINK)).toBe(true);
+// Digesting is async (Web Crypto): let several ticks settle.
+const flush = () =>
+  act(async () => {
+    for (let i = 0; i < 10; i++) await new Promise((r) => setTimeout(r, 0));
   });
 
-  it("an explicit (warm tap) repeat is honored", () => {
+describe("routeInviteLink", () => {
+  it("navigates a valid link once; a non-explicit repeat is ignored", async () => {
     const nav = vi.fn();
-    markHandled(LINK);
-    expect(routeInviteLink(LINK, { explicit: true }, nav)).toBe(true);
+    expect(await routeInviteLink(LINK, { explicit: false }, nav)).toBe(true);
+    expect(await routeInviteLink(LINK, { explicit: false }, nav)).toBe(false);
+    expect(nav).toHaveBeenCalledTimes(1);
+    expect(nav).toHaveBeenCalledWith(PATH);
+    expect(wasHandled((await linkDigest(LINK))!)).toBe(true);
+  });
+
+  it("stores only a sha256 digest — never the URL or the code", async () => {
+    await routeInviteLink(
+      "https://www.fromvictoryapp.com/invite#code=WXYZ-2345-6789-ABCD",
+      { explicit: true },
+      vi.fn(),
+    );
+    const stored = window.sessionStorage.getItem("fv_handled_invite_links") ?? "";
+    expect(stored).not.toContain("WXYZ");
+    expect(stored).not.toContain("fromvictoryapp");
+    expect(JSON.parse(stored)).toEqual(
+      expect.arrayContaining([expect.stringMatching(/^[0-9a-f]{64}$/)]),
+    );
+  });
+
+  it("an explicit (warm tap) repeat is honored", async () => {
+    const nav = vi.fn();
+    markHandled((await linkDigest(LINK))!);
+    expect(await routeInviteLink(LINK, { explicit: true }, nav)).toBe(true);
     expect(nav).toHaveBeenCalledWith(PATH);
   });
 
@@ -65,9 +84,9 @@ describe("routeInviteLink", () => {
     "https://www.fromvictoryapp.com/invite?code=7KQ2-M9XD-4HTR-PW3B",
     "fromvictory://invite",
     undefined,
-  ])("ignores %s", (url) => {
+  ])("ignores %s", async (url) => {
     const nav = vi.fn();
-    expect(routeInviteLink(url, { explicit: true }, nav)).toBe(false);
+    expect(await routeInviteLink(url, { explicit: true }, nav)).toBe(false);
     expect(nav).not.toHaveBeenCalled();
   });
 });
@@ -103,10 +122,13 @@ describe("<NativeInviteLinkHandler />", () => {
     render(<NativeInviteLinkHandler navigate={nav} />);
     await flush();
     expect(listeners).toHaveLength(1);
-    act(() => listeners[0]!({ url: LINK }));
-    act(() => listeners[0]!({ url: LINK }));
+    listeners[0]!({ url: LINK });
+    await flush();
+    listeners[0]!({ url: LINK });
+    await flush();
     expect(nav).toHaveBeenCalledTimes(2);
-    act(() => listeners[0]!({ url: "https://www.fromvictoryapp.com/athlete" }));
+    listeners[0]!({ url: "https://www.fromvictoryapp.com/athlete" });
+    await flush();
     expect(nav).toHaveBeenCalledTimes(2);
   });
 

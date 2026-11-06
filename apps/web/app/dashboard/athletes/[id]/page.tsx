@@ -257,12 +257,16 @@ export default async function AthleteDetailPage({ params }: Props) {
                     ? "Account ready"
                     : inviteState === "pending"
                       ? "Invite pending"
-                      : "Invite to the app"}
+                      : inviteState === "needs_username"
+                        ? "Needs a username"
+                        : "Invite to the app"}
                 </p>
                 <p className="font-body text-cream/50 text-[12px] leading-snug mt-0.5">
                   {inviteState === "ready"
                     ? `${detail.firstName} signs in with their username. Reset a forgotten password here.`
-                    : `Send ${detail.firstName} an invite to set up their account.`}
+                    : inviteState === "needs_username"
+                      ? `${detail.firstName} trains on one device. Add a username so they can sign in on any phone.`
+                      : `Send ${detail.firstName} an invite to set up their account.`}
                 </p>
               </div>
               <Link
@@ -274,7 +278,9 @@ export default async function AthleteDetailPage({ params }: Props) {
                   ? "Reset password"
                   : inviteState === "pending"
                     ? "Share invite"
-                    : "Invite"}
+                    : inviteState === "needs_username"
+                      ? "Add username"
+                      : "Invite"}
               </Link>
             </div>
 

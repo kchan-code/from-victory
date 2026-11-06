@@ -34,7 +34,7 @@ type Props = {
  */
 export function InviteFlow({ nativeShell }: Props) {
   const [state, formAction] = useFormState(checkInvite, initialState);
-  const [, startTransition] = useTransition();
+  const [checking, startTransition] = useTransition();
   const [linkCode, setLinkCode] = useState<string | null>(null);
   const [hashRead, setHashRead] = useState(false);
   const [continueHere, setContinueHere] = useState(nativeShell);
@@ -81,10 +81,12 @@ export function InviteFlow({ nativeShell }: Props) {
     );
   }
 
-  if (!hashRead) {
+  // A linked code is being checked: show that, not a prefilled form that
+  // flashes and disappears.
+  if (!hashRead || (checking && linkCode && continueHere && !state)) {
     return (
       <p className="font-body text-cream/60 text-[15px]" role="status">
-        Loading…
+        {hashRead ? "Checking your invite…" : "Loading…"}
       </p>
     );
   }

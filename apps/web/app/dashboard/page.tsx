@@ -374,6 +374,7 @@ const INVITE_ENTRY_COPY: Record<
   { label: string; pill: string | null }
 > = {
   not_invited: { label: "Invite athlete", pill: null },
+  needs_username: { label: "Add username", pill: "Needs username" },
   pending: { label: "Share invite", pill: "Invite pending" },
   ready: { label: "Manage", pill: "Account ready" },
 };
@@ -410,7 +411,7 @@ function InviteEntry({
         href={`/dashboard/athletes/${athleteId}/pair`}
         data-testid={`invite-entry-${athleteId}`}
         aria-label={`${copy.label}: ${firstName}${copy.pill ? ` (${copy.pill})` : ""}`}
-        className="font-heading font-semibold text-[13px] text-cream/80 hover:text-cream bg-onyx border border-hairline hover:border-cream/30 rounded-pill px-4 py-2 no-underline transition-colors duration-fast ease-out"
+        className="inline-flex items-center min-h-[44px] font-heading font-semibold text-[13px] text-cream/80 hover:text-cream bg-onyx border border-hairline hover:border-cream/30 rounded-pill px-4 no-underline transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
       >
         {copy.label}
       </Link>

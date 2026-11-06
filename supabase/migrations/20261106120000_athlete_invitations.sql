@@ -19,9 +19,10 @@
 --     3. issue_athlete_invite()   — atomic replace-and-issue (service role).
 --     4. claim_athlete_invite()   — atomic claim: lock, validate, set username
 --                                   (invites only), consume (service role).
---     5. release_athlete_invite() — compensating un-consume when the
---                                   password write fails after a claim
---                                   (service role).
+--     5. release_athlete_invite() — compensating undo when the password
+--                                   write fails after a claim: clears the
+--                                   username that claim set and revives the
+--                                   code (service role).
 --     6. get_athlete_invite_statuses() — parent dashboard status for the
 --                                   CALLER's linked athletes only: state +
 --                                   expiry. Never returns a code, a hash, or
@@ -317,16 +318,24 @@ comment on function public.claim_athlete_invite(text, text) is
   'Service-role only.';
 
 -- ---------------------------------------------------------------------------
--- 5. release_athlete_invite() — compensating un-consume.
+-- 5. release_athlete_invite() — compensating undo of a claim.
 --
---    Only reverts the exact claim that just happened (matching consumed_at
---    to the microsecond) and only while the code is still unexpired, so it
---    can never resurrect an old, legitimately-used code.
+--    Called when the password write after a claim fails. It undoes exactly
+--    that claim (matching consumed_at to the microsecond):
+--      - p_clear_username = true (the claim returned purpose 'invite', i.e. it
+--        SET the username) → the username is cleared again, so the athlete
+--        is back to "not set up": a retry can pick any username, and the
+--        parent dashboard does not show "account ready" for an account that
+--        never got a password.
+--      - the code is revived only while unexpired and only if no replacement
+--        was issued meanwhile (one-live-code invariant).
+--    Returns true when the code was revived.
 -- ---------------------------------------------------------------------------
 
 create or replace function public.release_athlete_invite(
-  p_code_sha256 text,
-  p_consumed_at timestamptz
+  p_code_sha256    text,
+  p_consumed_at    timestamptz,
+  p_clear_username boolean
 )
 returns boolean
 language plpgsql
@@ -334,16 +343,35 @@ security definer
 set search_path = ''
 as $$
 declare
-  v_count int;
+  v_athlete_id uuid;
+  v_count      int;
 begin
+  select dp.athlete_id
+    into v_athlete_id
+    from public.device_pairings dp
+   where dp.code_sha256 = p_code_sha256
+     and dp.consumed_at = p_consumed_at;
+
+  if v_athlete_id is null then
+    return false;
+  end if;
+
+  -- Same lock order as issue/claim: profile first.
+  perform 1 from public.profiles pr where pr.id = v_athlete_id for update;
+
+  if p_clear_username then
+    update public.profiles pr
+       set username = null
+     where pr.id = v_athlete_id
+       and pr.role = 'athlete';
+  end if;
+
   update public.device_pairings dp
      set consumed_at = null
    where dp.code_sha256 = p_code_sha256
      and dp.consumed_at = p_consumed_at
      and dp.expires_at > now()
      and not exists (
-       -- Never violate the one-live-code invariant: if the parent issued a
-       -- replacement in the meantime, the old code stays dead.
        select 1
          from public.device_pairings other
         where other.athlete_id = dp.athlete_id
@@ -354,10 +382,11 @@ begin
 end;
 $$;
 
-comment on function public.release_athlete_invite(text, timestamptz) is
-  'FV-630: revert a claim whose follow-up password write failed, so the '
-  'athlete can retry with the same code. Exact-match on consumed_at; never '
-  'revives an expired or replaced code. Service-role only.';
+comment on function public.release_athlete_invite(text, timestamptz, boolean) is
+  'FV-630: undo a claim whose follow-up password write failed: clears the '
+  'username the claim set (when told to) and revives the code so the athlete '
+  'can retry. Exact-match on consumed_at; never revives an expired or '
+  'replaced code. Service-role only.';
 
 -- ---------------------------------------------------------------------------
 -- 6. get_athlete_invite_statuses() — parent dashboard read.
@@ -366,15 +395,20 @@ comment on function public.release_athlete_invite(text, timestamptz) is
 --    A non-parent caller (athlete, unrelated parent) gets only the athletes
 --    linked to them — i.e. none. Returns state metadata only:
 --      account_ready      — athlete has finished setup (has a username)
+--      signed_in_before   — the account has signed in at least once (true for
+--                           athletes paired before usernames existed, FV-320,
+--                           who train on a device but have no username yet)
 --      pending_purpose    — purpose of the live, unexpired code, or null
 --      pending_expires_at — its expiry, or null
---    It NEVER returns a code, a hash, or the username itself.
+--    It NEVER returns a code, a hash, the username, or a timestamp of
+--    activity (signed_in_before is a boolean on purpose).
 -- ---------------------------------------------------------------------------
 
 create or replace function public.get_athlete_invite_statuses()
 returns table (
   athlete_id         uuid,
   account_ready      boolean,
+  signed_in_before   boolean,
   pending_purpose    text,
   pending_expires_at timestamptz
 )
@@ -386,6 +420,12 @@ as $$
   select
     pal.athlete_id,
     (pr.username is not null)  as account_ready,
+    exists (
+      select 1
+        from auth.users u
+       where u.id = pr.id
+         and u.last_sign_in_at is not null
+    )                          as signed_in_before,
     live.purpose               as pending_purpose,
     live.expires_at            as pending_expires_at
   from public.parent_athlete_links pal
@@ -401,7 +441,8 @@ $$;
 
 comment on function public.get_athlete_invite_statuses() is
   'FV-630: invite/account state for the calling parent''s linked athletes. '
-  'Metadata only — never a code, hash, or username. Authenticated only.';
+  'Metadata only — never a code, hash, username, or activity timestamp. '
+  'Authenticated only.';
 
 -- ---------------------------------------------------------------------------
 -- 7. Function grants — default-deny, then explicit.
@@ -413,7 +454,7 @@ revoke all on function public.issue_athlete_invite(uuid, uuid, text, timestamptz
   from public, anon, authenticated;
 revoke all on function public.claim_athlete_invite(text, text)
   from public, anon, authenticated;
-revoke all on function public.release_athlete_invite(text, timestamptz)
+revoke all on function public.release_athlete_invite(text, timestamptz, boolean)
   from public, anon, authenticated;
 revoke all on function public.get_athlete_invite_statuses()
   from public, anon, authenticated;
@@ -422,7 +463,7 @@ grant execute on function public.issue_athlete_invite(uuid, uuid, text, timestam
   to service_role;
 grant execute on function public.claim_athlete_invite(text, text)
   to service_role;
-grant execute on function public.release_athlete_invite(text, timestamptz)
+grant execute on function public.release_athlete_invite(text, timestamptz, boolean)
   to service_role;
 grant execute on function public.get_athlete_invite_statuses()
   to authenticated, service_role;

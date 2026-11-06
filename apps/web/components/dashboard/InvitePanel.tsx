@@ -119,6 +119,14 @@ export function InvitePanel({ athleteId, athleteFirstName, status }: Props) {
 
     return (
       <div data-testid="invite-issued">
+        {/* Announces creation and copy feedback to screen readers. */}
+        <p className="sr-only" role="status" aria-live="polite">
+          {copied === "link"
+            ? "Link copied."
+            : copied === "code"
+              ? "Code copied."
+              : `${recovery ? "Reset code" : "Invite code"} created: ${display}.`}
+        </p>
         <p className="font-body text-cream/80 text-[15px] leading-relaxed mb-5">
           {recovery
             ? `Send this to ${athleteFirstName}. It sets a new password. Their username stays the same.`
@@ -215,6 +223,25 @@ export function InvitePanel({ athleteId, athleteFirstName, status }: Props) {
         </p>
         {errorLine}
         {createForm("Create a new invite", "Creating…", true)}
+      </div>
+    );
+  }
+
+  // ---- Signed in before, no username (pre-FV-320 pairing) ---------------
+  if (status?.state === "needs_username") {
+    return (
+      <div data-testid="invite-state-needs-username">
+        <p className="font-body text-cream/80 text-[15px] leading-relaxed mb-3">
+          {athleteFirstName} already trains on one device. Add a username so
+          they can sign in on any phone, including a new one.
+        </p>
+        <p className="font-body text-cream/55 text-[13px] leading-relaxed mb-5">
+          Create an invite and send it to {athleteFirstName}. They pick a
+          username and a new password. Their training history stays. The
+          invite works once and expires in 7 days.
+        </p>
+        {errorLine}
+        {createForm("Create invite", "Creating…", true)}
       </div>
     );
   }

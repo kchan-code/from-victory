@@ -386,10 +386,20 @@ describe("claimAthleteInvite", () => {
     expect(res).toMatchObject({ ok: false, field: "password" });
     expect(svc.rpcCalls[1]).toEqual({
       fn: "release_athlete_invite",
-      args: { p_code_sha256: sha(CODE), p_consumed_at: CONSUMED_AT },
+      // purpose 'invite' = this claim set the username → undo it too, so the
+      // athlete isn't left "account ready" with no password (QA 1.1).
+      args: { p_code_sha256: sha(CODE), p_consumed_at: CONSUMED_AT, p_clear_username: true },
     });
     expect(setDeviceAthleteIdMock).not.toHaveBeenCalled();
     expect(signInMock).not.toHaveBeenCalled();
+  });
+
+  it("recovery claim whose password write fails → release keeps the username", async () => {
+    svc.rpc.claim_athlete_invite = claimOk("recovery");
+    svc.rpc.release_athlete_invite = { data: true, error: null };
+    svc.updateUserById = { error: { message: "weak password", status: 422 } };
+    await claimAthleteInvite(null, form({ username: undefined }));
+    expect(svc.rpcCalls[1]!.args).toMatchObject({ p_clear_username: false });
   });
 
   it("auth user lookup fails → release + generic error", async () => {

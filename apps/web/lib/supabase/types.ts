@@ -886,6 +886,7 @@ export type Database = {
         Args: {
           p_code_sha256: string
           p_consumed_at: string
+          p_clear_username: boolean
         }
         Returns: boolean
       }
@@ -894,6 +895,7 @@ export type Database = {
         Returns: {
           athlete_id: string
           account_ready: boolean
+          signed_in_before: boolean
           pending_purpose: "invite" | "recovery" | null
           pending_expires_at: string | null
         }[]

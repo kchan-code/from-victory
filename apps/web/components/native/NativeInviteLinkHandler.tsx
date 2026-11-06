@@ -25,7 +25,8 @@ import {
  * on every full page load. Without dedup, a used invite would re-open after
  * every reload. Each delivered URL is handled once per app process
  * (sessionStorage, which a cold launch starts empty; an in-memory set backs
- * it up if storage throws). A WARM `appUrlOpen` is an explicit new tap and is
+ * it up if storage throws). Only a sha256 digest of the URL is stored, never
+ * the URL itself, because the URL carries a live code. A WARM `appUrlOpen` is an explicit new tap and is
  * always honored.
  *
  * apps/web has no @capacitor/core dependency (same as lib/native/apple-iap.ts);
@@ -66,14 +67,33 @@ function readHandled(): string[] {
   }
 }
 
-export function wasHandled(url: string): boolean {
-  return handledInMemory.has(url) || readHandled().includes(url);
+/**
+ * Dedup key for a delivered URL: sha256 hex, so the stored list never holds
+ * a live invite code (kids-privacy-officer, FV-630). Null when Web Crypto is
+ * unavailable; the caller then dedups in memory only.
+ */
+export async function linkDigest(url: string): Promise<string | null> {
+  try {
+    const subtle = window.crypto?.subtle;
+    if (!subtle) return null;
+    const bytes = new TextEncoder().encode(url);
+    const hash = await subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(hash), (b) =>
+      b.toString(16).padStart(2, "0"),
+    ).join("");
+  } catch {
+    return null;
+  }
 }
 
-export function markHandled(url: string): void {
-  handledInMemory.add(url);
+export function wasHandled(key: string): boolean {
+  return handledInMemory.has(key) || readHandled().includes(key);
+}
+
+export function markHandled(key: string): void {
+  handledInMemory.add(key);
   try {
-    const next = [...readHandled().filter((u) => u !== url), url].slice(-10);
+    const next = [...readHandled().filter((k) => k !== key), key].slice(-10);
     window.sessionStorage.setItem(HANDLED_KEY, JSON.stringify(next));
   } catch {
     // Storage unavailable — the in-memory set still covers this page life.
@@ -92,16 +112,24 @@ function navigateToInvite(path: string): void {
 }
 
 /** Navigate to the in-app invite path for `url`, if it is a valid link. */
-export function routeInviteLink(
+export async function routeInviteLink(
   url: unknown,
   opts: { explicit: boolean },
   navigate: (path: string) => void = navigateToInvite,
-): boolean {
+): Promise<boolean> {
   if (typeof url !== "string") return false;
   const path = parseInviteUniversalLink(url);
   if (!path) return false;
-  if (!opts.explicit && wasHandled(url)) return false;
-  markHandled(url);
+  // Without Web Crypto, fall back to an in-memory-only key that is never
+  // written to storage.
+  const digest = await linkDigest(url);
+  if (digest) {
+    if (!opts.explicit && wasHandled(digest)) return false;
+    markHandled(digest);
+  } else {
+    if (!opts.explicit && handledInMemory.has(url)) return false;
+    handledInMemory.add(url);
+  }
   navigate(path);
   return true;
 }
@@ -122,7 +150,7 @@ export function NativeInviteLinkHandler({
     if (typeof app.addListener === "function") {
       Promise.resolve(
         app.addListener("appUrlOpen", (event) => {
-          routeInviteLink(event?.url, { explicit: true }, navigate);
+          void routeInviteLink(event?.url, { explicit: true }, navigate);
         }),
       )
         .then((h) => {
@@ -139,7 +167,7 @@ export function NativeInviteLinkHandler({
         .getLaunchUrl()
         .then((result) => {
           if (!cancelled) {
-            routeInviteLink(result?.url, { explicit: false }, navigate);
+            void routeInviteLink(result?.url, { explicit: false }, navigate);
           }
         })
         .catch(() => {

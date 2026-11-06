@@ -44,6 +44,11 @@ browser setup.
   ```
 - [ ] **PENDING**: web smoke (any browser): parent dashboard shows "Invite athlete" / "Invite pending" / "Account ready" correctly; create invite → open link in a private window → "Continue in browser" → set username/password → lands on `/athlete` signed in.
 - [ ] **PENDING**: legacy link: a `/pair?code=` link generated before the deploy (if any are still live) still completes setup.
+- [ ] **PENDING**: size the legacy population (athletes with no username who have signed in), so KC knows how many parents will see "Needs username":
+  ```sql
+  select count(*) from public.profiles p join auth.users u on u.id = p.id
+   where p.role = 'athlete' and p.username is null and u.last_sign_in_at is not null;
+  ```
 
 ## 3. iOS build
 
@@ -77,6 +82,8 @@ another device. Record date, build number, iOS version, and result for each.
 | D12 | Existing athlete on an existing device (device cookie) | Password-only sign-in unchanged | PENDING |
 | D13 | Kill and relaunch the app after a completed invite | Lands on training/home, not back on the invite | PENDING |
 | D14 | Long-press link in Messages → "Open in Safari" | Opens Safari (Apple behavior); browser path still works | PENDING |
+| D15 | Legacy athlete (paired before usernames, has signed in, no username) | Dashboard shows "Needs username"; invite → picks username + new password → same account and history | PENDING |
+| D16 | Force a password-save failure on first setup (e.g. a password the Auth policy rejects) then retry with a different username | Retry works with the new username; dashboard never showed "Account ready" in between | PENDING |
 
 ## 5. Rollback
 

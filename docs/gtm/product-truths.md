@@ -24,11 +24,14 @@ athlete enters the code.
 Each invite works once and expires in 7 days. Creating a new one turns the old
 one off. A code is shown only when it is created; to share it again later, the
 parent creates a new one. The dashboard shows each athlete as not invited,
-invite pending, or account ready.
+invite pending, or account ready. Athletes who were set up before usernames
+existed show as "needs username"; an invite lets them pick one (and a new
+password) and keeps their training history.
 
 Password reset is separate. For an athlete whose account is set up, the parent
 creates a reset code (works once, expires in 24 hours). It sets a new password
-and never changes the username. Athletes sign in on any phone, including a new
+and never changes the username. The reset page shows the username (read-only)
+to whoever opens the code, so an athlete who forgot it sees it there. Athletes sign in on any phone, including a new
 one, with their username and password. Old pairing links already sent keep
 working until they expire. No new athlete data is collected (no email, no phone
 number); nothing about subscriptions or prices changed.

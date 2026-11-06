@@ -101,6 +101,11 @@ const SCAN_PATHS = [
   // otherwise evade the guard on the athlete's most-frequented pre-session page.
   'apps/web/app/signin',
   'apps/web/app/pair',
+  // FV-630: the invite door (an athlete's first screen) and the root-layout
+  // native link handler.
+  'apps/web/app/invite',
+  'apps/web/components/native',
+  'apps/web/lib/invites',
   'apps/web/app/forgot-password',
   'apps/web/app/reset-password',
   'apps/web/app/auth',

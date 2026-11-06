@@ -14,7 +14,11 @@
 --   (e) Recovery: a set-up account's code is purpose=recovery and the claim
 --       never changes the username, whatever is sent.
 --   (f) Expiry: an expired code cannot be claimed and cannot be released
---       back to life; release never revives a code once replaced.
+--       back to life; release never revives a code once replaced. Releasing
+--       a failed FIRST setup clears the username it set (no false
+--       "account ready"); releasing a recovery keeps it.
+--   (h) signed_in_before flags pre-username (FV-320) accounts that train on
+--       a device, so the dashboard doesn't call them "not invited".
 --   (g) The one-live-code invariant holds even for a direct insert.
 --
 -- Fixtures (fixtures.sql): parent P links athlete A; parent Q and athlete B
@@ -31,7 +35,7 @@ begin
   foreach fn in array array[
     'public.issue_athlete_invite(uuid, uuid, text, timestamptz, timestamptz)',
     'public.claim_athlete_invite(text, text)',
-    'public.release_athlete_invite(text, timestamptz)'
+    'public.release_athlete_invite(text, timestamptz, boolean)'
   ]
   loop
     assert not has_function_privilege('anon', fn, 'execute'),
@@ -63,7 +67,7 @@ begin
    where n.nspname = 'public'
      and p.proname = 'get_athlete_invite_statuses'
      and a.mode = 't';
-  assert cols = array['account_ready', 'athlete_id', 'pending_expires_at', 'pending_purpose'],
+  assert cols = array['account_ready', 'athlete_id', 'pending_expires_at', 'pending_purpose', 'signed_in_before'],
     format('FV-630 FAIL: get_athlete_invite_statuses() columns changed to %s — it must never return a code, hash, or username', cols);
 end $$;
 
@@ -158,6 +162,18 @@ begin;
     assert not exists (select 1 from public.claim_athlete_invite(repeat('b', 64), 'ava_rls')),
       'FV-630 FAIL: replay of a consumed code returned a row';
 
+    -- (f) failed FIRST setup: release with clear → username gone, code live
+    update public.profiles set username = null where id = a;
+    perform public.issue_athlete_invite(p, a, repeat('8', 64), now() + interval '7 days', now() + interval '1 day');
+    select * into r from public.claim_athlete_invite(repeat('8', 64), 'ava_first');
+    assert public.release_athlete_invite(repeat('8', 64), r.consumed_at, true) = true,
+      'FV-630 FAIL: release after a failed first setup did not revive the code';
+    assert (select username from public.profiles where id = a) is null,
+      'FV-630 FAIL: release after a failed first setup left the username set';
+    select * into r from public.claim_athlete_invite(repeat('8', 64), 'ava_rls');
+    assert r.username = 'ava_rls' and r.purpose = 'invite',
+      'FV-630 FAIL: retry after a failed first setup could not choose a new username';
+
     -- (e) recovery keeps the username
     select * into r from public.issue_athlete_invite(p, a, repeat('c', 64), now() + interval '7 days', now() + interval '1 day');
     assert r.purpose = 'recovery' and r.expires_at < now() + interval '2 days',
@@ -169,13 +185,15 @@ begin;
       'FV-630 FAIL: recovery claim modified profiles.username';
 
     -- (f) release revives exactly this claim once; never after replacement
-    assert public.release_athlete_invite(repeat('c', 64), r.consumed_at) = true,
+    assert public.release_athlete_invite(repeat('c', 64), r.consumed_at, false) = true,
       'FV-630 FAIL: exact release did not revive the code';
-    assert public.release_athlete_invite(repeat('c', 64), r.consumed_at) = false,
+    assert (select username from public.profiles where id = a) = 'ava_rls',
+      'FV-630 FAIL: releasing a recovery claim cleared the username';
+    assert public.release_athlete_invite(repeat('c', 64), r.consumed_at, false) = false,
       'FV-630 FAIL: release was not idempotent';
     select * into r from public.claim_athlete_invite(repeat('c', 64), null);
     perform public.issue_athlete_invite(p, a, repeat('d', 64), now() + interval '7 days', now() + interval '1 day');
-    assert public.release_athlete_invite(repeat('c', 64), r.consumed_at) = false,
+    assert public.release_athlete_invite(repeat('c', 64), r.consumed_at, false) = false,
       'FV-630 FAIL: release revived a code after a replacement was issued';
 
     -- (f) expired code is dead
@@ -196,4 +214,28 @@ begin;
   end $$;
 rollback;
 
-\echo '  [PASS] 22_athlete_invitations (FV-630 AC a-g)'
+-- ---------------------------------------------------------------------------
+-- (h) signed_in_before: false for a never-signed-in athlete, true once the
+--     auth user has signed in (boolean only — no timestamp is exposed).
+-- ---------------------------------------------------------------------------
+begin;
+  update public.profiles set username = null where id = '20000000-0000-4000-8000-00000000000a';
+  update auth.users set last_sign_in_at = null where id = '20000000-0000-4000-8000-00000000000a';
+  set local request.jwt.claims to '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated"}';
+  set local role authenticated;
+  do $$ begin
+    assert (select signed_in_before from public.get_athlete_invite_statuses()
+             where athlete_id = '20000000-0000-4000-8000-00000000000a') = false,
+      'FV-630 FAIL: signed_in_before true for an athlete who never signed in';
+  end $$;
+  reset role;
+  update auth.users set last_sign_in_at = now() where id = '20000000-0000-4000-8000-00000000000a';
+  set local role authenticated;
+  do $$ begin
+    assert (select signed_in_before from public.get_athlete_invite_statuses()
+             where athlete_id = '20000000-0000-4000-8000-00000000000a') = true,
+      'FV-630 FAIL: signed_in_before false for a legacy athlete who signs in on a device';
+  end $$;
+rollback;
+
+\echo '  [PASS] 22_athlete_invitations (FV-630 AC a-h)'

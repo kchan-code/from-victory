@@ -65,6 +65,20 @@ describe("InvitePanel (parent)", () => {
     expect(screen.getByRole("button", { name: "Create invite" })).toBeInTheDocument();
   });
 
+  it("legacy account with no username → 'add a username' copy, history kept", () => {
+    render(
+      <InvitePanel
+        athleteId={ATHLETE}
+        athleteFirstName="Ava"
+        status={{ state: "needs_username", expiresAt: null, pendingRecovery: false }}
+      />,
+    );
+    const panel = screen.getByTestId("invite-state-needs-username");
+    expect(panel).toHaveTextContent(/already trains on one device/i);
+    expect(panel).toHaveTextContent(/training history stays/i);
+    expect(screen.getByRole("button", { name: "Create invite" })).toBeInTheDocument();
+  });
+
   it("pending → explains the code can't be shown again; offers a replacement, never an old code", () => {
     render(
       <InvitePanel
@@ -106,6 +120,8 @@ describe("InvitePanel (parent)", () => {
     expect(screen.getByRole("button", { name: "Copy link" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Copy code" })).toBeInTheDocument();
     expect(screen.getByTestId("invite-replace")).toHaveTextContent("Create a new invite");
+    // Screen readers hear that a code was created.
+    expect(screen.getByRole("status")).toHaveTextContent("Invite code created: 7KQ2-M9XD-4HTR-PW3B.");
   });
 
   it("share sends the fragment link (code never in a query string)", async () => {

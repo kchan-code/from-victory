@@ -5,16 +5,20 @@ import { createClient } from "@/lib/supabase/server";
 /**
  * Parent-facing athlete account state (FV-630).
  *
- *   not_invited — no username yet and no live code
- *   pending     — no username yet; a live invite code is out
- *   ready       — the athlete finished setup (username + password)
+ *   not_invited    — no username, never signed in, no live code
+ *   needs_username — no username, but the account HAS signed in: an athlete
+ *                    paired before usernames existed (FV-320) who trains on a
+ *                    device today. An invite adds a username (and a new
+ *                    password) so they can sign in on any phone.
+ *   pending        — no username yet; a live invite code is out
+ *   ready          — the athlete finished setup (username + password)
  *
  * `pendingRecovery` is set when a ready athlete has a live password-reset
  * code out. Reads through get_athlete_invite_statuses(), which is scoped to
  * auth.uid()'s linked athletes and returns metadata only — never a code, a
  * hash, or the username.
  */
-export type InviteState = "not_invited" | "pending" | "ready";
+export type InviteState = "not_invited" | "needs_username" | "pending" | "ready";
 
 export interface AthleteInviteStatus {
   state: InviteState;
@@ -31,6 +35,7 @@ export const NOT_INVITED_STATUS: AthleteInviteStatus = {
 
 export function toInviteStatus(row: {
   account_ready: boolean;
+  signed_in_before: boolean;
   pending_purpose: "invite" | "recovery" | null;
   pending_expires_at: string | null;
 }): AthleteInviteStatus {
@@ -47,6 +52,9 @@ export function toInviteStatus(row: {
       expiresAt: row.pending_expires_at,
       pendingRecovery: false,
     };
+  }
+  if (row.signed_in_before) {
+    return { state: "needs_username", expiresAt: null, pendingRecovery: false };
   }
   return NOT_INVITED_STATUS;
 }
