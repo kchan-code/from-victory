@@ -14,6 +14,7 @@ export default function robots(): MetadataRoute.Robots {
       "/athlete/",
       "/dashboard/",
       "/pair",
+      "/invite",
       "/signup",
       "/signin",
       "/subscribe",

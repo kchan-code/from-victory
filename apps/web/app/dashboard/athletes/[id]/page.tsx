@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { RhythmRing } from "@/components/ui";
 import { requireParent } from "@/lib/auth/guards";
 import { getAthleteDetail } from "@/lib/dashboard/athlete-detail";
+import { getInviteStatusMap } from "@/lib/invites/status";
 import { shapeAthleteRhythm } from "@/lib/dashboard/rhythm-core";
 import { ageFromBirthdate } from "@/lib/age";
 import { sportLabel } from "@/lib/sports";
@@ -35,6 +36,11 @@ export default async function AthleteDetailPage({ params }: Props) {
   // no row comes back for an id not linked to the calling parent.
   const detail = await getAthleteDetail(params.id);
   if (!detail) notFound();
+
+  // FV-630: account state for the invite / reset entry. null on read failure
+  // (neutral "Invite" copy; the invite page itself re-reads the state).
+  const inviteState =
+    (await getInviteStatusMap())?.get(detail.athleteId)?.state ?? null;
 
   // Shape rhythm metadata from the session counts we already have.
   const rhythm = shapeAthleteRhythm({
@@ -243,14 +249,20 @@ export default async function AthleteDetailPage({ params }: Props) {
           </p>
 
           <div className="flex flex-col gap-4">
-            {/* Pair device */}
+            {/* Invite / account access (FV-630) */}
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="font-body text-cream text-[14px] leading-snug">
-                  Pair a device
+                  {inviteState === "ready"
+                    ? "Account ready"
+                    : inviteState === "pending"
+                      ? "Invite pending"
+                      : "Invite to the app"}
                 </p>
                 <p className="font-body text-cream/50 text-[12px] leading-snug mt-0.5">
-                  Let {detail.firstName} sign in on their phone or tablet.
+                  {inviteState === "ready"
+                    ? `${detail.firstName} signs in with their username. Reset a forgotten password here.`
+                    : `Send ${detail.firstName} an invite to set up their account.`}
                 </p>
               </div>
               <Link
@@ -258,7 +270,11 @@ export default async function AthleteDetailPage({ params }: Props) {
                 data-testid="athlete-detail-pair-link"
                 className="flex-shrink-0 font-heading font-semibold text-[13px] text-cream/80 hover:text-cream bg-onyx border border-hairline hover:border-cream/30 rounded-pill px-4 min-h-[44px] flex items-center no-underline transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
               >
-                Pair device
+                {inviteState === "ready"
+                  ? "Reset password"
+                  : inviteState === "pending"
+                    ? "Share invite"
+                    : "Invite"}
               </Link>
             </div>
 

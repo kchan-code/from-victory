@@ -9,6 +9,7 @@ import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { getPayerSeatStateForCurrentParent } from "@/lib/subscriptions/seat-state";
 import { createClient } from "@/lib/supabase/server";
 import { getAthleteMetadataMap, ZERO_RHYTHM } from "@/lib/dashboard/rhythm";
+import { getInviteStatusMap, type InviteState } from "@/lib/invites/status";
 import { DeleteAccountSection } from "@/components/dashboard/DeleteAccountSection";
 import { DeleteAthleteButton } from "@/components/dashboard/DeleteAthleteButton";
 import { SeatSelectionPanel } from "@/components/dashboard/SeatSelectionPanel";
@@ -60,6 +61,11 @@ export default async function DashboardPage() {
   // own auth-context client internally; RLS on athlete_session_metadata scopes
   // results to this parent's linked athletes. NEVER reads journal_entries.
   const rhythmMap = await getAthleteMetadataMap();
+
+  // FV-630: per-athlete account state (not invited / invite pending /
+  // account ready). Metadata only, scoped to this parent's linked athletes.
+  // A failed read renders a neutral "Invite" entry, never a guessed state.
+  const inviteStatusMap = await getInviteStatusMap();
 
   // FV-585 (KC decision D2): seat-selection state. A capacity-selection
   // moment, never a payment failure — this is layered ON TOP of (never
@@ -298,12 +304,16 @@ export default async function DashboardPage() {
                         </div>
                       </Link>
                       <div className="flex items-center gap-2">
-                        <Link
-                          href={`/dashboard/athletes/${a.id}/pair`}
-                          className="font-heading font-semibold text-[13px] text-cream/80 hover:text-cream bg-onyx border border-hairline hover:border-cream/30 rounded-pill px-4 py-2 no-underline transition-colors duration-fast ease-out"
-                        >
-                          Pair device
-                        </Link>
+                        <InviteEntry
+                          athleteId={a.id}
+                          firstName={a.first_name}
+                          state={
+                            inviteStatusMap
+                              ? (inviteStatusMap.get(a.id)?.state ??
+                                "not_invited")
+                              : null
+                          }
+                        />
                         <DeleteAthleteButton
                           athleteId={a.id}
                           firstName={a.first_name}
@@ -356,5 +366,54 @@ export default async function DashboardPage() {
         <DeleteAccountSection />
       </div>
     </main>
+  );
+}
+
+const INVITE_ENTRY_COPY: Record<
+  InviteState,
+  { label: string; pill: string | null }
+> = {
+  not_invited: { label: "Invite athlete", pill: null },
+  pending: { label: "Share invite", pill: "Invite pending" },
+  ready: { label: "Manage", pill: "Account ready" },
+};
+
+/**
+ * Dashboard card entry for the FV-630 invite flow. `state === null` means
+ * the status read failed: show the neutral entry, never a guessed state.
+ */
+function InviteEntry({
+  athleteId,
+  firstName,
+  state,
+}: {
+  athleteId: string;
+  firstName: string;
+  state: InviteState | null;
+}) {
+  const copy = state ? INVITE_ENTRY_COPY[state] : { label: "Invite", pill: null };
+  return (
+    <>
+      {copy.pill ? (
+        <span
+          data-testid={`invite-pill-${state}-${athleteId}`}
+          className={`hidden sm:inline-flex items-center font-mono text-[10px] uppercase tracking-[0.14em] px-2.5 py-1 rounded-pill border ${
+            state === "ready"
+              ? "border-gold/50 text-gold"
+              : "border-hairline text-cream/60"
+          }`}
+        >
+          {copy.pill}
+        </span>
+      ) : null}
+      <Link
+        href={`/dashboard/athletes/${athleteId}/pair`}
+        data-testid={`invite-entry-${athleteId}`}
+        aria-label={`${copy.label}: ${firstName}${copy.pill ? ` (${copy.pill})` : ""}`}
+        className="font-heading font-semibold text-[13px] text-cream/80 hover:text-cream bg-onyx border border-hairline hover:border-cream/30 rounded-pill px-4 py-2 no-underline transition-colors duration-fast ease-out"
+      >
+        {copy.label}
+      </Link>
+    </>
   );
 }
