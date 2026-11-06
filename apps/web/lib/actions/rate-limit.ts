@@ -34,6 +34,7 @@ export const RATE_LIMIT_ACTIONS = [
   "password_reset",
   "password_update",
   "username_sign_in",
+  "preview_invite",
 ] as const;
 
 export type RateLimitAction = (typeof RATE_LIMIT_ACTIONS)[number];
@@ -87,9 +88,10 @@ export const RATE_LIMIT_CONFIG: Record<RateLimitAction, RateLimitConfig> = {
 
   /**
    * claim_pairing: keyed on request IP.
-   * Threat: DoS / timing attack on the pairing endpoint.
-   * The code is single-use and atomically consumed (192-bit entropy), so
-   * guessing is impractical. The rate limit here is purely DoS protection.
+   * Threat: DoS / timing attack on the pairing endpoint. Also gates the
+   * FV-630 invite/recovery claim (claimAthleteInvite).
+   * The code is single-use and atomically consumed (80-bit readable invite
+   * codes; 192-bit legacy pairing codes), so guessing is impractical. The rate limit here is purely DoS protection.
    * 20 attempts / 60 min per IP is well above any human use case.
    */
   claim_pairing: { limit: 20, windowMinutes: 60 },
@@ -135,6 +137,16 @@ export const RATE_LIMIT_CONFIG: Record<RateLimitAction, RateLimitConfig> = {
    * misremembers their password and tries a few times will not hit this.
    */
   username_sign_in: { limit: 15, windowMinutes: 15 },
+
+  /**
+   * preview_invite: keyed on request IP (FV-630).
+   * The code-check step of the invite flow (checkInvite) — a lookup by
+   * sha256(code). Gated BEFORE the lookup. Codes carry 80 bits of entropy, so
+   * this is not what makes guessing infeasible; it blunts scripted probing and
+   * DoS. 30 / 15 min covers a family sharing one network re-typing a code
+   * several times each.
+   */
+  preview_invite: { limit: 30, windowMinutes: 15 },
 };
 
 // ---------------------------------------------------------------------------
