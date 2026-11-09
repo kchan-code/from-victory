@@ -554,7 +554,7 @@ describe("InviteSetupForm", () => {
     expect(screen.queryByText(/available/i)).not.toBeInTheDocument();
   });
 
-  it("tapping a suggestion fills the username only: no submit, passwords untouched, focus to the field", () => {
+  it("tapping a suggestion fills the username only: no submit, passwords untouched, focus stays on the pill", () => {
     formState.current = collision;
     render(<InviteSetupForm code="7KQ2M9XD4HTRPW3B" firstName="Ava" mode="invite" username={null} />);
     const user = screen.getByLabelText("Choose a unique username") as HTMLInputElement;
@@ -572,7 +572,12 @@ describe("InviteSetupForm", () => {
     expect(pw2.value).toBe("hunter2hunter2");
     expect(formActionMock).not.toHaveBeenCalled();
     expect(pick).toHaveAttribute("aria-pressed", "true");
-    expect(document.activeElement).toBe(user);
+    // Focus stays on the pill: focusing the input would raise the phone
+    // keyboard over the password fields.
+    pick.focus();
+    fireEvent.click(pick);
+    expect(document.activeElement).toBe(pick);
+    expect(document.activeElement).not.toBe(user);
     expect(screen.getByText("Username set to north_harbor733.")).toBeInTheDocument();
   });
 

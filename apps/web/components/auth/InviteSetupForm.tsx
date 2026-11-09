@@ -2,7 +2,7 @@
 // client: useFormState for the claim action, controlled fields so input
 // survives a failed submit, tappable username suggestions (FV-634).
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 
 import {
@@ -66,25 +66,21 @@ export function InviteSetupForm({ code, firstName, mode, username }: Props) {
       ? (state.suggestions ?? [])
       : [];
 
-  // Each response is a new object: remount the username field so its
-  // role="alert" error is announced again on a repeated collision, and move
-  // focus there so keyboard and screen-reader users land on the problem.
-  const attempt = useRef(0);
-  const lastState = useRef(state);
-  if (lastState.current !== state) {
-    lastState.current = state;
-    attempt.current += 1;
-  }
+  // After a username error, move focus to the field so keyboard and
+  // screen-reader users land on the problem (its description carries the
+  // error + rules, so a repeated collision is read again). Programmatic focus
+  // after an async response doesn't raise the iOS keyboard.
   useEffect(() => {
     if (state && !state.ok && state.field === "username") {
       document.getElementById("username")?.focus();
     }
   }, [state]);
 
+  // Fills the username only. Focus stays on the tapped pill: focusing the
+  // input would raise the phone keyboard over the password fields.
   function pickSuggestion(value: string) {
     setChosenUsername(value);
     setAnnouncement(`Username set to ${value}.`);
-    document.getElementById("username")?.focus();
   }
 
   return (
@@ -115,7 +111,6 @@ export function InviteSetupForm({ code, firstName, mode, username }: Props) {
         ) : (
           <div className="mb-5">
             <Field
-              key={`username-${attempt.current}`}
               id="username"
               name="username"
               label="Choose a unique username"
@@ -136,7 +131,7 @@ export function InviteSetupForm({ code, firstName, mode, username }: Props) {
             />
             <p
               id="username-rules"
-              className="-mt-3 font-body text-[13px] text-cream/50 leading-relaxed"
+              className="-mt-3 font-body text-[13px] text-cream/70 leading-relaxed"
             >
               3–20 letters, numbers, or underscores. Not case-sensitive. Use a
               nickname, not your full name or birthday.
@@ -161,8 +156,13 @@ export function InviteSetupForm({ code, firstName, mode, username }: Props) {
                       type="button"
                       onClick={() => pickSuggestion(s)}
                       aria-pressed={chosenUsername === s}
-                      className="inline-flex items-center min-h-[44px] max-w-full px-4 rounded-pill bg-charcoal border border-hairline hover:border-cream/30 aria-pressed:border-gold font-mono text-[14px] text-cream break-all transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+                      className="inline-flex items-center gap-2 min-h-[44px] max-w-full px-4 rounded-pill bg-charcoal border border-hairline hover:border-cream/30 aria-pressed:border-gold aria-pressed:bg-gold/10 font-mono text-[14px] text-cream break-all transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
                     >
+                      {chosenUsername === s ? (
+                        <span aria-hidden="true" className="text-gold">
+                          ✓
+                        </span>
+                      ) : null}
                       {s}
                     </button>
                   ))}

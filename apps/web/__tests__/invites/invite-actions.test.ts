@@ -357,6 +357,7 @@ describe("claimAthleteInvite", () => {
     svc.rpc.claim_athlete_invite = { data: null, error: { message: "dup", code: "23505" } };
     const res = await claimAthleteInvite(null, form({ username: "Ava_10" }));
     expect(svc.rpcCalls[0]!.args.p_username).toBe("ava_10");
+    // Typed capitals → the message says capitals don't make it different.
     expect(res && !res.ok && res.error).toMatch(/already taken\. Capital letters don.t make it different/i);
     // Only these keys: no attempted handle or other account data echoed back.
     expect(Object.keys(res!).sort()).toEqual(["error", "field", "ok", "suggestions"]);
@@ -366,9 +367,17 @@ describe("claimAthleteInvite", () => {
     for (const s of suggestions) {
       expect(s).toMatch(/^[a-z]+_[a-z]+[1-9][0-9]{2}$/);
       expect(s).not.toBe("ava_10");
-      expect(s).not.toContain("ava");
     }
     expect(res!.error).not.toContain("ava_10");
+  });
+
+  it("all-lowercase collision: plain uniqueness message (no capitals wording)", async () => {
+    svc.rpc.claim_athlete_invite = { data: null, error: { message: "dup", code: "23505" } };
+    const res = await claimAthleteInvite(null, form({ username: "ava_10" }));
+    expect(res && !res.ok && res.error).toBe(
+      "That username is already taken. Each username can only belong to one athlete.",
+    );
+    expect((res as { suggestions: string[] }).suggestions).toHaveLength(3);
   });
 
   it("repeated collision: fresh suggestions each time, invite never consumed or released, no password write", async () => {

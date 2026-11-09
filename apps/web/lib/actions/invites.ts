@@ -262,6 +262,8 @@ export async function claimAthleteInvite(
   return completeInviteClaim({
     codeHash,
     username,
+    usernameHadCapitals:
+      typeof rawUsername === "string" && /[A-Z]/.test(rawUsername),
     password: parsed.data.password,
   });
 }

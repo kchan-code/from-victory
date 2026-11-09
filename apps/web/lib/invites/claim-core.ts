@@ -41,6 +41,9 @@ export type ClaimFailure = {
 };
 
 export const USERNAME_TAKEN_MESSAGE =
+  "That username is already taken. Each username can only belong to one athlete.";
+/** Used when the athlete typed capitals: "Ava_10" collides with "ava_10". */
+export const USERNAME_TAKEN_CASE_MESSAGE =
   "That username is already taken. Capital letters don't make it different.";
 
 export const INVITE_UNUSABLE_MESSAGE =
@@ -52,6 +55,8 @@ export async function completeInviteClaim(input: {
   codeHash: string;
   /** Normalized username, or null when the athlete didn't send one. */
   username: string | null;
+  /** The typed username had capital letters (picks the clearer message). */
+  usernameHadCapitals?: boolean;
   password: string;
 }): Promise<ClaimFailure> {
   const service = createServiceClient();
@@ -67,7 +72,9 @@ export async function completeInviteClaim(input: {
       // can try again with the same code. Fresh suggestions every time.
       return {
         ok: false,
-        error: USERNAME_TAKEN_MESSAGE,
+        error: input.usernameHadCapitals
+          ? USERNAME_TAKEN_CASE_MESSAGE
+          : USERNAME_TAKEN_MESSAGE,
         field: "username",
         suggestions: generateUsernameSuggestions({
           exclude: input.username ? [input.username] : [],
