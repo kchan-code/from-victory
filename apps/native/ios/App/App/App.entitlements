@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- FV-630: universal links for athlete invites. Only www is associated
+	     (the apex 301s to www). The site's apple-app-site-association
+	     (apps/web/app/.well-known/apple-app-site-association/route.ts)
+	     claims ONLY /invite; SceneDelegate forwards cold + warm deliveries
+	     to Capacitor's App plugin, and the web handler
+	     (apps/web/components/native/NativeInviteLinkHandler.tsx) validates
+	     host/path/fragment before navigating. Requires the Associated
+	     Domains capability on the App ID / provisioning profile. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:www.fromvictoryapp.com</string>
+	</array>
+</dict>
+</plist>

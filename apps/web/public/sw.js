@@ -177,6 +177,9 @@ const BYPASS_PREFIXES = [
   // parent dashboard would render web prices in-shell.
   "/dashboard",
   "/pair",
+  // FV-630: invite setup reads the native-shell UA server-side and runs
+  // server actions; never served from Cache Storage.
+  "/invite",
   "/signin",
   "/signup",
   "/forgot-",

@@ -73,6 +73,18 @@ export function SignInChooser({
       <div hidden={active !== "athlete"}>
         <AthleteUsernameSignInForm />
       </div>
+
+      {/* FV-630: the in-app front door for a new athlete. Visible on both
+          tabs so a first-time athlete never has to find the right tab. */}
+      <div className="mt-8 pt-6 border-t border-hairline">
+        <a
+          href="/invite"
+          data-testid="signin-have-invite"
+          className="flex w-full items-center justify-center min-h-[44px] bg-charcoal text-cream border border-hairline hover:border-cream/30 font-heading font-semibold text-[15px] rounded-pill px-6 no-underline transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+        >
+          I have an invite
+        </a>
+      </div>
     </div>
   );
 }

@@ -404,6 +404,8 @@ export type Database = {
           created_at: string
           created_by: string
           expires_at: string
+          // FV-630: hand-added (20261106120000_athlete_invitations.sql).
+          purpose: "invite" | "recovery"
         }
         Insert: {
           athlete_id: string
@@ -413,6 +415,7 @@ export type Database = {
           created_at?: string
           created_by: string
           expires_at: string
+          purpose?: "invite" | "recovery"
         }
         Update: {
           athlete_id?: string
@@ -422,6 +425,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           expires_at?: string
+          purpose?: "invite" | "recovery"
         }
         Relationships: [
           {
@@ -850,6 +854,52 @@ export type Database = {
       }
     }
     Functions: {
+      // FV-630: hand-added (20261106120000_athlete_invitations.sql). The first
+      // three are service-role only; get_athlete_invite_statuses is
+      // authenticated (scoped to auth.uid()'s linked athletes, metadata only).
+      issue_athlete_invite: {
+        Args: {
+          p_parent_id: string
+          p_athlete_id: string
+          p_code_sha256: string
+          p_invite_expires_at: string
+          p_recovery_expires_at: string
+        }
+        Returns: {
+          purpose: "invite" | "recovery"
+          expires_at: string
+        }[]
+      }
+      claim_athlete_invite: {
+        Args: {
+          p_code_sha256: string
+          p_username: string | null
+        }
+        Returns: {
+          athlete_id: string
+          purpose: "invite" | "recovery"
+          username: string
+          consumed_at: string
+        }[]
+      }
+      release_athlete_invite: {
+        Args: {
+          p_code_sha256: string
+          p_consumed_at: string
+          p_clear_username: boolean
+        }
+        Returns: boolean
+      }
+      get_athlete_invite_statuses: {
+        Args: Record<string, never>
+        Returns: {
+          athlete_id: string
+          account_ready: boolean
+          signed_in_before: boolean
+          pending_purpose: "invite" | "recovery" | null
+          pending_expires_at: string | null
+        }[]
+      }
       // FV-164: SECURITY DEFINER RPC called by the cron route (service-role only).
       // Execute is revoked from anon + authenticated in the migration.
       due_push_reminders: {

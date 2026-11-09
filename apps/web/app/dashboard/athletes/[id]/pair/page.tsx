@@ -2,19 +2,24 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AuthShell } from "@/components/auth/AuthShell";
-import { PairingPanel } from "@/components/dashboard/PairingPanel";
+import { InvitePanel } from "@/components/dashboard/InvitePanel";
 import { requireParent } from "@/lib/auth/guards";
+import { getInviteStatusMap } from "@/lib/invites/status";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
-  title: "Pair a device",
+  title: "Invite athlete",
 };
 
 type Params = {
   params: { id: string };
 };
 
-export default async function PairAthletePage({ params }: Params) {
+/**
+ * Invite / recovery page for one athlete (FV-630). The route keeps its
+ * legacy `/pair` path so existing bookmarks and dashboard links still work.
+ */
+export default async function InviteAthletePage({ params }: Params) {
   await requireParent();
 
   const supabase = createClient();
@@ -28,9 +33,17 @@ export default async function PairAthletePage({ params }: Params) {
 
   if (!athlete) notFound();
 
+  const statusMap = await getInviteStatusMap();
+  const status = statusMap ? (statusMap.get(athlete.id) ?? null) : null;
+  const ready = status?.state === "ready";
+
   return (
     <AuthShell
-      title={`Pair ${athlete.first_name}'s device`}
+      title={
+        ready
+          ? `${athlete.first_name}'s account`
+          : `Invite ${athlete.first_name}`
+      }
       footer={
         <Link
           href="/dashboard"
@@ -40,9 +53,10 @@ export default async function PairAthletePage({ params }: Params) {
         </Link>
       }
     >
-      <PairingPanel
+      <InvitePanel
         athleteId={athlete.id}
         athleteFirstName={athlete.first_name}
+        status={status}
       />
     </AuthShell>
   );
