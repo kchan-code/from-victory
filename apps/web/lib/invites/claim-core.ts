@@ -3,6 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { setDeviceAthleteId } from "@/lib/auth/device";
+import { generateUsernameSuggestions } from "@/lib/auth/username-suggestions";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -27,7 +28,20 @@ import { createServiceClient } from "@/lib/supabase/service";
  *      no second sign-in.
  */
 
-export type ClaimFailure = { ok: false; error: string; field?: string };
+export type ClaimFailure = {
+  ok: false;
+  error: string;
+  field?: string;
+  /**
+   * FV-634: only on a real username collision (DB 23505). Neutral generated
+   * handles, never derived from the athlete or the attempted name, never
+   * checked for availability. Nothing else is echoed back.
+   */
+  suggestions?: string[];
+};
+
+export const USERNAME_TAKEN_MESSAGE =
+  "That username is already taken. Capital letters don't make it different.";
 
 export const INVITE_UNUSABLE_MESSAGE =
   "This code can't be used. It may have expired, been replaced, or already been used. Ask your parent to create a new one.";
@@ -49,10 +63,15 @@ export async function completeInviteClaim(input: {
 
   if (claimError) {
     if (claimError.code === "23505") {
+      // The whole claim rolled back: the invite is still live, so the athlete
+      // can try again with the same code. Fresh suggestions every time.
       return {
         ok: false,
-        error: "That username is already taken. Choose a different one.",
+        error: USERNAME_TAKEN_MESSAGE,
         field: "username",
+        suggestions: generateUsernameSuggestions({
+          exclude: input.username ? [input.username] : [],
+        }),
       };
     }
     if (claimError.code === "22023") {

@@ -205,7 +205,7 @@ export async function checkInvite(
 // ---------------------------------------------------------------------------
 
 export type ClaimInviteState =
-  | { ok: false; error: string; field?: string }
+  | { ok: false; error: string; field?: string; suggestions?: string[] }
   | null;
 
 const ClaimSchema = z
