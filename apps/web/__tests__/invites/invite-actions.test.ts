@@ -352,6 +352,53 @@ describe("claimAthleteInvite", () => {
     expect(svc.rpcCalls.map((c) => c.fn)).toEqual(["claim_athlete_invite"]);
   });
 
+  // ---- FV-634: suggestions on a real collision only -----------------------
+  it("mixed-case collision: submits the normalized handle, explains case-insensitivity, returns 3 valid suggestions and nothing else", async () => {
+    svc.rpc.claim_athlete_invite = { data: null, error: { message: "dup", code: "23505" } };
+    const res = await claimAthleteInvite(null, form({ username: "Ava_10" }));
+    expect(svc.rpcCalls[0]!.args.p_username).toBe("ava_10");
+    expect(res && !res.ok && res.error).toMatch(/already taken\. Capital letters don.t make it different/i);
+    // Only these keys: no attempted handle or other account data echoed back.
+    expect(Object.keys(res!).sort()).toEqual(["error", "field", "ok", "suggestions"]);
+    const suggestions = (res as { suggestions: string[] }).suggestions;
+    expect(suggestions).toHaveLength(3);
+    expect(new Set(suggestions).size).toBe(3);
+    for (const s of suggestions) {
+      expect(s).toMatch(/^[a-z]+_[a-z]+[1-9][0-9]{2}$/);
+      expect(s).not.toBe("ava_10");
+      expect(s).not.toContain("ava");
+    }
+    expect(res!.error).not.toContain("ava_10");
+  });
+
+  it("repeated collision: fresh suggestions each time, invite never consumed or released, no password write", async () => {
+    svc.rpc.claim_athlete_invite = { data: null, error: { message: "dup", code: "23505" } };
+    const a = (await claimAthleteInvite(null, form())) as { suggestions: string[] };
+    const b = (await claimAthleteInvite(null, form({ username: a.suggestions[0] }))) as {
+      suggestions: string[];
+    };
+    expect(b.suggestions).toHaveLength(3);
+    expect(b.suggestions).not.toContain(a.suggestions[0]); // the one just tried
+    expect(svc.rpcCalls.map((c) => c.fn)).toEqual(["claim_athlete_invite", "claim_athlete_invite"]);
+    expect(svc.updateUserByIdCalls).toEqual([]);
+    expect(setDeviceAthleteIdMock).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["invalid format", { username: "no spaces!" }, null],
+    ["reserved name", { username: "Admin" }, null],
+    ["too short", { username: "ab" }, null],
+    ["password mismatch", { password_confirm: "different1" }, null],
+    ["missing username (22023)", { username: "" }, { message: "username required", code: "22023" }],
+    ["unusable code", {}, "empty"],
+  ] as const)("no suggestions for a non-collision error: %s", async (_l, over, rpc) => {
+    if (rpc === "empty") svc.rpc.claim_athlete_invite = { data: [], error: null };
+    else if (rpc) svc.rpc.claim_athlete_invite = { data: null, error: rpc };
+    const res = await claimAthleteInvite(null, form(over as Record<string, string>));
+    expect(res && !res.ok).toBe(true);
+    expect(res).not.toHaveProperty("suggestions");
+  });
+
   it("first setup without a username (22023) → username field error", async () => {
     svc.rpc.claim_athlete_invite = { data: null, error: { message: "username required", code: "22023" } };
     const res = await claimAthleteInvite(null, form({ username: "" }));

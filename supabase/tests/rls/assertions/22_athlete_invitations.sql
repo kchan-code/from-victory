@@ -238,4 +238,44 @@ begin;
   end $$;
 rollback;
 
-\echo '  [PASS] 22_athlete_invitations (FV-630 AC a-h)'
+-- ---------------------------------------------------------------------------
+-- (i) FV-634: case-insensitive collision at the DB layer. A username stored
+--     with capitals still blocks its lowercase form (lower() unique index);
+--     the claim rolls back, the invite stays live, and a mixed-case value can
+--     never be written through the claim (the app lowercases first; the RPC
+--     refuses anything outside [a-z0-9_]).
+-- ---------------------------------------------------------------------------
+begin;
+  set local role service_role;
+  do $$
+  declare
+    p constant uuid := '10000000-0000-4000-8000-000000000001';
+    a constant uuid := '20000000-0000-4000-8000-00000000000a';
+    r record;
+  begin
+    update public.profiles set username = 'RLS_Mixed' where id = '20000000-0000-4000-8000-00000000000b';
+    update public.profiles set username = null where id = a;
+    perform public.issue_athlete_invite(p, a, repeat('6', 64), now() + interval '7 days', now() + interval '1 day');
+
+    begin
+      perform * from public.claim_athlete_invite(repeat('6', 64), 'rls_mixed');
+      raise exception 'FV-634 FAIL: lowercase claim of a mixed-case-stored username succeeded';
+    exception when unique_violation then null;
+    end;
+    assert (select consumed_at from public.device_pairings where code_sha256 = repeat('6', 64)) is null,
+      'FV-634 FAIL: case-insensitive collision consumed the invite';
+
+    begin
+      perform * from public.claim_athlete_invite(repeat('6', 64), 'Ava_Upper');
+      raise exception 'FV-634 FAIL: a mixed-case username was accepted by the claim RPC';
+    exception when invalid_parameter_value then null;
+    end;
+
+    -- Same invite, a fresh choice, still works after two failed attempts.
+    select * into r from public.claim_athlete_invite(repeat('6', 64), 'steady_comet412');
+    assert r.athlete_id = a and r.username = 'steady_comet412',
+      'FV-634 FAIL: invite unusable after a collision';
+  end $$;
+rollback;
+
+\echo '  [PASS] 22_athlete_invitations (FV-630 AC a-h, FV-634 i)'

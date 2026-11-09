@@ -515,12 +515,96 @@ describe("InviteFlow (athlete)", () => {
 
 // ===========================================================================
 describe("InviteSetupForm", () => {
-  it("invite: asks for a username + password", () => {
+  const SUGG = ["steady_comet412", "north_harbor733", "calm_summit205"];
+  const collision = {
+    ok: false,
+    error: "That username is already taken. Capital letters don't make it different.",
+    field: "username",
+    suggestions: SUGG,
+  };
+
+  it("invite: 'Choose a unique username' with rules + privacy hint wired to the input", () => {
     render(<InviteSetupForm code="7KQ2M9XD4HTRPW3B" firstName="Ava" mode="invite" username={null} />);
-    const user = screen.getByLabelText("Username") as HTMLInputElement;
+    const user = screen.getByLabelText("Choose a unique username") as HTMLInputElement;
     expect(user.name).toBe("username");
     expect(user.readOnly).toBe(false);
+    const rules = document.getElementById("username-rules")!;
+    expect(rules).toHaveTextContent("3–20 letters, numbers, or underscores. Not case-sensitive.");
+    expect(rules).toHaveTextContent("Use a nickname, not your full name or birthday.");
+    expect(user.getAttribute("aria-describedby")).toBe("username-rules");
+    expect(screen.queryByTestId("username-suggestions")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Start training" })).toBeInTheDocument();
+  });
+
+  it("collision: announces the error, keeps the rules, moves focus to the field, shows 3 suggestion buttons", () => {
+    formState.current = collision;
+    render(<InviteSetupForm code="7KQ2M9XD4HTRPW3B" firstName="Ava" mode="invite" username={null} />);
+    const user = screen.getByLabelText("Choose a unique username");
+    expect(screen.getByRole("alert")).toHaveTextContent(/Capital letters don.t make it different/);
+    expect(user.getAttribute("aria-describedby")).toBe("username-error username-rules");
+    expect(document.getElementById("username-rules")).toBeInTheDocument();
+    expect(document.activeElement).toBe(user);
+    const group = screen.getByRole("group", { name: "Try one of these:" });
+    const buttons = Array.from(group.querySelectorAll("button"));
+    expect(buttons.map((b) => b.textContent)).toEqual(SUGG);
+    for (const btn of buttons) {
+      expect(btn).toHaveAttribute("type", "button"); // never submits
+      expect(btn.className).toContain("min-h-[44px]");
+    }
+    expect(screen.queryByText(/available/i)).not.toBeInTheDocument();
+  });
+
+  it("tapping a suggestion fills the username only: no submit, passwords untouched, focus to the field", () => {
+    formState.current = collision;
+    render(<InviteSetupForm code="7KQ2M9XD4HTRPW3B" firstName="Ava" mode="invite" username={null} />);
+    const user = screen.getByLabelText("Choose a unique username") as HTMLInputElement;
+    const pw = screen.getByLabelText("Set your password") as HTMLInputElement;
+    const pw2 = screen.getByLabelText("Confirm password") as HTMLInputElement;
+    fireEvent.change(user, { target: { value: "Ava_10" } });
+    fireEvent.change(pw, { target: { value: "hunter2hunter2" } });
+    fireEvent.change(pw2, { target: { value: "hunter2hunter2" } });
+
+    const pick = screen.getByRole("button", { name: "north_harbor733" });
+    fireEvent.click(pick);
+
+    expect(user.value).toBe("north_harbor733");
+    expect(pw.value).toBe("hunter2hunter2");
+    expect(pw2.value).toBe("hunter2hunter2");
+    expect(formActionMock).not.toHaveBeenCalled();
+    expect(pick).toHaveAttribute("aria-pressed", "true");
+    expect(document.activeElement).toBe(user);
+    expect(screen.getByText("Username set to north_harbor733.")).toBeInTheDocument();
+  });
+
+  it("typed input survives a re-render with a new (repeated) collision response", () => {
+    formState.current = collision;
+    const view = render(<InviteSetupForm code="7KQ2M9XD4HTRPW3B" firstName="Ava" mode="invite" username={null} />);
+    fireEvent.change(screen.getByLabelText("Set your password"), { target: { value: "hunter2hunter2" } });
+    fireEvent.change(screen.getByLabelText("Choose a unique username"), { target: { value: "taken_too" } });
+    formState.current = { ...collision, suggestions: ["bold_ridge901", "keen_orbit318", "clear_delta640"] };
+    view.rerender(<InviteSetupForm code="7KQ2M9XD4HTRPW3B" firstName="Ava" mode="invite" username={null} />);
+    expect((screen.getByLabelText("Set your password") as HTMLInputElement).value).toBe("hunter2hunter2");
+    expect((screen.getByLabelText("Choose a unique username") as HTMLInputElement).value).toBe("taken_too");
+    expect(screen.getByRole("button", { name: "bold_ridge901" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "steady_comet412" })).not.toBeInTheDocument();
+  });
+
+  it("no suggestions for a non-collision username error, or for a password error", () => {
+    formState.current = { ok: false, error: "That username isn't available. Try something else.", field: "username" };
+    const view = render(<InviteSetupForm code="7KQ2M9XD4HTRPW3B" firstName="Ava" mode="invite" username={null} />);
+    expect(screen.queryByTestId("username-suggestions")).not.toBeInTheDocument();
+    formState.current = { ok: false, error: "Passwords do not match.", field: "password_confirm", suggestions: SUGG };
+    view.rerender(<InviteSetupForm code="7KQ2M9XD4HTRPW3B" firstName="Ava" mode="invite" username={null} />);
+    expect(screen.queryByTestId("username-suggestions")).not.toBeInTheDocument();
+  });
+
+  it("recovery is unchanged: no unique-username copy or suggestions, even if a state carried them", () => {
+    formState.current = { ok: false, error: "x", field: "username", suggestions: ["steady_comet412"] };
+    render(<InviteSetupForm code="7KQ2M9XD4HTRPW3B" firstName="Ava" mode="recovery" username="ava_10" />);
+    expect(screen.getByLabelText("Username")).toHaveAttribute("readonly");
+    expect(screen.queryByText("Choose a unique username")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("username-suggestions")).not.toBeInTheDocument();
+    expect(screen.getByText("This doesn't change.")).toBeInTheDocument();
   });
 
   it("recovery: username shown read-only and NOT submitted", () => {
