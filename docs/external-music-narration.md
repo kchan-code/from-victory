@@ -2,7 +2,7 @@
 
 Tracking: [FV-635](https://linear.app/adeptiv/issue/FV-635/allow-external-music-to-continue-underneath-guided-narration).
 
-Status: implementation under review; not released. Requested by KC on November 9, 2026: keep music from Spotify, Apple Music, or another music app playing underneath the From Victory voice. Silent reading mode is not a substitute.
+Status: KC authorized release on November 10, 2026; release preparation in progress. Requested by KC on November 9, 2026: keep music from Spotify, Apple Music, or another music app playing underneath the From Victory voice. Silent reading mode is not a substitute.
 
 ## Behavior and scope
 
@@ -62,4 +62,14 @@ KC reports “music works” on the corrected iPhone-only test harness and reque
 
 Product approved one Narration volume slider plus clear phone/music control instructions. No provider-specific music-volume control is added. The normal app has not yet been restored on the test phone: the current local development profile lacks the app’s Associated Domains entitlement. No Apple account capability changes or store release have been performed.
 
-Volume increment validation: 40 focused web tests passed across 9 files; production web build including typecheck and lint passed. Android debug build and all 14 unit tests passed. iOS simulator SDK compile passed. QA and privacy approved the increment. Updated physical-device slider behavior is not yet user-verified.
+Volume increment validation: 40 focused web tests passed across 9 files; production web build including typecheck and lint passed. Android debug build and all 14 unit tests passed. iOS simulator SDK compile passed. QA and privacy approved the increment. KC verified that the physical-device slider changes narration volume.
+
+## Release decision — November 10, 2026
+
+KC chose external music plus the narration-volume slider and explicitly authorized release. Independent provider volume and experimental iOS cue ducking are excluded. iOS retains `mixWithOthers`; Android retains its existing `MAY_DUCK` focus request, whose effect depends on the external player.
+
+The stronger harness sample was approximately -17 LUFS, while its original legacy session recording was -23.25 LUFS. Representative current production manifest clips already measure -17.41 to -16.67 LUFS (breathing -16.86 LUFS), and WAV assembly preserves gain. Therefore no extra mastering or source-asset regeneration is included. The temporary louder sample is not a production asset.
+
+User evidence confirms iPhone music coexistence and narration-slider operation. It does not establish a particular music provider, actual guided-flow playback, screen-lock duration, calls, or headphone-route behavior. Those release checks must not be represented as completed. The temporary test app still needs replacement with the normal signed app.
+
+Merged current main into the feature branch, preserving Android offline entry alongside narration-plugin registration. iOS build number is 7 (latest uploaded build was 6). A current signing profile with Associated Domains is required by the existing invitation feature.
