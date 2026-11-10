@@ -14,11 +14,21 @@
  *
  * PII NOTE
  * --------
- * fv_athlete_cache is { sport, firstName } — a first name and sport string.
+ * fv_athlete_cache is { sport, firstName, entitlementVerified } — a first
+ * name, a sport string and a boolean (FV-625).
  * It lives in localStorage (device-local, never traverses the network, never
  * enters any SW cache). It must be cleared on sign-out and device re-pair so
  * a prior athlete's name does not survive a device-account switch on shared
  * hardware. See also PregameClientShell (FV-107) for the full PII policy.
+ *
+ * ENTITLEMENT MARKER (FV-625)
+ * --------------------------
+ * `entitlementVerified: true` is written ONLY by PregameClientShell after an
+ * online GET /api/athlete/access said the athlete is entitled. Offline, the
+ * shell renders pregame only from an entry carrying that marker. Entries
+ * written before FV-625 have no marker and read as `false`, so they no longer
+ * unlock offline pregame (one online pregame open re-verifies). The marker is
+ * a boolean only — no level, status, plan or date is stored on the device.
  *
  * GUARDS
  * ------
@@ -39,6 +49,8 @@ type CachedSport = Sport;
 export type AthleteCache = {
   sport: CachedSport;
   firstName: string;
+  /** FV-625 — true only when written after an online entitlement check passed. */
+  entitlementVerified: boolean;
 };
 
 /**
@@ -63,6 +75,9 @@ export function readAthleteCache(): AthleteCache | null {
     return {
       sport: sport as CachedSport,
       firstName: (parsed as Record<string, unknown>).firstName as string,
+      // FV-625: strictly `true`; a pre-FV-625 entry (no field) is unverified.
+      entitlementVerified:
+        (parsed as Record<string, unknown>).entitlementVerified === true,
     };
   } catch {
     return null;
@@ -85,7 +100,9 @@ export function writeAthleteCache(cache: AthleteCache): void {
 
 /**
  * Clear the athlete cache. Call this on sign-out and device re-pair so a
- * prior athlete's name doesn't survive a device-account switch.
+ * prior athlete's name doesn't survive a device-account switch, and when
+ * training access is revoked (FV-625: PregameClientShell on a blocked
+ * answer, /athlete/paused on mount) so offline pregame stops unlocking.
  *
  * No-op on SSR. Never throws.
  */

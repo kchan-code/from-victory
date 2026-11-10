@@ -9,17 +9,34 @@
  *   1. Calls supabase.auth.getUser() (browser client, anon key, RLS still on).
  *   2. If no session → router.replace("/signin").
  *   3. If session → loads the athlete's profile row (RLS-gated) to get sport.
- *   4. Writes { sport, firstName } to localStorage under fv_athlete_cache
- *      (minimal athlete PII: sport is "hockey"/"basketball"; firstName is a
- *      first name).
- *   5. Applies the first-run gate: no sport_selected_at → redirect to onboarding.
- *   6. Renders PregameFlow.
+ *   4. Applies the first-run gate: no sport_selected_at → redirect to onboarding.
+ *   5. TRAINING ENTITLEMENT GATE (FV-625): GET /api/athlete/access — the same
+ *      decision requireActiveAccess() applies server-side to hub/daily/
+ *      practice/postgame/journey (resolveTrainingAccess in
+ *      lib/subscriptions/enforce.ts). Blocked → clear fv_athlete_cache and
+ *      router.replace() to the allowlisted redirect (/athlete/paused,
+ *      /athlete/paused?reason=seats, /subscribe). PregameFlow never renders
+ *      for a blocked athlete online.
+ *   6. Entitled → writes { sport, firstName, entitlementVerified: true } to
+ *      localStorage under fv_athlete_cache (minimal athlete PII: a sport
+ *      string and a first name, plus a boolean — no billing data).
+ *   7. Renders PregameFlow.
  *
  * OFFLINE path (fetch throws a network / TypeError — not a 4xx):
  *   1. Reads fv_athlete_cache from localStorage.
- *   2. If cache hit → renders PregameFlow with the cached sport.
- *   3. If cache miss → shows a "Connect first" notice (athlete has never
- *      visited the pregame page while online on this device).
+ *   2. If the entry carries entitlementVerified: true (written only after an
+ *      online entitlement check passed) → renders PregameFlow with the
+ *      cached sport.
+ *   3. Otherwise (no entry, or a pre-FV-625 entry with no marker) → shows the
+ *      "Connect first" notice.
+ *
+ * OFFLINE REVOCATION IS BOUNDED, NOT INSTANT (FV-625, KC 2026-11-09): a device
+ * that last verified entitlement while online keeps offline pregame until it
+ * next reaches the server. No new grace period is added and a valid
+ * subscriber is never denied offline. Revocation lands on the first online
+ * contact that sees the block: opening pregame (step 5 clears the cache), or
+ * any gated training page (they redirect to /athlete/paused, which clears the
+ * cache on mount). Sign-out / re-pair clear it too (FV-154).
  *
  * AUTH BYPASS PROTECTION:
  *   The single try/catch wraps BOTH getUser() and the subsequent profile fetch.
@@ -53,9 +70,11 @@ import { useRouter } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/client";
 import {
+  clearAthleteCache,
   readAthleteCache,
   writeAthleteCache,
 } from "@/lib/pregame/athlete-cache";
+import { isTrainingBlockedRedirect } from "@/lib/subscriptions/training-redirects";
 import { PregameFlow } from "./PregameFlow";
 import { SUPPORTED_SPORTS, type Sport } from "@/lib/sports";
 
@@ -192,8 +211,51 @@ export function PregameClientShell() {
           : "hockey";
         const firstName = profile.first_name ?? "";
 
-        // Cache for future offline use (device-local, non-network).
-        writeAthleteCache({ sport, firstName });
+        // ── Training entitlement gate (FV-625) ──
+        // Same decision as requireActiveAccess() on every other training
+        // surface. A network throw here falls to the catch below (offline
+        // path, verified cache only). Anything else that isn't a clean
+        // "entitled" answer never renders the flow.
+        const accessRes = await fetch("/api/athlete/access", {
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: { Accept: "application/json" },
+        });
+
+        if (cancelled) return;
+
+        if (accessRes.status === 401 || accessRes.status === 403) {
+          router.replace("/signin");
+          return;
+        }
+        if (!accessRes.ok) {
+          setState({ kind: "error", message: `access check ${accessRes.status}` });
+          return;
+        }
+
+        const access = (await accessRes.json()) as unknown;
+        if (cancelled) return;
+
+        const redirectTo =
+          typeof access === "object" && access !== null && "redirect" in access
+            ? (access as { redirect: unknown }).redirect
+            : undefined;
+
+        if (redirectTo !== null) {
+          if (isTrainingBlockedRedirect(redirectTo)) {
+            // Revoke offline pregame on this device, then go where every
+            // other training surface sends a blocked athlete.
+            clearAthleteCache();
+            router.replace(redirectTo);
+            return;
+          }
+          // Malformed / unexpected answer — never follow it, never render.
+          setState({ kind: "error", message: "Unexpected access response" });
+          return;
+        }
+
+        // Entitled. Cache for future offline use (device-local, non-network).
+        writeAthleteCache({ sport, firstName, entitlementVerified: true });
 
         setState({ kind: "ready", sport, firstName });
       } catch (err) {
@@ -202,16 +264,19 @@ export function PregameClientShell() {
         // Network error → try the localStorage cache.
         if (isNetworkError(err)) {
           const cached = readAthleteCache();
-          if (cached) {
+          // FV-625: only an entry written after a passed online entitlement
+          // check unlocks offline pregame. A pre-FV-625 entry (no marker) is
+          // treated like no cache.
+          if (cached?.entitlementVerified) {
             setState({
               kind: "ready",
               sport: cached.sport,
               firstName: cached.firstName,
             });
           } else {
-            // No cache: athlete has never loaded this page online on this
-            // device. We cannot authenticate them offline → show a prompt
-            // to reconnect first.
+            // No verified cache: athlete hasn't opened pregame online (with
+            // an entitlement check) on this device. We cannot authenticate
+            // them offline → show a prompt to reconnect first.
             setState({ kind: "offline-no-cache" });
           }
           return;
