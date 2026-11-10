@@ -73,3 +73,5 @@ The stronger harness sample was approximately -17 LUFS, while its original legac
 User evidence confirms iPhone music coexistence and narration-slider operation. It does not establish a particular music provider, actual guided-flow playback, screen-lock duration, calls, or headphone-route behavior. Those release checks must not be represented as completed. The temporary test app still needs replacement with the normal signed app.
 
 Merged current main into the feature branch, preserving Android offline entry alongside narration-plugin registration. iOS build number is 7 (latest uploaded build was 6). A current signing profile with Associated Domains is required by the existing invitation feature.
+
+Android build number is 10; Play Console already has versionCode 9, so it must not be reused.
