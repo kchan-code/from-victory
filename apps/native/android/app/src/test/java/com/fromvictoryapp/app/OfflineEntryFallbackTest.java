@@ -65,6 +65,18 @@ public class OfflineEntryFallbackTest {
     }
 
     @Test
+    public void defaultHttpsPortMatchesExplicit443() {
+        assertEquals(OPEN_PREGAME, decide("https://www.fromvictoryapp.com:443/", true, -2, APP));
+        assertEquals(OPEN_PREGAME, decide(APP + "/", true, -2, "https://www.fromvictoryapp.com:443"));
+    }
+
+    @Test
+    public void nonHttpsAppUrlsNeverAct() {
+        // Intended: local http dev servers (e.g. 10.0.2.2) get Capacitor's default behavior.
+        assertEquals(NONE, decide("http://10.0.2.2:3000/", true, -2, "http://10.0.2.2:3000"));
+    }
+
+    @Test
     public void followsTheConfiguredServer() {
         assertEquals(OPEN_PREGAME, decide(STAGING + "/", true, -2, STAGING));
         assertEquals(STAGING + "/athlete/pregame", OfflineEntryFallback.pregameUrl(STAGING));

@@ -50,6 +50,8 @@ public class OfflineEntryWebViewClient extends BridgeWebViewClient {
                 if (html != null) {
                     Logger.info("FV-639", "page offline (code " + error.getErrorCode() + ") -> local offline page");
                     view.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
+                } else {
+                    Logger.warn("FV-639", "offline page asset missing (" + OFFLINE_PAGE_ASSET + "); leaving default error page");
                 }
                 break;
             default:

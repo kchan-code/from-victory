@@ -84,7 +84,7 @@ public final class OfflineEntryFallback {
             || !"https".equalsIgnoreCase(app.getScheme())
             || failed.getHost() == null
             || !failed.getHost().equalsIgnoreCase(app.getHost())
-            || failed.getPort() != app.getPort()) {
+            || httpsPort(failed) != httpsPort(app)) {
             return Action.NONE;
         }
         String path = failed.getRawPath();
@@ -95,6 +95,11 @@ public final class OfflineEntryFallback {
         // Any other app page (including Pregame itself, so it can never loop)
         // -> the local offline page.
         return Action.SHOW_OFFLINE_PAGE;
+    }
+
+    /** https port with the default made explicit, so "host" and "host:443" match. */
+    private static int httpsPort(URI uri) {
+        return uri.getPort() == -1 ? 443 : uri.getPort();
     }
 
     /** Absolute Pregame URL on the app host, or null if appUrl is unusable. */
