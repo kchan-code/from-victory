@@ -10,21 +10,22 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
-## 2026-11-09 — Pregame needs an active subscription, like the rest of training (FV-625; effective when the PR deploys)
+## 2026-11-09 — Pregame follows the same access rule as the rest of training (FV-625; effective when the PR deploys)
 
-Game-Day Pregame now follows the same access rule as Daily Training, Pre-Practice,
-Post-Game and the hub: an active, trialing or complimentary family subscription. When
-access lapses, an athlete who opens Pregame is sent to the same "Training paused" screen
-as the other training pages. Before this, Pregame stayed open after a cancellation.
+Game-Day Pregame now uses the same access rule as Daily Training, Pre-Practice,
+Post-Game and the athlete hub. When the account's subscription is canceled or has expired,
+an athlete who opens Pregame while online is sent to the same "Training paused" screen as
+those pages; a self-paying adult athlete is sent to the subscribe page. Before this,
+Pregame stayed open after a cancellation.
 
-Pregame still works with no signal for a subscribed athlete, on a device where Pregame
-was opened online at least once since this change. If access lapses while that device
-stays offline, Pregame keeps opening offline until the device next connects and opens
-Pregame or any other training page; it then stops.
+Offline Pregame (no signal) still works for an athlete with access, once Pregame has been
+opened online on that device after this change. A device's earlier offline setup does not
+carry over: the first open needs a connection. If access ends while a device stays
+offline, Pregame keeps opening offline on that device until it next connects and opens
+Pregame or another training page; then it stops.
 
-Why it matters to a buyer: a subscription covers all training, Pregame included; no
-part of training stays open after a family cancels. Offline Pregame at the rink, field
-or course is unchanged for subscribers.
+Why it matters to a buyer: Pregame is part of the subscription, like all training, and
+it stops when the subscription ends.
 
 ## 2026-11-06 — Athlete invites replace device pairing links; password reset keeps the username (FV-630; effective when the PR deploys, iOS link-opening needs the next iOS build)
 

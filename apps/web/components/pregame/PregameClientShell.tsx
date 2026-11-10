@@ -213,9 +213,25 @@ export function PregameClientShell() {
 
         // ── Training entitlement gate (FV-625) ──
         // Same decision as requireActiveAccess() on every other training
-        // surface. A network throw here falls to the catch below (offline
-        // path, verified cache only). Anything else that isn't a clean
-        // "entitled" answer never renders the flow.
+        // surface. Three outcomes:
+        //   - entitled ({ redirect: null })      → render + write verified cache
+        //   - blocked (allowlisted redirect)     → revoke cache + redirect
+        //   - UNVERIFIABLE (network throw, 5xx, non-JSON 200 such as a
+        //     captive portal, malformed body, non-allowlisted redirect) →
+        //     treated exactly like offline: open only from a cache entry a
+        //     previous passed check wrote, otherwise show an error. Never
+        //     follows an unknown redirect. This adds no bypass beyond the
+        //     documented offline bound — going offline reaches the same
+        //     path — and only an explicit "blocked" answer revokes.
+        const unverifiable = (message: string) => {
+          const cached = readAthleteCache();
+          if (cached?.entitlementVerified) {
+            setState({ kind: "ready", sport, firstName });
+          } else {
+            setState({ kind: "error", message });
+          }
+        };
+
         const accessRes = await fetch("/api/athlete/access", {
           cache: "no-store",
           credentials: "same-origin",
@@ -229,11 +245,21 @@ export function PregameClientShell() {
           return;
         }
         if (!accessRes.ok) {
-          setState({ kind: "error", message: `access check ${accessRes.status}` });
+          unverifiable(`access check ${accessRes.status}`);
           return;
         }
 
-        const access = (await accessRes.json()) as unknown;
+        let access: unknown;
+        try {
+          access = await accessRes.json();
+        } catch (parseErr) {
+          // A body that dies mid-stream is a network error (catch below);
+          // anything else (HTML from a captive portal, etc.) is unverifiable.
+          if (isNetworkError(parseErr)) throw parseErr;
+          if (cancelled) return;
+          unverifiable("Unreadable access response");
+          return;
+        }
         if (cancelled) return;
 
         const redirectTo =
@@ -249,8 +275,8 @@ export function PregameClientShell() {
             router.replace(redirectTo);
             return;
           }
-          // Malformed / unexpected answer — never follow it, never render.
-          setState({ kind: "error", message: "Unexpected access response" });
+          // Malformed / unexpected answer — never follow it.
+          unverifiable("Unexpected access response");
           return;
         }
 

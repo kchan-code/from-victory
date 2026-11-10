@@ -159,8 +159,8 @@ describe("online — blocked (canceled / inactive / seat-paused)", () => {
   });
 });
 
-describe("online — ambiguous answers fail closed (never render, never follow)", () => {
-  it("does not follow a non-allowlisted redirect", async () => {
+describe("online — unverifiable answers are treated like offline (never follow, revoke nothing)", () => {
+  it("does not follow a non-allowlisted redirect (no verified cache → error)", async () => {
     online();
     accessAnswer({ redirect: "https://evil.example/" });
     render(<PregameClientShell />);
@@ -177,18 +177,60 @@ describe("online — ambiguous answers fail closed (never render, never follow)"
     expect(cacheEntry()).toBeNull();
   });
 
-  it("a 5xx shows the error state and leaves an existing verified cache alone", async () => {
-    seedCache({ sport: "basketball", firstName: "Test", entitlementVerified: true });
+  it("a 5xx with no verified cache shows the error state", async () => {
     online();
     accessAnswer({ error: "boom" }, 500);
     render(<PregameClientShell />);
     expect(await screen.findByText("Something went wrong")).toBeInTheDocument();
     expect(screen.queryByTestId("pregame-flow")).not.toBeInTheDocument();
+  });
+
+  it("a 5xx with a verified cache opens pregame (same as offline) and keeps the cache", async () => {
+    seedCache({ sport: "basketball", firstName: "Test", entitlementVerified: true });
+    online();
+    accessAnswer({ error: "boom" }, 503);
+    render(<PregameClientShell />);
+    expect(await screen.findByTestId("pregame-flow")).toHaveTextContent("basketball:Test");
+    expect(replaceMock).not.toHaveBeenCalled();
     expect(cacheEntry()).toEqual({
       sport: "basketball",
       firstName: "Test",
       entitlementVerified: true,
     });
+  });
+
+  it("a captive-portal HTML 200 with a verified cache opens pregame", async () => {
+    seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
+    online();
+    fetchMock.mockResolvedValue(
+      new Response("<html><body>Sign in to rink Wi-Fi</body></html>", {
+        status: 200,
+        headers: { "Content-Type": "text/html" },
+      }),
+    );
+    render(<PregameClientShell />);
+    expect(await screen.findByTestId("pregame-flow")).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  it("a captive-portal HTML 200 with only a pre-FV-625 (unverified) cache does NOT open pregame", async () => {
+    seedCache({ sport: "hockey", firstName: "Test" });
+    online();
+    fetchMock.mockResolvedValue(
+      new Response("<html>portal</html>", { status: 200, headers: { "Content-Type": "text/html" } }),
+    );
+    render(<PregameClientShell />);
+    expect(await screen.findByText("Something went wrong")).toBeInTheDocument();
+    expect(screen.queryByTestId("pregame-flow")).not.toBeInTheDocument();
+  });
+
+  it("a non-allowlisted redirect with a verified cache opens from cache but is never followed", async () => {
+    seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
+    online();
+    accessAnswer({ redirect: "/athlete" });
+    render(<PregameClientShell />);
+    expect(await screen.findByTestId("pregame-flow")).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
   });
 
   it("a 401 from the access check sends the athlete to /signin", async () => {
