@@ -3,7 +3,7 @@
 **Owner:** Kinny (KC) · **Status:** Internal/Closed testing (v7); production not started · **Store presence:** not public
 
 > **Current state — 2026-11-03 (read this first; it supersedes older lines below).**
-> - Play Console is enrolled as an organization (From Victory LLC). The app record exists. v7 (1.0.0) is on Closed testing ("Alpha") and Internal testing. **The next upload needs `versionCode` ≥ 8.**
+> - Play Console is enrolled as an organization (From Victory LLC). The app record exists. v8 (1.0.0) is on Internal testing (v7 on Closed testing "Alpha"). **The next upload needs `versionCode` ≥ 9.**
 > - **Play requires targetSdk 36** for new uploads. That ships with Capacitor 8 in PR #458 (FV-502, held). Capacitor 8 needs **Node 22+** and **JDK 21**. `main` is still targetSdk 35 until #458 merges.
 > - **Android is consumption-only (KC Path A, FV-619/FV-620).** No Play Billing or embedded Stripe. The remaining in-shell signup link (FV-621) and add-athlete billing path (FV-622) are removed by #562 and #563 (both held), so they still exist in the shell until those merge. Don't upload a build for production review before then.
 > - **Preflight before every signed build:** `apps/native/scripts/android-release-preflight.sh [--aab <bundle>]`. It is read-only: it checks the toolchain, SDK levels, versionCode, applicationId, production shell config, manifest, and whether upload-key signing is wired. It never prints signing secrets.
@@ -49,7 +49,7 @@ Bubblewrap / TWA — Capacitor is the Android track.
 | Display name | `From Victory` |
 | Hosted WebView URL | `https://www.fromvictoryapp.com` (`capacitor.config.ts` `server.url`) |
 | Native project | `apps/native` (`@from-victory/native`) |
-| Current `versionCode` / `versionName` | `8` / `1.0.0` in `apps/native/android/app/build.gradle` — next upload after Play's v7 (preflight enforces `--min-version-code`, default 8; bump by 1 for every further upload) |
+| Current `versionCode` / `versionName` | `9` / `1.0.0` in `apps/native/android/app/build.gradle` — next upload after Play's v8 (build 8 is on Internal testing; run preflight with `--min-version-code 9`; bump by 1 for every further upload) |
 | Billing in the APK | **None.** Stripe on the web product. Do not add Play Billing / IAP in this pass. |
 | Tracking / ads / crash SDKs | **None.** Do not add them to satisfy Play. |
 | Age floor | 13+. Minors 13–17 are parent-managed. Not a kids app. |
@@ -523,7 +523,7 @@ Web deploys do **not** need a new AAB. Ship a new bundle when you change:
 - Signing config
 - R8 / packaging options
 
-- [ ] You know the next upload is `versionCode 8` or higher (Play already has 7; see the current-state note at the top)
+- [ ] You know the next upload is `versionCode 9` or higher (Play already has 8; see the current-state note at the top)
 
 ---
 
