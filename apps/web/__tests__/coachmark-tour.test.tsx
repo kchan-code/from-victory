@@ -221,10 +221,16 @@ describe("CoachmarkTour — complete all stops sets flag", () => {
     render(<CoachmarkTour surface="hub" />);
     await act(async () => { vi.runAllTimers(); });
 
-    // Step 1→2→3 by clicking "Next"
-    for (let i = 0; i < 2; i++) {
-      const nextBtn = screen.getByTestId("coachmark-next-btn");
-      await act(async () => { fireEvent.click(nextBtn); vi.runAllTimers(); });
+    // Step 1→2→3 by clicking "Next". Pins the stop ORDER (FV-641): the hub
+    // tour follows the visual order — rhythm ring, Pregame hero, Daily tile.
+    const expectedTitles = [/your rhythm/i, /before a game/i, /start here/i];
+    for (let i = 0; i < 3; i++) {
+      const tooltip = screen.getByTestId("coachmark-tooltip");
+      expect(within(tooltip).getByText(expectedTitles[i])).toBeInTheDocument();
+      if (i < 2) {
+        const nextBtn = screen.getByTestId("coachmark-next-btn");
+        await act(async () => { fireEvent.click(nextBtn); vi.runAllTimers(); });
+      }
     }
 
     // On step 3 the button reads "Compete from victory" (TOUR_DONE_LINE) — click to finish
@@ -418,8 +424,8 @@ describe("CoachmarkTour — missing anchors", () => {
   });
 
   it("skips a missing intermediate stop and shows next available one", async () => {
-    // Inject only 2 of 3 hub anchors — skip hub-daily-card
-    const slugs = ["hub-rhythm-ring", "hub-pregame-card"];
+    // Inject only 2 of 3 hub anchors — skip the intermediate hub-pregame-card
+    const slugs = ["hub-rhythm-ring", "hub-daily-card"];
     slugs.forEach(injectAnchor);
 
     render(<CoachmarkTour surface="hub" />);
