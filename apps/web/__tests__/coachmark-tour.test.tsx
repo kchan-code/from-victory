@@ -223,7 +223,7 @@ describe("CoachmarkTour — complete all stops sets flag", () => {
 
     // Step 1→2→3 by clicking "Next". Pins the stop ORDER (FV-641): the hub
     // tour follows the visual order — rhythm ring, Pregame hero, Daily tile.
-    const expectedTitles = [/your rhythm/i, /before a game/i, /start here/i];
+    const expectedTitles = [/your rhythm/i, /before a game/i, /daily training/i];
     for (const [i, title] of expectedTitles.entries()) {
       const tooltip = screen.getByTestId("coachmark-tooltip");
       expect(within(tooltip).getByText(title)).toBeInTheDocument();
