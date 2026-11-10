@@ -39,6 +39,7 @@ vi.mock("@/components/pregame/PregameFlow", () => ({
   ),
 }));
 
+import { AuthApiError, AuthRetryableFetchError } from "@supabase/supabase-js";
 import { PregameClientShell } from "@/components/pregame/PregameClientShell";
 import { ATHLETE_CACHE_KEY } from "@/lib/pregame/athlete-cache";
 
@@ -67,7 +68,19 @@ function online() {
   });
 }
 
+// What supabase-js 2.x actually does when the auth server is unreachable:
+// it RETURNS { user: null, error: AuthRetryableFetchError } — it does not
+// throw. (Proven on an Android device for FV-625: the old shell treated this
+// as an auth failure and redirected offline athletes to /signin.)
 function offline() {
+  getUserMock.mockResolvedValue({
+    data: { user: null },
+    error: new AuthRetryableFetchError("TypeError: Failed to fetch", 0),
+  });
+}
+
+// Belt-and-braces: a thrown network error must take the same path.
+function offlineThrown() {
   getUserMock.mockRejectedValue(new TypeError("Failed to fetch"));
 }
 
@@ -279,6 +292,57 @@ describe("offline", () => {
     fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
     render(<PregameClientShell />);
     expect(await screen.findByText("Connect first")).toBeInTheDocument();
+  });
+});
+
+describe("offline detection — supabase-js returns errors instead of throwing (FV-625 device finding)", () => {
+  it("a THROWN network error with a verified cache also opens pregame", async () => {
+    seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
+    offlineThrown();
+    render(<PregameClientShell />);
+    expect(await screen.findByTestId("pregame-flow")).toBeInTheDocument();
+  });
+
+  it("offline (returned AuthRetryableFetchError) never redirects to /signin", async () => {
+    seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByTestId("pregame-flow")).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  it("a real auth answer (AuthApiError, e.g. revoked/invalid session) still goes to /signin, not the cache", async () => {
+    seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
+    getUserMock.mockResolvedValue({
+      data: { user: null },
+      error: new AuthApiError("invalid JWT", 401, "bad_jwt"),
+    });
+    render(<PregameClientShell />);
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/signin"));
+    expect(screen.queryByTestId("pregame-flow")).not.toBeInTheDocument();
+  });
+
+  it("connection drops between getUser and the profile read (postgrest returns a fetch error) → verified cache", async () => {
+    seedCache({ sport: "golf", firstName: "Test", entitlementVerified: true });
+    getUserMock.mockResolvedValue({ data: { user: { id: "a-1" } }, error: null });
+    singleMock.mockResolvedValue({
+      data: null,
+      error: { message: "TypeError: Failed to fetch", details: "", hint: "", code: "" },
+    });
+    render(<PregameClientShell />);
+    expect(await screen.findByTestId("pregame-flow")).toHaveTextContent("golf:Test");
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  it("a non-network profile error still goes to /signin", async () => {
+    seedCache({ sport: "golf", firstName: "Test", entitlementVerified: true });
+    getUserMock.mockResolvedValue({ data: { user: { id: "a-1" } }, error: null });
+    singleMock.mockResolvedValue({
+      data: null,
+      error: { message: "JSON object requested, multiple (or no) rows returned", details: "", hint: "", code: "PGRST116" },
+    });
+    render(<PregameClientShell />);
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/signin"));
   });
 });
 

@@ -22,7 +22,10 @@
  *      string and a first name, plus a boolean — no billing data).
  *   7. Renders PregameFlow.
  *
- * OFFLINE path (fetch throws a network / TypeError — not a 4xx):
+ * OFFLINE path — any of: getUser() RETURNS an AuthRetryableFetchError
+ * (supabase-js returns, does not throw, when the auth server is unreachable),
+ * the profile read returns a fetch-failure error, or a fetch throws a network
+ * error (matched by message):
  *   1. Reads fv_athlete_cache from localStorage.
  *   2. If the entry carries entitlementVerified: true (written only after an
  *      online entitlement check passed) → renders PregameFlow with the
@@ -45,15 +48,16 @@
  * offline pregame until their own online check passes.
  *
  * AUTH BYPASS PROTECTION:
- *   The single try/catch wraps BOTH getUser() and the subsequent profile fetch.
- *   The offline (cache) path is only taken when one of them throws a genuine
- *   network error (matched by message — see isNetworkError; NOT a bare
- *   TypeError, and NOT a 401/403 or a Supabase AuthError). A network throw from
- *   either call is safe to serve from cache: the cache was written earlier by a
- *   successfully-authenticated user on this device. The online failure modes —
- *   an AuthError result or a null user — instead redirect to /signin. A
- *   cookie-stuffing attacker online with fake session cookies gets an AuthError
- *   / null user → redirect to /signin, never the cache.
+ *   The offline (cache) path is taken only for "can't reach the server"
+ *   signals: a returned AuthRetryableFetchError from getUser(), a profile-read
+ *   error carrying a fetch failure, or a thrown network error (matched by
+ *   message — see isNetworkError; NOT a bare TypeError). A real auth answer —
+ *   AuthApiError, missing session, null user, a 401/403 — redirects to
+ *   /signin, never the cache. The offline path also requires an entry with
+ *   entitlementVerified: true, which only a successfully-authenticated,
+ *   entitled session on THIS device can have written (FV-625). So a
+ *   cookie-stuffing attacker, or anyone who forces a network failure, gets at
+ *   most what going offline already gives: the bounded window described below.
  *
  * PII POLICY:
  *   fv_athlete_cache is written to localStorage, not Cache Storage. It is
@@ -73,6 +77,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { isAuthRetryableFetchError } from "@supabase/supabase-js";
 
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -133,6 +138,20 @@ export function PregameClientShell() {
     let cancelled = false;
     const supabase = createClient();
 
+    // Offline / unreachable-backend path: open ONLY from an entry a previous
+    // passed online entitlement check wrote (FV-625), else "Connect first".
+    function openFromVerifiedCacheOrConnectFirst() {
+      const cached = readAthleteCache();
+      if (cached?.entitlementVerified) {
+        setState({ kind: "ready", sport: cached.sport, firstName: cached.firstName });
+      } else {
+        // No verified cache: athlete hasn't opened pregame online (with an
+        // entitlement check) on this device. We cannot authenticate them
+        // offline → show a prompt to reconnect first.
+        setState({ kind: "offline-no-cache" });
+      }
+    }
+
     async function init() {
       try {
         // ───────────────────────────────────────────────────────────────
@@ -164,6 +183,20 @@ export function PregameClientShell() {
 
         if (cancelled) return;
 
+        // FV-625 (fixes a latent FV-107 defect, proven on an Android device):
+        // supabase-js does NOT throw when the auth server is unreachable — it
+        // RETURNS an AuthRetryableFetchError (network failure, or a 5xx from
+        // the auth server). Before this check that result fell into the
+        // branch below and redirected an offline athlete to /signin, which is
+        // not cached → the browser's own offline error page. Offline pregame
+        // never actually opened. Retryable = "can't reach the server", so it
+        // takes the offline path. An AuthApiError / missing session (a real
+        // auth answer) still goes to /signin.
+        if (authError && isAuthRetryableFetchError(authError)) {
+          openFromVerifiedCacheOrConnectFirst();
+          return;
+        }
+
         // Hard auth failure (AuthError, invalid token) → redirect to sign-in.
         // This is NOT the offline path — it is a genuine auth failure online.
         if (authError) {
@@ -185,6 +218,14 @@ export function PregameClientShell() {
           .single();
 
         if (cancelled) return;
+
+        // postgrest-js also RETURNS (not throws) a fetch failure, as an error
+        // whose message carries the fetch error ("TypeError: Failed to
+        // fetch"). Connection dropped between the two reads → offline path.
+        if (profileError && isNetworkError(new Error(profileError.message))) {
+          openFromVerifiedCacheOrConnectFirst();
+          return;
+        }
 
         if (profileError || !profile) {
           router.replace("/signin");
@@ -231,6 +272,8 @@ export function PregameClientShell() {
         //     path — and only an explicit "blocked" answer revokes.
         const unverifiable = (message: string) => {
           const cached = readAthleteCache();
+          // Fresh profile values (we are online enough to have read them);
+          // the verified entry is what authorizes it.
           if (cached?.entitlementVerified) {
             setState({ kind: "ready", sport, firstName });
           } else {
@@ -293,24 +336,12 @@ export function PregameClientShell() {
       } catch (err) {
         if (cancelled) return;
 
-        // Network error → try the localStorage cache.
+        // Thrown network error (e.g. the access-check fetch) → offline path.
+        // FV-625: only an entry written after a passed online entitlement
+        // check unlocks offline pregame; a pre-FV-625 entry (no marker) is
+        // treated like no cache.
         if (isNetworkError(err)) {
-          const cached = readAthleteCache();
-          // FV-625: only an entry written after a passed online entitlement
-          // check unlocks offline pregame. A pre-FV-625 entry (no marker) is
-          // treated like no cache.
-          if (cached?.entitlementVerified) {
-            setState({
-              kind: "ready",
-              sport: cached.sport,
-              firstName: cached.firstName,
-            });
-          } else {
-            // No verified cache: athlete hasn't opened pregame online (with
-            // an entitlement check) on this device. We cannot authenticate
-            // them offline → show a prompt to reconnect first.
-            setState({ kind: "offline-no-cache" });
-          }
+          openFromVerifiedCacheOrConnectFirst();
           return;
         }
 
