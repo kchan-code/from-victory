@@ -91,7 +91,11 @@ describe("readAthleteCache", () => {
       ATHLETE_CACHE_KEY,
       JSON.stringify({ sport: "hockey", firstName: "Jordan" }),
     );
-    expect(readAthleteCache()).toEqual({ sport: "hockey", firstName: "Jordan" });
+    expect(readAthleteCache()).toEqual({
+      sport: "hockey",
+      firstName: "Jordan",
+      entitlementVerified: false,
+    });
   });
 
   it("returns the cached value for basketball", () => {
@@ -99,7 +103,41 @@ describe("readAthleteCache", () => {
       ATHLETE_CACHE_KEY,
       JSON.stringify({ sport: "basketball", firstName: "Sam" }),
     );
-    expect(readAthleteCache()).toEqual({ sport: "basketball", firstName: "Sam" });
+    expect(readAthleteCache()).toEqual({
+      sport: "basketball",
+      firstName: "Sam",
+      entitlementVerified: false,
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-625 entitlement marker
+// ---------------------------------------------------------------------------
+
+describe("readAthleteCache — FV-625 entitlementVerified marker", () => {
+  it("a pre-FV-625 entry (no marker) reads as NOT verified", () => {
+    localStorageStub.setItem(
+      ATHLETE_CACHE_KEY,
+      JSON.stringify({ sport: "hockey", firstName: "Jordan" }),
+    );
+    expect(readAthleteCache()?.entitlementVerified).toBe(false);
+  });
+
+  it("only a strict boolean true counts as verified (no truthy coercion)", () => {
+    for (const v of ["true", 1, "yes", {}, null]) {
+      localStorageStub.setItem(
+        ATHLETE_CACHE_KEY,
+        JSON.stringify({ sport: "hockey", firstName: "Jordan", entitlementVerified: v }),
+      );
+      expect(readAthleteCache()?.entitlementVerified).toBe(false);
+    }
+  });
+
+  it("stores only the boolean — no level, status, plan or date fields", () => {
+    writeAthleteCache({ sport: "golf", firstName: "Riley", entitlementVerified: true });
+    const raw = JSON.parse(localStorageStub.getItem(ATHLETE_CACHE_KEY) ?? "{}");
+    expect(Object.keys(raw).sort()).toEqual(["entitlementVerified", "firstName", "sport"]);
   });
 });
 
@@ -109,14 +147,22 @@ describe("readAthleteCache", () => {
 
 describe("writeAthleteCache", () => {
   it("writes a value that readAthleteCache returns", () => {
-    writeAthleteCache({ sport: "hockey", firstName: "Taylor" });
-    expect(readAthleteCache()).toEqual({ sport: "hockey", firstName: "Taylor" });
+    writeAthleteCache({ sport: "hockey", firstName: "Taylor", entitlementVerified: true });
+    expect(readAthleteCache()).toEqual({
+      sport: "hockey",
+      firstName: "Taylor",
+      entitlementVerified: true,
+    });
   });
 
   it("overwrites an existing cached value", () => {
-    writeAthleteCache({ sport: "hockey", firstName: "Jordan" });
-    writeAthleteCache({ sport: "basketball", firstName: "Alex" });
-    expect(readAthleteCache()).toEqual({ sport: "basketball", firstName: "Alex" });
+    writeAthleteCache({ sport: "hockey", firstName: "Jordan", entitlementVerified: true });
+    writeAthleteCache({ sport: "basketball", firstName: "Alex", entitlementVerified: true });
+    expect(readAthleteCache()).toEqual({
+      sport: "basketball",
+      firstName: "Alex",
+      entitlementVerified: true,
+    });
   });
 });
 
@@ -126,7 +172,7 @@ describe("writeAthleteCache", () => {
 
 describe("clearAthleteCache", () => {
   it("removes the key so readAthleteCache returns null", () => {
-    writeAthleteCache({ sport: "hockey", firstName: "Jordan" });
+    writeAthleteCache({ sport: "hockey", firstName: "Jordan", entitlementVerified: true });
     // Confirm it's there
     expect(readAthleteCache()).not.toBeNull();
     // Clear
@@ -143,7 +189,7 @@ describe("clearAthleteCache", () => {
 
   it("removes only the fv_athlete_cache key, not other keys", () => {
     localStorageStub.setItem("other_key", "other_value");
-    writeAthleteCache({ sport: "hockey", firstName: "Jordan" });
+    writeAthleteCache({ sport: "hockey", firstName: "Jordan", entitlementVerified: true });
     clearAthleteCache();
     // Athlete cache is gone
     expect(readAthleteCache()).toBeNull();
