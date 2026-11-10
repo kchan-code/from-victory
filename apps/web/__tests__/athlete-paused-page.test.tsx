@@ -18,8 +18,10 @@ import "@testing-library/jest-dom/vitest";
 
 vi.mock("server-only", () => ({}));
 
-const { requireAthleteMock, shellCapabilityMock } = vi.hoisted(() => ({
+const { requireAthleteMock, shellCapabilityMock, clearAthleteCacheMock } = vi.hoisted(() => ({
   requireAthleteMock: vi.fn(),
+  // FV-625 — the paused page revokes offline pregame on mount.
+  clearAthleteCacheMock: vi.fn(),
   // Google Play "no in-app purchase" compliance + FV-572/577 capability.
   // Defaults to null (ordinary web/PWA request) — individual tests override
   // per case with "legacy-native" | "ios-iap" | null.
@@ -39,6 +41,11 @@ vi.mock("@/lib/native-shell", () => ({
 // module to keep this test scoped and dependency-light.
 vi.mock("@/lib/actions/auth", () => ({
   signOut: vi.fn(),
+}));
+
+vi.mock("@/lib/pregame/athlete-cache", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/pregame/athlete-cache")>()),
+  clearAthleteCache: clearAthleteCacheMock,
 }));
 
 import AthletePausedPage from "@/app/athlete/paused/page";
@@ -164,5 +171,16 @@ describe("/athlete/paused — seat-pause copy variant (FV-585, KC decision D2)",
     expect(screen.getByTestId("paused-body-copy").textContent).not.toMatch(
       /\bkid\b/i,
     );
+  });
+});
+
+describe("/athlete/paused — FV-625 offline pregame revocation", () => {
+  it.each<[string, "athlete" | "adult_athlete", { reason?: string } | undefined]>([
+    ["billing pause (minor)", "athlete", undefined],
+    ["seat pause (minor)", "athlete", { reason: "seats" }],
+    ["adult self-payer", "adult_athlete", undefined],
+  ])("clears the offline-pregame cache on mount — %s", async (_label, role, params) => {
+    await renderPage(role, params);
+    expect(clearAthleteCacheMock).toHaveBeenCalledTimes(1);
   });
 });

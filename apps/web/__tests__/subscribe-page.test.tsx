@@ -186,6 +186,12 @@ vi.mock("@/components/subscribe/SubscribeForm", () => ({
   ),
 }));
 
+// FV-625/FV-636: stub the offline-pregame revocation so the page tests can
+// assert WHEN it mounts (only for a blocked payer under enforcement).
+vi.mock("@/components/pregame/ClearOfflinePregameOnMount", () => ({
+  ClearOfflinePregameOnMount: () => <span data-testid="clear-offline-pregame" />,
+}));
+
 import SubscribePage from "@/app/subscribe/page";
 
 afterEach(() => {
@@ -277,6 +283,41 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
     expect(
       container.querySelector('a[aria-label="Back to home"]'),
     ).toHaveAttribute("href", "/");
+  });
+
+  it("FV-636: a blocked adult landing here revokes this device's offline pregame", async () => {
+    asAdult();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("blocked");
+    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    expect(queryByTestId("clear-offline-pregame")).not.toBeNull();
+  });
+
+  it("a blocked parent landing here also revokes it (the family is blocked)", async () => {
+    asParent();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("blocked");
+    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    expect(queryByTestId("clear-offline-pregame")).not.toBeNull();
+  });
+
+  it("an ENTITLED adult browsing /subscribe keeps their offline pregame", async () => {
+    asAdult();
+    maybeSingleMock.mockResolvedValue({ data: { stripe_customer_id: "cus_1" }, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("full");
+    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    expect(queryByTestId("clear-offline-pregame")).toBeNull();
+  });
+
+  it("gating off → never revokes from /subscribe", async () => {
+    asAdult();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    accessLevelMock.mockResolvedValue("blocked");
+    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    expect(queryByTestId("clear-offline-pregame")).toBeNull();
   });
 
   it("keeps the role-aware target for an adult with active access", async () => {

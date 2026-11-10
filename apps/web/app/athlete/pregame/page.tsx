@@ -9,6 +9,12 @@
  *   - Online:  calls supabase.auth.getUser() → fetches profile → renders flow.
  *   - Offline: reads cached sport from localStorage → renders flow.
  *   - No session or genuine auth error → router.replace("/signin").
+ *   - Training entitlement (FV-625): online, the shell asks
+ *     GET /api/athlete/access (network-only — /api is on the SW bypass list)
+ *     and applies the same redirect as every other gated training surface
+ *     (/athlete/paused etc.). Offline, only a cache entry written after a
+ *     passed check opens the flow. This page itself stays PII-free and
+ *     un-gated server-side so the SW can keep caching it.
  *
  * Security invariants (unchanged from before FV-107):
  *   - RLS still governs every real DB read/write via the anon client.
