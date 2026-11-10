@@ -26,8 +26,16 @@ export function isTrainingBlockedRedirect(
 }
 
 /**
- * Wire shape of GET /api/athlete/access. `redirect: null` = entitled.
- * Only a redirect path ever crosses the wire — never a level, status, plan,
- * provider or date (the athlete path stays enum-opaque; see ./access).
+ * Wire shape of GET /api/athlete/access.
+ *   - `redirect: null` = entitled; otherwise one of the paths above.
+ *   - `offlineUntil` (FV-625, KC policy "until the last verified subscription
+ *     period ends") = the end of the verified entitlement period as an ISO
+ *     timestamp, or null = no offline window (blocked, no end date such as a
+ *     perpetual comp grant, or gating off). Always null when blocked.
+ * Nothing else crosses the wire — never a level, status, plan, provider,
+ * price, grant detail or parent identity (see ./access).
  */
-export type TrainingAccessResponse = { redirect: TrainingBlockedRedirect | null };
+export type TrainingAccessResponse = {
+  redirect: TrainingBlockedRedirect | null;
+  offlineUntil: string | null;
+};

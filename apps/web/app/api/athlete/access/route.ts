@@ -9,13 +9,22 @@
  * decision every other training surface gets from requireActiveAccess() —
  * both go through resolveTrainingAccess() in lib/subscriptions/enforce.ts.
  *
- * Response (200): `{ redirect: null }` when entitled, otherwise
- * `{ redirect: "/athlete/paused" | "/athlete/paused?reason=seats" | "/subscribe" }`.
+ * Response (200): `{ redirect: null, offlineUntil }` when entitled, otherwise
+ * `{ redirect: "/athlete/paused" | "/athlete/paused?reason=seats" | "/subscribe",
+ *    offlineUntil: null }`.
  *
- * PRIVACY: only a redirect path crosses the wire — never the access level,
- * subscription status, plan, provider, period dates, grant details or the
- * parent's identity. The athlete path stays enum-opaque (lib/subscriptions/
- * access.ts). `Cache-Control: no-store` keeps the answer out of every cache;
+ * `offlineUntil` (KC policy 2026-11-09): the end of the last verified
+ * entitlement period — the subscription's current period end (the trial end
+ * while trialing), a dated comp grant's expiry, or the Apple expiry — as an
+ * ISO timestamp; null when the entitlement has no end date (a perpetual comp
+ * grant), when gating is off, or when blocked. The shell reuses a verified
+ * answer offline only until that moment.
+ *
+ * PRIVACY: a redirect path plus that ONE timestamp cross the wire — never the
+ * access level, subscription status, plan, provider, price, grant details or
+ * the parent's identity. On the minor-athlete path the timestamp is the
+ * family's renewal/trial/grant end date (reviewed by kids-privacy-officer,
+ * FV-625). `Cache-Control: no-store` keeps the answer out of every cache;
  * /api/* is also on the service worker's network-only bypass list.
  *
  * 401 — no session. 403 — a signed-in non-athlete (parents have no training).
@@ -27,7 +36,10 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
-import { resolveTrainingAccess } from "@/lib/subscriptions/enforce";
+import {
+  resolveOfflineEntitlementUntil,
+  resolveTrainingAccess,
+} from "@/lib/subscriptions/enforce";
 import type { TrainingAccessResponse } from "@/lib/subscriptions/training-redirects";
 
 const NO_STORE = { "Cache-Control": "private, no-store, max-age=0" };
@@ -57,8 +69,8 @@ export async function GET() {
   }
 
   const decision = await resolveTrainingAccess({ role: profile.role });
-  const body: TrainingAccessResponse = {
-    redirect: decision.allowed ? null : decision.redirectTo,
-  };
+  const body: TrainingAccessResponse = decision.allowed
+    ? { redirect: null, offlineUntil: await resolveOfflineEntitlementUntil() }
+    : { redirect: decision.redirectTo, offlineUntil: null };
   return NextResponse.json(body, { status: 200, headers: NO_STORE });
 }

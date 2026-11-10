@@ -17,9 +17,11 @@
  *      router.replace() to the allowlisted redirect (/athlete/paused,
  *      /athlete/paused?reason=seats, /subscribe). PregameFlow never renders
  *      for a blocked athlete online.
- *   6. Entitled → writes { sport, firstName, entitlementVerified: true } to
- *      localStorage under fv_athlete_cache (minimal athlete PII: a sport
- *      string and a first name, plus a boolean — no billing data).
+ *   6. Entitled → writes { sport, firstName, offlineUntil, verifiedAt } to
+ *      localStorage under fv_athlete_cache: minimal athlete PII (a sport
+ *      string and a first name) plus the server's `offlineUntil` (end of the
+ *      verified entitlement period, or null) and this device's clock at the
+ *      check. No status, plan or provider.
  *   7. Renders PregameFlow.
  *
  * OFFLINE path — any of: getUser() RETURNS an AuthRetryableFetchError
@@ -27,29 +29,33 @@
  * the profile read returns a fetch-failure error, or a fetch throws a network
  * error (matched by message):
  *   1. Reads fv_athlete_cache from localStorage.
- *   2. If the entry carries entitlementVerified: true (written only after an
- *      online entitlement check passed) → renders PregameFlow with the
- *      cached sport.
- *   3. Otherwise (no entry, or a pre-FV-625 entry with no marker) → shows the
- *      "Connect first" notice.
+ *   2. If hasUsableOfflineEntitlement(entry) — written by a passed online
+ *      check, device clock now >= that check and strictly before
+ *      `offlineUntil` → renders PregameFlow with the cached sport.
+ *   3. Otherwise → the "Connect first" notice (no entry; or an entry whose
+ *      window expired, has no end date, is legacy/corrupted, or whose clock
+ *      went back before the last check).
  *
- * OFFLINE REVOCATION IS BOUNDED, NOT INSTANT (FV-625, KC 2026-11-09): a device
- * that last verified entitlement while online keeps offline pregame until it
- * next reaches the server. No new grace period is added and a valid
- * subscriber is never denied offline. Revocation lands on the first online
- * contact that sees the block: opening pregame (step 5 clears the cache), or
- * — for a MINOR athlete — any gated training page (they redirect to
- * /athlete/paused, which clears the cache on mount). A blocked adult_athlete
- * is redirected to /subscribe instead, which does NOT clear it, so for an
- * adult only reopening pregame online revokes. (Moot today: this shell sends
- * adult_athlete to /dashboard before any cache write — FV-636; that fix must
- * also clear on its blocked path.) Sign-out / re-pair clear it too (FV-154).
+ * OFFLINE POLICY (KC 2026-11-09: "Until the last verified subscription period
+ * ends"): a verified answer is reused offline only until `offlineUntil` — the
+ * end of the period the server last verified (subscription period, trial end,
+ * dated comp grant or Apple expiry; see getParentOfflineEntitlementUntil). No
+ * grace is added past it and there is no indefinite offline access: an
+ * entitlement with NO end date (a perpetual comp grant — e.g. the Play
+ * reviewer account) gets `offlineUntil: null` → pregame is online-only for it.
+ * EXPLICIT revocation is immediate on the first online contact that sees the
+ * block, and stays revoked offline (the entry is removed): opening pregame
+ * (step 5 clears the cache); for a MINOR athlete, any gated training page
+ * (redirect to /athlete/paused, which clears on mount). Sign-out / re-pair
+ * clear it too (FV-154). A cancellation the
+ * device never sees online still ends offline use at `offlineUntil`.
  *
  * NO CROSS-ATHLETE CACHE: the entry is not keyed by user, so every way a
  * different athlete can become signed in on this device clears it first:
  * /signin + sign-out + forget-device (FV-154) and /invite + /pair
  * (ClearOfflinePregameOnMount, FV-625). A new athlete therefore has no
- * offline pregame until their own online check passes.
+ * offline pregame until their own online check passes — and that check
+ * OVERWRITES the entry with their own payer's `offlineUntil`.
  *
  * AUTH BYPASS PROTECTION:
  *   The offline (cache) path is taken only for "can't reach the server"
@@ -57,11 +63,15 @@
  *   error carrying a fetch failure, or a thrown network error (matched by
  *   message — see isNetworkError; NOT a bare TypeError). A real auth answer —
  *   AuthApiError, missing session, null user, a 401/403 — redirects to
- *   /signin, never the cache. The offline path also requires an entry with
- *   entitlementVerified: true, which only a successfully-authenticated,
- *   entitled session on THIS device can have written (FV-625). So a
- *   cookie-stuffing attacker, or anyone who forces a network failure, gets at
- *   most what going offline already gives: the bounded window described below.
+ *   /signin, never the cache. The offline path also requires a usable
+ *   offline entitlement, which only a successfully-authenticated, entitled
+ *   session on THIS device can have written (FV-625). So a cookie-stuffing
+ *   attacker, or anyone who forces a network failure, gets at most what
+ *   going offline already gives: the window above, ending at `offlineUntil`.
+ *   localStorage is device-local and user-editable: someone who edits it by
+ *   hand, or sets the device clock back inside the window, can extend
+ *   OFFLINE use on their own device — inherent to any offline client check;
+ *   every online contact still re-decides from the server.
  *
  * PII POLICY:
  *   fv_athlete_cache is written to localStorage, not Cache Storage. It is
@@ -86,6 +96,7 @@ import { isAuthRetryableFetchError } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import {
   clearAthleteCache,
+  hasUsableOfflineEntitlement,
   readAthleteCache,
   writeAthleteCache,
 } from "@/lib/pregame/athlete-cache";
@@ -127,7 +138,10 @@ function isNetworkError(err: unknown): boolean {
 type ShellState =
   | { kind: "loading" }
   | { kind: "ready"; sport: Sport; firstName: string }
-  | { kind: "offline-no-cache" }
+  // `recheck`: an entry exists but can't open offline (window expired, no end
+  // date, legacy/corrupted, clock went back) — the athlete has connected
+  // before, so "open it once while connected" would be the wrong advice.
+  | { kind: "offline-no-cache"; recheck: boolean }
   | { kind: "error"; message: string };
 
 // ---------------------------------------------------------------------------
@@ -143,16 +157,16 @@ export function PregameClientShell() {
     const supabase = createClient();
 
     // Offline / unreachable-backend path: open ONLY from an entry a previous
-    // passed online entitlement check wrote (FV-625), else "Connect first".
+    // passed online entitlement check wrote whose window is still open
+    // (FV-625), else "Connect first".
     function openFromVerifiedCacheOrConnectFirst() {
       const cached = readAthleteCache();
-      if (cached?.entitlementVerified) {
+      if (cached && hasUsableOfflineEntitlement(cached)) {
         setState({ kind: "ready", sport: cached.sport, firstName: cached.firstName });
       } else {
-        // No verified cache: athlete hasn't opened pregame online (with an
-        // entitlement check) on this device. We cannot authenticate them
-        // offline → show a prompt to reconnect first.
-        setState({ kind: "offline-no-cache" });
+        // No usable verified entry → we cannot confirm access offline →
+        // prompt to reconnect first.
+        setState({ kind: "offline-no-cache", recheck: cached !== null });
       }
     }
 
@@ -277,8 +291,8 @@ export function PregameClientShell() {
         const unverifiable = (message: string) => {
           const cached = readAthleteCache();
           // Fresh profile values (we are online enough to have read them);
-          // the verified entry is what authorizes it.
-          if (cached?.entitlementVerified) {
+          // the verified, unexpired entry is what authorizes it.
+          if (hasUsableOfflineEntitlement(cached)) {
             setState({ kind: "ready", sport, firstName });
           } else {
             setState({ kind: "error", message });
@@ -333,17 +347,23 @@ export function PregameClientShell() {
           return;
         }
 
-        // Entitled. Cache for future offline use (device-local, non-network).
-        writeAthleteCache({ sport, firstName, entitlementVerified: true });
+        // Entitled. Cache for future offline use (device-local, non-network),
+        // bounded by the server's verified period end. Always OVERWRITES —
+        // the latest verification wins, including "no end date" (null).
+        const rawUntil = (access as { offlineUntil?: unknown }).offlineUntil;
+        const offlineUntil =
+          typeof rawUntil === "string" && Number.isFinite(Date.parse(rawUntil))
+            ? rawUntil
+            : null;
+        writeAthleteCache({ sport, firstName, offlineUntil, verifiedAt: Date.now() });
 
         setState({ kind: "ready", sport, firstName });
       } catch (err) {
         if (cancelled) return;
 
         // Thrown network error (e.g. the access-check fetch) → offline path.
-        // FV-625: only an entry written after a passed online entitlement
-        // check unlocks offline pregame; a pre-FV-625 entry (no marker) is
-        // treated like no cache.
+        // FV-625: only an unexpired entry written after a passed online
+        // entitlement check unlocks offline pregame.
         if (isNetworkError(err)) {
           openFromVerifiedCacheOrConnectFirst();
           return;
@@ -396,10 +416,17 @@ export function PregameClientShell() {
             athlete's sport is resolved (that's why we're here — no cache, no
             network), so there is no SportConfig to thread. Sport-neutral is
             the only correct answer. */}
-        <p className="font-body text-[14px] leading-[1.55] text-cream/60">
-          Open the pregame session once while connected so it&rsquo;s ready
-          when you have no signal.
-        </p>
+        {state.recheck ? (
+          <p className="font-body text-[14px] leading-[1.55] text-cream/60">
+            Pregame needs a connection to check your access. Connect, then
+            open it again.
+          </p>
+        ) : (
+          <p className="font-body text-[14px] leading-[1.55] text-cream/60">
+            Open the pregame session once while connected so it&rsquo;s ready
+            when you have no signal.
+          </p>
+        )}
       </div>
     );
   }

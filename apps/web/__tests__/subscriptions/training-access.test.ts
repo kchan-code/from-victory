@@ -11,8 +11,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-const { accessMock, seatMock, redirectMock } = vi.hoisted(() => ({
+const { accessMock, untilMock, seatMock, redirectMock } = vi.hoisted(() => ({
   accessMock: vi.fn(),
+  untilMock: vi.fn(),
   seatMock: vi.fn(),
   redirectMock: vi.fn((to: string) => {
     throw new Error(`NEXT_REDIRECT:${to}`);
@@ -21,6 +22,7 @@ const { accessMock, seatMock, redirectMock } = vi.hoisted(() => ({
 
 vi.mock("@/lib/subscriptions/access", () => ({
   getAccessForCurrentUser: accessMock,
+  getOfflineEntitlementUntilForCurrentUser: untilMock,
 }));
 vi.mock("@/lib/subscriptions/seat-state", () => ({
   getAthleteSeatStatusForCurrentUser: seatMock,
@@ -29,6 +31,7 @@ vi.mock("next/navigation", () => ({ redirect: redirectMock }));
 
 import {
   requireActiveAccess,
+  resolveOfflineEntitlementUntil,
   resolveTrainingAccess,
   type CallerRole,
 } from "@/lib/subscriptions/enforce";
@@ -165,5 +168,23 @@ describe("isTrainingBlockedRedirect — client allowlist", () => {
     42,
   ])("rejects %s", (v) => {
     expect(isTrainingBlockedRedirect(v)).toBe(false);
+  });
+});
+
+describe("resolveOfflineEntitlementUntil (FV-625 offline bound)", () => {
+  it("gating off → null without reading anything (online-only, never unbounded)", async () => {
+    process.env.ENFORCE_SUBSCRIPTION_GATING = "false";
+    await expect(resolveOfflineEntitlementUntil()).resolves.toBeNull();
+    expect(untilMock).not.toHaveBeenCalled();
+  });
+
+  it("gating on → the current user's verified period end", async () => {
+    untilMock.mockResolvedValue("2026-12-09T12:00:00.000Z");
+    await expect(resolveOfflineEntitlementUntil()).resolves.toBe("2026-12-09T12:00:00.000Z");
+  });
+
+  it("gating on, no end date → null", async () => {
+    untilMock.mockResolvedValue(null);
+    await expect(resolveOfflineEntitlementUntil()).resolves.toBeNull();
   });
 });

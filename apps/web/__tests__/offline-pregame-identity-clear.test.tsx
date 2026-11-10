@@ -3,7 +3,7 @@
  *
  * FV-625 — no cross-athlete offline pregame.
  *
- * The offline-pregame entry (`fv_athlete_cache`, entitlementVerified) is not
+ * The offline-pregame entry (`fv_athlete_cache`, offlineUntil window) is not
  * keyed by user, so every path that can put a DIFFERENT athlete on a device
  * must drop it before that athlete can reach pregame offline:
  *   - /signin (ClearCacheOnMount, FV-154 — pre-existing)
@@ -72,7 +72,7 @@ import { PREGAME_SESSION_CACHE_KEY } from "@/lib/pregame/session-cache";
 function seedPreviousAthlete() {
   store.set(
     ATHLETE_CACHE_KEY,
-    JSON.stringify({ sport: "hockey", firstName: "Previous", entitlementVerified: true }),
+    JSON.stringify({ sport: "hockey", firstName: "Previous", offlineUntil: new Date(Date.now() + 86_400_000).toISOString(), verifiedAt: Date.now() }),
   );
 }
 

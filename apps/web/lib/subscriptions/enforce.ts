@@ -44,7 +44,8 @@
  *   service worker may cache, so it must never call requireAthlete() or
  *   redirect server-side. Instead PregameClientShell asks
  *   GET /api/athlete/access, which returns resolveTrainingAccess()'s decision
- *   (a redirect path or null — never billing data), and applies the SAME
+ *   (a redirect path or null, plus — when allowed — the offline bound
+ *   `offlineUntil`; never a level, status, plan or provider), and applies the SAME
  *   redirect targets client-side. NEVER gate:
  *     /subscribe, /signin, /signup, /billing, /auth/*, legal pages,
  *     crisis-resource displays, or the athlete settings/signout paths.
@@ -58,7 +59,10 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
-import { getAccessForCurrentUser } from "./access";
+import {
+  getAccessForCurrentUser,
+  getOfflineEntitlementUntilForCurrentUser,
+} from "./access";
 import type { AccessLevel } from "./access-level";
 import { getAthleteSeatStatusForCurrentUser } from "./seat-state";
 import type { TrainingBlockedRedirect } from "./training-redirects";
@@ -138,6 +142,22 @@ export async function resolveTrainingAccess(opts: {
     allowed: false,
     redirectTo: opts.role === "athlete" ? "/athlete/paused" : "/subscribe",
   };
+}
+
+/**
+ * FV-625 — how long the signed-in user's verified entitlement may be reused
+ * OFFLINE by the pregame shell (KC policy 2026-11-09: "until the last
+ * verified subscription period ends"). Call only after resolveTrainingAccess
+ * returned allowed. See getParentOfflineEntitlementUntil in ./access for the
+ * per-source rule (perpetual comp grants contribute no end → null).
+ *
+ * Gating off → null: with enforcement off there is no verified entitlement
+ * period to bound offline use by, so pregame is online-only rather than
+ * unbounded offline.
+ */
+export async function resolveOfflineEntitlementUntil(): Promise<string | null> {
+  if (!isSubscriptionEnforcementEnabled()) return null;
+  return getOfflineEntitlementUntilForCurrentUser();
 }
 
 // ---------------------------------------------------------------------------

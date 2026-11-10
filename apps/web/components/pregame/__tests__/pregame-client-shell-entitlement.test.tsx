@@ -5,23 +5,31 @@
  *
  * Pregame was the one training surface a canceled family could still open
  * (FV-619 Android staging row 23b). These tests pin:
- *   - online + entitled  → flow renders, offline cache written WITH the marker
+ *   - online + entitled  → flow renders, cache written with the server's
+ *                          offlineUntil + this device's verifiedAt
  *   - online + blocked   → flow never renders, cache cleared, allowlisted redirect
- *   - offline            → flow only from a marker-carrying cache entry
+ *   - offline            → flow only while the verified window is open
+ *                          (KC policy: until the last verified period ends)
  *   - anything ambiguous → never renders the flow, never follows the body
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
-const { replaceMock, getUserMock, singleMock } = vi.hoisted(() => ({
-  replaceMock: vi.fn(),
-  getUserMock: vi.fn(),
-  singleMock: vi.fn(),
-}));
+const { replaceMock, getUserMock, singleMock, router } = vi.hoisted(() => {
+  const replaceMock = vi.fn();
+  return {
+    replaceMock,
+    getUserMock: vi.fn(),
+    singleMock: vi.fn(),
+    // Stable identity, like Next's real useRouter(): the shell's effect
+    // depends on [router], so a fresh object per render would re-run it.
+    router: { replace: replaceMock },
+  };
+});
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: replaceMock }),
+  useRouter: () => router,
 }));
 
 vi.mock("@/lib/supabase/client", () => ({
@@ -85,12 +93,22 @@ function offlineThrown() {
 }
 
 function accessAnswer(body: unknown, status = 200) {
-  fetchMock.mockResolvedValue(
+  // A fresh Response per call (a body can only be read once).
+  fetchMock.mockImplementation(async () =>
     new Response(JSON.stringify(body), {
       status,
       headers: { "Content-Type": "application/json" },
     }),
   );
+}
+
+// A verified, unexpired entry: checked a second ago, valid for 30 days.
+const DAY = 86_400_000;
+function verified(): { offlineUntil: string; verifiedAt: number } {
+  return {
+    offlineUntil: new Date(Date.now() + 30 * DAY).toISOString(),
+    verifiedAt: Date.now() - 1000,
+  };
 }
 
 function seedCache(entry: Record<string, unknown>) {
@@ -121,7 +139,9 @@ afterEach(() => {
 describe("online — entitled", () => {
   it("renders the flow and writes the verified cache only after the access check", async () => {
     online();
-    accessAnswer({ redirect: null });
+    const until = new Date(Date.now() + 20 * DAY).toISOString();
+    accessAnswer({ redirect: null, offlineUntil: until });
+    const before = Date.now();
 
     render(<PregameClientShell />);
 
@@ -130,12 +150,53 @@ describe("online — entitled", () => {
       "/api/athlete/access",
       expect.objectContaining({ cache: "no-store", credentials: "same-origin" }),
     );
-    expect(cacheEntry()).toEqual({
+    const entry = cacheEntry();
+    expect(entry).toEqual({
       sport: "basketball",
       firstName: "Test",
-      entitlementVerified: true,
+      offlineUntil: until,
+      verifiedAt: expect.any(Number),
     });
+    expect(entry?.verifiedAt as number).toBeGreaterThanOrEqual(before);
     expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["null (perpetual comp grant / gating off)", null],
+    ["missing", undefined],
+    ["unparseable", "next tuesday"],
+    ["wrong type", 1767225600000],
+  ])("offlineUntil %s → renders online but writes NO offline window", async (_label, value) => {
+    online();
+    accessAnswer(value === undefined ? { redirect: null } : { redirect: null, offlineUntil: value });
+    render(<PregameClientShell />);
+    expect(await screen.findByTestId("pregame-flow")).toBeInTheDocument();
+    expect(cacheEntry()).toMatchObject({ offlineUntil: null });
+  });
+
+  it("a no-end-date entitlement is online-only: the next offline open says Connect first", async () => {
+    online();
+    accessAnswer({ redirect: null, offlineUntil: null });
+    const first = render(<PregameClientShell />);
+    expect(await screen.findByTestId("pregame-flow")).toBeInTheDocument();
+    first.unmount();
+
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByText("Connect first")).toBeInTheDocument();
+    expect(screen.getByText(/needs a connection to check your access/)).toBeInTheDocument();
+    expect(screen.queryByTestId("pregame-flow")).not.toBeInTheDocument();
+  });
+
+  it("each online check OVERWRITES the window (renewal extends, latest answer wins)", async () => {
+    const old = verified();
+    seedCache({ sport: "basketball", firstName: "Test", ...old });
+    online();
+    const renewed = new Date(Date.now() + 60 * DAY).toISOString();
+    accessAnswer({ redirect: null, offlineUntil: renewed });
+    render(<PregameClientShell />);
+    await screen.findByTestId("pregame-flow");
+    expect(cacheEntry()?.offlineUntil).toBe(renewed);
   });
 });
 
@@ -145,7 +206,7 @@ describe("online — blocked (canceled / inactive / seat-paused)", () => {
     "/athlete/paused?reason=seats",
     "/subscribe",
   ])("redirects to %s, never renders the flow, and revokes the offline cache", async (to) => {
-    seedCache({ sport: "basketball", firstName: "Test", entitlementVerified: true });
+    seedCache({ sport: "basketball", firstName: "Test", ...verified() });
     online();
     accessAnswer({ redirect: to });
 
@@ -157,7 +218,7 @@ describe("online — blocked (canceled / inactive / seat-paused)", () => {
   });
 
   it("then an offline reload on the same device cannot reopen pregame", async () => {
-    seedCache({ sport: "basketball", firstName: "Test", entitlementVerified: true });
+    seedCache({ sport: "basketball", firstName: "Test", ...verified() });
     online();
     accessAnswer({ redirect: "/athlete/paused" });
     const first = render(<PregameClientShell />);
@@ -199,21 +260,18 @@ describe("online — unverifiable answers are treated like offline (never follow
   });
 
   it("a 5xx with a verified cache opens pregame (same as offline) and keeps the cache", async () => {
-    seedCache({ sport: "basketball", firstName: "Test", entitlementVerified: true });
+    const seeded = { sport: "basketball", firstName: "Test", ...verified() };
+    seedCache(seeded);
     online();
     accessAnswer({ error: "boom" }, 503);
     render(<PregameClientShell />);
     expect(await screen.findByTestId("pregame-flow")).toHaveTextContent("basketball:Test");
     expect(replaceMock).not.toHaveBeenCalled();
-    expect(cacheEntry()).toEqual({
-      sport: "basketball",
-      firstName: "Test",
-      entitlementVerified: true,
-    });
+    expect(cacheEntry()).toEqual(seeded);
   });
 
   it("a captive-portal HTML 200 with a verified cache opens pregame", async () => {
-    seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
+    seedCache({ sport: "hockey", firstName: "Test", ...verified() });
     online();
     fetchMock.mockResolvedValue(
       new Response("<html><body>Sign in to rink Wi-Fi</body></html>", {
@@ -224,6 +282,20 @@ describe("online — unverifiable answers are treated like offline (never follow
     render(<PregameClientShell />);
     expect(await screen.findByTestId("pregame-flow")).toBeInTheDocument();
     expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  it("a 5xx with an EXPIRED verified cache does not open pregame", async () => {
+    seedCache({
+      sport: "basketball",
+      firstName: "Test",
+      offlineUntil: new Date(Date.now() - 1).toISOString(),
+      verifiedAt: Date.now() - 31 * DAY,
+    });
+    online();
+    accessAnswer({ error: "boom" }, 503);
+    render(<PregameClientShell />);
+    expect(await screen.findByText("Something went wrong")).toBeInTheDocument();
+    expect(screen.queryByTestId("pregame-flow")).not.toBeInTheDocument();
   });
 
   it("a captive-portal HTML 200 with only a pre-FV-625 (unverified) cache does NOT open pregame", async () => {
@@ -238,7 +310,7 @@ describe("online — unverifiable answers are treated like offline (never follow
   });
 
   it("a non-allowlisted redirect with a verified cache opens from cache but is never followed", async () => {
-    seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
+    seedCache({ sport: "hockey", firstName: "Test", ...verified() });
     online();
     accessAnswer({ redirect: "/athlete" });
     render(<PregameClientShell />);
@@ -257,7 +329,7 @@ describe("online — unverifiable answers are treated like offline (never follow
 
 describe("offline", () => {
   it("a valid subscriber's verified cache still opens pregame with no signal", async () => {
-    seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
+    seedCache({ sport: "hockey", firstName: "Test", ...verified() });
     offline();
     render(<PregameClientShell />);
     expect(await screen.findByTestId("pregame-flow")).toHaveTextContent("hockey:Test");
@@ -272,14 +344,42 @@ describe("offline", () => {
     expect(screen.queryByTestId("pregame-flow")).not.toBeInTheDocument();
   });
 
-  it("no cache → Connect first", async () => {
+  it("no cache → Connect first (first-time copy)", async () => {
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByText("Connect first")).toBeInTheDocument();
+    expect(screen.getByText(/Open the pregame session once while connected/)).toBeInTheDocument();
+  });
+
+  it("a legacy boolean-marker entry (entitlementVerified: true, no window) does not unlock offline", async () => {
+    seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByText("Connect first")).toBeInTheDocument();
+    expect(screen.queryByTestId("pregame-flow")).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["garbage offlineUntil", { offlineUntil: "garbage", verifiedAt: Date.now() - 1000 }],
+    ["garbage verifiedAt", { offlineUntil: new Date(Date.now() + DAY).toISOString(), verifiedAt: "x" }],
+    ["missing verifiedAt", { offlineUntil: new Date(Date.now() + DAY).toISOString() }],
+  ])("corrupted cache (%s) → Connect first, never the flow", async (_l, fields) => {
+    seedCache({ sport: "hockey", firstName: "Test", ...fields });
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByText("Connect first")).toBeInTheDocument();
+    expect(screen.queryByTestId("pregame-flow")).not.toBeInTheDocument();
+  });
+
+  it("unparseable JSON in the cache → Connect first", async () => {
+    window.localStorage.setItem(ATHLETE_CACHE_KEY, "{not json");
     offline();
     render(<PregameClientShell />);
     expect(await screen.findByText("Connect first")).toBeInTheDocument();
   });
 
   it("network drops between auth and the access check → verified cache path", async () => {
-    seedCache({ sport: "golf", firstName: "Test", entitlementVerified: true });
+    seedCache({ sport: "golf", firstName: "Test", ...verified() });
     online();
     fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
     render(<PregameClientShell />);
@@ -295,16 +395,111 @@ describe("offline", () => {
   });
 });
 
+describe("offline window — clock / expiry boundary (KC policy: until the last verified period ends)", () => {
+  const T0 = Date.parse("2026-11-09T12:00:00.000Z");
+  const UNTIL = "2026-12-09T12:00:00.000Z";
+  const UNTIL_MS = Date.parse(UNTIL);
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function at(ms: number) {
+    // Fake ONLY Date — testing-library's waitFor keeps real timers.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(ms);
+  }
+
+  it("1 ms before the period end → opens offline", async () => {
+    seedCache({ sport: "hockey", firstName: "Test", offlineUntil: UNTIL, verifiedAt: T0 });
+    at(UNTIL_MS - 1);
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByTestId("pregame-flow")).toBeInTheDocument();
+  });
+
+  it("exactly AT the period end → expired, Connect first (no grace)", async () => {
+    seedCache({ sport: "hockey", firstName: "Test", offlineUntil: UNTIL, verifiedAt: T0 });
+    at(UNTIL_MS);
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByText("Connect first")).toBeInTheDocument();
+    expect(screen.getByText(/needs a connection to check your access/)).toBeInTheDocument();
+    expect(screen.queryByTestId("pregame-flow")).not.toBeInTheDocument();
+  });
+
+  it("a cancellation the device never saw online still ends offline use at the period end", async () => {
+    seedCache({ sport: "hockey", firstName: "Test", offlineUntil: UNTIL, verifiedAt: T0 });
+    at(UNTIL_MS + 7 * DAY);
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByText("Connect first")).toBeInTheDocument();
+  });
+
+  it("device clock set back before the last online check → Connect first", async () => {
+    seedCache({ sport: "hockey", firstName: "Test", offlineUntil: UNTIL, verifiedAt: T0 });
+    at(T0 - 1);
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByText("Connect first")).toBeInTheDocument();
+  });
+
+  it("an expired window is renewed by the next online check", async () => {
+    seedCache({ sport: "hockey", firstName: "Test", offlineUntil: UNTIL, verifiedAt: T0 });
+    at(UNTIL_MS + DAY);
+    online();
+    const next = new Date(UNTIL_MS + 31 * DAY).toISOString();
+    accessAnswer({ redirect: null, offlineUntil: next });
+    render(<PregameClientShell />);
+    await screen.findByTestId("pregame-flow");
+    expect(cacheEntry()).toMatchObject({ offlineUntil: next, verifiedAt: UNTIL_MS + DAY });
+  });
+});
+
+describe("user switch on one device — no cross-athlete window", () => {
+  it("athlete B's online check replaces athlete A's window with B's own (here: none)", async () => {
+    seedCache({ sport: "hockey", firstName: "A", ...verified() });
+    getUserMock.mockResolvedValue({ data: { user: { id: "b-2" } }, error: null });
+    singleMock.mockResolvedValue({
+      data: { role: "athlete", first_name: "B", sport: "basketball", sport_selected_at: "2026-11-01T00:00:00Z" },
+      error: null,
+    });
+    accessAnswer({ redirect: null, offlineUntil: null });
+    const first = render(<PregameClientShell />);
+    expect(await screen.findByTestId("pregame-flow")).toHaveTextContent("basketball:B");
+    expect(cacheEntry()).toMatchObject({ firstName: "B", sport: "basketball", offlineUntil: null });
+    first.unmount();
+
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByText("Connect first")).toBeInTheDocument();
+    expect(screen.queryByText(/hockey:A/)).not.toBeInTheDocument();
+  });
+
+  it("athlete B blocked → A's window is removed, not reused", async () => {
+    seedCache({ sport: "hockey", firstName: "A", ...verified() });
+    getUserMock.mockResolvedValue({ data: { user: { id: "b-2" } }, error: null });
+    singleMock.mockResolvedValue({
+      data: { role: "athlete", first_name: "B", sport: "basketball", sport_selected_at: "2026-11-01T00:00:00Z" },
+      error: null,
+    });
+    accessAnswer({ redirect: "/athlete/paused", offlineUntil: null });
+    render(<PregameClientShell />);
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/athlete/paused"));
+    expect(cacheEntry()).toBeNull();
+  });
+});
+
 describe("offline detection — supabase-js returns errors instead of throwing (FV-625 device finding)", () => {
   it("a THROWN network error with a verified cache also opens pregame", async () => {
-    seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
+    seedCache({ sport: "hockey", firstName: "Test", ...verified() });
     offlineThrown();
     render(<PregameClientShell />);
     expect(await screen.findByTestId("pregame-flow")).toBeInTheDocument();
   });
 
   it("offline (returned AuthRetryableFetchError) never redirects to /signin", async () => {
-    seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
+    seedCache({ sport: "hockey", firstName: "Test", ...verified() });
     offline();
     render(<PregameClientShell />);
     expect(await screen.findByTestId("pregame-flow")).toBeInTheDocument();
@@ -312,7 +507,7 @@ describe("offline detection — supabase-js returns errors instead of throwing (
   });
 
   it("an auth-server 5xx (returned AuthRetryableFetchError status 503) is offline-like: verified cache opens, never /signin", async () => {
-    seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
+    seedCache({ sport: "hockey", firstName: "Test", ...verified() });
     getUserMock.mockResolvedValue({
       data: { user: null },
       error: new AuthRetryableFetchError("Service Unavailable", 503),
@@ -333,7 +528,7 @@ describe("offline detection — supabase-js returns errors instead of throwing (
   });
 
   it("a real auth answer (AuthApiError, e.g. revoked/invalid session) still goes to /signin, not the cache", async () => {
-    seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
+    seedCache({ sport: "hockey", firstName: "Test", ...verified() });
     getUserMock.mockResolvedValue({
       data: { user: null },
       error: new AuthApiError("invalid JWT", 401, "bad_jwt"),
@@ -344,7 +539,7 @@ describe("offline detection — supabase-js returns errors instead of throwing (
   });
 
   it("connection drops between getUser and the profile read (postgrest returns a fetch error) → verified cache", async () => {
-    seedCache({ sport: "golf", firstName: "Test", entitlementVerified: true });
+    seedCache({ sport: "golf", firstName: "Test", ...verified() });
     getUserMock.mockResolvedValue({ data: { user: { id: "a-1" } }, error: null });
     singleMock.mockResolvedValue({
       data: null,
@@ -356,7 +551,7 @@ describe("offline detection — supabase-js returns errors instead of throwing (
   });
 
   it("a non-network profile error still goes to /signin", async () => {
-    seedCache({ sport: "golf", firstName: "Test", entitlementVerified: true });
+    seedCache({ sport: "golf", firstName: "Test", ...verified() });
     getUserMock.mockResolvedValue({ data: { user: { id: "a-1" } }, error: null });
     singleMock.mockResolvedValue({
       data: null,

@@ -1,19 +1,23 @@
 /**
  * FV-625 — GET /api/athlete/access (pregame's training-entitlement check).
  *
- * Pins: auth/role handling, that the body carries ONLY a redirect path
- * (privacy: no level/status/plan/provider/date ever reaches the athlete), and
- * that the answer is never cacheable.
+ * Pins: auth/role handling, that the body carries ONLY a redirect path plus
+ * the offline bound `offlineUntil` (KC policy: until the last verified period
+ * ends) — never a level/status/plan/provider — that the bound is computed
+ * only when allowed, and that the answer is never cacheable.
  */
 import { describe, it, expect, vi, afterEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-const { getUserMock, singleMock, resolveMock } = vi.hoisted(() => ({
+const { getUserMock, singleMock, resolveMock, untilMock } = vi.hoisted(() => ({
   getUserMock: vi.fn(),
   singleMock: vi.fn(),
   resolveMock: vi.fn(),
+  untilMock: vi.fn(),
 }));
+
+const UNTIL = "2026-12-09T12:00:00.000Z";
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: () => ({
@@ -23,6 +27,7 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 vi.mock("@/lib/subscriptions/enforce", () => ({
   resolveTrainingAccess: resolveMock,
+  resolveOfflineEntitlementUntil: untilMock,
 }));
 
 import { GET } from "@/app/api/athlete/access/route";
@@ -65,23 +70,32 @@ describe("GET /api/athlete/access", () => {
     expect(resolveMock).not.toHaveBeenCalled();
   });
 
-  it("entitled athlete → { redirect: null } and nothing else", async () => {
+  it("entitled athlete → { redirect: null, offlineUntil } and nothing else", async () => {
     signedIn("athlete");
     resolveMock.mockResolvedValue({ allowed: true, level: "full" });
+    untilMock.mockResolvedValue(UNTIL);
     const res = await GET();
     expect(res.status).toBe(200);
     expectNoStore(res);
-    expect(await res.json()).toEqual({ redirect: null });
+    expect(await res.json()).toEqual({ redirect: null, offlineUntil: UNTIL });
     expect(resolveMock).toHaveBeenCalledWith({ role: "athlete" });
+  });
+
+  it("entitled with no end date (perpetual comp grant / gating off) → offlineUntil: null", async () => {
+    signedIn("athlete");
+    resolveMock.mockResolvedValue({ allowed: true, level: "full" });
+    untilMock.mockResolvedValue(null);
+    expect(await (await GET()).json()).toEqual({ redirect: null, offlineUntil: null });
   });
 
   it("degraded is still entitled and the level never crosses the wire", async () => {
     signedIn("athlete");
     resolveMock.mockResolvedValue({ allowed: true, level: "degraded" });
+    untilMock.mockResolvedValue(UNTIL);
     const res = await GET();
     const text = await res.text();
-    expect(JSON.parse(text)).toEqual({ redirect: null });
-    expect(text).not.toMatch(/degraded|full|blocked|level/);
+    expect(JSON.parse(text)).toEqual({ redirect: null, offlineUntil: UNTIL });
+    expect(text).not.toMatch(/degraded|full|blocked|level|status|plan|provider|stripe|apple|grant/i);
   });
 
   it("canceled family → { redirect: '/athlete/paused' } only", async () => {
@@ -90,7 +104,9 @@ describe("GET /api/athlete/access", () => {
     const res = await GET();
     expect(res.status).toBe(200);
     expectNoStore(res);
-    expect(await res.json()).toEqual({ redirect: "/athlete/paused" });
+    expect(await res.json()).toEqual({ redirect: "/athlete/paused", offlineUntil: null });
+    // The bound is never computed (or sent) for a blocked user.
+    expect(untilMock).not.toHaveBeenCalled();
   });
 
   it("seat-paused athlete → /athlete/paused?reason=seats", async () => {
@@ -101,13 +117,22 @@ describe("GET /api/athlete/access", () => {
     });
     expect(await (await GET()).json()).toEqual({
       redirect: "/athlete/paused?reason=seats",
+      offlineUntil: null,
     });
+    expect(untilMock).not.toHaveBeenCalled();
   });
 
   it("adult_athlete passes its own role through (blocked → /subscribe)", async () => {
     signedIn("adult_athlete");
     resolveMock.mockResolvedValue({ allowed: false, redirectTo: "/subscribe" });
-    expect(await (await GET()).json()).toEqual({ redirect: "/subscribe" });
+    expect(await (await GET()).json()).toEqual({ redirect: "/subscribe", offlineUntil: null });
     expect(resolveMock).toHaveBeenCalledWith({ role: "adult_athlete" });
+  });
+
+  it("FV-636: an entitled adult_athlete gets an offline bound like a minor athlete", async () => {
+    signedIn("adult_athlete");
+    resolveMock.mockResolvedValue({ allowed: true, level: "full" });
+    untilMock.mockResolvedValue(UNTIL);
+    expect(await (await GET()).json()).toEqual({ redirect: null, offlineUntil: UNTIL });
   });
 });

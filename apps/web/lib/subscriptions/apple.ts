@@ -140,6 +140,38 @@ export async function getAppleAccessLevelForPayer(
   payerId: string,
   now: Date = new Date(),
 ): Promise<AccessLevel> {
+  return (await readAppleEntitlementForPayer(service, payerId, now)).level;
+}
+
+/**
+ * FV-625 offline Pregame bound: the latest time-bound END across the payer's
+ * eligible Apple rows that currently grant access — same environment scoping
+ * and the same single read as `getAppleAccessLevelForPayer`.
+ *
+ *   - `subscribed` (not blocked)        → `expires_at`
+ *   - `in_grace_period` (not blocked)   → `grace_period_expires_at`
+ *   - `in_billing_retry`                → no end date (Apple is still
+ *     retrying; there is no forward bound) — contributes nothing
+ *   - `expired` / `revoked` / blocked   → nothing
+ *
+ * The 6h renewal-latency skew (`DEFAULT_APPLE_SKEW_MS`) is NOT added: the
+ * offline bound is the period end itself, not a grace window. Returns null
+ * when no eligible row has a usable end, or on a read error (fail closed —
+ * a shorter offline window, never a longer one).
+ */
+export async function getAppleEntitlementEndForPayer(
+  service: ServiceClient,
+  payerId: string,
+  now: Date = new Date(),
+): Promise<string | null> {
+  return (await readAppleEntitlementForPayer(service, payerId, now)).latestEnd;
+}
+
+async function readAppleEntitlementForPayer(
+  service: ServiceClient,
+  payerId: string,
+  now: Date,
+): Promise<{ level: AccessLevel; latestEnd: string | null }> {
   const { isAllowlisted } = await readSandboxAllowlistMembership(
     service,
     payerId,
@@ -158,11 +190,11 @@ export async function getAppleAccessLevelForPayer(
       subsError.message,
     );
     // Fail closed: a DB error must never risk granting access.
-    return "blocked";
+    return { level: "blocked", latestEnd: null };
   }
 
   if (!rows || rows.length === 0) {
-    return "blocked";
+    return { level: "blocked", latestEnd: null };
   }
 
   const eligibleRows = rows.filter(
@@ -170,6 +202,8 @@ export async function getAppleAccessLevelForPayer(
   );
 
   let best: AccessLevel = "blocked";
+  let latestEndMs: number | null = null;
+  let latestEnd: string | null = null;
   for (const row of eligibleRows) {
     const level = appleSubscriptionAccessLevel(
       row.status as AppleSubscriptionStatus,
@@ -178,9 +212,23 @@ export async function getAppleAccessLevelForPayer(
       now,
     );
     best = bestLevel(best, level);
+
+    if (level === "blocked") continue;
+    const end =
+      row.status === "subscribed"
+        ? row.expires_at
+        : row.status === "in_grace_period"
+          ? row.grace_period_expires_at
+          : null;
+    if (end === null) continue;
+    const endMs = new Date(end).getTime();
+    if (Number.isFinite(endMs) && (latestEndMs === null || endMs > latestEndMs)) {
+      latestEndMs = endMs;
+      latestEnd = new Date(endMs).toISOString();
+    }
   }
 
-  return best;
+  return { level: best, latestEnd };
 }
 
 // ---------------------------------------------------------------------------
