@@ -25,6 +25,14 @@ import java.net.URISyntaxException;
  * no signal) shows the shell's bundled offline page (www/index.html, the
  * existing cold-start copy) instead of Chromium's raw error page.
  *
+ * Pregame itself gets a few bounded retries first: on an offline cold start the
+ * WebView's first Pregame navigation can reach the network before the Service
+ * Worker is ready to answer it (observed on the emulator: roughly half of cold
+ * starts after the app had been stopped for 5+ s), while an immediate second
+ * navigation is answered from the SW cache. During the retries the user sees
+ * the local offline page ("Connecting to training..."), never Chromium's error
+ * page; once the retries are spent, that page simply stays.
+ *
  * Pure Java (no android.* types) so it is unit-tested on the JVM.
  */
 public final class OfflineEntryFallback {
@@ -40,6 +48,9 @@ public final class OfflineEntryFallback {
     static final int ERROR_CONNECT = -6;
     static final int ERROR_IO = -7;
     static final int ERROR_TIMEOUT = -8;
+
+    /** How many times a failed Pregame load is retried before giving up. */
+    static final int MAX_PREGAME_RETRIES = 3;
 
     private OfflineEntryFallback() {}
 
@@ -57,6 +68,8 @@ public final class OfflineEntryFallback {
         NONE,
         /** Open {@link #PREGAME_PATH} on the app host (offline entry). */
         OPEN_PREGAME,
+        /** Show the bundled offline page, then retry {@link #PREGAME_PATH} after {@link #retryDelayMs}. */
+        RETRY_PREGAME,
         /** Show the bundled offline page (no network involved). */
         SHOW_OFFLINE_PAGE
     }
@@ -66,8 +79,10 @@ public final class OfflineEntryFallback {
      * @param isMainFrame whether it was the top-level document
      * @param errorCode   WebViewClient error code
      * @param appUrl      the shell's configured app URL (Bridge#getAppUrl)
+     * @param pregameRetriesSoFar Pregame retries already made in this offline sequence
      */
-    public static Action decide(String failedUrl, boolean isMainFrame, int errorCode, String appUrl) {
+    public static Action decide(
+        String failedUrl, boolean isMainFrame, int errorCode, String appUrl, int pregameRetriesSoFar) {
         if (!isMainFrame || !isConnectivityError(errorCode) || failedUrl == null || appUrl == null) {
             return Action.NONE;
         }
@@ -92,9 +107,20 @@ public final class OfflineEntryFallback {
         if (path == null || path.isEmpty() || "/".equals(path)) {
             return Action.OPEN_PREGAME;
         }
-        // Any other app page (including Pregame itself, so it can never loop)
-        // -> the local offline page.
+        // Pregame: a bounded number of retries (the SW may not have been ready),
+        // then the local offline page. Never more than MAX_PREGAME_RETRIES, so it
+        // can never loop.
+        if (PREGAME_PATH.equals(path) && pregameRetriesSoFar < MAX_PREGAME_RETRIES) {
+            return Action.RETRY_PREGAME;
+        }
+        // Any other app page -> the local offline page.
         return Action.SHOW_OFFLINE_PAGE;
+    }
+
+    /** Delay before Pregame retry number {@code attempt} (0-based): 400, 800, 1600 ms. */
+    public static long retryDelayMs(int attempt) {
+        int clamped = Math.max(0, Math.min(attempt, MAX_PREGAME_RETRIES - 1));
+        return 400L << clamped;
     }
 
     /** https port with the default made explicit, so "host" and "host:443" match. */

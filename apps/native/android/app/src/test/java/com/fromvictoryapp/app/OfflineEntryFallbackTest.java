@@ -2,9 +2,11 @@ package com.fromvictoryapp.app;
 
 import static com.fromvictoryapp.app.OfflineEntryFallback.Action.NONE;
 import static com.fromvictoryapp.app.OfflineEntryFallback.Action.OPEN_PREGAME;
+import static com.fromvictoryapp.app.OfflineEntryFallback.Action.RETRY_PREGAME;
 import static com.fromvictoryapp.app.OfflineEntryFallback.Action.SHOW_OFFLINE_PAGE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -13,8 +15,10 @@ public class OfflineEntryFallbackTest {
     private static final String APP = "https://www.fromvictoryapp.com";
     private static final String STAGING = "https://fv-android-staging-web.vercel.app";
 
+    private static final int SPENT = OfflineEntryFallback.MAX_PREGAME_RETRIES;
+
     private static OfflineEntryFallback.Action decide(String url, boolean main, int code, String app) {
-        return OfflineEntryFallback.decide(url, main, code, app);
+        return OfflineEntryFallback.decide(url, main, code, app, SPENT);
     }
 
     @Test
@@ -48,8 +52,35 @@ public class OfflineEntryFallbackTest {
     }
 
     @Test
+    public void pregameIsRetriedABoundedNumberOfTimesThenTheLocalPageStays() {
+        String pregame = APP + "/athlete/pregame";
+        for (int done = 0; done < OfflineEntryFallback.MAX_PREGAME_RETRIES; done++) {
+            assertEquals("after " + done, RETRY_PREGAME, OfflineEntryFallback.decide(pregame, true, -2, APP, done));
+        }
+        assertEquals(SHOW_OFFLINE_PAGE, OfflineEntryFallback.decide(pregame, true, -2, APP, SPENT));
+        assertEquals(SHOW_OFFLINE_PAGE, OfflineEntryFallback.decide(pregame, true, -2, APP, SPENT + 5));
+        // Retries are for Pregame only, and only for connectivity errors on the main frame.
+        assertEquals(SHOW_OFFLINE_PAGE, OfflineEntryFallback.decide(APP + "/signin", true, -2, APP, 0));
+        assertEquals(NONE, OfflineEntryFallback.decide(pregame, true, -11, APP, 0));
+        assertEquals(NONE, OfflineEntryFallback.decide(pregame, false, -2, APP, 0));
+        assertEquals(NONE, OfflineEntryFallback.decide("https://other.example/athlete/pregame", true, -2, APP, 0));
+    }
+
+    @Test
+    public void retryDelaysBackOffAndStayBounded() {
+        assertEquals(400L, OfflineEntryFallback.retryDelayMs(0));
+        assertEquals(800L, OfflineEntryFallback.retryDelayMs(1));
+        assertEquals(1600L, OfflineEntryFallback.retryDelayMs(2));
+        assertEquals(1600L, OfflineEntryFallback.retryDelayMs(99));
+        assertEquals(400L, OfflineEntryFallback.retryDelayMs(-1));
+        long total = 0;
+        for (int i = 0; i < OfflineEntryFallback.MAX_PREGAME_RETRIES; i++) total += OfflineEntryFallback.retryDelayMs(i);
+        assertTrue("worst case before giving up stays under 3 s", total < 3000L);
+    }
+
+    @Test
     public void otherAppPagesShowTheLocalOfflinePageNeverPregame() {
-        // Pregame itself can never loop back into Pregame.
+        // Once retries are spent, Pregame itself can never loop back into Pregame.
         assertEquals(SHOW_OFFLINE_PAGE, decide(APP + "/athlete/pregame", true, -2, APP));
         // Signed-out offline: Pregame sends the user to /signin, which can't load.
         assertEquals(SHOW_OFFLINE_PAGE, decide(APP + "/signin", true, -2, APP));
