@@ -50,7 +50,8 @@ vi.mock("@/components/pregame/PregameFlow", () => ({
 
 import { AuthApiError, AuthRetryableFetchError } from "@supabase/supabase-js";
 import { PregameClientShell } from "@/components/pregame/PregameClientShell";
-import { ATHLETE_CACHE_KEY } from "@/lib/pregame/athlete-cache";
+import { ATHLETE_CACHE_KEY, clearAthleteCache } from "@/lib/pregame/athlete-cache";
+import { PREGAME_SESSION_CACHE_KEY, clearPregameSession } from "@/lib/pregame/session-cache";
 
 const fetchMock = vi.fn();
 
@@ -629,5 +630,98 @@ describe("unchanged pre-gate redirects", () => {
     render(<PregameClientShell />);
     await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/signin"));
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-638 — the Android shell now warms the Service-Worker audio cache
+// ("Set up for later"). Downloaded clips are generic, content-addressed audio:
+// they must NEVER act as an entitlement. Offline access is decided only by the
+// verified window above, even with a full audio cache in a Capacitor shell.
+// ---------------------------------------------------------------------------
+describe("FV-638 — a warm audio cache in the native shell is never an entitlement", () => {
+  const AUDIO = "http://localhost/audio/pregame/clips/opener-calm.aaaaaaaa.mp3";
+  // The gate must decide from the verified window alone: it never opens the
+  // audio cache. (Clips are generic, content-addressed audio; they stay on the
+  // device after sign-out and grant nothing.)
+  const openSpy = vi.fn();
+
+  beforeEach(() => {
+    Object.defineProperty(window, "Capacitor", {
+      value: { getPlatform: () => "android" },
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(navigator, "serviceWorker", {
+      value: { controller: {}, register: vi.fn() },
+      configurable: true,
+      writable: true,
+    });
+    // A fully downloaded fv-audio-<mv> cache: every lookup hits.
+    const hit = { match: async () => new Response("mp3"), put: async () => {} };
+    openSpy.mockReset();
+    openSpy.mockImplementation(async () => hit);
+    vi.stubGlobal("caches", { open: openSpy, keys: async () => [AUDIO] });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    delete (window as unknown as Record<string, unknown>).Capacitor;
+    delete (navigator as unknown as Record<string, unknown>).serviceWorker;
+  });
+
+  it("valid verified window → opens offline (the download is usable)", async () => {
+    seedCache({ sport: "hockey", firstName: "Test", ...verified() });
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByTestId("pregame-flow")).toBeInTheDocument();
+  });
+
+  it("expired window + full audio cache → Connect first", async () => {
+    const T0 = Date.parse("2026-11-09T12:00:00.000Z");
+    const UNTIL = "2026-11-24T12:00:00.000Z";
+    seedCache({ sport: "hockey", firstName: "Test", offlineUntil: UNTIL, verifiedAt: T0 });
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(Date.parse(UNTIL));
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByText("Connect first")).toBeInTheDocument();
+    expect(screen.queryByTestId("pregame-flow")).not.toBeInTheDocument();
+    expect(openSpy).not.toHaveBeenCalled();
+  });
+
+  it("revoked online (canceled) → window cleared; the next offline open says Connect first", async () => {
+    seedCache({ sport: "hockey", firstName: "Test", ...verified() });
+    online();
+    accessAnswer({ redirect: "/athlete/paused" });
+    const first = render(<PregameClientShell />);
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/athlete/paused"));
+    expect(cacheEntry()).toBeNull();
+    first.unmount();
+
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByText("Connect first")).toBeInTheDocument();
+    expect(screen.queryByTestId("pregame-flow")).not.toBeInTheDocument();
+    expect(openSpy).not.toHaveBeenCalled();
+  });
+
+  it("account switch (sign-out clears the device entry) → the next athlete cannot open A's download offline", async () => {
+    seedCache({ sport: "hockey", firstName: "A", ...verified() });
+    window.localStorage.setItem(
+      PREGAME_SESSION_CACHE_KEY,
+      JSON.stringify({ need: "Calm", role: "Forward", adversity: "nervous" }),
+    );
+    // What SignOutButton / ClearCacheOnMount run on sign-out.
+    clearAthleteCache();
+    clearPregameSession();
+    expect(window.localStorage.getItem(ATHLETE_CACHE_KEY)).toBeNull();
+    expect(window.localStorage.getItem(PREGAME_SESSION_CACHE_KEY)).toBeNull();
+
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByText("Connect first")).toBeInTheDocument();
+    expect(screen.queryByText(/hockey:A/)).not.toBeInTheDocument();
+    expect(openSpy).not.toHaveBeenCalled();
   });
 });

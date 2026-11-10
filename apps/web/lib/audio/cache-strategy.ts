@@ -19,8 +19,15 @@
  * This interface is the seam between the two worlds. Both implementations share
  * the same warm/check/resolve/isCached contract. The selection point in each
  * consumer (audio-precache.ts, useClipPlayer.ts) picks the right implementation
- * via selectCacheStrategy() — which today always returns WebCacheStrategy, adds
- * NO Capacitor dependency, and produces NO behavior change on web.
+ * via selectCacheStrategy(). It adds NO Capacitor dependency and produces NO
+ * behavior change on web.
+ *
+ * FV-638: the selection is CAPABILITY-based, not platform-based. Our Android
+ * shell loads the hosted app over https (server.url) in a Chromium WebView that
+ * runs the Service Worker and Cache Storage exactly like the PWA, so it uses
+ * WebCacheStrategy. Only a Capacitor shell WITHOUT Service Worker support
+ * (today: the iOS WKWebView, which has no App-Bound Domains configured) gets
+ * the NativeCacheStrategy stub — unchanged from before FV-638.
  *
  * NATIVE IMPLEMENTATION NOTE
  * --------------------------
@@ -67,8 +74,8 @@ import { MANIFEST_VERSION } from "@/components/pregame/audio-mapping";
  * always use WebCacheStrategy, which is the correct default for both the web
  * PWA and any server-side rendering context.
  *
- * The native PR will refine this detection (e.g. checking isNativePlatform())
- * once @capacitor/core is installed. The stub below never returns true today.
+ * NOTE: this IS true in both shipped shells (Android and iOS). It is not by
+ * itself the strategy switch — see selectCacheStrategy() (FV-638).
  */
 function isNativeShell(): boolean {
   if (typeof window === "undefined") return false;
@@ -76,6 +83,20 @@ function isNativeShell(): boolean {
   // it has no TypeScript declaration in a web-only build, so we access it via
   // a safe property-existence check rather than casting.
   return Object.prototype.hasOwnProperty.call(window, "Capacitor");
+}
+
+/**
+ * FV-638 — can this runtime run the Service-Worker audio path?
+ *
+ * WebCacheStrategy needs BOTH Cache Storage (to warm `fv-audio-<mv>`) and a
+ * Service Worker (sw.js audioCacheFirst serves those entries offline). The
+ * Android Capacitor WebView has both; the iOS WKWebView (no App-Bound Domains)
+ * exposes no `navigator.serviceWorker`, so it keeps the native stub.
+ */
+function hasServiceWorkerAudioPath(): boolean {
+  if (typeof window === "undefined") return false;
+  if (typeof caches === "undefined") return false;
+  return typeof navigator !== "undefined" && "serviceWorker" in navigator;
 }
 
 // ---------------------------------------------------------------------------
@@ -232,8 +253,8 @@ export class WebCacheStrategy implements CacheStrategy {
 // ---------------------------------------------------------------------------
 //
 // This stub satisfies the CacheStrategy interface so the web build compiles
-// cleanly when the native code path is selected at runtime (which it currently
-// never is — isNativeShell() always returns false in the web PWA). The real
+// cleanly. It is selected only in a Capacitor shell with no Service Worker
+// support (today: iOS) — see selectCacheStrategy() (FV-638). The real
 // Filesystem implementation is a follow-up PR gated on @capacitor/filesystem
 // being approved and installed.
 //
@@ -288,9 +309,11 @@ let _cachedStrategy: CacheStrategy | null = null;
 /**
  * Return the appropriate CacheStrategy for the current runtime.
  *
- * Today this ALWAYS returns WebCacheStrategy. The native path is reached only
- * when window.Capacitor is present (injected by the Capacitor bridge), which
- * never happens in a web build. The result is memoized so both consumers
+ * WebCacheStrategy whenever the runtime has the Service-Worker audio path —
+ * the browser, the installed PWA, AND the Android Capacitor shell (FV-638:
+ * selecting the stub there broke "Set up for later" and offline audio).
+ * NativeCacheStrategy only for a Capacitor shell WITHOUT that path (today:
+ * iOS WKWebView — unchanged). The result is memoized so both consumers
  * (audio-precache.ts and useClipPlayer.ts) share a single instance per page
  * load — the instance is stateless today, but memoizing is cheap insurance.
  *
@@ -300,9 +323,10 @@ let _cachedStrategy: CacheStrategy | null = null;
  */
 export function selectCacheStrategy(): CacheStrategy {
   if (_cachedStrategy) return _cachedStrategy;
-  _cachedStrategy = isNativeShell()
-    ? new NativeCacheStrategy()
-    : new WebCacheStrategy();
+  _cachedStrategy =
+    isNativeShell() && !hasServiceWorkerAudioPath()
+      ? new NativeCacheStrategy()
+      : new WebCacheStrategy();
   return _cachedStrategy;
 }
 
