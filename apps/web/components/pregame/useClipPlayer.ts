@@ -82,6 +82,12 @@ import {
 } from "./truth-rotation";
 import type { PrayerStyle } from "./types";
 import { selectCacheStrategy } from "@/lib/audio/cache-strategy";
+import {
+  createNativeNarrationPlayer,
+  getNarrationBridge,
+  NativeNarrationPlayer,
+  type NarrationPlayer,
+} from "@/lib/native/narration";
 
 // ---------------------------------------------------------------------------
 // Vendor-prefix type helper (decode-only AudioContext)
@@ -287,7 +293,7 @@ export function useClipPlayer({
   // DOM-attached-but-hidden (audio.hidden = true; document.body.appendChild).
   // Attachment improves iOS background-media reliability vs. fully detached;
   // the hook still exposes no render surface — the element is invisible.
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioRef = useRef<NarrationPlayer | null>(null);
   // Object URL for the assembled WAV blob — revoked on unmount.
   const blobUrlRef = useRef<string | null>(null);
   // rAF handle.
@@ -434,6 +440,18 @@ export function useClipPlayer({
     if (!practice && (!need || !position || !adversity)) return;
 
     let cancelled = false;
+    const nativeBridge = getNarrationBridge();
+    let sessionPlayer: NarrationPlayer | null = null;
+    const transferController = new AbortController();
+    // Re-resolving personalization must stop and release the previous native
+    // session before creating another, including React StrictMode remounts.
+    setReady(false);
+    setPlaying(false);
+    setCompleted(false);
+    setElapsedSec(0);
+    setError(null);
+    completedRef.current = false;
+    intendedPlayingRef.current = false;
 
     // Lie-fi guard (FV-172): bound ONLY the network-bound work (manifest + clip
     // fetches) with an AbortController + deadline. A hung load aborts → init()
@@ -596,16 +614,25 @@ export function useClipPlayer({
       // decode is done — playback is handled by HTMLAudioElement, not Web Audio.
       // Creating the context here (before a gesture) is fine on iOS Safari;
       // iOS only restricts *resuming* a suspended context outside a gesture.
-      let decodeCtx: AudioContext | null = null;
+      let decodeCtx: Pick<AudioContext, "decodeAudioData" | "close">;
       try {
-        const AudioContextCtor =
-          window.AudioContext ??
-          (window as WindowWithWebkit).webkitAudioContext;
-        if (!AudioContextCtor) {
-          setError("AudioContext not supported");
-          return;
+        if (nativeBridge) {
+          // Offline decoding never opens a device audio session, so preparing
+          // the narration cannot interrupt Spotify/Apple Music before Play.
+          const offline = new OfflineAudioContext(1, 1, 24000);
+          decodeCtx = {
+            decodeAudioData: offline.decodeAudioData.bind(offline),
+            close: async () => undefined,
+          };
+        } else {
+          const AudioContextCtor = window.AudioContext ??
+            (window as WindowWithWebkit).webkitAudioContext;
+          if (!AudioContextCtor) {
+            setError("AudioContext not supported");
+            return;
+          }
+          decodeCtx = new AudioContextCtor();
         }
-        decodeCtx = new AudioContextCtor() as AudioContext;
       } catch {
         setError("AudioContext constructor failed");
         return;
@@ -660,7 +687,7 @@ export function useClipPlayer({
       //   - The decoded bed buffer is used immediately in step 7 and then
       //     released — no ref is held past blob construction.
       let bedChannel0: Float32Array | null = null;
-      if (bedId) {
+      if (bedId && !nativeBridge) {
         const bed = getBed(bedId);
         if (bed) {
           const bedController = new AbortController();
@@ -733,17 +760,22 @@ export function useClipPlayer({
       if (cancelled) return;
 
       // 7. Create an object URL and wire the HTMLAudioElement.
-      const blobUrl = URL.createObjectURL(blob);
-      blobUrlRef.current = blobUrl;
-
-      const audio = new Audio();
-      audio.preload = "auto";
-      audio.src = blobUrl;
-      // Attach to the DOM (hidden) so iOS classifies this element in the
-      // background-media category more reliably across iOS versions. The hook
-      // still has no visible render output; the element is invisible and will
-      // be removed on unmount.
-      audio.hidden = true;
+      let audio: NarrationPlayer;
+      if (nativeBridge) {
+        audio = await createNativeNarrationPlayer(nativeBridge, blob, transferController.signal);
+        if (cancelled) { audio.remove(); return; }
+      } else {
+        const blobUrl = URL.createObjectURL(blob);
+        blobUrlRef.current = blobUrl;
+        const element = new Audio();
+        element.preload = "auto";
+        element.src = blobUrl;
+        element.hidden = true;
+        document.body.appendChild(element);
+        audio = element;
+      }
+      sessionPlayer = audio;
+      if (audio instanceof NativeNarrationPlayer) setTotalSec(audio.duration);
       // FV-494 — stable "guided session in progress" contract for
       // ServiceWorkerRegistrar's deploy-takeover reload. The marker means "do
       // not reload this page out from under the athlete" and stays set through
@@ -753,7 +785,6 @@ export function useClipPlayer({
       // each of which also dispatches "fv:guided-session-end" so a deferred
       // reload can fire at the next safe moment.
       audio.setAttribute("data-fv-guided-session", "active");
-      document.body.appendChild(audio);
       audioRef.current = audio;
 
       // Sync playing state AND drive the rAF loop from native media events.
@@ -779,7 +810,8 @@ export function useClipPlayer({
         if (completedRef.current) return;
         completedRef.current = true;
         intendedPlayingRef.current = false;
-        const totalDur = timelineRef.current?.totalDurationSec ?? 0;
+        const totalDur = audio instanceof NativeNarrationPlayer
+          ? audio.duration : timelineRef.current?.totalDurationSec ?? 0;
         setCompleted(true);
         setElapsedSec(totalDur);
         setPlaying(false);
@@ -791,8 +823,19 @@ export function useClipPlayer({
         onCompletedRef.current?.();
       });
 
-      // Register lock-screen metadata + controls.
-      wireMediaSession(practice ? "Pre-Practice" : "Pregame");
+      if (nativeBridge) {
+        audio.addEventListener("error", () => {
+          if (!cancelled) {
+            intendedPlayingRef.current = false;
+            setPlaying(false);
+            stopRaf();
+            setError("Native narration failed");
+          }
+        });
+      } else {
+        // Leave external music's lock-screen controls intact on native.
+        wireMediaSession(practice ? "Pre-Practice" : "Pregame");
+      }
 
       setReady(true);
     }
@@ -811,6 +854,18 @@ export function useClipPlayer({
       // fetch rejection short-circuits before any setState.
       clearDeadline();
       controller.abort();
+      transferController.abort();
+      if (sessionPlayer) {
+        stopRaf();
+        sessionPlayer.pause();
+        sessionPlayer.remove();
+        if (audioRef.current === sessionPlayer) audioRef.current = null;
+        document.dispatchEvent(new Event("fv:guided-session-end"));
+      }
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
     };
   }, [need, position, adversity, anchor, selfTalk, cueWord, positivePlays, practice, practiceState, practiceFocus, sport, prayerStyle, bedId, startRaf, stopRaf, wireMediaSession]);
 
@@ -832,7 +887,9 @@ export function useClipPlayer({
     const handleVisibilityChange = () => {
       if (document.visibilityState !== "visible") return;
       const audio = audioRef.current;
-      if (!audio || completedRef.current || !intendedPlayingRef.current) return;
+      // Native interruptions require an explicit Play tap. Status polling
+      // catches up after backgrounding without restarting audio over a call.
+      if (!audio || audio instanceof NativeNarrationPlayer || completedRef.current || !intendedPlayingRef.current) return;
       if (audio.paused) {
         audio.play().catch(() => {
           // Play rejected — athlete must tap manually. Don't set error.
@@ -892,7 +949,9 @@ export function useClipPlayer({
       const audio = audioRef.current;
       if (audio) {
         audio.pause();
-        audio.src = "";
+        if (!(audio instanceof NativeNarrationPlayer)) {
+          (audio as HTMLAudioElement).src = "";
+        }
         // Remove from the DOM (mirrors the appendChild in Phase 0). This also
         // removes the data-fv-guided-session marker; dispatch the session-end
         // signal so a deferred deploy-takeover reload (FV-494) is unblocked.
@@ -907,7 +966,7 @@ export function useClipPlayer({
       // Clear MediaSession handlers to avoid stale closures after unmount.
       try {
         const nav = navigator as NavigatorWithMediaSession;
-        if (nav.mediaSession) {
+        if (!getNarrationBridge() && nav.mediaSession) {
           nav.mediaSession.setActionHandler("play", null);
           nav.mediaSession.setActionHandler("pause", null);
         }

@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AudioTimeline, Phase } from "./types";
 import { audioAssetUrl } from "../audio-mapping";
+import { assembleWavBlob } from "./encode-wav";
+import { createNativeNarrationPlayer, getNarrationBridge, type NativeNarrationPlayer } from "@/lib/native/narration";
 
 // BreathingSphere only knows four phases. Map the broader audio timeline
 // phase set onto them: intro/settle (and anything else non-breath) collapse
@@ -27,6 +29,7 @@ function toSpherePhase(p: Phase): SpherePhase {
 export type BreathAudioState = {
   status: "loading" | "ready" | "missing" | "error";
   isPlaying: boolean;
+  hasStarted: boolean;
   controlled: {
     phase: SpherePhase;
     t: number;
@@ -40,6 +43,7 @@ export type BreathAudioState = {
   // Caller wires this to <audio ref={...} /> (or we can render our own
   // element; BreathScreen prefers passing one in).
   audioRef: React.RefObject<HTMLAudioElement>;
+  usesNativeAudio: boolean;
   play: () => Promise<void>;
   pause: () => void;
 };
@@ -74,14 +78,26 @@ export function useBreathAudio({
   const [timeline, setTimeline] = useState<AudioTimeline | null>(null);
   const [currentSec, setCurrentSec] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   const completedRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const nativeBridgeRef = useRef(getNarrationBridge());
+  const nativePlayerRef = useRef<NativeNarrationPlayer | null>(null);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   // Probe + load timeline JSON. We treat MP3 missing as expected — caller
   // can fall back to sphere-standalone mode.
   useEffect(() => {
     let cancelled = false;
-    fetch(audioAssetUrl(slug, "json"))
+    const controller = new AbortController();
+    const deadline = setTimeout(() => controller.abort(), 15_000);
+    completedRef.current = false;
+    setStatus("loading");
+    setIsPlaying(false);
+    setHasStarted(false);
+    setCurrentSec(0);
+    fetch(audioAssetUrl(slug, "json"), { signal: controller.signal })
       .then(async (res) => {
         if (cancelled) return;
         if (!res.ok) {
@@ -89,15 +105,47 @@ export function useBreathAudio({
           return;
         }
         const json = (await res.json()) as AudioTimeline;
+        if (cancelled) return;
+        const bridge = nativeBridgeRef.current;
+        if (bridge) {
+          const response = await fetch(audioAssetUrl(slug, "mp3"), { signal: controller.signal });
+          if (!response.ok) throw new Error("Breathing audio unavailable");
+          const bytes = await response.arrayBuffer();
+          if (cancelled) return;
+          clearTimeout(deadline);
+          const decoder = new OfflineAudioContext(1, 1, 24000);
+          const buffer = await decoder.decodeAudioData(bytes);
+          if (cancelled) return;
+          const player = await createNativeNarrationPlayer(bridge, assembleWavBlob([buffer]), controller.signal);
+          if (cancelled) { player.remove(); return; }
+          nativePlayerRef.current = player;
+          player.setAttribute("data-fv-guided-session", "active");
+          player.addEventListener("play", () => { setHasStarted(true); setIsPlaying(true); });
+          player.addEventListener("pause", () => setIsPlaying(false));
+          player.addEventListener("error", () => { setIsPlaying(false); setStatus("error"); });
+          player.addEventListener("ended", () => {
+            setIsPlaying(false);
+            player.removeAttribute("data-fv-guided-session");
+            document.dispatchEvent(new Event("fv:guided-session-end"));
+            if (!completedRef.current) {
+              completedRef.current = true;
+              onCompleteRef.current?.();
+            }
+          });
+        }
         setTimeline(json);
         setStatus("ready");
       })
       .catch(() => {
         if (cancelled) return;
         setStatus("error");
-      });
+      }).finally(() => clearTimeout(deadline));
     return () => {
       cancelled = true;
+      clearTimeout(deadline);
+      controller.abort();
+      nativePlayerRef.current?.remove();
+      nativePlayerRef.current = null;
     };
   }, [slug]);
 
@@ -111,8 +159,8 @@ export function useBreathAudio({
   // still gate that loop on/off.
   useEffect(() => {
     const el = audioRef.current;
-    if (!el || status !== "ready") return;
-    const onPlay = () => setIsPlaying(true);
+    if (nativeBridgeRef.current || !el || status !== "ready") return;
+    const onPlay = () => { setHasStarted(true); setIsPlaying(true); };
     const onPause = () => setIsPlaying(false);
     const onEnded = () => {
       setIsPlaying(false);
@@ -135,7 +183,7 @@ export function useBreathAudio({
   // the sphere expands/contracts smoothly instead of in 250ms steps.
   useEffect(() => {
     if (!isPlaying) return;
-    const el = audioRef.current;
+    const el = nativePlayerRef.current ?? audioRef.current;
     if (!el) return;
     let raf = 0;
     const tick = () => {
@@ -147,7 +195,7 @@ export function useBreathAudio({
   }, [isPlaying]);
 
   const play = useCallback(async () => {
-    const el = audioRef.current;
+    const el = nativePlayerRef.current ?? audioRef.current;
     if (!el) return;
     try {
       await el.play();
@@ -159,7 +207,7 @@ export function useBreathAudio({
   }, []);
 
   const pause = useCallback(() => {
-    audioRef.current?.pause();
+    (nativePlayerRef.current ?? audioRef.current)?.pause();
   }, []);
 
   // Derive sphere-controlled values from the active phase + currentSec
@@ -203,10 +251,12 @@ export function useBreathAudio({
   return {
     status,
     isPlaying,
+    hasStarted,
     controlled,
     rawPhase,
     rounds: expectedRounds,
     audioRef,
+    usesNativeAudio: nativeBridgeRef.current !== null,
     play,
     pause,
   };

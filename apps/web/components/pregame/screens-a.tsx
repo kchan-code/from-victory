@@ -316,7 +316,7 @@ export function BreathScreen({
 
       {/* Persistent audio element so the post-breath visual change
           doesn't tear down the playback that just completed. */}
-      {audioReady && (
+      {audioReady && !audio.usesNativeAudio && (
         // eslint-disable-next-line jsx-a11y/media-has-caption
         <audio
           ref={audio.audioRef}
@@ -340,7 +340,11 @@ export function BreathScreen({
       ) : (
         <>
           <div className="relative flex min-h-[360px] flex-1 flex-col items-center justify-center py-3 pb-7">
-            {audioReady ? (
+            {audio.usesNativeAudio && audio.status === "loading" ? (
+              <p role="status" className="font-body text-[15px] text-cream/70">
+                Preparing your breathing session…
+              </p>
+            ) : audioReady ? (
               <BreathingSphere
                 rounds={3}
                 inhale={4}
@@ -358,6 +362,15 @@ export function BreathScreen({
                 autoStart={false}
                 onComplete={markDone}
               />
+            )}
+            {audio.usesNativeAudio && audioReady && audio.hasStarted && !audio.isPlaying && (
+              <button
+                type="button"
+                onClick={() => void audio.play()}
+                className="mt-4 min-h-[44px] rounded-[12px] border border-gold/50 px-6 py-3 font-heading text-[14px] font-semibold text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+              >
+                Resume breathing
+              </button>
             )}
           </div>
 
@@ -383,7 +396,7 @@ export function BreathScreen({
               footprint stays slim via the small font size. */}
           <button
             type="button"
-            onClick={markDone}
+            onClick={() => { audio.pause(); markDone(); }}
             className="mx-auto mt-1 flex min-h-[44px] items-center rounded-sm px-2 font-body text-[12px] text-cream/50 underline underline-offset-2 transition-colors duration-fast hover:text-cream/70 active:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
           >
             Already settled

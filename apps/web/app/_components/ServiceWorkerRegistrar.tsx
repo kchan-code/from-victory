@@ -50,7 +50,7 @@ import { reloadPage } from "@/lib/reload-page";
  */
 function isGuidedSessionActive(): boolean {
   return (
-    document.querySelector('audio[data-fv-guided-session="active"]') !== null
+    document.querySelector('[data-fv-guided-session="active"]') !== null
   );
 }
 
