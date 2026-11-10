@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
-import { RevokeOfflinePregameOnMount } from "@/components/pregame/RevokeOfflinePregameOnMount";
+import { ClearOfflinePregameOnMount } from "@/components/pregame/ClearOfflinePregameOnMount";
 import { requireAthlete } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
 
@@ -41,7 +41,7 @@ export const metadata = {
  * if `reason=seats` ever reached an adult session.
  *
  * OFFLINE PREGAME REVOCATION (FV-625): this page mounts
- * RevokeOfflinePregameOnMount, which clears the device-local entry that lets
+ * ClearOfflinePregameOnMount, which clears the device-local entry that lets
  * /athlete/pregame open offline. Every gated surface redirects a blocked
  * athlete here, so the first online visit after a lapse revokes it.
  *
@@ -79,7 +79,7 @@ export default async function AthletePausedPage({
 
   return (
     <main id="main-content" className="min-h-screen bg-onyx flex flex-col px-5 pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
-      <RevokeOfflinePregameOnMount />
+      <ClearOfflinePregameOnMount />
       {/* ── Logo lockup — top anchor ── */}
       <header className="flex items-center gap-2 pt-[52px] pb-0">
         <Image

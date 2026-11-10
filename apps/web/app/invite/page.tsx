@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { AuthShell } from "@/components/auth/AuthShell";
 import { InviteFlow } from "@/components/auth/InviteFlow";
+import { ClearOfflinePregameOnMount } from "@/components/pregame/ClearOfflinePregameOnMount";
 import { isNativeShell } from "@/lib/native-shell";
 import { createClient } from "@/lib/supabase/server";
 
@@ -64,6 +65,10 @@ export default async function InvitePage() {
         </Link>
       }
     >
+      {/* FV-625: finishing an invite can switch the signed-in athlete on this
+          device without passing /signin — drop the previous athlete's
+          offline-pregame entry first (see the component's doc). */}
+      <ClearOfflinePregameOnMount />
       {signedIn ? (
         <p
           role="note"

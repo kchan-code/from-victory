@@ -38,6 +38,12 @@
  * any gated training page (they redirect to /athlete/paused, which clears the
  * cache on mount). Sign-out / re-pair clear it too (FV-154).
  *
+ * NO CROSS-ATHLETE CACHE: the entry is not keyed by user, so every way a
+ * different athlete can become signed in on this device clears it first:
+ * /signin + sign-out + forget-device (FV-154) and /invite + /pair
+ * (ClearOfflinePregameOnMount, FV-625). A new athlete therefore has no
+ * offline pregame until their own online check passes.
+ *
  * AUTH BYPASS PROTECTION:
  *   The single try/catch wraps BOTH getUser() and the subsequent profile fetch.
  *   The offline (cache) path is only taken when one of them throws a genuine
