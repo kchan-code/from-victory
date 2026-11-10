@@ -502,3 +502,124 @@ describe("/dashboard/settings — FV-580 Apple status read-error visibility", ()
     ).not.toBeInTheDocument();
   });
 });
+
+// ---------------------------------------------------------------------------
+// FV-623: the Stripe date row must never call an ended subscription a renewal.
+// Reproduces the FV-619 Android staging observation (row 23c): an immediate
+// sandbox cancel left status=canceled, cancel_at_period_end=false and the OLD
+// (still-future) current_period_end on the row, and the page read
+// "Canceled · RENEWS November 16, 2026".
+// ---------------------------------------------------------------------------
+
+function stripeRow(
+  status: string,
+  cancelAtPeriodEnd: boolean,
+  currentPeriodEnd = "2026-11-16T17:06:54Z",
+) {
+  maybeSingleMock.mockResolvedValue({
+    data: {
+      status,
+      price_id: "price_test",
+      current_period_end: currentPeriodEnd,
+      cancel_at_period_end: cancelAtPeriodEnd,
+    },
+    error: null,
+  });
+}
+
+describe("/dashboard/settings — FV-623 ended-subscription date row", () => {
+  it("immediately canceled (cancel_at_period_end=false, future period end): no 'Renews', no stale date", async () => {
+    stripeRow("canceled", false);
+
+    await renderPage();
+
+    expect(screen.getByTestId("subscription-status")).toHaveTextContent("Canceled");
+    expect(screen.queryByTestId("subscription-period-end")).not.toBeInTheDocument();
+    expect(screen.queryByText("Renews")).not.toBeInTheDocument();
+    expect(screen.queryByText("November 16, 2026")).not.toBeInTheDocument();
+  });
+
+  it("same immediately-canceled row inside the Android legacy-native shell (the observed FV-619 case)", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
+    stripeRow("canceled", false);
+
+    await renderPage();
+
+    expect(screen.getByTestId("subscription-status")).toHaveTextContent("Canceled");
+    expect(screen.queryByTestId("subscription-period-end")).not.toBeInTheDocument();
+    expect(screen.queryByText("Renews")).not.toBeInTheDocument();
+    // Unchanged in-shell manage notice; still no Stripe-bound control.
+    expect(
+      screen.getByTestId("billing-portal-native-shell-notice"),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("billing-portal-btn")).not.toBeInTheDocument();
+  });
+
+  it("a scheduled cancel that has since lapsed (status=canceled, cancel_at_period_end still true): no 'Access ends … continues' claim", async () => {
+    stripeRow("canceled", true, "2026-10-01T00:00:00Z");
+
+    await renderPage();
+
+    expect(screen.queryByTestId("subscription-period-end")).not.toBeInTheDocument();
+    expect(screen.queryByText("Access ends")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Your access continues until this date."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("incomplete_expired (never started) shows no renewal date either", async () => {
+    stripeRow("incomplete_expired", false);
+
+    await renderPage();
+
+    expect(screen.queryByTestId("subscription-period-end")).not.toBeInTheDocument();
+    expect(screen.queryByText("Renews")).not.toBeInTheDocument();
+  });
+
+  it("preserved: trialing still reads 'Renews <date>' (trial converts on that date)", async () => {
+    stripeRow("trialing", false);
+
+    await renderPage();
+
+    expect(screen.getByTestId("subscription-status")).toHaveTextContent("Trial");
+    expect(screen.getByText("Renews")).toBeInTheDocument();
+    expect(screen.getByTestId("subscription-period-end")).toHaveTextContent(
+      "November 16, 2026",
+    );
+  });
+
+  it("preserved: active still reads 'Renews <date>'", async () => {
+    stripeRow("active", false);
+
+    await renderPage();
+
+    expect(screen.getByText("Renews")).toBeInTheDocument();
+    expect(screen.getByTestId("subscription-period-end")).toHaveTextContent(
+      "November 16, 2026",
+    );
+  });
+
+  it("preserved: a scheduled cancel still in its paid period reads 'Access ends <date>' + continues note", async () => {
+    stripeRow("active", true);
+
+    await renderPage();
+
+    expect(screen.getByText("Access ends")).toBeInTheDocument();
+    expect(screen.queryByText("Renews")).not.toBeInTheDocument();
+    expect(screen.getByTestId("subscription-period-end")).toHaveTextContent(
+      "November 16, 2026",
+    );
+    expect(
+      screen.getByText("Your access continues until this date."),
+    ).toBeInTheDocument();
+  });
+
+  it("preserved: past_due keeps its date row (Stripe is still retrying; not an ended subscription)", async () => {
+    stripeRow("past_due", false);
+
+    await renderPage();
+
+    expect(screen.getByTestId("subscription-status")).toHaveTextContent("Past due");
+    expect(screen.getByTestId("subscription-period-end")).toBeInTheDocument();
+  });
+});
