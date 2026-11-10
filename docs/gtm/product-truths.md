@@ -13,24 +13,27 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 ## 2026-11-09 — Pregame follows the same access rule as the rest of training (FV-625, FV-636; effective when the PR deploys)
 
 Game-Day Pregame now uses the same access rule as Daily Training, Pre-Practice,
-Post-Game and the athlete hub. When the account's subscription is canceled or has expired,
-an athlete who opens Pregame while online is sent to the same "Training paused" screen as
-those pages. Before this,
-Pregame stayed open after a cancellation.
+Post-Game and the athlete hub. When the account's subscription has ended (canceled or
+expired), an athlete who opens Pregame while online is sent to the same place as those
+pages: the "Training paused" screen for an athlete under 18, or the subscribe page for an
+adult (18+) who pays for their own account. Before this, Pregame stayed open after a
+subscription ended.
 
 Offline Pregame (no signal) works for an athlete with access, once Pregame has been opened
 online on that device after this change; the first open needs a connection. Before this
 change, opening Pregame with no signal showed the browser's offline error page instead of
 the session (seen on Android; the cause was in shared web code, fixed with this change).
-Offline use lasts until the end of the subscription period (or free trial) that was last
-confirmed online on that device. Each online Pregame open renews it. After that date,
-Pregame needs a connection again. If a subscription is canceled, Pregame stops on that
+Offline use lasts until the end of the access period that was last confirmed online on
+that device: the current subscription period or free trial, or the end date of free
+access that has one. Each online Pregame open renews it. After that date, Pregame needs a
+connection again. When a subscription ends (canceled or expired), Pregame stops on that
 device the next time it is online and opens Pregame or any other training page, and it
-stays stopped offline. Accounts with free access that has no end date (for example a
+stays stopped offline. A subscription set to cancel at the end of its period keeps working
+until that period ends. Accounts with free access that has no end date (for example a
 reviewer account) can use Pregame online but not offline.
 
-Adult (18+) self-paying athletes can now open Pregame online and offline under the same
-rules. Before this change, Pregame did not open for them at all.
+Adult (18+) athletes who pay for their own account can now open Pregame online and
+offline under the same rules. Before this change, Pregame did not open for them at all.
 
 Why it matters to a buyer: Pregame is part of the subscription, like all training, and
 it stops when the subscription ends.
