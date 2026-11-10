@@ -15,6 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { SubscribeForm } from "@/components/subscribe/SubscribeForm";
 import { AppleSubscribeSection } from "@/components/subscribe/AppleSubscribeSection";
+import { ClearOfflinePregameOnMount } from "@/components/pregame/ClearOfflinePregameOnMount";
 
 export const metadata = {
   title: "Subscribe",
@@ -186,6 +187,12 @@ export default async function SubscribePage({ searchParams }: Props) {
 
   return (
     <main id="main-content" className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
+      {/* FV-625/FV-636: a blocked payer lands here from every gated training
+          surface (requireActiveAccess sends a blocked adult_athlete or parent
+          to /subscribe) — revoke this device's offline pregame, as
+          /athlete/paused does for a minor. Only when blocked: an entitled
+          payer browsing /subscribe keeps theirs. */}
+      {wouldBounce ? <ClearOfflinePregameOnMount /> : null}
       <div className="mx-auto max-w-[560px]">
         {/* Header */}
         <header className="flex items-center justify-between mb-12">

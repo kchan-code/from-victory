@@ -11,6 +11,7 @@
  *   - offline            → flow only while the verified window is open
  *                          (KC policy: until the last verified period ends)
  *   - anything ambiguous → never renders the flow, never follows the body
+ *   - FV-636             → adult_athlete trains here like a minor athlete
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup, waitFor } from "@testing-library/react";
@@ -487,6 +488,55 @@ describe("user switch on one device — no cross-athlete window", () => {
     render(<PregameClientShell />);
     await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/athlete/paused"));
     expect(cacheEntry()).toBeNull();
+  });
+});
+
+describe("FV-636 — adult_athlete (18+ self-serve) trains here like a minor athlete", () => {
+  function adultOnline() {
+    getUserMock.mockResolvedValue({ data: { user: { id: "ad-1" } }, error: null });
+    singleMock.mockResolvedValue({
+      data: { role: "adult_athlete", first_name: "Ade", sport: "soccer", sport_selected_at: "2026-11-01T00:00:00Z" },
+      error: null,
+    });
+  }
+
+  it("an entitled adult opens pregame online (no /dashboard bounce) and gets an offline window", async () => {
+    adultOnline();
+    const until = new Date(Date.now() + 10 * DAY).toISOString();
+    accessAnswer({ redirect: null, offlineUntil: until });
+    render(<PregameClientShell />);
+    expect(await screen.findByTestId("pregame-flow")).toHaveTextContent("soccer:Ade");
+    expect(replaceMock).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledWith("/api/athlete/access", expect.anything());
+    expect(cacheEntry()).toMatchObject({ firstName: "Ade", offlineUntil: until });
+  });
+
+  it("then opens offline from that window", async () => {
+    seedCache({ sport: "soccer", firstName: "Ade", ...verified() });
+    offline();
+    render(<PregameClientShell />);
+    expect(await screen.findByTestId("pregame-flow")).toHaveTextContent("soccer:Ade");
+  });
+
+  it("an inactive adult goes to /subscribe and the offline window is revoked", async () => {
+    seedCache({ sport: "soccer", firstName: "Ade", ...verified() });
+    adultOnline();
+    accessAnswer({ redirect: "/subscribe", offlineUntil: null });
+    render(<PregameClientShell />);
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/subscribe"));
+    expect(screen.queryByTestId("pregame-flow")).not.toBeInTheDocument();
+    expect(cacheEntry()).toBeNull();
+  });
+
+  it("an adult without a sport still goes to sport onboarding first", async () => {
+    getUserMock.mockResolvedValue({ data: { user: { id: "ad-1" } }, error: null });
+    singleMock.mockResolvedValue({
+      data: { role: "adult_athlete", first_name: "Ade", sport: null, sport_selected_at: null },
+      error: null,
+    });
+    render(<PregameClientShell />);
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/athlete/onboarding/sport"));
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
 

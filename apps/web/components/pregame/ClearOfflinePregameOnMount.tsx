@@ -14,6 +14,10 @@ import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
  *     blocked athlete there, so the first time a lapsed device is online and
  *     hits ANY gated page, offline pregame stops on that device, not only when
  *     pregame itself is reopened online.
+ *   - /subscribe, only when the payer is blocked under enforcement —
+ *     REVOCATION for a self-payer (FV-636): a blocked adult_athlete (or
+ *     parent) is redirected there by every gated training surface instead of
+ *     /athlete/paused.
  *   - /invite and /pair — IDENTITY SWITCH. Finishing an invite signs a
  *     different athlete in on this device without passing through /signin
  *     (whose ClearCacheOnMount already clears). Without this, the new athlete

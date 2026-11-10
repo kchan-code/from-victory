@@ -9,7 +9,10 @@
  *   1. Calls supabase.auth.getUser() (browser client, anon key, RLS still on).
  *   2. If no session → router.replace("/signin").
  *   3. If session → loads the athlete's profile row (RLS-gated) to get sport.
- *   4. Applies the first-run gate: no sport_selected_at → redirect to onboarding.
+ *   4. Role gate: `athlete` and `adult_athlete` (18+ self-serve, FV-325) train
+ *      here — the same roles requireAthlete() admits on every other training
+ *      surface (FV-636). Any other role (a parent) → /dashboard.
+ *      First-run gate: no sport_selected_at → redirect to onboarding.
  *   5. TRAINING ENTITLEMENT GATE (FV-625): GET /api/athlete/access — the same
  *      decision requireActiveAccess() applies server-side to hub/daily/
  *      practice/postgame/journey (resolveTrainingAccess in
@@ -46,8 +49,9 @@
  * EXPLICIT revocation is immediate on the first online contact that sees the
  * block, and stays revoked offline (the entry is removed): opening pregame
  * (step 5 clears the cache); for a MINOR athlete, any gated training page
- * (redirect to /athlete/paused, which clears on mount). Sign-out / re-pair
- * clear it too (FV-154). A cancellation the
+ * (redirect to /athlete/paused, which clears on mount); for a blocked
+ * adult_athlete or payer, /subscribe (clears on mount when it would bounce —
+ * FV-636). Sign-out / re-pair clear it too (FV-154). A cancellation the
  * device never sees online still ends offline use at `offlineUntil`.
  *
  * NO CROSS-ATHLETE CACHE: the entry is not keyed by user, so every way a
@@ -250,7 +254,9 @@ export function PregameClientShell() {
           return;
         }
 
-        if (profile.role !== "athlete") {
+        // FV-636: adult_athlete (18+ self-serve) trains here too — the same
+        // roles requireAthlete() admits on every other training surface.
+        if (profile.role !== "athlete" && profile.role !== "adult_athlete") {
           // Parent somehow navigated here — redirect to their home.
           router.replace("/dashboard");
           return;
