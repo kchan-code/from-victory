@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback } from "react";
 
+import { NarrationVolumeControl } from "./NarrationVolumeControl";
 import { BreathingSphere } from "./BreathingSphere";
 import { useBreathAudio } from "./audio/useBreathAudio";
 import { audioAssetUrl } from "./audio-mapping";
@@ -374,6 +375,7 @@ export function BreathScreen({
             )}
           </div>
 
+          {audioReady && <NarrationVolumeControl player={audio.nativeNarrationPlayer} />}
           <div className="flex justify-center gap-6 pb-2">
             <div className="text-center">
               <Eyebrow>Inhale</Eyebrow>

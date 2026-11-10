@@ -193,6 +193,7 @@ export type UseClipPlayerOptions = {
 };
 
 export type UseClipPlayerResult = {
+  nativeNarrationPlayer: NativeNarrationPlayer | null;
   /** True once all clips are decoded and the player is ready to play. */
   ready: boolean;
   /** Start or resume playback. Noop if not ready or already playing. */
@@ -281,6 +282,7 @@ export function useClipPlayer({
 }: UseClipPlayerOptions): UseClipPlayerResult {
   // ── state ──
   const [ready, setReady] = useState(false);
+  const [nativeNarrationPlayer, setNativeNarrationPlayer] = useState<NativeNarrationPlayer | null>(null);
   const [playing, setPlaying] = useState(false);
   const [elapsedSec, setElapsedSec] = useState(0);
   const [totalSec, setTotalSec] = useState(0);
@@ -446,6 +448,7 @@ export function useClipPlayer({
     // Re-resolving personalization must stop and release the previous native
     // session before creating another, including React StrictMode remounts.
     setReady(false);
+    setNativeNarrationPlayer(null);
     setPlaying(false);
     setCompleted(false);
     setElapsedSec(0);
@@ -775,7 +778,10 @@ export function useClipPlayer({
         audio = element;
       }
       sessionPlayer = audio;
-      if (audio instanceof NativeNarrationPlayer) setTotalSec(audio.duration);
+      if (audio instanceof NativeNarrationPlayer) {
+        setTotalSec(audio.duration);
+        setNativeNarrationPlayer(audio);
+      }
       // FV-494 — stable "guided session in progress" contract for
       // ServiceWorkerRegistrar's deploy-takeover reload. The marker means "do
       // not reload this page out from under the athlete" and stays set through
@@ -978,6 +984,7 @@ export function useClipPlayer({
 
   return {
     ready,
+    nativeNarrationPlayer,
     play,
     pause,
     playing,

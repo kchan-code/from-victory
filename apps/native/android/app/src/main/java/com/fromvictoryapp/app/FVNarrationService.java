@@ -43,6 +43,7 @@ public class FVNarrationService extends Service {
     private String state = "ready";
     private double duration;
     private double lastPosition;
+    private double volume = 1;
     private PluginCall preparing;
     private PluginCall starting;
     private long playRequest;
@@ -239,10 +240,22 @@ public class FVNarrationService extends Service {
         stopPlaybackService();
     }
     void pause(PluginCall call) { requireSession(call); pausePlayback(); call.resolve(); }
+    void setVolume(PluginCall call) {
+        double nextVolume = NarrationVolume.validate(
+            call.getString("sessionId"), transfer == null ? null : transfer.sessionId,
+            player != null && preparing == null && !"error".equals(state) && !"ended".equals(state),
+            call.getData().opt("volume")
+        );
+        // Per-player gain only: never change the system/music stream, request
+        // audio focus, or start/resume playback when the slider moves.
+        player.setVolume((float) nextVolume, (float) nextVolume);
+        volume = nextVolume;
+        call.resolve(new JSObject().put("volume", volume));
+    }
     void getStatus(PluginCall call) {
         requireSession(call);
         if (player != null && "playing".equals(state)) lastPosition = player.getCurrentPosition() / 1000.0;
-        JSObject result = new JSObject().put("position", lastPosition).put("duration", duration).put("state", state);
+        JSObject result = new JSObject().put("position", lastPosition).put("duration", duration).put("state", state).put("volume", volume);
         if ("error".equals(state)) result.put("error", "Narration playback failed");
         call.resolve(result);
     }
@@ -261,6 +274,7 @@ public class FVNarrationService extends Service {
         state = "ready";
         duration = 0;
         lastPosition = 0;
+        volume = 1;
     }
     @Override public void onTaskRemoved(Intent rootIntent) { reset(); super.onTaskRemoved(rootIntent); }
     @Override public void onDestroy() { reset(); unregisterReceiver(noisy); super.onDestroy(); }

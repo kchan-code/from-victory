@@ -17,6 +17,7 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
         CAPPluginMethod(name: "prepare", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "play", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "pause", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setVolume", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getStatus", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "dispose", returnType: CAPPluginReturnPromise),
     ]
@@ -30,6 +31,7 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
     private var receivedBytes = 0
     private var nextIndex = 0
     private var player: AVAudioPlayer?
+    private var volume: Double = 1
     private var state = "ready"
     private var failure: String?
     private var ownsAudioSession = false
@@ -156,6 +158,7 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
                     throw CocoaError(.fileReadCorruptFile)
                 }
                 player.delegate = self
+                player.volume = Float(self.volume)
                 self.player = player
                 self.state = "ready"
                 // Do not call prepareToPlay: it can activate the hardware before
@@ -206,9 +209,34 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
             guard self.matches(call) else { return }
             let duration = self.player?.duration ?? 0
             let position = self.state == "ended" ? duration : (self.player?.currentTime ?? 0)
-            var result: [String: Any] = ["position": position, "duration": duration, "state": self.state]
+            var result: [String: Any] = ["position": position, "duration": duration,
+                                       "state": self.state, "volume": self.volume]
             if let failure = self.failure { result["error"] = failure }
             call.resolve(result)
+        }
+    }
+
+    @objc func setVolume(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            guard self.matches(call) else { return }
+            // NSNumber also bridges booleans; reject them rather than treating
+            // true/false as numeric volume. Never clamp malformed input.
+            guard let number = call.getValue("volume") as? NSNumber,
+                  CFGetTypeID(number) != CFBooleanGetTypeID(),
+                  number.doubleValue.isFinite, (0...1).contains(number.doubleValue) else {
+                call.reject("Narration volume must be a number between 0 and 1.")
+                return
+            }
+            guard self.failure == nil, let player = self.player,
+                  ["ready", "paused", "playing"].contains(self.state) else {
+                call.reject("Narration is not ready.")
+                return
+            }
+            // This is this player's gain only. It neither activates the audio
+            // session nor touches system volume or another app's music.
+            self.volume = number.doubleValue
+            player.volume = Float(self.volume)
+            call.resolve(["volume": self.volume])
         }
     }
 
@@ -282,6 +310,7 @@ public class FVNarrationPlugin: CAPPlugin, CAPBridgedPlugin, AVAudioPlayerDelega
         expectedBytes = 0
         receivedBytes = 0
         nextIndex = 0
+        volume = 1
         failure = nil
         state = "ready"
         deactivateAudioSession()

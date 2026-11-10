@@ -7,6 +7,7 @@ export type NarrationStatus = {
   duration: number;
   state: "ready" | "playing" | "paused" | "ended" | "error";
   error?: string;
+  volume?: number;
 };
 export interface NarrationBridge {
   begin(options: { sessionId: string; byteLength: number }): Promise<void>;
@@ -16,6 +17,7 @@ export interface NarrationBridge {
   pause(options: { sessionId: string }): Promise<void>;
   getStatus(options: { sessionId: string }): Promise<NarrationStatus>;
   dispose(options: { sessionId: string }): Promise<void>;
+  setVolume?(options: { sessionId: string; volume: number }): Promise<{ volume: number }>;
 }
 export function getNarrationBridge(): NarrationBridge | null {
   if (typeof window === "undefined") return null;
@@ -27,6 +29,21 @@ export function getNarrationBridge(): NarrationBridge | null {
     .every((method) => typeof bridge[method as keyof NarrationBridge] === "function")
     ? bridge : null;
 }
+// Ephemeral preference only: resets on page reload, never stored or sent to a server.
+let desiredNarrationVolume = 1;
+const volumeListeners = new Set<() => void>();
+export function getNarrationVolume(): number { return desiredNarrationVolume; }
+export function setNarrationVolume(volume: number): void {
+  if (!Number.isFinite(volume)) return;
+  desiredNarrationVolume = Math.max(0, Math.min(1, volume));
+  // Notify on identical values too so a failed native write can be retried.
+  volumeListeners.forEach((listener) => listener());
+}
+export function subscribeNarrationVolume(listener: () => void): () => void {
+  volumeListeners.add(listener);
+  return () => { volumeListeners.delete(listener); };
+}
+
 export const NARRATION_MAX_BYTES = 64 * 1024 * 1024;
 export const NARRATION_CHUNK_BYTES = 192 * 1024;
 const CALL_TIMEOUT_MS = 15_000;
@@ -62,6 +79,11 @@ export type NarrationPlayer = Pick<HTMLAudioElement,
  * automatically after a call/headphone disconnect. */
 export class NativeNarrationPlayer extends EventTarget implements NarrationPlayer {
   readonly native = true;
+  readonly supportsVolume: boolean;
+  volumeError: string | null = null;
+  private pendingVolume: number | null = null;
+  private volumeDrain: Promise<void> | null = null;
+  private unsubscribeVolume: () => void = () => undefined;
   private position = 0;
   private sampledAt = performance.now();
   get currentTime(): number {
@@ -81,10 +103,41 @@ export class NativeNarrationPlayer extends EventTarget implements NarrationPlaye
   constructor(private bridge: NarrationBridge, readonly sessionId: string, duration: number) {
     super();
     this.duration = duration;
+    this.supportsVolume = typeof bridge.setVolume === "function";
+    if (this.supportsVolume) {
+      this.unsubscribeVolume = subscribeNarrationVolume(() => { void this.applyVolume(); });
+    }
     this.marker.hidden = true;
     document.body.appendChild(this.marker);
     this.timer = setInterval(() => this.poll(), 250);
     document.addEventListener("visibilitychange", this.refreshVisible);
+  }
+  /** Coalesce rapid slider changes independently of play/pause/status work.
+   * Rejections are visible but nonfatal: never stop narration or seize focus. */
+  applyVolume(): Promise<void> {
+    if (!this.supportsVolume || this.disposed || this.ended) return Promise.resolve();
+    this.pendingVolume = getNarrationVolume();
+    if (this.volumeDrain) return this.volumeDrain;
+    this.volumeDrain = Promise.resolve().then(async () => {
+      while (this.pendingVolume !== null && !this.disposed && !this.ended) {
+        const volume = this.pendingVolume;
+        this.pendingVolume = null;
+        try {
+          const result = await bounded(this.bridge.setVolume!({ sessionId: this.sessionId, volume }));
+          if (!Number.isFinite(result.volume) || result.volume < 0 || result.volume > 1) {
+            throw new Error("Invalid narration volume");
+          }
+          if (!this.disposed) this.volumeError = null;
+        } catch {
+          if (!this.disposed) this.volumeError = "Couldn’t change narration volume. Try again.";
+        }
+        if (!this.disposed) this.dispatchEvent(new Event("volumechange"));
+      }
+    }).finally(async () => {
+      this.volumeDrain = null;
+      if (this.pendingVolume !== null && !this.disposed) await this.applyVolume();
+    });
+    return this.volumeDrain;
   }
   private enqueue<T>(operation: () => Promise<T>): Promise<T> {
     const next = this.queue.then(operation);
@@ -129,6 +182,8 @@ export class NativeNarrationPlayer extends EventTarget implements NarrationPlaye
   play(): Promise<void> {
     return this.enqueue(async () => {
       if (this.disposed || this.ended) return;
+      await this.applyVolume();
+      if (this.disposed || this.ended) return;
       await bounded(this.bridge.play({ sessionId: this.sessionId }));
       if (!this.disposed) this.accept(await bounded(this.bridge.getStatus({ sessionId: this.sessionId })));
     });
@@ -145,6 +200,8 @@ export class NativeNarrationPlayer extends EventTarget implements NarrationPlaye
   remove(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.unsubscribeVolume();
+    this.pendingVolume = null;
     clearInterval(this.timer);
     document.removeEventListener("visibilitychange", this.refreshVisible);
     this.marker.remove();
@@ -185,7 +242,10 @@ export async function createNativeNarrationPlayer(
     const { duration } = await bounded(bridge.prepare({ sessionId }));
     checkAbort(signal);
     if (!Number.isFinite(duration) || duration <= 0) throw new Error("Invalid narration duration");
-    return new NativeNarrationPlayer(bridge, sessionId, duration);
+    const player = new NativeNarrationPlayer(bridge, sessionId, duration);
+    await player.applyVolume();
+    if (signal.aborted) { player.remove(); checkAbort(signal); }
+    return player;
   } catch (error) {
     abandoned = true;
     dispose();

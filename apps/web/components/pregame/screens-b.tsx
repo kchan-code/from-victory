@@ -33,6 +33,7 @@ import { positivePlayTitle } from "./positive-plays";
 import { verseForCueWord } from "./cue-word-verses";
 import type { AudioTimeline, Phase } from "./audio/types";
 import { findActivePhase, type AssembledTimeline } from "./audio-playlist";
+import { NarrationVolumeControl } from "./NarrationVolumeControl";
 import { useClipPlayer } from "./useClipPlayer";
 import { getNarrationBridge } from "@/lib/native/narration";
 
@@ -1904,6 +1905,7 @@ export function AudioSessionScreen({
           anything was happening; PreparingIndicator renders the same text
           visibly and keeps the single announcement. */}
       <PreparingIndicator loading={clipLoading} />
+      {isClipActive && !renderCompleted && <NarrationVolumeControl player={clipPlayer.nativeNarrationPlayer} />}
 
       <div className="flex flex-col gap-2.5">
         <button

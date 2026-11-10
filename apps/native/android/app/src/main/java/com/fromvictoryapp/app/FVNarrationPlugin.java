@@ -85,6 +85,7 @@ public class FVNarrationPlugin extends Plugin {
     @PluginMethod public void prepare(PluginCall call) { dispatch(call, FVNarrationService::prepare); }
     @PluginMethod public void play(PluginCall call) { dispatch(call, FVNarrationService::play); }
     @PluginMethod public void pause(PluginCall call) { dispatch(call, FVNarrationService::pause); }
+    @PluginMethod public void setVolume(PluginCall call) { dispatch(call, FVNarrationService::setVolume); }
     @PluginMethod public void getStatus(PluginCall call) { dispatch(call, FVNarrationService::getStatus); }
     @PluginMethod public void dispose(PluginCall call) { dispatch(call, FVNarrationService::dispose); }
     @Override protected void handleOnDestroy() {

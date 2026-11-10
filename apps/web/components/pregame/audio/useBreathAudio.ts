@@ -27,6 +27,7 @@ function toSpherePhase(p: Phase): SpherePhase {
 // run the sphere in standalone mode.
 
 export type BreathAudioState = {
+  nativeNarrationPlayer: NativeNarrationPlayer | null;
   status: "loading" | "ready" | "missing" | "error";
   isPlaying: boolean;
   hasStarted: boolean;
@@ -79,6 +80,7 @@ export function useBreathAudio({
   const [currentSec, setCurrentSec] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [nativeNarrationPlayer, setNativeNarrationPlayer] = useState<NativeNarrationPlayer | null>(null);
   const completedRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const nativeBridgeRef = useRef(getNarrationBridge());
@@ -96,6 +98,7 @@ export function useBreathAudio({
     setStatus("loading");
     setIsPlaying(false);
     setHasStarted(false);
+    setNativeNarrationPlayer(null);
     setCurrentSec(0);
     fetch(audioAssetUrl(slug, "json"), { signal: controller.signal })
       .then(async (res) => {
@@ -119,6 +122,7 @@ export function useBreathAudio({
           const player = await createNativeNarrationPlayer(bridge, assembleWavBlob([buffer]), controller.signal);
           if (cancelled) { player.remove(); return; }
           nativePlayerRef.current = player;
+          setNativeNarrationPlayer(player);
           player.setAttribute("data-fv-guided-session", "active");
           player.addEventListener("play", () => { setHasStarted(true); setIsPlaying(true); });
           player.addEventListener("pause", () => setIsPlaying(false));
@@ -249,6 +253,7 @@ export function useBreathAudio({
   }, [rawPhase, onComplete]);
 
   return {
+    nativeNarrationPlayer,
     status,
     isPlaying,
     hasStarted,
