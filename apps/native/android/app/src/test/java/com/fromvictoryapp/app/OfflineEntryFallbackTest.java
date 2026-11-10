@@ -79,6 +79,16 @@ public class OfflineEntryFallbackTest {
     }
 
     @Test
+    public void retriesOnlyReplaceTheLocalOfflinePage() {
+        assertTrue(OfflineEntryFallback.isLocalOfflinePageUrl(null));
+        assertTrue(OfflineEntryFallback.isLocalOfflinePageUrl("about:blank"));
+        assertTrue(OfflineEntryFallback.isLocalOfflinePageUrl("data:text/html,x"));
+        assertEquals(false, OfflineEntryFallback.isLocalOfflinePageUrl(APP + "/athlete/pregame"));
+        assertEquals(false, OfflineEntryFallback.isLocalOfflinePageUrl(APP + "/signin"));
+        assertEquals(false, OfflineEntryFallback.isLocalOfflinePageUrl("https://checkout.stripe.com/"));
+    }
+
+    @Test
     public void otherAppPagesShowTheLocalOfflinePageNeverPregame() {
         // Once retries are spent, Pregame itself can never loop back into Pregame.
         assertEquals(SHOW_OFFLINE_PAGE, decide(APP + "/athlete/pregame", true, -2, APP));

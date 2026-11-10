@@ -31,7 +31,9 @@ import java.net.URISyntaxException;
  * starts after the app had been stopped for 5+ s), while an immediate second
  * navigation is answered from the SW cache. During the retries the user sees
  * the local offline page ("Connecting to training..."), never Chromium's error
- * page; once the retries are spent, that page simply stays.
+ * page; once the retries are spent, that page simply stays. The retry budget is
+ * a hard cap per offline entry (only a new entry resets it), and a retry only
+ * fires while the local offline page is still showing.
  *
  * Pure Java (no android.* types) so it is unit-tested on the JVM.
  */
@@ -121,6 +123,14 @@ public final class OfflineEntryFallback {
     public static long retryDelayMs(int attempt) {
         int clamped = Math.max(0, Math.min(attempt, MAX_PREGAME_RETRIES - 1));
         return 400L << clamped;
+    }
+
+    /**
+     * Whether the WebView is showing the local offline page, which is loaded
+     * with no base URL and so reports about:blank (or a data: URL).
+     */
+    public static boolean isLocalOfflinePageUrl(String currentUrl) {
+        return currentUrl == null || "about:blank".equals(currentUrl) || currentUrl.startsWith("data:");
     }
 
     /** https port with the default made explicit, so "host" and "host:443" match. */

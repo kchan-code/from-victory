@@ -1,6 +1,5 @@
 package com.fromvictoryapp.app;
 
-import android.graphics.Bitmap;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
@@ -23,40 +22,25 @@ public class OfflineEntryWebViewClient extends BridgeWebViewClient {
 
     private final Bridge bridge;
 
-    /** Pregame retries made in the current offline sequence (main thread only). */
+    /**
+     * Pregame retries made since the last offline entry (main thread only).
+     * A hard cap: only a new offline entry resets it, so no callback ordering
+     * can turn the retries into a loop.
+     */
     private int pregameRetries = 0;
-    /** The scheduled Pregame retry, if any, so a new entry can cancel it. */
+    /** The scheduled Pregame retry, if any, so a new entry or teardown can cancel it. */
     private Runnable pendingRetry = null;
-    /** Whether the current top-level load reported an error. */
-    private boolean mainFrameFailed = false;
+    private WebView pendingRetryView = null;
 
     public OfflineEntryWebViewClient(Bridge bridge) {
         super(bridge);
         this.bridge = bridge;
     }
 
-    @Override
-    public void onPageStarted(WebView view, String url, Bitmap favicon) {
-        super.onPageStarted(view, url, favicon);
-        mainFrameFailed = false;
-    }
-
-    @Override
-    public void onPageFinished(WebView view, String url) {
-        super.onPageFinished(view, url);
-        // A Pregame load that finished without a top-level error ends the
-        // offline sequence: the next failure starts with a fresh retry budget.
-        if (!mainFrameFailed && url != null && url.equals(OfflineEntryFallback.pregameUrl(bridge.getAppUrl()))) {
-            pregameRetries = 0;
-        }
-    }
 
     @Override
     public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
         super.onReceivedError(view, request, error);
-        if (request.isForMainFrame()) {
-            mainFrameFailed = true;
-        }
         OfflineEntryFallback.Action action = OfflineEntryFallback.decide(
             request.getUrl().toString(),
             request.isForMainFrame(),
@@ -70,7 +54,7 @@ public class OfflineEntryWebViewClient extends BridgeWebViewClient {
                 String pregame = OfflineEntryFallback.pregameUrl(bridge.getAppUrl());
                 if (pregame != null) {
                     Logger.info("FV-639", "entry offline (code " + error.getErrorCode() + ") -> pregame shell");
-                    cancelPendingRetry(view);
+                    cancelPendingRetry();
                     pregameRetries = 0;
                     view.loadUrl(pregame);
                 }
@@ -93,21 +77,31 @@ public class OfflineEntryWebViewClient extends BridgeWebViewClient {
     }
 
     private void scheduleRetry(WebView view, long delayMs) {
-        cancelPendingRetry(view);
+        cancelPendingRetry();
         final String pregame = OfflineEntryFallback.pregameUrl(bridge.getAppUrl());
         if (pregame == null) return;
         pendingRetry = () -> {
             pendingRetry = null;
-            view.loadUrl(pregame);
+            pendingRetryView = null;
+            // Only while the local offline page is still what's showing; never
+            // override a page the WebView has moved on to.
+            if (OfflineEntryFallback.isLocalOfflinePageUrl(view.getUrl())) {
+                view.loadUrl(pregame);
+            } else {
+                Logger.info("FV-639", "retry skipped: page already changed");
+            }
         };
+        pendingRetryView = view;
         view.postDelayed(pendingRetry, delayMs);
     }
 
-    private void cancelPendingRetry(WebView view) {
-        if (pendingRetry != null) {
-            view.removeCallbacks(pendingRetry);
-            pendingRetry = null;
+    /** Cancels a scheduled Pregame retry (new entry, or Activity teardown). */
+    public void cancelPendingRetry() {
+        if (pendingRetry != null && pendingRetryView != null) {
+            pendingRetryView.removeCallbacks(pendingRetry);
         }
+        pendingRetry = null;
+        pendingRetryView = null;
     }
 
     private static void showOfflinePage(WebView view) {
