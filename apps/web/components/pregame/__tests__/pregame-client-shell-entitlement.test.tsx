@@ -311,6 +311,27 @@ describe("offline detection — supabase-js returns errors instead of throwing (
     expect(replaceMock).not.toHaveBeenCalled();
   });
 
+  it("an auth-server 5xx (returned AuthRetryableFetchError status 503) is offline-like: verified cache opens, never /signin", async () => {
+    seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
+    getUserMock.mockResolvedValue({
+      data: { user: null },
+      error: new AuthRetryableFetchError("Service Unavailable", 503),
+    });
+    render(<PregameClientShell />);
+    expect(await screen.findByTestId("pregame-flow")).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  it("an auth-server 5xx with no verified cache → Connect first, never /signin", async () => {
+    getUserMock.mockResolvedValue({
+      data: { user: null },
+      error: new AuthRetryableFetchError("Service Unavailable", 503),
+    });
+    render(<PregameClientShell />);
+    expect(await screen.findByText("Connect first")).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
   it("a real auth answer (AuthApiError, e.g. revoked/invalid session) still goes to /signin, not the cache", async () => {
     seedCache({ sport: "hockey", firstName: "Test", entitlementVerified: true });
     getUserMock.mockResolvedValue({

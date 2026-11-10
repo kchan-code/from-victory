@@ -15,15 +15,19 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 Game-Day Pregame now uses the same access rule as Daily Training, Pre-Practice,
 Post-Game and the athlete hub. When the account's subscription is canceled or has expired,
 an athlete who opens Pregame while online is sent to the same "Training paused" screen as
-those pages; a self-paying adult athlete is sent to the subscribe page. Before this,
+those pages. Before this,
 Pregame stayed open after a cancellation.
 
 Offline Pregame (no signal) works for an athlete with access, once Pregame has been opened
 online on that device after this change; the first open needs a connection. Before this
 change, opening Pregame with no signal showed the browser's offline error page instead of
-the session (a defect found and fixed with this change). If access ends while a device stays
-offline, Pregame keeps opening offline on that device until it next connects and opens
-Pregame or another training page; then it stops.
+the session (seen on Android; the cause was in shared web code, fixed with this change).
+If access ends while a device stays offline, Pregame keeps opening offline on that device
+until it next connects and opens Pregame, or any other training page; then it stops. There
+is no time limit on that window.
+
+Adult (18+) self-paying athletes currently cannot open Pregame at all; that is a separate
+known issue being fixed.
 
 Why it matters to a buyer: Pregame is part of the subscription, like all training, and
 it stops when the subscription ends.

@@ -38,8 +38,12 @@
  * next reaches the server. No new grace period is added and a valid
  * subscriber is never denied offline. Revocation lands on the first online
  * contact that sees the block: opening pregame (step 5 clears the cache), or
- * any gated training page (they redirect to /athlete/paused, which clears the
- * cache on mount). Sign-out / re-pair clear it too (FV-154).
+ * — for a MINOR athlete — any gated training page (they redirect to
+ * /athlete/paused, which clears the cache on mount). A blocked adult_athlete
+ * is redirected to /subscribe instead, which does NOT clear it, so for an
+ * adult only reopening pregame online revokes. (Moot today: this shell sends
+ * adult_athlete to /dashboard before any cache write — FV-636; that fix must
+ * also clear on its blocked path.) Sign-out / re-pair clear it too (FV-154).
  *
  * NO CROSS-ATHLETE CACHE: the entry is not keyed by user, so every way a
  * different athlete can become signed in on this device clears it first:
