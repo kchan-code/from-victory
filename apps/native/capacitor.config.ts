@@ -17,7 +17,9 @@ import type { CapacitorConfig } from "@capacitor/cli";
  *
  * Plugin allowlist (product-strategist): core, app, splash-screen, status-bar,
  * android, ios. No push-notifications (device token), analytics, ads, or
- * attribution SDKs. Any new plugin needs a fresh product + privacy review.
+ * attribution SDKs. App-local FVNarration transfers only the assembled narration
+ * WAV to the native audio player; it has no music-provider or library access.
+ * Any new plugin needs a fresh product + privacy review.
  */
 
 const serverUrl =

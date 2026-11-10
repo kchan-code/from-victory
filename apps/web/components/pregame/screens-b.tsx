@@ -33,7 +33,9 @@ import { positivePlayTitle } from "./positive-plays";
 import { verseForCueWord } from "./cue-word-verses";
 import type { AudioTimeline, Phase } from "./audio/types";
 import { findActivePhase, type AssembledTimeline } from "./audio-playlist";
+import { NarrationVolumeControl } from "./NarrationVolumeControl";
 import { useClipPlayer } from "./useClipPlayer";
+import { getNarrationBridge } from "@/lib/native/narration";
 
 type SetFn = <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
 
@@ -1118,6 +1120,8 @@ function substituteSegment(
 function useClipPlayerFlag(): boolean {
   // Read from location.search on the client; SSR always returns false.
   if (typeof window === "undefined") return false;
+  // Native mixing must never silently fall back to focus-stealing HTML audio.
+  if (getNarrationBridge()) return true;
   // Default ON: only disabled when explicitly set to "0".
   return new URLSearchParams(window.location.search).get("clipPlayer") !== "0";
 }
@@ -1240,7 +1244,7 @@ export function AudioSessionScreen({
     if (clipPlayer.error) {
       // "no template" means the current combination has no matching manifest
       // entry — not a true error, just use the legacy path silently.
-      if (clipPlayer.error !== "no template") {
+      if (clipPlayer.error !== "no template" || getNarrationBridge()) {
         setAudioMode("text");
       }
     }
@@ -1452,6 +1456,9 @@ export function AudioSessionScreen({
     }
     // ── Legacy two-<audio> path ──
     if (audioMode === "audio") {
+      // Error-to-text state updates run in an effect; never allow a native
+      // error render/tap to start HTML audio while that effect is pending.
+      if (getNarrationBridge()) return;
       const o = openerRef.current;
       const c = cellRef.current;
       if (!o || !c) return;
@@ -1713,7 +1720,7 @@ export function AudioSessionScreen({
 
       {/* Legacy <audio> elements — only rendered when the clip player is NOT active.
           Clip path pre-decodes via Web Audio API; no HTMLAudioElements needed. */}
-      {audioMode === "audio" && openerSrc && cellSrc && !isClipActive && (
+      {!getNarrationBridge() && audioMode === "audio" && openerSrc && cellSrc && !isClipActive && (
         <>
           {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
           <audio
@@ -1898,6 +1905,7 @@ export function AudioSessionScreen({
           anything was happening; PreparingIndicator renders the same text
           visibly and keeps the single announcement. */}
       <PreparingIndicator loading={clipLoading} />
+      {isClipActive && !renderCompleted && <NarrationVolumeControl player={clipPlayer.nativeNarrationPlayer} />}
 
       <div className="flex flex-col gap-2.5">
         <button

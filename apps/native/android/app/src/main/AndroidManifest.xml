@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Privacy: INTERNET only. No camera/mic/location/contacts.
+    <!-- Privacy: network and foreground narration playback only. No camera/mic/location/contacts.
          allowBackup=false — do not ship athlete device-local data to
          third-party cloud backup. Do not add analytics/ad SDK permissions. -->
     <application
@@ -31,6 +31,12 @@
 
         </activity>
 
+        <service
+            android:name=".FVNarrationService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback"
+            android:stopWithTask="true" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -45,4 +51,9 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Normal permissions for athlete-started narration during screen lock.
+         No microphone, music-library access, or notification permission prompt. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 </manifest>

@@ -29,6 +29,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { type PracticeState, type PrayerStyle, PRAYER_STYLE_OPTIONS } from "./types";
 import { getSportConfig, type Sport } from "./sport-registry";
+import { NarrationVolumeControl } from "./NarrationVolumeControl";
 import { useClipPlayer } from "./useClipPlayer";
 import {
   BottomBar,
@@ -578,6 +579,7 @@ function PracticeSessionScreen({
           dimmed play button while the audio decoded. Same text, same single
           announcement, now visible. */}
       <PreparingIndicator loading={clipLoading} />
+      {isClipActive && !renderCompleted && <NarrationVolumeControl player={clipPlayer.nativeNarrationPlayer} />}
 
       <div className="flex flex-col gap-2.5">
         {!renderCompleted && (

@@ -25,6 +25,7 @@ class FVBridgeViewController: CAPBridgeViewController {
         if #available(iOS 15.0, *) {
             bridge?.registerPluginInstance(FVAppleIAPPlugin())
         }
+        bridge?.registerPluginInstance(FVNarrationPlugin())
         // FV-589: CLI-verifiable evidence (via unified log, not stdout)
         // that the storyboard's FVBridgeViewController actually ran under
         // the new SceneDelegate and finished plugin registration.
