@@ -92,8 +92,8 @@ function injectAnchor(slug: string): HTMLElement {
 
 const HUB_STOPS = [
   "hub-rhythm-ring",
-  "hub-daily-card",
   "hub-pregame-card",
+  "hub-daily-card",
 ];
 const PREGAME_STOPS = [
   "pregame-begin-btn",

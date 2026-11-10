@@ -156,10 +156,12 @@ export default async function AthleteHomePage() {
 
         {/* ── Hub: hero + tile grid ──
             Beta-tester feedback (2026-08-24): too many words, tiles too small.
-            One hero (Daily Training) + a grid of large icon-first tiles. No
-            subtitle/body copy on any card — context lives in the destination
-            screens and the first-run coachmark tour (FV-313).
-            Fold rule (FV-190) still holds: Daily, Pregame, and Pre-Practice
+            One hero + a grid of large icon-first tiles. No subtitle/body copy
+            on any card — context lives in the destination screens and the
+            first-run coachmark tour (FV-313).
+            KC 2026-11-10: Pregame is the hero (the session athletes reach for
+            on game day); Daily Training moves into the tile grid.
+            Fold rule (FV-190) still holds: Pregame, Daily, and Pre-Practice
             land above a 375px fold; Journey / Ride Home may scroll.
             a11y: card titles are intentionally <p>, not headings — each card is
             a full <Link> so AT users navigate them by link, and the page's single
@@ -167,32 +169,32 @@ export default async function AthleteHomePage() {
             would collide with the daily screen's h1→h2 hierarchy).
         ── */}
         <section aria-label="Training sections" className="space-y-3">
-          {/* 1. Daily Training — hero / gold accent */}
+          {/* 1. Pregame — hero / gold accent */}
           <Link
-            href="/athlete/daily"
-            data-coachmark="hub-daily-card"
+            href="/athlete/pregame"
+            data-coachmark="hub-pregame-card"
             className="group block rounded-2xl border border-[rgba(223,175,55,0.40)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-gold active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
             style={{
               background:
-                "linear-gradient(180deg,rgba(223,175,55,0.10),rgba(223,175,55,0)),var(--bg-elev-1)",
+                "linear-gradient(180deg,rgba(223,175,55,0.12),rgba(223,175,55,0)),var(--bg-elev-1)",
             }}
           >
-            <div className="px-5 py-5 flex items-center gap-4">
+            <div className="px-5 py-7 flex items-center gap-4">
               <span
-                className="flex-none flex items-center justify-center w-14 h-14 rounded-2xl bg-gold/10 border border-gold/20"
+                className="flex-none flex items-center justify-center w-16 h-16 rounded-2xl bg-gold/10 border border-gold/20"
                 aria-hidden="true"
               >
-                <Icon name="book" size={28} color="var(--fv-gold)" />
+                <Icon name="flame" size={34} color="var(--fv-gold)" />
               </span>
               <div className="flex-1 min-w-0">
                 <p className="font-mono font-semibold text-[10px] uppercase tracking-[0.18em] text-gold mb-1">
-                  Today
+                  Game Day
                 </p>
-                <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[22px] leading-[1.1]">
-                  Daily Training
+                <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[24px] sm:text-[26px] leading-[1.1]">
+                  Pregame Visualization
                 </p>
               </div>
-              <span aria-hidden="true" className="flex-none text-gold text-[22px] font-display">
+              <span aria-hidden="true" className="flex-none text-gold text-[24px] font-display">
                 →
               </span>
             </div>
@@ -200,10 +202,10 @@ export default async function AthleteHomePage() {
 
           {/* Tile grid — big icon, one short title, nothing else. */}
           <div className="grid grid-cols-2 gap-3">
-            {/* 2. Pregame */}
+            {/* 2. Daily Training */}
             <Link
-              href="/athlete/pregame"
-              data-coachmark="hub-pregame-card"
+              href="/athlete/daily"
+              data-coachmark="hub-daily-card"
               className="group flex flex-col items-center justify-center gap-3 py-6 px-3 rounded-2xl border border-[rgba(223,175,55,0.22)] no-underline transition-[border-color,transform] duration-base ease-out hover:border-[rgba(223,175,55,0.45)] active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
               style={{
                 background:
@@ -214,10 +216,10 @@ export default async function AthleteHomePage() {
                 className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gold/[0.08] border border-gold/[0.15]"
                 aria-hidden="true"
               >
-                <Icon name="flame" size={32} color="var(--fv-gold)" />
+                <Icon name="book" size={32} color="var(--fv-gold)" />
               </span>
               <p className="font-display font-bold uppercase tracking-[0.02em] text-cream text-[17px] leading-[1.15] text-center">
-                Pregame Visualization
+                Daily Training
               </p>
             </Link>
 
@@ -289,7 +291,7 @@ export default async function AthleteHomePage() {
           </div>
         </section>
 
-        {/* ── Install nudge (FV-258) — below cards so the Daily/Pregame/
+        {/* ── Install nudge (FV-258) — below cards so the Pregame/Daily/
             Pre-Practice CTAs are never displaced from the 375px fold.
             The mb-4 gap lives on the card's own root, so dismissed/installed
             users see no phantom whitespace here. ── */}

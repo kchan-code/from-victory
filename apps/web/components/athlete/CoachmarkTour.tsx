@@ -94,8 +94,8 @@ const SURFACE_STOPS: Record<Surface, string[]> = {
   // declutter pass — every destination is a tile the tour already covers.
   hub: [
     "hub-rhythm-ring",
-    "hub-daily-card",
     "hub-pregame-card",
+    "hub-daily-card",
   ],
   pregame: [
     "pregame-begin-btn",
