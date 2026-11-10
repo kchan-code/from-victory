@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { AuthShell } from "@/components/auth/AuthShell";
 import { InviteSetupForm } from "@/components/auth/InviteSetupForm";
+import { ClearOfflinePregameOnMount } from "@/components/pregame/ClearOfflinePregameOnMount";
 import { normalizeInviteCode } from "@/lib/invites/code";
 import { inviteAppPath } from "@/lib/invites/universal-link";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -101,6 +102,9 @@ export default async function PairClaimPage({ searchParams }: Search) {
 
   return (
     <AuthShell title={`Welcome, ${athlete.first_name}.`}>
+      {/* FV-625: claiming signs this athlete in on the device — drop any
+          previous athlete's offline-pregame entry first. */}
+      <ClearOfflinePregameOnMount />
       <InviteSetupForm
         code={code}
         firstName={athlete.first_name}

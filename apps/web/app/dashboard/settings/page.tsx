@@ -3,7 +3,8 @@
  *
  * Displays:
  *   - Account email (read-only; email change deferred — see AC-7).
- *   - Subscription status: plan label, status, renews/ends date (Stripe), OR
+ *   - Subscription status: plan label, status, renews/ends date (Stripe; no
+ *     date row once the subscription has ended — FV-623), OR
  *     a price-free Apple status + in-app manage entry for an Apple-entitled
  *     payer (FV-578, record §4.4 — Apple precedence over Stripe/comp), OR a
  *     neutral "try again" status if the Apple read fails and there is no
@@ -135,7 +136,17 @@ export default async function DashboardSettingsPage() {
   );
 
   const hasSubscription = !!sub;
-  const isCanceling = sub?.cancel_at_period_end === true;
+  // FV-623: a subscription in a terminal Stripe status has already ended —
+  // there is no renewal and no remaining paid period. Stripe keeps the last
+  // `current_period_end` on the row after an IMMEDIATE cancel, so that date is
+  // neither a renewal date nor when access ended (access ended at the cancel).
+  // Hide the date row entirely for these statuses rather than show a stale
+  // "Renews" (or, for a scheduled cancel that has since lapsed, a stale
+  // "Access ends … continues until this date"). Mirrors the `blocked` set in
+  // lib/subscriptions/access-level.ts.
+  const hasEnded =
+    sub?.status === "canceled" || sub?.status === "incomplete_expired";
+  const isCanceling = !hasEnded && sub?.cancel_at_period_end === true;
   const periodEndDate = formatDate(sub?.current_period_end);
 
   // FV-578 (record §4.4): an Apple-entitled payer takes precedence over any
@@ -322,23 +333,26 @@ export default async function DashboardSettingsPage() {
                 </span>
               </div>
 
-              {/* Renews / ends date row */}
-              <div className="py-3 border-b border-hairline">
-                <p className="font-heading font-semibold text-[13px] text-cream/50 uppercase tracking-[0.12em] mb-1">
-                  {isCanceling ? "Access ends" : "Renews"}
-                </p>
-                <p
-                  className="font-body text-cream text-[15px]"
-                  data-testid="subscription-period-end"
-                >
-                  {periodEndDate}
-                </p>
-                {isCanceling ? (
-                  <p className="font-body text-cream/50 text-[13px] leading-relaxed mt-1">
-                    Your access continues until this date.
+              {/* Renews / ends date row — omitted once the subscription has
+                  ended (FV-623; see hasEnded above). */}
+              {hasEnded ? null : (
+                <div className="py-3 border-b border-hairline">
+                  <p className="font-heading font-semibold text-[13px] text-cream/50 uppercase tracking-[0.12em] mb-1">
+                    {isCanceling ? "Access ends" : "Renews"}
                   </p>
-                ) : null}
-              </div>
+                  <p
+                    className="font-body text-cream text-[15px]"
+                    data-testid="subscription-period-end"
+                  >
+                    {periodEndDate}
+                  </p>
+                  {isCanceling ? (
+                    <p className="font-body text-cream/50 text-[13px] leading-relaxed mt-1">
+                      Your access continues until this date.
+                    </p>
+                  ) : null}
+                </div>
+              )}
 
               {/* Manage subscription CTA. In-shell, checkout.stripe.com is
                   unreachable (Google Play compliance — see
