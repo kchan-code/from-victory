@@ -641,6 +641,10 @@ describe("unchanged pre-gate redirects", () => {
 // ---------------------------------------------------------------------------
 describe("FV-638 — a warm audio cache in the native shell is never an entitlement", () => {
   const AUDIO = "http://localhost/audio/pregame/clips/opener-calm.aaaaaaaa.mp3";
+  // The gate must decide from the verified window alone: it never opens the
+  // audio cache. (Clips are generic, content-addressed audio; they stay on the
+  // device after sign-out and grant nothing.)
+  const openSpy = vi.fn();
 
   beforeEach(() => {
     Object.defineProperty(window, "Capacitor", {
@@ -655,7 +659,9 @@ describe("FV-638 — a warm audio cache in the native shell is never an entitlem
     });
     // A fully downloaded fv-audio-<mv> cache: every lookup hits.
     const hit = { match: async () => new Response("mp3"), put: async () => {} };
-    vi.stubGlobal("caches", { open: async () => hit, keys: async () => [AUDIO] });
+    openSpy.mockReset();
+    openSpy.mockImplementation(async () => hit);
+    vi.stubGlobal("caches", { open: openSpy, keys: async () => [AUDIO] });
   });
 
   afterEach(() => {
@@ -681,6 +687,7 @@ describe("FV-638 — a warm audio cache in the native shell is never an entitlem
     render(<PregameClientShell />);
     expect(await screen.findByText("Connect first")).toBeInTheDocument();
     expect(screen.queryByTestId("pregame-flow")).not.toBeInTheDocument();
+    expect(openSpy).not.toHaveBeenCalled();
   });
 
   it("revoked online (canceled) → window cleared; the next offline open says Connect first", async () => {
@@ -696,6 +703,7 @@ describe("FV-638 — a warm audio cache in the native shell is never an entitlem
     render(<PregameClientShell />);
     expect(await screen.findByText("Connect first")).toBeInTheDocument();
     expect(screen.queryByTestId("pregame-flow")).not.toBeInTheDocument();
+    expect(openSpy).not.toHaveBeenCalled();
   });
 
   it("account switch (sign-out clears the device entry) → the next athlete cannot open A's download offline", async () => {
@@ -714,5 +722,6 @@ describe("FV-638 — a warm audio cache in the native shell is never an entitlem
     render(<PregameClientShell />);
     expect(await screen.findByText("Connect first")).toBeInTheDocument();
     expect(screen.queryByText(/hockey:A/)).not.toBeInTheDocument();
+    expect(openSpy).not.toHaveBeenCalled();
   });
 });
