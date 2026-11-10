@@ -8,14 +8,14 @@
 # Usage (from repo root):
 #   apps/native/scripts/android-release-preflight.sh [--min-version-code N] [--aab path/to/app-release.aab]
 #
-#   --min-version-code N  versionCode the next upload must be >= (default 8; Play has 7)
+#   --min-version-code N  versionCode the next upload must be >= (default 9; Play has 8)
 #   --aab PATH            also inspect a built bundle (signature present? not uploaded)
 #   FV_ROOT=/path/to/checkout  inspect a different checkout than the one holding this script
 #
 # Exit code: 0 = no FAIL lines, 1 = at least one FAIL. WARN lines don't fail.
 set -u
 
-MIN_VC=8
+MIN_VC=9
 AAB=""
 while [ $# -gt 0 ]; do
   case "$1" in
