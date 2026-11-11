@@ -407,7 +407,7 @@ describe("athleteUsernameSignIn — unknown username", () => {
 
     expect(result).toMatchObject({
       ok: false,
-      error: expect.stringMatching(/username or password/i),
+      error: expect.stringMatching(/username, email or password/i),
     });
     // Must NOT say "username not found" or similar (enumeration oracle).
     if (result && !result.ok) {
@@ -437,7 +437,7 @@ describe("athleteUsernameSignIn — wrong password", () => {
       void svc; void srv;
       return {
         ok: false as const,
-        error: "That username or password isn't right.",
+        error: "That username, email or password isn't right.",
       };
     })();
 
@@ -696,7 +696,7 @@ describe("athleteUsernameSignIn — email on the Athlete tab (FV-654)", () => {
 
     const { result } = await runAction("adult@example.com", "wrong");
 
-    expect(result).toEqual({ ok: false, error: "That username or password isn't right." });
+    expect(result).toEqual({ ok: false, error: "That username, email or password isn't right." });
     expect(setDeviceAthleteIdMock).not.toHaveBeenCalled();
   });
 
@@ -705,7 +705,7 @@ describe("athleteUsernameSignIn — email on the Athlete tab (FV-654)", () => {
 
     const { result } = await runAction("not@an@email");
 
-    expect(result).toEqual({ ok: false, error: "That username or password isn't right." });
+    expect(result).toEqual({ ok: false, error: "That username, email or password isn't right." });
     expect(serverMockImpl.auth.signInWithPassword).not.toHaveBeenCalled();
   });
 

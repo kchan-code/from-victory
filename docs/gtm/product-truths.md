@@ -10,6 +10,25 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-11 — The app never tells a subscriber to subscribe; clearer sign-in for athletes 18+ (FV-657; effective when the PR deploys)
+
+- **Android app, already subscribed:** a parent or adult who already subscribes and opens
+  the subscription page now sees their status ("You're already subscribed. Manage your
+  subscription from a web browser at fromvictoryapp.com.", or the App Store equivalent)
+  instead of "Subscribe to From Victory from a web browser". Accounts with free access
+  see "You have access to From Victory." on every platform, instead of "You're
+  subscribed to From Victory."
+- **Subscription page, not subscribed:** a new line above "Sign out" reads "Subscribed
+  with a different account? Sign out, then sign in with that one."
+- **Sign-in, "Athlete" tab:** the field is now labeled "Username or email", and the help
+  text speaks to both groups: under 18 (username from the parent's invite, password
+  help from the parent) and 18 or older (sign in with your email, with a "Reset it
+  here" password link). The error now reads "That username, email or password isn't
+  right."
+
+Why it matters to a buyer: someone who already pays is never asked to pay again, and an
+adult who subscribed on the website can find their way into the app on either tab.
+
 ## 2026-11-11 — "We couldn't check your access" is no longer shown as a paused or ended subscription (FV-656; effective when the PR deploys)
 
 Sometimes the app can't read a family's subscription status (a temporary error or a

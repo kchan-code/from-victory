@@ -24,6 +24,11 @@ const AthleteSignInSchema = z.object({
   password: z.string().min(1, "Password is required."),
 });
 
+// FV-657: the Athlete tab accepts a username or (FV-654) an email, so its one
+// generic failure message names both. Same message for every failure — no
+// enumeration oracle.
+const ATHLETE_TAB_GENERIC_ERROR = "That username, email or password isn't right.";
+
 const AthleteUsernameSignInSchema = z.object({
   username: z.string().min(1, "Username is required."),
   password: z.string().min(1, "Password is required."),
@@ -113,7 +118,7 @@ export async function athleteSignIn(
  * rate-limit.ts "username_sign_in" config.
  *
  * Generic failure message: BOTH unknown-username and wrong-password return
- * "That username or password isn't right." — no enumeration oracle. The
+ * ATHLETE_TAB_GENERIC_ERROR — no enumeration oracle. The
  * timing is not perfectly equalised (username lookup is an extra DB call) but
  * the rate-limit is the primary DoS/brute-force control; timing-oracle
  * protection is a FV-251 follow-up.
@@ -199,7 +204,7 @@ export async function athleteUsernameSignIn(
     // Generic error — do NOT distinguish "DB error" from "not found".
     return {
       ok: false,
-      error: "That username or password isn't right.",
+      error: ATHLETE_TAB_GENERIC_ERROR,
     };
   }
 
@@ -208,7 +213,7 @@ export async function athleteUsernameSignIn(
     // caller cannot enumerate valid usernames.
     return {
       ok: false,
-      error: "That username or password isn't right.",
+      error: ATHLETE_TAB_GENERIC_ERROR,
     };
   }
 
@@ -223,7 +228,7 @@ export async function athleteUsernameSignIn(
     );
     return {
       ok: false,
-      error: "That username or password isn't right.",
+      error: ATHLETE_TAB_GENERIC_ERROR,
     };
   }
 
@@ -241,7 +246,7 @@ export async function athleteUsernameSignIn(
     );
     return {
       ok: false,
-      error: "That username or password isn't right.",
+      error: ATHLETE_TAB_GENERIC_ERROR,
     };
   }
 
@@ -252,7 +257,6 @@ export async function athleteUsernameSignIn(
   redirect("/athlete");
 }
 
-const ATHLETE_TAB_GENERIC_ERROR = "That username or password isn't right.";
 const EmailSchema = z.string().email();
 
 /**

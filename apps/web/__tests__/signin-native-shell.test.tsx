@@ -98,3 +98,27 @@ describe("/signin new-customer guidance by shell capability (FV-621)", () => {
     expect(screen.queryByTestId("signin-native-shell-new-customer")).toBeNull();
   });
 });
+
+describe("/signin Athlete tab copy (FV-657)", () => {
+  it.each([null, "legacy-native", "ios-iap"] as const)(
+    "shell %s: 'Username or email' field, under-18 and 18+ guidance, adult reset link",
+    async (capability) => {
+      shellCapabilityMock.mockReturnValue(capability);
+      await renderPage();
+
+      // The Athlete tab's form is rendered (hidden) alongside the Parent tab's.
+      expect(screen.getByLabelText("Username or email", { selector: "input" })).toHaveAttribute(
+        "name",
+        "username",
+      );
+      expect(
+        screen.getByText(/Under 18\? Use the username from your parent’s invite\./),
+      ).toBeInTheDocument();
+      expect(screen.getByText(/18 or older\? Sign in with your email\./)).toBeInTheDocument();
+      expect(screen.getByTestId("athlete-tab-adult-reset-link")).toHaveAttribute(
+        "href",
+        "/forgot-password",
+      );
+    },
+  );
+});
