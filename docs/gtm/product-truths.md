@@ -25,6 +25,19 @@ that they must cancel with Apple, so they are not billed after deleting their ac
 Any copy that says deleting an account cancels the subscription must carry this
 exception.
 
+## 2026-11-11 — An adult athlete's email works on the "Athlete" sign-in tab (FV-654; effective when the PR deploys)
+
+The sign-in screen has two tabs, "Parent" and "Athlete". An adult athlete (18+) who pays
+for their own account signs in with their email and password. Before this, entering that
+email on the "Athlete" tab was rejected ("That username or password isn't right."); it
+only worked on the "Parent" tab, and nothing on screen said so. Now an email works on
+either tab and lands the adult on their training home. Athletes under 18 still sign in
+with the username and password their parent's invite set up. Nothing else about sign-in
+changed.
+
+Why it matters to a buyer: an adult who already subscribed on the website can sign in to
+the app with the same email and password, on whichever tab they pick.
+
 ## 2026-11-11 — An adult whose subscription has ended can reach account settings from the subscribe page (FV-645; effective when the PR deploys)
 
 An adult athlete (18+) who pays for their own account and whose subscription has ended is

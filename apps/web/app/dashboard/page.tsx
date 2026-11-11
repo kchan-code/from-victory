@@ -6,6 +6,7 @@ import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
+import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { getPayerSeatStateForCurrentParent } from "@/lib/subscriptions/seat-state";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -60,6 +61,16 @@ export default async function DashboardPage() {
     getDisplayedAppleProductIdResult(createServiceClient(), userId),
   ]);
   const appleDeleteNotice = appleSubscriptionNoticeFor(appleLookup);
+
+  // FV-655: getParentAccessLevel is fail-closed — a failed read comes back as
+  // "blocked" — so a paying family was shown "Start training today / Choose a
+  // plan" during an outage. When the level isn't "full", ask the
+  // error-tracking entitlement read /subscribe already uses (FV-581); if the
+  // status can't be read, show that page's neutral line instead of a purchase
+  // prompt. A fully entitled parent pays no extra read.
+  const subscriptionStatusUnknown =
+    accessLevel !== "full" &&
+    (await getSubscribeEntitlementState(userId)).status === "unknown";
 
   // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
   // checkout.stripe.com has no reachable path (see
@@ -143,7 +154,20 @@ export default async function DashboardPage() {
         {/* Subscribe CTA — shown only when not on an active subscription.
             Non-blocking: current users without a subscription row must not
             be locked out. Enforcement is a separate issue. */}
-        {accessLevel !== "full" ? (
+        {subscriptionStatusUnknown ? (
+          <section
+            aria-label="Subscription"
+            role="status"
+            data-testid="dashboard-subscription-status-unknown"
+            className="mb-10 bg-charcoal border border-hairline rounded-2xl px-5 py-4"
+          >
+            {/* Same copy as /subscribe's "unknown" card (FV-581). */}
+            <p className="font-body text-cream/60 text-[13px] leading-relaxed">
+              We couldn&rsquo;t load your subscription status. Please try
+              again.
+            </p>
+          </section>
+        ) : accessLevel !== "full" ? (
           <section
             aria-label="Subscription"
             className="mb-10 bg-charcoal border border-hairline rounded-2xl px-5 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5"

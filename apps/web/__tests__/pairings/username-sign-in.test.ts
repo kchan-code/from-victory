@@ -598,3 +598,144 @@ describe("athleteSignIn — device-cookie path (backward-compat)", () => {
     expect(calls.some(([action]) => action === "username_sign_in")).toBe(false);
   });
 });
+
+// ===========================================================================
+// FV-654. athleteUsernameSignIn — an email on the Athlete tab
+// ===========================================================================
+
+/**
+ * An 18+ self-serve athlete has a real email and no username. Before FV-654
+ * they got the generic error on the Athlete tab with no way forward. A value
+ * containing "@" now signs in by email exactly like the Parent tab's signIn.
+ */
+function makeEmailServerMock(opts: {
+  signInError?: { message: string; status?: number; code?: string } | null;
+  userId?: string;
+  role?: string | null;
+}) {
+  const { signInError = null, userId = "user-uuid-777", role = "adult_athlete" } = opts;
+  return {
+    auth: {
+      signInWithPassword: vi.fn(async (_o: unknown) =>
+        signInError
+          ? { data: { user: null }, error: signInError }
+          : { data: { user: { id: userId } }, error: null },
+      ),
+      signOut: vi.fn(async () => ({ error: null })),
+    },
+    from: vi.fn((_table: string) => ({
+      select: (_c: string) => ({
+        eq: (_c2: string, _v: unknown) => ({
+          single: async () => ({ data: role ? { role } : null, error: null }),
+        }),
+      }),
+    })),
+  };
+}
+
+async function runAction(username: string, password = "password123") {
+  try {
+    return { result: await athleteUsernameSignIn(null, usernameSignInFormData({ username, password })), redirected: false };
+  } catch (e) {
+    if (e === REDIRECT_SENTINEL) return { result: undefined, redirected: true };
+    throw e;
+  }
+}
+
+describe("athleteUsernameSignIn — email on the Athlete tab (FV-654)", () => {
+  it("an 18+ athlete's email + password signs in and lands on /athlete, with no device cookie", async () => {
+    const { redirect } = await import("next/navigation");
+    serverMockImpl = makeEmailServerMock({ role: "adult_athlete" }) as unknown as ReturnType<typeof makeServerMock>;
+
+    const { redirected } = await runAction("  Adult@Example.com ");
+
+    expect(redirected).toBe(true);
+    expect(serverMockImpl.auth.signInWithPassword).toHaveBeenCalledWith({
+      email: "adult@example.com",
+      password: "password123",
+    });
+    expect(redirect).toHaveBeenLastCalledWith("/athlete");
+    expect(setDeviceAthleteIdMock).not.toHaveBeenCalled();
+  });
+
+  it("never runs the username lookup for an email", async () => {
+    const getUserById = serviceMockImpl.auth.admin.getUserById;
+    serverMockImpl = makeEmailServerMock({ role: "adult_athlete" }) as unknown as ReturnType<typeof makeServerMock>;
+
+    await runAction("adult@example.com");
+
+    expect(getUserById).not.toHaveBeenCalled();
+  });
+
+  it("a parent's email lands on /dashboard", async () => {
+    const { redirect } = await import("next/navigation");
+    serverMockImpl = makeEmailServerMock({ role: "parent" }) as unknown as ReturnType<typeof makeServerMock>;
+
+    const { redirected } = await runAction("parent@example.com");
+
+    expect(redirected).toBe(true);
+    expect(redirect).toHaveBeenLastCalledWith("/dashboard");
+    expect(setDeviceAthleteIdMock).not.toHaveBeenCalled();
+  });
+
+  it("a minor athlete's synthetic email lands on /athlete and binds the device, like the username path", async () => {
+    const { redirect } = await import("next/navigation");
+    serverMockImpl = makeEmailServerMock({ role: "athlete", userId: "athlete-uuid-009" }) as unknown as ReturnType<typeof makeServerMock>;
+
+    const { redirected } = await runAction("x1@athletes.fromvictory.app");
+
+    expect(redirected).toBe(true);
+    expect(redirect).toHaveBeenLastCalledWith("/athlete");
+    expect(setDeviceAthleteIdMock).toHaveBeenCalledWith("athlete-uuid-009");
+  });
+
+  it("a wrong password returns the same generic error as an unknown username", async () => {
+    serverMockImpl = makeEmailServerMock({
+      signInError: { message: "Invalid login credentials", status: 400, code: "invalid_credentials" },
+    }) as unknown as ReturnType<typeof makeServerMock>;
+
+    const { result } = await runAction("adult@example.com", "wrong");
+
+    expect(result).toEqual({ ok: false, error: "That username or password isn't right." });
+    expect(setDeviceAthleteIdMock).not.toHaveBeenCalled();
+  });
+
+  it("a malformed email gets the generic error without a sign-in attempt", async () => {
+    serverMockImpl = makeEmailServerMock({}) as unknown as ReturnType<typeof makeServerMock>;
+
+    const { result } = await runAction("not@an@email");
+
+    expect(result).toEqual({ ok: false, error: "That username or password isn't right." });
+    expect(serverMockImpl.auth.signInWithPassword).not.toHaveBeenCalled();
+  });
+
+  it("also consumes the Parent tab's sign_in bucket keyed on the email", async () => {
+    serverMockImpl = makeEmailServerMock({}) as unknown as ReturnType<typeof makeServerMock>;
+
+    await runAction("Adult@Example.com");
+
+    expect(rateLimitGateMock).toHaveBeenCalledWith("username_sign_in", "adult@example.com:1.2.3.4");
+    expect(rateLimitGateMock).toHaveBeenCalledWith("sign_in", "adult@example.com");
+  });
+
+  it("is refused when the email's sign_in bucket is exhausted, before any sign-in attempt", async () => {
+    rateLimitGateMock.mockImplementation(async (bucket: string) => ({ limited: bucket === "sign_in" }));
+    serverMockImpl = makeEmailServerMock({}) as unknown as ReturnType<typeof makeServerMock>;
+
+    const { result } = await runAction("adult@example.com");
+
+    expect(result).toMatchObject({ ok: false, error: expect.stringMatching(/too many tries/i) });
+    expect(serverMockImpl.auth.signInWithPassword).not.toHaveBeenCalled();
+  });
+
+  it("a plain username still takes the username path (unchanged)", async () => {
+    serviceMockImpl = makeServiceMock({ signInProfileData: { id: "athlete-uuid-001" } });
+    serverMockImpl = makeServerMock({ signInError: null });
+
+    const { redirected } = await runAction("jordan7");
+
+    expect(redirected).toBe(true);
+    expect(serviceMockImpl.auth.admin.getUserById).toHaveBeenCalledWith("athlete-uuid-001");
+    expect(rateLimitGateMock).not.toHaveBeenCalledWith("sign_in", expect.anything());
+  });
+});

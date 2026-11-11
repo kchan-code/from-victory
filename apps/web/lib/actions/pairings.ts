@@ -121,8 +121,16 @@ export async function athleteSignIn(
  * On success: sets the device cookie (same as claimPairing / athleteSignIn)
  * so subsequent visits on this device show the password-only form.
  *
+ * FV-654: an 18+ self-serve athlete has a real email and no username, and the
+ * sign-in screen's only tabs are "Parent" and "Athlete". An adult who picks
+ * Athlete and types their email used to get the generic error with no way
+ * forward. A value containing "@" is now an email: it signs in exactly like
+ * the Parent tab's signIn (same `sign_in` rate-limit bucket keyed on the
+ * email, same role-aware landing), with this form's generic error. The device
+ * cookie is set only for a minor athlete, as on the username path.
+ *
  * FormData fields:
- *   username — the athlete's username (case-insensitive)
+ *   username — the athlete's username (case-insensitive), or an email
  *   password — the athlete's password
  */
 export async function athleteUsernameSignIn(
@@ -161,6 +169,13 @@ export async function athleteUsernameSignIn(
       ok: false,
       error: "Too many tries. Give it a few minutes, then try again.",
     };
+  }
+
+  // FV-654: usernames are [a-z0-9_] only (USERNAME_PATTERN in
+  // lib/auth/athlete-username.ts, and the claim RPC's DB check), so a value
+  // with "@" can only be an email — an 18+ athlete (or a parent) on this tab.
+  if (lowercasedUsername.includes("@")) {
+    return emailSignInFromAthleteTab(lowercasedUsername, parsed.data.password);
   }
 
   const service = createServiceClient();
@@ -235,6 +250,63 @@ export async function athleteUsernameSignIn(
   setDeviceAthleteId(athleteId);
 
   redirect("/athlete");
+}
+
+const ATHLETE_TAB_GENERIC_ERROR = "That username or password isn't right.";
+const EmailSchema = z.string().email();
+
+/**
+ * FV-654: the email branch of athleteUsernameSignIn. Mirrors signIn
+ * (lib/actions/auth.ts) — the `sign_in` rate-limit bucket keyed on the email,
+ * signInWithPassword, then role-aware landing — but keeps this form's generic
+ * error so the Athlete tab never reveals whether an email has an account.
+ * Not exported: a "use server" module's exports are callable actions.
+ */
+async function emailSignInFromAthleteTab(
+  email: string,
+  password: string,
+): Promise<AthleteSignInState> {
+  if (!EmailSchema.safeParse(email).success) {
+    return { ok: false, error: ATHLETE_TAB_GENERIC_ERROR };
+  }
+
+  const { limited } = await rateLimitGate("sign_in", email);
+  if (limited) {
+    return {
+      ok: false,
+      error: "Too many tries. Give it a few minutes, then try again.",
+    };
+  }
+
+  const supabase = createClient();
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (error || !data?.user) {
+    console.error(
+      `[pairings.athleteUsernameSignIn] email sign-in failed: ${error?.message ?? "no user"} (status=${error?.status ?? "n/a"} code=${error?.code ?? "n/a"})`,
+    );
+    return { ok: false, error: ATHLETE_TAB_GENERIC_ERROR };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", data.user.id)
+    .single();
+
+  if (profile?.role === "athlete") {
+    // A minor athlete who typed their synthetic email: same device binding
+    // as the username path.
+    setDeviceAthleteId(data.user.id);
+    redirect("/athlete");
+  }
+  if (profile?.role === "adult_athlete") {
+    redirect("/athlete");
+  }
+  // Parent (or anything else): same landing as signIn.
+  redirect("/dashboard");
 }
 
 /**
