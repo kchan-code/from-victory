@@ -77,6 +77,21 @@ describe("DeleteAccountPage — structure + Play/App Store requirements", () => 
     expect(text).toContain("30 days");
   });
 
+  it("FV-652: tells App Store subscribers that deleting the account does not cancel with Apple", () => {
+    const { getByTestId, container } = render(<DeleteAccountPage />);
+    const note = getByTestId("delete-account-app-store-note").textContent ?? "";
+    expect(note).toMatch(/managed by apple/i);
+    expect(note).toMatch(/does not cancel it/i);
+    expect(note).toMatch(/cannot\s+be automatically re-attached/i);
+    expect(note).toMatch(/tap your name, then subscriptions/i);
+    expect(note).not.toMatch(/\u2014/);
+    // The blanket "your subscription ... is canceled" claim is now scoped to
+    // subscriptions bought on the website.
+    const text = container.textContent ?? "";
+    expect(text).not.toMatch(/your subscription, if you have one, is\s+canceled/i);
+    expect(text).toMatch(/if you bought it on our website, is\s+canceled/i);
+  });
+
   it("gives a contact fallback for anyone who can't sign in", () => {
     const { container } = render(<DeleteAccountPage />);
     const text = container.textContent ?? "";

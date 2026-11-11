@@ -14,6 +14,7 @@ import {
   type SubscriptionStatus,
 } from "@/lib/subscriptions/access-level";
 import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
+import { appleSubscriptionNoticeFor } from "@/lib/subscriptions/apple-delete-notice";
 import { SUPPORTED_SPORTS, sportLabel, type Sport } from "@/lib/sports";
 import { FOCUS_AREA_LABELS, isFocusAreaKey } from "@/lib/quiz-config";
 import { formatHour } from "@/lib/push/format";
@@ -77,11 +78,25 @@ export default async function AthleteSettingsPage({
   // tester now sees this page agree with the real entitlement gate instead of
   // a false "no Apple subscription." Display-only; never feeds a
   // capacity/trial/purchase decision (see the accessor's doc comment).
-  const appleResult = readSubscriptionStatus
+  //
+  // FV-652: the Apple read now runs for an adult_athlete on EVERY shell (a
+  // minor still never triggers it), because the Delete account section must
+  // warn an App Store subscriber that deleting does not cancel with Apple —
+  // wherever they delete from. The Subscription section below still consumes
+  // the result on ios-iap only (`appleResult`), so its web/legacy-native
+  // rendering is unchanged.
+  const appleLookup = isAdult
     ? await getDisplayedAppleProductIdResult(createServiceClient(), userId)
+    : { productId: null, readError: false };
+  const appleResult = readSubscriptionStatus
+    ? appleLookup
     : { productId: null, readError: false };
   const appleActive = appleResult.productId !== null;
   const appleReadError = appleResult.readError;
+  // Fail toward the warning: an unreadable Apple status shows the hedged
+  // "unknown" variant rather than risk telling an App Store subscriber
+  // nothing (see lib/subscriptions/apple-delete-notice.ts).
+  const appleDeleteNotice = appleSubscriptionNoticeFor(appleLookup);
 
   // Stripe: the adult_athlete is their own payer, so `subscriptions.parent_id`
   // is this athlete's own userId — same key app/dashboard/settings/page.tsx
@@ -388,7 +403,14 @@ export default async function AthleteSettingsPage({
               </div>
             </section>
 
-            <DeleteAccountSection description="Deletes your account, training history, and subscription. This cannot be undone." />
+            <DeleteAccountSection
+              appleSubscriptionNotice={appleDeleteNotice}
+              description={
+                appleDeleteNotice !== null
+                  ? "Deletes your account and training history. This cannot be undone."
+                  : "Deletes your account, training history, and subscription. This cannot be undone."
+              }
+            />
           </>
         ) : null}
       </div>
