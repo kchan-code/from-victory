@@ -250,7 +250,9 @@ $107.99 / $136.99 / $165.99 yearly.
   - Code that recognises a plan by price id must learn the old ids too, or
     existing subscribers lose their "Monthly" / "Annual" label and drop out of
     the owner dashboard's plan mix and revenue estimate
-    (`lib/subscriptions/plans.ts` `priceIdToLabel`, `lib/admin/metrics-core.ts`).
+    (`lib/subscriptions/plans.ts` `priceIdToLabel`, used by
+    `lib/admin/metrics.ts:127-130`; the revenue estimate lives in
+    `lib/admin/metrics-core.ts`).
     That needs two "legacy price id" settings and tests.
   - Any hardcoded amount in checkout or trial-conversion copy is updated
     (`lib/actions/subscription.ts`, `lib/stripe/sync-athlete-quantity.ts`,
