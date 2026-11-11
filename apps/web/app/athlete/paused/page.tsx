@@ -157,15 +157,18 @@ export default async function AthletePausedPage({
             (Google Play compliance — see lib/native-shell.ts), so this becomes
             plain, non-tappable text instead of a link. An ios-iap shell falls
             through to the same reactivate link as web (FV-577). */}
-        {/* FV-656: an unreadable status gets a retry, never a billing path. */}
+        {/* FV-656: an unreadable status gets a retry, never a billing path.
+            A plain <a>, not <Link>: retry must be a full request so the
+            access check re-runs (a client-side navigation can be served from
+            the router cache and show the same unknown state again). */}
         {isUnavailable ? (
-          <Link
+          <a
             href="/athlete"
             data-testid="paused-try-again-link"
             className="inline-flex items-center justify-center rounded-[12px] border border-gold bg-gold px-5 py-4 font-heading text-[15px] font-semibold text-onyx transition-colors duration-fast ease-out hover:bg-gold-bright hover:text-onyx focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.99] w-full mb-3"
           >
             Try again
-          </Link>
+          </a>
         ) : isAdult ? (
           legacyNative ? (
             <div

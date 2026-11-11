@@ -282,13 +282,16 @@ export default async function SubscribePage({ searchParams }: Props) {
               We couldn&rsquo;t check your access. Please try again. If you
               already subscribe, don&rsquo;t purchase another subscription.
             </p>
-            <Link
+            {/* A plain <a>, not <Link>: retry must be a full request so the
+                access check re-runs (a client-side navigation can be served from
+                the router cache and show the same unknown state again). */}
+            <a
               href={isAdult ? "/athlete" : "/dashboard"}
               data-testid="subscribe-status-unknown-retry"
               className="inline-flex items-center justify-center font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 min-h-[44px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
             >
               Try again
-            </Link>
+            </a>
           </StatusCard>
         ) : entitlementState.status === "not_entitled" ? (
           /* Capability-based branch (FV-572, record §4.8) — BYTE-IDENTICAL

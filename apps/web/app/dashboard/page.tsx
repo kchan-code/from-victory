@@ -151,13 +151,16 @@ export default async function DashboardPage() {
               We couldn&rsquo;t check your access. Please try again. If you
               already subscribe, don&rsquo;t purchase another subscription.
             </p>
-            <Link
+            {/* A plain <a>, not <Link>: retry must be a full request so the
+                access check re-runs (a client-side navigation can be served from
+                the router cache and show the same unknown state again). */}
+            <a
               href="/dashboard"
               data-testid="dashboard-subscription-status-unknown-retry"
               className="inline-flex items-center font-heading font-semibold text-[13px] text-gold underline underline-offset-2 hover:text-gold-bright min-h-[44px]"
             >
               Try again
-            </Link>
+            </a>
           </section>
         ) : accessLevel !== "full" ? (
           <section
