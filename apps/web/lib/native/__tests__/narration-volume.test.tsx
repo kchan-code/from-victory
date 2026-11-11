@@ -27,6 +27,36 @@ afterEach(async () => {
   cleanup(); players.splice(0).forEach((player) => player.remove()); await flush(); vi.useRealTimers();
 });
 describe("narration volume", () => {
+  it("reveals volume on demand and preserves playback and gain after Done", async () => {
+    const bridge = bridgeWithVolume(); const player = await create(bridge); await player.play();
+    render(<NarrationVolumeControl player={player} />);
+    const trigger = screen.getByRole("button", { name: /^Voice/ });
+    expect(screen.queryByRole("slider")).toBeNull();
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(trigger);
+    const slider = screen.getByRole("slider", { name: "Narration volume" });
+    expect(document.activeElement).toBe(slider);
+    await act(async () => { fireEvent.change(slider, { target: { value: "0" } }); await flush(); });
+    expect(screen.getByRole("slider")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    expect(screen.queryByRole("slider")).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+    expect(screen.getByRole("button", { name: /^Voice muted/ })).toBeTruthy();
+    expect(getNarrationVolume()).toBe(0);
+    expect(bridge.pause).not.toHaveBeenCalled();
+    expect(bridge.dispose).not.toHaveBeenCalled();
+  });
+  it("dismisses with Escape or outside interaction without stealing outside focus", async () => {
+    const player = await create(bridgeWithVolume());
+    render(<><NarrationVolumeControl player={player} /><button>Outside</button></>);
+    const trigger = screen.getByRole("button", { name: /^Voice/ });
+    fireEvent.click(trigger); fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("slider")).toBeNull(); expect(document.activeElement).toBe(trigger);
+    fireEvent.click(trigger);
+    const outside = screen.getByRole("button", { name: "Outside" });
+    outside.focus(); fireEvent.pointerDown(outside);
+    expect(screen.queryByRole("slider")).toBeNull(); expect(document.activeElement).toBe(outside);
+  });
   it("starts at full volume and applies the preference before exposing a ready player", async () => {
     const bridge = bridgeWithVolume();
     const player = await create(bridge);
@@ -70,10 +100,15 @@ describe("narration volume", () => {
   it("shows a nonfatal error and permits retry without stopping narration", async () => {
     const bridge = bridgeWithVolume(); const player = await create(bridge); await player.play();
     render(<NarrationVolumeControl player={player} />);
+    fireEvent.click(screen.getByRole("button", { name: /^Voice/ }));
     bridge.setVolume.mockRejectedValueOnce(new Error("temporary failure"));
     await act(async () => { fireEvent.change(screen.getByRole("slider"), { target: { value: "35" } }); await flush(); });
     expect(screen.getByRole("status").textContent).toContain("Couldn’t change narration volume");
     expect(player.paused).toBe(false); expect(bridge.dispose).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    expect(screen.queryByRole("slider")).toBeNull();
+    expect(screen.getByRole("status").textContent).toContain("Open Voice to retry");
+    fireEvent.click(screen.getByRole("button", { name: /^Voice/ }));
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Retry" })); await flush(); });
     expect(screen.queryByRole("status")).toBeNull();
     expect(bridge.setVolume).toHaveBeenLastCalledWith({ sessionId: player.sessionId, volume: 0.35 });
@@ -97,6 +132,7 @@ describe("narration volume", () => {
   });
   it("labels mute accessibly and explains that the phone controls both audio sources", async () => {
     const player = await create(bridgeWithVolume()); render(<NarrationVolumeControl player={player} />);
+    fireEvent.click(screen.getByRole("button", { name: /^Voice/ }));
     await act(async () => { fireEvent.change(screen.getByRole("slider", { name: "Narration volume" }), { target: { value: "0" } }); await flush(); });
     expect(screen.getByRole("slider").getAttribute("aria-valuetext")).toBe("Muted");
     expect(screen.getByText(/Phone volume changes both/)).toBeTruthy();

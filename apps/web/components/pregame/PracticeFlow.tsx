@@ -579,26 +579,31 @@ function PracticeSessionScreen({
           dimmed play button while the audio decoded. Same text, same single
           announcement, now visible. */}
       <PreparingIndicator loading={clipLoading} />
-      {isClipActive && !renderCompleted && <NarrationVolumeControl player={clipPlayer.nativeNarrationPlayer} />}
 
       <div className="flex flex-col gap-2.5">
         {!renderCompleted && (
-          <button
-            type="button"
-            onClick={togglePlay}
-            disabled={renderCompleted || clipLoading}
-            aria-label={
-              clipLoading
-                ? "Preparing your session"
-                : renderPlaying
-                  ? "Pause session"
-                  : "Play session"
-            }
-            data-testid="practice-play-pause-btn"
-            className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-gold bg-gold text-onyx transition-transform duration-fast active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-          >
-            <Icon name={renderPlaying ? "pause" : "play"} size={26} />
-          </button>
+          <div className="relative grid grid-cols-[minmax(0,1fr)_64px_minmax(0,1fr)] items-center gap-2">
+            <span aria-hidden="true" />
+            <button
+              type="button"
+              onClick={togglePlay}
+              disabled={renderCompleted || clipLoading}
+              aria-label={
+                clipLoading
+                  ? "Preparing your session"
+                  : renderPlaying
+                    ? "Pause session"
+                    : "Play session"
+              }
+              data-testid="practice-play-pause-btn"
+              className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-gold bg-gold text-onyx transition-transform duration-fast active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            >
+              <Icon name={renderPlaying ? "pause" : "play"} size={26} />
+            </button>
+            {isClipActive && (
+              <NarrationVolumeControl player={clipPlayer.nativeNarrationPlayer} placement="transport" />
+            )}
+          </div>
         )}
 
         {renderCompleted && (
