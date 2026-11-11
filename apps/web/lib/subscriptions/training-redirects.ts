@@ -11,6 +11,9 @@
 export const TRAINING_BLOCKED_REDIRECTS = [
   "/athlete/paused",
   "/athlete/paused?reason=seats",
+  // FV-656: a minor athlete whose family's subscription status couldn't be
+  // read (an errored or timed-out read). Distinct from a confirmed lapse.
+  "/athlete/paused?reason=unavailable",
   "/subscribe",
 ] as const;
 

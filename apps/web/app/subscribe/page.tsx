@@ -191,9 +191,12 @@ export default async function SubscribePage({ searchParams }: Props) {
       {/* FV-625/FV-636: a blocked payer lands here from every gated training
           surface (requireActiveAccess sends a blocked adult_athlete or parent
           to /subscribe) — revoke this device's offline pregame, as
-          /athlete/paused does for a minor. Only when blocked: an entitled
-          payer browsing /subscribe keeps theirs. */}
-      {wouldBounce ? <ClearOfflinePregameOnMount /> : null}
+          /athlete/paused does for a minor. Only on a CONFIRMED lapse: an
+          entitled payer keeps theirs, and FV-656 — a status that couldn't be
+          read ("unknown"; wouldBounce is fail-closed) revokes nothing. */}
+      {wouldBounce && entitlementState.status === "not_entitled" ? (
+        <ClearOfflinePregameOnMount />
+      ) : null}
       <div className="mx-auto max-w-[560px]">
         {/* Header */}
         <header className="flex items-center justify-between mb-12">
@@ -272,10 +275,20 @@ export default async function SubscribePage({ searchParams }: Props) {
             affordance, never a false "you're subscribed." */}
         {entitlementState.status === "unknown" ? (
           <StatusCard testId="subscribe-status-unknown">
-            <p className="font-body text-cream/70 text-[15px] leading-relaxed">
-              We couldn&rsquo;t load your subscription status. Please try
-              again.
+            {/* FV-656: neutral — no claim about why the read failed, no buy
+                affordance, and a retry back to the payer's home (which
+                re-runs the access check). */}
+            <p className="font-body text-cream/70 text-[15px] leading-relaxed mb-4">
+              We couldn&rsquo;t check your access. Please try again. If you
+              already subscribe, don&rsquo;t purchase another subscription.
             </p>
+            <Link
+              href={isAdult ? "/athlete" : "/dashboard"}
+              data-testid="subscribe-status-unknown-retry"
+              className="inline-flex items-center justify-center font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 min-h-[44px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            >
+              Try again
+            </Link>
           </StatusCard>
         ) : entitlementState.status === "not_entitled" ? (
           /* Capability-based branch (FV-572, record §4.8) — BYTE-IDENTICAL

@@ -319,6 +319,16 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
     expect(queryByTestId("clear-offline-pregame")).toBeNull();
   });
 
+  it("FV-656: a blocked level with an UNREADABLE status revokes nothing (not a confirmed lapse)", async () => {
+    asAdult();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("blocked"); // fail-closed on the read error
+    entitlementStateMock.mockResolvedValue({ status: "unknown", provider: null });
+    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    expect(queryByTestId("clear-offline-pregame")).toBeNull();
+  });
+
   it("gating off → never revokes from /subscribe", async () => {
     asAdult();
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
@@ -525,9 +535,11 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
 
       const { getByTestId, queryByTestId, text } = await renderPage();
 
+      // FV-656: neutral copy (no claim about why the read failed) + retry.
       expect(getByTestId("subscribe-status-unknown").textContent).toBe(
-        "We couldn’t load your subscription status. Please try again.",
+        "We couldn’t check your access. Please try again. If you already subscribe, don’t purchase another subscription.Try again",
       );
+      expect(getByTestId("subscribe-status-unknown-retry")).toHaveAttribute("href", "/dashboard");
       expectNoBuyAffordances(queryByTestId, text);
       expect(queryByTestId("apple-subscribe-section-stub")).toBeNull();
       expect(queryByTestId("native-shell-subscribe-notice")).toBeNull();
@@ -544,6 +556,15 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
       expect(getByTestId("subscribe-status-unknown")).toBeTruthy();
       expectNoBuyAffordances(queryByTestId, text);
       expect(queryByTestId("apple-subscribe-section-stub")).toBeNull();
+    });
+
+    it("FV-656: an adult's retry goes back to training (which re-runs the check)", async () => {
+      asAdult();
+      entitlementStateMock.mockResolvedValue({ status: "unknown", provider: null });
+
+      const { getByTestId } = await renderPage();
+
+      expect(getByTestId("subscribe-status-unknown-retry")).toHaveAttribute("href", "/athlete");
     });
   });
 

@@ -69,6 +69,15 @@ export async function GET() {
   }
 
   const decision = await resolveTrainingAccess({ role: profile.role });
+
+  // FV-656: the subscription status couldn't be read. Answer "can't verify"
+  // (503), not a redirect: PregameClientShell treats a non-OK answer like
+  // offline, so the device's existing offline window decides — it can't
+  // grant new access, can't extend the window, and nothing is revoked on an
+  // unreadable status.
+  if (!decision.allowed && decision.statusUnknown) {
+    return NextResponse.json({ error: "unavailable" }, { status: 503, headers: NO_STORE });
+  }
   const body: TrainingAccessResponse = decision.allowed
     ? { redirect: null, offlineUntil: await resolveOfflineEntitlementUntil() }
     : { redirect: decision.redirectTo, offlineUntil: null };

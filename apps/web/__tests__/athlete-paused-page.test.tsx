@@ -184,3 +184,39 @@ describe("/athlete/paused — FV-625 offline pregame revocation", () => {
     expect(clearAthleteCacheMock).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("/athlete/paused?reason=unavailable — status couldn't be read (FV-656)", () => {
+  it.each<["athlete" | "adult_athlete"]>([["athlete"], ["adult_athlete"]])(
+    "%s: neutral copy, a Try again back to the hub, no parent/billing wording",
+    async (role) => {
+      const { container } = await renderPage(role, { reason: "unavailable" });
+      const text = container.textContent ?? "";
+
+      expect(screen.getByText("Access check")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { level: 1 }),
+      ).toHaveTextContent("We couldn’t check your access.");
+      expect(screen.getByTestId("paused-body-copy")).toHaveTextContent("Please try again.");
+      expect(screen.getByTestId("paused-try-again-link")).toHaveAttribute("href", "/athlete");
+      // Never presented as a lapse, and no path to buying or reactivating.
+      expect(text).not.toMatch(/paused|on hold|reactivate|ask your parent|subscription|\$/i);
+      expect(screen.queryByTestId("paused-reactivate-link")).toBeNull();
+      expect(screen.queryByTestId("paused-native-shell-notice")).toBeNull();
+      // Exits stay.
+      expect(screen.getByTestId("paused-settings-link")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /sign out/i })).toBeInTheDocument();
+    },
+  );
+
+  it("does NOT clear the offline-pregame cache (an unreadable status revokes nothing)", async () => {
+    await renderPage("athlete", { reason: "unavailable" });
+    expect(clearAthleteCacheMock).not.toHaveBeenCalled();
+  });
+
+  it("the default (confirmed lapse) copy and revocation are unchanged", async () => {
+    await renderPage("athlete");
+    expect(screen.getByText("Training paused")).toBeInTheDocument();
+    expect(screen.queryByTestId("paused-try-again-link")).toBeNull();
+    expect(clearAthleteCacheMock).toHaveBeenCalledTimes(1);
+  });
+});

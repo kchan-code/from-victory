@@ -10,6 +10,22 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-11 — "We couldn't check your access" is no longer shown as a paused or ended subscription (FV-656; effective when the PR deploys)
+
+Sometimes the app can't read a family's subscription status (a temporary error or a
+slow response). Before this, an athlete under 18 then saw "Training paused" and "ask
+your parent to reactivate access", even when the family's subscription was active. Now
+that athlete sees "We couldn't check your access. Please try again." with a "Try again"
+button, and nothing about pausing, reactivating or paying. Parents and adults who pay
+for themselves see "We couldn't check your access. Please try again. If you already
+subscribe, don't purchase another subscription." on the dashboard and the subscribe
+page, also with "Try again". Training still stays closed until the check succeeds, and
+offline Pregame is neither removed nor extended by a failed check: it keeps the expiry
+it already had.
+
+Why it matters to a buyer: a temporary problem on our side never tells a paying family
+their subscription stopped, and never prompts them to pay twice.
+
 ## 2026-11-11 — An adult athlete's email works on the "Athlete" sign-in tab (FV-654; effective when the PR deploys)
 
 The sign-in screen has two tabs, "Parent" and "Athlete". An adult athlete (18+) who pays

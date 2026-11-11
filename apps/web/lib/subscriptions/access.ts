@@ -187,6 +187,16 @@ export async function getAccessForCurrentUser(): Promise<AccessLevel> {
 }
 
 /**
+ * FV-656: the payer id for the signed-in user, or null (same rules as
+ * resolvePayerIdForCurrentUser below). Exported so the training gate can run
+ * the error-tracking entitlement read (./subscribe-guard, which imports this
+ * module — so the call has to live in ./enforce, not here).
+ */
+export async function getPayerIdForCurrentUser(): Promise<string | null> {
+  return resolvePayerIdForCurrentUser();
+}
+
+/**
  * Resolves the signed-in user to the PAYER whose entitlement covers them:
  *   - `parent`        → their own id.
  *   - `adult_athlete` → their own id (FV-325: 18+ self-serve — the athlete IS

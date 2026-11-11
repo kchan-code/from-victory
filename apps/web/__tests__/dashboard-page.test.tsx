@@ -239,7 +239,11 @@ describe("/dashboard — subscription status can't be read (FV-655)", () => {
 
       expect(
         screen.getByTestId("dashboard-subscription-status-unknown"),
-      ).toHaveTextContent("We couldn’t load your subscription status. Please try again.");
+      ).toHaveTextContent("We couldn’t check your access. Please try again. If you already subscribe, don’t purchase another subscription.");
+      // FV-656: a retry back to the dashboard, which re-reads the status.
+      expect(
+        screen.getByTestId("dashboard-subscription-status-unknown-retry"),
+      ).toHaveAttribute("href", "/dashboard");
       expect(screen.queryByTestId("dashboard-subscribe-cta")).not.toBeInTheDocument();
       expect(container.textContent ?? "").not.toMatch(/start training today/i);
       expect(container.textContent ?? "").not.toMatch(/subscribe to from victory/i);

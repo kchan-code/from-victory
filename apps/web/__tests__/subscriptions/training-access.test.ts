@@ -11,7 +11,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-const { accessMock, untilMock, seatMock, redirectMock } = vi.hoisted(() => ({
+const { accessMock, untilMock, seatMock, redirectMock, payerMock, entitlementMock } = vi.hoisted(() => ({
+  // FV-656: the blocked path asks the error-tracking entitlement read whether
+  // the status was actually readable. Default: readable and not entitled.
+  payerMock: vi.fn(),
+  entitlementMock: vi.fn(),
   accessMock: vi.fn(),
   untilMock: vi.fn(),
   seatMock: vi.fn(),
@@ -23,6 +27,10 @@ const { accessMock, untilMock, seatMock, redirectMock } = vi.hoisted(() => ({
 vi.mock("@/lib/subscriptions/access", () => ({
   getAccessForCurrentUser: accessMock,
   getOfflineEntitlementUntilForCurrentUser: untilMock,
+  getPayerIdForCurrentUser: payerMock,
+}));
+vi.mock("@/lib/subscriptions/subscribe-guard", () => ({
+  getSubscribeEntitlementState: entitlementMock,
 }));
 vi.mock("@/lib/subscriptions/seat-state", () => ({
   getAthleteSeatStatusForCurrentUser: seatMock,
@@ -42,6 +50,8 @@ const ORIGINAL_FLAG = process.env.ENFORCE_SUBSCRIPTION_GATING;
 beforeEach(() => {
   process.env.ENFORCE_SUBSCRIPTION_GATING = "true";
   seatMock.mockResolvedValue("active");
+  payerMock.mockResolvedValue("payer-1");
+  entitlementMock.mockResolvedValue({ status: "not_entitled", provider: null });
 });
 afterEach(() => {
   vi.clearAllMocks();
@@ -186,5 +196,67 @@ describe("resolveOfflineEntitlementUntil (FV-625 offline bound)", () => {
   it("gating on, no end date → null", async () => {
     untilMock.mockResolvedValue(null);
     await expect(resolveOfflineEntitlementUntil()).resolves.toBeNull();
+  });
+});
+
+describe("FV-656 — an unreadable status is a block, but not a lapse", () => {
+  beforeEach(() => {
+    accessMock.mockResolvedValue("blocked"); // fail-closed level on a read error
+    entitlementMock.mockResolvedValue({ status: "unknown", provider: null });
+  });
+
+  it("minor athlete → /athlete/paused?reason=unavailable, flagged statusUnknown", async () => {
+    await expect(resolveTrainingAccess({ role: "athlete" })).resolves.toEqual({
+      allowed: false,
+      redirectTo: "/athlete/paused?reason=unavailable",
+      statusUnknown: true,
+    });
+    expect(entitlementMock).toHaveBeenCalledWith("payer-1");
+  });
+
+  it.each<[CallerRole]>([["adult_athlete"], ["parent"]])(
+    "self-payer (%s) → /subscribe (its unknown card), flagged statusUnknown",
+    async (role) => {
+      await expect(resolveTrainingAccess({ role })).resolves.toEqual({
+        allowed: false,
+        redirectTo: "/subscribe",
+        statusUnknown: true,
+      });
+    },
+  );
+
+  it("is still a block: requireActiveAccess redirects, never returns a level", async () => {
+    await expect(requireActiveAccess({ role: "athlete" })).rejects.toThrow(
+      "NEXT_REDIRECT:/athlete/paused?reason=unavailable",
+    );
+  });
+
+  it("a throw from the status check counts as unknown (couldn't check), still blocked", async () => {
+    entitlementMock.mockRejectedValue(new Error("boom"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    await expect(resolveTrainingAccess({ role: "athlete" })).resolves.toMatchObject({
+      allowed: false,
+      statusUnknown: true,
+    });
+  });
+
+  it("an unresolvable payer (no session / no link) is a confirmed block, not unknown", async () => {
+    payerMock.mockResolvedValue(null);
+    await expect(resolveTrainingAccess({ role: "athlete" })).resolves.toEqual({
+      allowed: false,
+      redirectTo: "/athlete/paused",
+    });
+    expect(entitlementMock).not.toHaveBeenCalled();
+  });
+
+  it("an allowed decision never consults the status check (no extra reads on the happy path)", async () => {
+    accessMock.mockResolvedValue("full");
+    await resolveTrainingAccess({ role: "athlete" });
+    expect(payerMock).not.toHaveBeenCalled();
+    expect(entitlementMock).not.toHaveBeenCalled();
+  });
+
+  it("the unavailable redirect is on the client allowlist", () => {
+    expect(isTrainingBlockedRedirect("/athlete/paused?reason=unavailable")).toBe(true);
   });
 });

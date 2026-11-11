@@ -146,11 +146,18 @@ export default async function DashboardPage() {
             data-testid="dashboard-subscription-status-unknown"
             className="mb-10 bg-charcoal border border-hairline rounded-2xl px-5 py-4"
           >
-            {/* Same copy as /subscribe's "unknown" card (FV-581). */}
-            <p className="font-body text-cream/60 text-[13px] leading-relaxed">
-              We couldn&rsquo;t load your subscription status. Please try
-              again.
+            {/* Same copy as /subscribe's "unknown" card (FV-581, FV-656). */}
+            <p className="font-body text-cream/60 text-[13px] leading-relaxed mb-3">
+              We couldn&rsquo;t check your access. Please try again. If you
+              already subscribe, don&rsquo;t purchase another subscription.
             </p>
+            <Link
+              href="/dashboard"
+              data-testid="dashboard-subscription-status-unknown-retry"
+              className="inline-flex items-center font-heading font-semibold text-[13px] text-gold underline underline-offset-2 hover:text-gold-bright min-h-[44px]"
+            >
+              Try again
+            </Link>
           </section>
         ) : accessLevel !== "full" ? (
           <section

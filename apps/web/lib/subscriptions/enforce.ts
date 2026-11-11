@@ -62,9 +62,11 @@ import { redirect } from "next/navigation";
 import {
   getAccessForCurrentUser,
   getOfflineEntitlementUntilForCurrentUser,
+  getPayerIdForCurrentUser,
 } from "./access";
 import type { AccessLevel } from "./access-level";
 import { getAthleteSeatStatusForCurrentUser } from "./seat-state";
+import { getSubscribeEntitlementState } from "./subscribe-guard";
 import type { TrainingBlockedRedirect } from "./training-redirects";
 
 // ---------------------------------------------------------------------------
@@ -94,7 +96,37 @@ export type CallerRole = "parent" | "athlete" | "adult_athlete";
 
 export type TrainingAccessDecision =
   | { allowed: true; level: Exclude<AccessLevel, "blocked"> }
-  | { allowed: false; redirectTo: TrainingBlockedRedirect };
+  | {
+      allowed: false;
+      redirectTo: TrainingBlockedRedirect;
+      // FV-656: true when the block comes from a subscription status that
+      // couldn't be read, not a confirmed lapse. Still a block — no training
+      // renders — but callers must not present it as an ended subscription
+      // or revoke anything on it.
+      statusUnknown?: true;
+    };
+
+/**
+ * FV-656: did the payer's subscription status fail to read? Uses the
+ * error-tracking entitlement read /subscribe already relies on (FV-581).
+ * Only consulted on the blocked path. A payer that can't be resolved at all
+ * (no session / no link) is a confirmed block, not "unknown". A throw from
+ * the check itself means we couldn't check, so it counts as unknown — which
+ * can only soften the wording and skip a revocation, never grant access.
+ */
+async function isPayerStatusUnknownForCurrentUser(): Promise<boolean> {
+  try {
+    const payerId = await getPayerIdForCurrentUser();
+    if (payerId === null) return false;
+    return (await getSubscribeEntitlementState(payerId)).status === "unknown";
+  } catch (err) {
+    console.error(
+      "[enforce] entitlement status check threw:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return true;
+  }
+}
 
 /**
  * The training-entitlement decision WITHOUT side effects — the single source
@@ -135,6 +167,20 @@ export async function resolveTrainingAccess(opts: {
   }
 
   // level === "blocked"
+  // FV-656: getAccessForCurrentUser fails closed, so "blocked" also covers a
+  // read that errored or timed out. Keep it a block, but say so: a minor
+  // gets the "couldn't check" variant of the paused screen instead of "ask
+  // your parent to reactivate"; a payer still goes to /subscribe, whose
+  // unknown card already says the status couldn't be checked.
+  if (await isPayerStatusUnknownForCurrentUser()) {
+    return {
+      allowed: false,
+      redirectTo:
+        opts.role === "athlete" ? "/athlete/paused?reason=unavailable" : "/subscribe",
+      statusUnknown: true,
+    };
+  }
+
   // A MINOR athlete cannot buy — the parent must act. Gentle paused screen.
   // A parent OR an adult_athlete (FV-328) is the payer and can remedy the
   // block themselves — both route to checkout.
