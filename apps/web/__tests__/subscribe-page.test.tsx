@@ -603,7 +603,8 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
       const { getByTestId, queryByTestId, text } = await renderPage();
 
       expect(getByTestId("subscribe-status-entitled").textContent).toBe(
-        "You’re subscribed to From Victory.",
+        // FV-657: free access is access, not a paid subscription.
+        "You have access to From Victory.",
       );
       expectNoBuyAffordances(queryByTestId, text);
     });
@@ -655,7 +656,8 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
       const { getByTestId, queryByTestId, text } = await renderPage();
 
       expect(getByTestId("subscribe-status-entitled").textContent).toBe(
-        "You’re subscribed to From Victory.",
+        // FV-657: free access is access, not a paid subscription.
+        "You have access to From Victory.",
       );
       expectNoBuyAffordances(queryByTestId, text);
     });
@@ -693,19 +695,53 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
     });
   });
 
-  describe("status: entitled — legacy-native shell (any provider)", () => {
-    it("shows the SAME unchanged compliance notice as a not_entitled legacy-native payer — no in-shell link added", async () => {
+  describe("status: entitled — legacy-native shell (FV-657: never told to subscribe)", () => {
+    it.each([
+      ["stripe", "You’re already subscribed. Manage your subscription from a web browser at fromvictoryapp.com."],
+      ["apple", "You’re subscribed through the App Store. Manage it on your iPhone."],
+      ["comp", "You have access to From Victory."],
+      [null, "You have access to From Victory."],
+    ] as const)("provider %s → provider status, no subscribe notice, no link", async (provider, copy) => {
       asParent();
       shellCapabilityMock.mockReturnValue("legacy-native");
-      entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "stripe" });
+      entitlementStateMock.mockResolvedValue({ status: "entitled", provider });
 
-      const { getByTestId, queryByTestId, text } = await renderPage();
+      const { getByTestId, queryByTestId, text, container } = await renderPage();
 
-      expect(getByTestId("native-shell-subscribe-notice").textContent).toBe(
-        "Subscribe to From Victory from a web browser at fromvictoryapp.com.",
-      );
-      expect(queryByTestId("subscribe-status-entitled")).toBeNull();
+      expect(getByTestId("subscribe-status-entitled").textContent).toBe(copy);
+      expect(queryByTestId("native-shell-subscribe-notice")).toBeNull();
+      expect(text).not.toMatch(/subscribe to from victory/i);
+      expect(getByTestId("subscribe-status-entitled").querySelector("a")).toBeNull();
+      expect(queryByTestId("subscribe-different-account-hint")).toBeNull();
       expectNoBuyAffordances(queryByTestId, text);
+      void container;
+    });
+  });
+
+  describe("not_entitled — the different-account hint (FV-657)", () => {
+    it.each([null, "legacy-native", "ios-iap"] as const)(
+      "shell %s: shows the hint above Sign out",
+      async (capability) => {
+        asParent();
+        shellCapabilityMock.mockReturnValue(capability);
+        maybeSingleMock.mockResolvedValue({ data: null, error: null });
+        entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
+
+        const { getByTestId } = await renderPage();
+
+        expect(getByTestId("subscribe-different-account-hint").textContent).toBe(
+          "Subscribed with a different account? Sign out, then sign in with that one.",
+        );
+      },
+    );
+
+    it("an unknown status shows its own card, not the hint", async () => {
+      asParent();
+      entitlementStateMock.mockResolvedValue({ status: "unknown", provider: null });
+
+      const { queryByTestId } = await renderPage();
+
+      expect(queryByTestId("subscribe-different-account-hint")).toBeNull();
     });
   });
 

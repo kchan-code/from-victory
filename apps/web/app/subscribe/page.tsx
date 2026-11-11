@@ -333,19 +333,26 @@ export default async function SubscribePage({ searchParams }: Props) {
           )
         ) : /* entitlementState.status === "entitled" */
         shellCapability === "legacy-native" ? (
-          /* An entitled legacy-native payer sees the SAME compliance notice
-             as a not_entitled one, for every provider — no in-shell link is
-             added (record §4.4 + Google Play "no in-app purchase" scope). */
-          <div
-            role="status"
-            data-testid="native-shell-subscribe-notice"
-            className="bg-charcoal border border-hairline rounded-xl px-5 py-5"
-          >
+          /* FV-657: an entitled payer inside the Android app is never told to
+             subscribe. Provider-specific status, still with no link and no
+             price (record §4.4 + Google Play "no in-app purchase" scope). */
+          <StatusCard testId="subscribe-status-entitled">
             <p className="font-body text-cream/70 text-[15px] leading-relaxed">
-              Subscribe to From Victory from a web browser at
-              fromvictoryapp.com.
+              {entitlementState.provider === "stripe" ? (
+                <>
+                  You&rsquo;re already subscribed. Manage your subscription
+                  from a web browser at fromvictoryapp.com.
+                </>
+              ) : entitlementState.provider === "apple" ? (
+                <>
+                  You&rsquo;re subscribed through the App Store. Manage it on
+                  your iPhone.
+                </>
+              ) : (
+                <>You have access to From Victory.</>
+              )}
             </p>
-          </div>
+          </StatusCard>
         ) : shellCapability === "ios-iap" ? (
           entitlementState.provider === "apple" ? (
             appleUpgradeCapacity !== null ? (
@@ -370,8 +377,9 @@ export default async function SubscribePage({ searchParams }: Props) {
             </StatusCard>
           ) : (
             <StatusCard testId="subscribe-status-entitled">
+              {/* FV-657: comp/free access is access, not a paid subscription. */}
               <p className="font-body text-cream/70 text-[15px] leading-relaxed">
-                You&rsquo;re subscribed to From Victory.
+                You have access to From Victory.
               </p>
             </StatusCard>
           )
@@ -396,8 +404,9 @@ export default async function SubscribePage({ searchParams }: Props) {
           </StatusCard>
         ) : (
           <StatusCard testId="subscribe-status-entitled">
+            {/* FV-657: comp/free access is access, not a paid subscription. */}
             <p className="font-body text-cream/70 text-[15px] leading-relaxed">
-              You&rsquo;re subscribed to From Victory.
+              You have access to From Victory.
             </p>
           </StatusCard>
         )}
@@ -409,6 +418,19 @@ export default async function SubscribePage({ searchParams }: Props) {
             clears the offline athlete/pregame caches before the signOut action
             redirects (to /signin in-shell, "/" on the web). */}
         <div className="mt-10 border-t border-hairline pt-8">
+          {/* FV-657: landing here doesn't prove there's no subscription — the
+              most common cause is being signed in to a different account
+              (KC, 2026-11-10). Only when this account isn't entitled; an
+              unknown status already has its own card. */}
+          {entitlementState.status === "not_entitled" ? (
+            <p
+              data-testid="subscribe-different-account-hint"
+              className="mb-4 font-body text-[14px] leading-relaxed text-cream/70 text-center"
+            >
+              Subscribed with a different account? Sign out, then sign in with
+              that one.
+            </p>
+          ) : null}
           {/* FV-645: a blocked adult_athlete also needs a route to account
               settings, where account deletion lives (App Review 5.1.1(v)).
               /athlete/settings is not subscription-gated, but in the native

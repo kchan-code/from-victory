@@ -40,7 +40,7 @@ export function AthleteUsernameSignInForm() {
       <Field
         id="athlete-username"
         name="username"
-        label="Username"
+        label="Username or email"
         type="text"
         autoComplete="username"
         required
@@ -62,11 +62,29 @@ export function AthleteUsernameSignInForm() {
         </p>
       ) : null}
       <SubmitButton pendingLabel="Signing in…">Sign in</SubmitButton>
-      <p className="mt-6 font-body text-[13px] text-cream/55 leading-relaxed text-center">
-        New here? Use the invite code your parent sent. Forgot your password?
-        Ask your parent for a reset code from their dashboard. Your username
-        stays the same.
-      </p>
+      {/* FV-657: two audiences on this tab — an athlete under 18 (username
+          from the parent's invite; recovery through the parent) and, since
+          FV-654, an 18+ athlete who signs in with their own email (recovery
+          through the normal reset email). */}
+      <div className="mt-6 space-y-3 font-body text-[13px] text-cream/55 leading-relaxed text-center">
+        <p>
+          Under 18? Use the username from your parent&rsquo;s invite. New
+          here? Use the invite code your parent sent. Forgot your password?
+          Ask your parent for a reset code from their dashboard. Your username
+          stays the same.
+        </p>
+        <p>
+          18 or older? Sign in with your email. Forgot your password?{" "}
+          <a
+            href="/forgot-password"
+            data-testid="athlete-tab-adult-reset-link"
+            className="inline-block py-2 text-cream/85 underline underline-offset-2 hover:text-cream"
+          >
+            Reset it here
+          </a>
+          .
+        </p>
+      </div>
     </form>
   );
 }
