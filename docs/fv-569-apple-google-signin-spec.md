@@ -1,598 +1,757 @@
-# FV-569: Sign in with Apple + Google (parents and 18+ athletes), spec
+# FV-569 — Sign in with Apple + Google (parents and 18+ athletes): spec
 
-**Status:** DRAFT v2 for KC approval (discovery deliverable). Nothing here is built.
+**Status:** v3 for KC approval (discovery deliverable). Nothing is built, deployed, or changed in any account.
 **Date:** 2026-11-11.
-**Reviews:** backend-engineer, frontend-engineer, qa-reviewer and kids-privacy-officer reviewed v1. Their findings are folded in (see §13).
-**Issue:** FV-569 (discovery). The delivery issues in §11 are filed only after KC approves this spec and signs the decisions in §9.
+**Supersedes:** v1/v2 of this file. Superseded decisions are listed in §14; they are not open options.
+**Issue:** FV-569. The delivery issues in §12 are filed once KC approves this spec.
 
-## 1. Decision and scope
+## 1. Scope (settled)
 
-**KC decision (2026-11-11):** add Sign in with Apple and Sign in with Google for **parents** and **18+ self-serve athletes** (`adult_athlete`). The goal is to make getting into the app easier for the people who hold real email accounts.
+**Goal:** make getting in easy for the people who hold real email accounts, on every surface.
 
-**Product-strategist (2026-11-11):** approved with conditions, **website first**.
-
-| | In scope (Phase A, web) | Out of scope |
+| | In scope | Out of scope |
 |---|---|---|
-| Who | `parent`, `adult_athlete` | Minor athletes (13-17), in any form, ever in MVP. No linking a minor account, no SSO on invites or the username login, no "upgrade at 18" path. |
-| Where | Web browsers: the `/signin` Parent tab, `/signup`, `/signup/athlete`, and a new `/welcome` completion step | Inside the iOS and Android shells (Phase B, its own issue). Social and other in-app browsers. |
-| Providers | Apple and Google, through Supabase Auth's built-in providers | Facebook, Microsoft, X, or any other provider. No Clerk, Auth0, Firebase, or new SDK. |
-| Linking | Supabase's automatic same-email linking, hardened per §8.1 | A manual `linkIdentity` UI, account merging |
-| Data | Email and provider identity only | Copying the provider name or photo into profiles; sign-in analytics beyond counts |
+| Who | `parent` and `adult_athlete` (18+) | Minor athletes (13–17). They keep username/password and parent invites, unchanged. No SSO, no linking, no "upgrade at 18". |
+| Where | Web browsers, the **iOS app**, and the **Android app**. Web may go live first as an internal milestone. Native is required scope, not a deferred phase. | Embedded-WebView OAuth (blocked by Google, unsafe). Social in-app browsers on the web. |
+| Providers | Apple and Google, through Supabase Auth plus Apple's REST API for token redemption and revocation | Any other provider. No Clerk, Auth0, Firebase, or third-party auth SDK. |
+| Accounts | One Supabase user per person across web, iOS, and Android, so subscriptions and athletes follow the user id | A manual link/merge UI |
+| Users today | **Beta and test accounts only.** No customer migration UX is built; there is a one-time transition instead (§8). | — |
 
-Email and password stays. SSO is an extra way in, not a replacement.
+Email/password stays available for parents and 18+ athletes. **New** email/password signups now prove email ownership with a typed code (§4).
 
-**Evidence of friction.** The 2026-11-11 device QA found that 18+ athletes don't know which sign-in tab is theirs ([FV-654], fixed; [FV-657], in review). SSO helps the people who forget passwords or abandon signup. It doesn't fix tab confusion. FV-657 touches `SignInChooser` and must merge first; Phase A builds on its copy.
+## 2. Facts this design rests on (verified 2026-11-11)
 
-## 2. How it works today (verified on `main` @ 6790398)
+### Code (`main` @ 6790398)
 
-**Sign-in and signup.** Parent and adult accounts use email and password.
-- `lib/actions/auth.ts` `signUp` (`:41-129`) collects first_name and consent. The parent profile has `birthdate` null (a DB constraint), and **there is no parent age check**.
-- `lib/actions/auth-adult.ts` `signUpAdultAthlete` (`:82-185`) collects first_name, birthdate (a ≥18 zod refine), sport, age attestation and consent. It is gated by `isAdultSignupEnabled()` (`lib/flags.ts:17`).
-- Both insert the profile **with the session `auth.signUp` returns** (`auth.ts:97-102`). If the insert fails, they delete the auth user.
+- **Email confirmation is OFF in production.**
+  - Signup inserts the profile using the session that `auth.signUp` returns (`lib/actions/auth.ts:97-102`). That only works with autoconfirm.
+  - With autoconfirm, Supabase treats provider emails as verified when linking (`if email.Verified || config.Mailer.Autoconfirm`, supabase/auth `internal/models/linking.go`).
+  - So today anyone could pre-register a victim's email and be linked to them later. This is closed in §4 and §8.
+- **Profile-less sessions are treated as orphans and signed out.**
+  - `redirectIfAuthed` → `/auth/signout` (`lib/auth/guards.ts:230`).
+  - The `require*` guards → `/signin`.
+  - The shell router → sign-out (`lib/native-shell-router.ts:114`).
+  - The guards use `.single()`, so any error looks like "no profile".
+- **Every server gate uses `auth.getUser()`.** That is 18 call sites, with no `getClaims`/`getSession`. Middleware too (`lib/supabase/middleware.ts:72`). `jwt_expiry = 3600`.
+- **Entitlements and data key on the account id:**
+  - Stripe: `parent_id`, `metadata.parent_id`, `client_reference_id`.
+  - Apple IAP: `appAccountToken` → `payer_id`.
+  - Profiles and athletes hang off `profiles.id` = `auth.users.id`.
+  - So one user id across platforms gives subscription and athlete continuity.
+- **Deletion.** `deleteAccount` (`lib/actions/account.ts:169`) is immediate. It is gated by `requireSubscriber()` and cascades from `auth.users`.
+- **Consent is checked but never stored.** There is no parent age check.
+- **Native shell (Capacitor 8):**
+  - Plugins: core, app, splash-screen, status-bar.
+  - App-local plugins: `FVAppleIAPPlugin` (iOS) and `FVNarration`. The web code calls them through `window.Capacitor.Plugins.*` (`lib/native/apple-iap.ts:124`).
+  - iOS target 15.0. Android minSdk 24.
+  - UA token is `FVNativeShell/1` (plus `(ios)` on iOS). There is no build version in the UA.
+  - The `appUrlOpen` listener exists (`components/native/NativeInviteLinkHandler.tsx:152`).
+  - AASA serves `/invite` only. `assetlinks.json` has a **placeholder** fingerprint.
+  - There is no Sign in with Apple entitlement and no custom URL scheme.
+  - Android has **no** Play Billing plugin yet (Path A, consumption-only).
+- **There is no staging Supabase project.** Production `kumrgeosgzdlxgljbyju` is the only cloud project (`docs/fv572-ios-bridge-notes.md:274`).
+- **Reviewer accounts exist and must be preserved:**
+  - App Review demo: `docs/fv210-resubmission-packet.md` §F.
+  - Play reviewer: `apps/web/scripts/provision-play-review-account.ts`.
+- `app/privacy/page.tsx` names only Stripe as a processor.
 
-**Email confirmation is OFF in production.** The code proves it: the profile insert relies on `auth.uid()` from that fresh session, and with confirmations on there would be no session and the insert would fail RLS. Local `config.toml:207` agrees. Consequence: nobody's email is ever verified by a click (see §8.1).
+### Providers (sources in §15)
 
-**Consent is checked, not stored.** No column or table records terms acceptance. This is an existing gap; SSO keeps parity, with a follow-up filed (§9 Q7).
+- **PKCE (Supabase):**
+  - The verifier lives in the initiating client's storage. With `@supabase/ssr` that is the cookies of **the WebView or browser that started the flow**.
+  - The code is single-use and valid for 5 minutes.
+  - Custom URL schemes are allowed redirect URLs.
+- **`signInWithIdToken` (Supabase):**
+  - Accepts Apple and Google ID tokens. Apple's audience can be any listed Client ID; the Services ID must be first for web.
+  - The nonce goes SHA-256 to the provider and raw to Supabase.
+  - Supabase **does not redeem Apple's authorization code**, so it holds no Apple refresh token.
+- **Apple:**
+  - Authorization codes are single-use, valid 5 minutes, and redeemed at `/auth/token` with `client_id` = the App ID (native) or the Services ID (web).
+  - Revocation must use the **same** `client_id`.
+  - TN3194 "Securely store user tokens for account creations": send the identity token and code to your server, validate the code at `/auth/token`, and **securely store the token response**. Manual revocation is the fallback when no token exists.
+  - Private relay email is the same across one developer team's apps. The `sub` is team-scoped (to be verified, S3).
+- **Supabase email OTP:**
+  - The template uses `{{ .Token }}`. `verifyOtp({ type: "email" })` confirms a signup.
+  - **Built-in SMTP only delivers to project team members, at 2 per hour.** Custom SMTP is a hard prerequisite.
+- **Identity linking:**
+  - Same email links automatically.
+  - Linking "remove[s] any other unconfirmed identities linked to an existing user". This holds only when confirmations are ON.
+- **Sessions:**
+  - `signOut` (any scope) does not invalidate issued access JWTs. They stay valid until expiry.
+  - `getUser()` rejects a deleted user (`user_not_found`) and a revoked session (`session_not_found`). `getClaims()` with asymmetric keys does not.
+  - JWT expiry should be ≥5 minutes; the default is 1 hour.
+- **Native browsers:**
+  - `@capacitor/browser` uses SFSafariViewController on iOS, which is not an auth session. So we need an app-local plugin.
+  - `ASWebAuthenticationSession` with a custom scheme is available on iOS 15. It delivers the callback only to the calling app.
+  - Android: Chrome may not hand a redirect to an app without a user gesture. **Auth Tab** (Chrome 137+, `androidx.browser` 1.9) is Google's fix and falls back to a Custom Tab.
 
-**No trigger on `auth.users`.** Profiles are created only by the signup actions.
+## 3. Entry points (one clear door for both adult roles)
 
-**A session with no profile is treated as orphaned and signed out:**
-- `redirectIfAuthed` sends it to `/auth/signout` (`lib/auth/guards.ts:230`).
-- Every `require*` guard sends it to `/signin` (`:59,90,121,147`).
-- The native-shell router signs it out (`lib/native-shell-router.ts:114`).
+### `/signin`
 
-The guards use `.single()` and treat **any** error as "no profile". **This is the main code change:** an OAuth user arrives with an `auth.users` row and no profile.
+- **Primary section, "Parent or Athlete 18+":**
+  1. Continue with Apple
+  2. Continue with Google
+  3. A divider: "or use email"
+  4. The email + password form
+- **Secondary section, "Athlete under 18? Sign in with your username":** the existing username form and invite help. No SSO here.
+- This replaces today's Parent/Athlete tab pair. FV-657 (tab copy) merges first; this work then supersedes the tab labels.
+- KC approves all strings.
 
-**Auth callback.** `app/auth/callback/route.ts` exchanges the PKCE code, enforces a same-origin `next`, and doesn't look at the profile. Every failure goes to `/signin?reset=invalid`, which is reset-specific wording. Today's only callers are password reset (`auth.ts:270`, `account-settings.ts:48`).
+### `/signup`
 
-**Account deletion.** `deleteAccount` (`lib/actions/account.ts:169`) is immediate and hard. It is gated by `requireSubscriber()`, so a user with no profile can't call it. It cancels Stripe, then `auth.admin.deleteUser`, and the cascade also removes `auth.identities`.
+- The FV-515 chooser stays: "Parent" / "Athlete 18+".
+- Each form shows Apple, Google, then "or use email" above its fields.
 
-**Stripe.** It maps by account id (`subscriptions.parent_id`, `metadata.parent_id`, `client_reference_id`). There is no email matching, so two auth users sharing an email can't collide in our DB.
+### Inside the apps
 
-**Native shell.**
-- `getRequestShellCapability()` (`lib/native-shell.ts:143`) is already used on `/signin`; the signup pages don't read shell state.
-- The service worker never caches `signin`, `signup`, `forgot` or `reset`. The bypass list is in `public/sw.js` `BYPASS_PREFIXES` (`:171`), hand-mirrored in `lib/sw/route-strategy.ts` with a sync test. The cache version is `fv-shell-v7` (`sw.js:44`).
-- The SW strips the shell UA on intercepted navigations (FV-489), which is why the auth pages must stay in the bypass list.
+- The same pages render natively-handled buttons (§6) **only** in builds that advertise the new capability token `FVAuth/1`.
+- Older installed builds never show SSO.
+- In the Android app, new-account creation depends on decision **E1** (§11).
 
-**Email.**
-- Supabase Auth sends auth email. No custom SMTP is in the repo config; **the hosted setting is unverified**.
-- App email goes through Resend (digest, waitlist, contact, alerts), with sender domains set by env.
+### Web visibility rule (server-rendered, per request)
 
-**Config** (`supabase/config.toml`):
-- `[auth.external.apple]` is stubbed and disabled; there is no Google block.
-- `enable_manual_linking = false`.
-- Redirect URLs are localhost only.
+`showSSO(surface)` is true when all of these hold:
+- the surface flag is on;
+- the request is from a capable surface:
+  - web: not a shell UA, and not a denylisted in-app browser (Instagram, `FBAN/FBAV`, TikTok, `Line/`, Snapchat, `TwitterAndroid`, `LinkedInApp`, Pinterest, Android `; wv)`, iOS WebKit without `Safari/`);
+  - iOS/Android shell: UA contains `FVAuth/1`.
 
-**Rate limits.** The `sign_up` bucket is per-IP, 15/h; `sign_in` is per-email, 20/15m. Action names are a DB CHECK constraint, so a new bucket needs a migration. **Reuse `sign_up`.**
+When a denylisted in-app web browser hides the buttons, the page shows one line: "Open in Safari or Chrome to use Apple or Google."
 
-**Crons** (root `vercel.json`): reminders, digest, `reap-pairings` and `prune-activity-events`. Nothing reaps auth users with no profile.
+Flags: `SSO_WEB`, `SSO_IOS` and `SSO_ANDROID`, each `off | preview | on`.
+- `preview` shows the buttons only when an admin-set `fv_sso_preview` cookie is present.
+- Apple and Google are always enabled together per surface. Guideline 4.8 on iOS requires Apple whenever Google is offered.
 
-**Privacy policy.** `app/privacy/page.tsx` names only Stripe as a processor.
+## 4. Email/password signups verify email ownership (before any SSO launch)
 
-## 3. User flows
+- **Supabase "Confirm email": ON.**
+  - The email template uses a 6-digit `{{ .Token }}` code, not a link. A typed code works in the apps; a link would open the wrong browser.
+  - OTP expiry is 15 minutes, with a resend cooldown of 60s.
+- **Custom SMTP through Resend on our domain**, for production and staging.
+  - Register it with Apple Private Email Relay (SPF + DKIM aligned to `From:`) so relay addresses receive codes.
+  - Prerequisite: the built-in SMTP can't serve real users.
+- **Signup becomes two steps.** Both `signUp` (`lib/actions/auth.ts`) and `signUpAdultAthlete` (`lib/actions/auth-adult.ts`) are converted.
+  1. **Details → `startEmailSignup` server action.**
+     - The server validates the full zod schema **before** calling `auth.signUp`: the adult 18+ birthdate, or the parent 18+ guardian attestation; consent; and the `sign_up` rate limit.
+     - A failed check creates **no auth row and sends no email**.
+     - `auth.signUp` is called without `options.data`. No session is returned.
+     - The fields stay in client form state and are **never** written to `user_metadata`, so no birthdate lands in auth.
+  2. **Code → `completeEmailSignup` server action.**
+     - `verifyOtp({ email, token, type: "email" })` creates the session.
+     - The resubmitted fields are re-validated with the same schemas. An adult under 18 → service `deleteUser` → sign out → `/signup?error=age`, the same outcome as §5.2.
+     - The profile is inserted. A PK `23505` → redirect to the role home.
+     - **Never** delete the user on an insert failure: the legacy rollback at `auth.ts:99-122` / `auth-adult.ts:150-165` is removed. A failure leaves a verified, profile-less user, who goes to `/welcome` (§5.1).
+- **Sign-in when unconfirmed: a verify-only path.**
+  - `signIn` today collapses every error to "Email or password is incorrect" (`auth.ts:168-174`). It gains one branch: `email_not_confirmed` → "Enter the code we sent" (with resend) → `verifyEmailOnly`.
+  - `verifyEmailOnly` runs `verifyOtp` and **no profile insert**. This is the path for legacy beta accounts in §8, which already have profiles.
+  - To avoid account enumeration, the branch shows only after a correct password.
+- **Rate limits:**
+  - New `signup_verify` (per email) and `signup_resend` (per email) buckets need the action-name CHECK migration.
+  - Supabase's own OTP limits apply as well.
+- **Abandoned unverified signups** are covered by the cleanup reaper (§7).
+- **Result:** every new password account has a verified owner. Supabase's linking safeguard then applies. An unconfirmed password identity is **removed** when the real owner links Apple or Google. **No extra code is asked after a verified Apple/Google sign-in.**
 
-### 3.1 New user, web
+## 5. Server design (shared by all surfaces)
 
-1. On `/signup` (parent) or `/signup/athlete` (adult), the user taps **Continue with Apple** or **Continue with Google**.
-2. The page calls `signInWithOAuth({ provider, options: { redirectTo: <origin>/auth/callback?next=/welcome&as=parent|adult } })`. `as` only preselects the choice on `/welcome`; it grants nothing.
-3. Supabase → provider → Supabase → `/auth/callback`, which exchanges the code and sets the session cookie.
-4. The callback resolves session state (§4.2). `needs_onboarding` → `/welcome` (a server redirect, so Back doesn't return to the provider screen).
-5. **`/welcome`** is the completion step. It is server-rendered, `noindex`, has no analytics, and uses the existing auth components.
-   - **"Signed in as <email>"**. This is the auth email, not provider name or avatar.
-   - **Account type:** two large tap cards (≥56px), "Parent" and "Athlete 18+", preselected from `as`. When `ENABLE_ADULT_SIGNUP` is off there is no chooser, only the parent path.
-   - **Parent path:** first_name, consent, plus **one new attestation checkbox**, "I'm a parent or guardian and I'm 18 or older". It is not stored, just like consent (privacy finding).
-   - **Adult path:** the same fields and zod schema as `signUpAdultAthlete`: first_name, birthdate (native date input, `autocomplete="bday"`), sport, age attestation, consent. It uses the existing `AuthStep` step pattern so the phone keyboard doesn't bury the form. It shows the same trial / card-required disclosure as `AdultSignUpForm`.
-   - **Submit** inserts the profile with the user's own session (`profiles_insert_own`, no service role). It then routes exactly as the password signups do: parent → `/dashboard`; adult → `/subscribe`, or `/athlete` in the legacy-native shell.
-   - **Adult birthdate under 18:** service-role `auth.admin.deleteUser(user.id)`, sign out, then `/signup?error=age` with the existing ≥18 wording. No fallback to a minor or parent path, and nothing is stored or logged beyond a count. The birthdate is never logged.
-   - **"Use a different account"** is a quiet text link, not a button next to Submit. It asks for confirmation, then deletes the auth user and signs out. An account with no profile has nothing else to delete.
-   - **Relay line:** *"Signed in with a hidden Apple email and already have an account? Use a different account, then sign in with your usual email."* KC approves the copy.
-   - The first field is autofocused.
-6. Name fields start empty. **Never prefill from provider metadata.**
+### 5.1 Session state and gates
 
-### 3.2 Existing user signs in with SSO
+`getSessionState()` returns one of: `none | orphan | needs_onboarding | parent | athlete | adult_athlete | error`.
+- It uses `.maybeSingle()`. A query error is `error`, never onboarding.
+- **`needs_onboarding`:** authenticated, **no profile row**, and either:
+  - `app_metadata.providers` includes `apple` or `google`; or
+  - an email identity with `email_confirmed_at` set (the §4 code was verified but the profile insert didn't land).
 
-- **Same email as an existing password account.** Supabase links the identity to the existing user. Because confirmations are off, §8.1's hardening runs **once**, on that first link:
-  - the password is rotated to a random value;
-  - other sessions are revoked;
-  - the user sees *"For your security we reset your password. Keep using Apple/Google, or set a new password with Forgot password."*
+  Both fields are server-controlled.
+- **`orphan`:** authenticated, no profile row, and an email-only identity with `email_confirmed_at` null. It keeps today's sign-out behaviour.
+- Synthetic athlete emails (`athletes.fromvictory.app`) always have a profile, so they never reach either state.
 
-  After that they land on their role home. This is the main "easier" win for current parents and adults, at the cost of a one-time password reset.
-- **Apple "Hide My Email".** The relay address matches no one, so this becomes a **new** user and goes to `/welcome` with the relay line above. The support path is privacy@ or the contact form. Support never merges accounts without re-verifying both; this goes in the support runbook.
-
-### 3.3 Sign-in page placement
-
-- **Recommended:** the SSO buttons sit at the top of the **Parent tab**, above the email form. They don't appear on the Athlete tab, so minors aren't invited to try them; privacy endorsed this.
-- The Athlete tab's 18+ paragraph (FV-657) gets a **button that switches to the Parent tab**, not just text, so a confused adult is one tap from the buttons.
-- **Alternative (KC decision D4):** render the buttons **above the tab toggle**, shared by both tabs. That's better for confused adults. It is safe because `/welcome` blocks under-18s, but a minor who tries leaves an `auth.users` row for up to the reaper TTL (§4.2).
-
-### 3.4 Native apps (Phase A)
-
-- There are no SSO buttons in either shell (§4.4).
-- **An SSO-only user** (no password) who opens the app needs a password. The intended path is **Forgot password** with their email. **Unverified:** that Supabase recovery sets a usable password on an OAuth-only user. This must be proven in A4 before launch copy promises it.
-- `/signin` in the shell keeps today's website-guidance text.
-- Apple relay users only get the reset email if auth email can reach relay addresses (C6).
-
-### 3.5 Errors
-
-- **Provider cancel or error.** The provider's `error` / `error_description` (handled before the `!code` check) → `/signin?error=oauth`. The message: *"Sign-in with Apple/Google didn't finish. Try again or use your email."* It reuses the existing `role="alert"` banner, focus moves to the banner, and provider text is never echoed. The `searchParams` type gains `error: "oauth"`.
-- **Bad or expired code, or a different browser.** PKCE codes are single-use, last 5 minutes, and need the same browser. These get the same `error=oauth` message.
-- **Recovery-flow errors** keep `?reset=invalid`; the callback branches on `next` starting with `/reset-password`.
-
-## 4. Changes by layer
-
-### 4.1 Supabase config
-
-**Hosted:**
-- Enable Apple and Google (§7).
-- Redirect allow-list: the **exact** path `https://www.fromvictoryapp.com/auth/callback`. Previews would use the documented `https://*-<slug>.vercel.app/**` pattern, but only if Preview ever gets Supabase env; it doesn't today.
-
-**Local `config.toml`:**
-- Add `[auth.external.apple]` and `[auth.external.google]` with `env(...)` secrets, `enabled = false` by default.
-- Add `http://127.0.0.1:3000/auth/callback` to `additional_redirect_urls`.
-
-**Also:**
-- The Apple **Services ID must be first** in Client IDs, or web sign-in is rejected (Supabase docs).
-- `enable_manual_linking` stays `false`.
-- **Scopes (minimum):**
-  - Apple: request **no `name` scope**, `email` only, if Supabase's hosted flow allows it.
-  - Google: `openid email`, plus `profile` only if Supabase requires it.
-  - Verify the scopes actually sent (C3).
-
-### 4.2 Server (backend-engineer)
-
-**1. `getSessionState()` resolver.** Returns `none | orphan | needs_onboarding | parent | athlete | adult_athlete | error`.
-- Uses `.maybeSingle()`. A **query error returns `error`**, never `needs_onboarding` or `orphan`; callers show a retryable error rather than routing a real user into onboarding.
-- `needs_onboarding` = authenticated, no profile row, **and** `app_metadata.providers` includes `apple` or `google`. `app_metadata` is server-controlled, so users can't forge it, and it is seedable in E2E (§12).
-- A profile-less user with only `email` stays `orphan`, with today's sign-out behaviour. That case is a failed password signup.
-
-**2. Guards.**
+Gates:
 - `redirectIfAuthed` and every `require*` send `needs_onboarding` → `/welcome`.
-- New `requireOnboarding()` for `/welcome`: `orphan` → `/auth/signout` (not `/signin`, which would loop); a role → its home.
-- The **native-shell router is unchanged**: in the shell, `needs_onboarding` signs out, because the shell can't complete OAuth.
+- `requireOnboarding()` sends `orphan` → `/auth/signout`.
+- The shell router sends `needs_onboarding` → `/welcome` **only in `FVAuth/1` builds**. Older builds keep the sign-out.
 
-**3. `/auth/callback`.**
-- Handle provider `error` params first, then the code exchange.
-- Validate `next` against an allow-list: `/welcome`, `/dashboard`, `/athlete`, `/subscribe`, `/reset-password`. Anything else → the role home. This keeps the same-origin check.
-- After the exchange, resolve state. `needs_onboarding` → `/welcome` (pass the `as` hint). A role → `next` or the role home.
-- **Then run the §8.1 first-link hardening** when it applies.
+**Invariant:** gates keep using `getUser()`. `getClaims()` alone must never gate access, because it can't see revoked sessions.
 
-**4. `completeOnboarding` server action** (POST Server Action; never a GET route).
-- Reuses the two existing zod schemas (plus the parent attestation) and the `sign_up` rate-limit bucket (by IP).
-- Inserts the profile with the user's own session, using the **exact column set** of the matching password signup. The DB backstops are `birthdate_role_consistency`, the 18+ check and `sport_role_consistency` (`20260625000000_adult_athlete_role.sql:85-149`).
-- **Double submit:** rely on the `profiles.id` PK. Map `23505` → "already done", redirect to the role home.
-- **Never delete the user when the insert fails.** Do NOT copy the signup rollback, because a second submit would delete the account the first one just created.
-- **Only** the under-18 adult branch deletes the user.
-- `as=adult` with the flag off → rejected. `as` never grants a role.
+### 5.2 `/welcome` (completion, every surface)
 
-**5. `cancelOnboarding` server action** (POST).
-- The id comes from `getUser()`.
-- Immediately before `deleteUser`, re-check with the service client that **no profile exists**. If one does, it's a no-op that redirects to the role home.
-- Then sign out. It is idempotent.
+The page is server-rendered, `noindex`, has no analytics, and is in the service-worker bypass list (both `public/sw.js` and `lib/sw/route-strategy.ts`; bump `CACHE_VERSION`).
 
-**6. Orphan reaper (new cron)**, `/api/cron/reap-incomplete-oauth`. It copies the `reap-pairings` pattern: `CRON_SECRET` `timingSafeEqual`, count-only logs.
-- **TTL 1 hour, cron every 15 minutes** (privacy ruling; worst case about 75 minutes).
-- **Dry-run mode** (`REAPER_DRY_RUN=true`) for the first week: log candidate counts, delete nothing.
-- **Per-run cap:** for example 100.
-- **Re-check before each delete:** a service-client profile lookup per id immediately before `deleteUser`. The residual race (the user completes in the gap between the re-check and the delete) is accepted as negligible at a 1h TTL.
-- **Finder function** (migration):
-  - `security definer`, `set search_path = ''`, returns ids only;
-  - candidates are `auth.users` with an apple/google provider, no `profiles` row, and `created_at < now() - interval '1 hour'`;
-  - `revoke all ... from public, anon, authenticated`, then `grant execute ... to service_role`;
-  - an **effect-based** RLS-harness assertion (FV-507 / `15_function_grant_default_deny` / `19_client_grant_matrix` pattern).
-- Entry in the **root** `vercel.json`. Rollback = remove that entry.
+It contains:
+- "Signed in as <email>". This is the auth email, never the provider name or avatar.
+- Account type: two tap cards, "Parent" / "Athlete 18+". The `as` hint preselects one. When `ENABLE_ADULT_SIGNUP` is off, only the parent path shows.
+- **Parent:** first_name, consent, plus "I'm a parent or guardian and I'm 18 or older".
+- **Adult:** the `signUpAdultAthlete` fields and schema (birthdate with `autocomplete="bday"`, sport, attestation, consent), in `AuthStep` steps.
 
-**7. Account deletion (D1).**
-- `deleteAccount` computes `hasAppleIdentity` **before** deleting, because afterwards the user no longer exists. It passes this to the confirmation page as a redirect param.
-- The confirmation then shows the Apple revoke instruction (TN3194): *Settings → [your name] → Sign-In & Security → Sign in with Apple → From Victory → Stop Using*, with a link to https://support.apple.com/en-us/102571.
-- The same instruction goes in the privacy policy.
-- No token storage in Phase A.
+`completeOnboarding` (POST Server Action):
+- Rate limit: the `sign_up` bucket (IP).
+- Inserts the profile with the user's own session, using the exact column sets of the password signups.
+- A PK `23505` conflict → redirect to the role home. **Never** delete on an insert failure.
+- An adult birthdate under 18 → `revokeAppleTokens` (§5.4) → service `deleteUser` → sign out → `/signup?error=age`. Only the count is logged; the birthdate is never logged.
 
-**8. Provider metadata.** Provider name, avatar and email land in `auth.users.raw_user_meta_data` and `auth.identities.identity_data`. GoTrue rewrites them on every sign-in, so a scrub isn't durable and isn't required (privacy ruling). Controls:
-- **CI grep guard** (not just a unit test): fail on any read of `user_metadata`, `raw_user_meta_data`, `identity_data`, `full_name`, `avatar_url` or `picture` outside an allow-list. This covers the logging and error-capture paths (`lib/monitoring/notify.ts`).
-- **Deletion proof test:** after `deleteAccount` and after the reaper, no `auth.users` or `auth.identities` row remains for that id.
-- **Documented exception:** for SSO users, Supabase auth holds provider name, photo and email. This is a deviation from the "no photos" minimal-PII rule. It's acceptable only because it's parent or adult data, held in auth and never read or shown. **KC signs this** (§9) and the privacy policy states it.
+"Use a different account" is a quiet link with a confirm step. It calls `cancelOnboarding`:
+- re-checks that no profile exists;
+- revokes Apple tokens;
+- deletes the user;
+- signs out.
 
-**9. Apple client-secret expiry alert.**
-- Store the expiry date in env `APPLE_CLIENT_SECRET_EXPIRES_AT`.
-- A weekly check (fold it into an existing cron) calls `notifyError` 30 days before expiry.
-- This is in addition to the runbook and a Linear reminder.
+The relay line reads: "Signed in with a hidden Apple email and already have an account? Use a different account, then sign in your usual way."
 
-### 4.3 Web UI (frontend-engineer)
+Routing after completion matches today's signups. In the legacy-native Android shell, adults go to `/athlete`.
 
-**`components/auth/OAuthButtons.tsx`** is a client component, because it calls `supabase.auth.signInWithOAuth`.
-- **Apple:** the **white** variant on onyx (black disappears on black). Apple logo, exact wording "Continue with Apple". Apple HIG minimum height and corner-radius ranges.
-- **Google:** the dark theme: `#131314` fill, `1px #8E918F` border, white text, and the multicolour G kept.
-- **Both:**
-  - pill radius (`rounded-pill`, as the existing buttons use), `min-h-[48px]`;
-  - order Apple then Google, equal prominence;
-  - neutral: gold stays reserved for the single primary `SubmitButton`;
-  - logos are SVGs in `public/`, `aria-hidden`; the visible text carries the provider name.
-- **Focus:** the existing **gold ring** (`focus-visible:ring-2 ring-gold/60 ring-offset-onyx`, as in `SubmitButton.tsx:23`). No cobalt.
-- **While redirecting:** set `disabled`, which stops a double tap from overwriting the PKCE verifier cookie. Also set `aria-busy`, plus `aria-live="polite"` text such as "Opening Apple…".
-- **Divider** *"or use email"*. It must render correctly with one or two buttons, since the flags are per provider.
-- **Placement:** on the signup pages, above the email form. Check the 375px fold with `TrialDisclosure`, and keep the gold CTA reachable.
+### 5.3 Google (all surfaces): Supabase-hosted OAuth with PKCE
 
-**Render rule (server-side, per request).** The page passes `showOAuth(provider)`, which is true only when **all** of these hold:
-1. The provider flag is on. `ENABLE_SSO_APPLE` / `ENABLE_SSO_GOOGLE` take `off | preview | on`, the same shape as `isAdultSignupEnabled`. `preview` shows the buttons only when an admin-set `fv_sso_preview` cookie is present (§10).
-2. `getRequestShellCapability() === null`.
-3. The UA is not an in-app browser. This uses a **deny-list plus heuristics**:
-   - Instagram, `FBAN` / `FBAV`, TikTok (`musical_ly`, `BytedanceWebview`), `Line/`, Snapchat, `TwitterAndroid`, `LinkedInApp`, Pinterest;
-   - the generic Android WebView marker `; wv)`;
-   - an iOS WebKit UA without `Safari/`.
+1. JS in the page (browser or WebView) calls `signInWithOAuth({ provider: "google", options: { redirectTo, skipBrowserRedirect: inApp, scopes: "openid email" } })`. The verifier cookie lands in that browser's or WebView's jar.
+2. **Web:** a normal redirect, with `redirectTo` = `https://www.fromvictoryapp.com/auth/callback?next=…`.
+3. **Apps:** `redirectTo` = `com.fromvictoryapp.app://auth/callback`. The returned provider URL opens in `FVAuth.startSession` (§6). The plugin returns the callback URL, and JS navigates the **WebView** to `https://www.fromvictoryapp.com/auth/callback?code=…&next=…`. The exchange therefore happens with the WebView's verifier.
+4. Interception of the custom-scheme URL yields only a code that is useless without the WebView's verifier (RFC 8252 §8.1). On iOS, `ASWebAuthenticationSession` delivers the callback only to our app.
 
-   This is a presentation hint only, like `native-shell.ts`. The helper lives next to `native-shell.ts`, with unit tests.
+`/auth/callback`:
+- Handle provider `error` params first, then the exchange.
+- `next` allow-list: `/welcome`, `/dashboard`, `/athlete`, `/subscribe`, `/reset-password`. Anything else → the role home.
+- Errors → `/signin?error=oauth`. Recovery errors keep `?reset=invalid`.
+- Resolve state: `needs_onboarding` → `/welcome`.
 
-Where buttons are hidden by rule 3 (not rule 2), show one line: *"Open this page in Safari or Chrome to use Apple or Google."* KC approves the copy.
+### 5.4 Apple (all surfaces): we redeem the code, Supabase signs in by ID token
 
-**Service worker.**
-- Add `/welcome` (and confirm `/auth/`) to `BYPASS_PREFIXES` in **both** `public/sw.js` and `lib/sw/route-strategy.ts`.
-- Bump `CACHE_VERSION` (`fv-shell-v7` → `v8`) so installed shells pick it up.
-- Extend `sw-route-strategy.test.ts`.
-- `MANIFEST_VERSION` doesn't change, because no mp3 changes.
+One path everywhere, so every Apple sign-in yields a stored refresh token for revocation (TN3194).
 
-**Copy.** Every new string follows `docs/gtm/voice-and-guardrails.md`, and KC approves it at PR review. The `/welcome` adult path passes the existing audience-language ("kid") assertion.
+**iOS app (native sheet).**
+1. `FVAuth.signInWithApple({ nonceHash })` uses `ASAuthorizationAppleIDProvider`, scope `email` (no `name`). It returns `identityToken` and `authorizationCode`. The raw nonce is generated in the WebView JS and kept there.
+2. POST Server Action `appleNativeSignIn({ identityToken, authorizationCode, rawNonce })`:
+   1. `signInWithIdToken({ provider: "apple", token, nonce: rawNonce })` with the cookie client sets the session in the WebView.
+   2. Redeem the code at `https://appleid.apple.com/auth/token` with `client_id` = `com.fromvictoryapp.app` and a server-minted client-secret JWT.
+   3. Store the refresh token (§5.5).
+   4. Resolve state → `/welcome` or the role home.
 
-### 4.4 Native shell (Phase A)
+**Web.** These are our own routes (no Apple JS SDK).
+1. `/auth/apple/start`:
+   - generates `state` and a raw nonce;
+   - sets them in `__Host-` cookies (HttpOnly, Secure, `SameSite=None`, 10 min), because Apple's `form_post` is a cross-site POST;
+   - redirects to Apple `authorize` with `client_id` = the Services ID, `response_type=code id_token`, `response_mode=form_post`, `scope=email`, `nonce=SHA256(raw)` and `state`.
+2. `/auth/apple/callback` (POST). Apple posts from `Origin: https://appleid.apple.com`, so this route is exempt from any Origin/CSRF check in `middleware.ts` and route config. `state` is its CSRF defence.
+   1. Verify `state` against the cookie.
+   2. `signInWithIdToken` with the raw nonce.
+   3. Redeem the code (`client_id` = Services ID).
+   4. Store the token.
+   5. Clear the cookies.
+   6. Redirect → `/welcome` or the role home.
+   7. Errors → `/signin?error=oauth`.
 
-There are no native code changes and no new Capacitor plugin. Hiding is proven three ways. **The checks must run with the flags ON**, because with them off the buttons are hidden by the flag and a pass proves nothing:
+**Android app.** The same web routes, run inside `FVAuth.startSession`, plus a bound handoff. The session must land in the WebView, not the Auth Tab.
+1. The WebView generates a handoff `verifier`, keeps it in JS memory, and opens `/auth/apple/start?app=android&challenge=SHA256(verifier)` in `FVAuth.startSession`.
+2. `/auth/apple/callback` verifies `state`, verifies the ID token **without** creating a session, and redeems the code. It then writes a single-use **handoff row** in `private.apple_signin_handoffs` (service-role only, TTL 3 min). The row holds:
+   - the challenge;
+   - the `state`;
+   - the encrypted ID token and raw nonce;
+   - the encrypted refresh token and `client_id`.
 
-1. **Automated.** A Vitest route test plus a Playwright spec, with the flags on. Each sends the real `ios-iap` and `legacy-native` UA strings and asserts the **SSR HTML contains no OAuth button** on `/signin`, `/signup` and `/signup/athlete`.
-   - The UA fixtures include **older shipped builds** (Android build 9 and 10, iOS 1.0 (3) and current) and the in-app-browser UAs.
-   - Also a regression test that `/signin` and `/signup` stay in the SW bypass list.
-2. **Deployed.** `curl` with each shell UA against production during the gated preview window (§10 step 3). This rules out CDN caching of a buttons-on page.
-3. **Device**, on the iOS (ios-iap) and Android (legacy-native) shells against production, with the preview cookie set:
-   - no buttons on `/signin`, `/signup` or `/signup/athlete`;
-   - a deep link to `/signup?as=adult` shows no buttons;
-   - `/welcome` signs out or goes to the role home.
+   It then redirects to `com.fromvictoryapp.app://auth/callback?handoff=<id>`. The id has at least 128 bits of entropy.
+3. The plugin returns the URL. The WebView POSTs `{ handoff, verifier }` to `appleHandoffComplete`, which is rate-limited per IP. The action:
+   1. Opportunistically purges expired rows.
+   2. Checks that SHA256(verifier) = challenge and that the row is unused and unexpired. **Any mismatch deletes the row**, so a guess burns it.
+   3. On success, deletes the row and calls `signInWithIdToken` with the cookie client, so the session lands in the WebView.
+   4. Stores the token.
+4. A stolen handoff id is useless without the verifier.
+5. **Replaying the stored ID token is defended only by the nonce check**: the raw nonce never leaves the server row, and the row is single-use.
+6. **An unused handoff still holds a live Apple grant.** The purge (here and in the reaper) calls `/auth/revoke` with the stored refresh token **before** deleting the row.
 
-   Device QA is the final confirmation, not the guarantee.
+**Secrets.**
+- Server env: `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_SIGNIN_P8` (Vercel, Sensitive). Client secrets are minted per request with a 5-minute expiry, so **there is no 6-month manual rotation**.
+- Supabase's Apple provider holds **Client IDs only** (Services ID first, then the bundle ID) for ID-token audience checks. Gate S4 confirms that no Supabase-side secret is needed when hosted Apple OAuth is unused.
+- **Grouping:** the Services ID is grouped under the primary App ID, so web, Android, and iOS share one Apple `sub` and relay email (S3).
 
-## 5. App Store / Play exposure
+### 5.5 Apple token storage and revocation
 
-- **Guideline 4.8** applies to login the *app* offers. With the buttons hidden in the shell, the iOS app offers none. This is our reading; Apple doesn't address web-only login. The residual risk is detection failing, mitigated by §4.4.
-- **App Review notes:** state that the iOS app does not offer third-party login and that account deletion is in-app. A reviewer may otherwise read the shell's account deletion as implying Sign in with Apple account creation.
-- **Google OAuth in the Android WebView** would fail with `disallowed_useragent` anyway; hiding prevents a broken button.
-- **Merge timing:** the shell loads production. Don't merge the UI PR while an App Store or Play review is pending. The flags default **off**.
+**Table `private.apple_signin_tokens`:**
+- Columns: `user_id` (FK → `auth.users` on delete cascade), `client_id`, `refresh_token_ct`, `iv`, `tag`, `key_version`, `created_at`. Primary key `(user_id, client_id)`.
+- RLS is on with **no policies**. `revoke all` from `public`, `anon` and `authenticated`. Service role only.
+- There is an effect-based RLS-harness assertion (FV-507 pattern).
 
-## 6. Apple-specific requirements
+**Encryption:**
+- AES-256-GCM at the application level. The key is `APPLE_TOKEN_KEY` (32 bytes, Vercel Sensitive; staging has its own key). `key_version` supports rotation.
+- AAD binds each ciphertext to its row:
+  - token rows: `"token|" + user_id + "|" + client_id`;
+  - handoff rows: `"handoff|" + id`.
 
-**Client secret.**
-- Supabase doesn't generate or rotate it. It's an ES256 JWT signed with our `.p8`, valid for **at most 6 months**, and Apple sign-in silently breaks when it expires.
-- Mitigation:
-  - a rotation runbook in `docs/`: generate it with Supabase's tool (not in Safari), then paste it into Auth settings or `PATCH /v1/projects/$REF/config/auth`;
-  - the expiry alert (§4.2 item 9);
-  - a recurring Linear reminder at 5 months.
+  A ciphertext copied to another row then fails to decrypt.
+- Tokens are never logged; the error-capture paths scrub them.
+- **The `private` schema is not exposed through PostgREST.** It is not in the API's exposed schemas, and `usage` is revoked from `anon` and `authenticated`. The harness asserts both.
 
-**Token revocation on deletion: D1, recommended TN3194 manual path.**
-- **Facts:**
-  - Apple's REST revoke needs a refresh or access token.
-  - **Supabase doesn't store provider tokens.** `provider_refresh_token` exists only at the moment of the code exchange and may be empty for Apple.
-  - Apple's revoke expectation is tied to App Store apps that support account creation, and it's worded "should".
-  - TN3194 (2025-10) says that with no token you still delete the account and tell the user how to revoke manually.
-- **Privacy ruling:** TN3194 is accepted for Phase A, on conditions:
-  1. the instruction appears on the deletion confirmation **and** in the privacy policy;
-  2. Phase B implements real revocation;
-  3. **KC signs the deviation** from the strategist's "launch blocker" condition, in writing on the A4 issue.
-- Storing encrypted long-lived provider tokens for a web-only flow would add a new class of secret for little gain.
+**Minimization:** store the refresh token only. The ID token (which contains the email) and the access token are not stored. This narrows TN3194's "store the token response". It is sufficient for revocation, which is the only use.
 
-**Private Email Relay.** Mail to `@privaterelay.appleid.com` bounces unless the sending domain or address is registered with Apple (Certificates, Identifiers & Profiles → Services → Sign in with Apple for Email Communication). Registration needs SPF passing on the Return-Path domain and/or DKIM `d=` matching the `From:` domain. Affected senders:
-- **Resend `send.*`** (digest, alerts): register the domain.
-- **Supabase Auth email** (password reset, which SSO-only users need to get a password for the app): if production uses Supabase's default sender, we **can't** register it. Move auth email to custom SMTP via Resend on our domain first (C6). **C6 is a precondition for turning Apple on.**
-- **Stripe receipts:** these come from Stripe's domain unless Stripe's custom email domain is set up. Verify it (C7), or relay users won't get receipts.
-- **Recovery limit:** a relay user who loses access to their relay address can't recover the account. `/welcome`'s relay line and the privacy policy say so.
+**Revoke paths.** `revokeAppleTokens(userId)` calls `POST /auth/revoke` with the matching `client_id` for each row. It runs **before** every user delete:
+- `deleteAccount`;
+- the under-18 rejection;
+- `cancelOnboarding`;
+- the reaper.
 
-**Name.** Apple web OAuth returns no name. That's fine; we don't use it.
+**Failure:**
+- 3 retries with backoff.
+- If revocation still fails, **deletion proceeds anyway** (TN3194). The confirmation page shows the manual instruction (Settings → [name] → Sign-In & Security → Sign in with Apple → From Victory → Stop Using; https://support.apple.com/en-us/102571), and an alert counter increments.
+- The deletion confirmation shows the manual instruction whenever no token row existed.
+- **Accepted limit:** retries happen only within the request. Once the user is deleted, the cascade removes the only copy of the token, so the manual instruction plus the alert counter is the remedy.
 
-## 7. Configuration checklist (KC, manual; the consoles need his login)
+`deleteAccount` determines `hasAppleIdentity` **before** deleting, since the user is gone afterwards. It revokes **per deleted user**: the payer and any adult athletes, following the existing deletion order (`account.ts:291-322`).
 
-| # | Item | Where | Notes |
-|---|---|---|---|
-| C1 | Apple: confirm the App ID has Sign in with Apple. Create a **Services ID** (e.g. `com.fromvictoryapp.web`) with domain `www.fromvictoryapp.com` and return URL `https://kumrgeosgzdlxgljbyju.supabase.co/auth/v1/callback`. Create a **Sign in with Apple key** (.p8) and note the Key ID and Team ID | developer.apple.com | Store the .p8 in the password manager, never in the repo |
-| C2 | Generate the Apple client-secret JWT (≤6 months). Enable Apple in Supabase, **Services ID first** in Client IDs, server-to-server endpoint blank. Set `APPLE_CLIENT_SECRET_EXPIRES_AT` in Vercel | Supabase → Auth → Providers; Vercel | |
-| C3 | Google: OAuth consent screen (External; app name, logo, support email, privacy policy URL on fromvictoryapp.com, authorized domain). OAuth client type **Web application**, authorized JS origin `https://www.fromvictoryapp.com`, redirect URI = the Supabase callback. Minimum scopes (§4.1) | console.cloud.google.com | The privacy policy must be updated first (§7a) |
-| C4 | **Google brand verification**, required for production. Needs Search Console ownership of fromvictoryapp.com and the privacy policy on the same domain | Google Cloud | Takes days. Start right after §7a |
-| C5 | Supabase redirect allow-list: `https://www.fromvictoryapp.com/auth/callback` (exact). Confirm the Site URL. Confirm hosted **email confirmations = off** (the code says so; record it) | Supabase dashboard | |
-| C6 | Confirm the hosted auth email sender. If it's Supabase's default, set up custom SMTP via Resend on our domain and register it with Apple Private Email Relay | Supabase, Resend, Apple | **Precondition for Apple on** |
-| C7 | Register the Resend sending domain with Apple Private Email Relay (SPF/DKIM aligned). Decide on a Stripe custom email domain for receipts | Apple, Stripe | |
-| C8 | Vercel env (Production): `ENABLE_SSO_APPLE` and `ENABLE_SSO_GOOGLE` = `off` | Vercel | Env changes need a redeploy to take effect |
-| C9 | Decide on a Supabase custom auth domain (paid add-on) so consent screens show fromvictoryapp.com instead of `kumrgeosgzdlxgljbyju.supabase.co` | Supabase | D3 |
+### 5.6 Residual access after sign-out, deletion, or rejection
 
-### 7a. Privacy policy and store disclosures (before any flag leaves `off`)
+**Server-rendered and server-action paths:** `getUser()` rejects revoked sessions and deleted users immediately. This already holds and is now an invariant (§5.1).
 
-- **`app/privacy/page.tsx`** today names only Stripe. Add:
-  - Google and Apple as sign-in providers;
-  - what we receive: email and provider ID, plus possibly name and photo held by our auth provider and never used or shown;
-  - that minors (13-17) don't use SSO;
-  - that an unfinished sign-up's data is deleted within about an hour;
-  - the Apple revoke instruction;
-  - the relay-address recovery limit.
+**Direct PostgREST from a still-held access JWT** remains valid until `exp`. RLS reads `auth.uid()` from the JWT.
+- **Deleted users and rejected under-18s:** their rows cascade away, and FKs block inserts. Nothing is reachable.
+- **Shared-device sign-out:** the token leaves that device. A copied token works until expiry.
 
-  This is a privacy-path change: kids-privacy-officer review, and KC approves the wording.
-- **App Store privacy labels:** re-check "Contact Info: Email" and "Identifiers". The iOS app itself offers no SSO, so expect no change; record the check.
-- **Play Data safety:** declare email collected via Google sign-in, not shared. Coordinate with the open Data safety Analytics item.
+**Change:** `jwt_expiry` 3600 → **900**, after S7 confirms the offline pregame and app resume refresh cleanly. This is a project-wide setting, so it also shortens how long the offline pregame can reuse a token.
 
-## 8. Security review points
+**Revoking another user's sessions.** `auth.admin.signOut(jwt, scope)` needs that user's live JWT, which we don't hold. So the beta transition (§8) revokes sessions with service-role SQL:
 
-### 8.1 Pre-account takeover via automatic linking (D2): live risk, must close before launch
+```sql
+delete from auth.sessions where user_id = any($1);
+```
 
-**The attack.** Confirmations are off (§2), so anyone can create a password account with a victim's email. When the victim later signs in with Google or Apple using that email, Supabase links them **into the attacker-created account**, and the attacker still knows its password. Parent accounts hold minors' data, so accepting the risk is rejected (privacy, HIGH). Supabase's "remove unconfirmed identities on link" protection doesn't apply, because with confirmations off every identity counts as confirmed (backend). Q8 is therefore moot.
+Refresh tokens cascade. This is rehearsed in S8. The 15-minute residual window then bounds any leftover access.
 
-**Chosen mitigation: first-link hardening in the callback** (backend recommendation; satisfies privacy's "re-verify before dashboard access").
-- **Detect:** after the exchange, the user has a profile, has an `email` identity, and the `apple`/`google` identity used for this sign-in was created within the last 10 minutes, later than the email identity.
-- **Then:**
-  1. Service-role `auth.admin.updateUserById(id, { password: <random 32 bytes> })`. This kills any password someone else knows.
-  2. `supabase.auth.signOut({ scope: "others" })` with the user's own session. This revokes every other session.
-  3. Land on the role home with a one-time notice: *"For your security we reset your password. Keep using Apple/Google, or set a new password with Forgot password."* KC approves the copy.
-- **Why this is enough:** proving control of the email through Google or Apple is the re-verification. Rotating the password and revoking sessions removes the attacker's access.
-- **Leftover risk:** athletes the attacker pre-created under that parent account remain visible to the victim. That's rare and visible, so support handles it; it goes in the support runbook.
-- **Cost:** a legitimate parent who links Google once loses their old password and must use SSO or reset it.
-- **Root-cause follow-up (not this issue):** turn on email confirmation for password signups using a code entered in the same session, so the profile insert still works.
+### 5.7 Cleanup reaper (`/api/cron/reap-incomplete-signups`)
 
-**Tests:**
-- unit and integration tests for the detection predicate and both side effects;
-- a manual production check in A6 (KC's own accounts).
+**Targets.** Users with **no profile** older than 1 hour that are either:
+- OAuth (`app_metadata.providers` apple/google); or
+- email signups whose code was never verified (`email_confirmed_at` null).
 
-### 8.2 Other points
+**Schedule and safety:**
+- Runs every 15 minutes.
+- Dry-run (`REAPER_DRY_RUN`) for the first week.
+- A per-run cap of 100.
+- **Re-checks** that no profile exists right before each delete.
+- Revokes Apple tokens, then deletes.
 
-- **Open redirect:** the `next` allow-list (§4.2 item 3).
-- **Role from the client:** `as` is a hint only. The role comes from the user's own validated completion submit; provider data never grants a role or entitlement.
-- **A minor never ends up with a stored adult profile:** the zod check and the DB 18+ constraint.
-- **A minor attempting SSO:** they hold an `auth.users` + `auth.identities` row (email, provider ID, maybe name/photo) only until they enter an under-18 birthdate (deleted immediately), cancel (deleted immediately) or abandon (reaped within about 75 minutes). No birthdate or profile is ever stored. This is disclosed in the privacy policy.
-- **Parent path age:** today there's no check (parity). `/welcome` adds the 18+ parent/guardian attestation. A follow-up adds the same to password `signUp`.
-- **Server Actions only:** `completeOnboarding` and `cancelOnboarding` are POST Server Actions (Origin-checked), never GET routes. User ids come from `getUser()`, never from the client.
-- **Rate limits:** the completion action uses the `sign_up` IP bucket; the OAuth round trip is rate-limited by Supabase.
+**Mechanics:**
+- The finder is a `security definer` function with `search_path = ''`. It returns ids only, has `revoke all … from public, anon, authenticated`, and grants `execute` to `service_role` only. Harness assertion.
+- `CRON_SECRET` is checked with `timingSafeEqual`. Logs are counts only.
+- The entry goes in the root `vercel.json`.
+- It also purges expired handoff rows, revoking each stored refresh token first (§5.4).
 
-## 9. Decisions and open questions
+### 5.8 Data minimization
 
-| # | Item | Status / recommendation | Who signs |
-|---|---|---|---|
-| D1 | Apple revocation | TN3194 manual instruction (no token storage). Privacy accepted, with conditions | **KC, in writing**: deviates from the strategist's condition |
-| D2 | Pre-account takeover | First-link hardening (§8.1) | KC approves; backend + privacy agreed |
-| D3 | Custom auth domain (paid) vs supabase.co on consent screens | Recommend accepting supabase.co for launch and revisiting on uptake | KC |
-| D4 | Sign-in button placement | Parent tab + a switch-tab button in the Athlete tab's 18+ paragraph (recommended), vs shared above the tabs | KC |
-| D5 | Provider-metadata exception (auth holds name/photo for SSO users, never read) | Accept, with a CI guard + deletion proof + policy disclosure | **KC, in writing** |
-| Q3 | Scrub provider metadata? | **Resolved:** no scrub (not durable); controls in §4.2 item 8 | Privacy (done) |
-| Q4 | Orphan TTL | **Resolved:** 1h TTL, cron every 15 min | Privacy (done) |
-| Q6 | All new copy (buttons, `/welcome`, errors, relay line, revoke note, reset notice, in-app-browser line) | Drafts in the A3 PR | KC at PR review |
-| Q7 | Consent is never stored for any signup | Parity here. Prioritised follow-up: record terms version + timestamp for all signups, included in the deletion cascade | KC (file follow-up) |
-| Q8 | Password after an unconfirmed user links Google | **Moot:** confirmations are off (§8.1) | — |
-| Q9 | Does Forgot password give an OAuth-only user a usable password? | Unverified; prove it in A4 before any copy promises it | backend / QA |
+- Scopes: Apple `email`; Google `openid email`. S4 verifies what Supabase actually sends.
+- Provider name, avatar, and photo may still sit in `auth.users.raw_user_meta_data` / `auth.identities.identity_data` (GoTrue rewrites them on each sign-in).
+- **A CI grep guard** fails on any read of `user_metadata`, `raw_user_meta_data`, `identity_data`, `full_name`, `avatar_url`, or `picture` outside an allow-list, including the logging and alert paths.
+- A deletion proof test checks that no `auth.users`, `auth.identities`, or `private.apple_signin_tokens` row survives deletion or reaping.
+- **KC signs the exception** (E3): Supabase auth may hold a provider name or photo for SSO adults, never read or shown. This is a deviation from the "no photos" minimal-PII rule, limited to parent and adult data.
 
-## 10. Rollout and rollback
+## 6. Native apps
 
-**Rollout.**
-1. Write the §7a privacy policy update. Do config C1–C7. Get KC's sign-off on D1, D2, D4 and D5.
-2. Ship A1 (backend) **with E2E run green by hand**. The `E2E Tests (non-required)` job isn't a merge gate, so run it before merging A1, or make it required for this arc. Ship A2 with the reaper in **dry-run** mode. Ship A3 (UI) with the flags **off**.
-3. **Gated preview.** Set the flags to `preview`, so only browsers with the admin-set `fv_sso_preview` cookie see the buttons; everyone else sees nothing. Then:
-   - run the §4.4 checks 2–3 with the cookie set;
-   - KC tests a new Google user (parent);
-   - KC tests a new Apple user with Hide My Email (adult);
-   - KC tests an existing password parent linking Google (expect the password-reset notice);
-   - KC tests an SSO-only user using Forgot password, then signing in inside the app;
-   - KC tests deleting the Apple account and seeing the revoke instruction.
-4. KC sets `ENABLE_SSO_GOOGLE=on`, then `ENABLE_SSO_APPLE=on` (Apple only once C6 is done). Each change is a redeploy. Add a dated `docs/gtm/product-truths.md` entry the same day.
-5. **Watch for a week:**
-   - reaper dry-run counts, then switch it to live;
-   - `/welcome` drop-off;
-   - the `error=oauth` rate in Vercel logs;
-   - the first-link reset count;
-   - support mail.
+### New app-local plugin `FVAuth` (iOS + Android)
 
-**Rollback.**
-- **UI only:** set the flags to `off` (a redeploy). The buttons disappear and the backend paths stay harmless.
-- **A1 regression** (the resolver and guards run on every authenticated request, flag or not): **Vercel instant rollback**, promoting the previous deployment. A flag flip does not undo A1.
-- **Reaper:** set `REAPER_DRY_RUN=true`, or remove its `vercel.json` entry.
-- **Provider disabled in Supabase:** SSO users keep their accounts and recover via Forgot password. That only works for Apple relay users if C6 is done, which is why C6 gates Apple on. Disabling a provider doesn't delete users.
+No third-party SDK. It needs product-strategist and kids-privacy-officer review under the `capacitor.config.ts` plugin-allowlist rule.
 
-**Counts (optional, within the strategist's limit):** an admin-metrics tile with SSO vs password signups, derived from `auth.identities.provider` joined to `profiles`. No new event table. This is a follow-up, not Phase A.
+| Method | iOS | Android |
+|---|---|---|
+| `startSession({ url })` → `{ url }` | `ASWebAuthenticationSession(url:callbackURLScheme:)` (iOS 12+, fine on target 15), `prefersEphemeralWebBrowserSession = false` | **Auth Tab** (`androidx.browser:browser:1.9.x`) with a Custom Tab fallback; returns the callback URL |
+| `signInWithApple({ nonceHash })` → `{ identityToken, authorizationCode }` | `ASAuthorizationAppleIDProvider`, scope `email` | not provided (Android uses `startSession` + the handoff, §5.4) |
 
-## 11. Delivery breakdown (filed after approval; Tier 2 unless noted)
+**Plugin hardening** (it must not become a general browser launcher):
+- The callback scheme is **hard-coded natively** (`com.fromvictoryapp.app`), never taken from JS.
+- `startSession` rejects any `url` whose host isn't on a native allow-list:
+  - the Supabase auth host (`kumrgeosgzdlxgljbyju.supabase.co`, plus the staging ref);
+  - `www.fromvictoryapp.com`, for the Apple start route.
+- Only one session runs at a time.
+- `prefersEphemeralWebBrowserSession = false` (it shares Safari's provider login) is used only in adult flows, and is disclosed in the App Review notes.
 
-| Issue | Owner | Contents | Depends on |
-|---|---|---|---|
-| A0 Provider, email and policy setup | KC (manual) + lead | C1–C9; the §7a privacy-policy PR (privacy path); App Review notes text | — |
-| A1 OAuth session handling + first-link hardening | backend-engineer | §4.2 items 1–5, 8, 9; callback; `completeOnboarding` / `cancelOnboarding`; §8.1; CI metadata guard; tests | D2, D5 |
-| A2 Orphan reaper | backend-engineer | §4.2 item 6: migration (finder function, grants, RLS harness), cron route, root `vercel.json`, dry-run flag | A1 |
-| A3 SSO buttons + `/welcome` UI | frontend-engineer | §4.3: `off`/`preview`/`on` flags + admin preview cookie; the `showOAuth` helper; SW bypass in both files + cache bump; `/welcome`; copy drafts for KC | A1, FV-657 merged, D4 |
-| A4 Deletion + app-password path | backend-engineer + frontend-engineer | Apple revoke notice (§4.2 item 7); prove Q9 and wire the Forgot-password guidance | A1, D1, C6 |
-| A5 Docs + runbook | lead | Apple secret rotation runbook + reminder. CLAUDE.md "Out of scope" line → *"social sign-in for minors (13-17) and native/in-app SSO"*, with the same edit in `.claude/agents/product-strategist.md:67` (privacy path). Support runbook: relay accounts, no manual merges, attacker-created athletes | KC approves this spec |
-| A6 Device QA + launch | qa-reviewer + KC | §4.4 checks; §10 steps 3–5; product-truths entry | A0–A4 |
-| Follow-ups | — | Persist consent for all signups (Q7); 18+ parent attestation on password `signUp`; email confirmation by code for password signups (§8.1 root cause); SSO-vs-password admin tile | — |
-| B Native SSO (Phase B) | discovery, KC opens | Native Sign in with Apple on iOS + `signInWithIdToken`, **real revocation** (token storage); Google via the system browser / Android Credential Manager; new-plugin review. Ships with the next app builds; iOS must offer Apple alongside Google | Phase A live + uptake data |
+### Build changes
 
-**Review chain for every code PR:** `/review` → qa-reviewer → kids-privacy-officer → KC merge.
+- **iOS:**
+  - the Sign in with Apple capability in `App.entitlements` plus a regenerated provisioning profile;
+  - the URL scheme `com.fromvictoryapp.app` (`CFBundleURLTypes`);
+  - register `FVAuth` in `FVBridgeViewController`;
+  - UA → `FVNativeShell/1 (ios) FVAuth/1`.
+- **Android:**
+  - `androidx.browser` 1.9;
+  - a custom-scheme `VIEW` intent-filter for the Custom Tab fallback;
+  - register `FVAuth` in `MainActivity`;
+  - append `FVAuth/1` to the UA.
+- **Capacitor config:** `allowNavigation` is unchanged. The WebView never visits provider domains; the system browser does.
+- **Web code:** a `lib/native/auth.ts` wrapper reads `window.Capacitor.Plugins.FVAuth`, in the same pattern as `apple-iap.ts`.
 
-## 12. Test matrix
+### Callbacks and deep links
 
-### Unit (Vitest)
+- Both platforms use the custom scheme `com.fromvictoryapp.app://auth/callback`. iOS 15 can't use https callbacks (they need 17.4+).
+- Android Universal/App Links are not used, so the placeholder `assetlinks.json` fingerprint is not a blocker for this work. Fix it separately if App Links are adopted.
+- Safety comes from PKCE (Google) or the bound handoff (Android Apple), plus `ASWebAuthenticationSession`'s per-app delivery.
 
-**Resolver:**
-- none
-- email-only orphan → sign-out (unchanged)
-- `app_metadata.providers` containing google or apple with no profile → `needs_onboarding`
-- each role
-- **query error → `error`** (not onboarding)
+### Store rollout
 
-**Guards:**
-- each `require*` and `redirectIfAuthed` with `needs_onboarding` → `/welcome`
-- `requireOnboarding` with orphan → `/auth/signout`
-- the native-shell router is unchanged for `needs_onboarding` (it signs out)
-- **keep** the existing `guards.test.ts` case "no profile row → /signin" for the email-only orphan
+- **iOS:**
+  - a new build;
+  - App Review notes covering the demo account, how to see Apple/Google sign-in, and that in-app account deletion exists (5.1.1(v));
+  - App Privacy labels updated (email, user ID linked to identity for sign-in).
+  - Guideline 4.8 is met because Sign in with Apple ships alongside Google.
+- **Android:**
+  - a new build;
+  - the Data safety form updated (email and user ID collected via Google/Apple sign-in, not shared).
+  - Timing per E1.
+- **The server deploys first, with flags off.** Builds go to TestFlight / Play internal testing pointed at staging (`CAPACITOR_SERVER_URL`), then production review with `SSO_IOS`/`SSO_ANDROID` = `preview`. Turning a surface on is a server flag flip. No app update is needed after approval.
 
-**Callback:**
-- success with a profile → role home or an allowed `next`
-- success with no profile → `/welcome`
-- provider `error` → `/signin?error=oauth`
-- bad code → `/signin?error=oauth`
-- `next` = `//evil`, `/admin`, an absolute URL or a backslash → role home
-- recovery flow → `/reset-password`; a recovery error → `?reset=invalid`
-- recovery for a user with no profile
+## 7. Configuration checklist (KC; the consoles need his login)
 
-**First-link hardening (§8.1):**
-- the predicate is true only for a fresh OAuth identity on an existing user that has an email identity and a profile
-- it rotates the password and revokes other sessions
-- it does not run on later sign-ins
-- it does not run for OAuth-first users
+| # | Item |
+|---|---|
+| C1 | **Staging Supabase project** (`from-victory-staging`) + a Vercel environment wired to it (this also closes the Preview env gap). Migrations are applied via CI to staging. |
+| C2 | **Custom SMTP (Resend)** for production and staging auth email. Registered with Apple Private Email Relay (SPF/DKIM aligned). |
+| C3 | **Apple:** <br>• enable Sign in with Apple on App ID `com.fromvictoryapp.app` (primary); <br>• Services IDs for production and staging, **grouped** with the primary App ID, with return URLs `https://www.fromvictoryapp.com/auth/apple/callback` (+ staging); <br>• a Sign in with Apple key (.p8) → Vercel `APPLE_SIGNIN_P8`, `APPLE_KEY_ID`, `APPLE_TEAM_ID`. |
+| C4 | **Supabase Apple provider:** enabled, Client IDs = Services ID (first), then the bundle ID. |
+| C5 | **Google:** <br>• OAuth consent screen (External; privacy policy on fromvictoryapp.com; scopes `openid email`); <br>• a Web OAuth client with the redirect = the Supabase callback for production and staging; <br>• **brand verification** (Search Console ownership; takes days, start first). |
+| C6 | **Supabase:** <br>• the Google provider; <br>• **Confirm email ON** with the OTP template (production only after §4 ships); <br>• OTP expiry 900s; <br>• redirect allow-list (exact): `https://www.fromvictoryapp.com/auth/callback` and `com.fromvictoryapp.app://auth/callback` (+ staging). |
+| C7 | Vercel env: `APPLE_TOKEN_KEY`, `SSO_WEB`, `SSO_IOS`, `SSO_ANDROID` = `off`, `REAPER_DRY_RUN=true`. |
+| C8 | Privacy policy (§10) published before any flag leaves `off`; it is also the consent-screen URL. |
+| C9 | Optional: a Supabase custom auth domain (~$10/mo) so Google's consent screen shows our domain. Not required. |
 
-**`completeOnboarding`:**
-- parent success, including the attestation requirement
-- adult success
-- adult under 18 → user deleted and signed out, birthdate never logged
-- adult with the flag off → rejected
-- `as=adult` can't grant a role
-- double submit / PK `23505` → redirect, **no delete**
-- account deleted mid-flow
-- missing consent → field error
-- rate limit
-- never reads provider metadata
+## 8. One-time beta-account transition
 
-**`cancelOnboarding`:**
-- deletes only a `needs_onboarding` user
-- re-check: a profile created in between → no-op
-- idempotent
+**Purpose:** close the unsafe legacy path. Existing real-email accounts were autoconfirmed and never proven, so Supabase treats them as verified. Do this without building customer migration UX.
 
-**`showOAuth`:**
-- web UA with the flag on → true
-- `ios-iap` / `legacy-native` UAs (current and older builds) → false
-- each deny-listed in-app UA, `; wv)`, and iOS without `Safari/` → false
-- flag `off` → false
-- `preview` without the cookie → false; `preview` with the cookie → true
+**This spec authorizes none of the account changes below.** Steps T3–T4 each need KC's explicit go on a named list.
 
-**Reaper:**
-- selects only OAuth users with no profile older than the TTL
-- never touches a user with a profile, and never an email-only user
-- respects dry-run and the per-run cap
-- re-checks before deleting
-- `CRON_SECRET` auth
+**T1 — Inventory (read-only).** The lead runs it with KC on production.
 
-**Static and CI:**
-- the provider-metadata grep guard
-- `sw-route-strategy.test.ts` includes `/welcome`
-- `middleware-matcher.test.ts` and `native-shell-router.test.ts` cover `/welcome`
+The output stays **out of the repo**, Linear, PRs and chat. It is stored encrypted with KC-only access, because it contains PII. It holds an email *class*, not addresses; KC looks up addresses in the dashboard as needed.
 
-**Existing tests to update:** `signin-native-shell.test.tsx` and `signup-routing.test.tsx` mock `@/lib/native-shell` with only `getRequestShellCapability`. Add the new helper to those mocks.
+For every `auth.users` row:
+- id;
+- email class (synthetic athlete / real / relay);
+- role;
+- `created_at`, `last_sign_in_at`, `email_confirmed_at`;
+- providers;
+- subscription provider and status;
+- comp grant;
+- number of athletes;
+- admin flag;
+- reviewer-account flag.
+
+**T2 — Classify (KC).** Every real-email account is either:
+- **Keep, KC-controlled:** KC's own accounts, the App Review demo account, the Play reviewer account; or
+- **Keep, beta tester:** has athletes, history, or a subscription worth keeping; or
+- **Disposable.**
+
+Minor athletes (synthetic emails) are kept under their parent's decision and are unaffected by SSO.
+
+**T3 — Prove ownership for kept accounts** (after §4 is live):
+- **KC-controlled accounts:** KC resets each password himself via the email code and updates the reviewer credentials stored outside the repo and the review notes.
+- **Beta testers:** one service-role SQL transaction, rehearsed on staging first (S8). It runs against an explicit id list. The predicate also **excludes `%@athletes.fromvictory.app`**, and the T1 query asserts that no synthetic address is in the set. The transaction:
+  1. `update auth.users set email_confirmed_at = null`;
+  2. sets `identity_data.email_verified = false` on their `email` identities. S8 proves whether linking reads this flag; if it doesn't, the step is harmless;
+  3. `delete from auth.sessions` for those users (§5.6).
+
+  On their next password sign-in they enter the emailed code (§4 verify-only path). If they use Google/Apple first, Supabase removes the unproven password identity on linking.
+- This is built-in behaviour. No new UI beyond §4's "enter the code" screen.
+- **Locked-out parent** (unreachable or mistyped inbox): they can't reach in-app deletion. Support runbook:
+  1. verify the person out of band;
+  2. run the service-side deletion cascade, including Apple revoke;
+  3. honor the request within 30 days.
+
+**T4 — Disposable accounts:**
+- cancel any sandbox/test subscriptions;
+- delete through the app's deletion path, so cascades and Apple revocation run.
+
+Until KC authorizes that deletion, treat them like T3 accounts: unconfirmed, with sessions revoked. They then can't sign in without proving the inbox.
+
+**T5 — Close and verify:**
+- before enabling any SSO surface, a query must show **zero** real-email accounts (synthetic athlete addresses excluded) that are confirmed but not in the T3 "proven" list;
+- Confirm email stays ON permanently (see rollback);
+- a privately stored T1 snapshot is kept until 30 days after launch, then deleted.
+
+## 9. Security points
+
+- **Pre-registration takeover:**
+  - closed for new accounts by §4 (verified email + Supabase's unconfirmed-identity removal);
+  - closed for legacy accounts by §8;
+  - validated in staging (S2, S8), not assumed.
+- **Open redirect:** the `next` allow-list (§5.3).
+- **Role from client:** `as` is a hint. Roles are set only by the validated completion. Provider data never grants a role or entitlement.
+- **Minors:**
+  - no SSO entry on the under-18 section;
+  - an adult birthdate under 18 is deleted immediately (Apple tokens revoked first);
+  - abandoned attempts are reaped within ~75 minutes;
+  - no birthdate is stored or logged;
+  - the parent path adds the 18+ guardian attestation.
+- **Server Actions only** (Origin-checked POST) for:
+  - `startEmailSignup`, `completeEmailSignup`, `verifyEmailOnly`;
+  - `completeOnboarding`, `cancelOnboarding`;
+  - `appleNativeSignIn`, `appleHandoffComplete`.
+
+  Ids come from `getUser()`.
+- **Apple `form_post`:**
+  - the `state` and nonce cookies are `__Host-`, `SameSite=None`, Secure, 10-minute and single-use;
+  - `/auth/apple/callback` is exempt from Origin checks, and `state` is its CSRF defence.
+- **Handoff rows:**
+  - single-use, 3-minute TTL, an id of ≥128 bits;
+  - verifier- and state-bound, burned on any mismatch, rate-limited;
+  - encrypted with row-bound AAD;
+  - Apple grant revoked before an unused row is purged.
+- **Native plugin:** host allow-list and a hard-coded callback scheme (§6).
+
+## 10. Privacy, policy, and store disclosures
+
+`app/privacy/page.tsx` must say:
+- Google and Apple are sign-in providers. Each acts as an independent controller of its own sign-in;
+- **Resend** delivers our email, including sign-in codes. Name it as a processor alongside Stripe and our hosting and auth providers;
+- what we receive: email and the provider user ID. A name or photo may be held by our auth provider and is never used or shown;
+- Apple and Google learn that a parent or adult uses From Victory. They **receive no athlete data**;
+- a parent's sign-in method (including Apple or Google) controls access to their athlete's data and its deletion. The athlete keeps their own username login;
+- we keep an **encrypted Apple refresh token** solely to revoke Sign in with Apple when an account is deleted;
+- minors (13–17) don't use SSO;
+- unfinished sign-ups are deleted within about an hour;
+- how to revoke Apple access manually;
+- the relay-address recovery limit;
+- new email signups are verified by code.
+
+This is a privacy-path change: kids-privacy-officer review, then KC wording.
+
+Store disclosures:
+- iOS App Privacy labels and Play Data safety, as in §6. Both describe email and user ID as collected **from parents and adult athletes only**.
+- **Support runbook:**
+  - Hide My Email duplicates: the user picks the account that holds their subscription. No manual merges without re-verifying both inboxes.
+  - Relay users who lose their relay inbox cannot recover the account.
+
+## 11. Essential decisions (KC)
+
+| # | Decision | Recommendation |
+|---|---|---|
+| E1 | **Android new-account creation via SSO.** Today the Android app has no signup (Path A, consumption-only) and no Play Billing. | Ship Android SSO in the **Play Billing v1.1 build** (FV-620 chain), so new Android users can create *and* subscribe in-app. Sign-in for existing accounts is in the same build. |
+| E2 | **Staging Supabase project spend** (≈ one extra project's compute on the current plan; confirm on the billing page) | Approve. S1–S10 can't run safely on production. |
+| E3 | **Provider-metadata exception** (§5.8) | Sign it, with the CI guard + deletion proof + policy disclosure. |
+| E4 | **Transition lists and authorization** (§8 T2–T4) | Classify after T1. Authorize T3/T4 separately, by named list. |
+| E5 | **Copy:** sign-in sections, buttons, `/welcome`, code screens, errors, relay line, Apple revoke note, in-app-browser line | Approve at PR review. |
+
+**Engineering defaults (not decisions):**
+- `jwt_expiry` 900 after S7;
+- reaper TTL 1h, every 15 min;
+- OTP 15 min.
+
+**Product-strategist and privacy re-review:**
+- native scope plus the new `FVAuth` plugin and `androidx.browser` dependency are reviewed at A0;
+- KC's settled scope stands, and the reviews check implementation, not scope.
+
+## 12. Implementation sequence and delivery issues (Tier 2 unless noted)
+
+| # | Issue | Owner | Contents | Depends on |
+|---|---|---|---|---|
+| A0 | Setup + reviews | KC + lead | C1–C9; product-strategist + kids-privacy-officer review of `FVAuth`/`androidx.browser`; privacy-policy PR (§10) | — |
+| A1 | **Verified email signups** | backend + frontend | §4: two-step signup, `completeEmailSignup`, unconfirmed sign-in path, rate-limit migration, OTP template; Confirm email ON in prod at merge | C1, C2 |
+| A2 | **Beta transition** | lead + KC | §8 T1→T5 (T3/T4 on KC's named authorization) | A1 live, S8 |
+| A3 | Session core | backend | §5.1, §5.2, §5.6 (`jwt_expiry` after S7), `/auth/callback` (§5.3) | A1 |
+| A4 | Apple core + token store | backend | §5.4 web routes, `appleNativeSignIn`, `appleHandoffComplete`, §5.5 table/encryption/revoke + deletion integration | A3, C3, C4 |
+| A5 | Reaper | backend | §5.7 migration, harness, cron | A3, A4 |
+| A6 | Web UI + entry points | frontend | §3 (after FV-657 merges), `/welcome`, SW bypass, flags + preview cookie, error states | A3, A4 |
+| A7 | **Staging validation** | qa + lead | S1–S10 on staging, web plus TestFlight and Play-internal builds pointed at staging | A1–A6, A8, A9 |
+| A8 | iOS build | frontend (native) | §6 iOS plugin + entitlements + UA; TestFlight | A3, A4 deployed (flags off) |
+| A9 | Android build | frontend (native) | §6 Android plugin + UA; ships in the Play Billing v1.1 build per E1 | A3, A4 deployed; FV-620 chain |
+| A10 | Launch | KC + qa | web `preview` → `on`; iOS review → `preview` → `on`; Android same; product-truths entry; one-week watch | A2 T5 done, A7 green, store approvals |
+| A11 | Docs | lead | CLAUDE.md Out-of-scope line → "social sign-in for minors (13–17)"; same at `.claude/agents/product-strategist.md:67`; support runbook; Apple key/secret runbook | KC approves this spec |
+
+**Order:** A0 → A1 → (A2 ∥ A3) → A4 → (A5 ∥ A6 ∥ A8 ∥ A9) → A7 → A10.
+
+Web can reach `on` before the native builds are approved (the internal milestone). iOS and Android follow their own reviews.
+
+**Review chain** for every code PR: `/review` → qa-reviewer → kids-privacy-officer → KC merge.
+
+**Hot files:** `SignInChooser` (after FV-657), `guards.ts`, `sw.js` + `route-strategy.ts`. Serialize A3/A6.
+
+## 13. Validation and tests
+
+### Staging gates (A7). All must pass (S1–S10) before any production flag leaves `preview`.
+
+| # | Proves |
+|---|---|
+| S1 | The OTP signup confirms with `type: "email"`; Resend delivers the code to Gmail, iCloud, and an Apple relay address; unconfirmed sign-in → code screen. |
+| S2 | Linking: Google onto (a) a confirmed password user → same user id, password still works; (b) an unconfirmed password user → linked, **password identity removed**; (c) an autoconfirmed legacy-style user → linked, password kept (this demonstrates why §8 is required). |
+| S3 | The Apple `sub` and relay email are identical via the Services ID (web, Android) and the bundle ID (iOS) → one Supabase user. |
+| S4 | `signInWithIdToken` accepts Apple tokens with `aud` = the Services ID **and** `aud` = the bundle ID (raw nonce), and **rejects an unknown `aud`**, with no Supabase Apple secret configured. Record the scopes Supabase sends for Google. |
+| S5 | Code redemption returns a refresh token for both `client_id`s; revoke succeeds; a revoked user sees Apple's consent again. |
+| S6 | App callbacks: iOS `ASWebAuthenticationSession` and Android Auth Tab, plus the Custom Tab fallback (Chrome < 137), return the custom-scheme URL, including a **second** sign-in with an existing Google session (an auto-redirect without a gesture). The WebView exchange succeeds. The Android Apple handoff completes; a replayed handoff fails. |
+| S7 | `getUser()` rejects a revoked session and a deleted user on the server routes. `jwt_expiry` 900 doesn't break the offline pregame or the app's resume refresh. |
+| S8 | Transition rehearsal (the §8 T3 transaction on staging copies):<br>• password sign-in then requires the code;<br>• a real Google link **removes the password identity**. If it only does so with `identity_data.email_verified=false`, that step is mandatory;<br>• `delete from auth.sessions` ends server access on the next request;<br>• no synthetic athlete account is touched. |
+| S9 | Apple `form_post` with `SameSite=None` state cookies works in Safari (ITP) and Chrome. |
+| S10 | Recovery:<br>• an SSO-only user (no password) uses Forgot password with a verified email → sets a usable password → signs in with email in each app (also with an Apple relay address);<br>• an **unconfirmed** legacy beta user who forgot their password gets a usable recovery code, not just a confirmation resend. |
+
+### Acceptance test (A10, production, KC's real accounts, per role)
+
+Create an account on the web with Apple, then with Google (parent and adult), then:
+- sign into the **iOS app** with the same provider;
+- sign into the **Android app** with the same provider;
+- see the **same subscription state** (Stripe and Apple IAP) and the **same athletes and history** on all three.
+
+Also:
+- Apple on iOS with a real email, then Google on Android with that same email → one account.
+- Apple with Hide My Email → a separate account. The relay line and support recovery work.
+- Deleting an Apple-created account → the token is revoked (check in Apple ID settings), and no auth, identity, or token rows remain.
+
+### Unit tests (Vitest)
+
+**Session and routing:**
+- resolver (all states, including query error);
+- guards and shell router (`FVAuth/1` vs older UA);
+- callback (allow-list, `//evil`, `/admin`, absolute URL, backslash, provider error, recovery).
+
+**Signup and onboarding:**
+- `startEmailSignup`: under-18 adult or missing attestation → **no auth row and no email**;
+- `completeEmailSignup`: wrong, expired or resent code; rate limits; profile insert; `23505` → redirect; insert failure → **no delete**; under-18 → delete;
+- `verifyEmailOnly`: no insert, for an existing profile;
+- `signIn`: the `email_not_confirmed` branch appears only after a correct password;
+- `completeOnboarding` (parent attestation, adult, under-18 delete with revoke-first, flag off, `23505` no-delete);
+- `cancelOnboarding` (re-check, idempotent).
+
+**Apple:**
+- `appleNativeSignIn` and the web callback (state mismatch, nonce mismatch, redemption failure → sign-in proceeds and the deletion fallback is noted);
+- the handoff:
+  - bad verifier **burns the row**;
+  - expired;
+  - replay;
+  - rate limit;
+  - an unused row's purge **revokes first**;
+  - AAD mismatch fails to decrypt;
+- `/auth/apple/callback` is not blocked by the Origin checks;
+- `FVAuth` host allow-list: native unit tests reject non-allow-listed hosts;
+- `revokeAppleTokens` (matching `client_id`, retries, failure → delete proceeds);
+- encryption round trip and key version.
+
+**Visibility and reaper:**
+- `showSSO` (each surface, UA, flag, preview cookie, denylist);
+- reaper (targets, dry-run, cap, re-check, revoke-first).
+
+**Static:** the metadata grep guard; SW bypass sync. Extend the existing `native-shell` mocks in `signin-native-shell.test.tsx` and `signup-routing.test.tsx`.
 
 ### RLS harness
 
-- The finder function: `EXECUTE` is revoked from `PUBLIC`, `anon` and `authenticated`, and is service_role only. This is effect-based.
-- A behavioural reaper test with `fixtures.sql` users, with and without a profile.
+- `private.apple_signin_tokens`, the handoff table, and the reaper finder: no access for `anon`/`authenticated`; `EXECUTE` denied to `PUBLIC`.
+- Deletion proof.
 
-### Deletion proof
+### E2E (local Supabase; no real providers in CI)
 
-After `deleteAccount` and after the reaper, no `auth.users` or `auth.identities` row remains.
+- Set `enable_confirmations = true` in the local `supabase/config.toml` (it is `false` today, `:207`) so CI exercises §4. The existing seeds already use `email_confirm: true` (`e2e/global-setup.ts:263,341`).
+- Seed OAuth users with `app_metadata.providers` and fresh users per test.
+- Node-side session cookie injection (no app route).
+- A separate Playwright project.
+- Paginated cleanup.
+- `ci.yml` sets the flags.
+- Clear the rate-limit rows per test.
 
-### E2E (Playwright, local Supabase, no real providers in CI)
+Scenarios:
+- `/welcome` parent/adult/under-18/cancel;
+- the two-step email signup with an OTP read from local Inbucket/Mailpit;
+- shell UAs with and without `FVAuth/1` → buttons absent/present in the SSR HTML.
 
-**Seeding:**
-- A user with `auth.admin.createUser({ app_metadata: { provider: "google", providers: ["google"] } })` and no profile. The resolver keys on `app_metadata.providers`, so no `auth.identities` row is needed.
-- **Fresh seed per test:** the scenarios consume the user.
+The `E2E (non-required)` job must be run green by hand before merging A1/A3/A6.
 
-**Session:**
-- A Node-side `signInWithPassword` (seeded password) plus `@supabase/ssr` cookie injection into the Playwright context.
-- **No app route** for this. Note the coupling to the cookie-chunk format.
-- It's a new pattern next to `global-setup`'s UI-driven login.
+### Device QA (A7/A10)
 
-**Projects:** a new Playwright project with its own `testMatch`, plus an auth-less project for injected cookies.
+iPhone (iOS 15 + current) and Android (Chrome < 137 + current), on staging builds, then production review builds:
+- buttons present only in `FVAuth/1` builds;
+- each provider × role;
+- the cancel paths;
+- deletion with Apple;
+- older installed builds show no SSO.
 
-**Cleanup:** `global-setup` and `global-teardown` delete these users. Paginate `listUsers()`.
+Plus a manual WCAG pass: focus, labels, contrast on onyx, `aria-live`, banner focus.
 
-**Env:** set `ENABLE_ADULT_SIGNUP` and `ENABLE_SSO_*=on` in `ci.yml` (CI runs a prod build). The shared `sign_up` IP bucket (15/h) must not starve the existing signup tests: clear `auth_rate_limit_events` for the test IP between tests, or seed below the limit.
+### Rollback (each layer)
 
-**Scenarios:**
-- `/welcome` parent completion → `/dashboard`
-- adult completion → `/subscribe`
-- adult under 18 → deleted
-- "Use a different account" → deleted
-- guarded routes → `/welcome`
-- shell UAs (flags on) → no OAuth button in the SSR HTML (§4.4 check 1)
+| Layer | How | Caveat |
+|---|---|---|
+| UI exposure | Set `SSO_WEB` / `SSO_IOS` / `SSO_ANDROID` to `off` (a redeploy). This hides buttons on web **and** in shipped apps (server-rendered). | Native plugins stay dormant; app builds can't be rolled back. |
+| Server code | Vercel instant rollback to the previous deployment | The previous code signs out `needs_onboarding` users (acceptable), ignores the token table, and may lack the reaper route. Run the reaper after roll-forward. |
+| Provider config | **Keep the providers enabled** in Supabase even with flags off. Disabling strands SSO-only users; recovery is Forgot password via verified email. | Recovery for an SSO-only user is gate S10: prove that the recovery email sets a usable password (add to A7). |
+| Email confirmation | **Never turn it OFF while any SSO surface is on.** If §4 must be rolled back, set the SSO flags to `off` first. | Turning it OFF reopens pre-registration takeover. |
+| Data and migrations | Additive (token, handoff, finder, rate-limit actions). Leave them in place on rollback. Never drop the token table while it holds tokens for live accounts; revoke first. | — |
+| Transition (§8) | Not reversible. The T1 snapshot exists for reference only. That is why T3/T4 need separate named authorization. | — |
+| Reaper | `REAPER_DRY_RUN=true`, or remove the `vercel.json` entry | — |
 
-### Accessibility (manual WCAG pass until axe is wired)
+## 14. Superseded (do not reopen)
 
-- buttons: focus, labels, contrast on onyx, `aria-live`
-- `/welcome`: tap cards, focus order, autofocus
-- error banners: `role="alert"`, focus moves to them
+- **"Website-first, native deferred to Phase B":** replaced by native in scope (§6). Web-first is only an internal milestone.
+- **Permanent first-link password rotation / "password or reset" screen:** replaced by verified email signups (§4) plus the one-time beta transition (§8).
+- **TN3194 manual-revoke-only for Apple:** replaced by stored tokens and real revocation (§5.5). Manual revocation remains only as the failure fallback.
+- **Parent-tab-only SSO with a "switch tab" button:** replaced by the single "Parent or Athlete 18+" section (§3).
+- **Supabase-hosted Apple OAuth with a 6-month client-secret rotation:** replaced by our own code redemption with per-request client secrets (§5.4).
+- **The custom auth domain as a decision:** now optional (C9).
 
-### Manual / device (A6, flags at `preview` with the cookie)
+## 14a. Review log
 
-| Case | Web (Safari, Chrome) | iOS shell | Android shell |
-|---|---|---|---|
-| Buttons on /signin Parent tab, /signup, /signup/athlete | ✅ visible | ❌ none | ❌ none |
-| Deep link /signup?as=adult and /welcome | works | no buttons; /welcome → sign-out / home | same |
-| `curl` with each shell UA against production | — | no button markup | no button markup |
-| New user via Google → /welcome → parent | ✅ | n/a | n/a |
-| New user via Apple (Hide My Email) → /welcome → adult | ✅ | n/a | n/a |
-| Existing password parent signs in with Google (same email) → reset notice, lands on /dashboard, old password no longer works, other sessions signed out | ✅ | other session signed out ✅ | ✅ |
-| SSO-only user → Forgot password → sets a password → signs in inside the app (incl. an Apple relay address) | ✅ | ✅ | ✅ |
-| Delete account (Apple identity) → revoke instruction shown | ✅ | ✅ | ✅ |
-| Cancel at Google consent → friendly error, focus on the banner | ✅ | n/a | n/a |
-| Instagram in-app browser → no buttons, "open in Safari/Chrome" line | ✅ | n/a | n/a |
+**v1 → v2:** backend, frontend, QA and privacy reviews (web-only design). Their findings carried forward where still applicable:
+- the SW bypass sync plus cache bump;
+- the gold focus ring;
+- provider button specs;
+- `maybeSingle` and the error state;
+- the `23505` no-delete rule;
+- the reaper safety measures;
+- the CI metadata guard;
+- the 1h TTL;
+- the parent attestation.
 
-## 13. Review log (v1 → v2)
+**v3** (KC clarification: native in scope, beta users only):
 
-- **backend-engineer:** SUGGEST_REVISION.
-  - Confirmations are off in production, so the takeover risk is live; first-link hardening adopted.
-  - No rollback-delete in `completeOnboarding`.
-  - TOCTOU re-checks before deletes.
-  - Finder-function hardening.
-  - `maybeSingle` + error state.
-  - The `next` allow-list must include `/reset-password` and `/subscribe`.
-  - `hasAppleIdentity` computed before deletion.
-  - Q9 moved to unverified.
-- **frontend-engineer:** SUGGEST_REVISION.
-  - SW bypass in both files + cache bump.
-  - Gold focus ring, not cobalt.
-  - Concrete provider-button specs.
-  - Placement for confused adults (D4).
-  - `/welcome` phone UX.
-  - A fuller in-app-browser list.
-  - Disable while redirecting.
-  - Error-banner focus.
-- **qa-reviewer:**
-  - The device check with flags off proved nothing; now flags on, with automated SSR UA tests and older-build fixtures.
-  - Rollback for A1 = Vercel instant rollback.
-  - E2E is non-required: run it by hand.
-  - Reaper dry-run, cap and re-check.
-  - The gated preview replaces a public "test window".
-  - C6 gates Apple on.
-  - E2E seeding via `app_metadata.providers`.
-  - Additional unit cases, and the existing mocks to update.
-- **kids-privacy-officer** (spec review, not a PR verdict):
-  - D2 option (b) rejected.
-  - Metadata: no scrub, plus a CI guard, deletion proof and a KC-signed exception.
-  - Privacy policy and store disclosures added (§7a).
-  - TTL 1h with a 15-minute cron.
-  - Parent 18+ attestation on `/welcome`.
-  - TN3194 accepted with conditions.
-  - Consent persistence as a prioritised follow-up.
+**Backend:**
+- session revocation by SQL (`admin.signOut` needs the user's JWT);
+- clear `identity_data.email_verified` in T3 and prove it in S8;
+- a verify-only path for legacy accounts;
+- `completeEmailSignup` never deletes;
+- the `needs_onboarding` definition fixed;
+- the `signIn` error branch;
+- the handoff burned on mismatch and rate-limited;
+- `/auth/apple/callback` exempt from Origin checks;
+- `aud` tests;
+- revoke per deleted user;
+- local `enable_confirmations` for CI.
 
-[FV-654]: https://linear.app/adeptiv/issue/FV-654
-[FV-657]: https://linear.app/adeptiv/issue/FV-657
+**Privacy:**
+- step 1 validates age and attestation **before** `auth.signUp`;
+- an unused handoff revokes its Apple grant before purge;
+- Resend named as a processor;
+- disclosures covering minors of SSO parents;
+- an out-of-band deletion path for locked-out parents;
+- synthetic accounts excluded from T3;
+- plugin host allow-list and hard-coded scheme;
+- AAD binding;
+- `private` schema not exposed.
 
-## Sources
+## 15. Sources
 
 **Supabase:**
+- Identity linking: https://supabase.com/docs/guides/auth/auth-identity-linking
 - Apple: https://supabase.com/docs/guides/auth/social-login/auth-apple
 - Google: https://supabase.com/docs/guides/auth/social-login/auth-google
-- Provider tokens not stored: https://supabase.com/docs/guides/auth/social-login
-- Identity linking: https://supabase.com/docs/guides/auth/auth-identity-linking
 - Redirect URLs: https://supabase.com/docs/guides/auth/redirect-urls
+- Native deep linking: https://supabase.com/docs/guides/auth/native-mobile-deep-linking
 - PKCE: https://supabase.com/docs/guides/auth/sessions/pkce-flow
+- Email OTP: https://supabase.com/docs/guides/auth/auth-email-passwordless
+- SMTP: https://supabase.com/docs/guides/auth/auth-smtp
+- Sessions: https://supabase.com/docs/guides/auth/sessions
+- signOut: https://supabase.com/docs/reference/javascript/auth-signout
+- getClaims: https://supabase.com/docs/reference/javascript/auth-getclaims
+- Source: `internal/models/linking.go`, `internal/api/external.go`, `internal/api/verify.go`, `internal/api/auth.go` at github.com/supabase/auth
 
 **Apple:**
-- Revoke tokens: https://developer.apple.com/documentation/signinwithapplerestapi/revoke-tokens
 - TN3194: https://developer.apple.com/documentation/technotes/tn3194-handling-account-deletions-and-revoking-tokens-for-sign-in-with-apple
-- Account deletion: https://developer.apple.com/support/offering-account-deletion-in-your-app/
-- Private Email Relay: https://developer.apple.com/help/account/capabilities/configure-private-email-relay-service/
+- Generate and validate tokens: https://developer.apple.com/documentation/signinwithapplerestapi/generate-and-validate-tokens
+- Revoke tokens: https://developer.apple.com/documentation/signinwithapplerestapi/revoke-tokens
+- Private Email Relay: https://developer.apple.com/documentation/signinwithapple/communicating-using-the-private-email-relay-service
+- Group apps: https://developer.apple.com/help/account/capabilities/group-apps-for-sign-in-with-apple
+- ASWebAuthenticationSession: https://developer.apple.com/documentation/authenticationservices/aswebauthenticationsession
 - App Review Guidelines 4.8 / 5.1.1(v): https://developer.apple.com/app-store/review/guidelines/
 - Manual revoke: https://support.apple.com/en-us/102571
 
-**Google:**
-- OAuth policies (embedded user agents, brand verification): https://developers.google.com/identity/protocols/oauth2/policies
+**Google and Android:**
+- OAuth policies: https://developers.google.com/identity/protocols/oauth2/policies
 - Brand verification: https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification
-- Embedded WebView change: https://developers.googleblog.com/en/upcoming-security-changes-to-googles-oauth-20-authorization-endpoint-in-embedded-webviews/
+- Auth Tab: https://developer.chrome.com/docs/android/custom-tabs/guide-auth-tab
+- Android intents in Chrome: https://developer.chrome.com/docs/android/intents
 
-**Unverified (confirm during A0/A1/A4):**
-- the exact Apple and Google scopes Supabase's hosted flow sends;
-- whether `provider_refresh_token` is populated for Apple web sign-in;
-- whether Forgot password gives an OAuth-only user a usable password (Q9);
-- the hosted email-confirmation and SMTP settings (C5, C6).
+**Other:**
+- RFC 8252 §8.1: https://www.rfc-editor.org/rfc/rfc8252#section-8.1
+- Capacitor Browser (uses SFSafariViewController): https://capacitorjs.com/docs/apis/browser
+
+**Unverified, gated in staging:**
+- Apple `sub` identity across client IDs (S3);
+- whether Supabase needs no Apple secret for ID-token-only use (S4);
+- Chrome custom-scheme handoff on auto-redirect (S6);
+- recovery giving an SSO-only user a usable password (S10).
