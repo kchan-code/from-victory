@@ -31,8 +31,14 @@ vi.mock("react-dom", async (importOriginal) => {
   };
 });
 
-const { requireParentMock, shellCapabilityMock, accessLevelMock } =
+const { requireParentMock, shellCapabilityMock, accessLevelMock, entitlementStateMock } =
   vi.hoisted(() => ({
+    // FV-655: the dashboard consults the error-tracking entitlement read when
+    // the access level isn't "full". Default: a readable, not-entitled payer.
+    entitlementStateMock: vi.fn(async () => ({
+      status: "not_entitled" as "entitled" | "not_entitled" | "unknown",
+      provider: null as "apple" | "stripe" | "comp" | null,
+    })),
     requireParentMock: vi.fn(),
     // Google Play "no in-app purchase" compliance + FV-572/577 capability.
     // Defaults to null (ordinary web/PWA request) — individual tests
@@ -51,6 +57,10 @@ vi.mock("@/lib/native-shell", () => ({
 
 vi.mock("@/lib/subscriptions/access", () => ({
   getParentAccessLevel: accessLevelMock,
+}));
+
+vi.mock("@/lib/subscriptions/subscribe-guard", () => ({
+  getSubscribeEntitlementState: entitlementStateMock,
 }));
 
 // FV-585 (KC decision D2): the seat-selection banner is out of scope for this
@@ -105,6 +115,7 @@ afterEach(() => {
   // test order never matters.
   shellCapabilityMock.mockReturnValue(null);
   accessLevelMock.mockResolvedValue("blocked");
+  entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
 });
 
 async function renderPage() {
@@ -211,4 +222,47 @@ describe("/dashboard — Add athlete shell-capability branch (FV-622, Android Pa
       ).toBeNull();
     },
   );
+});
+
+describe("/dashboard — subscription status can't be read (FV-655)", () => {
+  // getParentAccessLevel fails closed ("blocked") on a read error, so before
+  // FV-655 a paying family saw "Start training today / Choose a plan" during
+  // an outage. An unreadable status now shows /subscribe's neutral line.
+  it.each([null, "legacy-native", "ios-iap"] as const)(
+    "shell %s: shows the neutral status line, no purchase prompt",
+    async (capability) => {
+      shellCapabilityMock.mockReturnValue(capability);
+      accessLevelMock.mockResolvedValue("blocked");
+      entitlementStateMock.mockResolvedValue({ status: "unknown", provider: null });
+
+      const { container } = await renderPage();
+
+      expect(
+        screen.getByTestId("dashboard-subscription-status-unknown"),
+      ).toHaveTextContent("We couldn’t load your subscription status. Please try again.");
+      expect(screen.queryByTestId("dashboard-subscribe-cta")).not.toBeInTheDocument();
+      expect(container.textContent ?? "").not.toMatch(/start training today/i);
+      expect(container.textContent ?? "").not.toMatch(/subscribe to from victory/i);
+      expect(container.textContent ?? "").not.toMatch(/\$/);
+    },
+  );
+
+  it("a readable not-entitled payer still gets the subscribe banner (unchanged)", async () => {
+    accessLevelMock.mockResolvedValue("blocked");
+    entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
+
+    await renderPage();
+
+    expect(screen.getByTestId("dashboard-subscribe-cta")).toHaveTextContent("Choose a plan");
+    expect(screen.queryByTestId("dashboard-subscription-status-unknown")).not.toBeInTheDocument();
+  });
+
+  it("a fully entitled parent never triggers the extra read", async () => {
+    accessLevelMock.mockResolvedValue("full");
+
+    await renderPage();
+
+    expect(entitlementStateMock).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("dashboard-subscription-status-unknown")).not.toBeInTheDocument();
+  });
 });
