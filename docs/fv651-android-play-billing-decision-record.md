@@ -1,8 +1,8 @@
 # FV-651: Android Google Play Billing (v1.1) decision record
 
 **Status:** DRAFT v3 for KC (product-strategist and kids-privacy-officer
-reviews applied, Section 14; **G0 decided by KC on 2026-11-11**; G2 direction
-given but figures unresolved, Sections 5 and 13).
+reviews applied, Section 14; **G0 and G2 decided by KC on 2026-11-11**,
+Sections 5 and 13).
 Discovery only. Nothing in this record authorizes
 a build, a native sync, a Play Console change, a Google Cloud change, an
 agreement, a production mutation, or a release.
@@ -218,27 +218,35 @@ points", and this session told KC the stores were at $4.99 / $49.99. Both
 were wrong. They came from the *proposed* mapping in the FV-210 record
 (Section 4.6), not from what was configured.
 
-**G2 status: direction given, figures unresolved.** On 2026-11-11 KC directed
-that Play use "Apple-style" prices, citing $4.99 / $49.99 for one athlete,
-with the website to follow, and asked that Apple's actual schedule be
-verified first. The verification shows Apple is at $5.00 / $49.00. Those two
-instructions now point in different directions, so nothing is recorded as
-decided until KC picks one:
+**G2 DECIDED (KC, 2026-11-11): Play matches Apple's actual price schedule.**
 
-- **Option A: Play matches Apple's actual schedule** (the table above). The
-  website already matches, so there is no website or Stripe change at all.
-  All three places a family can pay show the same price today.
-- **Option B: move to $4.99 / $49.99.** Then Apple has to change too, along
-  with the website and Stripe. Scope in Section 5.1.
+| Athletes | Play monthly | Play yearly |
+|---|---|---|
+| 1 | $5.00 | $49.00 |
+| 2 | $8.00 | $78.00 |
+| 3 | $11.00 | $106.99 |
+| 4 | $14.00 | $135.99 |
+| 5 | $17.00 | $164.99 |
 
-Play lets a developer enter a price rather than pick from fixed points (to
-confirm in Console when products are created), so either option can be
-matched exactly on Play.
+- The website and Stripe do not change. They already show these prices,
+  apart from the three yearly tiers where Apple (and so Play) is one cent
+  lower.
+- How it was decided: KC first directed "Apple-style" prices citing $4.99 /
+  $49.99 and asked for Apple's schedule to be verified. The verification
+  showed Apple at $5.00 / $49.00. Given both options, KC chose to match
+  Apple's actual prices.
+- Play lets a developer enter a price rather than pick from fixed points (to
+  confirm in Console when products are created), so the table can be matched
+  exactly.
+- This decides the price figures only. It does not authorize creating any
+  Play product (G1 and G10 are still open) or changing any live price.
 
-### 5.1 Scope if KC chooses Option B (not approved; nothing here is started)
+### 5.1 Not chosen: moving every price to $4.99 / $49.99
 
-A one-cent drop on monthly and a 99-cent rise on yearly, applied in three
-systems. KC would first have to set the full tier schedule, for example
+Kept for reference only. KC chose to match Apple's actual prices instead, so
+none of this is planned. It would have been a one-cent drop on monthly and a
+99-cent rise on yearly, applied in three systems. KC would first have had to
+set the full tier schedule, for example
 $4.99 / $7.99 / $10.99 / $13.99 / $16.99 monthly and $49.99 / $78.99 /
 $107.99 / $136.99 / $165.99 yearly.
 
@@ -631,7 +639,8 @@ proposed plan. KC decides the timing (decision G10).
 
 **Stage 1, can start once the record is acknowledged. Everything dormant,
 none of it touches files other work is using:**
-1. KC answers G1 to G10 (G0 is decided). FV-609 (trial copy) reconciled.
+1. KC answers G1 and G3 to G10 (G0 and G2 are decided). FV-609 (trial copy)
+   reconciled.
 2. C0 (policy check), C1 (capability signal), C2 (data model), C6 (native
    plugin), in parallel.
 3. KC starts the Google Payments merchant account (C8), which has its own
@@ -708,19 +717,18 @@ first child issues runs far past Section 10.
 
 ## 13. Decisions needed from KC
 
-**G0 is decided. It settles the approach only.** It does not approve the
-timing (G10), the permanent product IDs (G1), any change to the trial, any
-merge, or any Play Console or Google Cloud configuration. On G2, KC gave a
-direction (match Apple) but the figures he cited do not match Apple's
-verified prices, so G2 is not recorded as decided. No Play product is created
-and no live price is changed by anything in this record. G1 and G3 to G10
-remain open, and the child issues are still not filed.
+**G0 and G2 are decided.** G0 settles the approach; G2 settles the Play
+price figures. Neither approves the timing (G10), the permanent product IDs
+(G1), any change to the trial, any merge, or any Play Console or Google Cloud
+configuration. No Play product is created and no live price is changed by
+anything in this record. G1 and G3 to G10 remain open, and the child issues
+are still not filed.
 
 | # | Decision | Recommendation |
 |---|---|---|
 | G0 | Play Billing or a US-only link-out to Stripe (Section 9) | **DECIDED by KC, 2026-11-11: Google Play Billing with Google's in-app checkout**, for a better user experience from the start |
 | G1 | Product ID scheme (permanent once created) | Five subscriptions `family.1` to `family.5`, base plans `monthly` / `yearly`, offer `trial-7d` on tier 1 |
-| G2 | Play prices | **Direction given by KC 2026-11-11 (match Apple, website to follow), figures unresolved.** KC cited $4.99 / $49.99; Apple's verified prices are $5.00 / $49.00 and already equal the website (Section 5). Recommendation: Option A, match Apple's actual schedule, which needs no website or Stripe change. |
+| G2 | Play prices | **DECIDED by KC, 2026-11-11: match Apple's actual schedule** ($5.00 / $49.00 for one athlete; full table in Section 5). No website or Stripe change. |
 | G3 | Access during Google "account hold" | Follow whatever KC decides for the still-open billing-retry policy, so all three providers behave the same |
 | G4 | Grace period length; pause feature | Closest available to Apple's 16 days; pause off |
 | G5 | On account deletion: cancel only, or revoke with refund | Cancel only, with clear wording on the delete screen |
