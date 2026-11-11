@@ -16,6 +16,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { SubscribeForm } from "@/components/subscribe/SubscribeForm";
 import { AppleSubscribeSection } from "@/components/subscribe/AppleSubscribeSection";
 import { ClearOfflinePregameOnMount } from "@/components/pregame/ClearOfflinePregameOnMount";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 
 export const metadata = {
   title: "Subscribe",
@@ -384,6 +385,16 @@ export default async function SubscribePage({ searchParams }: Props) {
             </p>
           </StatusCard>
         )}
+
+        {/* FV-644: every payer on this page can sign out. In the native shell
+            a blocked adult_athlete has no other exit: Back goes to "/", the
+            shell's entry router sends "/" to /athlete, and requireActiveAccess
+            sends a blocked payer straight back here. SignOutButton (FV-154)
+            clears the offline athlete/pregame caches before the signOut action
+            redirects (to /signin in-shell, "/" on the web). */}
+        <div className="mt-10 border-t border-hairline pt-8">
+          <SignOutButton className="inline-flex items-center justify-center w-full min-h-[44px] rounded-[12px] border border-hairline bg-charcoal px-5 py-4 font-heading text-[14px] font-semibold text-cream/60 transition-colors duration-fast ease-out hover:text-cream hover:border-cream/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.99]" />
+        </div>
       </div>
     </main>
   );
