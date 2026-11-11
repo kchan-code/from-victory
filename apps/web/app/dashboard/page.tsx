@@ -8,6 +8,8 @@ import { getRequestShellCapability } from "@/lib/native-shell";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { getPayerSeatStateForCurrentParent } from "@/lib/subscriptions/seat-state";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
+import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
 import { getAthleteMetadataMap, ZERO_RHYTHM } from "@/lib/dashboard/rhythm";
 import { getInviteStatusMap, type InviteState } from "@/lib/invites/status";
 import { DeleteAccountSection } from "@/components/dashboard/DeleteAccountSection";
@@ -44,7 +46,19 @@ export default async function DashboardPage() {
 
   // Subscription access — used only to gate the subscribe CTA banner.
   // Enforcement (route-locking) is a separate issue; we do NOT block here.
-  const accessLevel = await getParentAccessLevel(userId);
+  //
+  // FV-652 (decision record §4.7): deleting the account cannot cancel an App
+  // Store subscription, so the Delete account section at the bottom of this
+  // page warns a parent who has one. Read through the ONE centralized,
+  // error-visible Apple accessor (see lib/subscriptions/apple.ts); display
+  // only. Run alongside the access-level read so the dashboard does not wait
+  // on it separately. Fail toward the warning when the read errors.
+  const [accessLevel, appleLookup] = await Promise.all([
+    getParentAccessLevel(userId),
+    getDisplayedAppleProductIdResult(createServiceClient(), userId),
+  ]);
+  const appleDeleteNotice =
+    appleLookup.productId !== null || appleLookup.readError;
 
   // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
   // checkout.stripe.com has no reachable path (see
@@ -363,7 +377,7 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        <DeleteAccountSection />
+        <DeleteAccountSection appleSubscriptionNotice={appleDeleteNotice} />
       </div>
     </main>
   );

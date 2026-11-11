@@ -80,6 +80,24 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
+// FV-652: the dashboard reads Apple subscription status (service-role,
+// centralized accessor) to decide whether the Delete account section warns
+// an App Store subscriber. Default: no Apple subscription.
+const { appleLookupMock } = vi.hoisted(() => ({
+  appleLookupMock: vi.fn(
+    async (): Promise<{ productId: string | null; readError: boolean }> => ({
+      productId: null,
+      readError: false,
+    }),
+  ),
+}));
+vi.mock("@/lib/supabase/service", () => ({
+  createServiceClient: () => ({}),
+}));
+vi.mock("@/lib/subscriptions/apple", () => ({
+  getDisplayedAppleProductIdResult: appleLookupMock,
+}));
+
 vi.mock("@/lib/dashboard/rhythm", () => ({
   getAthleteMetadataMap: vi.fn(async () => new Map()),
   ZERO_RHYTHM: {
@@ -105,6 +123,7 @@ afterEach(() => {
   // test order never matters.
   shellCapabilityMock.mockReturnValue(null);
   accessLevelMock.mockResolvedValue("blocked");
+  appleLookupMock.mockResolvedValue({ productId: null, readError: false });
 });
 
 async function renderPage() {
@@ -211,4 +230,72 @@ describe("/dashboard — Add athlete shell-capability branch (FV-622, Android Pa
       ).toBeNull();
     },
   );
+});
+
+describe("/dashboard — App Store subscriber delete notice (FV-652)", () => {
+  const NOTICE = /your app store subscription is managed by apple/i;
+
+  it("a parent with an active Apple subscription is told deleting does not cancel it", async () => {
+    appleLookupMock.mockResolvedValue({
+      productId: "com.fromvictoryapp.app.family.2.yearly",
+      readError: false,
+    });
+
+    await renderPage();
+
+    const notice = screen.getByTestId("delete-account-apple-notice");
+    expect(notice).toHaveTextContent(NOTICE);
+    expect(notice).toHaveTextContent(/tap your name, then subscriptions/i);
+    expect(notice).toHaveTextContent(/does not cancel it/i);
+    expect(notice).toHaveTextContent(/cannot be automatically re-attached/i);
+    expect(appleLookupMock).toHaveBeenCalledWith(expect.anything(), "parent-1");
+  });
+
+  it("the notice comes before the Delete button, so it is read before any confirmation", async () => {
+    appleLookupMock.mockResolvedValue({
+      productId: "com.fromvictoryapp.app.family.1.monthly",
+      readError: false,
+    });
+
+    await renderPage();
+
+    const notice = screen.getByTestId("delete-account-apple-notice");
+    const button = screen.getByRole("button", { name: /delete my account/i });
+    expect(
+      notice.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("Apple status read error → the notice shows anyway (fail toward warning)", async () => {
+    appleLookupMock.mockResolvedValue({ productId: null, readError: true });
+
+    await renderPage();
+
+    expect(screen.getByTestId("delete-account-apple-notice")).toHaveTextContent(NOTICE);
+  });
+
+  it("a parent with no Apple subscription sees no notice and the unchanged delete copy", async () => {
+    await renderPage();
+
+    expect(
+      screen.queryByTestId("delete-account-apple-notice"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/permanently delete your account and every athlete you manage/i),
+    ).toBeInTheDocument();
+  });
+
+  it("the notice appears inside the legacy-native shell too, with no price or checkout text", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
+    appleLookupMock.mockResolvedValue({
+      productId: "com.fromvictoryapp.app.family.1.monthly",
+      readError: false,
+    });
+
+    await renderPage();
+
+    const text = screen.getByTestId("delete-account-apple-notice").textContent ?? "";
+    expect(text).toMatch(NOTICE);
+    expect(text).not.toMatch(/\$|stripe|checkout/i);
+  });
 });
