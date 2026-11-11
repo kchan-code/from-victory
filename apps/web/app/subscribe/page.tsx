@@ -393,6 +393,21 @@ export default async function SubscribePage({ searchParams }: Props) {
             clears the offline athlete/pregame caches before the signOut action
             redirects (to /signin in-shell, "/" on the web). */}
         <div className="mt-10 border-t border-hairline pt-8">
+          {/* FV-645: a blocked adult_athlete also needs a route to account
+              settings, where account deletion lives (App Review 5.1.1(v)).
+              /athlete/settings is not subscription-gated, but in the native
+              shell nothing linked to it from here. Blocked adults only: an
+              entitled adult reaches settings through /athlete, and a parent
+              through /dashboard, so their flows are unchanged. */}
+          {isAdult && wouldBounce ? (
+            <Link
+              href="/athlete/settings"
+              data-testid="subscribe-account-settings"
+              className="mb-3 inline-flex items-center justify-center w-full min-h-[44px] rounded-[12px] border border-hairline bg-charcoal px-5 py-4 font-heading text-[14px] font-semibold text-cream/60 no-underline transition-colors duration-fast ease-out hover:text-cream hover:border-cream/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.99]"
+            >
+              Account settings
+            </Link>
+          ) : null}
           <SignOutButton className="inline-flex items-center justify-center w-full min-h-[44px] rounded-[12px] border border-hairline bg-charcoal px-5 py-4 font-heading text-[14px] font-semibold text-cream/60 transition-colors duration-fast ease-out hover:text-cream hover:border-cream/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.99]" />
         </div>
       </div>

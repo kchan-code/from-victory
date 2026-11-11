@@ -847,3 +847,75 @@ describe("SubscribePage — sign-out exit (FV-644)", () => {
     expect(container.querySelector('a[aria-label="Back to home"]')).toHaveAttribute("href", "/");
   });
 });
+
+describe("SubscribePage — account settings route for a blocked adult (FV-645)", () => {
+  const asRole = (role: "parent" | "adult_athlete") =>
+    requireSubscriberMock.mockResolvedValue({
+      userId: `${role}-1`,
+      profile: { id: `${role}-1`, role, first_name: "Jordan" },
+    });
+
+  const renderBlocked = async (
+    role: "parent" | "adult_athlete",
+    shell: "ios-iap" | "legacy-native" | null,
+  ) => {
+    asRole(role);
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("blocked");
+    shellCapabilityMock.mockReturnValue(shell);
+    return render(await SubscribePage({ searchParams: {} }));
+  };
+
+  for (const shell of ["ios-iap", "legacy-native", null] as const) {
+    it(`a blocked adult_athlete (shell: ${shell ?? "web"}) gets a link to account settings, where deletion lives`, async () => {
+      const { getByRole, getByTestId } = await renderBlocked("adult_athlete", shell);
+      const link = getByRole("link", { name: "Account settings" });
+      expect(link).toHaveAttribute("href", "/athlete/settings");
+      expect(getByTestId("subscribe-account-settings")).toBe(link);
+      // Sign out (FV-644) is still there beside it.
+      expect(getByRole("button", { name: "Sign out" })).not.toBeNull();
+    });
+
+    it(`a blocked parent (shell: ${shell ?? "web"}) gets no athlete-settings link (they keep /dashboard)`, async () => {
+      const { queryByTestId, container } = await renderBlocked("parent", shell);
+      expect(queryByTestId("subscribe-account-settings")).toBeNull();
+      expect(container.querySelector('a[href="/athlete/settings"]')).toBeNull();
+    });
+  }
+
+  it("an entitled adult browsing /subscribe sees no extra link (flow unchanged)", async () => {
+    asRole("adult_athlete");
+    maybeSingleMock.mockResolvedValue({ data: { stripe_customer_id: "cus_1" }, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("full");
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "comp" });
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    expect(queryByTestId("subscribe-account-settings")).toBeNull();
+  });
+
+  it("a blocked adult still gets the link when the entitlement status read is unknown", async () => {
+    entitlementStateMock.mockResolvedValue({ status: "unknown", provider: null });
+    const { getByRole, getByTestId } = await renderBlocked("adult_athlete", "ios-iap");
+    expect(getByTestId("subscribe-status-unknown")).not.toBeNull();
+    expect(getByRole("link", { name: "Account settings" })).toHaveAttribute(
+      "href",
+      "/athlete/settings",
+    );
+  });
+
+  it("gating off: an adult is never blocked, so the link does not appear", async () => {
+    asRole("adult_athlete");
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(false);
+    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    expect(queryByTestId("subscribe-account-settings")).toBeNull();
+  });
+
+  it("the link adds no price, checkout, or Stripe reference inside the legacy-native shell", async () => {
+    const { container } = await renderBlocked("adult_athlete", "legacy-native");
+    expect(container.textContent).not.toMatch(/\$|stripe|checkout/i);
+    expect(container.querySelector('a[href*="stripe"]')).toBeNull();
+  });
+});
