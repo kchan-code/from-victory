@@ -3,7 +3,7 @@ import { Blob as NodeBlob } from "node:buffer";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import {
   createNativeNarrationPlayer, getNarrationBridge, NARRATION_CHUNK_BYTES,
-  NARRATION_MAX_BYTES, type NarrationStatus,
+  NARRATION_MAX_BYTES, narrationSessionId, type NarrationStatus,
 } from "../narration";
 
 const wav = (size = 44) => new NodeBlob([new Uint8Array(size)]) as unknown as Blob;
@@ -17,6 +17,35 @@ const makeBridge = () => ({
 const flush = async () => { for (let i = 0; i < 30; i++) await Promise.resolve(); };
 beforeEach(() => { vi.useFakeTimers(); });
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); document.body.innerHTML = ""; });
+
+const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+// Older Android System WebView (< Chromium 92) has getRandomValues but no randomUUID (FV-643).
+const stubLegacyCrypto = () => {
+  const real = globalThis.crypto;
+  vi.stubGlobal("crypto", { getRandomValues: real.getRandomValues.bind(real) });
+};
+
+describe("narration session id (FV-643)", () => {
+  it("falls back to a canonical v4 UUID when crypto.randomUUID is missing", () => {
+    stubLegacyCrypto();
+    const ids = new Set(Array.from({ length: 50 }, () => narrationSessionId()));
+    expect(ids.size).toBe(50);
+    ids.forEach((id) => expect(id).toMatch(UUID_V4));
+  });
+  it("prefers crypto.randomUUID when available", () => {
+    expect(narrationSessionId()).toMatch(UUID_V4);
+  });
+  it("starts a native session on a WebView without crypto.randomUUID", async () => {
+    stubLegacyCrypto();
+    const bridge = makeBridge();
+    const player = await createNativeNarrationPlayer(bridge, wav(45), new AbortController().signal);
+    expect(bridge.begin).toHaveBeenCalledTimes(1);
+    const [{ sessionId }] = bridge.begin.mock.calls[0] as unknown as [{ sessionId: string }];
+    expect(sessionId).toMatch(UUID_V4);
+    expect(bridge.prepare).toHaveBeenCalledWith({ sessionId });
+    player.remove();
+  });
+});
 
 describe("native narration bridge", () => {
   it("does not claim support on web or incomplete/old native shells", () => {
