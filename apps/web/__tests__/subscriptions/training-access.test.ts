@@ -231,6 +231,35 @@ describe("FV-656 — an unreadable status is a block, but not a lapse", () => {
     );
   });
 
+  it.each([
+    ["stripe", "entitled"],
+    ["apple", "entitled"],
+    ["comp", "entitled"],
+  ] as const)(
+    "reads disagree (level blocked, status %s/%s — a transient first read): couldn't verify, never a lapse",
+    async (provider, status) => {
+      entitlementMock.mockResolvedValue({ status, provider });
+      await expect(resolveTrainingAccess({ role: "athlete" })).resolves.toEqual({
+        allowed: false,
+        redirectTo: "/athlete/paused?reason=unavailable",
+        statusUnknown: true,
+      });
+      await expect(resolveTrainingAccess({ role: "adult_athlete" })).resolves.toEqual({
+        allowed: false,
+        redirectTo: "/subscribe",
+        statusUnknown: true,
+      });
+    },
+  );
+
+  it("only a CONFIRMED not_entitled is a lapse", async () => {
+    entitlementMock.mockResolvedValue({ status: "not_entitled", provider: null });
+    await expect(resolveTrainingAccess({ role: "athlete" })).resolves.toEqual({
+      allowed: false,
+      redirectTo: "/athlete/paused",
+    });
+  });
+
   it("a throw from the status check counts as unknown (couldn't check), still blocked", async () => {
     entitlementMock.mockRejectedValue(new Error("boom"));
     vi.spyOn(console, "error").mockImplementation(() => {});

@@ -99,26 +99,30 @@ export type TrainingAccessDecision =
   | {
       allowed: false;
       redirectTo: TrainingBlockedRedirect;
-      // FV-656: true when the block comes from a subscription status that
-      // couldn't be read, not a confirmed lapse. Still a block — no training
+      // FV-656: true when the block is not a CONFIRMED lapse (the status
+      // couldn't be read, or the reads disagreed). Still a block — no training
       // renders — but callers must not present it as an ended subscription
       // or revoke anything on it.
       statusUnknown?: true;
     };
 
 /**
- * FV-656: did the payer's subscription status fail to read? Uses the
- * error-tracking entitlement read /subscribe already relies on (FV-581).
- * Only consulted on the blocked path. A payer that can't be resolved at all
- * (no session / no link) is a confirmed block, not "unknown". A throw from
- * the check itself means we couldn't check, so it counts as unknown — which
- * can only soften the wording and skip a revocation, never grant access.
+ * FV-656: is the block UNCONFIRMED? The level read fails closed, so "blocked"
+ * can come from a read that errored or timed out. This asks the error-tracking
+ * entitlement read /subscribe relies on (FV-581) for a second opinion, on the
+ * blocked path only. Only a CONFIRMED `not_entitled` is a lapse; anything else
+ * — `unknown` (that read errored too) or `entitled` (the reads disagree, e.g.
+ * the first one hit a transient failure) — is "couldn't verify". That can
+ * only soften the wording and skip a revocation; the decision stays a block,
+ * so it can never grant access (QA, PR #593).
+ * A payer that can't be resolved at all (no session / no link) is a confirmed
+ * block. A throw from the check means we couldn't check: unconfirmed.
  */
 async function isPayerStatusUnknownForCurrentUser(): Promise<boolean> {
   try {
     const payerId = await getPayerIdForCurrentUser();
     if (payerId === null) return false;
-    return (await getSubscribeEntitlementState(payerId)).status === "unknown";
+    return (await getSubscribeEntitlementState(payerId)).status !== "not_entitled";
   } catch (err) {
     console.error(
       "[enforce] entitlement status check threw:",
