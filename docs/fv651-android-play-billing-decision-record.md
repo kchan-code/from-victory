@@ -1,7 +1,8 @@
 # FV-651: Android Google Play Billing (v1.1) decision record
 
 **Status:** DRAFT v3 for KC (product-strategist and kids-privacy-officer
-reviews applied, Section 14; **G0 decided by KC on 2026-11-11**, Section 13).
+reviews applied, Section 14; **G0 decided by KC on 2026-11-11**; G2 direction
+given but figures unresolved, Sections 5 and 13).
 Discovery only. Nothing in this record authorizes
 a build, a native sync, a Play Console change, a Google Cloud change, an
 agreement, a production mutation, or a release.
@@ -194,12 +195,85 @@ digits and hyphens.
 - IDs are permanent. KC confirms the scheme before anything is created in
   Play Console (decision G1).
 
-**Prices.** KC's decision: same as web. Play lets a developer enter a price
-rather than pick from fixed points (to confirm in Console when products are
-created), so the tiers can be $5 / $8 / $11 / $14 / $17 monthly and $49 / $78
-/ $107 / $136 / $165 yearly, with no rounding to .99. Apple is at .99 points.
-Decision G2 is whether Play matches the website exactly (recommended) or
-matches Apple.
+**Prices.** KC's standing decision: store prices equal web prices.
+
+*Apple's actual schedule, verified 2026-11-11 from Apple's public US App
+Store listing (all ten in-app purchases shown) and matching the App Store
+Connect configuration recorded on 2026-09-22
+(`docs/testflight-beta-runbook-fv210.md`):*
+
+| Athletes | Apple monthly | Apple yearly | Website monthly | Website yearly |
+|---|---|---|---|---|
+| 1 | $5.00 | $49.00 | $5 | $49 |
+| 2 | $8.00 | $78.00 | $8 | $78 |
+| 3 | $11.00 | $106.99 | $11 | $107 |
+| 4 | $14.00 | $135.99 | $14 | $136 |
+| 5 | $17.00 | $164.99 | $17 | $165 |
+
+Apple already equals the website on seven of ten prices. The three larger
+yearly tiers are one cent lower because Apple had no exact price point.
+
+**Correction.** An earlier draft of this record said "Apple is at .99
+points", and this session told KC the stores were at $4.99 / $49.99. Both
+were wrong. They came from the *proposed* mapping in the FV-210 record
+(Section 4.6), not from what was configured.
+
+**G2 status: direction given, figures unresolved.** On 2026-11-11 KC directed
+that Play use "Apple-style" prices, citing $4.99 / $49.99 for one athlete,
+with the website to follow, and asked that Apple's actual schedule be
+verified first. The verification shows Apple is at $5.00 / $49.00. Those two
+instructions now point in different directions, so nothing is recorded as
+decided until KC picks one:
+
+- **Option A: Play matches Apple's actual schedule** (the table above). The
+  website already matches, so there is no website or Stripe change at all.
+  All three places a family can pay show the same price today.
+- **Option B: move to $4.99 / $49.99.** Then Apple has to change too, along
+  with the website and Stripe. Scope in Section 5.1.
+
+Play lets a developer enter a price rather than pick from fixed points (to
+confirm in Console when products are created), so either option can be
+matched exactly on Play.
+
+### 5.1 Scope if KC chooses Option B (not approved; nothing here is started)
+
+A one-cent drop on monthly and a 99-cent rise on yearly, applied in three
+systems. KC would first have to set the full tier schedule, for example
+$4.99 / $7.99 / $10.99 / $13.99 / $16.99 monthly and $49.99 / $78.99 /
+$107.99 / $136.99 / $165.99 yearly.
+
+- **Stripe (new purchases only).** Stripe prices cannot be edited. Create two
+  new graduated prices (monthly and yearly) and point
+  `STRIPE_PRICE_ID_MONTHLY` / `STRIPE_PRICE_ID_ANNUAL` at them. Existing
+  subscribers stay on their current price automatically; adding an athlete
+  keeps them on it.
+  - Code that recognises a plan by price id must learn the old ids too, or
+    existing subscribers lose their "Monthly" / "Annual" label and drop out of
+    the owner dashboard's plan mix and revenue estimate
+    (`lib/subscriptions/plans.ts` `priceIdToLabel`, `lib/admin/metrics-core.ts`).
+    That needs two "legacy price id" settings and tests.
+  - Any hardcoded amount in checkout or trial-conversion copy is updated
+    (`lib/actions/subscription.ts`, `lib/stripe/sync-athlete-quantity.ts`,
+    `components/subscribe/SubscribeForm.tsx`, `app/subscribe/page.tsx`).
+- **Website price display.** 26 source files state a price today: the pricing
+  page, the home page sections (hero, pricing summary, FAQ, structured data
+  for search engines, waitlist), the parents, athletes and seven sport pages,
+  two article pages, both sign-up pages, the dashboard subscribe prompt, and
+  `public/llms.txt`. Five test files pin the figures.
+  - Marketing copy is owned by the GTM engine (CLAUDE.md "GTM source of
+    truth"): `docs/gtm/brand.md`, `copy-paste-sheet.md`, two ready pages and
+    `voice-and-guardrails.md` carry the price. KC updates those through the
+    engine; this repo then implements them. The repo does not rewrite them.
+  - A dated `product-truths.md` entry.
+- **Apple.** Ten price changes in App Store Connect. The yearly change is an
+  increase, so Apple's rules on notifying or preserving existing subscribers
+  apply; preserving current subscribers' prices is the safe default. KC's
+  action.
+- **Preserving existing subscribers:** Stripe by leaving them on the old
+  price; Apple by choosing to preserve current prices; no one's price changes
+  unless KC says so.
+- Gates: Tier 2 throughout (payments, public pricing). product-strategist,
+  kids-privacy-officer, KC.
 
 **Trial.** 7 days, one-athlete tier only, same as web and iOS. Seven days is
 KC's decision (FV-574; FV-210 record 4.5) and is what the code does
@@ -633,15 +707,18 @@ first child issues runs far past Section 10.
 ## 13. Decisions needed from KC
 
 **G0 is decided. It settles the approach only.** It does not approve the
-timing (G10), the permanent product IDs (G1), prices (G2), any change to the
-trial, any merge, or any Play Console or Google Cloud configuration. G1 to
-G10 remain open, and the child issues are still not filed.
+timing (G10), the permanent product IDs (G1), any change to the trial, any
+merge, or any Play Console or Google Cloud configuration. On G2, KC gave a
+direction (match Apple) but the figures he cited do not match Apple's
+verified prices, so G2 is not recorded as decided. No Play product is created
+and no live price is changed by anything in this record. G1 and G3 to G10
+remain open, and the child issues are still not filed.
 
 | # | Decision | Recommendation |
 |---|---|---|
 | G0 | Play Billing or a US-only link-out to Stripe (Section 9) | **DECIDED by KC, 2026-11-11: Google Play Billing with Google's in-app checkout**, for a better user experience from the start |
 | G1 | Product ID scheme (permanent once created) | Five subscriptions `family.1` to `family.5`, base plans `monthly` / `yearly`, offer `trial-7d` on tier 1 |
-| G2 | Play prices | Exactly the website's prices ($5, $49, +$3, +$29), not Apple's .99 points |
+| G2 | Play prices | **Direction given by KC 2026-11-11 (match Apple, website to follow), figures unresolved.** KC cited $4.99 / $49.99; Apple's verified prices are $5.00 / $49.00 and already equal the website (Section 5). Recommendation: Option A, match Apple's actual schedule, which needs no website or Stripe change. |
 | G3 | Access during Google "account hold" | Follow whatever KC decides for the still-open billing-retry policy, so all three providers behave the same |
 | G4 | Grace period length; pause feature | Closest available to Apple's 16 days; pause off |
 | G5 | On account deletion: cancel only, or revoke with refund | Cancel only, with clear wording on the delete screen |
