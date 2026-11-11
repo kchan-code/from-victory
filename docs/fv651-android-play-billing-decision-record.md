@@ -1,6 +1,7 @@
 # FV-651: Android Google Play Billing (v1.1) decision record
 
-**Status:** DRAFT v1 for KC. Discovery only. Nothing in this record authorizes
+**Status:** DRAFT v2 for KC (product-strategist and kids-privacy-officer
+reviews applied, Section 14). Discovery only. Nothing in this record authorizes
 a build, a native sync, a Play Console change, a Google Cloud change, an
 agreement, a production mutation, or a release.
 
@@ -677,4 +678,5 @@ applied in this version.**
 - Fine as proposed: opaque UUID binding; test-purchase allowlist; Google's
   first-party billing library as a disclosed payment processor rather than a
   third-party tracking SDK; the capability marker as presentation only.
-- A re-review of this revised version is recorded on the PR.
+- Re-review of this revised version: APPROVED, all seven items resolved, no
+  new concern from the product-strategist changes. Posted on the PR.
