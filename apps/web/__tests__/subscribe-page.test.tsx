@@ -192,6 +192,13 @@ vi.mock("@/components/pregame/ClearOfflinePregameOnMount", () => ({
   ClearOfflinePregameOnMount: () => <span data-testid="clear-offline-pregame" />,
 }));
 
+// FV-644: the page renders SignOutButton for every payer. Stub only the
+// server action (same approach as athlete-paused-page.test.tsx); the button
+// itself renders for real.
+vi.mock("@/lib/actions/auth", () => ({
+  signOut: vi.fn(),
+}));
+
 import SubscribePage from "@/app/subscribe/page";
 
 afterEach(() => {
@@ -783,5 +790,60 @@ describe("SubscribePage — Apple upgrade wiring (FV-586, KC decision D3)", () =
     await renderPage();
 
     expect(activeAppleProductIdMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("SubscribePage — sign-out exit (FV-644)", () => {
+  const asRole = (role: "parent" | "adult_athlete") =>
+    requireSubscriberMock.mockResolvedValue({
+      userId: `${role}-1`,
+      profile: { id: `${role}-1`, role, first_name: "Jordan" },
+    });
+
+  const renderBlocked = async (
+    role: "parent" | "adult_athlete",
+    shell: "ios-iap" | "legacy-native" | null,
+  ) => {
+    asRole(role);
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("blocked");
+    shellCapabilityMock.mockReturnValue(shell);
+    return render(await SubscribePage({ searchParams: {} }));
+  };
+
+  for (const role of ["adult_athlete", "parent"] as const) {
+    for (const shell of ["ios-iap", "legacy-native", null] as const) {
+      it(`a blocked ${role} (shell: ${shell ?? "web"}) can sign out`, async () => {
+        const { getByRole, getByTestId } = await renderBlocked(role, shell);
+        const button = getByRole("button", { name: "Sign out" });
+        expect(button).toHaveAttribute("type", "submit");
+        expect(getByTestId("sign-out-btn")).toBe(button);
+        // The purchase surface is still there alongside it (AC 3).
+        expect(
+          shell === "ios-iap"
+            ? getByTestId("apple-subscribe-section-stub")
+            : shell === "legacy-native"
+              ? getByTestId("native-shell-subscribe-notice")
+              : getByTestId("subscribe-form-stub"),
+        ).not.toBeNull();
+      });
+    }
+  }
+
+  it("an entitled payer browsing /subscribe can also sign out", async () => {
+    asRole("adult_athlete");
+    maybeSingleMock.mockResolvedValue({ data: { stripe_customer_id: "cus_1" }, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("full");
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "comp" });
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    const { getByRole } = render(await SubscribePage({ searchParams: {} }));
+    expect(getByRole("button", { name: "Sign out" })).not.toBeNull();
+  });
+
+  it("Back behavior is unchanged: a blocked adult's Back still targets the public home", async () => {
+    const { container } = await renderBlocked("adult_athlete", "ios-iap");
+    expect(container.querySelector('a[aria-label="Back to home"]')).toHaveAttribute("href", "/");
   });
 });
