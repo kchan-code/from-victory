@@ -10,6 +10,19 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-11 — An adult whose subscription has ended can reach account settings from the subscribe page (FV-645; effective when the PR deploys)
+
+An adult athlete (18+) who pays for their own account and whose subscription has ended is
+sent to the subscribe page. That page now shows an "Account settings" link beside "Sign
+out" for that person. Account settings is where an adult deletes their account. Before
+this, inside the iOS and Android apps there was no route from the subscribe page to
+account settings, so account deletion could not be reached in the app. Nothing changes
+for parents (they reach settings from the dashboard) or for adults with an active
+subscription.
+
+Why it matters to a buyer: account deletion is reachable in the app for every account
+type, including an adult whose subscription has lapsed.
+
 ## 2026-11-09 — Pregame follows the same access rule as the rest of training (FV-625, FV-636; effective when the PR deploys)
 
 Game-Day Pregame now uses the same access rule as Daily Training, Pre-Practice,
