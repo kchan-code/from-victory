@@ -135,4 +135,28 @@ describe("GET /api/athlete/access", () => {
     untilMock.mockResolvedValue(UNTIL);
     expect(await (await GET()).json()).toEqual({ redirect: null, offlineUntil: UNTIL });
   });
+
+  it("FV-656: an unreadable status → 503 'unavailable' (can't verify), never a redirect or a bound", async () => {
+    signedIn("athlete");
+    resolveMock.mockResolvedValue({
+      allowed: false,
+      redirectTo: "/athlete/paused?reason=unavailable",
+      statusUnknown: true,
+    });
+    const res = await GET();
+    expect(res.status).toBe(503);
+    expectNoStore(res);
+    const text = await res.text();
+    expect(JSON.parse(text)).toEqual({ error: "unavailable" });
+    // No redirect for the shell to follow (so nothing is revoked) and no
+    // offline bound (so nothing is granted or extended).
+    expect(text).not.toMatch(/redirect|offlineUntil|paused|subscribe/);
+    expect(untilMock).not.toHaveBeenCalled();
+  });
+
+  it("FV-656: a self-payer with an unreadable status also gets 503", async () => {
+    signedIn("adult_athlete");
+    resolveMock.mockResolvedValue({ allowed: false, redirectTo: "/subscribe", statusUnknown: true });
+    expect((await GET()).status).toBe(503);
+  });
 });
