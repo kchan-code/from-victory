@@ -14,6 +14,7 @@ import {
   type SubscriptionStatus,
 } from "@/lib/subscriptions/access-level";
 import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
+import { appleSubscriptionNoticeFor } from "@/lib/subscriptions/apple-delete-notice";
 import { SUPPORTED_SPORTS, sportLabel, type Sport } from "@/lib/sports";
 import { FOCUS_AREA_LABELS, isFocusAreaKey } from "@/lib/quiz-config";
 import { formatHour } from "@/lib/push/format";
@@ -92,10 +93,10 @@ export default async function AthleteSettingsPage({
     : { productId: null, readError: false };
   const appleActive = appleResult.productId !== null;
   const appleReadError = appleResult.readError;
-  // Fail toward the warning: an unreadable Apple status shows the notice
-  // rather than risk telling an App Store subscriber nothing.
-  const appleDeleteNotice =
-    appleLookup.productId !== null || appleLookup.readError;
+  // Fail toward the warning: an unreadable Apple status shows the hedged
+  // "unknown" variant rather than risk telling an App Store subscriber
+  // nothing (see lib/subscriptions/apple-delete-notice.ts).
+  const appleDeleteNotice = appleSubscriptionNoticeFor(appleLookup);
 
   // Stripe: the adult_athlete is their own payer, so `subscriptions.parent_id`
   // is this athlete's own userId — same key app/dashboard/settings/page.tsx
@@ -405,7 +406,7 @@ export default async function AthleteSettingsPage({
             <DeleteAccountSection
               appleSubscriptionNotice={appleDeleteNotice}
               description={
-                appleDeleteNotice
+                appleDeleteNotice !== null
                   ? "Deletes your account and training history. This cannot be undone."
                   : "Deletes your account, training history, and subscription. This cannot be undone."
               }

@@ -8,6 +8,7 @@ import {
   deleteAccount,
   type DeleteAccountState,
 } from "@/lib/actions/account";
+import type { AppleSubscriptionNotice } from "@/lib/subscriptions/apple-delete-notice";
 
 const initialState: DeleteAccountState = null;
 
@@ -38,18 +39,25 @@ function ConfirmButton({ disabled }: { disabled: boolean }) {
  * account cannot cancel an App Store subscription — Apple has no server-side
  * cancel — so a payer with an active Apple subscription must be told, before
  * the typed confirmation, to cancel it with Apple. The calling page decides
- * (server-side) whether to show it, and fails toward showing it when the
- * Apple status read errors.
+ * (server-side) which variant to show:
+ *   - "active":  an active Apple subscription was read for this payer.
+ *   - "unknown": the Apple status read errored. Fail toward warning, but
+ *                hedge the wording so a payer who never had an App Store
+ *                subscription is not told they have one.
+ *   - null/omitted: no notice.
  */
 export const APPLE_SUBSCRIPTION_DELETE_NOTICE =
   "Your App Store subscription is managed by Apple. To cancel it, open Settings on your iPhone, tap your name, then Subscriptions. Deleting your From Victory account does not cancel it, and it cannot be automatically re-attached to a new account.";
 
+export const APPLE_SUBSCRIPTION_DELETE_NOTICE_UNKNOWN =
+  "If you subscribed through the App Store, that subscription is managed by Apple. To cancel it, open Settings on your iPhone, tap your name, then Subscriptions. Deleting your From Victory account does not cancel it, and it cannot be automatically re-attached to a new account.";
+
 export function DeleteAccountSection({
   description,
-  appleSubscriptionNotice = false,
+  appleSubscriptionNotice = null,
 }: {
   description?: ReactNode;
-  appleSubscriptionNotice?: boolean;
+  appleSubscriptionNotice?: AppleSubscriptionNotice | null;
 } = {}) {
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState("");
@@ -78,9 +86,12 @@ export function DeleteAccountSection({
           <p
             role="note"
             data-testid="delete-account-apple-notice"
+            data-variant={appleSubscriptionNotice}
             className="mt-4 max-w-[560px] rounded-lg border border-gold/40 bg-onyx px-4 py-3 font-body text-[14px] leading-relaxed text-cream"
           >
-            {APPLE_SUBSCRIPTION_DELETE_NOTICE}
+            {appleSubscriptionNotice === "unknown"
+              ? APPLE_SUBSCRIPTION_DELETE_NOTICE_UNKNOWN
+              : APPLE_SUBSCRIPTION_DELETE_NOTICE}
           </p>
         ) : null}
 

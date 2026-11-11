@@ -266,12 +266,18 @@ describe("/dashboard — App Store subscriber delete notice (FV-652)", () => {
     ).toBeTruthy();
   });
 
-  it("Apple status read error → the notice shows anyway (fail toward warning)", async () => {
+  it("Apple status read error → a hedged notice shows (fail toward warning, without asserting a subscription)", async () => {
     appleLookupMock.mockResolvedValue({ productId: null, readError: true });
 
     await renderPage();
 
-    expect(screen.getByTestId("delete-account-apple-notice")).toHaveTextContent(NOTICE);
+    const notice = screen.getByTestId("delete-account-apple-notice");
+    expect(notice).toHaveAttribute("data-variant", "unknown");
+    expect(notice).toHaveTextContent(
+      /^if you subscribed through the app store, that subscription is managed by apple\./i,
+    );
+    expect(notice).not.toHaveTextContent(NOTICE);
+    expect(notice).toHaveTextContent(/does not cancel it/i);
   });
 
   it("a parent with no Apple subscription sees no notice and the unchanged delete copy", async () => {

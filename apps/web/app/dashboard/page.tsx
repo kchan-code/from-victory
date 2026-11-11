@@ -10,6 +10,7 @@ import { getPayerSeatStateForCurrentParent } from "@/lib/subscriptions/seat-stat
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
+import { appleSubscriptionNoticeFor } from "@/lib/subscriptions/apple-delete-notice";
 import { getAthleteMetadataMap, ZERO_RHYTHM } from "@/lib/dashboard/rhythm";
 import { getInviteStatusMap, type InviteState } from "@/lib/invites/status";
 import { DeleteAccountSection } from "@/components/dashboard/DeleteAccountSection";
@@ -52,13 +53,13 @@ export default async function DashboardPage() {
   // page warns a parent who has one. Read through the ONE centralized,
   // error-visible Apple accessor (see lib/subscriptions/apple.ts); display
   // only. Run alongside the access-level read so the dashboard does not wait
-  // on it separately. Fail toward the warning when the read errors.
+  // on it separately. A read error shows the hedged "unknown" variant (fail
+  // toward warning; see lib/subscriptions/apple-delete-notice.ts).
   const [accessLevel, appleLookup] = await Promise.all([
     getParentAccessLevel(userId),
     getDisplayedAppleProductIdResult(createServiceClient(), userId),
   ]);
-  const appleDeleteNotice =
-    appleLookup.productId !== null || appleLookup.readError;
+  const appleDeleteNotice = appleSubscriptionNoticeFor(appleLookup);
 
   // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
   // checkout.stripe.com has no reachable path (see

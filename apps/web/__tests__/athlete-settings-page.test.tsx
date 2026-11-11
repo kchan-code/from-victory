@@ -563,6 +563,7 @@ describe("/athlete/settings — App Store subscriber delete notice (FV-652)", ()
       await renderSettings("adult_athlete");
 
       const notice = screen.getByTestId("delete-account-apple-notice");
+      expect(notice).toHaveAttribute("data-variant", "active");
       expect(notice).toHaveTextContent(NOTICE);
       expect(notice).toHaveTextContent(/tap your name, then subscriptions/i);
       expect(notice).toHaveTextContent(/does not cancel it/i);
@@ -586,7 +587,7 @@ describe("/athlete/settings — App Store subscriber delete notice (FV-652)", ()
     expect(screen.queryByLabelText(/type delete to confirm/i)).not.toBeInTheDocument();
   });
 
-  it("Apple status read error → the notice shows anyway (fail toward warning)", async () => {
+  it("Apple status read error → a hedged notice shows (fail toward warning, without asserting a subscription)", async () => {
     getDisplayedAppleProductIdResultMock.mockResolvedValue({
       productId: null,
       readError: true,
@@ -594,7 +595,20 @@ describe("/athlete/settings — App Store subscriber delete notice (FV-652)", ()
 
     await renderSettings("adult_athlete");
 
-    expect(screen.getByTestId("delete-account-apple-notice")).toHaveTextContent(NOTICE);
+    const notice = screen.getByTestId("delete-account-apple-notice");
+    expect(notice).toHaveAttribute("data-variant", "unknown");
+    expect(notice).toHaveTextContent(
+      /^if you subscribed through the app store, that subscription is managed by apple\./i,
+    );
+    expect(notice).not.toHaveTextContent(NOTICE);
+    expect(notice).toHaveTextContent(/tap your name, then subscriptions/i);
+    expect(notice).toHaveTextContent(/does not cancel it/i);
+    expect(notice).toHaveTextContent(/cannot be automatically re-attached/i);
+    expect(notice.textContent ?? "").not.toMatch(/\u2014|\$/);
+    // Neither claim about the subscription is made when its status is unknown.
+    expect(
+      screen.getByText(/deletes your account and training history\. this cannot be undone\./i),
+    ).toBeInTheDocument();
   });
 
   it("adult with no Apple subscription sees the original copy and no notice", async () => {
