@@ -135,7 +135,7 @@ export default function DeleteAccountPage() {
           <li>Type DELETE to confirm, then select &ldquo;Delete my account&rdquo; again.</li>
         </ol>
         <p className="mb-4">
-          <strong>What happens:</strong> your subscription, if you have one, is
+          <strong>What happens:</strong> your subscription, if you bought it on our website, is
           canceled, every
           athlete you solely manage is deleted, and your parent account is
           deleted &mdash; all immediately. An athlete also linked to a
@@ -150,12 +150,20 @@ export default function DeleteAccountPage() {
           <li>Select &ldquo;Delete my account.&rdquo;</li>
           <li>Type DELETE to confirm, then select &ldquo;Delete my account&rdquo; again.</li>
         </ol>
-        <p>
-          <strong>What happens:</strong> your subscription, if you have one, is
+        <p className="mb-4">
+          <strong>What happens:</strong> your subscription, if you bought it on our website, is
           canceled and your account and training history are deleted
           immediately. There is
           no parent or guardian on an adult-athlete account, so this deletes
           everything tied to you.
+        </p>
+
+        <SubHeading>If you subscribed in the iPhone app</SubHeading>
+        <p data-testid="delete-account-app-store-note">
+          A subscription bought through the App Store is managed by Apple.
+          Deleting your From Victory account does not cancel it, and it cannot
+          be automatically re-attached to a new account. To cancel it, open
+          Settings on your iPhone, tap your name, then Subscriptions.
         </p>
       </Section>
 

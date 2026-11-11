@@ -10,6 +10,21 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-11 — Deleting an account tells App Store subscribers to cancel with Apple (FV-652; effective when the PR deploys)
+
+Deleting a From Victory account cancels a subscription bought on the website. It does not
+cancel a subscription bought through the App Store on an iPhone: Apple manages that
+subscription and only the subscriber can cancel it, in the iPhone's Settings. The delete
+section in the parent dashboard and in an adult athlete's settings now says so to anyone
+with an active App Store subscription, before they confirm. The public account-deletion
+page says the same. Before this, those screens said the subscription was deleted or
+canceled without that exception.
+
+Why it matters to a buyer: a family that subscribed in the iPhone app is told plainly
+that they must cancel with Apple, so they are not billed after deleting their account.
+Any copy that says deleting an account cancels the subscription must carry this
+exception.
+
 ## 2026-11-11 — An adult athlete's email works on the "Athlete" sign-in tab (FV-654; effective when the PR deploys)
 
 The sign-in screen has two tabs, "Parent" and "Athlete". An adult athlete (18+) who pays

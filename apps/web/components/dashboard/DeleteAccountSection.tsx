@@ -8,6 +8,7 @@ import {
   deleteAccount,
   type DeleteAccountState,
 } from "@/lib/actions/account";
+import type { AppleSubscriptionNotice } from "@/lib/subscriptions/apple-delete-notice";
 
 const initialState: DeleteAccountState = null;
 
@@ -33,11 +34,30 @@ function ConfirmButton({ disabled }: { disabled: boolean }) {
  * (adult_athlete only, FV-441) can supply account-only copy without forking
  * this component. The parent dashboard usage omits the prop, so its rendered
  * copy is unchanged.
+ *
+ * `appleSubscriptionNotice` (FV-652, decision record §4.7): deleting the
+ * account cannot cancel an App Store subscription — Apple has no server-side
+ * cancel — so a payer with an active Apple subscription must be told, before
+ * the typed confirmation, to cancel it with Apple. The calling page decides
+ * (server-side) which variant to show:
+ *   - "active":  an active Apple subscription was read for this payer.
+ *   - "unknown": the Apple status read errored. Fail toward warning, but
+ *                hedge the wording so a payer who never had an App Store
+ *                subscription is not told they have one.
+ *   - null/omitted: no notice.
  */
+export const APPLE_SUBSCRIPTION_DELETE_NOTICE =
+  "Your App Store subscription is managed by Apple. To cancel it, open Settings on your iPhone, tap your name, then Subscriptions. Deleting your From Victory account does not cancel it, and it cannot be automatically re-attached to a new account.";
+
+export const APPLE_SUBSCRIPTION_DELETE_NOTICE_UNKNOWN =
+  "If you subscribed through the App Store, that subscription is managed by Apple. To cancel it, open Settings on your iPhone, tap your name, then Subscriptions. Deleting your From Victory account does not cancel it, and it cannot be automatically re-attached to a new account.";
+
 export function DeleteAccountSection({
   description,
+  appleSubscriptionNotice = null,
 }: {
   description?: ReactNode;
+  appleSubscriptionNotice?: AppleSubscriptionNotice | null;
 } = {}) {
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState("");
@@ -61,6 +81,19 @@ export function DeleteAccountSection({
             </>
           )}
         </p>
+
+        {appleSubscriptionNotice ? (
+          <p
+            role="note"
+            data-testid="delete-account-apple-notice"
+            data-variant={appleSubscriptionNotice}
+            className="mt-4 max-w-[560px] rounded-lg border border-gold/40 bg-onyx px-4 py-3 font-body text-[14px] leading-relaxed text-cream"
+          >
+            {appleSubscriptionNotice === "unknown"
+              ? APPLE_SUBSCRIPTION_DELETE_NOTICE_UNKNOWN
+              : APPLE_SUBSCRIPTION_DELETE_NOTICE}
+          </p>
+        ) : null}
 
         {!open ? (
           <button
