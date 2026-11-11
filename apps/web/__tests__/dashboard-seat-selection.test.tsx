@@ -83,6 +83,24 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
+// FV-652: the dashboard reads Apple subscription status (service-role,
+// centralized accessor) to decide whether the Delete account section warns
+// an App Store subscriber. Default: no Apple subscription.
+const { appleLookupMock } = vi.hoisted(() => ({
+  appleLookupMock: vi.fn(
+    async (): Promise<{ productId: string | null; readError: boolean }> => ({
+      productId: null,
+      readError: false,
+    }),
+  ),
+}));
+vi.mock("@/lib/supabase/service", () => ({
+  createServiceClient: () => ({}),
+}));
+vi.mock("@/lib/subscriptions/apple", () => ({
+  getDisplayedAppleProductIdResult: appleLookupMock,
+}));
+
 vi.mock("@/lib/dashboard/rhythm", () => ({
   getAthleteMetadataMap: vi.fn(async () => new Map()),
   ZERO_RHYTHM: {

@@ -9,6 +9,9 @@ import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { getPayerSeatStateForCurrentParent } from "@/lib/subscriptions/seat-state";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
+import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
+import { appleSubscriptionNoticeFor } from "@/lib/subscriptions/apple-delete-notice";
 import { getAthleteMetadataMap, ZERO_RHYTHM } from "@/lib/dashboard/rhythm";
 import { getInviteStatusMap, type InviteState } from "@/lib/invites/status";
 import { DeleteAccountSection } from "@/components/dashboard/DeleteAccountSection";
@@ -45,7 +48,19 @@ export default async function DashboardPage() {
 
   // Subscription access — used only to gate the subscribe CTA banner.
   // Enforcement (route-locking) is a separate issue; we do NOT block here.
-  const accessLevel = await getParentAccessLevel(userId);
+  //
+  // FV-652 (decision record §4.7): deleting the account cannot cancel an App
+  // Store subscription, so the Delete account section at the bottom of this
+  // page warns a parent who has one. Read through the ONE centralized,
+  // error-visible Apple accessor (see lib/subscriptions/apple.ts); display
+  // only. Run alongside the access-level read so the dashboard does not wait
+  // on it separately. A read error shows the hedged "unknown" variant (fail
+  // toward warning; see lib/subscriptions/apple-delete-notice.ts).
+  const [accessLevel, appleLookup] = await Promise.all([
+    getParentAccessLevel(userId),
+    getDisplayedAppleProductIdResult(createServiceClient(), userId),
+  ]);
+  const appleDeleteNotice = appleSubscriptionNoticeFor(appleLookup);
 
   // FV-655: getParentAccessLevel is fail-closed — a failed read comes back as
   // "blocked" — so a paying family was shown "Start training today / Choose a
@@ -397,7 +412,7 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        <DeleteAccountSection />
+        <DeleteAccountSection appleSubscriptionNotice={appleDeleteNotice} />
       </div>
     </main>
   );
