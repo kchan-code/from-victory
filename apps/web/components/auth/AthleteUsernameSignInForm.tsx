@@ -78,7 +78,7 @@ export function AthleteUsernameSignInForm() {
           <a
             href="/forgot-password"
             data-testid="athlete-tab-adult-reset-link"
-            className="underline underline-offset-2 hover:text-cream"
+            className="inline-block py-2 text-cream/85 underline underline-offset-2 hover:text-cream"
           >
             Reset it here
           </a>

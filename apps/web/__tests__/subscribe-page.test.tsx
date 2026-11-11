@@ -700,6 +700,7 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
       ["stripe", "You’re already subscribed. Manage your subscription from a web browser at fromvictoryapp.com."],
       ["apple", "You’re subscribed through the App Store. Manage it on your iPhone."],
       ["comp", "You have access to From Victory."],
+      [null, "You have access to From Victory."],
     ] as const)("provider %s → provider status, no subscribe notice, no link", async (provider, copy) => {
       asParent();
       shellCapabilityMock.mockReturnValue("legacy-native");
