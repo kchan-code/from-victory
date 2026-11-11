@@ -1,7 +1,8 @@
 # FV-651: Android Google Play Billing (v1.1) decision record
 
-**Status:** DRAFT v2 for KC (product-strategist and kids-privacy-officer
-reviews applied, Section 14). Discovery only. Nothing in this record authorizes
+**Status:** DRAFT v3 for KC (product-strategist and kids-privacy-officer
+reviews applied, Section 14; **G0 decided by KC on 2026-11-11**, Section 13).
+Discovery only. Nothing in this record authorizes
 a build, a native sync, a Play Console change, a Google Cloud change, an
 agreement, a production mutation, or a release.
 
@@ -162,8 +163,9 @@ as the FV-210 record: a new SDK on signed-in surfaces contradicts the privacy
 page's claim, adds a processor and a revenue share, and the iOS side already
 proves the direct approach works.
 
-**Not recommended: link-out to Stripe or alternative billing.** Section 9
-has the corrected comparison; it is KC's call (decision G0).
+**Not chosen: link-out to Stripe or alternative billing.** KC decided G0 for
+Play Billing on 2026-11-11 with the corrected comparison in Section 9 in
+front of him.
 
 ## 5. Decision 2: products, prices, trial
 
@@ -462,11 +464,9 @@ market, program and date; there is no single universal rate.
 | Build | This record: about 33 to 52 working days, a third provider to maintain | Much smaller: no billing plugin, no third provider. Needs enrollment, Google's link requirements, and a transaction-reporting integration. Not estimated here. |
 | Sign-up in the app | Restored | Would also need restoring |
 
-- **Recommendation stands: Play Billing**, because KC's stated priority is the
-  most seamless purchase for families, and because it does not rest on a
-  US-only program. The reason is no longer cost. If KC would rather trade
-  seamlessness and Canada for a much smaller build, link-out deserves its own
-  short evaluation before C1 starts. That is KC's call (decision G0).
+- **DECIDED (KC, 2026-11-11): Google Play Billing with Google's in-app
+  checkout.** KC's stated reason: a better user experience from the start.
+  The link-out route is not pursued. The reason is experience, not cost.
 - Whether the Play Billing rate needs any enrollment was not confirmed on
   Google's service-fee page. Check it in Play Console once the merchant
   account exists.
@@ -555,7 +555,7 @@ proposed plan. KC decides the timing (decision G10).
 
 **Stage 1, can start once the record is acknowledged. Everything dormant,
 none of it touches files other work is using:**
-1. KC answers G0 to G10. FV-609 (trial copy) reconciled.
+1. KC answers G1 to G10 (G0 is decided). FV-609 (trial copy) reconciled.
 2. C0 (policy check), C1 (capability signal), C2 (data model), C6 (native
    plugin), in parallel.
 3. KC starts the Google Payments merchant account (C8), which has its own
@@ -632,9 +632,14 @@ first child issues runs far past Section 10.
 
 ## 13. Decisions needed from KC
 
+**G0 is decided. It settles the approach only.** It does not approve the
+timing (G10), the permanent product IDs (G1), prices (G2), any change to the
+trial, any merge, or any Play Console or Google Cloud configuration. G1 to
+G10 remain open, and the child issues are still not filed.
+
 | # | Decision | Recommendation |
 |---|---|---|
-| G0 | Confirm Play Billing over a US-only link-out to Stripe, given the corrected comparison in Section 9 | Play Billing |
+| G0 | Play Billing or a US-only link-out to Stripe (Section 9) | **DECIDED by KC, 2026-11-11: Google Play Billing with Google's in-app checkout**, for a better user experience from the start |
 | G1 | Product ID scheme (permanent once created) | Five subscriptions `family.1` to `family.5`, base plans `monthly` / `yearly`, offer `trial-7d` on tier 1 |
 | G2 | Play prices | Exactly the website's prices ($5, $49, +$3, +$29), not Apple's .99 points |
 | G3 | Access during Google "account hold" | Follow whatever KC decides for the still-open billing-retry policy, so all three providers behave the same |
@@ -658,7 +663,8 @@ first child issues runs far past Section 10.
   service account, keyless credentials preferred, auth library server-only.
 - G0: backs Play Billing over link-out. Its own words on cost: at 0 to 10
   subscribers the cheapest option is neither route, it is staying
-  consumption-only. KC's Go stands.
+  consumption-only. KC's Go stands, and KC has since decided G0 for Play
+  Billing.
 - Timing: starting the full arc now is premature. Start the dormant,
   independent pieces and the merchant account; hold the shared-file work
   (10.3, decision G10).
