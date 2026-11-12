@@ -198,7 +198,10 @@ create table public.google_license_testers (
                           on delete cascade,
 
   -- Admin-only context (e.g. "Play reviewer account"). Never surfaced.
-  note        text,
+  -- Must not contain a name, an email or an athlete identifier; the length
+  -- bound keeps it to a short label.
+  note        text
+              check (note is null or char_length(note) <= 120),
 
   created_at  timestamptz not null default now()
 );
