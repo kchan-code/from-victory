@@ -921,6 +921,15 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: "marked" | "not_pending"
       }
+      // FV-674 reaper (service_role only). The finder returns ids + a flag only.
+      reaper_find_candidates: {
+        Args: { p_limit?: number }
+        Returns: { user_id: string; tombstoned: boolean; attempts: number }[]
+      }
+      reaper_bump_attempts: {
+        Args: { p_user_id: string }
+        Returns: number | null
+      }
       finalize_pending_deletion: {
         Args: { p_user_id: string }
         Returns: "no_tombstone" | "not_pending" | "deleted"
