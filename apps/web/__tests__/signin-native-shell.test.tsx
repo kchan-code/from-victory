@@ -13,7 +13,7 @@ import { render, screen, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
 const { shellCapabilityMock } = vi.hoisted(() => ({
-  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
+  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | "android-play" | null),
 }));
 
 vi.mock("server-only", () => ({}));
@@ -121,4 +121,33 @@ describe("/signin Athlete tab copy (FV-657)", () => {
       );
     },
   );
+});
+
+describe("/signin — android-play behaves like legacy-native (FV-659)", () => {
+  it("android-play: plain website guidance, no signup link", async () => {
+    shellCapabilityMock.mockReturnValue("android-play");
+    await renderPage();
+
+    const note = screen.getByTestId("signin-native-shell-new-customer");
+    expect(note).toHaveTextContent(
+      "New to From Victory? Subscribe from a web browser at fromvictoryapp.com, then sign in here.",
+    );
+    expect(note.querySelector("a")).toBeNull();
+    expect(signupLinks()).toHaveLength(0);
+    expect(screen.queryByText("Create a parent account")).toBeNull();
+  });
+
+  it("android-play: Athlete tab copy matches the other shells (FV-657)", async () => {
+    shellCapabilityMock.mockReturnValue("android-play");
+    await renderPage();
+
+    expect(screen.getByLabelText("Username or email", { selector: "input" })).toHaveAttribute(
+      "name",
+      "username",
+    );
+    expect(screen.getByTestId("athlete-tab-adult-reset-link")).toHaveAttribute(
+      "href",
+      "/forgot-password",
+    );
+  });
 });

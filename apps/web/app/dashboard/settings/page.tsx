@@ -37,6 +37,7 @@ import { SignOutButton } from "@/components/auth/SignOutButton";
 import { requireParent } from "@/lib/auth/guards";
 import { getDigestOptOut } from "@/lib/actions/digest-preferences";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
@@ -105,7 +106,7 @@ export default async function DashboardSettingsPage() {
   // NEW three-way branch to the "no subscription yet" entry link only.
   const shellCapability = getRequestShellCapability();
   const nativeShell = shellCapability !== null;
-  const legacyNative = shellCapability === "legacy-native";
+  const legacyNative = isRestrictedShell(shellCapability);
   const iosIap = shellCapability === "ios-iap";
 
   // Read the parent's own email from the authenticated session. This is the

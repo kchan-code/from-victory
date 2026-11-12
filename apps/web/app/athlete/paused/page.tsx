@@ -5,6 +5,7 @@ import { SignOutButton } from "@/components/auth/SignOutButton";
 import { ClearOfflinePregameOnMount } from "@/components/pregame/ClearOfflinePregameOnMount";
 import { requireAthlete } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 
 export const metadata = {
   title: "Training Paused",
@@ -86,7 +87,7 @@ export default async function AthletePausedPage({
   // ios-iap shell instead gets the same reactivate link as web — it already
   // carries no price, so it doubles as the in-app entry to /subscribe, where
   // AppleSubscribeSection renders the real StoreKit purchase surface.
-  const legacyNative = getRequestShellCapability() === "legacy-native";
+  const legacyNative = isRestrictedShell(getRequestShellCapability());
 
   return (
     <main id="main-content" className="min-h-screen bg-onyx flex flex-col px-5 pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
