@@ -44,7 +44,11 @@ export const FAQ_ITEMS: FaqEntry[] = [
   },
   {
     q: "Where do I subscribe, and does it work in the apps?",
-    a: "Subscribe on our website, fromvictoryapp.com, or in the iPhone app through the App Store. Either way, the subscription belongs to your From Victory account, so it works on the website and in both the iPhone and Android apps when you sign in with that same account. The Android app doesn’t sell subscriptions: subscribe on the website, then sign in to the Android app. Subscribed on the website? You don’t need Restore Purchases, and you don’t need to subscribe again. Restore Purchases only finds a subscription bought through the App Store on iPhone. A subscription bought in the iPhone app is managed through Apple on your iPhone.",
+    a: "Subscribe on our website, fromvictoryapp.com, or in the iPhone app through the App Store. Either way, the subscription belongs to your From Victory account. The Android app doesn’t sell subscriptions: subscribe on the website, then sign in to the Android app. A subscription bought in the iPhone app is managed through Apple on your iPhone.",
+  },
+  {
+    q: "I already subscribe. How do I use the app?",
+    a: "Sign in with the same From Victory account you used to subscribe. Your subscription works across the website, iPhone, and Android, so you don’t need to pay again. An athlete on your subscription signs in with their own username instead: see “How do we sign in to the app?”",
   },
   {
     q: "How do we sign in to the app?",
@@ -53,6 +57,10 @@ export const FAQ_ITEMS: FaqEntry[] = [
   {
     q: "I already subscribe. Why is the app asking me to subscribe?",
     a: "Don’t subscribe again. You may be signed in to a different account. If the screen says “We couldn’t check your access”, we couldn’t confirm your subscription status. Wait a minute and tap “Try again”. Otherwise, tap “Sign out” and sign in with the account you subscribed with. On the website and in the iPhone app, that can look like a dashboard banner that says “Start training today.” with “Choose a plan”, or a subscription page that says “Subscribed with a different account? Sign out, then sign in with that one.” In the Android app, the parent dashboard shows “Subscribe to From Victory from a web browser at fromvictoryapp.com.” and no subscribe button, because the Android app doesn’t sell subscriptions. There, “Sign out” is at the top of the screen. Still stuck? Sign in at fromvictoryapp.com in a browser, check your subscription in Settings, then reach us through the Contact page.",
+  },
+  {
+    q: "I subscribed in the iPhone app. When do I use Restore Purchases?",
+    a: "Only for a subscription bought in the From Victory iPhone app through the App Store. Restore Purchases is only in the iPhone app, and it can’t find a subscription bought on the website. It’s for the account that pays: a parent, or an athlete 18 or older who pays for their own account. An athlete on a parent’s subscription never needs it. First, sign in with the From Victory account you subscribed with, because Restore Purchases can’t move a subscription to a different account. If the app still asks you to subscribe, tap “Restore Purchases” on the subscription screen. Parents reach that screen from “Choose a plan” on the dashboard. If you don’t see “Restore Purchases”, update the app from the App Store. The App Store may ask for your Apple ID. If you see “No previous purchase was found for this Apple ID.”, check that this iPhone uses the Apple ID you subscribed with and that the subscription is still active. If you see “We couldn’t check for a previous purchase. Please try again.”, make sure you’re signed in to the right account, then wait a minute and try again. If it keeps happening, reach us through the Contact page. Don’t tap “Subscribe” to fix this: that starts a new purchase.",
   },
   {
     q: "What does “Training paused” mean on my athlete’s screen?",

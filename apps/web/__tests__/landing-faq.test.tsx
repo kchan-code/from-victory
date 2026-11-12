@@ -52,8 +52,9 @@ describe("Faq — all questions render", () => {
     // whenever an FAQ entry is added or removed, so the count change is a
     // visible, reviewed diff rather than silent drift. 8 -> 9 for the
     // "Where do I find From Victory online?" entry; 9 -> 13 for FV-681's four
-    // subscriber sign-in / recovery entries.
-    expect(summaries).toHaveLength(13);
+    // subscriber sign-in / recovery entries; 13 -> 15 for FV-685's
+    // existing-subscriber intro and Apple-only Restore Purchases entries.
+    expect(summaries).toHaveLength(15);
   });
 
   it("renders every question text in the DOM", () => {
@@ -161,11 +162,47 @@ describe("Faq — subscriber sign-in and recovery entries (FV-681)", () => {
     return entry!.a;
   };
 
-  it("subscribe answer: website or iPhone App Store, no Android purchase, Restore Purchases is App Store only", () => {
+  it("subscribe answer: website or iPhone App Store, no Android purchase", () => {
     const a = find("Where do I subscribe, and does it work in the apps?");
     expect(a).toContain("The Android app doesn’t sell subscriptions");
-    expect(a).toContain("Restore Purchases only finds a subscription bought through the App Store on iPhone.");
+    // FV-685: Restore Purchases lives in its own Apple-only entry, not here.
+    expect(a).not.toMatch(/Restore Purchases/);
     expect(a).not.toMatch(/\$\d/);
+  });
+
+  // FV-685 ─────────────────────────────────────────────────────────────────
+  it("existing-subscriber intro: same account everywhere, no second payment, points linked athletes to sign-in", () => {
+    const a = find("I already subscribe. How do I use the app?");
+    expect(a).toMatch(/^Sign in with the same From Victory account you used to subscribe\./);
+    expect(a).toContain("works across the website, iPhone, and Android, so you don’t need to pay again.");
+    expect(a).toContain("“How do we sign in to the app?”");
+    expect(a).not.toMatch(/Restore Purchases/);
+  });
+
+  it("Restore Purchases entry is Apple-only, payer-only, and never tells web or Android subscribers to restore", () => {
+    const a = find("I subscribed in the iPhone app. When do I use Restore Purchases?");
+    expect(a).toMatch(/^Only for a subscription bought in the From Victory iPhone app through the App Store\./);
+    expect(a).toContain("it can’t find a subscription bought on the website");
+    expect(a).toContain("An athlete on a parent’s subscription never needs it.");
+    expect(a).toContain("can’t move a subscription to a different account");
+    // On-screen labels quoted from AppleSubscribeSection / dashboard.
+    for (const label of [
+      "“Restore Purchases”",
+      "“Choose a plan”",
+      "“No previous purchase was found for this Apple ID.”",
+      "“We couldn’t check for a previous purchase. Please try again.”",
+      "“Subscribe”",
+    ]) {
+      expect(a).toContain(label);
+    }
+    // No blanket "No" and no instruction for Android/web subscribers to restore.
+    expect(a).not.toMatch(/^No\b/);
+    expect(a).not.toMatch(/Android/);
+  });
+
+  it("only the Apple-only entry mentions Restore Purchases", () => {
+    const mentioning = FAQ_ITEMS.filter((item) => /Restore Purchases/.test(item.a)).map((item) => item.q);
+    expect(mentioning).toEqual(["I subscribed in the iPhone app. When do I use Restore Purchases?"]);
   });
 
   it("sign-in answer covers parent, 18+ self-payer and athlete on a parent's subscription", () => {
@@ -225,6 +262,8 @@ describe("Faq — subscriber sign-in and recovery entries (FV-681)", () => {
       "How do we sign in to the app?",
       "I already subscribe. Why is the app asking me to subscribe?",
       "What does “Training paused” mean on my athlete’s screen?",
+      "I already subscribe. How do I use the app?",
+      "I subscribed in the iPhone app. When do I use Restore Purchases?",
     ];
     for (const q of qs) {
       const a = find(q);
@@ -269,8 +308,9 @@ describe("Faq — FAQ_JSON_LD structured data", () => {
     expect(FAQ_JSON_LD.mainEntity).toHaveLength(FAQ_ITEMS.length);
     // Trip-wire pin (repo convention, see FV-539): bump this deliberately
     // whenever an FAQ entry is added or removed. 8 -> 9 for the
-    // "Where do I find From Victory online?" entry; 9 -> 13 for FV-681.
-    expect(FAQ_JSON_LD.mainEntity).toHaveLength(13);
+    // "Where do I find From Victory online?" entry; 9 -> 13 for FV-681;
+    // 13 -> 15 for FV-685.
+    expect(FAQ_JSON_LD.mainEntity).toHaveLength(15);
   });
 
   it("FAQ_JSON_LD is valid JSON (stringify/parse round-trip)", () => {
