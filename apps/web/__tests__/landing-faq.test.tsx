@@ -50,9 +50,10 @@ describe("Faq — all questions render", () => {
     expect(summaries).toHaveLength(FAQ_ITEMS.length);
     // Trip-wire pin (repo convention, see FV-539): bump this deliberately
     // whenever an FAQ entry is added or removed, so the count change is a
-    // visible, reviewed diff rather than silent drift. 8 -> 9 for this PR's
-    // "Where do I find From Victory online?" entry.
-    expect(summaries).toHaveLength(9);
+    // visible, reviewed diff rather than silent drift. 8 -> 9 for the
+    // "Where do I find From Victory online?" entry; 9 -> 13 for FV-681's four
+    // subscriber sign-in / recovery entries.
+    expect(summaries).toHaveLength(13);
   });
 
   it("renders every question text in the DOM", () => {
@@ -103,17 +104,19 @@ describe("Faq — verbatim answer spot-pins", () => {
     expect(els.length).toBeGreaterThan(0);
   });
 
-  it("get-the-app answer names the App Store listing and not Google Play", () => {
+  it("get-the-app answer names the App Store listing and Google Play (FV-681)", () => {
     const entry = FAQ_ITEMS.find(
       (item) => item.q === "How does my athlete get the app?",
     );
     expect(entry).toBeDefined();
     expect(entry!.a).toContain(APP_STORE_URL);
-    expect(entry!.a).toMatch(/available on the US App Store \(iPhone\)/);
-    expect(entry!.a).toMatch(/not on Google Play/);
+    expect(entry!.a).toMatch(/from the US App Store/);
+    expect(entry!.a).toContain("On Android, search for From Victory on Google Play.");
+    expect(entry!.a).not.toMatch(/not on Google Play/);
+    // No unverified country claim for Google Play.
+    expect(entry!.a).not.toMatch(/Google Play \(|US Google Play|Google Play in/);
     expect(entry!.a).not.toMatch(/nothing to download/i);
     expect(entry!.a).not.toMatch(/Home Screen|browser on iPhone/i);
-    expect(entry!.a).toContain("On Android, open it in the browser and tap Install when prompted.");
     expect(entry!.a).not.toMatch(/—/);
     render(<Faq />);
     const link = screen.getByRole("link", { name: APP_STORE_URL });
@@ -143,6 +146,73 @@ describe("Faq — verbatim answer spot-pins", () => {
       /A household with more athletes pays less per athlete: that['’]s by design, because the same training serves your whole family\./,
     );
     expect(els.length).toBeGreaterThan(0);
+  });
+});
+
+// ── 2a. Subscriber sign-in + recovery entries (FV-681) ─────────────────────
+//
+// These answers quote on-screen labels. If a label changes in the app, the
+// FAQ must change with it, so the quoted strings are pinned here.
+
+describe("Faq — subscriber sign-in and recovery entries (FV-681)", () => {
+  const find = (q: string) => {
+    const entry = FAQ_ITEMS.find((item) => item.q === q);
+    expect(entry).toBeDefined();
+    return entry!.a;
+  };
+
+  it("subscribe answer: website or iPhone App Store, no Android purchase, Restore Purchases is App Store only", () => {
+    const a = find("Where do I subscribe, and does it work in the apps?");
+    expect(a).toContain("The Android app doesn’t sell subscriptions");
+    expect(a).toContain("Restore Purchases only finds a subscription bought through the App Store on iPhone.");
+    expect(a).not.toMatch(/\$\d/);
+  });
+
+  it("sign-in answer covers parent, 18+ self-payer and athlete on a parent's subscription", () => {
+    const a = find("How do we sign in to the app?");
+    for (const label of [
+      "“Welcome back”",
+      "“Parent”",
+      "“Athlete”",
+      "“Not [name]? Sign in as someone else”",
+      "“Forgot password?”",
+      "“Reset it here”",
+    ]) {
+      expect(a).toContain(label);
+    }
+    expect(a).toContain("18 or older who pays for their own account");
+    expect(a).toContain("including every athlete under 18");
+  });
+
+  it("already-subscribed answer: wrong account, access-check retry and the Android-specific recovery", () => {
+    const a = find("I already subscribe. Why is the app asking me to subscribe?");
+    expect(a).toMatch(/^Don’t subscribe again\./);
+    expect(a).toContain("“Try again”");
+    expect(a).toContain("“Subscribed with a different account? Sign out, then sign in with that one.”");
+    expect(a).toContain("“Subscribe to From Victory from a web browser at fromvictoryapp.com.”");
+    expect(a).toContain("tap “Sign out” at the top");
+  });
+
+  it("training-paused answer covers inactive plan, fewer spots and access check", () => {
+    const a = find("What does “Training paused” mean on my athlete’s screen?");
+    expect(a).toContain("nothing has been removed");
+    expect(a).toContain("fewer spots");
+    expect(a).toContain("“Access check”");
+  });
+
+  it("new entries carry no internal QA, environment or em-dash leakage", () => {
+    const qs = [
+      "How does my athlete get the app?",
+      "Where do I subscribe, and does it work in the apps?",
+      "How do we sign in to the app?",
+      "I already subscribe. Why is the app asking me to subscribe?",
+      "What does “Training paused” mean on my athlete’s screen?",
+    ];
+    for (const q of qs) {
+      const a = find(q);
+      expect(a).not.toMatch(/—/);
+      expect(a).not.toMatch(/staging|sandbox|emulator|TestFlight|FV-\d|build \d|\bQA\b|\bkid/i);
+    }
   });
 });
 
@@ -180,9 +250,9 @@ describe("Faq — FAQ_JSON_LD structured data", () => {
   it("FAQ_JSON_LD.mainEntity has the same length as FAQ_ITEMS", () => {
     expect(FAQ_JSON_LD.mainEntity).toHaveLength(FAQ_ITEMS.length);
     // Trip-wire pin (repo convention, see FV-539): bump this deliberately
-    // whenever an FAQ entry is added or removed. 8 -> 9 for this PR's
-    // "Where do I find From Victory online?" entry.
-    expect(FAQ_JSON_LD.mainEntity).toHaveLength(9);
+    // whenever an FAQ entry is added or removed. 8 -> 9 for the
+    // "Where do I find From Victory online?" entry; 9 -> 13 for FV-681.
+    expect(FAQ_JSON_LD.mainEntity).toHaveLength(13);
   });
 
   it("FAQ_JSON_LD is valid JSON (stringify/parse round-trip)", () => {
