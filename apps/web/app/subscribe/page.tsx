@@ -5,6 +5,7 @@ import Link from "next/link";
 import { requireSubscriber } from "@/lib/auth/guards";
 import { createCheckoutSession, createAdultCheckoutSession } from "@/lib/actions/subscription";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { getActiveAppleProductId } from "@/lib/subscriptions/apple";
 import { capacityForAppleProduct } from "@/lib/subscriptions/apple-capacity";
 import { getConfiguredAppleProducts } from "@/lib/subscriptions/apple-products";
@@ -302,7 +303,7 @@ export default async function SubscribePage({ searchParams }: Props) {
                - "ios-iap": an iOS build capable of the native StoreKit
                  purchase surface — render AppleSubscribeSection.
                - null: ordinary web/PWA flow — completely unchanged. */
-          shellCapability === "legacy-native" ? (
+          isRestrictedShell(shellCapability) ? (
             <div
               role="status"
               data-testid="native-shell-subscribe-notice"
@@ -332,7 +333,7 @@ export default async function SubscribePage({ searchParams }: Props) {
             </>
           )
         ) : /* entitlementState.status === "entitled" */
-        shellCapability === "legacy-native" ? (
+        isRestrictedShell(shellCapability) ? (
           /* FV-657: an entitled payer inside the Android app is never told to
              subscribe. Provider-specific status, still with no link and no
              price (record §4.4 + Google Play "no in-app purchase" scope). */

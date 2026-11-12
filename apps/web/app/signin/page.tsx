@@ -7,6 +7,7 @@ import { SignInSections } from "@/components/auth/SignInSections";
 import { getDeviceAthleteId } from "@/lib/auth/device";
 import { redirectIfAuthed } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { showSSO } from "@/lib/auth/sso-visibility";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -129,11 +130,11 @@ export default async function SignInPage({ searchParams }: Props) {
       ) : null}
       {/* FV-674: one door (Apple, Google, email) plus the under-18 username
           section, replacing FV-320's tabs. SSO renders only when showSSO()
-          says so; the username section never does. FV-621: in the legacy-native
-          shell the email form swaps the /signup link for website guidance. */}
+          says so; the username section never does. FV-621/FV-659: in a restricted
+          shell (legacy-native or android-play) the email form swaps the /signup link for website guidance. */}
       <SignInSections
         sso={showSSO()}
-        legacyNative={getRequestShellCapability() === "legacy-native"}
+        legacyNative={isRestrictedShell(getRequestShellCapability())}
       />
     </AuthShell>
   );

@@ -221,3 +221,31 @@ describe("middleware — native-shell entry router scope", () => {
     expect(setCookie).toContain("sb-refreshed=yes");
   });
 });
+
+// FV-659: an `android-play` UA must route exactly like the bare legacy token.
+const ANDROID_PLAY_UA =
+  "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 FVNativeShell/1 (play)";
+
+describe.each(["/", "/pricing", "/parents"])(
+  "middleware — android-play UA routes identically to legacy-native on %s",
+  (path) => {
+    it.each([
+      [null, null, "https://www.fromvictoryapp.com/signin"],
+      [{ id: "p" }, { role: "parent" }, "https://www.fromvictoryapp.com/dashboard"],
+      [{ id: "a" }, { role: "athlete" }, "https://www.fromvictoryapp.com/athlete"],
+      [{ id: "d" }, { role: "adult_athlete" }, "https://www.fromvictoryapp.com/athlete"],
+    ] as const)("auth %j / profile %j -> %s", async (user, profile, location) => {
+      userResult = user;
+      profileResult = profile;
+
+      const legacy = await middleware(makeRequest(path, NATIVE_SHELL_UA));
+      const play = await middleware(makeRequest(path, ANDROID_PLAY_UA));
+
+      expect(play.status).toBe(legacy.status);
+      expect(play.headers.get("location")).toBe(location);
+      expect(play.headers.get("location")).toBe(legacy.headers.get("location"));
+      expect(play.headers.get("cache-control")).toBe("no-store");
+      expect(play.headers.get("vary")).toContain("User-Agent");
+    });
+  },
+);

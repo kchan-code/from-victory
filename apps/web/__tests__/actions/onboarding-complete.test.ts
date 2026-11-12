@@ -132,6 +132,9 @@ describe("completeOnboarding", () => {
     });
     h.capability.mockReturnValue("legacy-native");
     expect(await redirectedTo(completeOnboarding(null, fd(ADULT)))).toBe("/athlete");
+    // FV-659: android-play is restricted like legacy-native until FV-665 diverges it.
+    h.capability.mockReturnValue("android-play");
+    expect(await redirectedTo(completeOnboarding(null, fd(ADULT)))).toBe("/athlete");
   });
 
   it("already_complete routes by the REAL role (two-tab case), inserts nothing", async () => {

@@ -22,7 +22,7 @@ const {
   capacityForAppleProductMock,
   shellCapabilityMock,
 } = vi.hoisted(() => ({
-  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
+  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | "android-play" | null),
   requireParentMock: vi.fn(),
   trialStateMock: vi.fn(),
   trialQuoteMock: vi.fn(),
@@ -241,5 +241,24 @@ describe("NewAthletePage — Apple capacity wiring (FV-586)", () => {
     expect(
       screen.getByTestId("athlete-form-stub"),
     ).toHaveAttribute("data-apple-capacity", "null");
+  });
+});
+
+describe("NewAthletePage — android-play behaves like legacy-native (FV-659)", () => {
+  it("android-play: plain website notice, no form, no Stripe/Apple reads", async () => {
+    requireParentMock.mockResolvedValue({ userId: "parent-1" });
+    shellCapabilityMock.mockReturnValue("android-play");
+
+    render(await NewAthletePage());
+
+    const notice = screen.getByTestId("add-athlete-native-shell-notice");
+    expect(notice).toHaveTextContent(
+      "Add athletes from a web browser at fromvictoryapp.com.",
+    );
+    expect(notice.querySelector("a")).toBeNull();
+    expect(screen.queryByTestId("athlete-form-stub")).toBeNull();
+    expect(trialStateMock).not.toHaveBeenCalled();
+    expect(trialQuoteMock).not.toHaveBeenCalled();
+    expect(activeAppleProductIdMock).not.toHaveBeenCalled();
   });
 });

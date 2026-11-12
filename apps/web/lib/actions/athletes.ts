@@ -31,6 +31,7 @@ import { getStripe } from "@/lib/stripe/server";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { createServiceClient } from "@/lib/supabase/service";
 import { assertAthleteCapacity } from "@/lib/subscriptions/apple-capacity";
 import { getTrialConversionState } from "@/lib/subscriptions/trial-conversion";
@@ -99,7 +100,7 @@ export async function createAthlete(
   // Stripe call — families add athletes on the website. The UA is a hint, not
   // authorization; this branch only ever removes an action. ios-iap and
   // web/PWA are unchanged.
-  if (getRequestShellCapability() === "legacy-native") {
+  if (isRestrictedShell(getRequestShellCapability())) {
     return {
       ok: false,
       error: "Add athletes from a web browser at fromvictoryapp.com.",
