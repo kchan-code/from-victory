@@ -21,10 +21,11 @@
 -- are out of scope: deleting the auth user cascades them by design.
 --
 -- ALLOWLIST POLICY: add a table here ONLY if a row in it can never be the first
--- sign that an account is established AND cannot exist without a profile row
--- (profiles are created before any of this data). Everything that records
--- payment, entitlement, comp access, or an athlete relationship belongs in the
--- predicate instead.
+-- sign that an account is established AND either cannot exist without a
+-- profile row (profiles are created before any of this data) or is a sign-in
+-- credential that every destructive path revokes before the cascade (FV-673
+-- Apple tokens). Everything that records payment, entitlement, comp access, or
+-- an athlete relationship belongs in the predicate instead.
 -- =============================================================================
 
 create function pg_temp.fk_uncovered()
@@ -50,7 +51,11 @@ declare
     'public.push_subscriptions',
       'athlete web-push endpoints; requires a profile, never a payer/entitlement marker',
     'public.device_pairings',
-      'athlete device pairing; requires a profile on both ends, never a payer/entitlement marker'
+      'athlete device pairing; requires a profile on both ends, never a payer/entitlement marker',
+    'private.apple_signin_tokens',
+      'FV-673 Sign in with Apple refresh token (a sign-in credential, never payment/entitlement). '
+      'A pending Apple account holds one BEFORE its profile exists, by design; every destructive '
+      'path revokes it with Apple first, then the auth.users delete cascades it'
   );
   -- schemas owned by the Supabase platform
   platform_schemas text[] := array[
