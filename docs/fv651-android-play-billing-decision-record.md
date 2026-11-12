@@ -1,14 +1,30 @@
 # FV-651: Android Google Play Billing (v1.1) decision record
 
-**Status:** DRAFT v3 for KC (product-strategist and kids-privacy-officer
-reviews applied, Section 14; **G0 and G2 decided by KC on 2026-11-11**,
-Sections 5 and 13).
-Discovery only. Nothing in this record authorizes
-a build, a native sync, a Play Console change, a Google Cloud change, an
-agreement, a production mutation, or a release.
+**Status:** v4 (2026-11-11). **G0, G2 and G10 are decided by KC.** KC
+approved the full implementation on 2026-11-11 (Section 13). The child issues
+are filed (Section 10.1) and delivery has started.
 
-**Mode:** discovery (CLAUDE.md "Two modes"). The deliverable is this record
-plus scoped child issues under FV-620. No code ships from FV-651.
+**What KC's approval covers:** the full Google Play Billing implementation,
+in reviewed stages: this record, the child issues, implementation with
+automated and reviewer QA, internal-track testing, and a verified release
+package.
+
+**What it does not cover.** Each of these still needs KC, at the time:
+- public billing activation or a production release;
+- any live price change;
+- accepting an agreement;
+- a new credential or a wider permission;
+- a real charge;
+- creating a permanent Play Console product before its concrete ID has been
+  reviewed and approved.
+
+The final public release goes back to KC with evidence.
+
+**What must be preserved throughout:** current production access, website
+Stripe billing, and iOS behavior. Every change merges dormant (Section 6.1).
+
+**Mode:** this record was the discovery deliverable. Delivery is issue-scoped
+under FV-620 (CLAUDE.md "Two modes"). No code ships from FV-651 itself.
 
 **Decision this record serves:** KC recorded GO on FV-620 on 2026-11-11:
 publish the approved consumption-only Android build now, then add Google Play
@@ -24,8 +40,10 @@ describes the 1.0.x release and stays true for it.
 **Separate from the approved release:** FV-619 / build 10 (1.0.1) is not
 blocked by, and not modified by, anything here.
 
-Inspected: `origin/main` @ 6790398 (2026-11-11). Store facts were read from
-Google's own pages on 2026-11-11; each is marked confirmed or not.
+Inspected: `origin/main` @ 6790398 (v1 to v3) and @ a0e882f (v4), 2026-11-11.
+Store facts were read from Google's own pages on 2026-11-11; each is marked
+confirmed or not. A second, wider read of Google's pages was done for v4
+(Section 5.2, 8.1 and the notes marked "v4").
 
 ---
 
@@ -156,6 +174,13 @@ is already covered elsewhere should be checked at the same time (Section 11).
 - **Library version: start on v9.** Google's deprecation table (confirmed):
   v7 can no longer ship in updates; v8 must be replaced by 2027-08-31; v9 by
   2028-08-31. Starting on v9 gives the longest runway before a forced upgrade.
+  - v4: the latest release is 9.1.0 (2026-06-18),
+    `com.android.billingclient:billing:9.1.0`, minimum Android API 23
+    (the app's minimum is 24). Confirmed.
+  - The library declares the billing permission itself; the app does not add
+    it by hand (confirmed in Google's release notes). So the permission
+    appears in a build exactly when the library is included, which is what
+    the build switch controls (Section 6.1).
 - Prices shown in the app come only from Play's product details. No hardcoded
   USD figure, same rule as iOS.
 
@@ -193,7 +218,8 @@ digits and hyphens.
 - A typed catalog file like `apple-product-catalog.ts`, dormant behind its
   own activation flag, is the single place the IDs and ceilings live.
 - IDs are permanent. KC confirms the scheme before anything is created in
-  Play Console (decision G1).
+  Play Console (decision G1). Section 5.2 gives the concrete IDs and why this
+  scheme was kept after the v4 read of Google's pages.
 
 **Prices.** KC's standing decision: store prices equal web prices.
 
@@ -239,7 +265,8 @@ were wrong. They came from the *proposed* mapping in the FV-210 record
   confirm in Console when products are created), so the table can be matched
   exactly.
 - This decides the price figures only. It does not authorize creating any
-  Play product (G1 and G10 are still open) or changing any live price.
+  Play product (KC's approval of the concrete IDs, G1, is still needed) or
+  changing any live price.
 
 ### 5.1 Not chosen: moving every price to $4.99 / $49.99
 
@@ -285,11 +312,74 @@ $107.99 / $136.99 / $165.99 yearly.
 - Gates: Tier 2 throughout (payments, public pricing). product-strategist,
   kids-privacy-officer, KC.
 
+### 5.2 Concrete product IDs for KC's approval (G1) (added in v4)
+
+Nothing below exists in Play Console. Creating it is KC's action, after
+approving these exact strings.
+
+| Athletes | Subscription product ID | Name shown by Google Play | Base plan IDs | Offer ID |
+|---|---|---|---|---|
+| 1 | `family.1` | 1 athlete | `monthly`, `yearly` | `trial-7d` on each base plan |
+| 2 | `family.2` | Up to 2 athletes | `monthly`, `yearly` | none |
+| 3 | `family.3` | Up to 3 athletes | `monthly`, `yearly` | none |
+| 4 | `family.4` | Up to 4 athletes | `monthly`, `yearly` | none |
+| 5 | `family.5` | Up to 5 athletes | `monthly`, `yearly` | none |
+
+The names match the Apple products' names. Whether to prefix them with
+"From Victory" is a listing-copy choice for KC; names can be edited later,
+IDs cannot.
+
+**Why five products and not one product with ten base plans.** Both were
+checked against Google's pages for v4.
+
+| | Five products (chosen) | One product, ten base plans |
+|---|---|---|
+| Upgrade that charges the difference now (`CHARGE_PRORATED_PRICE`) | Allowed | **Not allowed.** Within one product Google accepts only "charge full price now" or "no proration"; any other mode fails the purchase. Confirmed. |
+| Downgrade at renewal (`DEFERRED`) | Allowed | **Not allowed** (same rule). Confirmed. |
+| Name and benefits a parent sees in Google Play | One per tier | One for all ten plans; the tier would not be visible in Google Play's own screens. A base plan has no name field. Confirmed. |
+| Two subscriptions at once | Possible in principle; the app prevents it by always passing the old purchase and by the server's already-entitled guard | Google replaces automatically. Confirmed. |
+| Trial for someone who had a different tier before | Needs the offer set to "never had any subscription" | Covered by "never had this subscription" |
+
+The one-product shape cannot do the two tier-change behaviors this record
+already commits to (explicit upgrade that charges now; downgrade at renewal
+with seat selection). So the five-product scheme stands.
+
+**Rules confirmed for these IDs:** product ID uses lowercase letters, digits,
+`_` and `.`, starts with a letter or digit, at most 40 characters, and can
+never be changed or reused. Base plan ID uses lowercase letters, digits and
+hyphens, at most 63 characters. A subscription holds up to 250 base plans and
+offers, 50 active. Not confirmed: a maximum length for offer IDs (`trial-7d`
+is 8 characters).
+
+**Console settings that go with them (KC's actions, C8):**
+- Trial offer eligibility: new customers, "never had any subscription".
+- Prices typed exactly as in the G2 table. Google accepts any price from
+  $0.05 to $999.99 in the US (confirmed), so $106.99 can be matched exactly.
+- Resubscribe from Google Play: off on every base plan (Section 7.2).
+- Pause: off. Promo codes: none created.
+- Grace period and account hold: decision G4.
+
 **Trial.** 7 days, one-athlete tier only, same as web and iOS. Seven days is
-KC's decision (FV-574; FV-210 record 4.5) and is what the code does
-(`lib/actions/subscription.ts`). CLAUDE.md's MVP-scope line still says 14
-days; that is stale copy tracked on FV-609 and should be reconciled before
-any Play product is created, so nobody configures 14 by mistake.
+KC's decision (FV-574; FV-210 record 4.5), reconfirmed on 2026-11-11, and is
+what the code does (`lib/actions/subscription.ts`). CLAUDE.md's MVP-scope
+line still says 14 days; that is stale copy tracked on FV-609 and must be
+reconciled before any Play product is created, so nobody configures 14 by
+mistake.
+
+*What Apple is actually configured to do, read from App Store Connect on
+2026-11-11 (read-only API call, not taken from an earlier document):*
+- `family.1.monthly` and `family.1.yearly` each carry one introductory offer:
+  free trial, one week, one period.
+- The other eight products carry no introductory offer.
+- All ten products are in the Approved state.
+- Not re-read in this check: the offer's territory. The 2026-09-22 setup
+  record shows USA only.
+- Also read: the billing grace period is opted in for production, 16 days,
+  paid-to-paid renewals only.
+
+So "7 days, one athlete only" is what Apple charges today, and the Play
+trial offer below is specified to match it. Parity is a design target until
+C10 proves it on test purchases.
 - In Play the trial is an offer with "new customer" eligibility. Recommended
   setting: eligible only if the Google account has never had any subscription
   in this app (confirmed that this option exists).
@@ -321,6 +411,12 @@ any Play product is created, so nobody configures 14 by mistake.
 - **To prove on license testers before any of this is promised:** what
   purchase tokens and notifications a `DEFERRED` change produces and when,
   and how an upgrade during a trial is charged and reported.
+- v4, confirmed from Google's pages: a plan change is a new purchase that
+  names the old purchase token and the old product; the new purchase gets a
+  new token whose `linkedPurchaseToken` is the old one; a `DEFERRED` change
+  issues the new token at once with both plans listed; an upgrade with
+  `CHARGE_PRORATED_PRICE` ends a free trial (Google says the trial's
+  remaining value is carried over, which C10 must observe).
 
 ## 6. Decision 3: which Android builds can sell (capability signal)
 
@@ -331,6 +427,9 @@ any Play product is created, so nobody configures 14 by mistake.
   `android: { appendUserAgent: "FVNativeShell/1 (play)" }` in
   `capacitor.config.ts`. `getShellCapability()` gains a third value,
   `android-play`, checked before the bare token.
+- **The marker and the billing plugin ship together, behind one build
+  switch** (Section 6.1). A build can never carry the marker without the
+  plugin.
 - The marker changes presentation only. It is never authorization. A forged
   marker gets a different page and nothing else; purchases are accepted only
   on server-side verification tied to the signed-in account.
@@ -357,6 +456,59 @@ any Play product is created, so nobody configures 14 by mistake.
 - Families on 1.0.x keep the consumption-only app until they update. There is
   no forced-update mechanism today, and this record does not add one
   (decision G9).
+
+### 6.1 How everything stays dormant until KC activates (added in v4)
+
+Three independent locks. All three must be open before any family can see a
+Play purchase.
+
+| Lock | Where | Closed means |
+|---|---|---|
+| Build switch | Android build (C6, FV-664) | The build has no billing library, no billing permission, no plugin, and sends the bare `FVNativeShell/1`. It is a 1.0.x-style consumption-only build. This is the default for any build cut from `main`. |
+| Server flag `GOOGLE_PLAY_CATALOG_ACTIVE` | Web server (C3, FV-661) | An `android-play` build renders exactly like `legacy-native`: no price, no purchase, no sign-up, no add-athlete. New server paths write nothing. |
+| Play Console | Google (C8, FV-666) | No products exist, so nothing can be bought even by a tester. |
+
+- **Why the build switch exists.** The approved 1.0.x release line may still
+  need a fix build (for example FV-646). That build is cut from `main` after
+  billing code has merged. With the switch off it must be the same kind of
+  build Google already approved: no new permission, no marker. This keeps the
+  approved release separate from billing.
+- **Rollback without a new build.** Turning the server flag off returns every
+  `android-play` build to consumption-only behavior. C11 tests this.
+- **Website and iOS.** No Stripe or Apple code path changes while the server
+  flag is off; the existing Stripe and Apple test suites must pass unchanged
+  on every billing PR.
+
+### 6.2 Files shared with the sign-in work (FV-569) (added in v4)
+
+FV-569 (Sign in with Apple and Google) is a spec in review (PR #596); its
+delivery issues are not filed yet. Read at head `b9b686e` on 2026-11-11. Both
+streams edit the files below. Rule: **one branch at a time per file; the
+second rebases on the first; neither stream reformats or reorders the
+other's lines.**
+
+| File or surface | Billing (this record) | Sign-in (FV-569) |
+|---|---|---|
+| `apps/native/capacitor.config.ts`, `__tests__/capacitor-config.test.ts` | `(play)` marker under the build switch (C6) | `FVAuth/1` appended to the User-Agent on both platforms |
+| `MainActivity.java`, `android/app/build.gradle`, `AndroidManifest.xml` | Billing plugin and dependency (C6) | `FVAuth` plugin, `androidx.browser`, an intent filter |
+| `lib/native-shell.ts`, `__tests__/native-shell.test.ts` | `android-play` (C1) | Reads the same token |
+| `app/signin/page.tsx`, `components/auth/SignInForm.tsx`, sign-up pages, `lib/actions/auth.ts`, `auth-adult.ts` | C7 lifts the Android hide on sign-up for `android-play` | Owns these: new buttons, two-step verified sign-up |
+| `lib/actions/account.ts` (delete account) | Cancels the Play subscription (C5) | Revokes the Apple sign-in token |
+| `app/privacy/page.tsx`, Play Data safety form | Google Play as payment processor (C9) | Sign-in providers |
+| `middleware.ts` | No change (webhooks are already excluded) | Changes the Origin check exemptions |
+
+- **User-Agent format, agreed here so both streams can test against it:**
+  the capability marker comes first, feature tokens after it. Android with
+  both: `FVNativeShell/1 (play) FVAuth/1`. Classifiers match by substring,
+  never by equality or by the end of the string. C1 tests this exact string.
+- **Sign-up.** C7 does not redesign sign-up. It shows, under `android-play`,
+  whatever sign-up flow FV-569 has landed by then (or today's flow if FV-569
+  has not landed). The two streams agree the order before C7 starts.
+- **One Android build.** FV-569's open decision E1 recommends that Android
+  sign-in is released publicly with the Play Billing build. If KC approves
+  E1, C10 and C11 test and package one build carrying both.
+- Billing lands first on `native-shell.ts` (C1) and the native build files
+  (C6), because FV-569 delivery has not started.
 
 ## 7. Decision 4: server verification and provider ownership
 
@@ -396,13 +548,22 @@ any Play product is created, so nobody configures 14 by mistake.
   is refused. No automatic re-linking.
 - **Play promo codes stay off in Console for v1.1** (product-strategist
   condition). That removes one of the two out-of-app paths below.
-- **Known gap to design for:** purchases that start outside the app
-  (re-subscribing from the Play Store's own subscription screen, and promo
-  codes if they were ever enabled). These may arrive without the id. The intended rule is to follow
-  Google's `linkedPurchaseToken` back to a row we already own and otherwise
-  grant nothing and alert (the alert carries no purchase token and no payer
-  id in plain text). This must be proven on license testers. The Apple
-  offer-code problem (FV-649) is the same class of issue.
+- **Purchases that start outside the app** (the gap this record flagged in
+  v3). v4 findings from Google's pages:
+  - Re-subscribing from the Play Store's own screen after expiry produces a
+    new token with no link to the old one and without our id. Google does
+    return the expired purchase's id for that case
+    (`outOfAppPurchaseContext.expiredExternalAccountIdentifiers`, present
+    only while the new purchase is unacknowledged). Confirmed.
+  - Resubscribe can be switched off per base plan. Confirmed.
+  - Whether a promo-code redemption carries our id is not stated by Google.
+  - **Rule for v1.1:** resubscribe is off on every base plan and no promo
+    codes are created, so neither path exists. The server still handles the
+    case as a fallback: bind through the expired purchase's id when Google
+    supplies it and it matches a payer we already know; otherwise grant
+    nothing and alert (the alert carries no purchase token and no payer id in
+    plain text). C10 proves it on test purchases. The Apple offer-code
+    problem (FV-649) is the same class of issue.
 
 ### 7.3 Verification, lifecycle, time
 
@@ -432,6 +593,16 @@ any Play product is created, so nobody configures 14 by mistake.
 
 - Refunds: Google issues them. The server learns of them from the revoke and
   voided-purchase notifications (confirmed) and removes access.
+- v4, confirmed: the push request carries a Google-signed token in the
+  `Authorization` header; the webhook checks its signature, audience, sender
+  email and that the email is verified. Google's own guidance for access is:
+  keep access during the grace period, block access during account hold.
+- v4, confirmed: the server-side cancel is `purchases.subscriptionsv2.cancel`
+  (stops renewal, no refund); revoke with refund is
+  `purchases.subscriptionsv2.revoke`. The older `purchases.subscriptions.*`
+  methods are being shut down in 2027 and 2028, so only the v2 methods are
+  used. Console permissions involved: "View financial data" and "Manage
+  orders and subscriptions". Which method needs which was not confirmed.
 - Grace period and account hold are configured per base plan in Play Console.
   Account hold is on by default (confirmed). Length options need to be read
   in Console (decision G4).
@@ -514,6 +685,28 @@ the conditions written into the bullets above (Section 14).
   the Data safety form all describe Google Play purchases and in-app account
   creation. They change together, in one reviewed step.
 
+### 8.1 Policy check for a 13+ app where adults buy (C0, FV-658) (added in v4)
+
+Read from Google's own help pages on 2026-11-11. "Owner" is the child issue
+that must meet the requirement.
+
+| Requirement | Status | Owner |
+|---|---|---|
+| Target audience is declared by age group: 13-15, 16-17, 18 and over. | Confirmed | C9 |
+| The Families policy applies when "children" are a target audience. Google says the two teen groups "may be considered to include children in some locales", so it is not a fixed under-13 line. | Confirmed, with that caveat | C9, with kids-privacy-officer |
+| No restriction was found on selling subscriptions in an app whose audience includes 13 to 17. | **Not confirmed** (absence of a rule is not proof) | C9 |
+| The offer screen must state the offer terms, the price, the billing period, renewal terms, the trial length and the price after it, and how to cancel. | Confirmed | C7 |
+| The app must offer an easy online way to cancel. | Confirmed. The manage link to Google Play subscriptions is in scope. | C7 |
+| An app that lets users create an account must offer in-app account deletion and a web link for it. | Confirmed. Both exist today (FV-645, `/delete-account`). | C9 checks the declaration |
+| Data safety: payment data collected by Google Play itself need not be declared if the app never accesses it, but purchase history the app holds should be considered. | Confirmed. Our server stores subscription state, so C9 declares it. | C9 |
+| In-app digital subscriptions must use Google Play's billing system, and an app using it may not lead users to another payment method. | Confirmed. This is why the Android app never steers a family to the website to pay. | C5, C7 |
+
+Nothing found forbids or heavily restricts the purchase flow, so C7 is not
+blocked. The open point is the teen audience declaration: C9 settles the
+exact answers with kids-privacy-officer before any build with the marker is
+released. C0 is complete with this table; its issue closes with this
+revision.
+
 ## 9. Fees and why not link-out
 
 Read from Google's and Apple's own pages on 2026-11-11. Fees differ by
@@ -552,7 +745,8 @@ market, program and date; there is no single universal rate.
   checkout.** KC's stated reason: a better user experience from the start.
   The link-out route is not pursued. The reason is experience, not cost.
 - Whether the Play Billing rate needs any enrollment was not confirmed on
-  Google's service-fee page. Check it in Play Console once the merchant
+  Google's service-fee page (re-read for v4: the page mentions none for the
+  10% + 5% subscription rate). Check it in Play Console once the merchant
   account exists.
 - Play's payments policy requires Play Billing for in-app digital
   subscriptions (confirmed). US exception programs exist under a court order
@@ -575,30 +769,33 @@ Sources: [Play service fees](https://support.google.com/googleplay/android-devel
 approval on 2026-09-11 to the first real production purchase on 2026-11-03,
 across roughly 30 issues and one App Review rejection.
 
-### 10.1 Proposed child issues (filed under FV-620 after KC acknowledges)
+### 10.1 Child issues (filed under FV-620 on 2026-11-11)
 
 Estimates are working days of agent effort and are rough. Elapsed time is
 longer because every item is Tier 2 (payments, migrations, auth) and waits on
 KC, reviews, and Google.
 
-| # | Child issue | Area | Estimate | Depends on |
-|---|---|---|---|---|
-| C1 | `android-play` capability signal, config marker, guard-test rewrite. Dormant: no fielded build carries the marker yet. | web + native config | 1-2 | Record acknowledged |
-| C2 | Data model: three tables, RLS, grants, RLS harness assertions | supabase | 2-4 | Record acknowledged, G1 |
-| C3 | Server verification: Google auth, subscription read, acknowledge, typed catalog (dormant flag) | backend | 4-6 | C2, G7, Cloud project approved |
-| C4 | Notifications webhook: Pub/Sub push auth, re-read and upsert, lifecycle mapping, and an alert when the pipeline stalls or errors (release blocker) | backend | 3-5 | C3 |
-| C5 | Three-provider integration: resolver, capacity, seat state, trial rule, duplicate guard, offline window, deletion cancel | backend (hot shared files, serialize) | 4-6 | C3, G3, G5 |
-| C6 | Native plugin and JS bridge on Play Billing Library v9 | apps/native (independent area) | 4-6 | Record acknowledged |
-| C0 | Policy check: read Google's current Families and teen policies against a 13+ app where parents buy; record what they require. Docs only. | privacy + docs | 1 | Record acknowledged |
-| C7 | Android purchase UI, manage surfaces, restored sign-up and add-athlete under `android-play`, delete-flow wording | frontend (hot files, serialize) | 5-8 | C0, C1, C5, C6, KC copy |
-| C8 | Console and Cloud setup runbook, executed by KC: merchant account, products, testers, Pub/Sub, service account | KC + docs | 1 (KC) + waits | G1, G2, G4, G7 |
-| C9 | Store paperwork: Data safety, content rating, reviewer access, privacy policy and terms update | KC + privacy + attorney | 1-2 + waits | C7 design known |
-| C10 | Integrated device QA on license testers: purchase, trial, upgrade in trial, deferred downgrade and seat selection, hold, refund, restore, out-of-app re-subscribe, account switch, cross-provider | qa + native | 5-8 | C4-C8 |
-| C11 | Activation runbook, release build, product truths, doc updates (`android-play-release.md`, CLAUDE.md) | docs + release (KC) | 2-3 | C10 |
+| # | Issue | Child issue | Area | Estimate | Depends on |
+|---|---|---|---|---|---|
+| C0 | FV-658 | Policy check: Google's rules for a 13+ app where adults buy. Docs only. | privacy + docs | 1 | none |
+| C1 | FV-659 | `android-play` capability on the server. Web only; renders exactly like `legacy-native` for now. | web (shared with FV-569) | 1-2 | none |
+| C2 | FV-660 | Data model: three tables, RLS, grants, RLS harness assertions | supabase | 2-4 | none |
+| C3 | FV-661 | Server verification: Google auth, subscription read, acknowledge, typed catalog behind the server flag | backend | 4-6 | C2, G7; Cloud project for live tests only |
+| C4 | FV-662 | Notifications webhook: Pub/Sub push auth, re-read and upsert, lifecycle mapping, and an alert when the pipeline stalls or errors (release blocker) | backend | 3-5 | C3 |
+| C5 | FV-663 | Three-provider integration: resolver, capacity, seat state, trial rule, duplicate guard, offline window, deletion cancel | backend (hot shared files, serialize) | 4-6 | C3, C4, G3, G5 |
+| C6 | FV-664 | Native plugin and JS bridge on Play Billing Library, the `(play)` marker, and the build switch (Section 6.1) | apps/native (shared with FV-569) | 4-6 | none |
+| C7 | FV-665 | Android purchase UI, manage surfaces, restored sign-up and add-athlete under `android-play`, delete-flow wording | frontend (hot files, serialize) | 5-8 | C0, C1, C5, C6, KC copy |
+| C8 | FV-666 | Console and Cloud setup runbook, executed by KC: merchant account, products, testers, Pub/Sub, service account | KC + docs | 1 (KC) + waits | G1 approved, G2, G4, G7, FV-609 |
+| C9 | FV-667 | Store paperwork: Data safety, content rating, reviewer access, privacy policy and terms update | KC + privacy + attorney | 1-2 + waits | C0, C7 design known |
+| C10 | FV-668 | Integrated device QA on license testers, internal track: purchase, trial, upgrade in trial, deferred downgrade and seat selection, hold, refund, restore, out-of-app re-subscribe, account switch, cross-provider | qa + native | 5-8 | C4-C9 |
+| C11 | FV-669 | Activation runbook, verified release package, product truths, doc updates (`android-play-release.md`, CLAUDE.md) | docs + release (KC) | 2-3 | C10 |
 
 **Total: about 33 to 52 working days.** With gates, that supports the rough
 6 to 10 weeks elapsed already recorded on FV-620, and it could run longer if
 Play review or the out-of-app binding problem bites.
+
+Changes from v3: the config marker moved from C1 to C6 so it can never ship
+without the plugin; C1 is server-only; C6 gained the build switch.
 
 ### 10.2 Acceptance criteria the child issues must carry
 
@@ -632,32 +829,36 @@ named child issue when it is filed.
 - **C10:** account deletion with an active Play subscription; account switch
   on a shared device; proof that a binding cannot leak across payers.
 
-### 10.3 Order and timing
+### 10.3 Stages, milestones and dependencies (G10 decided)
 
-product-strategist's recommendation (2026-11-11), adopted here as the
-proposed plan. KC decides the timing (decision G10).
+KC decided G10 on 2026-11-11: run the whole arc now, in reviewed stages. The
+product-strategist had recommended holding the later stages until Android
+families were arriving; KC chose to build for a better experience from the
+start. The strategist's other conditions still apply (Section 14).
 
-**Stage 1, can start once the record is acknowledged. Everything dormant,
-none of it touches files other work is using:**
-1. KC answers G1 and G3 to G10 (G0 and G2 are decided). FV-609 (trial copy)
-   reconciled.
-2. C0 (policy check), C1 (capability signal), C2 (data model), C6 (native
-   plugin), in parallel.
-3. KC starts the Google Payments merchant account (C8), which has its own
-   waiting time.
+| Milestone | Issues | What "done" means | Waits on |
+|---|---|---|---|
+| M0 Record and issues | FV-651 | This record at v4, reviewed; twelve child issues filed | Done 2026-11-11, pending KC's merge of the v4 text |
+| M1 Foundations (dormant) | C0, C1, C2, C6 | Policy check recorded; classifier, tables and plugin merged; nothing visible to any user | KC merges (Tier 2). No Google account needed. |
+| M2 Server | C3, then C4 | Purchases can be verified and kept current from Google, behind the server flag | M1 (C2). G7. Live testing needs the Cloud project (C8). |
+| M3 Integration and UI | C5, then C7 | Three-provider rules and the Android purchase screens, behind both locks | M2, C0, C1, C6. G3, G5. KC copy. Order agreed with FV-569 (Section 6.2). |
+| M4 Store setup | C8, C9 | Merchant account, Cloud project, products, testers, notifications; Data safety and policy text ready | KC's own actions and approvals; Google's waits; attorney. G1 approved. FV-609. |
+| M5 Internal-track proof | C10 | Every row of the QA matrix has dated evidence from test purchases | M3, M4. KC uploads the internal-track build. |
+| M6 Release package | C11 | Activation runbook, tested rollback, and a go / no-go package in front of KC | M5 |
+| Public release | none | KC's decision after reading the M6 package | KC |
 
-**Stage 2, held until KC releases it.** C3, C4, then C5 and C7 (shared
-billing and purchase-surface files, one at a time), C9, C10, C11.
-- Suggested trigger for Stage 2: Android 1.0.1 is published, the open iOS and
-  Android release blockers are cleared, and there is some sign of Android
-  families arriving (installs, or outreach families asking to pay in the
-  app). At 0 to 10 subscribers with outreach-led acquisition, the strategist's
-  view is that starting the full arc now is premature.
+- **Run in parallel now:** C0, C1, C2, C6 (independent areas). KC can start
+  the merchant account (C8 step 1) at any time; it has its own waiting time
+  and is the longest external dependency.
+- **One at a time:** C3, C4, C5, C7. They share the billing modules and the
+  purchase pages, and C5 and C7 also share files with FV-569.
+- **Critical path:** C2, C3, C4, C5, C7, C10, C11. M4 runs alongside it and
+  must be finished before M5 can start.
+- **Elapsed time:** 6 to 10 weeks if reviews, KC's merges and Google's steps
+  each turn around in a day or two. The merchant account and Play review are
+  outside our control.
 - **Scope check after C3:** if measured effort is running past 1.5 times the
   estimate, stop and report to KC (Section 12).
-
-Everything merges dormant: catalog flag off, no fielded build carries the
-marker, no Console products live, until KC activates.
 
 ### 10.4 Maintenance (ongoing cost of the Go)
 
@@ -683,10 +884,11 @@ before.
 
 ## 11. Risks and open questions
 
-1. **Out-of-app purchases may arrive without the account id** (7.2). If
-   Google's linked-token chain does not cover it, re-subscribing from the
-   Play Store could charge a family and grant nothing. Must be proven in C10
-   before release, and the design must fail safe (no wrong-family grant).
+1. **Out-of-app purchases may arrive without the account id** (7.2).
+   Reduced in v4: resubscribe is switched off per base plan and no promo
+   codes are created, so the path should not exist; Google also returns the
+   expired purchase's id for a resubscribe. Still to be proven in C10 before
+   release, and the design fails safe (no wrong-family grant).
 2. **Tier-change behavior is documented but unproven for our shape** (5):
    cross-interval upgrades, deferred downgrades, upgrade during trial.
 3. **Reviewer path** (8): reviewers must be able to reach the purchase flow.
@@ -695,15 +897,20 @@ before.
    work on those files must be serialized (CLAUDE.md "Stream Boundaries").
 5. **Privacy policy** names only Stripe as a processor today. Google must be
    added, and Apple's coverage checked. This blocks activation (Section 8).
-6. **Policy for younger users.** The app's audience is 13 and up and parents
-   buy for minors. What Play's Families and teen policies require of an app
-   that sells subscriptions was not confirmed from Google's pages. C9 must
-   settle this with kids-privacy-officer before release.
-7. **Not confirmed from primary sources:** default grace-period length and
-   the available options; whether an in-app cancel or manage control is
-   mandatory (the manage deep link is included regardless); maximum length of
-   base plan and offer ids; the minimum library version is inferred from the
-   deadline table.
+6. **Policy for younger users.** Read for v4 (Section 8.1). Nothing found
+   blocks the purchase flow. Open: Google treats the teen age groups as
+   possibly "children" in some places, which can bring the Families policy
+   in. C9 settles the audience declaration with kids-privacy-officer before
+   release.
+7. **Still not confirmed from Google's pages after the v4 read:** the grace
+   period choices offered in the Console and the default; whether account
+   hold can be set to zero (the help page says it can be disabled, the API
+   reference says grace plus hold must total 30 to 60 days); a maximum
+   length for offer IDs; whether buying a base plan the user already owns
+   returns "already owned"; what Google Play shows per base plan on its
+   purchase sheet; whether a promo-code purchase carries our id; which
+   Console permission each server method needs; the US price range was read
+   from a rendered table. KC reads the Console items during C8.
 8. **Old builds linger.** Families who never update stay consumption-only.
 
 ## 12. What would reopen the Go decision
@@ -715,28 +922,42 @@ bound to the right family safely; Play policy for apps with users under 18
 forbids or heavily restricts the purchase flow; or the measured effort in the
 first child issues runs far past Section 10.
 
-## 13. Decisions needed from KC
+## 13. Decisions
 
-**G0 and G2 are decided.** G0 settles the approach; G2 settles the Play
-price figures. Neither approves the timing (G10), the permanent product IDs
-(G1), any change to the trial, any merge, or any Play Console or Google Cloud
-configuration. No Play product is created and no live price is changed by
-anything in this record. G1 and G3 to G10 remain open, and the child issues
-are still not filed.
+**Decided by KC (2026-11-11):**
 
-| # | Decision | Recommendation |
+| # | Decision | Outcome |
 |---|---|---|
-| G0 | Play Billing or a US-only link-out to Stripe (Section 9) | **DECIDED by KC, 2026-11-11: Google Play Billing with Google's in-app checkout**, for a better user experience from the start |
-| G1 | Product ID scheme (permanent once created) | Five subscriptions `family.1` to `family.5`, base plans `monthly` / `yearly`, offer `trial-7d` on tier 1 |
-| G2 | Play prices | **DECIDED by KC, 2026-11-11: match Apple's actual schedule** ($5.00 / $49.00 for one athlete; full table in Section 5). No website or Stripe change. |
-| G3 | Access during Google "account hold" | Follow whatever KC decides for the still-open billing-retry policy, so all three providers behave the same |
-| G4 | Grace period length; pause feature | Closest available to Apple's 16 days; pause off |
-| G5 | On account deletion: cancel only, or revoke with refund | Cancel only, with clear wording on the delete screen |
-| G6 | Maintenance ownership (10.4) | As proposed |
-| G7 | Server credential method | Keyless federation if it works, otherwise a server-only key |
-| G8 | How Play reviewers reach the purchase flow | A second reviewer account with no comp grant, allowlisted for test purchases |
-| G9 | Prompt 1.0.x users to update? | Not in this arc |
-| G10 | Timing: start Stage 1 now and hold Stage 2 (10.3), or run the whole arc now | Stage 1 now, Stage 2 on KC's release |
+| G0 | Play Billing or a US-only link-out to Stripe (Section 9) | Google Play Billing with Google's in-app checkout, for a better user experience from the start |
+| G2 | Play prices | Match Apple's actual schedule ($5.00 / $49.00 for one athlete; full table in Section 5). No website or Stripe change. No live price is changed. |
+| G10 | Timing | Run the full implementation now, in reviewed stages (Section 10.3), within the limits at the top of this record |
+| Trial | Trial policy | Keep the agreed 7-day, one-athlete trial |
+
+**Needs KC before the step it gates:**
+
+| # | Decision | Recommendation | Gates |
+|---|---|---|---|
+| G1 | The concrete product, base plan and offer IDs in Section 5.2. Permanent once created. | Approve as written | C8 product creation. Code does not wait: the IDs live in one catalog file. |
+| G3 | Access during Google's "account hold" (payment failed and the grace period is over). | **Block access during hold**, as Google's guidance says; the grace period before it keeps full access. Note this is stricter than Apple and Stripe today, where a failed renewal keeps access (`degraded`). Whether to tighten those two is a separate question for KC; this record does not change them. | C4 and C5 mapping. One named constant, easy to flip. |
+| Copy | Purchase screen, upgrade confirmation, manage and delete-account wording for Google subscribers | Approve at C7 PR review | C7 merge |
+| Store actions | Merchant account, Cloud project, service account, products, testers, notifications, Data safety, audience declaration, policy text | KC executes from the C8 and C9 runbooks | M4 |
+| Release | Internal-track upload, then public activation and release | KC, after the C11 package | M5, public release |
+
+**Reversible implementation choices, resolved here with a recommendation.**
+Work proceeds on these unless KC says otherwise; each can be changed later
+without rework elsewhere.
+
+| # | Choice | Resolved as | Why |
+|---|---|---|---|
+| G4 | Grace period, account hold, pause | Grace: the Console choice closest to Apple's 16 days without exceeding it (expected 14 days; KC reads the list in C8). Hold: Google's default. Pause: off. Resubscribe: off. | Matches Apple as closely as Google allows. All are Console settings KC can change. |
+| G5 | On account deletion | Cancel the Play subscription (no further renewals, no refund); tell the user plainly. If Google cannot be reached, deletion still completes and the user is told to cancel in Google Play. | Same as Stripe today. Wording goes to KC at C7. |
+| G6 | Maintenance ownership (10.4) | KC owns Console, Cloud, agreements and releases; engineering agents maintain the code under KC's Tier 2 gate; a yearly June check of Google's deprecation table, created at activation. | Same split as Apple. |
+| G7 | Server credential | Keyless federation from the hosting platform if it works in testing; otherwise a service-account key held as a server-only secret. Either way KC creates it (a new credential needs his approval). | Least standing secret. Code supports both behind one interface. |
+| G8 | How Play reviewers reach the purchase flow | A second reviewer account with no comp grant, on the license-tester allowlist | The current reviewer account is comped and would never see a purchase screen. |
+| G9 | Prompt 1.0.x users to update | Not in this arc | No forced-update mechanism exists; old builds keep working as today. |
+
+Also open, in the sign-in spec rather than here: FV-569 decision E1 (release
+Android sign-in together with the Play Billing build).
 
 ## 14. Reviews (2026-11-11)
 
@@ -773,3 +994,15 @@ applied in this version.**
   third-party tracking SDK; the capability marker as presentation only.
 - Re-review of this revised version: APPROVED, all seven items resolved, no
   new concern from the product-strategist changes. Posted on the PR.
+
+**v4 (2026-11-11), after KC's G10 approval.**
+- Apple's introductory offer and grace period were read live from App Store
+  Connect (Section 5).
+- Google's pages were re-read for product IDs, plan changes, out-of-app
+  purchases, notifications, cancel methods and policy (Sections 5.2, 7.2,
+  7.3, 8.1).
+- Changed since v3: the config marker moved from C1 to C6 behind a build
+  switch (6.1); files shared with FV-569 are listed with a rule (6.2);
+  resubscribe is switched off (7.2); the recommendation for G3 is now to
+  block during account hold, following Google's guidance.
+- Reviews of v4: see the PR.
