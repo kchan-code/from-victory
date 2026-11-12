@@ -5,6 +5,7 @@ import { SignOutButton } from "@/components/auth/SignOutButton";
 import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { getPayerSeatStateForCurrentParent } from "@/lib/subscriptions/seat-state";
@@ -80,7 +81,7 @@ export default async function DashboardPage() {
   // bridge, FV-572) instead gets a price-free in-app entry to /subscribe,
   // where AppleSubscribeSection renders the real StoreKit purchase surface.
   const shellCapability = getRequestShellCapability();
-  const legacyNative = shellCapability === "legacy-native";
+  const legacyNative = isRestrictedShell(shellCapability);
   const iosIap = shellCapability === "ios-iap";
 
   // FV-85: rhythm + session-count metadata. getAthleteMetadataMap() creates its

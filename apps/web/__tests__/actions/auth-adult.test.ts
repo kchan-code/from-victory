@@ -177,6 +177,17 @@ describe("signUpAdultAthlete", () => {
         expect(mockRedirect).not.toHaveBeenCalledWith("/subscribe");
       });
 
+      it("redirects to /athlete when capability is 'android-play' (FV-659 — same as legacy-native)", async () => {
+        mockGetRequestShellCapability.mockReturnValue("android-play");
+
+        await expect(signUpAdultAthlete(null, fd(VALID))).rejects.toThrow(
+          "NEXT_REDIRECT:/athlete",
+        );
+
+        expect(mockRedirect).toHaveBeenCalledWith("/athlete");
+        expect(mockRedirect).not.toHaveBeenCalledWith("/subscribe");
+      });
+
       it("still redirects to /subscribe when capability is null (web)", async () => {
         mockGetRequestShellCapability.mockReturnValue(null);
 
