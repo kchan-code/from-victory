@@ -35,6 +35,13 @@ export const RATE_LIMIT_ACTIONS = [
   "password_update",
   "username_sign_in",
   "preview_invite",
+  // FV-671 (SSO A1): verified email signup.
+  "signup_verify",
+  "signup_resend",
+  // Reserved for FV-673 (Apple sign-in). The DB CHECK already allows them
+  // (20261112100000_fv671_pending_accounts.sql) so FV-673 never touches it.
+  "apple_signin",
+  "apple_handoff",
 ] as const;
 
 export type RateLimitAction = (typeof RATE_LIMIT_ACTIONS)[number];
@@ -147,6 +154,30 @@ export const RATE_LIMIT_CONFIG: Record<RateLimitAction, RateLimitConfig> = {
    * several times each.
    */
   preview_invite: { limit: 30, windowMinutes: 15 },
+
+  /**
+   * signup_verify: keyed on normalized email (FV-671).
+   * Guards the 6-digit email code (10^6 values, 15-minute expiry): at most 8
+   * verification attempts per email per 15 minutes caps blind guessing at
+   * ~8e-6 per code lifetime, far below any human need (a person mistypes a
+   * few times at most). Supabase Auth applies its own per-IP limits too.
+   */
+  signup_verify: { limit: 8, windowMinutes: 15 },
+
+  /**
+   * signup_resend: keyed on normalized email (FV-671).
+   * Each call may send a real email (quota exhaustion / inbox spam against a
+   * known address). 6 / 60 min allows a few "did not get it" retries (the floor test requires > 5); the
+   * Supabase resend cooldown (60 s) spaces them out.
+   */
+  signup_resend: { limit: 6, windowMinutes: 60 },
+
+  /**
+   * apple_signin / apple_handoff: keyed on request IP. RESERVED for FV-673 —
+   * defined here (and in the DB CHECK) so that PR adds no migration for them.
+   */
+  apple_signin: { limit: 30, windowMinutes: 15 },
+  apple_handoff: { limit: 30, windowMinutes: 15 },
 };
 
 // ---------------------------------------------------------------------------
