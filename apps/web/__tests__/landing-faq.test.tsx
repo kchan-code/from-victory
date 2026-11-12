@@ -191,6 +191,9 @@ describe("Faq — subscriber sign-in and recovery entries (FV-681)", () => {
     expect(a).toContain("“Subscribed with a different account? Sign out, then sign in with that one.”");
     expect(a).toContain("“Subscribe to From Victory from a web browser at fromvictoryapp.com.”");
     expect(a).toContain("“Sign out” is at the top of the screen");
+    // KC wording (2026-11-12): a wrong account is possible, not "most common".
+    expect(a).toContain("You may be signed in to a different account.");
+    expect(a).not.toMatch(/most common/i);
   });
 
   it("training-paused answer covers inactive plan, fewer spots and access check", () => {
@@ -200,6 +203,19 @@ describe("Faq — subscriber sign-in and recovery entries (FV-681)", () => {
     expect(a).toContain("“Access check”");
     expect(a).toContain("“We couldn’t check your access”");
     expect(a).toContain("“Try again”");
+  });
+
+  // KC wording (2026-11-12): a failed access check is not proof that nothing
+  // changed with the subscription, so neither answer may claim it.
+  it("access-check failure copy says status is unconfirmed, never that nothing changed", () => {
+    for (const q of [
+      "I already subscribe. Why is the app asking me to subscribe?",
+      "What does “Training paused” mean on my athlete’s screen?",
+    ]) {
+      const a = find(q);
+      expect(a).toContain("we couldn’t confirm your subscription status. Wait a minute and tap “Try again”.");
+      expect(a).not.toMatch(/nothing has changed|nothing changed/i);
+    }
   });
 
   it("new entries carry no internal QA, environment or em-dash leakage", () => {
