@@ -124,7 +124,18 @@ public class FVPlayBillingPlugin extends Plugin implements PurchasesUpdatedListe
         waiters.add(new Waiter(ready, failed));
         if (connecting) return;
         connecting = true;
-        attemptConnect(true);
+        try {
+            attemptConnect(true);
+        } catch (RuntimeException e) {
+            // Could not even start connecting. Fail every waiter and reset, so the next call
+            // starts a fresh attempt instead of queueing behind one that will never finish.
+            BillingClient broken = client;
+            client = null;
+            if (broken != null) {
+                try { broken.endConnection(); } catch (RuntimeException ignored) { /* already unusable */ }
+            }
+            finishConnect(PlayBillingLogic.RC_ERROR);
+        }
     }
 
     private void attemptConnect(final boolean mayRetry) {
