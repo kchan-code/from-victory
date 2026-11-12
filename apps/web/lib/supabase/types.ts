@@ -347,6 +347,129 @@ export type Database = {
           }
         ]
       }
+      // FV-660: hand-added (20261111120000_google_play_provider_access.sql).
+      // Client roles may SELECT only product_id, base_plan_id, status,
+      // expires_at, auto_renewing of their OWN rows (column-level grant) —
+      // never select("*"). All writes are service-role.
+      google_subscriptions: {
+        Row: {
+          id: string
+          payer_id: string
+          purchase_token: string
+          product_id: string
+          base_plan_id: string
+          status: string
+          expires_at: string | null
+          auto_renewing: boolean
+          is_test_purchase: boolean
+          obfuscated_account_id: string | null
+          linked_purchase_token: string | null
+          acknowledged: boolean
+          offer_id: string | null
+          last_verified_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          payer_id: string
+          purchase_token: string
+          product_id: string
+          base_plan_id: string
+          status: string
+          expires_at?: string | null
+          auto_renewing?: boolean
+          is_test_purchase?: boolean
+          obfuscated_account_id?: string | null
+          linked_purchase_token?: string | null
+          acknowledged?: boolean
+          offer_id?: string | null
+          last_verified_at: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          payer_id?: string
+          purchase_token?: string
+          product_id?: string
+          base_plan_id?: string
+          status?: string
+          expires_at?: string | null
+          auto_renewing?: boolean
+          is_test_purchase?: boolean
+          obfuscated_account_id?: string | null
+          linked_purchase_token?: string | null
+          acknowledged?: boolean
+          offer_id?: string | null
+          last_verified_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "google_subscriptions_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      // FV-660: hand-added. Service-role-only: RLS enabled, no policies.
+      google_purchase_bindings: {
+        Row: {
+          payer_id: string
+          binding_id: string
+          created_at: string
+        }
+        Insert: {
+          payer_id: string
+          binding_id?: string
+          created_at?: string
+        }
+        Update: {
+          payer_id?: string
+          binding_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "google_purchase_bindings_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      // FV-660: hand-added. Service-role-only allowlist, empty by default.
+      google_license_testers: {
+        Row: {
+          payer_id: string
+          note: string | null
+          created_at: string
+        }
+        Insert: {
+          payer_id: string
+          note?: string | null
+          created_at?: string
+        }
+        Update: {
+          payer_id?: string
+          note?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "google_license_testers_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       athlete_sessions: {
         Row: {
           athlete_id: string

@@ -71,7 +71,8 @@ select relname, relacl
      'auth_rate_limit_events', 'device_pairings', 'journal_entries',
      'parent_athlete_links', 'profiles', 'push_subscriptions',
      'safety_events', 'subscriptions', 'training_sessions_catalog',
-     'waitlist_signups', 'activity_events_id_seq'
+     'waitlist_signups', 'activity_events_id_seq',
+     'google_subscriptions', 'google_purchase_bindings', 'google_license_testers'
    )
  order by relname;
 
@@ -157,7 +158,17 @@ begin
       ('training_sessions_catalog',  'anon',           true,  false, false, false),
       ('training_sessions_catalog',  'authenticated',  true,  false, false, false),
       ('waitlist_signups',           'anon',           false, true,  false, false),
-      ('waitlist_signups',           'authenticated',  true,  false, false, false)
+      ('waitlist_signups',           'authenticated',  true,  false, false, false),
+      -- FV-660: Google Play provider tables. Table-level SELECT is FALSE for
+      -- authenticated on google_subscriptions (column-level grant only, five
+      -- columns — pinned in section (c2) below); has_table_privilege does not
+      -- fall back to column grants. Bindings/testers: zero client grants.
+      ('google_subscriptions',       'anon',           false, false, false, false),
+      ('google_subscriptions',       'authenticated',  false, false, false, false),
+      ('google_purchase_bindings',   'anon',           false, false, false, false),
+      ('google_purchase_bindings',   'authenticated',  false, false, false, false),
+      ('google_license_testers',     'anon',           false, false, false, false),
+      ('google_license_testers',     'authenticated',  false, false, false, false)
     ) as t(relname, rolename, sel, ins, upd, del)
   loop
     select has_table_privilege(rec.rolename, 'public.' || rec.relname, 'SELECT') into got;
@@ -193,7 +204,8 @@ begin
     'activity_rollup', 'athlete_sessions', 'auth_rate_limit_events',
     'device_pairings', 'journal_entries', 'parent_athlete_links',
     'profiles', 'push_subscriptions', 'safety_events', 'subscriptions',
-    'training_sessions_catalog', 'waitlist_signups'
+    'training_sessions_catalog', 'waitlist_signups',
+    'google_subscriptions', 'google_purchase_bindings', 'google_license_testers'
   ]
   loop
     select has_table_privilege('service_role', 'public.' || tbl, 'SELECT') into got;
@@ -251,6 +263,67 @@ begin
   foreach col in array array['position', 'focus_area', 'next_game_on', 'sport'] loop
     select has_column_privilege('authenticated', 'public.profiles', col, 'update') into got;
     assert got, format('AC(c) FAIL: authenticated missing UPDATE on profiles.%s — table-level UPDATE must survive the re-pin (quiz/next-game/sport-switch write path) — check 20260910133456_client_grant_matrix_pin.sql', col);
+  end loop;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- (c2) FV-660: google_subscriptions column allowlist. authenticated SELECT
+-- true for exactly the five record-7.1 columns, false for every other column,
+-- no column-level INSERT/UPDATE anywhere; anon false everywhere; the two
+-- service-role-only tables carry no client column privilege at all.
+-- ---------------------------------------------------------------------------
+
+do $$
+declare
+  col text;
+  tbl_priv text;
+  got boolean;
+  allowed constant text[] := array[
+    'product_id', 'base_plan_id', 'status', 'expires_at', 'auto_renewing'
+  ];
+  withheld constant text[] := array[
+    'id', 'payer_id', 'purchase_token', 'is_test_purchase',
+    'obfuscated_account_id', 'linked_purchase_token', 'acknowledged',
+    'offer_id', 'last_verified_at', 'created_at', 'updated_at'
+  ];
+begin
+  foreach col in array allowed loop
+    select has_column_privilege('authenticated', 'public.google_subscriptions', col, 'select') into got;
+    assert got, format('AC(c2) FAIL: authenticated missing SELECT on google_subscriptions.%s — check 20261111120000_google_play_provider_access.sql', col);
+  end loop;
+
+  foreach col in array withheld loop
+    select has_column_privilege('authenticated', 'public.google_subscriptions', col, 'select') into got;
+    assert not got, format('AC(c2) FAIL: authenticated HAS SELECT on google_subscriptions.%s (must stay withheld) — check 20261111120000_google_play_provider_access.sql', col);
+  end loop;
+
+  foreach col in array allowed || withheld loop
+    foreach tbl_priv in array array['select', 'insert', 'update', 'references'] loop
+      select has_column_privilege('anon', 'public.google_subscriptions', col, tbl_priv) into got;
+      assert not got, format('AC(c2) FAIL: anon HAS %s on google_subscriptions.%s', tbl_priv, col);
+      if not (tbl_priv = 'select' and col = any(allowed)) then
+        select has_column_privilege('authenticated', 'public.google_subscriptions', col, tbl_priv) into got;
+        assert not got, format('AC(c2) FAIL: authenticated HAS %s on google_subscriptions.%s', tbl_priv, col);
+      end if;
+    end loop;
+  end loop;
+
+  foreach col in array array['payer_id', 'binding_id', 'created_at'] loop
+    foreach tbl_priv in array array['select', 'insert', 'update'] loop
+      select has_column_privilege('authenticated', 'public.google_purchase_bindings', col, tbl_priv) into got;
+      assert not got, format('AC(c2) FAIL: authenticated HAS %s on google_purchase_bindings.%s', tbl_priv, col);
+      select has_column_privilege('anon', 'public.google_purchase_bindings', col, tbl_priv) into got;
+      assert not got, format('AC(c2) FAIL: anon HAS %s on google_purchase_bindings.%s', tbl_priv, col);
+    end loop;
+  end loop;
+
+  foreach col in array array['payer_id', 'note', 'created_at'] loop
+    foreach tbl_priv in array array['select', 'insert', 'update'] loop
+      select has_column_privilege('authenticated', 'public.google_license_testers', col, tbl_priv) into got;
+      assert not got, format('AC(c2) FAIL: authenticated HAS %s on google_license_testers.%s', tbl_priv, col);
+      select has_column_privilege('anon', 'public.google_license_testers', col, tbl_priv) into got;
+      assert not got, format('AC(c2) FAIL: anon HAS %s on google_license_testers.%s', tbl_priv, col);
+    end loop;
   end loop;
 end $$;
 
