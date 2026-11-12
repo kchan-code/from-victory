@@ -15,6 +15,8 @@ type Role = "parent" | "adult_athlete";
 
 type Props = {
   email: string | null;
+  /** Only an Apple sign-in can carry a hidden (relay) email. */
+  showAppleRelayLine?: boolean;
   /** Preselected account type from the `?as=` hint. */
   defaultRole: Role;
   /** False = parent-only (ENABLE_ADULT_SIGNUP off): no account-type cards. */
@@ -56,7 +58,7 @@ function Check({
   );
 }
 
-export function WelcomeForm({ email, defaultRole, adultEnabled }: Props) {
+export function WelcomeForm({ email, showAppleRelayLine = false, defaultRole, adultEnabled }: Props) {
   const [role, setRole] = useState<Role>(adultEnabled ? defaultRole : "parent");
   const [state, formAction] = useFormState(completeOnboarding, initialState);
   const [cancelState, cancelAction] = useFormState(cancelOnboarding, initialState);
@@ -222,10 +224,12 @@ export function WelcomeForm({ email, defaultRole, adultEnabled }: Props) {
       </form>
 
       <div className="mt-8 border-t border-hairline pt-5">
-        <p className="font-body text-[13px] leading-relaxed text-cream/60">
-          Signed in with a hidden Apple email and already have an account? Use
-          a different account, then sign in your usual way.
-        </p>
+        {showAppleRelayLine ? (
+          <p className="font-body text-[13px] leading-relaxed text-cream/60">
+            Signed in with a hidden Apple email and already have an account? Use
+            a different account, then sign in your usual way.
+          </p>
+        ) : null}
         {confirming ? (
           <form action={cancelAction} className="mt-3">
             <p className="mb-3 font-body text-[13px] text-cream/80" role="alert">

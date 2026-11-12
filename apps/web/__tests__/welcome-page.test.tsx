@@ -107,9 +107,17 @@ describe("/welcome", () => {
     await expect(WelcomePage({ searchParams: {} })).rejects.toThrow("NEXT_REDIRECT");
   });
 
-  it("'Use a different account' needs a confirm step; the relay line is present", async () => {
+  it("the hidden-Apple-email line shows only for an Apple sign-in", async () => {
+    await renderPage();
+    expect(screen.queryByText(/hidden Apple email and already have an account/i)).toBeNull();
+    cleanup();
+    h.requireOnboarding.mockResolvedValue({ userId: "u1", email: "x@privaterelay.appleid.com", viaApple: true });
     await renderPage();
     expect(screen.getByText(/hidden Apple email and already have an account/i)).toBeInTheDocument();
+  });
+
+  it("'Use a different account' needs a confirm step", async () => {
+    await renderPage();
     expect(screen.queryByText("Yes, use a different account")).toBeNull();
     fireEvent.click(screen.getByTestId("welcome-use-different-account"));
     expect(screen.getByText("Yes, use a different account")).toBeInTheDocument();

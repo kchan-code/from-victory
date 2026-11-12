@@ -22,8 +22,9 @@ type Props = { searchParams: { as?: string } };
 
 export default async function WelcomePage({ searchParams }: Props) {
   let email: string | null;
+  let viaApple = false;
   try {
-    ({ email } = await requireOnboarding());
+    ({ email, viaApple } = await requireOnboarding());
   } catch (err) {
     if (!(err instanceof SessionCheckError)) throw err;
     // FV-656 pattern: a failed read is "couldn't check", never "set up now".
@@ -59,6 +60,7 @@ export default async function WelcomePage({ searchParams }: Props) {
     >
       <WelcomeForm
         email={email}
+        showAppleRelayLine={viaApple}
         defaultRole={defaultRole}
         adultEnabled={adultEnabled}
       />

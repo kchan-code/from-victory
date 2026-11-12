@@ -278,6 +278,8 @@ export async function redirectIfAuthed() {
 export async function requireOnboarding(): Promise<{
   userId: string;
   email: string | null;
+  /** True when the account signed in with Apple (app_metadata.providers). */
+  viaApple: boolean;
 }> {
   const supabase = createClient();
   const {
@@ -287,7 +289,15 @@ export async function requireOnboarding(): Promise<{
 
   const { state } = await resolveSessionState(supabase, user);
   if (state === "error") throw new SessionCheckError();
-  if (state === "pending") return { userId: user.id, email: user.email ?? null };
+  if (state === "pending") {
+    // app_metadata is server-controlled (never user_metadata, spec §5.8).
+    const providers = (user.app_metadata?.providers ?? []) as unknown[];
+    return {
+      userId: user.id,
+      email: user.email ?? null,
+      viaApple: Array.isArray(providers) && providers.includes("apple"),
+    };
+  }
   if (state === "orphan" || state === "none") redirect("/auth/signout");
   redirect(homeForState(state) ?? "/auth/signout");
 }

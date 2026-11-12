@@ -678,12 +678,13 @@ describe("FV-672: requireOnboarding", () => {
     await expectRedirect(requireOnboarding, "/auth/signout");
   });
 
-  it("pending -> returns the user id and the AUTH email (nothing else)", async () => {
+  it("pending -> returns the user id, the AUTH email and the Apple flag (nothing else)", async () => {
     mockUser = PENDING_GOOGLE as MockUser;
     mockProfile = null;
     await expect(requireOnboarding()).resolves.toEqual({
       userId: USER_ID,
       email: "g@example.com",
+      viaApple: false,
     });
     expect(redirect).not.toHaveBeenCalled();
   });
