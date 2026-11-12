@@ -78,6 +78,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(dest, url.origin));
   }
 
+  if (state === "athlete") {
+    // Defense in depth (privacy review #601): a minor (13-17) athlete account
+    // never holds a provider (SSO) session. Sign out and fail closed.
+    console.error("[auth.callback] provider session resolved to a minor athlete; signing out");
+    await supabase.auth.signOut();
+    return failure();
+  }
+
   const home = homeForState(state);
   if (home) {
     return NextResponse.redirect(new URL(safeNext ?? home, url.origin));

@@ -12,10 +12,11 @@ vi.mock("server-only", () => ({}));
 const h = vi.hoisted(() => ({
   exchange: vi.fn(),
   state: vi.fn(),
+  signOut: vi.fn(async () => ({ error: null })),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: () => ({ auth: { exchangeCodeForSession: h.exchange } }),
+  createClient: () => ({ auth: { exchangeCodeForSession: h.exchange, signOut: h.signOut } }),
 }));
 vi.mock("@/lib/auth/session-state", async () => {
   const core = await import("@/lib/auth/session-state-core");
@@ -116,7 +117,6 @@ describe("exchange + routing", () => {
 
   it.each([
     ["parent", "/dashboard"],
-    ["athlete", "/athlete"],
     ["adult_athlete", "/athlete"],
   ])("%s with no next -> %s; with an allow-listed next -> next; with a bad next -> home", async (state, home) => {
     h.state.mockResolvedValue({ state, user: { id: "u1" } });
@@ -125,6 +125,12 @@ describe("exchange + routing", () => {
     expect(await hit("?code=c&next=//evil.com")).toBe(home);
     expect(await hit("?code=c&next=/admin")).toBe(home);
     expect(await hit("?code=c&next=https://evil.com")).toBe(home);
+  });
+
+  it("a minor athlete never keeps a provider session: signed out, fails closed (privacy #601)", async () => {
+    h.state.mockResolvedValue({ state: "athlete", user: { id: "u1" } });
+    expect(await hit("?code=c&next=/athlete")).toBe("/signin?error=oauth");
+    expect(h.signOut).toHaveBeenCalled();
   });
 
   it("orphan -> /auth/signout", async () => {

@@ -2,6 +2,8 @@ import "server-only";
 
 import { homeForState, resolveSessionState } from "@/lib/auth/session-state-core";
 
+import { revokeAppleTokens } from "./revoke";
+
 import type { SupabaseLike } from "./flow";
 
 /**
@@ -27,5 +29,14 @@ export async function resolvePostSignInPath(
 
   const { state } = await resolveSessionState(supabase, user);
   if (state === "pending") return "/welcome";
+  if (state === "athlete") {
+    // Defense in depth (privacy review #601): minors (13-17) never hold an SSO
+    // session. Practically unreachable (an Apple token cannot assert a
+    // synthetic athlete address), but if it happens: revoke, sign out, fail.
+    console.error("[apple-signin] SSO session resolved to a minor athlete; revoking");
+    await revokeAppleTokens(userId).catch(() => undefined);
+    await supabase.auth.signOut().catch(() => undefined);
+    return "/signin?error=oauth";
+  }
   return homeForState(state) ?? "/";
 }
