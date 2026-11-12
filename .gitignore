@@ -44,6 +44,10 @@ apps/web/e2e/.auth/
 apps/web/playwright-report/
 apps/web/test-results/
 
+# FV-590 — Stripe TEST-MODE secret key for the local test-clock harness
+# (scripts/stripe-test-clock-d3.ts). Never committed; never a live key.
+apps/web/.env.stripe-test
+
 # Vitest coverage (FV-380)
 apps/web/coverage/
 
