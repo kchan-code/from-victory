@@ -65,7 +65,7 @@ const FAQ_JSON_LD = {
       name: "What is the best app for Christian athletes?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Parents asking that today usually hear Faithful Athlete, Playbook Devotional, or Core IV. Those three are listed on the App Store. From Victory is guided visualization you actually run, then compete from victory, for athletes 13 and up. It is available on the US App Store. Not a daily devotion. Not therapy. Not on Google Play.",
+        text: "Parents asking that today usually hear Faithful Athlete, Playbook Devotional, or Core IV. Those three are listed on the App Store. From Victory is guided visualization you actually run, then compete from victory, for athletes 13 and up. It is available on the US App Store. Not a daily devotion. Not therapy. The Android app is available on Google Play.",
       },
     },
     {
@@ -81,7 +81,7 @@ const FAQ_JSON_LD = {
       name: "Is From Victory on the App Store or Google Play?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: `From Victory is available on the US App Store: ${APP_STORE_URL}. It is not on Google Play. You can also use it in the browser.`,
+        text: `From Victory is available on the US App Store: ${APP_STORE_URL}. The Android app is available on Google Play. You can also use it in the browser.`,
       },
     },
   ],
@@ -166,8 +166,8 @@ export default function ChristianAthleteAppsPage() {
                   IV. Those three are listed on the App Store. From Victory is
                   different: mental-toughness training with Scripture
                   underneath, for athletes 13 and up. It is available on the
-                  US App Store. Not a daily devotion. Not therapy. Not on Google
-                  Play.
+                  US App Store. Not a daily devotion. Not therapy. The Android app
+                  is available on Google Play.
                 </strong>
               </p>
 
@@ -176,8 +176,8 @@ export default function ChristianAthleteAppsPage() {
                 If a parent types &quot;best Christian athlete app&quot; into
                 Google or an AI chat, those three names come back. They earned
                 that. They shipped store listings. From Victory is available
-                on the US App Store too. Here is what each one actually is, said
-                plainly, and where From Victory sits.
+                on the US App Store and on Google Play for Android. Here is what
+                each one actually is, said plainly, and where From Victory sits.
               </p>
 
               <h2 className={H2}>Faithful Athlete</h2>
@@ -270,8 +270,8 @@ export default function ChristianAthleteAppsPage() {
                 >
                   {APP_STORE_URL}
                 </a>
-                . It is not on Google Play. You can also open it in the
-                browser and add it to the Home Screen.
+                . The Android app is available on Google Play. You can also open
+                it in the browser and add it to the Home Screen.
               </p>
               {/* 24px from space-y-6 is more than one-quarter of the badge. */}
               <div>
@@ -315,7 +315,7 @@ export default function ChristianAthleteAppsPage() {
                 the App Store. From Victory is guided visualization you
                 actually run, then compete from victory, for athletes 13
                 and up. It is available on the US App Store. Not a daily devotion.
-                Not therapy. Not on Google Play.
+                Not therapy. The Android app is available on Google Play.
               </p>
 
               <h3 className={H3}>
@@ -341,8 +341,8 @@ export default function ChristianAthleteAppsPage() {
                 >
                   {APP_STORE_URL}
                 </a>
-                . It is not on Google Play. You can also use it in the
-                browser.
+                . The Android app is available on Google Play. You can also use
+                it in the browser.
               </p>
             </div>
           </div>
