@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import ts from "typescript";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -29,7 +30,13 @@ import { describe, expect, it } from "vitest";
  * `apps/native` has no node_modules and no typecheck script, so nothing in
  * CI compiles capacitor.config.ts against Capacitor's real types.
  *
- * This reads the config as SOURCE TEXT rather than importing it. Importing
+ * FV-664 adds a THIRD, env-gated key: `android.appendUserAgent` =
+ * "FVNativeShell/1 (play)", present ONLY when FV_PLAY_BILLING=1 (the one Play
+ * Billing build switch; Gradle reads the same variable). The source-text
+ * guards below pin WHERE it may sit; the runtime guards at the bottom of this
+ * describe evaluate the config under both env states and pin the values.
+ *
+ * Most guards read the config as SOURCE TEXT rather than importing it. Importing
  * it would pull `apps/native` into Next's typecheck graph, and
  * `@capacitor/cli` is not installed in the web workspace — that breaks
  * `next build` on Vercel (it did, on the first attempt at this guard).
@@ -37,6 +44,7 @@ import { describe, expect, it } from "vitest";
 describe("capacitor.config — native shell UA token + iOS capability marker (FV-483 / FV-572)", () => {
   const BASE_TOKEN = "FVNativeShell/1";
   const IOS_TOKEN = "FVNativeShell/1 (ios)";
+  const PLAY_TOKEN = "FVNativeShell/1 (play)";
 
   const configSource = readFileSync(
     resolve(__dirname, "../../native/capacitor.config.ts"),
@@ -81,17 +89,19 @@ describe("capacitor.config — native shell UA token + iOS capability marker (FV
   const androidRange = blockRange(configSource, "android");
   const occurrences = appendUserAgentOccurrences(configSource);
 
-  it("declares exactly two appendUserAgent keys: the global (Android + legacy-iOS) token and the iOS-only capability marker", () => {
-    expect(occurrences).toHaveLength(2);
+  it("declares exactly three appendUserAgent keys: the global token, the env-gated Android Play marker, and the iOS-only capability marker", () => {
+    expect(occurrences).toHaveLength(3);
   });
 
   it("pins the GLOBAL appendUserAgent to the exact, byte-identical legacy token — Android depends on this string never changing, forever (FV-478/489/492/493)", () => {
     const globalOccurrence = occurrences.find(
-      (o) => o.index < iosRange.start || o.index > iosRange.end,
+      (o) =>
+        (o.index < iosRange.start || o.index > iosRange.end) &&
+        (o.index < androidRange.start || o.index > androidRange.end),
     );
     expect(
       globalOccurrence,
-      "expected exactly one appendUserAgent occurrence outside the `ios` block (the global/top-level key)",
+      "expected exactly one appendUserAgent occurrence outside the `ios` and `android` blocks (the global/top-level key)",
     ).toBeDefined();
     expect(globalOccurrence?.value).toBe(BASE_TOKEN);
   });
@@ -107,14 +117,22 @@ describe("capacitor.config — native shell UA token + iOS capability marker (FV
     expect(iosOccurrence?.value).toBe(IOS_TOKEN);
   });
 
-  it("does NOT declare an android-scoped appendUserAgent override", () => {
+  it("only declares an android-scoped appendUserAgent behind the FV_PLAY_BILLING switch, with the exact Play marker", () => {
     const androidOccurrence = occurrences.find(
       (o) => o.index > androidRange.start && o.index < androidRange.end,
     );
     expect(
       androidOccurrence,
-      "android must keep receiving ONLY the top-level appendUserAgent — an android-scoped override is not part of this contract",
-    ).toBeUndefined();
+      "expected the gated Play marker inside the `android` block",
+    ).toBeDefined();
+    expect(androidOccurrence?.value).toBe(PLAY_TOKEN);
+    // The key must be a conditional spread on the switch — never unconditional,
+    // or every Android build (incl. 1.0.x-equivalent ones) would claim `(play)`.
+    const lineStart = configSource.lastIndexOf("\n", androidOccurrence?.index ?? 0) + 1;
+    expect(configSource.slice(lineStart, androidOccurrence?.index)).toMatch(
+      /\.\.\.\(playBilling \? \{\s*$/,
+    );
+    expect(configSource).toMatch(/const playBilling = process\.env\.FV_PLAY_BILLING === "1";/);
   });
 
   it("does NOT nest either appendUserAgent key inside `server`, where Capacitor ignores it (FV-478)", () => {
@@ -139,12 +157,83 @@ describe("capacitor.config — native shell UA token + iOS capability marker (FV
     );
     expect(detector).toContain(BASE_TOKEN);
     expect(detector).toContain(IOS_TOKEN);
+    // FV-659 classifier half of the FV-664 marker.
+    expect(detector).toContain(PLAY_TOKEN);
   });
 
   it("still does not allow navigation to any Stripe domain", () => {
     expect(
       configSource.slice(serverRange.start, serverRange.end).toLowerCase(),
     ).not.toContain("stripe.com");
+  });
+
+  /**
+   * Evaluates the real config under a given FV_PLAY_BILLING value. The source
+   * is transpiled with the TypeScript compiler (already a web devDependency)
+   * and run in isolation, so nothing from apps/native enters the module graph
+   * (see the import note above) and `@capacitor/cli` types are never needed
+   * (the only import is type-only and erased).
+   */
+  function evaluateConfig(playBilling: string | undefined): {
+    appendUserAgent?: string;
+    server?: { allowNavigation?: string[] };
+    android?: { appendUserAgent?: string };
+    ios?: { appendUserAgent?: string };
+  } {
+    const { outputText } = ts.transpileModule(configSource, {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+    });
+    const sandboxEnv: Record<string, string | undefined> = {
+      CAPACITOR_SERVER_URL: undefined,
+      FV_PLAY_BILLING: playBilling,
+    };
+    const moduleShim: { exports: { default?: unknown } } = { exports: {} };
+    // reason: evaluating a transpiled config module in isolation needs the
+    // Function constructor; the source is a checked-in repo file, not input.
+    new Function("module", "exports", "process", outputText)(moduleShim, moduleShim.exports, {
+      env: sandboxEnv,
+    });
+    return moduleShim.exports.default as ReturnType<typeof evaluateConfig>;
+  }
+
+  it("switch UNSET: Android gets NO android.appendUserAgent — it keeps the bare top-level token", () => {
+    for (const unset of [undefined, "", "0", "true"]) {
+      const config = evaluateConfig(unset);
+      expect(config.appendUserAgent).toBe(BASE_TOKEN);
+      expect(config.android).toBeDefined();
+      expect(config.android).not.toHaveProperty("appendUserAgent");
+    }
+  });
+
+  it("switch FV_PLAY_BILLING=1: android.appendUserAgent is exactly the Play marker; base token untouched", () => {
+    const config = evaluateConfig("1");
+    expect(config.appendUserAgent).toBe(BASE_TOKEN);
+    expect(config.android?.appendUserAgent).toBe(PLAY_TOKEN);
+  });
+
+  it("the iOS marker and the Stripe-free allowNavigation are identical under both switch states", () => {
+    for (const state of [undefined, "1"]) {
+      const config = evaluateConfig(state);
+      expect(config.ios?.appendUserAgent).toBe(IOS_TOKEN);
+      const hosts = config.server?.allowNavigation ?? [];
+      expect(hosts.length).toBeGreaterThan(0);
+      for (const host of hosts) expect(host.toLowerCase()).not.toContain("stripe");
+    }
+  });
+
+  it("keeps the Gradle side of the switch wired to the same env var and marker", () => {
+    const gradle = readFileSync(
+      resolve(__dirname, "../../native/android/app/build.gradle"),
+      "utf8",
+    );
+    expect(gradle).toContain("System.getenv('FV_PLAY_BILLING')");
+    expect(gradle).toContain(`'${PLAY_TOKEN}'`);
+    expect(gradle).toContain("verifyPlayBillingSwitch");
+    // The verifier compares the EFFECTIVE Android token by prefix, so a later
+    // feature token appended after the capability marker (FV-569 UA format:
+    // "FVNativeShell/1 (play) FVAuth/1") neither trips nor defeats it.
+    expect(gradle).toContain("effectiveUa.startsWith(playToken + ' ')");
+    expect(gradle).toContain("effectiveUa.contains('(play)')");
   });
 });
 

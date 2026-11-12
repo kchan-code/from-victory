@@ -16,7 +16,9 @@ import type { CapacitorConfig } from "@capacitor/cli";
  * does not fork the platforms.
  *
  * Plugin allowlist (product-strategist): core, app, splash-screen, status-bar,
- * android, ios. No push-notifications (device token), analytics, ads, or
+ * android, ios. (FV-664: an app-local FVPlayBillingPlugin exists ONLY in
+ * FV_PLAY_BILLING=1 builds; it carries Google's Play Billing Library and no
+ * other SDK.) No push-notifications (device token), analytics, ads, or
  * attribution SDKs. App-local FVNarration transfers only the assembled narration
  * WAV to the native audio player; it has no music-provider or library access.
  * Any new plugin needs a fresh product + privacy review.
@@ -24,6 +26,11 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const serverUrl =
   process.env.CAPACITOR_SERVER_URL ?? "https://www.fromvictoryapp.com";
+
+// FV-664: the ONE Play Billing build switch. `FV_PLAY_BILLING=1` must be set for BOTH
+// `npx cap sync` (this file) and Gradle (android/app/build.gradle); the Gradle task
+// verifyPlayBillingSwitch fails a build where the two disagree. Unset = today's 1.0.x shell.
+const playBilling = process.env.FV_PLAY_BILLING === "1";
 
 const config: CapacitorConfig = {
   // Play Console locked this package (immutable).
@@ -95,6 +102,12 @@ const config: CapacitorConfig = {
     // Android-scoped on purpose: a top-level key would also repaint the live
     // iOS WKWebView (ios.backgroundColor ?? backgroundColor) on its next build.
     backgroundColor: "#050505",
+    // FV-664: additive Play Billing capability marker (FV-651 record §6), present ONLY in builds
+    // made with FV_PLAY_BILLING=1 — the same builds that carry the billing plugin. Capacitor's
+    // per-platform key overrides the top-level token for Android only; without the switch this
+    // key is absent and Android keeps shipping the bare, byte-identical top-level token. Never
+    // add this key unconditionally, and never change the top-level token.
+    ...(playBilling ? { appendUserAgent: "FVNativeShell/1 (play)" } : {}),
   },
   ios: {
     contentInset: "automatic",

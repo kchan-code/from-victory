@@ -231,6 +231,32 @@ apps/native/scripts/android-release-preflight.sh \
 Never upload a bundle built for local testing (a `CAPACITOR_SERVER_URL` override
 or a cleartext manifest). The preflight fails both.
 
+### Play Billing build switch (FV-664)
+
+The commands above build the **default** shell: no Play Billing library, no
+`com.android.vending.BILLING` permission, no billing plugin, bare
+`FVNativeShell/1` User-Agent. That is the right build for any 1.0.x fix.
+
+A build that can sell through Google Play is made only by setting
+`FV_PLAY_BILLING=1` for **both** `npx cap sync android` and the Gradle build:
+
+```bash
+FV_PLAY_BILLING=1 npx cap sync android
+FV_PLAY_BILLING=1 npm run build:android:bundle
+```
+
+Set it for one step and not the other and the build fails at
+`verifyPlayBillingSwitch` (marker without plugin, or plugin without marker).
+Any value other than unset, `0` or `1` fails at configuration.
+
+After a build, check the merged manifest matches what you meant to build: the
+`BILLING` permission is present if and only if `FV_PLAY_BILLING=1`. A billing
+build also adds `ACCESS_NETWORK_STATE` and Google's billing/transport
+components (from the Play Billing Library's own dependencies), which the Data
+safety form and privacy page must reflect before such a build is uploaded
+(FV-667). Do not upload a billing build until FV-669's release package is
+approved by KC.
+
 That script is `cd android && ./gradlew bundleRelease`. Output:
 
 ```
