@@ -19,6 +19,9 @@ import type { CapacitorConfig } from "@capacitor/cli";
  * android, ios. No push-notifications (device token), analytics, ads, or
  * attribution SDKs. App-local FVNarration transfers only the assembled narration
  * WAV to the native audio player; it has no music-provider or library access.
+ * App-local FVAuth is a system-browser / Sign in with Apple bridge (no
+ * third-party SDK; parents and 18+ only, enforced server-side);
+ * product-strategist approved FV-675, kids-privacy-officer review required.
  * Any new plugin needs a fresh product + privacy review.
  */
 
@@ -151,6 +154,7 @@ const config: CapacitorConfig = {
  */
 const FVAUTH_UA_MARKER = "FVAuth/1";
 const SSO_STAGING_NAVIGATION_HOSTS = ["fv-android-staging-web.vercel.app"];
+const SSO_STAGING_ORIGIN = "https://fv-android-staging-web.vercel.app";
 
 export function withSsoStagingBuild(base: CapacitorConfig): CapacitorConfig {
   const globalToken = base.appendUserAgent ?? "";
@@ -193,6 +197,13 @@ let buildConfig: CapacitorConfig = config;
 // 1. Platform-token switches (FV-664 FV_PLAY_BILLING goes here).
 // 2. Capability markers, appended to the token in effect after step 1.
 if (process.env.FV_SSO_STAGING_BUILD === "1") {
+  // A staging switch on a production-URL shell would advertise FVAuth/1
+  // without `(play)` and widen the native allow-list (spec §13a). Refuse.
+  if (new URL(serverUrl).origin !== SSO_STAGING_ORIGIN) {
+    throw new Error(
+      `FV_SSO_STAGING_BUILD=1 requires CAPACITOR_SERVER_URL=${SSO_STAGING_ORIGIN}`,
+    );
+  }
   buildConfig = withSsoStagingBuild(buildConfig);
 }
 

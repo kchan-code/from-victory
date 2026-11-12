@@ -95,7 +95,9 @@ public class FVAuthPlugin: CAPPlugin, CAPBridgedPlugin {
               components.scheme?.lowercased() == "https",
               let host = components.host?.lowercased(), !host.isEmpty,
               allowedHosts.contains(host),
-              components.user == nil, components.password == nil
+              components.user == nil, components.password == nil,
+              // Two parsers must agree on the host (mirrors the Android cross-check).
+              url.host?.lowercased() == host
         else { return false }
         if let port = components.port, port != 443 { return false }
         return true

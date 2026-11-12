@@ -97,8 +97,16 @@ public class FVAuthPlugin extends Plugin {
         }
         // load() runs inside BridgeActivity.onCreate, before the activity is STARTED — the only
         // point an ActivityResultLauncher may be registered.
-        authTabLauncher =
-                AuthTabIntent.registerActivityResultLauncher(getActivity(), this::onAuthTabResult);
+        // A registration failure must never crash a production cold start for a
+        // feature that may not be in use: leave the launcher null and start()
+        // falls back to a Custom Tab.
+        try {
+            authTabLauncher =
+                    AuthTabIntent.registerActivityResultLauncher(getActivity(), this::onAuthTabResult);
+        } catch (RuntimeException e) {
+            authTabLauncher = null;
+            Log.w(TAG, "Auth Tab launcher unavailable; Custom Tab fallback only");
+        }
         Log.i(TAG, "loaded; staging allow-list: " + staging);
     }
 

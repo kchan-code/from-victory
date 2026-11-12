@@ -288,7 +288,10 @@ describe("capacitor.config — FV_SSO_STAGING_BUILD switch (FV-675)", () => {
 
   async function loadConfig(env: { FV_SSO_STAGING_BUILD?: string }): Promise<EvaluatedConfig> {
     vi.resetModules();
-    vi.stubEnv("CAPACITOR_SERVER_URL", undefined);
+    vi.stubEnv(
+      "CAPACITOR_SERVER_URL",
+      env.FV_SSO_STAGING_BUILD === "1" ? "https://fv-android-staging-web.vercel.app" : undefined,
+    );
     vi.stubEnv("FV_SSO_STAGING_BUILD", env.FV_SSO_STAGING_BUILD);
     const mod = (await import(/* @vite-ignore */ configPath)) as { default: EvaluatedConfig };
     // Deep copy so one evaluation can never alias another's arrays/objects.
@@ -297,6 +300,16 @@ describe("capacitor.config — FV_SSO_STAGING_BUILD switch (FV-675)", () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
+  });
+
+  it("env=1 with a production server URL refuses to build (spec §13a)", async () => {
+    vi.resetModules();
+    vi.stubEnv("CAPACITOR_SERVER_URL", undefined);
+    vi.stubEnv("FV_SSO_STAGING_BUILD", "1");
+    await expect(import(/* @vite-ignore */ configPath)).rejects.toThrow(/requires CAPACITOR_SERVER_URL/);
+    vi.resetModules();
+    vi.stubEnv("CAPACITOR_SERVER_URL", "https://www.fromvictoryapp.com");
+    await expect(import(/* @vite-ignore */ configPath)).rejects.toThrow(/requires CAPACITOR_SERVER_URL/);
   });
 
   it("env unset: the production config, unchanged", async () => {
@@ -378,7 +391,11 @@ describe("capacitor.config — FV_SSO_STAGING_BUILD switch (FV-675)", () => {
     const staging = await loadConfig({ FV_SSO_STAGING_BUILD: "1" });
     const stripped = JSON.parse(JSON.stringify(staging)) as EvaluatedConfig;
     delete stripped.plugins?.FVAuth;
-    if (stripped.server) stripped.server.allowNavigation = unset.server?.allowNavigation;
+    expect(staging.server?.url).toBe("https://fv-android-staging-web.vercel.app");
+    if (stripped.server) {
+      stripped.server.allowNavigation = unset.server?.allowNavigation;
+      stripped.server.url = unset.server?.url; // the required staging server URL
+    }
     if (stripped.ios) stripped.ios.appendUserAgent = unset.ios?.appendUserAgent;
     if (stripped.android) {
       if (unset.android?.appendUserAgent === undefined) delete stripped.android.appendUserAgent;
