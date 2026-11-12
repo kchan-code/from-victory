@@ -1,6 +1,6 @@
 # FV-569: Sign in with Apple + Google (parents and 18+ athletes), spec
 
-**Status:** v4 for KC approval (discovery deliverable). Nothing is built, configured, or changed in any account. No spend is introduced.
+**Status:** v4 + §13a billing coordination (2026-11-11), for KC approval (discovery deliverable). Nothing is built, configured, or changed in any account. No spend is introduced.
 **Date:** 2026-11-11.
 **Supersedes:** v1–v3. Superseded decisions are in §14 and are not open options.
 **Issue:** FV-569. Delivery issues (§12) are filed on approval.
@@ -584,6 +584,7 @@ This is a privacy-path change: kids-privacy-officer review, then KC's wording.
 | E2 | **Provider-metadata exception** (§5.8) | Sign it, with the CI guard, deletion proof and disclosure. |
 | E3 | **Transition lists and authorization** (§8 T2–T4, after V1) | Classify after T1. Authorize T3/T4 by named list. |
 | E4 | **Copy:** sign-in sections, buttons, `/welcome`, code screens, errors, relay line, revoke note, in-app-browser line | Approve at PR review. |
+| E5 | **Duplicate-account residual.** An Apple Hide My Email address or a different Google email creates a second account, and there is no merge (§1). That account cannot reach the first account's subscription. It could take a second web (Stripe) trial; store trials are limited per Apple ID or Google account by the stores. Accept this at beta scale? | Accept. Keep the `/welcome` relay line and the cancellable pending state. Revisit if the T1-style inventory shows repeat trials. |
 
 Staging spend is no longer a decision, because the existing staging is reused (§2).
 
@@ -612,7 +613,7 @@ Staging spend is no longer a decision, because the existing staging is reused (�
 
 **Reviews:** `/review` → qa-reviewer → kids-privacy-officer → KC merge.
 
-**Hot files:** `SignInChooser`, `guards.ts`, `sw.js`/`route-strategy.ts`. Serialize A3/A6.
+**Hot files:** `SignInChooser`, `guards.ts`, `sw.js`/`route-strategy.ts`. Serialize A3/A6. With Play Billing (§13a): the billing C1 PR owns the `android` UA block and lands before A8/A9. A6 lands before billing C7. `deleteAccount` changes in A4 and billing C5 are serialized in the fixed order.
 
 ## 13. Validation and tests
 
@@ -781,6 +782,74 @@ A manual WCAG pass: focus, labels, contrast on onyx, `aria-live`, banner focus.
 | Transition (§8) | Not reversible. | This is why T3/T4 require V1 and a named authorization. |
 | Native builds | Can't be rolled back. Server flags and route disablement neutralize them; the plugin stays dormant. | — |
 | Reaper | `REAPER_DRY_RUN=true`, or remove its `vercel.json` entry. | Tombstoned accounts wait. |
+
+## 13a. Coordination with Play Billing (FV-620 / FV-651) and combined regression evidence
+
+Added 2026-11-11 at the PM's request (Codex coordinating SSO and Play Billing for KC). It changes no SSO scope and approves nothing in the billing record. Billing references are to `docs/fv651-android-play-billing-decision-record.md` on `main` @ a0e882f (C1–C11, G0–G10).
+
+### Invariants both arcs hold
+1. **Identity never moves an entitlement.** Linking Apple or Google to an account never changes `auth.users.id`. There is no merge, so a family's subscription, comp grant, athletes and seats stay attached to the same id.
+2. **SSO code never writes billing state.** It never writes `subscriptions`, `apple_*`, comp grants, `parent_athlete_links`, or the future `google_*` tables. Billing code never writes `auth.identities` or the §5 pending-account tables.
+3. **Purchase binding stays per payer.** Apple's `appAccountToken` and Play's `obfuscatedAccountId` are opaque UUIDs minted for the payer's user id. Because of invariant 1, an account that later links SSO keeps them. A duplicate account (Hide My Email, different Google email) gets its own UUID and can never claim another account's Apple or Play transaction (`apple-subscription.ts:245-270`; billing record 7.2).
+4. **The capability markers are presentation only.** `FVAuth/1` and `(play)` gate which buttons render. Authorization stays server-side.
+5. **An unreadable status is never a lapse (FV-656).** On a return from Apple or Google, a subscription read that fails shows "couldn't check". It never routes to `/subscribe`. A failed profile read is `error`, never `pending`, so no deletion path can start from a read failure.
+
+### Shared surfaces: one owner, serialized
+
+| Surface | SSO (FV-569) | Play Billing (FV-620) | Rule |
+|---|---|---|---|
+| `apps/native/capacitor.config.ts` and the FV-483 config guard test | Adds `FVAuth/1` to the iOS override. **Android needs a new `android.appendUserAgent` override**, because a platform key replaces the top-level value. | C1 adds `android: { appendUserAgent: "FVNativeShell/1 (play)" }`. | C1 owns the `android` block and lands first (G10 Stage 1). The SSO native PR (A8/A9) then appends ` FVAuth/1` to both overrides. Final strings: iOS `FVNativeShell/1 (ios) FVAuth/1`, Android `FVNativeShell/1 (play) FVAuth/1`. The top-level bare token never changes. The guard test pins both strings. |
+| `lib/native-shell.ts` | Adds an orthogonal `hasAuthCapability(ua)` (`FVAuth/1`). It never changes `ShellCapability`. | C1 adds `android-play`, checked before the bare token. | One test table covers every combination: browser, bare, `(ios)`, `(play)`, each with and without `FVAuth/1`. |
+| Android account creation | `/welcome` creates a profile in the app. | C7 restores sign-up only under `android-play`. | **Production Android builds carry `FVAuth/1` only together with `(play)`**, pinned by the guard test. Staging and debug builds may carry `FVAuth/1` alone for V0–V2. This makes E1 structural rather than a release-day reminder. |
+| `/signin`, `SignInForm`/`SignInChooser`, `/signup` | A6 restructures the entry points (§3). | C7 un-hides sign-up under `android-play`. | A6 lands first; C7 rebases onto it (C7 already waits on C5 and C6). The secondary "under 18" section keeps FV-654: it still accepts an 18+ athlete's email. |
+| `lib/actions/account.ts` `deleteAccount` | A4 adds the Apple sign-in revoke (§5.5). | C5 adds the Play cancel (G5). | One fixed order: Stripe cancel → Play cancel (G5) → Apple sign-in revoke → delete the user. Each step retries, and none can hold deletion past the 30-day commitment (alert plus manual instruction). **Revoking Sign in with Apple does not cancel an App Store subscription.** The FV-652 notice stays, and no copy may suggest otherwise. |
+| `private.is_unestablished` (§5.1) | Lists the provider tables. | C2 adds `google_subscriptions` and `google_purchase_bindings`. | An RLS-harness assertion lists every foreign key to `auth.users` or `profiles` from `pg_constraint`. It fails when a table is neither covered by the predicate nor on an explicit allowlist. C2 cannot forget the predicate. |
+| `lib/subscriptions/*`: resolver, subscribe guard, trial, capacity, offline window | No change. | C5 adds Google. | SSO PRs must leave these files untouched (checked with `gh pr diff --name-only`). |
+| Staging `fv-android-staging` | V1 turns Confirm email ON and adds providers. | May use staging for non-Play checks. Play test purchases run on license testers (record 7.4). | Announce staging auth changes on FV-569 and FV-620 before making them. Test accounts are created already confirmed (`email_confirm: true`). |
+
+### Baseline evidence (before any SSO or billing code)
+Recorded 2026-11-11 against `main` @ a0e882f:
+- **CI run 43100944720** on PR #594 head d1ad0df (tree identical to a0e882f):
+  - Tests: 170 files, 3359 passed.
+  - E2E: 50 passed. The two skipped steps were the cached browser install and the failure-only report upload.
+  - RLS harness: 22 assertion files, all passed. These include `03_subscriptions`, `18_adult_athlete_boundary`, `20_apple_subscriptions`, `21_seat_selection` and `22_athlete_invitations`.
+- **A local targeted run** (detached worktree at a0e882f) covered 42 auth, access and billing suites:
+  - 41 passed, with 919 tests.
+  - One suite, `apple-server.real-fixture`, could not import `@apple/app-store-server-library`. This is the known gap where a worktree resolves the primary checkout's stale `node_modules`, not a product failure. The same suite is green in the CI run above.
+- **Covered today:**
+  - password parent signup and sign-in (E2E global setup);
+  - 18+ adult signup (`auth-adult`);
+  - minor username sign-in, and an 18+ email on the Athlete tab (`username-sign-in`, `athlete-username`);
+  - guards, shell and router;
+  - access resolution across Stripe, Apple, comp and unknown (`training-access`, `apple-access`, `grants-resolver`);
+  - the duplicate-purchase guard, capacity and seats, the offline window, and deletion notices.
+- **Not covered today**, so the delivering PRs add it: more than one identity per user, identity linking, the pending state, and Apple or Google identities.
+
+### Combined regression matrix
+Each delivering PR and gate produces the evidence in its row. The **snapshot** is a read-only, content-free record taken before and after on staging (V1/V2) and production (V3). It holds:
+- the user id and identity providers (no emails or tokens);
+- the role;
+- `getParentAccessLevel` and `getSubscribeEntitlementState`;
+- the linked athlete ids with `seat_active`;
+- the offline-until date.
+
+A row passes only when the after-snapshot matches the before-snapshot, except for the fields the row says change.
+
+| # | Cohort | Must hold | Proven by |
+|---|---|---|---|
+| R1 | Existing password parent with Stripe and linked athletes | Password sign-in is unchanged on web, iOS and legacy Android. Adding Google with the same verified email gives the same id, and the only change is one more provider. Access, guard state, athletes, seats and offline window are unchanged. The athletes' sessions and training access are unaffected. | Unit (A3); E2E (A3); V1 S2/S8; V2; V3 |
+| R2 | Existing password parent with an Apple subscription | As R1, plus Restore still binds to the same payer. Linking Sign in with Apple keeps the id. | Unit (A4); V2 on a sandbox tester; V3 |
+| R3 | Comp-granted parent | The comp grant still applies after linking. | Unit (A3); V3 (KC's admin account) |
+| R4 | 18+ athlete, password | Both the new primary door and the FV-654 Athlete tab sign in. After SSO is added, the role stays `adult_athlete` and lands on `/athlete`. | Unit (A6); E2E (A6); V2 |
+| R5 | Minor athlete (username) | No SSO buttons appear in the secondary section. A synthetic address never links. The parent link and training access follow the parent's entitlement before and after the parent adds SSO (`/api/athlete/access`). | Unit; RLS `18_`/`22_`; E2E (A6); V2 |
+| R6 | New Google account (web, iOS, Android) | `pending` → `/welcome` → profile, then not entitled → that surface's purchase path: Stripe on web, Apple on iOS. On Android, the not-entitled notice before `(play)` builds and Play purchase with them. Trial-eligible exactly once. | V2 app-first (§13); billing C10 for the Android purchase |
+| R7 | New Apple account, including Hide My Email | As R6, plus the token is stored, relay mail is delivered, and S10 recovery works. | V0 S3/S5; V1 S1/S10; V2 |
+| R8 | Duplicates and linkage | (a) The same verified email links. (b) An unverified pre-registration is dropped and the real owner keeps the account (S2/S8). (c) A relay or different email creates a separate, not-entitled account that cannot claim another account's Stripe, Apple or Play purchase (E5). (d) One identity gives one id across iOS, Android and web (S3). (e) The §8 transition changes no billing rows (snapshot before T3, after T5). | Unit; V0; V1; A2 snapshot |
+| R9 | Deletion with an entitlement | A subscribed, comp or athlete-linked account always reads `not_pending` (S11). `deleteAccount` runs the fixed order in the table above. The FV-652 notice shows for App Store payers. | Unit; concurrency tests (A1); RLS FK-coverage assertion; V2 |
+| R10 | Read failure on return | An access-read failure after SSO shows "couldn't check". There is no `/subscribe` and no `/welcome`. | Unit (A3) |
+| R11 | Legacy installed builds | Bare-token Android and older iOS builds show no SSO and no purchase path. The FV-492/493 legacy suites pass unchanged. | Unit (A6, C1); guard test |
+
+The combined report for the PM uses this table: one line per row per gate, with the PR or run id and the date.
 
 ## 14. Superseded (do not reopen)
 
