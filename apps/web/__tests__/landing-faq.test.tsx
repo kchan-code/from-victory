@@ -190,7 +190,7 @@ describe("Faq — subscriber sign-in and recovery entries (FV-681)", () => {
     expect(a).toContain("“Try again”");
     expect(a).toContain("“Subscribed with a different account? Sign out, then sign in with that one.”");
     expect(a).toContain("“Subscribe to From Victory from a web browser at fromvictoryapp.com.”");
-    expect(a).toContain("tap “Sign out” at the top");
+    expect(a).toContain("“Sign out” is at the top of the screen");
   });
 
   it("training-paused answer covers inactive plan, fewer spots and access check", () => {
@@ -198,6 +198,8 @@ describe("Faq — subscriber sign-in and recovery entries (FV-681)", () => {
     expect(a).toContain("nothing has been removed");
     expect(a).toContain("fewer spots");
     expect(a).toContain("“Access check”");
+    expect(a).toContain("“We couldn’t check your access”");
+    expect(a).toContain("“Try again”");
   });
 
   it("new entries carry no internal QA, environment or em-dash leakage", () => {
