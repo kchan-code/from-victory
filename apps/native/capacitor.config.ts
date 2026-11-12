@@ -24,6 +24,9 @@ import type { CapacitorConfig } from "@capacitor/cli";
  * billing build as free of third-party or telemetry code (FV-667 owns the
  * Data safety form and privacy text). App-local FVNarration transfers only the assembled narration
  * WAV to the native audio player; it has no music-provider or library access.
+ * App-local FVAuth is a system-browser / Sign in with Apple bridge (no
+ * third-party SDK; parents and 18+ only, enforced server-side);
+ * product-strategist approved FV-675, kids-privacy-officer review required.
  * Any new plugin needs a fresh product + privacy review.
  */
 
@@ -133,4 +136,91 @@ const config: CapacitorConfig = {
   },
 };
 
-export default config;
+/**
+ * FV-675 (SSO P0): staging-only FVAuth build switch.
+ *
+ * `FV_SSO_STAGING_BUILD=1` at `cap sync` / `cap copy` time produces a STAGING
+ * shell that advertises the app-local FVAuth plugin to the server. With the
+ * env unset (every production build), `config` above is exported untouched,
+ * so the generated capacitor.config.json stays byte-identical to the pre-SSO
+ * build and no production UA string changes (FV-620 C1 owns the production
+ * Android override; the FV-569 spec §13a serializes those edits).
+ *
+ * What the switch changes, and nothing else:
+ *   - UA: appends the `FVAuth/1` capability marker to each platform's
+ *     EFFECTIVE token. iOS becomes "FVNativeShell/1 (ios) FVAuth/1". Android
+ *     gets a per-platform override of its effective token plus the marker:
+ *     today "FVNativeShell/1 FVAuth/1"; once C1's `(play)` override lands it
+ *     becomes "FVNativeShell/1 (play) FVAuth/1" with no edit here. The
+ *     top-level bare token never changes. The marker is a presentation hint
+ *     only (apps/web/lib/native-shell.ts `hasAuthCapability`), never
+ *     authorization.
+ *   - allowNavigation: adds the staging WEB host so the WebView can stay on
+ *     the staging site. The staging Supabase host is deliberately NOT added:
+ *     provider sign-in must run in the system browser (FVAuth.startSession),
+ *     never inside the WebView. Still no Stripe host.
+ *   - plugins.FVAuth.stagingHosts: tells the native FVAuth plugin to accept
+ *     the staging hosts on top of its hard-coded production allow-list. The
+ *     host lists themselves live natively (FVAuthPlugin.swift /
+ *     FVAuthPlugin.java); this boolean is baked into the app bundle and is
+ *     not reachable from page JavaScript.
+ *
+ * Staging build: FV_SSO_STAGING_BUILD=1
+ *   CAPACITOR_SERVER_URL=https://fv-android-staging-web.vercel.app npx cap sync
+ */
+const FVAUTH_UA_MARKER = "FVAuth/1";
+const SSO_STAGING_NAVIGATION_HOSTS = ["fv-android-staging-web.vercel.app"];
+const SSO_STAGING_ORIGIN = "https://fv-android-staging-web.vercel.app";
+
+export function withSsoStagingBuild(base: CapacitorConfig): CapacitorConfig {
+  const globalToken = base.appendUserAgent ?? "";
+  const iosToken = base.ios?.appendUserAgent ?? globalToken;
+  const androidToken = base.android?.appendUserAgent ?? globalToken;
+  return {
+    ...base,
+    server: {
+      ...base.server,
+      allowNavigation: [
+        ...(base.server?.allowNavigation ?? []),
+        ...SSO_STAGING_NAVIGATION_HOSTS,
+      ],
+    },
+    plugins: {
+      ...base.plugins,
+      FVAuth: { stagingHosts: true },
+    },
+    android: {
+      ...base.android,
+      appendUserAgent: `${androidToken} ${FVAUTH_UA_MARKER}`,
+    },
+    ios: {
+      ...base.ios,
+      appendUserAgent: `${iosToken} ${FVAUTH_UA_MARKER}`,
+    },
+  };
+}
+
+/**
+ * Build switches compose in a fixed order on top of the unchanged `config`:
+ *   1. platform-token switches, which SET a platform's base UA token
+ *      (FV-664's FV_PLAY_BILLING branch, `android.appendUserAgent =
+ *      "FVNativeShell/1 (play)"`, belongs here — not implemented in FV-675);
+ *   2. capability-marker switches, which APPEND to whatever token is then in
+ *      effect (FV_SSO_STAGING_BUILD → " FVAuth/1").
+ * With every env unset, `buildConfig` is `config` itself.
+ */
+let buildConfig: CapacitorConfig = config;
+// 1. Platform-token switches (FV-664 FV_PLAY_BILLING goes here).
+// 2. Capability markers, appended to the token in effect after step 1.
+if (process.env.FV_SSO_STAGING_BUILD === "1") {
+  // A staging switch on a production-URL shell would advertise FVAuth/1
+  // without `(play)` and widen the native allow-list (spec §13a). Refuse.
+  if (new URL(serverUrl).origin !== SSO_STAGING_ORIGIN) {
+    throw new Error(
+      `FV_SSO_STAGING_BUILD=1 requires CAPACITOR_SERVER_URL=${SSO_STAGING_ORIGIN}`,
+    );
+  }
+  buildConfig = withSsoStagingBuild(buildConfig);
+}
+
+export default buildConfig;
