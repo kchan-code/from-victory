@@ -116,6 +116,11 @@ as $$
     and not exists (select 1 from public.apple_subscriptions    where payer_id  = p_user_id)
     and not exists (select 1 from public.apple_purchase_tokens  where payer_id  = p_user_id)
     and not exists (select 1 from public.apple_sandbox_testers  where payer_id  = p_user_id)
+    -- Google Play mirror tables (FV-660, PR #597). Required by the FV-569/FV-620
+    -- shared-surface rule: a Play payer must never look deletable.
+    and not exists (select 1 from public.google_subscriptions     where payer_id = p_user_id)
+    and not exists (select 1 from public.google_purchase_bindings where payer_id = p_user_id)
+    and not exists (select 1 from public.google_license_testers   where payer_id = p_user_id)
     and not exists (select 1 from public.access_grants          where parent_id = p_user_id)
     and not exists (select 1 from public.parent_athlete_links
                      where parent_id = p_user_id or athlete_id = p_user_id)
