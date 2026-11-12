@@ -163,7 +163,7 @@ describe("Faq — subscriber sign-in and recovery entries (FV-681)", () => {
   };
 
   it("subscribe answer: website or iPhone App Store, no Android purchase", () => {
-    const a = find("Where do I subscribe, and does it work in the apps?");
+    const a = find("Where do I subscribe?");
     expect(a).toContain("The Android app doesn’t sell subscriptions");
     // FV-685: Restore Purchases lives in its own Apple-only entry, not here.
     expect(a).not.toMatch(/Restore Purchases/);
@@ -258,7 +258,7 @@ describe("Faq — subscriber sign-in and recovery entries (FV-681)", () => {
   it("new entries carry no internal QA, environment or em-dash leakage", () => {
     const qs = [
       "How does my athlete get the app?",
-      "Where do I subscribe, and does it work in the apps?",
+      "Where do I subscribe?",
       "How do we sign in to the app?",
       "I already subscribe. Why is the app asking me to subscribe?",
       "What does “Training paused” mean on my athlete’s screen?",

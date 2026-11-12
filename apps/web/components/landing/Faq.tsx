@@ -43,7 +43,7 @@ export const FAQ_ITEMS: FaqEntry[] = [
     a: `On iPhone, download From Victory from the US App Store: ${APP_STORE_URL}. On Android, search for From Victory on Google Play. You can also use it in a web browser at fromvictoryapp.com. Your athlete signs in with the same account on any of them.`,
   },
   {
-    q: "Where do I subscribe, and does it work in the apps?",
+    q: "Where do I subscribe?",
     a: "Subscribe on our website, fromvictoryapp.com, or in the iPhone app through the App Store. Either way, the subscription belongs to your From Victory account. The Android app doesn’t sell subscriptions: subscribe on the website, then sign in to the Android app. A subscription bought in the iPhone app is managed through Apple on your iPhone.",
   },
   {
