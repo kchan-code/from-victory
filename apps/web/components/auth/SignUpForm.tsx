@@ -56,7 +56,11 @@ export function SignUpForm({ afterSubmit }: Props = {}) {
           role="parent"
           action={completeEmailSignup}
           retained={retained}
-          onChangeEmail={() => setDismissed(state)}
+          onChangeEmail={() => {
+            setDismissed(state);
+            // Return focus to the email field the user is about to change.
+            requestAnimationFrame(() => document.getElementById("email")?.focus());
+          }}
         />
       ) : null}
       <form action={formAction} noValidate hidden={showCode}>

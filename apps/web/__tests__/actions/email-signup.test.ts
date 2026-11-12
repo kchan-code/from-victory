@@ -168,6 +168,7 @@ beforeEach(() => {
     error: null,
   });
   h.resend.mockResolvedValue({ error: null });
+  h.getUser.mockResolvedValue({ data: { user: null }, error: null });
   h.signOut.mockImplementation(async () => {
     h.order.push("signOut");
     return { error: null };
@@ -479,11 +480,37 @@ describe("completeEmailSignup", () => {
     expect(h.svcRpc).not.toHaveBeenCalled(); // not even finalize: the user stays pending, retryable
   });
 
-  it("an IP rate limit after verification stops the profile call", async () => {
+  it("does not charge the per-IP sign_up bucket again at completion (step 1 already did)", async () => {
     h.gate.mockImplementation(async (action: string) => ({ limited: action === "sign_up" }));
-    const res = await completeEmailSignup(null, fd(PARENT_COMPLETE));
-    expect(res).toMatchObject({ ok: false });
-    expect(h.rpc).not.toHaveBeenCalled();
+    await redirectedTo(completeEmailSignup(null, fd(PARENT_COMPLETE)));
+    expect(h.gate).not.toHaveBeenCalledWith("sign_up", expect.anything());
+    expect(h.rpc).toHaveBeenCalled();
+  });
+
+  it("retry after a spent code: a session for the same confirmed email skips verifyOtp and completes (QA #600 1b)", async () => {
+    h.getUser.mockResolvedValue({
+      data: { user: { id: "u1", email: PARENT_COMPLETE.email, email_confirmed_at: "2026-11-11T00:00:00Z" } },
+      error: null,
+    });
+    expect(await redirectedTo(completeEmailSignup(null, fd(PARENT_COMPLETE)))).toBe("/dashboard");
+    expect(h.verifyOtp).not.toHaveBeenCalled();
+    expect(h.rpc).toHaveBeenCalledWith("complete_pending_profile", expect.objectContaining({ p_role: "parent" }));
+  });
+
+  it("a session for a DIFFERENT or unconfirmed email still requires the code", async () => {
+    h.getUser.mockResolvedValue({
+      data: { user: { id: "u9", email: "other@example.com", email_confirmed_at: "2026-11-11T00:00:00Z" } },
+      error: null,
+    });
+    await redirectedTo(completeEmailSignup(null, fd(PARENT_COMPLETE)));
+    expect(h.verifyOtp).toHaveBeenCalled();
+    h.verifyOtp.mockClear();
+    h.getUser.mockResolvedValue({
+      data: { user: { id: "u1", email: PARENT_COMPLETE.email, email_confirmed_at: null } },
+      error: null,
+    });
+    await redirectedTo(completeEmailSignup(null, fd(PARENT_COMPLETE)));
+    expect(h.verifyOtp).toHaveBeenCalled();
   });
 });
 

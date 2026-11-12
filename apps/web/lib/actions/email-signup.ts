@@ -162,32 +162,42 @@ export async function completeEmailSignup(
   if (!parsed.success) return { ok: false, ...firstIssue(parsed.error) };
   const fields = parsed.data;
 
-  // Per-email cap on code guesses.
-  const { limited: verifyLimited } = await rateLimitGate(
-    "signup_verify",
-    fields.email,
-  );
-  if (verifyLimited) return { ok: false, error: TOO_MANY };
-
   const supabase = createClient();
-  const { data: verified, error: verifyError } = await supabase.auth.verifyOtp({
-    email: fields.email,
-    token: fields.token,
-    type: "email",
-  });
-  if (verifyError || !verified.user) {
-    console.error(
-      `[email-signup.complete] verifyOtp failed: ${verifyError?.message ?? "no user returned"} (status=${verifyError?.status ?? "n/a"} code=${verifyError?.code ?? "n/a"})`,
-    );
-    return { ok: false, error: BAD_CODE, field: "token" };
-  }
-  const userId = verified.user.id;
 
-  // Profile creation is a POST that mutates state: gate it by IP too (spec
-  // §5.2). Placed after verification so mistyped codes don't burn this bucket.
-  const ip = await getRequestIp();
-  const { limited } = await rateLimitGate("sign_up", ip);
-  if (limited) return { ok: false, error: TOO_MANY };
+  // A retry after the code was already accepted (e.g. the profile RPC failed
+  // transiently) must not need the spent one-time code again: when this
+  // browser already holds a session for this exact, confirmed email, go
+  // straight to profile completion (QA #600 1b).
+  let userId: string | null = null;
+  const { data: current } = await supabase.auth.getUser();
+  if (
+    current?.user &&
+    current.user.email_confirmed_at &&
+    (current.user.email ?? "").toLowerCase() === fields.email
+  ) {
+    userId = current.user.id;
+  } else {
+    // Per-email cap on code guesses. The per-IP `sign_up` budget was already
+    // charged in step 1 (startEmailSignup), so it is not charged again here.
+    const { limited: verifyLimited } = await rateLimitGate(
+      "signup_verify",
+      fields.email,
+    );
+    if (verifyLimited) return { ok: false, error: TOO_MANY };
+
+    const { data: verified, error: verifyError } = await supabase.auth.verifyOtp({
+      email: fields.email,
+      token: fields.token,
+      type: "email",
+    });
+    if (verifyError || !verified.user) {
+      console.error(
+        `[email-signup.complete] verifyOtp failed: ${verifyError?.message ?? "no user returned"} (status=${verifyError?.status ?? "n/a"} code=${verifyError?.code ?? "n/a"})`,
+      );
+      return { ok: false, error: BAD_CODE, field: "token" };
+    }
+    userId = verified.user.id;
+  }
 
   const { data: result, error: rpcError } = await supabase.rpc(
     "complete_pending_profile",

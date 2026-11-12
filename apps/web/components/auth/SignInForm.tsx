@@ -45,7 +45,11 @@ export function SignInForm({ legacyNative = false }: Props) {
           email={state.email}
           purpose="signin"
           action={verifyEmailOnly}
-          onChangeEmail={() => setDismissed(state)}
+          onChangeEmail={() => {
+            setDismissed(state);
+            // Return focus to the email field the user is about to change.
+            requestAnimationFrame(() => document.getElementById("email")?.focus());
+          }}
         />
       ) : null}
       <form action={formAction} noValidate hidden={showCode}>

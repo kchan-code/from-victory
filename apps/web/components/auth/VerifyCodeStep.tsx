@@ -117,6 +117,9 @@ export function VerifyCodeStep({
             setToken(e.target.value.replace(/\D/g, "").slice(0, 6))
           }
           error={tokenError}
+          aria-describedby={
+            tokenError ? "verify-code-intro token-error" : "verify-code-intro"
+          }
           className="tracking-[0.4em] text-[20px] text-center"
         />
       </div>

@@ -90,7 +90,7 @@ describe("error rendering", () => {
     );
     const input = screen.getByLabelText("6-digit code");
     expect(input).toHaveAttribute("aria-invalid", "true");
-    expect(input.getAttribute("aria-describedby")).toBe("token-error");
+    expect(input.getAttribute("aria-describedby")).toBe("verify-code-intro token-error");
     expect(screen.getByRole("alert")).toHaveTextContent("didn't work");
 
     stateRef.current = { ok: false, error: "Something went wrong." };
