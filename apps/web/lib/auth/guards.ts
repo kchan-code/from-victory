@@ -1,7 +1,36 @@
 import { redirect } from "next/navigation";
 
+import {
+  classifyProfilelessUser,
+  homeForState,
+  resolveSessionState,
+} from "@/lib/auth/session-state-core";
 import { createClient } from "@/lib/supabase/server";
 import type { Sport } from "@/lib/sports";
+
+/**
+ * FV-672 (spec FV-569 §5.1 / §13a invariants 1 + 5): a failed profile read is
+ * `error` — "we couldn't check" — never `pending` and never "no profile". The
+ * guards throw this so the nearest error boundary renders a retry; it is
+ * deliberately NOT a redirect to /welcome, /subscribe or /signin (which would
+ * either onboard a possibly-established account or sign the user out on a
+ * transient blip). /welcome catches it to render its own "couldn't check" card.
+ */
+export class SessionCheckError extends Error {
+  constructor() {
+    super("session_check_failed");
+    this.name = "SessionCheckError";
+  }
+}
+
+/**
+ * Destination for a signed-in user with NO profile row: `pending` (verified
+ * apple/google/confirmed-email, still to complete onboarding) -> /welcome;
+ * `orphan` (unverified email-only) -> today's /signin -> sign-out chain.
+ */
+function noProfileTarget(user: Parameters<typeof classifyProfilelessUser>[0]) {
+  return classifyProfilelessUser(user) === "pending" ? "/welcome" : "/signin";
+}
 
 type ParentProfile = {
   id: string;
@@ -54,9 +83,10 @@ export async function requireParent(): Promise<{
     .from("profiles")
     .select("id, role, first_name")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
-  if (error || !profile) redirect("/signin");
+  if (error) throw new SessionCheckError();
+  if (!profile) redirect(noProfileTarget(user));
   if (profile.role !== "parent") redirect("/signin");
 
   return {
@@ -85,9 +115,10 @@ export async function requireSelfPayer(): Promise<{
     .from("profiles")
     .select("id, role, first_name")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
-  if (error || !profile) redirect("/signin");
+  if (error) throw new SessionCheckError();
+  if (!profile) redirect(noProfileTarget(user));
   if (profile.role !== "adult_athlete") redirect("/signin");
 
   return {
@@ -116,9 +147,10 @@ export async function requireSubscriber(): Promise<{
     .from("profiles")
     .select("id, role, first_name")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
-  if (error || !profile) redirect("/signin");
+  if (error) throw new SessionCheckError();
+  if (!profile) redirect(noProfileTarget(user));
   if (profile.role !== "parent" && profile.role !== "adult_athlete")
     redirect("/signin");
 
@@ -142,9 +174,10 @@ export async function requireAthlete(): Promise<{
     .from("profiles")
     .select("id, role, first_name, sport, sport_selected_at")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
-  if (error || !profile) redirect("/signin");
+  if (error) throw new SessionCheckError();
+  if (!profile) redirect(noProfileTarget(user));
   // FV-325: accept the 18+ self-serve role on athlete training surfaces.
   if (profile.role !== "athlete" && profile.role !== "adult_athlete")
     redirect("/signin");
@@ -212,20 +245,49 @@ export async function redirectIfAuthed() {
   } = await supabase.auth.getUser();
   if (!user) return;
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+  const { state } = await resolveSessionState(supabase, user);
+
+  // Verified but not yet onboarded (SSO / confirmed email): finish setup.
+  if (state === "pending") redirect("/welcome");
 
   // FV-325: adult_athlete (18+ self-serve) trains in the athlete app, same
   // home as a parent-created athlete.
-  if (profile?.role === "athlete" || profile?.role === "adult_athlete")
-    redirect("/athlete");
-  if (profile?.role === "parent") redirect("/dashboard");
+  const home = homeForState(state);
+  if (home) redirect(home);
 
-  // No profile (or unknown role): the session is orphaned. Redirecting to
+  // `error`: we could not read the profile. Do NOT route to /welcome or
+  // sign the user out on a transient failure — let the page (/signin,
+  // /signup) render; the real gates re-check on the next request.
+  if (state === "error") return;
+
+  // `orphan` (or unknown role): the session cannot be used. Redirecting to
   // /dashboard would loop back here via requireParent(). Route the user
-  // through the sign-out handler so the session is actually cleared first.
+  // through the sign-out handler so the session is actually cleared first
+  // (Server Components cannot mutate cookies; Route Handlers can).
   redirect("/auth/signout");
+}
+
+/**
+ * Guard for /welcome (FV-672). Only a `pending` session may stay:
+ *   none     -> /signin
+ *   orphan   -> /auth/signout (unverified email-only; today's behaviour)
+ *   parent / athlete / adult_athlete -> their role home
+ *   error    -> throws SessionCheckError (never /welcome-as-fallthrough)
+ * Returns the auth email for the "Signed in as" line (the auth email only).
+ */
+export async function requireOnboarding(): Promise<{
+  userId: string;
+  email: string | null;
+}> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/signin");
+
+  const { state } = await resolveSessionState(supabase, user);
+  if (state === "error") throw new SessionCheckError();
+  if (state === "pending") return { userId: user.id, email: user.email ?? null };
+  if (state === "orphan" || state === "none") redirect("/auth/signout");
+  redirect(homeForState(state) ?? "/auth/signout");
 }

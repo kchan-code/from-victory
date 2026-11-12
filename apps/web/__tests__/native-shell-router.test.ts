@@ -19,7 +19,7 @@ import type { NextRequest, NextResponse } from "next/server";
 
 vi.mock("server-only", () => ({}));
 
-type UserResult = { id: string } | null;
+type UserResult = Record<string, unknown> | null;
 type ProfileResult = { role: string } | null;
 
 let userResult: UserResult = null;
@@ -34,7 +34,7 @@ vi.mock("@supabase/ssr", () => ({
     from: (_table: string) => ({
       select: (_cols: string) => ({
         eq: (_col: string, _val: string) => ({
-          single: async () => ({ data: profileResult, error: profileError }),
+          maybeSingle: async () => ({ data: profileResult, error: profileError }),
         }),
       }),
     }),
@@ -52,7 +52,13 @@ import {
 // Minimal request/response stand-ins — resolveNativeShellEntryTarget only
 // ever reads request.cookies.getAll() and writes via response.cookies.set(),
 // neither of which these tests exercise (no cookie-refresh scenario here).
-const fakeRequest = { cookies: { getAll: () => [], set: () => undefined } } as unknown as NextRequest;
+function requestWithUa(ua: string): NextRequest {
+  return {
+    cookies: { getAll: () => [], set: () => undefined },
+    headers: new Headers({ "user-agent": ua }),
+  } as unknown as NextRequest;
+}
+const fakeRequest = requestWithUa("Mozilla/5.0 (Linux; Android 14) FVNativeShell/1");
 const fakeResponse = { cookies: { set: () => undefined } } as unknown as NextResponse;
 
 const ORIGINAL_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -160,5 +166,78 @@ describe("resolveNativeShellEntryTarget", () => {
 
     process.env.NEXT_PUBLIC_SUPABASE_URL = ORIGINAL_URL;
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = ORIGINAL_KEY;
+  });
+});
+
+// FV-672: pending (verified, no profile) -> /welcome ONLY in FVAuth/1 builds.
+describe("resolveNativeShellEntryTarget: pending session (FV-672)", () => {
+  const FVAUTH_UA = "Mozilla/5.0 (iPhone) FVNativeShell/1 (ios) FVAuth/1";
+  const OLD_SHELL_UA = "Mozilla/5.0 (iPhone) FVNativeShell/1 (ios)";
+  const GOOGLE_USER = {
+    id: "p-1",
+    email: "g@example.com",
+    app_metadata: { provider: "google", providers: ["google"] },
+  };
+  const APPLE_USER = {
+    id: "p-2",
+    app_metadata: { provider: "apple", providers: ["apple"] },
+  };
+  const ORPHAN_USER = {
+    id: "o-1",
+    email: "e@example.com",
+    email_confirmed_at: null,
+    app_metadata: { provider: "email", providers: ["email"] },
+  };
+
+  it.each([
+    ["google", GOOGLE_USER],
+    ["apple", APPLE_USER],
+  ])("FVAuth build + %s user without a profile -> /welcome", async (_l, user) => {
+    userResult = user;
+    profileResult = null;
+    expect(
+      await resolveNativeShellEntryTarget(requestWithUa(FVAUTH_UA), fakeResponse),
+    ).toBe("/welcome");
+  });
+
+  it("a shell WITHOUT FVAuth/1 keeps today's /auth/signout", async () => {
+    userResult = GOOGLE_USER;
+    profileResult = null;
+    expect(
+      await resolveNativeShellEntryTarget(requestWithUa(OLD_SHELL_UA), fakeResponse),
+    ).toBe("/auth/signout");
+  });
+
+  it("FVAuth/1 alone (no shell token) is not an FVAuth build", async () => {
+    userResult = GOOGLE_USER;
+    profileResult = null;
+    expect(
+      await resolveNativeShellEntryTarget(requestWithUa("Mozilla/5.0 FVAuth/1"), fakeResponse),
+    ).toBe("/auth/signout");
+  });
+
+  it("an orphan (unconfirmed email-only) stays /auth/signout even in an FVAuth build", async () => {
+    userResult = ORPHAN_USER;
+    profileResult = null;
+    expect(
+      await resolveNativeShellEntryTarget(requestWithUa(FVAUTH_UA), fakeResponse),
+    ).toBe("/auth/signout");
+  });
+
+  it("a failed profile read in an FVAuth build is NEVER /welcome", async () => {
+    userResult = GOOGLE_USER;
+    profileResult = null;
+    profileError = { message: "boom" };
+    expect(
+      await resolveNativeShellEntryTarget(requestWithUa(FVAUTH_UA), fakeResponse),
+    ).toBe("/auth/signout");
+  });
+
+  it("an established parent in an FVAuth build still goes to /dashboard", async () => {
+    userResult = GOOGLE_USER;
+    profileResult = { role: "parent" };
+    expect(
+      await resolveNativeShellEntryTarget(requestWithUa(FVAUTH_UA), fakeResponse),
+    ).toBe("/dashboard");
   });
 });

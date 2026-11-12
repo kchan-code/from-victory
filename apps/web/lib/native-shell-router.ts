@@ -3,6 +3,7 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import type { NextRequest, NextResponse } from "next/server";
 
+import { classifyProfilelessUser } from "@/lib/auth/session-state-core";
 import type { Database } from "@/lib/supabase/types";
 
 /**
@@ -35,6 +36,23 @@ export const NATIVE_SHELL_ATHLETE_TARGET = "/athlete";
  * to /signin); /auth/signout actually clears the session first.
  */
 const NATIVE_SHELL_ORPHANED_SESSION_TARGET = "/auth/signout";
+/**
+ * Verified (apple/google/confirmed-email) session with no profile yet — only
+ * routed here in FVAuth/1 builds (FV-672, spec §5.1), which can finish
+ * onboarding on /welcome. Every other shell keeps today's sign-out.
+ */
+export const NATIVE_SHELL_PENDING_TARGET = "/welcome";
+
+/**
+ * True for a shell build that carries the `FVAuth` plugin (UA token
+ * `FVAuth/1`) AND the shell token itself.
+ * TODO(FV-675): replace with `hasAuthCapability` from lib/native-shell.ts once
+ * PR #602 is rebased in. Presentation hint only, never authorization.
+ */
+function isFvAuthShellUserAgent(userAgent: string | null | undefined): boolean {
+  const ua = userAgent ?? "";
+  return ua.includes("FVNativeShell/1") && ua.includes("FVAuth/1");
+}
 
 /**
  * The marketing routes that redirect through this router in-shell. Single
@@ -109,9 +127,17 @@ export async function resolveNativeShellEntryTarget(
     .from("profiles")
     .select("role")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
-  if (error || !profile) return NATIVE_SHELL_ORPHANED_SESSION_TARGET;
+  // A failed read is never "pending" (spec §13a invariant 5): keep today's
+  // behaviour (the sign-out escape hatch), never /welcome.
+  if (error) return NATIVE_SHELL_ORPHANED_SESSION_TARGET;
+  if (!profile) {
+    return isFvAuthShellUserAgent(request.headers.get("user-agent")) &&
+      classifyProfilelessUser(user) === "pending"
+      ? NATIVE_SHELL_PENDING_TARGET
+      : NATIVE_SHELL_ORPHANED_SESSION_TARGET;
+  }
   if (profile.role === "parent") return NATIVE_SHELL_PARENT_TARGET;
   if (profile.role === "athlete" || profile.role === "adult_athlete")
     return NATIVE_SHELL_ATHLETE_TARGET;
