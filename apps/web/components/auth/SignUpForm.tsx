@@ -29,9 +29,12 @@ type Props = {
   /** Optional content rendered directly below the submit button (e.g. the
    * trial/billing expectation line) — pure presentation, page decides. */
   afterSubmit?: ReactNode;
+  /** FV-674: Apple/Google block + "or use email" divider, rendered above the
+   * form when showSSO() is true. Hidden with the form during code entry. */
+  sso?: ReactNode;
 };
 
-export function SignUpForm({ afterSubmit }: Props = {}) {
+export function SignUpForm({ afterSubmit, sso }: Props = {}) {
   const { wrapped, retained, dismissed, setDismissed } = useTwoStepSignup(
     startEmailSignup,
     RETAINED_KEYS,
@@ -63,6 +66,7 @@ export function SignUpForm({ afterSubmit }: Props = {}) {
           }}
         />
       ) : null}
+      {sso ? <div hidden={showCode}>{sso}</div> : null}
       <form action={formAction} noValidate hidden={showCode}>
         <input type="hidden" name="role" value="parent" />
       <Field

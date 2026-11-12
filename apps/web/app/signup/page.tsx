@@ -3,7 +3,9 @@ import Link from "next/link";
 import { AuthShell, type AuthStep } from "@/components/auth/AuthShell";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { TrialDisclosure } from "@/components/auth/TrialDisclosure";
+import { SsoButtons } from "@/components/auth/SsoButtons";
 import { redirectIfAuthed } from "@/lib/auth/guards";
+import { showSSO } from "@/lib/auth/sso-visibility";
 import { isAdultSignupEnabled } from "@/lib/flags";
 
 export const metadata = {
@@ -33,6 +35,7 @@ export default async function SignUpPage() {
       steps={adultSignupEnabled ? PARENT_STEPS : undefined}
     >
       <SignUpForm
+        sso={<SsoButtons entry={showSSO()} />}
         afterSubmit={
           adultSignupEnabled ? (
             <TrialDisclosure>

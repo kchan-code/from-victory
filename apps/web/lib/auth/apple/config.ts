@@ -54,6 +54,11 @@ export function getSsoLevel(surface: SsoSurface): SsoLevel {
 /** Admin preview cookie (spec §3 "Flags"). Its value must equal SSO_PREVIEW_TOKEN. */
 export const SSO_PREVIEW_COOKIE = "fv_sso_preview";
 
+/** FV-674: the same constant-time token check, shared with the entry-point UI. */
+export function isSsoPreviewCookieValid(cookieValue: string | undefined | null): boolean {
+  return previewTokenMatches(cookieValue);
+}
+
 function previewTokenMatches(cookieValue: string | undefined | null): boolean {
   const expected = (process.env.SSO_PREVIEW_TOKEN ?? "").trim();
   const got = (cookieValue ?? "").trim();

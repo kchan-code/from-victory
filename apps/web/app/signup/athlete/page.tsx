@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 
 import { AuthShell, type AuthStep } from "@/components/auth/AuthShell";
+import { SsoButtons } from "@/components/auth/SsoButtons";
 import { AdultSignUpForm } from "@/components/auth/AdultSignUpForm";
 import { TrialDisclosure } from "@/components/auth/TrialDisclosure";
 import { redirectIfAuthed } from "@/lib/auth/guards";
+import { showSSO } from "@/lib/auth/sso-visibility";
 import { isAdultSignupEnabled } from "@/lib/flags";
 
 export const metadata = {
@@ -29,6 +31,7 @@ export default async function AdultSignUpPage() {
       steps={ADULT_STEPS}
     >
       <AdultSignUpForm
+        sso={<SsoButtons entry={showSSO()} />}
         afterSubmit={
           <TrialDisclosure>
             After you create your account, you&apos;ll head to checkout. 14
