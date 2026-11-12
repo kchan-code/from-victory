@@ -576,6 +576,19 @@ This is a privacy-path change: kids-privacy-officer review, then KC's wording.
 - Losing the relay inbox means the account can't be recovered.
 - The locked-out-parent deletion path (§8).
 
+### Added by the kids-privacy-officer review of #600–#602 (2026-11-11)
+The privacy-policy PR must also say:
+- **Android handoff:** it holds the Apple ID token, including its email claim, encrypted, for at most 3 minutes.
+- **Under-18 on the adult path:** the attempt is rejected and the account is deleted. The birthdate is never stored, and until deletion the tombstone holds only an internal id and a reason.
+- **Failed Apple revoke:** if revoke fails during deletion, the account is still deleted and the user is shown how to revoke manually.
+- **Rate-limit records:** they store irreversible HMACs of the email or IP.
+
+Store forms:
+- **App Privacy (Apple):** Email Address and User ID, linked to the user, used for App Functionality only, not for tracking. Do not declare Name.
+- **Data safety (Play):** email and user IDs, collected from parents and adult athletes only, encrypted in transit, with deletion supported.
+
+The App Review notes disclose the non-ephemeral iOS auth session. The Supabase Google provider sets the scopes `openid email` explicitly.
+
 ## 11. Essential decisions (KC)
 
 | # | Decision | Recommendation |
