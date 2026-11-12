@@ -125,6 +125,19 @@ export function DeleteAccountSection({
                 {state.error}
               </p>
             ) : null}
+            {state && state.ok ? (
+              <p
+                className="font-body text-[13px] text-cream"
+                role="status"
+                data-testid="delete-account-apple-revoke-manual"
+              >
+                Your account is deleted. We couldn&rsquo;t finish disconnecting
+                Sign in with Apple, so please remove From Victory yourself: on
+                your iPhone open Settings, tap your name, then Sign-In &amp;
+                Security, then Sign in with Apple, choose From Victory, and tap
+                Stop Using Apple ID.
+              </p>
+            ) : null}
             <div className="flex items-center gap-2">
               <button
                 type="button"

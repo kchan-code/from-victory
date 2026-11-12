@@ -78,6 +78,13 @@ vi.mock("@/lib/stripe/server", () => ({
   }),
 }));
 
+// FV-673: Apple revoke is covered in account-apple-revoke.test.ts; here it is a
+// successful no-op so these tests keep exercising only the pre-existing flow.
+vi.mock("@/lib/auth/apple/revoke", () => ({
+  revokeAppleTokensWithRetry: vi.fn(async () => ({ rows: [], allOk: true })),
+  alertAppleRevokeFailure: vi.fn(),
+}));
+
 // Stripe quantity sync — non-blocking fire-and-forget; no-op in tests.
 const syncAthleteQuantityMock = vi.fn(async (..._args: unknown[]) => {});
 vi.mock("@/lib/stripe/sync-athlete-quantity", () => ({
