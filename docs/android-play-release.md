@@ -50,8 +50,8 @@ Bubblewrap / TWA — Capacitor is the Android track.
 | Hosted WebView URL | `https://www.fromvictoryapp.com` (`capacitor.config.ts` `server.url`) |
 | Native project | `apps/native` (`@from-victory/native`) |
 | Current `versionCode` / `versionName` | `9` / `1.0.0` in `apps/native/android/app/build.gradle` — next upload after Play's v8 (build 8 is on Internal testing; run preflight with `--min-version-code 9`; bump by 1 for every further upload) |
-| Billing in the APK | **None.** Stripe on the web product. Do not add Play Billing / IAP in this pass. |
-| Tracking / ads / crash SDKs | **None.** Do not add them to satisfy Play. |
+| Billing in the APK | **None in a default build.** Stripe on the web product. A build made with `FV_PLAY_BILLING=1` (FV-664, see section 4) carries Google's Play Billing Library; no such build is uploaded until KC approves the FV-669 release package. |
+| Tracking / ads / crash SDKs | **None of ours, and none at all in a default build.** Do not add them to satisfy Play. A `FV_PLAY_BILLING=1` build also carries the billing library's own Google components (datatransport telemetry transport, Play services, firebase-encoders), so do not describe that build as free of telemetry code. |
 | Age floor | 13+. Minors 13–17 are parent-managed. Not a kids app. |
 | iOS / App Store | Separate track: [docs/ios-app-store-release.md](./ios-app-store-release.md). Checklist ready; enrollment not started. |
 
@@ -231,6 +231,12 @@ apps/native/scripts/android-release-preflight.sh \
 Never upload a bundle built for local testing (a `CAPACITOR_SERVER_URL` override
 or a cleartext manifest). The preflight fails both.
 
+That script is `cd android && ./gradlew bundleRelease`. Output:
+
+```
+apps/native/android/app/build/outputs/bundle/release/app-release.aab
+```
+
 ### Play Billing build switch (FV-664)
 
 The commands above build the **default** shell: no Play Billing library, no
@@ -256,12 +262,6 @@ components (from the Play Billing Library's own dependencies), which the Data
 safety form and privacy page must reflect before such a build is uploaded
 (FV-667). Do not upload a billing build until FV-669's release package is
 approved by KC.
-
-That script is `cd android && ./gradlew bundleRelease`. Output:
-
-```
-apps/native/android/app/build/outputs/bundle/release/app-release.aab
-```
 
 Confirm the application id before the first upload (this is what Gradle
 packages — Play will bind it permanently):

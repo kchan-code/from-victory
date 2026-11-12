@@ -1,5 +1,7 @@
 package com.fromvictoryapp.app;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -19,6 +21,7 @@ final class PlayBillingLogic {
 
     static final String PACKAGE_NAME = "com.fromvictoryapp.app";
     static final int MAX_ACCOUNT_ID_LENGTH = 64;
+    static final int MAX_PRODUCT_IDS = 20;
 
     // BillingClient.BillingResponseCode
     static final int RC_SERVICE_TIMEOUT = -3;
@@ -106,6 +109,17 @@ final class PlayBillingLogic {
         return id != null && PRODUCT_ID.matcher(id).matches();
     }
 
+    /** Well-formed product ids only, first occurrence order, duplicates collapsed. Never null. */
+    static List<String> cleanProductIds(List<?> raw) {
+        LinkedHashSet<String> unique = new LinkedHashSet<>();
+        if (raw != null) {
+            for (Object value : raw) {
+                if (value instanceof String && isValidProductId((String) value)) unique.add((String) value);
+            }
+        }
+        return new ArrayList<>(unique);
+    }
+
     /**
      * Validates purchase() arguments. Returns null when valid, otherwise a short message that
      * never echoes the account id or token. {@code oldPurchaseToken}/{@code replaceMode} are both
@@ -171,6 +185,15 @@ final class PlayBillingLogic {
             case RC_DEVELOPER_ERROR: return ST_DEVELOPER_ERROR;
             default: return ST_UNKNOWN; // RC_ERROR, RC_ITEM_NOT_OWNED, anything new
         }
+    }
+
+    /**
+     * Error string for getProducts()/restore(), which have no "cancelled" or "ok" outcome: a
+     * failure is always one of the typed errors the JS wrapper knows.
+     */
+    static String listErrorForResponseCode(int code) {
+        String status = statusForResponseCode(code);
+        return "ok".equals(status) || ST_CANCELLED.equals(status) ? ST_UNKNOWN : status;
     }
 
     /**

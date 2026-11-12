@@ -37,9 +37,10 @@ public class PlayBillingLogicTest {
     }
 
     @Test public void validationMessagesNeverEchoSecrets() {
-        String msg = validate("family.1", "monthly", null, "", "tok-SECRET", null);
+        // Valid account id + a token with no mode: this reaches the replace checks.
+        String msg = validate("family.1", "monthly", null, ACCOUNT, "tok-SECRET", null);
         assertNotNull(msg);
-        assertTrue(!msg.contains("SECRET"));
+        assertTrue(!msg.contains("SECRET") && !msg.contains(ACCOUNT));
         String msg2 = validate("family.1", "monthly", null, ACCOUNT, "tok-SECRET", "BOGUS");
         assertNotNull(msg2);
         assertTrue(!msg2.contains("SECRET") && !msg2.contains(ACCOUNT));
@@ -122,6 +123,21 @@ public class PlayBillingLogicTest {
         assertEquals("unknown", PlayBillingLogic.statusForResponseCode(6));
         assertEquals("unknown", PlayBillingLogic.statusForResponseCode(8));
         assertEquals("unknown", PlayBillingLogic.statusForResponseCode(9999));
+    }
+
+    @Test public void listErrorsAreNeverOkOrCancelled() {
+        assertEquals("unknown", PlayBillingLogic.listErrorForResponseCode(0));
+        assertEquals("unknown", PlayBillingLogic.listErrorForResponseCode(1));
+        assertEquals("network", PlayBillingLogic.listErrorForResponseCode(12));
+        assertEquals("unavailable", PlayBillingLogic.listErrorForResponseCode(3));
+        assertEquals("developer_error", PlayBillingLogic.listErrorForResponseCode(5));
+    }
+
+    @Test public void cleansProductIds() {
+        assertEquals(Arrays.asList("family.1", "family.2"), PlayBillingLogic.cleanProductIds(
+            Arrays.<Object>asList("family.1", "family.1", "Family.3", 7, null, "family.2", "family.1")));
+        assertTrue(PlayBillingLogic.cleanProductIds(null).isEmpty());
+        assertTrue(PlayBillingLogic.cleanProductIds(Collections.emptyList()).isEmpty());
     }
 
     // ---- result shaping -----------------------------------------------------------------------

@@ -30,6 +30,7 @@ afterEach(() => {
 });
 
 const ACCOUNT = "0b3c2f5e9a7d4c1e8f6a5b4c3d2e1f00";
+const TOKEN = "tok-SECRET-purchase-token";
 const INPUT = { productId: "family.1", basePlanId: "monthly", obfuscatedAccountId: ACCOUNT };
 
 describe("isPlayBillingBridgeAvailable", () => {
@@ -214,8 +215,25 @@ describe("purchase", () => {
     expect(await purchase(INPUT)).toEqual({ status: "error", error: "developer_error" });
     installBridge({ purchase: vi.fn(async () => { throw new Error(`boom ${ACCOUNT}`); }) });
     expect(await purchase(INPUT)).toEqual({ status: "error", error: "unknown" });
+    installBridge({ purchase: vi.fn(async () => { throw { code: "INVALID_ARGUMENT", message: `bad ${TOKEN}` }; }) });
+    expect(
+      await purchase({ ...INPUT, replace: { oldPurchaseToken: TOKEN, mode: "DEFERRED" } }),
+    ).toEqual({ status: "error", error: "developer_error" });
     expect(warn).toHaveBeenCalled();
-    for (const call of warn.mock.calls) expect(String(call[0])).not.toContain(ACCOUNT);
+    // Every argument of every console call, not just the first.
+    const logged = warn.mock.calls.flat().map(String).join(" ");
+    expect(logged).not.toContain(ACCOUNT);
+    expect(logged).not.toContain(TOKEN);
+  });
+
+  it("never throws on a non-object input, even with the bridge present", async () => {
+    const native = vi.fn();
+    installBridge({ purchase: native });
+    for (const bad of [undefined, null, "family.1", 7, []]) {
+      // reason: deliberately violating the type to prove the runtime guard.
+      expect(await purchase(bad as never)).toEqual({ status: "error", error: "developer_error" });
+    }
+    expect(native).not.toHaveBeenCalled();
   });
 });
 

@@ -39,7 +39,8 @@
  *     null, call restore() and send what it returns to the server.
  *     `obfuscatedAccountId` is REQUIRED (1..64 chars). The plugin buys the
  *     offer matching EXACTLY basePlanId + offerId (absent = the base plan
- *     with no offer) and never falls back to another offer. Malformed
+ *     with no offer) and never falls back to another offer. A user cancel at
+ *     any step is `{ status: "cancelled" }`, never an error. Malformed
  *     arguments are REJECTED natively with code INVALID_ARGUMENT (mapped to
  *     `developer_error` here). The plugin never acknowledges: the server does.
  *
@@ -296,6 +297,8 @@ export async function getProducts(productIds: string[]): Promise<PlayGetProducts
 export async function purchase(input: PlayPurchaseInput): Promise<PlayPurchaseResult> {
   const bridge = getBridge();
   if (!bridge) return { status: "error", error: "bridge_unavailable" };
+  // Typed callers cannot get here with a non-object, but "never throws" has to hold for any input.
+  if (!isRecord(input)) return { status: "error", error: "developer_error" };
   const account = input.obfuscatedAccountId;
   if (typeof account !== "string" || account.trim().length === 0 || account.length > 64) {
     return { status: "error", error: "developer_error" };

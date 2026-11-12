@@ -1,7 +1,6 @@
 package com.fromvictoryapp.app;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
@@ -36,11 +35,13 @@ import org.json.JSONObject;
  *
  * Contract (mirrors apps/web/lib/native/play-billing.ts, the source of truth for the JS side):
  *   getProducts({ productIds })  -> { ok:true, products:[...] } | { ok:false, error }
+ *       (malformed ids are dropped, duplicates collapsed; more than 20 ids is INVALID_ARGUMENT)
  *   purchase({ productId, basePlanId, offerId?, obfuscatedAccountId, replace? })
  *       -> { status:"purchased", purchaseToken, productId } | { status:"cancelled" }
  *        | { status:"pending" } | { status:"error", error }
  *        | { status:"deferred", purchaseToken|null, productId|null }   (replace mode DEFERRED only)
- *       (malformed arguments are REJECTED with code INVALID_ARGUMENT)
+ *       (malformed arguments are REJECTED with code INVALID_ARGUMENT; an error may also carry
+ *        a non-sensitive `reason` slug, which the JS wrapper ignores)
  *   restore()                    -> { ok:true, purchases:[...] } | { ok:false, error }
  *   manageSubscriptions({ productId? }) -> { ok:true } | { ok:false, error }
  *
@@ -80,8 +81,33 @@ public class FVPlayBillingPlugin extends Plugin implements PurchasesUpdatedListe
     private final WebViewListener navigation = new WebViewListener() {
         // A full page navigation kills the JS promise; drop our reference so a stuck flow can
         // never block future purchases. The server learns of any completed purchase via restore().
-        @Override public void onPageStarted(WebView view) { main.post(() -> purchaseCall = null); }
+        @Override public void onPageStarted(WebView view) { main.post(() -> clearPurchase()); }
     };
+
+    private void clearPurchase() {
+        purchaseCall = null;
+        purchaseProductId = null;
+        purchaseDeferred = false;
+    }
+
+    /** Runs {@code body} now; an unexpected exception runs {@code onError} instead of crashing the app. */
+    private static void guarded(Runnable body, Runnable onError) {
+        try {
+            body.run();
+        } catch (RuntimeException e) {
+            // Deliberately not logged: the exception may carry call data.
+            try { onError.run(); } catch (RuntimeException ignored) { /* nothing left to do */ }
+        }
+    }
+
+    /**
+     * Billing callbacks are not guaranteed to arrive on the main thread, and launchBillingFlow
+     * must be called from it. Every callback body goes through here so plugin state really is
+     * main-thread only and a thrown exception resolves the call rather than killing the process.
+     */
+    private void onMain(Runnable body, Runnable onError) {
+        main.post(() -> guarded(body, onError));
+    }
 
     @Override public void load() {
         main.post(() -> {
@@ -122,8 +148,13 @@ public class FVPlayBillingPlugin extends Plugin implements PurchasesUpdatedListe
                 }
                 finishConnect(code);
             }
-            @Override public void onBillingSetupFinished(BillingResult result) { settle(result.getResponseCode()); }
-            @Override public void onBillingServiceDisconnected() { settle(PlayBillingLogic.RC_SERVICE_DISCONNECTED); }
+            @Override public void onBillingSetupFinished(BillingResult result) {
+                final int code = result.getResponseCode();
+                onMain(() -> settle(code), () -> finishConnect(PlayBillingLogic.RC_ERROR));
+            }
+            @Override public void onBillingServiceDisconnected() {
+                onMain(() -> settle(PlayBillingLogic.RC_SERVICE_DISCONNECTED), () -> finishConnect(PlayBillingLogic.RC_ERROR));
+            }
         });
     }
 
@@ -142,17 +173,19 @@ public class FVPlayBillingPlugin extends Plugin implements PurchasesUpdatedListe
     @PluginMethod public void getProducts(PluginCall call) {
         JSArray raw = call.getArray("productIds");
         if (raw == null) { call.reject("productIds must be an array of strings", "INVALID_ARGUMENT"); return; }
-        List<String> ids = new ArrayList<>();
-        for (int i = 0; i < raw.length(); i++) {
-            Object value = raw.opt(i);
-            if (value instanceof String && PlayBillingLogic.isValidProductId((String) value)) ids.add((String) value);
-        }
-        main.post(() -> queryProducts(call, ids, false));
+        List<Object> values = new ArrayList<>();
+        for (int i = 0; i < raw.length(); i++) values.add(raw.opt(i));
+        // Malformed ids are dropped and duplicates collapsed (Play rejects a duplicated product list).
+        List<String> ids = PlayBillingLogic.cleanProductIds(values);
+        if (ids.size() > PlayBillingLogic.MAX_PRODUCT_IDS) { call.reject("too many productIds", "INVALID_ARGUMENT"); return; }
+        Runnable failed = () -> call.resolve(listError(PlayBillingLogic.RC_ERROR));
+        onMain(() -> queryProducts(call, ids, false), failed);
     }
 
     private void queryProducts(PluginCall call, List<String> ids, boolean retried) {
         if (ids.isEmpty()) { call.resolve(productsOk(Collections.emptyList())); return; }
-        connect(c -> {
+        Runnable failed = () -> call.resolve(listError(PlayBillingLogic.RC_ERROR));
+        connect(c -> guarded(() -> {
             List<QueryProductDetailsParams.Product> products = new ArrayList<>();
             for (String id : ids) {
                 products.add(QueryProductDetailsParams.Product.newBuilder()
@@ -160,13 +193,13 @@ public class FVPlayBillingPlugin extends Plugin implements PurchasesUpdatedListe
             }
             c.queryProductDetailsAsync(
                 QueryProductDetailsParams.newBuilder().setProductList(products).build(),
-                (result, queryResult) -> {
+                (result, queryResult) -> onMain(() -> {
                     int code = result.getResponseCode();
                     if (code == PlayBillingLogic.RC_SERVICE_DISCONNECTED && !retried) { queryProducts(call, ids, true); return; }
                     if (code != PlayBillingLogic.RC_OK) { call.resolve(listError(code)); return; }
                     call.resolve(productsOk(queryResult.getProductDetailsList()));
-                });
-        }, code -> call.resolve(listError(code)));
+                }, failed));
+        }, failed), code -> call.resolve(listError(code)));
     }
 
     private static JSObject productsOk(List<ProductDetails> details) {
@@ -231,7 +264,7 @@ public class FVPlayBillingPlugin extends Plugin implements PurchasesUpdatedListe
             req.productId, req.basePlanId, req.offerId, req.obfuscatedAccountId, replaceToken, replaceMode);
         if (invalid != null) { call.reject(invalid, "INVALID_ARGUMENT"); return; }
         if (replaceMode != null) req.replacementMode = PlayBillingLogic.replacementModeFor(replaceMode);
-        main.post(() -> {
+        onMain(() -> {
             if (destroyed) { call.resolve(purchaseError(PlayBillingLogic.ST_UNAVAILABLE, "plugin_closed")); return; }
             if (purchaseCall != null) {
                 call.resolve(purchaseError(PlayBillingLogic.ST_UNKNOWN, "purchase_in_progress"));
@@ -242,22 +275,43 @@ public class FVPlayBillingPlugin extends Plugin implements PurchasesUpdatedListe
             purchaseDeferred = req.oldPurchaseToken != null
                 && req.replacementMode == PlayBillingLogic.REPLACEMENT_DEFERRED;
             beginPurchase(call, req, false);
-        });
+        }, () -> failPurchase(call));
+    }
+
+    /** Unexpected failure inside a purchase step: resolve the call and free the plugin for the next one. */
+    private void failPurchase(PluginCall call) {
+        finishPurchase(call, purchaseError(PlayBillingLogic.ST_UNKNOWN, "internal_error"));
+    }
+
+    /** A non-OK response before or at launch. A user cancel is "cancelled", never an error. */
+    private static JSObject purchaseResultForCode(int code) {
+        String status = PlayBillingLogic.statusForResponseCode(code);
+        if (PlayBillingLogic.ST_CANCELLED.equals(status)) {
+            JSObject out = new JSObject();
+            out.put("status", status);
+            return out;
+        }
+        return purchaseError("ok".equals(status) ? PlayBillingLogic.ST_UNKNOWN : status, null);
     }
 
     private void beginPurchase(PluginCall call, PurchaseRequest req, boolean retried) {
-        connect(c -> {
+        Runnable failed = () -> failPurchase(call);
+        connect(c -> guarded(() -> {
+            // The page navigated away or the activity was destroyed while connecting: never
+            // launch a purchase sheet nobody is waiting for.
+            if (purchaseCall != call) return;
             QueryProductDetailsParams.Product product = QueryProductDetailsParams.Product.newBuilder()
                 .setProductId(req.productId).setProductType(BillingClient.ProductType.SUBS).build();
             c.queryProductDetailsAsync(
                 QueryProductDetailsParams.newBuilder().setProductList(Collections.singletonList(product)).build(),
-                (result, queryResult) -> {
+                (result, queryResult) -> onMain(() -> {
+                    if (purchaseCall != call) return;
                     int code = result.getResponseCode();
                     if (code == PlayBillingLogic.RC_SERVICE_DISCONNECTED && !retried) { beginPurchase(call, req, true); return; }
-                    if (code != PlayBillingLogic.RC_OK) { finishPurchase(call, purchaseError(PlayBillingLogic.statusForResponseCode(code), null)); return; }
+                    if (code != PlayBillingLogic.RC_OK) { finishPurchase(call, purchaseResultForCode(code)); return; }
                     launch(c, call, req, queryResult.getProductDetailsList());
-                });
-        }, code -> finishPurchase(call, purchaseError(PlayBillingLogic.statusForResponseCode(code), null)));
+                }, failed));
+        }, failed), code -> finishPurchase(call, purchaseResultForCode(code)));
     }
 
     private void launch(BillingClient c, PluginCall call, PurchaseRequest req, List<ProductDetails> details) {
@@ -294,13 +348,16 @@ public class FVPlayBillingPlugin extends Plugin implements PurchasesUpdatedListe
         }
         BillingResult launched = c.launchBillingFlow(activity, flow.build());
         if (launched.getResponseCode() != PlayBillingLogic.RC_OK) {
-            finishPurchase(call, purchaseError(PlayBillingLogic.statusForResponseCode(launched.getResponseCode()), null));
+            finishPurchase(call, purchaseResultForCode(launched.getResponseCode()));
         }
         // On OK the result arrives in onPurchasesUpdated.
     }
 
     @Override public void onPurchasesUpdated(BillingResult result, List<Purchase> purchases) {
-        main.post(() -> {
+        // Play does not say which flow an update belongs to: any update that arrives while a call
+        // is waiting answers it. That is why a result is only ever a token for the server to
+        // verify (or a prompt to restore()), never proof of what was bought.
+        onMain(() -> {
             PluginCall call = purchaseCall;
             if (call == null) return; // not our flow (or page navigated away); the server reconciles via restore()
             List<PlayBillingLogic.PurchaseInfo> infos = new ArrayList<>();
@@ -328,11 +385,13 @@ public class FVPlayBillingPlugin extends Plugin implements PurchasesUpdatedListe
                 out = purchaseError(outcome.status, null);
             }
             finishPurchase(call, out);
-        });
+        }, () -> { if (purchaseCall != null) failPurchase(purchaseCall); });
     }
 
+    /** Resolves the live purchase call exactly once; a call that was already abandoned is left alone. */
     private void finishPurchase(PluginCall call, JSObject out) {
-        if (purchaseCall == call) { purchaseCall = null; purchaseProductId = null; purchaseDeferred = false; }
+        if (purchaseCall != call) return;
+        clearPurchase();
         call.resolve(out);
     }
 
@@ -347,21 +406,21 @@ public class FVPlayBillingPlugin extends Plugin implements PurchasesUpdatedListe
     private static JSObject listError(int code) {
         JSObject out = new JSObject();
         out.put("ok", false);
-        String status = PlayBillingLogic.statusForResponseCode(code);
-        out.put("error", "ok".equals(status) ? PlayBillingLogic.ST_UNKNOWN : status);
+        out.put("error", PlayBillingLogic.listErrorForResponseCode(code));
         return out;
     }
 
     // ---------------------------------------------------------------- restore
 
     @PluginMethod public void restore(PluginCall call) {
-        main.post(() -> queryPurchases(call, false));
+        onMain(() -> queryPurchases(call, false), () -> call.resolve(listError(PlayBillingLogic.RC_ERROR)));
     }
 
     private void queryPurchases(PluginCall call, boolean retried) {
-        connect(c -> c.queryPurchasesAsync(
+        Runnable failed = () -> call.resolve(listError(PlayBillingLogic.RC_ERROR));
+        connect(c -> guarded(() -> c.queryPurchasesAsync(
             QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build(),
-            (result, purchases) -> {
+            (result, purchases) -> onMain(() -> {
                 int code = result.getResponseCode();
                 if (code == PlayBillingLogic.RC_SERVICE_DISCONNECTED && !retried) { queryPurchases(call, true); return; }
                 if (code != PlayBillingLogic.RC_OK) { call.resolve(listError(code)); return; }
@@ -384,7 +443,7 @@ public class FVPlayBillingPlugin extends Plugin implements PurchasesUpdatedListe
                 out.put("ok", true);
                 out.put("purchases", list);
                 call.resolve(out);
-            }), code -> call.resolve(listError(code)));
+            }, failed)), failed), code -> call.resolve(listError(code)));
     }
 
     private static String stateName(int state) {
@@ -405,7 +464,7 @@ public class FVPlayBillingPlugin extends Plugin implements PurchasesUpdatedListe
                 if (activity != null) activity.startActivity(intent);
                 else getContext().startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
                 out.put("ok", true);
-            } catch (ActivityNotFoundException e) {
+            } catch (RuntimeException e) { // ActivityNotFoundException, SecurityException, ...
                 out.put("ok", false);
                 out.put("error", PlayBillingLogic.ST_UNAVAILABLE);
             }
@@ -420,9 +479,7 @@ public class FVPlayBillingPlugin extends Plugin implements PurchasesUpdatedListe
             destroyed = true;
             if (bridge != null) bridge.removeWebViewListener(navigation);
             PluginCall call = purchaseCall;
-            purchaseCall = null;
-            purchaseProductId = null;
-            purchaseDeferred = false;
+            clearPurchase();
             if (call != null) call.resolve(purchaseError(PlayBillingLogic.ST_UNKNOWN, "activity_destroyed"));
             List<Waiter> batch = new ArrayList<>(waiters);
             waiters.clear();

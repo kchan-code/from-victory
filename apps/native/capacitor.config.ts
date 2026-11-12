@@ -16,10 +16,13 @@ import type { CapacitorConfig } from "@capacitor/cli";
  * does not fork the platforms.
  *
  * Plugin allowlist (product-strategist): core, app, splash-screen, status-bar,
- * android, ios. (FV-664: an app-local FVPlayBillingPlugin exists ONLY in
- * FV_PLAY_BILLING=1 builds; it carries Google's Play Billing Library and no
- * other SDK.) No push-notifications (device token), analytics, ads, or
- * attribution SDKs. App-local FVNarration transfers only the assembled narration
+ * android, ios. No push-notifications (device token), analytics, ads, or
+ * attribution SDKs of ours. FV-664: an app-local FVPlayBillingPlugin exists ONLY
+ * in FV_PLAY_BILLING=1 builds. Those builds carry Google's Play Billing Library
+ * and its own transitive Google components (datatransport telemetry transport,
+ * Play services base/tasks/location, firebase-encoders), so do not describe a
+ * billing build as free of third-party or telemetry code (FV-667 owns the
+ * Data safety form and privacy text). App-local FVNarration transfers only the assembled narration
  * WAV to the native audio player; it has no music-provider or library access.
  * Any new plugin needs a fresh product + privacy review.
  */

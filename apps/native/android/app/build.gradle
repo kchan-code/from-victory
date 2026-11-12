@@ -120,6 +120,8 @@ tasks.register('verifyPlayBillingSwitch') {
         def parsed = new groovy.json.JsonSlurper().parse(configJson)
         def baseToken = 'FVNativeShell/1'
         def playToken = 'FVNativeShell/1 (play)'
+        // The TOP-LEVEL token is pinned exactly (it is also the legacy iOS token and must never
+        // change). Feature tokens such as FVAuth/1 go on the android/ios keys, not here.
         if (parsed.appendUserAgent != baseToken) {
             throw new GradleException("capacitor.config.json top-level appendUserAgent must be '${baseToken}' (got '${parsed.appendUserAgent}').")
         }
