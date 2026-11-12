@@ -1,7 +1,7 @@
 "use client";
 // client: OAuth/native-sheet flows need window, crypto, the Capacitor bridge and busy state
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { appleHandoffComplete, appleNativeSignIn } from "@/lib/actions/apple-auth";
 import {
@@ -50,6 +50,16 @@ function GoogleMark() {
 export function SsoButtons({ entry, withEmailDivider = true }: Props) {
   const [busy, setBusy] = useState<Provider | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // A flow that navigated away leaves `busy` set; if the browser restores this
+  // page from the back/forward cache (Back on iOS Safari), re-enable buttons.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setBusy(null);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
 
   if (entry.browserHint) {
     return (
@@ -180,10 +190,7 @@ export function SsoButtons({ entry, withEmailDivider = true }: Props) {
         </p>
       ) : null}
       {withEmailDivider ? (
-        <div
-          role="separator"
-          className="my-6 flex items-center gap-3 font-body text-[13px] text-cream/50"
-        >
+        <div className="my-6 flex items-center gap-3 font-body text-[13px] text-cream/70">
           <span aria-hidden="true" className="h-px flex-1 bg-hairline" />
           or use email
           <span aria-hidden="true" className="h-px flex-1 bg-hairline" />

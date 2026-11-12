@@ -64,7 +64,7 @@ describe("/signin sections", () => {
     const primary = within(screen.getByTestId("signin-primary"));
     const buttons = primary.getAllByRole("button").filter((b) => b.dataset.testid?.startsWith("sso-"));
     expect(buttons.map((b) => b.textContent)).toEqual(["Continue with Apple", "Continue with Google"]);
-    expect(primary.getByRole("separator")).toHaveTextContent("or use email");
+    expect(primary.getByText("or use email")).toBeInTheDocument();
     expect(primary.getByLabelText("Email")).toBeInTheDocument();
   });
 
@@ -87,7 +87,7 @@ describe("/signin sections", () => {
     render(<SignInSections sso={OFF} />);
     expect(screen.queryByTestId("sso-apple")).toBeNull();
     expect(screen.queryByTestId("sso-google")).toBeNull();
-    expect(screen.queryByRole("separator")).toBeNull();
+    expect(screen.queryByText("or use email")).toBeNull();
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
     expect(screen.getByLabelText("Username or email")).toBeInTheDocument();
   });
@@ -205,5 +205,21 @@ describe("flows", () => {
     fireEvent.click(screen.getByTestId("sso-apple"));
     await waitFor(() => expect(screen.getByTestId("sso-apple")).not.toBeDisabled());
     expect(screen.queryByRole("alert")).toBeNull();
+  });
+});
+
+describe("SsoButtons back/forward cache (QA #606)", () => {
+  it("re-enables the buttons when the page is restored from bfcache", async () => {
+    const { SsoButtons } = await import("@/components/auth/SsoButtons");
+    const { render, screen, fireEvent, act } = await import("@testing-library/react");
+    render(<SsoButtons entry={{ show: true, surface: "web", browserHint: false }} />);
+    fireEvent.click(screen.getByTestId("sso-google"));
+    await act(async () => {
+      const ev = new Event("pageshow") as PageTransitionEvent;
+      Object.defineProperty(ev, "persisted", { value: true });
+      window.dispatchEvent(ev);
+    });
+    expect(screen.getByTestId("sso-google")).not.toBeDisabled();
+    expect(screen.getByTestId("sso-apple")).not.toBeDisabled();
   });
 });
