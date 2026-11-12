@@ -474,7 +474,11 @@ Play purchase.
   build Google already approved: no new permission, no marker. This keeps the
   approved release separate from billing.
 - **Rollback without a new build.** Turning the server flag off returns every
-  `android-play` build to consumption-only behavior. C11 tests this.
+  `android-play` build to consumption-only behavior. C11 tests this, including
+  after test-purchase data exists.
+- **Data while dormant.** With the server flag off the new tables hold no
+  purchase data and the webhook writes nothing. Tokens are never logged in
+  either state.
 - **Website and iOS.** No Stripe or Apple code path changes while the server
   flag is off; the existing Stripe and Apple test suites must pass unchanged
   on every billing PR.
@@ -509,6 +513,12 @@ other's lines.**
   E1, C10 and C11 test and package one build carrying both.
 - Billing lands first on `native-shell.ts` (C1) and the native build files
   (C6), because FV-569 delivery has not started.
+- **Delete account.** Once both streams have landed, a test must show that
+  the Play cancel and the Apple token revocation both run, and that a failure
+  of either never stops the deletion (the 30-day commitment).
+- **Privacy page and Data safety form.** Edit them in one PR if the timing
+  allows. Otherwise the later PR re-reads the earlier one's text so neither
+  stream drops the other's disclosure.
 
 ## 7. Decision 4: server verification and provider ownership
 
@@ -558,12 +568,16 @@ other's lines.**
   - Resubscribe can be switched off per base plan. Confirmed.
   - Whether a promo-code redemption carries our id is not stated by Google.
   - **Rule for v1.1:** resubscribe is off on every base plan and no promo
-    codes are created, so neither path exists. The server still handles the
-    case as a fallback: bind through the expired purchase's id when Google
-    supplies it and it matches a payer we already know; otherwise grant
-    nothing and alert (the alert carries no purchase token and no payer id in
-    plain text). C10 proves it on test purchases. The Apple offer-code
-    problem (FV-649) is the same class of issue.
+    codes are created, so neither path should exist. If a purchase still
+    arrives without our id, the server grants nothing, does not acknowledge
+    it, and alerts (the alert carries no purchase token and no payer id in
+    plain text). Google refunds an unacknowledged purchase after 3 days, so
+    the family is not left paying for nothing.
+  - Binding such a purchase through the expired purchase's id is **not built
+    in v1.1** (product-strategist condition: it would build for a path we
+    have switched off). C10 proves that resubscribe is in fact unavailable.
+    The binding is built only if C10 shows the path still exists. The Apple
+    offer-code problem (FV-649) is the same class of issue.
 
 ### 7.3 Verification, lifecycle, time
 
@@ -652,6 +666,9 @@ These need product-strategist approval before any child issue starts:
 - A service account with the minimum Play Console permissions to read and
   acknowledge subscriptions. Cancel permission is added only if G5 chooses
   server-side cancel.
+  - v4: G5 resolves to server-side cancel, so the account gets "Manage
+    orders and subscriptions". It does not get "View financial data" unless
+    C3 shows a method needs it (product-strategist condition, carried on C8).
 - Credential handling: prefer keyless federation from the hosting platform if
   it works; otherwise a service-account key held as a server-only secret
   (decision G7).
@@ -702,9 +719,12 @@ that must meet the requirement.
 | In-app digital subscriptions must use Google Play's billing system, and an app using it may not lead users to another payment method. | Confirmed. This is why the Android app never steers a family to the website to pay. | C5, C7 |
 
 Nothing found forbids or heavily restricts the purchase flow, so C7 is not
-blocked. The open point is the teen audience declaration: C9 settles the
-exact answers with kids-privacy-officer before any build with the marker is
-released. C0 is complete with this table; its issue closes with this
+blocked (the role rule in Section 6 already keeps minors out of every
+purchase surface). The open point is the teen audience declaration: C9
+answers it with kids-privacy-officer sign-off, and records whether the
+Families policy applies, before any build carrying the `(play)` marker
+leaves the internal testing track. Internal-track testing with license
+testers does not count as a release for this purpose. C0 is complete with this table; its issue closes with this
 revision.
 
 ## 9. Fees and why not link-out
@@ -938,7 +958,9 @@ first child issues runs far past Section 10.
 | # | Decision | Recommendation | Gates |
 |---|---|---|---|
 | G1 | The concrete product, base plan and offer IDs in Section 5.2. Permanent once created. | Approve as written | C8 product creation. Code does not wait: the IDs live in one catalog file. |
-| G3 | Access during Google's "account hold" (payment failed and the grace period is over). | **Block access during hold**, as Google's guidance says; the grace period before it keeps full access. Note this is stricter than Apple and Stripe today, where a failed renewal keeps access (`degraded`). Whether to tighten those two is a separate question for KC; this record does not change them. | C4 and C5 mapping. One named constant, easy to flip. |
+| G3 | Access during Google's "account hold" (payment failed and the grace period is over). | **Keep access (`degraded`), the same as Apple and Stripe today**, so all three providers follow one rule. This is the build default until KC decides. The alternative is to block during hold, which is what Google's guidance says (guidance, not policy); doing that for Google alone would give three providers two different rules. product-strategist recommends the consistent default. Whether to tighten all three is one question for KC. | C4 and C5 mapping. One named constant, easy to flip. |
+| G6 | Maintenance ownership (10.4): KC owns Console, Cloud, agreements and releases; engineering agents maintain the code under KC's Tier 2 gate; a yearly June check of Google's deprecation table, created at activation. | Confirm in one line. It commits KC's ongoing time, so it is his to accept. | Activation |
+| Names | Whether the product names in Section 5.2 carry a "From Victory" prefix | KC's choice; names can be edited later | C8 product creation |
 | Copy | Purchase screen, upgrade confirmation, manage and delete-account wording for Google subscribers | Approve at C7 PR review | C7 merge |
 | Store actions | Merchant account, Cloud project, service account, products, testers, notifications, Data safety, audience declaration, policy text | KC executes from the C8 and C9 runbooks | M4 |
 | Release | Internal-track upload, then public activation and release | KC, after the C11 package | M5, public release |
@@ -950,10 +972,9 @@ without rework elsewhere.
 | # | Choice | Resolved as | Why |
 |---|---|---|---|
 | G4 | Grace period, account hold, pause | Grace: the Console choice closest to Apple's 16 days without exceeding it (expected 14 days; KC reads the list in C8). Hold: Google's default. Pause: off. Resubscribe: off. | Matches Apple as closely as Google allows. All are Console settings KC can change. |
-| G5 | On account deletion | Cancel the Play subscription (no further renewals, no refund); tell the user plainly. If Google cannot be reached, deletion still completes and the user is told to cancel in Google Play. | Same as Stripe today. Wording goes to KC at C7. |
-| G6 | Maintenance ownership (10.4) | KC owns Console, Cloud, agreements and releases; engineering agents maintain the code under KC's Tier 2 gate; a yearly June check of Google's deprecation table, created at activation. | Same split as Apple. |
-| G7 | Server credential | Keyless federation from the hosting platform if it works in testing; otherwise a service-account key held as a server-only secret. Either way KC creates it (a new credential needs his approval). | Least standing secret. Code supports both behind one interface. |
-| G8 | How Play reviewers reach the purchase flow | A second reviewer account with no comp grant, on the license-tester allowlist | The current reviewer account is comped and would never see a purchase screen. |
+| G5 | On account deletion | Cancel the Play subscription (no further renewals, no refund); tell the user plainly. If Google cannot be reached: retry, then complete the deletion anyway, tell the user to cancel in Google Play, and raise an alert. A later charge on a deleted account is also an alert. | Same as Stripe today. Wording goes to KC at C7. |
+| G7 | Server credential | Keyless federation from the hosting platform if it works in testing; otherwise a service-account key held as a server-only secret that is never logged. Either way KC creates it (a new credential needs his approval). | Least standing secret. Code supports both behind one interface. |
+| G8 | How Play reviewers reach the purchase flow | A second reviewer account (a parent account with no real athlete data) with no comp grant, on the license-tester allowlist | The current reviewer account is comped and would never see a purchase screen. |
 | G9 | Prompt 1.0.x users to update | Not in this arc | No forced-update mechanism exists; old builds keep working as today. |
 
 Also open, in the sign-in spec rather than here: FV-569 decision E1 (release
@@ -974,8 +995,8 @@ Android sign-in together with the Play Billing build).
   consumption-only. KC's Go stands, and KC has since decided G0 for Play
   Billing.
 - Timing: starting the full arc now is premature. Start the dormant,
-  independent pieces and the merchant account; hold the shared-file work
-  (10.3, decision G10).
+  independent pieces and the merchant account; hold the shared-file work.
+  (Superseded: KC decided G10 for the full arc on 2026-11-11.)
 - Other conditions, applied: settle the trial length in writing before
   products are created (Section 5); teen-policy check before UI work (C0);
   scope check after C3 at 1.5 times the estimate (10.3); a notification
@@ -1003,6 +1024,16 @@ applied in this version.**
   7.3, 8.1).
 - Changed since v3: the config marker moved from C1 to C6 behind a build
   switch (6.1); files shared with FV-569 are listed with a rule (6.2);
-  resubscribe is switched off (7.2); the recommendation for G3 is now to
-  block during account hold, following Google's guidance.
-- Reviews of v4: see the PR.
+  resubscribe is switched off (7.2).
+- **product-strategist on v4: APPROVED WITH CONDITIONS, all applied.** All
+  seven v3 conditions survived. The build switch and server flag are
+  justified, not scope creep (make the switch one Gradle property, not
+  product flavors). Five products are sound. Conditions: the service account
+  gets no "View financial data" unless a method needs it (7.6); the
+  out-of-app binding fallback is cut for v1.1 (7.2); G3 defaults to the same
+  rule as Apple and Stripe; G6 goes to KC to confirm.
+- **kids-privacy-officer on v4: APPROVED, no must-fix.** Its should-fix
+  items are applied here (6.1 data while dormant, 6.2 deletion and
+  disclosure rules, 8.1 audience wording, G5, G7, G8) or carried on the
+  child issues. The Section 10.2 criteria and the role and sign-up rules are
+  unchanged.
