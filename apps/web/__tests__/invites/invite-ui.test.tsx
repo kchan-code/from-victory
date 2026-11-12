@@ -30,6 +30,12 @@ vi.mock("@/lib/actions/invites", () => ({
 }));
 vi.mock("@/lib/actions/auth", () => ({ signIn: vi.fn() }));
 vi.mock("@/lib/actions/pairings", () => ({ athleteUsernameSignIn: vi.fn() }));
+vi.mock("@/lib/actions/email-signup", () => ({ verifyEmailOnly: vi.fn() }));
+vi.mock("@/lib/actions/apple-auth", () => ({
+  appleNativeSignIn: vi.fn(),
+  appleHandoffComplete: vi.fn(),
+}));
+vi.mock("@/lib/supabase/client", () => ({ createClient: vi.fn() }));
 vi.mock("@/lib/pregame/session-cache", () => ({ clearPregameSession: vi.fn() }));
 vi.mock("next/image", () => ({
   // reason: test stub for next/image; renders a plain img with the same alt.
@@ -38,7 +44,7 @@ vi.mock("next/image", () => ({
 
 import { InviteFlow } from "@/components/auth/InviteFlow";
 import { InviteSetupForm } from "@/components/auth/InviteSetupForm";
-import { SignInChooser } from "@/components/auth/SignInChooser";
+import { SignInSections } from "@/components/auth/SignInSections";
 import { InvitePanel } from "@/components/dashboard/InvitePanel";
 
 const ATHLETE = "20000000-0000-4000-8000-00000000000a";
@@ -250,12 +256,12 @@ describe("InviteSetupForm", () => {
 });
 
 // ===========================================================================
-describe("SignInChooser", () => {
-  it("offers 'I have an invite' on both tabs", () => {
-    render(<SignInChooser />);
-    const link = screen.getByTestId("signin-have-invite");
-    expect(link).toHaveAttribute("href", "/invite");
-    fireEvent.click(screen.getByTestId("signin-tab-athlete"));
-    expect(screen.getByTestId("signin-have-invite")).toBeVisible();
+describe("SignInSections", () => {
+  it("offers 'I have an invite' with both sections on one screen", () => {
+    render(
+      <SignInSections sso={{ show: false, surface: "web", browserHint: false }} />,
+    );
+    expect(screen.getByTestId("signin-have-invite")).toHaveAttribute("href", "/invite");
+    expect(screen.getByTestId("signin-under18")).toBeVisible();
   });
 });

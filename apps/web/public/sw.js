@@ -41,7 +41,8 @@
  * SW audio cache so stale clips are evicted at activate.
  */
 
-const CACHE_VERSION = "fv-shell-v7"; // bumped: FV-493 — BYPASS_PREFIXES said
+const CACHE_VERSION = "fv-shell-v8"; // bumped: FV-672 — /welcome joins
+// BYPASS_PREFIXES (per-request onboarding page; never cached). v7: FV-493 — BYPASS_PREFIXES said
 // "/dashboard/" (trailing slash), so bare /dashboard missed the bypass and
 // went through the navigation strategy. event.respondWith(fetch(request))
 // re-issues from ServiceWorkerGlobalScope, which drops Capacitor's appended
@@ -185,6 +186,9 @@ const BYPASS_PREFIXES = [
   "/forgot-",
   "/reset-",
   "/subscribe",
+  // FV-672: /welcome is per-request + personal (auth email, onboarding form)
+  // and is never served from Cache Storage.
+  "/welcome",
   "/audio/",
 ];
 

@@ -43,6 +43,12 @@ vi.mock("@/lib/auth/guards", () => ({
   redirectIfAuthed: redirectIfAuthedMock,
 }));
 
+// FV-674: SSO entry is covered in __tests__/auth/sso; stubbed off here.
+vi.mock("@/lib/auth/sso-visibility", () => ({
+  showSSO: () => ({ show: false, surface: "web", browserHint: false }),
+}));
+vi.mock("@/components/auth/SsoButtons", () => ({ SsoButtons: () => null }));
+
 vi.mock("next/navigation", () => ({
   notFound: vi.fn(() => {
     throw new Error("NEXT_NOT_FOUND");

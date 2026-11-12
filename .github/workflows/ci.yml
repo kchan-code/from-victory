@@ -399,3 +399,11 @@ jobs:
             echo "::notice::DB_URL not exported by 'supabase status -o env'; using known local default (port 54322)"
           fi
           bash supabase/tests/rls/run.sh "$DB_URL"
+      - name: Run pending-account concurrency tests (FV-671)
+        run: |
+          # Two real connections race the section-5.2 lock functions (see
+          # supabase/tests/concurrency/run.sh). REQUIRE_DB makes an unreachable
+          # database a hard failure instead of a SKIP.
+          eval "$(supabase status -o env 2>/dev/null || true)"
+          DB_URL="${DB_URL:-${SUPABASE_DB_URL:-postgresql://postgres:postgres@127.0.0.1:54322/postgres}}"
+          REQUIRE_DB=1 bash supabase/tests/concurrency/run.sh "$DB_URL"
