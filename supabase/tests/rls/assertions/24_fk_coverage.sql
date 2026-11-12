@@ -118,10 +118,13 @@ begin
   assert predicate_src ~ '\mpublic\.subscriptions\M'
      and predicate_src ~ '\mpublic\.apple_subscriptions\M'
      and predicate_src ~ '\mpublic\.apple_purchase_tokens\M'
+     and predicate_src ~ '\mpublic\.google_subscriptions\M'
+     and predicate_src ~ '\mpublic\.google_purchase_bindings\M'
+     and predicate_src ~ '\mpublic\.google_license_testers\M'
      and predicate_src ~ '\mpublic\.access_grants\M'
      and predicate_src ~ '\mpublic\.parent_athlete_links\M'
      and predicate_src ~ '\mpublic\.profiles\M',
-    'FV-671 FAIL: private.is_unestablished no longer lists the spec §5.1 baseline data sources';
+    'FV-671 FAIL: private.is_unestablished no longer lists the spec §5.1 baseline data sources (incl. the FV-660 Google Play tables)';
 end $$;
 
 -- Negative control (runs every time): a brand-new table referencing

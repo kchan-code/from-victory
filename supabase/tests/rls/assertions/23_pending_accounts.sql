@@ -449,6 +449,9 @@ begin;
   alter table public.apple_purchase_tokens drop constraint apple_purchase_tokens_payer_id_fkey;
   alter table public.apple_sandbox_testers drop constraint apple_sandbox_testers_payer_id_fkey;
   alter table public.access_grants         drop constraint access_grants_parent_id_fkey;
+  alter table public.google_subscriptions     drop constraint google_subscriptions_payer_id_fkey;
+  alter table public.google_purchase_bindings drop constraint google_purchase_bindings_payer_id_fkey;
+  alter table public.google_license_testers   drop constraint google_license_testers_payer_id_fkey;
   alter table public.parent_athlete_links  drop constraint parent_athlete_links_parent_id_fkey;
   alter table public.parent_athlete_links  drop constraint parent_athlete_links_athlete_id_fkey;
   alter table public.parent_athlete_links  disable trigger user;
@@ -459,6 +462,10 @@ begin;
   select pg_temp.est_scenario(5, 'insert into public.access_grants (parent_id) values ($uid)', 'comp grant');
   select pg_temp.est_scenario(6, 'insert into public.parent_athlete_links (parent_id, athlete_id) values ($uid, gen_random_uuid())', 'athlete link (as parent)');
   select pg_temp.est_scenario(7, 'insert into public.parent_athlete_links (parent_id, athlete_id) values (gen_random_uuid(), $uid)', 'athlete link (as athlete)');
+  -- Google Play mirror tables (FV-660, PR #597)
+  select pg_temp.est_scenario(9,  'insert into public.google_subscriptions (payer_id, purchase_token, product_id, base_plan_id, status, expires_at, last_verified_at) values ($uid, ''tok-fv671'', ''p'', ''monthly'', ''active'', now() + interval ''1 day'', now())', 'google subscription');
+  select pg_temp.est_scenario(10, 'insert into public.google_purchase_bindings (payer_id) values ($uid)', 'google purchase binding');
+  select pg_temp.est_scenario(11, 'insert into public.google_license_testers (payer_id) values ($uid)', 'google license tester');
   -- The trigger would (correctly) refuse this insert; disable it to prove that the
   -- finalize re-check is an independent second line of defense.
   alter table public.profiles disable trigger profiles_block_pending_deletion;
