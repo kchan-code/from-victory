@@ -34,6 +34,16 @@ vi.mock("@/lib/native-shell", () => ({
   getRequestShellCapability: shellCapabilityMock,
 }));
 vi.mock("@/lib/auth/guards", () => ({ redirectIfAuthed: vi.fn() }));
+// FV-674: SSO is off here; these tests pin the legacy (non-SSO) behaviour.
+vi.mock("@/lib/auth/sso-visibility", () => ({
+  showSSO: () => ({ show: false, surface: "web", browserHint: false }),
+}));
+vi.mock("@/lib/actions/apple-auth", () => ({
+  appleNativeSignIn: vi.fn(),
+  appleHandoffComplete: vi.fn(),
+}));
+vi.mock("@/lib/supabase/client", () => ({ createClient: vi.fn() }));
+vi.mock("@/lib/actions/email-signup", () => ({ verifyEmailOnly: vi.fn() }));
 vi.mock("@/lib/auth/device", () => ({ getDeviceAthleteId: () => null }));
 vi.mock("@/lib/supabase/service", () => ({ createServiceClient: vi.fn() }));
 vi.mock("@/lib/actions/auth", () => ({
@@ -106,7 +116,7 @@ describe("/signin Athlete tab copy (FV-657)", () => {
       shellCapabilityMock.mockReturnValue(capability);
       await renderPage();
 
-      // The Athlete tab's form is rendered (hidden) alongside the Parent tab's.
+      // FV-674: the username form is the under-18 section, always rendered.
       expect(screen.getByLabelText("Username or email", { selector: "input" })).toHaveAttribute(
         "name",
         "username",

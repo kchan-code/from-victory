@@ -8,7 +8,6 @@ import { bindAppleGrant } from "@/lib/auth/apple/bind";
 import {
   expectedClientId,
   isAppleServerConfigured,
-  isAppleSignInEnabled,
   isAppleSignInEntryAllowed,
   SSO_PREVIEW_COOKIE,
 } from "@/lib/auth/apple/config";
@@ -104,7 +103,13 @@ export async function appleHandoffComplete(input: {
   handoff: string;
   verifier: string;
 }): Promise<AppleSignInState> {
-  if (!isAppleSignInEnabled("android")) return { ok: false, error: GENERIC_ERROR };
+  // Preview gate for Android lives HERE, not at /auth/apple/start: this Server
+  // Action runs in the WebView, which holds the fv_sso_preview cookie, while
+  // the Auth Tab that runs the start route does not. `on` admits; `off` and
+  // `preview` without the cookie refuse.
+  if (!isAppleSignInEntryAllowed("android", cookies().get(SSO_PREVIEW_COOKIE)?.value)) {
+    return { ok: false, error: GENERIC_ERROR };
+  }
 
   const parsed = HandoffSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: GENERIC_ERROR };

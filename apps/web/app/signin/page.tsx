@@ -3,10 +3,11 @@ import type { Metadata } from "next";
 import { AthleteSignInForm } from "@/components/auth/AthleteSignInForm";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { ClearCacheOnMount } from "@/components/auth/ClearCacheOnMount";
-import { SignInChooser } from "@/components/auth/SignInChooser";
+import { SignInSections } from "@/components/auth/SignInSections";
 import { getDeviceAthleteId } from "@/lib/auth/device";
 import { redirectIfAuthed } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { showSSO } from "@/lib/auth/sso-visibility";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const siteUrl = "https://www.fromvictoryapp.com";
@@ -43,6 +44,7 @@ export default async function SignInPage({ searchParams }: Props) {
 
   const resetInvalid = searchParams.reset === "invalid";
   const sessionInvalid = searchParams.error === "session_invalid";
+  const oauthFailed = searchParams.error === "oauth";
 
   const deviceAthleteId = getDeviceAthleteId();
 
@@ -116,14 +118,21 @@ export default async function SignInPage({ searchParams }: Props) {
           Your session was invalid. Please sign in again.
         </div>
       ) : null}
-      {/* FV-320: two-tab chooser — parent (email+password) or athlete
-          (username+password on any device). The device-cookie path above
-          short-circuits before we get here, so this is only shown for
-          no-cookie visitors. Default tab is "Parent" — the more common
-          no-cookie scenario. FV-621: in the legacy-native shell (Android,
-          consumption-only) the parent tab swaps the /signup link for plain
-          website guidance; ios-iap and web are unchanged. */}
-      <SignInChooser
+      {oauthFailed ? (
+        <div
+          role="alert"
+          data-testid="signin-oauth-error"
+          className="mb-6 rounded-[10px] border border-[rgba(229,62,76,0.4)] bg-[rgba(229,62,76,0.08)] px-3.5 py-3 text-[13px] text-[#ffb3b9]"
+        >
+          That sign-in didn&rsquo;t go through. Try again, or use your email.
+        </div>
+      ) : null}
+      {/* FV-674: one door (Apple, Google, email) plus the under-18 username
+          section, replacing FV-320's tabs. SSO renders only when showSSO()
+          says so; the username section never does. FV-621: in the legacy-native
+          shell the email form swaps the /signup link for website guidance. */}
+      <SignInSections
+        sso={showSSO()}
         legacyNative={getRequestShellCapability() === "legacy-native"}
       />
     </AuthShell>

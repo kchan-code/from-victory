@@ -6,6 +6,7 @@ import {
   APPLE_AUTHORIZE_URL,
   expectedClientId,
   isAppleServerConfigured,
+  isAppleSignInEnabled,
   isAppleSignInEntryAllowed,
   SSO_PREVIEW_COOKIE,
 } from "@/lib/auth/apple/config";
@@ -32,7 +33,15 @@ export async function GET(request: NextRequest) {
   const isAndroid = params.get("app") === "android";
   const surface = isAndroid ? "android" : "web";
 
-  if (!isAppleSignInEntryAllowed(surface, request.cookies.get(SSO_PREVIEW_COOKIE)?.value)) {
+  // Android: this route runs in the Auth Tab / Custom Tab, a separate browser
+  // context that never carries the WebView's fv_sso_preview cookie. So the
+  // preview gate for Android sits where the session is created, in the WebView
+  // (appleHandoffComplete); here we only require the surface not be `off`.
+  // Web keeps the full entry gate (the cookie is present in the same browser).
+  const admitted = isAndroid
+    ? isAppleSignInEnabled("android")
+    : isAppleSignInEntryAllowed(surface, request.cookies.get(SSO_PREVIEW_COOKIE)?.value);
+  if (!admitted) {
     return new NextResponse("Not found", { status: 404 });
   }
 
