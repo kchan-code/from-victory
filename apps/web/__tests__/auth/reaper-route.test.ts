@@ -114,10 +114,10 @@ describe("dry run", () => {
       else process.env.REAPER_DRY_RUN = v;
       const body = await (await GET(req())).json();
       expect(body.dryRun).toBe(true);
-      expect(writes()).toEqual([]);
+      expect(writes()).toEqual(["purge"]); // account writes: none; handoff purge always runs
     }
   });
-  it("computes counts and writes nothing (no mark, revoke, bump, finalize, purge)", async () => {
+  it("computes counts and deletes no account (no mark, revoke, bump, finalize); still purges expired handoffs", async () => {
     process.env.REAPER_DRY_RUN = "true";
     h.candidates = [
       { user_id: "a", tombstoned: false, attempts: 0 },
@@ -125,8 +125,7 @@ describe("dry run", () => {
     ];
     const body = await (await GET(req())).json();
     expect(body).toMatchObject({ dryRun: true, candidates: 2, tombstoned: 1, wouldMark: 1, deleted: 0, marked: 0 });
-    expect(h.calls).toEqual(["reaper_find_candidates"]);
-    expect(h.purge).not.toHaveBeenCalled();
+    expect(h.calls).toEqual(["reaper_find_candidates", "purge"]);
   });
   it("'false' (any case) goes live", async () => {
     process.env.REAPER_DRY_RUN = "FALSE";

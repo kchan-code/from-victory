@@ -70,7 +70,9 @@ even when sign-in buttons are off.
 
 **Defaults to dry run.** Unless `REAPER_DRY_RUN` is exactly `false` the route
 only computes and logs counts (`candidates`, `tombstoned`, `wouldMark`); it
-marks, revokes, deletes and purges nothing. The cron entry only starts after
+marks, revokes and deletes no account. The Apple handoff purge runs in every
+mode (dry run and rollback included): it only clears expired or burned handoff
+rows, which is a retention duty. The cron entry only starts after
 this code is merged to `main` (auto-deploys to production), which KC controls.
 
 Procedure:

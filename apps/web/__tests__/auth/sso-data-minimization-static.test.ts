@@ -12,6 +12,9 @@
  * here in the same PR and get the kids-privacy-officer's sign-off; a bare
  * match is never acceptable.
  *
+ * This is a tripwire, not a security control: string concatenation or
+ * computed keys can evade it; code review remains the backstop.
+ *
  * `picture` is also ordinary English in marketing copy ("a picture of
  * tomorrow's first tee"), so it only matches code-shaped uses: property access
  * (`.picture`), a quoted key (`"picture"`) or an object/type key (`picture:`).
@@ -38,7 +41,7 @@ const PATTERNS: { name: string; re: RegExp }[] = [
   { name: "identity_data", re: /identity_data/ },
   { name: "full_name", re: /full_name/ },
   { name: "avatar_url", re: /avatar_url/ },
-  { name: "picture", re: /\.picture\b|["'`]picture["'`]|\bpicture\s*\??\s*:/ },
+  { name: "picture", re: /\.picture\b|["'`]picture["'`]|\bpicture\s*\??\s*:|\{[^}]*\bpicture\b[^}]*\}\s*=/ },
 ];
 
 const SKIP_FILES = new Set(["lib/supabase/types.ts"]);
@@ -98,6 +101,7 @@ describe("SSO data minimization (spec §5.8): no provider profile reads", () => 
     expect(bad("select('raw_user_meta_data')")).toBe(true);
     expect(bad("console.log(u.avatar_url)")).toBe(true);
     expect(bad("const o = { picture: url };")).toBe(true);
+    expect(bad("const { email, picture } = identity;")).toBe(true);
     expect(bad("// never read user_metadata here\nconst a = 1;")).toBe(false);
     expect(bad("/* full_name avatar_url */ const a = 1;")).toBe(false);
     expect(bad('const t = "One mental skill, then a picture of tomorrow.";')).toBe(false);

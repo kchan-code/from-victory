@@ -80,9 +80,13 @@ export async function runReaper(dryRun: boolean): Promise<ReaperSummary> {
   s.tombstoned = candidates.filter((c) => c.tombstoned).length;
 
   if (dryRun) {
-    // Computes counts only. Writes nothing: no mark, no revoke, no delete and
-    // no handoff purge (the purge deletes rows and calls Apple).
+    // Account deletion is counts-only: no mark, no revoke, no delete. The
+    // Apple handoff purge still runs: it never touches an account, only
+    // expired/burned handoff rows (at most minutes old, holding a refresh
+    // token), and clearing them is a retention duty (spec §5.4 step 4,
+    // privacy #601), so dry run and rollback must not pause it.
     s.wouldMark = s.candidates - s.tombstoned;
+    await runPurge(s);
     return s;
   }
 
@@ -94,12 +98,16 @@ export async function runReaper(dryRun: boolean): Promise<ReaperSummary> {
     }
   }
 
+  await runPurge(s);
+  return s;
+}
+
+async function runPurge(s: ReaperSummary): Promise<void> {
   try {
     s.purge = await purgeAppleHandoffs();
   } catch {
     s.errors++;
   }
-  return s;
 }
 
 type Service = ReturnType<typeof createServiceClient>;
