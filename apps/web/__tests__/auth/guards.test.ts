@@ -15,7 +15,7 @@
  *
  * For each guard we cover:
  *   - no session                              -> redirect("/signin")
- *   - profile lookup errors                    -> redirect("/signin")
+ *   - profile lookup errors                    -> throw SessionCheckError (FV-672: never /welcome, /subscribe or sign-out)
  *   - no profile row                           -> redirect("/signin")
  *   - profile role does not satisfy the guard  -> redirect("/signin")
  *   - profile role satisfies the guard         -> resolves with {userId, profile}
@@ -95,7 +95,7 @@ vi.mock("@/lib/supabase/server", () => ({
           eq: vi.fn((column: string, value: unknown) => {
             eqCalls.push({ column, value });
             return {
-              single: vi.fn(() =>
+              maybeSingle: vi.fn(() =>
                 Promise.resolve({ data: mockProfile, error: mockProfileError }),
               ),
             };
@@ -134,6 +134,8 @@ import {
   requireSubscriber,
   requireAthlete,
   redirectIfAuthed,
+  requireOnboarding,
+  SessionCheckError,
 } from "@/lib/auth/guards";
 
 const USER_ID = "aaaaaaaa-0000-4000-8000-000000000001";
@@ -158,14 +160,13 @@ describe("requireParent", () => {
     expect(selectCalls).toHaveLength(0);
   });
 
-  it("redirects to /signin when the profile lookup errors", async () => {
+  it("throws SessionCheckError (never a redirect) when the profile lookup errors (FV-672)", async () => {
     mockUser = { id: USER_ID };
     mockProfile = null;
     mockProfileError = { message: "db error" };
 
-    await expect(requireParent()).rejects.toThrow("NEXT_REDIRECT:/signin");
-    expect(redirect).toHaveBeenCalledTimes(1);
-    expect(redirect).toHaveBeenCalledWith("/signin");
+    await expect(requireParent()).rejects.toBeInstanceOf(SessionCheckError);
+    expect(redirect).not.toHaveBeenCalled();
   });
 
   it("redirects to /signin when no profile row exists", async () => {
@@ -220,13 +221,12 @@ describe("requireSelfPayer", () => {
     expect(selectCalls).toHaveLength(0);
   });
 
-  it("redirects to /signin when the profile lookup errors", async () => {
+  it("throws SessionCheckError (never a redirect) when the profile lookup errors (FV-672)", async () => {
     mockUser = { id: USER_ID };
     mockProfileError = { message: "db error" };
 
-    await expect(requireSelfPayer()).rejects.toThrow("NEXT_REDIRECT:/signin");
-    expect(redirect).toHaveBeenCalledTimes(1);
-    expect(redirect).toHaveBeenCalledWith("/signin");
+    await expect(requireSelfPayer()).rejects.toBeInstanceOf(SessionCheckError);
+    expect(redirect).not.toHaveBeenCalled();
   });
 
   it("redirects to /signin when no profile row exists", async () => {
@@ -283,12 +283,12 @@ describe("requireSubscriber", () => {
     expect(selectCalls).toHaveLength(0);
   });
 
-  it("redirects to /signin when the profile lookup errors", async () => {
+  it("throws SessionCheckError (never a redirect) when the profile lookup errors (FV-672)", async () => {
     mockUser = { id: USER_ID };
     mockProfileError = { message: "db error" };
 
-    await expect(requireSubscriber()).rejects.toThrow("NEXT_REDIRECT:/signin");
-    expect(redirect).toHaveBeenCalledTimes(1);
+    await expect(requireSubscriber()).rejects.toBeInstanceOf(SessionCheckError);
+    expect(redirect).not.toHaveBeenCalled();
   });
 
   it("redirects to /signin when no profile row exists", async () => {
@@ -349,12 +349,12 @@ describe("requireAthlete", () => {
     expect(selectCalls).toHaveLength(0);
   });
 
-  it("redirects to /signin when the profile lookup errors", async () => {
+  it("throws SessionCheckError (never a redirect) when the profile lookup errors (FV-672)", async () => {
     mockUser = { id: USER_ID };
     mockProfileError = { message: "db error" };
 
-    await expect(requireAthlete()).rejects.toThrow("NEXT_REDIRECT:/signin");
-    expect(redirect).toHaveBeenCalledTimes(1);
+    await expect(requireAthlete()).rejects.toBeInstanceOf(SessionCheckError);
+    expect(redirect).not.toHaveBeenCalled();
   });
 
   it("redirects to /signin when no profile row exists", async () => {
@@ -548,5 +548,160 @@ describe("redirectIfAuthed", () => {
     // stack), a bug could still call redirect() more than once. Assert the
     // count exactly.
     expect(redirect).toHaveBeenCalledTimes(1);
+  });
+});
+
+
+// ===========================================================================
+// FV-672 — session state x gate matrix (spec FV-569 §5.1)
+//
+//   none / orphan / pending / parent / athlete / adult_athlete / error
+//
+// `pending` = no profile + (apple|google provider OR confirmed email).
+// `orphan`  = no profile + email-only + unconfirmed.
+// `error`   = the profile read failed.
+// ===========================================================================
+
+type StateUser = Record<string, unknown>;
+const PENDING_GOOGLE: StateUser = {
+  id: USER_ID,
+  email: "g@example.com",
+  app_metadata: { provider: "google", providers: ["google"] },
+  identities: [{ provider: "google" }],
+};
+const PENDING_APPLE: StateUser = {
+  id: USER_ID,
+  email: "relay@privaterelay.appleid.com",
+  app_metadata: { provider: "apple", providers: ["apple"] },
+};
+const PENDING_CONFIRMED_EMAIL: StateUser = {
+  id: USER_ID,
+  email: "e@example.com",
+  email_confirmed_at: "2026-11-11T00:00:00Z",
+  app_metadata: { provider: "email", providers: ["email"] },
+};
+const ORPHAN_UNCONFIRMED_EMAIL: StateUser = {
+  id: USER_ID,
+  email: "e@example.com",
+  email_confirmed_at: null,
+  app_metadata: { provider: "email", providers: ["email"] },
+};
+
+async function expectRedirect(fn: () => Promise<unknown>, path: string) {
+  await expect(fn()).rejects.toThrow(`NEXT_REDIRECT:${path}`);
+  expect(redirect).toHaveBeenCalledTimes(1);
+  expect(redirect).toHaveBeenCalledWith(path);
+}
+
+describe("FV-672: pending -> /welcome on every gate", () => {
+  const pendingUsers: [string, StateUser][] = [
+    ["google", PENDING_GOOGLE],
+    ["apple", PENDING_APPLE],
+    ["confirmed email", PENDING_CONFIRMED_EMAIL],
+  ];
+  const gates: [string, () => Promise<unknown>][] = [
+    ["redirectIfAuthed", redirectIfAuthed],
+    ["requireParent", requireParent],
+    ["requireSelfPayer", requireSelfPayer],
+    ["requireSubscriber", requireSubscriber],
+    ["requireAthlete", requireAthlete],
+  ];
+
+  for (const [uLabel, user] of pendingUsers) {
+    for (const [gLabel, gate] of gates) {
+      it(`${gLabel} sends a pending ${uLabel} session to /welcome`, async () => {
+        mockUser = user as MockUser;
+        mockProfile = null;
+        await expectRedirect(gate, "/welcome");
+      });
+    }
+  }
+});
+
+describe("FV-672: orphan (unconfirmed email-only, no profile)", () => {
+  it("redirectIfAuthed -> /auth/signout", async () => {
+    mockUser = ORPHAN_UNCONFIRMED_EMAIL as MockUser;
+    mockProfile = null;
+    await expectRedirect(redirectIfAuthed, "/auth/signout");
+  });
+
+  for (const [label, gate] of [
+    ["requireParent", requireParent],
+    ["requireSelfPayer", requireSelfPayer],
+    ["requireSubscriber", requireSubscriber],
+    ["requireAthlete", requireAthlete],
+  ] as [string, () => Promise<unknown>][]) {
+    it(`${label} keeps today's /signin (-> sign-out chain), never /welcome`, async () => {
+      mockUser = ORPHAN_UNCONFIRMED_EMAIL as MockUser;
+      mockProfile = null;
+      await expectRedirect(gate, "/signin");
+    });
+  }
+});
+
+describe("FV-672: error is never /welcome, /subscribe or a sign-out", () => {
+  const gates: [string, () => Promise<unknown>][] = [
+    ["requireParent", requireParent],
+    ["requireSelfPayer", requireSelfPayer],
+    ["requireSubscriber", requireSubscriber],
+    ["requireAthlete", requireAthlete],
+    ["requireOnboarding", requireOnboarding],
+  ];
+  for (const [label, gate] of gates) {
+    it(`${label} throws SessionCheckError for a pending-looking user whose profile read failed`, async () => {
+      mockUser = PENDING_GOOGLE as MockUser;
+      mockProfile = null;
+      mockProfileError = { message: "boom" };
+      await expect(gate()).rejects.toBeInstanceOf(SessionCheckError);
+      expect(redirect).not.toHaveBeenCalled();
+    });
+  }
+
+  it("redirectIfAuthed lets the page render (no redirect at all) on a failed read", async () => {
+    mockUser = PENDING_GOOGLE as MockUser;
+    mockProfile = null;
+    mockProfileError = { message: "boom" };
+    await expect(redirectIfAuthed()).resolves.toBeUndefined();
+    expect(redirect).not.toHaveBeenCalled();
+  });
+});
+
+describe("FV-672: requireOnboarding", () => {
+  it("signed out -> /signin", async () => {
+    mockUser = null;
+    await expectRedirect(requireOnboarding, "/signin");
+  });
+
+  it("orphan -> /auth/signout", async () => {
+    mockUser = ORPHAN_UNCONFIRMED_EMAIL as MockUser;
+    mockProfile = null;
+    await expectRedirect(requireOnboarding, "/auth/signout");
+  });
+
+  it("pending -> returns the user id, the AUTH email and the Apple flag (nothing else)", async () => {
+    mockUser = PENDING_GOOGLE as MockUser;
+    mockProfile = null;
+    await expect(requireOnboarding()).resolves.toEqual({
+      userId: USER_ID,
+      email: "g@example.com",
+      viaApple: false,
+    });
+    expect(redirect).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["parent", "/dashboard"],
+    ["athlete", "/athlete"],
+    ["adult_athlete", "/athlete"],
+  ])("%s (already onboarded) -> %s", async (role, path) => {
+    mockUser = PENDING_GOOGLE as MockUser;
+    mockProfile = { role };
+    await expectRedirect(requireOnboarding, path);
+  });
+
+  it("an unrecognised role is treated as orphan -> /auth/signout", async () => {
+    mockUser = PENDING_GOOGLE as MockUser;
+    mockProfile = { role: "mystery" };
+    await expectRedirect(requireOnboarding, "/auth/signout");
   });
 });

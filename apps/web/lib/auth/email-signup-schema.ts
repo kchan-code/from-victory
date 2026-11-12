@@ -95,6 +95,23 @@ export const StartAdultSchema = z.object({ ...adultFields, password });
 export const CompleteParentSchema = z.object({ ...parentFields, token });
 export const CompleteAdultSchema = z.object({ ...adultFields, token });
 
+/**
+ * /welcome completion (FV-672): the signed-in, already-verified account. No
+ * email (it is the auth email, taken from the session), no password, no code.
+ */
+export const OnboardParentSchema = z.object({
+  first_name: firstName,
+  guardian_attestation: guardianAttestation,
+  consent,
+});
+export const OnboardAdultSchema = z.object({
+  first_name: firstName,
+  birthdate: adultBirthdate,
+  sport,
+  age_attestation: ageAttestation,
+  consent,
+});
+
 /** Legacy-account code entry (verifyEmailOnly). */
 export const VerifyOnlySchema = z.object({ email, token });
 
@@ -149,6 +166,18 @@ export const PARENT_COMPLETE_KEYS = [
 export const ADULT_COMPLETE_KEYS = [
   "email",
   "token",
+  "first_name",
+  "birthdate",
+  "sport",
+  "age_attestation",
+  "consent",
+] as const;
+export const PARENT_ONBOARD_KEYS = [
+  "first_name",
+  "guardian_attestation",
+  "consent",
+] as const;
+export const ADULT_ONBOARD_KEYS = [
   "first_name",
   "birthdate",
   "sport",
