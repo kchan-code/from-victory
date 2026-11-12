@@ -195,6 +195,12 @@ describe("Faq — subscriber sign-in and recovery entries (FV-681)", () => {
     ]) {
       expect(a).toContain(label);
     }
+    // Restore steps are conditional on the button appearing; a missing button
+    // (e.g. store configuration) routes to support, never to "update the app"
+    // or a second purchase.
+    expect(a).toContain("If “Restore Purchases” appears there, tap it.");
+    expect(a).toContain("If you don’t see “Restore Purchases”, don’t subscribe again: reach us through the Contact page.");
+    expect(a).not.toMatch(/update the app/i);
     // No blanket "No" and no instruction for Android/web subscribers to restore.
     expect(a).not.toMatch(/^No\b/);
     expect(a).not.toMatch(/Android/);
