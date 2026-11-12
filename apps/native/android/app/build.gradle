@@ -59,6 +59,9 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    // FV-675: Auth Tab / Custom Tab for FVAuthPlugin (system-browser sign-in). Google-published
+    // AndroidX library, no network or analytics of its own. Product + privacy reviewed with the plugin.
+    implementation "androidx.browser:browser:$androidxBrowserVersion"
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"

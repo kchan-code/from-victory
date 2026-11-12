@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 /**
  * FV-483 / FV-572 regression guard.
@@ -252,5 +252,138 @@ describe("capacitor.config — Capacitor 8 system-bar keys (FV-502)", () => {
       configSource.slice(start, end),
       "plugins.SystemBars.style must be DARK — Capacitor 8's core SystemBars plugin (not the legacy StatusBar block) controls bar-icon appearance on Android 15+, and its default follows device day/night mode: dark icons, invisible against the onyx strip",
     ).toMatch(/style\s*:\s*"DARK"/);
+  });
+});
+
+/**
+ * FV-675 (SSO P0) staging switch guard.
+ *
+ * `FV_SSO_STAGING_BUILD=1` at `cap sync` time produces a STAGING shell that
+ * advertises the FVAuth plugin (`FVAuth/1`), lets the WebView stay on the
+ * staging site, and tells the native plugin to accept the staging hosts. With
+ * the env unset — every production build — the exported config must be the
+ * unchanged production config: no `FVAuth/1`, no `android` UA override, the
+ * production allowNavigation list, no `plugins.FVAuth` (FV-620 C1 owns the
+ * production Android override and lands first; FV-569 spec §13a).
+ *
+ * Unlike the source-text guards above, this EVALUATES the config, because the
+ * switch is runtime logic. The import specifier is a variable so `tsc` does
+ * not pull apps/native (and `@capacitor/cli`'s types) into the web typecheck
+ * graph; the config's only import is `import type`, which the transform
+ * erases, so nothing from `@capacitor/cli` is loaded at runtime either.
+ */
+describe("capacitor.config — FV_SSO_STAGING_BUILD switch (FV-675)", () => {
+  interface EvaluatedConfig {
+    appendUserAgent?: string;
+    server?: { url?: string; allowNavigation?: string[] };
+    plugins?: Record<string, unknown>;
+    android?: { appendUserAgent?: string } & Record<string, unknown>;
+    ios?: { appendUserAgent?: string } & Record<string, unknown>;
+  }
+
+  const BASE_TOKEN = "FVNativeShell/1";
+  const IOS_TOKEN = "FVNativeShell/1 (ios)";
+  const PRODUCTION_NAVIGATION = ["www.fromvictoryapp.com", "fromvictoryapp.com"];
+  const configPath = resolve(__dirname, "../../native/capacitor.config.ts");
+
+  async function loadConfig(env: { FV_SSO_STAGING_BUILD?: string }): Promise<EvaluatedConfig> {
+    vi.resetModules();
+    vi.stubEnv("CAPACITOR_SERVER_URL", undefined);
+    vi.stubEnv("FV_SSO_STAGING_BUILD", env.FV_SSO_STAGING_BUILD);
+    const mod = (await import(/* @vite-ignore */ configPath)) as { default: EvaluatedConfig };
+    // Deep copy so one evaluation can never alias another's arrays/objects.
+    return JSON.parse(JSON.stringify(mod.default)) as EvaluatedConfig;
+  }
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("env unset: the production config, unchanged", async () => {
+    const config = await loadConfig({});
+    expect(JSON.stringify(config)).not.toContain("FVAuth");
+    expect(config.appendUserAgent).toBe(BASE_TOKEN);
+    expect(config.ios?.appendUserAgent).toBe(IOS_TOKEN);
+    expect(config.android?.appendUserAgent).toBeUndefined();
+    expect(config.server?.url).toBe("https://www.fromvictoryapp.com");
+    expect(config.server?.allowNavigation).toEqual(PRODUCTION_NAVIGATION);
+    expect(config.plugins).not.toHaveProperty("FVAuth");
+  });
+
+  it.each(["0", "true", "yes", ""])(
+    'only the exact value "1" flips the switch (%j → production)',
+    async (value) => {
+      const unset = await loadConfig({});
+      expect(await loadConfig({ FV_SSO_STAGING_BUILD: value })).toEqual(unset);
+    },
+  );
+
+  it("env=1: appends FVAuth/1 to each platform's effective UA; the top-level token never changes", async () => {
+    const unset = await loadConfig({});
+    const staging = await loadConfig({ FV_SSO_STAGING_BUILD: "1" });
+    expect(staging.appendUserAgent).toBe(BASE_TOKEN);
+    expect(staging.ios?.appendUserAgent).toBe("FVNativeShell/1 (ios) FVAuth/1");
+    // Android's effective token + the marker. Today (before FV-620 C1) that is
+    // the bare token; once C1's `(play)` override lands it becomes
+    // "FVNativeShell/1 (play) FVAuth/1" with no change to the switch.
+    expect(staging.android?.appendUserAgent).toBe(
+      `${unset.android?.appendUserAgent ?? BASE_TOKEN} FVAuth/1`,
+    );
+    if (unset.android?.appendUserAgent === undefined) {
+      expect(staging.android?.appendUserAgent).toBe("FVNativeShell/1 FVAuth/1");
+    }
+  });
+
+  it("env=1: adds only the staging web host to allowNavigation — no Stripe, no Supabase", async () => {
+    const staging = await loadConfig({ FV_SSO_STAGING_BUILD: "1" });
+    expect(staging.server?.allowNavigation).toEqual([
+      ...PRODUCTION_NAVIGATION,
+      "fv-android-staging-web.vercel.app",
+    ]);
+    for (const host of staging.server?.allowNavigation ?? []) {
+      expect(host.toLowerCase()).not.toContain("stripe");
+      expect(host.toLowerCase()).not.toContain("supabase");
+    }
+  });
+
+  it("env=1: selects the native staging allow-list via plugins.FVAuth", async () => {
+    const staging = await loadConfig({ FV_SSO_STAGING_BUILD: "1" });
+    expect(staging.plugins?.FVAuth).toEqual({ stagingHosts: true });
+  });
+
+  it("composes with a platform-token switch: appends FVAuth/1 to whatever Android/iOS token is in effect (FV-664 (play))", async () => {
+    vi.resetModules();
+    vi.stubEnv("FV_SSO_STAGING_BUILD", undefined);
+    const mod = (await import(/* @vite-ignore */ configPath)) as {
+      default: EvaluatedConfig;
+      withSsoStagingBuild: (base: EvaluatedConfig) => EvaluatedConfig;
+    };
+    const base = JSON.parse(JSON.stringify(mod.default)) as EvaluatedConfig;
+    // Simulates FV-664's FV_PLAY_BILLING branch having run first.
+    const play: EvaluatedConfig = {
+      ...base,
+      android: { ...base.android, appendUserAgent: "FVNativeShell/1 (play)" },
+    };
+    const composed = mod.withSsoStagingBuild(play);
+    expect(composed.android?.appendUserAgent).toBe("FVNativeShell/1 (play) FVAuth/1");
+    expect(composed.ios?.appendUserAgent).toBe("FVNativeShell/1 (ios) FVAuth/1");
+    expect(composed.appendUserAgent).toBe(BASE_TOKEN);
+    // A platform with no override falls back to the global token.
+    const noIos: EvaluatedConfig = { ...base, ios: { ...base.ios, appendUserAgent: undefined } };
+    expect(mod.withSsoStagingBuild(noIos).ios?.appendUserAgent).toBe("FVNativeShell/1 FVAuth/1");
+  });
+
+  it("env=1: nothing else differs from the production config", async () => {
+    const unset = await loadConfig({});
+    const staging = await loadConfig({ FV_SSO_STAGING_BUILD: "1" });
+    const stripped = JSON.parse(JSON.stringify(staging)) as EvaluatedConfig;
+    delete stripped.plugins?.FVAuth;
+    if (stripped.server) stripped.server.allowNavigation = unset.server?.allowNavigation;
+    if (stripped.ios) stripped.ios.appendUserAgent = unset.ios?.appendUserAgent;
+    if (stripped.android) {
+      if (unset.android?.appendUserAgent === undefined) delete stripped.android.appendUserAgent;
+      else stripped.android.appendUserAgent = unset.android.appendUserAgent;
+    }
+    expect(stripped).toEqual(unset);
   });
 });

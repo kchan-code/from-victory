@@ -26,10 +26,14 @@ class FVBridgeViewController: CAPBridgeViewController {
             bridge?.registerPluginInstance(FVAppleIAPPlugin())
         }
         bridge?.registerPluginInstance(FVNarrationPlugin())
+        // FV-675: app-local sign-in bridge (system-browser OAuth + the Sign
+        // in with Apple sheet). Host allow-list and callback scheme are
+        // hard-coded in FVAuthPlugin.swift; product + privacy reviewed.
+        bridge?.registerPluginInstance(FVAuthPlugin())
         // FV-589: CLI-verifiable evidence (via unified log, not stdout)
         // that the storyboard's FVBridgeViewController actually ran under
         // the new SceneDelegate and finished plugin registration.
         os.Logger(subsystem: Bundle.main.bundleIdentifier ?? "app", category: "scene")
-            .info("FVBridgeViewController.capacitorDidLoad: registered FVAppleIAPPlugin")
+            .info("FVBridgeViewController.capacitorDidLoad: registered FVAppleIAPPlugin, FVNarrationPlugin, FVAuthPlugin")
     }
 }
