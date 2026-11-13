@@ -7,8 +7,8 @@
  * a signed-in minor and inside the store apps.
  *
  * This module is pure (no React, no next/headers) so the matrix is unit
- * tested directly. The server resolves `nativeShell` and `session` once
- * per request; the client mount re-checks on navigation via `usePathname`.
+ * tested directly. The client mount re-checks the path on navigation and
+ * re-resolves the session whenever Supabase auth state changes.
  */
 
 import { isAllowedAnalyticsPath } from "./allowed-routes";
@@ -17,8 +17,10 @@ import { isAllowedAnalyticsPath } from "./allowed-routes";
  * - `signed-out` — no session. Marketing allowlist applies.
  * - `minor` — signed-in profile role `athlete` (parent-managed, 13–17).
  * - `non-minor` — signed-in `parent` or `adult_athlete` (18+).
- * - `unresolved` — a session cookie is present but the role could not be
- *   confirmed. Fail closed: do not mount.
+ * - `unresolved` — a cookie or client session is present but the user was
+ *   not verified, or the role could not be confirmed. Fail closed: do not
+ *   mount. This includes getUser() returning an error or a null user while
+ *   an auth cookie is still present.
  */
 export type AnalyticsSession =
   | "signed-out"
@@ -51,9 +53,10 @@ const NON_MINOR_ROLES: ReadonlySet<string> = new Set([
 
 /**
  * Map a verified session to the analytics audience.
- * `hasSessionUser` false → signed out, even if a stale cookie was present.
- * A verified user with a missing, empty, or unrecognized role is
- * `unresolved` (fail closed) rather than treated as signed out.
+ * Call this only after getUser() returned a user. A cookie with no verified
+ * user is `unresolved`, not signed-out — that decision lives in
+ * `resolveAnalyticsViewer`. A verified user with a missing, empty, or
+ * unrecognized role is also `unresolved`.
  */
 export function classifyAnalyticsSession(input: {
   hasSessionUser: boolean;
@@ -63,6 +66,61 @@ export function classifyAnalyticsSession(input: {
   if (input.role === "athlete") return "minor";
   if (input.role !== null && NON_MINOR_ROLES.has(input.role)) return "non-minor";
   return "unresolved";
+}
+
+/** Same token as lib/native-shell.ts. The (ios) and (play) markers contain it. */
+const NATIVE_SHELL_UA_TOKEN = "FVNativeShell/1";
+
+/** True for every store shell (legacy, ios-iap, android-play). */
+export function isAnalyticsNativeShell(userAgent: string | null | undefined): boolean {
+  return (userAgent ?? "").includes(NATIVE_SHELL_UA_TOKEN);
+}
+
+export type AnalyticsAuthLookup = {
+  userId: string | null;
+  /** getUser() returned an error or threw before this result was built. */
+  error: boolean;
+  role: string | null;
+  roleError: boolean;
+};
+
+/**
+ * Fail closed unless the visitor is a confirmed signed-out browser or a
+ * confirmed non-minor (parent / adult_athlete). A native shell never
+ * mounts. A cookie or in-memory session whose getUser() errors or returns
+ * no user is `unresolved` — analytics stays off.
+ */
+export async function resolveAnalyticsViewer(input: {
+  userAgent: string | null | undefined;
+  cookieNames: readonly string[];
+  /** True when the auth client already handed us a session object. */
+  sessionPresent: boolean;
+  lookup: () => Promise<AnalyticsAuthLookup>;
+}): Promise<AnalyticsViewer> {
+  if (isAnalyticsNativeShell(input.userAgent)) {
+    return { nativeShell: true, session: "unresolved" };
+  }
+
+  const hasCookie = hasSupabaseAuthSessionCookie(input.cookieNames);
+  if (!hasCookie && !input.sessionPresent) {
+    return { nativeShell: false, session: "signed-out" };
+  }
+
+  try {
+    const result = await input.lookup();
+    if (result.error || result.userId === null || result.roleError) {
+      return { nativeShell: false, session: "unresolved" };
+    }
+    return {
+      nativeShell: false,
+      session: classifyAnalyticsSession({
+        hasSessionUser: true,
+        role: result.role,
+      }),
+    };
+  } catch {
+    return { nativeShell: false, session: "unresolved" };
+  }
 }
 
 /**

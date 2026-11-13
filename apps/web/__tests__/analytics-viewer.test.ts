@@ -116,10 +116,13 @@ describe("getAnalyticsMountContext", () => {
     expect((await getAnalyticsMountContext()).session).toBe("unresolved");
   });
 
-  it("an auth cookie with no verified user is signed-out", async () => {
+  it("an auth cookie with no verified user keeps analytics off", async () => {
     cookieNames = [SESSION_COOKIE];
     getUser.mockResolvedValue({ data: { user: null }, error: { message: "expired" } });
-    expect((await getAnalyticsMountContext()).session).toBe("signed-out");
+    expect((await getAnalyticsMountContext()).session).toBe("unresolved");
+
+    getUser.mockResolvedValue({ data: { user: null }, error: null });
+    expect((await getAnalyticsMountContext()).session).toBe("unresolved");
     expect(maybeSingle).not.toHaveBeenCalled();
   });
 

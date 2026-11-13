@@ -12,6 +12,7 @@ import { describe, expect, it } from "vitest";
 import {
   classifyAnalyticsSession,
   hasSupabaseAuthSessionCookie,
+  resolveAnalyticsViewer,
   shouldMountAnalytics,
   type AnalyticsSession,
 } from "@/lib/analytics/mount";
@@ -198,5 +199,69 @@ describe("hasSupabaseAuthSessionCookie", () => {
       false,
     );
     expect(hasSupabaseAuthSessionCookie([])).toBe(false);
+  });
+});
+
+const COOKIE = ["sb-abcdefghijklmnop-auth-token"];
+
+describe("resolveAnalyticsViewer", () => {
+  it("keeps analytics off when an auth cookie is present and getUser errors", async () => {
+    const viewer = await resolveAnalyticsViewer({
+      userAgent: "Mozilla/5.0",
+      cookieNames: COOKIE,
+      sessionPresent: false,
+      lookup: async () => ({
+        userId: null,
+        error: true,
+        role: null,
+        roleError: false,
+      }),
+    });
+    expect(viewer).toEqual({ nativeShell: false, session: "unresolved" });
+    expect(shouldMountAnalytics("/privacy", viewer)).toBe(false);
+    expect(shouldMountAnalytics("/terms", viewer)).toBe(false);
+  });
+
+  it("keeps analytics off when an auth cookie is present and getUser returns no user", async () => {
+    const viewer = await resolveAnalyticsViewer({
+      userAgent: "Mozilla/5.0",
+      cookieNames: COOKIE,
+      sessionPresent: false,
+      lookup: async () => ({
+        userId: null,
+        error: false,
+        role: null,
+        roleError: false,
+      }),
+    });
+    expect(viewer.session).toBe("unresolved");
+    expect(shouldMountAnalytics("/privacy", viewer)).toBe(false);
+  });
+
+  it("a confirmed signed-out browser still mounts on /privacy and /terms", async () => {
+    const viewer = await resolveAnalyticsViewer({
+      userAgent: "Mozilla/5.0",
+      cookieNames: [],
+      sessionPresent: false,
+      lookup: async () => {
+        throw new Error("lookup should not run");
+      },
+    });
+    expect(viewer).toEqual({ nativeShell: false, session: "signed-out" });
+    expect(shouldMountAnalytics("/privacy", viewer)).toBe(true);
+    expect(shouldMountAnalytics("/terms", viewer)).toBe(true);
+  });
+
+  it("a store shell stays off even with no cookie", async () => {
+    const viewer = await resolveAnalyticsViewer({
+      userAgent: "Mozilla/5.0 FVNativeShell/1 (ios)",
+      cookieNames: [],
+      sessionPresent: false,
+      lookup: async () => {
+        throw new Error("lookup should not run");
+      },
+    });
+    expect(viewer.nativeShell).toBe(true);
+    expect(shouldMountAnalytics("/terms", viewer)).toBe(false);
   });
 });
