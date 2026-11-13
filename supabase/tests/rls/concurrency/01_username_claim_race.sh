@@ -28,23 +28,100 @@ NAME='race_name_634'
 S1=""
 CLEANED=0
 
-DB_HOST="$(python3 - "$DB_URL" <<'PY'
+readarray -t HOST_PARSE < <(python3 - "$DB_URL" <<'PY'
+import shlex
 import sys
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
-url = urlparse(sys.argv[1])
-print(url.hostname or "")
+db_url = sys.argv[1]
+port = None
+url_host = ""
+
+if "://" in db_url:
+    parsed = urlparse(db_url)
+    url_host = parsed.hostname or ""
+    if parsed.port:
+        port = str(parsed.port)
+    for h in parse_qs(parsed.query).get("host", []):
+        h = unquote(h)
+        if h:
+            print(f"host=url-query:{h}")
+else:
+    parsed = None
+
+for token in shlex.split(db_url):
+    if token.startswith("host="):
+        h = token.split("=", 1)[1]
+        if h:
+            print(f"host=connstr:{h}")
+    elif token.startswith("port="):
+        p = token.split("=", 1)[1]
+        if p:
+            port = p
+
+print(f"url_host={url_host}")
+if port:
+    print(f"port={port}")
 PY
 )"
 
-case "$DB_HOST" in
-  ""|localhost|127.0.0.1|::1)
-    ;;
-  *)
-    echo "::error::FV-634 race harness refused non-local DB host '$DB_HOST'. Use localhost or 127.0.0.1."
+URL_HOST=""
+DB_PORT="${PGPORT:-5432}"
+EXPLICIT_HOSTS=()
+
+for line in "${HOST_PARSE[@]}"; do
+  case "$line" in
+    url_host=*)
+      URL_HOST="${line#url_host=}"
+      ;;
+    port=*)
+      DB_PORT="${line#port=}"
+      ;;
+    host=*)
+      EXPLICIT_HOSTS+=("${line#host=}")
+      ;;
+  esac
+done
+
+if [ -n "${PGHOST:-}" ]; then
+  EXPLICIT_HOSTS+=("env:${PGHOST}")
+fi
+
+for entry in "${EXPLICIT_HOSTS[@]}"; do
+  src="${entry%%:*}"
+  host="${entry#*:}"
+  case "$host" in
+    localhost|127.0.0.1|::1)
+      ;;
+    *)
+      echo "::error::FV-634 race harness refused host from ${src}: '${host}'. Allowed hosts: localhost, 127.0.0.1, ::1."
+      exit 1
+      ;;
+  esac
+done
+
+if [ -n "$URL_HOST" ]; then
+  case "$URL_HOST" in
+    localhost|127.0.0.1|::1)
+      ;;
+    *)
+      echo "::error::FV-634 race harness refused URL hostname '${URL_HOST}'. Allowed hosts: localhost, 127.0.0.1, ::1."
+      exit 1
+      ;;
+  esac
+elif [ "${#EXPLICIT_HOSTS[@]}" -eq 0 ]; then
+  SOCKET_FOUND=0
+  for socket_dir in /var/run/postgresql /run/postgresql /tmp; do
+    if [ -S "${socket_dir}/.s.PGSQL.${DB_PORT}" ]; then
+      SOCKET_FOUND=1
+      break
+    fi
+  done
+  if [ "$SOCKET_FOUND" -ne 1 ]; then
+    echo "::error::FV-634 race harness refused empty hostname without a verifiable local Unix socket (.s.PGSQL.${DB_PORT})."
     exit 1
-    ;;
-esac
+  fi
+fi
 
 cleanup() {
   if [ "$CLEANED" -eq 1 ]; then
@@ -55,7 +132,7 @@ cleanup() {
     kill "$S1" >/dev/null 2>&1 || true
     wait "$S1" >/dev/null 2>&1 || true
   fi
-  "${PSQL[@]}" >/dev/null <<SQL || true
+  "${PSQL[@]}" >/dev/null <<SQL
 set role service_role;
 delete from public.parent_athlete_links where parent_id = '$P' and athlete_id in ('$C', '$D');
 delete from public.device_pairings where code_sha256 in ('$HC', '$HD');
