@@ -281,11 +281,13 @@ export default function PrivacyPage() {
         </p>
         <p className="mt-3">
           Separately, so that we can learn which training options are useful, we keep
-          anonymous totals of how often each preset pregame option is chosen (for example,
+          aggregate totals of how often each preset pregame option is chosen (for example,
           how many times a particular focus area or visualization was picked), counted by
-          sport and by month. These totals contain no account identifier and no record of who
-          chose what or when, and each option is counted on its own, never in combination with
-          an athlete&apos;s other choices. Anything an athlete types is never counted.
+          sport and by month. These totals do not contain an account identifier, and each
+          option is counted on its own, never in combination with an athlete&apos;s other
+          choices. We only look at a total once enough different athletes have contributed to
+          it that no individual athlete&apos;s choices can be identified. Anything an athlete
+          types is never counted.
         </p>
         <p className="mt-3">
           We collect this ourselves, in our own database. We do not use a third-party
