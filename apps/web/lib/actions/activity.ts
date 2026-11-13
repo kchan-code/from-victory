@@ -18,6 +18,7 @@ import type { ActivityEventInput } from "@/lib/activity/event-core";
 import type { PregameSelectionsInput } from "@/lib/activity/pregame-selection-core";
 import { recordPregameSelectionCounts } from "@/lib/activity/pregame-selections";
 import { recordActivityEvent } from "@/lib/activity/record";
+import { rateLimitGate } from "@/lib/actions/rate-limit-store";
 import { createClient } from "@/lib/supabase/server";
 
 // Events that may be triggered from the client. Deliberately excludes app_open
@@ -87,6 +88,12 @@ export async function logPregameSelections(
     if (!profile || (profile.role !== "athlete" && profile.role !== "adult_athlete")) {
       return;
     }
+
+    // Throttle (every call adds picks): keyed on the signed-in athlete via the
+    // shared rate-limit store (digest only, no raw id stored). Over the limit:
+    // record nothing, no error to the client.
+    const { limited } = await rateLimitGate("pregame_selections", user.id);
+    if (limited) return;
 
     // The id goes only to the server-only writer, which turns it into a keyed
     // digest; the database never receives it.

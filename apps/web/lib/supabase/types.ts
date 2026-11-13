@@ -241,12 +241,13 @@ export type Database = {
       }
       // FV-724: hand-added. Confirm via `supabase gen types typescript
       // --linked` after 20261113120000_pregame_selection_counts.sql is applied.
-      // Monthly distinct-athlete counts per pregame option (FV-749; no account
-      // identifier, no row timestamps). Read ONLY via
+      // Monthly totals per pregame option (FV-749): selection_count = all picks,
+      // athlete_count = distinct athletes (no account identifier, no row timestamps). Read ONLY via
       // read_pregame_selection_counts(). Service-role-only: RLS enabled, no
       // policies. period_start = first day of the UTC month.
       pregame_selection_counts: {
         Row: {
+          athlete_count: number
           dimension: string
           period_start: string
           selection_count: number
@@ -254,6 +255,7 @@ export type Database = {
           value: string
         }
         Insert: {
+          athlete_count?: number
           dimension: string
           period_start: string
           selection_count: number
@@ -261,6 +263,7 @@ export type Database = {
           value: string
         }
         Update: {
+          athlete_count?: number
           dimension?: string
           period_start?: string
           selection_count?: number
@@ -1149,23 +1152,24 @@ export type Database = {
         Args: { retention_days?: number }
         Returns: number
       }
-      // FV-749: hand-added. Counts selections at most once per opaque marker per
-      // UTC month. p_period must be the current UTC month's first day (else 0, nothing written). p_marker is a keyed digest computed by the app (the database
-      // never receives an athlete id). Returns cells written (0 = already counted
-      // or nothing valid). service_role only.
+      // FV-749: hand-added. selection_count +1 per pair always; athlete_count +1
+      // only for pairs whose keyed digest marker is newly claimed this month.
+      // p_selections = [{ dimension, value, marker }]. p_period must be the
+      // current UTC month's first day (else 0, nothing written). The database
+      // never receives an athlete id. Returns cells written. service_role only.
       // FV-749: hand-added. Retention: deletes closed-month markers and
-      // closed-month totals below 10; returns rows deleted. service_role only.
+      // closed-month cells with athlete_count below 10; returns rows deleted. service_role only.
       prune_pregame_selection_totals: {
         Args: Record<PropertyKey, never>
         Returns: number
       }
       record_pregame_selections: {
-        Args: { p_marker: string; p_period: string; p_sport: string; p_selections: Json }
+        Args: { p_period: string; p_sport: string; p_selections: Json }
         Returns: number
       }
       // FV-749: hand-added. The ONLY sanctioned read path for
-      // pregame_selection_counts: closed months only, cells with a
-      // distinct-athlete count >= greatest(p_min_athletes, 10). service_role only.
+      // pregame_selection_counts: closed months only, cells whose
+      // distinct-athlete count (athlete_count) >= greatest(p_min_athletes, 10). service_role only.
       read_pregame_selection_counts: {
         Args: { p_min_athletes?: number }
         Returns: {
@@ -1174,6 +1178,7 @@ export type Database = {
           dimension: string
           value: string
           selection_count: number
+          athlete_count: number
         }[]
       }
     }

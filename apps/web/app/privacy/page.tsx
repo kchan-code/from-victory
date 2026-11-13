@@ -289,19 +289,19 @@ export default function PrivacyPage() {
         </p>
         <p className="mt-3">
           Separately, so that we can learn which training options are useful, we keep
-          aggregate totals of how many athletes chose each preset pregame option (for
-          example, how many athletes picked a particular focus area or visualization),
-          counted by sport and by month. Each athlete is counted once a month, in one sport,
-          using the first pregame session that month in which they make a preset choice.
-          These totals do not contain an account identifier or a timestamp for any one
-          athlete, and each option is counted on its own, never in combination with an
-          athlete&apos;s other choices. To count each athlete only once, we keep a short-lived,
-          one-way code derived from the athlete&apos;s account that shows only that the athlete
-          has already been counted this month. It does not record what they chose, and we
-          delete these codes within a few days after the month ends. Our reporting only
-          reads a total once its month has ended and at least ten different athletes chose
-          that option. Totals below ten are deleted within a few days after the month ends;
-          totals of ten or more are kept. This is a safeguard against singling out one
+          aggregate totals of how often each preset pregame option is chosen, and by how
+          many different athletes (for example, how many times a particular focus area or
+          visualization was picked), counted by sport and by month. These totals do not
+          contain an account identifier or a timestamp for any one athlete, and each option
+          is counted on its own, never in combination with an athlete&apos;s other choices. To
+          know how many different athletes chose an option, we keep short-lived, one-way
+          codes, each derived from an athlete&apos;s account together with one option, that show
+          only that the athlete has already been counted for that option this month. The
+          codes cannot be read without a secret key held on our servers, and we delete them
+          within a few days after the month ends. Our reporting only reads a total once its
+          month has ended and at least ten different athletes chose that option. Totals for
+          options chosen by fewer than ten athletes are deleted within a few days after the
+          month ends; the others are kept. This is a safeguard against singling out one
           athlete, not a guarantee of anonymity. Anything an athlete types is never counted.
         </p>
         <p className="mt-3">

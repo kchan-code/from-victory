@@ -22,13 +22,16 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 vi.mock("@/lib/activity/record", () => ({ recordActivityEvent: vi.fn() }));
 
+const rateLimitGate = vi.fn(async (..._a: unknown[]) => ({ limited: false }));
+vi.mock("@/lib/actions/rate-limit-store", () => ({ rateLimitGate: (...a: unknown[]) => rateLimitGate(...a) }));
+
 const notifyError = vi.fn((..._a: unknown[]) => Promise.resolve());
 const deliverInBackground = vi.fn();
 vi.mock("@/lib/monitoring/notify", () => ({ notifyError: (...a: unknown[]) => notifyError(...a) }));
 vi.mock("@/lib/monitoring/deliver", () => ({ deliverInBackground: (...a: unknown[]) => deliverInBackground(...a) }));
 
 import { logPregameSelections } from "@/lib/actions/activity";
-import { pregameMarker, utcPeriodStartIso } from "@/lib/activity/pregame-marker";
+import { pregameOptionMarker, utcPeriodStartIso } from "@/lib/activity/pregame-marker";
 import {
   MAX_VALUE_LEN,
   SELECTION_DIMENSIONS,
@@ -167,11 +170,12 @@ describe("logPregameSelections (server action)", () => {
   beforeEach(() => {
     process.env.RATE_LIMIT_HASH_SECRET = "test-hash-secret";
     rpc.mockReset().mockResolvedValue({ error: null });
+    rateLimitGate.mockReset().mockResolvedValue({ limited: false });
     getUser.mockReset();
     single.mockReset();
   });
 
-  it("athlete: the RPC gets a digest marker, sport and selections — no athlete id anywhere", async () => {
+  it("athlete: the RPC gets period, sport and per-pair markers — no athlete id anywhere", async () => {
     getUser.mockResolvedValue({ data: { user: { id: ATHLETE_ID } } });
     single.mockResolvedValue({ data: { role: "athlete" } });
     await logPregameSelections("hockey", { ...hockeyValid, cueWord: "Secret" } as never);
@@ -179,15 +183,40 @@ describe("logPregameSelections (server action)", () => {
     expect(rpc).toHaveBeenCalledTimes(1);
     const [fn, args] = rpc.mock.calls[0]!;
     expect(fn).toBe("record_pregame_selections");
-    expect(Object.keys(args).sort()).toEqual(["p_marker", "p_period", "p_selections", "p_sport"]);
-    // The period passed is the one the digest was computed with (month-boundary safety).
+    expect(Object.keys(args).sort()).toEqual(["p_period", "p_selections", "p_sport"]);
     expect(args.p_period).toMatch(/^\d{4}-\d{2}-01$/);
-    expect(args.p_marker).toBe(pregameMarker(ATHLETE_ID, "test-hash-secret", new Date(`${args.p_period}T00:00:00Z`)));
-    expect(args.p_marker).toMatch(/^[0-9a-f]{64}$/);
     expect(args.p_sport).toBe("hockey");
+    const sels = args.p_selections as { dimension: string; value: string; marker: string }[];
+    expect(sels.length).toBeGreaterThan(0);
+    for (const sel of sels) {
+      expect(Object.keys(sel).sort()).toEqual(["dimension", "marker", "value"]);
+      // marker = digest of THIS pair under the passed period (digest month == period).
+      expect(sel.marker).toBe(
+        pregameOptionMarker(ATHLETE_ID, "test-hash-secret", args.p_period, "hockey", sel.dimension, sel.value),
+      );
+    }
+    const markers = sels.map((x) => x.marker);
+    expect(new Set(markers).size).toBe(markers.length); // different per pair
     const wire = JSON.stringify(args);
     expect(wire).not.toContain(ATHLETE_ID);
     expect(wire).not.toContain("Secret");
+  });
+
+  it("throttle: over the limit records nothing and does not throw", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: ATHLETE_ID } } });
+    single.mockResolvedValue({ data: { role: "athlete" } });
+    rateLimitGate.mockResolvedValue({ limited: true });
+    await expect(logPregameSelections("hockey", hockeyValid)).resolves.toBeUndefined();
+    expect(rpc).not.toHaveBeenCalled();
+    expect(rateLimitGate).toHaveBeenCalledWith("pregame_selections", ATHLETE_ID);
+  });
+
+  it("throttle is not consulted for non-athletes", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: "p" } } });
+    single.mockResolvedValue({ data: { role: "parent" } });
+    await logPregameSelections("hockey", hockeyValid);
+    expect(rateLimitGate).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
   });
 
   it("missing secret: nothing is recorded, no RPC, and the raw id is never used", async () => {
@@ -267,43 +296,41 @@ describe("logPregameSelections (server action)", () => {
     const logged = JSON.stringify(err.mock.calls);
     expect(logged).not.toContain("Confidence");
     expect(logged).not.toContain(ATHLETE_ID);
-    expect(logged).not.toContain(pregameMarker(ATHLETE_ID, "test-hash-secret", new Date()));
+    expect(logged).not.toContain(
+      pregameOptionMarker(ATHLETE_ID, "test-hash-secret", utcPeriodStartIso(new Date()), "hockey", "need", "Confidence"),
+    );
     expect(err).toHaveBeenCalled();
     err.mockRestore();
   });
 });
 
-describe("pregameMarker (keyed one-way digest)", () => {
-  const jan = new Date("2026-01-15T12:00:00Z");
-  const janLate = new Date("2026-01-31T23:59:59Z");
-  const feb = new Date("2026-02-01T00:00:00Z");
+describe("pregameOptionMarker (per-option keyed one-way digest)", () => {
+  const P = "2026-01-01";
+  const base = () => pregameOptionMarker(ATHLETE_ID, "k", P, "hockey", "need", "Calm");
 
-  it("same athlete + same UTC month -> same digest", () => {
-    expect(pregameMarker(ATHLETE_ID, "k", jan)).toBe(pregameMarker(ATHLETE_ID, "k", janLate));
+  it("is stable for the same tuple", () => {
+    expect(base()).toBe(base());
   });
-  it("changes with the month, the athlete and the secret", () => {
-    const base = pregameMarker(ATHLETE_ID, "k", jan);
-    expect(pregameMarker(ATHLETE_ID, "k", feb)).not.toBe(base);
-    expect(pregameMarker("20000000-0000-4000-8000-00000000000b", "k", jan)).not.toBe(base);
-    expect(pregameMarker(ATHLETE_ID, "other", jan)).not.toBe(base);
+  it("differs per option, athlete, month, sport, dimension and secret", () => {
+    const b = base();
+    expect(pregameOptionMarker(ATHLETE_ID, "k", P, "hockey", "need", "Joy")).not.toBe(b);
+    expect(pregameOptionMarker(ATHLETE_ID, "k", P, "hockey", "anchor", "Calm")).not.toBe(b);
+    expect(pregameOptionMarker(ATHLETE_ID, "k", P, "golf", "need", "Calm")).not.toBe(b);
+    expect(pregameOptionMarker(ATHLETE_ID, "k", "2026-02-01", "hockey", "need", "Calm")).not.toBe(b);
+    expect(pregameOptionMarker("20000000-0000-4000-8000-00000000000b", "k", P, "hockey", "need", "Calm")).not.toBe(b);
+    expect(pregameOptionMarker(ATHLETE_ID, "other", P, "hockey", "need", "Calm")).not.toBe(b);
+  });
+  it("tuple encoding cannot collide by concatenation", () => {
+    expect(pregameOptionMarker(ATHLETE_ID, "k", P, "hockey", "a:b", "c")).not.toBe(
+      pregameOptionMarker(ATHLETE_ID, "k", P, "hockey", "a", "b:c"),
+    );
+    expect(pregameOptionMarker("a", "k", P, "b", "c", "d")).not.toBe(
+      pregameOptionMarker("a:b", "k", P, "", "c", "d"),
+    );
   });
   it("is 64 lowercase hex chars and does not contain the id", () => {
-    const m = pregameMarker(ATHLETE_ID, "k", jan);
-    expect(m).toMatch(/^[0-9a-f]{64}$/);
-    expect(m).not.toContain(ATHLETE_ID);
-  });
-  it("digest month and the period passed always agree, even straddling a month end", () => {
-    // The app reads the clock once: the period string derived from that instant
-    // is the one hashed, so a 23:59:59.999 UTC call carries the OLD month for both.
-    const straddle = new Date("2026-01-31T23:59:59.999Z");
-    const period = utcPeriodStartIso(straddle);
-    expect(period).toBe("2026-01-01");
-    expect(pregameMarker(ATHLETE_ID, "k", straddle)).toBe(
-      pregameMarker(ATHLETE_ID, "k", new Date(`${period}T00:00:00Z`)),
-    );
-    expect(pregameMarker(ATHLETE_ID, "k", straddle)).not.toBe(
-      pregameMarker(ATHLETE_ID, "k", new Date("2026-02-01T00:00:00Z")),
-    );
+    expect(base()).toMatch(/^[0-9a-f]{64}$/);
+    expect(base()).not.toContain(ATHLETE_ID);
   });
   it("derives the period in UTC, first of the month", () => {
     expect(utcPeriodStartIso(new Date("2026-03-31T23:59:59Z"))).toBe("2026-03-01");

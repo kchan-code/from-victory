@@ -42,6 +42,9 @@ export const RATE_LIMIT_ACTIONS = [
   // (20261112100000_fv671_pending_accounts.sql) so FV-673 never touches it.
   "apple_signin",
   "apple_handoff",
+  // FV-749: throttle on logPregameSelections (keyed on the signed-in athlete).
+  // The DB CHECK is extended in 20261113140000.
+  "pregame_selections",
 ] as const;
 
 export type RateLimitAction = (typeof RATE_LIMIT_ACTIONS)[number];
@@ -178,6 +181,15 @@ export const RATE_LIMIT_CONFIG: Record<RateLimitAction, RateLimitConfig> = {
    */
   apple_signin: { limit: 30, windowMinutes: 15 },
   apple_handoff: { limit: 30, windowMinutes: 15 },
+
+  /**
+   * pregame_selections (FV-749): keyed on the signed-in athlete. Every call adds
+   * picks to the option totals, so it is throttled. A completed pregame is ~5
+   * minutes; 6 per hour covers a real athlete running it back-to-back (e.g. a
+   * rerun plus a Quick Reset) with headroom, and blunts scripted inflation.
+   * Over the limit the picks are silently not recorded (no error to the client).
+   */
+  pregame_selections: { limit: 6, windowMinutes: 60 },
 };
 
 // ---------------------------------------------------------------------------

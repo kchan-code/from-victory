@@ -390,7 +390,7 @@ begin
     'public.due_push_reminders()',
     'public.due_game_day_reminders()',
     'public.rollup_activity_events(integer)',
-    'public.record_pregame_selections(text, date, text, jsonb)',
+    'public.record_pregame_selections(date, text, jsonb)',
     'public.prune_pregame_selection_totals()',
     'public.read_pregame_selection_counts(integer)'
   ]
@@ -760,8 +760,8 @@ begin;
   declare n int;
   begin
     begin
-      insert into public.pregame_selection_counts (period_start, sport, dimension, value, selection_count)
-        values (current_date, 'hockey', 'need', 'fv724_probe', 1);
+      insert into public.pregame_selection_counts (period_start, sport, dimension, value, selection_count, athlete_count)
+        values (current_date, 'hockey', 'need', 'fv724_probe', 1, 1);
       raise exception 'AC(g) FAIL: pregame_selection_counts INSERT by authenticated unexpectedly SUCCEEDED';
     exception when insufficient_privilege then null; end;
 

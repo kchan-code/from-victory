@@ -22,7 +22,7 @@ import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { createServiceClient } from "@/lib/supabase/service";
 
-import { pregameMarker, utcPeriodStartIso } from "./pregame-marker";
+import { pregameOptionMarker, utcPeriodStartIso } from "./pregame-marker";
 import { buildSelectionCounts, type PregameSelectionsInput } from "./pregame-selection-core";
 
 // Operator alert for a missing secret in production, at most once per server
@@ -53,20 +53,21 @@ export async function recordPregameSelectionCounts(
       }
       return;
     }
-    // ONE clock reading: the digest's month and the period passed to the
-    // database are the same value, so they always agree. The database stores the
-    // row under p_period only if it is the current UTC month, else counts nothing
-    // (a call straddling midnight at a month boundary is simply not counted).
-    const now = new Date();
-    const period = utcPeriodStartIso(now);
-    const marker = pregameMarker(athleteId, secret, now);
+    // ONE clock reading: the digests' month and the period passed to the
+    // database are the same value. The database counts only if it is the current
+    // UTC month (a call straddling midnight at a month boundary is not counted).
+    const period = utcPeriodStartIso(new Date());
+    const selections = built.selections.map((sel) => ({
+      dimension: sel.dimension,
+      value: sel.value,
+      marker: pregameOptionMarker(athleteId, secret, period, built.sport, sel.dimension, sel.value),
+    }));
 
     const supabase = createServiceClient();
     const { error } = await supabase.rpc("record_pregame_selections", {
-      p_marker: marker,
       p_period: period,
       p_sport: built.sport,
-      p_selections: built.selections,
+      p_selections: selections,
     });
     if (error) {
       console.error("[activity] pregame selection counts write failed");
