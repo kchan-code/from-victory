@@ -94,7 +94,7 @@ select p.proname, p.proacl
      'check_journal_entry_consistency', 'check_safety_event_consistency',
      'enforce_birthdate_immutable', 'due_push_reminders',
      'due_game_day_reminders', 'rollup_activity_events',
-     'increment_pregame_selection_counts',
+     'increment_pregame_selection_counts', 'read_pregame_selection_counts',
      'get_own_personalization', 'get_own_username'
    )
  order by p.proname;
@@ -386,7 +386,8 @@ begin
     'public.due_push_reminders()',
     'public.due_game_day_reminders()',
     'public.rollup_activity_events(integer)',
-    'public.increment_pregame_selection_counts(text, jsonb)'
+    'public.increment_pregame_selection_counts(text, jsonb)',
+    'public.read_pregame_selection_counts(integer, integer)'
   ]
   loop
     select has_function_privilege('anon', fn, 'execute') into got;

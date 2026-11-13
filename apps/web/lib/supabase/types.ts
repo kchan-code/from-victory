@@ -224,8 +224,9 @@ export type Database = {
       }
       // FV-724: hand-added. Confirm via `supabase gen types typescript
       // --linked` after 20261113120000_pregame_selection_counts.sql is applied.
-      // ANONYMOUS monthly totals of pregame option choices: no athlete/user/
-      // session id, no row timestamps. Service-role-only: RLS enabled, no
+      // Monthly aggregate totals of pregame option choices (no account
+      // identifier, no row timestamps). Read ONLY via
+      // read_pregame_selection_counts(). Service-role-only: RLS enabled, no
       // policies. period_start = first day of the UTC month.
       pregame_selection_counts: {
         Row: {
@@ -1131,12 +1132,26 @@ export type Database = {
         Args: { retention_days?: number }
         Returns: number
       }
-      // FV-724: hand-added. Anonymous +1 per (dimension, value) for the current
+      // FV-724: hand-added. +1 per (dimension, value) for the current
       // UTC month. p_selections = [{ dimension, value }]. Takes NO athlete id.
       // EXECUTE: service_role only.
       increment_pregame_selection_counts: {
         Args: { p_sport: string; p_selections: Json }
         Returns: number
+      }
+      // FV-724: hand-added. The ONLY sanctioned read path for
+      // pregame_selection_counts: returns a cell only when its count AND the
+      // sport+month distinct-athlete count each meet a floor of >= 10 (caller
+      // cannot lower it). EXECUTE: service_role only. No app reader exists yet.
+      read_pregame_selection_counts: {
+        Args: { p_min_athletes?: number; p_min_count?: number }
+        Returns: {
+          period_start: string
+          sport: string
+          dimension: string
+          value: string
+          selection_count: number
+        }[]
       }
     }
     Enums: {
