@@ -36,3 +36,23 @@ export function isBenignCancelError(err: unknown): boolean {
   const benignCodes = new Set(["resource_missing", "subscription_canceled"]);
   return benignCodes.has(err.code ?? "");
 }
+
+/**
+ * Returns `true` when deleting a Stripe CUSTOMER failed only because the
+ * customer is already gone (`resource_missing`) — e.g. a retry after a partial
+ * account-deletion failure, or a customer removed from the Stripe dashboard.
+ * There is nothing left to delete, so account deletion may proceed.
+ *
+ * The SDK (`customers.del`) resolves with `{ deleted: true }` on success and
+ * throws a `StripeInvalidRequestError` for a missing customer. Every other
+ * error (network, auth, 5xx, rate-limit) returns `false` — the caller must
+ * abort so the payer's email/name is never silently left behind in Stripe.
+ *
+ * Callers: `lib/actions/account.ts` → `deleteAccount`.
+ */
+export function isBenignCustomerDeleteError(err: unknown): boolean {
+  return (
+    err instanceof Stripe.errors.StripeInvalidRequestError &&
+    err.code === "resource_missing"
+  );
+}

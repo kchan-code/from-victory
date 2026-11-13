@@ -9,7 +9,10 @@
 import Stripe from "stripe";
 import { describe, it, expect } from "vitest";
 
-import { isBenignCancelError } from "@/lib/stripe/cancel-errors";
+import {
+  isBenignCancelError,
+  isBenignCustomerDeleteError,
+} from "@/lib/stripe/cancel-errors";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -109,5 +112,34 @@ describe("isBenignCancelError — fatal cases (should return false)", () => {
       message: "An unknown invalid request occurred.",
     });
     expect(isBenignCancelError(err)).toBe(false);
+  });
+});
+
+describe("isBenignCustomerDeleteError (FV-726)", () => {
+  it("returns true for resource_missing (customer already gone)", () => {
+    expect(
+      isBenignCustomerDeleteError(makeInvalidRequestError("resource_missing")),
+    ).toBe(true);
+  });
+
+  it("returns false for other invalid-request codes (incl. the cancel-only code)", () => {
+    expect(isBenignCustomerDeleteError(makeInvalidRequestError("subscription_canceled"))).toBe(false);
+    expect(isBenignCustomerDeleteError(makeInvalidRequestError("parameter_invalid_empty"))).toBe(false);
+  });
+
+  it("returns false for non-invalid-request Stripe errors and plain errors", () => {
+    expect(
+      isBenignCustomerDeleteError(
+        new Stripe.errors.StripeConnectionError({ type: "api_error", message: "x" }),
+      ),
+    ).toBe(false);
+    expect(
+      isBenignCustomerDeleteError(
+        new Stripe.errors.StripeAuthenticationError({ type: "authentication_error", message: "x" }),
+      ),
+    ).toBe(false);
+    expect(isBenignCustomerDeleteError(new Error("resource_missing"))).toBe(false);
+    expect(isBenignCustomerDeleteError(null)).toBe(false);
+    expect(isBenignCustomerDeleteError("resource_missing")).toBe(false);
   });
 });
