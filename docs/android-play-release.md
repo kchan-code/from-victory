@@ -442,21 +442,35 @@ Source of truth for the native shell: [docs/native-capacitor.md](./native-capaci
 Privacy posture. Plugin allowlist is core / app / splash-screen / status-bar
 only. `INTERNET` only. `allowBackup=false`. No Advertising ID.
 
-### Live answers as read on 2026-11-13 (FV-722)
+### Data safety answers, 2026-11-13 (FV-722)
 
-From the public listing's Data safety page:
+**Live on the public listing** (read 2026-11-13): no data shared; collected:
+Name (App functionality, Account management), Email address (Developer
+communications, Account management), User IDs (App functionality, Account
+management), Other info (App functionality, Account management), App
+interactions (App functionality), Purchase history (Account management),
+Device or other IDs, optional (App functionality, Developer communications);
+encrypted in transit; deletion can be requested.
 
-- **Shared with third parties:** none declared.
-- **Collected:** Device or other IDs; Financial info (Purchase history);
-  Personal info (Name, Email address, User IDs, Other info); App activity (App
-  interactions).
-- **Security practices:** data encrypted in transit; users can request deletion.
+**Saved in Play Console on 2026-11-13, NOT yet sent for review** (Publishing
+overview → "Changes not yet submitted for review"; KC sends it):
 
-Compared with what the shipped app collects, no missing category was found.
-The purposes selected for each type were not read (the console form was not
-opened step by step); check that App interactions includes **Analytics**,
-because first-party usage events (`activity_events`) are used to count active
-and returning athletes.
+| Data type | Purposes |
+|---|---|
+| Name | App functionality, Account management |
+| Email address | App functionality, Developer communications, Account management |
+| User IDs | App functionality, Account management |
+| Other info | App functionality, Personalization, Account management |
+| Purchase history | App functionality, Account management |
+| Diagnostics (new) | App functionality |
+| App interactions | App functionality, Analytics, Personalization |
+| Device or other IDs | removed: nothing in the Android app collects one (web push endpoints are web only) |
+
+All collected, none shared, none ephemeral, all required. Diagnostics covers
+the automated error report (`apps/web/app/api/client-error`, FV-729).
+
+Once Google approves and the change is published, replace the "live" paragraph
+above with the table.
 
 ### Declare (typical — confirm against the live privacy policy)
 

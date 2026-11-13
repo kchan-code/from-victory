@@ -423,8 +423,9 @@ false.
 
 ### Live answers, corrected 2026-11-13 (FV-722)
 
-App Store Connect → App Privacy, as published on 2026-11-13 after the three
-corrections below. Read back from the console after publishing:
+App Store Connect → App Privacy, as published on 2026-11-13 after the
+corrections below. Read back from the console after publishing. The app's
+`PrivacyInfo.xcprivacy` declares the same seven types.
 
 | Data type | Purpose | Linked to identity | Tracking |
 |---|---|---|---|
@@ -433,7 +434,8 @@ corrections below. Read back from the console after publishing:
 | Identifiers: User ID | App Functionality | Yes | No |
 | Purchases: Purchase History | App Functionality | Yes | No |
 | Usage Data: Product Interaction | App Functionality, Analytics | Yes | No |
-| Other Data: Other Data Types | App Functionality | Yes | No |
+| Diagnostics: Other Diagnostic Data | App Functionality | **No** | No |
+| Other Data: Other Data Types | App Functionality, Product Personalization | Yes | No |
 
 **What was corrected** (KC's instruction; the label had last been published
 about two months earlier, before in-app purchase went live):
@@ -441,18 +443,30 @@ about two months earlier, before in-app purchase went live):
 1. **Purchase History added.** In-app purchase is live
    (`FVAppleIAPPlugin.swift`); we store Apple transaction identifiers, product,
    status and dates per account.
-2. **User ID added.** We store a username and account ids. (Google Play
-   already declared "User IDs".)
+2. **User ID added.** We store a username and account ids.
 3. **Analytics added as a purpose of Product Interaction.** The first-party
    usage events (`activity_events`: app opened, session started or finished)
    are used to count active and returning athletes.
+4. **Product Personalization added as a purpose of Other Data Types.** Besides
+   date of birth, this type covers sport, position, focus area and an optional
+   game date, which tailor what the athlete sees.
+5. **Other Diagnostic Data added, not linked.** The automated error report
+   (`apps/web/app/api/client-error`, FV-729) sends the failing screen's path,
+   the shell type, the build and an error message of at most 160 characters
+   with emails, ids and tokens stripped. The handler reads no cookie or
+   session and accepts no user id. **If that report ever carries an account
+   identifier, this entry must become "linked" here and in the manifest.**
+
+Items 4 and 5 follow the kids-privacy-officer's confirmation of the label
+(recorded on FV-722).
 
 Console quirk to know about: adding a purpose to an existing data type
 published it as BOTH "linked" and "not linked" on the product page preview.
 Re-opening the type, re-selecting "Yes, linked" and publishing again cleared
 the "not linked" entry. Check the preview after any edit.
 
-Not gaps: date of birth is covered by "Other Data"; no location, contacts,
+Not gaps: date of birth is covered by "Other Data"; no "Sensitive Info" entry
+is needed (no faith attribute is stored per account); no location, contacts,
 photos, advertising identifier, or third-party SDK data is collected.
 
 ### Declare (typical — confirm against the live privacy policy)
