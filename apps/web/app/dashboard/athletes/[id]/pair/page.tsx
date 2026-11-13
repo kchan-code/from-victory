@@ -44,6 +44,7 @@ export default async function InviteAthletePage({ params }: Params) {
           ? `${athlete.first_name}'s account`
           : `Invite ${athlete.first_name}`
       }
+      compact
       footer={
         <Link
           href="/dashboard"
