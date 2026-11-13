@@ -66,7 +66,7 @@ before any identifier change.
 4. Mac: Team + automatic signing, Archive, upload
 5. Testers install via TestFlight (internal)
 6. Listing + age rating + privacy nutrition labels
-7. Follow-up PRs: PrivacyInfo.xcprivacy, Podfile.lock
+7. Privacy manifest is in the repo (FV-721). Confirm it in Xcode (§11) before upload
 8. Production submission                       only after 6–7, FV-211, and 3.1.1 / 4.2
 ```
 
@@ -476,26 +476,71 @@ not an open browser. Do not claim “made for kids.”
 
 ---
 
-## 11. PrivacyInfo, Podfile.lock, version bumps — Agent / follow-up PR + Kinny · Mac
+## 11. PrivacyInfo, export options, Podfile.lock, version bumps — Kinny · Mac
 
-### `PrivacyInfo.xcprivacy`
+### `PrivacyInfo.xcprivacy` (FV-721)
 
-Not in the repo today. Apple requires a privacy manifest for App Store
-submission (and it will be needed before External TestFlight / App Review).
-Internal TestFlight can proceed without it. Add the host-app manifest in a
-**follow-up PR** (privacy path: it will live under `apps/native/ios/**`).
-Declare required-reason APIs the Capacitor shell actually uses; do not copy a
-generic template that claims APIs we do not call. Do not add tracking domains.
+The host-app manifest is `apps/native/ios/App/App/PrivacyInfo.xcprivacy`, and
+it is in the App target's Copy Bundle Resources. `NSPrivacyTracking` is false.
+There are no tracking domains. Collected types follow the nutrition-label
+intent in §9 (name, email, user ID, product interaction, purchase history,
+and Other Data Types for date of birth). Required-reason API list is empty:
+an audit of `FVNarrationPlugin.swift`, `FVAppleIAPPlugin.swift`,
+`FVAuthPlugin.swift`, Capacitor 8 (it no longer calls UserDefaults), and the
+App / SplashScreen / StatusBar pods found none of Apple's required-reason
+APIs. The comment inside the manifest records that audit.
 
-- [ ] Follow-up PR: `PrivacyInfo.xcprivacy` before App Review
+Confirm on a Mac before the next upload. This cannot be proven on Linux.
+
+1. Open `apps/native/ios/App/App.xcworkspace` (the workspace, not the xcodeproj).
+2. Select the App target → Build Phases → Copy Bundle Resources. `PrivacyInfo.xcprivacy` must be listed. If it is only a loose file in the navigator, the archive will not ship it.
+3. Product → Archive. This PR does not change the team, the bundle id, or `CURRENT_PROJECT_VERSION`.
+4. In the Organizer, select the archive → Generate Privacy Report.
+5. The report should show tracking off, no tracking domains, and the collected types above. Compare them to the live App Store Connect privacy answers. If Connect records date of birth under a different type than Other Data, change that one entry in the manifest before you upload.
+6. If the report names a missing required-reason API, add only that API and its reason code. Do not add UserDefaults, an ATT prompt, or a crash SDK to clear a warning.
+
+- [ ] Privacy report generated from an archive and compared to App Store Connect
 - [ ] Do not add crash-reporting “to fill the manifest”
+
+### Which export plist (FV-735)
+
+| File | When |
+|---|---|
+| `apps/native/ios/App/ExportOptions.plist` | TestFlight **internal** testers. `testFlightInternalTestingOnly` is true, so this IPA cannot be submitted to the App Store. |
+| `apps/native/ios/App/ExportOptions.app-store.plist` | App Store distribution, including a build that must go beyond internal TestFlight. `testFlightInternalTestingOnly` is false. `destination` is `export` (a local IPA). Upload with Transporter or `xcrun altool`. |
+
+Both use automatic signing and the same team id already in the TestFlight plist. Neither file is a signing change, a bundle-id change, or a build-number bump (`manageAppVersionAndBuildNumber` is false).
+
+```bash
+xcodebuild -exportArchive \
+  -archivePath App.xcarchive \
+  -exportPath build/app-store \
+  -exportOptionsPlist apps/native/ios/App/ExportOptions.app-store.plist
+```
 
 ### `Podfile.lock`
 
-`apps/native/.gitignore` currently ignores `ios/App/Podfile.lock`. First Mac
-archive does not need it committed. Reproducible CocoaPods / any future CI
-should commit it in a **follow-up PR** (listed in
-[docs/native-capacitor.md](./native-capacitor.md) Follow-ups).
+Not committed in FV-735. `apps/native/.gitignore` still ignores
+`ios/App/Podfile.lock`. CocoaPods is not reproducible on the Linux agents
+that edit this repo (no Ruby, and the Podfile's path pods resolve through a
+Mac `npm install` + Xcode). Committing a lockfile generated any other way
+would pin a resolution Kinny's Mac did not produce.
+
+On a Mac, from the repo root:
+
+```bash
+npm install
+cd apps/native
+npx cap sync ios
+cd ios/App
+pod install
+```
+
+Review the diff. If `project.pbxproj` changes, keep the team, the bundle id
+`com.fromvictoryapp.app`, and `CURRENT_PROJECT_VERSION` as they are. Then
+remove the `ios/App/Podfile.lock` line from `apps/native/.gitignore` and
+commit `apps/native/ios/App/Podfile.lock` only. Do not commit `Pods/`.
+Do not hand-edit the lockfile.
 
 ### Build number / marketing version
 

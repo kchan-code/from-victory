@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- FV-735: App Store distribution export. Same signing style and team as
+	     ExportOptions.plist (TestFlight internal). This file does not change
+	     the signing identity, the bundle id, or the build number.
+	     Use this plist with `xcodebuild -exportArchive` when the IPA must be
+	     eligible for App Store Connect beyond internal TestFlight.
+	     destination=export writes a local IPA. Upload that IPA with Transporter
+	     or `xcrun altool`. Do not set testFlightInternalTestingOnly. -->
+	<key>method</key>
+	<string>app-store-connect</string>
+	<key>destination</key>
+	<string>export</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	<key>teamID</key>
+	<string>CYQ2836PYN</string>
+	<key>uploadSymbols</key>
+	<true/>
+	<key>manageAppVersionAndBuildNumber</key>
+	<false/>
+	<key>testFlightInternalTestingOnly</key>
+	<false/>
+</dict>
+</plist>

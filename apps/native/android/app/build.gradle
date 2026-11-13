@@ -71,6 +71,10 @@ android {
     }
     buildTypes {
         release {
+            // FV-735 item 7 / FV-740: R8 stays off on purpose. proguard-rules.pro
+            // is still the Capacitor stub. Enabling minify without keep rules and
+            // a device smoke can strip the bridge, narration, or the Play Billing
+            // reflection in MainActivity. Do not flip this in a store upload.
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             if (keystorePropertiesFile.exists()) {

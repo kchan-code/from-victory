@@ -2,6 +2,7 @@ package com.fromvictoryapp.app;
 
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import com.getcapacitor.Bridge;
 import com.getcapacitor.BridgeWebViewClient;
@@ -11,9 +12,10 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 /**
- * FV-639: Capacitor's client plus offline handling for top-level loads on the
- * app's own host (see {@link OfflineEntryFallback}). Everything else is
- * Capacitor's default.
+ * FV-639 / FV-718: Capacitor's client plus offline handling for top-level loads
+ * on the app's own host (see {@link OfflineEntryFallback}). Connectivity
+ * failures follow the Pregame retry budget. A main-frame HTTP 5xx shows the
+ * bundled page immediately. Everything else is Capacitor's default.
  */
 public class OfflineEntryWebViewClient extends BridgeWebViewClient {
 
@@ -76,6 +78,24 @@ public class OfflineEntryWebViewClient extends BridgeWebViewClient {
         }
     }
 
+    @Override
+    public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
+        super.onReceivedHttpError(view, request, errorResponse);
+        if (errorResponse == null || request == null) return;
+        OfflineEntryFallback.Action action = OfflineEntryFallback.decideHttpStatus(
+            request.getUrl().toString(),
+            request.isForMainFrame(),
+            errorResponse.getStatusCode(),
+            bridge.getAppUrl()
+        );
+        if (action == OfflineEntryFallback.Action.SHOW_OFFLINE_PAGE) {
+            // Status code only — never the URL.
+            Logger.info("FV-718", "main-frame HTTP " + errorResponse.getStatusCode() + " -> local offline page");
+            cancelPendingRetry();
+            showOfflinePage(view);
+        }
+    }
+
     private void scheduleRetry(WebView view, long delayMs) {
         cancelPendingRetry();
         final String pregame = OfflineEntryFallback.pregameUrl(bridge.getAppUrl());
@@ -104,10 +124,15 @@ public class OfflineEntryWebViewClient extends BridgeWebViewClient {
         pendingRetryView = null;
     }
 
-    private static void showOfflinePage(WebView view) {
+    private void showOfflinePage(WebView view) {
         String html = readOfflinePage(view);
         if (html != null) {
-            view.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
+            String appUrl = bridge.getAppUrl();
+            html = OfflineEntryFallback.injectOfflinePage(html, appUrl, OfflineEntryFallback.pregameUrl(appUrl));
+            // Non-null base so absolute Try again / saved-session links navigate.
+            // The host is the reserved offline origin, not the app, so a retry
+            // still knows this page is the fallback (see isLocalOfflinePageUrl).
+            view.loadDataWithBaseURL(OfflineEntryFallback.OFFLINE_PAGE_BASE, html, "text/html", "utf-8", null);
         } else {
             Logger.warn("FV-639", "offline page asset missing (" + OFFLINE_PAGE_ASSET + "); leaving default error page");
         }

@@ -18,6 +18,10 @@ import os
  * discipline as capacitor.config.ts's plugin list applies.
  */
 class FVBridgeViewController: CAPBridgeViewController {
+    /// Retained for the lifetime of the WebView. The WebView also retains it
+    /// as `navigationDelegate`; this property keeps the retry timer cancellable
+    /// if the controller is released first.
+    private var offlineNavigation: FVOfflineNavigationDelegate?
 
     override open func capacitorDidLoad() {
         // Deployment target is iOS 15.0 (StoreKit 2 floor), so the
@@ -35,5 +39,24 @@ class FVBridgeViewController: CAPBridgeViewController {
         // the new SceneDelegate and finished plugin registration.
         os.Logger(subsystem: Bundle.main.bundleIdentifier ?? "app", category: "scene")
             .info("FVBridgeViewController.capacitorDidLoad: registered FVAppleIAPPlugin, FVNarrationPlugin, FVAuthPlugin")
+        // FV-718: install before viewDidLoad starts the server.url load.
+        installOfflineEntryFallback()
+    }
+
+    /// Capacitor's delegate stays in front for allow-list and plugin decisions.
+    /// `server.errorPath` is left unset so Capacitor does not start a second
+    /// local load that races this one.
+    private func installOfflineEntryFallback() {
+        guard let webView else { return }
+        let proxy = FVOfflineNavigationDelegate(forward: webView.navigationDelegate)
+        proxy.appURLProvider = { [weak self] in
+            self?.bridge?.config.serverURL.absoluteString
+        }
+        offlineNavigation = proxy
+        webView.navigationDelegate = proxy
+    }
+
+    deinit {
+        offlineNavigation?.cancelPendingRetry()
     }
 }

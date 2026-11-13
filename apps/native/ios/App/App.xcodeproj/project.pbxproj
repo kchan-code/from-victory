@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		FA600001AAA1BBB2CCC3D002 /* FVNarrationPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA600001AAA1BBB2CCC3D001 /* FVNarrationPlugin.swift */; };
 		FA675001AAA1BBB2CCC3D002 /* FVAuthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA675001AAA1BBB2CCC3D001 /* FVAuthPlugin.swift */; };
+		FA718001AAA1BBB2CCC3D002 /* OfflineEntryFallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA718001AAA1BBB2CCC3D001 /* OfflineEntryFallback.swift */; };
+		FA718002AAA1BBB2CCC3D002 /* FVOfflineNavigationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA718002AAA1BBB2CCC3D001 /* FVOfflineNavigationDelegate.swift */; };
+		FA721001AAA1BBB2CCC3D002 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = FA721001AAA1BBB2CCC3D001 /* PrivacyInfo.xcprivacy */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
@@ -24,6 +27,9 @@
 
 /* Begin PBXFileReference section */
 		FA675001AAA1BBB2CCC3D001 /* FVAuthPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FVAuthPlugin.swift; sourceTree = "<group>"; };
+		FA718001AAA1BBB2CCC3D001 /* OfflineEntryFallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineEntryFallback.swift; sourceTree = "<group>"; };
+		FA718002AAA1BBB2CCC3D001 /* FVOfflineNavigationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FVOfflineNavigationDelegate.swift; sourceTree = "<group>"; };
+		FA721001AAA1BBB2CCC3D001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		FA600001AAA1BBB2CCC3D001 /* FVNarrationPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FVNarrationPlugin.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
@@ -92,6 +98,9 @@
 				FA600001AAA1BBB2CCC3D001 /* FVNarrationPlugin.swift */,
 				FA675001AAA1BBB2CCC3D001 /* FVAuthPlugin.swift */,
 				FA573001AAA1BBB2CCC3D003 /* FVBridgeViewController.swift */,
+				FA718001AAA1BBB2CCC3D001 /* OfflineEntryFallback.swift */,
+				FA718002AAA1BBB2CCC3D001 /* FVOfflineNavigationDelegate.swift */,
+				FA721001AAA1BBB2CCC3D001 /* PrivacyInfo.xcprivacy */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
@@ -180,6 +189,7 @@
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
+				FA721001AAA1BBB2CCC3D002 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -232,6 +242,8 @@
 				FA600001AAA1BBB2CCC3D002 /* FVNarrationPlugin.swift in Sources */,
 				FA675001AAA1BBB2CCC3D002 /* FVAuthPlugin.swift in Sources */,
 				FA573001AAA1BBB2CCC3D004 /* FVBridgeViewController.swift in Sources */,
+				FA718001AAA1BBB2CCC3D002 /* OfflineEntryFallback.swift in Sources */,
+				FA718002AAA1BBB2CCC3D002 /* FVOfflineNavigationDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

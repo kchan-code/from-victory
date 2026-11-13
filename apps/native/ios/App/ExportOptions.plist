@@ -2,7 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- FV-594: TestFlight beta export. Automatic signing via App Store Connect API key
+	<!-- FV-594 / FV-735: TestFlight INTERNAL export. A build exported with this
+	     file cannot be submitted to the App Store (testFlightInternalTestingOnly).
+	     For App Store distribution use ExportOptions.app-store.plist in this
+	     directory. Automatic signing via App Store Connect API key
 	     (xcodebuild -allowProvisioningUpdates -authenticationKeyPath/-authenticationKeyID/
 	     -authenticationKeyIssuerID). No secrets in this file. -->
 	<key>method</key>

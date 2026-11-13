@@ -22,15 +22,22 @@ import java.net.URISyntaxException;
  *
  * Any OTHER top-level page on the app's own host that fails for a
  * connectivity reason (e.g. Pregame sending a signed-out user to /signin with
- * no signal) shows the shell's bundled offline page (www/index.html, the
- * existing cold-start copy) instead of Chromium's raw error page.
+ * no signal) shows the shell's bundled offline page (www/index.html) instead
+ * of Chromium's raw error page. The page has Try again (the app URL) and,
+ * when the Pregame URL can be built, Open a saved session.
+ *
+ * FV-718: a main-frame HTTP 5xx on that same origin also shows the bundled
+ * page. A 5xx is the server answering, so it does not auto-open Pregame
+ * (that request would hit the same outage). The saved-session link is the
+ * way into a session the Service Worker may still have cached. 4xx, SSL,
+ * bad URLs, and subresources still do nothing here.
  *
  * Pregame itself gets a few bounded retries first: on an offline cold start the
  * WebView's first Pregame navigation can reach the network before the Service
  * Worker is ready to answer it (observed on the emulator: roughly half of cold
  * starts after the app had been stopped for 5+ s), while an immediate second
  * navigation is answered from the SW cache. During the retries the user sees
- * the local offline page ("Connecting to training..."), never Chromium's error
+ * the local offline page (Try again / Open a saved session), never Chromium's error
  * page; once the retries are spent, that page simply stays. The retry budget is
  * a hard cap per offline entry (only a new entry resets it), and a retry only
  * fires while the local offline page is still showing.
@@ -42,9 +49,18 @@ public final class OfflineEntryFallback {
     /** The SW-cached, PII-free offline shell (sw.js PREGAME_PATH). */
     public static final String PREGAME_PATH = "/athlete/pregame";
 
+    /**
+     * Base URL for the bundled page. Reserved {@code .invalid} host (RFC 2606),
+     * so {@code loadDataWithBaseURL} can give the document an origin (absolute
+     * links then navigate) without being the app origin. {@link #isLocalOfflinePageUrl}
+     * treats this host as "still on the fallback", which is what gates Pregame retries.
+     */
+    public static final String OFFLINE_PAGE_BASE = "https://fv-offline.invalid/";
+
     // android.webkit.WebViewClient error codes (copied as literals so this class
-    // stays JVM-testable). Only connectivity failures qualify; HTTP errors,
-    // SSL failures, bad URLs, unsafe resources etc. never trigger the fallback.
+    // stays JVM-testable). Only connectivity failures qualify for decide().
+    // Main-frame HTTP 5xx is decideHttpStatus(). SSL failures, 4xx, bad URLs,
+    // and unsafe resources never trigger a fallback.
     static final int ERROR_UNKNOWN = -1; // net::ERR_INTERNET_DISCONNECTED surfaces here
     static final int ERROR_HOST_LOOKUP = -2;
     static final int ERROR_CONNECT = -6;
@@ -77,6 +93,23 @@ public final class OfflineEntryFallback {
     }
 
     /**
+     * Main-frame HTTP 5xx on the app origin. Always the bundled page (with its
+     * retry control). Not {@link Action#OPEN_PREGAME}: the server answered, so
+     * an automatic Pregame navigation would hit the same outage. 4xx does not
+     * qualify (auth and missing pages are the app's own responses).
+     */
+    public static Action decideHttpStatus(
+        String failedUrl, boolean isMainFrame, int statusCode, String appUrl) {
+        if (!isMainFrame || statusCode < 500 || statusCode > 599) {
+            return Action.NONE;
+        }
+        if (sameHttpsAppUri(failedUrl, appUrl) == null) {
+            return Action.NONE;
+        }
+        return Action.SHOW_OFFLINE_PAGE;
+    }
+
+    /**
      * @param failedUrl   the URL whose load failed
      * @param isMainFrame whether it was the top-level document
      * @param errorCode   WebViewClient error code
@@ -85,23 +118,11 @@ public final class OfflineEntryFallback {
      */
     public static Action decide(
         String failedUrl, boolean isMainFrame, int errorCode, String appUrl, int pregameRetriesSoFar) {
-        if (!isMainFrame || !isConnectivityError(errorCode) || failedUrl == null || appUrl == null) {
+        if (!isMainFrame || !isConnectivityError(errorCode)) {
             return Action.NONE;
         }
-        URI failed;
-        URI app;
-        try {
-            failed = new URI(failedUrl);
-            app = new URI(appUrl);
-        } catch (URISyntaxException e) {
-            return Action.NONE;
-        }
-        // Same origin as the configured app only (never a third-party page).
-        if (!"https".equalsIgnoreCase(failed.getScheme())
-            || !"https".equalsIgnoreCase(app.getScheme())
-            || failed.getHost() == null
-            || !failed.getHost().equalsIgnoreCase(app.getHost())
-            || httpsPort(failed) != httpsPort(app)) {
+        URI failed = sameHttpsAppUri(failedUrl, appUrl);
+        if (failed == null) {
             return Action.NONE;
         }
         String path = failed.getRawPath();
@@ -126,16 +147,88 @@ public final class OfflineEntryFallback {
     }
 
     /**
-     * Whether the WebView is showing the local offline page, which is loaded
-     * with no base URL and so reports about:blank (or a data: URL).
+     * Whether the WebView is showing the local offline page: about:blank, a
+     * data URL, or {@link #OFFLINE_PAGE_BASE}.
      */
     public static boolean isLocalOfflinePageUrl(String currentUrl) {
-        return currentUrl == null || "about:blank".equals(currentUrl) || currentUrl.startsWith("data:");
+        if (currentUrl == null || "about:blank".equals(currentUrl) || currentUrl.startsWith("data:")) {
+            return true;
+        }
+        try {
+            URI uri = new URI(currentUrl);
+            return "fv-offline.invalid".equalsIgnoreCase(uri.getHost());
+        } catch (URISyntaxException e) {
+            return false;
+        }
+    }
+
+    private static final String SAVED_START = "<!--fv-saved-->";
+    private static final String SAVED_END = "<!--/fv-saved-->";
+
+    /**
+     * Fill the bundled page's retry and saved-session links. Only https URLs
+     * are written into attributes. A missing Pregame URL removes the saved-session
+     * control instead of leaving a dead link.
+     */
+    public static String injectOfflinePage(String html, String retryUrl, String pregameUrl) {
+        if (html == null) return "";
+        String retry = isHttpsPageUrl(retryUrl) ? htmlAttr(retryUrl) : "#";
+        String out = html.replace("__FV_RETRY_URL__", retry);
+        if (isHttpsPageUrl(pregameUrl)) {
+            return out.replace("__FV_PREGAME_URL__", htmlAttr(pregameUrl));
+        }
+        int start = out.indexOf(SAVED_START);
+        int end = out.indexOf(SAVED_END);
+        if (start >= 0 && end > start) {
+            return out.substring(0, start) + out.substring(end + SAVED_END.length());
+        }
+        return out.replace("__FV_PREGAME_URL__", "#");
+    }
+
+    private static boolean isHttpsPageUrl(String url) {
+        if (url == null || !url.startsWith("https://") || url.indexOf('"') >= 0 || url.indexOf('<') >= 0
+            || url.indexOf(' ') >= 0) {
+            return false;
+        }
+        try {
+            URI uri = new URI(url);
+            return "https".equalsIgnoreCase(uri.getScheme()) && uri.getHost() != null;
+        } catch (URISyntaxException e) {
+            return false;
+        }
+    }
+
+    private static String htmlAttr(String url) {
+        return url.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;");
     }
 
     /** https port with the default made explicit, so "host" and "host:443" match. */
     private static int httpsPort(URI uri) {
         return uri.getPort() == -1 ? 443 : uri.getPort();
+    }
+
+    /**
+     * The failed URI when it is the same https origin as {@code appUrl}, else null.
+     * Third-party pages, cleartext, and bad URLs are null.
+     */
+    private static URI sameHttpsAppUri(String failedUrl, String appUrl) {
+        if (failedUrl == null || appUrl == null) return null;
+        URI failed;
+        URI app;
+        try {
+            failed = new URI(failedUrl);
+            app = new URI(appUrl);
+        } catch (URISyntaxException e) {
+            return null;
+        }
+        if (!"https".equalsIgnoreCase(failed.getScheme())
+            || !"https".equalsIgnoreCase(app.getScheme())
+            || failed.getHost() == null
+            || !failed.getHost().equalsIgnoreCase(app.getHost())
+            || httpsPort(failed) != httpsPort(app)) {
+            return null;
+        }
+        return failed;
     }
 
     /** Absolute Pregame URL on the app host, or null if appUrl is unusable. */
