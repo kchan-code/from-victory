@@ -11,7 +11,7 @@ import type { Database } from "@/lib/supabase/types";
  *
  * apps/native/capacitor.config.ts points `server.url` at the marketing site
  * root, so the native shell's FIRST screen is the public landing page —
- * which shows real prices and "Start your athlete's 14-day free trial." A
+ * which shows real prices and "Start your athlete's 7-day free trial." A
  * Play reviewer sees a purchase surface on screen one, which Payments policy
  * rejects. Gating every marketing page was explicitly rejected (KC ruling);
  * instead, in-shell, the three marketing routes that can show pricing

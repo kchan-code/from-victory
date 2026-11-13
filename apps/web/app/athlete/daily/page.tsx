@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AthleteBottomNav } from "@/components/athlete/BottomNav";
-import { CompletionCTA } from "@/components/daily/CompletionCTA";
+import { DailyCompletionSlot } from "@/components/daily/CompletionCTA";
 import { SessionBody } from "@/components/daily/SessionBody";
 import { Icon, RhythmRingAnimated } from "@/components/ui";
 import { SignOutButton } from "@/components/auth/SignOutButton";
@@ -180,28 +180,14 @@ export default async function DailyPage() {
               )}
             </article>
 
-            {/* ── Complete CTA / All-complete state ── */}
-            {sessionData.allComplete ? (
-              /* All 30 days done — closure copy, now with milestone celebration */
-              <div className="fv-milestone-bg border border-gold/30 rounded-2xl p-7 text-center mb-6">
-                <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.18em] text-gold mb-3">
-                  30 Days Complete
-                </p>
-                <p className="font-display font-extrabold uppercase tracking-[0.02em] text-cream text-[22px] leading-[1.15] mb-3">
-                  Your rhythm is built.
-                </p>
-                <p className="font-body text-cream/65 text-[15px] leading-relaxed">
-                  You finished all 30 sessions. The work you put in is yours —
-                  keep showing up.
-                </p>
-              </div>
-            ) : (
-              /* Normal state — client completion moment handles the overlay */
-              <CompletionCTA
-                dayNumber={sessionData.dayNumber}
-                completedCount={sessionData.completedCount}
-              />
-            )}
+            {/* Complete CTA, or the closure banner once all 30 are already done.
+                The slot keeps an in-progress celebration mounted when the
+                server refresh marks day 30 complete. */}
+            <DailyCompletionSlot
+              dayNumber={sessionData.dayNumber}
+              completedCount={sessionData.completedCount}
+              allComplete={sessionData.allComplete}
+            />
           </>
         )}
       </div>

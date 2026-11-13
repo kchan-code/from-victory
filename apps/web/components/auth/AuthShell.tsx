@@ -16,9 +16,18 @@ type Props = {
   children: ReactNode;
   footer?: ReactNode;
   steps?: AuthStep[];
+  /** Tighter gap under the title when the child supplies its own subtitle. */
+  compact?: boolean;
 };
 
-export function AuthShell({ title, subtitle, children, footer, steps }: Props) {
+export function AuthShell({
+  title,
+  subtitle,
+  children,
+  footer,
+  steps,
+  compact = false,
+}: Props) {
   return (
     <main id="main-content" className="min-h-screen bg-onyx flex flex-col items-center justify-center px-5 py-12">
       <Link
@@ -50,8 +59,8 @@ export function AuthShell({ title, subtitle, children, footer, steps }: Props) {
                   {step.label}
                 </span>
                 {i < steps.length - 1 ? (
-                  <span aria-hidden="true" className="text-cream/25">
-                    &rarr;
+                  <span aria-hidden="true" className="text-gold/80">
+                    ›
                   </span>
                 ) : null}
               </li>
@@ -66,7 +75,7 @@ export function AuthShell({ title, subtitle, children, footer, steps }: Props) {
             {subtitle}
           </p>
         ) : (
-          <div className="mb-7" />
+          <div className={compact ? "mb-3" : "mb-7"} />
         )}
         {children}
       </div>

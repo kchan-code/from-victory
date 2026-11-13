@@ -17,6 +17,17 @@ change native plugins, permissions, or WebView navigation policy.
 
 ---
 
+## External music with narration
+
+The proposed app-local `FVNarration` bridge plays the existing guided narration
+through native audio sessions so external music can continue. It accepts only
+bounded temporary WAV bytes and playback commands, not provider accounts,
+library permissions, file paths, or network URLs. iOS adds the audio background
+mode; Android adds a non-exported foreground media-playback service and wake
+lock for screen-off playback. Review and device-test requirements are recorded
+in [external-music-narration.md](./external-music-narration.md). This feature is
+not enabled by a hosted-web deployment alone; new native builds are required.
+
 ## Architecture choice
 
 | Option | Fit for this codebase | Decision |

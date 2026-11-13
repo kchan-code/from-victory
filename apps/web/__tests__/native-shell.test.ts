@@ -24,6 +24,7 @@ vi.mock("next/headers", () => ({
 import {
   getRequestShellCapability,
   getShellCapability,
+  hasAuthCapability,
   isNativeShell,
   isNativeShellUserAgent,
 } from "@/lib/native-shell";
@@ -239,5 +240,149 @@ describe("getShellCapability — byte-identity pin (FV-572)", () => {
     expect(
       getShellCapability(`Mozilla/5.0 (Linux; Android 14) ${globalToken}`),
     ).toBe("legacy-native");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-659 — `android-play` capability (FV-651 §6). A future Android build with
+// Play Billing sends `FVNativeShell/1 (play)`; the server classifies it now,
+// but it must stay a native shell and render like `legacy-native` today.
+// ---------------------------------------------------------------------------
+
+describe("getShellCapability — android-play (FV-659)", () => {
+  const ANDROID = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36";
+  const IOS =
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15";
+
+  it("classifies the full four-way table", () => {
+    expect(getShellCapability(`${ANDROID} FVNativeShell/1 (play)`)).toBe(
+      "android-play",
+    );
+    expect(getShellCapability(`${IOS} FVNativeShell/1 (ios)`)).toBe("ios-iap");
+    expect(getShellCapability(`${ANDROID} FVNativeShell/1`)).toBe(
+      "legacy-native",
+    );
+    expect(
+      getShellCapability(`${ANDROID} Chrome/126.0 Mobile Safari/537.36`),
+    ).toBe(null);
+  });
+
+  it("matches by substring, so a trailing token (FVAuth/1) does not change the result", () => {
+    expect(getShellCapability("FVNativeShell/1 (play) FVAuth/1")).toBe(
+      "android-play",
+    );
+    expect(getShellCapability("FVNativeShell/1 (ios) FVAuth/1")).toBe(
+      "ios-iap",
+    );
+    expect(getShellCapability("FVNativeShell/1 FVAuth/1")).toBe(
+      "legacy-native",
+    );
+  });
+
+  it("checks (play) BEFORE the bare token (the marker contains the bare token)", () => {
+    expect("FVNativeShell/1 (play)".includes("FVNativeShell/1")).toBe(true);
+    expect(getShellCapability("FVNativeShell/1 (play)")).toBe("android-play");
+  });
+
+  it("isNativeShellUserAgent stays true for all three native values and false for a browser", () => {
+    expect(isNativeShellUserAgent("FVNativeShell/1 (play)")).toBe(true);
+    expect(isNativeShellUserAgent("FVNativeShell/1 (ios)")).toBe(true);
+    expect(isNativeShellUserAgent("FVNativeShell/1")).toBe(true);
+    expect(isNativeShellUserAgent("Mozilla/5.0 Chrome/126.0")).toBe(false);
+  });
+
+  it("isNativeShell() and getRequestShellCapability() read the (play) header", () => {
+    headerMap["user-agent"] =
+      "Mozilla/5.0 (Linux; Android 14) FVNativeShell/1 (play)";
+    expect(isNativeShell()).toBe(true);
+    expect(getRequestShellCapability()).toBe("android-play");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// hasAuthCapability (FV-675) — orthogonal to getShellCapability. One table
+// covers every combination (FV-569 spec §13a): browser, bare, (ios), and the
+// future (play) marker, each with and without FVAuth/1.
+// ---------------------------------------------------------------------------
+
+describe("hasAuthCapability (FV-675)", () => {
+  const ANDROID_WEBVIEW =
+    "Mozilla/5.0 (Linux; Android 14; Pixel 8; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/131.0.0.0 Mobile Safari/537.36";
+  const IOS_WEBVIEW =
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148";
+  const SAFARI =
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1";
+
+  const table: Array<{
+    name: string;
+    ua: string;
+    shell: ReturnType<typeof getShellCapability>;
+    auth: boolean;
+  }> = [
+    { name: "browser", ua: SAFARI, shell: null, auth: false },
+    {
+      name: "browser + FVAuth/1 (no shell token)",
+      ua: `${SAFARI} FVAuth/1`,
+      shell: null,
+      auth: false,
+    },
+    {
+      name: "bare shell token",
+      ua: `${ANDROID_WEBVIEW} FVNativeShell/1`,
+      shell: "legacy-native",
+      auth: false,
+    },
+    {
+      name: "bare shell token + FVAuth/1 (Android staging)",
+      ua: `${ANDROID_WEBVIEW} FVNativeShell/1 FVAuth/1`,
+      shell: "legacy-native",
+      auth: true,
+    },
+    {
+      name: "(ios)",
+      ua: `${IOS_WEBVIEW} FVNativeShell/1 (ios)`,
+      shell: "ios-iap",
+      auth: false,
+    },
+    {
+      name: "(ios) + FVAuth/1",
+      ua: `${IOS_WEBVIEW} FVNativeShell/1 (ios) FVAuth/1`,
+      shell: "ios-iap",
+      auth: true,
+    },
+    // `(play)` is the FV-659 Android Play Billing marker (#598). FVAuth/1 must
+    // not change its classification; hasAuthCapability must not care.
+    {
+      name: "(play)",
+      ua: `${ANDROID_WEBVIEW} FVNativeShell/1 (play)`,
+      shell: "android-play",
+      auth: false,
+    },
+    {
+      name: "(play) + FVAuth/1",
+      ua: `${ANDROID_WEBVIEW} FVNativeShell/1 (play) FVAuth/1`,
+      shell: "android-play",
+      auth: true,
+    },
+  ];
+
+  it.each(table)("$name → auth=$auth, shell capability unchanged", ({ ua, shell, auth }) => {
+    expect(hasAuthCapability(ua)).toBe(auth);
+    // Orthogonal: FVAuth/1 never changes the ShellCapability classification.
+    expect(getShellCapability(ua)).toBe(shell);
+    expect(getShellCapability(ua.replace(" FVAuth/1", ""))).toBe(shell);
+  });
+
+  it("returns false for null, undefined, and empty string", () => {
+    expect(hasAuthCapability(null)).toBe(false);
+    expect(hasAuthCapability(undefined)).toBe(false);
+    expect(hasAuthCapability("")).toBe(false);
+  });
+
+  it("matches FVAuth/1 only as a whole, case-sensitive token", () => {
+    expect(hasAuthCapability("x FVNativeShell/1 (ios) FVAuth/10")).toBe(false);
+    expect(hasAuthCapability("x FVNativeShell/1 (ios) XFVAuth/1")).toBe(false);
+    expect(hasAuthCapability("x FVNativeShell/1 (ios) fvauth/1")).toBe(false);
+    expect(hasAuthCapability("x FVNativeShell/1 (ios) FVAuth/1 extra")).toBe(true);
   });
 });

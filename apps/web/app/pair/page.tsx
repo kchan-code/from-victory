@@ -1,15 +1,22 @@
 import { createHash } from "crypto";
 
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { AthleteClaimForm } from "@/components/auth/AthleteClaimForm";
 import { AuthShell } from "@/components/auth/AuthShell";
+import { InviteSetupForm } from "@/components/auth/InviteSetupForm";
+import { ClearOfflinePregameOnMount } from "@/components/pregame/ClearOfflinePregameOnMount";
+import { normalizeInviteCode } from "@/lib/invites/code";
+import { inviteAppPath } from "@/lib/invites/universal-link";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const siteUrl = "https://www.fromvictoryapp.com";
 const appSocialImage = `${siteUrl}/og-app-1200x630.png`;
 
-// Pairing link (`/pair?code=`) is the URL a parent texts — the door into train.
+// LEGACY pairing link (`/pair?code=`, FV-177). FV-630 replaced it with
+// `/invite#code=` readable invites; links already sent keep working here
+// until they expire (7-day TTL). Claims go through the same atomic
+// claimAthleteInvite path, so a set-up account keeps its username.
 // Uses the Kinny-signed app card, not the marketing website card.
 export const metadata: Metadata = {
   title: "Welcome",
@@ -50,6 +57,14 @@ export default async function PairClaimPage({ searchParams }: Search) {
     return <InvalidLink reason="missing" />;
   }
 
+  // A readable FV-630 code pasted into the old URL shape: hand it to /invite
+  // (fragment, not query) without any lookup here, so the readable-code path
+  // is always the rate-limited one.
+  const readable = normalizeInviteCode(code);
+  if (readable) {
+    redirect(inviteAppPath(readable));
+  }
+
   // FV-177: pairing codes are stored hashed (sha256 hex). Hash the inbound
   // raw code from the URL and look up by code_sha256. The raw code is never
   // stored or logged here; it is passed to the claim form, which re-validates
@@ -75,7 +90,7 @@ export default async function PairClaimPage({ searchParams }: Search) {
 
   const { data: athlete } = await service
     .from("profiles")
-    .select("first_name")
+    .select("first_name, username")
     .eq("id", pairing.athlete_id)
     .single();
 
@@ -83,14 +98,18 @@ export default async function PairClaimPage({ searchParams }: Search) {
     return <InvalidLink reason="not_found" />;
   }
 
+  const mode = athlete.username ? "recovery" : "invite";
+
   return (
-    <AuthShell
-      title={`Welcome, ${athlete.first_name}.`}
-      subtitle="Pick a username and password — you'll use them to sign in on any device."
-    >
-      <AthleteClaimForm
+    <AuthShell title={`Welcome, ${athlete.first_name}.`}>
+      {/* FV-625: claiming signs this athlete in on the device — drop any
+          previous athlete's offline-pregame entry first. */}
+      <ClearOfflinePregameOnMount />
+      <InviteSetupForm
         code={code}
         firstName={athlete.first_name}
+        mode={mode}
+        username={mode === "recovery" ? athlete.username : null}
       />
     </AuthShell>
   );
@@ -103,13 +122,13 @@ function InvalidLink({
 }) {
   const messages: Record<typeof reason, string> = {
     missing:
-      "This page expects a pairing link. Ask your parent to send you a fresh one from their dashboard.",
+      "This page expects an invite link. Ask your parent to create a new invite from their dashboard.",
     not_found:
-      "We don't recognise this pairing link. Ask your parent to send a fresh one.",
+      "We don't recognise this link. Ask your parent to create a new invite.",
     used:
-      "This pairing link has already been used. If this device is yours, head to sign in. Otherwise, ask your parent for a new link.",
+      "This link has already been used. If your account is set up, sign in with your username. Otherwise, ask your parent for a new invite.",
     expired:
-      "This pairing link has expired. Ask your parent for a fresh one — they only last 7 days.",
+      "This link has expired. Ask your parent to create a new invite.",
   };
 
   return (

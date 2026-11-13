@@ -20,7 +20,9 @@ const {
   trialQuoteMock,
   activeAppleProductIdMock,
   capacityForAppleProductMock,
+  shellCapabilityMock,
 } = vi.hoisted(() => ({
+  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | "android-play" | null),
   requireParentMock: vi.fn(),
   trialStateMock: vi.fn(),
   trialQuoteMock: vi.fn(),
@@ -29,6 +31,10 @@ const {
 }));
 
 vi.mock("server-only", () => ({}));
+
+vi.mock("@/lib/native-shell", () => ({
+  getRequestShellCapability: shellCapabilityMock,
+}));
 
 vi.mock("@/lib/auth/guards", () => ({
   requireParent: requireParentMock,
@@ -70,6 +76,39 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   activeAppleProductIdMock.mockResolvedValue(null);
+  shellCapabilityMock.mockReturnValue(null);
+});
+
+describe("NewAthletePage — legacy-native shell (FV-622, Android Path A)", () => {
+  it("legacy-native: renders the plain website notice, no form, no Stripe quote read", async () => {
+    requireParentMock.mockResolvedValue({ userId: "parent-1" });
+    shellCapabilityMock.mockReturnValue("legacy-native");
+
+    render(await NewAthletePage());
+
+    const notice = screen.getByTestId("add-athlete-native-shell-notice");
+    expect(notice).toHaveTextContent(
+      "Add athletes from a web browser at fromvictoryapp.com.",
+    );
+    expect(notice.querySelector("a")).toBeNull();
+    expect(screen.queryByTestId("athlete-form-stub")).toBeNull();
+    expect(trialStateMock).not.toHaveBeenCalled();
+    expect(trialQuoteMock).not.toHaveBeenCalled();
+    expect(activeAppleProductIdMock).not.toHaveBeenCalled();
+  });
+
+  it("ios-iap: unchanged — renders the form", async () => {
+    requireParentMock.mockResolvedValue({ userId: "parent-1" });
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    trialStateMock.mockResolvedValue({ kind: "not_trialing" });
+
+    render(await NewAthletePage());
+
+    expect(screen.getByTestId("athlete-form-stub")).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("add-athlete-native-shell-notice"),
+    ).toBeNull();
+  });
 });
 
 describe("NewAthletePage — trial-conversion wiring (FV-586)", () => {
@@ -202,5 +241,24 @@ describe("NewAthletePage — Apple capacity wiring (FV-586)", () => {
     expect(
       screen.getByTestId("athlete-form-stub"),
     ).toHaveAttribute("data-apple-capacity", "null");
+  });
+});
+
+describe("NewAthletePage — android-play behaves like legacy-native (FV-659)", () => {
+  it("android-play: plain website notice, no form, no Stripe/Apple reads", async () => {
+    requireParentMock.mockResolvedValue({ userId: "parent-1" });
+    shellCapabilityMock.mockReturnValue("android-play");
+
+    render(await NewAthletePage());
+
+    const notice = screen.getByTestId("add-athlete-native-shell-notice");
+    expect(notice).toHaveTextContent(
+      "Add athletes from a web browser at fromvictoryapp.com.",
+    );
+    expect(notice.querySelector("a")).toBeNull();
+    expect(screen.queryByTestId("athlete-form-stub")).toBeNull();
+    expect(trialStateMock).not.toHaveBeenCalled();
+    expect(trialQuoteMock).not.toHaveBeenCalled();
+    expect(activeAppleProductIdMock).not.toHaveBeenCalled();
   });
 });

@@ -68,7 +68,7 @@ const {
   // Defaults to null (ordinary web/PWA request) — the shell-capability
   // describe block below overrides it per test with
   // "legacy-native" | "ios-iap" | null.
-  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
+  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | "android-play" | null),
   // FV-579/FV-580 — the centralized `apple_subscriptions` accessor. Defaults
   // to "no active Apple entitlement, read succeeded"; individual tests
   // override per case.
@@ -490,23 +490,34 @@ describe("/athlete/settings — ios-iap provider-aware, error-visible subscripti
     expect(container.textContent ?? "").not.toMatch(/\$/);
   });
 
-  it("web (capability null): reads are NOT consulted, BillingPortalButton unchanged", async () => {
+  it("web (capability null): Subscription section ignores the reads, BillingPortalButton unchanged", async () => {
     shellCapabilityMock.mockReturnValue(null);
+    // FV-652: the Apple read now runs for an adult on every shell (for the
+    // delete notice), but the Subscription section must still not consume it
+    // off ios-iap — even an active Apple result leaves the web UI unchanged.
+    getDisplayedAppleProductIdResultMock.mockResolvedValue({
+      productId: "com.fromvictoryapp.app.family.1.monthly",
+      readError: false,
+    });
 
     await renderSettings("adult_athlete");
 
-    expect(getDisplayedAppleProductIdResultMock).not.toHaveBeenCalled();
+    expect(getDisplayedAppleProductIdResultMock).toHaveBeenCalledTimes(1);
     expect(subscriptionsMaybeSingleMock).not.toHaveBeenCalled();
     expect(screen.getByTestId("billing-portal-btn")).toBeInTheDocument();
     expect(screen.getByText(/manage or cancel your subscription/i)).toBeInTheDocument();
   });
 
-  it("legacy-native: reads are NOT consulted, browser notice unchanged", async () => {
+  it("legacy-native: Subscription section ignores the reads, browser notice unchanged", async () => {
     shellCapabilityMock.mockReturnValue("legacy-native");
+    getDisplayedAppleProductIdResultMock.mockResolvedValue({
+      productId: "com.fromvictoryapp.app.family.1.monthly",
+      readError: false,
+    });
 
     await renderSettings("adult_athlete");
 
-    expect(getDisplayedAppleProductIdResultMock).not.toHaveBeenCalled();
+    expect(getDisplayedAppleProductIdResultMock).toHaveBeenCalledTimes(1);
     expect(subscriptionsMaybeSingleMock).not.toHaveBeenCalled();
     expect(
       screen.getByTestId("billing-portal-native-shell-notice"),
@@ -534,5 +545,124 @@ describe("/athlete/settings — ios-iap provider-aware, error-visible subscripti
     expect(
       screen.queryByTestId("settings-subscription-status-unavailable"),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("/athlete/settings — App Store subscriber delete notice (FV-652)", () => {
+  const NOTICE = /your app store subscription is managed by apple/i;
+  const APPLE_ACTIVE = {
+    productId: "com.fromvictoryapp.app.family.1.monthly",
+    readError: false,
+  };
+
+  for (const shell of ["ios-iap", "legacy-native", null] as const) {
+    it(`adult with an active Apple subscription (shell: ${shell ?? "web"}) is told deleting does not cancel it`, async () => {
+      shellCapabilityMock.mockReturnValue(shell);
+      getDisplayedAppleProductIdResultMock.mockResolvedValue(APPLE_ACTIVE);
+
+      await renderSettings("adult_athlete");
+
+      const notice = screen.getByTestId("delete-account-apple-notice");
+      expect(notice).toHaveAttribute("data-variant", "active");
+      expect(notice).toHaveTextContent(NOTICE);
+      expect(notice).toHaveTextContent(/tap your name, then subscriptions/i);
+      expect(notice).toHaveTextContent(/does not cancel it/i);
+      expect(notice).toHaveTextContent(/cannot be automatically re-attached/i);
+      // The description must no longer claim the subscription is deleted.
+      expect(
+        screen.getByText(/deletes your account and training history\. this cannot be undone\./i),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText(/training history, and subscription/i),
+      ).not.toBeInTheDocument();
+    });
+  }
+
+  it("the notice is visible before the typed DELETE confirmation is opened", async () => {
+    getDisplayedAppleProductIdResultMock.mockResolvedValue(APPLE_ACTIVE);
+
+    await renderSettings("adult_athlete");
+
+    expect(screen.getByTestId("delete-account-apple-notice")).toBeInTheDocument();
+    expect(screen.queryByLabelText(/type delete to confirm/i)).not.toBeInTheDocument();
+  });
+
+  it("Apple status read error → a hedged notice shows (fail toward warning, without asserting a subscription)", async () => {
+    getDisplayedAppleProductIdResultMock.mockResolvedValue({
+      productId: null,
+      readError: true,
+    });
+
+    await renderSettings("adult_athlete");
+
+    const notice = screen.getByTestId("delete-account-apple-notice");
+    expect(notice).toHaveAttribute("data-variant", "unknown");
+    expect(notice).toHaveTextContent(
+      /^if you subscribed through the app store, that subscription is managed by apple\./i,
+    );
+    expect(notice).not.toHaveTextContent(NOTICE);
+    expect(notice).toHaveTextContent(/tap your name, then subscriptions/i);
+    expect(notice).toHaveTextContent(/does not cancel it/i);
+    expect(notice).toHaveTextContent(/cannot be automatically re-attached/i);
+    expect(notice.textContent ?? "").not.toMatch(/\u2014|\$/);
+    // Neither claim about the subscription is made when its status is unknown.
+    expect(
+      screen.getByText(/deletes your account and training history\. this cannot be undone\./i),
+    ).toBeInTheDocument();
+  });
+
+  it("adult with no Apple subscription sees the original copy and no notice", async () => {
+    await renderSettings("adult_athlete");
+
+    expect(
+      screen.queryByTestId("delete-account-apple-notice"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /deletes your account, training history, and subscription\. this cannot be undone\./i,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("a minor never triggers the Apple read and never sees the notice", async () => {
+    getDisplayedAppleProductIdResultMock.mockResolvedValue(APPLE_ACTIVE);
+
+    await renderSettings("athlete");
+
+    expect(getDisplayedAppleProductIdResultMock).not.toHaveBeenCalled();
+    expect(
+      screen.queryByTestId("delete-account-apple-notice"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("the notice contains no em dash and no price", async () => {
+    getDisplayedAppleProductIdResultMock.mockResolvedValue(APPLE_ACTIVE);
+
+    await renderSettings("adult_athlete");
+
+    const text = screen.getByTestId("delete-account-apple-notice").textContent ?? "";
+    expect(text).not.toMatch(/\u2014|\$/);
+  });
+});
+
+describe("/athlete/settings — android-play renders exactly like legacy-native (FV-659)", () => {
+  it("adult_athlete: identical markup, browser notice, no portal/subscribe button", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
+    const legacy = (await renderSettings("adult_athlete")).container.innerHTML;
+    cleanup();
+
+    shellCapabilityMock.mockReturnValue("android-play");
+    const play = (await renderSettings("adult_athlete")).container.innerHTML;
+
+    expect(play).toBe(legacy);
+    expect(screen.queryByTestId("billing-portal-btn")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("settings-subscribe-btn")).not.toBeInTheDocument();
+    expect(screen.getByTestId("billing-portal-native-shell-notice")).toBeInTheDocument();
+  });
+
+  it("minor athlete: still no Subscription section (unchanged)", async () => {
+    shellCapabilityMock.mockReturnValue("android-play");
+    await renderSettings("athlete");
+    expect(screen.queryByRole("heading", { name: "Subscription" })).not.toBeInTheDocument();
   });
 });

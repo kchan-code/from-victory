@@ -1,6 +1,14 @@
 # Android Play Store release checklist — From Victory
 
-**Owner:** Kinny (KC) · **Status:** ready to execute · **Store presence:** not live
+**Owner:** Kinny (KC) · **Status:** Internal/Closed testing (v7); production not started · **Store presence:** not public
+
+> **Current state — 2026-11-03 (read this first; it supersedes older lines below).**
+> - Play Console is enrolled as an organization (From Victory LLC). The app record exists. v8 (1.0.0) is on Internal testing (v7 on Closed testing "Alpha"). **The next upload needs `versionCode` ≥ 9.**
+> - **Play requires targetSdk 36** for new uploads. That ships with Capacitor 8 in PR #458 (FV-502, held). Capacitor 8 needs **Node 22+** and **JDK 21**. `main` is still targetSdk 35 until #458 merges.
+> - **Android is consumption-only (KC Path A, FV-619/FV-620).** No Play Billing or embedded Stripe. The remaining in-shell signup link (FV-621) and add-athlete billing path (FV-622) are removed by #562 and #563 (both held), so they still exist in the shell until those merge. Don't upload a build for production review before then.
+> - **Preflight before every signed build:** `apps/native/scripts/android-release-preflight.sh [--aab <bundle>]`. It is read-only: it checks the toolchain, SDK levels, versionCode, applicationId, production shell config, manifest, and whether upload-key signing is wired. It never prints signing secrets.
+> - **Device evidence and the remaining device matrix:** FV-619 / FV-502 comments. The iOS on-device gate for the first Capacitor 8 iOS build is on FV-573.
+> - **Upload, submission and promotion are KC decisions.** Nothing in this doc authorizes them.
 
 Android-first. The Capacitor shell in `apps/native` is scaffolding only until this
 checklist is done. The PWA on Vercel remains the primary product; Play is additive
@@ -41,9 +49,9 @@ Bubblewrap / TWA — Capacitor is the Android track.
 | Display name | `From Victory` |
 | Hosted WebView URL | `https://www.fromvictoryapp.com` (`capacitor.config.ts` `server.url`) |
 | Native project | `apps/native` (`@from-victory/native`) |
-| Current `versionCode` / `versionName` | `2` / `1.0.0` in `apps/native/android/app/build.gradle` |
-| Billing in the APK | **None.** Stripe on the web product. Do not add Play Billing / IAP in this pass. |
-| Tracking / ads / crash SDKs | **None.** Do not add them to satisfy Play. |
+| Current `versionCode` / `versionName` | `9` / `1.0.0` in `apps/native/android/app/build.gradle` — next upload after Play's v8 (build 8 is on Internal testing; run preflight with `--min-version-code 9`; bump by 1 for every further upload) |
+| Billing in the APK | **None in a default build.** Stripe on the web product. A build made with `FV_PLAY_BILLING=1` (FV-664, see section 4) carries Google's Play Billing Library; no such build is uploaded until KC approves the FV-669 release package. |
+| Tracking / ads / crash SDKs | **None of ours, and none at all in a default build.** Do not add them to satisfy Play. A `FV_PLAY_BILLING=1` build also carries the billing library's own Google components (datatransport telemetry transport, Play services, firebase-encoders), so do not describe that build as free of telemetry code. |
 | Age floor | 13+. Minors 13–17 are parent-managed. Not a kids app. |
 | iOS / App Store | Separate track: [docs/ios-app-store-release.md](./ios-app-store-release.md). Checklist ready; enrollment not started. |
 
@@ -202,23 +210,58 @@ and applies `signingConfigs.release` when that file exists. Without it,
 
 ## 4. Build a signed AAB — Kinny · Local (agent can run the commands)
 
-Prerequisites: Node 20+, JDK 21 (gradle sets sourceCompatibility 21 — JDK 17 fails with "invalid source release"), Android SDK platform 35, `ANDROID_HOME` /
+Prerequisites: Node 22+ (Capacitor 8 CLI), JDK 21 (gradle sets sourceCompatibility 21 — JDK 17 fails with "invalid source release"), Android SDK platform 36 (targetSdk 36, PR #458), `ANDROID_HOME` /
 `android/local.properties` `sdk.dir`. Debug APK steps stay in
 [docs/native-capacitor.md](./native-capacitor.md).
 
 ```bash
-# from repo root
-npm install
+# from repo root — CAPACITOR_SERVER_URL must be UNSET (production shell)
+npm ci
+unset CAPACITOR_SERVER_URL
+apps/native/scripts/android-release-preflight.sh          # fix every FAIL first
 cd apps/native
 npx cap sync android
 npm run build:android:bundle
+cd ../..
+apps/native/scripts/android-release-preflight.sh \
+  --aab apps/native/android/app/build/outputs/bundle/release/app-release.aab
+# expect: PREFLIGHT: PASS — then the upload decision is KC's
 ```
+
+Never upload a bundle built for local testing (a `CAPACITOR_SERVER_URL` override
+or a cleartext manifest). The preflight fails both.
 
 That script is `cd android && ./gradlew bundleRelease`. Output:
 
 ```
 apps/native/android/app/build/outputs/bundle/release/app-release.aab
 ```
+
+### Play Billing build switch (FV-664)
+
+The commands above build the **default** shell: no Play Billing library, no
+`com.android.vending.BILLING` permission, no billing plugin, bare
+`FVNativeShell/1` User-Agent. That is the right build for any 1.0.x fix.
+
+A build that can sell through Google Play is made only by setting
+`FV_PLAY_BILLING=1` for **both** `npx cap sync android` and the Gradle build:
+
+```bash
+FV_PLAY_BILLING=1 npx cap sync android
+FV_PLAY_BILLING=1 npm run build:android:bundle
+```
+
+Set it for one step and not the other and the build fails at
+`verifyPlayBillingSwitch` (marker without plugin, or plugin without marker).
+Any value other than unset, `0` or `1` fails at configuration.
+
+After a build, check the merged manifest matches what you meant to build: the
+`BILLING` permission is present if and only if `FV_PLAY_BILLING=1`. A billing
+build also adds `ACCESS_NETWORK_STATE` and Google's billing/transport
+components (from the Play Billing Library's own dependencies), which the Data
+safety form and privacy page must reflect before such a build is uploaded
+(FV-667). Do not upload a billing build until FV-669's release package is
+approved by KC.
 
 Confirm the application id before the first upload (this is what Gradle
 packages — Play will bind it permanently):
@@ -506,7 +549,7 @@ Web deploys do **not** need a new AAB. Ship a new bundle when you change:
 - Signing config
 - R8 / packaging options
 
-- [ ] You know the next upload is `versionCode 2` (after this first `1`)
+- [ ] You know the next upload is `versionCode 9` or higher (Play already has 8; see the current-state note at the top)
 
 ---
 

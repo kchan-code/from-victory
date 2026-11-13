@@ -2,8 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { ClearOfflinePregameOnMount } from "@/components/pregame/ClearOfflinePregameOnMount";
 import { requireAthlete } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 
 export const metadata = {
   title: "Training Paused",
@@ -39,6 +41,17 @@ export const metadata = {
  * the branch below still falls back to the existing adult copy defensively
  * if `reason=seats` ever reached an adult session.
  *
+ * OFFLINE PREGAME REVOCATION (FV-625): this page mounts
+ * ClearOfflinePregameOnMount, which clears the device-local entry that lets
+ * /athlete/pregame open offline. Every gated surface redirects a blocked
+ * athlete here, so the first online visit after a lapse revokes it.
+ *
+ * STATUS UNAVAILABLE (FV-656): `?reason=unavailable` means the family's
+ * subscription status couldn't be read (an errored or timed-out read), NOT
+ * that it lapsed. Neutral copy, a "Try again" back to the hub, no parent /
+ * reactivate / billing wording, and NO offline-Pregame revocation — an
+ * unreadable status must never revoke (or grant) anything.
+ *
  * NOTE: The copy below may receive a content-curator polish pass before
  * launch. It is intentionally in Mentor voice (warm, direct, no shame).
  */
@@ -61,6 +74,11 @@ export default async function AthletePausedPage({
   const isSeatPause =
     (reason === "seats" || (Array.isArray(reason) && reason.includes("seats"))) &&
     !isAdult;
+  // FV-656: any role — an adult never lands here via the gate (a self-payer
+  // goes to /subscribe), but the neutral copy is right for anyone.
+  const isUnavailable =
+    reason === "unavailable" ||
+    (Array.isArray(reason) && reason.includes("unavailable"));
   // Google Play "no in-app purchase" compliance: inside the legacy-native
   // shell, checkout.stripe.com has no reachable path (see
   // apps/native/capacitor.config.ts), so the adult reactivate link below must
@@ -69,10 +87,11 @@ export default async function AthletePausedPage({
   // ios-iap shell instead gets the same reactivate link as web — it already
   // carries no price, so it doubles as the in-app entry to /subscribe, where
   // AppleSubscribeSection renders the real StoreKit purchase surface.
-  const legacyNative = getRequestShellCapability() === "legacy-native";
+  const legacyNative = isRestrictedShell(getRequestShellCapability());
 
   return (
     <main id="main-content" className="min-h-screen bg-onyx flex flex-col px-5 pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
+      {isUnavailable ? null : <ClearOfflinePregameOnMount />}
       {/* ── Logo lockup — top anchor ── */}
       <header className="flex items-center gap-2 pt-[52px] pb-0">
         <Image
@@ -97,14 +116,20 @@ export default async function AthletePausedPage({
       <div className="flex-1 flex flex-col justify-center max-w-[420px] mx-auto w-full pt-8 pb-10">
         {/* Eyebrow */}
         <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.22em] text-gold mb-4">
-          Training paused
+          {isUnavailable ? "Access check" : "Training paused"}
         </p>
 
         {/* Heading — identity-first framing */}
         <h1 className="font-display font-extrabold uppercase tracking-[0.03em] text-cream text-[32px] sm:text-[36px] leading-[1.05] mb-5">
-          Your identity
-          <br />
-          never pauses.
+          {isUnavailable ? (
+            "We couldn’t check your access."
+          ) : (
+            <>
+              Your identity
+              <br />
+              never pauses.
+            </>
+          )}
         </h1>
 
         {/* Body — warm, plain, no shame. Minor athlete: no pricing/checkout
@@ -115,7 +140,9 @@ export default async function AthletePausedPage({
           className="font-body text-cream/75 text-[16px] leading-relaxed mb-3"
           data-testid="paused-body-copy"
         >
-          {isSeatPause
+          {isUnavailable
+            ? "Please try again."
+            : isSeatPause
             ? "Your family's plan has fewer spots right now. Ask your parent to choose who's active from their dashboard."
             : isAdult
               ? "Your training is on hold right now. You can reactivate any time from your subscription."
@@ -131,7 +158,19 @@ export default async function AthletePausedPage({
             (Google Play compliance — see lib/native-shell.ts), so this becomes
             plain, non-tappable text instead of a link. An ios-iap shell falls
             through to the same reactivate link as web (FV-577). */}
-        {isAdult ? (
+        {/* FV-656: an unreadable status gets a retry, never a billing path.
+            A plain <a>, not <Link>: retry must be a full request so the
+            access check re-runs (a client-side navigation can be served from
+            the router cache and show the same unknown state again). */}
+        {isUnavailable ? (
+          <a
+            href="/athlete"
+            data-testid="paused-try-again-link"
+            className="inline-flex items-center justify-center rounded-[12px] border border-gold bg-gold px-5 py-4 font-heading text-[15px] font-semibold text-onyx transition-colors duration-fast ease-out hover:bg-gold-bright hover:text-onyx focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.99] w-full mb-3"
+          >
+            Try again
+          </a>
+        ) : isAdult ? (
           legacyNative ? (
             <div
               role="status"

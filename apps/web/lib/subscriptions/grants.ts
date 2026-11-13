@@ -39,6 +39,27 @@ export async function hasActiveCompGrant(
   service: ServiceClient,
   parentId: string,
 ): Promise<boolean> {
+  return (await getActiveCompGrantSummary(service, parentId)).active;
+}
+
+/**
+ * The active-grant read behind `hasActiveCompGrant`, plus the latest END DATE
+ * among the active grants (FV-625 offline Pregame bound).
+ *
+ *   - `active`          — same answer `hasActiveCompGrant` gives.
+ *   - `latestFiniteEnd` — the latest `expires_at` among ACTIVE grants that
+ *     have one (ISO string), or null when there is none. A PERPETUAL grant
+ *     (`expires_at = null`) has no end date and contributes nothing here: it
+ *     ends only when an admin revokes it, which a device can learn only
+ *     online. No period is invented for it.
+ *
+ * Fail-closed on DB error: `{ active: false, latestFiniteEnd: null }`.
+ */
+export async function getActiveCompGrantSummary(
+  service: ServiceClient,
+  parentId: string,
+  nowMs: number = Date.now(),
+): Promise<{ active: boolean; latestFiniteEnd: string | null }> {
   // Fetch all non-revoked grants for this parent. Typically 0–3 rows.
   const { data, error } = await service
     .from("access_grants")
@@ -53,18 +74,31 @@ export async function hasActiveCompGrant(
     );
     // Fail-closed: on DB error, do NOT grant access. The underlying
     // subscription check in getParentAccessLevel will still run.
-    return false;
+    return { active: false, latestFiniteEnd: null };
   }
 
   if (!data || data.length === 0) {
-    return false;
+    return { active: false, latestFiniteEnd: null };
   }
 
   // Check whether any non-revoked grant is also not expired.
   // Perpetual grants (expires_at = null) are always active.
-  const now = Date.now();
-  return data.some((grant) => {
-    if (grant.expires_at === null) return true;
-    return new Date(grant.expires_at).getTime() > now;
-  });
+  let active = false;
+  let latestMs: number | null = null;
+  let latestIso: string | null = null;
+  for (const grant of data) {
+    if (grant.expires_at === null) {
+      active = true;
+      continue;
+    }
+    const endMs = new Date(grant.expires_at).getTime();
+    if (endMs > nowMs) {
+      active = true;
+      if (latestMs === null || endMs > latestMs) {
+        latestMs = endMs;
+        latestIso = grant.expires_at;
+      }
+    }
+  }
+  return { active, latestFiniteEnd: latestIso };
 }

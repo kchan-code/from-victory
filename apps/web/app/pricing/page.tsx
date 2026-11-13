@@ -16,14 +16,14 @@ export const metadata: Metadata = {
   alternates: { canonical: "/pricing" },
   title: "Pricing",
   description:
-    "14 days free, then $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
+    "7 days free when you start with one athlete, then $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
   openGraph: {
     type: "website",
     url: `${siteUrl}/pricing`,
     siteName: "From Victory",
     title: "Pricing · From Victory",
     description:
-      "14 days free, then $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
+      "7 days free when you start with one athlete, then $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
     images: [
       {
         url: `${siteUrl}/og-website-1200x630.png`,
@@ -36,15 +36,15 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Pricing · From Victory",
     description:
-      "14 days free, then $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
+      "7 days free when you start with one athlete, then $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. No ads, no data sold, cancel anytime.",
     images: [`${siteUrl}/og-website-1200x630.png`],
   },
 };
 
 const faq: { q: string; a: string }[] = [
   {
-    q: "What happens after the 14-day trial?",
-    a: "If you do nothing, your subscription starts at the rate you selected: $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. We will not charge you before the trial period ends. You can cancel any time in your account settings before the trial ends and you will not be billed. The free trial applies to first-time subscribers.",
+    q: "What happens after the 7-day trial?",
+    a: "If you do nothing, your subscription starts at the rate you selected: $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional. We will not charge you before the trial period ends. You can cancel any time in your account settings before the trial ends and you will not be billed. The free trial applies to a first-time checkout that starts with one athlete.",
   },
   {
     q: "What sports are available right now?",
@@ -60,7 +60,7 @@ const faq: { q: string; a: string }[] = [
   },
   {
     q: "Is there a free tier or free version?",
-    a: "Not currently. The 14-day free trial gives your athlete full access to evaluate the app with no commitment.",
+    a: "Not currently. The 7-day free trial gives your athlete full access to evaluate the app with no commitment.",
   },
   {
     q: "How does From Victory handle my athlete's data?",
@@ -93,14 +93,14 @@ export default function PricingPage() {
               <span className="fv-eyebrow">Pricing</span>
             </div>
             <h1 className="fv-h-hero mb-[26px]">
-              14 days free.{" "}
+              7 days free for your first athlete.{" "}
               <br className="hidden sm:block" />
               Then <em>$49 per year.</em>
             </h1>
             <p className="max-w-[44ch] mx-auto mb-9 text-cream/70 text-[clamp(16px,1.4vw,19px)] leading-[1.55]">
               $49/yr or $5/mo for your first athlete, $29/yr or $3/mo
               for each additional. No ads, no data sold, cancel anytime.
-              First-time subscribers train free for the first two weeks.
+              First-time subscribers who start with one athlete train free for the first 7 days.
             </p>
           </Reveal>
         </div>
@@ -347,14 +347,14 @@ export default function PricingPage() {
               Start training from <em>secure identity.</em>
             </h2>
             <p className="fv-lede max-w-[44ch] mx-auto mb-8">
-              14 days free, then $5/mo or $49/yr. Your athlete trains.
+              7 days free for your first athlete, then $5/mo or $49/yr. Your athlete trains.
               You see the rhythm.
             </p>
             <Link
               href="/signup"
               className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-8 py-[20px] text-[17px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
             >
-              Start your athlete&apos;s 14-day free trial
+              Start your athlete&apos;s 7-day free trial
               <SvgIcon name="arrow" size={17} />
             </Link>
             <p className="mt-4 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 font-semibold">

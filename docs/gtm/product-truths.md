@@ -10,6 +10,211 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-13: Signed-out screen says Welcome, then parent, 18+, or invite (FV-707, FV-708; effective when the PR deploys)
+
+The signed-out screen on the website, in the iPhone app, and in the Android app says "Welcome" and asks how the person will use From Victory. The choices are "I'm a parent" (parent account), "I'm 18+ and training myself" (own account, only when adult signup is enabled), and "I have an invite" (athletes under 18). "Sign in" opens the existing parent email form and the athlete username form. A device that already belongs to an athlete still says "Welcome back" plus that athlete's first name.
+
+The parent dashboard says "Welcome" plus the parent's first name until at least one athlete is linked, then "Welcome back" plus the first name.
+
+Adult signup still requires age 18 or older, an 18+ confirmation, and agreement to the Terms of Use and Privacy Policy. Athletes under 18 are not offered a way to create their own account. In the iPhone app and the Android app, the signup screens do not show a web price or a trial length. The iPhone purchase screen still shows the App Store price. An adult who creates an account inside the Android app still lands in training rather than checkout. The Android sign-in form still tells a new customer to subscribe on the website.
+
+The parent signup page and the adult signup page, on the website, say 7 days free, then $5/mo or $49/yr, for a first-time subscriber. The adult page no longer says 14 days.
+
+Why it matters to a buyer: a first visit is not greeted as a return, and an athlete 18 or older can see how to create their own account from the first screen.
+
+## 2026-11-13 — The invite link page matches the phone the athlete is using (FV-687)
+
+An athlete who opens an invite link in a phone browser sees a short setup path.
+iPhone and iPad see the App Store badge. The next step says to install, go back
+to the text, and tap the link again. With the app installed, that tap opens
+setup in the app (a username and password, or a new password on a reset). It
+does not finish the invite by itself. If they would rather type the code, the
+page also says to open From Victory, tap "I have an invite", and enter the code.
+Android sees the Google Play badge. The next step says to open From Victory,
+tap "I have an invite", and enter the code. The link does not open the Android
+app. A computer sees both badges and both paths. "Continue in browser" stays
+on the page and finishes setup in the browser. This updates the 2026-11-06 note
+that the link page offers only the App Store.
+
+Why it matters to a buyer: an athlete on Android can install from the invite
+text, and an athlete on iPhone is told the real next step after install.
+
+## 2026-11-13 - Public trial copy now says 7 days (FV-609)
+
+Kinny decided on 12 Nov 2026 that the live free trial is 7 days. Public pages, structured data, llms.txt, FAQ, pricing, and the paste-ready marketing lines now say a 7-day free trial (or "7 days free"). Checkout is unchanged. A first-time checkout that starts with one athlete still gets 7 days. A first checkout that starts with more than one athlete still starts paid. Prices are unchanged ($5/mo or $49/yr for the first athlete, $3/mo or $29/yr for each additional).
+
+Why it matters to a buyer: the homepage, pricing page, and signup page now name the same 7-day trial.
+
+This supersedes the 2026-09-12 note that public marketing still advertised the previous trial length.
+
+## 2026-11-11 — The Android app is available on Google Play (recorded by FV-681)
+
+The From Victory Android app is published on Google Play
+(https://play.google.com/store/apps/details?id=com.fromvictoryapp.app) as of 2026-11-11.
+It has no in-app purchase: the Android app does not sell subscriptions and shows no
+price or subscribe button. New customers subscribe on the website (fromvictoryapp.com),
+then sign in to the Android app with the same account. A subscription bought on the
+website or in the iPhone app works in the Android app when the subscriber signs in with
+that account; a family with no active subscription sees "Subscribe to From Victory from
+a web browser at fromvictoryapp.com." The countries where the Play listing is available
+are not recorded here. The iOS app on the US App Store and the web app in the browser
+are unchanged. This supersedes the 2026-11-03 entry's statement that From Victory is not
+on Google Play and has no Android store listing. Other public surfaces that still say
+"not on Google Play" are tracked in FV-684. The homepage FAQ's new sign-in and recovery
+answers (FV-681) are effective when that PR deploys.
+
+Why it matters to a buyer: an Android family can install From Victory from Google Play;
+they subscribe on the website, not in the app, and sign in with the same account.
+
+## 2026-11-11 — The app never tells a subscriber to subscribe; clearer sign-in for athletes 18+ (FV-657; effective when the PR deploys)
+
+- **Android app, already subscribed:** a parent or adult who already subscribes and opens
+  the subscription page now sees their status ("You're already subscribed. Manage your
+  subscription from a web browser at fromvictoryapp.com.", or the App Store equivalent)
+  instead of "Subscribe to From Victory from a web browser". Accounts with free access
+  see "You have access to From Victory." on every platform, instead of "You're
+  subscribed to From Victory."
+- **Subscription page, not subscribed:** a new line above "Sign out" reads "Subscribed
+  with a different account? Sign out, then sign in with that one."
+- **Sign-in, "Athlete" tab:** the field is now labeled "Username or email", and the help
+  text speaks to both groups: under 18 (username from the parent's invite, password
+  help from the parent) and 18 or older (sign in with your email, with a "Reset it
+  here" password link). The error now reads "That username, email or password isn't
+  right."
+
+Why it matters to a buyer: someone who already pays is never asked to pay again, and an
+adult who subscribed on the website can find their way into the app on either tab.
+
+## 2026-11-11 — "We couldn't check your access" is no longer shown as a paused or ended subscription (FV-656; effective when the PR deploys)
+
+Sometimes the app can't read a family's subscription status (a temporary error or a
+slow response). Before this, an athlete under 18 then saw "Training paused" and "ask
+your parent to reactivate access", even when the family's subscription was active. Now
+that athlete sees "We couldn't check your access. Please try again." with a "Try again"
+button, and nothing about pausing, reactivating or paying. Parents and adults who pay
+for themselves see "We couldn't check your access. Please try again. If you already
+subscribe, don't purchase another subscription." on the dashboard and the subscribe
+page, also with "Try again". Training still stays closed until the check succeeds, and
+offline Pregame is neither removed nor extended by a failed check: it keeps the expiry
+it already had.
+
+Why it matters to a buyer: a temporary problem checking access never tells a paying family
+their subscription stopped, and never prompts them to pay twice.
+
+## 2026-11-11 — Deleting an account tells App Store subscribers to cancel with Apple (FV-652; effective when the PR deploys)
+
+Deleting a From Victory account cancels a subscription bought on the website. It does not
+cancel a subscription bought through the App Store on an iPhone: Apple manages that
+subscription and only the subscriber can cancel it, in the iPhone's Settings. The delete
+section in the parent dashboard and in an adult athlete's settings now says so to anyone
+with an active App Store subscription, before they confirm. The public account-deletion
+page says the same. Before this, those screens said the subscription was deleted or
+canceled without that exception.
+
+Why it matters to a buyer: a family that subscribed in the iPhone app is told plainly
+that they must cancel with Apple, so they are not billed after deleting their account.
+Any copy that says deleting an account cancels the subscription must carry this
+exception.
+
+## 2026-11-11 — An adult athlete's email works on the "Athlete" sign-in tab (FV-654; effective when the PR deploys)
+
+The sign-in screen has two tabs, "Parent" and "Athlete". An adult athlete (18+) who pays
+for their own account signs in with their email and password. Before this, entering that
+email on the "Athlete" tab was rejected ("That username or password isn't right."); it
+only worked on the "Parent" tab, and nothing on screen said so. Now an email works on
+either tab and lands the adult on their training home. Athletes under 18 still sign in
+with the username and password their parent's invite set up. Nothing else about sign-in
+changed.
+
+Why it matters to a buyer: an adult who already subscribed on the website can sign in to
+the app with the same email and password, on whichever tab they pick.
+
+## 2026-11-11 — An adult whose subscription has ended can reach account settings from the subscribe page (FV-645; effective when the PR deploys)
+
+An adult athlete (18+) who pays for their own account and whose subscription has ended is
+sent to the subscribe page. That page now shows an "Account settings" link beside "Sign
+out" for that person. Account settings is where an adult deletes their account. Before
+this, inside the iOS and Android apps there was no route from the subscribe page to
+account settings, so account deletion could not be reached in the app. Nothing changes
+for parents (they reach settings from the dashboard) or for adults with an active
+subscription.
+
+Why it matters to a buyer: account deletion is reachable in the app for every account
+type, including an adult whose subscription has lapsed.
+
+## 2026-11-09 — Pregame follows the same access rule as the rest of training (FV-625, FV-636; effective when the PR deploys)
+
+Game-Day Pregame now uses the same access rule as Daily Training, Pre-Practice,
+Post-Game and the athlete hub. When the account's subscription has ended (canceled or
+expired), an athlete who opens Pregame while online is sent to the same place as those
+pages: the "Training paused" screen for an athlete under 18, or the subscribe page for an
+adult (18+) who pays for their own account. Before this, Pregame stayed open after a
+subscription ended.
+
+Offline Pregame (no signal) works for an athlete with access, once Pregame has been opened
+online on that device after this change; the first open needs a connection. Before this
+change, opening Pregame with no signal showed the browser's offline error page instead of
+the session (seen on Android; the cause was in shared web code, fixed with this change).
+Offline use lasts until the end of the access period that was last confirmed online on
+that device: the current subscription period or free trial, or the end date of free
+access that has one. Each online Pregame open renews it. After that date, Pregame needs a
+connection again. When a subscription ends (canceled or expired), Pregame stops on that
+device the next time it is online and opens Pregame or any other training page, and it
+stays stopped offline. A subscription set to cancel at the end of its period keeps working
+until that period ends. Accounts with free access that has no end date (for example a
+reviewer account) can use Pregame online but not offline.
+
+Adult (18+) athletes who pay for their own account can now open Pregame online and
+offline under the same rules. Before this change, Pregame did not open for them at all.
+
+Why it matters to a buyer: Pregame is part of the subscription, like all training, and
+it stops when the subscription ends.
+
+## 2026-11-06 — Athlete invites replace device pairing links; password reset keeps the username (FV-630; effective when the PR deploys, iOS link-opening needs the next iOS build)
+
+A parent invites an athlete from the parent dashboard. The invite is a
+16-character code plus a link. Opening the link on an iPhone with the app
+installed opens the From Victory app (once the next iOS build ships); the
+athlete picks a username and password and lands in training, signed in, with no
+second sign-in. Without the app, the link page offers the App Store, shows the
+code to type into the app after installing ("I have an invite"), or continues in
+the browser. The App Store does not carry the invite through an install; the
+athlete enters the code.
+
+Each invite works once and expires in 7 days. Creating a new one turns the old
+one off. A code is shown only when it is created; to share it again later, the
+parent creates a new one. The dashboard shows each athlete as not invited,
+invite pending, or account ready. Athletes who were set up before usernames
+existed show as "needs username"; an invite lets them pick one (and a new
+password) and keeps their training history.
+
+Password reset is separate. For an athlete whose account is set up, the parent
+creates a reset code (works once, expires in 24 hours). It sets a new password
+and never changes the username. The reset page shows the username (read-only)
+to whoever opens the code, so an athlete who forgot it sees it there. Athletes sign in on any phone, including a new
+one, with their username and password. Old pairing links already sent keep
+working until they expire. No new athlete data is collected (no email, no phone
+number); nothing about subscriptions or prices changed.
+
+Why it matters to a buyer: getting an athlete from "parent paid" to "athlete
+training on their own phone" is one text message, and a forgotten password does
+not cost the athlete their username or history.
+
+## 2026-11-04 — iPhone installation guidance points to the App Store
+
+The homepage FAQ and iPhone browser dashboard installation card direct users to
+the existing US App Store listing. The public AI/search description states that
+From Victory is also accessible in a browser, without the “installable PWA” label.
+Android browser installation instructions remain available. Existing browser
+support, installed web apps, and browser reminder settings are unchanged. The
+dashboard card remains dismissible and is hidden inside the native app.
+
+## 2026-11-03 — iOS app is available on the US App Store
+
+From Victory iOS app v1.0 is available on the US App Store: https://apps.apple.com/us/app/from-victory/id6804743047. It went live on 2026-11-03 via manual release after App Review approval. US App Store only. iOS only. It is not available on Google Play; there is no Android store listing. The web app (installable PWA) still works in the browser. The marketing site now links the listing with Apple's unmodified "Download on the App Store" badge. This supersedes the 2026-08-26 entry that said the app is not listed on any public store.
+
+Why it matters to a buyer: a parent on iPhone can now download the app from the US App Store. An Android parent cannot get it from a store; they use it in the browser.
+
 ## 2026-09-12 — New free trials become 7 days for one athlete (rides FV-574; effective when that PR deploys)
 
 KC approved a new offering (2026-09-11): new first-time trials are SEVEN days,
@@ -293,6 +498,8 @@ The site header now carries a "Sports" dropdown listing the seven live sports (d
 Why it matters to a buyer: a basketball, golf, football, baseball, lacrosse, or soccer parent searching for their sport now lands on a page about their athlete's actual game, not a hockey pitch.
 
 ## 2026-08-26 — Public store listings are not live; marketing comparison names today's SERP apps
+
+*Superseded 2026-11-03: the iOS app is now on the US App Store. See the 2026-11-03 entry above. It is not on Google Play.*
 
 From Victory is a web app / installable PWA. It is not listed on the App Store or Google Play. Internal TestFlight and Play Closed Alpha exist for native-shell QA. Do not tell a parent they can download From Victory from a public store tonight.
 

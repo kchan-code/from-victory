@@ -9,7 +9,8 @@ const siteUrl = "https://www.fromvictoryapp.com";
 // meaningfully changes; article dates come from the registry.
 const MARKETING_UPDATED = new Date("2026-07-09");
 const SEO_REFRESH = new Date("2026-08-26");
-const SPORT_PAGES_ADDED = new Date("2026-08-27");
+// iOS listing went live on the App Store (3 Nov 2026).
+const APP_STORE_LISTING = new Date("2026-11-03");
 
 // Build-time only. A crawler once saw /sitemap.xml 500; keep this route
 // a static list with a hardcoded article fallback so it cannot throw.
@@ -56,7 +57,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
       url: siteUrl,
-      lastModified: SEO_REFRESH,
+      lastModified: APP_STORE_LISTING,
       changeFrequency: "weekly",
       priority: 1,
     },
@@ -99,7 +100,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${siteUrl}/hockey`,
-      lastModified: SEO_REFRESH,
+      lastModified: APP_STORE_LISTING,
       changeFrequency: "monthly",
       priority: 0.8,
     },
@@ -107,7 +108,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       ["basketball", "golf", "football", "baseball", "lacrosse", "soccer"] as const
     ).map((sport) => ({
       url: `${siteUrl}/${sport}`,
-      lastModified: SPORT_PAGES_ADDED,
+      lastModified: APP_STORE_LISTING,
       changeFrequency: "monthly" as const,
       priority: 0.8,
     })),
@@ -126,7 +127,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${siteUrl}/christian-athlete-apps`,
-      lastModified: SEO_REFRESH,
+      lastModified: APP_STORE_LISTING,
       changeFrequency: "monthly",
       priority: 0.7,
     },

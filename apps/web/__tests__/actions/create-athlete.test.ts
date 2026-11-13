@@ -26,6 +26,15 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
+// FV-622: shell capability. Defaults to null (web/PWA) so every pre-existing
+// case keeps its behavior; the FV-622 block overrides per case.
+const shellCapabilityMock = vi.fn(
+  () => null as "legacy-native" | "ios-iap" | "android-play" | null,
+);
+vi.mock("@/lib/native-shell", () => ({
+  getRequestShellCapability: () => shellCapabilityMock(),
+}));
+
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(() => {
     throw new Error("NEXT_REDIRECT");
@@ -186,6 +195,8 @@ function makeFormData(
 }
 
 beforeEach(() => {
+  shellCapabilityMock.mockReturnValue(null);
+  lastServiceMockInstance = null;
   profileInsertPayload = null;
   profileInsertError = null;
   linkInsertError = null;
@@ -424,5 +435,86 @@ describe("createAthlete — trial-conversion guard (FV-586, KC decision D3)", ()
     expect(stripeSubscriptionsRetrieveMock).not.toHaveBeenCalled();
     expect(stripeSubscriptionsUpdateMock).not.toHaveBeenCalled();
     expect(profileInsertPayload).not.toBeNull();
+  });
+});
+
+// ===========================================================================
+// FV-622 — Android Path A: legacy-native shell refuses every add
+// ===========================================================================
+
+describe("createAthlete — legacy-native shell guard (FV-622)", () => {
+  it("legacy-native: refuses with website guidance before any DB or Stripe side effect", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
+    // Even a trial family whose add would convert the trial is refused.
+    trialConversionStateResult = {
+      kind: "stripe_trial",
+      stripeSubscriptionId: "sub_trial_1",
+      currentAthleteCount: 1,
+      trialEndsAt: null,
+    };
+
+    const result = await createAthlete(
+      null,
+      makeFormData({ trialConversionConfirmed: "true" }),
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Add athletes from a web browser at fromvictoryapp.com.",
+    });
+    expect(lastServiceMockInstance).toBeNull(); // no service client created
+    expect(profileInsertPayload).toBeNull();
+    expect(getTrialConversionStateMock).not.toHaveBeenCalled();
+    expect(stripeSubscriptionsRetrieveMock).not.toHaveBeenCalled();
+    expect(stripeSubscriptionsUpdateMock).not.toHaveBeenCalled();
+    expect(syncAthleteQuantityMock).not.toHaveBeenCalled();
+  });
+
+  it("ios-iap: unchanged — the add proceeds and syncs quantity as on web", async () => {
+    shellCapabilityMock.mockReturnValue("ios-iap");
+
+    await expect(createAthlete(null, makeFormData())).rejects.toThrow(
+      "NEXT_REDIRECT",
+    );
+
+    expect(profileInsertPayload).not.toBeNull();
+    expect(syncAthleteQuantityMock).toHaveBeenCalledWith("parent-uuid-123");
+  });
+
+  it("web (null): unchanged — the add proceeds and syncs quantity", async () => {
+    await expect(createAthlete(null, makeFormData())).rejects.toThrow(
+      "NEXT_REDIRECT",
+    );
+
+    expect(profileInsertPayload).not.toBeNull();
+    expect(syncAthleteQuantityMock).toHaveBeenCalledWith("parent-uuid-123");
+  });
+});
+
+describe("createAthlete — android-play shell guard (FV-659)", () => {
+  it("android-play: refuses with website guidance before any DB or Stripe side effect, exactly like legacy-native", async () => {
+    shellCapabilityMock.mockReturnValue("android-play");
+    trialConversionStateResult = {
+      kind: "stripe_trial",
+      stripeSubscriptionId: "sub_trial_1",
+      currentAthleteCount: 1,
+      trialEndsAt: null,
+    };
+
+    const result = await createAthlete(
+      null,
+      makeFormData({ trialConversionConfirmed: "true" }),
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Add athletes from a web browser at fromvictoryapp.com.",
+    });
+    expect(lastServiceMockInstance).toBeNull();
+    expect(profileInsertPayload).toBeNull();
+    expect(getTrialConversionStateMock).not.toHaveBeenCalled();
+    expect(stripeSubscriptionsRetrieveMock).not.toHaveBeenCalled();
+    expect(stripeSubscriptionsUpdateMock).not.toHaveBeenCalled();
+    expect(syncAthleteQuantityMock).not.toHaveBeenCalled();
   });
 });

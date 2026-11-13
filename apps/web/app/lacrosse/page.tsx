@@ -11,6 +11,7 @@ import { ScrollNav } from "@/components/landing/ScrollNav";
 import { Footer } from "@/components/landing/Footer";
 import { Reveal } from "@/components/landing/Reveal";
 import { SectionMeta } from "@/components/landing/SectionMeta";
+import { AppStoreAvailabilityCard } from "@/components/landing/AppStoreBadge";
 import { SportWebPageJsonLd } from "@/components/landing/StructuredData";
 import { SvgIcon } from "@/components/landing/SvgIcon";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
@@ -133,7 +134,7 @@ export default function LacrossePage() {
                   href="/signup"
                   className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
                 >
-                  Start a 14-day free trial
+                  Start a 7-day free trial
                   <SvgIcon name="arrow" size={16} />
                 </Link>
                 <Link
@@ -275,7 +276,7 @@ export default function LacrossePage() {
                     A parent buys and manages the account for athletes 13–17.
                     You see rhythm: they showed up. You do not see what they
                     prayed or which hard moment they named. 18+ can train on
-                    their own. 14 days free, then $5/mo or $49/yr for the
+                    their own. 7 days free when you start with one athlete, then $5/mo or $49/yr for the
                     first athlete. $3/$29 for each additional. Cancel anytime.
                   </p>
                   <div className="flex flex-wrap gap-3">
@@ -283,7 +284,7 @@ export default function LacrossePage() {
                       href="/signup"
                       className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
                     >
-                      Start your athlete&apos;s 14-day free trial
+                      Start your athlete&apos;s 7-day free trial
                       <SvgIcon name="arrow" size={16} />
                     </Link>
                     <Link
@@ -302,19 +303,7 @@ export default function LacrossePage() {
                     border: "1px solid rgba(223,175,55,0.2)",
                   }}
                 >
-                  <div className="flex items-center gap-2.5 mb-5">
-                    <FlameMark size={16} />
-                    <span className="fv-eyebrow gold">Web app · PWA</span>
-                  </div>
-                  <p className="font-body text-[15px] leading-[1.6] text-cream/80 m-0 mb-6">
-                    From Victory runs in the browser and installs to the home
-                    screen. It is not listed on the App Store or Google Play
-                    yet. Internal TestFlight and Play Closed Alpha only. Do
-                    not look for a public store listing.
-                  </p>
-                  <p className="font-body text-[15px] leading-[1.6] text-cream/80 m-0">
-                    Play hard, fearless, and free.
-                  </p>
+                  <AppStoreAvailabilityCard />
                 </div>
               </div>
             </Reveal>

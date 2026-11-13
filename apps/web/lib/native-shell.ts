@@ -40,23 +40,39 @@ const NATIVE_SHELL_UA_TOKEN = "FVNativeShell/1";
  */
 const IOS_SHELL_UA_TOKEN = "FVNativeShell/1 (ios)";
 
-/** The two "we're inside the native shell" classifications a request's
+/**
+ * The additive, Android-only capability marker (FV-659, FV-651 §6). Only a
+ * FUTURE Android build that carries a Google Play Billing plugin will send
+ * it; every Android build fielded today sends only the bare token (frozen).
+ * The server learns the value now so it is ready, but `android-play` renders
+ * exactly like `legacy-native` everywhere until later issues add purchase
+ * surfaces behind a server flag.
+ */
+const PLAY_SHELL_UA_TOKEN = "FVNativeShell/1 (play)";
+
+/** The three "we're inside the native shell" classifications a request's
  * User-Agent can resolve to (see `getShellCapability()`). A `null` result
  * means "not the shell" — an ordinary browser or the installed PWA. */
-export type ShellCapability = "ios-iap" | "legacy-native";
+export type ShellCapability = "ios-iap" | "legacy-native" | "android-play";
 
 /**
  * Classifies a raw User-Agent string into a shell capability.
  *
- * ORDER MATTERS: the `(ios)` marker is checked BEFORE the bare token. The
- * marker string CONTAINS the bare token as a substring
+ * ORDER MATTERS: the `(ios)` and `(play)` markers are checked BEFORE the bare
+ * token. Each marker string CONTAINS the bare token as a substring
  * (`"FVNativeShell/1 (ios)".includes("FVNativeShell/1")` is `true`), so
- * checking the bare token first would misclassify every `ios-iap` UA as
- * `legacy-native`.
+ * checking the bare token first would misclassify every `ios-iap` /
+ * `android-play` UA as `legacy-native`. Matching is by substring, so extra
+ * trailing tokens (e.g. a later `FVAuth/1`) do not change the result.
  *
  *   - `"ios-iap"` — UA carries `FVNativeShell/1 (ios)`. A new-enough iOS
  *     build that CAN present a StoreKit purchase surface once one ships in a
  *     later FV-572 slice. This slice does not build any purchase UI.
+ *   - `"android-play"` — UA carries `FVNativeShell/1 (play)`. A FUTURE
+ *     Android build that carries a Google Play Billing plugin. Today it
+ *     renders EXACTLY like `legacy-native` at every call site (use
+ *     `isRestrictedShell()` from `./native-shell-restricted`); purchase
+ *     surfaces arrive in later issues behind a server flag.
  *   - `"legacy-native"` — UA carries the bare `FVNativeShell/1` WITHOUT the
  *     `(ios)` marker. Fielded on BOTH every Android build (forever — the
  *     Android token is intentionally frozen, FV-478/489/492/493) AND every
@@ -82,14 +98,49 @@ export function getShellCapability(
 ): ShellCapability | null {
   const ua = userAgent ?? "";
   if (ua.includes(IOS_SHELL_UA_TOKEN)) return "ios-iap";
+  if (ua.includes(PLAY_SHELL_UA_TOKEN)) return "android-play";
   if (ua.includes(NATIVE_SHELL_UA_TOKEN)) return "legacy-native";
   return null;
 }
 
 /**
+ * The additive sign-in capability marker (FV-675, FV-569 spec §3 / §13a).
+ * Appended by shell builds that bundle the app-local FVAuth plugin, after the
+ * platform token: "FVNativeShell/1 (ios) FVAuth/1" on iOS, and on Android
+ * "FVNativeShell/1 FVAuth/1" (staging) or "FVNativeShell/1 (play) FVAuth/1".
+ * Every already-fielded build lacks it, so older builds never show SSO.
+ */
+const AUTH_CAPABILITY_UA_TOKEN = "FVAuth/1";
+
+/** `FVAuth/1` as a whole whitespace-delimited token (so `FVAuth/10` never matches). */
+const AUTH_CAPABILITY_UA_PATTERN = /(?:^|\s)FVAuth\/1(?=\s|$)/;
+
+/**
+ * True when the User-Agent is a native-shell build that can run native
+ * sign-in (the FVAuth plugin): the shell token AND the `FVAuth/1` marker.
+ *
+ * ORTHOGONAL to `getShellCapability()`: it never changes `ShellCapability`
+ * and does not care which platform marker (`(ios)`, `(play)`, or
+ * none) is present. A browser UA that happens to contain `FVAuth/1` without
+ * the shell token is NOT capable — the marker only means something from the
+ * shell, which is the only runtime with the plugin.
+ *
+ * Same caveat as `getShellCapability()`: a presentation hint for which
+ * sign-in buttons render, NEVER authorization (spec §13a invariant 4).
+ */
+export function hasAuthCapability(userAgent: string | null | undefined): boolean {
+  const ua = userAgent ?? "";
+  return (
+    getShellCapability(ua) !== null &&
+    ua.includes(AUTH_CAPABILITY_UA_TOKEN) &&
+    AUTH_CAPABILITY_UA_PATTERN.test(ua)
+  );
+}
+
+/**
  * Pure "is this the native shell at all?" check against a raw User-Agent
- * string. Routes through `getShellCapability()` above — `true` for BOTH
- * `ios-iap` and `legacy-native`, exactly as the single flat-token substring
+ * string. Routes through `getShellCapability()` above — `true` for ALL
+ * of `ios-iap`, `android-play` and `legacy-native`, exactly as the single flat-token substring
  * check behaved before this classifier existed. No existing call site of
  * this function (or of `isNativeShell()` below) gains any iOS-specific
  * behavior from this change; they all still key off a single boolean.
@@ -127,7 +178,7 @@ export function isNativeShell(): boolean {
 
 /**
  * The current request's shell CAPABILITY (not just the flat "is it the
- * shell" boolean above) — `"ios-iap"` | `"legacy-native"` | `null`. Mirrors
+ * shell" boolean above) — `"ios-iap"` | `"android-play"` | `"legacy-native"` | `null`. Mirrors
  * `isNativeShell()`'s exact shape (reads the raw `user-agent` request header
  * via `next/headers`, safe only inside a rendered Server Component / Route
  * Handler / Server Action) but routes through `getShellCapability()` so a

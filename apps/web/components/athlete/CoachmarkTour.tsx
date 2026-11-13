@@ -42,8 +42,8 @@ const STOP_COPY: Record<
     body: "This tracks showing up and coming back — never a streak to protect.",
   },
   "hub-daily-card": {
-    title: "Start here",
-    body: "Your daily training: one mental skill, one truth from Scripture. Begin here each day.",
+    title: "Daily training",
+    body: "One mental skill, one truth from Scripture. A few minutes, every day — game day or not.",
   },
   "hub-pregame-card": {
     title: "Before a game",
@@ -94,8 +94,8 @@ const SURFACE_STOPS: Record<Surface, string[]> = {
   // declutter pass — every destination is a tile the tour already covers.
   hub: [
     "hub-rhythm-ring",
-    "hub-daily-card",
     "hub-pregame-card",
+    "hub-daily-card",
   ],
   pregame: [
     "pregame-begin-btn",

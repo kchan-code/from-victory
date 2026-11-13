@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Privacy: INTERNET only. No camera/mic/location/contacts.
+    <!-- Privacy: network and foreground narration playback only. No camera/mic/location/contacts.
          allowBackup=false — do not ship athlete device-local data to
-         third-party cloud backup. Do not add analytics/ad SDK permissions. -->
+         third-party cloud backup. Do not add analytics/ad SDK permissions.
+         FV-664: builds made with the Play Billing build switch gain Google's billing
+         permission and the network-state permission through manifest merge from the Play
+         Billing Library. They are expected there and must stay absent from a default build.
+         (Permission names are deliberately not spelled out here: this comment is copied into
+         the merged manifest, and release checks grep it for them.) -->
     <application
         android:allowBackup="false"
         android:fullBackupContent="@xml/backup_rules"
@@ -16,7 +21,7 @@
         android:usesCleartextTraffic="false">
 
         <activity
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
@@ -29,7 +34,28 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- FV-675 (FV-569 spec §6 Callbacks): sign-in callback for FVAuthPlugin's Custom Tab
+                 fallback. Exactly com.fromvictoryapp.app://auth/callback. launchMode stays
+                 singleTask so the redirect re-enters THIS running activity via onNewIntent
+                 (FVAuthPlugin.handleOnNewIntent) instead of stacking a second WebView. The URL is
+                 useless without the WebView's PKCE / handoff verifier. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="com.fromvictoryapp.app"
+                    android:host="auth"
+                    android:path="/callback" />
+            </intent-filter>
+
         </activity>
+
+        <service
+            android:name=".FVNarrationService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback"
+            android:stopWithTask="true" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -42,7 +68,20 @@
         </provider>
     </application>
 
+    <!-- FV-675: package visibility (Android 11+) so FVAuthPlugin can find a browser that supports
+         Custom Tabs / Auth Tab. Visibility of browsers only; no permission, no data access. -->
+    <queries>
+        <intent>
+            <action android:name="android.support.customtabs.action.CustomTabsService" />
+        </intent>
+    </queries>
+
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Normal permissions for athlete-started narration during screen lock.
+         No microphone, music-library access, or notification permission prompt. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 </manifest>

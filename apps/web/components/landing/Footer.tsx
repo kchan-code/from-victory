@@ -1,12 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AppStoreBadge } from "./AppStoreBadge";
+
+import { SUPPORTED_SPORTS, sportLabel } from "@/lib/sports";
 
 // Absolute /# form so these resolve to the homepage anchors from the
 // sub-pages (/parents, /pricing, /teams) that also render this footer.
+// Sport landings follow SUPPORTED_SPORTS (same order as llms.txt):
+// Hockey, Basketball, Golf, Football, Baseball, Lacrosse, Soccer.
 const productLinks = [
   { href: "/#how", label: "How it works" },
   { href: "/#app", label: "The app" },
-  { href: "/hockey", label: "Hockey" },
+  ...SUPPORTED_SPORTS.map((sport) => ({
+    href: `/${sport}`,
+    label: sportLabel(sport),
+  })),
   { href: "/signup", label: "Start free trial" },
   { href: "https://shop.fromvictoryapp.com/", label: "Shop" },
 ];
@@ -48,6 +56,10 @@ export function Footer() {
               Fueled by the Spirit.
               <br />
               Built for Victory.
+            </div>
+            {/* 24px clear space above the badge, under the lockup. */}
+            <div className="mt-6">
+              <AppStoreBadge />
             </div>
           </div>
           <FooterColumn title="Product" links={productLinks} />
@@ -138,6 +150,10 @@ export function Footer() {
             </a>
           </div>
         </div>
+        <p className="m-0 mt-4 max-w-[68ch] font-body text-[12px] font-normal normal-case tracking-normal text-cream/40 leading-[1.5]">
+          Apple, the Apple logo, and App Store are trademarks of Apple Inc.,
+          registered in the U.S. and other countries.
+        </p>
       </div>
     </footer>
   );

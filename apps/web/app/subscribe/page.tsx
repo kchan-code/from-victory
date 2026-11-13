@@ -5,6 +5,7 @@ import Link from "next/link";
 import { requireSubscriber } from "@/lib/auth/guards";
 import { createCheckoutSession, createAdultCheckoutSession } from "@/lib/actions/subscription";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { getActiveAppleProductId } from "@/lib/subscriptions/apple";
 import { capacityForAppleProduct } from "@/lib/subscriptions/apple-capacity";
 import { getConfiguredAppleProducts } from "@/lib/subscriptions/apple-products";
@@ -15,6 +16,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { SubscribeForm } from "@/components/subscribe/SubscribeForm";
 import { AppleSubscribeSection } from "@/components/subscribe/AppleSubscribeSection";
+import { ClearOfflinePregameOnMount } from "@/components/pregame/ClearOfflinePregameOnMount";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 
 export const metadata = {
   title: "Subscribe",
@@ -186,6 +189,15 @@ export default async function SubscribePage({ searchParams }: Props) {
 
   return (
     <main id="main-content" className="min-h-screen bg-onyx px-5 py-10 sm:px-8">
+      {/* FV-625/FV-636: a blocked payer lands here from every gated training
+          surface (requireActiveAccess sends a blocked adult_athlete or parent
+          to /subscribe) — revoke this device's offline pregame, as
+          /athlete/paused does for a minor. Only on a CONFIRMED lapse: an
+          entitled payer keeps theirs, and FV-656 — a status that couldn't be
+          read ("unknown"; wouldBounce is fail-closed) revokes nothing. */}
+      {wouldBounce && entitlementState.status === "not_entitled" ? (
+        <ClearOfflinePregameOnMount />
+      ) : null}
       <div className="mx-auto max-w-[560px]">
         {/* Header */}
         <header className="flex items-center justify-between mb-12">
@@ -214,7 +226,7 @@ export default async function SubscribePage({ searchParams }: Props) {
             className="mb-8 bg-charcoal border border-hairline rounded-xl px-5 py-4"
           >
             <p className="font-body text-cream/70 text-[14px] leading-relaxed">
-              Checkout canceled&nbsp;&mdash; no charge was made. Pick a plan
+              Checkout canceled. No charge was made. Pick a plan
               when you&rsquo;re ready.
             </p>
           </div>
@@ -236,20 +248,20 @@ export default async function SubscribePage({ searchParams }: Props) {
             {nativeShell || entitlementState.status !== "not_entitled" ? (
               <>
                 Daily mental-toughness training with faith built
-                in&nbsp;&mdash; one session per day combining a mental skill
+                in. One session per day combining a mental skill
                 and a scripture foundation.
               </>
             ) : isAdult ? (
               <>
                 $5/mo or $49/yr. Cancel any time. Daily mental-toughness
-                training with faith built in&nbsp;&mdash; one session per day
+                training with faith built in. One session per day
                 combining a mental skill and a scripture foundation.
               </>
             ) : (
               <>
                 $5/mo or $49/yr for your first athlete; $3/mo or $29/yr for
                 each additional athlete. Daily mental-toughness training with
-                faith built in&nbsp;&mdash; one session per day combining a
+                faith built in. One session per day combining a
                 mental skill and a scripture foundation.
               </>
             )}
@@ -264,10 +276,23 @@ export default async function SubscribePage({ searchParams }: Props) {
             affordance, never a false "you're subscribed." */}
         {entitlementState.status === "unknown" ? (
           <StatusCard testId="subscribe-status-unknown">
-            <p className="font-body text-cream/70 text-[15px] leading-relaxed">
-              We couldn&rsquo;t load your subscription status. Please try
-              again.
+            {/* FV-656: neutral — no claim about why the read failed, no buy
+                affordance, and a retry back to the payer's home (which
+                re-runs the access check). */}
+            <p className="font-body text-cream/70 text-[15px] leading-relaxed mb-4">
+              We couldn&rsquo;t check your access. Please try again. If you
+              already subscribe, don&rsquo;t purchase another subscription.
             </p>
+            {/* A plain <a>, not <Link>: retry must be a full request so the
+                access check re-runs (a client-side navigation can be served from
+                the router cache and show the same unknown state again). */}
+            <a
+              href={isAdult ? "/athlete" : "/dashboard"}
+              data-testid="subscribe-status-unknown-retry"
+              className="inline-flex items-center justify-center font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 min-h-[44px] no-underline hover:bg-gold-bright transition-colors duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            >
+              Try again
+            </a>
           </StatusCard>
         ) : entitlementState.status === "not_entitled" ? (
           /* Capability-based branch (FV-572, record §4.8) — BYTE-IDENTICAL
@@ -278,7 +303,7 @@ export default async function SubscribePage({ searchParams }: Props) {
                - "ios-iap": an iOS build capable of the native StoreKit
                  purchase surface — render AppleSubscribeSection.
                - null: ordinary web/PWA flow — completely unchanged. */
-          shellCapability === "legacy-native" ? (
+          isRestrictedShell(shellCapability) ? (
             <div
               role="status"
               data-testid="native-shell-subscribe-notice"
@@ -308,20 +333,27 @@ export default async function SubscribePage({ searchParams }: Props) {
             </>
           )
         ) : /* entitlementState.status === "entitled" */
-        shellCapability === "legacy-native" ? (
-          /* An entitled legacy-native payer sees the SAME compliance notice
-             as a not_entitled one, for every provider — no in-shell link is
-             added (record §4.4 + Google Play "no in-app purchase" scope). */
-          <div
-            role="status"
-            data-testid="native-shell-subscribe-notice"
-            className="bg-charcoal border border-hairline rounded-xl px-5 py-5"
-          >
+        isRestrictedShell(shellCapability) ? (
+          /* FV-657: an entitled payer inside the Android app is never told to
+             subscribe. Provider-specific status, still with no link and no
+             price (record §4.4 + Google Play "no in-app purchase" scope). */
+          <StatusCard testId="subscribe-status-entitled">
             <p className="font-body text-cream/70 text-[15px] leading-relaxed">
-              Subscribe to From Victory from a web browser at
-              fromvictoryapp.com.
+              {entitlementState.provider === "stripe" ? (
+                <>
+                  You&rsquo;re already subscribed. Manage your subscription
+                  from a web browser at fromvictoryapp.com.
+                </>
+              ) : entitlementState.provider === "apple" ? (
+                <>
+                  You&rsquo;re subscribed through the App Store. Manage it on
+                  your iPhone.
+                </>
+              ) : (
+                <>You have access to From Victory.</>
+              )}
             </p>
-          </div>
+          </StatusCard>
         ) : shellCapability === "ios-iap" ? (
           entitlementState.provider === "apple" ? (
             appleUpgradeCapacity !== null ? (
@@ -346,16 +378,17 @@ export default async function SubscribePage({ searchParams }: Props) {
             </StatusCard>
           ) : (
             <StatusCard testId="subscribe-status-entitled">
+              {/* FV-657: comp/free access is access, not a paid subscription. */}
               <p className="font-body text-cream/70 text-[15px] leading-relaxed">
-                You&rsquo;re subscribed to From Victory.
+                You have access to From Victory.
               </p>
             </StatusCard>
           )
         ) : entitlementState.provider === "apple" ? (
           <StatusCard testId="subscribe-status-entitled">
             <p className="font-body text-cream/70 text-[15px] leading-relaxed">
-              You&rsquo;re subscribed through the App Store&nbsp;&mdash;
-              manage it on your iPhone.
+              You&rsquo;re subscribed through the App Store.
+              Manage it on your iPhone.
             </p>
           </StatusCard>
         ) : entitlementState.provider === "stripe" ? (
@@ -372,11 +405,50 @@ export default async function SubscribePage({ searchParams }: Props) {
           </StatusCard>
         ) : (
           <StatusCard testId="subscribe-status-entitled">
+            {/* FV-657: comp/free access is access, not a paid subscription. */}
             <p className="font-body text-cream/70 text-[15px] leading-relaxed">
-              You&rsquo;re subscribed to From Victory.
+              You have access to From Victory.
             </p>
           </StatusCard>
         )}
+
+        {/* FV-644: every payer on this page can sign out. In the native shell
+            a blocked adult_athlete has no other exit: Back goes to "/", the
+            shell's entry router sends "/" to /athlete, and requireActiveAccess
+            sends a blocked payer straight back here. SignOutButton (FV-154)
+            clears the offline athlete/pregame caches before the signOut action
+            redirects (to /signin in-shell, "/" on the web). */}
+        <div className="mt-10 border-t border-hairline pt-8">
+          {/* FV-657: landing here doesn't prove there's no subscription — the
+              most common cause is being signed in to a different account
+              (KC, 2026-11-10). Only when this account isn't entitled; an
+              unknown status already has its own card. */}
+          {entitlementState.status === "not_entitled" ? (
+            <p
+              data-testid="subscribe-different-account-hint"
+              className="mb-4 font-body text-[14px] leading-relaxed text-cream/70 text-center"
+            >
+              Subscribed with a different account? Sign out, then sign in with
+              that one.
+            </p>
+          ) : null}
+          {/* FV-645: a blocked adult_athlete also needs a route to account
+              settings, where account deletion lives (App Review 5.1.1(v)).
+              /athlete/settings is not subscription-gated, but in the native
+              shell nothing linked to it from here. Blocked adults only: an
+              entitled adult reaches settings through /athlete, and a parent
+              through /dashboard, so their flows are unchanged. */}
+          {isAdult && wouldBounce ? (
+            <Link
+              href="/athlete/settings"
+              data-testid="subscribe-account-settings"
+              className="mb-3 inline-flex items-center justify-center w-full min-h-[44px] rounded-[12px] border border-hairline bg-charcoal px-5 py-4 font-heading text-[14px] font-semibold text-cream/60 no-underline transition-colors duration-fast ease-out hover:text-cream hover:border-cream/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.99]"
+            >
+              Account settings
+            </Link>
+          ) : null}
+          <SignOutButton className="inline-flex items-center justify-center w-full min-h-[44px] rounded-[12px] border border-hairline bg-charcoal px-5 py-4 font-heading text-[14px] font-semibold text-cream/60 transition-colors duration-fast ease-out hover:text-cream hover:border-cream/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.99]" />
+        </div>
       </div>
     </main>
   );

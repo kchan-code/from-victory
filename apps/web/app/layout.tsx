@@ -1,63 +1,16 @@
 import type { Metadata } from "next";
-import {
-  Big_Shoulders_Display,
-  JetBrains_Mono,
-  Manrope,
-  Sora,
-  Source_Serif_4,
-} from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { AnalyticsMount } from "./_components/AnalyticsMount";
 import { ServiceWorkerRegistrar } from "./_components/ServiceWorkerRegistrar";
-
-const bigShoulders = Big_Shoulders_Display({
-  subsets: ["latin"],
-  weight: ["700", "800"],
-  display: "swap",
-  variable: "--font-big-shoulders",
-});
-
-const sora = Sora({
-  subsets: ["latin"],
-  weight: ["500", "600"],
-  display: "swap",
-  variable: "--font-sora",
-});
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  display: "swap",
-  variable: "--font-manrope",
-});
-
-const sourceSerif = Source_Serif_4({
-  subsets: ["latin"],
-  weight: ["400"],
-  display: "swap",
-  variable: "--font-source-serif",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["500", "600"],
-  display: "swap",
-  variable: "--font-jetbrains-mono",
-});
-
-const fontVariables = [
-  bigShoulders.variable,
-  sora.variable,
-  manrope.variable,
-  sourceSerif.variable,
-  jetbrainsMono.variable,
-].join(" ");
+import { NativeInviteLinkHandler } from "@/components/native/NativeInviteLinkHandler";
+// FV-617: brand fonts are self-hosted via next/font/local (see ./fonts).
+import { fontVariables } from "./fonts";
 
 const siteUrl = "https://www.fromvictoryapp.com";
 // Kinny-signed 1200×630 website card. Marketing/site routes inherit this
-// (homepage, /parents, /resources, sport landings, etc.). `/pair` and
-// `/signin` override with the app card — the door into train.
+// (homepage, /parents, /resources, sport landings, etc.). `/pair`, `/invite`
+// and `/signin` override with the app card — the door into train.
 const socialImage = `${siteUrl}/og-website-1200x630.png`;
 const socialDescription =
   "See the first moment before you compete. Guided visualization for athletes 13+ across seven sports. Your identity is secure. Compete From Victory.";
@@ -144,6 +97,9 @@ export default function RootLayout({
         {children}
         {/* FV-105: service worker registration — runs after window load, renders nothing */}
         <ServiceWorkerRegistrar />
+        {/* FV-630: routes invite universal links in the iOS app. No-op on
+            the web / PWA (no window.Capacitor). */}
+        <NativeInviteLinkHandler />
         {/* FV-395: Vercel Web Analytics — public-marketing-only via beforeSend allowlist, renders nothing */}
         <AnalyticsMount />
       </body>

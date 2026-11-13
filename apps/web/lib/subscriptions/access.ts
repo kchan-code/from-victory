@@ -45,8 +45,11 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { hasActiveCompGrant } from "./grants";
-import { getAppleAccessLevelForPayer } from "./apple";
+import { getActiveCompGrantSummary, hasActiveCompGrant } from "./grants";
+import {
+  getAppleAccessLevelForPayer,
+  getAppleEntitlementEndForPayer,
+} from "./apple";
 import {
   subscriptionAccessLevel,
   type AccessLevel,
@@ -176,13 +179,42 @@ export async function getParentAccessLevel(
  * comp grant, or if the parent chain cannot be resolved.
  */
 export async function getAccessForCurrentUser(): Promise<AccessLevel> {
+  const payerId = await resolvePayerIdForCurrentUser();
+  if (payerId === null) return "blocked";
+  // getParentAccessLevel uses the service client internally — returns ONLY
+  // the AccessLevel enum. No billing data is reachable from this call path.
+  return getParentAccessLevel(payerId);
+}
+
+/**
+ * FV-656: the payer id for the signed-in user, or null (same rules as
+ * resolvePayerIdForCurrentUser below). Exported so the training gate can run
+ * the error-tracking entitlement read (./subscribe-guard, which imports this
+ * module — so the call has to live in ./enforce, not here).
+ */
+export async function getPayerIdForCurrentUser(): Promise<string | null> {
+  return resolvePayerIdForCurrentUser();
+}
+
+/**
+ * Resolves the signed-in user to the PAYER whose entitlement covers them:
+ *   - `parent`        → their own id.
+ *   - `adult_athlete` → their own id (FV-325: 18+ self-serve — the athlete IS
+ *     the payer; their profile id is the payer key in `subscriptions`, stored
+ *     in the parent_id column). No parent_athlete_links hop.
+ *   - `athlete`       → their parent via `parent_athlete_links` (RLS allows
+ *     the athlete to read rows where athlete_id = auth.uid()).
+ * Returns null (callers fail closed) with no session, no profile, no link, or
+ * any other role.
+ */
+async function resolvePayerIdForCurrentUser(): Promise<string | null> {
   const supabase = createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return "blocked";
+  if (!user) return null;
 
   // Fetch role without trusting any client-supplied value.
   const { data: profile, error: profileError } = await supabase
@@ -191,23 +223,13 @@ export async function getAccessForCurrentUser(): Promise<AccessLevel> {
     .eq("id", user.id)
     .single();
 
-  if (profileError || !profile) return "blocked";
+  if (profileError || !profile) return null;
 
-  if (profile.role === "parent") {
-    return getParentAccessLevel(user.id);
-  }
-
-  if (profile.role === "adult_athlete") {
-    // FV-325: 18+ self-serve — the athlete IS the payer. Their own profile id
-    // is the payer key in `subscriptions` (stored in the parent_id column), so
-    // access derives from their OWN subscription row. No parent_athlete_links
-    // hop. Rides ENFORCE_SUBSCRIPTION_GATING automatically via the enforce layer.
-    return getParentAccessLevel(user.id);
+  if (profile.role === "parent" || profile.role === "adult_athlete") {
+    return user.id;
   }
 
   if (profile.role === "athlete") {
-    // Resolve parent via parent_athlete_links.
-    // RLS allows the athlete to read rows where athlete_id = auth.uid().
     const { data: link, error: linkError } = await supabase
       .from("parent_athlete_links")
       .select("parent_id")
@@ -218,13 +240,94 @@ export async function getAccessForCurrentUser(): Promise<AccessLevel> {
     if (linkError || !link) {
       // Athlete has no parent link — shouldn't happen in normal flow, but
       // fail-closed rather than granting access.
-      return "blocked";
+      return null;
     }
-
-    // getParentAccessLevel uses the service client internally — returns ONLY
-    // the AccessLevel enum. No billing data is reachable from this call path.
-    return getParentAccessLevel(link.parent_id);
+    return link.parent_id;
   }
 
-  return "blocked";
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Offline Pregame bound (FV-625, KC policy 2026-11-09)
+// ---------------------------------------------------------------------------
+
+/**
+ * KC's offline policy: a device's offline Pregame access lasts "until the
+ * last verified subscription period ends". This returns that end for a payer:
+ * the LATEST finite end across the sources that currently grant access —
+ *
+ *   - comp grants: the latest `expires_at` among active grants. A PERPETUAL
+ *     grant (`expires_at = null`, e.g. the Play reviewer account) has no end
+ *     date and contributes NOTHING — no period is invented for it.
+ *   - Stripe: `current_period_end` when the status is not blocked (during
+ *     `trialing` Stripe's current period IS the trial, so this is the trial
+ *     end; see ./trial-conversion).
+ *   - Apple: the active row's `expires_at` / grace end via the centralized
+ *     accessor in ./apple (no skew added).
+ *
+ * Returns null when no entitling source has a finite end still in the future
+ * — the caller then gives NO offline window (online-only), never an unbounded
+ * one. Every read fails closed (an error drops that source → a shorter or
+ * null window, never a longer one).
+ *
+ * Call only after the access decision said "allowed": this function does not
+ * decide access, it only bounds how long a verified answer may be reused
+ * offline.
+ */
+export async function getParentOfflineEntitlementUntil(
+  parentId: string,
+  now: Date = new Date(),
+): Promise<string | null> {
+  const service = createServiceClient();
+  const nowMs = now.getTime();
+  const ends: number[] = [];
+
+  const grant = await getActiveCompGrantSummary(service, parentId, nowMs);
+  if (grant.latestFiniteEnd !== null) {
+    ends.push(new Date(grant.latestFiniteEnd).getTime());
+  }
+
+  const { data, error } = await service
+    .from("subscriptions")
+    .select("status, current_period_end")
+    .eq("parent_id", parentId)
+    .maybeSingle();
+  if (error) {
+    console.error(
+      `[subscriptions/access] Error fetching subscription period for parent=${parentId}:`,
+      error.message,
+    );
+  } else if (
+    data &&
+    data.current_period_end !== null &&
+    subscriptionAccessLevel(data.status as SubscriptionStatus) !== "blocked"
+  ) {
+    ends.push(new Date(data.current_period_end).getTime());
+  }
+
+  const appleEnd = await getAppleEntitlementEndForPayer(service, parentId, now);
+  if (appleEnd !== null) {
+    ends.push(new Date(appleEnd).getTime());
+  }
+
+  const finite = ends.filter((ms) => Number.isFinite(ms));
+  if (finite.length === 0) return null;
+  const latest = Math.max(...finite);
+  return latest > nowMs ? new Date(latest).toISOString() : null;
+}
+
+/**
+ * The offline Pregame bound for the signed-in user's payer (see
+ * getParentOfflineEntitlementUntil). PRIVACY: on the athlete path this is the
+ * ONLY billing-derived value that leaves the server besides the access enum —
+ * one timestamp. No status, plan, provider, price, grant detail or parent
+ * identity.
+ */
+export async function getOfflineEntitlementUntilForCurrentUser(
+  now: Date = new Date(),
+): Promise<string | null> {
+  const payerId = await resolvePayerIdForCurrentUser();
+  if (payerId === null) return null;
+  return getParentOfflineEntitlementUntil(payerId, now);
 }

@@ -347,6 +347,129 @@ export type Database = {
           }
         ]
       }
+      // FV-660: hand-added (20261111120000_google_play_provider_access.sql).
+      // Client roles may SELECT only product_id, base_plan_id, status,
+      // expires_at, auto_renewing of their OWN rows (column-level grant) —
+      // never select("*"). All writes are service-role.
+      google_subscriptions: {
+        Row: {
+          id: string
+          payer_id: string
+          purchase_token: string
+          product_id: string
+          base_plan_id: string
+          status: string
+          expires_at: string | null
+          auto_renewing: boolean
+          is_test_purchase: boolean
+          obfuscated_account_id: string | null
+          linked_purchase_token: string | null
+          acknowledged: boolean
+          offer_id: string | null
+          last_verified_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          payer_id: string
+          purchase_token: string
+          product_id: string
+          base_plan_id: string
+          status: string
+          expires_at?: string | null
+          auto_renewing?: boolean
+          is_test_purchase?: boolean
+          obfuscated_account_id?: string | null
+          linked_purchase_token?: string | null
+          acknowledged?: boolean
+          offer_id?: string | null
+          last_verified_at: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          payer_id?: string
+          purchase_token?: string
+          product_id?: string
+          base_plan_id?: string
+          status?: string
+          expires_at?: string | null
+          auto_renewing?: boolean
+          is_test_purchase?: boolean
+          obfuscated_account_id?: string | null
+          linked_purchase_token?: string | null
+          acknowledged?: boolean
+          offer_id?: string | null
+          last_verified_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "google_subscriptions_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      // FV-660: hand-added. Service-role-only: RLS enabled, no policies.
+      google_purchase_bindings: {
+        Row: {
+          payer_id: string
+          binding_id: string
+          created_at: string
+        }
+        Insert: {
+          payer_id: string
+          binding_id?: string
+          created_at?: string
+        }
+        Update: {
+          payer_id?: string
+          binding_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "google_purchase_bindings_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      // FV-660: hand-added. Service-role-only allowlist, empty by default.
+      google_license_testers: {
+        Row: {
+          payer_id: string
+          note: string | null
+          created_at: string
+        }
+        Insert: {
+          payer_id: string
+          note?: string | null
+          created_at?: string
+        }
+        Update: {
+          payer_id?: string
+          note?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "google_license_testers_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       athlete_sessions: {
         Row: {
           athlete_id: string
@@ -404,6 +527,8 @@ export type Database = {
           created_at: string
           created_by: string
           expires_at: string
+          // FV-630: hand-added (20261106120000_athlete_invitations.sql).
+          purpose: "invite" | "recovery"
         }
         Insert: {
           athlete_id: string
@@ -413,6 +538,7 @@ export type Database = {
           created_at?: string
           created_by: string
           expires_at: string
+          purpose?: "invite" | "recovery"
         }
         Update: {
           athlete_id?: string
@@ -422,6 +548,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           expires_at?: string
+          purpose?: "invite" | "recovery"
         }
         Relationships: [
           {
@@ -850,6 +977,77 @@ export type Database = {
       }
     }
     Functions: {
+      // FV-630: hand-added (20261106120000_athlete_invitations.sql). The first
+      // three are service-role only; get_athlete_invite_statuses is
+      // authenticated (scoped to auth.uid()'s linked athletes, metadata only).
+      issue_athlete_invite: {
+        Args: {
+          p_parent_id: string
+          p_athlete_id: string
+          p_code_sha256: string
+          p_invite_expires_at: string
+          p_recovery_expires_at: string
+        }
+        Returns: {
+          purpose: "invite" | "recovery"
+          expires_at: string
+        }[]
+      }
+      claim_athlete_invite: {
+        Args: {
+          p_code_sha256: string
+          p_username: string | null
+        }
+        Returns: {
+          athlete_id: string
+          purpose: "invite" | "recovery"
+          username: string
+          consumed_at: string
+        }[]
+      }
+      release_athlete_invite: {
+        Args: {
+          p_code_sha256: string
+          p_consumed_at: string
+          p_clear_username: boolean
+        }
+        Returns: boolean
+      }
+      get_athlete_invite_statuses: {
+        Args: Record<string, never>
+        Returns: {
+          athlete_id: string
+          account_ready: boolean
+          signed_in_before: boolean
+          pending_purpose: "invite" | "recovery" | null
+          pending_expires_at: string | null
+        }[]
+      }
+      // FV-671: hand-added (20261112100000_fv671_pending_accounts.sql). The
+      // pending-account lock functions (spec §5.2). complete_pending_profile and
+      // cancel_my_pending_account are `authenticated` and act only on auth.uid();
+      // reaper_mark and finalize_pending_deletion are service_role only.
+      complete_pending_profile: {
+        Args: {
+          p_role: "parent" | "adult_athlete"
+          p_first_name: string
+          p_birthdate?: string | null
+          p_sport?: string | null
+        }
+        Returns: "created" | "already_complete" | "reject_underage"
+      }
+      cancel_my_pending_account: {
+        Args: Record<string, never>
+        Returns: "marked" | "not_pending"
+      }
+      reaper_mark: {
+        Args: { p_user_id: string }
+        Returns: "marked" | "not_pending"
+      }
+      finalize_pending_deletion: {
+        Args: { p_user_id: string }
+        Returns: "no_tombstone" | "not_pending" | "deleted"
+      }
       // FV-164: SECURITY DEFINER RPC called by the cron route (service-role only).
       // Execute is revoked from anon + authenticated in the migration.
       due_push_reminders: {

@@ -78,8 +78,8 @@ export function AthleteSignInForm({ firstName, accountEmail }: Props) {
         <SubmitButton pendingLabel="Signing in…">Sign in</SubmitButton>
       </form>
       <p className="mt-6 font-body text-[13px] text-cream/55 leading-relaxed text-center">
-        Forgot your password? Ask your parent to send you a new pairing
-        link from their dashboard.
+        Forgot your password? Ask your parent for a reset code from their
+        dashboard. Your username stays the same.
       </p>
       <form
         action={forgetDevice}

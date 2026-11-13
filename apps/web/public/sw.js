@@ -71,7 +71,7 @@ const CACHE_VERSION = "fv-shell-v7"; // bumped: FV-493 — BYPASS_PREFIXES said
  * update this string AND MANIFEST_VERSION in audio-mapping.ts in the same PR.
  * The `audio-cache-bust` CI job enforces this parity.
  */
-const MANIFEST_VERSION = "da23db2c"; // sync with audio-mapping.ts:MANIFEST_VERSION
+const MANIFEST_VERSION = "fd0b4d17"; // sync with audio-mapping.ts:MANIFEST_VERSION
 const AUDIO_CACHE = `fv-audio-${MANIFEST_VERSION}`;
 
 /**
@@ -177,6 +177,9 @@ const BYPASS_PREFIXES = [
   // parent dashboard would render web prices in-shell.
   "/dashboard",
   "/pair",
+  // FV-630: invite setup reads the native-shell UA server-side and runs
+  // server actions; never served from Cache Storage.
+  "/invite",
   "/signin",
   "/signup",
   "/forgot-",

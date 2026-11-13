@@ -332,7 +332,7 @@ bound strictly to the linked issue's AC. Both map output onto the three groups.
 The privacy veto is never suppressed to satisfy "issue-scoped only."
 
 ## MVP Scope (locked — kill scope creep ruthlessly)
-- Parent signup + Stripe subscription (first athlete $5/mo or $49/yr; each additional athlete $3/mo or $29/yr; 14-day first-time trial)
+- Parent signup + Stripe subscription (first athlete $5/mo or $49/yr; each additional athlete $3/mo or $29/yr; 7-day first-time trial)
 - Parent creates athlete account (no email for the athlete)
 - One daily training session, themed per live sport (hockey, basketball,
   golf, football, baseball, lacrosse, soccer — see `SUPPORTED_SPORTS`), faith-

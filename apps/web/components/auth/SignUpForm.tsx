@@ -53,6 +53,7 @@ export function SignUpForm({ afterSubmit }: Props = {}) {
         autoComplete="new-password"
         required
         minLength={8}
+        canReveal
         hint="At least 8 characters."
         error={fieldError("password")}
       />

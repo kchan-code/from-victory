@@ -63,7 +63,7 @@ const {
   // Google Play "no in-app purchase" compliance + FV-572/577 capability.
   // Defaults to null (ordinary web/PWA request) — individual tests override
   // per case with "legacy-native" | "ios-iap" | null.
-  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
+  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | "android-play" | null),
   getUserMock: vi.fn(async () => ({ data: { user: { email: "kim@example.com" } } })),
   maybeSingleMock: vi.fn(),
   // FV-578/FV-580 — the centralized `apple_subscriptions` accessor. Defaults
@@ -500,5 +500,174 @@ describe("/dashboard/settings — FV-580 Apple status read-error visibility", ()
     expect(
       screen.queryByTestId("subscription-status-unavailable"),
     ).not.toBeInTheDocument();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FV-623: the Stripe date row must never call an ended subscription a renewal.
+// Reproduces the FV-619 Android staging observation (row 23c): an immediate
+// sandbox cancel left status=canceled, cancel_at_period_end=false and the OLD
+// (still-future) current_period_end on the row, and the page read
+// "Canceled · RENEWS November 16, 2026".
+// ---------------------------------------------------------------------------
+
+function stripeRow(
+  status: string,
+  cancelAtPeriodEnd: boolean,
+  currentPeriodEnd = "2026-11-16T17:06:54Z",
+) {
+  maybeSingleMock.mockResolvedValue({
+    data: {
+      status,
+      price_id: "price_test",
+      current_period_end: currentPeriodEnd,
+      cancel_at_period_end: cancelAtPeriodEnd,
+    },
+    error: null,
+  });
+}
+
+describe("/dashboard/settings — FV-623 ended-subscription date row", () => {
+  it("immediately canceled (cancel_at_period_end=false, future period end): no 'Renews', no stale date", async () => {
+    stripeRow("canceled", false);
+
+    await renderPage();
+
+    expect(screen.getByTestId("subscription-status")).toHaveTextContent("Canceled");
+    expect(screen.queryByTestId("subscription-period-end")).not.toBeInTheDocument();
+    expect(screen.queryByText("Renews")).not.toBeInTheDocument();
+    expect(screen.queryByText("November 16, 2026")).not.toBeInTheDocument();
+  });
+
+  it("same immediately-canceled row inside the Android legacy-native shell (the observed FV-619 case)", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
+    stripeRow("canceled", false);
+
+    await renderPage();
+
+    expect(screen.getByTestId("subscription-status")).toHaveTextContent("Canceled");
+    expect(screen.queryByTestId("subscription-period-end")).not.toBeInTheDocument();
+    expect(screen.queryByText("Renews")).not.toBeInTheDocument();
+    // Unchanged in-shell manage notice; still no Stripe-bound control.
+    expect(
+      screen.getByTestId("billing-portal-native-shell-notice"),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("billing-portal-btn")).not.toBeInTheDocument();
+  });
+
+  it("a scheduled cancel that has since lapsed (status=canceled, cancel_at_period_end still true): no 'Access ends … continues' claim", async () => {
+    stripeRow("canceled", true, "2026-10-01T00:00:00Z");
+
+    await renderPage();
+
+    expect(screen.queryByTestId("subscription-period-end")).not.toBeInTheDocument();
+    expect(screen.queryByText("Access ends")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Your access continues until this date."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("incomplete_expired (never started) shows no renewal date either", async () => {
+    stripeRow("incomplete_expired", false);
+
+    await renderPage();
+
+    expect(screen.queryByTestId("subscription-period-end")).not.toBeInTheDocument();
+    expect(screen.queryByText("Renews")).not.toBeInTheDocument();
+  });
+
+  it("preserved: trialing still reads 'Renews <date>' (trial converts on that date)", async () => {
+    stripeRow("trialing", false);
+
+    await renderPage();
+
+    expect(screen.getByTestId("subscription-status")).toHaveTextContent("Trial");
+    expect(screen.getByText("Renews")).toBeInTheDocument();
+    expect(screen.getByTestId("subscription-period-end")).toHaveTextContent(
+      "November 16, 2026",
+    );
+  });
+
+  it("preserved: active still reads 'Renews <date>'", async () => {
+    stripeRow("active", false);
+
+    await renderPage();
+
+    expect(screen.getByText("Renews")).toBeInTheDocument();
+    expect(screen.getByTestId("subscription-period-end")).toHaveTextContent(
+      "November 16, 2026",
+    );
+  });
+
+  it("preserved: a scheduled cancel still in its paid period reads 'Access ends <date>' + continues note", async () => {
+    stripeRow("active", true);
+
+    await renderPage();
+
+    expect(screen.getByText("Access ends")).toBeInTheDocument();
+    expect(screen.queryByText("Renews")).not.toBeInTheDocument();
+    expect(screen.getByTestId("subscription-period-end")).toHaveTextContent(
+      "November 16, 2026",
+    );
+    expect(
+      screen.getByText("Your access continues until this date."),
+    ).toBeInTheDocument();
+  });
+
+  it("preserved: past_due keeps its date row (Stripe is still retrying; not an ended subscription)", async () => {
+    stripeRow("past_due", false);
+
+    await renderPage();
+
+    expect(screen.getByTestId("subscription-status")).toHaveTextContent("Past due");
+    expect(screen.getByTestId("subscription-period-end")).toBeInTheDocument();
+  });
+});
+
+describe("/dashboard/settings — android-play renders exactly like legacy-native (FV-659)", () => {
+  const ACTIVE_ROW = {
+    data: {
+      status: "active",
+      price_id: "price_test",
+      current_period_end: "2026-09-01T00:00:00Z",
+      cancel_at_period_end: false,
+    },
+    error: null,
+  };
+  const NO_ROW = { data: null, error: null };
+
+  async function htmlFor(
+    capability: "legacy-native" | "android-play",
+    row: typeof ACTIVE_ROW | typeof NO_ROW,
+  ) {
+    shellCapabilityMock.mockReturnValue(capability);
+    maybeSingleMock.mockResolvedValue(row);
+    const { container } = await renderPage();
+    const html = container.innerHTML;
+    cleanup();
+    return html;
+  }
+
+  it("active Stripe row: identical markup, non-tappable browser notice, no portal button", async () => {
+    const legacy = await htmlFor("legacy-native", ACTIVE_ROW);
+    const play = await htmlFor("android-play", ACTIVE_ROW);
+    expect(play).toBe(legacy);
+    expect(play).toContain("billing-portal-native-shell-notice");
+    expect(play).not.toContain("billing-portal-btn");
+  });
+
+  it("no subscription row: identical markup, browser-subscribe copy, no Choose-a-plan link", async () => {
+    const legacy = await htmlFor("legacy-native", NO_ROW);
+    const play = await htmlFor("android-play", NO_ROW);
+    expect(play).toBe(legacy);
+    expect(play).toContain("Subscribe to From Victory from a web browser");
+  });
+
+  it("android-play never issues the Apple read (ios-iap only)", async () => {
+    shellCapabilityMock.mockReturnValue("android-play");
+    maybeSingleMock.mockResolvedValue(NO_ROW);
+    await renderPage();
+    expect(getDisplayedAppleProductIdResultMock).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("settings-apple-manage")).not.toBeInTheDocument();
   });
 });

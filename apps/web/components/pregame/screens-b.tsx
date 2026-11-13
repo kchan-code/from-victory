@@ -33,7 +33,9 @@ import { positivePlayTitle } from "./positive-plays";
 import { verseForCueWord } from "./cue-word-verses";
 import type { AudioTimeline, Phase } from "./audio/types";
 import { findActivePhase, type AssembledTimeline } from "./audio-playlist";
+import { NarrationVolumeControl } from "./NarrationVolumeControl";
 import { useClipPlayer } from "./useClipPlayer";
+import { getNarrationBridge } from "@/lib/native/narration";
 
 type SetFn = <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
 
@@ -464,6 +466,14 @@ export function ReviewScreen({
     { label: "Close", value: closeLabel },
   ];
 
+  // FV-543: the line under the summary is the verse for the need the athlete
+  // chose, same lookup AudioSessionScreen and PregameCardScreen already use.
+  // No need selected keeps the spine line this screen already showed.
+  const sessionVerse: NeedVerse =
+    state.need != null
+      ? NEED_VERSE[state.need]
+      : { reference: SCRIPTURE_REF, displayText: SCRIPTURE_SHORT };
+
   return (
     <ScreenBody>
       {/* FV-486: "Save for the rink" → sport-neutral. The step label is a
@@ -507,7 +517,7 @@ export function ReviewScreen({
       </div>
 
       <p className="mt-5 text-center font-scripture text-[15px] italic leading-[1.5] text-cream/70">
-        {SCRIPTURE_SHORT}
+        {sessionVerse.displayText}
       </p>
 
       {/* FV-129: the inline offline-download control is for the PLAY path only.
@@ -1110,6 +1120,8 @@ function substituteSegment(
 function useClipPlayerFlag(): boolean {
   // Read from location.search on the client; SSR always returns false.
   if (typeof window === "undefined") return false;
+  // Native mixing must never silently fall back to focus-stealing HTML audio.
+  if (getNarrationBridge()) return true;
   // Default ON: only disabled when explicitly set to "0".
   return new URLSearchParams(window.location.search).get("clipPlayer") !== "0";
 }
@@ -1232,7 +1244,7 @@ export function AudioSessionScreen({
     if (clipPlayer.error) {
       // "no template" means the current combination has no matching manifest
       // entry — not a true error, just use the legacy path silently.
-      if (clipPlayer.error !== "no template") {
+      if (clipPlayer.error !== "no template" || getNarrationBridge()) {
         setAudioMode("text");
       }
     }
@@ -1444,6 +1456,9 @@ export function AudioSessionScreen({
     }
     // ── Legacy two-<audio> path ──
     if (audioMode === "audio") {
+      // Error-to-text state updates run in an effect; never allow a native
+      // error render/tap to start HTML audio while that effect is pending.
+      if (getNarrationBridge()) return;
       const o = openerRef.current;
       const c = cellRef.current;
       if (!o || !c) return;
@@ -1705,7 +1720,7 @@ export function AudioSessionScreen({
 
       {/* Legacy <audio> elements — only rendered when the clip player is NOT active.
           Clip path pre-decodes via Web Audio API; no HTMLAudioElements needed. */}
-      {audioMode === "audio" && openerSrc && cellSrc && !isClipActive && (
+      {!getNarrationBridge() && audioMode === "audio" && openerSrc && cellSrc && !isClipActive && (
         <>
           {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
           <audio
@@ -1892,25 +1907,31 @@ export function AudioSessionScreen({
       <PreparingIndicator loading={clipLoading} />
 
       <div className="flex flex-col gap-2.5">
-        <button
-          type="button"
-          onClick={togglePlay}
-          // F3: disable while clip player is active but not yet decoded.
-          // Also disabled once session is completed (CTA replaces it).
-          // Legacy path: only disabled on completion (its own readiness
-          // is handled by the HEAD probe + audioMode state).
-          disabled={renderCompleted || clipLoading}
-          aria-label={
-            clipLoading
-              ? "Preparing your session"
-              : renderPlaying
-                ? "Pause guided session"
-                : "Play guided session"
-          }
-          className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-gold bg-gold text-onyx transition-transform duration-fast active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-        >
-          <Icon name={renderPlaying ? "pause" : "play"} size={26} />
-        </button>
+        <div className="relative grid grid-cols-[minmax(0,1fr)_64px_minmax(0,1fr)] items-center gap-2">
+          <span aria-hidden="true" />
+          <button
+            type="button"
+            onClick={togglePlay}
+            // F3: disable while clip player is active but not yet decoded.
+            // Also disabled once session is completed (CTA replaces it).
+            // Legacy path: only disabled on completion (its own readiness
+            // is handled by the HEAD probe + audioMode state).
+            disabled={renderCompleted || clipLoading}
+            aria-label={
+              clipLoading
+                ? "Preparing your session"
+                : renderPlaying
+                  ? "Pause guided session"
+                  : "Play guided session"
+            }
+            className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-gold bg-gold text-onyx transition-transform duration-fast active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+          >
+            <Icon name={renderPlaying ? "pause" : "play"} size={26} />
+          </button>
+          {isClipActive && !renderCompleted && (
+            <NarrationVolumeControl player={clipPlayer.nativeNarrationPlayer} placement="transport" />
+          )}
+        </div>
 
         {/* Accessible alternative for deaf/HoH athletes or loud environments.
             Only shown in audio mode — once switched to text mode this row

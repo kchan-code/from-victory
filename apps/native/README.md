@@ -19,3 +19,19 @@ cd apps/native
 npx cap sync
 npm run build:android:debug
 ```
+
+## Staging SSO build (FV-675)
+
+`FV_SSO_STAGING_BUILD=1` makes a **staging-only** shell that advertises the
+app-local `FVAuth` sign-in plugin (`FVAuth/1` in the User-Agent) and accepts
+the staging hosts. It refuses to build unless the server URL is the staging
+site:
+
+```bash
+LANG=en_US.UTF-8 FV_SSO_STAGING_BUILD=1 CAPACITOR_SERVER_URL=https://fv-android-staging-web.vercel.app npx cap sync
+```
+
+Re-run `npx cap sync` **without** the env before any production build. Signed
+iOS builds need the Sign in with Apple capability on the App ID and a refreshed
+provisioning profile (the entitlement is in every build).
+

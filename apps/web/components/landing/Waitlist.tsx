@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AppStoreBadge } from "./AppStoreBadge";
 import { Reveal } from "./Reveal";
 import { SectionMeta } from "./SectionMeta";
 import { SvgIcon } from "./SvgIcon";
@@ -43,7 +44,7 @@ export function Waitlist() {
             </h2>
             <p className="fv-lede mb-8">
               {LIVE_SPORTS_PROSE} are live now. Start your athlete&apos;s
-              14-day free trial today. Playing something else? Select your sport
+              7-day free trial today. Playing something else? Select your sport
               below and we&rsquo;ll reach out when it launches.
             </p>
 
@@ -53,12 +54,16 @@ export function Waitlist() {
                 href="/signup"
                 className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
               >
-                Start your athlete&apos;s 14-day free trial
+                Start your athlete&apos;s 7-day free trial
                 <SvgIcon name="arrow" size={16} />
               </Link>
               <p className="mt-3 font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 font-semibold">
-                14 days free for first-time subscribers, then $5/mo or $49/yr, cancel anytime
+                7 days free for first-time subscribers, then $5/mo or $49/yr, cancel anytime
               </p>
+              {/* 16px clear space is more than one-quarter of the 44px badge. */}
+              <div className="mt-4">
+                <AppStoreBadge />
+              </div>
             </div>
 
             <div className="flex flex-col gap-3.5">

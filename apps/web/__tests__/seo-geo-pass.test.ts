@@ -26,22 +26,35 @@ describe("SoftwareApplication JSON-LD (FV-504)", () => {
     ]);
   });
 
-  it("keeps LifestyleApplication and names the 14-day trial", () => {
+  it("keeps LifestyleApplication and names the 7-day trial", () => {
     expect(SOFTWARE_APPLICATION_JSON_LD.applicationCategory).toBe(
       "LifestyleApplication",
     );
     const offers = SOFTWARE_APPLICATION_JSON_LD.offers;
     expect(offers.some((o) => o.price === "0")).toBe(true);
-    expect(offers.some((o) => o.description?.includes("14-day"))).toBe(true);
+    expect(offers.some((o) => o.description?.includes("7-day"))).toBe(true);
+    const trialOffers = offers.filter((o) => o.description?.includes("7-day"));
+    expect(trialOffers.length).toBeGreaterThan(0);
+    for (const offer of trialOffers) {
+      expect(offer.description).toMatch(/one athlete/i);
+    }
     expect(offers.map((o) => o.price)).toEqual(
       expect.arrayContaining(["5.00", "49.00", "3.00", "29.00"]),
     );
   });
 
-  it("does not invent ratings or store URLs", () => {
+  it("names the live iOS listing and does not invent ratings", () => {
     expect(SOFTWARE_APPLICATION_JSON_LD).not.toHaveProperty("aggregateRating");
+    expect(SOFTWARE_APPLICATION_JSON_LD.operatingSystem).toBe("iOS");
+    expect(SOFTWARE_APPLICATION_JSON_LD.downloadUrl).toBe(
+      "https://apps.apple.com/us/app/from-victory/id6804743047",
+    );
+    expect(SOFTWARE_APPLICATION_JSON_LD.sameAs).toEqual([
+      "https://apps.apple.com/us/app/from-victory/id6804743047",
+    ]);
     const serialized = JSON.stringify(SOFTWARE_APPLICATION_JSON_LD);
-    expect(serialized).not.toMatch(/apps\.apple\.com|play\.google\.com/);
+    expect(serialized).not.toMatch(/play\.google\.com/);
+    expect(serialized).not.toMatch(/aggregateRating/);
   });
 });
 
@@ -66,19 +79,23 @@ describe("sitemap (FV-504 / FV-506)", () => {
     expect(urls).not.toContain("https://www.fromvictoryapp.com/blog");
   });
 
-  it("bumps lastmod on the refreshed marketing URLs to 2026-08-26", () => {
+  it("bumps lastmod on the App Store listing pages to 2026-11-03", () => {
     const entries = sitemap();
-    const hockey = entries.find((e) => e.url.endsWith("/hockey"));
-    expect(hockey?.lastModified).toEqual(new Date("2026-08-26"));
     const home = entries.find((e) => e.url === "https://www.fromvictoryapp.com");
-    expect(home?.lastModified).toEqual(new Date("2026-08-26"));
+    expect(home?.lastModified).toEqual(new Date("2026-11-03"));
+    const hockey = entries.find((e) => e.url.endsWith("/hockey"));
+    expect(hockey?.lastModified).toEqual(new Date("2026-11-03"));
+    const comparison = entries.find((e) =>
+      e.url.endsWith("/christian-athlete-apps"),
+    );
+    expect(comparison?.lastModified).toEqual(new Date("2026-11-03"));
   });
 
-  it("stamps the six new sport pages with the 2026-08-27 lastmod", () => {
+  it("stamps the six other sport pages with the 2026-11-03 lastmod", () => {
     const entries = sitemap();
     for (const sport of SPORT_SLUGS.filter((s) => s !== "hockey")) {
       const entry = entries.find((e) => e.url.endsWith(`/${sport}`));
-      expect(entry?.lastModified).toEqual(new Date("2026-08-27"));
+      expect(entry?.lastModified).toEqual(new Date("2026-11-03"));
     }
   });
 });
@@ -95,6 +112,9 @@ describe("sport landing pages (FV-506)", () => {
       expect(page).toContain(`canonical: "/${sport}"`);
       expect(page).toContain("Compete From Victory");
       expect(page).toContain("Hebrews 12:1");
+      expect(page).toContain("AppStoreAvailabilityCard");
+      expect(page).not.toContain("not listed on the App Store");
+      expect(page).not.toContain("Web app · PWA");
     });
   }
 });
@@ -170,12 +190,31 @@ describe("homepage title/meta (FV-504 Partner bound)", () => {
 });
 
 describe("comparison page copy pins (FV-504)", () => {
-  it("names the three SERP apps and does not claim public stores", () => {
+  it("names the three SERP apps and the live App Store listing", () => {
     expect(CHRISTIAN_ATHLETE_APPS_TITLE).toContain("Faithful Athlete");
     expect(CHRISTIAN_ATHLETE_APPS_TITLE).toContain("Playbook Devotional");
     expect(CHRISTIAN_ATHLETE_APPS_TITLE).toContain("Core IV");
-    expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).toMatch(/Not in stores yet/);
+    expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).toMatch(/available on the US App Store/);
+    expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).not.toMatch(/Not in stores yet/);
+    expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).not.toMatch(/Google Play/);
     expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).toMatch(/compete from victory/i);
+  });
+});
+
+describe("US App Store availability wording (#560)", () => {
+  // KC: every statement of From Victory's own availability says US App Store,
+  // while Android availability is separate (FV-684). Competitor "listed on the App Store"
+  // lines are not availability statements for From Victory and are allowed.
+  const files = [
+    "../app/christian-athlete-apps/page.tsx",
+    "../public/llms.txt",
+    "../../../docs/gtm/product-truths.md",
+  ].map((f) => [f, readFileSync(resolve(__dirname, f), "utf8")] as const);
+
+  it.each(files)("%s keeps the App Store country qualifier", (_f, raw) => {
+    const text = raw.replace(/\s+/g, " ");
+    expect(text).not.toMatch(/(?:available|download the app) (?:on|from) the App Store/i);
+    expect(text).not.toMatch(/Google Play (?:not yet|is still not live|coming)/i);
   });
 });
 
@@ -193,8 +232,18 @@ describe("llms.txt (FV-504)", () => {
     expect(llms).toContain("Not therapy");
     expect(llms).toContain("Not a daily devotional");
     expect(llms).toContain("Not for anyone under 13");
-    expect(llms).toContain("Not listed on the App Store or Google Play yet");
+    expect(llms).toContain(
+      "- Available on the US App Store (iPhone, US only): https://apps.apple.com/us/app/from-victory/id6804743047.\n",
+    );
+    expect(llms).not.toContain("Not listed on the App Store or Google Play yet");
+    expect(llms).not.toContain("Not in stores yet");
     expect(llms).not.toMatch(/Crossway|Biblica grant/i);
+  });
+
+  it("qualifies the pricing-line trial as a one-athlete start", () => {
+    expect(llms).toContain(
+      "7 days free when you start with one athlete, then $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional.",
+    );
   });
 
   it("has short lift-able answers for the named moments", () => {
@@ -205,5 +254,36 @@ describe("llms.txt (FV-504)", () => {
     expect(llms).toMatch(/Jealousy:/);
     expect(llms).toMatch(/Favoritism:/);
     expect(llms).toContain("/hockey");
+  });
+});
+
+// Current public surfaces only: dated product-truths entries retain their history.
+describe("Google Play availability (FV-684)", () => {
+  const surfaces = [
+    "../app/christian-athlete-apps/page.tsx",
+    "../components/landing/AppStoreBadge.tsx",
+    "../public/llms.txt",
+  ].map((f) => [f, readFileSync(resolve(__dirname, f), "utf8")] as const);
+
+  it.each(surfaces)("%s states Android availability without stale denial", (_f, raw) => {
+    const text = raw.replace(/\s+/g, " ");
+    expect(text).toContain("The Android app is available on Google Play.");
+    expect(text).not.toMatch(/not (?:available |listed )?on Google Play/i);
+    expect(text).not.toMatch(/Google Play (?:not yet|is still not live|coming)/i);
+    expect(text).not.toMatch(/(?:US|worldwide|global) Google Play|Google Play (?:worldwide|globally|in the US)/i);
+  });
+
+  it("gives the Android listing and keeps subscription purchase on the website", () => {
+    const llms = readFileSync(resolve(__dirname, "../public/llms.txt"), "utf8");
+    const where = llms.split("## Where to get it")[1]?.split("## ")[0] ?? "";
+    const bullets = where.split("\n").filter((line) => line.startsWith("- "));
+    expect(bullets).toEqual([
+      "- The Android app is available on Google Play: https://play.google.com/store/apps/details?id=com.fromvictoryapp.app. The Android app does not sell subscriptions. Subscribe on the website, then sign in with the same account.",
+      "- Available on the US App Store (iPhone, US only): https://apps.apple.com/us/app/from-victory/id6804743047.",
+    ]);
+    expect(where.match(/The Android app is available on Google Play/g) ?? []).toHaveLength(1);
+    expect(bullets[1]).not.toMatch(/Google Play/);
+    expect(llms).toContain("https://play.google.com/store/apps/details?id=com.fromvictoryapp.app");
+    expect(llms).toContain("The Android app does not sell subscriptions. Subscribe on the website, then sign in with the same account.");
   });
 });

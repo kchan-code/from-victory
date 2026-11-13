@@ -10,7 +10,19 @@ import { SubmitButton } from "./SubmitButton";
 
 const initialState: AuthActionState = null;
 
-export function SignInForm() {
+type Props = {
+  /**
+   * True only inside the legacy-native Capacitor shell (every Android build).
+   * Android is consumption-only (KC Path A, FV-619/FV-621): new customers
+   * subscribe on the website, then sign in here, so the in-shell form shows
+   * plain, non-tappable guidance instead of the /signup link. Presentation
+   * hint only (see lib/native-shell.ts), never authorization. ios-iap and
+   * web/PWA keep the link.
+   */
+  legacyNative?: boolean;
+};
+
+export function SignInForm({ legacyNative = false }: Props) {
   const [state, formAction] = useFormState(signIn, initialState);
   const fieldError = (name: string) =>
     state && !state.ok && state.field === name ? state.error : undefined;
@@ -54,15 +66,25 @@ export function SignInForm() {
         </p>
       ) : null}
       <SubmitButton pendingLabel="Signing in…">Sign in</SubmitButton>
-      <p className="mt-6 font-body text-[14px] text-cream/60 text-center">
-        New here?{" "}
-        <Link
-          href="/signup"
-          className="text-gold hover:text-gold-bright no-underline"
+      {legacyNative ? (
+        <p
+          data-testid="signin-native-shell-new-customer"
+          className="mt-6 font-body text-[14px] text-cream/60 text-center"
         >
-          Create a parent account
-        </Link>
-      </p>
+          New to From Victory? Subscribe from a web browser at
+          fromvictoryapp.com, then sign in here.
+        </p>
+      ) : (
+        <p className="mt-6 font-body text-[14px] text-cream/60 text-center">
+          New here?{" "}
+          <Link
+            href="/signup"
+            className="text-gold hover:text-gold-bright no-underline"
+          >
+            Create a parent account
+          </Link>
+        </p>
+      )}
     </form>
   );
 }

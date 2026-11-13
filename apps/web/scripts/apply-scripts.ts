@@ -283,7 +283,8 @@ export function parseBook(content: string): ParsedBook {
       continue;
     }
 
-    const metaMatch = line.match(/<!--\s*slug:\s*([^\s|]+)\s*\|\s*file:\s*([^\s>]+)\s*-->/);
+    // Optional book annotations (e.g. adversity) do not change slug/file identity.
+    const metaMatch = line.match(/<!--\s*slug:\s*([^\s|]+)\s*\|\s*file:\s*([^\s>|]+)\s*(?:\|[^<>]*)?-->/);
     if (metaMatch?.[1] != null && metaMatch?.[2] != null) {
       currentClip = { slug: metaMatch[1]!, file: metaMatch[2]!, lines: [], pauses: [], items: [] };
       clips.push(currentClip);
@@ -601,7 +602,7 @@ export async function syncFromBooks({ write }: { write: boolean }): Promise<Sync
         console.warn(
           `WARN: clip "${parsed.slug}" — .md has ${parsed.lines.length} numbered lines, ` +
           `TS source has ${current.speechTexts.length} speech segments. ` +
-          `The generator will fail fast on this mismatch at render time.`,
+          `Clip rendering uses the book-defined structure; opener-specific validation still applies.`,
         );
         totalClipCountMismatches++;
       }

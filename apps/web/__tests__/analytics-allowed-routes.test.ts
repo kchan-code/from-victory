@@ -70,6 +70,7 @@ describe("isAllowedAnalyticsPath — public marketing allowlist", () => {
     expect(isAllowedAnalyticsPath("/athlete")).toBe(false);
     expect(isAllowedAnalyticsPath("/dashboard")).toBe(false);
     expect(isAllowedAnalyticsPath("/pair")).toBe(false);
+    expect(isAllowedAnalyticsPath("/invite")).toBe(false); // FV-630
     expect(isAllowedAnalyticsPath("/signup")).toBe(false);
     expect(isAllowedAnalyticsPath("/signin")).toBe(false);
     expect(isAllowedAnalyticsPath("/subscribe")).toBe(false);

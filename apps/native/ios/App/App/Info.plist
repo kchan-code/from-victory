@@ -20,6 +20,21 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<!-- FV-675 (FV-569 spec §6 Callbacks): the sign-in callback scheme.
+	     ASWebAuthenticationSession receives com.fromvictoryapp.app://auth/callback
+	     itself; this entry lets a stray delivery reach the app rather than
+	     nowhere. The URL is useless without the WebView's PKCE verifier. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.fromvictoryapp.app.auth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.fromvictoryapp.app</string>
+			</array>
+		</dict>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -48,6 +63,11 @@
 			</array>
 		</dict>
 	</dict>
+	<!-- Native narration continues while the screen is locked. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>

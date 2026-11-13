@@ -31,6 +31,16 @@
  *   check — it must never advance the watermark, so a legitimately-redelivered
  *   `subscription.created` (carrying `price_id`) is never wrongly skipped.
  *
+ *   Checkout / subscription.created race (FV-182):
+ *   Stripe emits `checkout.session.completed` and `customer.subscription.created`
+ *   within the same second, in either order. If subscription.created lands first
+ *   there is no row yet (parent_id is only known from checkout metadata), so it
+ *   is ignored. To keep the checkout-created row correct regardless of order,
+ *   `handleCheckoutSessionCompleted` does a compensating read: it retrieves the
+ *   Subscription from Stripe and maps it with `rowFromSubscription`, so status
+ *   (e.g. `trialing`), price_id and current_period_end are authoritative rather
+ *   than provisional. A retrieve failure throws → 500 → Stripe retries.
+ *
  * Retry semantics:
  *   - 200: event processed successfully, OR event type ignored intentionally.
  *     Stripe will NOT retry.
@@ -196,6 +206,14 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
  * First event that binds a Stripe Customer to a parent row. Reads
  * `session.metadata.parent_id` (set during checkout session creation — see
  * file-level comment above).
+ *
+ * `customer.subscription.created` may be delivered BEFORE this event (no row
+ * yet → it is ignored). So when the session has a subscription we fetch it
+ * from Stripe and take status / price / period end / cancel flag from it
+ * (FV-182), instead of the provisional checkout-derived values. `parent_id`
+ * still comes from session metadata. This path never writes
+ * `last_stripe_event_at` (FV-63) — a later subscription.* event must not be
+ * skipped by the watermark.
  */
 async function handleCheckoutSessionCompleted(
   session: Stripe.Checkout.Session,
@@ -219,16 +237,28 @@ async function handleCheckoutSessionCompleted(
     return;
   }
 
+  // Compensating read (FV-182). Throws on failure → route returns 500 and
+  // Stripe retries; we never write a row with fabricated values.
+  let synced = row;
+  if (row.stripe_subscription_id) {
+    const sub = await getStripe().subscriptions.retrieve(
+      row.stripe_subscription_id,
+    );
+    synced = { ...rowFromSubscription(sub), parent_id: row.parent_id };
+  }
+
   const service = createServiceClient();
   const { error } = await service.from("subscriptions").upsert(
     {
       parent_id: row.parent_id,
+      // Customer id stays the checkout session's (same customer by definition).
       stripe_customer_id: row.stripe_customer_id,
-      stripe_subscription_id: row.stripe_subscription_id,
-      status: row.status,
-      price_id: row.price_id,
-      current_period_end: row.current_period_end,
-      cancel_at_period_end: row.cancel_at_period_end,
+      stripe_subscription_id: synced.stripe_subscription_id,
+      status: synced.status,
+      price_id: synced.price_id,
+      current_period_end: synced.current_period_end,
+      cancel_at_period_end: synced.cancel_at_period_end,
+      // NOTE: last_stripe_event_at is intentionally NOT written (FV-63).
     },
     {
       // Upsert on parent_id (the PK). If a row exists, overwrite the
@@ -245,7 +275,7 @@ async function handleCheckoutSessionCompleted(
 
   console.info(
     `[stripe/webhook] checkout.session.completed: upserted subscription row ` +
-      `for customer="${row.stripe_customer_id}"`,
+      `for customer="${row.stripe_customer_id}" status="${synced.status}"`,
   );
 }
 
@@ -254,7 +284,9 @@ async function handleCheckoutSessionCompleted(
  *
  * Resolves `parent_id` from the existing row by `stripe_customer_id`.
  * If no row exists yet, we cannot safely create one (no `parent_id`).
- * In practice `checkout.session.completed` fires first and creates the row.
+ * `checkout.session.completed` creates the row, but Stripe may deliver this
+ * event first (same-second race). In that case it is ignored here and the
+ * checkout handler's compensating read (FV-182) populates the row instead.
  *
  * `eventCreated` is the Unix-seconds timestamp from the Stripe event. It is
  * written to `last_stripe_event_at` and used as a watermark to skip stale
@@ -282,13 +314,14 @@ async function handleSubscriptionUpsert(
   }
 
   if (!existing) {
-    // No row yet — checkout event hasn't landed or was not handled. Log and
-    // return 200 to avoid infinite retries. The issue will self-heal when the
-    // checkout event is re-delivered or when the parent completes checkout.
+    // No row yet — checkout event hasn't landed (or was not handled). Log and
+    // return 200 to avoid infinite retries. Checkout's compensating read
+    // (FV-182) fills the row from Stripe when it arrives.
     console.warn(
       `[stripe/webhook] ${eventType}: no subscription row found for ` +
         `customer="${row.stripe_customer_id}" sub="${row.stripe_subscription_id}". ` +
-        `Ignoring — row should be created by checkout.session.completed first.`,
+        `Ignoring — checkout.session.completed will create the row from a ` +
+        `fresh subscription read (FV-182).`,
     );
     return;
   }

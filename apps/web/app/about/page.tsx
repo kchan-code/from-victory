@@ -450,7 +450,7 @@ export default function AboutPage() {
                   href="/signup"
                   className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
                 >
-                  Start your athlete&apos;s 14-day free trial
+                  Start your athlete&apos;s 7-day free trial
                   <SvgIcon name="arrow" size={16} />
                 </Link>
                 <Link

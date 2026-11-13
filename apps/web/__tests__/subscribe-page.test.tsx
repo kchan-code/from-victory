@@ -50,7 +50,7 @@ const {
   // describe blocks below override this per test to "legacy-native" /
   // "ios-iap".
   shellCapabilityMock: vi.fn(
-    (): "ios-iap" | "legacy-native" | null => null,
+    (): "ios-iap" | "legacy-native" | "android-play" | null => null,
   ),
   // FV-581: default "not_entitled" so every pre-existing test in this file
   // (written before the duplicate-billing guard existed) sees the exact
@@ -186,6 +186,19 @@ vi.mock("@/components/subscribe/SubscribeForm", () => ({
   ),
 }));
 
+// FV-625/FV-636: stub the offline-pregame revocation so the page tests can
+// assert WHEN it mounts (only for a blocked payer under enforcement).
+vi.mock("@/components/pregame/ClearOfflinePregameOnMount", () => ({
+  ClearOfflinePregameOnMount: () => <span data-testid="clear-offline-pregame" />,
+}));
+
+// FV-644: the page renders SignOutButton for every payer. Stub only the
+// server action (same approach as athlete-paused-page.test.tsx); the button
+// itself renders for real.
+vi.mock("@/lib/actions/auth", () => ({
+  signOut: vi.fn(),
+}));
+
 import SubscribePage from "@/app/subscribe/page";
 
 afterEach(() => {
@@ -277,6 +290,51 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
     expect(
       container.querySelector('a[aria-label="Back to home"]'),
     ).toHaveAttribute("href", "/");
+  });
+
+  it("FV-636: a blocked adult landing here revokes this device's offline pregame", async () => {
+    asAdult();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("blocked");
+    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    expect(queryByTestId("clear-offline-pregame")).not.toBeNull();
+  });
+
+  it("a blocked parent landing here also revokes it (the family is blocked)", async () => {
+    asParent();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("blocked");
+    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    expect(queryByTestId("clear-offline-pregame")).not.toBeNull();
+  });
+
+  it("an ENTITLED adult browsing /subscribe keeps their offline pregame", async () => {
+    asAdult();
+    maybeSingleMock.mockResolvedValue({ data: { stripe_customer_id: "cus_1" }, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("full");
+    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    expect(queryByTestId("clear-offline-pregame")).toBeNull();
+  });
+
+  it("FV-656: a blocked level with an UNREADABLE status revokes nothing (not a confirmed lapse)", async () => {
+    asAdult();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("blocked"); // fail-closed on the read error
+    entitlementStateMock.mockResolvedValue({ status: "unknown", provider: null });
+    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    expect(queryByTestId("clear-offline-pregame")).toBeNull();
+  });
+
+  it("gating off → never revokes from /subscribe", async () => {
+    asAdult();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    accessLevelMock.mockResolvedValue("blocked");
+    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    expect(queryByTestId("clear-offline-pregame")).toBeNull();
   });
 
   it("keeps the role-aware target for an adult with active access", async () => {
@@ -477,9 +535,11 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
 
       const { getByTestId, queryByTestId, text } = await renderPage();
 
+      // FV-656: neutral copy (no claim about why the read failed) + retry.
       expect(getByTestId("subscribe-status-unknown").textContent).toBe(
-        "We couldn’t load your subscription status. Please try again.",
+        "We couldn’t check your access. Please try again. If you already subscribe, don’t purchase another subscription.Try again",
       );
+      expect(getByTestId("subscribe-status-unknown-retry")).toHaveAttribute("href", "/dashboard");
       expectNoBuyAffordances(queryByTestId, text);
       expect(queryByTestId("apple-subscribe-section-stub")).toBeNull();
       expect(queryByTestId("native-shell-subscribe-notice")).toBeNull();
@@ -496,6 +556,15 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
       expect(getByTestId("subscribe-status-unknown")).toBeTruthy();
       expectNoBuyAffordances(queryByTestId, text);
       expect(queryByTestId("apple-subscribe-section-stub")).toBeNull();
+    });
+
+    it("FV-656: an adult's retry goes back to training (which re-runs the check)", async () => {
+      asAdult();
+      entitlementStateMock.mockResolvedValue({ status: "unknown", provider: null });
+
+      const { getByTestId } = await renderPage();
+
+      expect(getByTestId("subscribe-status-unknown-retry")).toHaveAttribute("href", "/athlete");
     });
   });
 
@@ -534,21 +603,22 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
       const { getByTestId, queryByTestId, text } = await renderPage();
 
       expect(getByTestId("subscribe-status-entitled").textContent).toBe(
-        "You’re subscribed to From Victory.",
+        // FV-657: free access is access, not a paid subscription.
+        "You have access to From Victory.",
       );
       expectNoBuyAffordances(queryByTestId, text);
     });
   });
 
   describe("status: entitled — web (no native shell)", () => {
-    it("provider apple → 'manage it on your iPhone' status copy, no Stripe checkout", async () => {
+    it("provider apple → 'Manage it on your iPhone' status copy, no Stripe checkout", async () => {
       asParent();
       entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "apple" });
 
       const { getByTestId, queryByTestId, text } = await renderPage();
 
       expect(getByTestId("subscribe-status-entitled").textContent).toContain(
-        "manage it on your iPhone",
+        "Manage it on your iPhone",
       );
       expect(text).not.toMatch(/stripe/i);
       expect(queryByTestId("apple-subscribe-section-stub")).toBeNull();
@@ -586,7 +656,8 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
       const { getByTestId, queryByTestId, text } = await renderPage();
 
       expect(getByTestId("subscribe-status-entitled").textContent).toBe(
-        "You’re subscribed to From Victory.",
+        // FV-657: free access is access, not a paid subscription.
+        "You have access to From Victory.",
       );
       expectNoBuyAffordances(queryByTestId, text);
     });
@@ -624,19 +695,53 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
     });
   });
 
-  describe("status: entitled — legacy-native shell (any provider)", () => {
-    it("shows the SAME unchanged compliance notice as a not_entitled legacy-native payer — no in-shell link added", async () => {
+  describe("status: entitled — legacy-native shell (FV-657: never told to subscribe)", () => {
+    it.each([
+      ["stripe", "You’re already subscribed. Manage your subscription from a web browser at fromvictoryapp.com."],
+      ["apple", "You’re subscribed through the App Store. Manage it on your iPhone."],
+      ["comp", "You have access to From Victory."],
+      [null, "You have access to From Victory."],
+    ] as const)("provider %s → provider status, no subscribe notice, no link", async (provider, copy) => {
       asParent();
       shellCapabilityMock.mockReturnValue("legacy-native");
-      entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "stripe" });
+      entitlementStateMock.mockResolvedValue({ status: "entitled", provider });
 
-      const { getByTestId, queryByTestId, text } = await renderPage();
+      const { getByTestId, queryByTestId, text, container } = await renderPage();
 
-      expect(getByTestId("native-shell-subscribe-notice").textContent).toBe(
-        "Subscribe to From Victory from a web browser at fromvictoryapp.com.",
-      );
-      expect(queryByTestId("subscribe-status-entitled")).toBeNull();
+      expect(getByTestId("subscribe-status-entitled").textContent).toBe(copy);
+      expect(queryByTestId("native-shell-subscribe-notice")).toBeNull();
+      expect(text).not.toMatch(/subscribe to from victory/i);
+      expect(getByTestId("subscribe-status-entitled").querySelector("a")).toBeNull();
+      expect(queryByTestId("subscribe-different-account-hint")).toBeNull();
       expectNoBuyAffordances(queryByTestId, text);
+      void container;
+    });
+  });
+
+  describe("not_entitled — the different-account hint (FV-657)", () => {
+    it.each([null, "legacy-native", "ios-iap"] as const)(
+      "shell %s: shows the hint above Sign out",
+      async (capability) => {
+        asParent();
+        shellCapabilityMock.mockReturnValue(capability);
+        maybeSingleMock.mockResolvedValue({ data: null, error: null });
+        entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
+
+        const { getByTestId } = await renderPage();
+
+        expect(getByTestId("subscribe-different-account-hint").textContent).toBe(
+          "Subscribed with a different account? Sign out, then sign in with that one.",
+        );
+      },
+    );
+
+    it("an unknown status shows its own card, not the hint", async () => {
+      asParent();
+      entitlementStateMock.mockResolvedValue({ status: "unknown", provider: null });
+
+      const { queryByTestId } = await renderPage();
+
+      expect(queryByTestId("subscribe-different-account-hint")).toBeNull();
     });
   });
 
@@ -741,6 +846,186 @@ describe("SubscribePage — Apple upgrade wiring (FV-586, KC decision D3)", () =
 
     await renderPage();
 
+    expect(activeAppleProductIdMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("SubscribePage — sign-out exit (FV-644)", () => {
+  const asRole = (role: "parent" | "adult_athlete") =>
+    requireSubscriberMock.mockResolvedValue({
+      userId: `${role}-1`,
+      profile: { id: `${role}-1`, role, first_name: "Jordan" },
+    });
+
+  const renderBlocked = async (
+    role: "parent" | "adult_athlete",
+    shell: "ios-iap" | "legacy-native" | null,
+  ) => {
+    asRole(role);
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("blocked");
+    shellCapabilityMock.mockReturnValue(shell);
+    return render(await SubscribePage({ searchParams: {} }));
+  };
+
+  for (const role of ["adult_athlete", "parent"] as const) {
+    for (const shell of ["ios-iap", "legacy-native", null] as const) {
+      it(`a blocked ${role} (shell: ${shell ?? "web"}) can sign out`, async () => {
+        const { getByRole, getByTestId } = await renderBlocked(role, shell);
+        const button = getByRole("button", { name: "Sign out" });
+        expect(button).toHaveAttribute("type", "submit");
+        expect(getByTestId("sign-out-btn")).toBe(button);
+        // The purchase surface is still there alongside it (AC 3).
+        expect(
+          shell === "ios-iap"
+            ? getByTestId("apple-subscribe-section-stub")
+            : shell === "legacy-native"
+              ? getByTestId("native-shell-subscribe-notice")
+              : getByTestId("subscribe-form-stub"),
+        ).not.toBeNull();
+      });
+    }
+  }
+
+  it("an entitled payer browsing /subscribe can also sign out", async () => {
+    asRole("adult_athlete");
+    maybeSingleMock.mockResolvedValue({ data: { stripe_customer_id: "cus_1" }, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("full");
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "comp" });
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    const { getByRole } = render(await SubscribePage({ searchParams: {} }));
+    expect(getByRole("button", { name: "Sign out" })).not.toBeNull();
+  });
+
+  it("Back behavior is unchanged: a blocked adult's Back still targets the public home", async () => {
+    const { container } = await renderBlocked("adult_athlete", "ios-iap");
+    expect(container.querySelector('a[aria-label="Back to home"]')).toHaveAttribute("href", "/");
+  });
+});
+
+describe("SubscribePage — account settings route for a blocked adult (FV-645)", () => {
+  const asRole = (role: "parent" | "adult_athlete") =>
+    requireSubscriberMock.mockResolvedValue({
+      userId: `${role}-1`,
+      profile: { id: `${role}-1`, role, first_name: "Jordan" },
+    });
+
+  const renderBlocked = async (
+    role: "parent" | "adult_athlete",
+    shell: "ios-iap" | "legacy-native" | null,
+  ) => {
+    asRole(role);
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("blocked");
+    shellCapabilityMock.mockReturnValue(shell);
+    return render(await SubscribePage({ searchParams: {} }));
+  };
+
+  for (const shell of ["ios-iap", "legacy-native", null] as const) {
+    it(`a blocked adult_athlete (shell: ${shell ?? "web"}) gets a link to account settings, where deletion lives`, async () => {
+      const { getByRole, getByTestId } = await renderBlocked("adult_athlete", shell);
+      const link = getByRole("link", { name: "Account settings" });
+      expect(link).toHaveAttribute("href", "/athlete/settings");
+      expect(getByTestId("subscribe-account-settings")).toBe(link);
+      // Sign out (FV-644) is still there beside it.
+      expect(getByRole("button", { name: "Sign out" })).not.toBeNull();
+    });
+
+    it(`a blocked parent (shell: ${shell ?? "web"}) gets no athlete-settings link (they keep /dashboard)`, async () => {
+      const { queryByTestId, container } = await renderBlocked("parent", shell);
+      expect(queryByTestId("subscribe-account-settings")).toBeNull();
+      expect(container.querySelector('a[href="/athlete/settings"]')).toBeNull();
+    });
+  }
+
+  it("an entitled adult browsing /subscribe sees no extra link (flow unchanged)", async () => {
+    asRole("adult_athlete");
+    maybeSingleMock.mockResolvedValue({ data: { stripe_customer_id: "cus_1" }, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("full");
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "comp" });
+    shellCapabilityMock.mockReturnValue("ios-iap");
+    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    expect(queryByTestId("subscribe-account-settings")).toBeNull();
+  });
+
+  it("a blocked adult still gets the link when the entitlement status read is unknown", async () => {
+    entitlementStateMock.mockResolvedValue({ status: "unknown", provider: null });
+    const { getByRole, getByTestId } = await renderBlocked("adult_athlete", "ios-iap");
+    expect(getByTestId("subscribe-status-unknown")).not.toBeNull();
+    expect(getByRole("link", { name: "Account settings" })).toHaveAttribute(
+      "href",
+      "/athlete/settings",
+    );
+  });
+
+  it("gating off: an adult is never blocked, so the link does not appear", async () => {
+    asRole("adult_athlete");
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(false);
+    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    expect(queryByTestId("subscribe-account-settings")).toBeNull();
+  });
+
+  it("the link adds no price, checkout, or Stripe reference inside the legacy-native shell", async () => {
+    const { container } = await renderBlocked("adult_athlete", "legacy-native");
+    expect(container.textContent).not.toMatch(/\$|stripe|checkout/i);
+    expect(container.querySelector('a[href*="stripe"]')).toBeNull();
+  });
+});
+
+describe("SubscribePage — android-play renders exactly like legacy-native (FV-659)", () => {
+  const asParent = () =>
+    requireSubscriberMock.mockResolvedValue({
+      userId: "parent-1",
+      profile: { id: "parent-1", role: "parent", first_name: "Kim" },
+    });
+
+  async function htmlFor(capability: "legacy-native" | "android-play") {
+    shellCapabilityMock.mockReturnValue(capability);
+    const { container } = render(await SubscribePage({ searchParams: {} }));
+    const html = container.innerHTML;
+    cleanup();
+    return html;
+  }
+
+  it("not_entitled: identical markup — compliance notice, no price, no form, no Apple section", async () => {
+    asParent();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
+
+    const legacy = await htmlFor("legacy-native");
+    const play = await htmlFor("android-play");
+
+    expect(play).toBe(legacy);
+    expect(play).toContain("native-shell-subscribe-notice");
+    expect(play).not.toContain("subscribe-form-stub");
+    expect(play).not.toContain("apple-subscribe-section-stub");
+    expect(play).not.toMatch(/\$5|\$49|\$3|\$29/);
+  });
+
+  it.each(["stripe", "apple", "comp", null] as const)(
+    "entitled via %s: identical markup, provider status with no subscribe prompt",
+    async (provider) => {
+      asParent();
+      entitlementStateMock.mockResolvedValue({ status: "entitled", provider });
+
+      const legacy = await htmlFor("legacy-native");
+      const play = await htmlFor("android-play");
+
+      expect(play).toBe(legacy);
+      expect(play).toContain("subscribe-status-entitled");
+      expect(play).not.toContain("native-shell-subscribe-notice");
+    },
+  );
+
+  it("android-play never reads the Apple product (ios-iap only)", async () => {
+    asParent();
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "apple" });
+    await htmlFor("android-play");
     expect(activeAppleProductIdMock).not.toHaveBeenCalled();
   });
 });

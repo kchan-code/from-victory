@@ -5,10 +5,16 @@ import { SignOutButton } from "@/components/auth/SignOutButton";
 import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
+import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { getPayerSeatStateForCurrentParent } from "@/lib/subscriptions/seat-state";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
+import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
+import { appleSubscriptionNoticeFor } from "@/lib/subscriptions/apple-delete-notice";
 import { getAthleteMetadataMap, ZERO_RHYTHM } from "@/lib/dashboard/rhythm";
+import { getInviteStatusMap, type InviteState } from "@/lib/invites/status";
 import { DeleteAccountSection } from "@/components/dashboard/DeleteAccountSection";
 import { DeleteAthleteButton } from "@/components/dashboard/DeleteAthleteButton";
 import { SeatSelectionPanel } from "@/components/dashboard/SeatSelectionPanel";
@@ -43,7 +49,29 @@ export default async function DashboardPage() {
 
   // Subscription access — used only to gate the subscribe CTA banner.
   // Enforcement (route-locking) is a separate issue; we do NOT block here.
-  const accessLevel = await getParentAccessLevel(userId);
+  //
+  // FV-652 (decision record §4.7): deleting the account cannot cancel an App
+  // Store subscription, so the Delete account section at the bottom of this
+  // page warns a parent who has one. Read through the ONE centralized,
+  // error-visible Apple accessor (see lib/subscriptions/apple.ts); display
+  // only. Run alongside the access-level read so the dashboard does not wait
+  // on it separately. A read error shows the hedged "unknown" variant (fail
+  // toward warning; see lib/subscriptions/apple-delete-notice.ts).
+  const [accessLevel, appleLookup] = await Promise.all([
+    getParentAccessLevel(userId),
+    getDisplayedAppleProductIdResult(createServiceClient(), userId),
+  ]);
+  const appleDeleteNotice = appleSubscriptionNoticeFor(appleLookup);
+
+  // FV-655: getParentAccessLevel is fail-closed — a failed read comes back as
+  // "blocked" — so a paying family was shown "Start training today / Choose a
+  // plan" during an outage. When the level isn't "full", ask the
+  // error-tracking entitlement read /subscribe already uses (FV-581); if the
+  // status can't be read, show that page's neutral line instead of a purchase
+  // prompt. A fully entitled parent pays no extra read.
+  const subscriptionStatusUnknown =
+    accessLevel !== "full" &&
+    (await getSubscribeEntitlementState(userId)).status === "unknown";
 
   // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
   // checkout.stripe.com has no reachable path (see
@@ -53,13 +81,18 @@ export default async function DashboardPage() {
   // bridge, FV-572) instead gets a price-free in-app entry to /subscribe,
   // where AppleSubscribeSection renders the real StoreKit purchase surface.
   const shellCapability = getRequestShellCapability();
-  const legacyNative = shellCapability === "legacy-native";
+  const legacyNative = isRestrictedShell(shellCapability);
   const iosIap = shellCapability === "ios-iap";
 
   // FV-85: rhythm + session-count metadata. getAthleteMetadataMap() creates its
   // own auth-context client internally; RLS on athlete_session_metadata scopes
   // results to this parent's linked athletes. NEVER reads journal_entries.
   const rhythmMap = await getAthleteMetadataMap();
+
+  // FV-630: per-athlete account state (not invited / invite pending /
+  // account ready). Metadata only, scoped to this parent's linked athletes.
+  // A failed read renders a neutral "Invite" entry, never a guessed state.
+  const inviteStatusMap = await getInviteStatusMap();
 
   // FV-585 (KC decision D2): seat-selection state. A capacity-selection
   // moment, never a payment failure — this is layered ON TOP of (never
@@ -115,14 +148,41 @@ export default async function DashboardPage() {
             Parent dashboard
           </p>
           <h1 className="font-display font-extrabold uppercase tracking-[0.04em] text-cream text-[40px] sm:text-[48px] leading-[1.05] mb-6">
-            Welcome back, {profile.first_name}.
+            {/* A linked athlete is the returning signal this page already
+                has. First visit after signup, before any athlete is linked,
+                stays "Welcome". */}
+            {linkedAthletes.length > 0 ? "Welcome back" : "Welcome"},{" "}
+            {profile.first_name}.
           </h1>
         </section>
 
         {/* Subscribe CTA — shown only when not on an active subscription.
             Non-blocking: current users without a subscription row must not
             be locked out. Enforcement is a separate issue. */}
-        {accessLevel !== "full" ? (
+        {subscriptionStatusUnknown ? (
+          <section
+            aria-label="Subscription"
+            role="status"
+            data-testid="dashboard-subscription-status-unknown"
+            className="mb-10 bg-charcoal border border-hairline rounded-2xl px-5 py-4"
+          >
+            {/* Same copy as /subscribe's "unknown" card (FV-581, FV-656). */}
+            <p className="font-body text-cream/60 text-[13px] leading-relaxed mb-3">
+              We couldn&rsquo;t check your access. Please try again. If you
+              already subscribe, don&rsquo;t purchase another subscription.
+            </p>
+            {/* A plain <a>, not <Link>: retry must be a full request so the
+                access check re-runs (a client-side navigation can be served from
+                the router cache and show the same unknown state again). */}
+            <a
+              href="/dashboard"
+              data-testid="dashboard-subscription-status-unknown-retry"
+              className="inline-flex items-center font-heading font-semibold text-[13px] text-gold underline underline-offset-2 hover:text-gold-bright min-h-[44px]"
+            >
+              Try again
+            </a>
+          </section>
+        ) : accessLevel !== "full" ? (
           <section
             aria-label="Subscription"
             className="mb-10 bg-charcoal border border-hairline rounded-2xl px-5 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5"
@@ -217,12 +277,24 @@ export default async function DashboardPage() {
             <h2 className="font-display font-bold uppercase tracking-[0.08em] text-cream text-[18px]">
               Your athletes
             </h2>
-            <Link
-              href="/dashboard/athletes/new"
-              className="font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 py-2.5 no-underline hover:bg-gold-bright transition-colors duration-base ease-out"
-            >
-              Add athlete
-            </Link>
+            {/* FV-622 (Android Path A): adding an athlete can change Stripe
+                billing, so the legacy-native shell gets plain, non-tappable
+                website text instead of the link. ios-iap and web unchanged. */}
+            {legacyNative ? (
+              <p
+                data-testid="add-athlete-native-shell-notice"
+                className="font-body text-cream/60 text-[13px] text-right max-w-[60%]"
+              >
+                Add athletes from a web browser at fromvictoryapp.com.
+              </p>
+            ) : (
+              <Link
+                href="/dashboard/athletes/new"
+                className="font-heading font-semibold text-[14px] text-onyx bg-gold border border-gold rounded-pill px-5 py-2.5 no-underline hover:bg-gold-bright transition-colors duration-base ease-out"
+              >
+                Add athlete
+              </Link>
+            )}
           </div>
 
           {linkedAthletes.length === 0 ? (
@@ -286,12 +358,16 @@ export default async function DashboardPage() {
                         </div>
                       </Link>
                       <div className="flex items-center gap-2">
-                        <Link
-                          href={`/dashboard/athletes/${a.id}/pair`}
-                          className="font-heading font-semibold text-[13px] text-cream/80 hover:text-cream bg-onyx border border-hairline hover:border-cream/30 rounded-pill px-4 py-2 no-underline transition-colors duration-fast ease-out"
-                        >
-                          Pair device
-                        </Link>
+                        <InviteEntry
+                          athleteId={a.id}
+                          firstName={a.first_name}
+                          state={
+                            inviteStatusMap
+                              ? (inviteStatusMap.get(a.id)?.state ??
+                                "not_invited")
+                              : null
+                          }
+                        />
                         <DeleteAthleteButton
                           athleteId={a.id}
                           firstName={a.first_name}
@@ -341,8 +417,58 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        <DeleteAccountSection />
+        <DeleteAccountSection appleSubscriptionNotice={appleDeleteNotice} />
       </div>
     </main>
+  );
+}
+
+const INVITE_ENTRY_COPY: Record<
+  InviteState,
+  { label: string; pill: string | null }
+> = {
+  not_invited: { label: "Invite athlete", pill: null },
+  needs_username: { label: "Add username", pill: "Needs username" },
+  pending: { label: "Share invite", pill: "Invite pending" },
+  ready: { label: "Manage", pill: "Account ready" },
+};
+
+/**
+ * Dashboard card entry for the FV-630 invite flow. `state === null` means
+ * the status read failed: show the neutral entry, never a guessed state.
+ */
+function InviteEntry({
+  athleteId,
+  firstName,
+  state,
+}: {
+  athleteId: string;
+  firstName: string;
+  state: InviteState | null;
+}) {
+  const copy = state ? INVITE_ENTRY_COPY[state] : { label: "Invite", pill: null };
+  return (
+    <>
+      {copy.pill ? (
+        <span
+          data-testid={`invite-pill-${state}-${athleteId}`}
+          className={`hidden sm:inline-flex items-center font-mono text-[10px] uppercase tracking-[0.14em] px-2.5 py-1 rounded-pill border ${
+            state === "ready"
+              ? "border-gold/50 text-gold"
+              : "border-hairline text-cream/60"
+          }`}
+        >
+          {copy.pill}
+        </span>
+      ) : null}
+      <Link
+        href={`/dashboard/athletes/${athleteId}/pair`}
+        data-testid={`invite-entry-${athleteId}`}
+        aria-label={`${copy.label}: ${firstName}${copy.pill ? ` (${copy.pill})` : ""}`}
+        className="inline-flex items-center min-h-[44px] font-heading font-semibold text-[13px] text-cream/80 hover:text-cream bg-onyx border border-hairline hover:border-cream/30 rounded-pill px-4 no-underline transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+      >
+        {copy.label}
+      </Link>
+    </>
   );
 }

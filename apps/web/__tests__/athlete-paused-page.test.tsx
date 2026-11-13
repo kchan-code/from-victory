@@ -18,12 +18,14 @@ import "@testing-library/jest-dom/vitest";
 
 vi.mock("server-only", () => ({}));
 
-const { requireAthleteMock, shellCapabilityMock } = vi.hoisted(() => ({
+const { requireAthleteMock, shellCapabilityMock, clearAthleteCacheMock } = vi.hoisted(() => ({
   requireAthleteMock: vi.fn(),
+  // FV-625 — the paused page revokes offline pregame on mount.
+  clearAthleteCacheMock: vi.fn(),
   // Google Play "no in-app purchase" compliance + FV-572/577 capability.
   // Defaults to null (ordinary web/PWA request) — individual tests override
   // per case with "legacy-native" | "ios-iap" | null.
-  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
+  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | "android-play" | null),
 }));
 
 vi.mock("@/lib/auth/guards", () => ({
@@ -39,6 +41,11 @@ vi.mock("@/lib/native-shell", () => ({
 // module to keep this test scoped and dependency-light.
 vi.mock("@/lib/actions/auth", () => ({
   signOut: vi.fn(),
+}));
+
+vi.mock("@/lib/pregame/athlete-cache", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/pregame/athlete-cache")>()),
+  clearAthleteCache: clearAthleteCacheMock,
 }));
 
 import AthletePausedPage from "@/app/athlete/paused/page";
@@ -164,5 +171,67 @@ describe("/athlete/paused — seat-pause copy variant (FV-585, KC decision D2)",
     expect(screen.getByTestId("paused-body-copy").textContent).not.toMatch(
       /\bkid\b/i,
     );
+  });
+});
+
+describe("/athlete/paused — FV-625 offline pregame revocation", () => {
+  it.each<[string, "athlete" | "adult_athlete", { reason?: string } | undefined]>([
+    ["billing pause (minor)", "athlete", undefined],
+    ["seat pause (minor)", "athlete", { reason: "seats" }],
+    ["adult self-payer", "adult_athlete", undefined],
+  ])("clears the offline-pregame cache on mount — %s", async (_label, role, params) => {
+    await renderPage(role, params);
+    expect(clearAthleteCacheMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("/athlete/paused?reason=unavailable — status couldn't be read (FV-656)", () => {
+  it.each<["athlete" | "adult_athlete"]>([["athlete"], ["adult_athlete"]])(
+    "%s: neutral copy, a Try again back to the hub, no parent/billing wording",
+    async (role) => {
+      const { container } = await renderPage(role, { reason: "unavailable" });
+      const text = container.textContent ?? "";
+
+      expect(screen.getByText("Access check")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { level: 1 }),
+      ).toHaveTextContent("We couldn’t check your access.");
+      expect(screen.getByTestId("paused-body-copy")).toHaveTextContent("Please try again.");
+      expect(screen.getByTestId("paused-try-again-link")).toHaveAttribute("href", "/athlete");
+      // Never presented as a lapse, and no path to buying or reactivating.
+      expect(text).not.toMatch(/paused|on hold|reactivate|ask your parent|subscription|\$/i);
+      expect(screen.queryByTestId("paused-reactivate-link")).toBeNull();
+      expect(screen.queryByTestId("paused-native-shell-notice")).toBeNull();
+      // Exits stay.
+      expect(screen.getByTestId("paused-settings-link")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /sign out/i })).toBeInTheDocument();
+    },
+  );
+
+  it("does NOT clear the offline-pregame cache (an unreadable status revokes nothing)", async () => {
+    await renderPage("athlete", { reason: "unavailable" });
+    expect(clearAthleteCacheMock).not.toHaveBeenCalled();
+  });
+
+  it("the default (confirmed lapse) copy and revocation are unchanged", async () => {
+    await renderPage("athlete");
+    expect(screen.getByText("Training paused")).toBeInTheDocument();
+    expect(screen.queryByTestId("paused-try-again-link")).toBeNull();
+    expect(clearAthleteCacheMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("/athlete/paused — android-play renders exactly like legacy-native (FV-659)", () => {
+  it("adult_athlete: identical markup, neutral notice instead of the reactivate link", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
+    const legacy = (await renderPage("adult_athlete")).container.innerHTML;
+    cleanup();
+
+    shellCapabilityMock.mockReturnValue("android-play");
+    const play = (await renderPage("adult_athlete")).container.innerHTML;
+
+    expect(play).toBe(legacy);
+    expect(screen.queryByTestId("paused-reactivate-link")).not.toBeInTheDocument();
+    expect(screen.getByTestId("paused-native-shell-notice")).toBeInTheDocument();
   });
 });

@@ -285,7 +285,7 @@ export default function PregameRitualPage() {
                 This is the ritual From Victory is built around. Play hard,
                 fearless, and free.{" "}
                 <Link href="/signup" className={LINK_CLS}>
-                  Start your athlete&apos;s 14-day free trial
+                  Start your athlete&apos;s 7-day free trial
                 </Link>
                 . $5/mo or $49/yr after, cancel anytime.
               </p>

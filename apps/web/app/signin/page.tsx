@@ -6,6 +6,9 @@ import { ClearCacheOnMount } from "@/components/auth/ClearCacheOnMount";
 import { SignInChooser } from "@/components/auth/SignInChooser";
 import { getDeviceAthleteId } from "@/lib/auth/device";
 import { redirectIfAuthed } from "@/lib/auth/guards";
+import { isAdultSignupEnabled } from "@/lib/flags";
+import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const siteUrl = "https://www.fromvictoryapp.com";
@@ -86,11 +89,11 @@ export default async function SignInPage({ searchParams }: Props) {
   }
 
   return (
-    <AuthShell title="Welcome back">
-      {/* FV-154: clear offline athlete cache on mount — covers forgetDevice
-          and /auth/signout escape hatch, both of which redirect here after
-          signing out server-side. An authenticated athlete is never on this
-          path (redirectIfAuthed() guards the page). */}
+    <AuthShell title="Welcome" compact>
+      {/* FV-154: clear offline athlete cache on mount. Covers forgetDevice
+          and /auth/signout, both of which redirect here after signing out
+          server-side. An authenticated athlete is never on this path
+          (redirectIfAuthed() guards the page). */}
       <ClearCacheOnMount />
       {resetInvalid ? (
         <div
@@ -115,12 +118,16 @@ export default async function SignInPage({ searchParams }: Props) {
           Your session was invalid. Please sign in again.
         </div>
       ) : null}
-      {/* FV-320: two-tab chooser — parent (email+password) or athlete
-          (username+password on any device). The device-cookie path above
-          short-circuits before we get here, so this is only shown for
-          no-cookie visitors. Default tab is "Parent" — the more common
-          no-cookie scenario. */}
-      <SignInChooser />
+      {/* FV-707: welcome doors first (parent, 18+ when enabled, invite).
+          The existing parent and athlete forms sit behind Sign in.
+          A device-cookie athlete never reaches this block.
+          FV-621: the credential form in a restricted shell still swaps the
+          signup link for website guidance. */}
+      <SignInChooser
+        legacyNative={isRestrictedShell(getRequestShellCapability())}
+        adultSignupEnabled={isAdultSignupEnabled()}
+        startOnSignIn={resetInvalid || sessionInvalid}
+      />
     </AuthShell>
   );
 }

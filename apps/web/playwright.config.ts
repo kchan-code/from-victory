@@ -105,7 +105,12 @@ export default defineConfig({
     // ------------------------------------------------------------------
     {
       name: "chromium-mobile-athlete",
-      testMatch: [/practice-flow\.e2e\.ts$/, /postgame-module\.e2e\.ts$/, /pregame-flow\.e2e\.ts$/],
+      testMatch: [
+        /practice-flow\.e2e\.ts$/,
+        /postgame-module\.e2e\.ts$/,
+        /pregame-flow\.e2e\.ts$/,
+        /sport-picker-sign-out\.e2e\.ts$/,
+      ],
       use: {
         ...devices["iPhone 14"],
         storageState: path.join(__dirname, "e2e", ".auth", "athlete.storageState.json"),
@@ -119,7 +124,10 @@ export default defineConfig({
     // ------------------------------------------------------------------
     {
       name: "chromium-mobile-noauth",
-      testMatch: /landing-truthfulness\.e2e\.ts$/,
+      testMatch: [
+        /landing-truthfulness\.e2e\.ts$/,
+        /signin-chooser\.e2e\.ts$/,
+      ],
       use: {
         ...devices["iPhone 14"],
         browserName: "chromium",

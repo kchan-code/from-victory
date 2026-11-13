@@ -38,9 +38,15 @@
  *
  * SCOPE:
  *   Wired onto athlete VALUE surfaces: hub (/athlete), daily, practice,
- *   postgame, journey. /athlete/pregame is intentionally NOT gated here — it
- *   is a static, offline-tolerant shell (FV-107) with no server-side
- *   requireAthlete(); gate it client-side if ever required. NEVER gate:
+ *   postgame, journey — server-side, via requireActiveAccess(). Pregame
+ *   (/athlete/pregame) is gated too (FV-625), but NOT by a server redirect:
+ *   its page is a static, PII-free, offline-tolerant shell (FV-107) that the
+ *   service worker may cache, so it must never call requireAthlete() or
+ *   redirect server-side. Instead PregameClientShell asks
+ *   GET /api/athlete/access, which returns resolveTrainingAccess()'s decision
+ *   (a redirect path or null, plus — when allowed — the offline bound
+ *   `offlineUntil`; never a level, status, plan or provider), and applies the SAME
+ *   redirect targets client-side. NEVER gate:
  *     /subscribe, /signin, /signup, /billing, /auth/*, legal pages,
  *     crisis-resource displays, or the athlete settings/signout paths.
  *
@@ -53,9 +59,15 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
-import { getAccessForCurrentUser } from "./access";
+import {
+  getAccessForCurrentUser,
+  getOfflineEntitlementUntilForCurrentUser,
+  getPayerIdForCurrentUser,
+} from "./access";
 import type { AccessLevel } from "./access-level";
 import { getAthleteSeatStatusForCurrentUser } from "./seat-state";
+import { getSubscribeEntitlementState } from "./subscribe-guard";
+import type { TrainingBlockedRedirect } from "./training-redirects";
 
 // ---------------------------------------------------------------------------
 // Flag helper — exported so tests can assert it reads the right env var
@@ -77,6 +89,126 @@ export function isSubscriptionEnforcementEnabled(): boolean {
 // FV-328: adult_athlete is a self-payer (like a parent) — a blocked adult routes
 // to /subscribe, NOT the paused screen. Callers pass the dynamic profile.role.
 export type CallerRole = "parent" | "athlete" | "adult_athlete";
+
+// ---------------------------------------------------------------------------
+// Shared decision (FV-625)
+// ---------------------------------------------------------------------------
+
+export type TrainingAccessDecision =
+  | { allowed: true; level: Exclude<AccessLevel, "blocked"> }
+  | {
+      allowed: false;
+      redirectTo: TrainingBlockedRedirect;
+      // FV-656: true when the block is not a CONFIRMED lapse (the status
+      // couldn't be read, or the reads disagreed). Still a block — no training
+      // renders — but callers must not present it as an ended subscription
+      // or revoke anything on it.
+      statusUnknown?: true;
+    };
+
+/**
+ * FV-656: is the block UNCONFIRMED? The level read fails closed, so "blocked"
+ * can come from a read that errored or timed out. This asks the error-tracking
+ * entitlement read /subscribe relies on (FV-581) for a second opinion, on the
+ * blocked path only. Only a CONFIRMED `not_entitled` is a lapse; anything else
+ * — `unknown` (that read errored too) or `entitled` (the reads disagree, e.g.
+ * the first one hit a transient failure) — is "couldn't verify". That can
+ * only soften the wording and skip a revocation; the decision stays a block,
+ * so it can never grant access (QA, PR #593).
+ * A payer that can't be resolved at all (no session / no link) is a confirmed
+ * block. A throw from the check means we couldn't check: unconfirmed.
+ */
+async function isPayerStatusUnknownForCurrentUser(): Promise<boolean> {
+  try {
+    const payerId = await getPayerIdForCurrentUser();
+    if (payerId === null) return false;
+    return (await getSubscribeEntitlementState(payerId)).status !== "not_entitled";
+  } catch (err) {
+    console.error(
+      "[enforce] entitlement status check threw:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return true;
+  }
+}
+
+/**
+ * The training-entitlement decision WITHOUT side effects — the single source
+ * of truth behind both requireActiveAccess() (server redirect) and
+ * GET /api/athlete/access (pregame's client-side gate, FV-625).
+ *
+ * Same rules as before FV-625, unchanged: flag off → allowed; billing level
+ * (comp grant → Stripe → Apple, best-of — see ./access) full/degraded →
+ * allowed unless a minor athlete is seat-paused; blocked → minor athlete to
+ * /athlete/paused, self-payer (parent, adult_athlete) to /subscribe.
+ */
+export async function resolveTrainingAccess(opts: {
+  role: CallerRole;
+}): Promise<TrainingAccessDecision> {
+  // Flag off → no-op. "full" so callers can use the level without branching.
+  if (!isSubscriptionEnforcementEnabled()) {
+    return { allowed: true, level: "full" };
+  }
+
+  const level = await getAccessForCurrentUser();
+
+  if (level === "full" || level === "degraded") {
+    // Seat overlay (FV-585): only the minor athlete path can be individually
+    // paused this way — a billing-entitled payer (parent/adult_athlete) is
+    // never gated here regardless of seat state. Fails open on any read
+    // error (see ./seat-state's module doc), so this can only ever ADD a
+    // redirect on top of an already-non-blocked billing level, never remove
+    // one.
+    if (opts.role === "athlete") {
+      const seatStatus = await getAthleteSeatStatusForCurrentUser();
+      if (seatStatus !== "active") {
+        return { allowed: false, redirectTo: "/athlete/paused?reason=seats" };
+      }
+    }
+    // "degraded" is not a hard block. Callers may inspect the returned level
+    // to show a payment-fix banner but must NOT gate content behind it.
+    return { allowed: true, level };
+  }
+
+  // level === "blocked"
+  // FV-656: getAccessForCurrentUser fails closed, so "blocked" also covers a
+  // read that errored or timed out. Keep it a block, but say so: a minor
+  // gets the "couldn't check" variant of the paused screen instead of "ask
+  // your parent to reactivate"; a payer still goes to /subscribe, whose
+  // unknown card already says the status couldn't be checked.
+  if (await isPayerStatusUnknownForCurrentUser()) {
+    return {
+      allowed: false,
+      redirectTo:
+        opts.role === "athlete" ? "/athlete/paused?reason=unavailable" : "/subscribe",
+      statusUnknown: true,
+    };
+  }
+
+  // A MINOR athlete cannot buy — the parent must act. Gentle paused screen.
+  // A parent OR an adult_athlete (FV-328) is the payer and can remedy the
+  // block themselves — both route to checkout.
+  return {
+    allowed: false,
+    redirectTo: opts.role === "athlete" ? "/athlete/paused" : "/subscribe",
+  };
+}
+
+/**
+ * FV-625 — how long the signed-in user's verified entitlement may be reused
+ * OFFLINE by the pregame shell (KC policy 2026-11-09: "until the last
+ * verified subscription period ends"). Call only after resolveTrainingAccess
+ * returned allowed. See getParentOfflineEntitlementUntil in ./access for the
+ * per-source rule (perpetual comp grants contribute no end → null).
+ *
+ * Gating off → null: with enforcement off there is no verified entitlement
+ * period to bound offline use by, so pregame is online-only rather than
+ * unbounded offline.
+ */
+export async function resolveOfflineEntitlementUntil(): Promise<string | null> {
+  if (!isSubscriptionEnforcementEnabled()) return null;
+  return getOfflineEntitlementUntilForCurrentUser();
+}
 
 // ---------------------------------------------------------------------------
 // Main guard
@@ -104,41 +236,11 @@ export type CallerRole = "parent" | "athlete" | "adult_athlete";
 export async function requireActiveAccess(opts: {
   role: CallerRole;
 }): Promise<Exclude<AccessLevel, "blocked">> {
-  // Flag off → no-op. Return "full" so callers can use the return value
-  // without branching on undefined.
-  if (!isSubscriptionEnforcementEnabled()) {
-    return "full";
+  const decision = await resolveTrainingAccess(opts);
+  if (decision.allowed) {
+    return decision.level;
   }
-
-  const level = await getAccessForCurrentUser();
-
-  if (level === "full" || level === "degraded") {
-    // Seat overlay (FV-585): only the minor athlete path can be individually
-    // paused this way — a billing-entitled payer (parent/adult_athlete) is
-    // never gated here regardless of seat state. Fails open on any read
-    // error (see ./seat-state's module doc), so this can only ever ADD a
-    // redirect on top of an already-non-blocked billing level, never remove
-    // one.
-    if (opts.role === "athlete") {
-      const seatStatus = await getAthleteSeatStatusForCurrentUser();
-      if (seatStatus !== "active") {
-        redirect("/athlete/paused?reason=seats");
-      }
-    }
-    // "degraded" is not a hard block. Callers may inspect the returned level
-    // to show a payment-fix banner but must NOT gate content behind it.
-    return level;
-  }
-
-  // level === "blocked"
-  if (opts.role === "athlete") {
-    // A MINOR athlete cannot buy — the parent must act. Gentle paused screen.
-    redirect("/athlete/paused");
-  } else {
-    // A parent OR an adult_athlete (FV-328) is the payer and can remedy the
-    // block themselves — both route to checkout.
-    redirect("/subscribe");
-  }
+  redirect(decision.redirectTo);
 
   // TypeScript unreachable after redirect() throws, but satisfies the return type.
   // reason: redirect() never returns; this line is dead code required by TS.
