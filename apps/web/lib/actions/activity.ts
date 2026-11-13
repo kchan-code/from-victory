@@ -15,6 +15,8 @@
 // Fire-and-forget from the client; this action never throws and never navigates.
 
 import type { ActivityEventInput } from "@/lib/activity/event-core";
+import type { PregameSelectionsInput } from "@/lib/activity/pregame-selection-core";
+import { recordPregameSelectionCounts } from "@/lib/activity/pregame-selections";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { createClient } from "@/lib/supabase/server";
 
@@ -52,6 +54,39 @@ export async function logActivityEvent(input: ActivityEventInput): Promise<void>
     }
 
     await recordActivityEvent(user.id, input);
+  } catch {
+    // Telemetry is best-effort: never surface an error to the client.
+  }
+}
+
+// Anonymous pregame selection totals (FV-724 follow-up). Called once per
+// completed pregame. The caller must be a signed-in athlete so this cannot be
+// spammed anonymously — but the athlete's id is used ONLY for that check. It is
+// never passed to the writer or the database function, and nothing is logged
+// alongside the selections. The writer validates every value against the
+// sport's fixed vocabulary and drops the rest (the cue word is never accepted).
+// Best-effort: never throws, never navigates.
+export async function logPregameSelections(
+  sport: string,
+  selections: PregameSelectionsInput,
+): Promise<void> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (!profile || (profile.role !== "athlete" && profile.role !== "adult_athlete")) {
+      return;
+    }
+
+    await recordPregameSelectionCounts(sport, selections);
   } catch {
     // Telemetry is best-effort: never surface an error to the client.
   }

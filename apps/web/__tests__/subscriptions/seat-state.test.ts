@@ -16,14 +16,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
+// FV-745: seat state reads the CAPACITY accessor from ./apple-capacity (which
+// ignores a billing-retry Apple row for a payer who is paid elsewhere). The
+// mock keeps its old name; it now stands in for that accessor.
 const getActiveAppleProductIdMock = vi.fn();
-vi.mock("@/lib/subscriptions/apple", () => ({
-  getActiveAppleProductId: (...args: unknown[]) =>
-    getActiveAppleProductIdMock(...args),
-}));
-
 const payerCapacityCeilingMock = vi.fn();
 vi.mock("@/lib/subscriptions/apple-capacity", () => ({
+  getCapacityAppleProductId: (...args: unknown[]) =>
+    getActiveAppleProductIdMock(...args),
   payerCapacityCeiling: (...args: unknown[]) =>
     payerCapacityCeilingMock(...args),
 }));

@@ -222,6 +222,36 @@ export type Database = {
         }
         Relationships: []
       }
+      // FV-724: hand-added. Confirm via `supabase gen types typescript
+      // --linked` after 20261113120000_pregame_selection_counts.sql is applied.
+      // Monthly aggregate totals of pregame option choices (no account
+      // identifier, no row timestamps). Read ONLY via
+      // read_pregame_selection_counts(). Service-role-only: RLS enabled, no
+      // policies. period_start = first day of the UTC month.
+      pregame_selection_counts: {
+        Row: {
+          dimension: string
+          period_start: string
+          selection_count: number
+          sport: string
+          value: string
+        }
+        Insert: {
+          dimension: string
+          period_start: string
+          selection_count: number
+          sport: string
+          value: string
+        }
+        Update: {
+          dimension?: string
+          period_start?: string
+          selection_count?: number
+          sport?: string
+          value?: string
+        }
+        Relationships: []
+      }
       // FV-570: hand-added. Confirm shape via `supabase gen types typescript
       // --linked` after `supabase db push` applies
       // 20260911120000_apple_provider_access.sql to the linked project.
@@ -1101,6 +1131,27 @@ export type Database = {
       rollup_activity_events: {
         Args: { retention_days?: number }
         Returns: number
+      }
+      // FV-724: hand-added. +1 per (dimension, value) for the current
+      // UTC month. p_selections = [{ dimension, value }]. Takes NO athlete id.
+      // EXECUTE: service_role only.
+      increment_pregame_selection_counts: {
+        Args: { p_sport: string; p_selections: Json }
+        Returns: number
+      }
+      // FV-724: hand-added. The ONLY sanctioned read path for
+      // pregame_selection_counts: returns a cell only when its count AND the
+      // sport+month distinct-athlete count each meet a floor of >= 10 (caller
+      // cannot lower it). EXECUTE: service_role only. No app reader exists yet.
+      read_pregame_selection_counts: {
+        Args: { p_min_athletes?: number; p_min_count?: number }
+        Returns: {
+          period_start: string
+          sport: string
+          dimension: string
+          value: string
+          selection_count: number
+        }[]
       }
     }
     Enums: {

@@ -45,4 +45,11 @@ for f in "${ASSERTIONS[@]}"; do
   "${PSQL[@]}" -f "$f"
 done
 
-echo "== RLS harness: ${#ASSERTIONS[@]} assertion file(s), ALL ASSERTIONS PASSED =="
+# Multi-session checks (FV-634): races the single-session .sql files cannot
+# express. Each script owns its throwaway rows and cleans up.
+mapfile -t CONCURRENCY < <(printf '%s\n' "$DIR"/concurrency/*.sh)
+for f in "${CONCURRENCY[@]}"; do
+  bash "$f" "$DB_URL"
+done
+
+echo "== RLS harness: ${#ASSERTIONS[@]} assertion file(s) + ${#CONCURRENCY[@]} concurrency check(s), ALL ASSERTIONS PASSED =="
