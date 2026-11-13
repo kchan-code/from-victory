@@ -48,6 +48,14 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: () => ({ auth: { getUser: getUserMock } }),
 }));
 vi.mock("@/lib/native-shell", () => ({ isNativeShell: () => false }));
+vi.mock("next/headers", () => ({
+  headers: () => ({
+    get: (name: string) =>
+      name.toLowerCase() === "user-agent"
+        ? "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+        : null,
+  }),
+}));
 vi.mock("@/components/auth/InviteFlow", () => ({ InviteFlow: () => <div /> }));
 vi.mock("@/components/auth/InviteSetupForm", () => ({ InviteSetupForm: () => <div /> }));
 vi.mock("@/lib/supabase/service", () => ({

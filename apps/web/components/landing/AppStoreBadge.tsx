@@ -20,7 +20,7 @@ export function AppStoreBadge() {
       href={APP_STORE_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-block leading-none"
+      className="inline-block shrink-0 leading-none"
     >
       <Image
         src="/images/badges/download-on-the-app-store.svg"
