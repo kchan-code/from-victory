@@ -442,6 +442,22 @@ Source of truth for the native shell: [docs/native-capacitor.md](./native-capaci
 Privacy posture. Plugin allowlist is core / app / splash-screen / status-bar
 only. `INTERNET` only. `allowBackup=false`. No Advertising ID.
 
+### Live answers as read on 2026-11-13 (FV-722)
+
+From the public listing's Data safety page:
+
+- **Shared with third parties:** none declared.
+- **Collected:** Device or other IDs; Financial info (Purchase history);
+  Personal info (Name, Email address, User IDs, Other info); App activity (App
+  interactions).
+- **Security practices:** data encrypted in transit; users can request deletion.
+
+Compared with what the shipped app collects, no missing category was found.
+The purposes selected for each type were not read (the console form was not
+opened step by step); check that App interactions includes **Analytics**,
+because first-party usage events (`activity_events`) are used to count active
+and returning athletes.
+
 ### Declare (typical — confirm against the live privacy policy)
 
 Collected because the WebView is the product:
@@ -451,8 +467,14 @@ Collected because the WebView is the product:
 - **App activity:** in-app interactions / training rhythm metadata (not a
   public score; not journal body)
 - **Financial:** purchase **history** (Stripe subscriptions). Card numbers are
-  entered on Stripe Checkout, not stored by From Victory. There is **no** Google
-  Play Billing SDK in `apps/native`.
+  entered on Stripe Checkout, not stored by From Victory. The Play build that
+  is live (1.0.1, versionCode 10) has no Google Play Billing SDK. The repo does
+  carry one behind the `FV_PLAY_BILLING=1` build switch
+  (`apps/native/android/app/build.gradle`); a build made with it brings
+  Google's billing library and its own Google components, and the Data safety
+  form must be re-checked before such a build is uploaded (FV-667). (Corrected
+  2026-11-13, FV-722: this line used to say there was no Play Billing SDK in
+  `apps/native`.)
 
 ### Do not declare as collected by this app
 
