@@ -15,8 +15,10 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 - The Privacy Policy now says: subscriptions bought in the iOS app are sold and billed by
   Apple, and what we receive from Apple; we keep a first-party record of a few app
   actions (app opened, daily or pregame session started or finished) for every athlete
-  account, including ages 13 to 17, deleted after about 90 days; we keep aggregate
-  monthly totals of which preset pregame options are chosen, with no account identifier;
+  account, including ages 13 to 17 (individual records deleted after about 90 days; totals kept); we keep aggregate
+  monthly totals of which preset pregame options are chosen, with no account identifier,
+  and only look at a total once at least ten athletes in that sport completed a pregame
+  that month and the total is at least ten (a safeguard, not a guarantee of anonymity);
   the app sends a short automated error report with no account identifier when a screen
   fails to load.
 - The protections line for 13-17 accounts changed from "No behavioral or advertising

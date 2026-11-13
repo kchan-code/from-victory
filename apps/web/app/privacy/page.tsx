@@ -235,7 +235,8 @@ export default function PrivacyPage() {
           receive, and store, only what is needed to recognize and manage the subscription: an
           Apple transaction identifier for the subscription, which plan was purchased, the
           subscription status, its renewal or expiration date (and the end of any billing
-          grace period), and whether automatic renewal is on. We also store an identifier we
+          grace period), whether automatic renewal is on, and any plan change scheduled for
+          the next renewal. We also store an identifier we
           generate ourselves to connect the purchase to your From Victory account. Apple
           sends us notices when a subscription renews, is cancelled, expires, or is refunded,
           so that access in the app stays accurate. Apple&apos;s handling of your purchase and
@@ -290,11 +291,13 @@ export default function PrivacyPage() {
           Separately, so that we can learn which training options are useful, we keep
           aggregate totals of how often each preset pregame option is chosen (for example,
           how many times a particular focus area or visualization was picked), counted by
-          sport and by month. These totals do not contain an account identifier, and each
-          option is counted on its own, never in combination with an athlete&apos;s other
-          choices. We only look at a total once enough different athletes have contributed to
-          it that no individual athlete&apos;s choices can be identified. Anything an athlete
-          types is never counted.
+          sport and by month. These totals do not contain an account identifier or a
+          timestamp for any one athlete, and each option is counted on its own, never in
+          combination with an athlete&apos;s other choices. We do not look at a total unless
+          at least ten different athletes in that sport completed a pregame session that
+          month and the total itself is at least ten. This is a safeguard against singling
+          out one athlete, not a guarantee of anonymity. Anything an athlete types is never
+          counted.
         </p>
         <p className="mt-3">
           We collect this ourselves, in our own database. We do not use a third-party
@@ -308,7 +311,7 @@ export default function PrivacyPage() {
         <p className="mt-3">
           Individual usage records are deleted after about 90 days. Before they are deleted
           they are added to running totals (for example, the number of athletes active in a
-          week) that contain no account identifiers and cannot be traced back to an athlete.
+          week) that contain no account identifiers.
           This applies to every athlete account, including accounts for athletes ages 13 to
           17.
         </p>
@@ -316,10 +319,11 @@ export default function PrivacyPage() {
         <SubHeading>j. Error reports</SubHeading>
         <p>
           If a screen in the app fails to load, the app sends us a short automated report so
-          we can fix the problem: which screen failed, which version of the app was in use,
-          and a brief technical description of the error. The report does not contain an
-          account identifier, a name, or an email address, and it is not saved in our
-          database. It is delivered to our team by email through our email provider.
+          we can fix the problem: which screen failed, which version and type of app (web,
+          iPhone, or Android) was in use, and a brief technical description of the error. The
+          report is built so that it does not include an account identifier or an email
+          address, and it is not saved in our database. It is delivered to our team by email
+          through our email provider.
         </p>
       </Section>
 
@@ -377,7 +381,8 @@ export default function PrivacyPage() {
           <li>No advertising</li>
           <li>
             No advertising analytics and no behavioral profiling: we do not track a minor
-            across apps or websites, and we do not build a profile of a minor&apos;s behavior
+            across apps or websites, and we do not use the activity record described above to
+            build a profile of a minor&apos;s behavior
           </li>
           <li>
             No third-party analytics: the only usage information we keep about a minor is the
@@ -463,7 +468,8 @@ export default function PrivacyPage() {
           page), we use a cookieless, privacy-focused web-analytics service provided by our
           web-hosting provider to count anonymous, aggregate page visits. It sets no cookies,
           collects no names or other identifiers, does not follow visitors across other
-          websites, and never runs on athlete, parent-dashboard, or other signed-in surfaces.
+          websites, and never runs for a minor&apos;s account, in our mobile apps, or on
+          athlete or parent-dashboard pages.
         </p>
       </Section>
 
