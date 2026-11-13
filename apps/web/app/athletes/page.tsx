@@ -459,14 +459,14 @@ export default function AthletesPage() {
                       Your account. Your call.
                     </h3>
                     <p className="font-body text-[13.5px] leading-[1.6] text-cream/70 m-0 mb-5">
-                      Create your own account and start a 14-day free trial.
+                      Create your own account and start a 7-day free trial.
                       $5/month or $49/year after the trial. Cancel anytime.
                     </p>
                     <Link
                       href="/signup"
                       className="inline-flex items-center justify-center gap-2 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-6 py-3.5 min-h-[44px] text-[14px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
                     >
-                      Start your 14-day free trial
+                      Start your 7-day free trial
                       <SvgIcon name="arrow" size={14} />
                     </Link>
                   </div>

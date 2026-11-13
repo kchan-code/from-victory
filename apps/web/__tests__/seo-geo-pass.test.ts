@@ -26,13 +26,13 @@ describe("SoftwareApplication JSON-LD (FV-504)", () => {
     ]);
   });
 
-  it("keeps LifestyleApplication and names the 14-day trial", () => {
+  it("keeps LifestyleApplication and names the 7-day trial", () => {
     expect(SOFTWARE_APPLICATION_JSON_LD.applicationCategory).toBe(
       "LifestyleApplication",
     );
     const offers = SOFTWARE_APPLICATION_JSON_LD.offers;
     expect(offers.some((o) => o.price === "0")).toBe(true);
-    expect(offers.some((o) => o.description?.includes("14-day"))).toBe(true);
+    expect(offers.some((o) => o.description?.includes("7-day"))).toBe(true);
     expect(offers.map((o) => o.price)).toEqual(
       expect.arrayContaining(["5.00", "49.00", "3.00", "29.00"]),
     );

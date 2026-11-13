@@ -478,7 +478,7 @@ What a session can honestly offer: a structured rehearsal of today's plan, inclu
 
 Hebrews 12:1-2 frames how we run: with perseverance, eyes fixed on Jesus. Tonight's result matters, and it does not decide your standing with God. His completed work settles that before warmups. Your Identity Is Secure. Compete From Victory. Visualization is preparation, not how you earn anything.
 
-Try a five-minute guided pregame session. [Start your 14-day free trial](/pricing).
+Try a five-minute guided pregame session. [Start your 7-day free trial](/pricing).
 
 ### References
 

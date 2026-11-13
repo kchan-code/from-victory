@@ -41,9 +41,9 @@ export const SOFTWARE_APPLICATION_JSON_LD = {
   offers: [
     {
       "@type": "Offer",
-      name: "14-day free trial",
+      name: "7-day free trial",
       description:
-        "14-day free trial for first-time subscribers. Then $5/month or $49/year for the first athlete. Cancel anytime.",
+        "7-day free trial for first-time subscribers. Then $5/month or $49/year for the first athlete. Cancel anytime.",
       price: "0",
       priceCurrency: "USD",
       priceValidUntil: offerPriceValidUntil(),
@@ -52,7 +52,7 @@ export const SOFTWARE_APPLICATION_JSON_LD = {
       "@type": "Offer",
       name: "Monthly: first athlete",
       description:
-        "14-day free trial, then $5/month for the first athlete. Cancel anytime.",
+        "7-day free trial, then $5/month for the first athlete. Cancel anytime.",
       price: "5.00",
       priceCurrency: "USD",
       priceValidUntil: offerPriceValidUntil(),
@@ -61,7 +61,7 @@ export const SOFTWARE_APPLICATION_JSON_LD = {
       "@type": "Offer",
       name: "Annual: first athlete",
       description:
-        "14-day free trial, then $49/year for the first athlete. Cancel anytime.",
+        "7-day free trial, then $49/year for the first athlete. Cancel anytime.",
       price: "49.00",
       priceCurrency: "USD",
       priceValidUntil: offerPriceValidUntil(),

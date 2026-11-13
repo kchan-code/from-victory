@@ -173,7 +173,7 @@ export function WaitlistForm() {
               href="/signup"
               className="text-cream underline underline-offset-2 hover:text-gold"
             >
-              Start your athlete&rsquo;s 14-day free trial
+              Start your athlete&rsquo;s 7-day free trial
             </Link>
             .
           </p>

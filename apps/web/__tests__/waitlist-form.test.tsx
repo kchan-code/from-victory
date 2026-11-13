@@ -179,7 +179,7 @@ describe("WaitlistForm — live-sport arrival routes to the trial (FV-517)", () 
     render(<WaitlistForm />);
     expect(screen.getByText(/available now/i)).toBeInTheDocument();
     const link = screen.getByRole("link", {
-      name: /start your athlete.s 14-day free trial/i,
+      name: /start your athlete.s 7-day free trial/i,
     });
     expect(link).toHaveAttribute("href", "/signup");
   });

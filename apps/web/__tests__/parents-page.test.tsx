@@ -143,7 +143,7 @@ describe("/parents — tagline and access (FV-550)", () => {
     const text = container.textContent ?? "";
     expect(text).toContain("Athletes 13-17 train under your account");
     expect(text).toContain(
-      "athletes 18+ can start their own 14-day trial, $5/mo or $49/yr",
+      "athletes 18+ can start their own 7-day trial, $5/mo or $49/yr",
     );
   });
 });

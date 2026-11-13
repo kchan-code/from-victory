@@ -11,7 +11,7 @@
 //   4. Toggling the control switches the displayed price and per-interval copy.
 //   5. First-athlete and additional-athlete prices are present for both
 //      intervals.
-//   6. The 14-day-trial + cancel-anytime terms sit directly adjacent to the
+//   6. The 7-day-trial + cancel-anytime terms sit directly adjacent to the
 //      single primary CTA.
 
 import "@testing-library/jest-dom/vitest";
@@ -138,7 +138,7 @@ describe("PricingPage — single primary CTA with adjacent terms", () => {
     const cta = screen.getByTestId("plan-cta");
     const terms = screen.getByTestId("plan-cta-terms");
     expect(cta.nextElementSibling).toBe(terms);
-    expect(terms).toHaveTextContent(/14 days free/i);
+    expect(terms).toHaveTextContent(/7 days free/i);
     expect(terms).toHaveTextContent(/cancel anytime/i);
   });
 });

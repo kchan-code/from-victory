@@ -31,7 +31,7 @@ listings, and microcopy get written here. They follow the same rules.
 4. **No prosperity-gospel "claim the win."** Worth is not the scoreboard — that's the
    thesis; don't break it.
 5. **Launched honesty.** No invented proof — no testimonials, ratings, user counts, or
-   retention claims until a real cohort exists. The CTA is the 14-day free trial
+   retention claims until a real cohort exists. The CTA is the 7-day free trial
    ($5/mo or $49/yr first athlete); waitlist language only for not-yet-live sports.
    Buyers: parents for athletes 13-17; athletes 18+ self-serve (live 2026-07-22).
    Amended 2026-08-31 (KC): one approved beta-athlete quote runs on the homepage,

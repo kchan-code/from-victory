@@ -86,7 +86,7 @@ describe("Hero — 18+ athlete path (FV-515)", () => {
     // The primary parent CTA is unaffected either way.
     expect(
       screen.getByRole("link", {
-        name: /start your athlete.s 14-day free trial/i,
+        name: /start your athlete.s 7-day free trial/i,
       }),
     ).toHaveAttribute("href", "/signup");
   });

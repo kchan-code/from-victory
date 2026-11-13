@@ -178,7 +178,7 @@ test.describe("Landing page — truthfulness regression guards", () => {
     await expect(notice.getByText(/available now/i)).toBeVisible();
     await expect(
       notice.getByRole("link", {
-        name: /start your athlete.s 14-day free trial/i,
+        name: /start your athlete.s 7-day free trial/i,
       }),
     ).toHaveAttribute("href", "/signup");
   });

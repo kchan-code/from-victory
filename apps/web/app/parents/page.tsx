@@ -95,10 +95,10 @@ const parentSees = [
 // never claims a flow that would 404 (qa-reviewer FV-550 must-fix).
 function getPricingPoints(adultSignup: boolean): string[] {
   return [
-    "14 days free for first-time subscribers: no charge until the trial ends",
+    "7 days free for first-time subscribers: no charge until the trial ends",
     "$5/mo or $49/yr for your first athlete, $3/mo or $29/yr for each additional",
     adultSignup
-      ? "Athletes 13-17 train under your account; athletes 18+ can start their own 14-day trial, $5/mo or $49/yr"
+      ? "Athletes 13-17 train under your account; athletes 18+ can start their own 7-day trial, $5/mo or $49/yr"
       : "Athletes 13-17 train under your account",
     "Cancel anytime from your account settings",
     "No ads, no third-party tracking, no data sold",
@@ -144,7 +144,7 @@ export default function ParentsPage() {
                 href="/signup"
                 className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
               >
-                Start your athlete&apos;s 14-day free trial
+                Start your athlete&apos;s 7-day free trial
                 <SvgIcon name="arrow" size={16} />
               </Link>
               <Link
@@ -406,7 +406,7 @@ export default function ParentsPage() {
             <div className="grid gap-12 lg:gap-16 items-start grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
               <div>
                 <h2 className="fv-h-section mb-8">
-                  14 days free. Then $5/mo or $49/yr.
+                  7 days free. Then $5/mo or $49/yr.
                 </h2>
                 <ul className="flex flex-col gap-3.5 m-0 p-0 list-none mb-10">
                   {pricingPoints.map((pt) => (
@@ -431,7 +431,7 @@ export default function ParentsPage() {
                     href="/signup"
                     className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
                   >
-                    Start your athlete&apos;s 14-day free trial
+                    Start your athlete&apos;s 7-day free trial
                     <SvgIcon name="arrow" size={16} />
                   </Link>
                   <Link
@@ -483,7 +483,7 @@ export default function ParentsPage() {
                     "Pre-practice lock-in",
                     "Journey view + rhythm tracking",
                     "Parent dashboard",
-                    "14-day free trial",
+                    "7-day free trial",
                   ].map((feat) => (
                     <div key={feat} className="flex items-center gap-3">
                       <div

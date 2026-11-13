@@ -10,6 +10,14 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-13 - Public trial copy now says 7 days (FV-609)
+
+Kinny decided on 12 Nov 2026 that the live free trial is 7 days. Public pages, structured data, llms.txt, FAQ, pricing, and the paste-ready marketing lines now say a 7-day free trial (or "7 days free"). Checkout is unchanged. A first-time checkout that starts with one athlete still gets 7 days. A first checkout that starts with more than one athlete still starts paid. Prices are unchanged ($5/mo or $49/yr for the first athlete, $3/mo or $29/yr for each additional).
+
+Why it matters to a buyer: the homepage, pricing page, and signup page now name the same 7-day trial.
+
+This supersedes the 2026-09-12 note that public marketing still advertised the previous trial length.
+
 ## 2026-11-11 — The Android app is available on Google Play (recorded by FV-681)
 
 The From Victory Android app is published on Google Play

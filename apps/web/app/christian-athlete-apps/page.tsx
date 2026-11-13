@@ -300,7 +300,7 @@ export default function ChristianAthleteAppsPage() {
               </p>
               <p className={P}>
                 <Link href="/signup" className={LINK_CLS}>
-                  Start a 14-day free trial
+                  Start a 7-day free trial
                 </Link>
                 . $5/mo or $49/yr after for the first athlete. $3/$29 add-on.
                 Cancel anytime.

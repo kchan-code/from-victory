@@ -130,7 +130,7 @@ export default function SoccerPage() {
                   href="/signup"
                   className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
                 >
-                  Start a 14-day free trial
+                  Start a 7-day free trial
                   <SvgIcon name="arrow" size={16} />
                 </Link>
                 <Link
@@ -271,7 +271,7 @@ export default function SoccerPage() {
                     A parent buys and manages the account for athletes 13–17.
                     You see rhythm: they showed up. You do not see what they
                     prayed or which hard moment they named. 18+ can train on
-                    their own. 14 days free, then $5/mo or $49/yr for the
+                    their own. 7 days free, then $5/mo or $49/yr for the
                     first athlete. $3/$29 for each additional. Cancel anytime.
                   </p>
                   <div className="flex flex-wrap gap-3">
@@ -279,7 +279,7 @@ export default function SoccerPage() {
                       href="/signup"
                       className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
                     >
-                      Start your athlete&apos;s 14-day free trial
+                      Start your athlete&apos;s 7-day free trial
                       <SvgIcon name="arrow" size={16} />
                     </Link>
                     <Link

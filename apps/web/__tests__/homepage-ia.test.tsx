@@ -103,7 +103,7 @@ const EXPECTED_HEADINGS: RegExp[] = [
   /Rehearse it\. Reset from it\. Leave it with God\./i, // 4. Method (FV-538: pregame method)
   /Built for the moments athletes actually face\./i, // 5. AppPreview
   /What you see, and what stays private\./i, // 6. ParentTrust
-  /14 days free\. Cancel anytime\./i, // 7. PricingSummary
+  /7 days free\. Cancel anytime\./i, // 7. PricingSummary
   /Built by a hockey dad/i, // 8. Founder (+ beta proof)
   /Questions parents ask\./i, // 9a. Faq
   /Start training from secure identity\./i, // 9b. Waitlist
@@ -166,7 +166,7 @@ describe("Homepage — parent-trust and pricing-summary headings (FV-514)", () =
   it("renders the pricing-summary heading verbatim", () => {
     render(<LandingPage />);
     expect(
-      screen.getByRole("heading", { name: "14 days free. Cancel anytime." }),
+      screen.getByRole("heading", { name: "7 days free. Cancel anytime." }),
     ).toBeInTheDocument();
   });
 });
@@ -178,7 +178,7 @@ describe("Homepage — CTA cadence: 4 conversion CTAs to /signup (FV-514)", () =
     expect(signupLinks).toHaveLength(4);
     signupLinks.forEach((link) => {
       expect(link.textContent ?? "").toMatch(
-        /start your athlete.s 14-day free trial/i,
+        /start your athlete.s 7-day free trial/i,
       );
     });
   });

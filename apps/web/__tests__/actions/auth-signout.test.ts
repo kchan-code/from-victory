@@ -3,7 +3,7 @@
  *
  * FV-489 bug: on a real device, signing out inside the native shell landed
  * on "/" — the gated marketing root, which shows real prices and "Start
- * your athlete's 14-day free trial." That's an in-app-purchase-surface
+ * your athlete's 7-day free trial." That's an in-app-purchase-surface
  * violation the moment it renders post-sign-out, and (per a separate fix in
  * middleware.ts + public/sw.js) the bad response could persist across a
  * force-stop + cold start. This file covers the redirect-target half of the
