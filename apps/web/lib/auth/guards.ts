@@ -44,7 +44,7 @@ export async function requireParent(): Promise<{
   userId: string;
   profile: ParentProfile;
 }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -75,7 +75,7 @@ export async function requireSelfPayer(): Promise<{
   userId: string;
   profile: AdultAthleteProfile;
 }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -106,7 +106,7 @@ export async function requireSubscriber(): Promise<{
   userId: string;
   profile: SubscriberProfile;
 }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -132,7 +132,7 @@ export async function requireAthlete(): Promise<{
   userId: string;
   profile: AthleteProfile;
 }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -206,7 +206,7 @@ export async function requireAthlete(): Promise<{
  * and then lands the user on /signin with an explanatory error param.
  */
 export async function redirectIfAuthed() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

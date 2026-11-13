@@ -12,10 +12,24 @@ import type { NextRequest } from "next/server";
 
 vi.mock("server-only", () => ({}));
 
+const { alertCronFailureMock } = vi.hoisted(() => ({
+  alertCronFailureMock: vi.fn(),
+}));
+
+vi.mock("@/lib/monitoring/cron-alert", () => ({
+  alertCronFailure: (...args: unknown[]) => alertCronFailureMock(...args),
+}));
+
+let serviceThrows = false;
+let deleteResult: { data: unknown[]; error: { message: string } | null } = {
+  data: [],
+  error: null,
+};
+
 // Service-client stub: delete().is().lt().select() and
 // delete().not().lt().select() both resolve to an empty result set.
 function makeDeleteChain() {
-  const result = { data: [], error: null };
+  const result = deleteResult;
   const tail = {
     select: async (_c: string) => result,
   };
@@ -30,11 +44,16 @@ function makeDeleteChain() {
 }
 
 vi.mock("@/lib/supabase/service", () => ({
-  createServiceClient: () => ({
-    from: (_t: string) => ({
-      delete: () => makeDeleteChain(),
-    }),
-  }),
+  createServiceClient: () => {
+    if (serviceThrows) {
+      throw new Error("service key athlete aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee");
+    }
+    return {
+      from: (_t: string) => ({
+        delete: () => makeDeleteChain(),
+      }),
+    };
+  },
 }));
 
 import { GET, POST } from "@/app/api/cron/reap-pairings/route";
@@ -49,6 +68,8 @@ const ORIGINAL_SECRET = process.env.CRON_SECRET;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  serviceThrows = false;
+  deleteResult = { data: [], error: null };
   process.env.CRON_SECRET = "test-cron-secret";
 });
 
@@ -75,6 +96,10 @@ describe("cron reap-pairings route auth gate", () => {
     delete process.env.CRON_SECRET;
     const res = await GET(makeReq("Bearer anything"));
     expect(res.status).toBe(500);
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/reap-pairings] missing config",
+      "CRON_SECRET is not set",
+    );
   });
 
   it("GET with the valid token → 200 with prune counts", async () => {
@@ -87,5 +112,29 @@ describe("cron reap-pairings route auth gate", () => {
   it("POST with the valid token → 200 (manual ops trigger parity)", async () => {
     const res = await POST(makeReq("Bearer test-cron-secret"));
     expect(res.status).toBe(200);
+    expect(alertCronFailureMock).not.toHaveBeenCalled();
+  });
+
+  it("sends one alert when a delete fails, without the database message", async () => {
+    deleteResult = { data: [], error: { message: "athlete aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee" } };
+    const res = await GET(makeReq("Bearer test-cron-secret"));
+    expect(res.status).toBe(200);
+    expect(alertCronFailureMock).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(alertCronFailureMock.mock.calls)).not.toContain(
+      "eeeeeeeeeeee",
+    );
+    expect(alertCronFailureMock.mock.calls[0]?.[2]).toEqual(
+      expect.objectContaining({ reasons: "expired+consumed" }),
+    );
+  });
+
+  it("alerts with the error name only when the handler throws", async () => {
+    serviceThrows = true;
+    const res = await GET(makeReq("Bearer test-cron-secret"));
+    expect(res.status).toBe(500);
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/reap-pairings] threw",
+      "Error",
+    );
   });
 });

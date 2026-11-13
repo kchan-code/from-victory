@@ -83,6 +83,20 @@ NO journal content is ever written.
 
 ---
 
+## 2d. Client error reports (FV-729) — not stored
+
+`POST /api/client-error` does not write a table. A rate-limited email goes
+out through the existing `notifyError` Resend channel (same retention as
+that inbox). The payload is route (UUID path segments replaced with `:id`),
+error digest, shell capability enum, build SHA, and a truncated message with
+emails, ids, and tokens removed. No user id, no cookie, no athlete content.
+The in-memory rate limit keeps no IP and no identifier past the function
+instance. Vercel may still log the request line per section 1; the handler
+does not log the body.
+
+`GET /api/health` returns `{ ok: true|false }` only. It does not log query
+results.
+
 ## 3. Review Cadence
 
 Review this policy:
@@ -96,4 +110,5 @@ Review this policy:
 
 *Cross-references: FV-13 (device-cookie hardening + rate-limit events),
 FV-14 (account deletion audit), FV-135 (journal / Option C dormant),
+FV-729 (health + client error reports),
 CLAUDE.md §Non-Negotiable Constraints.*

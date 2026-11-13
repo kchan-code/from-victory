@@ -155,7 +155,7 @@ async function renderSettings(role: "athlete" | "adult_athlete") {
   });
   maybeSingleMock.mockResolvedValue({ data: null, error: null });
 
-  const jsx = await AthleteSettingsPage({ searchParams: {} });
+  const jsx = await AthleteSettingsPage({ searchParams: Promise.resolve({}) });
   return render(jsx);
 }
 
@@ -174,6 +174,13 @@ describe("/athlete/settings — Subscription + Delete account gating (FV-441)", 
       screen.queryByRole("button", { name: /delete my account/i }),
     ).not.toBeInTheDocument();
     expect(screen.queryByText(/manage or cancel your subscription/i)).not.toBeInTheDocument();
+    const deletion = screen.getByTestId("minor-account-deletion-note");
+    expect(deletion).toHaveTextContent(
+      "The parent who set up this account can delete it from their dashboard.",
+    );
+    expect(deletion).toHaveTextContent("privacy@fromvictoryapp.com");
+    expect(deletion.textContent?.toLowerCase()).not.toMatch(/kid|child|billing|stripe|\$/);
+    expect(deletion.querySelector("button")).toBeNull();
   });
 
   it("an adult_athlete sees both the Subscription and Delete account sections", async () => {
@@ -188,6 +195,7 @@ describe("/athlete/settings — Subscription + Delete account gating (FV-441)", 
     expect(
       screen.getByRole("heading", { name: "Delete account" }),
     ).toBeInTheDocument();
+    expect(screen.queryByTestId("minor-account-deletion-note")).not.toBeInTheDocument();
     expect(
       screen.getByText(
         /deletes your account, training history, and subscription\. this cannot be undone\./i,
@@ -665,4 +673,34 @@ describe("/athlete/settings — android-play renders exactly like legacy-native 
     await renderSettings("athlete");
     expect(screen.queryByRole("heading", { name: "Subscription" })).not.toBeInTheDocument();
   });
+});
+
+describe("/athlete/settings — daily reminder in a store shell (FV-716)", () => {
+  it("web keeps the reminder link and does not show the store-shell line", async () => {
+    shellCapabilityMock.mockReturnValue(null);
+    await renderSettings("athlete");
+    expect(screen.getByTestId("settings-reminder-btn")).toHaveAttribute(
+      "href",
+      "/athlete/settings/notifications",
+    );
+    expect(screen.queryByTestId("settings-reminder-native")).not.toBeInTheDocument();
+    expect(screen.queryByText(/add to home screen/i)).not.toBeInTheDocument();
+  });
+
+  it.each(["ios-iap", "legacy-native", "android-play"] as const)(
+    "%s replaces the reminder row with one honest line",
+    async (capability) => {
+      shellCapabilityMock.mockReturnValue(capability);
+      await renderSettings("athlete");
+      const row = screen.getByTestId("settings-reminder-native");
+      expect(row).toHaveTextContent(
+        "Daily reminders aren't available in the app yet.",
+      );
+      expect(row.tagName).not.toBe("A");
+      expect(screen.queryByTestId("settings-reminder-btn")).not.toBeInTheDocument();
+      expect(row.textContent?.toLowerCase()).not.toMatch(/add to home screen|your browser|\bedit\b/);
+      expect(screen.queryByText(/add to home screen/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/your browser/i)).not.toBeInTheDocument();
+    },
+  );
 });

@@ -16,6 +16,6 @@ import { loadDailySession, type DailySessionView } from "./progression";
  */
 export async function getDailySession(): Promise<DailySessionView> {
   const { userId, profile } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
   return loadDailySession(supabase, userId, profile.sport);
 }

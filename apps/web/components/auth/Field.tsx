@@ -44,7 +44,7 @@ export function Field({
           type={inputType}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy || undefined}
-          className={`w-full bg-onyx border border-hairline focus:border-gold rounded-md px-4 py-3 font-body text-[15px] text-cream placeholder:text-cream/30 outline-none transition-colors duration-fast ease-out focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx ${
+          className={`w-full bg-onyx border border-hairline focus:border-gold rounded-md px-4 py-3 font-body text-[16px] text-cream placeholder:text-cream/30 outline-none transition-colors duration-fast ease-out focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx ${
             canReveal ? "pr-16" : ""
           } ${className ?? ""}`}
           {...inputProps}

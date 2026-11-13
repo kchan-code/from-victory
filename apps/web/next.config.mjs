@@ -1,6 +1,28 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // FV-731: tags server actions with this deployment so a WebView left open
+  // across a ship can be recognized as stale. Keeping the previous deployment
+  // alive to serve those old clients (Skew Protection) is a Vercel dashboard
+  // setting — Project → Settings → Advanced — not something this file can turn on.
+  ...(process.env.VERCEL_DEPLOYMENT_ID
+    ? { deploymentId: process.env.VERCEL_DEPLOYMENT_ID }
+    : {}),
+  env: {
+    // Inlined at build so the client error report can name its own build.
+    // A commit SHA is not a secret. Empty in local dev.
+    NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA ?? "",
+  },
+  // Next 15 stops reusing dynamic page segments from the client router cache
+  // (staleTimes.dynamic default is 0; static stays 300). Next 14.2.35 reused
+  // dynamic segments for 30s and static segments for 300s. Restore that window
+  // so Link / router navigations keep the previous cache behavior.
+  experimental: {
+    staleTimes: {
+      dynamic: 30,
+      static: 300,
+    },
+  },
   async headers() {
     return [
       {

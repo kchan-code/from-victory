@@ -39,7 +39,7 @@ export const metadata = {
  * This page's own NODE_ENV gate is intentionally STRICTER — it exists only
  * for a local-simulator pass and must not render on Preview either.
  */
-export default function AppleIapPreviewPage() {
+export default async function AppleIapPreviewPage() {
   if (
     process.env.NODE_ENV !== "development" ||
     process.env.FV_IAP_DEV_PREVIEW !== "1"
@@ -49,7 +49,7 @@ export default function AppleIapPreviewPage() {
 
   // Real runtime facts, read the same way the production page does — no
   // synthetic values. See lib/native-shell.ts / lib/subscriptions/apple-products.ts.
-  const shellCapability = getRequestShellCapability();
+  const shellCapability = await getRequestShellCapability();
   const configuredProductCount = getConfiguredAppleProducts().length;
 
   return (

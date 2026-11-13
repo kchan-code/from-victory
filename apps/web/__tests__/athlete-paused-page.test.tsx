@@ -66,7 +66,10 @@ async function renderPage(
     userId: "athlete-1",
     profile: { id: "athlete-1", role, first_name: "Jordan" },
   });
-  const jsx = await AthletePausedPage({ searchParams });
+  const jsx = await AthletePausedPage({
+    searchParams:
+      searchParams === undefined ? undefined : Promise.resolve(searchParams),
+  });
   return render(jsx);
 }
 

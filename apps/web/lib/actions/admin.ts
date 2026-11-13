@@ -74,7 +74,7 @@ export async function createAthleteDirect(
   const { userId: parentId } = await requireAdminParent();
 
   // Belt-and-suspenders: confirm caller's email is in the admin list.
-  const userClient = createClient();
+  const userClient = await createClient();
   const {
     data: { user },
   } = await userClient.auth.getUser();

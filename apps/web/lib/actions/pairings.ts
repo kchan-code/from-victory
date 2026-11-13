@@ -47,7 +47,7 @@ export async function athleteSignIn(
   _prev: AthleteSignInState,
   formData: FormData,
 ): Promise<AthleteSignInState> {
-  const athleteId = getDeviceAthleteId();
+  const athleteId = await getDeviceAthleteId();
   if (!athleteId) {
     return {
       ok: false,
@@ -88,7 +88,7 @@ export async function athleteSignIn(
     return { ok: false, error: "Sign-in is unavailable. Please try again." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error: signInError } = await supabase.auth.signInWithPassword({
     email: userData.user.email,
     password: parsed.data.password,
@@ -233,7 +233,7 @@ export async function athleteUsernameSignIn(
   }
 
   // Attempt sign-in with the synthetic email + supplied password.
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error: signInError } = await supabase.auth.signInWithPassword({
     email: userData.user.email,
     password: parsed.data.password,
@@ -252,7 +252,7 @@ export async function athleteUsernameSignIn(
 
   // Bind the device cookie so subsequent visits on this device show the
   // password-only form (same UX as claimPairing / athleteSignIn).
-  setDeviceAthleteId(athleteId);
+  await setDeviceAthleteId(athleteId);
 
   redirect("/athlete");
 }
@@ -282,7 +282,7 @@ async function emailSignInFromAthleteTab(
     };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -303,7 +303,7 @@ async function emailSignInFromAthleteTab(
   if (profile?.role === "athlete") {
     // A minor athlete who typed their synthetic email: same device binding
     // as the username path.
-    setDeviceAthleteId(data.user.id);
+    await setDeviceAthleteId(data.user.id);
     redirect("/athlete");
   }
   if (profile?.role === "adult_athlete") {
@@ -319,8 +319,8 @@ async function emailSignInFromAthleteTab(
  * Sign in as someone else" link on the athlete sign-in screen.
  */
 export async function forgetDevice() {
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.auth.signOut();
-  clearDeviceAthleteId();
+  await clearDeviceAthleteId();
   redirect("/signin");
 }

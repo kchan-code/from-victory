@@ -3,6 +3,7 @@ import Link from "next/link";
 import ReminderSettings from "@/components/athlete/ReminderSettings";
 import { Icon } from "@/components/ui";
 import { requireAthlete } from "@/lib/auth/guards";
+import { getRequestShellCapability } from "@/lib/native-shell";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
@@ -11,7 +12,7 @@ export const metadata = {
 
 export default async function NotificationsSettingsPage() {
   const { userId } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Load the athlete's current push subscription row to hydrate the client
   // component with real initial state. We only need reminder_hour — we do NOT
@@ -40,9 +41,12 @@ export default async function NotificationsSettingsPage() {
         </Link>
       </header>
 
+      {/* FV-716 / FV-213: no Web Push in a store shell. FV-703 must not
+          offer a Day 1 reminder here until native push exists. */}
       <ReminderSettings
         initialEnabled={initialEnabled}
         initialHour={initialHour}
+        nativeShell={(await getRequestShellCapability()) !== null}
       />
     </main>
   );

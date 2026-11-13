@@ -103,7 +103,9 @@ export default function RootLayout({
         <NativeInviteLinkHandler />
         {/* FV-712: finishes/reconciles late Apple transactions. No-op outside the iOS shell. */}
         <NativeAppleTransactionSync />
-        {/* FV-395: Vercel Web Analytics — public-marketing-only via beforeSend allowlist, renders nothing */}
+        {/* FV-395 / FV-727: Vercel Web Analytics. Client gate, fail-closed
+            until auth is confirmed. No cookies() or headers() here, so
+            marketing pages stay static. */}
         <AnalyticsMount />
       </body>
     </html>

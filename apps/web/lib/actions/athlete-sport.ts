@@ -58,7 +58,7 @@ export async function selectSport(
   }
 
   const { userId } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { error } = await supabase
     .from("profiles")
@@ -124,7 +124,7 @@ export async function changeSport(
   }
 
   const { userId } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { error } = await supabase
     .from("profiles")

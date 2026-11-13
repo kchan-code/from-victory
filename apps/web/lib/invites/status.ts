@@ -68,7 +68,7 @@ export async function getInviteStatusMap(): Promise<Map<
   AthleteInviteStatus
 > | null> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase.rpc("get_athlete_invite_statuses");
     if (error) {
       console.error(`[invites.status] status rpc failed: ${error.message}`);

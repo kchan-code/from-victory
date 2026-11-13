@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { safeRedirectPath } from "@/lib/auth/safe-redirect";
 import { createClient } from "@/lib/supabase/server";
 
 // Handles the redirect that Supabase Auth issues after the user clicks
@@ -14,13 +15,13 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") ?? "/";
+  const next = url.searchParams.get("next");
 
   if (!code) {
     return NextResponse.redirect(new URL("/signin?reset=invalid", url.origin));
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
     console.error(
@@ -29,8 +30,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/signin?reset=invalid", url.origin));
   }
 
-  // Only allow internal (same-origin, leading-slash) redirects to defeat
-  // open-redirect via the next param.
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  // FV-725: relative path only. `/\evil.com` passes a startsWith("/") check
+  // because the URL parser treats "\" as "/" and resolves it off-site.
+  const safeNext = safeRedirectPath(next, url.origin);
   return NextResponse.redirect(new URL(safeNext, url.origin));
 }

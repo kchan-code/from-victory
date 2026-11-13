@@ -104,7 +104,7 @@ function GrantForm() {
             onChange={(e) => setParentEmail(e.target.value)}
             aria-invalid={!!fieldErrors["parentEmail"]}
             aria-describedby={fieldErrors["parentEmail"] ? "grant-email-error" : undefined}
-            className="w-full bg-onyx border border-hairline focus:border-gold rounded-md px-4 py-3 font-body text-[15px] text-cream placeholder:text-cream/30 outline-none transition-colors duration-fast ease-out focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            className="w-full bg-onyx border border-hairline focus:border-gold rounded-md px-4 py-3 font-body text-[16px] text-cream placeholder:text-cream/30 outline-none transition-colors duration-fast ease-out focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
             placeholder="parent@example.com"
             data-testid="grant-email-input"
           />
@@ -131,7 +131,7 @@ function GrantForm() {
             onChange={(e) => setReason(e.target.value)}
             aria-invalid={!!fieldErrors["reason"]}
             aria-describedby={fieldErrors["reason"] ? "grant-reason-error" : undefined}
-            className="w-full bg-onyx border border-hairline focus:border-gold rounded-md px-4 py-3 font-body text-[15px] text-cream placeholder:text-cream/30 outline-none transition-colors duration-fast ease-out focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            className="w-full bg-onyx border border-hairline focus:border-gold rounded-md px-4 py-3 font-body text-[16px] text-cream placeholder:text-cream/30 outline-none transition-colors duration-fast ease-out focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
             placeholder="beta tester, coach, friends & family…"
             data-testid="grant-reason-input"
           />
@@ -155,7 +155,7 @@ function GrantForm() {
             type="date"
             value={expiresAt}
             onChange={(e) => setExpiresAt(e.target.value)}
-            className="w-full bg-onyx border border-hairline focus:border-gold rounded-md px-4 py-3 font-body text-[15px] text-cream placeholder:text-cream/30 outline-none transition-colors duration-fast ease-out focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            className="w-full bg-onyx border border-hairline focus:border-gold rounded-md px-4 py-3 font-body text-[16px] text-cream placeholder:text-cream/30 outline-none transition-colors duration-fast ease-out focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
             data-testid="grant-expires-input"
           />
           <p className="mt-2 font-body text-[13px] text-cream/50">

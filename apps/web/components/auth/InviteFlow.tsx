@@ -15,7 +15,10 @@ import {
 } from "@/lib/marketing/store-platform";
 
 import { Field } from "./Field";
-import { InviteInstallChooser } from "./InviteInstallChooser";
+import {
+  InviteInstallChooser,
+  InviteSignedInNote,
+} from "./InviteInstallChooser";
 import { InviteSetupForm } from "./InviteSetupForm";
 import { SubmitButton } from "./SubmitButton";
 
@@ -24,6 +27,14 @@ const initialState: CheckInviteState = null;
 type Props = {
   /** Rendering inside the native app shell (UA hint; presentation only). */
   nativeShell: boolean;
+  /**
+   * Platform from the request User-Agent. iPhone and Android are trusted on
+   * first paint. Desktop stays unresolved until the client confirms it is
+   * not an iPad reporting a Macintosh UA, so both badges never flash.
+   */
+  initialPlatform?: StorePlatform;
+  /** Someone is already signed in on this device. Presentation only. */
+  signedIn?: boolean;
 };
 
 /**
@@ -39,12 +50,23 @@ type Props = {
  *   In a browser
  *   without code:   type the code. Store badges match the device.
  */
-export function InviteFlow({ nativeShell }: Props) {
+export function InviteFlow({
+  nativeShell,
+  initialPlatform,
+  signedIn = false,
+}: Props) {
   const [state, formAction] = useFormState(checkInvite, initialState);
   const [checking, startTransition] = useTransition();
   const [linkCode, setLinkCode] = useState<string | null>(null);
   const [hashRead, setHashRead] = useState(false);
-  const [platform, setPlatform] = useState<StorePlatform>("unknown");
+  const [platform, setPlatform] = useState<StorePlatform | null>(
+    initialPlatform ?? null,
+  );
+  // iPhone and Android UAs are decisive on the server. A desktop UA is not:
+  // iPadOS can report Macintosh until the client sees touch points.
+  const [platformResolved, setPlatformResolved] = useState(
+    initialPlatform === "ios" || initialPlatform === "android",
+  );
   const [continueHere, setContinueHere] = useState(nativeShell);
   const [copied, setCopied] = useState(false);
   const autoChecked = useRef(false);
@@ -55,6 +77,7 @@ export function InviteFlow({ nativeShell }: Props) {
     setPlatform(
       detectStorePlatform(navigator.userAgent, navigator.maxTouchPoints),
     );
+    setPlatformResolved(true);
     // Read before clearing. Next.js dev remounts once (Strict Mode); if the
     // fragment is wiped in the first effect, the second mount sees no code.
     // The clear is deferred and cancelled on cleanup so both passes read it.
@@ -91,14 +114,19 @@ export function InviteFlow({ nativeShell }: Props) {
     startTransition(() => formAction(fd));
   }, [hashRead, linkCode, continueHere, formAction]);
 
+  const badgePlatform: StorePlatform | null = platformResolved ? platform : null;
+
   if (state && state.ok) {
     return (
-      <InviteSetupForm
-        code={state.code}
-        firstName={state.firstName}
-        mode={state.mode}
-        username={state.username}
-      />
+      <>
+        <InviteSetupForm
+          code={state.code}
+          firstName={state.firstName}
+          mode={state.mode}
+          username={state.username}
+        />
+        {signedIn ? <InviteSignedInNote /> : null}
+      </>
     );
   }
 
@@ -118,8 +146,9 @@ export function InviteFlow({ nativeShell }: Props) {
     return (
       <InviteInstallChooser
         displayCode={display}
-        platform={platform}
+        platform={badgePlatform}
         copied={copied}
+        signedIn={signedIn}
         onCopy={async () => {
           try {
             await navigator.clipboard.writeText(display);
@@ -162,13 +191,14 @@ export function InviteFlow({ nativeShell }: Props) {
       </form>
       {!nativeShell ? (
         <div className="mt-8 border-t border-hairline pt-5">
-          <p className="font-body text-cream/80 text-[15px] leading-relaxed mb-3">
+          <p className="font-body font-normal text-cream/80 text-[15px] leading-relaxed mb-3">
             You can also get the From Victory app. Open it, tap I have an
-            invite, and enter your invite code.
+            invite on the welcome screen, and enter your invite code.
           </p>
-          <StoreDownloadBadges platform={platform} />
+          <StoreDownloadBadges platform={badgePlatform} />
         </div>
       ) : null}
+      {signedIn ? <InviteSignedInNote /> : null}
     </div>
   );
 }

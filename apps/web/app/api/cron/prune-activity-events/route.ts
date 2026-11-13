@@ -73,6 +73,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+import { alertCronFailure } from "@/lib/monitoring/cron-alert";
 import { createServiceClient } from "@/lib/supabase/service";
 
 // Single source of truth for the retention window. Keep in sync with the
@@ -83,12 +84,32 @@ import { createServiceClient } from "@/lib/supabase/service";
 const ACTIVITY_EVENTS_RETENTION_DAYS = 90;
 
 async function handleCronRequest(req: NextRequest) {
+  try {
+    return await runPrune(req);
+  } catch (err) {
+    console.error(
+      "[cron/prune-activity-events] threw",
+      err instanceof Error ? err.name : "Error",
+    );
+    alertCronFailure(
+      "[cron/prune-activity-events] threw",
+      err instanceof Error ? err.name : "Error",
+    );
+    return NextResponse.json({ error: "Cron failed." }, { status: 500 });
+  }
+}
+
+async function runPrune(req: NextRequest) {
   // 1. CRON_SECRET must be configured.
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     console.error(
       "[cron/prune-activity-events] CRON_SECRET is not configured. " +
         "Set this env var to protect the cron route.",
+    );
+    alertCronFailure(
+      "[cron/prune-activity-events] missing config",
+      "CRON_SECRET is not set",
     );
     return NextResponse.json(
       { error: "Cron secret not configured." },
@@ -131,6 +152,11 @@ async function handleCronRequest(req: NextRequest) {
       "[cron/prune-activity-events] rollup failed (prune skipped):",
       rollupError.message,
     );
+    alertCronFailure(
+      "[cron/prune-activity-events] rollup failed",
+      "rollup failed and prune was skipped",
+      { code: opaqueDbCode(rollupError.code) },
+    );
     return NextResponse.json({ error: "Rollup failed." }, { status: 500 });
   }
 
@@ -148,6 +174,11 @@ async function handleCronRequest(req: NextRequest) {
 
   if (error) {
     console.error("[cron/prune-activity-events] prune failed:", error.message);
+    alertCronFailure(
+      "[cron/prune-activity-events] prune failed",
+      "activity event prune failed",
+      { code: opaqueDbCode(error.code) },
+    );
     return NextResponse.json({ error: "Prune failed." }, { status: 500 });
   }
 
@@ -158,6 +189,11 @@ async function handleCronRequest(req: NextRequest) {
   );
 
   return NextResponse.json({ rolled: rolledCount, pruned });
+}
+
+/** Postgres SQLSTATE when it looks like one. Never the message (it can echo a value). */
+function opaqueDbCode(code: string | undefined): string {
+  return code && /^[A-Z0-9]{2,8}$/.test(code) ? code : "db";
 }
 
 // Vercel Cron invokes with GET; POST kept for manual ops triggering.

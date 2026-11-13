@@ -34,26 +34,26 @@ describe("isNativeShell", () => {
     headerMap = {};
   });
 
-  it("returns true when the User-Agent carries the native shell token", () => {
+  it("returns true when the User-Agent carries the native shell token", async () => {
     headerMap["user-agent"] =
       "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/120.0.0.0 Mobile Safari/537.36 FVNativeShell/1";
-    expect(isNativeShell()).toBe(true);
+    expect(await isNativeShell()).toBe(true);
   });
 
-  it("returns false for an ordinary mobile browser User-Agent", () => {
+  it("returns false for an ordinary mobile browser User-Agent", async () => {
     headerMap["user-agent"] =
       "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1";
-    expect(isNativeShell()).toBe(false);
+    expect(await isNativeShell()).toBe(false);
   });
 
-  it("returns false when the User-Agent header is missing entirely", () => {
+  it("returns false when the User-Agent header is missing entirely", async () => {
     // headerMap has no "user-agent" key at all.
-    expect(isNativeShell()).toBe(false);
+    expect(await isNativeShell()).toBe(false);
   });
 
-  it("returns false for an empty User-Agent header", () => {
+  it("returns false for an empty User-Agent header", async () => {
     headerMap["user-agent"] = "";
-    expect(isNativeShell()).toBe(false);
+    expect(await isNativeShell()).toBe(false);
   });
 });
 
@@ -98,10 +98,10 @@ describe("isNativeShellUserAgent", () => {
     expect(isNativeShellUserAgent("")).toBe(false);
   });
 
-  it("stays in lockstep with isNativeShell() for the same header value", () => {
+  it("stays in lockstep with isNativeShell() for the same header value", async () => {
     headerMap["user-agent"] = "some-browser FVNativeShell/1 extra-token";
     expect(isNativeShellUserAgent(headerMap["user-agent"])).toBe(
-      isNativeShell(),
+      await isNativeShell(),
     );
   });
 });
@@ -185,31 +185,31 @@ describe("getRequestShellCapability", () => {
     headerMap = {};
   });
 
-  it("returns ios-iap for a request carrying the iOS capability marker", () => {
+  it("returns ios-iap for a request carrying the iOS capability marker", async () => {
     headerMap["user-agent"] =
       "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 FVNativeShell/1 (ios)";
-    expect(getRequestShellCapability()).toBe("ios-iap");
+    expect(await getRequestShellCapability()).toBe("ios-iap");
   });
 
-  it("returns legacy-native for a request carrying only the bare token", () => {
+  it("returns legacy-native for a request carrying only the bare token", async () => {
     headerMap["user-agent"] =
       "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 FVNativeShell/1";
-    expect(getRequestShellCapability()).toBe("legacy-native");
+    expect(await getRequestShellCapability()).toBe("legacy-native");
   });
 
-  it("returns null for an ordinary browser request", () => {
+  it("returns null for an ordinary browser request", async () => {
     headerMap["user-agent"] =
       "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1";
-    expect(getRequestShellCapability()).toBe(null);
+    expect(await getRequestShellCapability()).toBe(null);
   });
 
-  it("returns null when the User-Agent header is missing entirely", () => {
-    expect(getRequestShellCapability()).toBe(null);
+  it("returns null when the User-Agent header is missing entirely", async () => {
+    expect(await getRequestShellCapability()).toBe(null);
   });
 
-  it("stays in lockstep with getShellCapability() for the same header value", () => {
+  it("stays in lockstep with getShellCapability() for the same header value", async () => {
     headerMap["user-agent"] = "some-browser FVNativeShell/1 (ios) extra-token";
-    expect(getRequestShellCapability()).toBe(
+    expect(await getRequestShellCapability()).toBe(
       getShellCapability(headerMap["user-agent"]),
     );
   });
@@ -291,11 +291,11 @@ describe("getShellCapability — android-play (FV-659)", () => {
     expect(isNativeShellUserAgent("Mozilla/5.0 Chrome/126.0")).toBe(false);
   });
 
-  it("isNativeShell() and getRequestShellCapability() read the (play) header", () => {
+  it("isNativeShell() and getRequestShellCapability() read the (play) header", async () => {
     headerMap["user-agent"] =
       "Mozilla/5.0 (Linux; Android 14) FVNativeShell/1 (play)";
-    expect(isNativeShell()).toBe(true);
-    expect(getRequestShellCapability()).toBe("android-play");
+    expect(await isNativeShell()).toBe(true);
+    expect(await getRequestShellCapability()).toBe("android-play");
   });
 });
 

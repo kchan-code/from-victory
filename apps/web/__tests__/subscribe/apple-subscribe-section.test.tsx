@@ -10,6 +10,7 @@
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
@@ -236,6 +237,22 @@ describe("AppleSubscribeSection — legal links (FV-601, App Review 3.1.2)", () 
   });
 });
 
+describe("AppleSubscribeSection — first paint is loading (FV-720)", () => {
+  it.each([
+    ["empty catalog", []],
+    ["configured catalog", ONE_TIER],
+  ] as const)("server HTML is a loading state for %s", (_label, catalog) => {
+    getConfiguredAppleProductsMock.mockReturnValue([...catalog]);
+    isAppleIapBridgeAvailableMock.mockReturnValue(true);
+    const html = renderToStaticMarkup(<AppleSubscribeSection />);
+    expect(html).toContain('data-testid="apple-subscribe-loading"');
+    expect(html).toContain("Loading subscription options.");
+    expect(html).not.toContain("available in this version");
+    expect(html).not.toContain("apple-subscribe-unavailable");
+    expect(html).not.toMatch(/\$\d/);
+  });
+});
+
 describe("AppleSubscribeSection — unavailable state", () => {
   it("shows the calm unavailable state with no price when no products are configured", async () => {
     getConfiguredAppleProductsMock.mockReturnValue([]);
@@ -246,6 +263,7 @@ describe("AppleSubscribeSection — unavailable state", () => {
     await waitFor(() =>
       expect(screen.getByTestId("apple-subscribe-unavailable")).toBeInTheDocument(),
     );
+    expect(screen.queryByTestId("apple-subscribe-loading")).toBeNull();
     const text = screen.getByTestId("apple-subscribe-unavailable").textContent ?? "";
     expect(text).toContain("Subscriptions aren’t available in this version yet.");
     expect(text).not.toMatch(/\$\d/);
@@ -289,6 +307,17 @@ describe("AppleSubscribeSection — first purchase, single-tier catalog", () => 
     expect(screen.getByTestId("apple-purchase-note").textContent).toBe(
       "Apple shows the final price and terms before you confirm.",
     );
+  });
+
+  it("states that the subscription renews until cancelled, and where to cancel (FV-720)", async () => {
+    await renderReady();
+    const note = screen.getByTestId("apple-renewal-note");
+    expect(note.textContent).toBe(
+      "The subscription renews automatically at the price shown until you cancel. To cancel, open Settings on your iPhone, tap your name, then Subscriptions.",
+    );
+    expect(note.textContent).not.toMatch(/\$\d/);
+    expect(note.textContent?.toLowerCase()).not.toMatch(/free|trial/);
+    expect(note.textContent).not.toContain("\u2014");
   });
 
   it("shows a loading placeholder before StoreKit prices resolve", async () => {

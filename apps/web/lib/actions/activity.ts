@@ -36,7 +36,7 @@ export async function logActivityEvent(input: ActivityEventInput): Promise<void>
     // Resolve the athlete WITHOUT requireAthlete()'s redirect side-effect —
     // telemetry must never navigate the user. A non-athlete / signed-out caller
     // is simply a no-op.
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

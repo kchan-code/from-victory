@@ -10,14 +10,29 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { NextRequest } from "next/server";
 
+const { deliverInBackgroundMock, alertCronFailureMock, runWeeklyDigestMock } =
+  vi.hoisted(() => ({
+    deliverInBackgroundMock: vi.fn((promise: Promise<unknown>) => promise),
+    alertCronFailureMock: vi.fn(),
+    runWeeklyDigestMock: vi.fn(async (..._args: unknown[]) => ({
+      eligible: 0,
+      sent: 0,
+      skipped: 0,
+      errors: 0,
+    })),
+  }));
+
 vi.mock("@/lib/monitoring/deliver", () => ({
-  deliverInBackground: vi.fn(),
+  deliverInBackground: deliverInBackgroundMock,
+}));
+
+vi.mock("@/lib/monitoring/cron-alert", () => ({
+  alertCronFailure: (...args: unknown[]) => alertCronFailureMock(...args),
+  CRON_FAILURE_ALERT_THRESHOLD: 0,
 }));
 
 vi.mock("@/lib/email/weekly-digest", () => ({
-  runWeeklyDigest: vi
-    .fn()
-    .mockResolvedValue({ eligible: 0, sent: 0, skipped: 0, errors: 0 }),
+  runWeeklyDigest: (...args: unknown[]) => runWeeklyDigestMock(...args),
 }));
 
 import { GET, POST } from "@/app/api/cron/weekly-digest/route";
@@ -34,6 +49,14 @@ const ORIGINAL_SECRET = process.env.CRON_SECRET;
 beforeEach(() => {
   vi.clearAllMocks();
   process.env.CRON_SECRET = "test-cron-secret";
+  process.env.RESEND_API_KEY = "re_test";
+  process.env.DIGEST_EMAIL_FROM = "digest@example.com";
+  runWeeklyDigestMock.mockResolvedValue({
+    eligible: 0,
+    sent: 0,
+    skipped: 0,
+    errors: 0,
+  });
 });
 
 afterEach(() => {
@@ -74,5 +97,58 @@ describe("cron weekly-digest route auth gate", () => {
     const res = await GET(makeReq("Bearer anything"));
     expect(res.status).toBe(500);
     expect(deliverInBackground).not.toHaveBeenCalled();
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/weekly-digest] missing config",
+      "CRON_SECRET is not set",
+    );
+  });
+
+  it("alerts once when mail config is missing, and still accepts the cron", async () => {
+    delete process.env.RESEND_API_KEY;
+    const res = await GET(makeReq("Bearer test-cron-secret"));
+    expect(res.status).toBe(202);
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/weekly-digest] missing config",
+      "RESEND_API_KEY or DIGEST_EMAIL_FROM is not set",
+    );
+  });
+
+  it("alerts when the background run's error count is over the threshold", async () => {
+    runWeeklyDigestMock.mockResolvedValueOnce({
+      eligible: 4,
+      sent: 2,
+      skipped: 0,
+      errors: 2,
+    });
+    const res = await GET(makeReq("Bearer test-cron-secret"));
+    expect(res.status).toBe(202);
+    await deliverInBackgroundMock.mock.results[0]?.value;
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/weekly-digest] send failures",
+      "digest run error count exceeded threshold",
+      { eligible: "4", sent: "2", skipped: "0", errors: "2" },
+    );
+  });
+
+  it("alerts when the background run rejects, with the error name only", async () => {
+    runWeeklyDigestMock.mockRejectedValueOnce(
+      new Error("parent=aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee smtp down"),
+    );
+    await GET(makeReq("Bearer test-cron-secret"));
+    await deliverInBackgroundMock.mock.results[0]?.value;
+    expect(alertCronFailureMock).toHaveBeenCalledTimes(1);
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/weekly-digest] background run rejected",
+      "Error",
+    );
+    expect(JSON.stringify(alertCronFailureMock.mock.calls)).not.toContain(
+      "eeeeeeeeeeee",
+    );
+  });
+
+  it("does not alert a clean run", async () => {
+    await GET(makeReq("Bearer test-cron-secret"));
+    await deliverInBackgroundMock.mock.results[0]?.value;
+    expect(alertCronFailureMock).not.toHaveBeenCalled();
   });
 });

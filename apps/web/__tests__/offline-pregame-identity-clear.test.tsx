@@ -48,6 +48,14 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: () => ({ auth: { getUser: getUserMock } }),
 }));
 vi.mock("@/lib/native-shell", () => ({ isNativeShell: () => false }));
+vi.mock("next/headers", () => ({
+  headers: () => ({
+    get: (name: string) =>
+      name.toLowerCase() === "user-agent"
+        ? "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+        : null,
+  }),
+}));
 vi.mock("@/components/auth/InviteFlow", () => ({ InviteFlow: () => <div /> }));
 vi.mock("@/components/auth/InviteSetupForm", () => ({ InviteSetupForm: () => <div /> }));
 vi.mock("@/lib/supabase/service", () => ({
@@ -103,7 +111,11 @@ describe("identity-switch entry points clear the previous athlete's offline entr
       },
     });
     athleteMock.mockResolvedValue({ data: { first_name: "New", username: null } });
-    render(await PairClaimPage({ searchParams: { code: "legacy-raw-code-value" } }));
+    render(
+      await PairClaimPage({
+        searchParams: Promise.resolve({ code: "legacy-raw-code-value" }),
+      }),
+    );
     expect(store.has(ATHLETE_CACHE_KEY)).toBe(false);
   });
 });

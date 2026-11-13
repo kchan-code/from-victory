@@ -18,7 +18,6 @@ android/app/*.iml
 
 # iOS
 ios/App/Pods/
-ios/App/Podfile.lock
 ios/DerivedData/
 ios/App/App.xcworkspace/xcuserdata/
 ios/App/App.xcodeproj/xcuserdata/

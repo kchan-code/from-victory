@@ -290,8 +290,10 @@ Info.plist change — see §11.
 - [ ] At least one tester installed via TestFlight
 - [ ] Shell opens `https://www.fromvictoryapp.com` (sign-in, daily training,
       pregame audio). Parent deletion still reachable at `/dashboard/settings`;
-      adult self-serve deletion at `/athlete/settings` (Apple 5.1.1(v) — confirm
-      **inside the WebView** before any public or external-TestFlight track).
+      adult self-serve deletion at `/athlete/settings`. A 13-17 athlete sees
+      on `/athlete/settings` that the parent who set up the account deletes it
+      from the parent dashboard (Apple 5.1.1(v)). Confirm
+      **inside the WebView** before any public or external-TestFlight track.
 
 Do **not** submit this build for App Review / Production until §7–§10 are done,
 [FV-211](https://linear.app/adeptiv/issue/FV-211) has a kids-privacy-officer
@@ -333,14 +335,27 @@ Accept Android-first if counsel / KC would rather not spend a review cycle yet.
 
 ### 7c. Apple 5.1.1(v) — account deletion reachability
 
-Both stores require in-app account deletion that is easy to find. Confirm
-**inside the Capacitor WebView** (not only Safari):
+Both stores require in-app account deletion that is easy to find. Athletes
+13-17 are parent-managed. The athlete does not delete the account. The app
+says so in settings, which is how a reviewer finds the path (FV-734).
 
-- Parent: `/dashboard/settings`
-- Adult 18+: `/athlete/settings`
+Confirm **inside the Capacitor WebView** (not only Safari):
 
-If a signed-in tester cannot reach deletion without leaving the app, that is a
-follow-up product PR — not copy-paste native chrome.
+- Parent: `/dashboard/settings`. The parent who created the account deletes
+  it, or removes one athlete, from the parent dashboard.
+- Adult 18+: `/athlete/settings`. An adult athlete deletes their own account
+  there.
+- Athlete 13-17: `/athlete/settings` shows one line and no delete button and
+  no billing. The line says the parent who set up the account can delete it
+  from their dashboard, and gives `privacy@fromvictoryapp.com` if the athlete
+  needs help. A 13-17 athlete cannot delete the account. That privacy
+  boundary stays (FV-441). The line is the discoverable explanation.
+
+Review notes should say this so App Review does not look for a self-delete
+button on a 13-17 account.
+
+If a signed-in parent or adult athlete cannot reach deletion without leaving
+the app, that is a follow-up product PR, not copy-paste native chrome.
 
 ### 7d. Privacy nutrition labels + age (preview; fill in §9–§10)
 
@@ -380,7 +395,7 @@ football, baseball, lacrosse, soccer — not swimming or other v2 books).
 | Category | Primary (+ optional secondary) | **KC pick.** Likely Sports or Health & Fitness — **not** Kids. |
 | App Store icon | 1024×1024 PNG, no alpha | Source: `apps/native/resources/icon.png` (from PWA `icon-512.png`). Regenerating iOS AppIcon: `apps/native/resources/README.md` |
 | Screenshots | Required size classes for devices you support (typically 6.7-inch iPhone in Connect’s current form) | Dark-mode athlete surfaces. Capture on a real device from Internal TestFlight. Do not mock marketing scenes. |
-| Review notes | Needed before App Review ([FV-214](https://linear.app/adeptiv/issue/FV-214)) | Credentials for a **paid parent + paired athlete** so Apple sees the real product, not the marketing site. Include the 4.2 justification and where deletion lives. |
+| Review notes | Needed before App Review ([FV-214](https://linear.app/adeptiv/issue/FV-214)) | Credentials for a **paid parent + paired athlete** so Apple sees the real product, not the marketing site. Include the 4.2 justification and where deletion lives. For a 13-17 athlete, deletion is parent-managed: settings explain that the parent deletes the account from the parent dashboard (`/dashboard/settings`). Adult athletes delete from `/athlete/settings`. Fallback contact: `privacy@fromvictoryapp.com`. |
 
 Pricing: **Free** to install. Subscriptions are Stripe on the website. Do not
 set a paid download price. Do not create IAP products in Connect in this pass.

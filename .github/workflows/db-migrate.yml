@@ -7,10 +7,16 @@
 #
 # This job pushes pending migrations the moment a migration lands on main.
 #
-# Known v1 limitation (documented, accepted): Vercel deploys in parallel with
-# this job, so a seconds-to-minutes code-before-schema race window remains —
-# vs. the hours-to-days gap of the manual process. v2 (not built): gate the
-# Vercel promotion on this job via a deploy hook / ignored-build-step.
+# Migrate-before-deploy (FV-731): vercel.json ignoreCommand skips the automatic
+# production build when this push changes supabase/migrations AND the Vercel
+# env FV_MIGRATE_BEFORE_DEPLOY=1. This job then applies the schema and runs
+# `vercel deploy --prod` with FV_DEPLOY_AFTER_MIGRATE=1 so that second build
+# is not skipped. Until the flag and the Vercel token secrets below are set,
+# git auto-deploy still races this job (the old v1 window). Order of operations
+# and the rollback rules: docs/runbooks/rollback.md.
+#
+#   VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID — set these BEFORE turning
+#   on FV_MIGRATE_BEFORE_DEPLOY, or a migration commit is skipped and never ships.
 #
 # Required repo secrets (KC sets these — the job fails LOUDLY without them):
 #   SUPABASE_ACCESS_TOKEN — personal access token (supabase.com/dashboard/account/tokens)
@@ -70,3 +76,36 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: supabase migration list --linked
+
+      # Runs only after "Push migrations" succeeds. A failed db push does not
+      # promote code. CLI deploys still execute ignoreCommand; FV_DEPLOY_AFTER_MIGRATE
+      # is the signal that schema is already current and the build must proceed.
+      - name: Check whether a post-migration production deploy is configured
+        id: vercel
+        env:
+          HAS_TOKEN: ${{ secrets.VERCEL_TOKEN != '' && 'yes' || '' }}
+          HAS_ORG: ${{ secrets.VERCEL_ORG_ID != '' && 'yes' || '' }}
+          HAS_PROJECT: ${{ secrets.VERCEL_PROJECT_ID != '' && 'yes' || '' }}
+        run: |
+          if [ -n "$HAS_TOKEN" ] && [ -n "$HAS_ORG" ] && [ -n "$HAS_PROJECT" ]; then
+            echo "configured=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=no" >> "$GITHUB_OUTPUT"
+            echo "::warning::VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID are not all set. This job applied migrations but did not deploy. Leave Vercel env FV_MIGRATE_BEFORE_DEPLOY unset until those secrets exist, or the automatic production build is skipped and this commit never ships. See docs/runbooks/rollback.md."
+          fi
+
+      - uses: actions/setup-node@v7
+        if: steps.vercel.outputs.configured == 'yes'
+        with:
+          node-version: "22"
+
+      - name: Deploy production after migrations
+        if: steps.vercel.outputs.configured == 'yes'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          npm install --global vercel@65.15.0
+          vercel deploy --prod --yes --token "$VERCEL_TOKEN" \
+            --build-env FV_DEPLOY_AFTER_MIGRATE=1

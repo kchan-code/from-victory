@@ -5,7 +5,7 @@
 // DailySession; this handles anything else (auth failures caught by the guard
 // redirect, network errors, etc.).
 
-import { useEffect } from "react";
+import { useReportClientError } from "@/components/errors/useReportClientError";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -13,10 +13,7 @@ interface ErrorProps {
 }
 
 export default function AthleteError({ error, reset }: ErrorProps) {
-  useEffect(() => {
-    // Log to the console in dev; replace with a structured logger if one lands.
-    console.error("[athlete] unhandled error:", error);
-  }, [error]);
+  useReportClientError(error);
 
   return (
     <main id="main-content" className="min-h-screen bg-onyx px-5 py-10 sm:px-8 flex items-center justify-center">

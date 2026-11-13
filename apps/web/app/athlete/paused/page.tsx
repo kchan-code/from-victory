@@ -56,11 +56,12 @@ export const metadata = {
  * launch. It is intentionally in Mentor voice (warm, direct, no shame).
  */
 
-export default async function AthletePausedPage({
-  searchParams,
-}: {
-  searchParams?: { reason?: string | string[] };
-}) {
+export default async function AthletePausedPage(
+  props: {
+    searchParams?: Promise<{ reason?: string | string[] }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   // Confirm the visitor is a signed-in athlete. If not signed in,
   // requireAthlete() redirects to /signin — no risk of sign-out loop.
   const { profile } = await requireAthlete();
@@ -87,7 +88,7 @@ export default async function AthletePausedPage({
   // ios-iap shell instead gets the same reactivate link as web — it already
   // carries no price, so it doubles as the in-app entry to /subscribe, where
   // AppleSubscribeSection renders the real StoreKit purchase surface.
-  const legacyNative = isRestrictedShell(getRequestShellCapability());
+  const legacyNative = isRestrictedShell(await getRequestShellCapability());
 
   return (
     <main id="main-content" className="min-h-screen bg-onyx flex flex-col px-5 pb-[calc(48px+env(safe-area-inset-bottom,0px))]">

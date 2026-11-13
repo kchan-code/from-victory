@@ -2,7 +2,10 @@ import { notFound } from "next/navigation";
 
 import { AuthShell, type AuthStep } from "@/components/auth/AuthShell";
 import { AdultSignUpForm } from "@/components/auth/AdultSignUpForm";
-import { TrialDisclosure } from "@/components/auth/TrialDisclosure";
+import {
+  IosSignupSubscriptionNote,
+  TrialDisclosure,
+} from "@/components/auth/TrialDisclosure";
 import { redirectIfAuthed } from "@/lib/auth/guards";
 import { isAdultSignupEnabled } from "@/lib/flags";
 import { getRequestShellCapability } from "@/lib/native-shell";
@@ -23,9 +26,10 @@ export default async function AdultSignUpPage() {
   if (!isAdultSignupEnabled()) notFound();
   await redirectIfAuthed();
 
-  // Same native-shell rule as the parent form: no hardcoded web price or
-  // trial line inside ios-iap (StoreKit) or a restricted shell.
-  const showWebTrialCopy = getRequestShellCapability() === null;
+  // Same native-shell rule as the parent form: web price and trial length
+  // on the website only. ios-iap points at the in-app step. A restricted
+  // shell shows no price.
+  const shellCapability = await getRequestShellCapability();
 
   return (
     <AuthShell
@@ -35,8 +39,10 @@ export default async function AdultSignUpPage() {
     >
       <AdultSignUpForm
         afterSubmit={
-          showWebTrialCopy ? (
+          shellCapability === null ? (
             <TrialDisclosure detail="Free trial for first-time subscribers. Next, you pick a plan." />
+          ) : shellCapability === "ios-iap" ? (
+            <IosSignupSubscriptionNote />
           ) : undefined
         }
       />

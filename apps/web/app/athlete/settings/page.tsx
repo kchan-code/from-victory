@@ -19,10 +19,13 @@ import { appleSubscriptionNoticeFor } from "@/lib/subscriptions/apple-delete-not
 import { SUPPORTED_SPORTS, sportLabel, type Sport } from "@/lib/sports";
 import { FOCUS_AREA_LABELS, isFocusAreaKey } from "@/lib/quiz-config";
 import { formatHour } from "@/lib/push/format";
+import { NATIVE_REMINDER_UNAVAILABLE_COPY } from "@/lib/push/native-reminder-copy";
 
 export const metadata = {
   title: "Settings",
 };
+
+const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
 function isSport(value: string | undefined): value is Sport {
   return (
@@ -30,13 +33,14 @@ function isSport(value: string | undefined): value is Sport {
   );
 }
 
-export default async function AthleteSettingsPage({
-  searchParams,
-}: {
-  searchParams?: { switched?: string; updated?: string };
-}) {
+export default async function AthleteSettingsPage(
+  props: {
+    searchParams?: Promise<{ switched?: string; updated?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const { profile, userId } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // FV-441: an adult_athlete (18+ self-serve payer) is their own billing
   // account, so Subscription + Delete account sections apply to them only.
@@ -54,9 +58,11 @@ export default async function AthleteSettingsPage({
   // so it gets its own price-free /subscribe entry instead of
   // BillingPortalButton — /subscribe renders AppleSubscribeSection (purchase
   // + restore + manage) for that capability.
-  const shellCapability = getRequestShellCapability();
+  const shellCapability = await getRequestShellCapability();
   const legacyNative = isRestrictedShell(shellCapability);
   const iosIap = shellCapability === "ios-iap";
+  // FV-716: either store shell. Web Push cannot be delivered (FV-213).
+  const storeShell = shellCapability !== null;
 
   // FV-579: an adult_athlete is their own payer, so the ios-iap subscription
   // control must be provider-aware and error-visible — mirroring the
@@ -253,32 +259,52 @@ export default async function AthleteSettingsPage({
           >
             Notifications
           </h2>
-          <Link
-            href="/athlete/settings/notifications"
-            data-testid="settings-reminder-btn"
-            className="flex min-h-[60px] w-full items-center gap-4 rounded-[12px] border border-hairline bg-charcoal px-4 py-3.5 no-underline transition-colors duration-fast ease-out hover:border-gold/40 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-          >
-            <span className="flex-none text-cream/50">
-              <Icon name="bell" size={18} />
-            </span>
-            <span className="flex-1 min-w-0">
-              <span className="block font-heading text-[16px] font-semibold leading-tight text-cream">
-                Daily reminder
+          {storeShell ? (
+            <div
+              role="status"
+              data-testid="settings-reminder-native"
+              className="flex min-h-[60px] w-full items-center gap-4 rounded-[12px] border border-hairline bg-charcoal px-4 py-3.5"
+            >
+              <span className="flex-none text-cream/50">
+                <Icon name="bell" size={18} />
               </span>
-              <span className="mt-0.5 block font-body text-[13px] leading-snug text-cream/50">
-                A steady nudge to keep your rhythm.
+              <span className="flex-1 min-w-0">
+                <span className="block font-heading text-[16px] font-semibold leading-tight text-cream">
+                  Daily reminder
+                </span>
+                <span className="mt-0.5 block font-body text-[13px] leading-snug text-cream/60">
+                  {NATIVE_REMINDER_UNAVAILABLE_COPY}
+                </span>
               </span>
-            </span>
-            <span className="flex-none font-heading text-[14px] font-semibold text-cream/70">
-              {pushSub !== null
-                ? `On · ${formatHour(pushSub.reminder_hour)}`
-                : "Off"}
-            </span>
-            <span className="flex flex-none items-center gap-1 font-heading text-[13px] font-semibold text-gold">
-              Edit
-              <Icon name="arrowRight" size={16} color="var(--fv-gold)" />
-            </span>
-          </Link>
+            </div>
+          ) : (
+            <Link
+              href="/athlete/settings/notifications"
+              data-testid="settings-reminder-btn"
+              className="flex min-h-[60px] w-full items-center gap-4 rounded-[12px] border border-hairline bg-charcoal px-4 py-3.5 no-underline transition-colors duration-fast ease-out hover:border-gold/40 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
+            >
+              <span className="flex-none text-cream/50">
+                <Icon name="bell" size={18} />
+              </span>
+              <span className="flex-1 min-w-0">
+                <span className="block font-heading text-[16px] font-semibold leading-tight text-cream">
+                  Daily reminder
+                </span>
+                <span className="mt-0.5 block font-body text-[13px] leading-snug text-cream/50">
+                  A steady nudge to keep your rhythm.
+                </span>
+              </span>
+              <span className="flex-none font-heading text-[14px] font-semibold text-cream/70">
+                {pushSub !== null
+                  ? `On · ${formatHour(pushSub.reminder_hour)}`
+                  : "Off"}
+              </span>
+              <span className="flex flex-none items-center gap-1 font-heading text-[13px] font-semibold text-gold">
+                Edit
+                <Icon name="arrowRight" size={16} color="var(--fv-gold)" />
+              </span>
+            </Link>
+          )}
         </section>
 
         {/* ── ACCOUNT ── */}
@@ -293,6 +319,25 @@ export default async function AthleteSettingsPage({
             Account
           </h2>
           <SignOutButton className="inline-flex w-full items-center justify-center rounded-[12px] border border-hairline bg-charcoal px-5 py-4 font-heading text-[14px] font-semibold text-cream/70 transition-colors duration-fast ease-out hover:text-cream hover:border-cream/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx" />
+          {/* FV-734 / Apple 5.1.1(v): a 13-17 athlete can find how deletion
+              works. No button and no billing. The parent deletes from the
+              dashboard. Adults keep the delete section below. */}
+          {!isAdult ? (
+            <p
+              data-testid="minor-account-deletion-note"
+              className="mt-4 font-body text-[14px] leading-relaxed text-cream/60"
+            >
+              The parent who set up this account can delete it from their
+              dashboard. For help, email{" "}
+              <a
+                href={`mailto:${PRIVACY_EMAIL}`}
+                className="text-cream/80 underline underline-offset-2 hover:text-gold"
+              >
+                {PRIVACY_EMAIL}
+              </a>
+              .
+            </p>
+          ) : null}
         </section>
 
         {/* ── SUBSCRIPTION + DELETE ACCOUNT (adult_athlete only) ──

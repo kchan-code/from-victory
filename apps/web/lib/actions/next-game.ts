@@ -126,7 +126,7 @@ export async function saveNextGame(
   }
 
   const { userId } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const localToday = localTodayInTz(parsed.data.timezone);
   const nextGameOn = computeNextGameDate(parsed.data.answer, localToday);

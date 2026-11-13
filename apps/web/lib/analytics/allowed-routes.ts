@@ -10,6 +10,12 @@
  * @vercel/analytics import) so it's trivially unit-testable and so the
  * allowlist is reviewable in one place without digging through the
  * Analytics mount component.
+ *
+ * FV-727: the allowlist is necessary but not sufficient. /privacy and
+ * /terms are marketing pages and are also linked from in-app Settings.
+ * shouldMountAnalytics (./mount.ts) keeps the script off for a signed-in
+ * minor (role `athlete`) and for every native store shell, on any route.
+ * Signed-out browser visitors on the paths below are unchanged.
  */
 
 /** Paths that must match exactly (no sub-path tracking). */

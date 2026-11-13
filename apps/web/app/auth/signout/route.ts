@@ -18,7 +18,7 @@ import { createClient } from "@/lib/supabase/server";
 // which bounces it back to /signin — forever.
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.auth.signOut();
   return NextResponse.redirect(
     new URL("/signin?error=session_invalid", url.origin),

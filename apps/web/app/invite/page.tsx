@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 
 import { AuthShell } from "@/components/auth/AuthShell";
 import { InviteFlow } from "@/components/auth/InviteFlow";
 import { ClearOfflinePregameOnMount } from "@/components/pregame/ClearOfflinePregameOnMount";
 import { isNativeShell } from "@/lib/native-shell";
+import { detectStorePlatform } from "@/lib/marketing/store-platform";
 import { createClient } from "@/lib/supabase/server";
 
 const siteUrl = "https://www.fromvictoryapp.com";
@@ -40,14 +42,15 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function InvitePage() {
-  const nativeShell = isNativeShell();
+  const nativeShell = await isNativeShell();
+  const initialPlatform = detectStorePlatform((await headers()).get("user-agent"));
 
   // Someone already signed in on this device (a parent on their own phone, or
   // another athlete) is told up front that finishing setup switches the
   // device to this athlete. Presentation only — no redirect.
   let signedIn = false;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -59,6 +62,7 @@ export default async function InvitePage() {
   return (
     <AuthShell
       title="Your invite"
+      compact
       footer={
         <Link href="/signin" className="text-cream/70 hover:text-cream no-underline">
           Already set up? Sign in
@@ -69,16 +73,11 @@ export default async function InvitePage() {
           device without passing /signin — drop the previous athlete's
           offline-pregame entry first (see the component's doc). */}
       <ClearOfflinePregameOnMount />
-      {signedIn ? (
-        <p
-          role="note"
-          className="mb-6 rounded-[10px] border border-hairline bg-onyx px-3.5 py-3 font-body text-[13px] text-cream/70"
-        >
-          Someone is signed in on this device. Finishing this invite signs
-          them out here and signs in the invited athlete.
-        </p>
-      ) : null}
-      <InviteFlow nativeShell={nativeShell} />
+      <InviteFlow
+        nativeShell={nativeShell}
+        initialPlatform={initialPlatform}
+        signedIn={signedIn}
+      />
     </AuthShell>
   );
 }

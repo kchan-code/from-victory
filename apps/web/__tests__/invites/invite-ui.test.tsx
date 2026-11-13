@@ -39,16 +39,25 @@ vi.mock("@/lib/actions/email-signup", () => ({
 vi.mock("@/lib/actions/pairings", () => ({ athleteUsernameSignIn: vi.fn() }));
 vi.mock("@/lib/pregame/session-cache", () => ({ clearPregameSession: vi.fn() }));
 vi.mock("next/image", () => ({
-  // reason: test stub for next/image; renders a plain img with the same alt.
-  default: (props: { alt: string; src: string }) => <img alt={props.alt} src={props.src} />,
+  // reason: test stub for next/image; keeps alt and the display size.
+  default: (props: { alt: string; src: string; width?: number; height?: number }) => (
+    <img alt={props.alt} src={props.src} width={props.width} height={props.height} />
+  ),
 }));
 
 import { InviteFlow } from "@/components/auth/InviteFlow";
 import { InviteSetupForm } from "@/components/auth/InviteSetupForm";
 import { SignInChooser } from "@/components/auth/SignInChooser";
 import { InvitePanel } from "@/components/dashboard/InvitePanel";
+import { StoreDownloadBadges } from "@/components/landing/StoreDownloadBadges";
 import { PLAY_STORE_URL } from "@/lib/marketing/play-store";
 import { APP_STORE_URL } from "@/lib/marketing/app-store";
+
+function assertStoreUrl(href: string | null) {
+  expect(href).toBeTruthy();
+  const keys = [...new URL(href!).searchParams.keys()];
+  expect(keys.every((key) => key === "id")).toBe(true);
+}
 
 const IPHONE_UA =
   "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
@@ -108,7 +117,7 @@ describe("InvitePanel (parent)", () => {
     expect(screen.getByRole("button", { name: "Create invite" })).toBeInTheDocument();
   });
 
-  it("pending → explains the code can't be shown again; offers a replacement, never an old code", () => {
+  it("pending → waiting chip, code shown once, replacement stays behind a confirm", () => {
     render(
       <InvitePanel
         athleteId={ATHLETE}
@@ -116,9 +125,24 @@ describe("InvitePanel (parent)", () => {
         status={{ state: "pending", expiresAt: EXP, pendingRecovery: false }}
       />,
     );
-    expect(screen.getByTestId("invite-state-pending")).toHaveTextContent(/only shown when it.s created/i);
-    expect(screen.getByRole("button", { name: "Create a new invite" })).toBeInTheDocument();
+    const panel = screen.getByTestId("invite-state-pending");
+    expect(panel).toHaveTextContent("Waiting for Ava");
+    expect(panel).toHaveTextContent(/hasn.t finished setting up yet/i);
+    expect(panel).toHaveTextContent(/works until/i);
+    expect(panel).toHaveTextContent(/only show an invite code once/i);
+    expect(screen.getByTestId("invite-replace")).toHaveTextContent("Make a new invite");
     expect(screen.queryByTestId("invite-code")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("invite-replace-confirm")).not.toBeInTheDocument();
+    expect(panel.textContent).not.toMatch(/—|–/);
+
+    fireEvent.click(screen.getByTestId("invite-replace"));
+    expect(formActionMock).not.toHaveBeenCalled();
+    const confirm = screen.getByTestId("invite-replace-confirm");
+    expect(confirm).toHaveAttribute("type", "submit");
+    expect(confirm).toHaveTextContent("Replace invite");
+    const form = confirm.closest("form");
+    expect(form?.querySelector('input[name="athlete_id"]')).toHaveValue(ATHLETE);
+    expect(screen.getByTestId("invite-replace").closest("form")).toBeNull();
   });
 
   it("ready → separate recovery that keeps the username", () => {
@@ -130,6 +154,8 @@ describe("InvitePanel (parent)", () => {
       />,
     );
     const panel = screen.getByTestId("invite-state-ready");
+    expect(screen.getByTestId("invite-status-chip")).toHaveTextContent("Set up");
+    expect(panel).toHaveTextContent(/account is ready/i);
     expect(panel).toHaveTextContent(/keeps their username/i);
     expect(screen.getByRole("button", { name: "Create reset code" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /create invite/i })).not.toBeInTheDocument();
@@ -144,13 +170,48 @@ describe("InvitePanel (parent)", () => {
         status={{ state: "pending", expiresAt: EXP, pendingRecovery: false }}
       />,
     );
+    const panel = screen.getByTestId("invite-issued");
     expect(screen.getByTestId("invite-code")).toHaveTextContent("7KQ2-M9XD-4HTR-PW3B");
-    expect(screen.getByTestId("invite-share")).toHaveTextContent("Share invite");
-    expect(screen.getByRole("button", { name: "Copy link" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Copy code" })).toBeInTheDocument();
-    expect(screen.getByTestId("invite-replace")).toHaveTextContent("Create a new invite");
+    expect(screen.getByTestId("invite-share")).toHaveTextContent("Send invite to Ava");
+    expect(screen.getByRole("button", { name: "Copy invite link" })).toBeInTheDocument();
+    expect(screen.getByTestId("invite-backup")).toHaveTextContent("7KQ2-M9XD-4HTR-PW3B");
+    expect(screen.getByRole("button", { name: "Copy" })).toBeInTheDocument();
+    expect(panel).toHaveTextContent(/works one time and expires/i);
+    expect(panel).toHaveTextContent(/can.t show this code again/i);
+    expect(panel).toHaveTextContent("What Ava does next");
+    expect(panel).toHaveTextContent("Use this on Android.");
+    expect(screen.getByTestId("invite-replace")).toHaveTextContent("Replace this invite");
+    expect(screen.queryByTestId("invite-replace-confirm")).not.toBeInTheDocument();
+    expect(panel.textContent).not.toMatch(/—|–/);
     // Screen readers hear that a code was created.
-    expect(screen.getByRole("status")).toHaveTextContent("Invite code created: 7KQ2-M9XD-4HTR-PW3B.");
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Invite created. Backup code 7KQ2-M9XD-4HTR-PW3B.",
+    );
+  });
+
+  it("replace asks before it turns the invite off", () => {
+    formState.current = { ok: true, code: "7KQ2M9XD4HTRPW3B", purpose: "invite", expiresAt: EXP };
+    render(
+      <InvitePanel
+        athleteId={ATHLETE}
+        athleteFirstName="Ava"
+        status={{ state: "pending", expiresAt: EXP, pendingRecovery: false }}
+      />,
+    );
+    const trigger = screen.getByTestId("invite-replace");
+    expect(trigger).toHaveAttribute("type", "button");
+    fireEvent.click(trigger);
+    expect(formActionMock).not.toHaveBeenCalled();
+    expect(screen.getByText("Replace Ava's invite?")).toBeInTheDocument();
+    const confirm = screen.getByTestId("invite-replace-confirm");
+    expect(confirm).toHaveAttribute("type", "submit");
+    expect(confirm.closest("form")?.querySelector('input[name="athlete_id"]')).toHaveValue(
+      ATHLETE,
+    );
+    expect(trigger.closest("form")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Keep this invite" }));
+    expect(screen.queryByTestId("invite-replace-confirm")).not.toBeInTheDocument();
+    expect(formActionMock).not.toHaveBeenCalled();
   });
 
   it("share sends the fragment link (code never in a query string)", async () => {
@@ -165,6 +226,15 @@ describe("InvitePanel (parent)", () => {
     expect(arg.url).toBe(`${window.location.origin}/invite#code=7KQ2-M9XD-4HTR-PW3B`);
     expect(arg.url).not.toContain("?");
     expect(arg.text).toContain("7KQ2-M9XD-4HTR-PW3B");
+    expect(arg.text).not.toContain("Ava");
+    expect(arg.text).not.toMatch(/—|–/);
+    const installAt = arg.text.indexOf("1. Get the From Victory app");
+    const linkAt = arg.text.indexOf("2. Then tap this link");
+    expect(installAt).toBeGreaterThanOrEqual(0);
+    expect(linkAt).toBeGreaterThan(installAt);
+    expect(arg.text.indexOf(arg.url)).toBeGreaterThan(linkAt);
+    expect(screen.getByTestId("invite-share")).toHaveTextContent("Send it again");
+    expect(screen.queryByText(/Paste it in a text/i)).not.toBeInTheDocument();
     Reflect.deleteProperty(navigator, "share");
   });
 
@@ -177,8 +247,11 @@ describe("InvitePanel (parent)", () => {
         status={{ state: "ready", expiresAt: null, pendingRecovery: false }}
       />,
     );
-    expect(screen.getByTestId("invite-issued")).toHaveTextContent(/username stays the same/i);
-    expect(screen.getByTestId("invite-share")).toHaveTextContent("Share reset link");
+    const panel = screen.getByTestId("invite-issued");
+    expect(panel).toHaveTextContent(/username stays the same/i);
+    expect(screen.getByTestId("invite-share")).toHaveTextContent("Send reset link to Ava");
+    expect(screen.getByTestId("invite-replace")).toHaveTextContent("Replace this reset code");
+    expect(panel).toHaveTextContent(/This reset code works one time and expires/i);
   });
 
   it("surfaces a create error", () => {
@@ -230,45 +303,50 @@ describe("InviteFlow (athlete)", () => {
       return screen.getAllByRole("listitem").map((item) => item.getAttribute("data-testid") ?? "");
     }
 
-    it("iPhone: App Store, then tap the link again, then type the code as the fallback", async () => {
+    it("iPhone: App Store, tap the link again, and a collapsed code disclosure", async () => {
       await renderLinked(IPHONE_UA);
       const chooser = screen.getByTestId("invite-install-chooser");
       expect(chooser).toHaveAttribute("data-platform", "ios");
       expect(chooser).toHaveTextContent("Train in the From Victory app.");
       expect(chooser).not.toHaveTextContent(/on iPhone, or keep going/i);
       expect(chooser).not.toHaveTextContent(/need to type anything/i);
+      expect(chooser.textContent).not.toMatch(/—|–/);
 
-      expect(stepIds()).toEqual([
-        "invite-step-get-app",
-        "invite-step-reopen",
-        "invite-step-code",
-      ]);
+      expect(stepIds()).toEqual(["invite-step-get-app", "invite-step-reopen"]);
       const getApp = screen.getByTestId("invite-step-get-app");
       const reopen = screen.getByTestId("invite-step-reopen");
-      const code = screen.getByTestId("invite-step-code");
       expect(getApp.compareDocumentPosition(reopen) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-      expect(reopen.compareDocumentPosition(code) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
       expect(getApp).toHaveTextContent("Get the app.");
-      expect(screen.getByRole("link", { name: "Download on the App Store" })).toHaveAttribute(
-        "href",
-        APP_STORE_URL,
+      const appStore = screen.getByRole("link", { name: "Download on the App Store" });
+      expect(appStore).toHaveAttribute("href", APP_STORE_URL);
+      assertStoreUrl(appStore.getAttribute("href"));
+      expect(screen.getByRole("img", { name: "Download on the App Store" })).toHaveAttribute(
+        "height",
+        "44",
+      );
+      expect(screen.getByRole("img", { name: "Download on the App Store" })).toHaveAttribute(
+        "width",
+        "132",
       );
       expect(screen.queryByRole("link", { name: "Get it on Google Play" })).not.toBeInTheDocument();
 
-      expect(reopen).toHaveTextContent(
-        "After it installs, come back to your text and tap the link again. The app opens your setup. You do not type this code.",
-      );
-      expect(code).toHaveTextContent(
-        "Or open From Victory, tap I have an invite, and enter this code.",
-      );
+      expect(reopen).toHaveTextContent("Tap your invite link again.");
+      expect(reopen).toHaveTextContent("The app opens your setup. No code needed.");
+      expect(screen.queryByTestId("invite-chooser-code")).not.toBeInTheDocument();
+
+      const disclosure = screen.getByTestId("invite-type-code");
+      expect(disclosure).toHaveAttribute("aria-expanded", "false");
+      fireEvent.click(disclosure);
+      expect(disclosure).toHaveAttribute("aria-expanded", "true");
+      expect(screen.getByText(/Open From Victory, tap/i)).toBeInTheDocument();
       expect(screen.getByTestId("invite-chooser-code")).toHaveTextContent("7KQ2-M9XD-4HTR-PW3B");
-      expect(screen.getByRole("button", { name: "Copy code" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Copy" })).toBeInTheDocument();
 
       const cont = screen.getByTestId("invite-continue-browser");
       expect(cont.className).not.toMatch(/w-full/);
-      expect(code.compareDocumentPosition(cont) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-      expect(chooser).toHaveTextContent("Finish setup on this page instead of in the app.");
+      expect(reopen.compareDocumentPosition(cont) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(chooser).not.toHaveTextContent("Finish setup on this page");
     });
 
     it("iPad: App Store and the same reopen path as iPhone", async () => {
@@ -277,63 +355,86 @@ describe("InviteFlow (athlete)", () => {
       expect(screen.getByRole("link", { name: "Download on the App Store" })).toBeInTheDocument();
       expect(screen.queryByRole("link", { name: "Get it on Google Play" })).not.toBeInTheDocument();
       expect(screen.getByTestId("invite-step-reopen")).toHaveTextContent(
-        "come back to your text and tap the link again",
+        "Tap your invite link again.",
       );
     });
 
-    it("Android: Google Play, and typing the code is the main path", async () => {
+    it("Android: Google Play, welcome-screen invite door, then the code", async () => {
       await renderLinked(ANDROID_UA);
       const chooser = screen.getByTestId("invite-install-chooser");
       expect(chooser).toHaveAttribute("data-platform", "android");
       expect(chooser).toHaveTextContent("Train in the From Victory app.");
       expect(chooser).not.toHaveTextContent(/iPhone/i);
       expect(chooser).not.toHaveTextContent(/tap the link again/i);
-      expect(chooser).not.toHaveTextContent(/need to type anything/i);
+      expect(chooser).not.toHaveTextContent(/bottom of the sign-in/i);
+      expect(chooser.textContent).not.toMatch(/—|–/);
 
-      expect(stepIds()).toEqual(["invite-step-get-app", "invite-step-code"]);
+      expect(stepIds()).toEqual([
+        "invite-step-get-app",
+        "invite-step-open",
+        "invite-step-code",
+      ]);
       const getApp = screen.getByTestId("invite-step-get-app");
+      const open = screen.getByTestId("invite-step-open");
       const code = screen.getByTestId("invite-step-code");
-      expect(getApp.compareDocumentPosition(code) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(getApp.compareDocumentPosition(open) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(open.compareDocumentPosition(code) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
       expect(screen.queryByRole("link", { name: "Download on the App Store" })).not.toBeInTheDocument();
-      expect(screen.getByRole("link", { name: "Get it on Google Play" })).toHaveAttribute(
-        "href",
-        PLAY_STORE_URL,
+      const play = screen.getByRole("link", { name: "Get it on Google Play" });
+      expect(play).toHaveAttribute("href", PLAY_STORE_URL);
+      assertStoreUrl(play.getAttribute("href"));
+      expect(screen.getByRole("img", { name: "Get it on Google Play" })).toHaveAttribute(
+        "width",
+        "148",
       );
-      expect(code).toHaveTextContent(
-        "Open From Victory, tap I have an invite, and enter this code.",
+      expect(screen.getByRole("img", { name: "Get it on Google Play" })).toHaveAttribute(
+        "height",
+        "44",
       );
-      expect(code).not.toHaveTextContent(/^Or open/);
+      expect(open).toHaveTextContent("Open From Victory and tap I have an invite.");
+      expect(open).toHaveTextContent(/It.s on the welcome screen/);
+      expect(code).toHaveTextContent("Enter this code.");
+      expect(code).toHaveTextContent("Your invite code");
       expect(screen.getByTestId("invite-chooser-code")).toHaveTextContent("7KQ2-M9XD-4HTR-PW3B");
       expect(screen.getByRole("button", { name: "Copy code" })).toBeInTheDocument();
-      expect(chooser).toHaveTextContent("Finish setup on this page instead of in the app.");
+      expect(chooser).not.toHaveTextContent("Finish setup on this page");
       expect(formActionMock).not.toHaveBeenCalled();
     });
 
-    it("desktop: both stores, iPhone reopen, and Android code entry", async () => {
+    it("desktop: both stores, an iPhone default, and an Android toggle", async () => {
       await renderLinked(DESKTOP_UA);
       const chooser = screen.getByTestId("invite-install-chooser");
       expect(chooser).toHaveAttribute("data-platform", "unknown");
+      expect(chooser).toHaveTextContent("Get the app on your phone.");
+      expect(stepIds()).toEqual(["invite-step-get-app", "invite-step-reopen"]);
+      const appStore = screen.getByRole("link", { name: "Download on the App Store" });
+      const play = screen.getByRole("link", { name: "Get it on Google Play" });
+      expect(appStore).toHaveAttribute("href", APP_STORE_URL);
+      expect(play).toHaveAttribute("href", PLAY_STORE_URL);
+      assertStoreUrl(appStore.getAttribute("href"));
+      assertStoreUrl(play.getAttribute("href"));
+      expect(screen.getByTestId("invite-device-ios")).toHaveAttribute("aria-pressed", "true");
+      expect(screen.getByTestId("invite-step-reopen")).toHaveTextContent(
+        "Tap your invite link again.",
+      );
+      expect(chooser).toHaveTextContent("Typing it instead? Use this in the app.");
+      expect(screen.getByRole("button", { name: "Copy code" })).toBeInTheDocument();
+      expect(chooser).not.toHaveTextContent(/need to type anything/i);
+      expect(chooser.textContent).not.toMatch(/—|–/);
+
+      fireEvent.click(screen.getByTestId("invite-device-android"));
+      expect(screen.getByTestId("invite-device-android")).toHaveAttribute("aria-pressed", "true");
       expect(stepIds()).toEqual([
         "invite-step-get-app",
-        "invite-step-reopen",
-        "invite-step-code",
+        "invite-step-open",
+        "invite-step-enter",
       ]);
-      expect(screen.getByRole("link", { name: "Download on the App Store" })).toHaveAttribute(
-        "href",
-        APP_STORE_URL,
+      expect(screen.getByTestId("invite-step-open")).toHaveTextContent(
+        /It.s on the welcome screen/,
       );
-      expect(screen.getByRole("link", { name: "Get it on Google Play" })).toHaveAttribute(
-        "href",
-        PLAY_STORE_URL,
-      );
-      expect(screen.getByTestId("invite-step-reopen")).toHaveTextContent(
-        "On iPhone, after it installs, come back to your text and tap the link again.",
-      );
-      expect(screen.getByTestId("invite-step-code")).toHaveTextContent(
-        "On Android, open From Victory, tap I have an invite, and enter this code.",
-      );
-      expect(chooser).not.toHaveTextContent(/need to type anything/i);
+      expect(screen.getByTestId("invite-step-enter")).toHaveTextContent("Enter the code below.");
+      expect(chooser).toHaveTextContent("Typing it instead? Use this in the app.");
     });
 
     it("keeps the linked code when Strict Mode runs the effect twice", async () => {
@@ -347,6 +448,7 @@ describe("InviteFlow (athlete)", () => {
         );
       });
       expect(screen.getByTestId("invite-install-chooser")).toHaveAttribute("data-platform", "ios");
+      fireEvent.click(screen.getByTestId("invite-type-code"));
       expect(screen.getByTestId("invite-chooser-code")).toHaveTextContent("7KQ2-M9XD-4HTR-PW3B");
       expect(window.location.hash).toBe("");
     });
@@ -370,7 +472,7 @@ describe("InviteFlow (athlete)", () => {
       PLAY_STORE_URL,
     );
     expect(screen.queryByRole("link", { name: "Download on the App Store" })).not.toBeInTheDocument();
-    expect(screen.getByText(/Open it, tap I have an invite/i)).toBeInTheDocument();
+    expect(screen.getByText(/tap I have an invite on the welcome screen/i)).toBeInTheDocument();
     expect(screen.queryByText(/On iPhone/i)).not.toBeInTheDocument();
   });
 
@@ -435,6 +537,36 @@ describe("InviteSetupForm", () => {
 });
 
 // ===========================================================================
+describe("store badges", () => {
+  it("App Store and Play URLs carry no query params other than id", () => {
+    assertStoreUrl(APP_STORE_URL);
+    assertStoreUrl(PLAY_STORE_URL);
+    expect(new URL(PLAY_STORE_URL).searchParams.get("id")).toBe("com.fromvictoryapp.app");
+    expect(new URL(APP_STORE_URL).search).toBe("");
+  });
+
+  it("renders a skeleton instead of both badges before the platform is known", () => {
+    render(<StoreDownloadBadges platform={null} />);
+    expect(screen.getByTestId("store-badges-skeleton")).toBeInTheDocument();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
+});
+
+describe("signed-in note", () => {
+  it("sits under Continue in browser, not in a banner", async () => {
+    setUserAgent(IPHONE_UA);
+    window.history.replaceState(null, "", "/invite#code=7KQ2-M9XD-4HTR-PW3B");
+    await act(async () => {
+      render(<InviteFlow nativeShell={false} signedIn />);
+    });
+    const note = screen.getByTestId("invite-signed-in-note");
+    const cont = screen.getByTestId("invite-continue-browser");
+    expect(note.className).not.toMatch(/border/);
+    expect(cont.compareDocumentPosition(note) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(note).toHaveTextContent(/signs them out here/i);
+  });
+});
+
 describe("SignInChooser", () => {
   it("offers invite on the welcome doors, and still on both sign-in tabs", () => {
     render(<SignInChooser />);

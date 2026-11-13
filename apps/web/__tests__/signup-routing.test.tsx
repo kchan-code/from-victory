@@ -178,6 +178,8 @@ describe("/signup — flag on: parent form + same-screen athlete card + handoff 
     );
     expect(note.textContent).not.toMatch(/14/);
     expect(note.textContent?.toLowerCase()).not.toContain("no credit card");
+    expect(note.textContent?.toLowerCase()).not.toContain("card required");
+    expect(screen.queryByTestId("signup-ios-subscription-note")).not.toBeInTheDocument();
   });
 
   it("does not mention the dormant journal or fold pre-practice into pregame", async () => {
@@ -226,12 +228,14 @@ describe("/signup/athlete — flag on: steps + handoff expectations (FV-515)", (
     );
     expect(note.textContent).not.toMatch(/14/);
     expect(note.textContent?.toLowerCase()).not.toContain("no credit card");
+    expect(note.textContent?.toLowerCase()).not.toContain("card required");
+    expect(screen.queryByTestId("signup-ios-subscription-note")).not.toBeInTheDocument();
   });
 });
 
-describe("signup trial copy is hidden in a native shell (FV-707)", () => {
+describe("signup trial copy by shell capability (FV-707, FV-719)", () => {
   it.each(["ios-iap", "legacy-native", "android-play"] as const)(
-    "%s: parent and adult signup omit the web price and trial lines",
+    "%s: parent and adult signup omit web prices, card terms, and the trial length",
     async (capability) => {
       shellCapabilityMock.mockReturnValue(capability);
       isAdultSignupEnabledMock.mockReturnValue(true);
@@ -241,6 +245,14 @@ describe("signup trial copy is hidden in a native shell (FV-707)", () => {
       expect(screen.queryByTestId("signup-trial-note")).not.toBeInTheDocument();
       expect(screen.queryByText(/\$5\/mo/)).not.toBeInTheDocument();
       expect(screen.queryByText(/7 days free/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/card required/i)).not.toBeInTheDocument();
+      if (capability === "ios-iap") {
+        expect(screen.getByTestId("signup-ios-subscription-note")).toHaveTextContent(
+          "After you create your account, you choose a subscription in the app.",
+        );
+      } else {
+        expect(screen.queryByTestId("signup-ios-subscription-note")).not.toBeInTheDocument();
+      }
       unmount();
 
       const adult = await AdultSignUpPage();
@@ -248,8 +260,36 @@ describe("signup trial copy is hidden in a native shell (FV-707)", () => {
       expect(screen.queryByTestId("signup-trial-note")).not.toBeInTheDocument();
       expect(screen.queryByText(/\$5\/mo/)).not.toBeInTheDocument();
       expect(screen.queryByText(/7 days free/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/card required/i)).not.toBeInTheDocument();
+      if (capability === "ios-iap") {
+        expect(screen.getByTestId("signup-ios-subscription-note")).toHaveTextContent(
+          "After you create your account, you choose a subscription in the app.",
+        );
+      } else {
+        expect(screen.queryByTestId("signup-ios-subscription-note")).not.toBeInTheDocument();
+      }
     },
   );
+
+  it("keeps the card-required auto-charge sentence on checkout only", () => {
+    const ROOT = resolve(__dirname, "..");
+    const signup = readFileSync(join(ROOT, "app/signup/page.tsx"), "utf8").toLowerCase();
+    const adult = readFileSync(join(ROOT, "app/signup/athlete/page.tsx"), "utf8").toLowerCase();
+    const disclosure = readFileSync(
+      join(ROOT, "components/auth/TrialDisclosure.tsx"),
+      "utf8",
+    ).toLowerCase();
+    const checkout = readFileSync(
+      join(ROOT, "components/subscribe/SubscribeForm.tsx"),
+      "utf8",
+    );
+    expect(signup).not.toContain("card required");
+    expect(adult).not.toContain("card required");
+    expect(disclosure).not.toContain("card required");
+    expect(checkout).toContain(
+      "Card required. It will be charged automatically when the trial",
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
