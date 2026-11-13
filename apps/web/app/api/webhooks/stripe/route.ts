@@ -68,6 +68,7 @@ import { getStripe } from "@/lib/stripe/server";
 import {
   rowFromCheckoutSession,
   rowFromSubscription,
+  stripeFieldsFromRow,
   subscriptionFromInvoice,
 } from "@/lib/stripe/subscription-sync";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
@@ -343,12 +344,7 @@ async function handleSubscriptionUpsert(
   const { error } = await service.from("subscriptions").upsert(
     {
       parent_id: existing.parent_id,
-      stripe_customer_id: row.stripe_customer_id,
-      stripe_subscription_id: row.stripe_subscription_id,
-      status: row.status,
-      price_id: row.price_id,
-      current_period_end: row.current_period_end,
-      cancel_at_period_end: row.cancel_at_period_end,
+      ...stripeFieldsFromRow(row),
       last_stripe_event_at: new Date(eventCreated * 1000).toISOString(),
     },
     { onConflict: "parent_id" },

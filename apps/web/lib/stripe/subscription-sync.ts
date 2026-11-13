@@ -119,6 +119,23 @@ export function rowFromSubscription(sub: Stripe.Subscription): SubscriptionRow {
 }
 
 /**
+ * The Stripe-sourced `subscriptions` columns written for a subscription.*
+ * sync. Shared by the webhook upsert and the reconcile cron (FV-709) so both
+ * write the identical field set; callers add `parent_id` / the
+ * `last_stripe_event_at` watermark themselves.
+ */
+export function stripeFieldsFromRow(row: SubscriptionRow) {
+  return {
+    stripe_customer_id: row.stripe_customer_id,
+    stripe_subscription_id: row.stripe_subscription_id,
+    status: row.status,
+    price_id: row.price_id,
+    current_period_end: row.current_period_end,
+    cancel_at_period_end: row.cancel_at_period_end,
+  };
+}
+
+/**
  * Resolves the subscription reference on an invoice.
  *
  * Stripe API 2025-03-31.basil removed `Invoice.subscription` in favor of
