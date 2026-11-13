@@ -421,6 +421,36 @@ Privacy posture. Plugin allowlist is core / app / splash-screen / status-bar
 only. No Advertising Identifier. `ITSAppUsesNonExemptEncryption` is already
 false.
 
+### Live answers as read on 2026-11-13 (FV-722)
+
+App Store Connect → App Privacy, "Published 2 months ago", read directly from
+the console:
+
+| Data type | Purpose | Linked to identity |
+|---|---|---|
+| Contact Info: Name | App Functionality | Yes |
+| Contact Info: Email Address | App Functionality | Yes |
+| Usage Data: Product Interaction | App Functionality | Yes |
+| Other Data: Other Data Types | App Functionality | Yes |
+
+Nothing is declared as used for tracking.
+
+**Gaps against what 1.0.1 collects** (to be corrected in the console by KC;
+these edits apply immediately, no new app version needed):
+
+1. **Purchases: Purchase History is not declared.** In-app purchase is live
+   (`FVAppleIAPPlugin.swift`); we store Apple transaction identifiers, product,
+   status and dates per account. Add it: App Functionality, linked.
+2. **Identifiers: User ID is not declared.** We store a username and account
+   ids. Add it: App Functionality, linked. (Google Play already declares
+   "User IDs".)
+3. **Product Interaction lists only App Functionality.** The first-party usage
+   events (`activity_events`: app opened, session started or finished) are used
+   to count active and returning athletes. Add the **Analytics** purpose.
+
+Not gaps: date of birth is covered by "Other Data"; no location, contacts,
+photos, advertising identifier, or third-party SDK data is collected.
+
 ### Declare (typical — confirm against the live privacy policy)
 
 Collected because the WebView is the product:
@@ -429,17 +459,23 @@ Collected because the WebView is the product:
 - **Identifiers:** user IDs (username / account ids)
 - **Sensitive / other:** date of birth (13+ gate + 13–17 protections) — pick the
   App Privacy type that matches `/privacy`, do not hide DOB
-- **Usage data:** product interaction / training rhythm metadata (not a public
-  score; not journal body)
-- **Purchases:** purchase **history** (Stripe subscriptions). Card numbers are
-  entered on Stripe Checkout, not stored by From Victory. There is **no**
-  StoreKit IAP in `apps/native`.
+- **Usage data:** product interaction: training rhythm metadata (not a public
+  score; not journal body) **and** first-party usage events (`activity_events`:
+  app opened, daily or pregame session started or finished), which are used for
+  analytics. Declare both purposes: App Functionality and Analytics.
+- **Purchases:** purchase **history**. Since 1.0.1 the iOS app sells
+  subscriptions through StoreKit (`apps/native/ios/App/App/FVAppleIAPPlugin.swift`);
+  we store Apple transaction identifiers, product, status and dates. Web
+  subscriptions go through Stripe. Card numbers are never stored by From
+  Victory. (Corrected 2026-11-13, FV-722: this line used to say there was no
+  StoreKit IAP in `apps/native`.)
 
 ### Do not declare as collected by this app
 
 - Location, contacts, camera, microphone, photos
 - Device ID / Advertising Identifier used for tracking
-- Analytics, advertising, or crash-reporting SDK data (none shipped)
+- Third-party analytics, advertising, or crash-reporting SDK data (none
+  shipped). First-party usage events ARE collected: see "Usage data" above.
 - Journal entry **content** (athlete-only; parent dashboard is metadata only;
   journal is dormant in production per FV-135 — do not describe it as an
   active feature)
