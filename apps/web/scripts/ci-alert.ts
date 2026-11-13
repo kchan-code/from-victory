@@ -118,13 +118,27 @@ export async function ciAlert(
 
   try {
     const client = new Resend(apiKey);
-    await client.emails.send({
+    // FV-680: the Resend SDK RETURNS API errors ({ data, error }) instead of
+    // throwing. Before this check a 422 (malformed ALERT_EMAIL_TO) still
+    // logged "dispatched", so drift alerts failed silently for days. Only a
+    // response without `error` counts as sent.
+    const { error } = await client.emails.send({
       from,
       to,
       subject: `[FV Alert] ${label}`,
       text,
       html,
     });
+    if (error) {
+      // Name + status class only — never the recipient, sender, or key.
+      const code =
+        (error as { statusCode?: number | null }).statusCode ?? "unknown";
+      console.warn(
+        `[ci-alert] Alert send rejected by Resend (${error.name ?? "error"}, status ${code}); ` +
+          `check ALERT_EMAIL_TO / ALERT_EMAIL_FROM. The underlying check still fails the job.`,
+      );
+      return false;
+    }
     console.log(`[ci-alert] Alert email dispatched: ${label}`);
     return true;
   } catch (err) {
