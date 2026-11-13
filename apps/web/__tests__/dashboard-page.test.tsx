@@ -43,7 +43,7 @@ const { requireParentMock, shellCapabilityMock, accessLevelMock, entitlementStat
     // Google Play "no in-app purchase" compliance + FV-572/577 capability.
     // Defaults to null (ordinary web/PWA request) — individual tests
     // override per case with "legacy-native" | "ios-iap" | null.
-    shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
+    shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | "android-play" | null),
     accessLevelMock: vi.fn(async () => "blocked"),
   }));
 
@@ -361,5 +361,47 @@ describe("/dashboard — subscription status can't be read (FV-655)", () => {
 
     expect(entitlementStateMock).not.toHaveBeenCalled();
     expect(screen.queryByTestId("dashboard-subscription-status-unknown")).not.toBeInTheDocument();
+  });
+});
+
+describe("/dashboard — android-play renders exactly like legacy-native (FV-659)", () => {
+  async function htmlFor(capability: "legacy-native" | "android-play") {
+    shellCapabilityMock.mockReturnValue(capability);
+    const { container } = await renderPage();
+    const html = container.innerHTML;
+    cleanup();
+    return html;
+  }
+
+  it.each(["blocked", "full"] as const)(
+    "access %s: identical markup, including the subscribe + Add athlete notices",
+    async (level) => {
+      accessLevelMock.mockResolvedValue(level);
+      const legacy = await htmlFor("legacy-native");
+      const play = await htmlFor("android-play");
+      expect(play).toBe(legacy);
+    },
+  );
+
+  it("android-play: no subscribe CTA, browser-subscribe copy, plain-text Add athlete", async () => {
+    accessLevelMock.mockResolvedValue("blocked");
+    shellCapabilityMock.mockReturnValue("android-play");
+    await renderPage();
+    expect(screen.queryByTestId("dashboard-subscribe-cta")).not.toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Subscribe to From Victory from a web browser at fromvictoryapp.com.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("add-athlete-native-shell-notice")).toBeInTheDocument();
+  });
+
+  it("android-play: unknown subscription status shows the neutral line, no purchase prompt (FV-655)", async () => {
+    shellCapabilityMock.mockReturnValue("android-play");
+    accessLevelMock.mockResolvedValue("blocked");
+    entitlementStateMock.mockResolvedValue({ status: "unknown", provider: null });
+    await renderPage();
+    expect(screen.getByTestId("dashboard-subscription-status-unknown")).toBeInTheDocument();
+    expect(screen.queryByTestId("dashboard-subscribe-cta")).not.toBeInTheDocument();
   });
 });

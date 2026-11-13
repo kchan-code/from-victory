@@ -10,6 +10,25 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-11 — The Android app is available on Google Play (recorded by FV-681)
+
+The From Victory Android app is published on Google Play
+(https://play.google.com/store/apps/details?id=com.fromvictoryapp.app) as of 2026-11-11.
+It has no in-app purchase: the Android app does not sell subscriptions and shows no
+price or subscribe button. New customers subscribe on the website (fromvictoryapp.com),
+then sign in to the Android app with the same account. A subscription bought on the
+website or in the iPhone app works in the Android app when the subscriber signs in with
+that account; a family with no active subscription sees "Subscribe to From Victory from
+a web browser at fromvictoryapp.com." The countries where the Play listing is available
+are not recorded here. The iOS app on the US App Store and the web app in the browser
+are unchanged. This supersedes the 2026-11-03 entry's statement that From Victory is not
+on Google Play and has no Android store listing. Other public surfaces that still say
+"not on Google Play" are tracked in FV-684. The homepage FAQ's new sign-in and recovery
+answers (FV-681) are effective when that PR deploys.
+
+Why it matters to a buyer: an Android family can install From Victory from Google Play;
+they subscribe on the website, not in the app, and sign in with the same account.
+
 ## 2026-11-11 — The app never tells a subscriber to subscribe; clearer sign-in for athletes 18+ (FV-657; effective when the PR deploys)
 
 - **Android app, already subscribed:** a parent or adult who already subscribes and opens
