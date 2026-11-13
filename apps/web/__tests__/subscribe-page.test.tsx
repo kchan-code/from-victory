@@ -663,8 +663,8 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
     });
   });
 
-  // FV-584 (KC decision D1): a DEGRADED payer (e.g. past_due Stripe, or an
-  // Apple row in in_billing_retry) now resolves to `status: "entitled"` too
+  // FV-584 (KC decision D1): a DEGRADED payer (e.g. past_due Stripe; an
+  // Apple row in in_billing_retry was degraded until FV-710 blocked it) resolves to `status: "entitled"` too
   // — this page only ever branches on status/provider, never on the
   // underlying full-vs-degraded level (that fold lives in
   // subscribe-guard.ts, see subscribe-guard.test.ts), so a degraded payer
@@ -682,7 +682,7 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
       expectNoBuyAffordances(queryByTestId, text);
     });
 
-    it("provider apple (degraded, e.g. in_billing_retry) → AppleSubscribeSection in manage mode, no Subscribe button", async () => {
+    it("provider apple (degraded) → AppleSubscribeSection in manage mode, no Subscribe button", async () => {
       asParent();
       shellCapabilityMock.mockReturnValue("ios-iap");
       entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "apple" });

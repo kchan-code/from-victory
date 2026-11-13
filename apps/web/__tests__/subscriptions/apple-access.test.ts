@@ -336,7 +336,7 @@ describe("getActiveAppleProductIdResult", () => {
     ).toEqual({ productId: "tier_1_1athlete", readError: false });
   });
 
-  it("returns { productId, readError: false } for a degraded 'in_billing_retry' Production row (degraded policy preserved, not re-litigated)", async () => {
+  it("returns { productId: null, readError: false } for an 'in_billing_retry' Production row (blocked since FV-710)", async () => {
     appleSubRows = [
       {
         environment: "Production",
@@ -349,7 +349,7 @@ describe("getActiveAppleProductIdResult", () => {
     const service = makeServiceMock();
     expect(
       await getActiveAppleProductIdResult(service as never, PAYER_ID, NOW),
-    ).toEqual({ productId: "tier_3_3athletes", readError: false });
+    ).toEqual({ productId: null, readError: false });
   });
 
   it("returns { productId: null, readError: false } for an 'expired' Production row (stale ceiling must not apply)", async () => {

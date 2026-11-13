@@ -13,7 +13,7 @@
  *   - entitled via Stripe (active row)
  *   - entitled via a comp grant (no Stripe row, no Apple row)
  *   - entitled via a DEGRADED Stripe row (past_due) and a DEGRADED Apple row
- *     (in_billing_retry) — KC decision D1 / FV-584: `degraded` is entitled,
+ *     (grace past its bound, inside the skew) — KC decision D1 / FV-584: `degraded` is entitled,
  *     same as `full`, so a payer with a subscription that needs fixing is
  *     blocked from starting a second one
  *   - not entitled (no subscription anywhere)
@@ -231,7 +231,7 @@ describe("getSubscribeEntitlementState", () => {
     expect(result).toEqual({ status: "entitled", provider: "stripe" });
   });
 
-  it("entitled via Apple: Production row with status=in_billing_retry (degraded, FV-584)", async () => {
+  it("not entitled via Apple: Production row with status=in_billing_retry is blocked (FV-710)", async () => {
     appleSubsListResult = {
       data: [
         {
@@ -254,7 +254,7 @@ describe("getSubscribeEntitlementState", () => {
     };
 
     const result = await getSubscribeEntitlementState(PAYER_ID);
-    expect(result).toEqual({ status: "entitled", provider: "apple" });
+    expect(result).toEqual({ status: "not_entitled", provider: null });
   });
 
   it("prefers apple as the reported provider when BOTH Apple and Stripe are active (duplicate billing)", async () => {

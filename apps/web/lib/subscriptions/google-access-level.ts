@@ -40,9 +40,10 @@ export const DEFAULT_GOOGLE_SKEW_MS = 6 * 60 * 60 * 1000;
  *     in grace, so `expiresAt` is the grace bound. Grace keeps access.
  *   - `canceled` (auto-renew off, paid through the period): full while
  *     now <= expiresAt, then blocked. No skew: nothing is renewing.
- *   - `on_hold` (account hold): `degraded`, the same level Apple billing retry
- *     and Stripe past_due map to (decision G3 default). No time gate, like
- *     Apple `in_billing_retry`.
+ *   - `on_hold` (account hold: payment failed and grace is over): `blocked`,
+ *     the same as Apple `in_billing_retry` (decision G3, settled by KC in
+ *     FV-710 on 2026-11-13: grace keeps access, hold does not). A recovered
+ *     charge returns the row to `active`.
  *   - `pending`, `pending_purchase_canceled`, `paused`, `expired`: `blocked`.
  *
  * @param status    `google_subscriptions.status`.
@@ -71,8 +72,6 @@ export function googleSubscriptionAccessLevel(
       return nowMs <= bound ? "full" : "blocked";
 
     case "on_hold":
-      return "degraded";
-
     case "pending":
     case "pending_purchase_canceled":
     case "paused":

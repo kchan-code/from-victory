@@ -165,22 +165,45 @@ describe("appleSubscriptionAccessLevel — in_grace_period", () => {
 });
 
 // ---------------------------------------------------------------------------
-// in_billing_retry — always degraded, no time gate
+// in_billing_retry — always blocked (FV-710): grace is over, no access
 // ---------------------------------------------------------------------------
 
 describe("appleSubscriptionAccessLevel — in_billing_retry", () => {
-  it("is degraded regardless of expiresAt being in the future", () => {
+  it("is blocked regardless of expiresAt being in the future", () => {
     const expiresAt = hoursFromNow(24 * 30);
     expect(
       appleSubscriptionAccessLevel("in_billing_retry", expiresAt, null, NOW),
-    ).toBe("degraded");
+    ).toBe("blocked");
   });
 
-  it("is degraded regardless of expiresAt being long past", () => {
+  it("is blocked regardless of expiresAt being long past", () => {
     const expiresAt = hoursFromNow(-24 * 90);
     expect(
       appleSubscriptionAccessLevel("in_billing_retry", expiresAt, null, NOW),
-    ).toBe("degraded");
+    ).toBe("blocked");
+  });
+
+  it("is blocked even when a stale grace bound is still in the future", () => {
+    expect(
+      appleSubscriptionAccessLevel(
+        "in_billing_retry",
+        hoursFromNow(-24),
+        hoursFromNow(24),
+        NOW,
+      ),
+    ).toBe("blocked");
+  });
+
+  it("grace keeps full access right up to its bound, then billing retry blocks (the FV-710 boundary)", () => {
+    const expiresAt = hoursFromNow(-24 * 16);
+    const graceEnds = hoursFromNow(0);
+    expect(
+      appleSubscriptionAccessLevel("in_grace_period", expiresAt, graceEnds, NOW),
+    ).toBe("full");
+    // GRACE_PERIOD_EXPIRED moves the row to in_billing_retry.
+    expect(
+      appleSubscriptionAccessLevel("in_billing_retry", expiresAt, null, NOW),
+    ).toBe("blocked");
   });
 });
 
