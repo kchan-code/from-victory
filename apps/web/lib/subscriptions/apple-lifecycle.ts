@@ -67,10 +67,19 @@ type ServiceClient = SupabaseClient<Database>;
  * Maps an App Store Server Notification V2 (notificationType, subtype) pair
  * to our Apple-native status vocabulary, per the FV-571 acceptance table:
  *
- *   SUBSCRIBED | DID_RENEW | DID_CHANGE_RENEWAL_STATUS | OFFER_REDEEMED
- *     -> subscribed (this also covers a same-group UPGRADE, which Apple
- *        delivers as SUBSCRIBED with subtype UPGRADE — the supersession-safe
- *        OTID update happens in applyAppleSnapshot, not here)
+ *   SUBSCRIBED | DID_RENEW | OFFER_REDEEMED -> subscribed (this also covers
+ *     a same-group UPGRADE, which Apple delivers as SUBSCRIBED with subtype
+ *     UPGRADE — the supersession-safe OTID update happens in
+ *     applyAppleSnapshot, not here)
+ *   DID_CHANGE_RENEWAL_STATUS -> subscribed, EXCEPT when `currentStatus` is
+ *     `in_grace_period` or `in_billing_retry` (FV-713). Toggling auto-renew
+ *     is not an entitlement change. For those two rows this returns null
+ *     and the webhook persists ONLY `auto_renew_status` via
+ *     `applyAutoRenewStatus` — a full snapshot would rewrite status to
+ *     `subscribed` and clear the grace bound. The caller passes the row's
+ *     status at the moment the mapping is applied. With no current status
+ *     (no row yet, or a caller that doesn't have one), the historical
+ *     mapping stands: subscribed.
  *   DID_CHANGE_RENEWAL_PREF + subtype UPGRADE -> subscribed (FV-602: a
  *     same-group UPGRADE takes effect IMMEDIATELY — Apple's
  *     signedTransactionInfo on this payload is the new, already-effective
@@ -89,23 +98,48 @@ type ServiceClient = SupabaseClient<Database>;
  *     caller — see buildSnapshotFromNotification)
  *   EXPIRED -> expired
  *   REVOKE | REFUND -> revoked
+ *   REFUND_REVERSED -> subscribed (FV-713). Apple reversed a previously
+ *     granted refund and told us to reinstate what the REFUND had revoked.
+ *     That is the same status `reconcileAppleSubscription` writes when Get
+ *     All Subscription Statuses reports ACTIVE (1). The notification is the
+ *     reinstate signal itself: the FV-709 daily pass only selects live
+ *     statuses, so a revoked row is never re-read, and a status re-read
+ *     that still says revoked would leave the payer blocked with nothing
+ *     scheduled to repair it. Access stays time-bounded by expires_at; once
+ *     the row is `subscribed` again the daily pass can correct the label if
+ *     Apple's status is actually expired.
  *
  * Returns `null` for every other notificationType — these are either
  * genuinely unknown or recognized-but-intentionally-not-acted-on (e.g.
  * PRICE_INCREASE, CONSUMPTION_REQUEST, TEST, …). The caller (the webhook)
  * treats `null` as the "200 + warn, no write" branch for those — never a
- * processing failure. (DID_CHANGE_RENEWAL_PREF non-UPGRADE is the one
- * exception, handled specially — see above.)
+ * processing failure. Two nulls are NOT ignores: DID_CHANGE_RENEWAL_PREF
+ * non-UPGRADE (scheduled product change — see above) and
+ * DID_CHANGE_RENEWAL_STATUS while the row is in grace or billing retry
+ * (auto-renew fields only — see above).
  */
 export function mapAppleNotificationToStatus(
   notificationType: string,
   subtype: string | null | undefined,
+  currentStatus?: AppleSubscriptionStatus | null,
 ): AppleSubscriptionStatus | null {
   switch (notificationType) {
     case "SUBSCRIBED":
     case "DID_RENEW":
-    case "DID_CHANGE_RENEWAL_STATUS":
     case "OFFER_REDEEMED":
+      return "subscribed";
+
+    case "DID_CHANGE_RENEWAL_STATUS":
+      // FV-713: an auto-renew toggle must not replace grace or billing
+      // retry. null here means "no status change" — the webhook still
+      // writes auto_renew_status. Any other current status (including none)
+      // keeps the historical full-snapshot mapping.
+      if (currentStatus === "in_grace_period" || currentStatus === "in_billing_retry") {
+        return null;
+      }
+      return "subscribed";
+
+    case "REFUND_REVERSED":
       return "subscribed";
 
     case "DID_CHANGE_RENEWAL_PREF":
@@ -131,6 +165,27 @@ export function mapAppleNotificationToStatus(
     default:
       return null;
   }
+}
+
+/**
+ * The auto-renew bit a DID_CHANGE_RENEWAL_STATUS notification is asserting
+ * (FV-713). Prefers the verified renewal payload — the same source
+ * `buildSnapshotFields` writes on the full-snapshot path — and falls back to
+ * the notification subtype when that payload is absent.
+ *
+ * Returns null when neither is present. The grace / billing-retry path must
+ * not invent `true`: that would re-enable auto-renew for a payer whose
+ * toggle we couldn't read. (The subscribed full-snapshot path still defaults
+ * a missing renewal to true, which is the historical behavior.)
+ */
+export function autoRenewStatusForRenewalToggle(
+  subtype: string | null | undefined,
+  renewal: DecodedRenewalInfo | null,
+): boolean | null {
+  if (renewal) return renewal.autoRenewStatus;
+  if (subtype === "AUTO_RENEW_ENABLED") return true;
+  if (subtype === "AUTO_RENEW_DISABLED") return false;
+  return null;
 }
 
 /**
@@ -523,6 +578,92 @@ export async function applyPendingRenewalProduct(
   if (updateError) {
     throw new Error(
       `[subscriptions/apple-lifecycle] apple_subscriptions update failed (renewal-pref, payer=${input.payerId}): ${updateError.message}`,
+    );
+  }
+  if (updatedCount === 0) {
+    return { applied: false, reason: "stale" };
+  }
+  return { applied: true };
+}
+
+// ---------------------------------------------------------------------------
+// applyAutoRenewStatus — the narrow auto-renew-toggle sibling of
+// applyAppleSnapshot (FV-713). Used exclusively by the webhook's
+// DID_CHANGE_RENEWAL_STATUS handling when the row is already
+// `in_grace_period` or `in_billing_retry`. NEVER touches status /
+// expires_at / grace_period_expires_at / product_id / auto_renew_product_id:
+// those are the entitlement columns a full snapshot would rewrite, which is
+// the bug this function exists to avoid (a toggle must not clear the grace
+// bound or promote billing retry to subscribed).
+// ---------------------------------------------------------------------------
+
+export type ApplyAutoRenewStatusResult =
+  | { applied: true }
+  | { applied: false; reason: "stale" | "no_row" };
+
+/**
+ * Persists `apple_subscriptions.auto_renew_status` for a (payer, environment)
+ * row, WITHOUT touching any entitlement column.
+ *
+ * Mirrors applyPendingRenewalProduct's watermark discipline exactly (same
+ * stale/duplicate/equal-signedDate drop, same atomic re-check via `.lt` on
+ * the UPDATE's own WHERE clause) so this write and a full-snapshot write
+ * share one `last_signed_date` watermark and cannot regress each other.
+ *
+ * Never creates a row. A renewal-status toggle for a payer with no snapshot
+ * is not this function's job — the webhook only calls it after reading a
+ * grace or billing-retry row, and a missing row returns
+ * `{ applied: false, reason: "no_row" }`.
+ *
+ * Throws on any DB error, matching the other upserts — the webhook catches
+ * and maps that to a 500 so Apple retries.
+ */
+export async function applyAutoRenewStatus(
+  service: ServiceClient,
+  input: {
+    payerId: string;
+    environment: AppleEnvironment;
+    autoRenewStatus: boolean;
+    signedDate: number;
+  },
+): Promise<ApplyAutoRenewStatusResult> {
+  const { data: existing, error: readError } = await service
+    .from("apple_subscriptions")
+    .select("id, last_signed_date")
+    .eq("payer_id", input.payerId)
+    .eq("environment", input.environment)
+    .maybeSingle();
+
+  if (readError) {
+    throw new Error(
+      `[subscriptions/apple-lifecycle] apple_subscriptions read failed (auto-renew, payer=${input.payerId}): ${readError.message}`,
+    );
+  }
+
+  if (!existing) {
+    return { applied: false, reason: "no_row" };
+  }
+
+  const incomingSignedIso = new Date(input.signedDate).toISOString();
+  const storedMs = Date.parse(existing.last_signed_date);
+  if (Number.isFinite(storedMs) && input.signedDate <= storedMs) {
+    return { applied: false, reason: "stale" };
+  }
+
+  const updatePayload: Database["public"]["Tables"]["apple_subscriptions"]["Update"] = {
+    auto_renew_status: input.autoRenewStatus,
+    last_signed_date: incomingSignedIso,
+  };
+
+  const { error: updateError, count: updatedCount } = await service
+    .from("apple_subscriptions")
+    .update(updatePayload, { count: "exact" })
+    .eq("id", existing.id)
+    .lt("last_signed_date", incomingSignedIso);
+
+  if (updateError) {
+    throw new Error(
+      `[subscriptions/apple-lifecycle] apple_subscriptions update failed (auto-renew, payer=${input.payerId}): ${updateError.message}`,
     );
   }
   if (updatedCount === 0) {

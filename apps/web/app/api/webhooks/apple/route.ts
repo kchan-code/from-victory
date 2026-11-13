@@ -58,6 +58,22 @@
  *     `applyPendingRenewalProduct` — product_id/status/expires_at/capacity
  *     are never touched by this branch. The actual entitlement change
  *     happens later, when Apple's DID_RENEW for that cycle arrives.
+ *
+ * DID_CHANGE_RENEWAL_STATUS (FV-713) — auto-renew toggle, not an entitlement
+ * change when the row is already in grace or billing retry:
+ *   - current status `in_grace_period` or `in_billing_retry`:
+ *     mapAppleNotificationToStatus returns null. Routed to
+ *     `processRenewalStatusChange`, which writes ONLY `auto_renew_status`
+ *     via `applyAutoRenewStatus`. A full snapshot would replace that status
+ *     with `subscribed` and clear the grace bound.
+ *   - any other current status (including no row): the historical mapping
+ *     stands — `subscribed` — and the full snapshot path runs, so a normal
+ *     subscribed row toggling auto-renew is unchanged.
+ *
+ * REFUND_REVERSED (FV-713) maps to `subscribed` and uses the same full
+ * snapshot path as DID_RENEW. That reinstates a row REFUND had set to
+ * `revoked`. The daily reconcile never selects revoked rows, so this
+ * notification is the restore; access stays bounded by expires_at.
  */
 
 export const runtime = "nodejs";
@@ -72,9 +88,12 @@ import {
   describeVerificationFailure,
 } from "@/lib/subscriptions/apple-server";
 import type { DecodedNotification, DecodedTransactionInfo } from "@/lib/subscriptions/apple-server";
+import type { AppleSubscriptionStatus } from "@/lib/subscriptions/apple-access-level";
 import {
   applyAppleSnapshot,
+  applyAutoRenewStatus,
   applyPendingRenewalProduct,
+  autoRenewStatusForRenewalToggle,
   buildSnapshotFields,
   mapAppleNotificationToStatus,
 } from "@/lib/subscriptions/apple-lifecycle";
@@ -149,6 +168,14 @@ async function processNotification(decoded: DecodedNotification): Promise<void> 
     return processRenewalPreferenceChange(decoded);
   }
 
+  // FV-713: the auto-renew toggle's mapping depends on the current row
+  // status, which this function doesn't have yet. Routed before the generic
+  // mapper so a null from grace/billing-retry is an auto-renew write, not
+  // the "ignore" branch below.
+  if (decoded.notificationType === "DID_CHANGE_RENEWAL_STATUS") {
+    return processRenewalStatusChange(decoded);
+  }
+
   const mappedStatus = mapAppleNotificationToStatus(
     decoded.notificationType,
     decoded.subtype,
@@ -187,6 +214,108 @@ async function processNotification(decoded: DecodedNotification): Promise<void> 
     console.info(
       `[apple/webhook] dropped stale/duplicate notificationType="${decoded.notificationType}" for payer=${payerId} — newer state already applied.`,
     );
+  }
+}
+
+/**
+ * DID_CHANGE_RENEWAL_STATUS (FV-713). Reads the row's status at apply time
+ * and passes it to `mapAppleNotificationToStatus`.
+ *
+ * Grace or billing retry maps to null: persist only `auto_renew_status`.
+ * Every other current status (including no row) maps to `subscribed` and
+ * runs the same full snapshot a renewal does, which is the behavior a
+ * subscribed row already had.
+ */
+async function processRenewalStatusChange(decoded: DecodedNotification): Promise<void> {
+  if (!decoded.transaction) {
+    console.warn(
+      `[apple/webhook] notificationType="DID_CHANGE_RENEWAL_STATUS" subtype="${decoded.subtype ?? ""}" carried no transaction payload — nothing to apply.`,
+    );
+    return;
+  }
+
+  const { transaction, renewal } = decoded;
+  const service = createServiceClient();
+
+  const gate = await resolveAndGatePayer(service, decoded.notificationType, transaction);
+  if (!gate) return;
+  const { payerId } = gate;
+
+  const currentStatus = await readCurrentAppleStatus(
+    service,
+    payerId,
+    transaction.environment,
+  );
+  const mappedStatus = mapAppleNotificationToStatus(
+    decoded.notificationType,
+    decoded.subtype,
+    currentStatus,
+  );
+
+  if (mappedStatus === null) {
+    const autoRenewStatus = autoRenewStatusForRenewalToggle(decoded.subtype, renewal);
+    if (autoRenewStatus === null) {
+      console.warn(
+        `[apple/webhook] notificationType="DID_CHANGE_RENEWAL_STATUS" subtype="${decoded.subtype ?? ""}" for payer=${payerId} carried no auto-renew bit — status left unchanged.`,
+      );
+      return;
+    }
+    const result = await applyAutoRenewStatus(service, {
+      payerId,
+      environment: transaction.environment,
+      autoRenewStatus,
+      signedDate: transaction.signedDate,
+    });
+    if (!result.applied) {
+      console.info(
+        `[apple/webhook] auto-renew update not applied (${result.reason}) for payer=${payerId} — notificationType="DID_CHANGE_RENEWAL_STATUS" subtype="${decoded.subtype ?? ""}".`,
+      );
+    }
+    return;
+  }
+
+  const fields = buildSnapshotFields(mappedStatus, transaction, renewal);
+  const result = await applyAppleSnapshot(service, { payerId, ...fields });
+  if (!result.applied) {
+    console.info(
+      `[apple/webhook] dropped stale/duplicate notificationType="${decoded.notificationType}" for payer=${payerId} — newer state already applied.`,
+    );
+  }
+}
+
+/**
+ * The row's status at the moment a DID_CHANGE_RENEWAL_STATUS mapping is
+ * applied. Null when there is no row yet (first-seen toggle) or the stored
+ * value isn't one of our statuses — both fall through to the historical
+ * `subscribed` snapshot. A read error throws so Apple retries.
+ */
+async function readCurrentAppleStatus(
+  service: ReturnType<typeof createServiceClient>,
+  payerId: string,
+  environment: DecodedTransactionInfo["environment"],
+): Promise<AppleSubscriptionStatus | null> {
+  const { data, error } = await service
+    .from("apple_subscriptions")
+    .select("status")
+    .eq("payer_id", payerId)
+    .eq("environment", environment)
+    .maybeSingle();
+  if (error) {
+    throw new Error(`apple_subscriptions status read failed: ${error.message}`);
+  }
+  return narrowAppleStatus(data?.status);
+}
+
+function narrowAppleStatus(status: string | null | undefined): AppleSubscriptionStatus | null {
+  switch (status) {
+    case "subscribed":
+    case "in_grace_period":
+    case "in_billing_retry":
+    case "expired":
+    case "revoked":
+      return status;
+    default:
+      return null;
   }
 }
 
@@ -236,11 +365,11 @@ async function processRenewalPreferenceChange(decoded: DecodedNotification): Pro
 }
 
 /**
- * Shared gate for both write paths (full-snapshot and renewal-preference-
- * only): resolves the payer, applies the Sandbox-allowlist policy, and
- * verifies the PRIVACY AC role check — all BEFORE either caller performs any
- * write. Returns `null` when any gate fails (the caller has already logged
- * the reason); returns `{ payerId }` when clear to write.
+ * Shared gate for every write path (full snapshot, renewal-preference, and
+ * the auto-renew toggle): resolves the payer, applies the Sandbox-allowlist
+ * policy, and verifies the PRIVACY AC role check — all BEFORE any caller
+ * performs a write. Returns `null` when any gate fails (the caller has
+ * already logged the reason); returns `{ payerId }` when clear to write.
  */
 async function resolveAndGatePayer(
   service: ReturnType<typeof createServiceClient>,
