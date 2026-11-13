@@ -21,6 +21,16 @@ import type { NextRequest } from "next/server";
 
 vi.mock("server-only", () => ({}));
 
+const { alertCronFailureMock } = vi.hoisted(() => ({
+  alertCronFailureMock: vi.fn(),
+}));
+
+vi.mock("@/lib/monitoring/cron-alert", () => ({
+  alertCronFailure: (...args: unknown[]) => alertCronFailureMock(...args),
+}));
+
+let serviceThrows = false;
+
 // Ordered log of service-client operations so tests can assert rollup-before-prune.
 let callLog: string[] = [];
 // Controls injected per-test to simulate rollup / prune failures.
@@ -43,7 +53,11 @@ function makeDeleteChain() {
 }
 
 vi.mock("@/lib/supabase/service", () => ({
-  createServiceClient: () => ({
+  createServiceClient: () => {
+    if (serviceThrows) {
+      throw new Error("service key athlete aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee");
+    }
+    return {
     rpc: async (fn: string, params: unknown) => {
       callLog.push("rollup");
       rpcArgs.push({ fn, params });
@@ -52,7 +66,8 @@ vi.mock("@/lib/supabase/service", () => ({
     from: (_t: string) => ({
       delete: () => makeDeleteChain(),
     }),
-  }),
+    };
+  },
 }));
 
 import { GET, POST } from "@/app/api/cron/prune-activity-events/route";
@@ -69,6 +84,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   callLog = [];
   rpcArgs = [];
+  serviceThrows = false;
   rollupResult = { data: 0, error: null };
   process.env.CRON_SECRET = "test-cron-secret";
 });
@@ -96,6 +112,10 @@ describe("cron prune-activity-events route auth gate", () => {
     delete process.env.CRON_SECRET;
     const res = await GET(makeReq("Bearer anything"));
     expect(res.status).toBe(500);
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/prune-activity-events] missing config",
+      "CRON_SECRET is not set",
+    );
   });
 
   it("does not touch the DB when unauthorized", async () => {
@@ -138,6 +158,12 @@ describe("cron prune-activity-events roll-up-then-prune (FV-415)", () => {
     expect(res.status).toBe(500);
     // rollup was attempted, prune was NOT (prune must never outrun rollup).
     expect(callLog).toEqual(["rollup"]);
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/prune-activity-events] rollup failed",
+      "rollup failed and prune was skipped",
+      { code: "db" },
+    );
+    expect(JSON.stringify(alertCronFailureMock.mock.calls)).not.toContain("boom");
   });
 
   it("is deterministic across repeated runs (same rollup arg, no drift)", async () => {
@@ -163,6 +189,20 @@ describe("cron prune-activity-events roll-up-then-prune (FV-415)", () => {
     expect(logged).toContain("pruned=0");
     expect(logged).not.toMatch(/athlete/i);
     expect(logged).not.toMatch(/meta/i);
+    expect(alertCronFailureMock).not.toHaveBeenCalled();
     infoSpy.mockRestore();
+  });
+
+  it("alerts with the error name only when the handler throws", async () => {
+    serviceThrows = true;
+    const res = await GET(makeReq("Bearer test-cron-secret"));
+    expect(res.status).toBe(500);
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/prune-activity-events] threw",
+      "Error",
+    );
+    expect(JSON.stringify(alertCronFailureMock.mock.calls)).not.toContain(
+      "eeeeeeeeeeee",
+    );
   });
 });

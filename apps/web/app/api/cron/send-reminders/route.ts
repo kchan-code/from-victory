@@ -50,6 +50,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import webpush from "web-push";
 
+import { alertCronFailure, CRON_FAILURE_ALERT_THRESHOLD } from "@/lib/monitoring/cron-alert";
 import { createServiceClient } from "@/lib/supabase/service";
 
 // ---------------------------------------------------------------------------
@@ -75,12 +76,33 @@ const GAME_DAY_COPY = {
 // ---------------------------------------------------------------------------
 
 export async function GET(req: NextRequest) {
+  try {
+    return await runSendReminders(req);
+  } catch (err) {
+    // Name only — the message can echo a row. One alert, then 500.
+    console.error(
+      "[cron/send-reminders] threw",
+      err instanceof Error ? err.name : "Error",
+    );
+    alertCronFailure(
+      "[cron/send-reminders] threw",
+      err instanceof Error ? err.name : "Error",
+    );
+    return NextResponse.json({ error: "Cron failed." }, { status: 500 });
+  }
+}
+
+async function runSendReminders(req: NextRequest) {
   // 1. Auth: Bearer CRON_SECRET
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     console.error(
       "[cron/send-reminders] CRON_SECRET is not configured. " +
         "Set this env var and redeploy.",
+    );
+    alertCronFailure(
+      "[cron/send-reminders] missing config",
+      "CRON_SECRET is not set",
     );
     return NextResponse.json(
       { error: "Cron secret not configured." },
@@ -107,6 +129,10 @@ export async function GET(req: NextRequest) {
       "[cron/send-reminders] VAPID keys are not configured. " +
         "Set NEXT_PUBLIC_VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY and redeploy.",
     );
+    alertCronFailure(
+      "[cron/send-reminders] missing config",
+      "VAPID keys are not set",
+    );
     return NextResponse.json(
       { error: "VAPID keys not configured." },
       { status: 500 },
@@ -121,6 +147,7 @@ export async function GET(req: NextRequest) {
   );
 
   const service = createServiceClient();
+  const reasons: string[] = [];
 
   // 4a + 4b. Fetch both batches concurrently. Both fetches must complete
   //          before we decide what to send — game-day sends must not be blocked
@@ -139,6 +166,7 @@ export async function GET(req: NextRequest) {
       "[cron/send-reminders] due_game_day_reminders() RPC failed:",
       gameDayFetchError.message,
     );
+    reasons.push("game-day-rpc");
   }
 
   // 4b errors are also non-fatal: we still want to send any game-day rows
@@ -148,18 +176,48 @@ export async function GET(req: NextRequest) {
       "[cron/send-reminders] due_push_reminders() RPC failed:",
       fetchError.message,
     );
+    reasons.push("daily-rpc");
   }
 
   const allGameDayRows = gameDayRows ?? [];
   const allDueRows = dueRows ?? [];
 
-  if (allGameDayRows.length === 0 && allDueRows.length === 0) {
-    return NextResponse.json({ sent: 0, pruned: 0, failed: 0 });
-  }
-
   let sent = 0;
   let pruned = 0;
   let failed = 0;
+  let stampFailed = 0;
+
+  function emitFailureAlert() {
+    if (
+      failed > CRON_FAILURE_ALERT_THRESHOLD &&
+      !reasons.includes("send")
+    ) {
+      reasons.push("send");
+    }
+    if (
+      stampFailed > CRON_FAILURE_ALERT_THRESHOLD &&
+      !reasons.includes("stamp")
+    ) {
+      reasons.push("stamp");
+    }
+    if (reasons.length === 0) return;
+    alertCronFailure(
+      "[cron/send-reminders] failures",
+      "reminder run exceeded the failure threshold",
+      {
+        reasons: reasons.join("+"),
+        sent: String(sent),
+        pruned: String(pruned),
+        failed: String(failed),
+        stampFailed: String(stampFailed),
+      },
+    );
+  }
+
+  if (allGameDayRows.length === 0 && allDueRows.length === 0) {
+    emitFailureAlert();
+    return NextResponse.json({ sent: 0, pruned: 0, failed: 0 });
+  }
 
   // ---------------------------------------------------------------------------
   // Helper: stamp last_sent_on + optionally null next_game_on after a send.
@@ -191,6 +249,7 @@ export async function GET(req: NextRequest) {
           "[cron/send-reminders] last_sent_on update failed:",
           updateError.message,
         );
+        stampFailed += 1;
       }
 
       // FV-240: clear next_game_on after a game-day send so stale past-dates
@@ -340,5 +399,6 @@ export async function GET(req: NextRequest) {
     `[cron/send-reminders] done — sent=${sent} pruned=${pruned} failed=${failed}`,
   );
 
+  emitFailureAlert();
   return NextResponse.json({ sent, pruned, failed });
 }

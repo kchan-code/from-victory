@@ -55,6 +55,17 @@ const profilesUpdateSpy = vi.fn().mockReturnValue({ error: null });
 // Module mocks (must be hoisted)
 // ---------------------------------------------------------------------------
 
+const { alertCronFailureMock } = vi.hoisted(() => ({
+  alertCronFailureMock: vi.fn(),
+}));
+
+vi.mock("@/lib/monitoring/cron-alert", () => ({
+  alertCronFailure: (...args: unknown[]) => alertCronFailureMock(...args),
+  CRON_FAILURE_ALERT_THRESHOLD: 0,
+}));
+
+let serviceThrows = false;
+
 vi.mock("web-push", () => {
   class WebPushError extends Error {
     statusCode: number;
@@ -78,7 +89,11 @@ vi.mock("web-push", () => {
 });
 
 vi.mock("@/lib/supabase/service", () => ({
-  createServiceClient: () => ({
+  createServiceClient: () => {
+    if (serviceThrows) {
+      throw new Error("missing key athlete aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee");
+    }
+    return {
     rpc: (name: string) => {
       if (name === "due_game_day_reminders") {
         return Promise.resolve({
@@ -120,7 +135,8 @@ vi.mock("@/lib/supabase/service", () => ({
       }
       return {};
     },
-  }),
+    };
+  },
 }));
 
 // ---------------------------------------------------------------------------
@@ -169,6 +185,7 @@ beforeEach(() => {
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY = "vapid-pub";
   process.env.VAPID_PRIVATE_KEY = "vapid-priv";
 
+  serviceThrows = false;
   gameDayRpcRows = [];
   gameDayRpcError = null;
   dueRpcRows = [];
@@ -206,6 +223,7 @@ describe("GET /api/cron/send-reminders — game-day nudge (FV-240)", () => {
 
     expect(res.status).toBe(200);
     expect(body).toEqual({ sent: 1, pruned: 0, failed: 0 });
+    expect(alertCronFailureMock).not.toHaveBeenCalled();
 
     // The payload sent to sendNotification should be the game-day copy
     expect(webpush.sendNotification).toHaveBeenCalledOnce();
@@ -308,6 +326,11 @@ describe("GET /api/cron/send-reminders — game-day nudge (FV-240)", () => {
     const body = await res.json();
 
     expect(body).toEqual({ sent: 0, pruned: 0, failed: 1 });
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/send-reminders] failures",
+      "reminder run exceeded the failure threshold",
+      expect.objectContaining({ failed: "1", reasons: "send" }),
+    );
   });
 
   it("falls through to daily reminders if game-day RPC errors (symmetric error handling)", async () => {
@@ -321,6 +344,14 @@ describe("GET /api/cron/send-reminders — game-day nudge (FV-240)", () => {
     // are fetched concurrently so neither blocks the other)
     expect(body.sent).toBe(1);
     expect(res.status).toBe(200);
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/send-reminders] failures",
+      "reminder run exceeded the failure threshold",
+      expect.objectContaining({ reasons: "game-day-rpc" }),
+    );
+    expect(JSON.stringify(alertCronFailureMock.mock.calls)).not.toContain(
+      "RPC unavailable",
+    );
   });
 
   it("completes game-day sends if daily RPC errors (symmetric error handling)", async () => {
@@ -343,6 +374,41 @@ describe("GET /api/cron/send-reminders — game-day nudge (FV-240)", () => {
     });
     const res = await GET(req);
     expect(res.status).toBe(401);
+    expect(alertCronFailureMock).not.toHaveBeenCalled();
+  });
+
+  it("alerts when CRON_SECRET is missing and does not send", async () => {
+    delete process.env.CRON_SECRET;
+    const res = await GET(makeRequest());
+    expect(res.status).toBe(500);
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/send-reminders] missing config",
+      "CRON_SECRET is not set",
+    );
+    expect(webpush.sendNotification).not.toHaveBeenCalled();
+  });
+
+  it("alerts when VAPID keys are missing", async () => {
+    delete process.env.VAPID_PRIVATE_KEY;
+    const res = await GET(makeRequest());
+    expect(res.status).toBe(500);
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/send-reminders] missing config",
+      "VAPID keys are not set",
+    );
+  });
+
+  it("alerts with the error name only when the handler throws", async () => {
+    serviceThrows = true;
+    const res = await GET(makeRequest());
+    expect(res.status).toBe(500);
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/send-reminders] threw",
+      "Error",
+    );
+    expect(JSON.stringify(alertCronFailureMock.mock.calls)).not.toContain(
+      "eeeeeeeeeeee",
+    );
   });
 
   it("sends daily REMINDER_COPY for non-game-day athletes", async () => {

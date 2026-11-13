@@ -42,6 +42,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { deliverInBackground } from "@/lib/monitoring/deliver";
+import { alertCronFailure, CRON_FAILURE_ALERT_THRESHOLD } from "@/lib/monitoring/cron-alert";
 import { runWeeklyDigest } from "@/lib/email/weekly-digest";
 
 async function handleCronRequest(req: NextRequest) {
@@ -51,6 +52,10 @@ async function handleCronRequest(req: NextRequest) {
     console.error(
       "[weekly-digest/cron] CRON_SECRET is not configured. " +
         "Set this env var to protect the cron route.",
+    );
+    alertCronFailure(
+      "[cron/weekly-digest] missing config",
+      "CRON_SECRET is not set",
     );
     return NextResponse.json({ error: "Cron secret not configured." }, { status: 500 });
   }
@@ -67,15 +72,50 @@ async function handleCronRequest(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  // 3. Respond 202 immediately; run the digest in the background so we don't
+  // 3. Required mail config. runWeeklyDigest no-ops (and does not itself alert)
+  //    when these are missing, which used to look like a successful empty run.
+  if (!process.env.RESEND_API_KEY || !process.env.DIGEST_EMAIL_FROM) {
+    alertCronFailure(
+      "[cron/weekly-digest] missing config",
+      "RESEND_API_KEY or DIGEST_EMAIL_FROM is not set",
+    );
+  }
+
+  // 4. Respond 202 immediately; run the digest in the background so we don't
   //    exceed Vercel's 10-second cron HTTP timeout on large parent lists.
+  //    runWeeklyDigest counts per-parent failures and does not alert. This
+  //    route sends the one alert: on rejection, or when the error count
+  //    exceeds the threshold. Counts only — parent ids never leave the sender.
   deliverInBackground(
-    runWeeklyDigest().then((result) => {
-      console.info(
-        `[weekly-digest/cron] completed: eligible=${result.eligible} ` +
-          `sent=${result.sent} skipped=${result.skipped} errors=${result.errors}`,
-      );
-    }),
+    runWeeklyDigest()
+      .then((result) => {
+        console.info(
+          `[weekly-digest/cron] completed: eligible=${result.eligible} ` +
+            `sent=${result.sent} skipped=${result.skipped} errors=${result.errors}`,
+        );
+        if (result.errors > CRON_FAILURE_ALERT_THRESHOLD) {
+          alertCronFailure(
+            "[cron/weekly-digest] send failures",
+            "digest run error count exceeded threshold",
+            {
+              eligible: String(result.eligible),
+              sent: String(result.sent),
+              skipped: String(result.skipped),
+              errors: String(result.errors),
+            },
+          );
+        }
+      })
+      .catch((err: unknown) => {
+        console.error(
+          "[weekly-digest/cron] background run rejected",
+          err instanceof Error ? err.name : "Error",
+        );
+        alertCronFailure(
+          "[cron/weekly-digest] background run rejected",
+          err instanceof Error ? err.name : "Error",
+        );
+      }),
   );
 
   return NextResponse.json({ accepted: true }, { status: 202 });

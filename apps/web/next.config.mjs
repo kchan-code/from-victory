@@ -1,6 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // FV-731: tags server actions with this deployment so a WebView left open
+  // across a ship can be recognized as stale. Keeping the previous deployment
+  // alive to serve those old clients (Skew Protection) is a Vercel dashboard
+  // setting — Project → Settings → Advanced — not something this file can turn on.
+  ...(process.env.VERCEL_DEPLOYMENT_ID
+    ? { deploymentId: process.env.VERCEL_DEPLOYMENT_ID }
+    : {}),
+  env: {
+    // Inlined at build so the client error report can name its own build.
+    // A commit SHA is not a secret. Empty in local dev.
+    NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA ?? "",
+  },
   async headers() {
     return [
       {
