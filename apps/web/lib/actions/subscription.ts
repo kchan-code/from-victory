@@ -135,6 +135,7 @@ import {
 import { requireParent, requireSelfPayer } from "@/lib/auth/guards";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
+import { isNativeShell } from "@/lib/native-shell";
 import { getStripe } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -170,7 +171,13 @@ async function readAttributionFromCookie(): Promise<Attribution> {
 // Types
 // ---------------------------------------------------------------------------
 
-export type SubscriptionActionState = { ok: false; error: string } | null;
+export type SubscriptionActionState =
+  | {
+      ok: false;
+      code?: "native_shell_unavailable";
+      error: string;
+    }
+  | null;
 
 // ---------------------------------------------------------------------------
 // Zod schema
@@ -206,6 +213,16 @@ async function startSubscriptionCheckout(
    */
   trialQuantityEligible: boolean,
 ): Promise<SubscriptionActionState> {
+  // Google Play / App Store compliance belt-and-braces: refuse Stripe
+  // Checkout from any native shell before touching Stripe.
+  if (await isNativeShell()) {
+    return {
+      ok: false,
+      code: "native_shell_unavailable",
+      error: "Manage your subscription from a web browser at fromvictoryapp.com.",
+    };
+  }
+
   // 2.5. Duplicate-billing guard (FV-581, record Section 4.4; broadened by
   //      FV-584 / KC decision D1) — a payer already `full` OR `degraded`
   //      (past_due/paused/etc.) via any provider must never see a fresh

@@ -46,6 +46,16 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
+const { requestHeadersMock, requestCookiesMock, headerState } = vi.hoisted(() => ({
+  requestHeadersMock: vi.fn(),
+  requestCookiesMock: vi.fn(),
+  headerState: { userAgent: "Mozilla/5.0" },
+}));
+vi.mock("next/headers", () => ({
+  headers: requestHeadersMock,
+  cookies: requestCookiesMock,
+}));
+
 const redirectMock = vi.fn();
 vi.mock("next/navigation", () => ({
   redirect: (url: string) => {
@@ -183,6 +193,13 @@ getSubscribeEntitlementStateMock.mockResolvedValue({
 describe("createCheckoutSession — 7-day trial logic (FV-217, duration+gate FV-574)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    headerState.userAgent = "Mozilla/5.0";
+    requestHeadersMock.mockResolvedValue({
+      get: (name: string) => (name.toLowerCase() === "user-agent" ? headerState.userAgent : null),
+    });
+    requestCookiesMock.mockResolvedValue({
+      get: () => undefined,
+    });
     process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
     process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
     process.env.STRIPE_PRICE_ID_MONTHLY = "price_monthly_500";
@@ -416,6 +433,13 @@ describe("createCheckoutSession — 7-day trial logic (FV-217, duration+gate FV-
 describe("createCheckoutSession — quantity from athlete count (FV-283)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    headerState.userAgent = "Mozilla/5.0";
+    requestHeadersMock.mockResolvedValue({
+      get: (name: string) => (name.toLowerCase() === "user-agent" ? headerState.userAgent : null),
+    });
+    requestCookiesMock.mockResolvedValue({
+      get: () => undefined,
+    });
     process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
     process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
     process.env.STRIPE_PRICE_ID_MONTHLY = "price_monthly_500";
@@ -476,6 +500,13 @@ describe("createCheckoutSession — quantity from athlete count (FV-283)", () =>
 describe("createAdultCheckoutSession (FV-327)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    headerState.userAgent = "Mozilla/5.0";
+    requestHeadersMock.mockResolvedValue({
+      get: (name: string) => (name.toLowerCase() === "user-agent" ? headerState.userAgent : null),
+    });
+    requestCookiesMock.mockResolvedValue({
+      get: () => undefined,
+    });
     process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
     process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
     process.env.STRIPE_PRICE_ID_MONTHLY = "price_monthly_500";
@@ -565,6 +596,13 @@ describe("createAdultCheckoutSession (FV-327)", () => {
 describe("createCheckoutSession — cross-provider Apple trial history (FV-570)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    headerState.userAgent = "Mozilla/5.0";
+    requestHeadersMock.mockResolvedValue({
+      get: (name: string) => (name.toLowerCase() === "user-agent" ? headerState.userAgent : null),
+    });
+    requestCookiesMock.mockResolvedValue({
+      get: () => undefined,
+    });
     process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
     process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
     process.env.STRIPE_PRICE_ID_MONTHLY = "price_monthly_500";
@@ -643,6 +681,13 @@ describe("createCheckoutSession — cross-provider Apple trial history (FV-570)"
 describe("createCheckoutSession — one-athlete trial gate (FV-574)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    headerState.userAgent = "Mozilla/5.0";
+    requestHeadersMock.mockResolvedValue({
+      get: (name: string) => (name.toLowerCase() === "user-agent" ? headerState.userAgent : null),
+    });
+    requestCookiesMock.mockResolvedValue({
+      get: () => undefined,
+    });
     process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
     process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
     process.env.STRIPE_PRICE_ID_MONTHLY = "price_monthly_500";
@@ -741,12 +786,97 @@ describe("createCheckoutSession — one-athlete trial gate (FV-574)", () => {
 });
 
 // ---------------------------------------------------------------------------
+// FV-715: native-shell checkout refusal guard
+// ---------------------------------------------------------------------------
+
+describe("startSubscriptionCheckout — native-shell refusal guard (FV-715)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    headerState.userAgent = "Mozilla/5.0";
+    requestHeadersMock.mockResolvedValue({
+      get: (name: string) => (name.toLowerCase() === "user-agent" ? headerState.userAgent : null),
+    });
+    requestCookiesMock.mockResolvedValue({
+      get: () => undefined,
+    });
+    process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
+    process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
+    process.env.STRIPE_PRICE_ID_MONTHLY = "price_monthly_500";
+    process.env.STRIPE_PRICE_ID_ANNUAL = "price_annual_4900";
+    sessionsCreateMock.mockResolvedValue({
+      url: "https://checkout.stripe.com/pay/cs_test",
+    });
+    hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+    getSubscribeEntitlementStateMock.mockResolvedValue({
+      status: "not_entitled",
+      provider: null,
+    });
+    supabaseMockImpl = makeSubMock(null);
+  });
+
+  it("web request (no shell token) is allowed to create checkout", async () => {
+    headerState.userAgent = "Mozilla/5.0";
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(sessionsCreateMock).toHaveBeenCalledOnce();
+  });
+
+  it("ios-iap shell is refused before Stripe checkout session creation", async () => {
+    headerState.userAgent = "FVNativeShell/1 (ios)";
+
+    const result = await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(result?.ok).toBe(false);
+    if (result?.ok === false) {
+      expect(result.code).toBe("native_shell_unavailable");
+      expect(result.error).toContain("fromvictoryapp.com");
+    }
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it("restricted Play shell is refused before Stripe checkout session creation", async () => {
+    headerState.userAgent = "FVNativeShell/1 (play)";
+
+    const result = await createCheckoutSession(null, makeFormData("annual"));
+
+    expect(result?.ok).toBe(false);
+    if (result?.ok === false) {
+      expect(result.code).toBe("native_shell_unavailable");
+    }
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it("bare FVNativeShell/1 shell is refused before Stripe checkout session creation", async () => {
+    headerState.userAgent = "FVNativeShell/1";
+
+    const result = await createAdultCheckoutSession(null, makeFormData("monthly"));
+
+    expect(result?.ok).toBe(false);
+    if (result?.ok === false) {
+      expect(result.code).toBe("native_shell_unavailable");
+    }
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // FV-581: duplicate-billing entitlement guard
 // ---------------------------------------------------------------------------
 
 describe("startSubscriptionCheckout — duplicate-billing guard (FV-581)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    headerState.userAgent = "Mozilla/5.0";
+    requestHeadersMock.mockResolvedValue({
+      get: (name: string) => (name.toLowerCase() === "user-agent" ? headerState.userAgent : null),
+    });
+    requestCookiesMock.mockResolvedValue({
+      get: () => undefined,
+    });
     process.env.NEXT_PUBLIC_SITE_URL = "https://app.fromvictoryapp.com";
     process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
     process.env.STRIPE_PRICE_ID_MONTHLY = "price_monthly_500";
