@@ -852,7 +852,7 @@ describe("POST /api/webhooks/stripe", () => {
     });
   });
 
-  it("(a) deleted event for a non-tracked sub while tracked S is live: no write, watermark untouched, one alert", async () => {
+  it("(a) deleted event for a non-tracked sub while tracked S is live: no write, watermark untouched, log only (the duplicate resolved itself)", async () => {
     serviceMockImpl = makeServiceMock({ existingRow: trackedRow() });
     const res = await send(
       makeEvent(
@@ -865,16 +865,105 @@ describe("POST /api/webhooks/stripe", () => {
     expect(res.status).toBe(200);
     expect(upsertCalls).toHaveLength(0);
     expect(subscriptionsRetrieveMock).not.toHaveBeenCalled();
-    expect(notifyErrorMock).toHaveBeenCalledTimes(1);
-    expect(alertCtx()).toMatchObject({
-      event_id: "evt_a",
-      tracked_sub: "sub_S",
-      incoming_sub: "sub_E",
-      reason: "non_entitling",
-    });
+    expect(subscriptionsListMock).not.toHaveBeenCalled();
+    expect(notifyErrorMock).not.toHaveBeenCalled();
   });
 
-  it.each(["incomplete", "past_due", "unpaid", "paused", "incomplete_expired"])(
+  it("incomplete_expired event for a non-tracked sub: no write, no alert", async () => {
+    serviceMockImpl = makeServiceMock({ existingRow: trackedRow() });
+    const res = await send(
+      makeEvent(
+        "customer.subscription.updated",
+        makeSubscription({ id: "sub_E", status: "incomplete_expired" }),
+        3000,
+      ),
+    );
+    expect(res.status).toBe(200);
+    expect(upsertCalls).toHaveLength(0);
+    expect(notifyErrorMock).not.toHaveBeenCalled();
+  });
+
+  it("redelivered delete for old S after the row moved to E: no write, no alert", async () => {
+    serviceMockImpl = makeServiceMock({
+      existingRow: trackedRow({ stripe_subscription_id: "sub_E" }),
+    });
+    const res = await send(
+      makeEvent(
+        "customer.subscription.deleted",
+        makeSubscription({ id: "sub_S", status: "canceled" }),
+        3000,
+      ),
+    );
+    expect(res.status).toBe(200);
+    expect(upsertCalls).toHaveLength(0);
+    expect(notifyErrorMock).not.toHaveBeenCalled();
+  });
+
+  it.each(["past_due", "unpaid", "paused"])(
+    "re-subscribe: active E while Stripe says tracked S is %s -> row adopts E, alert that S still exists",
+    async (storedStatus) => {
+      serviceMockImpl = makeServiceMock({
+        existingRow: trackedRow({ status: storedStatus }),
+      });
+      subscriptionsRetrieveMock.mockResolvedValueOnce(
+        makeSubscription({ id: "sub_S", status: storedStatus }),
+      );
+      const res = await send(
+        makeEvent(
+          "customer.subscription.updated",
+          makeSubscription({ id: "sub_E", status: "active" }),
+          3000,
+          "evt_resub",
+        ),
+      );
+      expect(res.status).toBe(200);
+      const row = upsertCalls[0] as Record<string, unknown>;
+      expect(row.stripe_subscription_id).toBe("sub_E");
+      expect(row.status).toBe("active");
+      expect(row.last_stripe_event_at).toBe(new Date(3000 * 1000).toISOString());
+      expect(notifyErrorMock).toHaveBeenCalledTimes(1);
+      expect(alertCtx()).toMatchObject({
+        replaced_sub: "sub_S",
+        replaced_status: storedStatus,
+        adopted_sub: "sub_E",
+        reason: "replaced_unpaid",
+      });
+    },
+  );
+
+  it("active E while Stripe says tracked S is incomplete: row adopts E, no alert", async () => {
+    serviceMockImpl = makeServiceMock({ existingRow: trackedRow({ status: "incomplete" }) });
+    subscriptionsRetrieveMock.mockResolvedValueOnce(
+      makeSubscription({ id: "sub_S", status: "incomplete" }),
+    );
+    await send(
+      makeEvent(
+        "customer.subscription.updated",
+        makeSubscription({ id: "sub_E", status: "active" }),
+        3000,
+      ),
+    );
+    expect((upsertCalls[0] as Record<string, unknown>).stripe_subscription_id).toBe("sub_E");
+    expect(notifyErrorMock).not.toHaveBeenCalled();
+  });
+
+  it("trialing counts as a live tracked S: active E is a duplicate, no write", async () => {
+    serviceMockImpl = makeServiceMock({ existingRow: trackedRow({ status: "trialing" }) });
+    subscriptionsRetrieveMock.mockResolvedValueOnce(
+      makeSubscription({ id: "sub_S", status: "trialing" }),
+    );
+    await send(
+      makeEvent(
+        "customer.subscription.created",
+        makeSubscription({ id: "sub_E", status: "active" }),
+        3000,
+      ),
+    );
+    expect(upsertCalls).toHaveLength(0);
+    expect(alertCtx().reason).toBe("duplicate");
+  });
+
+  it.each(["incomplete", "past_due", "unpaid", "paused"])(
     "non-entitling %s event for a non-tracked sub: no write, alert",
     async (status) => {
       serviceMockImpl = makeServiceMock({ existingRow: trackedRow() });
@@ -1130,8 +1219,8 @@ describe("POST /api/webhooks/stripe", () => {
     serviceMockImpl = makeServiceMock({ existingRow: trackedRow() });
     await send(
       makeEvent(
-        "customer.subscription.deleted",
-        makeSubscription({ id: "sub_E", status: "canceled" }),
+        "customer.subscription.updated",
+        makeSubscription({ id: "sub_E", status: "past_due" }),
         3000,
       ),
     );

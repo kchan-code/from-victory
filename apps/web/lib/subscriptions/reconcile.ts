@@ -13,7 +13,12 @@ import type Stripe from "stripe";
 
 import type { Database } from "@/lib/supabase/types";
 import { getStripe } from "@/lib/stripe/server";
-import { rowFromSubscription, stripeFieldsFromRow } from "@/lib/stripe/subscription-sync";
+import {
+  TERMINAL_STATUSES,
+  findSurvivingSubscription,
+  rowFromSubscription,
+  stripeFieldsFromRow,
+} from "@/lib/stripe/subscription-sync";
 import { reconcileAppleSubscription } from "./apple-lifecycle";
 
 type ServiceClient = SupabaseClient<Database>;
@@ -163,8 +168,22 @@ async function reconcileStripeRow(
     throw err;
   }
 
-  const truth = rowFromSubscription(sub);
+  let truth = rowFromSubscription(sub);
+  // FV-711: the tracked subscription is over. If the customer has another
+  // live one (a duplicate the webhook kept off the row), move the row to it
+  // rather than marking a still-paying family canceled. Canceled rows are
+  // never re-listed by this job, so this is the only chance to catch it.
+  if (TERMINAL_STATUSES.has(truth.status)) {
+    const survivor = await findSurvivingSubscription(
+      stripe,
+      truth.stripe_customer_id,
+      row.stripe_subscription_id as string,
+      { timeout: STRIPE_CALL_TIMEOUT_MS },
+    );
+    if (survivor) truth = rowFromSubscription(survivor);
+  }
   const inSync =
+    truth.stripe_subscription_id === row.stripe_subscription_id &&
     truth.status === row.status &&
     truth.price_id === row.price_id &&
     truth.cancel_at_period_end === row.cancel_at_period_end &&

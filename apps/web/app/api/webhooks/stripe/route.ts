@@ -67,6 +67,10 @@ import type { NextRequest } from "next/server";
 import { getStripe } from "@/lib/stripe/server";
 import {
   rowFromCheckoutSession,
+  ENTITLING_STATUSES,
+  LIVE_STATUSES,
+  TERMINAL_STATUSES,
+  findSurvivingSubscription,
   rowFromSubscription,
   stripeFieldsFromRow,
   subscriptionFromInvoice,
@@ -205,31 +209,17 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
 // Tracked-subscription guard (FV-711)
 // ---------------------------------------------------------------------------
 
-/** Statuses after which a subscription is over; a different one may replace it. */
-const TERMINAL_STATUSES = new Set(["canceled", "incomplete_expired"]);
-/** Statuses that grant full access (see lib/subscriptions/access-level.ts). */
-const ENTITLING_STATUSES = new Set(["active", "trialing"]);
-/**
- * Statuses in which a stored/retrieved subscription is still a live, billable
- * relationship. `incomplete` is deliberately NOT live: nothing has been
- * charged and it expires on its own, so it must not block a paid replacement.
- */
-const LIVE_STATUSES = new Set([
-  "active",
-  "trialing",
-  "past_due",
-  "unpaid",
-  "paused",
-]);
-
 type TrackedRow = {
   stripe_subscription_id?: string | null;
   status?: string | null;
 };
 
 type AdoptionDecision =
-  | { action: "adopt" }
-  | { action: "skip"; reason: "non_entitling" | "duplicate" };
+  // `replaced` is set when E displaced a tracked subscription that Stripe
+  // still reports as billable-but-unpaid (past_due / unpaid / paused).
+  | { action: "adopt"; replaced?: string }
+  // `terminal`: the non-tracked subscription's event says it is over.
+  | { action: "skip"; reason: "non_entitling" | "duplicate"; terminal?: boolean };
 
 function isResourceMissing(err: unknown): boolean {
   return (
@@ -249,8 +239,15 @@ function isResourceMissing(err: unknown): boolean {
  *     active/trialing             -> skip: an event about a different
  *                                    subscription must not touch tracked S
  *   S non-terminal, E entitling   -> retrieve S from Stripe (the row may be
- *                                    stale): live -> skip (duplicate);
- *                                    not live / missing -> adopt
+ *                                    stale):
+ *                                      S active/trialing -> skip (duplicate)
+ *                                      S past_due/unpaid/paused -> adopt E
+ *                                        (a paid replacement for a failed
+ *                                        subscription is a re-subscribe;
+ *                                        refusing it would leave a paying
+ *                                        family degraded) and alert, since S
+ *                                        may still bill if it recovers
+ *                                      S over / missing -> adopt E
  *
  * A Stripe error other than resource_missing is rethrown (route -> 500 ->
  * Stripe retries). Never guesses.
@@ -267,44 +264,24 @@ async function decideAdoption(
     return { action: "adopt" };
   }
   if (!ENTITLING_STATUSES.has(incoming.status)) {
-    return { action: "skip", reason: "non_entitling" };
+    return {
+      action: "skip",
+      reason: "non_entitling",
+      terminal: TERMINAL_STATUSES.has(incoming.status),
+    };
   }
   try {
     const stored = await getStripe().subscriptions.retrieve(storedId);
-    return LIVE_STATUSES.has(stored.status)
-      ? { action: "skip", reason: "duplicate" }
-      : { action: "adopt" };
+    if (ENTITLING_STATUSES.has(stored.status)) {
+      return { action: "skip", reason: "duplicate" };
+    }
+    return TERMINAL_STATUSES.has(stored.status) || stored.status === "incomplete"
+      ? { action: "adopt" }
+      : { action: "adopt", replaced: stored.status };
   } catch (err) {
     if (isResourceMissing(err)) return { action: "adopt" };
     throw err;
   }
-}
-
-/**
- * The tracked subscription just ended. If the customer still has another live
- * subscription (the duplicate this guard kept off the row), return it so the
- * row can move to it instead of going `canceled` while the family is still
- * paying. Entitling subscriptions win, then the newest.
- *
- * Throws on a Stripe error (route -> 500 -> Stripe retries): writing
- * `canceled` without knowing would risk locking out a paying family.
- */
-async function findSurvivingSubscription(
-  customerId: string,
-  endedSubscriptionId: string,
-): Promise<Stripe.Subscription | null> {
-  const subs = await getStripe().subscriptions.list({
-    customer: customerId,
-    status: "all",
-    limit: 20,
-  });
-  const live = subs.data.filter(
-    (s) => s.id !== endedSubscriptionId && LIVE_STATUSES.has(s.status),
-  );
-  if (live.length === 0) return null;
-  const rank = (s: Stripe.Subscription) => (ENTITLING_STATUSES.has(s.status) ? 1 : 0);
-  live.sort((a, b) => rank(b) - rank(a) || b.created - a.created);
-  return live[0] ?? null;
 }
 
 /** One alert per event. Opaque ids only: no emails, names or athlete data. */
@@ -525,21 +502,40 @@ async function handleSubscriptionUpsert(
       `[stripe/webhook] ${eventType}: sub="${row.stripe_subscription_id}" is not the ` +
         `tracked sub="${existing.stripe_subscription_id}" (${decision.reason}). No write.`,
     );
+    // A non-tracked subscription ending is the duplicate resolving itself
+    // (or a late redelivery after a re-subscribe): nothing for ops to do, so
+    // log only. Everything else is a live second subscription: alert.
+    if (!decision.terminal) {
+      alertSubscriptionConflict(
+        decision.reason === "duplicate"
+          ? "second live subscription on one customer; row kept on the tracked subscription"
+          : "event for a non-tracked subscription ignored; tracked subscription untouched",
+        {
+          event_type: eventType,
+          event_id: eventId,
+          customer: row.stripe_customer_id,
+          tracked_sub: existing.stripe_subscription_id ?? "",
+          incoming_sub: row.stripe_subscription_id ?? "",
+          incoming_status: row.status,
+          reason: decision.reason,
+        },
+      );
+    }
+    return;
+  }
+  if (decision.replaced) {
     alertSubscriptionConflict(
-      decision.reason === "duplicate"
-        ? "second live subscription on one customer; row kept on the tracked subscription"
-        : "event for a non-tracked subscription ignored; tracked subscription untouched",
+      "new paid subscription replaced an unpaid tracked one; the old subscription still exists in Stripe",
       {
         event_type: eventType,
         event_id: eventId,
         customer: row.stripe_customer_id,
-        tracked_sub: existing.stripe_subscription_id ?? "",
-        incoming_sub: row.stripe_subscription_id ?? "",
-        incoming_status: row.status,
-        reason: decision.reason,
+        replaced_sub: existing.stripe_subscription_id ?? "",
+        replaced_status: decision.replaced,
+        adopted_sub: row.stripe_subscription_id ?? "",
+        reason: "replaced_unpaid",
       },
     );
-    return;
   }
 
   // Out-of-order protection: skip events older than the watermark.
@@ -569,6 +565,7 @@ async function handleSubscriptionUpsert(
     TERMINAL_STATUSES.has(row.status)
   ) {
     const survivor = await findSurvivingSubscription(
+      getStripe(),
       row.stripe_customer_id,
       existing.stripe_subscription_id,
     );
