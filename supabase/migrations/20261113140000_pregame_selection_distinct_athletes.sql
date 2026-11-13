@@ -34,9 +34,14 @@
 --   the second waits for the first to commit, then conflicts and writes nothing.
 --   The marker is claimed only when at least one valid (dimension, value)
 --   survives the SQL filters, so an empty/invalid call never consumes the month.
---   Month boundary: the row's month is computed here in SQL (UTC); the app
---   computes the same UTC month for the digest. A call straddling midnight UTC at
---   a month boundary may count under either month; that is acceptable.
+--   Month boundary: the app reads its clock once and passes the SAME period it
+--   used for the digest as p_period. The writer counts ONLY if p_period is
+--   exactly the current UTC month's first day (computed in SQL from now()); the
+--   row is stored under that period. Otherwise it returns 0 without claiming a
+--   marker or writing counts, so a call straddling midnight UTC at a month
+--   boundary is simply not counted and the athlete's next call in the new month
+--   (new digest, matching period) counts normally. One athlete can therefore
+--   never add more than +1 to a cell in a month.
 --
 -- Retention (public.prune_pregame_selection_totals(), run on every writer call
 --   AND from the daily cron route /api/cron/prune-activity-events):
@@ -152,6 +157,7 @@ grant execute on function public.prune_pregame_selection_totals() to service_rol
 -- ---------------------------------------------------------------------------
 create or replace function public.record_pregame_selections(
   p_marker     text,
+  p_period     date,
   p_sport      text,
   p_selections jsonb
 )
@@ -169,6 +175,7 @@ begin
   perform public.prune_pregame_selection_totals();
 
   if p_marker is null or p_marker !~ '^[0-9a-f]{64}$'
+     or p_period is distinct from v_period
      or p_sport is null or p_sport !~ '^[a-z][a-z-]{0,31}$'
      or p_selections is null or jsonb_typeof(p_selections) <> 'array' then
     return 0;
@@ -225,15 +232,16 @@ begin
 end;
 $$;
 
-comment on function public.record_pregame_selections(text, text, jsonb) is
+comment on function public.record_pregame_selections(text, date, text, jsonb) is
   'Counts a pregame''s selections AT MOST ONCE per opaque marker per UTC month '
   '(FV-749). The marker is a keyed one-way digest computed by the application; '
-  'the database never receives an athlete identifier. Does not consume the month '
+  'the database never receives an athlete identifier. Counts only when p_period '
+  'is the current UTC month (else 0, nothing claimed). Does not consume the month '
   'when nothing valid is counted. Also prunes (see prune_pregame_selection_totals). '
   'Service-role-only (EXECUTE revoked from PUBLIC/anon/authenticated).';
 
-revoke all on function public.record_pregame_selections(text, text, jsonb) from public, anon, authenticated;
-grant execute on function public.record_pregame_selections(text, text, jsonb) to service_role;
+revoke all on function public.record_pregame_selections(text, date, text, jsonb) from public, anon, authenticated;
+grant execute on function public.record_pregame_selections(text, date, text, jsonb) to service_role;
 
 drop function public.increment_pregame_selection_counts(text, jsonb);
 

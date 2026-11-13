@@ -18,10 +18,17 @@ import "server-only";
 // NEVER throws. On failure it logs one generic line — never the selections,
 // never an id or digest.
 
+import { deliverInBackground } from "@/lib/monitoring/deliver";
+import { notifyError } from "@/lib/monitoring/notify";
 import { createServiceClient } from "@/lib/supabase/service";
 
-import { pregameMarker } from "./pregame-marker";
+import { pregameMarker, utcPeriodStartIso } from "./pregame-marker";
 import { buildSelectionCounts, type PregameSelectionsInput } from "./pregame-selection-core";
+
+// Operator alert for a missing secret in production, at most once per server
+// instance (the rate-limit helper's equivalent alert has no dedupe, and one
+// alert per pregame completion would be noise). Never includes an id.
+let missingSecretAlerted = false;
 
 export async function recordPregameSelectionCounts(
   athleteId: string,
@@ -35,13 +42,29 @@ export async function recordPregameSelectionCounts(
     const secret = process.env.RATE_LIMIT_HASH_SECRET;
     if (!secret) {
       console.error("[activity] pregame selection counts skipped: hash secret not configured");
+      if (process.env.NODE_ENV === "production" && !missingSecretAlerted) {
+        missingSecretAlerted = true;
+        deliverInBackground(
+          notifyError(
+            "[activity] RATE_LIMIT_HASH_SECRET not set in production",
+            "Pregame selection totals are NOT being recorded. Set RATE_LIMIT_HASH_SECRET in Vercel env vars.",
+          ),
+        );
+      }
       return;
     }
-    const marker = pregameMarker(athleteId, secret, new Date());
+    // ONE clock reading: the digest's month and the period passed to the
+    // database are the same value, so they always agree. The database stores the
+    // row under p_period only if it is the current UTC month, else counts nothing
+    // (a call straddling midnight at a month boundary is simply not counted).
+    const now = new Date();
+    const period = utcPeriodStartIso(now);
+    const marker = pregameMarker(athleteId, secret, now);
 
     const supabase = createServiceClient();
     const { error } = await supabase.rpc("record_pregame_selections", {
       p_marker: marker,
+      p_period: period,
       p_sport: built.sport,
       p_selections: built.selections,
     });

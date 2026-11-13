@@ -11,11 +11,12 @@
 // months) and only the application server, which holds the secret, can compute
 // it. Pure function: the secret and clock are injected so it is unit-testable.
 //
-// Month boundary: the database derives the row's month in SQL (UTC) at insert
-// time; this derives the digest's month in the app. A call that straddles
-// midnight UTC at a month boundary may count under either month. That is
-// acceptable (at worst one athlete is counted once in each of two adjacent
-// months, or its marker month differs from the row month for that one call).
+// Month boundary: the caller reads the clock ONCE and passes the same period it
+// used for the digest to the database (p_period). The database counts only if
+// p_period is exactly the current UTC month's first day; otherwise it returns 0
+// without claiming a marker or writing counts. A call that straddles midnight
+// UTC at a month boundary is therefore simply not counted, and the athlete's
+// next call in the new month counts normally (digest and period always agree).
 
 import { createHmac } from "node:crypto";
 

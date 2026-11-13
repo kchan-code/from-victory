@@ -17,6 +17,9 @@
 -- marker's primary-key unique index; see the migration header).
 -- =============================================================================
 
+create function pg_temp.fv749_cur() returns date language sql as
+  $$ select date_trunc('month', now() at time zone 'utc')::date $$;
+
 create function pg_temp.fv749_marker() returns text language sql as
   $$ select encode(sha256(gen_random_uuid()::text::bytea), 'hex') $$;
 
@@ -59,7 +62,7 @@ begin
     'FV-749 FAIL: the old increment_pregame_selection_counts must be dropped';
   assert to_regprocedure('public.read_pregame_selection_counts(integer, integer)') is null,
     'FV-749 FAIL: the old two-argument reader must be dropped';
-  assert to_regprocedure('public.record_pregame_selections(uuid, text, jsonb)') is null,
+  assert to_regprocedure('public.record_pregame_selections(text, text, jsonb)') is null,
     'FV-749 FAIL: no function may accept an athlete uuid';
 end $$;
 
@@ -80,7 +83,7 @@ begin;
   begin
     -- First call: +1 per distinct cell, duplicate pair in one call adds 1, bad
     -- entries dropped, plus exactly one marker.
-    select public.record_pregame_selections(x, 'hockey', jsonb_build_array(
+    select public.record_pregame_selections(x, pg_temp.fv749_cur(), 'hockey', jsonb_build_array(
       jsonb_build_object('dimension','need',          'value','Confidence'),
       jsonb_build_object('dimension','role',          'value','Goalie'),
       jsonb_build_object('dimension','positive_play', 'value','viz-a'),
@@ -102,7 +105,7 @@ begin;
       'FV-724 FAIL: unknown dimension / bad value was stored';
 
     -- Second call, same marker, same month, DIFFERENT selections: nothing.
-    select public.record_pregame_selections(x, 'hockey', jsonb_build_array(
+    select public.record_pregame_selections(x, pg_temp.fv749_cur(), 'hockey', jsonb_build_array(
       jsonb_build_object('dimension','need','value','Calm'),
       jsonb_build_object('dimension','need','value','Confidence'))) into n;
     assert n = 0, format('FV-749 FAIL: second call in the month must return 0, got %s', n);
@@ -111,7 +114,7 @@ begin;
 
     -- The same marker calling many times leaves every cell at 1.
     for i in 1..5 loop
-      perform public.record_pregame_selections(x, 'hockey', jsonb_build_array(
+      perform public.record_pregame_selections(x, pg_temp.fv749_cur(), 'hockey', jsonb_build_array(
         jsonb_build_object('dimension','need','value','Confidence'),
         jsonb_build_object('dimension','role','value','Goalie')));
     end loop;
@@ -121,7 +124,7 @@ begin;
     assert markers = 1, 'FV-749 FAIL: marker duplicated';
 
     -- A different marker adds +1 to the same cell.
-    select public.record_pregame_selections(y, 'hockey', jsonb_build_array(
+    select public.record_pregame_selections(y, pg_temp.fv749_cur(), 'hockey', jsonb_build_array(
       jsonb_build_object('dimension','need','value','Confidence'))) into n;
     assert n = 1, format('FV-749 FAIL: a different marker must write 1 cell, got %s', n);
     select selection_count into cnt from public.pregame_selection_counts
@@ -129,25 +132,25 @@ begin;
     assert cnt = 2, format('FV-749 FAIL: two distinct markers must give 2, got %s', cnt);
 
     -- Invalid input is a no-op, never an error, and never claims a marker.
-    assert public.record_pregame_selections(null, 'hockey', '[]'::jsonb) = 0, 'FV-749 FAIL: null marker must be a no-op';
-    assert public.record_pregame_selections('not-a-digest', 'hockey',
+    assert public.record_pregame_selections(null, pg_temp.fv749_cur(), 'hockey', '[]'::jsonb) = 0, 'FV-749 FAIL: null marker must be a no-op';
+    assert public.record_pregame_selections('not-a-digest', pg_temp.fv749_cur(), 'hockey',
       jsonb_build_array(jsonb_build_object('dimension','need','value','Hope'))) = 0,
       'FV-749 FAIL: a malformed marker must be a no-op';
-    assert public.record_pregame_selections(pg_temp.fv749_marker(), 'Bad Sport', '[]'::jsonb) = 0, 'FV-749 FAIL: bad sport must be a no-op';
-    assert public.record_pregame_selections(pg_temp.fv749_marker(), 'hockey', '{"a":1}'::jsonb) = 0, 'FV-749 FAIL: non-array must be a no-op';
+    assert public.record_pregame_selections(pg_temp.fv749_marker(), pg_temp.fv749_cur(), 'Bad Sport', '[]'::jsonb) = 0, 'FV-749 FAIL: bad sport must be a no-op';
+    assert public.record_pregame_selections(pg_temp.fv749_marker(), pg_temp.fv749_cur(), 'hockey', '{"a":1}'::jsonb) = 0, 'FV-749 FAIL: non-array must be a no-op';
     assert (select count(*) from public.pregame_selection_contributors) = 2,
       'FV-749 FAIL: invalid input must not record a marker';
 
     -- The marker is NOT claimed when nothing valid is counted, so a later call
     -- with valid selections still counts.
     declare z text := pg_temp.fv749_marker(); begin
-      assert public.record_pregame_selections(z, 'hockey', jsonb_build_array(
+      assert public.record_pregame_selections(z, pg_temp.fv749_cur(), 'hockey', jsonb_build_array(
         jsonb_build_object('dimension','cue_word','value','Faithful'),
         jsonb_build_object('dimension','need','value',''))) = 0,
         'FV-749 FAIL: nothing valid must return 0';
       assert (select count(*) from public.pregame_selection_contributors where marker = z) = 0,
         'FV-749 FAIL: a call with nothing valid must not claim the marker';
-      assert public.record_pregame_selections(z, 'hockey',
+      assert public.record_pregame_selections(z, pg_temp.fv749_cur(), 'hockey',
         jsonb_build_array(jsonb_build_object('dimension','need','value','Hope'))) = 1,
         'FV-749 FAIL: the month must still be available after an empty call';
     end;
@@ -156,6 +159,49 @@ begin;
     update public.pregame_selection_counts set selection_count = 500;
     assert (select count(*) from public.read_pregame_selection_counts()) = 0,
       'FV-749 FAIL: the current (open) month must never be readable';
+  end $$;
+rollback;
+
+-- ---------------------------------------------------------------------------
+-- Period guard: the writer counts ONLY when p_period is the current UTC month.
+-- A last-month / next-month / null / garbage period returns 0, claims no
+-- marker and writes nothing (so a call straddling a month boundary is simply
+-- not counted, and the same athlete's next-month call counts normally).
+-- ---------------------------------------------------------------------------
+begin;
+  delete from public.pregame_selection_counts;
+  delete from public.pregame_selection_contributors;
+  set local role service_role;
+  do $$
+  declare
+    m text := pg_temp.fv749_marker();
+    sel jsonb := jsonb_build_array(jsonb_build_object('dimension','need','value','Hope'));
+    p date;
+  begin
+    foreach p in array array[
+      (pg_temp.fv749_cur() - interval '1 month')::date,
+      (pg_temp.fv749_cur() + interval '1 month')::date,
+      pg_temp.fv749_cur() + 1,
+      null::date] loop
+      assert public.record_pregame_selections(m, p, 'hockey', sel) = 0,
+        format('FV-749 FAIL: period %s must return 0', p);
+    end loop;
+    assert (select count(*) from public.pregame_selection_contributors) = 0,
+      'FV-749 FAIL: a wrong period must not claim a marker';
+    assert (select count(*) from public.pregame_selection_counts) = 0,
+      'FV-749 FAIL: a wrong period must not write counts';
+    -- The same marker still counts with the right period afterwards.
+    assert public.record_pregame_selections(m, pg_temp.fv749_cur(), 'hockey', sel) = 1,
+      'FV-749 FAIL: a correct-period call after a rejected one must count';
+  end $$;
+  -- Garbage period text cannot even be cast.
+  do $$
+  declare ok boolean := false;
+  begin
+    begin
+      perform public.record_pregame_selections(pg_temp.fv749_marker(), 'garbage'::date, 'hockey', '[]'::jsonb);
+    exception when invalid_datetime_format or datatype_mismatch or invalid_text_representation then ok := true; end;
+    assert ok, 'FV-749 FAIL: a garbage period must be rejected';
   end $$;
 rollback;
 
@@ -171,7 +217,7 @@ begin;
   set local role service_role;
   do $$
   begin
-    assert public.record_pregame_selections(pg_temp.fv749_marker(), 'hockey',
+    assert public.record_pregame_selections(pg_temp.fv749_marker(), pg_temp.fv749_cur(), 'hockey',
       jsonb_build_array(jsonb_build_object('dimension','need','value','Joy'))) = 1,
       'FV-749 FAIL: a new-month digest must count even when last month has a marker row';
   end $$;
@@ -190,11 +236,11 @@ begin;
   declare i int; vals text[]; vals_low text[]; n int;
   begin
     for i in 1..10 loop
-      perform public.record_pregame_selections(pg_temp.fv749_marker(), 'hockey',
+      perform public.record_pregame_selections(pg_temp.fv749_marker(), pg_temp.fv749_cur(), 'hockey',
         jsonb_build_array(jsonb_build_object('dimension','need','value','Calm')));
     end loop;
     for i in 1..9 loop
-      perform public.record_pregame_selections(pg_temp.fv749_marker(), 'hockey',
+      perform public.record_pregame_selections(pg_temp.fv749_marker(), pg_temp.fv749_cur(), 'hockey',
         jsonb_build_array(jsonb_build_object('dimension','need','value','Joy')));
     end loop;
 
@@ -268,7 +314,7 @@ begin;
   set local role service_role;
   do $$
   begin
-    perform public.record_pregame_selections(pg_temp.fv749_marker(), 'hockey',
+    perform public.record_pregame_selections(pg_temp.fv749_marker(), pg_temp.fv749_cur(), 'hockey',
       jsonb_build_array(jsonb_build_object('dimension','need','value','Hope')));
     assert (select count(*) from public.pregame_selection_counts where value = 'SmallClosed') = 0,
       'FV-749 FAIL: the writer must also prune closed-month cells < 10';
@@ -308,7 +354,7 @@ begin;
     assert ok, 'FV-724 FAIL: authenticated INSERT into counts was not denied';
 
     ok := false;
-    begin perform public.record_pregame_selections(m, 'hockey', '[]'::jsonb);
+    begin perform public.record_pregame_selections(m, pg_temp.fv749_cur(), 'hockey', '[]'::jsonb);
     exception when insufficient_privilege then ok := true; end;
     assert ok, 'FV-749 FAIL: authenticated was able to EXECUTE record_pregame_selections';
 
@@ -339,7 +385,7 @@ begin;
     assert ok, 'FV-749 FAIL: anon INSERT into the marker table was not denied';
 
     ok := false;
-    begin perform public.record_pregame_selections(m, 'hockey', '[]'::jsonb);
+    begin perform public.record_pregame_selections(m, pg_temp.fv749_cur(), 'hockey', '[]'::jsonb);
     exception when insufficient_privilege then ok := true; end;
     assert ok, 'FV-749 FAIL: anon was able to EXECUTE record_pregame_selections';
 

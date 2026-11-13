@@ -22,6 +22,11 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 vi.mock("@/lib/activity/record", () => ({ recordActivityEvent: vi.fn() }));
 
+const notifyError = vi.fn((..._a: unknown[]) => Promise.resolve());
+const deliverInBackground = vi.fn();
+vi.mock("@/lib/monitoring/notify", () => ({ notifyError: (...a: unknown[]) => notifyError(...a) }));
+vi.mock("@/lib/monitoring/deliver", () => ({ deliverInBackground: (...a: unknown[]) => deliverInBackground(...a) }));
+
 import { logPregameSelections } from "@/lib/actions/activity";
 import { pregameMarker, utcPeriodStartIso } from "@/lib/activity/pregame-marker";
 import {
@@ -174,7 +179,10 @@ describe("logPregameSelections (server action)", () => {
     expect(rpc).toHaveBeenCalledTimes(1);
     const [fn, args] = rpc.mock.calls[0]!;
     expect(fn).toBe("record_pregame_selections");
-    expect(Object.keys(args).sort()).toEqual(["p_marker", "p_selections", "p_sport"]);
+    expect(Object.keys(args).sort()).toEqual(["p_marker", "p_period", "p_selections", "p_sport"]);
+    // The period passed is the one the digest was computed with (month-boundary safety).
+    expect(args.p_period).toMatch(/^\d{4}-\d{2}-01$/);
+    expect(args.p_marker).toBe(pregameMarker(ATHLETE_ID, "test-hash-secret", new Date(`${args.p_period}T00:00:00Z`)));
     expect(args.p_marker).toMatch(/^[0-9a-f]{64}$/);
     expect(args.p_sport).toBe("hockey");
     const wire = JSON.stringify(args);
@@ -190,7 +198,32 @@ describe("logPregameSelections (server action)", () => {
     await logPregameSelections("hockey", hockeyValid);
     expect(rpc).not.toHaveBeenCalled();
     expect(JSON.stringify(err.mock.calls)).not.toContain(ATHLETE_ID);
+    // Outside production: generic log only, no operator alert.
+    expect(notifyError).not.toHaveBeenCalled();
     err.mockRestore();
+  });
+
+  it("missing secret in production: alerts the operator once per instance, never with the id", async () => {
+    vi.resetModules();
+    vi.stubEnv("NODE_ENV", "production");
+    delete process.env.RATE_LIMIT_HASH_SECRET;
+    notifyError.mockClear();
+    deliverInBackground.mockClear();
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const { recordPregameSelectionCounts } = await import("@/lib/activity/pregame-selections");
+      await recordPregameSelectionCounts(ATHLETE_ID, "hockey", hockeyValid);
+      await recordPregameSelectionCounts(ATHLETE_ID, "hockey", hockeyValid);
+      await recordPregameSelectionCounts(ATHLETE_ID, "hockey", hockeyValid);
+      expect(rpc).not.toHaveBeenCalled();
+      expect(notifyError).toHaveBeenCalledTimes(1);
+      expect(deliverInBackground).toHaveBeenCalledTimes(1);
+      expect(JSON.stringify(notifyError.mock.calls)).not.toContain(ATHLETE_ID);
+      expect(JSON.stringify(notifyError.mock.calls)).toContain("RATE_LIMIT_HASH_SECRET");
+    } finally {
+      vi.unstubAllEnvs();
+      err.mockRestore();
+    }
   });
 
   it("adult_athlete is allowed", async () => {
@@ -258,6 +291,19 @@ describe("pregameMarker (keyed one-way digest)", () => {
     const m = pregameMarker(ATHLETE_ID, "k", jan);
     expect(m).toMatch(/^[0-9a-f]{64}$/);
     expect(m).not.toContain(ATHLETE_ID);
+  });
+  it("digest month and the period passed always agree, even straddling a month end", () => {
+    // The app reads the clock once: the period string derived from that instant
+    // is the one hashed, so a 23:59:59.999 UTC call carries the OLD month for both.
+    const straddle = new Date("2026-01-31T23:59:59.999Z");
+    const period = utcPeriodStartIso(straddle);
+    expect(period).toBe("2026-01-01");
+    expect(pregameMarker(ATHLETE_ID, "k", straddle)).toBe(
+      pregameMarker(ATHLETE_ID, "k", new Date(`${period}T00:00:00Z`)),
+    );
+    expect(pregameMarker(ATHLETE_ID, "k", straddle)).not.toBe(
+      pregameMarker(ATHLETE_ID, "k", new Date("2026-02-01T00:00:00Z")),
+    );
   });
   it("derives the period in UTC, first of the month", () => {
     expect(utcPeriodStartIso(new Date("2026-03-31T23:59:59Z"))).toBe("2026-03-01");

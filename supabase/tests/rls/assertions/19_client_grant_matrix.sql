@@ -390,7 +390,7 @@ begin
     'public.due_push_reminders()',
     'public.due_game_day_reminders()',
     'public.rollup_activity_events(integer)',
-    'public.record_pregame_selections(text, text, jsonb)',
+    'public.record_pregame_selections(text, date, text, jsonb)',
     'public.prune_pregame_selection_totals()',
     'public.read_pregame_selection_counts(integer)'
   ]

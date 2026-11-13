@@ -1150,7 +1150,7 @@ export type Database = {
         Returns: number
       }
       // FV-749: hand-added. Counts selections at most once per opaque marker per
-      // UTC month. p_marker is a keyed digest computed by the app (the database
+      // UTC month. p_period must be the current UTC month's first day (else 0, nothing written). p_marker is a keyed digest computed by the app (the database
       // never receives an athlete id). Returns cells written (0 = already counted
       // or nothing valid). service_role only.
       // FV-749: hand-added. Retention: deletes closed-month markers and
@@ -1160,7 +1160,7 @@ export type Database = {
         Returns: number
       }
       record_pregame_selections: {
-        Args: { p_marker: string; p_sport: string; p_selections: Json }
+        Args: { p_marker: string; p_period: string; p_sport: string; p_selections: Json }
         Returns: number
       }
       // FV-749: hand-added. The ONLY sanctioned read path for
