@@ -28,7 +28,7 @@ NAME='race_name_634'
 S1=""
 CLEANED=0
 
-readarray -t HOST_PARSE < <(python3 - "$DB_URL" <<'PY'
+if ! HOST_PARSE_RAW="$(python3 - "$DB_URL" <<'PY'
 import shlex
 import sys
 from urllib.parse import parse_qs, unquote, urlparse
@@ -40,12 +40,18 @@ url_host = ""
 if "://" in db_url:
     parsed = urlparse(db_url)
     url_host = parsed.hostname or ""
+    if parsed.hostname:
+        print(f"host=url-host:{parsed.hostname}")
     if parsed.port:
         port = str(parsed.port)
     for h in parse_qs(parsed.query).get("host", []):
         h = unquote(h)
         if h:
             print(f"host=url-query:{h}")
+    for h in parse_qs(parsed.query).get("hostaddr", []):
+        h = unquote(h)
+        if h:
+            print(f"hostaddr=url-query:{h}")
 else:
     parsed = None
 
@@ -54,6 +60,10 @@ for token in shlex.split(db_url):
         h = token.split("=", 1)[1]
         if h:
             print(f"host=connstr:{h}")
+    elif token.startswith("hostaddr="):
+        h = token.split("=", 1)[1]
+        if h:
+            print(f"hostaddr=connstr:{h}")
     elif token.startswith("port="):
         p = token.split("=", 1)[1]
         if p:
@@ -63,11 +73,22 @@ print(f"url_host={url_host}")
 if port:
     print(f"port={port}")
 PY
-)"
+)"; then
+  echo "::error::FV-634 race harness failed to parse DB host details; refusing to run."
+  exit 1
+fi
+
+if [ -z "$HOST_PARSE_RAW" ]; then
+  echo "::error::FV-634 race harness parser returned no host metadata; refusing to run."
+  exit 1
+fi
+
+readarray -t HOST_PARSE <<<"$HOST_PARSE_RAW"
 
 URL_HOST=""
 DB_PORT="${PGPORT:-5432}"
 EXPLICIT_HOSTS=()
+EXPLICIT_HOSTADDRS=()
 
 for line in "${HOST_PARSE[@]}"; do
   case "$line" in
@@ -80,11 +101,17 @@ for line in "${HOST_PARSE[@]}"; do
     host=*)
       EXPLICIT_HOSTS+=("${line#host=}")
       ;;
+    hostaddr=*)
+      EXPLICIT_HOSTADDRS+=("${line#hostaddr=}")
+      ;;
   esac
 done
 
 if [ -n "${PGHOST:-}" ]; then
   EXPLICIT_HOSTS+=("env:${PGHOST}")
+fi
+if [ -n "${PGHOSTADDR:-}" ]; then
+  EXPLICIT_HOSTADDRS+=("env:${PGHOSTADDR}")
 fi
 
 for entry in "${EXPLICIT_HOSTS[@]}"; do
@@ -100,6 +127,19 @@ for entry in "${EXPLICIT_HOSTS[@]}"; do
   esac
 done
 
+for entry in "${EXPLICIT_HOSTADDRS[@]}"; do
+  src="${entry%%:*}"
+  host="${entry#*:}"
+  case "$host" in
+    localhost|127.0.0.1|::1)
+      ;;
+    *)
+      echo "::error::FV-634 race harness refused hostaddr from ${src}: '${host}'. Allowed hosts: localhost, 127.0.0.1, ::1."
+      exit 1
+      ;;
+  esac
+done
+
 if [ -n "$URL_HOST" ]; then
   case "$URL_HOST" in
     localhost|127.0.0.1|::1)
@@ -109,7 +149,7 @@ if [ -n "$URL_HOST" ]; then
       exit 1
       ;;
   esac
-elif [ "${#EXPLICIT_HOSTS[@]}" -eq 0 ]; then
+elif [ "${#EXPLICIT_HOSTS[@]}" -eq 0 ] && [ "${#EXPLICIT_HOSTADDRS[@]}" -eq 0 ]; then
   SOCKET_FOUND=0
   for socket_dir in /var/run/postgresql /run/postgresql /tmp; do
     if [ -S "${socket_dir}/.s.PGSQL.${DB_PORT}" ]; then
