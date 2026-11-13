@@ -649,6 +649,7 @@ function runNativeSelfTest() {
   ];
   const mustAllow = [
     ['fixture/app/build.gradle', 'deps', 'implementation "com.android.billingclient:billing:9.1.0"'],
+    ['fixture/app/build.gradle', 'text', 'implementation "com.android.billingclient:billing:9.1.0"'],
     ['fixture/app/build.gradle', 'deps', 'implementation "androidx.appcompat:appcompat:1.7.1"'],
     ['fixture/app/build.gradle', 'deps', '// implementation "com.google.firebase:firebase-analytics:22.0.0"'],
     ['fixture/Plugin.swift', 'imports', 'import AVFoundation\n'],

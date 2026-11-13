@@ -410,7 +410,7 @@ false.
 
 Collected because the WebView is the product:
 
-- **Contact info:** name, email (parent and 18+ athlete)
+- **Contact info:** name, email (parent and 18+ athlete). Athletes 13–17 do not provide a real email. Parent-created and admin-created athlete accounts store `athlete-<uuid>@athletes.fromvictory.app`, which is not a deliverable address (`apps/web/lib/auth/athlete-email.ts`; password reset for that domain is short-circuited). The Email Address type on `PrivacyInfo.xcprivacy` is the parent account, and an 18+ self-serve account when that path collects one (privacy policy). Founder confirmation of the 18+ answer stays with the App Store Connect check below.
 - **Identifiers:** user IDs (username / account ids)
 - **Sensitive / other:** date of birth (13+ gate + 13–17 protections) — pick the
   App Privacy type that matches `/privacy`, do not hide DOB
