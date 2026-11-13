@@ -199,8 +199,19 @@ is deployed (it ships in this PR).
 ### What enforcement does
 - **Full access** (active/trialing subscription **or** an active comp grant) →
   everything works as normal.
-- **Degraded** (past_due / unpaid) → still works; not hard-blocked (a
-  fix-payment banner is a follow-up, FV-195).
+- **Degraded** (Stripe past_due) → still works while Stripe retries the card;
+  the payer sees a fix-payment notice (FV-710).
+  - **This depends on a Stripe Dashboard setting.** Billing → Revenue recovery
+    → Retries → "If all retries for a payment fail" must stay on **cancel the
+    subscription** (checked 2026-11-13). That setting is what ends access when
+    the retries run out. If it is changed to "mark as unpaid" or "leave
+    past-due", a failed payment keeps training open with no end date, because
+    the code does not time-limit `past_due` / `unpaid` / `paused` itself.
+  - App Store and Google Play work differently (FV-710): access is kept only
+    for the store's own billing grace period, then blocked while the store
+    keeps retrying. The grace length is set in App Store Connect (Billing
+    Grace Period) and Play Console; if it is switched off there, a failed
+    renewal blocks straight away.
 - **Blocked** (no subscription, no comp) →
   - a **parent** is sent to `/subscribe`,
   - an **athlete** is sent to `/athlete/paused` (a calm screen telling them to

@@ -10,6 +10,20 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-13: What happens when a subscription payment fails (FV-710; effective when the PR deploys)
+
+- App Store and Google Play subscriptions: when a renewal payment fails, training stays
+  on for the store's billing grace period. If the payment is still failing when that
+  period ends, training pauses until the store collects payment; it comes back on by
+  itself when it does. Before this change, training stayed on for as long as the store
+  kept retrying (up to 60 days on the App Store).
+- Web (Stripe) subscriptions: unchanged. Training stays on while Stripe retries the card
+  (about two weeks), then the subscription is canceled.
+- The paying parent or adult athlete now sees an in-app notice that the payment did not
+  go through and how to fix it. A 13-17 athlete never sees billing language; they see
+  the existing paused screen.
+- Nothing is deleted when training pauses for a failed payment.
+
 ## 2026-11-13: Store shells, signup price line, and how a 13-17 account is deleted (FV-716, FV-719, FV-720, FV-734)
 
 On the website, parent signup and adult signup still say 7 days free, then $5/mo or $49/yr, for a first-time subscriber with one athlete. The sentence that a card is required and will be charged when the trial ends stays on checkout only.
