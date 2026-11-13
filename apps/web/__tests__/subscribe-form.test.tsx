@@ -19,6 +19,8 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
+let mockedFormState: unknown = null;
+
 // Test-env shim: Next.js aliases "react-dom" to its own canary build that
 // exports useFormState/useFormStatus (how App Router server actions work in
 // React 18). The plain npm `react-dom@18.3.1` package Vitest resolves does
@@ -27,11 +29,12 @@ import "@testing-library/jest-dom/vitest";
 // so a no-dispatch useState passthrough is enough.
 vi.mock("react-dom", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-dom")>();
-  const React = await import("react");
   return {
     ...actual,
-    useFormState: (_action: unknown, initialState: unknown) =>
-      React.useState(initialState),
+    useFormState: (_action: unknown, initialState: unknown) => [
+      mockedFormState ?? initialState,
+      () => undefined,
+    ],
     useFormStatus: () => ({ pending: false }),
   };
 });
@@ -42,7 +45,10 @@ import { SubscribeForm } from "@/components/subscribe/SubscribeForm";
 // mock) — a no-op async function satisfies the type.
 const noopAction = async () => null;
 
-afterEach(() => cleanup());
+afterEach(() => {
+  mockedFormState = null;
+  cleanup();
+});
 
 describe("SubscribeForm — value-prop reminder (parent vs adult)", () => {
   it("defaults to parent tiering copy when isAdult is omitted", () => {
@@ -90,5 +96,23 @@ describe("SubscribeForm — 7-day trial banner (FV-574)", () => {
 
     expect(screen.queryByTestId("trial-eligible-banner")).toBeNull();
     expect(screen.queryByTestId("trial-autocharge-disclosure")).toBeNull();
+  });
+});
+
+describe("SubscribeForm — native-shell checkout message mapping (FV-715)", () => {
+  it("maps native_shell_unavailable to URL-free UI copy", () => {
+    mockedFormState = {
+      ok: false as const,
+      code: "native_shell_unavailable" as const,
+      error: "Manage your subscription from a web browser at fromvictoryapp.com.",
+    };
+
+    render(<SubscribeForm trialEligible={false} action={noopAction} />);
+
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toBe("This purchase isn't available in the app.");
+    expect(alert.textContent).not.toContain("fromvictoryapp.com");
+    expect(alert.textContent).not.toMatch(/[a-z0-9.-]+\.[a-z]{2,}/i);
+    expect(alert.textContent).not.toContain("http");
   });
 });

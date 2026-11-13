@@ -10,7 +10,13 @@ import { useFormState, useFormStatus } from "react-dom";
 // We do NOT import the action directly — the caller passes it as a prop so
 // this component works for both the parent and adult_athlete checkout flows
 // without taking a "server-only" dependency.
-type SubscriptionActionState = { ok: false; error: string } | null;
+type SubscriptionActionState =
+  | {
+      ok: false;
+      code?: "native_shell_unavailable";
+      error: string;
+    }
+  | null;
 
 const initialState: SubscriptionActionState = null;
 
@@ -201,6 +207,13 @@ export function SubscribeForm({
     }
   };
 
+  const actionErrorMessage =
+    actionState != null && !actionState.ok
+      ? actionState.code === "native_shell_unavailable"
+        ? "This purchase isn't available in the app."
+        : actionState.error
+      : null;
+
   return (
     <form action={formAction}>
       {/* Hidden plan input bound to selection */}
@@ -263,12 +276,12 @@ export function SubscribeForm({
       </p>
 
       {/* Inline error */}
-      {actionState != null && !actionState.ok ? (
+      {actionErrorMessage != null ? (
         <p
           role="alert"
           className="mb-5 font-body text-[14px] text-danger leading-snug"
         >
-          {actionState.error}
+          {actionErrorMessage}
         </p>
       ) : null}
 

@@ -219,7 +219,7 @@ async function startSubscriptionCheckout(
     return {
       ok: false,
       code: "native_shell_unavailable",
-      error: "Manage your subscription from a web browser at fromvictoryapp.com.",
+      error: "This purchase isn't available in the app.",
     };
   }
 

@@ -830,7 +830,9 @@ describe("startSubscriptionCheckout — native-shell refusal guard (FV-715)", ()
     expect(result?.ok).toBe(false);
     if (result?.ok === false) {
       expect(result.code).toBe("native_shell_unavailable");
-      expect(result.error).toContain("fromvictoryapp.com");
+      expect(result.error).toBe("This purchase isn't available in the app.");
+      expect(result.error).not.toMatch(/[a-z0-9.-]+\.[a-z]{2,}/i);
+      expect(result.error).not.toContain("http");
     }
     expect(sessionsCreateMock).not.toHaveBeenCalled();
     expect(redirectMock).not.toHaveBeenCalled();
