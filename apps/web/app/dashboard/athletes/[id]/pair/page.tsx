@@ -12,17 +12,18 @@ export const metadata = {
 };
 
 type Params = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 /**
  * Invite / recovery page for one athlete (FV-630). The route keeps its
  * legacy `/pair` path so existing bookmarks and dashboard links still work.
  */
-export default async function InviteAthletePage({ params }: Params) {
+export default async function InviteAthletePage(props: Params) {
+  const params = await props.params;
   await requireParent();
 
-  const supabase = createClient();
+  const supabase = await createClient();
   // RLS scopes this to linked athletes; an unlinked id returns null.
   const { data: athlete } = await supabase
     .from("profiles")

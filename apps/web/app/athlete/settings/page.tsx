@@ -33,13 +33,14 @@ function isSport(value: string | undefined): value is Sport {
   );
 }
 
-export default async function AthleteSettingsPage({
-  searchParams,
-}: {
-  searchParams?: { switched?: string; updated?: string };
-}) {
+export default async function AthleteSettingsPage(
+  props: {
+    searchParams?: Promise<{ switched?: string; updated?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const { profile, userId } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // FV-441: an adult_athlete (18+ self-serve payer) is their own billing
   // account, so Subscription + Delete account sections apply to them only.
@@ -57,7 +58,7 @@ export default async function AthleteSettingsPage({
   // so it gets its own price-free /subscribe entry instead of
   // BillingPortalButton — /subscribe renders AppleSubscribeSection (purchase
   // + restore + manage) for that capability.
-  const shellCapability = getRequestShellCapability();
+  const shellCapability = await getRequestShellCapability();
   const legacyNative = isRestrictedShell(shellCapability);
   const iosIap = shellCapability === "ios-iap";
   // FV-716: either store shell. Web Push cannot be delivered (FV-213).

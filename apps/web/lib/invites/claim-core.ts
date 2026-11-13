@@ -119,9 +119,9 @@ export async function completeInviteClaim(input: {
     };
   }
 
-  setDeviceAthleteId(athleteId);
+  await setDeviceAthleteId(athleteId);
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error: signInError } = await supabase.auth.signInWithPassword({
     email: syntheticEmail,
     password: input.password,

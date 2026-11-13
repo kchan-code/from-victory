@@ -43,7 +43,7 @@ export type BreathAudioState = {
   rounds: number;
   // Caller wires this to <audio ref={...} /> (or we can render our own
   // element; BreathScreen prefers passing one in).
-  audioRef: React.RefObject<HTMLAudioElement>;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
   usesNativeAudio: boolean;
   play: () => Promise<void>;
   pause: () => void;

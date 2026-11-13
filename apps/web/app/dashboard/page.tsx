@@ -27,7 +27,7 @@ export const metadata = {
 export default async function DashboardPage() {
   const { userId, profile } = await requireParent();
 
-  const supabase = createClient();
+  const supabase = await createClient();
   // RLS scopes this to athletes linked to the calling parent.
   const { data: athletes, error: athletesError } = await supabase
     .from("profiles")
@@ -80,7 +80,7 @@ export default async function DashboardPage() {
   // exact suppression; `ios-iap` (an iOS build with the StoreKit purchase
   // bridge, FV-572) instead gets a price-free in-app entry to /subscribe,
   // where AppleSubscribeSection renders the real StoreKit purchase surface.
-  const shellCapability = getRequestShellCapability();
+  const shellCapability = await getRequestShellCapability();
   const legacyNative = isRestrictedShell(shellCapability);
   const iosIap = shellCapability === "ios-iap";
 

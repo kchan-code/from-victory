@@ -42,15 +42,15 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function InvitePage() {
-  const nativeShell = isNativeShell();
-  const initialPlatform = detectStorePlatform(headers().get("user-agent"));
+  const nativeShell = await isNativeShell();
+  const initialPlatform = detectStorePlatform((await headers()).get("user-agent"));
 
   // Someone already signed in on this device (a parent on their own phone, or
   // another athlete) is told up front that finishing setup switches the
   // device to this athlete. Presentation only — no redirect.
   let signedIn = false;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

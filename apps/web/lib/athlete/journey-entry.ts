@@ -21,7 +21,7 @@ export type { JourneyEntry };
  */
 export async function getJourney(): Promise<JourneyEntry[]> {
   const { userId } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
   return loadJourney(supabase, userId);
 }
 
@@ -34,6 +34,6 @@ export async function getJourneyEntry(
   dayNumber: number,
 ): Promise<JourneyEntry | null> {
   const { userId } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
   return loadJourneyEntry(supabase, userId, dayNumber);
 }

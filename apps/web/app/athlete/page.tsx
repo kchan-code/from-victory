@@ -46,7 +46,7 @@ export default async function AthleteHomePage() {
   let sessionLoaded = false;
 
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const data = await loadDailySession(supabase, userId, profile.sport);
     dayNumber = data.dayNumber;
     completedCount = data.completedCount;

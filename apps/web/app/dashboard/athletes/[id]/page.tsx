@@ -14,8 +14,9 @@ import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  await params;
   return {
     title: "Athlete detail",
     // Override with athlete name once the data loads. Next.js calls this
@@ -24,10 +25,11 @@ export async function generateMetadata({
 }
 
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
-export default async function AthleteDetailPage({ params }: Props) {
+export default async function AthleteDetailPage(props: Props) {
+  const params = await props.params;
   // requireParent() redirects to /signin if the caller is not a parent.
   await requireParent();
 

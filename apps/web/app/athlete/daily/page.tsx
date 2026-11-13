@@ -43,7 +43,7 @@ export default async function DailyPage() {
   let sessionError = false;
 
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     sessionData = await loadDailySession(supabase, userId, profile.sport);
   } catch (err) {
     if (err instanceof DailySessionNotFoundError) {

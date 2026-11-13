@@ -29,7 +29,7 @@ export default async function AdultSignUpPage() {
   // Same native-shell rule as the parent form: web price and trial length
   // on the website only. ios-iap points at the in-app step. A restricted
   // shell shows no price.
-  const shellCapability = getRequestShellCapability();
+  const shellCapability = await getRequestShellCapability();
 
   return (
     <AuthShell

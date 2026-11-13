@@ -45,7 +45,7 @@ import type { TrainingAccessResponse } from "@/lib/subscriptions/training-redire
 const NO_STORE = { "Cache-Control": "private, no-store, max-age=0" };
 
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -12,7 +12,7 @@ export const metadata = {
 
 export default async function NotificationsSettingsPage() {
   const { userId } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Load the athlete's current push subscription row to hydrate the client
   // component with real initial state. We only need reminder_hour — we do NOT
@@ -46,7 +46,7 @@ export default async function NotificationsSettingsPage() {
       <ReminderSettings
         initialEnabled={initialEnabled}
         initialHour={initialHour}
-        nativeShell={getRequestShellCapability() !== null}
+        nativeShell={(await getRequestShellCapability()) !== null}
       />
     </main>
   );

@@ -31,7 +31,7 @@ export default async function SignUpPage() {
   // Web and PWA show the 7-day price line. ios-iap points at the in-app
   // subscription step with no web price or trial terms (StoreKit shows
   // Apple's). A restricted shell shows no price.
-  const shellCapability = getRequestShellCapability();
+  const shellCapability = await getRequestShellCapability();
 
   return (
     <AuthShell

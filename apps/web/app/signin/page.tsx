@@ -37,16 +37,17 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: { reset?: string; error?: string };
+  searchParams: Promise<{ reset?: string; error?: string }>;
 };
 
-export default async function SignInPage({ searchParams }: Props) {
+export default async function SignInPage(props: Props) {
+  const searchParams = await props.searchParams;
   await redirectIfAuthed();
 
   const resetInvalid = searchParams.reset === "invalid";
   const sessionInvalid = searchParams.error === "session_invalid";
 
-  const deviceAthleteId = getDeviceAthleteId();
+  const deviceAthleteId = await getDeviceAthleteId();
 
   if (deviceAthleteId) {
     const service = createServiceClient();
@@ -124,7 +125,7 @@ export default async function SignInPage({ searchParams }: Props) {
           FV-621: the credential form in a restricted shell still swaps the
           signup link for website guidance. */}
       <SignInChooser
-        legacyNative={isRestrictedShell(getRequestShellCapability())}
+        legacyNative={isRestrictedShell(await getRequestShellCapability())}
         adultSignupEnabled={isAdultSignupEnabled()}
         startOnSignIn={resetInvalid || sessionInvalid}
       />

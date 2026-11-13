@@ -12,7 +12,7 @@ export default async function ResetPasswordPage() {
   // The /auth/callback route handler exchanges the recovery code into a
   // session before redirecting here. If we don't have a user here, the
   // link was missing, malformed, or expired.
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

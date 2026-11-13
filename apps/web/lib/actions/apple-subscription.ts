@@ -152,7 +152,7 @@ export async function submitApplePurchase(
   }
 
   // 1. Resolve the signed-in user server-side. Never trust a client-passed id.
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -383,7 +383,7 @@ export type BeginApplePurchaseResult =
 export async function beginApplePurchase(
   requestedProductId?: string,
 ): Promise<BeginApplePurchaseResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

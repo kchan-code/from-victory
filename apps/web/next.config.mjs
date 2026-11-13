@@ -13,6 +13,16 @@ const nextConfig = {
     // A commit SHA is not a secret. Empty in local dev.
     NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA ?? "",
   },
+  // Next 15 stops reusing dynamic page segments from the client router cache
+  // (staleTimes.dynamic default is 0; static stays 300). Next 14.2.35 reused
+  // dynamic segments for 30s and static segments for 300s. Restore that window
+  // so Link / router navigations keep the previous cache behavior.
+  experimental: {
+    staleTimes: {
+      dynamic: 30,
+      static: 300,
+    },
+  },
   async headers() {
     return [
       {

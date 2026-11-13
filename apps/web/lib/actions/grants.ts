@@ -153,7 +153,7 @@ export async function grantCompAccess(input: {
   const { userId: adminId } = await requireAdminParent();
 
   // Belt-and-suspenders: confirm caller email is admin.
-  const userClient = createClient();
+  const userClient = await createClient();
   const { data: { user } } = await userClient.auth.getUser();
   if (!user || !isAdminEmail(user.email)) {
     return { ok: false, error: "Not authorized." };
@@ -235,7 +235,7 @@ export async function revokeCompAccess(input: {
 }): Promise<RevokeActionState> {
   await requireAdminParent();
 
-  const userClient = createClient();
+  const userClient = await createClient();
   const { data: { user } } = await userClient.auth.getUser();
   if (!user || !isAdminEmail(user.email)) {
     return { ok: false, error: "Not authorized." };
@@ -281,7 +281,7 @@ export async function revokeCompAccess(input: {
 export async function listCompGrants(): Promise<ListGrantsState> {
   await requireAdminParent();
 
-  const userClient = createClient();
+  const userClient = await createClient();
   const { data: { user } } = await userClient.auth.getUser();
   if (!user || !isAdminEmail(user.email)) {
     return { ok: false, error: "Not authorized." };

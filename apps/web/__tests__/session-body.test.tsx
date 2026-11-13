@@ -29,23 +29,23 @@ describe("parseInline", () => {
     expect(result[0]).toBe("This is ");
     expect(result[2]).toBe(" text");
     // The middle element is a React element — check type string heuristically.
-    const mid = result[1] as React.ReactElement;
+    const mid = result[1] as React.ReactElement<{ children?: React.ReactNode }>;
     expect(mid.type).toBe("em");
     expect(mid.props.children).toBe("important");
   });
 
   it("wraps **bold** in <strong>", () => {
     const result = parseInline("You **compete** from victory");
-    const bold = (result as React.ReactElement[]).find(
+    const bold = (result as React.ReactElement<{ children?: React.ReactNode }>[]).find(
       (n) => typeof n === "object" && n.type === "strong",
     );
     expect(bold).toBeDefined();
-    expect((bold as React.ReactElement).props.children).toBe("compete");
+    expect((bold as React.ReactElement<{ children?: React.ReactNode }>).props.children).toBe("compete");
   });
 
   it("handles **bold** before *italic* in same line", () => {
     const result = parseInline("**First** and *second*");
-    const types = (result as React.ReactElement[])
+    const types = (result as React.ReactElement<{ children?: React.ReactNode }>[])
       .filter((n) => typeof n === "object")
       .map((n) => n.type);
     expect(types).toContain("strong");
@@ -58,12 +58,12 @@ describe("parseInline", () => {
     expect(result).toEqual(["That is what happened. That is not who I am."]);
 
     const wrapped = parseInline("*That is what happened. That is not who I am.*");
-    const em = (wrapped as React.ReactElement[]).find(
+    const em = (wrapped as React.ReactElement<{ children?: React.ReactNode }>[]).find(
       (n) => typeof n === "object" && n.type === "em",
     );
     expect(em).toBeDefined();
     // Non-greedy match must keep the whole sentence (incl. interior period).
-    expect((em as React.ReactElement).props.children).toBe(
+    expect((em as React.ReactElement<{ children?: React.ReactNode }>).props.children).toBe(
       "That is what happened. That is not who I am.",
     );
   });
@@ -72,7 +72,7 @@ describe("parseInline", () => {
     const raw = "<script>alert(1)</script>";
     const result = parseInline(raw);
     // Should be a single plain-text string — no React element with type "script".
-    const hasScriptElement = (result as React.ReactElement[]).some(
+    const hasScriptElement = (result as React.ReactElement<{ children?: React.ReactNode }>[]).some(
       (n) => typeof n === "object" && n.type === "script",
     );
     expect(hasScriptElement).toBe(false);
@@ -135,11 +135,11 @@ describe("parseBlocks", () => {
       // The * markers survive block parsing so the renderer's parseInline turns
       // them into <em> — verify the round-trip end to end.
       const inline = parseInline(bq.lines.join(" "));
-      const em = (inline as React.ReactElement[]).find(
+      const em = (inline as React.ReactElement<{ children?: React.ReactNode }>[]).find(
         (n) => typeof n === "object" && n.type === "em",
       );
       expect(em).toBeDefined();
-      expect((em as React.ReactElement).props.children).toBe(
+      expect((em as React.ReactElement<{ children?: React.ReactNode }>).props.children).toBe(
         "That is what happened. That is not who I am.",
       );
     }

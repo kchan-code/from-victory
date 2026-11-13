@@ -208,7 +208,7 @@ export async function getPayerIdForCurrentUser(): Promise<string | null> {
  * any other role.
  */
 async function resolvePayerIdForCurrentUser(): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

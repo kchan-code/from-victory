@@ -168,7 +168,7 @@ export async function processUnsubscribeToken(
  */
 export async function getDigestOptOut(): Promise<boolean> {
   const { userId } = await requireParent();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data } = await supabase
     .from("profiles")

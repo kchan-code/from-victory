@@ -24,5 +24,5 @@ export { shapeAthleteDetail } from "./athlete-detail-core";
 export async function getAthleteDetail(
   athleteId: string,
 ): Promise<ReturnType<typeof loadAthleteDetail>> {
-  return loadAthleteDetail(createClient(), athleteId);
+  return loadAthleteDetail(await createClient(), athleteId);
 }

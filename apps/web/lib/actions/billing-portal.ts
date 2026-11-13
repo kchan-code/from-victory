@@ -67,7 +67,7 @@ export async function openBillingPortal(
   //    not in allowNavigation — see apps/native/capacitor.config.ts). Refuse
   //    before touching auth/Stripe at all — the UI already hides the button
   //    that would call this action in-shell; this is the belt to that brace.
-  if (isNativeShell()) {
+  if (await isNativeShell()) {
     return {
       ok: false,
       code: "native_shell_unavailable",
@@ -83,7 +83,7 @@ export async function openBillingPortal(
   // 2. Read the payer's subscription row via the RLS-scoped client.
   //    The payer can only read their own row; the Stripe customer ID stays
   //    server-side and is never returned to the caller.
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: sub, error: subError } = await supabase
     .from("subscriptions")
     .select("stripe_customer_id")

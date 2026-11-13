@@ -118,7 +118,7 @@ export async function signUpAdultAthlete(
     };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
@@ -179,7 +179,7 @@ export async function signUpAdultAthlete(
   // redirect() throws internally and must not be called inside a try/catch —
   // both branches below sit at the top level, matching the pattern in
   // lib/actions/billing-portal.ts.
-  if (isRestrictedShell(getRequestShellCapability())) {
+  if (isRestrictedShell(await getRequestShellCapability())) {
     redirect("/athlete");
   }
   redirect("/subscribe");

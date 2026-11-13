@@ -19,7 +19,7 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function startDailySession(): Promise<void> {
   const { userId, profile } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
   const { catalogId } = await resolveCurrentCatalogId(
     supabase,
     userId,
@@ -53,7 +53,7 @@ export async function startDailySession(): Promise<void> {
  */
 export async function completeDailySession(): Promise<void> {
   const { userId, profile } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
   const { catalogId } = await resolveCurrentCatalogId(
     supabase,
     userId,

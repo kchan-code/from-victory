@@ -224,7 +224,7 @@ describe("SubscribePage — price paragraph (parent vs adult)", () => {
     });
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
 
-    const jsx = await SubscribePage({ searchParams: {} });
+    const jsx = await SubscribePage({ searchParams: Promise.resolve({}) });
     const { container } = render(jsx);
     const text = container.textContent ?? "";
 
@@ -241,7 +241,7 @@ describe("SubscribePage — price paragraph (parent vs adult)", () => {
     });
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
 
-    const jsx = await SubscribePage({ searchParams: {} });
+    const jsx = await SubscribePage({ searchParams: Promise.resolve({}) });
     const { container } = render(jsx);
     const text = container.textContent ?? "";
 
@@ -270,7 +270,7 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
     enforcementEnabledMock.mockReturnValue(true);
     accessLevelMock.mockResolvedValue("blocked");
 
-    const { container } = render(await SubscribePage({ searchParams: {} }));
+    const { container } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
 
     expect(container.querySelector('a[href="/athlete"]')).toBeNull();
     const home = container.querySelector('a[aria-label="Back to home"]');
@@ -284,7 +284,7 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
     enforcementEnabledMock.mockReturnValue(true);
     accessLevelMock.mockResolvedValue("blocked");
 
-    const { container } = render(await SubscribePage({ searchParams: {} }));
+    const { container } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
 
     expect(container.querySelector('a[href="/dashboard"]')).toBeNull();
     expect(
@@ -297,7 +297,7 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
     enforcementEnabledMock.mockReturnValue(true);
     accessLevelMock.mockResolvedValue("blocked");
-    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    const { queryByTestId } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
     expect(queryByTestId("clear-offline-pregame")).not.toBeNull();
   });
 
@@ -306,7 +306,7 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
     enforcementEnabledMock.mockReturnValue(true);
     accessLevelMock.mockResolvedValue("blocked");
-    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    const { queryByTestId } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
     expect(queryByTestId("clear-offline-pregame")).not.toBeNull();
   });
 
@@ -315,7 +315,7 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
     maybeSingleMock.mockResolvedValue({ data: { stripe_customer_id: "cus_1" }, error: null });
     enforcementEnabledMock.mockReturnValue(true);
     accessLevelMock.mockResolvedValue("full");
-    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    const { queryByTestId } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
     expect(queryByTestId("clear-offline-pregame")).toBeNull();
   });
 
@@ -325,7 +325,7 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
     enforcementEnabledMock.mockReturnValue(true);
     accessLevelMock.mockResolvedValue("blocked"); // fail-closed on the read error
     entitlementStateMock.mockResolvedValue({ status: "unknown", provider: null });
-    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    const { queryByTestId } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
     expect(queryByTestId("clear-offline-pregame")).toBeNull();
   });
 
@@ -333,7 +333,7 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
     asAdult();
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
     accessLevelMock.mockResolvedValue("blocked");
-    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    const { queryByTestId } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
     expect(queryByTestId("clear-offline-pregame")).toBeNull();
   });
 
@@ -346,7 +346,7 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
     enforcementEnabledMock.mockReturnValue(true);
     accessLevelMock.mockResolvedValue("full");
 
-    const { container } = render(await SubscribePage({ searchParams: {} }));
+    const { container } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
 
     expect(
       container.querySelector('a[aria-label="Back to training"]'),
@@ -365,7 +365,7 @@ describe("SubscribePage — legacy-native shell (Google Play compliance)", () =>
     shellCapabilityMock.mockReturnValue("legacy-native");
 
     const { container, getByTestId, queryByTestId } = render(
-      await SubscribePage({ searchParams: {} }),
+      await SubscribePage({ searchParams: Promise.resolve({}) }),
     );
     const text = container.textContent ?? "";
 
@@ -392,7 +392,7 @@ describe("SubscribePage — legacy-native shell (Google Play compliance)", () =>
     shellCapabilityMock.mockReturnValue(null);
 
     const { getByTestId, queryByTestId, container } = render(
-      await SubscribePage({ searchParams: {} }),
+      await SubscribePage({ searchParams: Promise.resolve({}) }),
     );
 
     expect(getByTestId("subscribe-form-stub")).toBeTruthy();
@@ -412,7 +412,7 @@ describe("SubscribePage — ios-iap shell capability (FV-572)", () => {
     shellCapabilityMock.mockReturnValue("ios-iap");
 
     const { getByTestId, queryByTestId, container } = render(
-      await SubscribePage({ searchParams: {} }),
+      await SubscribePage({ searchParams: Promise.resolve({}) }),
     );
     const text = container.textContent ?? "";
 
@@ -441,7 +441,7 @@ describe("SubscribePage — 7-day trial banner gate (FV-574)", () => {
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
 
   const renderedText = async () => {
-    const { container } = render(await SubscribePage({ searchParams: {} }));
+    const { container } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
     return container.textContent ?? "";
   };
 
@@ -515,7 +515,7 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
 
   const renderPage = async () => {
     const { container, getByTestId, queryByTestId } = render(
-      await SubscribePage({ searchParams: {} }),
+      await SubscribePage({ searchParams: Promise.resolve({}) }),
     );
     return { container, getByTestId, queryByTestId, text: container.textContent ?? "" };
   };
@@ -767,7 +767,7 @@ describe("SubscribePage — Apple upgrade wiring (FV-586, KC decision D3)", () =
     });
 
   const renderPage = async () => {
-    const { container, getByTestId } = render(await SubscribePage({ searchParams: {} }));
+    const { container, getByTestId } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
     return { container, getByTestId, text: container.textContent ?? "" };
   };
 
@@ -866,7 +866,7 @@ describe("SubscribePage — sign-out exit (FV-644)", () => {
     enforcementEnabledMock.mockReturnValue(true);
     accessLevelMock.mockResolvedValue("blocked");
     shellCapabilityMock.mockReturnValue(shell);
-    return render(await SubscribePage({ searchParams: {} }));
+    return render(await SubscribePage({ searchParams: Promise.resolve({}) }));
   };
 
   for (const role of ["adult_athlete", "parent"] as const) {
@@ -895,7 +895,7 @@ describe("SubscribePage — sign-out exit (FV-644)", () => {
     accessLevelMock.mockResolvedValue("full");
     entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "comp" });
     shellCapabilityMock.mockReturnValue("ios-iap");
-    const { getByRole } = render(await SubscribePage({ searchParams: {} }));
+    const { getByRole } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
     expect(getByRole("button", { name: "Sign out" })).not.toBeNull();
   });
 
@@ -921,7 +921,7 @@ describe("SubscribePage — account settings route for a blocked adult (FV-645)"
     enforcementEnabledMock.mockReturnValue(true);
     accessLevelMock.mockResolvedValue("blocked");
     shellCapabilityMock.mockReturnValue(shell);
-    return render(await SubscribePage({ searchParams: {} }));
+    return render(await SubscribePage({ searchParams: Promise.resolve({}) }));
   };
 
   for (const shell of ["ios-iap", "legacy-native", null] as const) {
@@ -948,7 +948,7 @@ describe("SubscribePage — account settings route for a blocked adult (FV-645)"
     accessLevelMock.mockResolvedValue("full");
     entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "comp" });
     shellCapabilityMock.mockReturnValue("ios-iap");
-    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    const { queryByTestId } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
     expect(queryByTestId("subscribe-account-settings")).toBeNull();
   });
 
@@ -966,7 +966,7 @@ describe("SubscribePage — account settings route for a blocked adult (FV-645)"
     asRole("adult_athlete");
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
     enforcementEnabledMock.mockReturnValue(false);
-    const { queryByTestId } = render(await SubscribePage({ searchParams: {} }));
+    const { queryByTestId } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
     expect(queryByTestId("subscribe-account-settings")).toBeNull();
   });
 
@@ -986,7 +986,7 @@ describe("SubscribePage — android-play renders exactly like legacy-native (FV-
 
   async function htmlFor(capability: "legacy-native" | "android-play") {
     shellCapabilityMock.mockReturnValue(capability);
-    const { container } = render(await SubscribePage({ searchParams: {} }));
+    const { container } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
     const html = container.innerHTML;
     cleanup();
     return html;

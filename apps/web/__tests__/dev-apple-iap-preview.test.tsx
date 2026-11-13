@@ -120,48 +120,48 @@ afterEach(() => {
 });
 
 describe("/dev/apple-iap-preview — production/gate unreachability", () => {
-  it("404s (notFound) when NODE_ENV is not development, even with the preview flag set", () => {
+  it("404s (notFound) when NODE_ENV is not development, even with the preview flag set", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("FV_IAP_DEV_PREVIEW", "1");
 
-    expect(() => AppleIapPreviewPage()).toThrow("NEXT_NOT_FOUND");
+    await expect(AppleIapPreviewPage()).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalledTimes(1);
   });
 
-  it("404s (notFound) in development when FV_IAP_DEV_PREVIEW is unset", () => {
+  it("404s (notFound) in development when FV_IAP_DEV_PREVIEW is unset", async () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("FV_IAP_DEV_PREVIEW", undefined);
 
-    expect(() => AppleIapPreviewPage()).toThrow("NEXT_NOT_FOUND");
+    await expect(AppleIapPreviewPage()).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalledTimes(1);
   });
 
-  it("404s (notFound) in development when FV_IAP_DEV_PREVIEW is set to something other than \"1\"", () => {
+  it("404s (notFound) in development when FV_IAP_DEV_PREVIEW is set to something other than \"1\"", async () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("FV_IAP_DEV_PREVIEW", "true");
 
-    expect(() => AppleIapPreviewPage()).toThrow("NEXT_NOT_FOUND");
+    await expect(AppleIapPreviewPage()).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalledTimes(1);
   });
 
-  it("renders (does not 404) only when both NODE_ENV=development AND FV_IAP_DEV_PREVIEW=1", () => {
+  it("renders (does not 404) only when both NODE_ENV=development AND FV_IAP_DEV_PREVIEW=1", async () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("FV_IAP_DEV_PREVIEW", "1");
 
-    expect(() => AppleIapPreviewPage()).not.toThrow();
+    await expect(AppleIapPreviewPage()).resolves.toBeTruthy();
     expect(notFoundMock).not.toHaveBeenCalled();
   });
 });
 
 describe("/dev/apple-iap-preview — renders the real AppleSubscribeSection", () => {
-  function renderGated() {
+  async function renderGated() {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("FV_IAP_DEV_PREVIEW", "1");
-    return render(AppleIapPreviewPage());
+    return render(await AppleIapPreviewPage());
   }
 
-  it("shows the dev-preview banner with the exact warning copy", () => {
-    renderGated();
+  it("shows the dev-preview banner with the exact warning copy", async () => {
+    await renderGated();
     const banner = screen.getByTestId("dev-iap-preview-banner");
     expect(banner.textContent).toContain("FV-573 DEV PREVIEW");
     expect(banner.textContent).toContain(
@@ -172,17 +172,17 @@ describe("/dev/apple-iap-preview — renders the real AppleSubscribeSection", ()
     );
   });
 
-  it("shows the REAL shell-capability classification from getRequestShellCapability()", () => {
+  it("shows the REAL shell-capability classification from getRequestShellCapability()", async () => {
     getRequestShellCapabilityMock.mockReturnValue("ios-iap");
-    renderGated();
+    await renderGated();
     expect(
       screen.getByTestId("dev-iap-preview-shell-capability").textContent,
     ).toBe("shellCapability: ios-iap");
   });
 
-  it("shows legacy-native and null classifications too (real passthrough, not hardcoded)", () => {
+  it("shows legacy-native and null classifications too (real passthrough, not hardcoded)", async () => {
     getRequestShellCapabilityMock.mockReturnValue("legacy-native");
-    const { unmount } = renderGated();
+    const { unmount } = await renderGated();
     expect(
       screen.getByTestId("dev-iap-preview-shell-capability").textContent,
     ).toBe("shellCapability: legacy-native");
@@ -190,25 +190,25 @@ describe("/dev/apple-iap-preview — renders the real AppleSubscribeSection", ()
     cleanup();
 
     getRequestShellCapabilityMock.mockReturnValue(null);
-    renderGated();
+    await renderGated();
     expect(
       screen.getByTestId("dev-iap-preview-shell-capability").textContent,
     ).toBe("shellCapability: null");
   });
 
-  it("shows the REAL configured-product count from getConfiguredAppleProducts()", () => {
+  it("shows the REAL configured-product count from getConfiguredAppleProducts()", async () => {
     getConfiguredAppleProductsMock.mockReturnValue([
       { productId: "test.fv.tier1.monthly", athleteCapacity: 1 },
       { productId: "test.fv.tier3.monthly", athleteCapacity: 3 },
     ]);
-    renderGated();
+    await renderGated();
     expect(
       screen.getByTestId("dev-iap-preview-product-count").textContent,
     ).toBe("configuredProducts: 2");
   });
 
   it("renders the real AppleSubscribeSection plan summary (not a stub)", async () => {
-    renderGated();
+    await renderGated();
     // FV-600: the per-product card list was replaced by a selector + ONE plan
     // summary; pre-purchase there is nothing to manage, so no manage link.
     await waitFor(() =>
@@ -221,7 +221,7 @@ describe("/dev/apple-iap-preview — renders the real AppleSubscribeSection", ()
 
   it("renders the section's unavailable state when no products are configured (same component behavior as production)", async () => {
     getConfiguredAppleProductsMock.mockReturnValue([]);
-    renderGated();
+    await renderGated();
     await waitFor(() =>
       expect(
         screen.getByTestId("apple-subscribe-unavailable"),
@@ -231,13 +231,14 @@ describe("/dev/apple-iap-preview — renders the real AppleSubscribeSection", ()
 });
 
 describe("/dev/apple-iap-preview — no auth, no Supabase call", () => {
-  it("renders without ever calling lib/supabase/server or lib/supabase/service (both mocked to throw)", () => {
+  it("renders without ever calling lib/supabase/server or lib/supabase/service (both mocked to throw)", async () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("FV_IAP_DEV_PREVIEW", "1");
 
     // If the page (directly, or transitively through AppleSubscribeSection /
     // apple-products / apple-iap / apple-subscription) ever called either
     // Supabase entrypoint, the mocks above would throw and this would fail.
-    expect(() => render(AppleIapPreviewPage())).not.toThrow();
+    const jsx = await AppleIapPreviewPage();
+    expect(() => render(jsx)).not.toThrow();
   });
 });

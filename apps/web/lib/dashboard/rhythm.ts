@@ -25,5 +25,5 @@ export { shapeAthleteRhythm, ZERO_RHYTHM } from "./rhythm-core";
 export async function getAthleteMetadataMap(): Promise<
   ReturnType<typeof loadAthleteMetadataMap>
 > {
-  return loadAthleteMetadataMap(createClient());
+  return loadAthleteMetadataMap(await createClient());
 }

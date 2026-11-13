@@ -198,7 +198,7 @@ export async function rateLimitGate(
  *           Callers must handle null by failing open (see rateLimitGate).
  */
 export async function getRequestIp(): Promise<string | null> {
-  const headerStore = headers();
+  const headerStore = await headers();
 
   // Vercel sets x-real-ip as the canonical single-value client IP.
   const realIp = headerStore.get("x-real-ip");

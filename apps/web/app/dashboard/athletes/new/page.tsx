@@ -39,7 +39,7 @@ export default async function NewAthletePage() {
   // adding an athlete can change Stripe billing, so a deep link here renders
   // the plain, non-tappable website notice instead of the form — and skips the
   // trial-quote (Stripe) read entirely. ios-iap and web are unchanged.
-  if (isRestrictedShell(getRequestShellCapability())) {
+  if (isRestrictedShell(await getRequestShellCapability())) {
     return (
       <AuthShell title="Add an athlete">
         <div
