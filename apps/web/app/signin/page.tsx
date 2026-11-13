@@ -7,6 +7,7 @@ import { SignInChooser } from "@/components/auth/SignInChooser";
 import { getDeviceAthleteId } from "@/lib/auth/device";
 import { redirectIfAuthed } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const siteUrl = "https://www.fromvictoryapp.com";
@@ -124,7 +125,7 @@ export default async function SignInPage({ searchParams }: Props) {
           consumption-only) the parent tab swaps the /signup link for plain
           website guidance; ios-iap and web are unchanged. */}
       <SignInChooser
-        legacyNative={getRequestShellCapability() === "legacy-native"}
+        legacyNative={isRestrictedShell(getRequestShellCapability())}
       />
     </AuthShell>
   );

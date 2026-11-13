@@ -29,7 +29,7 @@ vi.mock("server-only", () => ({}));
 // FV-622: shell capability. Defaults to null (web/PWA) so every pre-existing
 // case keeps its behavior; the FV-622 block overrides per case.
 const shellCapabilityMock = vi.fn(
-  () => null as "legacy-native" | "ios-iap" | null,
+  () => null as "legacy-native" | "ios-iap" | "android-play" | null,
 );
 vi.mock("@/lib/native-shell", () => ({
   getRequestShellCapability: () => shellCapabilityMock(),
@@ -488,5 +488,33 @@ describe("createAthlete — legacy-native shell guard (FV-622)", () => {
 
     expect(profileInsertPayload).not.toBeNull();
     expect(syncAthleteQuantityMock).toHaveBeenCalledWith("parent-uuid-123");
+  });
+});
+
+describe("createAthlete — android-play shell guard (FV-659)", () => {
+  it("android-play: refuses with website guidance before any DB or Stripe side effect, exactly like legacy-native", async () => {
+    shellCapabilityMock.mockReturnValue("android-play");
+    trialConversionStateResult = {
+      kind: "stripe_trial",
+      stripeSubscriptionId: "sub_trial_1",
+      currentAthleteCount: 1,
+      trialEndsAt: null,
+    };
+
+    const result = await createAthlete(
+      null,
+      makeFormData({ trialConversionConfirmed: "true" }),
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Add athletes from a web browser at fromvictoryapp.com.",
+    });
+    expect(lastServiceMockInstance).toBeNull();
+    expect(profileInsertPayload).toBeNull();
+    expect(getTrialConversionStateMock).not.toHaveBeenCalled();
+    expect(stripeSubscriptionsRetrieveMock).not.toHaveBeenCalled();
+    expect(stripeSubscriptionsUpdateMock).not.toHaveBeenCalled();
+    expect(syncAthleteQuantityMock).not.toHaveBeenCalled();
   });
 });

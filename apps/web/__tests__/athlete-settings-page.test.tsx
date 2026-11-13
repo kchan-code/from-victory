@@ -68,7 +68,7 @@ const {
   // Defaults to null (ordinary web/PWA request) — the shell-capability
   // describe block below overrides it per test with
   // "legacy-native" | "ios-iap" | null.
-  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
+  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | "android-play" | null),
   // FV-579/FV-580 — the centralized `apple_subscriptions` accessor. Defaults
   // to "no active Apple entitlement, read succeeded"; individual tests
   // override per case.
@@ -642,5 +642,27 @@ describe("/athlete/settings — App Store subscriber delete notice (FV-652)", ()
 
     const text = screen.getByTestId("delete-account-apple-notice").textContent ?? "";
     expect(text).not.toMatch(/\u2014|\$/);
+  });
+});
+
+describe("/athlete/settings — android-play renders exactly like legacy-native (FV-659)", () => {
+  it("adult_athlete: identical markup, browser notice, no portal/subscribe button", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
+    const legacy = (await renderSettings("adult_athlete")).container.innerHTML;
+    cleanup();
+
+    shellCapabilityMock.mockReturnValue("android-play");
+    const play = (await renderSettings("adult_athlete")).container.innerHTML;
+
+    expect(play).toBe(legacy);
+    expect(screen.queryByTestId("billing-portal-btn")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("settings-subscribe-btn")).not.toBeInTheDocument();
+    expect(screen.getByTestId("billing-portal-native-shell-notice")).toBeInTheDocument();
+  });
+
+  it("minor athlete: still no Subscription section (unchanged)", async () => {
+    shellCapabilityMock.mockReturnValue("android-play");
+    await renderSettings("athlete");
+    expect(screen.queryByRole("heading", { name: "Subscription" })).not.toBeInTheDocument();
   });
 });

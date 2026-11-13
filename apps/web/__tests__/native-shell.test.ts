@@ -241,3 +241,59 @@ describe("getShellCapability — byte-identity pin (FV-572)", () => {
     ).toBe("legacy-native");
   });
 });
+
+// ---------------------------------------------------------------------------
+// FV-659 — `android-play` capability (FV-651 §6). A future Android build with
+// Play Billing sends `FVNativeShell/1 (play)`; the server classifies it now,
+// but it must stay a native shell and render like `legacy-native` today.
+// ---------------------------------------------------------------------------
+
+describe("getShellCapability — android-play (FV-659)", () => {
+  const ANDROID = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36";
+  const IOS =
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15";
+
+  it("classifies the full four-way table", () => {
+    expect(getShellCapability(`${ANDROID} FVNativeShell/1 (play)`)).toBe(
+      "android-play",
+    );
+    expect(getShellCapability(`${IOS} FVNativeShell/1 (ios)`)).toBe("ios-iap");
+    expect(getShellCapability(`${ANDROID} FVNativeShell/1`)).toBe(
+      "legacy-native",
+    );
+    expect(
+      getShellCapability(`${ANDROID} Chrome/126.0 Mobile Safari/537.36`),
+    ).toBe(null);
+  });
+
+  it("matches by substring, so a trailing token (FVAuth/1) does not change the result", () => {
+    expect(getShellCapability("FVNativeShell/1 (play) FVAuth/1")).toBe(
+      "android-play",
+    );
+    expect(getShellCapability("FVNativeShell/1 (ios) FVAuth/1")).toBe(
+      "ios-iap",
+    );
+    expect(getShellCapability("FVNativeShell/1 FVAuth/1")).toBe(
+      "legacy-native",
+    );
+  });
+
+  it("checks (play) BEFORE the bare token (the marker contains the bare token)", () => {
+    expect("FVNativeShell/1 (play)".includes("FVNativeShell/1")).toBe(true);
+    expect(getShellCapability("FVNativeShell/1 (play)")).toBe("android-play");
+  });
+
+  it("isNativeShellUserAgent stays true for all three native values and false for a browser", () => {
+    expect(isNativeShellUserAgent("FVNativeShell/1 (play)")).toBe(true);
+    expect(isNativeShellUserAgent("FVNativeShell/1 (ios)")).toBe(true);
+    expect(isNativeShellUserAgent("FVNativeShell/1")).toBe(true);
+    expect(isNativeShellUserAgent("Mozilla/5.0 Chrome/126.0")).toBe(false);
+  });
+
+  it("isNativeShell() and getRequestShellCapability() read the (play) header", () => {
+    headerMap["user-agent"] =
+      "Mozilla/5.0 (Linux; Android 14) FVNativeShell/1 (play)";
+    expect(isNativeShell()).toBe(true);
+    expect(getRequestShellCapability()).toBe("android-play");
+  });
+});
