@@ -66,6 +66,19 @@ vi.mock("@/lib/subscriptions/access", () => ({
   getParentAccessLevel: accessLevelMock,
 }));
 
+// FV-710: payer-facing failed-payment read. Default null = no notice.
+const { billingIssueMock } = vi.hoisted(() => ({
+  billingIssueMock: vi.fn(
+    async (): Promise<null | {
+      provider: "apple" | "stripe";
+      stage: "grace" | "lapsed";
+    }> => null,
+  ),
+}));
+vi.mock("@/lib/subscriptions/billing-issue", () => ({
+  getPayerBillingIssue: billingIssueMock,
+}));
+
 vi.mock("@/lib/subscriptions/subscribe-guard", () => ({
   getSubscribeEntitlementState: entitlementStateMock,
 }));
@@ -143,6 +156,7 @@ afterEach(() => {
   appleLookupMock.mockResolvedValue({ productId: null, readError: false });
   entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
   athleteRows.current = [];
+  billingIssueMock.mockResolvedValue(null);
 });
 
 async function renderPage() {
@@ -430,4 +444,63 @@ describe("/dashboard — android-play renders exactly like legacy-native (FV-659
     expect(screen.getByTestId("dashboard-subscription-status-unknown")).toBeInTheDocument();
     expect(screen.queryByTestId("dashboard-subscribe-cta")).not.toBeInTheDocument();
   });
+});
+
+describe("/dashboard — failed-payment notice (FV-710)", () => {
+  it("shows no notice when there is no billing issue", async () => {
+    await renderPage();
+    expect(screen.queryByTestId("dashboard-payment-issue")).not.toBeInTheDocument();
+  });
+
+  it("shows the grace notice with a settings link for Stripe on web", async () => {
+    accessLevelMock.mockResolvedValue("degraded");
+    billingIssueMock.mockResolvedValue({ provider: "stripe", stage: "grace" });
+    await renderPage();
+    const notice = screen.getByTestId("dashboard-payment-issue");
+    expect(notice).toHaveAttribute("role", "status");
+    expect(notice).toHaveTextContent(
+      "Your last payment didn't go through. Update your payment method to keep training going.",
+    );
+    expect(screen.getByTestId("dashboard-payment-issue-fix")).toHaveAttribute(
+      "href",
+      "/dashboard/settings",
+    );
+  });
+
+  it("does not also tell a payer in grace to choose a plan", async () => {
+    accessLevelMock.mockResolvedValue("degraded");
+    billingIssueMock.mockResolvedValue({ provider: "stripe", stage: "grace" });
+    await renderPage();
+    expect(screen.queryByTestId("dashboard-subscribe-cta")).not.toBeInTheDocument();
+    expect(screen.queryByText("Start training today.")).not.toBeInTheDocument();
+  });
+
+  it("keeps the choose-a-plan banner for a lapsed payer, who may subscribe again", async () => {
+    accessLevelMock.mockResolvedValue("blocked");
+    billingIssueMock.mockResolvedValue({ provider: "apple", stage: "lapsed" });
+    await renderPage();
+    expect(screen.getByTestId("dashboard-subscribe-cta")).toBeInTheDocument();
+  });
+
+  it("shows the lapsed Apple notice with text-only instructions and no link", async () => {
+    billingIssueMock.mockResolvedValue({ provider: "apple", stage: "lapsed" });
+    await renderPage();
+    const notice = screen.getByTestId("dashboard-payment-issue");
+    expect(notice).toHaveTextContent("Training is paused");
+    expect(notice).toHaveTextContent("Payment & Shipping");
+    expect(notice.querySelector("a")).toBeNull();
+  });
+
+  it.each(["legacy-native", "ios-iap"] as const)(
+    "Stripe grace in the %s shell: no Stripe-bound link, browser instruction",
+    async (capability) => {
+      shellCapabilityMock.mockReturnValue(capability);
+      billingIssueMock.mockResolvedValue({ provider: "stripe", stage: "grace" });
+      await renderPage();
+      const notice = screen.getByTestId("dashboard-payment-issue");
+      expect(notice.querySelector("a")).toBeNull();
+      expect(notice).toHaveTextContent("web browser at fromvictoryapp.com");
+      expect(notice.textContent).not.toMatch(/\$\d/);
+    },
+  );
 });

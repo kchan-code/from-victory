@@ -11,6 +11,8 @@ import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guar
 import { getPayerSeatStateForCurrentParent } from "@/lib/subscriptions/seat-state";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getPayerBillingIssue } from "@/lib/subscriptions/billing-issue";
+import { PaymentIssueNotice } from "@/components/billing/PaymentIssueNotice";
 import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
 import { appleSubscriptionNoticeFor } from "@/lib/subscriptions/apple-delete-notice";
 import { getAthleteMetadataMap, ZERO_RHYTHM } from "@/lib/dashboard/rhythm";
@@ -57,9 +59,12 @@ export default async function DashboardPage() {
   // only. Run alongside the access-level read so the dashboard does not wait
   // on it separately. A read error shows the hedged "unknown" variant (fail
   // toward warning; see lib/subscriptions/apple-delete-notice.ts).
-  const [accessLevel, appleLookup] = await Promise.all([
+  // FV-710: the payer-facing "your payment didn't go through" read (null on
+  // any read error — never a warning on a guess).
+  const [accessLevel, appleLookup, billingIssue] = await Promise.all([
     getParentAccessLevel(userId),
     getDisplayedAppleProductIdResult(createServiceClient(), userId),
+    getPayerBillingIssue(userId),
   ]);
   const appleDeleteNotice = appleSubscriptionNoticeFor(appleLookup);
 
@@ -156,9 +161,24 @@ export default async function DashboardPage() {
           </h1>
         </section>
 
+        {/* FV-710: failed-payment notice (grace or lapsed), payer-only. Stripe
+            fix link goes to the existing billing-portal entry; in any native
+            shell no Stripe-bound link renders. */}
+        {billingIssue ? (
+          <PaymentIssueNotice
+            issue={billingIssue}
+            nativeShell={shellCapability !== null}
+            manageHref="/dashboard/settings"
+            testId="dashboard-payment-issue"
+          />
+        ) : null}
+
         {/* Subscribe CTA — shown only when not on an active subscription.
             Non-blocking: current users without a subscription row must not
-            be locked out. Enforcement is a separate issue. */}
+            be locked out. Enforcement is a separate issue. FV-710: not shown
+            to a payer whose payment is being retried (Stripe past_due reads
+            as "degraded"): they already subscribe and the notice above says
+            how to fix it, so "Choose a plan" would contradict it. */}
         {subscriptionStatusUnknown ? (
           <section
             aria-label="Subscription"
@@ -182,7 +202,7 @@ export default async function DashboardPage() {
               Try again
             </a>
           </section>
-        ) : accessLevel !== "full" ? (
+        ) : accessLevel !== "full" && billingIssue?.stage !== "grace" ? (
           <section
             aria-label="Subscription"
             className="mb-10 bg-charcoal border border-hairline rounded-2xl px-5 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5"

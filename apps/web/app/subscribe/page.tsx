@@ -11,6 +11,8 @@ import { capacityForAppleProduct } from "@/lib/subscriptions/apple-capacity";
 import { getConfiguredAppleProducts } from "@/lib/subscriptions/apple-products";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { isSubscriptionEnforcementEnabled } from "@/lib/subscriptions/enforce";
+import { getPayerBillingIssue } from "@/lib/subscriptions/billing-issue";
+import { PaymentIssueNotice } from "@/components/billing/PaymentIssueNotice";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -111,6 +113,18 @@ export default async function SubscribePage(props: Props) {
     trialEligible =
       subReadError === null && existingSub === null && trialQuantityEligible;
   }
+
+  // FV-710: failed-payment notice. `lapsed` always shows (this is where a
+  // blocked payer lands); `grace` only alongside the "entitled" status card
+  // (a grace payer is still entitled). Skipped when the status itself is
+  // unreadable — that card is already the neutral, no-guess state.
+  const billingIssue =
+    entitlementState.status === "unknown"
+      ? null
+      : await getPayerBillingIssue(userId);
+  const showBillingIssue =
+    billingIssue !== null &&
+    (billingIssue.stage === "lapsed" || entitlementState.status === "entitled");
 
   const wasCanceled = searchParams.status === "canceled";
 
@@ -268,6 +282,16 @@ export default async function SubscribePage(props: Props) {
             )}
           </p>
         </section>
+
+        {showBillingIssue && billingIssue ? (
+          <PaymentIssueNotice
+            issue={billingIssue}
+            nativeShell={nativeShell}
+            manageHref={isAdult ? "/athlete/settings" : "/dashboard/settings"}
+            testId="subscribe-payment-issue"
+            className="mb-8"
+          />
+        ) : null}
 
         {/* FV-581 (decision record §4.4 "duplicate-billing guard"): the main
             content region below is keyed FIRST on server-computed

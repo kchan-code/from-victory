@@ -14,6 +14,8 @@ import {
   subscriptionAccessLevel,
   type SubscriptionStatus,
 } from "@/lib/subscriptions/access-level";
+import { getPayerBillingIssue } from "@/lib/subscriptions/billing-issue";
+import { PaymentIssueNotice } from "@/components/billing/PaymentIssueNotice";
 import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
 import { appleSubscriptionNoticeFor } from "@/lib/subscriptions/apple-delete-notice";
 import { SUPPORTED_SPORTS, sportLabel, type Sport } from "@/lib/sports";
@@ -104,6 +106,10 @@ export default async function AthleteSettingsPage(
   // "unknown" variant rather than risk telling an App Store subscriber
   // nothing (see lib/subscriptions/apple-delete-notice.ts).
   const appleDeleteNotice = appleSubscriptionNoticeFor(appleLookup);
+
+  // FV-710: payer-only failed-payment notice. An adult_athlete is their own
+  // payer; a minor athlete never triggers this read (and never sees billing).
+  const billingIssue = isAdult ? await getPayerBillingIssue(userId) : null;
 
   // Stripe: the adult_athlete is their own payer, so `subscriptions.parent_id`
   // is this athlete's own userId — same key app/dashboard/settings/page.tsx
@@ -355,6 +361,14 @@ export default async function AthleteSettingsPage(
               >
                 Subscription
               </h2>
+              {billingIssue ? (
+                <PaymentIssueNotice
+                  issue={billingIssue}
+                  nativeShell={shellCapability !== null}
+                  testId="settings-payment-issue"
+                  className="mb-3"
+                />
+              ) : null}
               <div className="rounded-[12px] border border-hairline bg-charcoal px-4 py-3.5">
                 {/* In legacy-native shell, no manage CTA or helper line —
                     reader-app compliance means the only subscription copy is
