@@ -35,3 +35,20 @@ Re-run `npx cap sync` **without** the env before any production build. Signed
 iOS builds need the Sign in with Apple capability on the App ID and a refreshed
 provisioning profile (the entitlement is in every build).
 
+## Offline launch page and export plists
+
+`www/index.html` is the bundled page both shells show when the hosted app
+fails to load or returns a main-frame 5xx at launch (FV-718). `npx cap sync`
+copies it into the iOS bundle and the Android assets. An archive or AAB built
+without that sync still has the previous page.
+
+iOS export plists (signing and team are the same in both; neither file changes
+the bundle id or the build number):
+
+- `ios/App/ExportOptions.plist` — TestFlight internal only.
+- `ios/App/ExportOptions.app-store.plist` — App Store distribution. Writes a
+  local IPA (`destination` = `export`). Upload with Transporter or altool.
+
+What to confirm in Xcode before the next iOS upload is in
+[docs/ios-app-store-release.md](../../docs/ios-app-store-release.md) §11.
+

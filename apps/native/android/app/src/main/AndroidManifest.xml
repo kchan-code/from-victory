@@ -20,6 +20,9 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false">
 
+        <!-- FV-735 item 6 / FV-739: screenOrientation=portrait still applies on phones.
+             Android 16 ignores it on large screens (sw >= 600dp). Left as-is; tablet
+             landscape has not been tested. -->
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"

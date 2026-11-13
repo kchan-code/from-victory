@@ -117,8 +117,12 @@ const config: CapacitorConfig = {
   },
   ios: {
     contentInset: "automatic",
-    // Prefer HTTPS scheme parity with Android when Cap supports it.
-    scheme: "From Victory",
+    // FV-735: do not set `scheme` here. In Capacitor 8, `ios.scheme` is the
+    // Xcode scheme `npx cap run ios` builds (default "App", which is this
+    // project's scheme). It is not a WKWebView URL scheme. The old value
+    // "From Victory" matched no scheme in App.xcodeproj. A custom URL scheme
+    // would be `server.iosScheme`, which stays unset so local assets keep
+    // Capacitor's default `capacitor` scheme. The WebView loads `server.url`.
     // FV-572: additive, iOS-only capability marker. Capacitor's per-platform
     // keys OVERRIDE the top-level `appendUserAgent` above for that platform
     // only — Android is untouched and keeps shipping the bare, byte-identical

@@ -238,17 +238,21 @@ screenshots — not required for the scaffold to build.
   `privacy-verdict` gate is not blocked on a cloud-agent `cursor[bot]` comment —
   that gate only accepts OWNER/MEMBER/COLLABORATOR authors). README + this doc
   already state the rule: PWA primary; native shell only; no native-only features.
-- iOS `PrivacyInfo.xcprivacy` host-app manifest before App Review
-  ([docs/ios-app-store-release.md](./ios-app-store-release.md) §11)
+- ~~iOS `PrivacyInfo.xcprivacy`~~ added in FV-721. Kinny still generates the
+  privacy report from an archive and compares it to App Store Connect
+  ([docs/ios-app-store-release.md](./ios-app-store-release.md) §11).
 - ~~Play Families / Data Safety pre-flight before Play Console app creation~~
   → Kinny checklist: [docs/android-play-release.md](./android-play-release.md)
   §7–§9. Console fill + [FV-211](https://linear.app/adeptiv/issue/FV-211)
   kids-privacy-officer veto still required before a **public** track.
-- Decide whether to commit `ios/App/Podfile.lock` for reproducible CocoaPods
-  ([docs/ios-app-store-release.md](./ios-app-store-release.md) §11)
-- Extend `athlete-no-tracking` CI to scan `apps/native` manifests/deps
-- Enable R8/ProGuard minify for release AABs before first **production** Play
-  upload ([docs/android-play-release.md](./android-play-release.md) §11)
+- `ios/App/Podfile.lock`: commit it when `pod install` has been run on a Mac
+  (Linux cannot reproduce the lockfile here). Steps in
+  [docs/ios-app-store-release.md](./ios-app-store-release.md) §11.
+- ~~Extend `athlete-no-tracking` CI to scan `apps/native`~~ done in FV-728.
+  Play Billing is the documented allow-list entry.
+- R8 stays off until [FV-740](https://linear.app/adeptiv/issue/FV-740/enable-r8-for-the-android-release-build-after-keep-rules-and-a-device).
+  `proguard-rules.pro` is still the Capacitor stub. Do not flip
+  `minifyEnabled` in a store upload.
 - Rename Capacitor sample unit/instrumented tests off `com.getcapacitor.myapp`
 - Replace placeholder zeros in `apps/web/public/.well-known/assetlinks.json`
   with Play **app signing** SHA-256 (privacy-path PR; not a Capacitor

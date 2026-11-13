@@ -20,8 +20,13 @@ name: Athlete no-tracking guard
 # Dependency-free: plain Node CommonJS using only built-ins. No `npm install`.
 # Runs in ~1-2 seconds.
 #
-# TRIGGER: pull_request events that touch apps/web/**, or this guard's own
-# workflow/script (so a change to the guard runs the guard).
+# FV-728: the same job also scans apps/native (package.json, the Podfile,
+# Gradle files, and plugin import lines) for tracking SDKs. Play Billing is
+# an explicit allow-list entry. A missing required native manifest fails the
+# job, so a sparse checkout that drops apps/native cannot silently pass.
+#
+# TRIGGER: pull_request events that touch apps/web/**, apps/native/**, or this
+# guard's own workflow/script (so a change to the guard runs the guard).
 # On a direct push to main (merge) the job does not re-run because the
 # guaranteeing PR run would have gated it. If a bypass is ever needed, the
 # script can also be invoked locally:
@@ -32,6 +37,7 @@ on:
     branches: [main]
     paths:
       - 'apps/web/**'
+      - 'apps/native/**'
       - '.github/workflows/athlete-no-tracking.yml'
       - '.github/scripts/check-athlete-no-tracking.cjs'
 
@@ -49,17 +55,19 @@ jobs:
         with:
           # FV-627: a full checkout pulls ~820 MB of apps/web/public/audio and
           # has taken 10+ minutes on slow runners. The scanner only reads
-          # source under apps/web (see SCAN_PATHS) plus its own script, so
-          # check out everything in .github and apps/web EXCEPT public/, and
-          # fetch blobs lazily. Non-cone on purpose: every current and future
-          # SCAN_PATH under apps/web stays covered (the scanner silently skips
-          # missing paths, so a narrow list could weaken it unnoticed).
+          # source under apps/web (see SCAN_PATHS) and apps/native (FV-728),
+          # plus its own script. Check out .github, apps/web EXCEPT public/,
+          # and apps/native. Fetch blobs lazily. Non-cone on purpose: every
+          # current and future SCAN_PATH under apps/web stays covered. The
+          # native scan fails if its required manifests are missing, so this
+          # list must keep apps/native.
           filter: blob:none
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /.github/
             /apps/web/
             !/apps/web/public/
+            /apps/native/
 
       - name: Run athlete no-tracking guard (FV-350)
         run: node .github/scripts/check-athlete-no-tracking.cjs

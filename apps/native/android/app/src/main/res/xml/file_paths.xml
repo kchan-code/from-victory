@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- FV-735: Capacitor's WebChromeClient camera/file capture writes a temp JPEG
+     under getExternalFilesDir(DIRECTORY_PICTURES) and shares it through
+     ${applicationId}.fileprovider (BridgeWebChromeClient.createImageFileUri).
+     The provider stays, because removing it crashes that capture path. The
+     Capacitor template exposed all of shared external storage (external-path
+     path=".") and the whole cache. Only the pictures directory is shared. -->
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <external-path name="my_images" path="." />
-    <cache-path name="my_cache_images" path="." />
+    <external-files-path name="captured_pictures" path="Pictures" />
 </paths>

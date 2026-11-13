@@ -83,6 +83,7 @@ public class OfflineEntryFallbackTest {
         assertTrue(OfflineEntryFallback.isLocalOfflinePageUrl(null));
         assertTrue(OfflineEntryFallback.isLocalOfflinePageUrl("about:blank"));
         assertTrue(OfflineEntryFallback.isLocalOfflinePageUrl("data:text/html,x"));
+        assertTrue(OfflineEntryFallback.isLocalOfflinePageUrl(OfflineEntryFallback.OFFLINE_PAGE_BASE));
         assertEquals(false, OfflineEntryFallback.isLocalOfflinePageUrl(APP + "/athlete/pregame"));
         assertEquals(false, OfflineEntryFallback.isLocalOfflinePageUrl(APP + "/signin"));
         assertEquals(false, OfflineEntryFallback.isLocalOfflinePageUrl("https://checkout.stripe.com/"));
@@ -122,6 +123,46 @@ public class OfflineEntryFallbackTest {
         assertEquals(OPEN_PREGAME, decide(STAGING + "/", true, -2, STAGING));
         assertEquals(STAGING + "/athlete/pregame", OfflineEntryFallback.pregameUrl(STAGING));
         assertEquals(NONE, decide(APP + "/", true, -2, STAGING));
+    }
+
+    @Test
+    public void mainFrame5xxShowsTheBundledPageAndDoesNotOpenPregame() {
+        for (int status : new int[] {500, 502, 503, 599}) {
+            assertEquals("status " + status, SHOW_OFFLINE_PAGE,
+                OfflineEntryFallback.decideHttpStatus(APP + "/", true, status, APP));
+            assertEquals("status " + status, SHOW_OFFLINE_PAGE,
+                OfflineEntryFallback.decideHttpStatus(APP + "/athlete/pregame", true, status, APP));
+        }
+        // Entry 5xx must not take the connectivity path into Pregame.
+        assertEquals(NONE, decide(APP + "/", true, 503, APP));
+    }
+
+    @Test
+    public void http4xxSubresourcesAndOtherOriginsDoNotShowThePage() {
+        assertEquals(NONE, OfflineEntryFallback.decideHttpStatus(APP + "/", true, 404, APP));
+        assertEquals(NONE, OfflineEntryFallback.decideHttpStatus(APP + "/signin", true, 401, APP));
+        assertEquals(NONE, OfflineEntryFallback.decideHttpStatus(APP + "/", true, 499, APP));
+        assertEquals(NONE, OfflineEntryFallback.decideHttpStatus(APP + "/", true, 600, APP));
+        assertEquals(NONE, OfflineEntryFallback.decideHttpStatus(APP + "/", false, 503, APP));
+        assertEquals(NONE, OfflineEntryFallback.decideHttpStatus("https://checkout.stripe.com/", true, 503, APP));
+        assertEquals(NONE, OfflineEntryFallback.decideHttpStatus(null, true, 503, APP));
+        assertEquals(NONE, OfflineEntryFallback.decideHttpStatus(APP + "/", true, 503, null));
+    }
+
+    @Test
+    public void offlinePageInjectionKeepsHttpsLinksAndDropsAMissingSession() {
+        String html = "<a class=\"fv-retry\" href=\"__FV_RETRY_URL__\">Try again</a>"
+            + "<!--fv-saved--><a href=\"__FV_PREGAME_URL__\">Open</a><!--/fv-saved-->";
+        String injected = OfflineEntryFallback.injectOfflinePage(html, APP, APP + "/athlete/pregame");
+        assertTrue(injected.contains("href=\"" + APP + "\""));
+        assertTrue(injected.contains("href=\"" + APP + "/athlete/pregame\""));
+        String stripped = OfflineEntryFallback.injectOfflinePage(html, APP, null);
+        assertTrue(stripped.contains("href=\"" + APP + "\""));
+        assertEquals(false, stripped.contains("fv-saved"));
+        assertEquals(false, stripped.contains("__FV_"));
+        String unsafe = OfflineEntryFallback.injectOfflinePage(html, "javascript:alert(1)", null);
+        assertTrue(unsafe.contains("href=\"#\""));
+        assertEquals(false, unsafe.contains("javascript:"));
     }
 
     @Test

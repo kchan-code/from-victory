@@ -43,15 +43,51 @@
         color: #b8b8b0;
         font-size: 0.95rem;
       }
+      .fv-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 1.25rem;
+        width: 100%;
+        max-width: 18rem;
+      }
+      a {
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 44px;
+        margin-top: 0.75rem;
+        padding: 0.7rem 1.25rem;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.95rem;
+      }
+      a.fv-retry {
+        background: #dfaf37;
+        color: #050505;
+      }
+      a.fv-saved {
+        background: transparent;
+        color: #f4c24f;
+      }
     </style>
   </head>
   <body>
     <main>
       <h1>From Victory</h1>
       <p>
-        Connecting to training&hellip; If this screen stays up, check your
-        network and reopen the app.
+        Training didn't load. Check your connection, then try again. If you
+        saved a Pregame session on this device, open it below.
       </p>
+      <div class="fv-actions">
+        <a class="fv-retry" href="__FV_RETRY_URL__">Try again</a>
+        <!--fv-saved-->
+        <a class="fv-saved" href="__FV_PREGAME_URL__">Open a saved session</a>
+        <!--/fv-saved-->
+      </div>
     </main>
   </body>
 </html>

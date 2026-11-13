@@ -68,9 +68,11 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<!-- FV-735: iOS 15 has no 32-bit devices. armv7 was the Capacitor template
+	     leftover and does not match the deployment target. -->
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
