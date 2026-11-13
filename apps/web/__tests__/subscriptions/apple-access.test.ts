@@ -336,7 +336,7 @@ describe("getActiveAppleProductIdResult", () => {
     ).toEqual({ productId: "tier_1_1athlete", readError: false });
   });
 
-  it("returns { productId: null, readError: false } for an 'in_billing_retry' Production row (blocked since FV-710)", async () => {
+  it("still returns the product for an 'in_billing_retry' Production row, flagged paymentLapsed (FV-710: live at Apple, no access)", async () => {
     appleSubRows = [
       {
         environment: "Production",
@@ -349,7 +349,30 @@ describe("getActiveAppleProductIdResult", () => {
     const service = makeServiceMock();
     expect(
       await getActiveAppleProductIdResult(service as never, PAYER_ID, NOW),
-    ).toEqual({ productId: null, readError: false });
+    ).toEqual({ productId: "tier_3_3athletes", readError: false, paymentLapsed: true });
+  });
+
+  it("prefers a row that grants access over an 'in_billing_retry' row (no paymentLapsed flag)", async () => {
+    appleSubRows = [
+      {
+        environment: "Production",
+        status: "in_billing_retry",
+        expires_at: FUTURE_ISO,
+        grace_period_expires_at: null,
+        product_id: "tier_3_3athletes",
+      },
+      {
+        environment: "Production",
+        status: "subscribed",
+        expires_at: FUTURE_ISO,
+        grace_period_expires_at: null,
+        product_id: "tier_1_1athlete",
+      },
+    ];
+    const service = makeServiceMock();
+    expect(
+      await getActiveAppleProductIdResult(service as never, PAYER_ID, NOW),
+    ).toEqual({ productId: "tier_1_1athlete", readError: false });
   });
 
   it("returns { productId: null, readError: false } for an 'expired' Production row (stale ceiling must not apply)", async () => {

@@ -388,6 +388,14 @@ export type ActiveAppleProductIdResult = {
    * trustworthy "no active row") in that case; it is always `null` on error
    * so callers can't accidentally branch on a stale/default value. */
   readError: boolean;
+  /**
+   * FV-710: true when the returned row is `in_billing_retry` — the
+   * subscription still exists at Apple (it is retrying the charge and can
+   * bill again without notice) but grants NO training access. Callers that
+   * decide ACCESS must not read `productId !== null` as "has access"; that
+   * decision is `getAppleAccessLevelForPayer`. Absent/false otherwise.
+   */
+  paymentLapsed?: boolean;
 };
 
 /**
@@ -487,6 +495,18 @@ export async function getActiveAppleProductIdResult(
     );
     if (level === "full" || level === "degraded") {
       return { productId: row.product_id, readError: false };
+    }
+  }
+
+  // FV-710: no row grants access. A row in billing retry is still a LIVE
+  // Apple subscription: Apple keeps retrying the charge for up to 60 days and
+  // only the payer can cancel it. It therefore still counts as "this payer
+  // subscribes through Apple" for everything this accessor feeds (the
+  // delete-account warning, the manage screen, the seat ceiling, and the
+  // duplicate-purchase guard), even though training access is blocked.
+  for (const row of ordered) {
+    if (row.status === "in_billing_retry") {
+      return { productId: row.product_id, readError: false, paymentLapsed: true };
     }
   }
 

@@ -231,7 +231,7 @@ describe("getSubscribeEntitlementState", () => {
     expect(result).toEqual({ status: "entitled", provider: "stripe" });
   });
 
-  it("not entitled via Apple: Production row with status=in_billing_retry is blocked (FV-710)", async () => {
+  it("entitled via Apple with accessPaused: a Production in_billing_retry row blocks training but also blocks a second purchase (FV-710)", async () => {
     appleSubsListResult = {
       data: [
         {
@@ -254,7 +254,7 @@ describe("getSubscribeEntitlementState", () => {
     };
 
     const result = await getSubscribeEntitlementState(PAYER_ID);
-    expect(result).toEqual({ status: "not_entitled", provider: null });
+    expect(result).toEqual({ status: "entitled", provider: "apple", accessPaused: true });
   });
 
   it("prefers apple as the reported provider when BOTH Apple and Stripe are active (duplicate billing)", async () => {

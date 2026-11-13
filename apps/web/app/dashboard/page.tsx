@@ -176,9 +176,9 @@ export default async function DashboardPage() {
         {/* Subscribe CTA — shown only when not on an active subscription.
             Non-blocking: current users without a subscription row must not
             be locked out. Enforcement is a separate issue. FV-710: not shown
-            to a payer whose payment is being retried (Stripe past_due reads
-            as "degraded"): they already subscribe and the notice above says
-            how to fix it, so "Choose a plan" would contradict it. */}
+            to a payer with a failed payment (grace or lapsed): they already
+            subscribe and the notice above says how to fix it, so "Choose a
+            plan" would contradict it and cannot lead to a purchase. */}
         {subscriptionStatusUnknown ? (
           <section
             aria-label="Subscription"
@@ -202,7 +202,7 @@ export default async function DashboardPage() {
               Try again
             </a>
           </section>
-        ) : accessLevel !== "full" && billingIssue?.stage !== "grace" ? (
+        ) : accessLevel !== "full" && billingIssue === null ? (
           <section
             aria-label="Subscription"
             className="mb-10 bg-charcoal border border-hairline rounded-2xl px-5 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5"

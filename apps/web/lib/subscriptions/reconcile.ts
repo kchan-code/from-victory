@@ -255,7 +255,11 @@ export async function reconcileStripePass(
 // Apple
 // ---------------------------------------------------------------------------
 
-/** Statuses that grant (full or degraded) access — see apple-access-level.ts. */
+/**
+ * Statuses where the subscription is still live at Apple and must keep being
+ * reconciled. `in_billing_retry` grants no access since FV-710, but a
+ * recovered charge has to be picked up, so it stays in this list.
+ */
 const APPLE_LIVE_STATUSES = ["subscribed", "in_grace_period", "in_billing_retry"];
 
 type AppleRowLite = {

@@ -475,11 +475,11 @@ describe("/dashboard — failed-payment notice (FV-710)", () => {
     expect(screen.queryByText("Start training today.")).not.toBeInTheDocument();
   });
 
-  it("keeps the choose-a-plan banner for a lapsed payer, who may subscribe again", async () => {
+  it("does not tell a lapsed payer to choose a plan either (they still hold the subscription)", async () => {
     accessLevelMock.mockResolvedValue("blocked");
     billingIssueMock.mockResolvedValue({ provider: "apple", stage: "lapsed" });
     await renderPage();
-    expect(screen.getByTestId("dashboard-subscribe-cta")).toBeInTheDocument();
+    expect(screen.queryByTestId("dashboard-subscribe-cta")).not.toBeInTheDocument();
   });
 
   it("shows the lapsed Apple notice with text-only instructions and no link", async () => {

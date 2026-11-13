@@ -9,7 +9,7 @@ export const BILLING_ISSUE_COPY = {
   grace:
     "Your last payment didn't go through. Update your payment method to keep training going.",
   lapsed:
-    "Training is paused because your last payment didn't go through. Update your payment method and it comes back on by itself, or subscribe again below.",
+    "Training is paused because your last payment didn't go through. Update your payment method and it comes back on by itself.",
   fixApple:
     "On your iPhone, open Settings, tap your name, then Payment & Shipping (or Subscriptions).",
   fixStripeLink: "Update payment method",
