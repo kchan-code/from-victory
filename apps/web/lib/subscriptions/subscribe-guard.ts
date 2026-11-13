@@ -66,7 +66,7 @@ import "server-only";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getParentAccessLevel } from "./access";
 import { subscriptionAccessLevel, type SubscriptionStatus } from "./access-level";
-import { getActiveAppleProductId, getActiveAppleProductIdResult } from "./apple";
+import { getActiveAppleProductIdResult } from "./apple";
 
 type ServiceClient = ReturnType<typeof createServiceClient>;
 
@@ -189,10 +189,13 @@ export async function getSubscribeEntitlementState(
   if (level === "blocked") {
     // FV-710: blocked, but a live App Store subscription in billing retry
     // must not be offered a second purchase (Apple can still collect on the
-    // first). A read error here falls through to not_entitled only because
-    // readUnderlyingSources just read the same table successfully.
+    // first). A read error here is "unknown" (refuse to start a purchase),
+    // never a guessed not_entitled.
     const apple = await getActiveAppleProductIdResult(service, userId);
-    if (!apple.readError && apple.productId !== null && apple.paymentLapsed) {
+    if (apple.readError) {
+      return { status: "unknown", provider: null };
+    }
+    if (apple.productId !== null && apple.paymentLapsed) {
       return { status: "entitled", provider: "apple", accessPaused: true };
     }
     return { status: "not_entitled", provider: null };
@@ -206,8 +209,17 @@ export async function getSubscribeEntitlementState(
   // status already fetched above (no second read, no unchecked-error
   // fall-through), broadened the same way so a degraded Stripe payer
   // resolves provider "stripe" rather than falling through to "comp".
-  const appleProductId = await getActiveAppleProductId(service, userId);
-  if (appleProductId !== null) {
+  // FV-710: a billing-retry Apple row (`paymentLapsed`) grants no access, so
+  // it is never the provider CARRYING a non-blocked level: a payer who is
+  // paid through Stripe or comped and also has a stale retry row resolves to
+  // "stripe" / "comp", not "apple". A read error keeps the fail-open
+  // behavior of `getActiveAppleProductId` (not an Apple payer).
+  const appleResult = await getActiveAppleProductIdResult(service, userId);
+  if (
+    !appleResult.readError &&
+    appleResult.productId !== null &&
+    !appleResult.paymentLapsed
+  ) {
     return { status: "entitled", provider: "apple" };
   }
 

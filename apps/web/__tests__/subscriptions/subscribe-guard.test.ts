@@ -257,6 +257,33 @@ describe("getSubscribeEntitlementState", () => {
     expect(result).toEqual({ status: "entitled", provider: "apple", accessPaused: true });
   });
 
+  it("a payer paid through Stripe with a stale Apple in_billing_retry row resolves to stripe, not apple (FV-710)", async () => {
+    subscriptionsResult = { data: { status: "active" }, error: null };
+    appleSubsListResult = {
+      data: [
+        {
+          environment: "Production",
+          status: "in_billing_retry",
+          expires_at: FUTURE_ISO,
+          grace_period_expires_at: null,
+        },
+      ],
+      error: null,
+    };
+    appleSubsProductionSingleResult = {
+      data: {
+        product_id: "tier_1_1athlete",
+        status: "in_billing_retry",
+        expires_at: FUTURE_ISO,
+        grace_period_expires_at: null,
+      },
+      error: null,
+    };
+
+    const result = await getSubscribeEntitlementState(PAYER_ID);
+    expect(result).toEqual({ status: "entitled", provider: "stripe" });
+  });
+
   it("prefers apple as the reported provider when BOTH Apple and Stripe are active (duplicate billing)", async () => {
     subscriptionsResult = { data: { status: "active" }, error: null };
     appleSubsListResult = {

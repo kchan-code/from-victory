@@ -69,6 +69,7 @@ const {
     async (): Promise<{
       status: "entitled" | "not_entitled" | "unknown";
       provider: "apple" | "stripe" | "comp" | null;
+      accessPaused?: true;
     }> => ({ status: "not_entitled", provider: null }),
   ),
   // FV-586 (KC decision D3): defaults preserve "no upgrade available" for
@@ -319,6 +320,20 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
     enforcementEnabledMock.mockReturnValue(true);
     accessLevelMock.mockResolvedValue("blocked");
+    const { queryByTestId } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
+    expect(queryByTestId("clear-offline-pregame")).not.toBeNull();
+  });
+
+  it("FV-710: a blocked payer whose App Store payment is failing past grace also revokes it", async () => {
+    asParent();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("blocked");
+    entitlementStateMock.mockResolvedValue({
+      status: "entitled",
+      provider: "apple",
+      accessPaused: true,
+    });
     const { queryByTestId } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
     expect(queryByTestId("clear-offline-pregame")).not.toBeNull();
   });

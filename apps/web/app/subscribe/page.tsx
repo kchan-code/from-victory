@@ -210,7 +210,12 @@ export default async function SubscribePage(props: Props) {
           /athlete/paused does for a minor. Only on a CONFIRMED lapse: an
           entitled payer keeps theirs, and FV-656 — a status that couldn't be
           read ("unknown"; wouldBounce is fail-closed) revokes nothing. */}
-      {wouldBounce && entitlementState.status === "not_entitled" ? (
+      {wouldBounce &&
+      (entitlementState.status === "not_entitled" ||
+        (entitlementState.status === "entitled" &&
+          entitlementState.accessPaused === true)) ? (
+        /* FV-710: accessPaused (live App Store subscription, payment failing
+           past grace) is also a CONFIRMED block, so it revokes too. */
         <ClearOfflinePregameOnMount />
       ) : null}
       <div className="mx-auto max-w-[560px]">
