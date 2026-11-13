@@ -80,6 +80,12 @@ vi.mock("@/lib/native/apple-iap", () => ({
   manageSubscriptions: manageSubscriptionsMock,
 }));
 
+// FV-712: AppleSubscribeSection runs a transaction sync on mount. The preview
+// page has no native bridge to sync against, so stub it out.
+vi.mock("@/lib/native/apple-transaction-sync", () => ({
+  syncAppleTransactions: vi.fn(async () => ({ status: "unsupported" })),
+}));
+
 vi.mock("@/lib/actions/apple-subscription", () => ({
   beginApplePurchase: beginApplePurchaseMock,
   submitApplePurchase: submitApplePurchaseMock,
