@@ -27,6 +27,25 @@ export const APPLE_LOOKAHEAD_MS = 24 * 60 * 60 * 1000;
 const PAGE_SIZE = 1000;
 const MAX_PAGES = 10;
 const STRIPE_CONCURRENCY = 4;
+/**
+ * Our clock (Vercel) and Stripe's clock (event.created) are different clocks.
+ * The watermark we write is pulled back by this margin so an event Stripe
+ * stamps just after our retrieve is never discarded as "older than the
+ * watermark" because our clock ran a little ahead. Costs nothing: the
+ * webhook re-applying an equal-or-newer state is harmless.
+ */
+export const CLOCK_SKEW_MARGIN_MS = 5_000;
+/** Per-call ceilings so one hung provider call cannot eat the whole run. */
+export const STRIPE_CALL_TIMEOUT_MS = 10_000;
+export const APPLE_CALL_TIMEOUT_MS = 15_000;
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error("provider call timed out")), ms);
+  });
+  return Promise.race([p, timeout]).finally(() => clearTimeout(timer));
+}
 
 export type PassCounts = {
   checked: number;
@@ -112,7 +131,7 @@ async function listStripeRows(service: ServiceClient): Promise<StripeRowLite[]> 
  * Re-apply Stripe truth to one row.
  *
  * WATERMARK: `retrievedAtMs` is captured BEFORE the Stripe retrieve call
- * (floored to the second). The write sets last_stripe_event_at to that
+ * (floored to the second, minus CLOCK_SKEW_MARGIN_MS). The write sets last_stripe_event_at to that
  * instant (never lower than the stored value), guarded by an optimistic
  * compare on the watermark value we read.
  *  - The snapshot reflects every event created before the retrieve began, so
@@ -131,10 +150,14 @@ async function reconcileStripeRow(
   stripe: Stripe,
   row: StripeRowLite,
 ): Promise<"in_sync" | "corrected" | "missing" | "raced"> {
-  const retrievedAtMs = Math.floor(Date.now() / 1000) * 1000;
+  const retrievedAtMs = Math.floor(Date.now() / 1000) * 1000 - CLOCK_SKEW_MARGIN_MS;
   let sub: Stripe.Subscription;
   try {
-    sub = await stripe.subscriptions.retrieve(row.stripe_subscription_id as string);
+    sub = await stripe.subscriptions.retrieve(
+      row.stripe_subscription_id as string,
+      {},
+      { timeout: STRIPE_CALL_TIMEOUT_MS },
+    );
   } catch (err) {
     if (isResourceMissing(err)) return "missing";
     throw err;
@@ -286,7 +309,10 @@ export async function reconcileApplePass(
     }
     counts.checked++;
     try {
-      const res = await reconcileAppleSubscription(service, row.payer_id, "Production");
+      const res = await withTimeout(
+        reconcileAppleSubscription(service, row.payer_id, "Production"),
+        APPLE_CALL_TIMEOUT_MS,
+      );
       if (res.ok) {
         if (res.applied && (await appleRowChanged(service, row))) counts.corrected++;
       } else {

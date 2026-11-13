@@ -101,15 +101,17 @@ async function handleCronRequest(req: NextRequest) {
   }
 
   const dirty = [stripe, apple].some(
-    (p) => p.corrected > 0 || p.failed > 0 || p.missing > 0,
+    // `deferred` counts too: rows the run could not reach (cap or time
+    // budget) must be visible, or a run that did nothing would look clean.
+    (p) => p.corrected > 0 || p.failed > 0 || p.missing > 0 || p.deferred > 0,
   );
   if (dirty) {
     const fmt = (p: PassCounts) =>
-      `checked=${p.checked} corrected=${p.corrected} failed=${p.failed} missing=${p.missing}`;
+      `checked=${p.checked} corrected=${p.corrected} failed=${p.failed} missing=${p.missing} raced=${p.raced} deferred=${p.deferred}`;
     deliverInBackground(
       notifyError(
         "[cron/reconcile-subscriptions] drift or failures found",
-        "Subscription reconcile run completed with corrections or failures.",
+        "Subscription reconcile run completed with corrections, failures or unreached rows.",
         { stripe: fmt(stripe), apple: fmt(apple) },
       ),
     );

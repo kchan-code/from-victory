@@ -25,6 +25,8 @@ let appleRows: Row[] = [];
 let updates: Row[] = [];
 let updateResult: Row[] = [{ parent_id: "p" }];
 let appleFilters: Array<[string, unknown]> = [];
+// Filters applied to `subscriptions` AFTER .update() — i.e. the write guard.
+let stripeUpdateFilters: Array<[string, string, unknown]> = [];
 // Row returned by the post-reconcile re-read (appleRowChanged).
 let appleAfter: Row | null = null;
 
@@ -32,9 +34,14 @@ function builder(table: string) {
   let isUpdate = false;
   const b: Record<string, unknown> = {};
   const self = () => b;
-  for (const m of ["select", "not", "order", "range", "is", "lte"]) b[m] = self;
+  for (const m of ["select", "not", "order", "range", "lte"]) b[m] = self;
+  b.is = (col: string, val: unknown) => {
+    if (table === "subscriptions" && isUpdate) stripeUpdateFilters.push(["is", col, val]);
+    return b;
+  };
   b.eq = (col: string, val: unknown) => {
     if (table === "apple_subscriptions") appleFilters.push([col, val]);
+    if (table === "subscriptions" && isUpdate) stripeUpdateFilters.push(["eq", col, val]);
     return b;
   };
   b.in = (col: string, val: unknown) => {
@@ -59,6 +66,12 @@ vi.mock("@/lib/supabase/service", () => ({
 }));
 
 import { GET, POST } from "@/app/api/cron/reconcile-subscriptions/route";
+import {
+  CLOCK_SKEW_MARGIN_MS,
+  STRIPE_BATCH_CAP,
+  reconcileStripePass,
+  rotateWindow,
+} from "@/lib/subscriptions/reconcile";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 
@@ -101,6 +114,7 @@ beforeEach(() => {
   appleRows = [];
   updates = [];
   appleFilters = [];
+  stripeUpdateFilters = [];
   appleAfter = null;
   updateResult = [{ parent_id: "p" }];
   vi.spyOn(console, "error").mockImplementation(() => {});
@@ -186,6 +200,105 @@ describe("stripe pass", () => {
     const body = await (await GET(makeReq(OK))).json();
     expect(body.stripe).toMatchObject({ raced: 1, corrected: 0 });
     expect(updates).toHaveLength(0);
+  });
+});
+
+describe("stripe watermark + write guard", () => {
+  const NOW = new Date("2026-11-13T04:30:07.400Z");
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it("null stored watermark: writes floor(now) minus skew margin, guarded by IS NULL", async () => {
+    stripeRows = [dbRow()];
+    retrieveMock.mockResolvedValue(stripeSub({ status: "canceled" }));
+    await GET(makeReq(OK));
+    const expected = new Date(
+      Date.parse("2026-11-13T04:30:07.000Z") - CLOCK_SKEW_MARGIN_MS,
+    ).toISOString();
+    expect(updates[0]?.last_stripe_event_at).toBe(expected);
+    expect(stripeUpdateFilters).toContainEqual(["is", "last_stripe_event_at", null]);
+    expect(stripeUpdateFilters).toContainEqual(["eq", "parent_id", dbRow().parent_id]);
+  });
+
+  it("older stored watermark: advances it, guarded by equality on the value read", async () => {
+    const stored = "2026-11-01T00:00:00+00:00";
+    stripeRows = [dbRow({ last_stripe_event_at: stored })];
+    retrieveMock.mockResolvedValue(stripeSub({ status: "canceled" }));
+    await GET(makeReq(OK));
+    expect(Date.parse(updates[0]?.last_stripe_event_at as string)).toBe(
+      Date.parse("2026-11-13T04:30:07.000Z") - CLOCK_SKEW_MARGIN_MS,
+    );
+    expect(stripeUpdateFilters).toContainEqual(["eq", "last_stripe_event_at", stored]);
+  });
+
+  it("stored watermark inside the skew margin -> raced, no write", async () => {
+    stripeRows = [dbRow({ last_stripe_event_at: "2026-11-13T04:30:05.000Z" })];
+    retrieveMock.mockResolvedValue(stripeSub({ status: "canceled" }));
+    const body = await (await GET(makeReq(OK))).json();
+    expect(body.stripe).toMatchObject({ raced: 1, corrected: 0 });
+    expect(updates).toHaveLength(0);
+  });
+
+  it("passes a per-call timeout to Stripe", async () => {
+    stripeRows = [dbRow()];
+    retrieveMock.mockResolvedValue(stripeSub());
+    await GET(makeReq(OK));
+    expect(retrieveMock).toHaveBeenCalledWith("sub_1", {}, { timeout: 10_000 });
+  });
+});
+
+describe("drift detection covers every synced field", () => {
+  it.each([
+    ["price", stripeSub({ items: { data: [{ price: { id: "price_2" }, current_period_end: 1893456000 }] } })],
+    ["period end", stripeSub({ items: { data: [{ price: { id: "price_1" }, current_period_end: 1893456001 }] } })],
+    ["cancel flag", stripeSub({ cancel_at_period_end: true })],
+    ["customer", stripeSub({ customer: "cus_other" })],
+  ])("%s differs -> corrected", async (_name, sub) => {
+    stripeRows = [dbRow()];
+    retrieveMock.mockResolvedValue(sub);
+    const body = await (await GET(makeReq(OK))).json();
+    expect(body.stripe).toMatchObject({ corrected: 1 });
+  });
+});
+
+describe("bounded work", () => {
+  it("rotateWindow: under the cap is untouched; over the cap every row is reached across days", () => {
+    const small = [1, 2, 3];
+    expect(rotateWindow(small, 5, new Date(0))).toEqual(small);
+    const rows = Array.from({ length: 250 }, (_, i) => i);
+    const seen = new Set<number>();
+    for (let day = 0; day < 5; day++) {
+      const w = rotateWindow(rows, 100, new Date(day * 86_400_000)).slice(0, 100);
+      w.forEach((r) => seen.add(r));
+    }
+    expect(seen.size).toBe(250);
+  });
+
+  it("250 eligible rows: checks the cap, defers the rest, and alerts", async () => {
+    stripeRows = Array.from({ length: 250 }, (_, i) =>
+      dbRow({ parent_id: `p${i}`, stripe_subscription_id: `sub_${i}` }),
+    );
+    retrieveMock.mockImplementation(async (id: string) => stripeSub({ id }));
+    const body = await (await GET(makeReq(OK))).json();
+    expect(body.stripe).toMatchObject({
+      checked: STRIPE_BATCH_CAP,
+      deferred: 250 - STRIPE_BATCH_CAP,
+      corrected: 0,
+    });
+    expect(notifyError).toHaveBeenCalledTimes(1);
+  });
+
+  it("deadline already passed: starts nothing and reports everything deferred", async () => {
+    stripeRows = [dbRow(), dbRow({ parent_id: "b" })];
+    const counts = await reconcileStripePass(
+      { from: (t: string) => builder(t) } as never,
+      Date.now() - 1,
+    );
+    expect(counts).toMatchObject({ checked: 0, deferred: 2 });
+    expect(retrieveMock).not.toHaveBeenCalled();
   });
 });
 
