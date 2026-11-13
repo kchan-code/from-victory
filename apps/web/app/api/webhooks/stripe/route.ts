@@ -196,6 +196,20 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
       );
       break;
 
+    case "charge.refunded":
+      await handleChargeRefunded(
+        event.data.object as Stripe.Charge,
+        event.id,
+      );
+      break;
+
+    case "charge.dispute.created":
+      await handleChargeDisputeCreated(
+        event.data.object as Stripe.Dispute,
+        event.id,
+      );
+      break;
+
     default:
       // Intentionally ignored. Return 200 so Stripe doesn't retry.
       console.info(
@@ -682,4 +696,80 @@ async function handleInvoicePaymentFailed(
     `[stripe/webhook] invoice.payment_failed: subscription not expanded on invoice ` +
       `id="${invoice.id}". customer.subscription.updated will handle status sync.`,
   );
+}
+
+/**
+ * charge.refunded
+ *
+ * Sends an ops alert with opaque billing identifiers only. No access state
+ * changes are made here (separate policy decision).
+ */
+async function handleChargeRefunded(
+  charge: Stripe.Charge,
+  eventId: string,
+): Promise<void> {
+  const paymentIntentId = stripeIdOrNull(charge.payment_intent);
+  const customerId = stripeIdOrNull(charge.customer);
+
+  deliverInBackground(
+    notifyError(
+      "[stripe/webhook] charge.refunded",
+      "Stripe charge refunded. Manual subscription access review required.",
+      {
+        event_id: eventId,
+        charge_id: charge.id,
+        payment_intent_id: paymentIntentId,
+        customer_id: customerId,
+        amount: String(charge.amount),
+        currency: charge.currency,
+      },
+    ),
+  );
+}
+
+/**
+ * charge.dispute.created
+ *
+ * Sends an ops alert with opaque billing identifiers plus dispute deadline
+ * details. No access state changes are made here (separate policy decision).
+ */
+async function handleChargeDisputeCreated(
+  dispute: Stripe.Dispute,
+  eventId: string,
+): Promise<void> {
+  const paymentIntentId = stripeIdOrNull(dispute.payment_intent);
+  const chargeId = stripeIdOrNull(dispute.charge);
+  const customerId =
+    typeof dispute.charge === "object" && dispute.charge !== null
+      ? stripeIdOrNull(dispute.charge.customer)
+      : "null";
+
+  deliverInBackground(
+    notifyError(
+      "[stripe/webhook] charge.dispute.created",
+      "Stripe charge dispute created. Response deadline requires manual follow-up.",
+      {
+        event_id: eventId,
+        dispute_id: dispute.id,
+        charge_id: chargeId,
+        payment_intent_id: paymentIntentId,
+        customer_id: customerId,
+        amount: String(dispute.amount),
+        currency: dispute.currency,
+        reason: dispute.reason,
+        evidence_due_by: dispute.evidence_details?.due_by
+          ? new Date(dispute.evidence_details.due_by * 1000).toISOString()
+          : "null",
+      },
+    ),
+  );
+}
+
+function stripeIdOrNull(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (typeof value === "object" && value !== null && "id" in value) {
+    const maybeId = (value as { id?: unknown }).id;
+    if (typeof maybeId === "string") return maybeId;
+  }
+  return "null";
 }
