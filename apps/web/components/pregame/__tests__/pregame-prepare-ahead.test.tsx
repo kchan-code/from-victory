@@ -44,6 +44,7 @@ import { PREGAME_SESSION_CACHE_KEY } from "@/lib/pregame/session-cache";
 // forget event call; behaviour under test is unchanged.
 vi.mock("@/lib/actions/activity", () => ({
   logActivityEvent: vi.fn(() => Promise.resolve()),
+  logPregameSelections: vi.fn(() => Promise.resolve()),
 }));
 
 // ── Mock useClipPlayer — no Web Audio, no fetch ──────────────────────────────

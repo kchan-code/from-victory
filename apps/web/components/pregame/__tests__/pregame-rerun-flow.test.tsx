@@ -32,6 +32,7 @@ import { useClipPlayer } from "@/components/pregame/useClipPlayer";
 // unchanged — the pregame event call is fire-and-forget.
 vi.mock("@/lib/actions/activity", () => ({
   logActivityEvent: vi.fn(() => Promise.resolve()),
+  logPregameSelections: vi.fn(() => Promise.resolve()),
 }));
 import { logActivityEvent } from "@/lib/actions/activity";
 

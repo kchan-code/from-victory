@@ -61,7 +61,7 @@ import {
   writePregameSession,
   type PregameSessionCache,
 } from "@/lib/pregame/session-cache";
-import { logActivityEvent } from "@/lib/actions/activity";
+import { logActivityEvent, logPregameSelections } from "@/lib/actions/activity";
 
 type Props = {
   athleteFirstName: string;
@@ -332,6 +332,16 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
       fireEvent("pregame_complete", {
         audio_completed: data.audioCompleted,
       });
+      // Anonymous per-option totals (no athlete id, cue word never sent).
+      void logPregameSelections(sport, {
+        need: data.need,
+        role: data.role,
+        adversity: data.adversity,
+        anchor: data.anchor,
+        selfTalk: data.selfTalk,
+        prayerStyle: data.prayerStyle,
+        positivePlays: data.positivePlays,
+      }).catch(() => {});
     }
     if (
       data.need !== null &&

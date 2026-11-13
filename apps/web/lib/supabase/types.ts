@@ -222,6 +222,35 @@ export type Database = {
         }
         Relationships: []
       }
+      // FV-724: hand-added. Confirm via `supabase gen types typescript
+      // --linked` after 20261113120000_pregame_selection_counts.sql is applied.
+      // ANONYMOUS monthly totals of pregame option choices: no athlete/user/
+      // session id, no row timestamps. Service-role-only: RLS enabled, no
+      // policies. period_start = first day of the UTC month.
+      pregame_selection_counts: {
+        Row: {
+          dimension: string
+          period_start: string
+          selection_count: number
+          sport: string
+          value: string
+        }
+        Insert: {
+          dimension: string
+          period_start: string
+          selection_count: number
+          sport: string
+          value: string
+        }
+        Update: {
+          dimension?: string
+          period_start?: string
+          selection_count?: number
+          sport?: string
+          value?: string
+        }
+        Relationships: []
+      }
       // FV-570: hand-added. Confirm shape via `supabase gen types typescript
       // --linked` after `supabase db push` applies
       // 20260911120000_apple_provider_access.sql to the linked project.
@@ -1100,6 +1129,13 @@ export type Database = {
       // 20260711000000_activity_rollup_reshape.sql is applied to prod.
       rollup_activity_events: {
         Args: { retention_days?: number }
+        Returns: number
+      }
+      // FV-724: hand-added. Anonymous +1 per (dimension, value) for the current
+      // UTC month. p_selections = [{ dimension, value }]. Takes NO athlete id.
+      // EXECUTE: service_role only.
+      increment_pregame_selection_counts: {
+        Args: { p_sport: string; p_selections: Json }
         Returns: number
       }
     }
