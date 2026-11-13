@@ -135,6 +135,50 @@ export function stripeFieldsFromRow(row: SubscriptionRow) {
   };
 }
 
+/** Statuses after which a subscription is over; a different one may replace it. */
+export const TERMINAL_STATUSES: ReadonlySet<string> = new Set(["canceled", "incomplete_expired"]);
+/** Statuses that grant full access (see lib/subscriptions/access-level.ts). */
+export const ENTITLING_STATUSES: ReadonlySet<string> = new Set(["active", "trialing"]);
+/**
+ * Statuses in which a subscription is still a live, billable relationship.
+ * `incomplete` is deliberately NOT live: nothing has been charged and it
+ * expires on its own, so it must not block a paid replacement.
+ */
+export const LIVE_STATUSES: ReadonlySet<string> = new Set([
+  "active",
+  "trialing",
+  "past_due",
+  "unpaid",
+  "paused",
+]);
+
+/**
+ * A customer's tracked subscription has ended. If the customer still has
+ * another live subscription, return it so the row can move to it instead of
+ * going `canceled` while the family is still paying (FV-711). Entitling
+ * subscriptions win, then the newest.
+ *
+ * Throws on a Stripe error — callers must not write `canceled` on a guess.
+ */
+export async function findSurvivingSubscription(
+  stripe: Stripe,
+  customerId: string,
+  endedSubscriptionId: string,
+  options?: Stripe.RequestOptions,
+): Promise<Stripe.Subscription | null> {
+  const subs = await stripe.subscriptions.list(
+    { customer: customerId, status: "all", limit: 20 },
+    options,
+  );
+  const live = subs.data.filter(
+    (s) => s.id !== endedSubscriptionId && LIVE_STATUSES.has(s.status),
+  );
+  if (live.length === 0) return null;
+  const rank = (s: Stripe.Subscription) => (ENTITLING_STATUSES.has(s.status) ? 1 : 0);
+  live.sort((a, b) => rank(b) - rank(a) || b.created - a.created);
+  return live[0] ?? null;
+}
+
 /**
  * Resolves the subscription reference on an invoice.
  *

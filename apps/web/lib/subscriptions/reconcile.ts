@@ -13,7 +13,12 @@ import type Stripe from "stripe";
 
 import type { Database } from "@/lib/supabase/types";
 import { getStripe } from "@/lib/stripe/server";
-import { rowFromSubscription, stripeFieldsFromRow } from "@/lib/stripe/subscription-sync";
+import {
+  TERMINAL_STATUSES,
+  findSurvivingSubscription,
+  rowFromSubscription,
+  stripeFieldsFromRow,
+} from "@/lib/stripe/subscription-sync";
 import { reconcileAppleSubscription } from "./apple-lifecycle";
 
 type ServiceClient = SupabaseClient<Database>;
@@ -163,8 +168,22 @@ async function reconcileStripeRow(
     throw err;
   }
 
-  const truth = rowFromSubscription(sub);
+  let truth = rowFromSubscription(sub);
+  // FV-711: the tracked subscription is over. If the customer has another
+  // live one (a duplicate the webhook kept off the row), move the row to it
+  // rather than marking a still-paying family canceled. Canceled rows are
+  // never re-listed by this job, so this is the only chance to catch it.
+  if (TERMINAL_STATUSES.has(truth.status)) {
+    const survivor = await findSurvivingSubscription(
+      stripe,
+      truth.stripe_customer_id,
+      row.stripe_subscription_id as string,
+      { timeout: STRIPE_CALL_TIMEOUT_MS },
+    );
+    if (survivor) truth = rowFromSubscription(survivor);
+  }
   const inSync =
+    truth.stripe_subscription_id === row.stripe_subscription_id &&
     truth.status === row.status &&
     truth.price_id === row.price_id &&
     truth.cancel_at_period_end === row.cancel_at_period_end &&
@@ -185,7 +204,11 @@ async function reconcileStripeRow(
       ...stripeFieldsFromRow(truth),
       last_stripe_event_at: new Date(newWatermarkMs).toISOString(),
     })
-    .eq("parent_id", row.parent_id);
+    .eq("parent_id", row.parent_id)
+    // The checkout handler can move the row to another subscription WITHOUT
+    // touching the watermark (FV-63), so the watermark alone would not catch
+    // that. Only write if the row still tracks the subscription we read.
+    .eq("stripe_subscription_id", row.stripe_subscription_id as string);
   q =
     row.last_stripe_event_at === null
       ? q.is("last_stripe_event_at", null)

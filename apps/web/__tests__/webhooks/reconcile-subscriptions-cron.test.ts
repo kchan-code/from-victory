@@ -10,8 +10,9 @@ vi.mock("@/lib/monitoring/deliver", () => ({ deliverInBackground: vi.fn() }));
 vi.mock("@/lib/monitoring/notify", () => ({ notifyError: vi.fn().mockResolvedValue(undefined) }));
 
 const retrieveMock = vi.fn();
+const listMock = vi.fn();
 vi.mock("@/lib/stripe/server", () => ({
-  getStripe: () => ({ subscriptions: { retrieve: retrieveMock } }),
+  getStripe: () => ({ subscriptions: { retrieve: retrieveMock, list: listMock } }),
 }));
 
 const reconcileAppleMock = vi.fn();
@@ -116,6 +117,8 @@ beforeEach(() => {
   appleFilters = [];
   stripeUpdateFilters = [];
   appleAfter = null;
+  // Default: the customer has no other subscription (no survivor).
+  listMock.mockResolvedValue({ data: [] });
   updateResult = [{ parent_id: "p" }];
   vi.spyOn(console, "error").mockImplementation(() => {});
   vi.spyOn(console, "info").mockImplementation(() => {});
@@ -203,6 +206,49 @@ describe("stripe pass", () => {
   });
 });
 
+describe("tracked subscription ended, another is live (FV-711 survivor)", () => {
+  it("moves the row to the surviving live subscription instead of canceling", async () => {
+    stripeRows = [dbRow()];
+    retrieveMock.mockResolvedValue(stripeSub({ status: "canceled" }));
+    listMock.mockResolvedValue({
+      data: [
+        { ...stripeSub({ status: "canceled" }), created: 1 },
+        { ...stripeSub({ id: "sub_2", status: "active" }), created: 2 },
+      ],
+    });
+    const body = await (await GET(makeReq(OK))).json();
+    expect(body.stripe).toMatchObject({ corrected: 1 });
+    expect(updates[0]).toMatchObject({ stripe_subscription_id: "sub_2", status: "active" });
+    expect(listMock).toHaveBeenCalledWith(
+      { customer: "cus_secret", status: "all", limit: 20 },
+      { timeout: 10_000 },
+    );
+  });
+
+  it("no survivor -> row goes canceled as before", async () => {
+    stripeRows = [dbRow()];
+    retrieveMock.mockResolvedValue(stripeSub({ status: "canceled" }));
+    await GET(makeReq(OK));
+    expect(updates[0]).toMatchObject({ stripe_subscription_id: "sub_1", status: "canceled" });
+  });
+
+  it("survivor lookup fails -> row untouched, counted failed", async () => {
+    stripeRows = [dbRow()];
+    retrieveMock.mockResolvedValue(stripeSub({ status: "canceled" }));
+    listMock.mockRejectedValue(new Error("stripe down"));
+    const body = await (await GET(makeReq(OK))).json();
+    expect(body.stripe).toMatchObject({ failed: 1, corrected: 0 });
+    expect(updates).toHaveLength(0);
+  });
+
+  it("live tracked subscription -> no survivor lookup", async () => {
+    stripeRows = [dbRow()];
+    retrieveMock.mockResolvedValue(stripeSub());
+    await GET(makeReq(OK));
+    expect(listMock).not.toHaveBeenCalled();
+  });
+});
+
 describe("stripe watermark + write guard", () => {
   const NOW = new Date("2026-11-13T04:30:07.400Z");
   beforeEach(() => {
@@ -221,6 +267,8 @@ describe("stripe watermark + write guard", () => {
     expect(updates[0]?.last_stripe_event_at).toBe(expected);
     expect(stripeUpdateFilters).toContainEqual(["is", "last_stripe_event_at", null]);
     expect(stripeUpdateFilters).toContainEqual(["eq", "parent_id", dbRow().parent_id]);
+    // Guarded on the tracked subscription too (checkout can move it without a watermark).
+    expect(stripeUpdateFilters).toContainEqual(["eq", "stripe_subscription_id", "sub_1"]);
   });
 
   it("older stored watermark: advances it, guarded by equality on the value read", async () => {
