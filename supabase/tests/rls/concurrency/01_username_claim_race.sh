@@ -25,11 +25,45 @@ D='20000000-0000-4000-8000-0000000006c2'
 HC=$(printf 'c%.0s' {1..64})
 HD=$(printf 'd%.0s' {1..64})
 NAME='race_name_634'
+S1=""
+CLEANED=0
+
+DB_HOST="$(python3 - "$DB_URL" <<'PY'
+import sys
+from urllib.parse import urlparse
+
+url = urlparse(sys.argv[1])
+print(url.hostname or "")
+PY
+)"
+
+case "$DB_HOST" in
+  ""|localhost|127.0.0.1|::1)
+    ;;
+  *)
+    echo "::error::FV-634 race harness refused non-local DB host '$DB_HOST'. Use localhost or 127.0.0.1."
+    exit 1
+    ;;
+esac
 
 cleanup() {
-  "${PSQL[@]}" -c "delete from auth.users where id in ('$C','$D');" >/dev/null 2>&1 || true
+  if [ "$CLEANED" -eq 1 ]; then
+    return
+  fi
+  CLEANED=1
+  if [ -n "${S1:-}" ] && kill -0 "$S1" >/dev/null 2>&1; then
+    kill "$S1" >/dev/null 2>&1 || true
+    wait "$S1" >/dev/null 2>&1 || true
+  fi
+  "${PSQL[@]}" >/dev/null <<SQL || true
+set role service_role;
+delete from public.parent_athlete_links where parent_id = '$P' and athlete_id in ('$C', '$D');
+delete from public.device_pairings where code_sha256 in ('$HC', '$HD');
+delete from public.profiles where id in ('$C', '$D');
+delete from auth.users where id in ('$C', '$D');
+SQL
 }
-trap cleanup EXIT
+trap cleanup EXIT INT TERM
 cleanup
 
 "${PSQL[@]}" >/dev/null <<SQL
@@ -72,6 +106,7 @@ rc=$?
 set -e
 elapsed=$(( $(date +%s) - start ))
 wait "$S1"
+S1=""
 
 if [ "$rc" -eq 0 ]; then
   echo "::error::FV-634 race FAIL: second concurrent claim of the same username SUCCEEDED: $out"; exit 1
@@ -95,3 +130,5 @@ end \$\$;
 SQL
 
 echo "  [PASS] concurrency/01_username_claim_race (FV-634: second claim blocked ${elapsed}s, then 23505; invite kept)"
+
+cleanup

@@ -170,8 +170,15 @@ beforeEach(() => {
 });
 afterEach(() => {
   vi.restoreAllMocks();
-  // No log line may ever carry a raw code or a code hash.
-  const secrets = [CODE, sha(CODE), LEGACY_CODE, sha(LEGACY_CODE)];
+  // No log line may ever carry a raw code, a code hash, or a typed password.
+  const secrets = [
+    CODE,
+    sha(CODE),
+    LEGACY_CODE,
+    sha(LEGACY_CODE),
+    "password123",
+    "different1",
+  ];
   for (const line of logs) {
     for (const s of secrets) expect(line).not.toContain(s);
     expect(line).not.toMatch(/[0-9a-f]{64}/);
