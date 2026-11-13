@@ -289,6 +289,22 @@ export default function PrivacyPage() {
           it that no individual athlete&apos;s choices can be identified. Anything an athlete
           types is never counted.
         </p>
+        <p className="mt-3">
+          We collect this ourselves, in our own database. We do not use a third-party
+          analytics or advertising service for it, we do not share it with anyone for their
+          own use, and we do not use it to advertise to anyone or to build a profile of an
+          athlete. It is used to count how many athletes are active and returning and to find
+          problems. A parent cannot see these records; the parent dashboard shows only the
+          participation rhythm described in &ldquo;The athlete&apos;s private space&rdquo;
+          below.
+        </p>
+        <p className="mt-3">
+          Individual usage records are deleted after about 90 days. Before they are deleted
+          they are added to running totals (for example, the number of athletes active in a
+          week) that contain no account identifiers and cannot be traced back to an athlete.
+          This applies to every athlete account, including accounts for athletes ages 13 to
+          17.
+        </p>
 
         <SubHeading>j. Error reports</SubHeading>
         <p>
