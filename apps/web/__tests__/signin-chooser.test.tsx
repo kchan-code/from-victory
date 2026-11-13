@@ -61,6 +61,12 @@ vi.mock("@/lib/actions/auth", () => ({
   signIn: vi.fn(),
   forgetDevice: vi.fn(),
 }));
+vi.mock("@/lib/actions/email-signup", () => ({
+  startEmailSignup: vi.fn(),
+  completeEmailSignup: vi.fn(),
+  verifyEmailOnly: vi.fn(),
+  resendSignupCode: vi.fn(),
+}));
 vi.mock("@/lib/actions/pairings", () => ({
   athleteUsernameSignIn: vi.fn(),
   athleteSignIn: vi.fn(),

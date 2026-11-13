@@ -20,8 +20,14 @@ vi.mock("react-dom", async (importOriginal) => {
   };
 });
 
-vi.mock("@/lib/actions/auth", () => ({ signUp: vi.fn() }));
-vi.mock("@/lib/actions/auth-adult", () => ({ signUpAdultAthlete: vi.fn() }));
+vi.mock("server-only", () => ({}));
+vi.mock("@/lib/actions/auth", () => ({ signUp: vi.fn(), signIn: vi.fn() }));
+vi.mock("@/lib/actions/email-signup", () => ({
+  startEmailSignup: vi.fn(),
+  completeEmailSignup: vi.fn(),
+  verifyEmailOnly: vi.fn(),
+  resendSignupCode: vi.fn(),
+}));
 
 import { AdultSignUpForm } from "@/components/auth/AdultSignUpForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";

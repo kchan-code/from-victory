@@ -30,6 +30,12 @@ vi.mock("@/lib/actions/invites", () => ({
   claimAthleteInvite: vi.fn(),
 }));
 vi.mock("@/lib/actions/auth", () => ({ signIn: vi.fn() }));
+vi.mock("@/lib/actions/email-signup", () => ({
+  startEmailSignup: vi.fn(),
+  completeEmailSignup: vi.fn(),
+  verifyEmailOnly: vi.fn(),
+  resendSignupCode: vi.fn(),
+}));
 vi.mock("@/lib/actions/pairings", () => ({ athleteUsernameSignIn: vi.fn() }));
 vi.mock("@/lib/pregame/session-cache", () => ({ clearPregameSession: vi.fn() }));
 vi.mock("next/image", () => ({

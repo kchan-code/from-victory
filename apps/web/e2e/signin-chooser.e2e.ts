@@ -9,6 +9,11 @@
  */
 import { expect, test } from "@playwright/test";
 
+const RESTRICTED_SHELL_UAS = [
+  "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 FVNativeShell/1",
+  "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 FVNativeShell/1 (play)",
+] as const;
+
 test.describe("Signed-out welcome doors", () => {
   test("Welcome chooser routes parent and invite, and hides 18+ when the flag is off", async ({
     page,
@@ -33,9 +38,13 @@ test.describe("Signed-out welcome doors", () => {
     await expect(page.getByTestId("signin-door-adult")).toHaveCount(0);
 
     await page.getByTestId("signin-show-form").click();
-    await expect(page.getByLabel("Email")).toBeVisible();
+    // "Email" is a substring of the athlete field's "Username or email".
+    // Both inputs are in the DOM, so the locator must be exact.
+    await expect(page.getByLabel("Email", { exact: true })).toBeVisible();
     await page.getByTestId("signin-tab-athlete").click();
-    await expect(page.getByLabel("Username or email")).toBeVisible();
+    await expect(
+      page.getByLabel("Username or email", { exact: true }),
+    ).toBeVisible();
   });
 
   test("parent signup says 7 days and has no 18+ card when the flag is off", async ({
@@ -57,5 +66,48 @@ test.describe("Signed-out welcome doors", () => {
   test("adult signup route is closed when the flag is off", async ({ page }) => {
     const response = await page.goto("/signup/athlete");
     expect(response?.status()).toBe(404);
+  });
+
+  test("restricted shell user agent shows the welcome doors and no price or trial line", async ({
+    browser,
+  }) => {
+    for (const userAgent of RESTRICTED_SHELL_UAS) {
+      const context = await browser.newContext({
+        userAgent,
+        viewport: { width: 390, height: 844 },
+      });
+      const page = await context.newPage();
+      try {
+        await page.goto("/signin");
+        await expect(
+          page.getByRole("heading", { name: "Welcome", exact: true }),
+        ).toBeVisible();
+        await expect(page.getByTestId("signin-door-parent")).toHaveAttribute(
+          "href",
+          "/signup",
+        );
+        await expect(page.getByTestId("signin-have-invite")).toHaveAttribute(
+          "href",
+          "/invite",
+        );
+        await expect(page.getByTestId("signin-door-adult")).toHaveCount(0);
+        const doors = page.locator("a");
+        const hrefs = await doors.evaluateAll((els) =>
+          els.map((el) => el.getAttribute("href") ?? ""),
+        );
+        expect(hrefs.some((href) => /subscribe|checkout|stripe/i.test(href))).toBe(
+          false,
+        );
+
+        await page.goto("/signup");
+        const signup = (await page.locator("#main-content").innerText()).toLowerCase();
+        expect(signup).not.toMatch(/\$\d/);
+        expect(signup).not.toContain("7 days");
+        expect(signup).not.toContain("14 days");
+        expect(signup).not.toContain("free trial");
+      } finally {
+        await context.close();
+      }
+    }
   });
 });
