@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 import { AnalyticsMount } from "./_components/AnalyticsMount";
+import { getAnalyticsMountContext } from "@/lib/analytics/viewer";
 import { ServiceWorkerRegistrar } from "./_components/ServiceWorkerRegistrar";
 import { NativeInviteLinkHandler } from "@/components/native/NativeInviteLinkHandler";
 // FV-617: brand fonts are self-hosted via next/font/local (see ./fonts).
@@ -65,11 +66,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // FV-727: shell + signed-in minor are known before HTML is sent, so the
+  // analytics script is absent from the response rather than removed later.
+  // Reads cookies/headers, so routes under this layout render dynamically.
+  const analytics = await getAnalyticsMountContext();
+
   return (
     <html lang="en" className={fontVariables} suppressHydrationWarning>
       <body className="min-h-screen bg-onyx text-cream antialiased">
@@ -100,8 +106,12 @@ export default function RootLayout({
         {/* FV-630: routes invite universal links in the iOS app. No-op on
             the web / PWA (no window.Capacitor). */}
         <NativeInviteLinkHandler />
-        {/* FV-395: Vercel Web Analytics — public-marketing-only via beforeSend allowlist, renders nothing */}
-        <AnalyticsMount />
+        {/* FV-395 / FV-727: Vercel Web Analytics. Marketing paths only.
+            Never a signed-in minor, and never inside a store shell. */}
+        <AnalyticsMount
+          nativeShell={analytics.nativeShell}
+          session={analytics.session}
+        />
       </body>
     </html>
   );
