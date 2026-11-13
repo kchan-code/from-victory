@@ -45,10 +45,11 @@ export default async function UpdateRequiredPage(props: {
     parseUpdatePlatformParam((await props.searchParams)?.p);
   if (platform === null) redirect("/");
 
+  // Copy: KC, 2026-11-13.
   const store =
     platform === "ios"
-      ? { href: APP_STORE_URL, label: "Update on the App Store" }
-      : { href: PLAY_STORE_URL, label: "Update on Google Play" };
+      ? { href: APP_STORE_URL, name: "the App Store", label: "Update on the App Store" }
+      : { href: PLAY_STORE_URL, name: "Google Play", label: "Update on Google Play" };
 
   return (
     <main
@@ -75,15 +76,22 @@ export default async function UpdateRequiredPage(props: {
       </header>
 
       <div className="flex-1 flex flex-col justify-center max-w-[420px] mx-auto w-full pt-8 pb-10">
-        <p className="font-mono font-semibold text-[11px] uppercase tracking-[0.22em] text-gold mb-4">
-          Update required
-        </p>
         <h1 className="font-display font-extrabold uppercase tracking-[0.03em] text-cream text-[32px] sm:text-[36px] leading-[1.05] mb-5">
-          Update the app to keep training.
+          Update required
         </h1>
-        <p className="font-body text-cream/70 text-[15px] leading-relaxed mb-8">
-          This version of From Victory is no longer supported. Your account
-          and everything in it stay exactly as they are.
+        <p
+          data-testid="update-required-body"
+          className="font-body text-cream/70 text-[15px] leading-relaxed mb-8"
+        >
+          To continue, update to the latest version on{" "}
+          <a
+            href={store.href}
+            data-testid="update-required-inline-link"
+            className="text-gold underline underline-offset-2 hover:text-gold-bright focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold rounded-sm"
+          >
+            {store.name}
+          </a>
+          .
         </p>
         <a
           href={store.href}

@@ -49,8 +49,12 @@ describe("/update-required", () => {
   it("a gated Android app gets the Google Play link", async () => {
     asUserAgent(ANDROID_LEGACY);
     const { getByTestId, getByRole } = render(await UpdateRequiredPage({}));
-    expect(getByRole("heading", { level: 1 }).textContent).toBe(
-      "Update the app to keep training.",
+    expect(getByRole("heading", { level: 1 }).textContent).toBe("Update required");
+    expect(getByTestId("update-required-body").textContent).toBe(
+      "To continue, update to the latest version on Google Play.",
+    );
+    expect(getByTestId("update-required-inline-link").getAttribute("href")).toBe(
+      "https://play.google.com/store/apps/details?id=com.fromvictoryapp.app",
     );
     const link = getByTestId("update-required-store-link");
     expect(link.getAttribute("href")).toBe(
@@ -67,6 +71,12 @@ describe("/update-required", () => {
       "https://apps.apple.com/us/app/from-victory/id6804743047",
     );
     expect(link.textContent).toBe("Update on the App Store");
+    expect(getByTestId("update-required-body").textContent).toBe(
+      "To continue, update to the latest version on the App Store.",
+    );
+    expect(getByTestId("update-required-inline-link").getAttribute("href")).toBe(
+      "https://apps.apple.com/us/app/from-victory/id6804743047",
+    );
   });
 
   it("shows no price, purchase or billing language", async () => {
