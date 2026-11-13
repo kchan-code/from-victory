@@ -12,9 +12,20 @@ vi.mock("server-only", () => ({}));
 const verifyCalls: Array<{ idToken: string; audience: string }> = [];
 let libraryThrows = false;
 let libraryPayload: Record<string, unknown> | undefined;
+let certsThrow = false;
+let certCalls = 0;
+let constructorThrows = false;
 
 vi.mock("google-auth-library", () => ({
   OAuth2Client: class {
+    constructor() {
+      if (constructorThrows) throw new Error("JWT_LEAK_SENTINEL constructor");
+    }
+    async getFederatedSignonCertsAsync() {
+      certCalls += 1;
+      if (certsThrow) throw new Error("JWT_LEAK_SENTINEL certs");
+      return {};
+    }
     async verifyIdToken(opts: { idToken: string; audience: string }) {
       verifyCalls.push(opts);
       if (libraryThrows) throw new Error("JWT_LEAK_SENTINEL in library error");
@@ -24,13 +35,23 @@ vi.mock("google-auth-library", () => ({
 }));
 
 import {
+  PushVerifierUnavailableError,
   resetPlayAuthCacheForTests,
-  verifyPubSubPush,
+  verifyPubSubPush as verifyPubSubPushRaw,
+  type PushAuthDeps,
   type VerifyGoogleIdToken,
 } from "@/lib/subscriptions/google-play-auth";
 
 const AUD = "https://fromvictoryapp.example/api/webhooks/google-play";
 const SA = "push@project.iam.gserviceaccount.example";
+
+// Every returned result is collected and leak-checked in afterEach.
+const outputs: string[] = [];
+async function verifyPubSubPush(authorization: string | null, d: PushAuthDeps = {}) {
+  const r = await verifyPubSubPushRaw(authorization, d);
+  outputs.push(JSON.stringify(r));
+  return r;
+}
 const GOOD_CLAIMS = { iss: "https://accounts.google.com", email: SA, email_verified: true };
 
 const deps = (verifyIdToken: VerifyGoogleIdToken) => ({ verifyIdToken, audience: AUD, serviceAccount: SA });
@@ -40,8 +61,16 @@ beforeEach(() => {
   verifyCalls.length = 0;
   libraryThrows = false;
   libraryPayload = { ...GOOD_CLAIMS };
+  certsThrow = false;
+  certCalls = 0;
+  constructorThrows = false;
+  outputs.length = 0;
 });
 afterEach(() => {
+  const haystack = outputs.join("\n");
+  for (const secret of [SA, "JWT_LEAK_SENTINEL", "JWT_OK", "J_ENV"]) {
+    expect(haystack, `leaked ${secret}`).not.toContain(secret);
+  }
   delete process.env.GOOGLE_PLAY_PUBSUB_AUDIENCE;
   delete process.env.GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT;
 });
@@ -158,5 +187,75 @@ describe("verifyPubSubPush", () => {
     const r = await verifyPubSubPush("Bearer J_ENV");
     expect(r).toEqual({ ok: false, status: 401, reason: "invalid_token" });
     expect(JSON.stringify(r)).not.toContain("JWT_LEAK_SENTINEL");
+  });
+
+  it("an injected verifier that throws the tagged error maps to 503 verifier_unavailable", async () => {
+    const r = await verifyPubSubPush(
+      "Bearer J",
+      deps(async () => {
+        throw new PushVerifierUnavailableError();
+      }),
+    );
+    expect(r).toEqual({ ok: false, status: 503, reason: "verifier_unavailable" });
+  });
+
+  it("an untagged throw is still an invalid token (401), not an outage", async () => {
+    const r = await verifyPubSubPush("Bearer J", deps(async () => Promise.reject(new Error("nope"))));
+    expect(r).toMatchObject({ status: 401, reason: "invalid_token" });
+  });
+
+  it("the default verifier maps a signing-certificate fetch failure to 503 and never verifies", async () => {
+    process.env.GOOGLE_PLAY_PUBSUB_AUDIENCE = AUD;
+    process.env.GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT = SA;
+    certsThrow = true;
+    const r = await verifyPubSubPush("Bearer J_ENV");
+    expect(r).toEqual({ ok: false, status: 503, reason: "verifier_unavailable" });
+    expect(verifyCalls).toEqual([]);
+  });
+
+  it("the default verifier maps a client construction failure to 503", async () => {
+    process.env.GOOGLE_PLAY_PUBSUB_AUDIENCE = AUD;
+    process.env.GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT = SA;
+    constructorThrows = true;
+    expect(await verifyPubSubPush("Bearer J_ENV")).toMatchObject({ status: 503, reason: "verifier_unavailable" });
+  });
+
+  it("the default verifier recovers once certificates are available again", async () => {
+    process.env.GOOGLE_PLAY_PUBSUB_AUDIENCE = AUD;
+    process.env.GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT = SA;
+    certsThrow = true;
+    await verifyPubSubPush("Bearer J_ENV");
+    certsThrow = false;
+    expect(await verifyPubSubPush("Bearer J_ENV")).toEqual({ ok: true });
+    expect(certCalls).toBe(2);
+  });
+
+  for (const [name, d] of [
+    ["audience", { audience: "   ", serviceAccount: SA }],
+    ["service account", { audience: AUD, serviceAccount: "\t " }],
+  ] as const) {
+    it(`a whitespace-only ${name} is treated as unset (403, no verification)`, async () => {
+      const verify = vi.fn(async () => ({ ...GOOD_CLAIMS }));
+      expect(await verifyPubSubPush("Bearer J", { ...d, verifyIdToken: verify })).toEqual({
+        ok: false,
+        status: 403,
+        reason: "not_configured",
+      });
+      expect(verify).not.toHaveBeenCalled();
+    });
+  }
+
+  it("config values are trimmed before use", async () => {
+    const seen: string[] = [];
+    const r = await verifyPubSubPush("Bearer J", {
+      audience: `  ${AUD} `,
+      serviceAccount: ` ${SA} `,
+      verifyIdToken: async (_t, a) => {
+        seen.push(a);
+        return { ...GOOD_CLAIMS };
+      },
+    });
+    expect(r).toEqual({ ok: true });
+    expect(seen).toEqual([AUD]);
   });
 });

@@ -139,22 +139,35 @@ export async function processGoogleNotification(
     .maybeSingle();
   if (rowError) dbFail("row_read", rowError);
 
-  // A void for a token we do not own has nothing to remove. (If a bound
-  // purchase is unwritten, a later ordinary message or the client submit
-  // writes it from Google's then-current state.)
-  if (voided && !row) return "ignored";
-
+  // Only a genuinely transient failure (`unavailable`) may be retried. Anything
+  // else is permanent for this message, and retrying it would loop forever.
   const got = await getSubscriptionPurchaseV2(token);
   if (!got.ok) {
-    if (voided && row) {
-      // Access removal must not depend on Google's read succeeding.
-      await forceNonGranting(service, row.id, now);
-      console.error(`${P} voided purchase: Google read failed (${got.reason}); access removed.`);
-      alertOps(`${P} voided purchase read failed`, "Google read failed for a voided purchase; access removed, will retry", {
-        row_id: row.id,
-        reason: got.reason,
-      });
-      return "retry";
+    if (voided) {
+      if (row) {
+        // Access removal must not depend on Google's read succeeding. An
+        // already-expired row is left alone (its expiry is not rewritten).
+        await forceNonGranting(service, row.id, now);
+        const transient = got.reason === "unavailable";
+        console.error(`${P} voided purchase: Google read failed (${got.reason}); access removed.`);
+        alertOps(
+          `${P} voided purchase read failed`,
+          transient
+            ? "Google read failed for a voided purchase; access removed, will retry"
+            : "Google could not be read for a voided purchase; access removed, not retrying",
+          { row_id: row.id, reason: got.reason },
+        );
+        return transient ? "retry" : "applied";
+      }
+      // A void for a token we do not hold yet: only a transient failure retries.
+      if (got.reason === "unavailable") {
+        console.error(`${P} voided purchase: Google read failed (${got.reason}).`);
+        alertOps(`${P} voided purchase read failed`, "Google read failed for a voided purchase we do not hold yet; will retry", {
+          reason: got.reason,
+        });
+        return "retry";
+      }
+      return "ignored";
     }
     if (got.reason === "invalid_token") {
       // Google does not know the token: not retryable. For a row we own that is
@@ -167,25 +180,38 @@ export async function processGoogleNotification(
       }
       return "ignored";
     }
-    console.error(`${P} Google read failed (${got.reason}).`);
-    alertOps(`${P} Google read failed`, "Could not read the subscription from Google; will retry", {
+    if (got.reason === "unavailable") {
+      // Pub/Sub redelivers with backoff; the stall checker is the backstop, so
+      // no alert email per delivery.
+      console.warn(`${P} Google read unavailable; will be redelivered.`);
+      return "retry";
+    }
+    // unparseable / unknown_state: permanent. A new Google state must not turn
+    // into an endless redelivery loop.
+    console.error(`${P} Google read failed (${got.reason}); not retrying.`);
+    alertOps(`${P} Google answer unreadable`, "Google returned a subscription we cannot read; message dropped", {
       reason: got.reason,
+      ...(row ? { row_id: row.id } : {}),
     });
-    return "retry";
+    return "ignored";
   }
 
   const purchase = got.purchase;
   return row
     ? applyToOwnedRow(service, row, token, purchase, voided, now)
-    : applyToUnownedToken(service, token, purchase, now);
+    : applyToUnownedToken(service, token, purchase, now, voided);
 }
 
-/** Sets a row to a non-granting state with an expiry that is not in the future. */
+/**
+ * Sets a row to a non-granting state with an expiry that is not in the future.
+ * Skips a row that is already `expired` so its expiry is never rewritten.
+ */
 async function forceNonGranting(service: GoogleServiceClient, rowId: string, now: Date): Promise<void> {
   const { error } = await service
     .from("google_subscriptions")
     .update({ status: "expired", expires_at: now.toISOString(), auto_renewing: false })
-    .eq("id", rowId);
+    .eq("id", rowId)
+    .neq("status", "expired");
   if (error) dbFail("force_non_granting", error);
 }
 
@@ -217,6 +243,9 @@ async function applyToOwnedRow(
   }
 
   let level = googleSubscriptionAccessLevel(purchase.status, purchase.expiresAt, now);
+  // Only a forced void write may overwrite `expired` with something else; a
+  // write that leaves the row granting is conditional in SQL (see below).
+  let forced = false;
 
   if (voided && level !== "blocked") {
     // Google still reports a granting state for a voided purchase. A refund or
@@ -224,6 +253,7 @@ async function applyToOwnedRow(
     // the future (the status vocabulary is fixed by the table CHECK).
     fields = { ...fields, status: "expired", expires_at: nowIso, auto_renewing: false };
     level = "blocked";
+    forced = true;
     console.warn(`${P} voided purchase still granting at Google; forced non-granting.`);
     alertOps(`${P} voided purchase forced non-granting`, "Google still reported a granting state for a voided purchase", {
       row_id: row.id,
@@ -240,8 +270,23 @@ async function applyToOwnedRow(
     });
   }
 
-  const { error } = await service.from("google_subscriptions").update(fields).eq("id", row.id);
+  // `level` is blocked after the two overrides above, so recompute whether the
+  // Google-reported state itself grants: that is what must be conditional.
+  const googleGrants = googleSubscriptionAccessLevel(purchase.status, purchase.expiresAt, now) !== "blocked";
+  const conditional = googleGrants && !forced && row.status !== "expired";
+  let query = service.from("google_subscriptions").update(fields).eq("id", row.id);
+  if (conditional) query = query.neq("status", "expired");
+  const { data: written, error } = await query.select("id").maybeSingle();
   if (error) dbFail("subscription_refresh", error);
+  if (conditional && !written) {
+    // The row was closed (a refund) between our read and this write: it stays
+    // closed. Nothing is written and nothing is acknowledged.
+    console.warn(`${P} expired row not re-opened by a later message.`);
+    alertOps(`${P} expired row not re-opened`, "Google reported a granting state for a row held as expired; left closed", {
+      row_id: row.id,
+    });
+    return "applied";
+  }
 
   // Acknowledge only what Google says is unacknowledged and grants full access
   // (closes "started pending, became active later").
@@ -257,9 +302,17 @@ async function applyToOwnedRow(
 async function applyToUnownedToken(
   service: GoogleServiceClient,
   token: string,
-  purchase: ParsedGooglePurchase,
+  googlePurchase: ParsedGooglePurchase,
   now: Date,
+  voided: boolean,
 ): Promise<RtdnOutcome> {
+  // A void that arrives before the row exists writes the row ALREADY CLOSED, so
+  // a later client submit or ordinary message cannot create a granting row for
+  // a refunded purchase. It is never acknowledged.
+  const purchase: ParsedGooglePurchase = voided
+    ? { ...googlePurchase, status: "expired", expiresAt: now.toISOString(), autoRenewing: false }
+    : googlePurchase;
+
   // Linked token we may already own (rule c).
   let linkedRow: { id: string; payer_id: string } | null = null;
   if (purchase.linkedPurchaseToken) {
@@ -287,12 +340,15 @@ async function applyToUnownedToken(
 
   const payerId = bindingPayerId ?? linkedRow?.payer_id ?? null;
   if (!payerId) {
-    // Rule d.
+    // Rule d. (Nothing can be written later for an unbound purchase either, so
+    // an unbound void needs no alert of its own.)
     console.warn(`${P} rejected: purchase not bound to a payer. Not acknowledged.`);
-    alertOps(
-      `${P} unbound purchase refused`,
-      "A purchase arrived with a missing or unmatched account id; nothing granted, not acknowledged",
-    );
+    if (!voided) {
+      alertOps(
+        `${P} unbound purchase refused`,
+        "A purchase arrived with a missing or unmatched account id; nothing granted, not acknowledged",
+      );
+    }
     return "ignored";
   }
 
@@ -336,6 +392,8 @@ async function applyToUnownedToken(
     await refreshLinkedRow(service, payerId, purchase.linkedPurchaseToken, linkedRow.id, nowIso, P);
   }
 
+  // A closed (voided) write has status `expired`, so level is blocked and this
+  // never acknowledges.
   const level = googleSubscriptionAccessLevel(purchase.status, purchase.expiresAt, now);
   if (level === "full" && !purchase.acknowledged) {
     const acked = await acknowledgeAndRecord(service, written.rowId, purchase.productId, token, P);

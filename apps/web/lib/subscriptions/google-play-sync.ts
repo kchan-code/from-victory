@@ -102,17 +102,44 @@ export async function writeMirrorRow(
 ): Promise<WriteMirrorRowResult> {
   const fields = mirrorFields(purchase, verifiedAtIso);
 
-  const update = async (): Promise<{ kind: "ok"; rowId: string } | { kind: "conflict" }> => {
-    const { data, error } = await service
+  // A write that leaves the row granting must never overwrite `expired`: the
+  // check is made IN SQL (`status <> 'expired'`), not from an earlier read,
+  // because a refund can close the row between that read and this write.
+  const wouldGrant =
+    googleSubscriptionAccessLevel(purchase.status, purchase.expiresAt, new Date(verifiedAtIso)) !== "blocked";
+
+  const touchClosed = async (rowId: string): Promise<WriteMirrorRowResult> => {
+    const { error: touchError } = await service
+      .from("google_subscriptions")
+      .update({ last_verified_at: verifiedAtIso })
+      .eq("id", rowId);
+    if (touchError) dbFail("subscription_touch", touchError);
+    return { kind: "closed", rowId };
+  };
+
+  const update = async (): Promise<WriteMirrorRowResult> => {
+    let query = service
       .from("google_subscriptions")
       .update(fields)
       .eq("purchase_token", purchaseToken)
-      .eq("payer_id", payerId)
-      .select("id")
-      .maybeSingle();
+      .eq("payer_id", payerId);
+    if (wouldGrant) query = query.neq("status", "expired");
+    const { data, error } = await query.select("id").maybeSingle();
     if (error) dbFail("subscription_update", error);
+    if (data) return { kind: "ok", rowId: data.id };
     // No row matched (payer, token): someone else owns the token.
-    return data ? { kind: "ok", rowId: data.id } : { kind: "conflict" };
+    if (!wouldGrant) return { kind: "conflict" };
+
+    // The conditional update matched nothing: either the row was closed
+    // concurrently (this payer + expired) or it is not this payer's.
+    const { data: again, error: againError } = await service
+      .from("google_subscriptions")
+      .select("id, payer_id, status")
+      .eq("purchase_token", purchaseToken)
+      .maybeSingle();
+    if (againError) dbFail("subscription_read", againError);
+    if (again && again.payer_id === payerId && again.status === "expired") return touchClosed(again.id);
+    return { kind: "conflict" };
   };
 
   const { data: existing, error: readError } = await service
@@ -123,16 +150,7 @@ export async function writeMirrorRow(
   if (readError) dbFail("subscription_read", readError);
   if (existing) {
     if (existing.payer_id !== payerId) return { kind: "conflict" };
-    const wouldGrant =
-      googleSubscriptionAccessLevel(purchase.status, purchase.expiresAt, new Date(verifiedAtIso)) !== "blocked";
-    if (existing.status === "expired" && wouldGrant) {
-      const { error: touchError } = await service
-        .from("google_subscriptions")
-        .update({ last_verified_at: verifiedAtIso })
-        .eq("id", existing.id);
-      if (touchError) dbFail("subscription_touch", touchError);
-      return { kind: "closed", rowId: existing.id };
-    }
+    if (existing.status === "expired" && wouldGrant) return touchClosed(existing.id);
     return update();
   }
 

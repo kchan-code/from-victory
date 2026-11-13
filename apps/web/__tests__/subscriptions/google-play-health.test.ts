@@ -57,7 +57,13 @@ describe("isGoogleRowStalled (pure)", () => {
     expect(isGoogleRowStalled({ status: "active", expires_at: hoursAgo(30), last_verified_at: null }, NOW)).toBe(true);
     expect(isGoogleRowStalled({ status: "canceled", expires_at: hoursAgo(30), last_verified_at: hoursAgo(100) }, NOW)).toBe(true);
     expect(isGoogleRowStalled({ status: "in_grace_period", expires_at: hoursAgo(25), last_verified_at: hoursAgo(25) }, NOW)).toBe(true);
-    expect(isGoogleRowStalled({ status: "on_hold", expires_at: hoursAgo(48), last_verified_at: null }, NOW)).toBe(true);
+  });
+
+  // CHANGED (QA fix 4): on_hold used to be pinned as stalled. A held row has a
+  // past expiry by definition and gets no notification during the hold.
+  it("never counts an on_hold row, however old", () => {
+    expect(isGoogleRowStalled({ status: "on_hold", expires_at: hoursAgo(48), last_verified_at: null }, NOW)).toBe(false);
+    expect(isGoogleRowStalled({ status: "on_hold", expires_at: hoursAgo(5000), last_verified_at: hoursAgo(5000) }, NOW)).toBe(false);
   });
 
   it("does not flag a row inside the threshold, or one verified recently", () => {
@@ -110,8 +116,10 @@ describe("checkGooglePipelineStalls", () => {
   it("alerts with a COUNT only (no row id, token, payer or product)", async () => {
     rows = [
       { status: "active", expires_at: hoursAgo(30), last_verified_at: null, id: "row-1", purchase_token: "TOKEN_SENTINEL", payer_id: "PAYER_SENTINEL" },
-      { status: "on_hold", expires_at: hoursAgo(80), last_verified_at: hoursAgo(80) },
+      { status: "canceled", expires_at: hoursAgo(80), last_verified_at: hoursAgo(80) },
       { status: "active", expires_at: hoursAgo(30), last_verified_at: hoursAgo(1) },
+      // Even if one reached the checker, an on_hold row is never counted.
+      { status: "on_hold", expires_at: hoursAgo(80), last_verified_at: hoursAgo(80) },
     ];
     expect(await checkGooglePipelineStalls({ now: () => NOW })).toBe(2);
     expect(alerts).toHaveLength(1);
@@ -122,7 +130,7 @@ describe("checkGooglePipelineStalls", () => {
 
   it("scopes the query to granting statuses with an expiry older than the threshold", async () => {
     await checkGooglePipelineStalls({ now: () => NOW });
-    expect(queries[0]?.in).toEqual(["status", ["active", "in_grace_period", "canceled", "on_hold"]]);
+    expect(queries[0]?.in).toEqual(["status", ["active", "in_grace_period", "canceled"]]);
     expect(queries[0]?.lt).toEqual(["expires_at", hoursAgo(GOOGLE_STALL_THRESHOLD_HOURS)]);
   });
 

@@ -51,6 +51,10 @@ let jwts: Map<string, JwtScenario>;
 
 vi.mock("google-auth-library", () => ({
   OAuth2Client: class {
+    async getFederatedSignonCertsAsync() {
+      if (certsFail) throw new Error("certs fetch failed JWT_SENTINEL_OK_41ce");
+      return {};
+    }
     async verifyIdToken(opts: { idToken: string; audience: string }) {
       const s = jwts.get(opts.idToken);
       if (!s || s === "bad_signature") throw new Error(`bad signature ${opts.idToken}`);
@@ -71,8 +75,12 @@ let tables: Record<string, Row[]>;
 let events: string[];
 let nextRowId: number;
 let createServiceCalls: number;
-let dbFault: { table: string; op: string } | null;
+/** `skip`: let that many matching operations succeed first (to hit a later query). */
+let dbFault: { table: string; op: string; skip?: number } | null;
+let faultSeen: number;
+let beforeExec: ((table: string, op: "select" | "insert" | "update") => void) | null;
 let rowAtAck: Row | null;
+let certsFail: boolean;
 
 vi.mock("@/lib/supabase/service", () => ({
   createServiceClient: () => {
@@ -90,10 +98,14 @@ function builder(table: string) {
   let op: "select" | "insert" | "update" = "select";
   let payload: Row = {};
   const filters: Array<[string, unknown]> = [];
-  const matches = (r: Row) => filters.every(([c, v]) => r[c] === v);
+  const notFilters: Array<[string, unknown]> = [];
+  const matches = (r: Row) =>
+    filters.every(([c, v]) => r[c] === v) && notFilters.every(([c, v]) => r[c] !== v);
 
   function exec(): { data: unknown; error: { code?: string; message: string } | null } {
-    if (dbFault && dbFault.table === table && dbFault.op === op) {
+    // Test hook: lets a test change the world between the code's read and its write.
+    if (beforeExec) beforeExec(table, op);
+    if (dbFault && dbFault.table === table && dbFault.op === op && faultSeen++ >= (dbFault.skip ?? 0)) {
       return {
         data: null,
         error: {
@@ -126,6 +138,10 @@ function builder(table: string) {
     select: () => api,
     eq: (c: string, v: unknown) => {
       filters.push([c, v]);
+      return api;
+    },
+    neq: (c: string, v: unknown) => {
+      notFilters.push([c, v]);
       return api;
     },
     insert: (p: Row) => {
@@ -285,6 +301,9 @@ beforeEach(() => {
   nextRowId = 1;
   createServiceCalls = 0;
   dbFault = null;
+  faultSeen = 0;
+  beforeExec = null;
+  certsFail = false;
   rowAtAck = null;
   alerts = [];
   logged = [];
@@ -311,6 +330,7 @@ afterEach(() => {
     PAYER,
     OTHER_PAYER,
     JWT_OK,
+    SERVICE_ACCOUNT,
     "FAKE_ACCESS_TOKEN",
     ...sentData,
   ];
@@ -648,23 +668,104 @@ describe("voided purchases and revokes remove access (AC4)", () => {
     expect(alerts[0]?.[2]).toEqual({ row_id: "row-seed", reason: "unavailable" });
   });
 
-  it("Google does not recognise the token on a void: access still removed, retryable", async () => {
+  // CHANGED (FV-662 QA fix 3): a permanent read failure on a void used to be
+  // 503 (endless redelivery). Access is already removed, so it is now 2xx with
+  // one alert.
+  it("Google does not recognise the token on a void: access removed, NOT retried (2xx), one alert", async () => {
     seedRow({ status: "active", expires_at: FUTURE });
-    expect(await push(voidNote())).toBe(503);
+    expect(await push(voidNote())).toBe(200);
     expect(levelOf(SENTINEL_TOKEN)).toBe("blocked");
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0]?.[2]).toEqual({ row_id: "row-seed", reason: "invalid_token" });
   });
 
-  it("an unreadable Google answer on a void still removes access", async () => {
+  it("an unreadable Google answer on a void: access removed, NOT retried (2xx), one alert", async () => {
     seedRow({ status: "active", expires_at: FUTURE });
     googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_SOMETHING_NEW" });
-    expect(await push(voidNote())).toBe(503);
+    expect(await push(voidNote())).toBe(200);
     expect(levelOf(SENTINEL_TOKEN)).toBe("blocked");
+    expect(alerts).toHaveLength(1);
   });
 
-  it("a void for a token we do not own: 2xx, no Google call, no write", async () => {
+  it("a failed read on a void does not rewrite an already-expired row's expiry", async () => {
+    seedRow({ status: "expired", expires_at: "2026-11-01T00:00:00.000Z" });
+    googleByToken.set(SENTINEL_TOKEN, { status: 503 });
+    expect(await push(voidNote())).toBe(503);
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: "2026-11-01T00:00:00.000Z" });
+  });
+
+  // CHANGED (QA fix 2): a void for a token we do not hold used to be ignored
+  // without reading Google. It now reads Google; an unreadable or unknown token
+  // is still a 2xx no-op (or 503 only when Google is merely unavailable).
+  it("a void for a token we do not hold, unknown to Google: 2xx, nothing written", async () => {
     expect(await push(voidNote())).toBe(200);
-    expect(fetchCalls).toEqual([]);
     expect(subRows()).toEqual([]);
+    expect(alerts).toEqual([]);
+  });
+
+  it("a void for a token we do not hold, Google unavailable: 503 (retry), nothing written", async () => {
+    googleByToken.set(SENTINEL_TOKEN, { status: 503 });
+    expect(await push(voidNote())).toBe(503);
+    expect(subRows()).toEqual([]);
+  });
+
+  it("a void for a token we do not hold, unreadable Google answer: 2xx, nothing written", async () => {
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_SOMETHING_NEW", accountId: BINDING_ID });
+    expect(await push(voidNote())).toBe(200);
+    expect(subRows()).toEqual([]);
+  });
+
+  it("a void for an unbound purchase we do not hold: ignored, nothing written, no alert", async () => {
+    googleReturns(SENTINEL_TOKEN, { accountId: OTHER_BINDING });
+    expect(await push(voidNote())).toBe(200);
+    expect(subRows()).toEqual([]);
+    expect(alerts).toEqual([]);
+    expect(events).not.toContain("ack");
+  });
+
+  it("a void BEFORE the row exists writes the row already closed and never acknowledges", async () => {
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID }); // Google still says ACTIVE, unacknowledged
+    expect(await push(voidNote())).toBe(200);
+    const row = rowFor(SENTINEL_TOKEN);
+    expect(row).toMatchObject({ payer_id: PAYER, status: "expired", auto_renewing: false });
+    expect(new Date(row?.expires_at as string).getTime()).toBeLessThanOrEqual(Date.now());
+    expect(levelOf(SENTINEL_TOKEN)).toBe("blocked");
+    expect(events).not.toContain("ack");
+  });
+
+  it("void first, then an ordinary notification: the row stays expired, no acknowledge", async () => {
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID });
+    await push(voidNote());
+    const closed = { ...rowFor(SENTINEL_TOKEN) };
+    expect(await push(subNote())).toBe(200);
+    expect(await push(subNote(SENTINEL_TOKEN, 2))).toBe(200);
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: closed.expires_at });
+    expect(levelOf(SENTINEL_TOKEN)).toBe("blocked");
+    expect(events).not.toContain("ack");
+  });
+
+  it("a void before the row exists applies the same checks: non-allowlisted test purchase, unknown product, athlete payer, foreign linked token", async () => {
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID, testPurchase: true });
+    await push(voidNote());
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID, productId: "family.9" });
+    await push(voidNote());
+    tables.profiles = [{ id: PAYER, role: "athlete" }];
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID });
+    await push(voidNote());
+    tables.profiles = [{ id: PAYER, role: "parent" }];
+    subRows().push({ id: "row-old", payer_id: OTHER_PAYER, purchase_token: SENTINEL_LINKED_TOKEN, status: "active", expires_at: FUTURE });
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID, linkedPurchaseToken: SENTINEL_LINKED_TOKEN });
+    await push(voidNote());
+    expect(rowFor(SENTINEL_TOKEN)).toBeUndefined();
+  });
+
+  it("a void before the row exists resolves the payer through an owned linked token (rule c)", async () => {
+    subRows().push({ id: "row-old", payer_id: PAYER, purchase_token: SENTINEL_LINKED_TOKEN, status: "active", expires_at: FUTURE });
+    googleReturns(SENTINEL_LINKED_TOKEN, { acknowledged: true });
+    googleReturns(SENTINEL_TOKEN, { accountId: null, linkedPurchaseToken: SENTINEL_LINKED_TOKEN });
+    expect(await push(voidNote())).toBe(200);
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ payer_id: PAYER, status: "expired" });
+    expect(events).not.toContain("ack");
   });
 
   it("a void does not touch another payer's separate row", async () => {
@@ -912,18 +1013,33 @@ describe("rule c: no row, linked token names a row we own (plan change)", () => 
 // ---------------------------------------------------------------------------
 
 describe("temporary failures return 5xx so Pub/Sub redelivers", () => {
-  it("Google unavailable for a non-void message: 503, row untouched, alert", async () => {
+  // CHANGED (QA fix 3): still 503, but no alert email per delivery (Pub/Sub
+  // redelivers with backoff; the stall checker is the backstop).
+  it("Google unavailable for a non-void message: 503, row untouched, NO alert email", async () => {
     const row = seedRow();
     googleByToken.set(SENTINEL_TOKEN, { status: 503 });
     expect(await push(subNote())).toBe(503);
     expect(rowFor(SENTINEL_TOKEN)).toEqual(row);
-    expect(alerts).toHaveLength(1);
+    expect(alerts).toEqual([]);
+    expect(logged.join("\n")).toContain("will be redelivered");
   });
 
-  it("an unreadable Google answer (unknown state): 503 and nothing written", async () => {
+  // CHANGED (QA fix 3): was 503 (an endless redelivery loop on a new Google
+  // state). Now 2xx with an alert carrying the enum reason only.
+  it("an unreadable Google answer (unknown state): 2xx, nothing written, one alert with the reason", async () => {
     googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_SOMETHING_NEW", accountId: BINDING_ID });
-    expect(await push(subNote())).toBe(503);
+    expect(await push(subNote())).toBe(200);
     expect(subRows()).toEqual([]);
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0]?.[2]).toEqual({ reason: "unknown_state" });
+  });
+
+  it("an unreadable Google answer for a row we hold: 2xx, row untouched, alert carries the row id", async () => {
+    const row = seedRow();
+    googleByToken.set(SENTINEL_TOKEN, { status: 200, body: { nonsense: true } });
+    expect(await push(subNote())).toBe(200);
+    expect(rowFor(SENTINEL_TOKEN)).toEqual(row);
+    expect(alerts[0]?.[2]).toEqual({ reason: "unparseable", row_id: "row-seed" });
   });
 
   it("Google rejecting an OWNED token (404/410) is not retried (2xx) but alerts", async () => {
@@ -978,6 +1094,141 @@ describe("database failures: 500, alert, and nothing sensitive in logs, alerts o
     );
     // getSubscriptionPurchaseV2 swallows fetch errors into "unavailable".
     expect(await push(subNote())).toBe(503);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// QA fix 1: a refund must not be undone by a concurrent ordinary message
+// ---------------------------------------------------------------------------
+
+describe("concurrent refund versus ordinary message (QA fix 1)", () => {
+  it("the row is closed between the read and the write: the granting write matches nothing, no acknowledge, stays expired", async () => {
+    seedRow({ status: "active", acknowledged: false });
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_ACTIVE" }); // unacknowledged, would ack
+    beforeExec = (table, op) => {
+      if (table === "google_subscriptions" && op === "update") {
+        beforeExec = null;
+        // The voided message completes here: forces expired.
+        Object.assign(rowFor(SENTINEL_TOKEN)!, { status: "expired", expires_at: "2026-11-12T00:00:00.000Z", auto_renewing: false });
+      }
+    };
+    expect(await push(subNote())).toBe(200);
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: "2026-11-12T00:00:00.000Z" });
+    expect(levelOf(SENTINEL_TOKEN)).toBe("blocked");
+    expect(events).not.toContain("ack");
+    expect(logged.join("\n")).toContain("expired row not re-opened");
+  });
+
+  it("a forced void write stays unconditional and wins", async () => {
+    seedRow({ status: "active" });
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_ACTIVE", acknowledged: true });
+    await push(voidNote());
+    expect(rowFor(SENTINEL_TOKEN)?.status).toBe("expired");
+  });
+
+  it("a non-granting write is not blocked by the guard (Google says canceled and past expiry)", async () => {
+    seedRow({ status: "active" });
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_CANCELED", expiryTime: PAST, acknowledged: true });
+    await push(subNote());
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "canceled", expires_at: PAST });
+  });
+
+  it("rule b: a closed row appears between the first read and the write: it stays closed, no acknowledge", async () => {
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID });
+    let selects = 0;
+    beforeExec = (table, op) => {
+      if (table === "google_subscriptions" && op === "select" && ++selects === 2) {
+        beforeExec = null;
+        subRows().push({ id: "row-closed", payer_id: PAYER, purchase_token: SENTINEL_TOKEN, status: "expired", expires_at: PAST });
+      }
+    };
+    expect(await push(subNote())).toBe(200);
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ id: "row-closed", status: "expired", expires_at: PAST });
+    expect(events).not.toContain("ack");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// QA fix 5: a broken verifier is loud (503 + alert), not a silent 401 forever
+// ---------------------------------------------------------------------------
+
+describe("push verifier outage and config hygiene (QA fix 5)", () => {
+  it("signing certificates cannot be fetched: 503, a static alert, body never read, nothing touched", async () => {
+    certsFail = true;
+    const { req, bodyRead } = makeRequest(`Bearer ${JWT_OK}`, envelope(subNote()));
+    const res = await POST(req);
+    responseTexts.push(await res.text());
+    expect(res.status).toBe(503);
+    expect(bodyRead()).toBe(false);
+    expect(fetchCalls).toEqual([]);
+    expect(createServiceCalls).toBe(0);
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0]?.[0]).toBe("[google-play-webhook] push verifier unavailable");
+    expect(alerts[0]?.[2]).toBeUndefined();
+  });
+
+  it("an invalid token with healthy certificates is still a plain 401 with no alert", async () => {
+    expect(await push(subNote(), "Bearer JWT_WRONG_SIGNATURE")).toBe(401);
+    expect(alerts).toEqual([]);
+  });
+
+  for (const [name, env] of [
+    ["audience", "GOOGLE_PLAY_PUBSUB_AUDIENCE"],
+    ["service account", "GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT"],
+  ] as const) {
+    it(`a whitespace-only ${name} is unset: 403`, async () => {
+      process.env[env] = "   ";
+      const { req, bodyRead } = makeRequest(`Bearer ${JWT_OK}`, envelope(subNote()));
+      const res = await POST(req);
+      responseTexts.push(await res.text());
+      expect(res.status).toBe(403);
+      expect(bodyRead()).toBe(false);
+    });
+  }
+
+  it("config with stray whitespace around real values still authenticates", async () => {
+    process.env.GOOGLE_PLAY_PUBSUB_AUDIENCE = `  ${AUDIENCE} `;
+    process.env.GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT = ` ${SERVICE_ACCOUNT}  `;
+    expect(await push(subNote())).toBe(200);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// QA fix 7: database faults on the remaining queries
+// ---------------------------------------------------------------------------
+
+describe("database faults on linked_read, subscription_read and subscription_touch (QA fix 7)", () => {
+  it("linked_read fails: 500, nothing written or acknowledged, only the code logged", async () => {
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID, linkedPurchaseToken: SENTINEL_LINKED_TOKEN });
+    dbFault = { table: "google_subscriptions", op: "select", skip: 1 }; // 1st select is row_read
+    expect(await push(subNote())).toBe(500);
+    expect(logged.join("\n")).toContain("linked_read:XX000");
+    expect(subRows()).toEqual([]);
+    expect(events).not.toContain("ack");
+  });
+
+  it("subscription_read (inside the row write) fails: 500, nothing written or acknowledged", async () => {
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID });
+    dbFault = { table: "google_subscriptions", op: "select", skip: 1 };
+    expect(await push(subNote())).toBe(500);
+    expect(logged.join("\n")).toContain("subscription_read:XX000");
+    expect(subRows()).toEqual([]);
+    expect(events).not.toContain("ack");
+  });
+
+  it("subscription_touch (closing an expired row) fails: 500, never acknowledged", async () => {
+    googleReturns(SENTINEL_TOKEN, { accountId: BINDING_ID });
+    let selects = 0;
+    beforeExec = (table, op) => {
+      if (table === "google_subscriptions" && op === "select" && ++selects === 2) {
+        beforeExec = null;
+        subRows().push({ id: "row-closed", payer_id: PAYER, purchase_token: SENTINEL_TOKEN, status: "expired", expires_at: PAST });
+      }
+    };
+    dbFault = { table: "google_subscriptions", op: "update" };
+    expect(await push(subNote())).toBe(500);
+    expect(logged.join("\n")).toContain("subscription_touch:XX000");
+    expect(events).not.toContain("ack");
   });
 });
 

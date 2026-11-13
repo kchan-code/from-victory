@@ -84,7 +84,7 @@ export const getPlayAccessToken: GetPlayAccessToken = async () => {
 /** Test hook: drop the cached auth client. */
 export function resetPlayAuthCacheForTests(): void {
   cachedSource = null;
-  cachedIdTokenVerifier = null;
+  cachedIdTokenClient = null;
 }
 
 // ---------------------------------------------------------------------------
@@ -113,12 +113,28 @@ export type PushAuthFailure =
   | "invalid_token"
   | "wrong_issuer"
   | "wrong_identity"
-  | "email_unverified";
+  | "email_unverified"
+  | "verifier_unavailable";
 
 export type PushAuthResult =
   | { ok: true }
-  /** 401: no/invalid credential. 403: a valid Google token for the wrong party, or no config. */
-  | { ok: false; status: 401 | 403; reason: PushAuthFailure };
+  /**
+   * 401: no/invalid credential. 403: a valid Google token for the wrong party,
+   * or no config. 503: the verifier itself cannot work (library or Google's
+   * signing certificates unavailable): not the caller's fault, so retryable.
+   */
+  | { ok: false; status: 401 | 403 | 503; reason: PushAuthFailure };
+
+/**
+ * Thrown by a verifier that cannot do its job at all (as opposed to rejecting
+ * a token). Carries no detail: the underlying error is dropped.
+ */
+export class PushVerifierUnavailableError extends Error {
+  constructor() {
+    super("Push verifier unavailable.");
+    this.name = "PushVerifierUnavailableError";
+  }
+}
 
 export interface PushAuthDeps {
   readonly verifyIdToken?: VerifyGoogleIdToken;
@@ -133,27 +149,40 @@ const GOOGLE_ISSUERS: ReadonlySet<string> = new Set([
 ]);
 const MAX_JWT_LENGTH = 8192;
 
-let cachedIdTokenVerifier: VerifyGoogleIdToken | null = null;
+// reason: narrow structural view of the one class/methods we use.
+interface IdTokenClient {
+  getFederatedSignonCertsAsync(): Promise<unknown>;
+  verifyIdToken(opts: {
+    idToken: string;
+    audience: string;
+  }): Promise<{ getPayload(): Record<string, unknown> | undefined }>;
+}
+
+let cachedIdTokenClient: IdTokenClient | null = null;
 
 const defaultVerifyIdToken: VerifyGoogleIdToken = async (idToken, audience) => {
-  if (!cachedIdTokenVerifier) {
-    // Lazy import, same rule as buildAuth(): never at module load.
-    // reason: narrow structural view of the one class/method we use.
-    const { OAuth2Client } = (await import("google-auth-library")) as unknown as {
-      OAuth2Client: new () => {
-        verifyIdToken(opts: {
-          idToken: string;
-          audience: string;
-        }): Promise<{ getPayload(): Record<string, unknown> | undefined }>;
+  // Everything that can fail for a reason that is not "this token is bad"
+  // (library import, client construction, fetching Google's signing
+  // certificates) is separated out, so an outage is not mistaken for a stream
+  // of invalid tokens.
+  let client: IdTokenClient;
+  try {
+    if (!cachedIdTokenClient) {
+      // Lazy import, same rule as buildAuth(): never at module load.
+      const { OAuth2Client } = (await import("google-auth-library")) as unknown as {
+        OAuth2Client: new () => IdTokenClient;
       };
-    };
-    const client = new OAuth2Client();
-    cachedIdTokenVerifier = async (token, aud) => {
-      const ticket = await client.verifyIdToken({ idToken: token, audience: aud });
-      return ticket.getPayload();
-    };
+      cachedIdTokenClient = new OAuth2Client();
+    }
+    client = cachedIdTokenClient;
+    // The library caches certificates itself; this surfaces a fetch failure here.
+    await client.getFederatedSignonCertsAsync();
+  } catch {
+    throw new PushVerifierUnavailableError();
   }
-  return cachedIdTokenVerifier(idToken, audience);
+  // A failure from here on means the token itself is invalid.
+  const ticket = await client.verifyIdToken({ idToken, audience });
+  return ticket.getPayload();
 };
 
 /**
@@ -165,8 +194,9 @@ export async function verifyPubSubPush(
   authorization: string | null,
   deps: PushAuthDeps = {},
 ): Promise<PushAuthResult> {
-  const audience = deps.audience ?? process.env.GOOGLE_PLAY_PUBSUB_AUDIENCE;
-  const serviceAccount = deps.serviceAccount ?? process.env.GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT;
+  // Whitespace-only config is unset.
+  const audience = (deps.audience ?? process.env.GOOGLE_PLAY_PUBSUB_AUDIENCE)?.trim();
+  const serviceAccount = (deps.serviceAccount ?? process.env.GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT)?.trim();
   if (!audience || !serviceAccount) {
     return { ok: false, status: 403, reason: "not_configured" };
   }
@@ -180,7 +210,10 @@ export async function verifyPubSubPush(
   let claims: Record<string, unknown> | undefined;
   try {
     claims = await (deps.verifyIdToken ?? defaultVerifyIdToken)(jwt, audience);
-  } catch {
+  } catch (err) {
+    if (err instanceof PushVerifierUnavailableError) {
+      return { ok: false, status: 503, reason: "verifier_unavailable" };
+    }
     return { ok: false, status: 401, reason: "invalid_token" };
   }
   if (!claims) return { ok: false, status: 401, reason: "invalid_token" };

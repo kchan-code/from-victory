@@ -22,7 +22,8 @@
  *   401  missing/invalid credential          403  wrong service account, unverified
  *                                                 email, or auth not configured
  *   200  dormant (flag off), applied, or an irrelevant/unparseable/unknown message
- *   503  Google or the acknowledge was unavailable (retry)
+ *   503  the push verifier cannot work (library / signing certs unavailable; alerted),
+ *        or Google / the acknowledge was transiently unavailable (retry)
  *   500  database or unexpected failure (retry)
  *
  * DORMANT: unless GOOGLE_PLAY_CATALOG_ACTIVE is exactly "1", the push is still
@@ -58,7 +59,18 @@ export async function POST(req: NextRequest) {
   //    unauthenticated request.
   const auth = await verifyPubSubPush(req.headers.get("authorization"));
   if (!auth.ok) {
-    console.warn(`[google-play/webhook] push rejected (${auth.reason}).`);
+    if (auth.reason === "verifier_unavailable") {
+      // Not the sender's fault: every real push would fail until this is fixed.
+      console.error("[google-play/webhook] push verifier unavailable.");
+      deliverInBackground(
+        notifyError(
+          "[google-play-webhook] push verifier unavailable",
+          "Cannot verify Google Play pushes (library or signing certificates unavailable); pushes are being refused with 503",
+        ),
+      );
+    } else {
+      console.warn(`[google-play/webhook] push rejected (${auth.reason}).`);
+    }
     return fail(auth.status);
   }
 

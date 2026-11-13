@@ -24,12 +24,15 @@ import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-ca
 /** Hours past expiry (with no fresh verification) before a row counts as stalled. */
 export const GOOGLE_STALL_THRESHOLD_HOURS = 24;
 
-/** Statuses that grant or degrade access and so must be re-verified at expiry. */
+/**
+ * Statuses that grant access and so must be re-verified at expiry. `on_hold` is
+ * deliberately NOT watched: a held row has a past expiry by definition and
+ * receives no notification for the length of the hold, so it would false-alarm.
+ */
 export const GOOGLE_STALL_WATCHED_STATUSES: readonly GoogleSubscriptionStatus[] = [
   "active",
   "in_grace_period",
   "canceled",
-  "on_hold",
 ];
 
 export interface StallCandidate {
