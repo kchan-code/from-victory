@@ -38,7 +38,7 @@ describe("SoftwareApplication JSON-LD (FV-504)", () => {
     );
   });
 
-  it("names the live iOS listing and does not invent ratings or Google Play", () => {
+  it("names the live iOS listing and does not invent ratings", () => {
     expect(SOFTWARE_APPLICATION_JSON_LD).not.toHaveProperty("aggregateRating");
     expect(SOFTWARE_APPLICATION_JSON_LD.operatingSystem).toBe("iOS");
     expect(SOFTWARE_APPLICATION_JSON_LD.downloadUrl).toBe(
@@ -191,14 +191,13 @@ describe("comparison page copy pins (FV-504)", () => {
     expect(CHRISTIAN_ATHLETE_APPS_TITLE).toContain("Core IV");
     expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).toMatch(/available on the US App Store/);
     expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).not.toMatch(/Not in stores yet/);
-    expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).not.toMatch(/Google Play/);
     expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).toMatch(/compete from victory/i);
   });
 });
 
-describe("US-only availability wording (#560)", () => {
+describe("US App Store availability wording (#560)", () => {
   // KC: every statement of From Victory's own availability says US App Store,
-  // and nothing promises Google Play. Competitor "listed on the App Store"
+  // while Android availability is separate (FV-684). Competitor "listed on the App Store"
   // lines are not availability statements for From Victory and are allowed.
   const files = [
     "../app/christian-athlete-apps/page.tsx",
@@ -206,7 +205,7 @@ describe("US-only availability wording (#560)", () => {
     "../../../docs/gtm/product-truths.md",
   ].map((f) => [f, readFileSync(resolve(__dirname, f), "utf8")] as const);
 
-  it.each(files)("%s has no unqualified availability or Google Play promise", (_f, raw) => {
+  it.each(files)("%s keeps the App Store country qualifier", (_f, raw) => {
     const text = raw.replace(/\s+/g, " ");
     expect(text).not.toMatch(/(?:available|download the app) (?:on|from) the App Store/i);
     expect(text).not.toMatch(/Google Play (?:not yet|is still not live|coming)/i);
@@ -228,7 +227,7 @@ describe("llms.txt (FV-504)", () => {
     expect(llms).toContain("Not a daily devotional");
     expect(llms).toContain("Not for anyone under 13");
     expect(llms).toContain(
-      "Available on the US App Store (iPhone, US only): https://apps.apple.com/us/app/from-victory/id6804743047. Not on Google Play.",
+      "Available on the US App Store (iPhone, US only): https://apps.apple.com/us/app/from-victory/id6804743047. The Android app is available on Google Play.",
     );
     expect(llms).not.toContain("Not listed on the App Store or Google Play yet");
     expect(llms).not.toContain("Not in stores yet");
@@ -243,5 +242,28 @@ describe("llms.txt (FV-504)", () => {
     expect(llms).toMatch(/Jealousy:/);
     expect(llms).toMatch(/Favoritism:/);
     expect(llms).toContain("/hockey");
+  });
+});
+
+// Current public surfaces only: dated product-truths entries retain their history.
+describe("Google Play availability (FV-684)", () => {
+  const surfaces = [
+    "../app/christian-athlete-apps/page.tsx",
+    "../components/landing/AppStoreBadge.tsx",
+    "../public/llms.txt",
+  ].map((f) => [f, readFileSync(resolve(__dirname, f), "utf8")] as const);
+
+  it.each(surfaces)("%s states Android availability without stale denial", (_f, raw) => {
+    const text = raw.replace(/\s+/g, " ");
+    expect(text).toContain("The Android app is available on Google Play.");
+    expect(text).not.toMatch(/not (?:available |listed )?on Google Play/i);
+    expect(text).not.toMatch(/Google Play (?:not yet|is still not live|coming)/i);
+    expect(text).not.toMatch(/(?:US|worldwide|global) Google Play|Google Play (?:worldwide|globally|in the US)/i);
+  });
+
+  it("gives the Android listing and keeps subscription purchase on the website", () => {
+    const llms = readFileSync(resolve(__dirname, "../public/llms.txt"), "utf8");
+    expect(llms).toContain("https://play.google.com/store/apps/details?id=com.fromvictoryapp.app");
+    expect(llms).toContain("The Android app does not sell subscriptions. Subscribe on the website, then sign in with the same account.");
   });
 });

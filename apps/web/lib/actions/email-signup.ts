@@ -24,6 +24,7 @@ import { isAdultSignupEnabled } from "@/lib/flags";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { createClient } from "@/lib/supabase/server";
 
 import type { AuthActionState } from "./auth";
@@ -68,10 +69,11 @@ function roleHome(role: string | null | undefined): string {
 /** Where a brand-new adult goes: same routing as the legacy signUpAdultAthlete. */
 function newAccountHome(role: SignupRole): string {
   if (role === "parent") return "/dashboard";
-  // Inside the legacy-native shell /subscribe is a no-purchase dead end
-  // (FV-478/FV-482), so a legacy-native adult lands on /athlete; an ios-iap
-  // shell (FV-577) and the web go to /subscribe.
-  return getRequestShellCapability() === "legacy-native"
+  // Inside a restricted shell (legacy-native, and android-play until FV-665
+  // diverges it — FV-659) /subscribe is a no-purchase dead end
+  // (FV-478/FV-482), so that adult lands on /athlete; an ios-iap shell
+  // (FV-577) and the web go to /subscribe.
+  return isRestrictedShell(getRequestShellCapability())
     ? "/athlete"
     : "/subscribe";
 }

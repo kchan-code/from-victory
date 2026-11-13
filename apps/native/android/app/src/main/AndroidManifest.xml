@@ -3,7 +3,12 @@
 
     <!-- Privacy: network and foreground narration playback only. No camera/mic/location/contacts.
          allowBackup=false — do not ship athlete device-local data to
-         third-party cloud backup. Do not add analytics/ad SDK permissions. -->
+         third-party cloud backup. Do not add analytics/ad SDK permissions.
+         FV-664: builds made with the Play Billing build switch gain Google's billing
+         permission and the network-state permission through manifest merge from the Play
+         Billing Library. They are expected there and must stay absent from a default build.
+         (Permission names are deliberately not spelled out here: this comment is copied into
+         the merged manifest, and release checks grep it for them.) -->
     <application
         android:allowBackup="false"
         android:fullBackupContent="@xml/backup_rules"

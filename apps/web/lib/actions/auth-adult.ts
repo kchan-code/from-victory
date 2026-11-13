@@ -14,7 +14,7 @@ import type { AuthActionState } from "./auth";
  * The profile is no longer inserted here (there is no session until the email
  * code is verified) and the legacy delete-on-insert-failure rollback is GONE:
  * completeEmailSignup -> complete_pending_profile creates the role='adult_athlete'
- * profile, and post-signup routing (/subscribe, or /athlete in the legacy-native
+ * profile, and post-signup routing (/subscribe, or /athlete in a restricted
  * shell — FV-482/FV-577) lives there. New UI should call startEmailSignup /
  * completeEmailSignup directly.
  */

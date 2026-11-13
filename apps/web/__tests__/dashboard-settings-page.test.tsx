@@ -63,7 +63,7 @@ const {
   // Google Play "no in-app purchase" compliance + FV-572/577 capability.
   // Defaults to null (ordinary web/PWA request) — individual tests override
   // per case with "legacy-native" | "ios-iap" | null.
-  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
+  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | "android-play" | null),
   getUserMock: vi.fn(async () => ({ data: { user: { email: "kim@example.com" } } })),
   maybeSingleMock: vi.fn(),
   // FV-578/FV-580 — the centralized `apple_subscriptions` accessor. Defaults
@@ -621,5 +621,53 @@ describe("/dashboard/settings — FV-623 ended-subscription date row", () => {
 
     expect(screen.getByTestId("subscription-status")).toHaveTextContent("Past due");
     expect(screen.getByTestId("subscription-period-end")).toBeInTheDocument();
+  });
+});
+
+describe("/dashboard/settings — android-play renders exactly like legacy-native (FV-659)", () => {
+  const ACTIVE_ROW = {
+    data: {
+      status: "active",
+      price_id: "price_test",
+      current_period_end: "2026-09-01T00:00:00Z",
+      cancel_at_period_end: false,
+    },
+    error: null,
+  };
+  const NO_ROW = { data: null, error: null };
+
+  async function htmlFor(
+    capability: "legacy-native" | "android-play",
+    row: typeof ACTIVE_ROW | typeof NO_ROW,
+  ) {
+    shellCapabilityMock.mockReturnValue(capability);
+    maybeSingleMock.mockResolvedValue(row);
+    const { container } = await renderPage();
+    const html = container.innerHTML;
+    cleanup();
+    return html;
+  }
+
+  it("active Stripe row: identical markup, non-tappable browser notice, no portal button", async () => {
+    const legacy = await htmlFor("legacy-native", ACTIVE_ROW);
+    const play = await htmlFor("android-play", ACTIVE_ROW);
+    expect(play).toBe(legacy);
+    expect(play).toContain("billing-portal-native-shell-notice");
+    expect(play).not.toContain("billing-portal-btn");
+  });
+
+  it("no subscription row: identical markup, browser-subscribe copy, no Choose-a-plan link", async () => {
+    const legacy = await htmlFor("legacy-native", NO_ROW);
+    const play = await htmlFor("android-play", NO_ROW);
+    expect(play).toBe(legacy);
+    expect(play).toContain("Subscribe to From Victory from a web browser");
+  });
+
+  it("android-play never issues the Apple read (ios-iap only)", async () => {
+    shellCapabilityMock.mockReturnValue("android-play");
+    maybeSingleMock.mockResolvedValue(NO_ROW);
+    await renderPage();
+    expect(getDisplayedAppleProductIdResultMock).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("settings-apple-manage")).not.toBeInTheDocument();
   });
 });

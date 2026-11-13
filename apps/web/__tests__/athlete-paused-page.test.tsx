@@ -25,7 +25,7 @@ const { requireAthleteMock, shellCapabilityMock, clearAthleteCacheMock } = vi.ho
   // Google Play "no in-app purchase" compliance + FV-572/577 capability.
   // Defaults to null (ordinary web/PWA request) — individual tests override
   // per case with "legacy-native" | "ios-iap" | null.
-  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | null),
+  shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | "android-play" | null),
 }));
 
 vi.mock("@/lib/auth/guards", () => ({
@@ -218,5 +218,20 @@ describe("/athlete/paused?reason=unavailable — status couldn't be read (FV-656
     expect(screen.getByText("Training paused")).toBeInTheDocument();
     expect(screen.queryByTestId("paused-try-again-link")).toBeNull();
     expect(clearAthleteCacheMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("/athlete/paused — android-play renders exactly like legacy-native (FV-659)", () => {
+  it("adult_athlete: identical markup, neutral notice instead of the reactivate link", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
+    const legacy = (await renderPage("adult_athlete")).container.innerHTML;
+    cleanup();
+
+    shellCapabilityMock.mockReturnValue("android-play");
+    const play = (await renderPage("adult_athlete")).container.innerHTML;
+
+    expect(play).toBe(legacy);
+    expect(screen.queryByTestId("paused-reactivate-link")).not.toBeInTheDocument();
+    expect(screen.getByTestId("paused-native-shell-notice")).toBeInTheDocument();
   });
 });

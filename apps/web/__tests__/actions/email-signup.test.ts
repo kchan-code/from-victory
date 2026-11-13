@@ -417,6 +417,13 @@ describe("completeEmailSignup", () => {
       );
     });
 
+    it("android-play shell -> /athlete, same as legacy-native (FV-659)", async () => {
+      h.capability.mockReturnValue("android-play");
+      expect(await redirectedTo(completeEmailSignup(null, fd(ADULT_COMPLETE)))).toBe(
+        "/athlete",
+      );
+    });
+
     it("ios-iap shell -> /subscribe (FV-577)", async () => {
       h.capability.mockReturnValue("ios-iap");
       expect(await redirectedTo(completeEmailSignup(null, fd(ADULT_COMPLETE)))).toBe(

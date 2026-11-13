@@ -7,6 +7,7 @@ import { DeleteAccountSection } from "@/components/dashboard/DeleteAccountSectio
 import { Icon } from "@/components/ui";
 import { requireAthlete } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import {
@@ -54,7 +55,7 @@ export default async function AthleteSettingsPage({
   // BillingPortalButton — /subscribe renders AppleSubscribeSection (purchase
   // + restore + manage) for that capability.
   const shellCapability = getRequestShellCapability();
-  const legacyNative = shellCapability === "legacy-native";
+  const legacyNative = isRestrictedShell(shellCapability);
   const iosIap = shellCapability === "ios-iap";
 
   // FV-579: an adult_athlete is their own payer, so the ios-iap subscription
