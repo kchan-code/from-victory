@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from "vitest";
 
-import { buildEventRow, sanitizeMeta } from "@/lib/activity/event-core";
+import { META_KEY_ALLOWLIST, buildEventRow, sanitizeMeta } from "@/lib/activity/event-core";
 
 const ATH = "20000000-0000-4000-8000-00000000000a";
 
@@ -16,7 +16,7 @@ describe("buildEventRow", () => {
       sport: "hockey",
       audio_mode: "clip",
       network_mode: "offline",
-      meta: { position: "goalie", clips_played: 9, audio_completed: true },
+      meta: { src: "full", clips_played: 9, audio_completed: true },
     });
     expect(row).toEqual({
       athlete_id: ATH,
@@ -25,7 +25,7 @@ describe("buildEventRow", () => {
       sport: "hockey",
       audio_mode: "clip",
       network_mode: "offline",
-      meta: { position: "goalie", clips_played: 9, audio_completed: true },
+      meta: { src: "full", clips_played: 9, audio_completed: true },
     });
   });
 
@@ -59,8 +59,7 @@ describe("buildEventRow", () => {
 describe("sanitizeMeta — the EVENT-ONLY allow-list", () => {
   it("keeps allow-listed primitive keys, drops everything else", () => {
     const meta = sanitizeMeta({
-      position: "winger",
-      adversity: "benched",
+      src: "saved",
       clips_played: 7,
       audio_completed: false,
       // not allow-listed — must be dropped:
@@ -69,26 +68,48 @@ describe("sanitizeMeta — the EVENT-ONLY allow-list", () => {
       athlete_name: "Ava",
     });
     expect(meta).toEqual({
-      position: "winger",
-      adversity: "benched",
+      src: "saved",
       clips_played: 7,
       audio_completed: false,
     });
   });
 
+  it("FV-724: never stores what an athlete selected, even if a client sends it", () => {
+    const meta = sanitizeMeta({
+      position: "winger",
+      adversity: "benched",
+      anchor: "breath",
+      prayer_style: "guided",
+      cue_word_category: "calm",
+      focus_area: "confidence",
+      audio_completed: true,
+    });
+    expect(meta).toEqual({ audio_completed: true });
+    for (const key of [
+      "position",
+      "adversity",
+      "anchor",
+      "prayer_style",
+      "cue_word_category",
+      "focus_area",
+    ]) {
+      expect(META_KEY_ALLOWLIST as readonly string[]).not.toContain(key);
+    }
+  });
+
   it("drops objects, arrays, and non-finite numbers even on allow-listed keys", () => {
     const meta = sanitizeMeta({
-      anchor: { nested: "object" } as unknown as string,
       src: ["a", "b"] as unknown as string,
       clips_played: Number.POSITIVE_INFINITY,
-      prayer_style: "guided",
+      clips_errored: { nested: "object" } as unknown as number,
+      audio_completed: true,
     });
-    expect(meta).toEqual({ prayer_style: "guided" });
+    expect(meta).toEqual({ audio_completed: true });
   });
 
   it("caps allow-listed string values at 64 chars", () => {
-    const meta = sanitizeMeta({ anchor: "y".repeat(120) });
-    expect(meta?.anchor).toHaveLength(64);
+    const meta = sanitizeMeta({ src: "y".repeat(120) });
+    expect(meta?.src).toHaveLength(64);
   });
 
   it("returns null when nothing survives", () => {

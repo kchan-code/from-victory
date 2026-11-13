@@ -29,24 +29,20 @@ export type Surface = (typeof SURFACES)[number];
 export const AUDIO_MODES = ["clip", "timer"] as const;
 export const NETWORK_MODES = ["online", "offline"] as const;
 
-// Allow-listed `meta` keys. Low-cardinality slugs / ints / bools ONLY. Each is a
-// dimension, never content:
-//   position          — sport role slug (e.g. "goalie"), not sensitive
-//   adversity         — pregame scenario slug (e.g. "benched"), a fixed set
-//   anchor            — mental-skill cue CATEGORY slug, NOT the athlete's typed cue word
-//   prayer_style      — guided | self-guided toggle, not prayer content
-//   cue_word_category — bucketed category, never the raw cue string
+// Allow-listed `meta` keys. Technical playback facts and the entry source ONLY:
 //   clips_played/errored, audio_completed — pregame playback ints/bool
-//   src               — entry source (e.g. "push")
-// We deliberately EXCLUDE focus_area: it is athlete-profile preference data
-// (kids-privacy-officer flagged it as athlete-private). position is a sport role
-// and is fine; the distinction is intentional — do not add focus_area here.
+//   src               — entry source (e.g. "full", "saved")
+//
+// FV-724: NOTHING AN ATHLETE SELECTS IS STORED HERE. `position`, `adversity`
+// (the hard moment chosen to rehearse), `anchor`, `prayer_style` and
+// `cue_word_category` were allow-listed until 2026-11-13 and were written per
+// athlete on every completed pregame, while nothing ever read them. The
+// Privacy Policy says a usage record "does not contain what the athlete
+// selected or was shown inside a session" and that an athlete's choices are
+// kept private to that athlete. Do not add a selection, preference or
+// profile field here (that includes focus_area) without changing the policy
+// first and a kids-privacy-officer review.
 export const META_KEY_ALLOWLIST = [
-  "position",
-  "adversity",
-  "anchor",
-  "prayer_style",
-  "cue_word_category",
   "clips_played",
   "clips_errored",
   "audio_completed",
