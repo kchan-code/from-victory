@@ -1,5 +1,6 @@
 /**
- * Unit tests for signUpAdultAthlete (FV-326) — the 18+ self-serve signup action.
+ * Unit tests for signUpAdultAthlete (FV-326; FV-671 re-pointed it at the verified
+ * two-step signup) — the 18+ self-serve signup action.
  *
  * Covers the flag gate + all input-validation paths, which return BEFORE any
  * Supabase / rate-limit call, plus the post-signup redirect branch (FV-482):
@@ -24,6 +25,7 @@ const {
   mockInsert,
   mockFrom,
   mockGetRequestShellCapability,
+  mockDeleteUser,
 } = vi.hoisted(() => {
   // redirect() throws NEXT_REDIRECT internally in Next.js — mirror that
   // here so a test that reaches redirect() doesn't fall through and
@@ -36,12 +38,14 @@ const {
   const mockFrom = vi.fn(() => ({ insert: mockInsert }));
   // FV-572/577 capability: "legacy-native" | "ios-iap" | null.
   const mockGetRequestShellCapability = vi.fn();
+  const mockDeleteUser = vi.fn();
   return {
     mockRedirect,
     mockSignUp,
     mockInsert,
     mockFrom,
     mockGetRequestShellCapability,
+    mockDeleteUser,
   };
 });
 
@@ -53,10 +57,10 @@ vi.mock("@/lib/actions/rate-limit-store", () => ({
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: () => ({ auth: { signUp: mockSignUp }, from: mockFrom }),
+  createClient: () => ({ auth: { signUp: mockSignUp, signOut: vi.fn() }, from: mockFrom }),
 }));
 vi.mock("@/lib/supabase/service", () => ({
-  createServiceClient: () => ({ auth: { admin: { deleteUser: vi.fn() } } }),
+  createServiceClient: () => ({ auth: { admin: { deleteUser: mockDeleteUser } }, rpc: vi.fn() }),
 }));
 vi.mock("@/lib/monitoring/deliver", () => ({ deliverInBackground: vi.fn() }));
 vi.mock("@/lib/monitoring/notify", () => ({ notifyError: vi.fn() }));
@@ -153,62 +157,36 @@ describe("signUpAdultAthlete", () => {
       expect(res).toMatchObject({ ok: false, field: "password" });
     });
 
-    // FV-482/577: on success, the action redirects — where depends on
-    // getRequestShellCapability(). redirect() throws (mocked above to mirror
-    // Next.js), so a successful post-signup call always rejects; we assert
-    // on WHERE mockRedirect was called, not on the resolved value.
-    describe("post-signup redirect (FV-482/577)", () => {
-      beforeEach(() => {
-        mockSignUp.mockResolvedValue({
-          data: { user: { id: "adult-user-1" } },
-          error: null,
-        });
-        mockInsert.mockResolvedValue({ error: null });
+    // FV-671: signUpAdultAthlete is now step 1 of the verified two-step signup
+    // (delegates to startEmailSignup). It no longer inserts a profile, no
+    // longer redirects (there is no session until the emailed code is
+    // verified), and never deletes the auth user. The post-signup routing
+    // (FV-482/577) moved to completeEmailSignup — see
+    // __tests__/actions/email-signup.test.ts.
+    it("returns the verify_code step and never inserts a profile or deletes a user", async () => {
+      mockSignUp.mockResolvedValue({
+        data: { user: { id: "adult-user-1" }, session: null },
+        error: null,
       });
 
-      it("redirects to /athlete when capability is 'legacy-native' (not /subscribe)", async () => {
-        mockGetRequestShellCapability.mockReturnValue("legacy-native");
+      const res = await signUpAdultAthlete(null, fd(VALID));
 
-        await expect(signUpAdultAthlete(null, fd(VALID))).rejects.toThrow(
-          "NEXT_REDIRECT:/athlete",
-        );
-
-        expect(mockRedirect).toHaveBeenCalledWith("/athlete");
-        expect(mockRedirect).not.toHaveBeenCalledWith("/subscribe");
+      expect(res).toEqual({
+        ok: true,
+        step: "verify_code",
+        email: "adult@example.com",
+        purpose: "signup",
+        role: "adult_athlete",
       });
-
-      it("redirects to /athlete when capability is 'android-play' (FV-659 — same as legacy-native)", async () => {
-        mockGetRequestShellCapability.mockReturnValue("android-play");
-
-        await expect(signUpAdultAthlete(null, fd(VALID))).rejects.toThrow(
-          "NEXT_REDIRECT:/athlete",
-        );
-
-        expect(mockRedirect).toHaveBeenCalledWith("/athlete");
-        expect(mockRedirect).not.toHaveBeenCalledWith("/subscribe");
-      });
-
-      it("still redirects to /subscribe when capability is null (web)", async () => {
-        mockGetRequestShellCapability.mockReturnValue(null);
-
-        await expect(signUpAdultAthlete(null, fd(VALID))).rejects.toThrow(
-          "NEXT_REDIRECT:/subscribe",
-        );
-
-        expect(mockRedirect).toHaveBeenCalledWith("/subscribe");
-        expect(mockRedirect).not.toHaveBeenCalledWith("/athlete");
-      });
-
-      it("redirects to /subscribe when capability is 'ios-iap' (FV-577 — NOT a dead end)", async () => {
-        mockGetRequestShellCapability.mockReturnValue("ios-iap");
-
-        await expect(signUpAdultAthlete(null, fd(VALID))).rejects.toThrow(
-          "NEXT_REDIRECT:/subscribe",
-        );
-
-        expect(mockRedirect).toHaveBeenCalledWith("/subscribe");
-        expect(mockRedirect).not.toHaveBeenCalledWith("/athlete");
-      });
+      expect(mockSignUp).toHaveBeenCalledOnce();
+      expect(mockSignUp.mock.calls[0]?.[0]).toEqual({
+        email: "adult@example.com",
+        password: "password123",
+      }); // no options.data
+      expect(mockFrom).not.toHaveBeenCalled();
+      expect(mockInsert).not.toHaveBeenCalled();
+      expect(mockRedirect).not.toHaveBeenCalled();
+      expect(mockDeleteUser).not.toHaveBeenCalled();
     });
   });
 });

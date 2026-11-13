@@ -204,15 +204,22 @@ enable_signup = true
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
-enable_confirmations = false
+# FV-671 (SSO A1): ON permanently. A new password signup has no session until
+# the owner enters the 6-digit code from the confirmation email; the profile is
+# created afterwards by complete_pending_profile(). E2E seeds are created with
+# email_confirm: true via the admin API so they are unaffected. Never turn this
+# back OFF (spec section 13 rollback floor).
+enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
-max_frequency = "1s"
+# FV-671: 60s resend cooldown (spec section 4).
+max_frequency = "60s"
 # Number of characters used in the email OTP.
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
-otp_expiry = 3600
+# FV-671: 15 minutes (spec section 4).
+otp_expiry = 900
 
 # Use a production-ready SMTP server
 # [auth.email.smtp]
@@ -223,6 +230,11 @@ otp_expiry = 3600
 # pass = "env(SENDGRID_API_KEY)"
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
+
+# FV-671: the signup confirmation email carries the 6-digit {{ .Token }} (no link).
+[auth.email.template.confirmation]
+subject = "Your From Victory verification code"
+content_path = "./supabase/templates/confirmation.html"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]
