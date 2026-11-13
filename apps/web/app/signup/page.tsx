@@ -2,7 +2,10 @@ import Link from "next/link";
 
 import { AuthShell, type AuthStep } from "@/components/auth/AuthShell";
 import { SignUpForm } from "@/components/auth/SignUpForm";
-import { TrialDisclosure } from "@/components/auth/TrialDisclosure";
+import {
+  IosSignupSubscriptionNote,
+  TrialDisclosure,
+} from "@/components/auth/TrialDisclosure";
 import { Icon } from "@/components/ui";
 import { redirectIfAuthed } from "@/lib/auth/guards";
 import { isAdultSignupEnabled } from "@/lib/flags";
@@ -25,9 +28,10 @@ export default async function SignUpPage() {
   // The parent form stays immediately visible. The 18+ path is a row under
   // the subtitle, only when adult signup is enabled.
   const adultSignupEnabled = isAdultSignupEnabled();
-  // Web and PWA show the 7-day price line. A native shell does not: ios-iap
-  // takes price and trial from StoreKit, and a restricted shell shows no price.
-  const showWebTrialCopy = getRequestShellCapability() === null;
+  // Web and PWA show the 7-day price line. ios-iap points at the in-app
+  // subscription step with no web price or trial terms (StoreKit shows
+  // Apple's). A restricted shell shows no price.
+  const shellCapability = getRequestShellCapability();
 
   return (
     <AuthShell
@@ -49,8 +53,10 @@ export default async function SignUpPage() {
       ) : null}
       <SignUpForm
         afterSubmit={
-          showWebTrialCopy ? (
+          shellCapability === null ? (
             <TrialDisclosure detail="Free trial for first-time subscribers with one athlete. Next, add your athlete from your dashboard." />
+          ) : shellCapability === "ios-iap" ? (
+            <IosSignupSubscriptionNote />
           ) : undefined
         }
       />

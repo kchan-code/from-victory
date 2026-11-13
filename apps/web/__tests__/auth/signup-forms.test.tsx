@@ -48,6 +48,8 @@ describe("signup forms (FV-707)", () => {
     expect(
       screen.getByRole("button", { name: "Create parent account" }),
     ).toBeInTheDocument();
+    expect(screen.getByLabelText("Email").className).toMatch(/text-\[16px\]/);
+    expect(screen.getByLabelText("Password").className).toMatch(/text-\[16px\]/);
   });
 
   it("adult form keeps the 18+ gates and points under-18 athletes to an invite", () => {

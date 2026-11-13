@@ -10,6 +10,18 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-13: Store shells, signup price line, and how a 13-17 account is deleted (FV-716, FV-719, FV-720, FV-734)
+
+On the website, parent signup and adult signup still say 7 days free, then $5/mo or $49/yr, for a first-time subscriber with one athlete. The sentence that a card is required and will be charged when the trial ends stays on checkout only.
+
+In the iPhone app, both signup screens do not show a web price, a trial length, or a card. They say that after you create your account, you choose a subscription in the app. Apple's purchase sheet shows the price. The purchase screen says the subscription renews automatically at the price shown until you cancel, and that you cancel in iPhone Settings under your Apple ID, then Subscriptions. The Android app and older shells still show no price and no trial length on signup.
+
+Daily reminders in the iPhone app and the Android app say they are not available in the app yet. The website and an installed home-screen version still offer the reminder.
+
+An athlete ages 13-17 sees, in settings, that the parent who set up the account can delete it from the parent dashboard. The contact is privacy@fromvictoryapp.com. There is no delete button and no billing on that screen. A parent still deletes from the parent dashboard. An adult athlete still deletes their own account from settings.
+
+Why it matters to a buyer: the iPhone app does not quote the website price, and a 13-17 athlete can see who deletes the account.
+
 ## 2026-11-13: Signed-out screen says Welcome, then parent, 18+, or invite (FV-707, FV-708; effective when the PR deploys)
 
 The signed-out screen on the website, in the iPhone app, and in the Android app says "Welcome" and asks how the person will use From Victory. The choices are "I'm a parent" (parent account), "I'm 18+ and training myself" (own account, only when adult signup is enabled), and "I have an invite" (athletes under 18). "Sign in" opens the existing parent email form and the athlete username form. A device that already belongs to an athlete still says "Welcome back" plus that athlete's first name.

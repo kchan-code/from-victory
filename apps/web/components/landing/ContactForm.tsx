@@ -66,7 +66,7 @@ export function ContactForm() {
             required
             maxLength={120}
             aria-invalid={errorField === "name"}
-            className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[15px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18]"
+            className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[16px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18]"
           />
         </Field>
         <Field id="c-email" label="Email">
@@ -79,7 +79,7 @@ export function ContactForm() {
             required
             maxLength={320}
             aria-invalid={errorField === "email"}
-            className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[15px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18]"
+            className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[16px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18]"
           />
         </Field>
       </div>
@@ -92,7 +92,7 @@ export function ContactForm() {
           required
           maxLength={2000}
           aria-invalid={errorField === "message"}
-          className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[15px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18] resize-y min-h-[140px]"
+          className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[16px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18] resize-y min-h-[140px]"
         />
       </Field>
 
