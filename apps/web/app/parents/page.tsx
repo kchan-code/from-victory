@@ -95,7 +95,7 @@ const parentSees = [
 // never claims a flow that would 404 (qa-reviewer FV-550 must-fix).
 function getPricingPoints(adultSignup: boolean): string[] {
   return [
-    "7 days free for first-time subscribers: no charge until the trial ends",
+    "7 days free for a first-time checkout with one athlete: no charge until the trial ends",
     "$5/mo or $49/yr for your first athlete, $3/mo or $29/yr for each additional",
     adultSignup
       ? "Athletes 13-17 train under your account; athletes 18+ can start their own 7-day trial, $5/mo or $49/yr"
@@ -406,7 +406,7 @@ export default function ParentsPage() {
             <div className="grid gap-12 lg:gap-16 items-start grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
               <div>
                 <h2 className="fv-h-section mb-8">
-                  7 days free. Then $5/mo or $49/yr.
+                  7 days free for your first athlete. Then $5/mo or $49/yr.
                 </h2>
                 <ul className="flex flex-col gap-3.5 m-0 p-0 list-none mb-10">
                   {pricingPoints.map((pt) => (
@@ -483,7 +483,7 @@ export default function ParentsPage() {
                     "Pre-practice lock-in",
                     "Journey view + rhythm tracking",
                     "Parent dashboard",
-                    "7-day free trial",
+                    "7-day free trial for your first athlete",
                   ].map((feat) => (
                     <div key={feat} className="flex items-center gap-3">
                       <div

@@ -181,6 +181,20 @@ describe('/parents — "Read it here. They train it in the app." links (FV-550)'
   });
 });
 
+describe("/parents — one-athlete trial (FV-609)", () => {
+  it("qualifies the 7-day trial as a first checkout with one athlete", () => {
+    const { container } = render(<ParentsPage />);
+    const text = container.textContent ?? "";
+    expect(text).toContain(
+      "7 days free for your first athlete. Then $5/mo or $49/yr.",
+    );
+    expect(text).toContain("7-day free trial for your first athlete");
+    expect(text).toContain(
+      "7 days free for a first-time checkout with one athlete: no charge until the trial ends",
+    );
+  });
+});
+
 describe("/parents — voice scans (FV-550)", () => {
   it("contains no customer-facing em dashes", () => {
     const { container } = render(<ParentsPage />);

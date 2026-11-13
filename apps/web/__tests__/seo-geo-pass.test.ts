@@ -33,6 +33,11 @@ describe("SoftwareApplication JSON-LD (FV-504)", () => {
     const offers = SOFTWARE_APPLICATION_JSON_LD.offers;
     expect(offers.some((o) => o.price === "0")).toBe(true);
     expect(offers.some((o) => o.description?.includes("7-day"))).toBe(true);
+    const trialOffers = offers.filter((o) => o.description?.includes("7-day"));
+    expect(trialOffers.length).toBeGreaterThan(0);
+    for (const offer of trialOffers) {
+      expect(offer.description).toMatch(/one athlete/i);
+    }
     expect(offers.map((o) => o.price)).toEqual(
       expect.arrayContaining(["5.00", "49.00", "3.00", "29.00"]),
     );
@@ -233,6 +238,12 @@ describe("llms.txt (FV-504)", () => {
     expect(llms).not.toContain("Not listed on the App Store or Google Play yet");
     expect(llms).not.toContain("Not in stores yet");
     expect(llms).not.toMatch(/Crossway|Biblica grant/i);
+  });
+
+  it("qualifies the pricing-line trial as a one-athlete start", () => {
+    expect(llms).toContain(
+      "7 days free when you start with one athlete, then $49/yr or $5/mo for your first athlete, $29/yr or $3/mo for each additional.",
+    );
   });
 
   it("has short lift-able answers for the named moments", () => {

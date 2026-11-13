@@ -25,7 +25,7 @@ import { vi } from "vitest";
 vi.mock("@/components/landing/ScrollNav", () => ({ ScrollNav: () => null }));
 vi.mock("@/components/landing/Footer", () => ({ Footer: () => null }));
 
-import PricingPage from "@/app/pricing/page";
+import PricingPage, { metadata } from "@/app/pricing/page";
 
 // jsdom doesn't implement matchMedia — stub it so Reveal.tsx can mount.
 beforeAll(() => {
@@ -50,6 +50,15 @@ describe("PricingPage — structure", () => {
   it("renders exactly one <h1>", () => {
     const { container } = render(<PricingPage />);
     expect(container.querySelectorAll("h1")).toHaveLength(1);
+    expect(container.querySelector("h1")?.textContent).toMatch(
+      /7 days free for your first athlete/i,
+    );
+  });
+
+  it("metadata qualifies the trial as a one-athlete start", () => {
+    expect(metadata.description).toContain(
+      "7 days free when you start with one athlete",
+    );
   });
 });
 
@@ -138,8 +147,9 @@ describe("PricingPage — single primary CTA with adjacent terms", () => {
     const cta = screen.getByTestId("plan-cta");
     const terms = screen.getByTestId("plan-cta-terms");
     expect(cta.nextElementSibling).toBe(terms);
-    expect(terms).toHaveTextContent(/7 days free/i);
-    expect(terms).toHaveTextContent(/cancel anytime/i);
+    expect(terms).toHaveTextContent(
+      /7 days free for your first athlete, cancel anytime/i,
+    );
   });
 });
 

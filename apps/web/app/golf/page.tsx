@@ -274,7 +274,7 @@ export default function GolfPage() {
                     A parent buys and manages the account for athletes 13–17.
                     You see rhythm: they showed up. You do not see what they
                     prayed or which hard moment they named. 18+ can train on
-                    their own. 7 days free, then $5/mo or $49/yr for the
+                    their own. 7 days free when you start with one athlete, then $5/mo or $49/yr for the
                     first athlete. $3/$29 for each additional. Cancel anytime.
                   </p>
                   <div className="flex flex-wrap gap-3">

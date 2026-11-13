@@ -3,9 +3,9 @@ import { Reveal } from "./Reveal";
 import { SectionMeta } from "./SectionMeta";
 import { SvgIcon } from "./SvgIcon";
 
-// FV-514 homepage IA restructure — pricing summary strip. Heading is
-// KC-approved verbatim (audit doc §7 decision 5). Price line is the same
-// sentence used verbatim on the pricing-page hero (app/pricing/page.tsx).
+// FV-514 homepage IA restructure — pricing summary strip. The heading
+// names the one-athlete trial (FV-609). Price line matches the
+// pricing-page hero (app/pricing/page.tsx).
 
 export function PricingSummary() {
   return (
@@ -16,7 +16,7 @@ export function PricingSummary() {
         </Reveal>
         <Reveal>
           <div className="max-w-[620px]">
-            <h2 className="fv-h-section mb-6">7 days free. Cancel anytime.</h2>
+            <h2 className="fv-h-section mb-6">7 days free for your first athlete. Cancel anytime.</h2>
             {/* Verbatim: app/pricing/page.tsx hero sub-copy. */}
             <p className="fv-lede mb-8">
               $49/yr or $5/mo for your first athlete, $29/yr or $3/mo
