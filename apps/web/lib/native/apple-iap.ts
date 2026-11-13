@@ -29,9 +29,14 @@
  *   window.Capacitor.Plugins.FVAppleIAPPlugin.purchase(
  *     { productId: string; appAccountToken: string }
  *   ) => Promise<
- *          | { ok: true; signedTransactionInfo: string; signedRenewalInfo?: string }
+ *          | { ok: true; signedTransactionInfo: string; signedRenewalInfo?: string;
+ *              transactionId?: string }
  *          | { ok: false; error: "cancelled" | "pending" | "failed" }
  *        >
+ *     `transactionId` (FV-712) is present only on newer native binaries.
+ *     Those binaries do NOT call `transaction.finish()` themselves — the web
+ *     layer finishes the transaction (via `finishTransactions`) only after
+ *     the server confirms it. Old binaries omit it and finish natively.
  *     `appAccountToken` is a UUID string (from `beginApplePurchase()`,
  *     apps/web/lib/actions/apple-subscription.ts) forwarded verbatim to
  *     StoreKit's `Product.PurchaseOption.appAccountToken`. The native side
@@ -68,6 +73,28 @@
  *     information about what the user does inside it (entitlement changes
  *     made there flow back to us via Notifications V2 / the next restore).
  *
+ *   FV-712 ADDITIVE methods (absent on binaries already in the App Store —
+ *   every one is feature-detected with `typeof bridge.x === "function"`; an
+ *   old binary yields `error: "unsupported"` and behaves exactly as before):
+ *
+ *   window.Capacitor.Plugins.FVAppleIAPPlugin.getUnfinishedTransactions()
+ *     => Promise<
+ *          | { ok: true; transactions: { transactionId: string; originalTransactionId: string;
+ *              signedTransactionInfo: string; signedRenewalInfo?: string }[] }
+ *          | { ok: false; error: "failed" }
+ *        >
+ *     Verified-only, NEWEST-FIRST. Only the first entry may carry
+ *     `signedRenewalInfo`.
+ *
+ *   window.Capacitor.Plugins.FVAppleIAPPlugin.finishTransactions(
+ *     { transactionIds: string[] }
+ *   ) => Promise<{ ok: true; finished: number } | { ok: false; error: "failed" }>
+ *
+ *   window.Capacitor.Plugins.FVAppleIAPPlugin.addListener(
+ *     "transactionsUpdated", cb
+ *   ) => handle with remove()   (empty payload; fired when StoreKit's
+ *     `Transaction.updates` yields a verified transaction; may be absent)
+ *
  * Every exported function here is async, is fully typed, and NEVER throws a
  * raw error across the call boundary — every native/bridge failure is caught
  * and mapped to a typed, discriminated result (or a safe empty value for
@@ -86,7 +113,7 @@ interface NativeGetProductsResult {
 }
 
 type NativePurchaseResult =
-  | { ok: true; signedTransactionInfo: string; signedRenewalInfo?: string }
+  | { ok: true; signedTransactionInfo: string; signedRenewalInfo?: string; transactionId?: unknown }
   | { ok: false; error?: string };
 
 interface NativeRestoreTransaction {
@@ -100,7 +127,16 @@ type NativeRestoreResult =
 
 type NativeManageResult = { ok: true } | { ok: false; error?: string };
 
+type NativeListenerHandle = { remove: () => Promise<void> | void };
+
 interface FVAppleIAPPluginBridge {
+  // FV-712 additive methods — optional: absent on already-shipped binaries.
+  getUnfinishedTransactions?: () => Promise<unknown>;
+  finishTransactions?: (options: { transactionIds: string[] }) => Promise<unknown>;
+  addListener?: (
+    event: "transactionsUpdated",
+    cb: () => void,
+  ) => Promise<NativeListenerHandle> | NativeListenerHandle;
   getProducts(options: { productIds: string[] }): Promise<NativeGetProductsResult>;
   purchase(options: {
     productId: string;
@@ -154,7 +190,7 @@ export interface ApplePurchaseInput {
 export type ApplePurchaseError = "cancelled" | "pending" | "bridge_unavailable" | "failed";
 
 export type ApplePurchaseResult =
-  | { ok: true; signedTransactionInfo: string; signedRenewalInfo?: string }
+  | { ok: true; signedTransactionInfo: string; signedRenewalInfo?: string; transactionId?: string }
   | { ok: false; error: ApplePurchaseError };
 
 export interface AppleRestoreTransaction {
@@ -233,6 +269,9 @@ export async function purchase(input: ApplePurchaseInput): Promise<ApplePurchase
         ok: true,
         signedTransactionInfo: result.signedTransactionInfo,
         signedRenewalInfo: result.signedRenewalInfo,
+        ...(typeof result.transactionId === "string" && result.transactionId
+          ? { transactionId: result.transactionId }
+          : {}),
       };
     }
     return { ok: false, error: coercePurchaseError(result?.ok === false ? result.error : undefined) };
@@ -286,4 +325,133 @@ export async function manageSubscriptions(): Promise<AppleManageResult> {
     logBridgeWarning("manageSubscriptions", err);
     return { ok: false, error: "failed" };
   }
+}
+
+// ---------------------------------------------------------------------------
+// FV-712 — unfinished-transaction sync API (additive; feature-detected)
+// ---------------------------------------------------------------------------
+
+export interface AppleUnfinishedTransaction {
+  transactionId: string;
+  /** StoreKit's original transaction id: the same for every renewal of one
+   * subscription. Absent only if the native payload omits it. */
+  originalTransactionId?: string;
+  signedTransactionInfo: string;
+  signedRenewalInfo?: string;
+}
+
+/** `"unsupported"` = bridge present but the method is missing (old binary). */
+export type AppleSyncBridgeError = "bridge_unavailable" | "unsupported" | "failed";
+
+export type AppleUnfinishedResult =
+  | { ok: true; transactions: AppleUnfinishedTransaction[] }
+  | { ok: false; error: AppleSyncBridgeError };
+
+export type AppleFinishResult =
+  | { ok: true; finished: number }
+  | { ok: false; error: AppleSyncBridgeError };
+
+/**
+ * Verified, unfinished StoreKit transactions, NEWEST-FIRST. Malformed
+ * entries (non-string id / JWS) are dropped. Never throws.
+ */
+export async function getUnfinishedTransactions(): Promise<AppleUnfinishedResult> {
+  const bridge = getBridge();
+  if (!bridge) return { ok: false, error: "bridge_unavailable" };
+  if (typeof bridge.getUnfinishedTransactions !== "function") {
+    return { ok: false, error: "unsupported" };
+  }
+  try {
+    const result = (await bridge.getUnfinishedTransactions()) as
+      | { ok?: unknown; transactions?: unknown }
+      | null
+      | undefined;
+    if (result?.ok !== true) return { ok: false, error: "failed" };
+    const raw: unknown[] = Array.isArray(result.transactions) ? result.transactions : [];
+    const transactions: AppleUnfinishedTransaction[] = [];
+    for (const entry of raw) {
+      const e = entry as Record<string, unknown> | null;
+      if (
+        !e ||
+        typeof e.transactionId !== "string" ||
+        !e.transactionId ||
+        typeof e.signedTransactionInfo !== "string" ||
+        !e.signedTransactionInfo
+      ) {
+        continue;
+      }
+      transactions.push({
+        transactionId: e.transactionId,
+        ...(typeof e.originalTransactionId === "string" && e.originalTransactionId
+          ? { originalTransactionId: e.originalTransactionId }
+          : {}),
+        signedTransactionInfo: e.signedTransactionInfo,
+        ...(typeof e.signedRenewalInfo === "string" && e.signedRenewalInfo
+          ? { signedRenewalInfo: e.signedRenewalInfo }
+          : {}),
+      });
+    }
+    return { ok: true, transactions };
+  } catch (err) {
+    logBridgeWarning("getUnfinishedTransactions", err);
+    return { ok: false, error: "failed" };
+  }
+}
+
+/** Finishes the given StoreKit transactions. No-op ok for an empty list. */
+export async function finishTransactions(ids: string[]): Promise<AppleFinishResult> {
+  const bridge = getBridge();
+  if (!bridge) return { ok: false, error: "bridge_unavailable" };
+  if (typeof bridge.finishTransactions !== "function") {
+    return { ok: false, error: "unsupported" };
+  }
+  if (ids.length === 0) return { ok: true, finished: 0 };
+  try {
+    const result = (await bridge.finishTransactions({ transactionIds: ids })) as
+      | { ok?: unknown; finished?: unknown }
+      | null
+      | undefined;
+    if (result?.ok === true) {
+      return { ok: true, finished: typeof result.finished === "number" ? result.finished : 0 };
+    }
+    return { ok: false, error: "failed" };
+  } catch (err) {
+    logBridgeWarning("finishTransactions", err);
+    return { ok: false, error: "failed" };
+  }
+}
+
+/**
+ * Subscribes to native `transactionsUpdated`. Returns an unsubscribe that is
+ * safe whether the listener handle is a promise or sync, and a no-op when the
+ * bridge or `addListener` is missing. Never throws.
+ */
+export function onTransactionsUpdated(cb: () => void): () => void {
+  const bridge = getBridge();
+  if (!bridge || typeof bridge.addListener !== "function") return () => {};
+  let cancelled = false;
+  let handle: NativeListenerHandle | null = null;
+  const removeHandle = (h: NativeListenerHandle | null | undefined) => {
+    try {
+      void Promise.resolve(h?.remove?.()).catch(() => {});
+    } catch {
+      // Removal failure is harmless.
+    }
+  };
+  try {
+    Promise.resolve(bridge.addListener("transactionsUpdated", () => cb()))
+      .then((h) => {
+        if (cancelled) removeHandle(h);
+        else handle = h;
+      })
+      .catch((err) => logBridgeWarning("onTransactionsUpdated", err));
+  } catch (err) {
+    logBridgeWarning("onTransactionsUpdated", err);
+    return () => {};
+  }
+  return () => {
+    cancelled = true;
+    removeHandle(handle);
+    handle = null;
+  };
 }

@@ -24,6 +24,8 @@ const {
   beginApplePurchaseMock,
   submitApplePurchaseMock,
   refreshMock,
+  finishTransactionsMock,
+  syncAppleTransactionsMock,
 } = vi.hoisted(() => ({
   getConfiguredAppleProductsMock: vi.fn(),
   getStoreKitProductsMock: vi.fn(
@@ -36,6 +38,8 @@ const {
   beginApplePurchaseMock: vi.fn(),
   submitApplePurchaseMock: vi.fn(),
   refreshMock: vi.fn(),
+  finishTransactionsMock: vi.fn(async () => ({ ok: true, finished: 1 })),
+  syncAppleTransactionsMock: vi.fn(async () => ({ status: "none" }) as { status: string; applied?: boolean }),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -52,6 +56,11 @@ vi.mock("@/lib/native/apple-iap", () => ({
   purchase: purchaseMock,
   restore: restoreMock,
   manageSubscriptions: manageSubscriptionsMock,
+  finishTransactions: finishTransactionsMock,
+}));
+
+vi.mock("@/lib/native/apple-transaction-sync", () => ({
+  syncAppleTransactions: syncAppleTransactionsMock,
 }));
 
 vi.mock("@/lib/actions/apple-subscription", () => ({
@@ -420,6 +429,75 @@ describe("AppleSubscribeSection — first purchase, single-tier catalog", () => 
     });
     expect(refreshMock).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId("apple-subscribe-error")).toBeNull();
+  });
+
+  it("FV-712: finishes the transaction only after submit ok, when transactionId is present", async () => {
+    const calls: string[] = [];
+    beginApplePurchaseMock.mockResolvedValue({ ok: true, appAccountToken: "token-abc" });
+    purchaseMock.mockResolvedValue({ ok: true, signedTransactionInfo: "jws-txn", transactionId: "tx-1" });
+    submitApplePurchaseMock.mockImplementation(async () => {
+      calls.push("submit");
+      return { ok: true, applied: true };
+    });
+    finishTransactionsMock.mockImplementation(async () => {
+      calls.push("finish");
+      return { ok: true, finished: 1 };
+    });
+
+    await renderReady();
+    fireEvent.click(screen.getByTestId("apple-purchase-submit"));
+    await waitFor(() => expect(screen.getByTestId("apple-subscribe-success")).toBeInTheDocument());
+
+    expect(calls).toEqual(["submit", "finish"]);
+    expect(finishTransactionsMock).toHaveBeenCalledWith(["tx-1"]);
+  });
+
+  it("FV-712: a failing finish does not change the success UI", async () => {
+    beginApplePurchaseMock.mockResolvedValue({ ok: true, appAccountToken: "token-abc" });
+    purchaseMock.mockResolvedValue({ ok: true, signedTransactionInfo: "jws-txn", transactionId: "tx-1" });
+    submitApplePurchaseMock.mockResolvedValue({ ok: true, applied: true });
+    finishTransactionsMock.mockRejectedValueOnce(new Error("boom"));
+
+    await renderReady();
+    fireEvent.click(screen.getByTestId("apple-purchase-submit"));
+    await waitFor(() => expect(screen.getByTestId("apple-subscribe-success")).toBeInTheDocument());
+    expect(screen.queryByTestId("apple-subscribe-error")).toBeNull();
+  });
+
+  it("FV-712: old binary (no transactionId) never calls finishTransactions", async () => {
+    beginApplePurchaseMock.mockResolvedValue({ ok: true, appAccountToken: "token-abc" });
+    purchaseMock.mockResolvedValue({ ok: true, signedTransactionInfo: "jws-txn" });
+    submitApplePurchaseMock.mockResolvedValue({ ok: true, applied: true });
+
+    await renderReady();
+    fireEvent.click(screen.getByTestId("apple-purchase-submit"));
+    await waitFor(() => expect(screen.getByTestId("apple-subscribe-success")).toBeInTheDocument());
+    expect(finishTransactionsMock).not.toHaveBeenCalled();
+  });
+
+  it("FV-712: submit failure does not finish the transaction", async () => {
+    beginApplePurchaseMock.mockResolvedValue({ ok: true, appAccountToken: "token-abc" });
+    purchaseMock.mockResolvedValue({ ok: true, signedTransactionInfo: "jws-txn", transactionId: "tx-1" });
+    submitApplePurchaseMock.mockResolvedValue({ ok: false, error: "internal_error" });
+
+    await renderReady();
+    fireEvent.click(screen.getByTestId("apple-purchase-submit"));
+    await waitFor(() => expect(screen.getByTestId("apple-subscribe-error")).toBeInTheDocument());
+    expect(finishTransactionsMock).not.toHaveBeenCalled();
+  });
+
+  it("FV-712: mount fires a forced sync once the bridge is available, and refreshes only when applied", async () => {
+    syncAppleTransactionsMock.mockResolvedValueOnce({ status: "synced", applied: true });
+    await renderReady();
+    expect(syncAppleTransactionsMock).toHaveBeenCalledWith({ force: true });
+    await waitFor(() => expect(refreshMock).toHaveBeenCalledTimes(1));
+  });
+
+  it("FV-712: mount does not sync when the bridge is unavailable", async () => {
+    getConfiguredAppleProductsMock.mockReturnValue(ONE_TIER);
+    isAppleIapBridgeAvailableMock.mockReturnValue(false);
+    render(<AppleSubscribeSection />);
+    expect(syncAppleTransactionsMock).not.toHaveBeenCalled();
   });
 
   it("user cancellation resets quietly — no error shown", async () => {

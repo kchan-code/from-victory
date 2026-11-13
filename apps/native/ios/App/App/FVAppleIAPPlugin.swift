@@ -33,8 +33,26 @@
 //      -> { "products": [{ "productId", "displayPrice", "displayName" }] }
 //
 //    purchase({ productId: String, appAccountToken: String })
-//      -> { "ok": true, "signedTransactionInfo": String, "signedRenewalInfo": String? }
+//      -> { "ok": true, "transactionId": String, "signedTransactionInfo": String,
+//           "signedRenewalInfo": String? }
 //       | { "ok": false, "error": "cancelled" | "pending" | "failed" }
+//         (FV-712: a successful purchase is NOT finished here. The JS layer
+//         calls finishTransactions once the server has recorded it.)
+//
+//    getUnfinishedTransactions()                                  (FV-712)
+//      -> { "ok": true, "transactions": [{ "transactionId",
+//           "originalTransactionId", "signedTransactionInfo",
+//           "signedRenewalInfo"? }] }
+//         (verified only, NEWEST-FIRST by purchaseDate; only the first
+//         entry carries "signedRenewalInfo")
+//
+//    finishTransactions({ transactionIds: [String] })             (FV-712)
+//      -> { "ok": true, "finished": Int }
+//
+//    event "transactionsUpdated" (empty payload)                  (FV-712)
+//      Fired when StoreKit delivers a verified transaction outside a
+//      purchase() call (Ask to Buy approval, renewal, refund). Retained
+//      until a JS listener consumes it.
 //
 //    restore()
 //      -> { "ok": true, "transactions": [{ "signedTransactionInfo", "signedRenewalInfo"? }] }
@@ -83,7 +101,40 @@ public class FVAppleIAPPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "purchase", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "restore", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "manageSubscriptions", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getUnfinishedTransactions", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "finishTransactions", returnType: CAPPluginReturnPromise),
     ]
+
+    // -----------------------------------------------------------------
+    // Transaction.updates listener (FV-712)
+    // -----------------------------------------------------------------
+
+    /// Long-lived task that iterates `Transaction.updates` for the life of
+    /// the plugin. StoreKit delivers here anything that did not come back
+    /// from a `purchase()` call on this device: an Ask to Buy approval, a
+    /// renewal, a refund, a purchase made on another device.
+    private var updatesTask: Task<Void, Never>?
+
+    /// `load()` runs when the bridge registers the plugin, which is at app
+    /// launch (FVBridgeViewController.capacitorDidLoad), so the listener is
+    /// in place before any web content runs.
+    public override func load() {
+        updatesTask = Task.detached(priority: .utility) { [weak self] in
+            for await update in Transaction.updates {
+                // Unverified updates are ignored: never forwarded, never
+                // finished.
+                guard case .verified = update else { continue }
+                // No payload. The JS side responds by calling
+                // getUnfinishedTransactions, so nothing about the purchase
+                // rides on the event itself.
+                self?.notifyListeners("transactionsUpdated", data: [:], retainUntilConsumed: true)
+            }
+        }
+    }
+
+    deinit {
+        updatesTask?.cancel()
+    }
 
     // -----------------------------------------------------------------
     // getProducts
@@ -156,18 +207,16 @@ public class FVAppleIAPPlugin: CAPPlugin, CAPBridgedPlugin {
                         let signedTransactionInfo = verificationResult.jwsRepresentation
                         let signedRenewalInfo = await Self.currentRenewalInfoJWS(for: product)
 
-                        // Finish immediately: the durable server-side
-                        // record comes from submitApplePurchase's
-                        // real-time server call (and, as a backstop,
-                        // restore() + Notifications V2) — NOT from
-                        // StoreKit's unfinished-transaction redelivery
-                        // queue. Waiting to finish until after the JS
-                        // layer's server round-trip would need a second
-                        // bridge call with no corresponding benefit here.
-                        await transaction.finish()
-
+                        // FV-712: do NOT finish here. The transaction
+                        // stays in StoreKit's unfinished queue until the JS
+                        // layer has a successful server response and calls
+                        // finishTransactions. If that server call fails, or
+                        // the app dies first, the transaction is still
+                        // there at next launch (getUnfinishedTransactions)
+                        // and is submitted again.
                         var payload: [String: Any] = [
                             "ok": true,
+                            "transactionId": String(transaction.id),
                             "signedTransactionInfo": signedTransactionInfo,
                         ]
                         if let signedRenewalInfo {
@@ -252,6 +301,65 @@ public class FVAppleIAPPlugin: CAPPlugin, CAPBridgedPlugin {
                 .map { $0.payload }
 
             call.resolve(["ok": true, "transactions": transactions])
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // getUnfinishedTransactions / finishTransactions (FV-712)
+    // -----------------------------------------------------------------
+
+    @objc func getUnfinishedTransactions(_ call: CAPPluginCall) {
+        Task {
+            var entries: [(date: Date, productID: String, payload: [String: String])] = []
+            for await verificationResult in Transaction.unfinished {
+                guard case .verified(let transaction) = verificationResult else {
+                    // Unverified: never surfaced to the server.
+                    continue
+                }
+                entries.append((
+                    date: transaction.purchaseDate,
+                    productID: transaction.productID,
+                    payload: [
+                        "transactionId": String(transaction.id),
+                        "originalTransactionId": String(transaction.originalID),
+                        "signedTransactionInfo": verificationResult.jwsRepresentation,
+                    ]
+                ))
+            }
+
+            // CONTRACT: newest-first, same as restore().
+            entries.sort { $0.date > $1.date }
+
+            // Renewal info only for the newest entry: it is the only one the
+            // JS side submits, and a device upgraded from a build that never
+            // finished renewals can hold a long backlog.
+            if let newest = entries.first,
+               let product = try? await Product.products(for: [newest.productID]).first,
+               let renewalJWS = await Self.currentRenewalInfoJWS(for: product) {
+                entries[0].payload["signedRenewalInfo"] = renewalJWS
+            }
+
+            call.resolve(["ok": true, "transactions": entries.map { $0.payload }])
+        }
+    }
+
+    @objc func finishTransactions(_ call: CAPPluginCall) {
+        let ids = Set(call.getArray("transactionIds", String.self) ?? [])
+        guard !ids.isEmpty else {
+            call.resolve(["ok": true, "finished": 0])
+            return
+        }
+
+        Task {
+            var finished = 0
+            for await verificationResult in Transaction.unfinished {
+                guard case .verified(let transaction) = verificationResult,
+                      ids.contains(String(transaction.id))
+                else { continue }
+                await transaction.finish()
+                finished += 1
+            }
+            call.resolve(["ok": true, "finished": finished])
         }
     }
 
