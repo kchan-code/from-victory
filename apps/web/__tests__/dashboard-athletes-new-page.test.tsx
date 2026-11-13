@@ -49,12 +49,11 @@ vi.mock("@/lib/subscriptions/trial-conversion", () => ({
   getTrialConversionQuote: trialQuoteMock,
 }));
 
-vi.mock("@/lib/subscriptions/apple", () => ({
-  getActiveAppleProductId: activeAppleProductIdMock,
-}));
-
+// FV-745: the page reads the CAPACITY accessor (a billing-retry Apple row is
+// not the ceiling for a payer who is paid elsewhere), not the raw one.
 vi.mock("@/lib/subscriptions/apple-capacity", () => ({
   capacityForAppleProduct: capacityForAppleProductMock,
+  getCapacityAppleProductId: activeAppleProductIdMock,
 }));
 
 vi.mock("@/components/dashboard/AthleteForm", () => ({

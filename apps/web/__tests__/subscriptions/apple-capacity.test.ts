@@ -19,9 +19,20 @@ vi.mock("server-only", () => ({}));
 // getActiveAppleProductId stub — controls what assertAthleteCapacity sees as
 // the payer's active Apple product id.
 const getActiveAppleProductIdMock = vi.fn();
+// FV-745: the capacity gate reads the error-visible Result accessor. By
+// default it mirrors the plain mock (no read error, not lapsed); a test can
+// override it to model a billing-retry row.
+const getActiveAppleProductIdResultMock = vi.fn();
 vi.mock("@/lib/subscriptions/apple", () => ({
   getActiveAppleProductId: (...args: unknown[]) =>
     getActiveAppleProductIdMock(...args),
+  getActiveAppleProductIdResult: (...args: unknown[]) =>
+    getActiveAppleProductIdResultMock(...args),
+}));
+
+const hasActiveCompGrantMock = vi.fn();
+vi.mock("@/lib/subscriptions/grants", () => ({
+  hasActiveCompGrant: (...args: unknown[]) => hasActiveCompGrantMock(...args),
 }));
 
 import {
@@ -30,6 +41,7 @@ import {
   getAppleProductCapacity,
   payerCapacityCeiling,
   assertAthleteCapacity,
+  getCapacityAppleProductId,
   isStrictAppleCapacityUpgrade,
   type AppleTierCeiling,
 } from "@/lib/subscriptions/apple-capacity";
@@ -40,6 +52,13 @@ const CATALOG_FLAG = "APPLE_CATALOG_ACTIVE";
 
 beforeEach(() => {
   getActiveAppleProductIdMock.mockReset();
+  getActiveAppleProductIdResultMock.mockReset();
+  getActiveAppleProductIdResultMock.mockImplementation(async (...args: unknown[]) => ({
+    productId: (await getActiveAppleProductIdMock(...args)) ?? null,
+    readError: false,
+  }));
+  hasActiveCompGrantMock.mockReset();
+  hasActiveCompGrantMock.mockResolvedValue(false);
   delete process.env[CATALOG_FLAG];
 });
 
@@ -277,5 +296,92 @@ describe("getAppleProductCapacity / capacityForAppleProduct — flag set to \"1\
       );
       expect(result).toBe(false);
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getCapacityAppleProductId — FV-745
+// ---------------------------------------------------------------------------
+
+describe("getCapacityAppleProductId (FV-745)", () => {
+  type StripeRead = { data: { status: string } | null; error: { message: string } | null };
+
+  function serviceWithStripe(result: StripeRead) {
+    const maybeSingle = vi.fn(async () => result);
+    const from = vi.fn(() => ({
+      select: () => ({ eq: () => ({ maybeSingle }) }),
+    }));
+    return { service: { from } as never, from, maybeSingle };
+  }
+
+  const LAPSED = { productId: "apple.tier.two", readError: false, paymentLapsed: true };
+
+  it("an access-granting Apple row is the ceiling, with no extra reads", async () => {
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      productId: "apple.tier.two",
+      readError: false,
+    });
+    const { service, from } = serviceWithStripe({ data: { status: "active" }, error: null });
+    expect(await getCapacityAppleProductId(service, PAYER_ID)).toBe("apple.tier.two");
+    expect(hasActiveCompGrantMock).not.toHaveBeenCalled();
+    expect(from).not.toHaveBeenCalled();
+  });
+
+  it("no Apple row, or an Apple read error, is uncapped", async () => {
+    const { service } = serviceWithStripe({ data: null, error: null });
+    getActiveAppleProductIdResultMock.mockResolvedValue({ productId: null, readError: false });
+    expect(await getCapacityAppleProductId(service, PAYER_ID)).toBeNull();
+    getActiveAppleProductIdResultMock.mockResolvedValue({ productId: null, readError: true });
+    expect(await getCapacityAppleProductId(service, PAYER_ID)).toBeNull();
+  });
+
+  it("billing-retry Apple row ALONE keeps its ceiling (no Stripe row)", async () => {
+    getActiveAppleProductIdResultMock.mockResolvedValue(LAPSED);
+    const { service } = serviceWithStripe({ data: null, error: null });
+    expect(await getCapacityAppleProductId(service, PAYER_ID)).toBe("apple.tier.two");
+  });
+
+  it.each(["canceled", "incomplete_expired"])(
+    "billing-retry Apple row + a %s Stripe row keeps its ceiling (Stripe grants nothing)",
+    async (status) => {
+      getActiveAppleProductIdResultMock.mockResolvedValue(LAPSED);
+      const { service } = serviceWithStripe({ data: { status }, error: null });
+      expect(await getCapacityAppleProductId(service, PAYER_ID)).toBe("apple.tier.two");
+    },
+  );
+
+  it.each(["active", "trialing", "past_due"])(
+    "billing-retry Apple row + a %s Stripe subscription is NOT capped by Apple",
+    async (status) => {
+      getActiveAppleProductIdResultMock.mockResolvedValue(LAPSED);
+      const { service } = serviceWithStripe({ data: { status }, error: null });
+      expect(await getCapacityAppleProductId(service, PAYER_ID)).toBeNull();
+    },
+  );
+
+  it("billing-retry Apple row + a comp grant is NOT capped by Apple", async () => {
+    getActiveAppleProductIdResultMock.mockResolvedValue(LAPSED);
+    hasActiveCompGrantMock.mockResolvedValue(true);
+    const { service, from } = serviceWithStripe({ data: null, error: null });
+    expect(await getCapacityAppleProductId(service, PAYER_ID)).toBeNull();
+    expect(from).not.toHaveBeenCalled();
+  });
+
+  it("a Stripe read error while deciding fails OPEN (uncapped), never caps a paying family", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    getActiveAppleProductIdResultMock.mockResolvedValue(LAPSED);
+    const { service } = serviceWithStripe({ data: null, error: { message: "timeout" } });
+    expect(await getCapacityAppleProductId(service, PAYER_ID)).toBeNull();
+    vi.restoreAllMocks();
+  });
+
+  it("assertAthleteCapacity does not refuse an add for a Stripe-paid family with a lapsed Apple row", async () => {
+    process.env[CATALOG_FLAG] = "1";
+    getActiveAppleProductIdResultMock.mockResolvedValue({
+      ...LAPSED,
+      productId: Object.keys(getAppleProductCapacity())[0] ?? "apple.tier.two",
+    });
+    const { service } = serviceWithStripe({ data: { status: "active" }, error: null });
+    expect(await assertAthleteCapacity(service, PAYER_ID, 99)).toEqual({ allowed: true });
   });
 });

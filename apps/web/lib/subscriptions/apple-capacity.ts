@@ -24,8 +24,10 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 
-import { getActiveAppleProductId } from "./apple";
+import { subscriptionAccessLevel, type SubscriptionStatus } from "./access-level";
+import { getActiveAppleProductId, getActiveAppleProductIdResult } from "./apple";
 import { catalogCapacityMap, isAppleCatalogActive } from "./apple-product-catalog";
+import { hasActiveCompGrant } from "./grants";
 
 type ServiceClient = SupabaseClient<Database>;
 
@@ -146,6 +148,56 @@ export type AssertAthleteCapacityResult =
   | { allowed: false; reason: "capacity_reached" };
 
 /**
+ * The Apple product that sets this payer's athlete CEILING, or null when no
+ * Apple plan caps them (FV-745).
+ *
+ * Same answer as `getActiveAppleProductId`, with one exception. Since FV-710
+ * that accessor also returns a row in billing retry (`paymentLapsed`): the
+ * subscription is still live at Apple but grants no training access. Such a
+ * row is the capacity source ONLY when nothing else is carrying the payer's
+ * access. A family that is paid through Stripe, or comped, and also has an
+ * old App Store subscription stuck in billing retry must not be capped (and
+ * have a paid athlete's seat paused) by a plan that is giving them nothing.
+ * A payer whose only subscription is the lapsed Apple row keeps its ceiling.
+ *
+ * FAIL-OPEN, matching this module's capacity gate and `./seat-state`: an
+ * Apple read error is "not an Apple payer" (uncapped), and a Stripe read
+ * error while deciding the exception is "paid elsewhere" (uncapped). A
+ * transient error must never cap or pause a paying family.
+ * (`hasActiveCompGrant` itself reports a read error as "no grant"; the Stripe
+ * read still runs after it.)
+ */
+export async function getCapacityAppleProductId(
+  service: ServiceClient,
+  payerId: string,
+): Promise<string | null> {
+  const apple = await getActiveAppleProductIdResult(service, payerId);
+  if (apple.readError || apple.productId === null) return null;
+  if (!apple.paymentLapsed) return apple.productId;
+
+  if (await hasActiveCompGrant(service, payerId)) return null;
+
+  const { data, error } = await service
+    .from("subscriptions")
+    .select("status")
+    .eq("parent_id", payerId)
+    .maybeSingle();
+  if (error) {
+    console.error(
+      `[subscriptions/apple-capacity] subscriptions read failed (payer=${payerId}): ${error.message}. Failing OPEN (no Apple ceiling from a lapsed row).`,
+    );
+    return null;
+  }
+  if (
+    data &&
+    subscriptionAccessLevel(data.status as SubscriptionStatus) !== "blocked"
+  ) {
+    return null;
+  }
+  return apple.productId;
+}
+
+/**
  * Server-side add-gate: determines whether a payer may add another athlete.
  *
  * Resolves the payer's provider by checking for an active Apple subscription
@@ -178,7 +230,7 @@ export async function assertAthleteCapacity(
   payerId: string,
   currentAthleteCount: number,
 ): Promise<AssertAthleteCapacityResult> {
-  const appleProductId = await getActiveAppleProductId(service, payerId);
+  const appleProductId = await getCapacityAppleProductId(service, payerId);
 
   if (!appleProductId) {
     // No active Apple subscription — not an Apple payer for capacity
