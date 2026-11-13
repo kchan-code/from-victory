@@ -28,7 +28,7 @@ export function Hero() {
 
             <h1 className="fv-h-hero mb-[26px]">
               Visualize and Compete
-              <br />
+              <br />{" "}
               <em>From Victory</em>
             </h1>
 
