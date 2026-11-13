@@ -1,6 +1,6 @@
 "use client"; // client: error boundary requires useEffect + reset callback (React requirement)
 
-import { useEffect } from "react";
+import { useReportClientError } from "@/components/errors/useReportClientError";
 
 export default function ErrorBoundary({
   error,
@@ -9,10 +9,7 @@ export default function ErrorBoundary({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    // Log to server-side telemetry if wired up later — no third-party SDK here.
-    console.error(error);
-  }, [error]);
+  useReportClientError(error);
 
   return (
     <main id="main-content" className="min-h-[100dvh] bg-onyx text-cream flex flex-col items-center justify-center px-6 py-16 text-center">

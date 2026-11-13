@@ -46,6 +46,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+import { alertCronFailure } from "@/lib/monitoring/cron-alert";
 import { createServiceClient } from "@/lib/supabase/service";
 
 // How long to retain a consumed (successfully claimed) pairing row before the
@@ -53,12 +54,32 @@ import { createServiceClient } from "@/lib/supabase/service";
 const CONSUMED_RETENTION_HOURS = 72;
 
 async function handleCronRequest(req: NextRequest) {
+  try {
+    return await runReap(req);
+  } catch (err) {
+    console.error(
+      "[cron/reap-pairings] threw",
+      err instanceof Error ? err.name : "Error",
+    );
+    alertCronFailure(
+      "[cron/reap-pairings] threw",
+      err instanceof Error ? err.name : "Error",
+    );
+    return NextResponse.json({ error: "Cron failed." }, { status: 500 });
+  }
+}
+
+async function runReap(req: NextRequest) {
   // 1. CRON_SECRET must be configured.
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     console.error(
       "[cron/reap-pairings] CRON_SECRET is not configured. " +
         "Set this env var to protect the cron route.",
+    );
+    alertCronFailure(
+      "[cron/reap-pairings] missing config",
+      "CRON_SECRET is not set",
     );
     return NextResponse.json(
       { error: "Cron secret not configured." },
@@ -86,6 +107,7 @@ async function handleCronRequest(req: NextRequest) {
 
   let expiredPruned = 0;
   let consumedPruned = 0;
+  const reasons: string[] = [];
 
   // 3a. Reap expired + unconsumed rows (dead, never-claimed tokens).
   //     Uses device_pairings_unconsumed_expires_idx.
@@ -102,6 +124,7 @@ async function handleCronRequest(req: NextRequest) {
         "[cron/reap-pairings] expired+unconsumed prune failed:",
         error.message,
       );
+      reasons.push("expired");
     } else {
       expiredPruned = data?.length ?? 0;
     }
@@ -121,9 +144,22 @@ async function handleCronRequest(req: NextRequest) {
         "[cron/reap-pairings] aged-consumed prune failed:",
         error.message,
       );
+      reasons.push("consumed");
     } else {
       consumedPruned = data?.length ?? 0;
     }
+  }
+
+  if (reasons.length > 0) {
+    alertCronFailure(
+      "[cron/reap-pairings] failures",
+      "reaper delete failed",
+      {
+        reasons: reasons.join("+"),
+        expiredPruned: String(expiredPruned),
+        consumedPruned: String(consumedPruned),
+      },
+    );
   }
 
   console.info(
