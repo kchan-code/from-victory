@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import {
+  alertAppleRevokeFailure,
+  revokeAppleTokensWithRetry,
+} from "@/lib/auth/apple/revoke";
 import { requireParent, requireSubscriber } from "@/lib/auth/guards";
 import {
   isDeletionRateLimited,
@@ -164,7 +168,44 @@ export async function deleteAthlete(
   return null;
 }
 
-export type DeleteAccountState = { ok: false; error: string } | null;
+// FV-673 (spec §5.5): `ok: true` is returned ONLY when the account is deleted
+// but Apple could not be told to revoke its sign-in authorization; the UI shows
+// the manual-revoke instruction instead of redirecting. Normal success still
+// redirects (the action never returns).
+export type DeleteAccountState =
+  | { ok: false; error: string }
+  | { ok: true; appleRevokeManual: true }
+  | null;
+
+/**
+ * Revoke a user's stored Apple refresh tokens before their auth row is
+ * deleted: 3 inline attempts. Returns true when nothing is left un-revoked.
+ * On failure the caller deletes anyway (the deletion right is never blocked
+ * by Apple) and we alert with the internal id only (no token / email).
+ * Deliberately NOT gated by the SSO_* flags.
+ */
+async function revokeAppleBeforeDelete(userId: string): Promise<boolean> {
+  try {
+    const r = await revokeAppleTokensWithRetry(userId, 3);
+    if (r.allOk) return true;
+  } catch {
+    /* fall through to the alert */
+  }
+  alertAppleRevokeFailure("revoke failed during account deletion", { user_id: userId });
+  return false;
+}
+
+/** Whether the signed-in user has an Apple identity (read BEFORE the delete). */
+async function sessionHasAppleIdentity(): Promise<boolean> {
+  try {
+    const {
+      data: { user },
+    } = await createClient().auth.getUser();
+    return (user?.identities ?? []).some((i) => i.provider === "apple");
+  } catch {
+    return false;
+  }
+}
 
 export async function deleteAccount(
   _prev: DeleteAccountState,
@@ -207,6 +248,9 @@ export async function deleteAccount(
       error: `Too many deletion requests. Please wait before trying again.`,
     };
   }
+
+  // FV-673: capture BEFORE anything is deleted (the session dies with the row).
+  const hasAppleIdentity = await sessionHasAppleIdentity();
 
   // ---------------------------------------------------------------------------
   // Step 1: Cancel the Stripe subscription BEFORE touching any DB rows.
@@ -264,6 +308,10 @@ export async function deleteAccount(
   }
   // No subscription row or no stripe_subscription_id — nothing to cancel.
 
+  // Ordering contract (spec §13a): Stripe cancel (above) -> [future Play
+  // Billing cancel goes HERE, FV-620/651; not implemented] -> Apple revoke
+  // (per user, immediately before that user's delete below) -> delete.
+
   // ---------------------------------------------------------------------------
   // Step 2: Delete sole-managed athletes.
   //
@@ -295,6 +343,10 @@ export async function deleteAccount(
       .eq("athlete_id", athleteId);
     if ((count ?? 0) > 1) continue; // shared with a co-parent — keep
 
+    // FV-673: revoke this user's Apple tokens first (no-op for synthetic-email
+    // athletes; real for any adult athlete). Failure never blocks the delete.
+    await revokeAppleBeforeDelete(athleteId);
+
     const { error } = await service.auth.admin.deleteUser(athleteId);
     if (error) {
       console.error(
@@ -319,6 +371,8 @@ export async function deleteAccount(
   // up the row by stripe_customer_id, find nothing (already cascade-deleted), and
   // return 200 with a console.warn. No orphan, no retry loop.
   // ---------------------------------------------------------------------------
+  const payerRevoked = await revokeAppleBeforeDelete(parentId);
+
   const { error } = await service.auth.admin.deleteUser(parentId);
   if (error) {
     console.error(
@@ -355,6 +409,14 @@ export async function deleteAccount(
   // Clear the now-orphaned session cookies, then send them home.
   const supabase = createClient();
   await supabase.auth.signOut();
+
+  // FV-673: Apple could not be told to revoke. The account IS deleted; show the
+  // manual instruction (Settings > Apple ID > Sign in with Apple) instead of
+  // redirecting away.
+  if (!payerRevoked && hasAppleIdentity) {
+    return { ok: true, appleRevokeManual: true };
+  }
+
   // Same shell/browser split as signOut() in lib/actions/auth.ts (FV-489):
   // "/" is the gated marketing root in-shell (real prices, trial CTA), a
   // Play Payments violation on this account-deletion sign-out too. Browser
