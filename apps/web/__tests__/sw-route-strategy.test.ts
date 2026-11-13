@@ -156,6 +156,11 @@ const CASES: Case[] = [
     expected: "passthrough",
   },
   {
+    name: "/update-required → passthrough (FV-717: must reach the server with the shell UA)",
+    input: { pathname: "/update-required", isSameOrigin: true, isNavigate: true },
+    expected: "passthrough",
+  },
+  {
     name: "/pair → passthrough",
     input: { pathname: "/pair", isSameOrigin: true, isNavigate: true },
     expected: "passthrough",

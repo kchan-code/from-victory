@@ -235,6 +235,14 @@ redirected. API routes, auth callbacks and form/server-action posts are not,
 so a request already in flight finishes; the next navigation is gated. This is
 a routing hint from a client-supplied header, not a security boundary.
 
+**Known limit (service worker).** A page the service worker re-issues reaches
+the server without the app's User-Agent (FV-489/FV-493), so it is not gated.
+Every sign-in, account and purchase route is on the worker's bypass list and
+is gated. What can slip through: the worker-handled public pages and the
+cached `/athlete/pregame` shell. `/update-required` is on the bypass list
+(`public/sw.js`, `lib/sw/route-strategy.ts`), and the redirect names the
+platform (`?p=android`) so the screen still renders under an older worker.
+
 ### iOS — Mac follow-up (copy-paste)
 
 This runner scaffolds `apps/native/ios/` but cannot archive. **macOS + Xcode

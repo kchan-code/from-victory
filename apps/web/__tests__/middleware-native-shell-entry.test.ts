@@ -270,7 +270,7 @@ describe("middleware — minimum-supported-build gate (FV-717)", () => {
         const response = await middleware(makeRequest(path, NATIVE_SHELL_UA));
         expect(response.status).toBe(307);
         expect(response.headers.get("location")).toBe(
-          "https://www.fromvictoryapp.com/update-required",
+          "https://www.fromvictoryapp.com/update-required?p=android",
         );
         expect(response.headers.get("cache-control")).toBe("no-store");
         expect(response.headers.get("vary")).toContain("User-Agent");
@@ -303,7 +303,7 @@ describe("middleware — minimum-supported-build gate (FV-717)", () => {
     try {
       const response = await middleware(makeRequest("/dashboard", NATIVE_SHELL_UA));
       expect(response.headers.get("location")).toBe(
-        "https://www.fromvictoryapp.com/update-required",
+        "https://www.fromvictoryapp.com/update-required?p=android",
       );
       expect(response.cookies.get("sb-refreshed")?.value).toBe("yes");
     } finally {

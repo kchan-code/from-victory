@@ -13,8 +13,8 @@ import { getShellCapability } from "./native-shell";
  * where <n> is the store build number (Android `versionCode`, iOS
  * `CFBundleVersion`). It is appended AFTER the platform token and never
  * changes the frozen `FVNativeShell/1` token. Android stamps it at build time
- * (apps/native/scripts/stamp-build-marker.mjs, enforced by Gradle); iOS adds
- * it at runtime from the bundle (FVBridgeViewController.swift).
+ * (Gradle task `stampNativeBuildMarker`, apps/native/android/app/build.gradle);
+ * iOS adds it at runtime from the bundle (FVBridgeViewController.swift).
  *
  * VERSION-LESS SHELLS COUNT AS THE OLDEST (KC decision 2026-11-13). Every
  * binary shipped before FV-717 sends no marker. They are treated as build 0,
@@ -28,6 +28,16 @@ import { getShellCapability } from "./native-shell";
  *
  * Like everything UA-derived, this is a presentation/routing hint, never
  * authorization. A forged UA can only show or skip the update screen.
+ *
+ * KNOWN LIMIT: a navigation the service worker re-issues loses the shell's
+ * appended User-Agent (FV-489/FV-493, device-verified), so it reaches the
+ * server looking like a browser and is NOT gated. Every sign-in, account and
+ * purchase route is on the worker's bypass list and so IS gated; what can
+ * slip through are the worker-handled public pages and the cached, PII-free
+ * /athlete/pregame shell. For the same reason /update-required is on the
+ * bypass list, and the redirect carries the platform in the query string so
+ * the screen still renders if the UA is lost anyway (for example under a
+ * service worker installed before FV-717).
  */
 
 export type NativePlatform = "ios" | "android";
@@ -115,23 +125,40 @@ export function resolveUpdateRequired(
   return build < minimum ? platform : null;
 }
 
+/** Query parameter that carries the platform to the update screen. */
+export const UPDATE_PLATFORM_PARAM = "p";
+
 /**
- * Whether middleware should send this request to the update screen. Only
- * page navigations are redirected: API routes, auth callbacks and non-GET
- * requests (server actions, form posts) pass through, so an in-flight
- * sign-in or purchase submission is never cut off mid-request. The next
- * navigation is gated.
+ * Where middleware should send this request, or null to let it through.
+ * Only page navigations are redirected: API routes, auth callbacks and
+ * non-GET requests (server actions, form posts) pass through, so an
+ * in-flight sign-in or purchase submission is never cut off mid-request.
+ * The next navigation is gated.
+ *
+ * The target carries the platform (`/update-required?p=android`) because the
+ * request for the update screen itself may arrive without the shell's UA
+ * (see KNOWN LIMIT above); the screen then still knows which store to link.
  */
-export function shouldRedirectToUpdate(input: {
+export function resolveUpdateRedirect(input: {
   method: string;
   pathname: string;
   userAgent: string | null | undefined;
   env?: Record<string, string | undefined>;
-}): boolean {
-  if (input.method !== "GET" && input.method !== "HEAD") return false;
+}): string | null {
+  if (input.method !== "GET" && input.method !== "HEAD") return null;
   const { pathname } = input;
-  if (pathname === UPDATE_REQUIRED_PATH) return false;
-  if (pathname === "/api" || pathname.startsWith("/api/")) return false;
-  if (pathname === "/auth" || pathname.startsWith("/auth/")) return false;
-  return resolveUpdateRequired(input.userAgent, input.env) !== null;
+  if (pathname === UPDATE_REQUIRED_PATH) return null;
+  if (pathname === "/api" || pathname.startsWith("/api/")) return null;
+  if (pathname === "/auth" || pathname.startsWith("/auth/")) return null;
+  const platform = resolveUpdateRequired(input.userAgent, input.env);
+  if (platform === null) return null;
+  return `${UPDATE_REQUIRED_PATH}?${UPDATE_PLATFORM_PARAM}=${platform}`;
+}
+
+/** The platform named by the update screen's query parameter, if valid. */
+export function parseUpdatePlatformParam(
+  value: string | string[] | undefined,
+): NativePlatform | null {
+  const single = Array.isArray(value) ? value[0] : value;
+  return single === "ios" || single === "android" ? single : null;
 }

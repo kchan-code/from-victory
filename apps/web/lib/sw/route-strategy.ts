@@ -93,6 +93,9 @@ export const BYPASS_PREFIXES = [
   "/forgot-",
   "/reset-",
   "/subscribe",
+  // FV-717: the update screen reads the native-shell UA server-side. A
+  // navigation the SW re-issues loses that UA (FV-489), so it must bypass.
+  "/update-required",
   "/audio/",
 ] as const;
 

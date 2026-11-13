@@ -9,8 +9,9 @@ import {
   getShellBuild,
   getShellPlatform,
   parseMinimumBuild,
+  parseUpdatePlatformParam,
+  resolveUpdateRedirect,
   resolveUpdateRequired,
-  shouldRedirectToUpdate,
 } from "@/lib/native-build-gate";
 
 const ANDROID_WEBVIEW =
@@ -148,39 +149,52 @@ describe("resolveUpdateRequired", () => {
   });
 });
 
-describe("shouldRedirectToUpdate", () => {
-  const env = { NATIVE_MIN_BUILD_ANDROID: "11" };
-  const gated = (pathname: string, method = "GET") =>
-    shouldRedirectToUpdate({ method, pathname, userAgent: ANDROID_LEGACY, env });
+describe("resolveUpdateRedirect", () => {
+  const env = { NATIVE_MIN_BUILD_ANDROID: "11", NATIVE_MIN_BUILD_IOS: "8" };
+  const target = (pathname: string, method = "GET", userAgent = ANDROID_LEGACY) =>
+    resolveUpdateRedirect({ method, pathname, userAgent, env });
 
-  it("redirects page navigations from a gated shell", () => {
+  it("sends page navigations from a gated shell to the update screen, naming the platform", () => {
     for (const path of ["/", "/signin", "/dashboard", "/athlete", "/subscribe", "/athlete/pregame"]) {
-      expect(gated(path)).toBe(true);
+      expect(target(path)).toBe("/update-required?p=android");
     }
+    expect(target("/dashboard", "GET", IOS_LEGACY)).toBe("/update-required?p=ios");
+    expect(target("/dashboard", "GET", IOS_IAP_NO_BUILD)).toBe("/update-required?p=ios");
   });
 
-  it("never redirects the update screen itself (no loop)", () => {
-    expect(gated("/update-required")).toBe(false);
+  it("never redirects the update screen itself (no loop), with or without a query", () => {
+    expect(target("/update-required")).toBeNull();
   });
 
   it("lets API routes, auth callbacks and non-GET requests through", () => {
-    expect(gated("/api/athlete/access")).toBe(false);
-    expect(gated("/auth/callback")).toBe(false);
-    expect(gated("/auth/signout")).toBe(false);
-    expect(gated("/dashboard", "POST")).toBe(false);
+    expect(target("/api/athlete/access")).toBeNull();
+    expect(target("/auth/callback")).toBeNull();
+    expect(target("/auth/signout")).toBeNull();
+    expect(target("/dashboard", "POST")).toBeNull();
   });
 
   it("does not treat look-alike paths as API or auth", () => {
-    expect(gated("/apiary")).toBe(true);
-    expect(gated("/authors")).toBe(true);
+    expect(target("/apiary")).toBe("/update-required?p=android");
+    expect(target("/authors")).toBe("/update-required?p=android");
   });
 
   it("does nothing for an up-to-date shell or a browser", () => {
-    expect(
-      shouldRedirectToUpdate({ method: "GET", pathname: "/", userAgent: ANDROID_BUILD_11, env }),
-    ).toBe(false);
-    expect(
-      shouldRedirectToUpdate({ method: "GET", pathname: "/", userAgent: ANDROID_WEBVIEW, env }),
-    ).toBe(false);
+    expect(target("/", "GET", ANDROID_BUILD_11)).toBeNull();
+    expect(target("/", "GET", ANDROID_WEBVIEW)).toBeNull();
   });
+});
+
+describe("parseUpdatePlatformParam", () => {
+  it("accepts only the two platform names", () => {
+    expect(parseUpdatePlatformParam("ios")).toBe("ios");
+    expect(parseUpdatePlatformParam("android")).toBe("android");
+    expect(parseUpdatePlatformParam(["android", "ios"])).toBe("android");
+  });
+
+  it.each([undefined, "", "IOS", "windows", "https://evil.example", ["nope"]])(
+    "rejects %j",
+    (value) => {
+      expect(parseUpdatePlatformParam(value)).toBeNull();
+    },
+  );
 });

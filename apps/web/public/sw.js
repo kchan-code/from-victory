@@ -41,7 +41,8 @@
  * SW audio cache so stale clips are evicted at activate.
  */
 
-const CACHE_VERSION = "fv-shell-v7"; // bumped: FV-493 — BYPASS_PREFIXES said
+const CACHE_VERSION = "fv-shell-v8"; // bumped: FV-717 — /update-required joined
+// BYPASS_PREFIXES. Previous bump: FV-493 — BYPASS_PREFIXES said
 // "/dashboard/" (trailing slash), so bare /dashboard missed the bypass and
 // went through the navigation strategy. event.respondWith(fetch(request))
 // re-issues from ServiceWorkerGlobalScope, which drops Capacitor's appended
@@ -185,6 +186,9 @@ const BYPASS_PREFIXES = [
   "/forgot-",
   "/reset-",
   "/subscribe",
+  // FV-717: the update screen reads the native-shell UA server-side. A
+  // navigation the SW re-issues loses that UA (FV-489), so it must bypass.
+  "/update-required",
   "/audio/",
 ];
 

@@ -2,10 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { updateSession } from "./lib/supabase/middleware";
 import { isNativeShellUserAgent } from "./lib/native-shell";
-import {
-  UPDATE_REQUIRED_PATH,
-  shouldRedirectToUpdate,
-} from "./lib/native-build-gate";
+import { resolveUpdateRedirect } from "./lib/native-build-gate";
 import {
   NATIVE_SHELL_ROUTED_PATHS,
   resolveNativeShellEntryTarget,
@@ -43,15 +40,14 @@ export async function middleware(request: NextRequest) {
   // sign-in or a purchase surface. Never cached, and Vary: User-Agent, for the
   // same shared-cache reason as the routed paths (FV-489). See
   // lib/native-build-gate.ts.
-  if (
-    shouldRedirectToUpdate({
-      method: request.method,
-      pathname,
-      userAgent: request.headers.get("user-agent"),
-    })
-  ) {
+  const updateTarget = resolveUpdateRedirect({
+    method: request.method,
+    pathname,
+    userAgent: request.headers.get("user-agent"),
+  });
+  if (updateTarget !== null) {
     const updateResponse = NextResponse.redirect(
-      new URL(UPDATE_REQUIRED_PATH, request.url),
+      new URL(updateTarget, request.url),
     );
     updateResponse.headers.set("Cache-Control", "no-store");
     addVaryUserAgent(updateResponse.headers);

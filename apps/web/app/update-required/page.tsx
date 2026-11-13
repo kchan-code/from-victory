@@ -4,7 +4,10 @@ import { redirect } from "next/navigation";
 
 import { APP_STORE_URL } from "@/lib/marketing/app-store";
 import { PLAY_STORE_URL } from "@/lib/marketing/play-store";
-import { resolveUpdateRequired } from "@/lib/native-build-gate";
+import {
+  parseUpdatePlatformParam,
+  resolveUpdateRequired,
+} from "@/lib/native-build-gate";
 
 export const metadata = {
   title: "Update required",
@@ -20,17 +23,26 @@ export const metadata = {
  * a guard would bounce a signed-out shell to /signin, which middleware would
  * send straight back here.
  *
- * Anyone who is NOT gated (a browser, the PWA, or an app that has since been
- * updated) is sent home, so this page never strands a current build.
+ * Which store to link: the request's own User-Agent decides when it says the
+ * app is gated. If it does not (a service worker re-issued the navigation and
+ * dropped the shell's UA, FV-489), the `?p=` platform middleware put on the
+ * redirect is used instead. Without either, the visitor is sent home. This
+ * page therefore NEVER redirects a visitor who arrived from the gate, which
+ * is what rules out a loop with middleware. It is harmless for anyone to open
+ * `?p=ios` directly: they see a link to the public store listing.
  *
  * The store link is a plain <a>: neither store host is in the shell's
  * allowNavigation list (apps/native/capacitor.config.ts), so the tap leaves
  * the WebView and opens the store. No price, no purchase path, no billing
  * language: this screen is seen by athletes of every age.
  */
-export default async function UpdateRequiredPage() {
+export default async function UpdateRequiredPage(props: {
+  searchParams?: Promise<{ p?: string | string[] }>;
+}) {
   const userAgent = (await headers()).get("user-agent");
-  const platform = resolveUpdateRequired(userAgent);
+  const platform =
+    resolveUpdateRequired(userAgent) ??
+    parseUpdatePlatformParam((await props.searchParams)?.p);
   if (platform === null) redirect("/");
 
   const store =

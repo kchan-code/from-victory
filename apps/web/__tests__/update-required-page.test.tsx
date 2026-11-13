@@ -48,7 +48,7 @@ afterEach(() => {
 describe("/update-required", () => {
   it("a gated Android app gets the Google Play link", async () => {
     asUserAgent(ANDROID_LEGACY);
-    const { getByTestId, getByRole } = render(await UpdateRequiredPage());
+    const { getByTestId, getByRole } = render(await UpdateRequiredPage({}));
     expect(getByRole("heading", { level: 1 }).textContent).toBe(
       "Update the app to keep training.",
     );
@@ -61,7 +61,7 @@ describe("/update-required", () => {
 
   it("a gated iOS app gets the App Store link", async () => {
     asUserAgent(IOS_LEGACY);
-    const { getByTestId } = render(await UpdateRequiredPage());
+    const { getByTestId } = render(await UpdateRequiredPage({}));
     const link = getByTestId("update-required-store-link");
     expect(link.getAttribute("href")).toBe(
       "https://apps.apple.com/us/app/from-victory/id6804743047",
@@ -71,7 +71,7 @@ describe("/update-required", () => {
 
   it("shows no price, purchase or billing language", async () => {
     asUserAgent(ANDROID_LEGACY);
-    const { container } = render(await UpdateRequiredPage());
+    const { container } = render(await UpdateRequiredPage({}));
     expect(container.textContent).not.toMatch(/\$|subscri|payment|trial|price/i);
   });
 
@@ -81,12 +81,36 @@ describe("/update-required", () => {
     ["no user agent", null],
   ])("%s is sent home instead of being stranded here", async (_label, ua) => {
     asUserAgent(ua);
-    await expect(UpdateRequiredPage()).rejects.toThrow("REDIRECT:/");
+    await expect(UpdateRequiredPage({})).rejects.toThrow("REDIRECT:/");
+  });
+
+  it("FV-489: when the service worker dropped the shell UA, the platform on the redirect still renders the screen (no loop)", async () => {
+    asUserAgent("Mozilla/5.0 (Linux; Android 14; wv) AppleWebKit/537.36 Mobile Safari/537.36");
+    const { getByTestId } = render(
+      await UpdateRequiredPage({ searchParams: Promise.resolve({ p: "android" }) }),
+    );
+    expect(getByTestId("update-required-store-link").textContent).toBe("Update on Google Play");
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it("the request's own UA wins over the query parameter", async () => {
+    asUserAgent(IOS_LEGACY);
+    const { getByTestId } = render(
+      await UpdateRequiredPage({ searchParams: Promise.resolve({ p: "android" }) }),
+    );
+    expect(getByTestId("update-required-store-link").textContent).toBe("Update on the App Store");
+  });
+
+  it("an unrecognised platform parameter is ignored", async () => {
+    asUserAgent(null);
+    await expect(
+      UpdateRequiredPage({ searchParams: Promise.resolve({ p: "https://evil.example" }) }),
+    ).rejects.toThrow("REDIRECT:/");
   });
 
   it("with no minimum set, even a version-less app is sent home", async () => {
     vi.stubEnv("NATIVE_MIN_BUILD_ANDROID", "");
     asUserAgent(ANDROID_LEGACY);
-    await expect(UpdateRequiredPage()).rejects.toThrow("REDIRECT:/");
+    await expect(UpdateRequiredPage({})).rejects.toThrow("REDIRECT:/");
   });
 });
