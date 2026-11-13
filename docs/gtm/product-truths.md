@@ -29,9 +29,11 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
   actions (app opened, daily or pregame session started or finished) for every athlete
   account, including ages 13 to 17 (individual records deleted after about 90 days; totals kept); we keep aggregate
   monthly totals of how many athletes chose each preset pregame option (each athlete
-  counted once a month), with no account identifier, and only look at a total once its
-  month has ended and at least ten different athletes chose that option; smaller totals
-  are deleted (a safeguard, not a guarantee of anonymity; updated by FV-749);
+  counted once a month, in one sport), with no account identifier; our reporting only
+  reads a total once its month has ended and at least ten different athletes chose that
+  option; totals below ten and the short-lived one-way codes used to count each athlete
+  once are deleted within a few days after the month ends (a safeguard, not a guarantee
+  of anonymity; updated by FV-749);
   the app sends a short automated error report with no account identifier when a screen
   fails to load.
 - The protections line for 13-17 accounts changed from "No behavioral or advertising

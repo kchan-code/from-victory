@@ -39,6 +39,12 @@ let rollupResult: { data: unknown; error: { message: string } | null } = {
   error: null,
 };
 let rpcArgs: Array<{ fn: string; params: unknown }> = [];
+// FV-749: result / behaviour of the pregame selection totals prune RPC.
+let selectionPrune: { data: unknown; error: { message: string; code?: string } | null } = {
+  data: 0,
+  error: null,
+};
+let selectionPruneThrows = false;
 
 function makeDeleteChain() {
   const result = { data: [], error: null };
@@ -59,6 +65,11 @@ vi.mock("@/lib/supabase/service", () => ({
     }
     return {
     rpc: async (fn: string, params: unknown) => {
+      if (fn === "prune_pregame_selection_totals") {
+        callLog.push("selection-prune");
+        if (selectionPruneThrows) throw new Error("boom athlete aaaa");
+        return selectionPrune;
+      }
       callLog.push("rollup");
       rpcArgs.push({ fn, params });
       return rollupResult;
@@ -86,6 +97,8 @@ beforeEach(() => {
   rpcArgs = [];
   serviceThrows = false;
   rollupResult = { data: 0, error: null };
+  selectionPrune = { data: 0, error: null };
+  selectionPruneThrows = false;
   process.env.CRON_SECRET = "test-cron-secret";
 });
 
@@ -128,7 +141,7 @@ describe("cron prune-activity-events route auth gate", () => {
     const res = await GET(makeReq("Bearer test-cron-secret"));
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body).toEqual({ rolled: 5, pruned: 0 });
+    expect(body).toEqual({ rolled: 5, pruned: 0, selectionPruned: 0 });
   });
 
   it("POST with the valid token → 200 (manual ops trigger parity)", async () => {
@@ -140,7 +153,7 @@ describe("cron prune-activity-events route auth gate", () => {
 describe("cron prune-activity-events roll-up-then-prune (FV-415)", () => {
   it("rolls up BEFORE pruning", async () => {
     await GET(makeReq("Bearer test-cron-secret"));
-    expect(callLog).toEqual(["rollup", "prune"]);
+    expect(callLog).toEqual(["selection-prune", "rollup", "prune"]);
   });
 
   it("invokes rollup_activity_events with the retention window", async () => {
@@ -157,7 +170,8 @@ describe("cron prune-activity-events roll-up-then-prune (FV-415)", () => {
     const res = await GET(makeReq("Bearer test-cron-secret"));
     expect(res.status).toBe(500);
     // rollup was attempted, prune was NOT (prune must never outrun rollup).
-    expect(callLog).toEqual(["rollup"]);
+    // (the independent selection-totals retention ran first — FV-749.)
+    expect(callLog).toEqual(["selection-prune", "rollup"]);
     expect(alertCronFailureMock).toHaveBeenCalledWith(
       "[cron/prune-activity-events] rollup failed",
       "rollup failed and prune was skipped",
@@ -170,8 +184,8 @@ describe("cron prune-activity-events roll-up-then-prune (FV-415)", () => {
     rollupResult = { data: 3, error: null };
     const first = await GET(makeReq("Bearer test-cron-secret"));
     const second = await GET(makeReq("Bearer test-cron-secret"));
-    expect(await first.json()).toEqual({ rolled: 3, pruned: 0 });
-    expect(await second.json()).toEqual({ rolled: 3, pruned: 0 });
+    expect(await first.json()).toEqual({ rolled: 3, pruned: 0, selectionPruned: 0 });
+    expect(await second.json()).toEqual({ rolled: 3, pruned: 0, selectionPruned: 0 });
     // Both runs invoke the same idempotent RPC with the same args — the
     // no-double-count guarantee itself is enforced in SQL (UPSERT).
     expect(rpcArgs).toEqual([
@@ -204,5 +218,46 @@ describe("cron prune-activity-events roll-up-then-prune (FV-415)", () => {
     expect(JSON.stringify(alertCronFailureMock.mock.calls)).not.toContain(
       "eeeeeeeeeeee",
     );
+  });
+});
+
+describe("cron prune-activity-events selection totals prune (FV-749)", () => {
+  it("runs the selection totals prune (first, independently) and reports its count", async () => {
+    selectionPrune = { data: 4, error: null };
+    const res = await GET(makeReq("Bearer test-cron-secret"));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ rolled: 0, pruned: 0, selectionPruned: 4 });
+    expect(callLog).toEqual(["selection-prune", "rollup", "prune"]);
+  });
+
+  it("a selection prune error is alerted but does NOT fail the route", async () => {
+    selectionPrune = { data: null, error: { message: "leaky Confidence", code: "42501" } };
+    const res = await GET(makeReq("Bearer test-cron-secret"));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ rolled: 0, pruned: 0, selectionPruned: 0 });
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/prune-activity-events] selection totals prune failed",
+      "pregame selection totals prune failed",
+      { code: "42501" },
+    );
+    expect(JSON.stringify(alertCronFailureMock.mock.calls)).not.toContain("Confidence");
+  });
+
+  it("a thrown selection prune is alerted by error name only and does NOT fail the route", async () => {
+    selectionPruneThrows = true;
+    const res = await GET(makeReq("Bearer test-cron-secret"));
+    expect(res.status).toBe(200);
+    expect(alertCronFailureMock).toHaveBeenCalledWith(
+      "[cron/prune-activity-events] selection totals prune threw",
+      "Error",
+    );
+    expect(JSON.stringify(alertCronFailureMock.mock.calls)).not.toContain("aaaa");
+  });
+
+  it("still runs when the rollup fails (retention is never delayed by the rollup)", async () => {
+    rollupResult = { data: null, error: { message: "boom" } };
+    const res = await GET(makeReq("Bearer test-cron-secret"));
+    expect(res.status).toBe(500);
+    expect(callLog).toEqual(["selection-prune", "rollup"]);
   });
 });

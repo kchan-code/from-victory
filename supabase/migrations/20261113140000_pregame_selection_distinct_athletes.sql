@@ -15,20 +15,31 @@
 --   is why the reader no longer needs activity_events / activity_rollup (and so
 --   is no longer limited to ~90 days of history).
 --
--- How "counted once" is enforced (atomically, in the database):
---   public.pregame_selection_contributors holds (athlete_id, period_start) and
---   NOTHING else: no sport, no selections, no timestamp. It is NOT a record of
---   selections; it only says "this athlete has already been counted this
---   month". record_pregame_selections() inserts the marker with ON CONFLICT DO
---   NOTHING and only if a row was actually inserted does it upsert the counts,
---   all in one function call (one transaction). Two concurrent calls for the
---   same athlete serialise on the marker's unique index: the second waits for
---   the first to commit, then its insert conflicts and it writes nothing. If the
---   count upsert fails, the marker insert rolls back with it.
---   The athlete id is used ONLY for the marker. It is never written to
---   pregame_selection_counts, never returned, never logged.
+-- How "counted once" is enforced (atomically, in the database) WITHOUT the
+--   database ever learning who the athlete is:
+--   The APPLICATION server computes an opaque keyed one-way digest
+--     marker = hex(HMAC-SHA256(secret, "pregame-selection-marker:v1:" ||
+--                              athleteId || ":" || periodStartISO))
+--   (the UTC month is part of the input, so an athlete's marker differs every
+--   month) and passes ONLY that digest. Neither table holds an athlete
+--   identifier, and the database never receives one; the digest can be computed
+--   only by the application server, which holds the secret.
+--   public.pregame_selection_contributors holds (marker, period_start) and
+--   NOTHING else: no athlete id, no FK, no sport, no selections, no timestamp.
+--   It is NOT a record of selections; it only says "this keyed digest has
+--   already been counted this month". record_pregame_selections() claims the
+--   marker with INSERT ... ON CONFLICT DO NOTHING and only if a row was inserted
+--   does it upsert the counts, all in one function call (one transaction). Two
+--   concurrent calls with the same marker serialise on the marker's primary key:
+--   the second waits for the first to commit, then conflicts and writes nothing.
+--   The marker is claimed only when at least one valid (dimension, value)
+--   survives the SQL filters, so an empty/invalid call never consumes the month.
+--   Month boundary: the row's month is computed here in SQL (UTC); the app
+--   computes the same UTC month for the digest. A call straddling midnight UTC at
+--   a month boundary may count under either month; that is acceptable.
 --
--- Retention (run on every record_pregame_selections() call, cheap):
+-- Retention (public.prune_pregame_selection_totals(), run on every writer call
+--   AND from the daily cron route /api/cron/prune-activity-events):
 --   - Marker rows live only for the CURRENT UTC month; older ones are deleted.
 --   - Totals below 10 are deleted once their month closes (a small cell of a
 --     closed month is never readable, so it is not retained).
@@ -49,21 +60,28 @@
 delete from public.pregame_selection_counts;
 
 -- ---------------------------------------------------------------------------
--- Marker table. FK to profiles with ON DELETE CASCADE so deleting an account
--- removes its marker. Service-role-only in effect: RLS on, NO policies, no
--- client write grants (same posture as pregame_selection_counts).
+-- Marker table: keyed one-way digest + month. NO athlete id, NO FK to profiles
+-- (so nothing here cascades on account deletion, and nothing identifies an
+-- account). RLS on, NO policies, no client write grants (same posture as
+-- pregame_selection_counts).
 -- ---------------------------------------------------------------------------
 create table public.pregame_selection_contributors (
-  athlete_id   uuid not null references public.profiles(id) on delete cascade,
+  marker       text not null check (marker ~ '^[0-9a-f]{64}$'),
   period_start date not null,
-  primary key (athlete_id, period_start)
+  primary key (marker)
 );
 
+-- The primary key cannot serve the prune's range predicate on period_start.
+create index pregame_selection_contributors_period_idx
+  on public.pregame_selection_contributors (period_start);
+
 comment on table public.pregame_selection_contributors is
-  'Marker only (FV-749): athlete X was already counted in pregame_selection_counts '
-  'for UTC month M. No sport, no selections, no timestamps; NOT a record of what '
-  'was chosen. Rows exist only for the current UTC month (older rows are deleted '
-  'by record_pregame_selections). Service-role-only: RLS enabled, no policies.';
+  'Marker only (FV-749): a keyed one-way digest (HMAC-SHA256, computed by the '
+  'application server; the database holds no athlete identifier) saying "already '
+  'counted for UTC month M". No athlete id, sport, selections or timestamps; NOT '
+  'a record of what was chosen. Rows live only for the current UTC month (older '
+  'rows are deleted by prune_pregame_selection_totals). Service-role-only: RLS '
+  'enabled, no policies.';
 
 alter table public.pregame_selection_contributors enable row level security;
 
@@ -72,7 +90,8 @@ grant select on table public.pregame_selection_contributors to authenticated, an
 
 comment on table public.pregame_selection_counts is
   'Monthly counts of DISTINCT ATHLETES per chosen pregame option (FV-749): each '
-  'athlete counted at most once per UTC month. No account identifier, no row '
+  'athlete counted at most once per UTC month (via a keyed digest marker; the '
+  'database holds no athlete identifier). No account identifier, no row '
   'timestamps, one dimension per row. NOT anonymous on its own at small counts '
   '(current-month cells can be below 10) and not hidden from backups/row '
   'versions. The ONLY sanctioned read path is read_pregame_selection_counts() '
@@ -81,24 +100,58 @@ comment on table public.pregame_selection_counts is
   'or more are kept. Service-role-only: RLS enabled, no policies.';
 
 -- ---------------------------------------------------------------------------
+-- Prune: retention, in its own function so the daily cron can call it too (the
+-- writer also calls it, so it runs whenever anyone completes a pregame).
+-- Markers before the current UTC month; closed-month cells below 10.
+-- Returns the number of rows deleted (an opaque count).
+-- ---------------------------------------------------------------------------
+create or replace function public.prune_pregame_selection_totals()
+returns integer
+language plpgsql
+set search_path = public
+set timezone = 'UTC'
+as $$
+declare
+  v_period date := date_trunc('month', now())::date;
+  n1 integer;
+  n2 integer;
+begin
+  delete from public.pregame_selection_contributors where period_start < v_period;
+  get diagnostics n1 = row_count;
+  delete from public.pregame_selection_counts
+   where period_start < v_period and selection_count < 10;
+  get diagnostics n2 = row_count;
+  return n1 + n2;
+end;
+$$;
+
+comment on function public.prune_pregame_selection_totals() is
+  'Retention for the pregame selection tables (FV-749): deletes marker rows of '
+  'closed months and closed-month totals below 10. Service-role-only.';
+
+revoke all on function public.prune_pregame_selection_totals() from public, anon, authenticated;
+grant execute on function public.prune_pregame_selection_totals() to service_role;
+
+-- ---------------------------------------------------------------------------
 -- Writer. Replaces increment_pregame_selection_counts (dropped below).
 --
--- p_athlete_id is used ONLY for the once-per-month marker. It is never written
--- to pregame_selection_counts, never returned, never logged.
+-- p_marker is an opaque keyed digest computed by the APPLICATION (see header).
+-- The database never receives an athlete identifier. It is used only as the
+-- once-per-month marker and never written to pregame_selection_counts.
 --
--- p_selections: jsonb ARRAY of {"dimension": text, "value": text}. Validation
--- is unchanged: unknown dimension, non-string / empty / >120-char value, and
--- entries past the first 32 are dropped. Each distinct (dimension, value) adds
--- exactly 1 (duplicates inside one call collapse), so a cell never gets more
--- than +1 from one athlete.
+-- p_selections: jsonb ARRAY of {"dimension": text, "value": text}. Validation:
+-- unknown dimension, non-string / empty / >120-char value, and entries past the
+-- first 32 are dropped. Each distinct (dimension, value) adds exactly 1, so a
+-- cell never gets more than +1 from one athlete per month.
 --
--- Returns the number of cells written; 0 if the athlete was already counted
--- this UTC month (or the input was invalid / empty).
+-- The marker is claimed ONLY if at least one valid pair remains; otherwise the
+-- call returns 0 without consuming the month. Returns the number of cells
+-- written; 0 if already counted this UTC month (or nothing valid).
 --
 -- SECURITY INVOKER: service_role already holds the table grants.
 -- ---------------------------------------------------------------------------
 create or replace function public.record_pregame_selections(
-  p_athlete_id uuid,
+  p_marker     text,
   p_sport      text,
   p_selections jsonb
 )
@@ -111,24 +164,46 @@ declare
   affected integer := 0;
   v_period date := date_trunc('month', now())::date;
   v_marked integer;
+  v_valid  jsonb;
 begin
-  -- Housekeeping (every call): markers are only needed for the current month;
-  -- small cells of closed months are never readable, so do not retain them.
-  delete from public.pregame_selection_contributors where period_start < v_period;
-  delete from public.pregame_selection_counts
-   where period_start < v_period and selection_count < 10;
+  perform public.prune_pregame_selection_totals();
 
-  if p_athlete_id is null
+  if p_marker is null or p_marker !~ '^[0-9a-f]{64}$'
      or p_sport is null or p_sport !~ '^[a-z][a-z-]{0,31}$'
      or p_selections is null or jsonb_typeof(p_selections) <> 'array' then
     return 0;
   end if;
 
-  -- Atomic "count this athlete once this month". A concurrent call for the same
-  -- athlete blocks on the unique index until we commit, then conflicts -> 0.
-  insert into public.pregame_selection_contributors (athlete_id, period_start)
-  values (p_athlete_id, v_period)
-  on conflict (athlete_id, period_start) do nothing;
+  select jsonb_agg(jsonb_build_object('dimension', v.dimension, 'value', v.value)
+                   order by v.dimension, v.value)
+    into v_valid
+  from (
+    select distinct s.dimension, s.value
+    from (
+      select e.elem ->> 'dimension' as dimension,
+             e.elem ->> 'value'     as value
+      from jsonb_array_elements(p_selections) with ordinality as e(elem, ord)
+      where e.ord <= 32
+        and jsonb_typeof(e.elem -> 'value') = 'string'
+    ) s
+    where s.dimension in (
+            'need', 'role', 'adversity', 'anchor', 'self_talk',
+            'prayer_style', 'positive_play'
+          )
+      and s.value is not null
+      and char_length(s.value) between 1 and 120
+  ) v;
+
+  -- Nothing countable: do not consume the athlete's month.
+  if v_valid is null then
+    return 0;
+  end if;
+
+  -- Atomic "count this marker once this month". A concurrent call with the same
+  -- marker blocks on the primary key until we commit, then conflicts -> 0.
+  insert into public.pregame_selection_contributors (marker, period_start)
+  values (p_marker, v_period)
+  on conflict (marker) do nothing;
   get diagnostics v_marked = row_count;
   if v_marked = 0 then
     return 0;
@@ -136,24 +211,12 @@ begin
 
   insert into public.pregame_selection_counts as c
     (period_start, sport, dimension, value, selection_count)
-  select v_period, p_sport, s.dimension, s.value, 1
-  from (
-    select e.elem ->> 'dimension' as dimension,
-           e.elem ->> 'value'     as value
-    from jsonb_array_elements(p_selections) with ordinality as e(elem, ord)
-    where e.ord <= 32
-      and jsonb_typeof(e.elem -> 'value') = 'string'
-  ) s
-  where s.dimension in (
-          'need', 'role', 'adversity', 'anchor', 'self_talk',
-          'prayer_style', 'positive_play'
-        )
-    and s.value is not null
-    and char_length(s.value) between 1 and 120
-  group by s.dimension, s.value
-  -- Deterministic lock order so concurrent calls (different athletes) upsert
+  select v_period, p_sport, x.dimension, x.value, 1
+  from jsonb_array_elements(v_valid) as e(elem),
+       lateral (select e.elem ->> 'dimension' as dimension, e.elem ->> 'value' as value) x
+  -- Deterministic lock order so concurrent calls (different markers) upsert
   -- rows in the same order and cannot deadlock.
-  order by s.dimension, s.value
+  order by x.dimension, x.value
   on conflict (period_start, sport, dimension, value)
   do update set selection_count = c.selection_count + 1;
 
@@ -162,15 +225,15 @@ begin
 end;
 $$;
 
-comment on function public.record_pregame_selections(uuid, text, jsonb) is
-  'Counts an athlete''s pregame selections AT MOST ONCE per UTC month (FV-749). '
-  'The athlete id is used only for the once-per-month marker; it is never '
-  'stored with the counts, returned or logged. Also deletes old markers and '
-  'closed-month cells below 10. Service-role-only (EXECUTE revoked from '
-  'PUBLIC/anon/authenticated).';
+comment on function public.record_pregame_selections(text, text, jsonb) is
+  'Counts a pregame''s selections AT MOST ONCE per opaque marker per UTC month '
+  '(FV-749). The marker is a keyed one-way digest computed by the application; '
+  'the database never receives an athlete identifier. Does not consume the month '
+  'when nothing valid is counted. Also prunes (see prune_pregame_selection_totals). '
+  'Service-role-only (EXECUTE revoked from PUBLIC/anon/authenticated).';
 
-revoke all on function public.record_pregame_selections(uuid, text, jsonb) from public, anon, authenticated;
-grant execute on function public.record_pregame_selections(uuid, text, jsonb) to service_role;
+revoke all on function public.record_pregame_selections(text, text, jsonb) from public, anon, authenticated;
+grant execute on function public.record_pregame_selections(text, text, jsonb) to service_role;
 
 drop function public.increment_pregame_selection_counts(text, jsonb);
 

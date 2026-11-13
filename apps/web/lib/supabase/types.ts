@@ -222,19 +222,19 @@ export type Database = {
         }
         Relationships: []
       }
-      // FV-749: hand-added. Marker only: athlete already counted for UTC month.
-      // No sport/selections/timestamps. Service-role-only: RLS on, no policies.
+      // FV-749: hand-added. Marker only: a keyed one-way digest (computed by the app; no athlete
+      // id in the database) already counted for the UTC month. No sport/selections/timestamps. Service-role-only: RLS on, no policies.
       pregame_selection_contributors: {
         Row: {
-          athlete_id: string
+          marker: string
           period_start: string
         }
         Insert: {
-          athlete_id: string
+          marker: string
           period_start: string
         }
         Update: {
-          athlete_id?: string
+          marker?: string
           period_start?: string
         }
         Relationships: []
@@ -1149,12 +1149,18 @@ export type Database = {
         Args: { retention_days?: number }
         Returns: number
       }
-      // FV-749: hand-added. Counts an athlete's selections at most once per UTC
-      // month. p_athlete_id is used only for the once-per-month marker (never
-      // stored with the counts or returned). p_selections = [{ dimension, value }].
-      // Returns cells written (0 = already counted this month). service_role only.
+      // FV-749: hand-added. Counts selections at most once per opaque marker per
+      // UTC month. p_marker is a keyed digest computed by the app (the database
+      // never receives an athlete id). Returns cells written (0 = already counted
+      // or nothing valid). service_role only.
+      // FV-749: hand-added. Retention: deletes closed-month markers and
+      // closed-month totals below 10; returns rows deleted. service_role only.
+      prune_pregame_selection_totals: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       record_pregame_selections: {
-        Args: { p_athlete_id: string; p_sport: string; p_selections: Json }
+        Args: { p_marker: string; p_sport: string; p_selections: Json }
         Returns: number
       }
       // FV-749: hand-added. The ONLY sanctioned read path for

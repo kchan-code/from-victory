@@ -23,6 +23,7 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/activity/record", () => ({ recordActivityEvent: vi.fn() }));
 
 import { logPregameSelections } from "@/lib/actions/activity";
+import { pregameMarker, utcPeriodStartIso } from "@/lib/activity/pregame-marker";
 import {
   MAX_VALUE_LEN,
   SELECTION_DIMENSIONS,
@@ -159,12 +160,13 @@ describe("buildSelectionCounts (pure vocabulary validation)", () => {
 
 describe("logPregameSelections (server action)", () => {
   beforeEach(() => {
+    process.env.RATE_LIMIT_HASH_SECRET = "test-hash-secret";
     rpc.mockReset().mockResolvedValue({ error: null });
     getUser.mockReset();
     single.mockReset();
   });
 
-  it("athlete: calls record_pregame_selections with the id, sport and selections only", async () => {
+  it("athlete: the RPC gets a digest marker, sport and selections — no athlete id anywhere", async () => {
     getUser.mockResolvedValue({ data: { user: { id: ATHLETE_ID } } });
     single.mockResolvedValue({ data: { role: "athlete" } });
     await logPregameSelections("hockey", { ...hockeyValid, cueWord: "Secret" } as never);
@@ -172,12 +174,23 @@ describe("logPregameSelections (server action)", () => {
     expect(rpc).toHaveBeenCalledTimes(1);
     const [fn, args] = rpc.mock.calls[0]!;
     expect(fn).toBe("record_pregame_selections");
-    expect(Object.keys(args).sort()).toEqual(["p_athlete_id", "p_selections", "p_sport"]);
-    expect(args.p_athlete_id).toBe(ATHLETE_ID);
+    expect(Object.keys(args).sort()).toEqual(["p_marker", "p_selections", "p_sport"]);
+    expect(args.p_marker).toMatch(/^[0-9a-f]{64}$/);
     expect(args.p_sport).toBe("hockey");
-    // The id travels ONLY as p_athlete_id — never inside the selections.
-    expect(JSON.stringify(args.p_selections)).not.toContain(ATHLETE_ID);
-    expect(JSON.stringify(args)).not.toContain("Secret");
+    const wire = JSON.stringify(args);
+    expect(wire).not.toContain(ATHLETE_ID);
+    expect(wire).not.toContain("Secret");
+  });
+
+  it("missing secret: nothing is recorded, no RPC, and the raw id is never used", async () => {
+    delete process.env.RATE_LIMIT_HASH_SECRET;
+    getUser.mockResolvedValue({ data: { user: { id: ATHLETE_ID } } });
+    single.mockResolvedValue({ data: { role: "athlete" } });
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    await logPregameSelections("hockey", hockeyValid);
+    expect(rpc).not.toHaveBeenCalled();
+    expect(JSON.stringify(err.mock.calls)).not.toContain(ATHLETE_ID);
+    err.mockRestore();
   });
 
   it("adult_athlete is allowed", async () => {
@@ -221,7 +234,33 @@ describe("logPregameSelections (server action)", () => {
     const logged = JSON.stringify(err.mock.calls);
     expect(logged).not.toContain("Confidence");
     expect(logged).not.toContain(ATHLETE_ID);
+    expect(logged).not.toContain(pregameMarker(ATHLETE_ID, "test-hash-secret", new Date()));
     expect(err).toHaveBeenCalled();
     err.mockRestore();
+  });
+});
+
+describe("pregameMarker (keyed one-way digest)", () => {
+  const jan = new Date("2026-01-15T12:00:00Z");
+  const janLate = new Date("2026-01-31T23:59:59Z");
+  const feb = new Date("2026-02-01T00:00:00Z");
+
+  it("same athlete + same UTC month -> same digest", () => {
+    expect(pregameMarker(ATHLETE_ID, "k", jan)).toBe(pregameMarker(ATHLETE_ID, "k", janLate));
+  });
+  it("changes with the month, the athlete and the secret", () => {
+    const base = pregameMarker(ATHLETE_ID, "k", jan);
+    expect(pregameMarker(ATHLETE_ID, "k", feb)).not.toBe(base);
+    expect(pregameMarker("20000000-0000-4000-8000-00000000000b", "k", jan)).not.toBe(base);
+    expect(pregameMarker(ATHLETE_ID, "other", jan)).not.toBe(base);
+  });
+  it("is 64 lowercase hex chars and does not contain the id", () => {
+    const m = pregameMarker(ATHLETE_ID, "k", jan);
+    expect(m).toMatch(/^[0-9a-f]{64}$/);
+    expect(m).not.toContain(ATHLETE_ID);
+  });
+  it("derives the period in UTC, first of the month", () => {
+    expect(utcPeriodStartIso(new Date("2026-03-31T23:59:59Z"))).toBe("2026-03-01");
+    expect(utcPeriodStartIso(new Date("2026-04-01T00:00:00Z"))).toBe("2026-04-01");
   });
 });

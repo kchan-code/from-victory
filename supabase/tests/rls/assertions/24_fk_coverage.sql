@@ -50,9 +50,7 @@ declare
     'public.push_subscriptions',
       'athlete web-push endpoints; requires a profile, never a payer/entitlement marker',
     'public.device_pairings',
-      'athlete device pairing; requires a profile on both ends, never a payer/entitlement marker',
-    'public.pregame_selection_contributors',
-      'FV-749 once-per-month counting marker (athlete_id, period_start only); requires a profile, never a payer/entitlement marker'
+      'athlete device pairing; requires a profile on both ends, never a payer/entitlement marker'
   );
   -- schemas owned by the Supabase platform
   platform_schemas text[] := array[

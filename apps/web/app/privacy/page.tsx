@@ -291,16 +291,18 @@ export default function PrivacyPage() {
           Separately, so that we can learn which training options are useful, we keep
           aggregate totals of how many athletes chose each preset pregame option (for
           example, how many athletes picked a particular focus area or visualization),
-          counted by sport and by month. Each athlete is counted once a month, using the
-          first pregame session they complete that month. These totals do not contain an
-          account identifier or a timestamp for any one athlete, and each option is counted
-          on its own, never in combination with an athlete&apos;s other choices. To count each
-          athlete only once, we keep a note that an athlete has been counted for the current
-          month; it does not record what they chose and is deleted after the month ends. We
-          do not look at a total until its month has ended and at least ten different
-          athletes chose that option, and totals below ten are deleted after the month ends.
-          This is a safeguard against singling out one athlete, not a guarantee of anonymity.
-          Anything an athlete types is never counted.
+          counted by sport and by month. Each athlete is counted once a month, in one sport,
+          using the first pregame session that month in which they make a preset choice.
+          These totals do not contain an account identifier or a timestamp for any one
+          athlete, and each option is counted on its own, never in combination with an
+          athlete&apos;s other choices. To count each athlete only once, we keep a short-lived,
+          one-way code derived from the athlete&apos;s account that shows only that the athlete
+          has already been counted this month. It does not record what they chose, and we
+          delete these codes within a few days after the month ends. Our reporting only
+          reads a total once its month has ended and at least ten different athletes chose
+          that option. Totals below ten are deleted within a few days after the month ends;
+          totals of ten or more are kept. This is a safeguard against singling out one
+          athlete, not a guarantee of anonymity. Anything an athlete types is never counted.
         </p>
         <p className="mt-3">
           We collect this ourselves, in our own database. We do not use a third-party

@@ -96,6 +96,7 @@ select p.proname, p.proacl
      'enforce_birthdate_immutable', 'due_push_reminders',
      'due_game_day_reminders', 'rollup_activity_events',
      'record_pregame_selections', 'read_pregame_selection_counts',
+     'prune_pregame_selection_totals',
      'get_own_personalization', 'get_own_username'
    )
  order by p.proname;
@@ -389,7 +390,8 @@ begin
     'public.due_push_reminders()',
     'public.due_game_day_reminders()',
     'public.rollup_activity_events(integer)',
-    'public.record_pregame_selections(uuid, text, jsonb)',
+    'public.record_pregame_selections(text, text, jsonb)',
+    'public.prune_pregame_selection_totals()',
     'public.read_pregame_selection_counts(integer)'
   ]
   loop
@@ -793,8 +795,8 @@ begin;
   declare n int;
   begin
     begin
-      insert into public.pregame_selection_contributors (athlete_id, period_start)
-        values ('20000000-0000-4000-8000-00000000000a', current_date);
+      insert into public.pregame_selection_contributors (marker, period_start)
+        values (repeat('a', 64), current_date);
       raise exception 'AC(g) FAIL: pregame_selection_contributors INSERT by authenticated unexpectedly SUCCEEDED';
     exception when insufficient_privilege then null; end;
 
