@@ -177,6 +177,7 @@ set role service_role;
 delete from public.parent_athlete_links where parent_id = '$P' and athlete_id in ('$C', '$D');
 delete from public.device_pairings where code_sha256 in ('$HC', '$HD');
 delete from public.profiles where id in ('$C', '$D');
+reset role;
 delete from auth.users where id in ('$C', '$D');
 SQL
 }
