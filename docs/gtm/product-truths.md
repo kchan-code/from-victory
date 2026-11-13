@@ -10,6 +10,24 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-13: Privacy Policy and Terms updated for App Store billing and usage data (FV-723, FV-724; effective when the PR deploys)
+
+- The Privacy Policy now says: subscriptions bought in the iOS app are sold and billed by
+  Apple, and what we receive from Apple; we keep a first-party record of a few app
+  actions (app opened, daily or pregame session started or finished) for every athlete
+  account, including ages 13 to 17, deleted after about 90 days; we keep aggregate
+  monthly totals of which preset pregame options are chosen, with no account identifier;
+  the app sends a short automated error report with no account identifier when a screen
+  fails to load.
+- The protections line for 13-17 accounts changed from "No behavioral or advertising
+  analytics" to "No advertising analytics and no behavioral profiling" plus "No
+  third-party analytics". Marketing must not say "no analytics" for minors. It can say:
+  no ads, no third-party tracking or analytics, no profiling, no sale of data.
+- The Terms now describe paid subscriptions in the present tense: automatic renewal,
+  cancel in account settings (web) or with Apple (iOS), refunds for App Store purchases
+  handled by Apple, deleting an account does not cancel an App Store subscription.
+- Effective date of both documents: November 13, 2026.
+
 ## 2026-11-13: The store apps can be required to update (FV-717; effective when the PR deploys, off by default)
 
 - The App Store and Google Play apps can now be told to update. When a minimum app

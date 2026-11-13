@@ -32,7 +32,9 @@ export const metadata: Metadata = {
   },
 };
 
-const EFFECTIVE_DATE = "May 22, 2026";
+// Effective date: the day KC approved the FV-723 wording (2026-11-13).
+// Previous: May 22, 2026.
+const EFFECTIVE_DATE = "November 13, 2026";
 const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
 export default function TermsPage() {
@@ -376,10 +378,10 @@ export default function TermsPage() {
       </Section>
 
       <Section title="15. Paid Features, Subscriptions, and Purchases">
-        {/* FV-723 (2026-11-13): PROPOSED WORDING, NOT YET APPROVED. Replaces the
-            "may in the future offer paid features" text, which predates live
-            subscriptions and in-app purchase. For KC + attorney review. Google
-            Play Billing is not described because it is not live. */}
+        {/* FV-723: approved by KC on 2026-11-13. Replaces the "may in the future
+            offer paid features" text, which predated live subscriptions and
+            in-app purchase. Google Play Billing is not described because it is
+            not live; add it here before Play purchases are turned on. */}
         <p>
           Access to From Victory training requires a paid subscription, bought by the account
           holder (a parent or guardian, or an adult athlete). An athlete under 18 cannot buy a

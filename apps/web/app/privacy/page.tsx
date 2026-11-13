@@ -9,22 +9,29 @@ import Link from "next/link";
 // self-managed accounts (own email + password, self-pay, no parent link).
 // Adult self-serve is built but gated behind ENABLE_ADULT_SIGNUP — coordinate
 // publication with the flag flip and attorney sign-off (FV-329).
-// FV-723 / FV-724 (2026-11-13) — PROPOSED WORDING, NOT YET APPROVED. Adds the
-// App Store purchase path (1e, 7, 8), discloses first-party usage activity
-// (new 1i, 3, 6), and corrects statements the shipped app contradicts
-// ("no behavioral ... analytics" for 13-17 accounts, and the matching line
-// in section 6). The push sentence in 1f ("We do not track whether
-// notifications are opened or clicked") is left as is: a `push_click` event
-// exists in the vocabulary but nothing records it today. If that changes, 1f
-// and 1i must change first. Section 1i is accurate only once the companion
-// change (PR #643) has merged: it stops storing pregame selections with usage
-// events and keeps anonymous monthly totals instead. For KC + attorney review:
-// do not publish until approved, then set EFFECTIVE_DATE to the publication
-// date. Google Play Billing is NOT described because it is not live.
+// FV-723 / FV-724 (2026-11-13) — wording approved by KC on 2026-11-13. Adds
+// the App Store purchase path (1e, 7, 8), discloses first-party usage activity
+// and automated error reports (new 1i, 1j, 3, 6), and corrects statements the
+// shipped app contradicted ("no behavioral ... analytics" for 13-17 accounts,
+// and the matching line in section 6). Keep these in step with the code:
+//   - 1f says "We do not track whether notifications are opened or clicked".
+//     A `push_click` event exists in the usage-event vocabulary but nothing
+//     records it. If that changes, 1f and 1i must change first.
+//   - 1i says a usage record "does not contain what the athlete selected".
+//     True since PR #643 (selections are kept only as aggregate monthly
+//     totals) for new records, and for older records once the migration that
+//     clears them has run. Do not add a selection or preference to usage
+//     events without changing 1i first.
+//   - 1j says an error report carries no account identifier. See
+//     lib/monitoring/client-error-report.ts.
+//   - Google Play Billing is NOT described because it is not live. Add it to
+//     1e, 7 and 8 (and Terms section 15) before Play purchases are turned on.
+//   - Sign in with Apple / Google is NOT described because the sign-in entry
+//     points are not live. Add the identifiers before they are.
 // Every factual claim here is grounded in the verified data inventory
 // (schema + code). Launch notes:
-//   1. EFFECTIVE_DATE below is set to June 24, 2026 (KC, 2026-06-25); the
-//      policy still needs attorney sign-off before publication (FV-329).
+//   1. EFFECTIVE_DATE below is November 13, 2026, the date KC approved the
+//      FV-723 / FV-724 wording. Attorney sign-off is tracked in FV-329.
 //   2. The private-journal infrastructure is built but DORMANT (FV-135, zero
 //      production callers) and is intentionally NOT described as an active
 //      feature here. Revisit if/when it is wired.
@@ -60,9 +67,9 @@ export const metadata: Metadata = {
   },
 };
 
-// Effective date set to June 24, 2026 by KC (2026-06-25). Attorney sign-off
-// (FV-329) still required before the policy is published.
-const EFFECTIVE_DATE = "June 24, 2026";
+// Effective date: the day KC approved the FV-723 / FV-724 wording
+// (2026-11-13). Previous: June 24, 2026. Attorney sign-off: see FV-329.
+const EFFECTIVE_DATE = "November 13, 2026";
 const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
 export default function PrivacyPage() {
