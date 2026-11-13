@@ -1,4 +1,5 @@
 import UIKit
+import WebKit
 import Capacitor
 import os
 
@@ -40,6 +41,41 @@ class FVBridgeViewController: CAPBridgeViewController {
             .info("FVBridgeViewController.capacitorDidLoad: registered FVAppleIAPPlugin, FVNarrationPlugin, FVAuthPlugin")
         // FV-718: install before viewDidLoad starts the server.url load.
         installOfflineEntryFallback()
+    }
+
+    /// FV-717: tell the server which build this is, so it can require an
+    /// update (apps/web/lib/native-build-gate.ts). Appends a whole
+    /// `FVBuild/<CFBundleVersion>` token AFTER the tokens Capacitor already
+    /// added from `ios.appendUserAgent`; nothing existing is changed or
+    /// removed, so every server-side check on `FVNativeShell/1 (ios)` still
+    /// matches. Read from the running bundle, so the number can never drift
+    /// from the build App Store Connect has. A build number that is not a
+    /// plain positive integer (this project uses 1, 2, 3...) adds nothing:
+    /// the server then treats the app as having no build number.
+    override open func webViewConfiguration(for instanceConfiguration: InstanceConfiguration) -> WKWebViewConfiguration {
+        let configuration = super.webViewConfiguration(for: instanceConfiguration)
+        guard let marker = Self.buildMarker(
+            bundleVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+        ) else {
+            return configuration
+        }
+        if let existing = configuration.applicationNameForUserAgent, !existing.isEmpty {
+            configuration.applicationNameForUserAgent = "\(existing) \(marker)"
+        } else {
+            configuration.applicationNameForUserAgent = marker
+        }
+        return configuration
+    }
+
+    /// `FVBuild/<n>` for a plain positive-integer build number, else nil.
+    static func buildMarker(bundleVersion: String?) -> String? {
+        guard let raw = bundleVersion?.trimmingCharacters(in: .whitespaces),
+              !raw.isEmpty, raw.count <= 9,
+              raw.allSatisfy({ $0.isASCII && $0.isNumber }),
+              let number = Int(raw), number > 0 else {
+            return nil
+        }
+        return "FVBuild/\(number)"
     }
 
     /// Capacitor's delegate stays in front for allow-list and plugin decisions.

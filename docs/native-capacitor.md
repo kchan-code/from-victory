@@ -190,6 +190,51 @@ Keytool commands remain in [docs/android-twa-runbook.md](./android-twa-runbook.m
 Steps 2–3. Digital Asset Links fingerprints are **not** a Capacitor WebView
 blocker; real SHA-256 values are a follow-up `apps/web` PR after Play App Signing.
 
+### Requiring an app update (FV-717)
+
+Every installed app loads the live site, so a change on `main` reaches every
+store user at once, on whatever build they have. The server can now refuse
+builds that are too old.
+
+**How a build reports its number.** Each shell adds a `FVBuild/<n>` token to
+its User-Agent, after its other tokens. The frozen `FVNativeShell/1` token is
+unchanged.
+
+| Platform | Number | Where it is added |
+|---|---|---|
+| Android | `versionCode` | Gradle task `stampNativeBuildMarker` (`android/app/build.gradle`) rewrites the generated `capacitor.config.json` before assets are merged. Nothing to run by hand. |
+| iOS | `CFBundleVersion` (the Xcode build number) | `FVBridgeViewController.webViewConfiguration(for:)` at runtime. |
+
+**First builds that report a number:** any build made from a commit that
+includes FV-717. The builds live in the stores when it merged do not: Android
+`versionCode` 10 (1.0.1) and iOS build 7 (1.0.1). Record the first reporting
+build numbers here when they ship:
+
+- Android: _(fill in)_
+- iOS: _(fill in)_
+
+**Turning the gate on.** Set `NATIVE_MIN_BUILD_ANDROID` and/or
+`NATIVE_MIN_BUILD_IOS` in Vercel (Production) to the lowest build still
+allowed, then redeploy. An app below it is sent to `/update-required`, which
+links to its store listing. Unset (the default) means no gate.
+
+**Apps that report no number count as the oldest** (KC decision 2026-11-13).
+Setting any minimum for a platform sends every pre-FV-717 app on that platform
+to the update screen. So:
+
+1. Ship a build that reports its number and wait until it is live in the store.
+2. Check it: open the app, then look for `FVBuild/` in the request User-Agent
+   (Vercel runtime logs).
+3. Only then set that platform's minimum.
+
+Setting a minimum before step 1 leaves those users on the update screen with
+nothing to update to. To undo, clear the variable and redeploy.
+
+**What is and is not gated.** Page navigations from a gated app are
+redirected. API routes, auth callbacks and form/server-action posts are not,
+so a request already in flight finishes; the next navigation is gated. This is
+a routing hint from a client-supplied header, not a security boundary.
+
 ### iOS — Mac follow-up (copy-paste)
 
 This runner scaffolds `apps/native/ios/` but cannot archive. **macOS + Xcode

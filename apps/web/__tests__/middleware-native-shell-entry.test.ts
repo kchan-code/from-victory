@@ -249,3 +249,65 @@ describe.each(["/", "/pricing", "/parents"])(
     });
   },
 );
+
+describe("middleware — minimum-supported-build gate (FV-717)", () => {
+  const ANDROID_BUILD_11_UA = `${NATIVE_SHELL_UA} FVBuild/11`;
+
+  it("no minimum set (the default): a version-less shell is routed exactly as before", async () => {
+    vi.stubEnv("NATIVE_MIN_BUILD_ANDROID", "");
+    try {
+      const response = await middleware(makeRequest("/", NATIVE_SHELL_UA));
+      expect(response.headers.get("location")).toBe("https://www.fromvictoryapp.com/signin");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("minimum set: a version-less shell is sent to /update-required from any page, uncached", async () => {
+    vi.stubEnv("NATIVE_MIN_BUILD_ANDROID", "11");
+    try {
+      for (const path of ["/", "/signin", "/dashboard", "/athlete/pregame"]) {
+        const response = await middleware(makeRequest(path, NATIVE_SHELL_UA));
+        expect(response.status).toBe(307);
+        expect(response.headers.get("location")).toBe(
+          "https://www.fromvictoryapp.com/update-required",
+        );
+        expect(response.headers.get("cache-control")).toBe("no-store");
+        expect(response.headers.get("vary")).toContain("User-Agent");
+      }
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("minimum set: the update screen itself, an up-to-date shell, and a browser are not redirected there", async () => {
+    vi.stubEnv("NATIVE_MIN_BUILD_ANDROID", "11");
+    vi.stubEnv("NATIVE_MIN_BUILD_IOS", "8");
+    try {
+      const own = await middleware(makeRequest("/update-required", NATIVE_SHELL_UA));
+      expect(own.headers.get("location")).toBeNull();
+
+      const current = await middleware(makeRequest("/dashboard", ANDROID_BUILD_11_UA));
+      expect(current.headers.get("location")).toBeNull();
+
+      const browser = await middleware(makeRequest("/dashboard", ORDINARY_UA));
+      expect(browser.headers.get("location")).toBeNull();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("carries a refreshed session cookie onto the update redirect", async () => {
+    vi.stubEnv("NATIVE_MIN_BUILD_ANDROID", "11");
+    simulateCookieRefresh = true;
+    try {
+      const response = await middleware(makeRequest("/dashboard", NATIVE_SHELL_UA));
+      expect(response.headers.get("location")).toBe(
+        "https://www.fromvictoryapp.com/update-required",
+      );
+      expect(response.cookies.get("sb-refreshed")?.value).toBe("yes");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
