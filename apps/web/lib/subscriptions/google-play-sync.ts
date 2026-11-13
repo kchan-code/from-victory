@@ -246,7 +246,10 @@ export async function refreshLinkedRow(
       last_verified_at: verifiedAtIso,
     })
     .eq("purchase_token", linkedToken)
-    .eq("payer_id", payerId);
+    .eq("payer_id", payerId)
+    // `expired` is terminal for a row (see writeMirrorRow): a linked older row
+    // that was closed, for example by a refund, is never re-opened from here.
+    .neq("status", "expired");
   if (error) {
     console.warn(`${logPrefix} linked purchase refresh write failed (${error.code ?? "unknown"}).`);
     alertOps(

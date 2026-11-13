@@ -740,6 +740,22 @@ describe("submitGooglePurchase: linked purchase token", () => {
     });
   });
 
+  it("never re-opens a linked older row that is already expired, even if Google still reports that token as active", async () => {
+    // e.g. the old purchase was refunded (row forced to expired) and Google lags.
+    subRows().push({
+      id: "row-old",
+      payer_id: PAYER,
+      purchase_token: SENTINEL_LINKED_TOKEN,
+      status: "expired",
+      expires_at: "2020-01-01T00:00:00.000Z",
+    });
+    googleReturns(SENTINEL_LINKED_TOKEN, { state: "SUBSCRIPTION_STATE_ACTIVE" });
+    googleReturns(SENTINEL_TOKEN, { productId: "family.2", linkedPurchaseToken: SENTINEL_LINKED_TOKEN });
+
+    expect(await submit()).toEqual({ ok: true, entitled: true, acknowledged: true });
+    expect(rowFor(SENTINEL_LINKED_TOKEN)).toMatchObject({ status: "expired", expires_at: "2020-01-01T00:00:00.000Z" });
+  });
+
   it("does not cut off a deferred downgrade early: the old row keeps what Google reports", async () => {
     subRows().push({ id: "row-old", payer_id: PAYER, purchase_token: SENTINEL_LINKED_TOKEN, status: "active" });
     googleReturns(SENTINEL_LINKED_TOKEN, { state: "SUBSCRIPTION_STATE_ACTIVE", expiryTime: FUTURE });
