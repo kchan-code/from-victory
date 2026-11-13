@@ -410,7 +410,8 @@ self-onboard/self-pay fork (post-MVP).
   once 10 or more athletes chose the option) and their markers
   (`pregame_selection_contributors`: one keyed one-way digest per athlete
   per option per month, plus the month; no athlete id and no option in the
-  clear) are also disclosed in section 1i; do not add an athlete identifier or any
+  clear; throttle rows for this action in `auth_rate_limit_events` are
+  pruned within about a day) are also disclosed in section 1i; do not add an athlete identifier or any
   athlete-keyed field to either, or read the raw totals table for display,
   without changing the policy first (FV-749).
 - Athletes 18+ are legal adults. A future fork treats 18+ differently

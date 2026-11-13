@@ -168,7 +168,7 @@ describe("buildSelectionCounts (pure vocabulary validation)", () => {
 
 describe("logPregameSelections (server action)", () => {
   beforeEach(() => {
-    process.env.RATE_LIMIT_HASH_SECRET = "test-hash-secret";
+    process.env.PREGAME_MARKER_SECRET = "test-hash-secret";
     rpc.mockReset().mockResolvedValue({ error: null });
     rateLimitGate.mockReset().mockResolvedValue({ limited: false });
     getUser.mockReset();
@@ -220,7 +220,9 @@ describe("logPregameSelections (server action)", () => {
   });
 
   it("missing secret: nothing is recorded, no RPC, and the raw id is never used", async () => {
-    delete process.env.RATE_LIMIT_HASH_SECRET;
+    delete process.env.PREGAME_MARKER_SECRET;
+    // The rate-limit secret must NOT be used as a fallback.
+    process.env.RATE_LIMIT_HASH_SECRET = "rate-limit-secret-present";
     getUser.mockResolvedValue({ data: { user: { id: ATHLETE_ID } } });
     single.mockResolvedValue({ data: { role: "athlete" } });
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -229,13 +231,14 @@ describe("logPregameSelections (server action)", () => {
     expect(JSON.stringify(err.mock.calls)).not.toContain(ATHLETE_ID);
     // Outside production: generic log only, no operator alert.
     expect(notifyError).not.toHaveBeenCalled();
+    delete process.env.RATE_LIMIT_HASH_SECRET;
     err.mockRestore();
   });
 
   it("missing secret in production: alerts the operator once per instance, never with the id", async () => {
     vi.resetModules();
     vi.stubEnv("NODE_ENV", "production");
-    delete process.env.RATE_LIMIT_HASH_SECRET;
+    delete process.env.PREGAME_MARKER_SECRET;
     notifyError.mockClear();
     deliverInBackground.mockClear();
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -248,7 +251,7 @@ describe("logPregameSelections (server action)", () => {
       expect(notifyError).toHaveBeenCalledTimes(1);
       expect(deliverInBackground).toHaveBeenCalledTimes(1);
       expect(JSON.stringify(notifyError.mock.calls)).not.toContain(ATHLETE_ID);
-      expect(JSON.stringify(notifyError.mock.calls)).toContain("RATE_LIMIT_HASH_SECRET");
+      expect(JSON.stringify(notifyError.mock.calls)).toContain("PREGAME_MARKER_SECRET");
     } finally {
       vi.unstubAllEnvs();
       err.mockRestore();

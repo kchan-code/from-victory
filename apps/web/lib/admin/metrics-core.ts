@@ -573,7 +573,13 @@ export function shapeAdminMetrics(input: {
     now,
     8,
   );
-  const authAbuse = labeledCounts(input.authEvents.filter((e) => inRange(e.created_at)).map((e) => e.action));
+  // FV-749: the pregame selections throttle rows live in the same table but are
+  // not auth traffic (metrics.ts also excludes them at the query; belt and braces).
+  const authAbuse = labeledCounts(
+    input.authEvents
+      .filter((e) => e.action !== "pregame_selections" && inRange(e.created_at))
+      .map((e) => e.action),
+  );
 
   // ---- Instrumented metrics (activity_events) ----
   const appOpens = input.activityEvents.filter((e) => e.event_name === "app_open");

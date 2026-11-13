@@ -270,6 +270,32 @@ begin;
   end $$;
 rollback;
 
+-- Throttle rows: 'pregame_selections' rows in auth_rate_limit_events are
+-- per-athlete timestamps, so the prune deletes those older than 2 hours, keeps
+-- recent ones, and never touches any other action.
+begin;
+  delete from public.auth_rate_limit_events where bucket like 'fv749%';
+  insert into public.auth_rate_limit_events (bucket, action, created_at)
+  values
+    ('fv749-old-pregame',    'pregame_selections', now() - interval '3 hours'),
+    ('fv749-recent-pregame', 'pregame_selections', now() - interval '30 minutes'),
+    ('fv749-old-signin',     'sign_in',            now() - interval '3 hours'),
+    ('fv749-old-signup',     'sign_up',            now() - interval '30 days');
+  set local role service_role;
+  do $$
+  declare deleted int;
+  begin
+    deleted := public.prune_pregame_selection_totals();
+    assert deleted >= 1, 'FV-749 FAIL: prune must report the deleted throttle row';
+    assert (select count(*) from public.auth_rate_limit_events where bucket = 'fv749-old-pregame') = 0,
+      'FV-749 FAIL: an old pregame_selections throttle row must be deleted';
+    assert (select count(*) from public.auth_rate_limit_events where bucket = 'fv749-recent-pregame') = 1,
+      'FV-749 FAIL: a recent pregame_selections throttle row must be kept';
+    assert (select count(*) from public.auth_rate_limit_events where bucket in ('fv749-old-signin', 'fv749-old-signup')) = 2,
+      'FV-749 FAIL: rows of other actions must be untouched, however old';
+  end $$;
+rollback;
+
 -- The writer prunes too.
 begin;
   delete from public.pregame_selection_counts;

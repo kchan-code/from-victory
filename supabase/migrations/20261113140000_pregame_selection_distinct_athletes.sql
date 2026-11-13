@@ -50,6 +50,12 @@
 --     (never readable, so not retained), whatever their selection_count.
 --   - Cells with athlete_count of 10 or more are kept.
 --   The raw table can still hold cells below 10 for the CURRENT month only.
+--   - Throttle rows: the 'pregame_selections' rows in auth_rate_limit_events
+--     (a per-athlete timestamped record of each pregame completion, written by
+--     the rate-limit store) are deleted once older than 2 hours (the limiter
+--     window is 60 minutes, RATE_LIMIT_CONFIG.pregame_selections), so they live
+--     at most about a day (the prune runs on every write and daily). Rows of
+--     every other action are untouched.
 --
 -- Still true: the raw count table is NOT anonymous on its own at small counts
 --   (a current-month cell can be one minor's choice), the reader below is the
@@ -124,7 +130,8 @@ comment on column public.pregame_selection_counts.athlete_count is
 -- ---------------------------------------------------------------------------
 -- Prune: retention, in its own function so the daily cron can call it too (the
 -- writer also calls it). Markers before the current UTC month; closed-month
--- cells with athlete_count below 10. Returns the number of rows deleted.
+-- cells with athlete_count below 10; 'pregame_selections' throttle rows older
+-- than 2 hours. Returns the number of rows deleted.
 -- ---------------------------------------------------------------------------
 create or replace function public.prune_pregame_selection_totals()
 returns integer
@@ -136,20 +143,28 @@ declare
   v_period date := date_trunc('month', now())::date;
   n1 integer;
   n2 integer;
+  n3 integer;
 begin
   delete from public.pregame_selection_contributors where period_start < v_period;
   get diagnostics n1 = row_count;
   delete from public.pregame_selection_counts
    where period_start < v_period and athlete_count < 10;
   get diagnostics n2 = row_count;
-  return n1 + n2;
+  -- Throttle rows: 2h = the 60-minute limiter window plus a safe margin. ONLY
+  -- this action; every other auth_rate_limit_events row is left alone.
+  delete from public.auth_rate_limit_events
+   where action = 'pregame_selections'
+     and created_at < now() - interval '2 hours';
+  get diagnostics n3 = row_count;
+  return n1 + n2 + n3;
 end;
 $$;
 
 comment on function public.prune_pregame_selection_totals() is
   'Retention for the pregame selection tables (FV-749): deletes marker rows of '
-  'closed months and closed-month cells with athlete_count below 10. '
-  'Service-role-only.';
+  'closed months, closed-month cells with athlete_count below 10, and '
+  'pregame_selections throttle rows in auth_rate_limit_events older than 2 hours '
+  '(no other action). Service-role-only.';
 
 revoke all on function public.prune_pregame_selection_totals() from public, anon, authenticated;
 grant execute on function public.prune_pregame_selection_totals() to service_role;

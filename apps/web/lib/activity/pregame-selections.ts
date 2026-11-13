@@ -9,11 +9,11 @@ import "server-only";
 // UTC month, and passes only that digest plus the validated {dimension, value}
 // pairs. Neither the id nor the digest is ever logged or returned.
 //
-// The HMAC secret is RATE_LIMIT_HASH_SECRET (already used by
-// lib/actions/rate-limit-store.ts for auth_rate_limit_events digests), with the
-// domain-separation prefix in pregame-marker.ts. If it is not set, NOTHING is
-// recorded (unlike rate limiting there is no dev fallback here, and we never
-// fall back to the raw id).
+// The HMAC secret is its OWN env var, PREGAME_MARKER_SECRET (NOT the
+// rate-limit secret: rotating that one mid-month would let athletes be counted
+// again and inflate athlete_count). If it is not set, NOTHING is recorded: no
+// dev fallback, no fallback to another secret, never the raw id. Rotate it only
+// right after a month's totals close.
 //
 // NEVER throws. On failure it logs one generic line — never the selections,
 // never an id or digest.
@@ -39,15 +39,15 @@ export async function recordPregameSelectionCounts(
     const built = buildSelectionCounts(sport, input);
     if (!built || built.selections.length === 0) return;
 
-    const secret = process.env.RATE_LIMIT_HASH_SECRET;
+    const secret = process.env.PREGAME_MARKER_SECRET;
     if (!secret) {
-      console.error("[activity] pregame selection counts skipped: hash secret not configured");
+      console.error("[activity] pregame selection counts skipped: marker secret not configured");
       if (process.env.NODE_ENV === "production" && !missingSecretAlerted) {
         missingSecretAlerted = true;
         deliverInBackground(
           notifyError(
-            "[activity] RATE_LIMIT_HASH_SECRET not set in production",
-            "Pregame selection totals are NOT being recorded. Set RATE_LIMIT_HASH_SECRET in Vercel env vars.",
+            "[activity] PREGAME_MARKER_SECRET not set in production",
+            "Pregame option totals are NOT being recorded. Set PREGAME_MARKER_SECRET in Vercel env vars (do not rotate it mid-month).",
           ),
         );
       }

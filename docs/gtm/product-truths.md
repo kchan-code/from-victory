@@ -32,8 +32,9 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
   different athletes, with no account identifier; our reporting only reads a total once
   its month has ended and at least ten different athletes chose that option; totals for
   options chosen by fewer than ten athletes, and the short-lived one-way codes used to
-  count different athletes, are deleted within a few days after the month ends (a
-  safeguard, not a guarantee of anonymity; updated by FV-749);
+  count different athletes, are deleted within a few days after the month ends; with our
+  server key and an athlete's account, those codes could show which options that athlete
+  chose in the current month (a safeguard, not a guarantee of anonymity; updated by FV-749);
   the app sends a short automated error report with no account identifier when a screen
   fails to load.
 - The protections line for 13-17 accounts changed from "No behavioral or advertising
