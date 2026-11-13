@@ -121,6 +121,17 @@ verification items:
    finish-timing here is a deliberate, documented tradeoff (see the plugin's
    inline comment), not an oversight.
 
+   **Superseded by FV-712 (2026-11-13).** The plugin no longer finishes a
+   purchase itself. `purchase()` returns a `transactionId`; the web layer
+   calls `finishTransactions` only after `submitApplePurchase` succeeds. A
+   launch-time `Transaction.updates` task fires a `transactionsUpdated`
+   event, and the web layer drains `getUnfinishedTransactions()` on launch,
+   on that event, and when the app returns to the foreground. Binaries built
+   before FV-712 keep the old finish-immediately behavior; the web layer
+   feature-detects the new methods. Device QA for the new binary: Ask to Buy
+   approved while the app is closed, and a purchase with the submit call
+   forced to fail, both unlock on next launch without Restore Purchases.
+
 ## 5. Plugin contract quick-reference
 
 | Method | Input | Success | Failure |

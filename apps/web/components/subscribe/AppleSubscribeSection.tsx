@@ -82,12 +82,14 @@ import {
   type AppleProductConfig,
 } from "@/lib/subscriptions/apple-products";
 import {
+  finishTransactions as finishAppleTransactions,
   getProducts as getStoreKitProducts,
   isAppleIapBridgeAvailable,
   manageSubscriptions as manageSubscriptionsWithBridge,
   purchase as purchaseWithBridge,
   restore as restoreWithBridge,
 } from "@/lib/native/apple-iap";
+import { syncAppleTransactions } from "@/lib/native/apple-transaction-sync";
 import {
   beginApplePurchase,
   submitApplePurchase,
@@ -568,6 +570,20 @@ export function AppleSubscribeSection({
   const [changePlanOpen, setChangePlanOpen] = useState(false);
   const [actionState, setActionState] = useState<ActionState>(IDLE);
 
+  // FV-712: recovery path — after signing in as the right payer, submit any
+  // unfinished StoreKit transaction (forced past the app-wide backoff).
+  useEffect(() => {
+    if (!isAppleIapBridgeAvailable()) return;
+    let active = true;
+    void syncAppleTransactions({ force: true }).then((result) => {
+      if (active && result.status === "synced" && result.applied) router.refresh();
+    });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only; router is stable
+  }, []);
+
   useEffect(() => {
     let catalog: DisplayProduct[] = [];
     let resolvedCurrentInterval: Interval | null = null;
@@ -755,6 +771,16 @@ export function AppleSubscribeSection({
       if (!submitResult.ok) {
         setActionState({ kind: "purchase-error", message: PURCHASE_ERROR_COPY });
         return;
+      }
+
+      // FV-712: new binaries leave the transaction unfinished until the
+      // server confirms it. Best-effort — never changes the success UI.
+      if (purchaseResult.transactionId) {
+        try {
+          await finishAppleTransactions([purchaseResult.transactionId]);
+        } catch {
+          // StoreKit redelivers an unfinished transaction; sync will retry.
+        }
       }
 
       setActionState({
