@@ -88,10 +88,13 @@ export type WriteMirrorRowResult =
  * Writes the mirror row for (payer, token). Never overwrites `payer_id` of an
  * existing row: a row owned by another payer yields "conflict".
  *
- * A row this payer already holds as `expired` is never re-opened. `expired` is
- * terminal at Google, and it is also the state a refund or chargeback forces
- * (FV-662), so re-submitting the same token while Google still reports a
- * granting state must not restore access. That yields "closed".
+ * `expired` is TERMINAL for a row. It is terminal at Google, and it is also the
+ * state a refund or chargeback forces (FV-662). Once a row is `expired` nothing
+ * here changes its status, expiry or product again: only `last_verified_at` is
+ * touched. So no later message, no re-submitted token and no intermediate
+ * state (paused, pending) can lead back to a granting row. When Google reports
+ * a granting state for such a row the result is "closed" so the caller can
+ * say so; otherwise it is an ordinary "ok".
  */
 export async function writeMirrorRow(
   service: GoogleServiceClient,
@@ -102,43 +105,42 @@ export async function writeMirrorRow(
 ): Promise<WriteMirrorRowResult> {
   const fields = mirrorFields(purchase, verifiedAtIso);
 
-  // A write that leaves the row granting must never overwrite `expired`: the
-  // check is made IN SQL (`status <> 'expired'`), not from an earlier read,
-  // because a refund can close the row between that read and this write.
   const wouldGrant =
     googleSubscriptionAccessLevel(purchase.status, purchase.expiresAt, new Date(verifiedAtIso)) !== "blocked";
 
-  const touchClosed = async (rowId: string): Promise<WriteMirrorRowResult> => {
+  /** The row is expired: touch `last_verified_at` only. */
+  const leaveClosed = async (rowId: string): Promise<WriteMirrorRowResult> => {
     const { error: touchError } = await service
       .from("google_subscriptions")
       .update({ last_verified_at: verifiedAtIso })
       .eq("id", rowId);
     if (touchError) dbFail("subscription_touch", touchError);
-    return { kind: "closed", rowId };
+    return wouldGrant ? { kind: "closed", rowId } : { kind: "ok", rowId };
   };
 
+  // The terminal check is made IN SQL (`status <> 'expired'`) on EVERY update,
+  // not from an earlier read: a refund can close the row between that read and
+  // this write.
   const update = async (): Promise<WriteMirrorRowResult> => {
-    let query = service
+    const { data, error } = await service
       .from("google_subscriptions")
       .update(fields)
       .eq("purchase_token", purchaseToken)
-      .eq("payer_id", payerId);
-    if (wouldGrant) query = query.neq("status", "expired");
-    const { data, error } = await query.select("id").maybeSingle();
+      .eq("payer_id", payerId)
+      .neq("status", "expired")
+      .select("id")
+      .maybeSingle();
     if (error) dbFail("subscription_update", error);
     if (data) return { kind: "ok", rowId: data.id };
-    // No row matched (payer, token): someone else owns the token.
-    if (!wouldGrant) return { kind: "conflict" };
-
-    // The conditional update matched nothing: either the row was closed
-    // concurrently (this payer + expired) or it is not this payer's.
+    // Nothing matched: either the row was closed concurrently (this payer +
+    // expired) or the token is not this payer's.
     const { data: again, error: againError } = await service
       .from("google_subscriptions")
       .select("id, payer_id, status")
       .eq("purchase_token", purchaseToken)
       .maybeSingle();
     if (againError) dbFail("subscription_read", againError);
-    if (again && again.payer_id === payerId && again.status === "expired") return touchClosed(again.id);
+    if (again && again.payer_id === payerId && again.status === "expired") return leaveClosed(again.id);
     return { kind: "conflict" };
   };
 
@@ -150,7 +152,7 @@ export async function writeMirrorRow(
   if (readError) dbFail("subscription_read", readError);
   if (existing) {
     if (existing.payer_id !== payerId) return { kind: "conflict" };
-    if (existing.status === "expired" && wouldGrant) return touchClosed(existing.id);
+    if (existing.status === "expired") return leaveClosed(existing.id);
     return update();
   }
 

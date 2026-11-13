@@ -528,7 +528,7 @@ describe("submitGooglePurchase: a closed purchase stays closed", () => {
     expect(fetchCalls.some((u) => u.includes(":acknowledge"))).toBe(false);
   });
 
-  it("an expired row is refreshed normally when Google also reports it as not granting", async () => {
+  it("an expired row is terminal: when Google also reports it as not granting, only last_verified_at moves and there is no alert", async () => {
     tables.google_subscriptions.push({
       id: "row-closed",
       payer_id: PAYER,
@@ -538,7 +538,26 @@ describe("submitGooglePurchase: a closed purchase stays closed", () => {
     });
     googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_EXPIRED", expiryTime: "2020-02-01T00:00:00.000Z" });
     expect(await submit()).toEqual({ ok: true, entitled: false, acknowledged: false });
-    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: "2020-02-01T00:00:00.000Z" });
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: "2020-01-01T00:00:00.000Z" });
+    expect(typeof rowFor(SENTINEL_TOKEN)?.last_verified_at).toBe("string");
+    expect(alerts).toEqual([]);
+  });
+
+  it("an expired row never moves to an intermediate state (PAUSED) that a later submit could re-open", async () => {
+    tables.google_subscriptions.push({
+      id: "row-closed",
+      payer_id: PAYER,
+      purchase_token: SENTINEL_TOKEN,
+      status: "expired",
+      expires_at: "2020-01-01T00:00:00.000Z",
+    });
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_PAUSED" });
+    expect(await submit()).toEqual({ ok: true, entitled: false, acknowledged: false });
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired" });
+    googleReturns(SENTINEL_TOKEN, { acknowledged: false });
+    expect(await submit()).toEqual({ ok: true, entitled: false, acknowledged: false });
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: "2020-01-01T00:00:00.000Z" });
+    expect(fetchCalls.some((u) => u.includes(":acknowledge"))).toBe(false);
   });
 });
 

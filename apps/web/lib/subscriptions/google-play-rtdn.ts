@@ -243,48 +243,53 @@ async function applyToOwnedRow(
   }
 
   let level = googleSubscriptionAccessLevel(purchase.status, purchase.expiresAt, now);
-  // Only a forced void write may overwrite `expired` with something else; a
-  // write that leaves the row granting is conditional in SQL (see below).
-  let forced = false;
+  const googleGrants = level !== "blocked";
 
-  if (voided && level !== "blocked") {
-    // Google still reports a granting state for a voided purchase. A refund or
-    // chargeback overrides it: force `expired` with an expiry that is not in
-    // the future (the status vocabulary is fixed by the table CHECK).
-    fields = { ...fields, status: "expired", expires_at: nowIso, auto_renewing: false };
-    level = "blocked";
-    forced = true;
-    console.warn(`${P} voided purchase still granting at Google; forced non-granting.`);
-    alertOps(`${P} voided purchase forced non-granting`, "Google still reported a granting state for a voided purchase", {
-      row_id: row.id,
-    });
-  } else if (row.status === "expired" && level !== "blocked") {
-    // `expired` is terminal at Google. A row we hold as expired (including one
-    // forced by an earlier void) must not be re-opened by a later or
-    // out-of-order message: keep it closed and say so.
+  // `expired` is TERMINAL for a row (see writeMirrorRow): once expired, only
+  // `last_verified_at` is ever written again. That holds for an expiry Google
+  // reported and for one a refund forced, and whatever Google says now, so no
+  // intermediate state (paused, pending) can lead back to a granting row.
+  let conditional = true;
+  if (row.status === "expired") {
     fields = { last_verified_at: nowIso };
     level = "blocked";
-    console.warn(`${P} expired row not re-opened by a later message.`);
-    alertOps(`${P} expired row not re-opened`, "Google reported a granting state for a row held as expired; left closed", {
-      row_id: row.id,
-    });
+    conditional = false;
+    if (googleGrants) {
+      console.warn(`${P} expired row not re-opened by a later message.`);
+      alertOps(`${P} expired row not re-opened`, "Google reported a granting state for a row held as expired; left closed", {
+        row_id: row.id,
+      });
+    }
+  } else if (voided && purchase.status !== "expired") {
+    // A refund or chargeback always ends the row as `expired`, whatever Google
+    // still reports (active, paused, on hold): force it, with an expiry that
+    // is not in the future (the status vocabulary is fixed by the table CHECK).
+    // This is the only write that is not conditional on the row being open.
+    fields = { ...fields, status: "expired", expires_at: nowIso, auto_renewing: false };
+    level = "blocked";
+    conditional = false;
+    if (googleGrants) {
+      console.warn(`${P} voided purchase still granting at Google; forced non-granting.`);
+      alertOps(`${P} voided purchase forced non-granting`, "Google still reported a granting state for a voided purchase", {
+        row_id: row.id,
+      });
+    }
   }
 
-  // `level` is blocked after the two overrides above, so recompute whether the
-  // Google-reported state itself grants: that is what must be conditional.
-  const googleGrants = googleSubscriptionAccessLevel(purchase.status, purchase.expiresAt, now) !== "blocked";
-  const conditional = googleGrants && !forced && row.status !== "expired";
+  // Every other write is conditional IN SQL on the row not having been closed
+  // since we read it (a refund can land between the read and this write).
   let query = service.from("google_subscriptions").update(fields).eq("id", row.id);
   if (conditional) query = query.neq("status", "expired");
   const { data: written, error } = await query.select("id").maybeSingle();
   if (error) dbFail("subscription_refresh", error);
   if (conditional && !written) {
-    // The row was closed (a refund) between our read and this write: it stays
-    // closed. Nothing is written and nothing is acknowledged.
+    // Closed concurrently: it stays closed. Nothing written, nothing acknowledged.
     console.warn(`${P} expired row not re-opened by a later message.`);
-    alertOps(`${P} expired row not re-opened`, "Google reported a granting state for a row held as expired; left closed", {
-      row_id: row.id,
-    });
+    if (googleGrants) {
+      alertOps(`${P} expired row not re-opened`, "Google reported a granting state for a row held as expired; left closed", {
+        row_id: row.id,
+      });
+    }
     return "applied";
   }
 

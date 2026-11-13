@@ -791,6 +791,41 @@ describe("voided purchases and revokes remove access (AC4)", () => {
     await push(subNote(SENTINEL_TOKEN, 4));
     expect(levelOf(SENTINEL_TOKEN)).toBe("blocked");
   });
+
+  it("a void always ends the row as expired, even when Google reports a non-granting state such as PAUSED", async () => {
+    seedRow({ status: "active", expires_at: FUTURE });
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_PAUSED", acknowledged: true });
+    expect(await push(voidNote())).toBe(200);
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired" });
+  });
+
+  it("expired is terminal: no intermediate state (PAUSED, then ACTIVE) can lead back to a granting row", async () => {
+    seedRow({ status: "active", expires_at: FUTURE });
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_ACTIVE", acknowledged: true });
+    await push(voidNote());
+    const closed = { ...rowFor(SENTINEL_TOKEN) };
+    expect(closed.status).toBe("expired");
+    // Google now says paused: the status must NOT move off expired.
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_PAUSED", acknowledged: true });
+    expect(await push(subNote(SENTINEL_TOKEN, 2))).toBe(200);
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: closed.expires_at });
+    // ... so a later ACTIVE cannot re-open it either.
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_ACTIVE", acknowledged: false });
+    expect(await push(subNote(SENTINEL_TOKEN, 3))).toBe(200);
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: closed.expires_at });
+    expect(levelOf(SENTINEL_TOKEN)).toBe("blocked");
+    expect(fetchCalls.some((u) => u.includes(":acknowledge"))).toBe(false);
+  });
+
+  it("a naturally expired row keeps its status and expiry when Google repeats EXPIRED (only last_verified_at moves, no alert)", async () => {
+    seedRow({ status: "expired", expires_at: "2020-01-01T00:00:00.000Z" });
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_EXPIRED", expiryTime: "2020-02-01T00:00:00.000Z" });
+    const alertsBefore = alerts.length;
+    expect(await push(subNote())).toBe(200);
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: "2020-01-01T00:00:00.000Z" });
+    expect(typeof rowFor(SENTINEL_TOKEN)?.last_verified_at).toBe("string");
+    expect(alerts.length).toBe(alertsBefore);
+  });
 });
 
 // ---------------------------------------------------------------------------
