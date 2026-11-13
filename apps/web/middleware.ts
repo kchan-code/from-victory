@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { updateSession } from "./lib/supabase/middleware";
 import { isNativeShellUserAgent } from "./lib/native-shell";
+import { resolveUpdateRedirect } from "./lib/native-build-gate";
 import {
   NATIVE_SHELL_ROUTED_PATHS,
   resolveNativeShellEntryTarget,
@@ -31,6 +32,30 @@ export async function middleware(request: NextRequest) {
   const response = await updateSession(request);
 
   const pathname = request.nextUrl.pathname;
+
+  // FV-717 minimum-supported-build gate. A store app below the server's
+  // minimum for its platform (NATIVE_MIN_BUILD_IOS / NATIVE_MIN_BUILD_ANDROID;
+  // unset = no gate) is sent to the update screen on every page navigation.
+  // Runs before the entry-point router below so a gated shell never reaches
+  // sign-in or a purchase surface. Never cached, and Vary: User-Agent, for the
+  // same shared-cache reason as the routed paths (FV-489). See
+  // lib/native-build-gate.ts.
+  const updateTarget = resolveUpdateRedirect({
+    method: request.method,
+    pathname,
+    userAgent: request.headers.get("user-agent"),
+  });
+  if (updateTarget !== null) {
+    const updateResponse = NextResponse.redirect(
+      new URL(updateTarget, request.url),
+    );
+    updateResponse.headers.set("Cache-Control", "no-store");
+    addVaryUserAgent(updateResponse.headers);
+    response.cookies.getAll().forEach((cookie) => {
+      updateResponse.cookies.set(cookie);
+    });
+    return updateResponse;
+  }
 
   // Native-shell entry-point router (Google Play "no in-app purchase"
   // compliance). apps/native/capacitor.config.ts loads the marketing site

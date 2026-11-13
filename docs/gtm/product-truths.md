@@ -10,6 +10,14 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-13: The store apps can be required to update (FV-717; effective when the PR deploys, off by default)
+
+- The App Store and Google Play apps can now be told to update. When a minimum app
+  version is set, an older app shows an "Update required" screen with a button to its
+  store listing instead of the app. Accounts and training history are unaffected.
+- No minimum is set. Nobody sees this screen until one is. It cannot be set usefully
+  until new builds of both apps are live in the stores.
+
 ## 2026-11-13: What happens when a subscription payment fails (FV-710; effective when the PR deploys)
 
 - App Store and Google Play subscriptions: when a renewal payment fails, training stays

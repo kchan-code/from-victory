@@ -152,6 +152,49 @@ tasks.register('verifyPlayBillingSwitch') {
 }
 tasks.matching { it.name ==~ /merge.*Assets/ }.configureEach { dependsOn tasks.named('verifyPlayBillingSwitch') }
 
+// FV-717: every Android build tells the server its build number, so the server can require an
+// update (apps/web/lib/native-build-gate.ts). The marker is a whole "FVBuild/<versionCode>" token
+// appended AFTER every other token of the EFFECTIVE Android appendUserAgent in the
+// capacitor.config.json that `cap sync` generated (a generated, untracked file). It is stamped
+// here, from the same versionCode that is packaged into the bundle, so the number the app reports
+// can never drift from the number Play sees. The top-level token is never touched: the stamped
+// value goes on the android key, and it still starts with "FVNativeShell/1" (and "(play)" when
+// present), so verifyPlayBillingSwitch above and every server-side substring check are unaffected.
+// Re-running is a no-op: an existing FVBuild token is replaced, never duplicated.
+def fvBuildNumber = android.defaultConfig.versionCode
+tasks.register('stampNativeBuildMarker') {
+    def configJson = file('src/main/assets/capacitor.config.json')
+    def buildNumber = fvBuildNumber
+    inputs.property('buildNumber', buildNumber)
+    doLast {
+        if (!configJson.exists()) {
+            logger.warn("stampNativeBuildMarker: ${configJson} not found; run `npx cap sync android` before packaging.")
+            return
+        }
+        if (buildNumber == null || buildNumber < 1) {
+            throw new GradleException("stampNativeBuildMarker: versionCode must be a positive integer (got '${buildNumber}').")
+        }
+        def parsed = new groovy.json.JsonSlurper().parse(configJson)
+        def effectiveUa = ((parsed.android?.appendUserAgent ?: parsed.appendUserAgent) ?: '') as String
+        def tokens = effectiveUa.tokenize(' ').findAll { !(it ==~ /FVBuild\/\d+/) }
+        if (tokens.isEmpty() || tokens[0] != 'FVNativeShell/1') {
+            throw new GradleException("stampNativeBuildMarker: effective Android appendUserAgent '${effectiveUa}' must start with 'FVNativeShell/1'.")
+        }
+        def stamped = (tokens + ["FVBuild/${buildNumber}".toString()]).join(' ')
+        if (stamped == effectiveUa) {
+            return
+        }
+        if (parsed.android == null) {
+            parsed.android = [:]
+        }
+        parsed.android.appendUserAgent = stamped
+        configJson.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(parsed)) + '\n'
+        logger.lifecycle("stampNativeBuildMarker: Android appendUserAgent = '${stamped}'")
+    }
+}
+tasks.named('verifyPlayBillingSwitch') { mustRunAfter tasks.named('stampNativeBuildMarker') }
+tasks.matching { it.name ==~ /merge.*Assets/ }.configureEach { dependsOn tasks.named('stampNativeBuildMarker') }
+
 apply from: 'capacitor.build.gradle'
 
 // Intentionally no google-services plugin apply. Push Notifications /
