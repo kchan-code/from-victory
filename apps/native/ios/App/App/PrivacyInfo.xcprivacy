@@ -4,9 +4,10 @@
 <dict>
 	<!-- FV-721. App-target manifest. Tracking is off. Collected types match the
 	     nutrition-label intent in docs/ios-app-store-release.md section 9,
-	     including the hosted WebView, not only native APIs. Kinny confirms
-	     these against the live App Store Connect answers before the next
-	     upload (steps are in that section). Date of birth has no dedicated
+	     including the hosted WebView, not only native APIs. Checked against
+	     the live App Store Connect answers on 2026-11-13 (FV-722): the six
+	     types, purposes, linked and tracking values below match the published
+	     label. Keep the two in step when either changes. Date of birth has no dedicated
 	     manifest type; it is declared as Other Data Types. Do not switch that
 	     to Sensitive Info: Apple's sensitive category is racial, health,
 	     religious, biometric, and similar data, which this app does not collect. -->
@@ -77,9 +78,14 @@
 			<true/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
 			<false/>
+			<!-- FV-722: Analytics as well as App Functionality. First-party usage
+			     events (app opened, session started or finished) are used to
+			     count active and returning athletes. Matches the App Store
+			     Connect label as corrected on 2026-11-13. -->
 			<key>NSPrivacyCollectedDataTypePurposes</key>
 			<array>
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
 			</array>
 		</dict>
 		<dict>
