@@ -66,6 +66,37 @@ describe("Faq — all questions render", () => {
       expect(summaryTexts).toContain(item.q);
     }
   });
+
+  it("renders questions in parent-journey order, and FAQPage JSON-LD follows it", () => {
+    const { container } = render(<Faq />);
+    const summaryTexts = Array.from(container.querySelectorAll("summary span")).map(
+      (el) => el.textContent ?? "",
+    );
+    // Parent reading top to bottom: what it is, safety, cost, getting
+    // started, troubleshooting, then where to find the product.
+    // "Restore Purchases" is the iPhone-specific next step after the
+    // subscribe prompt, so it sits with troubleshooting, before "Training paused".
+    const order = [
+      "Is this therapy or counseling?",
+      "What does my athlete actually believe here?",
+      "Does visualization actually work?",
+      "How much screen time is this?",
+      "How old does my athlete need to be?",
+      "Can I read what my athlete does inside a session?",
+      "What does it cost, and can I cancel?",
+      "Where do I subscribe?",
+      "How does my athlete get the app?",
+      "How do we sign in to the app?",
+      "I already subscribe. How do I use the app?",
+      "I already subscribe. Why is the app asking me to subscribe?",
+      "I subscribed in the iPhone app. When do I use Restore Purchases?",
+      "What does “Training paused” mean on my athlete’s screen?",
+      "Where do I find From Victory online?",
+    ];
+    expect(FAQ_ITEMS.map((item) => item.q)).toEqual(order);
+    expect(summaryTexts).toEqual(order);
+    expect(FAQ_JSON_LD.mainEntity.map((entry) => entry.name)).toEqual(order);
+  });
 });
 
 // ── 2. Answers match the source copy (verbatim spot-pins) ───────────────────
