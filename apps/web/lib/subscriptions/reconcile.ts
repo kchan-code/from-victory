@@ -204,7 +204,11 @@ async function reconcileStripeRow(
       ...stripeFieldsFromRow(truth),
       last_stripe_event_at: new Date(newWatermarkMs).toISOString(),
     })
-    .eq("parent_id", row.parent_id);
+    .eq("parent_id", row.parent_id)
+    // The checkout handler can move the row to another subscription WITHOUT
+    // touching the watermark (FV-63), so the watermark alone would not catch
+    // that. Only write if the row still tracks the subscription we read.
+    .eq("stripe_subscription_id", row.stripe_subscription_id as string);
   q =
     row.last_stripe_event_at === null
       ? q.is("last_stripe_event_at", null)

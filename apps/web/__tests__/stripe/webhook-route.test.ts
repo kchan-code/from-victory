@@ -931,6 +931,46 @@ describe("POST /api/webhooks/stripe", () => {
     },
   );
 
+  it("stale replacement event (older than the watermark): no write and no 'replaced' alert", async () => {
+    serviceMockImpl = makeServiceMock({ existingRow: trackedRow({ status: "past_due" }) });
+    subscriptionsRetrieveMock.mockResolvedValueOnce(
+      makeSubscription({ id: "sub_S", status: "past_due" }),
+    );
+    await send(
+      makeEvent(
+        "customer.subscription.updated",
+        makeSubscription({ id: "sub_E", status: "active" }),
+        1000,
+      ),
+    );
+    expect(upsertCalls).toHaveLength(0);
+    expect(notifyErrorMock).not.toHaveBeenCalled();
+  });
+
+  it("checkout replacing a past_due tracked S: row adopts E and ops is told even if the live-count list fails", async () => {
+    serviceMockImpl = makeServiceMock({ existingRow: trackedRow({ status: "past_due" }) });
+    subscriptionsRetrieveMock
+      .mockResolvedValueOnce(makeSubscription({ id: "sub_E", status: "active" }))
+      .mockResolvedValueOnce(makeSubscription({ id: "sub_S", status: "past_due" }));
+    subscriptionsListMock.mockRejectedValueOnce(new Error("stripe down"));
+    const res = await send(
+      makeEvent(
+        "checkout.session.completed",
+        {
+          id: "cs_resub",
+          customer: "cus_test",
+          subscription: "sub_E",
+          metadata: { parent_id: "parent-uuid-711" },
+        } as unknown as Stripe.Checkout.Session,
+        3000,
+      ),
+    );
+    expect(res.status).toBe(200);
+    expect((upsertCalls[0] as Record<string, unknown>).stripe_subscription_id).toBe("sub_E");
+    expect(notifyErrorMock).toHaveBeenCalledTimes(1);
+    expect(alertCtx().reason).toBe("replaced_unpaid");
+  });
+
   it("active E while Stripe says tracked S is incomplete: row adopts E, no alert", async () => {
     serviceMockImpl = makeServiceMock({ existingRow: trackedRow({ status: "incomplete" }) });
     subscriptionsRetrieveMock.mockResolvedValueOnce(

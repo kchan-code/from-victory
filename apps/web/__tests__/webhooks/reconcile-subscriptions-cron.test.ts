@@ -267,6 +267,8 @@ describe("stripe watermark + write guard", () => {
     expect(updates[0]?.last_stripe_event_at).toBe(expected);
     expect(stripeUpdateFilters).toContainEqual(["is", "last_stripe_event_at", null]);
     expect(stripeUpdateFilters).toContainEqual(["eq", "parent_id", dbRow().parent_id]);
+    // Guarded on the tracked subscription too (checkout can move it without a watermark).
+    expect(stripeUpdateFilters).toContainEqual(["eq", "stripe_subscription_id", "sub_1"]);
   });
 
   it("older stored watermark: advances it, guarded by equality on the value read", async () => {

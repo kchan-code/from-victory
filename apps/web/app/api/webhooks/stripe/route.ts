@@ -385,6 +385,20 @@ async function handleCheckoutSessionCompleted(
       );
       return;
     }
+    if (decision.replaced) {
+      alertSubscriptionConflict(
+        "new paid subscription replaced an unpaid tracked one; the old subscription still exists in Stripe",
+        {
+          event_type: "checkout.session.completed",
+          event_id: eventId,
+          customer: row.stripe_customer_id,
+          replaced_sub: tracked?.stripe_subscription_id ?? "",
+          replaced_status: decision.replaced,
+          adopted_sub: synced.stripe_subscription_id,
+          reason: "replaced_unpaid",
+        },
+      );
+    }
   }
 
   const { error } = await service.from("subscriptions").upsert(
@@ -523,6 +537,21 @@ async function handleSubscriptionUpsert(
     }
     return;
   }
+  // Out-of-order protection: skip events older than the watermark.
+  const incomingMs = eventCreated * 1000;
+  const storedMs = existing.last_stripe_event_at
+    ? Date.parse(existing.last_stripe_event_at)
+    : NaN;
+  if (Number.isFinite(storedMs) && incomingMs < storedMs) {
+    console.warn(
+      `[stripe/webhook] ${eventType}: skipping stale event (created=${eventCreated}) ` +
+        `for sub="${row.stripe_subscription_id}" — newer state already applied. ` +
+        `No write.`,
+    );
+    return;
+  }
+
+  // Alert only once the event is known not to be stale (it will be written).
   if (decision.replaced) {
     alertSubscriptionConflict(
       "new paid subscription replaced an unpaid tracked one; the old subscription still exists in Stripe",
@@ -536,20 +565,6 @@ async function handleSubscriptionUpsert(
         reason: "replaced_unpaid",
       },
     );
-  }
-
-  // Out-of-order protection: skip events older than the watermark.
-  const incomingMs = eventCreated * 1000;
-  const storedMs = existing.last_stripe_event_at
-    ? Date.parse(existing.last_stripe_event_at)
-    : NaN;
-  if (Number.isFinite(storedMs) && incomingMs < storedMs) {
-    console.warn(
-      `[stripe/webhook] ${eventType}: skipping stale event (created=${eventCreated}) ` +
-        `for sub="${row.stripe_subscription_id}" — newer state already applied. ` +
-        `No write.`,
-    );
-    return;
   }
 
   // FV-711: when the TRACKED subscription ends, do not strand a family that
