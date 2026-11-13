@@ -1023,6 +1023,31 @@ export type Database = {
           pending_expires_at: string | null
         }[]
       }
+      // FV-671: hand-added (20261112100000_fv671_pending_accounts.sql). The
+      // pending-account lock functions (spec §5.2). complete_pending_profile and
+      // cancel_my_pending_account are `authenticated` and act only on auth.uid();
+      // reaper_mark and finalize_pending_deletion are service_role only.
+      complete_pending_profile: {
+        Args: {
+          p_role: "parent" | "adult_athlete"
+          p_first_name: string
+          p_birthdate?: string | null
+          p_sport?: string | null
+        }
+        Returns: "created" | "already_complete" | "reject_underage"
+      }
+      cancel_my_pending_account: {
+        Args: Record<string, never>
+        Returns: "marked" | "not_pending"
+      }
+      reaper_mark: {
+        Args: { p_user_id: string }
+        Returns: "marked" | "not_pending"
+      }
+      finalize_pending_deletion: {
+        Args: { p_user_id: string }
+        Returns: "no_tombstone" | "not_pending" | "deleted"
+      }
       // FV-164: SECURITY DEFINER RPC called by the cron route (service-role only).
       // Execute is revoked from anon + authenticated in the migration.
       due_push_reminders: {

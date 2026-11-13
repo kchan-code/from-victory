@@ -241,7 +241,7 @@ function makeServiceMock(opts: ServiceMockOptions = {}) {
  * claimPairing, and athleteSignIn.
  */
 interface ServerMockOptions {
-  signUpData?: { user: { id: string } } | null;
+  signUpData?: { user: { id: string }; session: null } | null;
   signUpError?: { message: string; status?: number; code?: string } | null;
   signInError?: { message: string; status?: number; code?: string } | null;
   signInProfileRole?: string;
@@ -252,7 +252,7 @@ interface ServerMockOptions {
 
 function makeServerMock(opts: ServerMockOptions = {}) {
   const {
-    signUpData = { user: { id: "parent-uuid-new" } },
+    signUpData = { user: { id: "parent-uuid-new" }, session: null } as unknown as ServerMockOptions["signUpData"],
     signUpError = null,
     signInError = null,
     signInProfileRole = "parent",
@@ -393,8 +393,14 @@ describe("signUp — rate limiting", () => {
     first_name = "Alex",
     consent = "on",
   ) {
-    const fields: Record<string, string> = { email, password, first_name, consent };
-    return { get: (key: string) => fields[key] ?? null } as FormData;
+    const f = new FormData();
+    f.set("email", email);
+    f.set("password", password);
+    f.set("first_name", first_name);
+    f.set("consent", consent);
+    // FV-671: the parent signup also needs the guardian attestation.
+    f.set("guardian_attestation", "on");
+    return f;
   }
 
   it("over-limit: returns throttle error WITHOUT calling supabase.auth.signUp", async () => {
@@ -419,21 +425,21 @@ describe("signUp — rate limiting", () => {
     expect(serverMockImpl.auth.signUp).toHaveBeenCalledOnce();
   });
 
-  it("under-limit happy path: signUp + profile insert complete and redirect fires", async () => {
+  it("under-limit happy path: signUp returns the verify_code step (FV-671: no profile insert, no redirect, no session)", async () => {
     serverMockImpl = makeServerMock({
       signUpError: null,
       profileInsertError: null,
     });
 
-    let threw: Error | null = null;
-    try {
-      await signUp(null, makeFormData());
-    } catch (e) {
-      threw = e as Error;
-    }
+    const result = await signUp(null, makeFormData());
 
     expect(serverMockImpl.auth.signUp).toHaveBeenCalledOnce();
-    expect(threw).toBe(REDIRECT_SENTINEL);
+    expect(result).toMatchObject({
+      ok: true,
+      step: "verify_code",
+      purpose: "signup",
+      role: "parent",
+    });
   });
 
   it("fail-open: rateLimitGate returns not-limited — auth.signUp IS called", async () => {

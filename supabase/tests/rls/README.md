@@ -19,6 +19,7 @@ Run as role-scoped clients against a freshly-migrated local Supabase:
 | (f) | `safety_events` unreadable by both athlete and parent roles |
 | (g) | FV-443: `adult_athlete` (18+ self-serve payer/trainee) is invisible to every parent, can never appear in `parent_athlete_links` on either side, cannot reach another profile / another account's `subscriptions` row / any `parent_athlete_links` row, CAN read (but not write) its own `subscriptions` row, and its private-column self-read (`get_own_personalization()`) carries no wider grant than the existing athlete pattern — see `assertions/18_adult_athlete_boundary.sql` |
 | (h) | FV-568: the FULL client-role grant matrix is pinned — every `public` relation × {anon, authenticated, service_role} × {SELECT, INSERT, UPDATE, DELETE} via `has_table_privilege`, the `profiles` column allowlist via `has_column_privilege`, the `activity_events_id_seq` sequence, every trigger/cron/RPC function via `has_function_privilege`, and a default-privilege probe (a table/sequence created inside a rolled-back transaction must not inherit client write grants). Effect probes with row-count diagnosis cover the service-role-only tables, plus service_role / athlete-self-write / anon-waitlist positive controls — see `assertions/19_client_grant_matrix.sql` |
+| (i) | FV-671: the pending-account lock (`20261112100000_fv671_pending_accounts.sql`) — `private` schema + tombstone unreachable by anon/authenticated/service_role (grant AND effect), exact `EXECUTE` grants (`complete_pending_profile` / `cancel_my_pending_account` → authenticated only; `reaper_mark` / `finalize_pending_deletion` → service_role only; `private.is_unestablished` → nobody), sequenced behavior of every lock function, and the finalize re-check — see `assertions/23_pending_accounts.sql`. `assertions/24_fk_coverage.sql` fails when any table referencing `auth.users` / `public.profiles` is neither covered by `private.is_unestablished` nor on its documented allowlist. The true two-connection races live in `supabase/tests/concurrency/run.sh` (see below). |
 
 ## Why plain SQL (not supabase-js / pgTAP)
 
@@ -86,7 +87,9 @@ supabase/tests/rls/
 │   ├── 05_safety_events.sql     # AC f
 │   ├── ...
 │   ├── 18_adult_athlete_boundary.sql  # AC g (FV-443)
-│   └── 19_client_grant_matrix.sql     # AC h (FV-568) — the grant matrix of record
+│   ├── 19_client_grant_matrix.sql     # AC h (FV-568) — the grant matrix of record
+│   ├── 23_pending_accounts.sql        # AC i (FV-671) — private schema, lock functions, grants
+│   └── 24_fk_coverage.sql             # AC i (FV-671) — every FK to auth.users/profiles is covered or allowlisted
 ├── run.sh                 # seeds fixtures, then runs every assertions/*.sql
 └── README.md
 ```
@@ -120,3 +123,22 @@ The harness is only meaningful if it has been seen red. To re-verify it can
 fail, deliberately break a policy — e.g. add a parent SELECT policy to
 `journal_entries` — and confirm AC(b) fails the job, then revert. The original
 red run for this harness is linked in the FV-166 PR.
+
+## Concurrency tests (FV-671)
+
+`supabase/tests/concurrency/run.sh [DB_URL]` is NOT a role-scoped assertion file
+(a single psql session can't race itself), so it lives beside this harness. It
+opens two real connections: session A takes the per-user advisory lock and holds
+it; session B starts only after A signals, and the script asserts B really queued
+behind A (elapsed time) and decided on A's committed state — two tabs completing,
+completion vs cancel, completion vs the reaper, finalize vs completion / direct
+profile insert, and established data landing before finalize. With no reachable
+database it prints `SKIP` and exits 0 unless `REQUIRE_DB=1` (CI sets it).
+
+```bash
+supabase start && supabase db reset      # or: supabase db push --local
+supabase/tests/concurrency/run.sh
+```
+
+Note: the harness's own `run.sh` uses `mapfile` (bash 4+). On stock macOS bash 3.2 run it with
+a newer bash (`brew install bash`) or loop over `assertions/*.sql` with psql.
