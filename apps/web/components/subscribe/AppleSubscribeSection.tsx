@@ -16,10 +16,11 @@
  * same markup the server did or React logs a hydration mismatch. This
  * component follows the same pattern already used in this codebase for
  * browser-API detection (see components/athlete/InstallPrompt.tsx): state
- * defaults to the SSR-safe "unavailable" shape, and the real bridge/config
- * check runs inside a `useEffect` (post-mount, client-only), upgrading to
- * the selector view only after mount confirms both a configured product
- * list AND a live native bridge.
+ * defaults to a neutral loading shape (FV-720). The real bridge/config
+ * check runs inside a `useEffect` (post-mount, client-only). "Unavailable"
+ * is set only after that check has failed. The selector view is set only
+ * after mount confirms both a configured product list AND a live native
+ * bridge.
  *
  * STILL GATED — DO NOT BUILD HERE (unresolved KC policy, record §4.6 "P5"):
  * seat-designation / downgrade-selection UI, and any Apple trial/intro-offer
@@ -99,6 +100,7 @@ import {
 // ---------------------------------------------------------------------------
 
 const UNAVAILABLE_COPY = "Subscriptions aren’t available in this version yet.";
+const LOADING_COPY = "Loading subscription options.";
 const MANAGE_HEADING = "Manage your plan";
 const MANAGE_STATUS_COPY = "You’re subscribed. Manage or restore below.";
 const CURRENT_PLAN_LABEL = "Current plan";
@@ -110,6 +112,10 @@ const CHANGE_PLAN_LABEL = "Change plan";
 // sheet is the sole source of trial/price/terms claims (no trial/eligibility
 // copy is ever rendered by this component itself).
 const APPLE_TERMS_NOTE = "Apple shows the final price and terms before you confirm.";
+// FV-720 (App Review 3.1.2): one static line on the purchase paywall. Price
+// and period stay StoreKit's. No web trial terms and no hardcoded price.
+const APPLE_RENEWAL_NOTE =
+  "The subscription renews automatically at the price shown until you cancel. To cancel, open Settings on your iPhone, tap your name, then Subscriptions.";
 /**
  * FV-615: backoff between StoreKit product-lookup attempts when the previous
  * attempt returned no products. Total extra wait ≈ 7s before the screen
@@ -150,7 +156,7 @@ const APPLE_EULA_URL = "https://www.apple.com/legal/internet-services/itunes/dev
 // Local types
 // ---------------------------------------------------------------------------
 
-type Phase = "unavailable" | "ready";
+type Phase = "loading" | "unavailable" | "ready";
 type Interval = "month" | "year";
 
 export interface AppleSubscribeSectionProps {
@@ -550,9 +556,10 @@ export function AppleSubscribeSection({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  // SSR-safe default: "unavailable" is exactly what a server render (no
-  // `window`) would compute, so the first client render matches it too.
-  const [phase, setPhase] = useState<Phase>("unavailable");
+  // SSR-safe default (FV-720): loading, not "unavailable". The server has
+  // not checked the bridge or the catalog yet. The first client render
+  // matches this markup; the effect below moves to ready or unavailable.
+  const [phase, setPhase] = useState<Phase>("loading");
   const [products, setProducts] = useState<DisplayProduct[]>([]);
   const [selectedAthleteCount, setSelectedAthleteCount] = useState<number | null>(null);
   const [selectedInterval, setSelectedInterval] = useState<Interval | null>(null);
@@ -577,7 +584,10 @@ export function AppleSubscribeSection({
       // — an already-entitled payer must never be stranded from managing or
       // restoring their subscription by an unrelated product-config gap
       // (NEXT_PUBLIC_APPLE_PRODUCTS). See AppleSubscribeSectionProps doc.
-      if (!isAppleIapBridgeAvailable()) return;
+      if (!isAppleIapBridgeAvailable()) {
+        setPhase("unavailable");
+        return;
+      }
 
       // Resolve the payer's CURRENT billing interval — needed for the
       // "Current plan" label (FV-600) and, in "upgrade" mode, to constrain
@@ -614,8 +624,9 @@ export function AppleSubscribeSection({
               )
             : [];
           if (catalog.length === 0) {
-            // Nothing to offer — stay in the calm unavailable state rather
-            // than rendering an empty change-plan disclosure.
+            // Nothing to offer. Unavailable only after this check, not on
+            // first paint (FV-720).
+            setPhase("unavailable");
             return;
           }
         }
@@ -624,7 +635,9 @@ export function AppleSubscribeSection({
       catalog = getConfiguredAppleProducts();
       if (catalog.length === 0 || !isAppleIapBridgeAvailable()) {
         // Shipped state today: NEXT_PUBLIC_APPLE_PRODUCTS is unset, so this
-        // is the branch every production render takes. See apple-products.ts.
+        // is the branch every production render takes after the effect.
+        // First paint stays on LOADING_COPY. See apple-products.ts.
+        setPhase("unavailable");
         return;
       }
     }
@@ -811,7 +824,27 @@ export function AppleSubscribeSection({
   }
 
   // -------------------------------------------------------------------------
-  // Render — unavailable state (shipped default; also the SSR-matching state)
+  // Render — loading (SSR and first client paint). Unavailable is below,
+  // only after the effect has found that products cannot load.
+  // -------------------------------------------------------------------------
+
+  if (phase === "loading") {
+    return (
+      <div
+        role="status"
+        aria-busy="true"
+        data-testid="apple-subscribe-loading"
+        className="bg-charcoal border border-hairline rounded-xl px-5 py-5"
+      >
+        <p className="font-body text-cream/70 text-[15px] leading-relaxed">
+          {LOADING_COPY}
+        </p>
+      </div>
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // Render — unavailable (product loading failed)
   // -------------------------------------------------------------------------
 
   if (phase === "unavailable") {
@@ -1085,6 +1118,13 @@ export function AppleSubscribeSection({
         className="mb-4 font-body text-cream/55 text-[13px] leading-relaxed"
       >
         {APPLE_TERMS_NOTE}
+      </p>
+
+      <p
+        data-testid="apple-renewal-note"
+        className="mb-4 font-body text-cream/55 text-[13px] leading-relaxed"
+      >
+        {APPLE_RENEWAL_NOTE}
       </p>
 
       <button

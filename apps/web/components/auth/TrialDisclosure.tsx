@@ -26,3 +26,18 @@ export function TrialDisclosure({ detail }: Props) {
     </div>
   );
 }
+
+/**
+ * iOS shell only (FV-719). No web price, no trial length, no card line.
+ * StoreKit shows Apple's price and terms on the subscription step.
+ */
+export function IosSignupSubscriptionNote() {
+  return (
+    <p
+      data-testid="signup-ios-subscription-note"
+      className="mt-4 text-center font-body text-cream/80 text-[14px] leading-relaxed m-0"
+    >
+      After you create your account, you choose a subscription in the app.
+    </p>
+  );
+}

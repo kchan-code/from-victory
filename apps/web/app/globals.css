@@ -883,3 +883,14 @@ a:hover { color: var(--accent-hot); }
   descent-override: 22.29%;
   line-gap-override: 0.00%;
 }
+
+/* FV-733: iOS Safari and the iOS app WebView zoom the page when a focused
+   text field computes under 16px, then leave it zoomed. 16px on the control
+   stops that. Pinch zoom stays on. !important wins over a smaller Tailwind
+   utility and over the 15px body token (--t-body), which an input otherwise
+   inherits. Checkbox, radio, range, and hidden inputs are not text fields. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([type="image"]):not([type="color"]),
+select,
+textarea {
+  font-size: 16px !important;
+}

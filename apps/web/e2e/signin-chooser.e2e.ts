@@ -105,9 +105,64 @@ test.describe("Signed-out welcome doors", () => {
         expect(signup).not.toContain("7 days");
         expect(signup).not.toContain("14 days");
         expect(signup).not.toContain("free trial");
+        await expect(page.getByTestId("signup-ios-subscription-note")).toHaveCount(0);
       } finally {
         await context.close();
       }
     }
+  });
+
+  test("ios shell signup points at the in-app subscription step without a web price", async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      userAgent:
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) FVNativeShell/1 (ios)",
+      viewport: { width: 390, height: 844 },
+    });
+    const page = await context.newPage();
+    try {
+      await page.goto("/signup");
+      await expect(page.getByTestId("signup-ios-subscription-note")).toHaveText(
+        "After you create your account, you choose a subscription in the app.",
+      );
+      const signup = await page.locator("#main-content").innerText();
+      expect(signup).not.toMatch(/\$\d/);
+      expect(signup.toLowerCase()).not.toContain("card required");
+      expect(signup.toLowerCase()).not.toContain("7 days");
+      expect(signup.toLowerCase()).not.toContain("14 days");
+    } finally {
+      await context.close();
+    }
+  });
+
+  test("sign-in fields are at least 16px and zoom stays enabled", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/signin");
+    await page.getByTestId("signin-show-form").click();
+    // Parent and athlete forms are both in the DOM. "Password" matches both,
+    // so each field is addressed by id.
+    const email = page.locator("#email");
+    const fields = [
+      email,
+      page.locator("#password"),
+      page.locator("#athlete-username"),
+      page.locator("#athlete-signin-password"),
+    ];
+    for (const field of fields) {
+      const size = await field.evaluate((el) =>
+        parseFloat(getComputedStyle(el).fontSize),
+      );
+      expect(size).toBeGreaterThanOrEqual(16);
+    }
+    const viewport = await page.evaluate(() => {
+      const meta = document.querySelector('meta[name="viewport"]');
+      return meta?.getAttribute("content") ?? "";
+    });
+    expect(viewport).not.toMatch(/user-scalable\s*=\s*no/i);
+    expect(viewport).not.toMatch(/maximum-scale\s*=\s*1(?:\.0+)?(?:\s|,|$)/i);
+    await email.focus();
+    const scale = await page.evaluate(() => window.visualViewport?.scale ?? 1);
+    expect(scale).toBeLessThanOrEqual(1.01);
   });
 });

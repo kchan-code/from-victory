@@ -29,6 +29,7 @@ import {
 } from "@/lib/actions/push-reminder";
 import { urlBase64ToUint8Array } from "@/lib/push/vapid";
 import { formatHour } from "@/lib/push/format";
+import { NATIVE_REMINDER_UNAVAILABLE_COPY } from "@/lib/push/native-reminder-copy";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -138,11 +139,17 @@ function Toggle({
 interface ReminderSettingsProps {
   initialEnabled: boolean;
   initialHour: number;
+  /**
+   * Store shell (iOS or Android). Web Push cannot be delivered there
+   * (FV-213). Hide the toggle and any PWA or browser instructions.
+   */
+  nativeShell?: boolean;
 }
 
 export default function ReminderSettings({
   initialEnabled,
   initialHour,
+  nativeShell = false,
 }: ReminderSettingsProps) {
   const [enabled, setEnabled] = useState(initialEnabled);
   const [hour, setHour] = useState(
@@ -286,6 +293,28 @@ export default function ReminderSettings({
   }
 
   // ---- Render --------------------------------------------------------------
+
+  // FV-716: inside a store app there is no Share sheet and no native push.
+  // One honest line. Do not offer a toggle that would subscribe and never deliver.
+  if (nativeShell) {
+    return (
+      <div className="px-5 sm:px-8 max-w-[640px] mx-auto">
+        <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">
+          Daily reminder
+        </p>
+        <h1 className="mb-3 font-display font-extrabold uppercase tracking-[0.03em] text-cream text-[30px] leading-[1.05]">
+          Daily reminder
+        </h1>
+        <p
+          role="status"
+          data-testid="reminder-native-unavailable"
+          className="font-body text-[15px] leading-[1.6] text-cream/70"
+        >
+          {NATIVE_REMINDER_UNAVAILABLE_COPY}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="px-5 sm:px-8 max-w-[640px] mx-auto">
