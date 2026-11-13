@@ -52,7 +52,8 @@ describe("server-only boundary", () => {
   });
 
   it("exactly one module imports google-auth-library: google-play-auth.ts", () => {
-    const importers = SOURCE_FILES.filter((f) => /["']google-auth-library["']/.test(read(f))).map(rel);
+    // Also catches deep imports such as "google-auth-library/build/...".
+    const importers = SOURCE_FILES.filter((f) => /["'`]google-auth-library(?:\/[^"'`]*)?["'`]/.test(read(f))).map(rel);
     expect(importers).toEqual(["lib/subscriptions/google-play-auth.ts"]);
   });
 
@@ -72,7 +73,11 @@ describe("server-only boundary", () => {
       // from a client component is the sanctioned way to call it.
       for (const m of SERVER_ONLY_MODULES.filter((x) => !x.startsWith("lib/actions/"))) {
         const base = m.replace(/^lib\//, "").replace(/\.ts$/, "");
-        if (src.includes(base)) offenders.push(`${rel(f)} -> ${m}`);
+        // Alias/absolute form ("subscriptions/google-play-api") or a relative
+        // import of the same file ("./google-play-api", "../subscriptions/google-play-api").
+        const leaf = base.split("/").pop() ?? base;
+        const relative = new RegExp(`from\\s*["'\`]\\.{1,2}/(?:[\\w./-]*/)?${leaf}["'\`]`);
+        if (src.includes(base) || relative.test(src)) offenders.push(`${rel(f)} -> ${m}`);
       }
       if (/google-auth-library/.test(src)) offenders.push(`${rel(f)} -> google-auth-library`);
     }
@@ -97,12 +102,12 @@ describe("google_subscriptions client reads", () => {
     const offenders: string[] = [];
     for (const f of SOURCE_FILES) {
       const src = read(f);
-      let idx = src.indexOf('"google_subscriptions"');
-      while (idx !== -1) {
+      // Any quote style: "google_subscriptions", 'google_subscriptions', `google_subscriptions`.
+      const mention = /["'`]google_subscriptions["'`]/g;
+      for (let m = mention.exec(src); m !== null; m = mention.exec(src)) {
         // Look at the rest of this query chain (up to the next statement end).
-        const chain = src.slice(idx, idx + 400).split(";")[0] ?? "";
+        const chain = src.slice(m.index, m.index + 400).split(";")[0] ?? "";
         if (/\.select\(\s*(?:["'`]\s*\*\s*["'`])?\s*\)/.test(chain)) offenders.push(rel(f));
-        idx = src.indexOf('"google_subscriptions"', idx + 1);
       }
     }
     expect(offenders).toEqual([]);

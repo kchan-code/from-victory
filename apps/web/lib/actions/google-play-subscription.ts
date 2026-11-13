@@ -298,10 +298,9 @@ async function refreshLinkedRow(
 export async function beginGooglePlayPurchase(): Promise<BeginGooglePlayPurchaseResult> {
   if (!isGooglePlayCatalogActive()) return { ok: false, error: "unavailable" };
 
-  const payer = await resolvePayer();
-  if (!payer.ok) return payer;
-
   try {
+    const payer = await resolvePayer();
+    if (!payer.ok) return payer;
     const bindingId = await getOrMintBindingId(createServiceClient(), payer.payerId);
     return { ok: true, obfuscatedAccountId: bindingId };
   } catch (err) {
@@ -327,11 +326,11 @@ export async function submitGooglePurchase(
   if (!parsed.success) return { ok: false, error: "invalid_input" };
   const purchaseToken = parsed.data.purchaseToken;
 
-  const payer = await resolvePayer();
-  if (!payer.ok) return payer;
-  const payerId = payer.payerId;
-
   try {
+    const payer = await resolvePayer();
+    if (!payer.ok) return payer;
+    const payerId = payer.payerId;
+
     // 3. Google is the truth. Nothing below runs unless it confirms the token.
     const got = await getSubscriptionPurchaseV2(purchaseToken);
     if (!got.ok) {

@@ -50,6 +50,9 @@ let events: string[];
 let rowAtAck: Row | null;
 let nextRowId: number;
 let racePayer: string | null;
+/** When set, the fake service client fails that (table, op) with a message that carries secrets. */
+let dbFault: { table: string; op: string } | null;
+let authThrows: boolean;
 
 let googleByToken: Map<string, { status: number; body?: unknown }>;
 let ackStatus: number;
@@ -67,7 +70,12 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: () => {
     createClientCalls += 1;
     return {
-      auth: { getUser: async () => ({ data: { user: currentUser } }) },
+      auth: {
+        getUser: async () => {
+          if (authThrows) throw new Error(`auth exploded for ${PAYER}`);
+          return { data: { user: currentUser } };
+        },
+      },
       from: (table: string) => {
         if (table !== "profiles") throw new Error(`unexpected table on RLS client: ${table}`);
         return {
@@ -94,6 +102,16 @@ function builder(table: keyof typeof tables) {
   const matches = (r: Row) => filters.every(([c, v]) => r[c] === v);
 
   function exec(): { data: unknown; error: { code?: string; message: string } | null } {
+    if (dbFault && dbFault.table === table && dbFault.op === op) {
+      // A realistic driver error: the message quotes the row.
+      return {
+        data: null,
+        error: {
+          code: "XX000",
+          message: `internal error near ${SENTINEL_TOKEN} for ${SENTINEL_ACCOUNT_ID} payer ${PAYER}`,
+        },
+      };
+    }
     if (table === "google_license_testers") {
       const id = filters.find(([c]) => c === "payer_id")?.[1] as string;
       return { data: tables.google_license_testers.has(id) ? { payer_id: id } : null, error: null };
@@ -245,6 +263,8 @@ beforeEach(() => {
   rowAtAck = null;
   nextRowId = 1;
   racePayer = null;
+  dbFault = null;
+  authThrows = false;
   googleByToken = new Map();
   ackStatus = 200;
   fetchCalls = [];
@@ -262,7 +282,8 @@ beforeEach(() => {
 afterEach(() => {
   // Criterion 5: no sentinel in any console output, alert, or returned value.
   const haystack = JSON.stringify({ logged, alerts, results: lastResults });
-  for (const secret of [SENTINEL_TOKEN, SENTINEL_LINKED_TOKEN, SENTINEL_ACCOUNT_ID, OTHER_ACCOUNT]) {
+  // Payer ids are covered too: the action promises not to log them.
+  for (const secret of [SENTINEL_TOKEN, SENTINEL_LINKED_TOKEN, SENTINEL_ACCOUNT_ID, OTHER_ACCOUNT, PAYER, OTHER_PAYER]) {
     expect(haystack, `leaked ${secret}`).not.toContain(secret);
   }
   vi.unstubAllGlobals();
@@ -379,7 +400,7 @@ describe("submitGooglePurchase: happy path", () => {
       product_id: "family.1",
       base_plan_id: "monthly",
       status: "active",
-      expires_at: "2026-12-12T12:00:00.000Z",
+      expires_at: "2099-12-12T12:00:00.000Z",
       auto_renewing: true,
       is_test_purchase: false,
       obfuscated_account_id: SENTINEL_ACCOUNT_ID,
@@ -478,6 +499,40 @@ describe("submitGooglePurchase: binding and ownership", () => {
 // ---------------------------------------------------------------------------
 // Test purchases (criterion 4)
 // ---------------------------------------------------------------------------
+
+describe("submitGooglePurchase: database and auth failures", () => {
+  // The fake driver error's message carries the token, the account id and the
+  // payer id. Only the Postgres code may reach a log; afterEach proves the rest.
+  const faults: Array<[string, { table: string; op: string }, { testPurchase?: boolean; existingRow?: boolean }]> = [
+    ["ownership read", { table: "google_subscriptions", op: "select" }, {}],
+    ["binding read", { table: "google_purchase_bindings", op: "select" }, {}],
+    ["license-tester read", { table: "google_license_testers", op: "select" }, { testPurchase: true }],
+    ["row insert (not a unique violation)", { table: "google_subscriptions", op: "insert" }, {}],
+    ["row update", { table: "google_subscriptions", op: "update" }, { existingRow: true }],
+  ];
+  for (const [name, fault, setup] of faults) {
+    it(`${name} fails: internal_error, never acknowledged, only the Postgres code is logged`, async () => {
+      googleReturns(SENTINEL_TOKEN, { testPurchase: setup.testPurchase });
+      if (setup.existingRow) {
+        tables.google_subscriptions.push({ id: "row-existing", payer_id: PAYER, purchase_token: SENTINEL_TOKEN });
+      }
+      dbFault = fault;
+      expect(await submit()).toEqual({ ok: false, error: "internal_error" });
+      expect(fetchCalls.some((u) => u.includes(":acknowledge"))).toBe(false);
+      expect(logged.join("\n")).toContain("XX000");
+    });
+  }
+
+  it("a thrown auth client is internal_error from both actions, not an unhandled rejection", async () => {
+    authThrows = true;
+    googleReturns(SENTINEL_TOKEN);
+    expect(await submit()).toEqual({ ok: false, error: "internal_error" });
+    expect(fetchCalls).toEqual([]);
+    const b = await beginGooglePlayPurchase();
+    lastResults.push(b);
+    expect(b).toEqual({ ok: false, error: "internal_error" });
+  });
+});
 
 describe("submitGooglePurchase: license-tester purchases", () => {
   it("a test purchase from a payer NOT on the allowlist grants nothing", async () => {

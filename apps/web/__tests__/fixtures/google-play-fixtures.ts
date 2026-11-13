@@ -8,6 +8,13 @@ export const SENTINEL_TOKEN = "SENTINEL_PURCHASE_TOKEN_9f3a";
 export const SENTINEL_LINKED_TOKEN = "SENTINEL_LINKED_TOKEN_c71d";
 export const SENTINEL_ACCOUNT_ID = "SENTINEL_OBFUSCATED_ACCT_5b2e";
 
+/**
+ * Default expiry for fixtures. Deliberately far in the future: the action
+ * compares Google's expiry with the real clock, so a near date would turn the
+ * suite red on its own once that date passed.
+ */
+export const DEFAULT_FIXTURE_EXPIRY = "2099-12-12T12:00:00.000Z";
+
 export interface FixtureOptions {
   state?: string;
   productId?: string;
@@ -31,7 +38,7 @@ export function subscriptionV2Fixture(o: FixtureOptions = {}): Record<string, un
       ...(o.offerId ? { offerId: o.offerId } : {}),
     },
   };
-  if (o.expiryTime !== null) lineItem.expiryTime = o.expiryTime ?? "2026-12-12T12:00:00.000Z";
+  if (o.expiryTime !== null) lineItem.expiryTime = o.expiryTime ?? DEFAULT_FIXTURE_EXPIRY;
 
   const body: Record<string, unknown> = {
     kind: "androidpublisher#subscriptionPurchaseV2",

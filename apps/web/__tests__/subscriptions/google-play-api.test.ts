@@ -56,7 +56,7 @@ describe("parseSubscriptionPurchaseV2", () => {
       productId: "family.1",
       basePlanId: "monthly",
       status: "active",
-      expiresAt: "2026-12-12T12:00:00.000Z",
+      expiresAt: "2099-12-12T12:00:00.000Z",
       autoRenewing: true,
       isTestPurchase: false,
       obfuscatedAccountId: SENTINEL_ACCOUNT_ID,
@@ -153,6 +153,36 @@ describe("parseSubscriptionPurchaseV2", () => {
       const r = parseSubscriptionPurchaseV2({ ...subscriptionV2Fixture(), lineItems });
       expect(r.ok && r.purchase.productId).toBe("family.3");
       expect(r.ok && r.purchase.expiresAt).toBe("2026-12-20T00:00:00.000Z");
+    }
+  });
+
+  it("scheduled UPGRADE with the marker on the target (or on both): never reports the later, larger plan", () => {
+    // If Google's marker semantics differ from the reference reading, the plan
+    // held now must still win: it is owned and expires no later than the target.
+    const held = {
+      productId: "family.1",
+      expiryTime: "2026-12-01T00:00:00.000Z",
+      latestSuccessfulOrderId: "GPA.1111-1111-1111-11111",
+      autoRenewingPlan: { autoRenewEnabled: true },
+      offerDetails: { basePlanId: "monthly" },
+    };
+    const target = {
+      productId: "family.5",
+      expiryTime: "2027-01-01T00:00:00.000Z",
+      deferredItemReplacement: { productId: "family.5" },
+      autoRenewingPlan: { autoRenewEnabled: true },
+      offerDetails: { basePlanId: "monthly" },
+    };
+    for (const lineItems of [
+      [target, held],
+      [held, target],
+      [{ ...held, deferredItemReplacement: { productId: "family.5" } }, target],
+      // Even with no ownership signal at all, earliest expiry wins.
+      [{ ...held, latestSuccessfulOrderId: undefined }, target],
+    ]) {
+      const r = parseSubscriptionPurchaseV2({ ...subscriptionV2Fixture(), lineItems });
+      expect(r.ok && r.purchase.productId).toBe("family.1");
+      expect(r.ok && r.purchase.expiresAt).toBe("2026-12-01T00:00:00.000Z");
     }
   });
 
