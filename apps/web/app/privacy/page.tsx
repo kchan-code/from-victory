@@ -289,21 +289,14 @@ export default function PrivacyPage() {
           it that no individual athlete&apos;s choices can be identified. Anything an athlete
           types is never counted.
         </p>
-        <p className="mt-3">
-          We collect this ourselves, in our own database. We do not use a third-party
-          analytics or advertising service for it, we do not share it with anyone for their
-          own use, and we do not use it to advertise to anyone or to build a profile of an
-          athlete. It is used to count how many athletes are active and returning and to find
-          problems. A parent cannot see these records; the parent dashboard shows only the
-          participation rhythm described in &ldquo;The athlete&apos;s private space&rdquo;
-          below.
-        </p>
-        <p className="mt-3">
-          Individual usage records are deleted after about 90 days. Before they are deleted
-          they are added to running totals (for example, the number of athletes active in a
-          week) that contain no account identifiers and cannot be traced back to an athlete.
-          This applies to every athlete account, including accounts for athletes ages 13 to
-          17.
+
+        <SubHeading>j. Error reports</SubHeading>
+        <p>
+          If a screen in the app fails to load, the app sends us a short automated report so
+          we can fix the problem: which screen failed, which version of the app was in use,
+          and a brief technical description of the error. The report does not contain an
+          account identifier, a name, or an email address, and it is not saved in our
+          database. It is delivered to our team by email through our email provider.
         </p>
       </Section>
 
