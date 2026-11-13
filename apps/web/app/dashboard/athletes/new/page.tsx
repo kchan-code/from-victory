@@ -4,8 +4,10 @@ import { requireParent } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { createServiceClient } from "@/lib/supabase/service";
-import { capacityForAppleProduct } from "@/lib/subscriptions/apple-capacity";
-import { getActiveAppleProductId } from "@/lib/subscriptions/apple";
+import {
+  capacityForAppleProduct,
+  getCapacityAppleProductId,
+} from "@/lib/subscriptions/apple-capacity";
 import {
   getTrialConversionQuote,
   getTrialConversionState,
@@ -99,7 +101,7 @@ export default async function NewAthletePage() {
   // an Apple payer, or an unmapped product id) falls back to the form's
   // generic phrasing.
   let appleCapacity: number | null = null;
-  const appleProductId = await getActiveAppleProductId(service, parentId);
+  const appleProductId = await getCapacityAppleProductId(service, parentId);
   if (appleProductId) {
     appleCapacity = capacityForAppleProduct(appleProductId);
   }

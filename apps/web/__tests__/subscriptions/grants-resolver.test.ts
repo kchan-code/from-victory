@@ -47,6 +47,11 @@ vi.mock("@/lib/subscriptions/apple-capacity", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/subscriptions/apple-capacity")>();
   return {
     ...actual,
+    // FV-745: seat state reads the capacity accessor. It stands in for
+    // "which Apple product caps this payer"; the accessor's own rules
+    // (billing-retry row + paid elsewhere) are covered in apple-capacity.test.ts.
+    getCapacityAppleProductId: (...args: unknown[]) =>
+      getActiveAppleProductIdMock(...(args as [])),
     payerCapacityCeiling: (...args: unknown[]) =>
       payerCapacityCeilingMock(...(args as [])),
   };

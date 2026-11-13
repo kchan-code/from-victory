@@ -55,8 +55,7 @@ import type { Database } from "@/lib/supabase/types";
 
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getActiveAppleProductId } from "./apple";
-import { payerCapacityCeiling } from "./apple-capacity";
+import { getCapacityAppleProductId, payerCapacityCeiling } from "./apple-capacity";
 
 type ServiceClient = SupabaseClient<Database>;
 
@@ -163,11 +162,12 @@ export type PayerSeatState = SeatState & {
  * Resolves the seat state for a payer (parent or adult_athlete profile id).
  *
  * Capacity resolution mirrors `assertAthleteCapacity` exactly: the
- * sanctioned `getActiveAppleProductId` accessor determines whether this
- * payer is on the Apple provider at all — Production, or Sandbox for an
+ * `getCapacityAppleProductId` (`./apple-capacity`, FV-745; it wraps the
+ * sanctioned `./apple` accessor) determines whether an Apple plan caps this
+ * payer at all — Production, or Sandbox for an
  * allowlisted payer (record §4.9, FV-596); `payerCapacityCeiling` maps that
  * to a numeric ceiling (or `null` for stripe/comp/none/unmapped-Apple-product,
- * per the §4.6 invariant). `getActiveAppleProductId` itself never throws —
+ * per the §4.6 invariant). That accessor itself never throws —
  * it logs and returns `null` on any read error — so a transient
  * `apple_subscriptions` hiccup here already resolves to "uncapped" by
  * construction, matching this module's fail-OPEN direction.
@@ -181,7 +181,9 @@ export async function getPayerSeatState(
   service: ServiceClient,
   payerId: string,
 ): Promise<PayerSeatState> {
-  const appleProductId = await getActiveAppleProductId(service, payerId);
+  // FV-745: an Apple row in billing retry is not the ceiling for a payer who
+  // is paid through Stripe or comped (see getCapacityAppleProductId).
+  const appleProductId = await getCapacityAppleProductId(service, payerId);
   const capacity = appleProductId
     ? payerCapacityCeiling({ provider: "apple", appleProductId })
     : null;
