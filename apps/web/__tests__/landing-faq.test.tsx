@@ -134,6 +134,11 @@ describe("Faq — verbatim answer spot-pins", () => {
       /\$5 a month, or \$49 a year for your first athlete, and \$3 a month, or \$29 a year, for each additional athlete in your household\./,
     );
     expect(els.length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(
+        /When you start with one athlete, first-time subscribers get a 7-day free trial, so you can try it before you pay anything\./,
+      ).length,
+    ).toBeGreaterThan(0);
   });
 
   it("get-the-app answer names the App Store listing and Google Play (FV-681)", () => {

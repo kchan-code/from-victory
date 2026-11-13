@@ -193,7 +193,7 @@ export async function signOut() {
   const supabase = createClient();
   await supabase.auth.signOut();
   // Inside the native shell, "/" is the gated marketing root — real prices,
-  // "Start your athlete's 14-day free trial" — a Google Play Payments policy
+  // "Start your athlete's 7-day free trial": a Google Play Payments policy
   // violation the moment it renders post-sign-out (FV-489). Route to /signin
   // instead, mirroring the native-shell entry-point router's own signed-out
   // target (NATIVE_SHELL_SIGNED_OUT_TARGET in lib/native-shell-router.ts).

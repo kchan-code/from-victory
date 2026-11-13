@@ -192,9 +192,10 @@ describe("whole-body sha256 fidelity pins", () => {
       "42070f1ab6ed4cb4fba9f097441209393c5652f2efb7af9487abfd64d629bf96",
     "sports-psychology-and-faith-do-they-mix":
       "56d1fa799fd5f0ff072a4371afa71d0f50117b9b87f1558be5141855f60a8afb",
-    // FV-539 — KC-approved verbatim body (2026-09-01)
+    // FV-539: KC-approved verbatim body (2026-09-01).
+    // FV-609: closing CTA only, "14-day free trial" to "7-day free trial".
     "does-visualization-work-for-athletes":
-      "0c510cdb5e07b481b3c383154a38e15b6e417938368cfd323851d85b3717d703",
+      "9e26ba0e6b14632886fe6a7c6882b7ce9647ba594b48b24d53f6019ab1834af6",
   };
 
   for (const [slug, expectedHash] of Object.entries(PINS)) {

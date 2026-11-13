@@ -81,7 +81,7 @@ export function PregameSample() {
                 href="/signup"
                 className="mt-4 inline-flex items-center justify-center gap-2 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-5 py-3 min-h-[44px] text-[13.5px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
               >
-                Start your athlete&apos;s 14-day free trial
+                Start your athlete&apos;s 7-day free trial
                 <SvgIcon name="arrow" size={14} />
               </Link>
             </div>

@@ -36,7 +36,7 @@ const FEATURES = [
   "Journey view: 30-day session map",
   "Rhythm visualization (not a streak counter)",
   "Parent dashboard: rhythm + session count",
-  "14-day free trial",
+  "7-day free trial for your first athlete",
   "Cancel anytime",
 ];
 
@@ -207,7 +207,7 @@ export function PricingPlanCard() {
           data-testid="plan-cta-terms"
           className="text-center font-mono text-[10px] tracking-[0.12em] uppercase text-cream/55 font-semibold mt-3"
         >
-          14 days free, cancel anytime
+          7 days free for your first athlete, cancel anytime
         </p>
       </div>
     </div>

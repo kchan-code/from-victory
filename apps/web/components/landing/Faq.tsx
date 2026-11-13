@@ -36,7 +36,7 @@ export const FAQ_ITEMS: FaqEntry[] = [
   },
   {
     q: "What does it cost, and can I cancel?",
-    a: "$5 a month, or $49 a year for your first athlete, and $3 a month, or $29 a year, for each additional athlete in your household. First-time subscribers get a 14-day free trial, so you can try the whole thing before you pay anything. You can cancel anytime from the billing portal: no calls, no friction. A household with more athletes pays less per athlete: that’s by design, because the same training serves your whole family.",
+    a: "$5 a month, or $49 a year for your first athlete, and $3 a month, or $29 a year, for each additional athlete in your household. When you start with one athlete, first-time subscribers get a 7-day free trial, so you can try it before you pay anything. You can cancel anytime from the billing portal: no calls, no friction. A household with more athletes pays less per athlete: that’s by design, because the same training serves your whole family.",
   },
   {
     q: "Where do I subscribe?",

@@ -50,7 +50,7 @@ export function Hero() {
                 href="/signup"
                 className="inline-flex items-center justify-center gap-2.5 bg-gold text-onyx border border-gold font-heading font-semibold rounded-pill px-7 py-[18px] text-[16px] no-underline transition-colors duration-base ease-out hover:bg-gold-bright active:scale-[0.97]"
               >
-                Start your athlete&apos;s 14-day free trial
+                Start your athlete&apos;s 7-day free trial
                 <SvgIcon name="arrow" size={16} />
               </Link>
               <a
@@ -62,7 +62,7 @@ export function Hero() {
               </a>
             </div>
             <p className="font-mono text-[11px] tracking-[0.16em] uppercase text-cream/55 font-semibold mb-0">
-              14 days free for first-time subscribers, then $5/mo or $49/yr, cancel anytime
+              7 days free for first-time subscribers, then $5/mo or $49/yr, cancel anytime
             </p>
             {/* 16px clear space is more than one-quarter of the 44px badge. */}
             <div className="mt-4">

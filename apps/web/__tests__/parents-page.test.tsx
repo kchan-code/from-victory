@@ -143,7 +143,7 @@ describe("/parents — tagline and access (FV-550)", () => {
     const text = container.textContent ?? "";
     expect(text).toContain("Athletes 13-17 train under your account");
     expect(text).toContain(
-      "athletes 18+ can start their own 14-day trial, $5/mo or $49/yr",
+      "athletes 18+ can start their own 7-day trial, $5/mo or $49/yr",
     );
   });
 });
@@ -178,6 +178,20 @@ describe('/parents — "Read it here. They train it in the app." links (FV-550)'
       const slug = href.replace("/resources/", "");
       expect(getArticleBySlug(slug)!.audience).toBe("parent");
     }
+  });
+});
+
+describe("/parents — one-athlete trial (FV-609)", () => {
+  it("qualifies the 7-day trial as a first checkout with one athlete", () => {
+    const { container } = render(<ParentsPage />);
+    const text = container.textContent ?? "";
+    expect(text).toContain(
+      "7 days free for your first athlete. Then $5/mo or $49/yr.",
+    );
+    expect(text).toContain("7-day free trial for your first athlete");
+    expect(text).toContain(
+      "7 days free for a first-time checkout with one athlete: no charge until the trial ends",
+    );
   });
 });
 

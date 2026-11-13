@@ -270,7 +270,7 @@ describe("/athletes — conversion fork (FV-545)", () => {
     const { container } = render(<AthletesPage />);
     const text = container.textContent ?? "";
     expect(text).toContain("18 OR OLDER");
-    expect(text).toContain("start a 14-day free trial");
+    expect(text).toContain("start a 7-day free trial");
     expect(text).toContain("$5/month or $49/year after the trial");
     const signup = container.querySelector('a[href="/signup"]');
     expect(signup).not.toBeNull();
