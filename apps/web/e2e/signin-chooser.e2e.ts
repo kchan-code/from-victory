@@ -140,9 +140,16 @@ test.describe("Signed-out welcome doors", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/signin");
     await page.getByTestId("signin-show-form").click();
-    const email = page.getByLabel("Email", { exact: true });
-    const password = page.getByLabel("Password", { exact: true });
-    for (const field of [email, password]) {
+    // Parent and athlete forms are both in the DOM. "Password" matches both,
+    // so each field is addressed by id.
+    const email = page.locator("#email");
+    const fields = [
+      email,
+      page.locator("#password"),
+      page.locator("#athlete-username"),
+      page.locator("#athlete-signin-password"),
+    ];
+    for (const field of fields) {
       const size = await field.evaluate((el) =>
         parseFloat(getComputedStyle(el).fontSize),
       );
