@@ -112,28 +112,26 @@ type LineItem = z.infer<typeof LineItemSchema>;
 /**
  * Which line item is the plan the user holds right now.
  *
- * Google's reference says a deferred change is marked on the CURRENT item
- * (`deferredItemReplacement` / `deferredItemRemoval`) and that
- * `latestSuccessfulOrderId` is "not present if the item is not owned by the
- * user yet (e.g. the item being deferred replaced to)". It does not spell out
- * the full shape, so this is ordered from the strongest signal to the weakest
- * and is a device check on FV-668:
- *   1. items marked as being replaced or removed later;
- *   2. else items the user owns (have a successful order);
- *   3. else every item.
- * Within the chosen pool the EARLIEST parseable expiry wins, which can only
- * under-grant. An item with no expiry is chosen only when no item in the pool
- * has one (and a null expiry never grants access). Picking a not-yet-owned
- * item would wrongly block a paying customer until renewal, so it is never
- * preferred over an owned one.
+ * A scheduled (next-renewal) change lists the plan held now and the plan it
+ * will become. Google's reference says `latestSuccessfulOrderId` is "not
+ * present if the item is not owned by the user yet (e.g. the item being
+ * deferred replaced to)", but does not show a full response, so the rule is
+ * built to be safe whichever way the details fall (device check: FV-668):
+ *   1. candidates are the items the user owns (have a successful order); if no
+ *      item carries that field, every item is a candidate;
+ *   2. among candidates the EARLIEST parseable expiry wins. The plan held now
+ *      always expires no later than the plan replacing it, so this can never
+ *      report the later or larger plan (no over-grant);
+ *   3. an item with no expiry is chosen only when no candidate has one, so a
+ *      not-yet-owned target cannot blank out a paying customer's access (and a
+ *      null expiry never grants).
+ * The `deferredItemReplacement` / `deferredItemRemoval` markers are parsed but
+ * deliberately NOT used to choose: which item carries them is not something to
+ * bet access on.
  */
 function pickCurrentLineItem(items: LineItem[]): { item: LineItem; iso: string | null } | null {
-  const isPresent = (v: unknown) => v !== undefined && v !== null;
-  const beingChanged = items.filter(
-    (i) => isPresent(i.deferredItemReplacement) || isPresent(i.deferredItemRemoval),
-  );
   const owned = items.filter((i) => !!i.latestSuccessfulOrderId);
-  const pool = beingChanged.length > 0 ? beingChanged : owned.length > 0 ? owned : items;
+  const pool = owned.length > 0 ? owned : items;
 
   const keyed = pool.map((item) => ({ item, iso: toIso(item.expiryTime) }));
   const dated = keyed
