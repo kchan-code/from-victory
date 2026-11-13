@@ -191,6 +191,7 @@ describe("comparison page copy pins (FV-504)", () => {
     expect(CHRISTIAN_ATHLETE_APPS_TITLE).toContain("Core IV");
     expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).toMatch(/available on the US App Store/);
     expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).not.toMatch(/Not in stores yet/);
+    expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).not.toMatch(/Google Play/);
     expect(CHRISTIAN_ATHLETE_APPS_EXCERPT).toMatch(/compete from victory/i);
   });
 });
@@ -227,7 +228,7 @@ describe("llms.txt (FV-504)", () => {
     expect(llms).toContain("Not a daily devotional");
     expect(llms).toContain("Not for anyone under 13");
     expect(llms).toContain(
-      "Available on the US App Store (iPhone, US only): https://apps.apple.com/us/app/from-victory/id6804743047. The Android app is available on Google Play.",
+      "- Available on the US App Store (iPhone, US only): https://apps.apple.com/us/app/from-victory/id6804743047.\n",
     );
     expect(llms).not.toContain("Not listed on the App Store or Google Play yet");
     expect(llms).not.toContain("Not in stores yet");
@@ -263,6 +264,14 @@ describe("Google Play availability (FV-684)", () => {
 
   it("gives the Android listing and keeps subscription purchase on the website", () => {
     const llms = readFileSync(resolve(__dirname, "../public/llms.txt"), "utf8");
+    const where = llms.split("## Where to get it")[1]?.split("## ")[0] ?? "";
+    const bullets = where.split("\n").filter((line) => line.startsWith("- "));
+    expect(bullets).toEqual([
+      "- The Android app is available on Google Play: https://play.google.com/store/apps/details?id=com.fromvictoryapp.app. The Android app does not sell subscriptions. Subscribe on the website, then sign in with the same account.",
+      "- Available on the US App Store (iPhone, US only): https://apps.apple.com/us/app/from-victory/id6804743047.",
+    ]);
+    expect(where.match(/The Android app is available on Google Play/g) ?? []).toHaveLength(1);
+    expect(bullets[1]).not.toMatch(/Google Play/);
     expect(llms).toContain("https://play.google.com/store/apps/details?id=com.fromvictoryapp.app");
     expect(llms).toContain("The Android app does not sell subscriptions. Subscribe on the website, then sign in with the same account.");
   });

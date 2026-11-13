@@ -13,8 +13,8 @@ From Victory is a product of From Victory LLC (New Jersey). The product lives at
 
 ## Where to get it
 
-- Android on Google Play: https://play.google.com/store/apps/details?id=com.fromvictoryapp.app. The Android app does not sell subscriptions. Subscribe on the website, then sign in with the same account.
-- Available on the US App Store (iPhone, US only): https://apps.apple.com/us/app/from-victory/id6804743047. The Android app is available on Google Play.
+- The Android app is available on Google Play: https://play.google.com/store/apps/details?id=com.fromvictoryapp.app. The Android app does not sell subscriptions. Subscribe on the website, then sign in with the same account.
+- Available on the US App Store (iPhone, US only): https://apps.apple.com/us/app/from-victory/id6804743047.
 
 ## Product
 
