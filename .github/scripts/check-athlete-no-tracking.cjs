@@ -382,8 +382,21 @@ function scanRawInvocations(source) {
 // Play Billing (`com.android.billingclient:billing`) is an explicit allow-list
 // entry. It is the payments library, not a tracking SDK (FV-664). A line that
 // declares billing AND a banned coordinate still fails. This scan does not
-// walk Maven's transitive graph: firebase-encoders pulled in by billing is
-// not a hit unless someone declares it.
+// walk Maven's or CocoaPods' transitive graph: firebase-encoders pulled in by
+// billing is not a hit unless someone declares it.
+//
+// Podfile.lock is scanned only when it is in the checkout. It is gitignored
+// until a Mac `pod install` commits it (docs/ios-app-store-release.md §11), so
+// CI does not see transitive pods until that file lands.
+//
+// Native lines also honor ALLOWED_TOKENS (the web Sentry exception). Adding a
+// name there is a privacy-reviewed edit of this script, not a casual
+// dependency add.
+//
+// Gradle, version catalogs (*.toml), Package.swift, and the Xcode project are
+// scanned on every non-comment line, so `id` / `apply plugin` lines and a
+// coordinate on its own line are included. A banned SDK that appears only as
+// an unresolved alias with none of these tokens in the name is still missed.
 // ---------------------------------------------------------------------------
 
 const NATIVE_REQUIRED_FILES = [
@@ -398,9 +411,11 @@ const NATIVE_BANNED_TOKENS = [
   'firebase-analytics',
   'firebaseanalytics',
   'firebase/analytics',
+  'firebase.analytics',
   'firebase-crashlytics',
   'firebasecrashlytics',
   'firebase/crashlytics',
+  'firebase.crashlytics',
   'com.google.firebase',
   'crashlytics',
   'play-services-ads',
@@ -454,7 +469,8 @@ function nativeBannedInLine(line) {
 
 function isNativeDependencyLine(line) {
   return /\b(implementation|api|compileOnly|runtimeOnly|classpath|testImplementation|androidTestImplementation|kapt|ksp)\b/.test(line)
-    || /\bpod\s+['"]/.test(line);
+    || /\bpod\s+['"]/.test(line)
+    || /\b(id|apply)\b/.test(line);
 }
 
 function isNativeImportLine(line) {
@@ -562,7 +578,9 @@ function scanNativeSurfaces() {
     }
     scanned.push(abs);
     const source = fs.readFileSync(abs, 'utf8');
-    const mode = rel.endsWith('package.json') ? 'package.json' : 'deps';
+    // Gradle and the Podfile are scanned on every non-comment line so a plugin
+    // id, an `apply plugin` line, or a coordinate on its own line is visible.
+    const mode = rel.endsWith('package.json') ? 'package.json' : 'text';
     violations.push(...scanNativeContent(rel, source, mode));
   }
 
@@ -576,15 +594,27 @@ function scanNativeSurfaces() {
     ));
   }
 
+  const nativeRoot = path.join(REPO_ROOT, 'apps/native');
   const gradleRoot = path.join(REPO_ROOT, 'apps/native/android');
   for (const file of walkNativeFiles(gradleRoot, (name) => name.endsWith('.gradle') || name.endsWith('.gradle.kts'))) {
     if (scanned.includes(file)) continue;
     scanned.push(file);
     const rel = path.relative(REPO_ROOT, file);
-    violations.push(...scanNativeContent(rel, fs.readFileSync(file, 'utf8'), 'deps'));
+    violations.push(...scanNativeContent(rel, fs.readFileSync(file, 'utf8'), 'text'));
   }
 
-  const nativeRoot = path.join(REPO_ROOT, 'apps/native');
+  // Version catalogs, Swift Package Manager, and Xcode package references.
+  const extraManifests = walkNativeFiles(
+    nativeRoot,
+    (name) => name === 'Package.swift' || name.endsWith('.toml') || name === 'project.pbxproj',
+  );
+  for (const file of extraManifests) {
+    if (scanned.includes(file)) continue;
+    scanned.push(file);
+    const rel = path.relative(REPO_ROOT, file);
+    violations.push(...scanNativeContent(rel, fs.readFileSync(file, 'utf8'), 'text'));
+  }
+
   for (const file of walkNativeFiles(nativeRoot, (name) => NATIVE_SOURCE_EXTENSIONS.has(path.extname(name)))) {
     scanned.push(file);
     const rel = path.relative(REPO_ROOT, file);
@@ -611,6 +641,11 @@ function runNativeSelfTest() {
     ['fixture/Podfile', 'deps', "pod 'Adjust'\n"],
     ['fixture/Plugin.swift', 'imports', 'import FirebaseCrashlytics\n'],
     ['fixture/package.json', 'package.json', '{"dependencies":{"@react-native-firebase/analytics":"1.0.0"}}\n'],
+    ['fixture/app/build.gradle', 'text', "id 'com.google.firebase.crashlytics'\n"],
+    ['fixture/app/build.gradle', 'text', "apply plugin: 'com.google.firebase.crashlytics'\n"],
+    ['fixture/app/build.gradle', 'text', '    "com.google.firebase:firebase-analytics:22.0.0"\n'],
+    ['fixture/libs.versions.toml', 'text', 'firebase-analytics = "22.0.0"\n'],
+    ['fixture/libs.versions.toml', 'text', 'analytics = { module = "libs.firebase.analytics" }\n'],
   ];
   const mustAllow = [
     ['fixture/app/build.gradle', 'deps', 'implementation "com.android.billingclient:billing:9.1.0"'],

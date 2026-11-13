@@ -18,9 +18,8 @@ import os
  * discipline as capacitor.config.ts's plugin list applies.
  */
 class FVBridgeViewController: CAPBridgeViewController {
-    /// Retained for the lifetime of the WebView. The WebView also retains it
-    /// as `navigationDelegate`; this property keeps the retry timer cancellable
-    /// if the controller is released first.
+    /// Strong owner of the fallback delegate. WKWebView.navigationDelegate is
+    /// weak, so this property is what keeps the retry timer alive.
     private var offlineNavigation: FVOfflineNavigationDelegate?
 
     override open func capacitorDidLoad() {

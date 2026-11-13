@@ -14,7 +14,7 @@
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
-	<!-- Required-reason APIs audited 2026-11-13 against the app target and the
+	<!-- Required-reason APIs audited 2026-11-13 UTC against the app target and the
 	     plugins it links. None of these call UserDefaults, file-timestamp,
 	     disk-space, system-boot-time, or active-keyboard APIs:
 	       FVNarrationPlugin.swift (FileManager temp files, AVAudioSession playback)
@@ -42,6 +42,10 @@
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 		</dict>
+		<!-- Email is a parent's address, or an 18+ athlete's own address.
+		     A 13-17 athlete account has no real email. The sign-in identifier
+		     is system-generated and is not a working address (privacy policy;
+		     docs/ios-app-store-release.md §9). -->
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeEmailAddress</string>
