@@ -70,7 +70,7 @@ describe("getUnfinishedTransactions", () => {
           { transactionId: 3, signedTransactionInfo: "x" },
           { transactionId: "4", signedTransactionInfo: 9 },
           null,
-          { transactionId: "1", signedTransactionInfo: "jws1" },
+          { transactionId: "1", originalTransactionId: "o1", signedTransactionInfo: "jws1" },
         ],
       })),
     });
@@ -78,7 +78,7 @@ describe("getUnfinishedTransactions", () => {
       ok: true,
       transactions: [
         { transactionId: "2", signedTransactionInfo: "jws2", signedRenewalInfo: "r" },
-        { transactionId: "1", signedTransactionInfo: "jws1" },
+        { transactionId: "1", originalTransactionId: "o1", signedTransactionInfo: "jws1" },
       ],
     });
   });

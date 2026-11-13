@@ -41,7 +41,8 @@
 //
 //    getUnfinishedTransactions()                                  (FV-712)
 //      -> { "ok": true, "transactions": [{ "transactionId",
-//           "signedTransactionInfo", "signedRenewalInfo"? }] }
+//           "originalTransactionId", "signedTransactionInfo",
+//           "signedRenewalInfo"? }] }
 //         (verified only, NEWEST-FIRST by purchaseDate; only the first
 //         entry carries "signedRenewalInfo")
 //
@@ -118,7 +119,7 @@ public class FVAppleIAPPlugin: CAPPlugin, CAPBridgedPlugin {
     /// launch (FVBridgeViewController.capacitorDidLoad), so the listener is
     /// in place before any web content runs.
     public override func load() {
-        updatesTask = Task.detached(priority: .background) { [weak self] in
+        updatesTask = Task.detached(priority: .utility) { [weak self] in
             for await update in Transaction.updates {
                 // Unverified updates are ignored: never forwarded, never
                 // finished.
@@ -320,6 +321,7 @@ public class FVAppleIAPPlugin: CAPPlugin, CAPBridgedPlugin {
                     productID: transaction.productID,
                     payload: [
                         "transactionId": String(transaction.id),
+                        "originalTransactionId": String(transaction.originalID),
                         "signedTransactionInfo": verificationResult.jwsRepresentation,
                     ]
                 ))

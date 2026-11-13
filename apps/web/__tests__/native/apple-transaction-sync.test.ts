@@ -26,8 +26,13 @@ import {
 } from "@/lib/native/apple-transaction-sync";
 
 const TXNS = [
-  { transactionId: "id-new", signedTransactionInfo: "SECRET.JWS.NEW", signedRenewalInfo: "SECRET.RENEW" },
-  { transactionId: "id-old", signedTransactionInfo: "SECRET.JWS.OLD" },
+  {
+    transactionId: "id-new",
+    originalTransactionId: "orig-1",
+    signedTransactionInfo: "SECRET.JWS.NEW",
+    signedRenewalInfo: "SECRET.RENEW",
+  },
+  { transactionId: "id-old", originalTransactionId: "orig-1", signedTransactionInfo: "SECRET.JWS.OLD" },
 ];
 
 beforeEach(() => {
@@ -113,20 +118,62 @@ describe("syncAppleTransactions", () => {
     "ownership_conflict",
     "environment_rejected",
     "invalid_input",
-  ])("definitive error %s skips later non-forced calls; force bypasses", async (code) => {
+    "verification_failed",
+  ])("rejection %s waits 15 minutes, then tries again; force bypasses", async (code) => {
+    vi.useFakeTimers();
     vi.spyOn(console, "warn").mockImplementation(() => {});
     submitMock.mockResolvedValue({ ok: false, error: code });
     expect(await syncAppleTransactions()).toEqual({ status: "deferred", error: code });
+
+    vi.advanceTimersByTime(14 * 60_000);
     expect(await syncAppleTransactions()).toEqual({ status: "skipped" });
     expect(submitMock).toHaveBeenCalledTimes(1);
-    expect(window.sessionStorage.getItem("fv_apple_sync_blocked")).toBe("1");
 
-    submitMock.mockResolvedValue({ ok: true, applied: false });
-    expect(await syncAppleTransactions({ force: true })).toEqual({ status: "synced", applied: false });
+    expect(await syncAppleTransactions({ force: true })).toEqual({ status: "deferred", error: code });
     expect(submitMock).toHaveBeenCalledTimes(2);
+
+    // The forced attempt restarted the wait; once it passes, a plain call runs.
+    vi.advanceTimersByTime(15 * 60_000 + 1);
+    expect(await syncAppleTransactions()).toEqual({ status: "deferred", error: code });
+    expect(submitMock).toHaveBeenCalledTimes(3);
   });
 
-  it("definitive-error block survives storage throwing (in-memory fallback)", async () => {
+  it("a successful forced run clears the wait (sign-in recovery)", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    submitMock.mockResolvedValue({ ok: false, error: "unauthenticated" });
+    await syncAppleTransactions();
+    expect(await syncAppleTransactions()).toEqual({ status: "skipped" });
+
+    submitMock.mockResolvedValue({ ok: true, applied: true });
+    expect(await syncAppleTransactions({ force: true })).toEqual({ status: "synced", applied: true });
+    expect(window.sessionStorage.getItem("fv_apple_sync_not_before")).toBeNull();
+    expect(await syncAppleTransactions()).toEqual({ status: "synced", applied: true });
+  });
+
+  it("the wait survives a fresh module load in the same app process", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    submitMock.mockResolvedValue({ ok: false, error: "internal_error" });
+    await syncAppleTransactions();
+    const stored = window.sessionStorage.getItem("fv_apple_sync_not_before");
+    expect(Number(stored)).toBeGreaterThan(Date.now());
+
+    vi.resetModules();
+    const fresh = await import("@/lib/native/apple-transaction-sync");
+    expect(await fresh.syncAppleTransactions()).toEqual({ status: "skipped" });
+    expect(submitMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("stores only a timestamp, never transaction data", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    submitMock.mockResolvedValue({ ok: false, error: "token_mismatch" });
+    await syncAppleTransactions();
+    const dump = JSON.stringify({ ...window.sessionStorage });
+    expect(dump).not.toContain("SECRET");
+    expect(dump).not.toContain("id-new");
+    expect(Object.keys(window.sessionStorage)).toEqual(["fv_apple_sync_not_before"]);
+  });
+
+  it("the wait still applies when storage throws (in-memory fallback)", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
       throw new Error("denied");
@@ -137,6 +184,35 @@ describe("syncAppleTransactions", () => {
     submitMock.mockResolvedValue({ ok: false, error: "unauthenticated" });
     await syncAppleTransactions();
     expect(await syncAppleTransactions()).toEqual({ status: "skipped" });
+  });
+
+  it("finishes only the submitted subscription's transactions", async () => {
+    getUnfinishedMock.mockResolvedValue({
+      ok: true,
+      transactions: [
+        { transactionId: "a3", originalTransactionId: "A", signedTransactionInfo: "SECRET.A3" },
+        { transactionId: "b1", originalTransactionId: "B", signedTransactionInfo: "SECRET.B1" },
+        { transactionId: "a2", originalTransactionId: "A", signedTransactionInfo: "SECRET.A2" },
+      ],
+    });
+    await syncAppleTransactions();
+    expect(submitMock).toHaveBeenCalledWith({
+      signedTransactionInfo: "SECRET.A3",
+      signedRenewalInfo: undefined,
+    });
+    expect(finishMock).toHaveBeenCalledWith(["a3", "a2"]);
+  });
+
+  it("finishes only the submitted transaction when the native payload has no original id", async () => {
+    getUnfinishedMock.mockResolvedValue({
+      ok: true,
+      transactions: [
+        { transactionId: "n1", signedTransactionInfo: "SECRET.N1" },
+        { transactionId: "n0", signedTransactionInfo: "SECRET.N0" },
+      ],
+    });
+    await syncAppleTransactions();
+    expect(finishMock).toHaveBeenCalledWith(["n1"]);
   });
 
   it("transient errors throttle non-forced calls to one per 60s; force bypasses", async () => {

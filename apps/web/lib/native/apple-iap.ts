@@ -79,7 +79,7 @@
  *
  *   window.Capacitor.Plugins.FVAppleIAPPlugin.getUnfinishedTransactions()
  *     => Promise<
- *          | { ok: true; transactions: { transactionId: string;
+ *          | { ok: true; transactions: { transactionId: string; originalTransactionId: string;
  *              signedTransactionInfo: string; signedRenewalInfo?: string }[] }
  *          | { ok: false; error: "failed" }
  *        >
@@ -333,6 +333,9 @@ export async function manageSubscriptions(): Promise<AppleManageResult> {
 
 export interface AppleUnfinishedTransaction {
   transactionId: string;
+  /** StoreKit's original transaction id: the same for every renewal of one
+   * subscription. Absent only if the native payload omits it. */
+  originalTransactionId?: string;
   signedTransactionInfo: string;
   signedRenewalInfo?: string;
 }
@@ -379,6 +382,9 @@ export async function getUnfinishedTransactions(): Promise<AppleUnfinishedResult
       }
       transactions.push({
         transactionId: e.transactionId,
+        ...(typeof e.originalTransactionId === "string" && e.originalTransactionId
+          ? { originalTransactionId: e.originalTransactionId }
+          : {}),
         signedTransactionInfo: e.signedTransactionInfo,
         ...(typeof e.signedRenewalInfo === "string" && e.signedRenewalInfo
           ? { signedRenewalInfo: e.signedRenewalInfo }
