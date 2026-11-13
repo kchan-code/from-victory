@@ -61,7 +61,7 @@ import {
   writePregameSession,
   type PregameSessionCache,
 } from "@/lib/pregame/session-cache";
-import { logActivityEvent } from "@/lib/actions/activity";
+import { logActivityEvent, logPregameSelections } from "@/lib/actions/activity";
 
 type Props = {
   athleteFirstName: string;
@@ -321,20 +321,27 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   // early returns — so the rules-of-hooks ordering invariant is respected.
   useEffect(() => {
     if (view.kind !== "card") return;
-    // Reaching the card means the audio session finished — log completion with
-    // the (allow-listed) personalization dimensions. Null fields are dropped
-    // server-side. The latch fires this exactly ONCE per session: the card is
+    // Reaching the card means the audio session finished — log completion.
+    // FV-724: only whether the audio played through. The athlete's selections
+    // (position, hard moment, anchor, prayer style) are NOT sent: they are the
+    // athlete's own and the server allow-list no longer accepts them. The latch fires this exactly ONCE per session: the card is
     // re-enterable (back arrow → last flow step → forward), and [view.kind]
     // would otherwise re-run the effect and double-insert. Reset on session start.
     if (!completionFiredRef.current) {
       completionFiredRef.current = true;
       fireEvent("pregame_complete", {
-        position: data.role,
-        adversity: data.adversity,
-        anchor: data.anchor,
-        prayer_style: data.prayerStyle,
         audio_completed: data.audioCompleted,
       });
+      // Anonymous per-option totals (no athlete id, cue word never sent).
+      void logPregameSelections(sport, {
+        need: data.need,
+        role: data.role,
+        adversity: data.adversity,
+        anchor: data.anchor,
+        selfTalk: data.selfTalk,
+        prayerStyle: data.prayerStyle,
+        positivePlays: data.positivePlays,
+      }).catch(() => {});
     }
     if (
       data.need !== null &&
