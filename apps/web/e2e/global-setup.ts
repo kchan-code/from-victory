@@ -293,6 +293,8 @@ async function createAndSignInParent(
 
   try {
     await parentPage.goto(`${baseUrl}/signin`);
+    // FV-707: the credential form sits behind the welcome doors.
+    await parentPage.getByTestId("signin-show-form").click();
     await parentPage.waitForSelector('input[name="email"]');
 
     await parentPage.fill('input[name="email"]', fixture.email);

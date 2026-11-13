@@ -55,6 +55,7 @@ export function AdultSignUpForm({ afterSubmit }: Props = {}) {
         autoComplete="new-password"
         required
         minLength={8}
+        canReveal
         hint="At least 8 characters."
         error={fieldError("password")}
       />
@@ -73,7 +74,7 @@ export function AdultSignUpForm({ afterSubmit }: Props = {}) {
       <div className="mb-5">
         <label
           htmlFor="sport"
-          className="block font-display font-semibold uppercase tracking-[0.10em] text-[12px] text-cream/80 mb-2"
+          className="block font-heading font-semibold uppercase tracking-[0.10em] text-[12px] text-cream/80 mb-2"
         >
           Your sport
         </label>
@@ -174,10 +175,20 @@ export function AdultSignUpForm({ afterSubmit }: Props = {}) {
       ) : null}
 
       <SubmitButton pendingLabel="Creating account…">
-        Create athlete account
+        Create my account
       </SubmitButton>
       {afterSubmit}
       <p className="mt-6 font-body text-[14px] text-cream/60 text-center">
+        Under 18?{" "}
+        <Link
+          href="/invite"
+          className="text-gold hover:text-gold-bright no-underline"
+        >
+          Ask a parent to invite you
+        </Link>
+        .
+      </p>
+      <p className="mt-3 font-body text-[14px] text-cream/60 text-center">
         Already have an account?{" "}
         <Link
           href="/signin"

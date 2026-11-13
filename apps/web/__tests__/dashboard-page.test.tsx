@@ -31,8 +31,15 @@ vi.mock("react-dom", async (importOriginal) => {
   };
 });
 
-const { requireParentMock, shellCapabilityMock, accessLevelMock, entitlementStateMock } =
+const { requireParentMock, shellCapabilityMock, accessLevelMock, entitlementStateMock, athleteRows } =
   vi.hoisted(() => ({
+    athleteRows: {
+      current: [] as Array<{
+        id: string;
+        first_name: string;
+        birthdate: string | null;
+      }>,
+    },
     // FV-655: the dashboard consults the error-tracking entitlement read when
     // the access level isn't "full". Default: a readable, not-entitled payer.
     entitlementStateMock: vi.fn(async () => ({
@@ -83,7 +90,7 @@ vi.mock("@/lib/supabase/server", () => ({
     from: () => ({
       select: () => ({
         eq: () => ({
-          order: async () => ({ data: [], error: null }),
+          order: async () => ({ data: athleteRows.current, error: null }),
         }),
       }),
     }),
@@ -135,6 +142,7 @@ afterEach(() => {
   accessLevelMock.mockResolvedValue("blocked");
   appleLookupMock.mockResolvedValue({ productId: null, readError: false });
   entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
+  athleteRows.current = [];
 });
 
 async function renderPage() {
@@ -145,6 +153,21 @@ async function renderPage() {
   const jsx = await DashboardPage();
   return render(jsx);
 }
+
+describe("/dashboard greeting (FV-708)", () => {
+  it("says Welcome back once an athlete is linked", async () => {
+    athleteRows.current = [
+      { id: "athlete-1", first_name: "Alex", birthdate: "2010-06-01" },
+    ];
+    accessLevelMock.mockResolvedValue("full");
+
+    await renderPage();
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Welcome back, Kim." }),
+    ).toBeInTheDocument();
+  });
+});
 
 describe("/dashboard — subscribe CTA shell-capability branch (Google Play compliance, FV-572/577)", () => {
   it("shows the real 'Choose a plan' CTA with price copy when capability is null (web)", async () => {
@@ -157,6 +180,9 @@ describe("/dashboard — subscribe CTA shell-capability branch (Google Play comp
     expect(link).toHaveTextContent("Choose a plan");
     expect(
       screen.getByText(/\$5\/mo for your first athlete/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Welcome, Kim." }),
     ).toBeInTheDocument();
   });
 

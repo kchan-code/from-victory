@@ -108,13 +108,23 @@ describe("trial copy guard (FV-609)", () => {
     const offenders: string[] = [];
     for (const file of files) {
       const lines = readFileSync(file, "utf8").split("\n");
+      let fileHit = false;
       lines.forEach((line, index) => {
         if (lineClaimsStaleTrial(line)) {
+          fileHit = true;
           offenders.push(
             `${relative(WEB_ROOT, file)}:${index + 1}: ${line.trim()}`,
           );
         }
       });
+      // A claim split across lines ("14" at the end of one line, "days" at
+      // the start of the next) used to hide from the per-line scan. That is
+      // how /signup/athlete kept a 14-day sentence after FV-609.
+      if (!fileHit && lineClaimsStaleTrial(lines.join(" "))) {
+        offenders.push(
+          `${relative(WEB_ROOT, file)}: wrapped 14-day or two-week trial claim`,
+        );
+      }
     }
 
     expect(offenders).toEqual([]);
@@ -138,6 +148,17 @@ describe("trial copy guard (FV-609)", () => {
     expect(lineClaimsStaleTrial("a 2-week free trial")).toBe(true);
     expect(lineClaimsStaleTrial("try the 14-day trial")).toBe(true);
     expect(lineClaimsStaleTrial("fourteen days free")).toBe(true);
+    // Wrapped the way /signup/athlete used to hide it from the line scanner.
+    expect(
+      lineClaimsStaleTrial(
+        "head to checkout. 14\ndays free for first-time subscribers".replace(
+          /\s+/g,
+          " ",
+        ),
+      ),
+    ).toBe(true);
+    expect(lineClaimsStaleTrial("14")).toBe(false);
+    expect(lineClaimsStaleTrial("days free")).toBe(false);
   });
 
   it("qualifies the sport-page trial line as a one-athlete start", () => {

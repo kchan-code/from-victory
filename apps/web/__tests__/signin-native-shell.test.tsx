@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
 const { shellCapabilityMock } = vi.hoisted(() => ({
@@ -59,6 +59,10 @@ async function renderPage() {
   render(await SignInPage({ searchParams: {} }));
 }
 
+function openCredentialForm() {
+  fireEvent.click(screen.getByTestId("signin-show-form"));
+}
+
 function signupLinks() {
   return screen
     .queryAllByRole("link")
@@ -66,9 +70,10 @@ function signupLinks() {
 }
 
 describe("/signin new-customer guidance by shell capability (FV-621)", () => {
-  it("legacy-native (Android): plain website guidance, no signup link", async () => {
+  it("legacy-native (Android): credential form keeps plain website guidance and no signup link", async () => {
     shellCapabilityMock.mockReturnValue("legacy-native");
     await renderPage();
+    openCredentialForm();
 
     const note = screen.getByTestId("signin-native-shell-new-customer");
     expect(note).toHaveTextContent(
@@ -79,9 +84,10 @@ describe("/signin new-customer guidance by shell capability (FV-621)", () => {
     expect(screen.queryByText("Create a parent account")).toBeNull();
   });
 
-  it("ios-iap (live iOS): keeps the Create a parent account link", async () => {
+  it("ios-iap (live iOS): keeps the Create a parent account link on the credential form", async () => {
     shellCapabilityMock.mockReturnValue("ios-iap");
     await renderPage();
+    openCredentialForm();
 
     expect(
       screen.getByRole("link", { name: "Create a parent account" }),
@@ -89,8 +95,9 @@ describe("/signin new-customer guidance by shell capability (FV-621)", () => {
     expect(screen.queryByTestId("signin-native-shell-new-customer")).toBeNull();
   });
 
-  it("web/PWA: keeps the Create a parent account link", async () => {
+  it("web/PWA: keeps the Create a parent account link on the credential form", async () => {
     await renderPage();
+    openCredentialForm();
 
     expect(
       screen.getByRole("link", { name: "Create a parent account" }),
@@ -105,6 +112,7 @@ describe("/signin Athlete tab copy (FV-657)", () => {
     async (capability) => {
       shellCapabilityMock.mockReturnValue(capability);
       await renderPage();
+      openCredentialForm();
 
       // The Athlete tab's form is rendered (hidden) alongside the Parent tab's.
       expect(screen.getByLabelText("Username or email", { selector: "input" })).toHaveAttribute(
@@ -124,9 +132,10 @@ describe("/signin Athlete tab copy (FV-657)", () => {
 });
 
 describe("/signin — android-play behaves like legacy-native (FV-659)", () => {
-  it("android-play: plain website guidance, no signup link", async () => {
+  it("android-play: credential form keeps plain website guidance, no signup link", async () => {
     shellCapabilityMock.mockReturnValue("android-play");
     await renderPage();
+    openCredentialForm();
 
     const note = screen.getByTestId("signin-native-shell-new-customer");
     expect(note).toHaveTextContent(
@@ -140,6 +149,7 @@ describe("/signin — android-play behaves like legacy-native (FV-659)", () => {
   it("android-play: Athlete tab copy matches the other shells (FV-657)", async () => {
     shellCapabilityMock.mockReturnValue("android-play");
     await renderPage();
+    openCredentialForm();
 
     expect(screen.getByLabelText("Username or email", { selector: "input" })).toHaveAttribute(
       "name",

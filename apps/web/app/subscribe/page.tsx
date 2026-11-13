@@ -226,7 +226,7 @@ export default async function SubscribePage({ searchParams }: Props) {
             className="mb-8 bg-charcoal border border-hairline rounded-xl px-5 py-4"
           >
             <p className="font-body text-cream/70 text-[14px] leading-relaxed">
-              Checkout canceled&nbsp;&mdash; no charge was made. Pick a plan
+              Checkout canceled. No charge was made. Pick a plan
               when you&rsquo;re ready.
             </p>
           </div>
@@ -248,20 +248,20 @@ export default async function SubscribePage({ searchParams }: Props) {
             {nativeShell || entitlementState.status !== "not_entitled" ? (
               <>
                 Daily mental-toughness training with faith built
-                in&nbsp;&mdash; one session per day combining a mental skill
+                in. One session per day combining a mental skill
                 and a scripture foundation.
               </>
             ) : isAdult ? (
               <>
                 $5/mo or $49/yr. Cancel any time. Daily mental-toughness
-                training with faith built in&nbsp;&mdash; one session per day
+                training with faith built in. One session per day
                 combining a mental skill and a scripture foundation.
               </>
             ) : (
               <>
                 $5/mo or $49/yr for your first athlete; $3/mo or $29/yr for
                 each additional athlete. Daily mental-toughness training with
-                faith built in&nbsp;&mdash; one session per day combining a
+                faith built in. One session per day combining a
                 mental skill and a scripture foundation.
               </>
             )}
@@ -387,8 +387,8 @@ export default async function SubscribePage({ searchParams }: Props) {
         ) : entitlementState.provider === "apple" ? (
           <StatusCard testId="subscribe-status-entitled">
             <p className="font-body text-cream/70 text-[15px] leading-relaxed">
-              You&rsquo;re subscribed through the App Store&nbsp;&mdash;
-              manage it on your iPhone.
+              You&rsquo;re subscribed through the App Store.
+              Manage it on your iPhone.
             </p>
           </StatusCard>
         ) : entitlementState.provider === "stripe" ? (

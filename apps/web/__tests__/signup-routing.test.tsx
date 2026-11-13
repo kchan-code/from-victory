@@ -30,10 +30,14 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, cleanup, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 
-const { isAdultSignupEnabledMock, redirectIfAuthedMock } = vi.hoisted(() => ({
-  isAdultSignupEnabledMock: vi.fn(() => false),
-  redirectIfAuthedMock: vi.fn().mockResolvedValue(undefined),
-}));
+const { isAdultSignupEnabledMock, redirectIfAuthedMock, shellCapabilityMock } =
+  vi.hoisted(() => ({
+    isAdultSignupEnabledMock: vi.fn(() => false),
+    redirectIfAuthedMock: vi.fn().mockResolvedValue(undefined),
+    shellCapabilityMock: vi.fn(
+      () => null as "legacy-native" | "ios-iap" | "android-play" | null,
+    ),
+  }));
 
 vi.mock("@/lib/flags", () => ({
   isAdultSignupEnabled: isAdultSignupEnabledMock,
@@ -41,6 +45,10 @@ vi.mock("@/lib/flags", () => ({
 
 vi.mock("@/lib/auth/guards", () => ({
   redirectIfAuthed: redirectIfAuthedMock,
+}));
+
+vi.mock("@/lib/native-shell", () => ({
+  getRequestShellCapability: shellCapabilityMock,
 }));
 
 vi.mock("next/navigation", () => ({
@@ -71,6 +79,7 @@ afterEach(() => {
   vi.clearAllMocks();
   isAdultSignupEnabledMock.mockReturnValue(false);
   redirectIfAuthedMock.mockResolvedValue(undefined);
+  shellCapabilityMock.mockReturnValue(null);
 });
 
 // ---------------------------------------------------------------------------
@@ -105,20 +114,19 @@ describe("Hero — 18+ athlete path (FV-515)", () => {
 // ---------------------------------------------------------------------------
 // /signup — parent form always visible; flag-gated secondary card + steps
 // ---------------------------------------------------------------------------
-describe("/signup — flag off: today's parent-form-only page, unchanged (FV-515)", () => {
-  it("renders only the parent form — no progress indicator, no secondary card, no disclosure", async () => {
+describe("/signup — flag off: parent form, no 18+ row (FV-515, FV-707)", () => {
+  it("renders the parent form and the 7-day note, with no 18+ row and no progress list", async () => {
     isAdultSignupEnabledMock.mockReturnValue(false);
     const jsx = await SignUpPage();
     render(jsx);
 
     expect(screen.getByTestId("signup-form-stub")).toBeInTheDocument();
     expect(screen.queryByRole("list")).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("link", { name: "Create your own account" }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByTestId("trial-autocharge-disclosure"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("signup-adult-entry")).not.toBeInTheDocument();
+    expect(screen.queryByText(/are you the athlete, and 18 or older/i)).not.toBeInTheDocument();
+    const note = screen.getByTestId("signup-trial-note");
+    expect(note).toHaveTextContent("7 days free, then $5/mo or $49/yr.");
+    expect(note.textContent).not.toMatch(/14/);
   });
 });
 
@@ -130,15 +138,18 @@ describe("/signup — flag on: parent form + same-screen athlete card + handoff 
     expect(screen.getByTestId("signup-form-stub")).toBeInTheDocument();
   });
 
-  it("renders the athlete card with the verbatim copy, linking to /signup/athlete", async () => {
+  it("renders the 18+ row under the subtitle, linking to /signup/athlete", async () => {
     isAdultSignupEnabledMock.mockReturnValue(true);
     const jsx = await SignUpPage();
     render(jsx);
-    expect(
-      screen.getByText(/are you the athlete, and 18 or older\?/i),
-    ).toBeInTheDocument();
-    const link = screen.getByRole("link", { name: "Create your own account" });
+    const link = screen.getByTestId("signup-adult-entry");
     expect(link).toHaveAttribute("href", "/signup/athlete");
+    expect(link).toHaveTextContent(
+      "Training yourself and 18 or older? Create your own account",
+    );
+    expect(
+      screen.queryByText(/are you the athlete, and 18 or older\?/i),
+    ).not.toBeInTheDocument();
   });
 
   it("renders the progress indicator with Account current, then Athlete, then Trial", async () => {
@@ -155,16 +166,18 @@ describe("/signup — flag on: parent form + same-screen athlete card + handoff 
     expect(current?.textContent).toMatch(/account/i);
   });
 
-  it("renders the trial/billing disclosure adjacent to the submit button, never promising 'no credit card'", async () => {
+  it("renders the 7-day note under the button, never promising 'no credit card'", async () => {
     isAdultSignupEnabledMock.mockReturnValue(true);
     const jsx = await SignUpPage();
     render(jsx);
-    const disclosure = screen.getByTestId("trial-autocharge-disclosure");
-    expect(disclosure.textContent).toMatch(/card required/i);
-    expect(disclosure.textContent).toMatch(/first-time subscribers/i);
-    expect(disclosure.textContent?.toLowerCase()).not.toContain(
-      "no credit card",
+    const note = screen.getByTestId("signup-trial-note");
+    expect(note).toHaveTextContent("7 days free, then $5/mo or $49/yr.");
+    expect(note).toHaveTextContent("Cancel anytime.");
+    expect(note).toHaveTextContent(
+      "Free trial for first-time subscribers with one athlete. Next, add your athlete from your dashboard.",
     );
+    expect(note.textContent).not.toMatch(/14/);
+    expect(note.textContent?.toLowerCase()).not.toContain("no credit card");
   });
 
   it("does not mention the dormant journal or fold pre-practice into pregame", async () => {
@@ -201,17 +214,42 @@ describe("/signup/athlete — flag on: steps + handoff expectations (FV-515)", (
     expect(current?.textContent).toMatch(/account/i);
   });
 
-  it("renders the trial/billing disclosure, never promising 'no credit card'", async () => {
+  it("renders the 7-day note, never a 14-day claim or 'no credit card'", async () => {
     isAdultSignupEnabledMock.mockReturnValue(true);
     const jsx = await AdultSignUpPage();
     render(jsx);
-    const disclosure = screen.getByTestId("trial-autocharge-disclosure");
-    expect(disclosure.textContent).toMatch(/card required/i);
-    expect(disclosure.textContent).toMatch(/first-time subscribers/i);
-    expect(disclosure.textContent?.toLowerCase()).not.toContain(
-      "no credit card",
+    const note = screen.getByTestId("signup-trial-note");
+    expect(note).toHaveTextContent("7 days free, then $5/mo or $49/yr.");
+    expect(note).toHaveTextContent("Cancel anytime.");
+    expect(note).toHaveTextContent(
+      "Free trial for first-time subscribers. Next, you pick a plan.",
     );
+    expect(note.textContent).not.toMatch(/14/);
+    expect(note.textContent?.toLowerCase()).not.toContain("no credit card");
   });
+});
+
+describe("signup trial copy is hidden in a native shell (FV-707)", () => {
+  it.each(["ios-iap", "legacy-native", "android-play"] as const)(
+    "%s: parent and adult signup omit the web price and trial lines",
+    async (capability) => {
+      shellCapabilityMock.mockReturnValue(capability);
+      isAdultSignupEnabledMock.mockReturnValue(true);
+
+      const parent = await SignUpPage();
+      const { unmount } = render(parent);
+      expect(screen.queryByTestId("signup-trial-note")).not.toBeInTheDocument();
+      expect(screen.queryByText(/\$5\/mo/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/7 days free/i)).not.toBeInTheDocument();
+      unmount();
+
+      const adult = await AdultSignUpPage();
+      render(adult);
+      expect(screen.queryByTestId("signup-trial-note")).not.toBeInTheDocument();
+      expect(screen.queryByText(/\$5\/mo/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/7 days free/i)).not.toBeInTheDocument();
+    },
+  );
 });
 
 // ---------------------------------------------------------------------------

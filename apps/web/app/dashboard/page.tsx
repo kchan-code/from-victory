@@ -148,7 +148,11 @@ export default async function DashboardPage() {
             Parent dashboard
           </p>
           <h1 className="font-display font-extrabold uppercase tracking-[0.04em] text-cream text-[40px] sm:text-[48px] leading-[1.05] mb-6">
-            Welcome back, {profile.first_name}.
+            {/* A linked athlete is the returning signal this page already
+                has. First visit after signup, before any athlete is linked,
+                stays "Welcome". */}
+            {linkedAthletes.length > 0 ? "Welcome back" : "Welcome"},{" "}
+            {profile.first_name}.
           </h1>
         </section>
 
