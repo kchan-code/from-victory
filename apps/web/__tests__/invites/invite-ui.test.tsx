@@ -6,6 +6,7 @@
  * recovery), and the sign-in "I have an invite" entry.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { StrictMode } from "react";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
@@ -40,6 +41,28 @@ import { InviteFlow } from "@/components/auth/InviteFlow";
 import { InviteSetupForm } from "@/components/auth/InviteSetupForm";
 import { SignInChooser } from "@/components/auth/SignInChooser";
 import { InvitePanel } from "@/components/dashboard/InvitePanel";
+import { PLAY_STORE_URL } from "@/lib/marketing/play-store";
+import { APP_STORE_URL } from "@/lib/marketing/app-store";
+
+const IPHONE_UA =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
+const IPAD_UA =
+  "Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
+const ANDROID_UA =
+  "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36";
+const DESKTOP_UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+function setUserAgent(ua: string, maxTouchPoints = 0) {
+  Object.defineProperty(navigator, "userAgent", {
+    configurable: true,
+    value: ua,
+  });
+  Object.defineProperty(navigator, "maxTouchPoints", {
+    configurable: true,
+    value: maxTouchPoints,
+  });
+}
 
 const ATHLETE = "20000000-0000-4000-8000-00000000000a";
 const EXP = "2026-11-13T21:00:00+00:00";
@@ -173,20 +196,176 @@ describe("InviteFlow (athlete)", () => {
     expect(window.location.pathname).toBe("/invite");
   });
 
-  it("in a browser, a linked code shows App Store / code / continue — and does not auto-check", async () => {
+  it("in a browser, continuing there checks the linked code and does not auto-check first", async () => {
+    setUserAgent(DESKTOP_UA);
     window.history.replaceState(null, "", "/invite#code=7KQ2-M9XD-4HTR-PW3B");
     await act(async () => {
       render(<InviteFlow nativeShell={false} />);
     });
     expect(screen.getByTestId("invite-install-chooser")).toBeInTheDocument();
-    expect(screen.getByTestId("invite-chooser-code")).toHaveTextContent("7KQ2-M9XD-4HTR-PW3B");
-    expect(screen.getByAltText("Download on the App Store")).toBeInTheDocument();
     expect(formActionMock).not.toHaveBeenCalled();
 
     await act(async () => {
       fireEvent.click(screen.getByTestId("invite-continue-browser"));
     });
     expect(formActionMock).toHaveBeenCalledTimes(1);
+  });
+
+  describe("install chooser by platform", () => {
+    async function renderLinked(ua: string, maxTouchPoints = 0) {
+      setUserAgent(ua, maxTouchPoints);
+      window.history.replaceState(null, "", "/invite#code=7KQ2-M9XD-4HTR-PW3B");
+      await act(async () => {
+        render(<InviteFlow nativeShell={false} />);
+      });
+    }
+
+    function stepIds(): string[] {
+      return screen.getAllByRole("listitem").map((item) => item.getAttribute("data-testid") ?? "");
+    }
+
+    it("iPhone: App Store, then tap the link again, then type the code as the fallback", async () => {
+      await renderLinked(IPHONE_UA);
+      const chooser = screen.getByTestId("invite-install-chooser");
+      expect(chooser).toHaveAttribute("data-platform", "ios");
+      expect(chooser).toHaveTextContent("Train in the From Victory app.");
+      expect(chooser).not.toHaveTextContent(/on iPhone, or keep going/i);
+      expect(chooser).not.toHaveTextContent(/need to type anything/i);
+
+      expect(stepIds()).toEqual([
+        "invite-step-get-app",
+        "invite-step-reopen",
+        "invite-step-code",
+      ]);
+      const getApp = screen.getByTestId("invite-step-get-app");
+      const reopen = screen.getByTestId("invite-step-reopen");
+      const code = screen.getByTestId("invite-step-code");
+      expect(getApp.compareDocumentPosition(reopen) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(reopen.compareDocumentPosition(code) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+      expect(getApp).toHaveTextContent("Get the app.");
+      expect(screen.getByRole("link", { name: "Download on the App Store" })).toHaveAttribute(
+        "href",
+        APP_STORE_URL,
+      );
+      expect(screen.queryByRole("link", { name: "Get it on Google Play" })).not.toBeInTheDocument();
+
+      expect(reopen).toHaveTextContent(
+        "After it installs, come back to your text and tap the link again. The app opens your setup. You do not type this code.",
+      );
+      expect(code).toHaveTextContent(
+        "Or open From Victory, tap I have an invite, and enter this code.",
+      );
+      expect(screen.getByTestId("invite-chooser-code")).toHaveTextContent("7KQ2-M9XD-4HTR-PW3B");
+      expect(screen.getByRole("button", { name: "Copy code" })).toBeInTheDocument();
+
+      const cont = screen.getByTestId("invite-continue-browser");
+      expect(cont.className).not.toMatch(/w-full/);
+      expect(code.compareDocumentPosition(cont) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(chooser).toHaveTextContent("Finish setup on this page instead of in the app.");
+    });
+
+    it("iPad: App Store and the same reopen path as iPhone", async () => {
+      await renderLinked(IPAD_UA);
+      expect(screen.getByTestId("invite-install-chooser")).toHaveAttribute("data-platform", "ios");
+      expect(screen.getByRole("link", { name: "Download on the App Store" })).toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: "Get it on Google Play" })).not.toBeInTheDocument();
+      expect(screen.getByTestId("invite-step-reopen")).toHaveTextContent(
+        "come back to your text and tap the link again",
+      );
+    });
+
+    it("Android: Google Play, and typing the code is the main path", async () => {
+      await renderLinked(ANDROID_UA);
+      const chooser = screen.getByTestId("invite-install-chooser");
+      expect(chooser).toHaveAttribute("data-platform", "android");
+      expect(chooser).toHaveTextContent("Train in the From Victory app.");
+      expect(chooser).not.toHaveTextContent(/iPhone/i);
+      expect(chooser).not.toHaveTextContent(/tap the link again/i);
+      expect(chooser).not.toHaveTextContent(/need to type anything/i);
+
+      expect(stepIds()).toEqual(["invite-step-get-app", "invite-step-code"]);
+      const getApp = screen.getByTestId("invite-step-get-app");
+      const code = screen.getByTestId("invite-step-code");
+      expect(getApp.compareDocumentPosition(code) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+      expect(screen.queryByRole("link", { name: "Download on the App Store" })).not.toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Get it on Google Play" })).toHaveAttribute(
+        "href",
+        PLAY_STORE_URL,
+      );
+      expect(code).toHaveTextContent(
+        "Open From Victory, tap I have an invite, and enter this code.",
+      );
+      expect(code).not.toHaveTextContent(/^Or open/);
+      expect(screen.getByTestId("invite-chooser-code")).toHaveTextContent("7KQ2-M9XD-4HTR-PW3B");
+      expect(screen.getByRole("button", { name: "Copy code" })).toBeInTheDocument();
+      expect(chooser).toHaveTextContent("Finish setup on this page instead of in the app.");
+      expect(formActionMock).not.toHaveBeenCalled();
+    });
+
+    it("desktop: both stores, iPhone reopen, and Android code entry", async () => {
+      await renderLinked(DESKTOP_UA);
+      const chooser = screen.getByTestId("invite-install-chooser");
+      expect(chooser).toHaveAttribute("data-platform", "unknown");
+      expect(stepIds()).toEqual([
+        "invite-step-get-app",
+        "invite-step-reopen",
+        "invite-step-code",
+      ]);
+      expect(screen.getByRole("link", { name: "Download on the App Store" })).toHaveAttribute(
+        "href",
+        APP_STORE_URL,
+      );
+      expect(screen.getByRole("link", { name: "Get it on Google Play" })).toHaveAttribute(
+        "href",
+        PLAY_STORE_URL,
+      );
+      expect(screen.getByTestId("invite-step-reopen")).toHaveTextContent(
+        "On iPhone, after it installs, come back to your text and tap the link again.",
+      );
+      expect(screen.getByTestId("invite-step-code")).toHaveTextContent(
+        "On Android, open From Victory, tap I have an invite, and enter this code.",
+      );
+      expect(chooser).not.toHaveTextContent(/need to type anything/i);
+    });
+
+    it("keeps the linked code when Strict Mode runs the effect twice", async () => {
+      setUserAgent(IPHONE_UA);
+      window.history.replaceState(null, "", "/invite#code=7KQ2-M9XD-4HTR-PW3B");
+      await act(async () => {
+        render(
+          <StrictMode>
+            <InviteFlow nativeShell={false} />
+          </StrictMode>,
+        );
+      });
+      expect(screen.getByTestId("invite-install-chooser")).toHaveAttribute("data-platform", "ios");
+      expect(screen.getByTestId("invite-chooser-code")).toHaveTextContent("7KQ2-M9XD-4HTR-PW3B");
+      expect(window.location.hash).toBe("");
+    });
+
+    it("iPadOS desktop mode (Macintosh UA, touch) is treated as iPhone", async () => {
+      await renderLinked(DESKTOP_UA, 5);
+      expect(screen.getByTestId("invite-install-chooser")).toHaveAttribute("data-platform", "ios");
+      expect(screen.queryByRole("link", { name: "Get it on Google Play" })).not.toBeInTheDocument();
+    });
+  });
+
+  it("with no link code on Android, offers Google Play and does not say iPhone", async () => {
+    setUserAgent(ANDROID_UA);
+    window.history.replaceState(null, "", "/invite");
+    await act(async () => {
+      render(<InviteFlow nativeShell={false} />);
+    });
+    expect(screen.getByTestId("invite-code-form")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Get it on Google Play" })).toHaveAttribute(
+      "href",
+      PLAY_STORE_URL,
+    );
+    expect(screen.queryByRole("link", { name: "Download on the App Store" })).not.toBeInTheDocument();
+    expect(screen.getByText(/Open it, tap I have an invite/i)).toBeInTheDocument();
+    expect(screen.queryByText(/On iPhone/i)).not.toBeInTheDocument();
   });
 
   it("with no link code, shows code entry", async () => {

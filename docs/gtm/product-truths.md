@@ -10,6 +10,23 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-13 — The invite link page matches the phone the athlete is using (FV-687)
+
+An athlete who opens an invite link in a phone browser sees a short setup path.
+iPhone and iPad see the App Store badge. The next step says to install, go back
+to the text, and tap the link again. With the app installed, that tap opens
+setup in the app (a username and password, or a new password on a reset). It
+does not finish the invite by itself. If they would rather type the code, the
+page also says to open From Victory, tap "I have an invite", and enter the code.
+Android sees the Google Play badge. The next step says to open From Victory,
+tap "I have an invite", and enter the code. The link does not open the Android
+app. A computer sees both badges and both paths. "Continue in browser" stays
+on the page and finishes setup in the browser. This updates the 2026-11-06 note
+that the link page offers only the App Store.
+
+Why it matters to a buyer: an athlete on Android can install from the invite
+text, and an athlete on iPhone is told the real next step after install.
+
 ## 2026-11-11 — The Android app is available on Google Play (recorded by FV-681)
 
 The From Victory Android app is published on Google Play
