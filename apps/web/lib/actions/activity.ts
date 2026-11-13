@@ -59,13 +59,14 @@ export async function logActivityEvent(input: ActivityEventInput): Promise<void>
   }
 }
 
-// Anonymous pregame selection totals (FV-724 follow-up). Called once per
-// completed pregame. The caller must be a signed-in athlete so this cannot be
-// spammed anonymously — but the athlete's id is used ONLY for that check. It is
-// never passed to the writer or the database function, and nothing is logged
-// alongside the selections. The writer validates every value against the
-// sport's fixed vocabulary and drops the rest (the cue word is never accepted).
-// Best-effort: never throws, never navigates.
+// Pregame selection totals (FV-724 follow-up, FV-749). Called once per completed
+// pregame. The caller must be a signed-in athlete so this cannot be spammed
+// anonymously. The athlete's id is passed to the database ONLY for the
+// once-per-UTC-month marker that counts each athlete at most once; it is never
+// stored with the counts, and nothing is logged alongside the selections. The
+// writer validates every value against the sport's fixed vocabulary and drops
+// the rest (the cue word is never accepted). Best-effort: never throws, never
+// navigates.
 export async function logPregameSelections(
   sport: string,
   selections: PregameSelectionsInput,
@@ -86,7 +87,8 @@ export async function logPregameSelections(
       return;
     }
 
-    await recordPregameSelectionCounts(sport, selections);
+    // The id goes to the database only for the once-per-month marker.
+    await recordPregameSelectionCounts(user.id, sport, selections);
   } catch {
     // Telemetry is best-effort: never surface an error to the client.
   }

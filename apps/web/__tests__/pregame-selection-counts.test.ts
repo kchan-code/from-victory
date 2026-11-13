@@ -121,6 +121,16 @@ describe("buildSelectionCounts (pure vocabulary validation)", () => {
     expect(pp).toEqual([plays[0], plays[1], plays[2]]);
   });
 
+  it("never emits a duplicate (dimension, value) pair", () => {
+    const plays = positivePlaysFor("hockey", "Forward").map((p) => p.slug);
+    const r = buildSelectionCounts("hockey", {
+      ...hockeyValid,
+      positivePlays: [plays[0], plays[0], plays[1], plays[1]],
+    })!;
+    const keys = r.selections.map((x) => `${x.dimension}|${x.value}`);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
   it("positive plays are dropped when no valid role is chosen", () => {
     const slug = positivePlaysFor("hockey", "Forward")[0]!.slug;
     const r = buildSelectionCounts("hockey", { positivePlays: [slug] })!;
@@ -154,19 +164,20 @@ describe("logPregameSelections (server action)", () => {
     single.mockReset();
   });
 
-  it("athlete: calls the RPC with sport + selections only — no athlete id", async () => {
+  it("athlete: calls record_pregame_selections with the id, sport and selections only", async () => {
     getUser.mockResolvedValue({ data: { user: { id: ATHLETE_ID } } });
     single.mockResolvedValue({ data: { role: "athlete" } });
     await logPregameSelections("hockey", { ...hockeyValid, cueWord: "Secret" } as never);
 
     expect(rpc).toHaveBeenCalledTimes(1);
     const [fn, args] = rpc.mock.calls[0]!;
-    expect(fn).toBe("increment_pregame_selection_counts");
-    expect(Object.keys(args).sort()).toEqual(["p_selections", "p_sport"]);
-    const wire = JSON.stringify(args);
-    expect(wire).not.toContain(ATHLETE_ID);
-    expect(wire).not.toContain("Secret");
+    expect(fn).toBe("record_pregame_selections");
+    expect(Object.keys(args).sort()).toEqual(["p_athlete_id", "p_selections", "p_sport"]);
+    expect(args.p_athlete_id).toBe(ATHLETE_ID);
     expect(args.p_sport).toBe("hockey");
+    // The id travels ONLY as p_athlete_id — never inside the selections.
+    expect(JSON.stringify(args.p_selections)).not.toContain(ATHLETE_ID);
+    expect(JSON.stringify(args)).not.toContain("Secret");
   });
 
   it("adult_athlete is allowed", async () => {
@@ -210,6 +221,7 @@ describe("logPregameSelections (server action)", () => {
     const logged = JSON.stringify(err.mock.calls);
     expect(logged).not.toContain("Confidence");
     expect(logged).not.toContain(ATHLETE_ID);
+    expect(err).toHaveBeenCalled();
     err.mockRestore();
   });
 });

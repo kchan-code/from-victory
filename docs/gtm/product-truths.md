@@ -28,9 +28,10 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
   Apple, and what we receive from Apple; we keep a first-party record of a few app
   actions (app opened, daily or pregame session started or finished) for every athlete
   account, including ages 13 to 17 (individual records deleted after about 90 days; totals kept); we keep aggregate
-  monthly totals of which preset pregame options are chosen, with no account identifier,
-  and only look at a total once at least ten athletes in that sport completed a pregame
-  that month and the total is at least ten (a safeguard, not a guarantee of anonymity);
+  monthly totals of how many athletes chose each preset pregame option (each athlete
+  counted once a month), with no account identifier, and only look at a total once its
+  month has ended and at least ten different athletes chose that option; smaller totals
+  are deleted (a safeguard, not a guarantee of anonymity; updated by FV-749);
   the app sends a short automated error report with no account identifier when a screen
   fails to load.
 - The protections line for 13-17 accounts changed from "No behavioral or advertising

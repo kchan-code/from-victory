@@ -222,9 +222,26 @@ export type Database = {
         }
         Relationships: []
       }
+      // FV-749: hand-added. Marker only: athlete already counted for UTC month.
+      // No sport/selections/timestamps. Service-role-only: RLS on, no policies.
+      pregame_selection_contributors: {
+        Row: {
+          athlete_id: string
+          period_start: string
+        }
+        Insert: {
+          athlete_id: string
+          period_start: string
+        }
+        Update: {
+          athlete_id?: string
+          period_start?: string
+        }
+        Relationships: []
+      }
       // FV-724: hand-added. Confirm via `supabase gen types typescript
       // --linked` after 20261113120000_pregame_selection_counts.sql is applied.
-      // Monthly aggregate totals of pregame option choices (no account
+      // Monthly distinct-athlete counts per pregame option (FV-749; no account
       // identifier, no row timestamps). Read ONLY via
       // read_pregame_selection_counts(). Service-role-only: RLS enabled, no
       // policies. period_start = first day of the UTC month.
@@ -1132,19 +1149,19 @@ export type Database = {
         Args: { retention_days?: number }
         Returns: number
       }
-      // FV-724: hand-added. +1 per (dimension, value) for the current
-      // UTC month. p_selections = [{ dimension, value }]. Takes NO athlete id.
-      // EXECUTE: service_role only.
-      increment_pregame_selection_counts: {
-        Args: { p_sport: string; p_selections: Json }
+      // FV-749: hand-added. Counts an athlete's selections at most once per UTC
+      // month. p_athlete_id is used only for the once-per-month marker (never
+      // stored with the counts or returned). p_selections = [{ dimension, value }].
+      // Returns cells written (0 = already counted this month). service_role only.
+      record_pregame_selections: {
+        Args: { p_athlete_id: string; p_sport: string; p_selections: Json }
         Returns: number
       }
-      // FV-724: hand-added. The ONLY sanctioned read path for
-      // pregame_selection_counts: returns a cell only when its count AND the
-      // sport+month distinct-athlete count each meet a floor of >= 10 (caller
-      // cannot lower it). EXECUTE: service_role only. No app reader exists yet.
+      // FV-749: hand-added. The ONLY sanctioned read path for
+      // pregame_selection_counts: closed months only, cells with a
+      // distinct-athlete count >= greatest(p_min_athletes, 10). service_role only.
       read_pregame_selection_counts: {
-        Args: { p_min_athletes?: number; p_min_count?: number }
+        Args: { p_min_athletes?: number }
         Returns: {
           period_start: string
           sport: string
