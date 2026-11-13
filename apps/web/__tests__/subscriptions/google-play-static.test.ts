@@ -41,6 +41,9 @@ const SERVER_ONLY_MODULES = [
   "lib/subscriptions/google-play-api.ts",
   "lib/subscriptions/google-product-catalog.ts",
   "lib/subscriptions/subscription-plan-key.ts",
+  "lib/subscriptions/google-play-sync.ts",
+  "lib/subscriptions/google-play-rtdn.ts",
+  "lib/subscriptions/google-play-health.ts",
   "lib/actions/google-play-subscription.ts",
 ];
 

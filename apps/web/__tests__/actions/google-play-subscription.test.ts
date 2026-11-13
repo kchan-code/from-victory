@@ -445,6 +445,38 @@ describe("submitGooglePurchase: happy path", () => {
 // Binding and ownership (criterion 2)
 // ---------------------------------------------------------------------------
 
+describe("submitGooglePurchase: a closed purchase stays closed", () => {
+  it("re-submitting a token whose row is held as expired never restores access or acknowledges, even if Google still reports active", async () => {
+    // e.g. a refund or chargeback forced the row to expired while Google lags.
+    tables.google_subscriptions.push({
+      id: "row-closed",
+      payer_id: PAYER,
+      purchase_token: SENTINEL_TOKEN,
+      status: "expired",
+      expires_at: "2020-01-01T00:00:00.000Z",
+      acknowledged: true,
+    });
+    googleReturns(SENTINEL_TOKEN, { acknowledged: false });
+    expect(await submit()).toEqual({ ok: true, entitled: false, acknowledged: false });
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: "2020-01-01T00:00:00.000Z" });
+    expect(fetchCalls.some((u) => u.includes(":acknowledge"))).toBe(false);
+    expect(JSON.stringify(alerts)).toContain("row-closed");
+  });
+
+  it("an expired row is refreshed normally when Google also reports it as not granting", async () => {
+    tables.google_subscriptions.push({
+      id: "row-closed",
+      payer_id: PAYER,
+      purchase_token: SENTINEL_TOKEN,
+      status: "expired",
+      expires_at: "2020-01-01T00:00:00.000Z",
+    });
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_EXPIRED", expiryTime: "2020-02-01T00:00:00.000Z" });
+    expect(await submit()).toEqual({ ok: true, entitled: false, acknowledged: false });
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: "2020-02-01T00:00:00.000Z" });
+  });
+});
+
 describe("submitGooglePurchase: binding and ownership", () => {
   it("refuses a purchase with NO account id: nothing written, never acknowledged, alert has no ids", async () => {
     googleReturns(SENTINEL_TOKEN, { accountId: null });

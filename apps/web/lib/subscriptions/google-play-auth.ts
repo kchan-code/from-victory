@@ -84,4 +84,115 @@ export const getPlayAccessToken: GetPlayAccessToken = async () => {
 /** Test hook: drop the cached auth client. */
 export function resetPlayAuthCacheForTests(): void {
   cachedSource = null;
+  cachedIdTokenVerifier = null;
+}
+
+// ---------------------------------------------------------------------------
+// Pub/Sub push authentication (FV-662; record 7.3)
+// ---------------------------------------------------------------------------
+//
+// Google signs every push with an OIDC token in `Authorization: Bearer <JWT>`.
+// We accept a push only when ALL hold: the signature verifies against Google's
+// certs, the audience equals GOOGLE_PLAY_PUBSUB_AUDIENCE, the issuer is
+// Google, `email` equals GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT, and
+// `email_verified` is true. Missing config rejects (fail closed). The JWT and
+// its claims are never logged or returned.
+
+/**
+ * Verifies a Google-signed ID token (signature, expiry, audience) and returns
+ * its claims; throws when invalid. Injectable so tests never need the library.
+ */
+export type VerifyGoogleIdToken = (
+  idToken: string,
+  audience: string,
+) => Promise<Record<string, unknown> | undefined>;
+
+export type PushAuthFailure =
+  | "not_configured"
+  | "missing_token"
+  | "invalid_token"
+  | "wrong_issuer"
+  | "wrong_identity"
+  | "email_unverified";
+
+export type PushAuthResult =
+  | { ok: true }
+  /** 401: no/invalid credential. 403: a valid Google token for the wrong party, or no config. */
+  | { ok: false; status: 401 | 403; reason: PushAuthFailure };
+
+export interface PushAuthDeps {
+  readonly verifyIdToken?: VerifyGoogleIdToken;
+  /** Override env for tests. */
+  readonly audience?: string;
+  readonly serviceAccount?: string;
+}
+
+const GOOGLE_ISSUERS: ReadonlySet<string> = new Set([
+  "https://accounts.google.com",
+  "accounts.google.com",
+]);
+const MAX_JWT_LENGTH = 8192;
+
+let cachedIdTokenVerifier: VerifyGoogleIdToken | null = null;
+
+const defaultVerifyIdToken: VerifyGoogleIdToken = async (idToken, audience) => {
+  if (!cachedIdTokenVerifier) {
+    // Lazy import, same rule as buildAuth(): never at module load.
+    // reason: narrow structural view of the one class/method we use.
+    const { OAuth2Client } = (await import("google-auth-library")) as unknown as {
+      OAuth2Client: new () => {
+        verifyIdToken(opts: {
+          idToken: string;
+          audience: string;
+        }): Promise<{ getPayload(): Record<string, unknown> | undefined }>;
+      };
+    };
+    const client = new OAuth2Client();
+    cachedIdTokenVerifier = async (token, aud) => {
+      const ticket = await client.verifyIdToken({ idToken: token, audience: aud });
+      return ticket.getPayload();
+    };
+  }
+  return cachedIdTokenVerifier(idToken, audience);
+};
+
+/**
+ * Authenticates a Pub/Sub push from its `Authorization` header value. Never
+ * throws; every failure is a static reason code (no JWT, claim or library
+ * message is carried out).
+ */
+export async function verifyPubSubPush(
+  authorization: string | null,
+  deps: PushAuthDeps = {},
+): Promise<PushAuthResult> {
+  const audience = deps.audience ?? process.env.GOOGLE_PLAY_PUBSUB_AUDIENCE;
+  const serviceAccount = deps.serviceAccount ?? process.env.GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT;
+  if (!audience || !serviceAccount) {
+    return { ok: false, status: 403, reason: "not_configured" };
+  }
+
+  const match = /^Bearer (\S+)$/i.exec(authorization ?? "");
+  const jwt = match?.[1];
+  if (!jwt || jwt.length > MAX_JWT_LENGTH) {
+    return { ok: false, status: 401, reason: "missing_token" };
+  }
+
+  let claims: Record<string, unknown> | undefined;
+  try {
+    claims = await (deps.verifyIdToken ?? defaultVerifyIdToken)(jwt, audience);
+  } catch {
+    return { ok: false, status: 401, reason: "invalid_token" };
+  }
+  if (!claims) return { ok: false, status: 401, reason: "invalid_token" };
+
+  if (typeof claims.iss !== "string" || !GOOGLE_ISSUERS.has(claims.iss)) {
+    return { ok: false, status: 401, reason: "wrong_issuer" };
+  }
+  if (claims.email_verified !== true) {
+    return { ok: false, status: 403, reason: "email_unverified" };
+  }
+  if (typeof claims.email !== "string" || claims.email.toLowerCase() !== serviceAccount.toLowerCase()) {
+    return { ok: false, status: 403, reason: "wrong_identity" };
+  }
+  return { ok: true };
 }
