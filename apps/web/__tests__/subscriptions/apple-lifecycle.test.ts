@@ -27,6 +27,11 @@
  *     ./apple-server client (no_row / no_data / applied paths), including
  *     environment-filtered, newest-signedDate selection across multiple
  *     candidates.
+ *   - FV-713: REFUND_REVERSED maps to subscribed (a refunded row regains
+ *     access). DID_CHANGE_RENEWAL_STATUS does not change a row already in
+ *     grace or billing retry (null — the webhook writes auto_renew_status
+ *     only via applyAutoRenewStatus). A subscribed row still maps to
+ *     subscribed, the historical full-snapshot behavior.
  *
  * ./apple-server is mocked so no `@apple/app-store-server-library` code
  * path (and no network call to Apple) is ever reached from this file.
@@ -48,7 +53,9 @@ import {
   mapAppleStatusEnum,
   buildSnapshotFields,
   applyAppleSnapshot,
+  applyAutoRenewStatus,
   applyPendingRenewalProduct,
+  autoRenewStatusForRenewalToggle,
   reconcileAppleSubscription,
   deriveActionSubmissionStatus,
 } from "@/lib/subscriptions/apple-lifecycle";
@@ -155,6 +162,71 @@ describe("mapAppleNotificationToStatus", () => {
 
   it("returns null for a genuinely unknown notificationType", () => {
     expect(mapAppleNotificationToStatus("SOMETHING_NEW_APPLE_ADDED", undefined)).toBeNull();
+  });
+
+  // -------------------------------------------------------------------------
+  // FV-713
+  // -------------------------------------------------------------------------
+
+  it("REFUND_REVERSED -> subscribed, including when the row is currently revoked", () => {
+    expect(mapAppleNotificationToStatus("REFUND_REVERSED", undefined)).toBe("subscribed");
+    expect(mapAppleNotificationToStatus("REFUND_REVERSED", null)).toBe("subscribed");
+    expect(mapAppleNotificationToStatus("REFUND_REVERSED", undefined, "revoked")).toBe(
+      "subscribed",
+    );
+  });
+
+  it.each(["in_grace_period", "in_billing_retry"] as const)(
+    "DID_CHANGE_RENEWAL_STATUS does not change a row currently %s",
+    (current) => {
+      expect(
+        mapAppleNotificationToStatus("DID_CHANGE_RENEWAL_STATUS", "AUTO_RENEW_DISABLED", current),
+      ).toBeNull();
+      expect(
+        mapAppleNotificationToStatus("DID_CHANGE_RENEWAL_STATUS", "AUTO_RENEW_ENABLED", current),
+      ).toBeNull();
+    },
+  );
+
+  it("DID_CHANGE_RENEWAL_STATUS on a subscribed row still maps to subscribed", () => {
+    expect(
+      mapAppleNotificationToStatus("DID_CHANGE_RENEWAL_STATUS", "AUTO_RENEW_DISABLED", "subscribed"),
+    ).toBe("subscribed");
+    expect(
+      mapAppleNotificationToStatus("DID_CHANGE_RENEWAL_STATUS", "AUTO_RENEW_ENABLED", "subscribed"),
+    ).toBe("subscribed");
+    // No current row (first-seen toggle) keeps the same historical mapping.
+    expect(mapAppleNotificationToStatus("DID_CHANGE_RENEWAL_STATUS", "AUTO_RENEW_DISABLED", null)).toBe(
+      "subscribed",
+    );
+  });
+
+  it("the current-status argument does not change any other notification type", () => {
+    expect(mapAppleNotificationToStatus("REFUND", undefined, "in_grace_period")).toBe("revoked");
+    expect(mapAppleNotificationToStatus("DID_RENEW", undefined, "in_billing_retry")).toBe(
+      "subscribed",
+    );
+    expect(mapAppleNotificationToStatus("REFUND_REVERSED", undefined, "in_grace_period")).toBe(
+      "subscribed",
+    );
+  });
+});
+
+describe("autoRenewStatusForRenewalToggle", () => {
+  it("prefers the verified renewal payload over the subtype", () => {
+    expect(
+      autoRenewStatusForRenewalToggle("AUTO_RENEW_ENABLED", makeRenewal({ autoRenewStatus: false })),
+    ).toBe(false);
+  });
+
+  it("falls back to the subtype when the renewal payload is absent", () => {
+    expect(autoRenewStatusForRenewalToggle("AUTO_RENEW_ENABLED", null)).toBe(true);
+    expect(autoRenewStatusForRenewalToggle("AUTO_RENEW_DISABLED", null)).toBe(false);
+  });
+
+  it("returns null when neither the renewal payload nor a known subtype is present", () => {
+    expect(autoRenewStatusForRenewalToggle(undefined, null)).toBeNull();
+    expect(autoRenewStatusForRenewalToggle(null, null)).toBeNull();
   });
 });
 
@@ -711,6 +783,96 @@ describe("applyPendingRenewalProduct", () => {
     expect(updatedRow).not.toHaveProperty("grace_period_expires_at");
     expect(updatedRow).not.toHaveProperty("auto_renew_status");
     expect(updatedRow).not.toHaveProperty("app_account_token");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// applyAutoRenewStatus (FV-713) — DID_CHANGE_RENEWAL_STATUS while the row is
+// in grace or billing retry. Never touches status, the grace bound, or expiry.
+// ---------------------------------------------------------------------------
+
+describe("applyAutoRenewStatus", () => {
+  it("writes auto_renew_status and the watermark, and nothing else", async () => {
+    const service = makeServiceMock({
+      id: "row-1",
+      last_signed_date: new Date(1_600_000_000_000).toISOString(),
+    });
+    const result = await applyAutoRenewStatus(service as never, {
+      payerId: PAYER_ID,
+      environment: "Production",
+      autoRenewStatus: false,
+      signedDate: 1_700_000_000_000,
+    });
+    expect(result).toEqual({ applied: true });
+    const updatedRow = service.__spies.update.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(updatedRow).toEqual({
+      auto_renew_status: false,
+      last_signed_date: new Date(1_700_000_000_000).toISOString(),
+    });
+    expect(updatedRow).not.toHaveProperty("status");
+    expect(updatedRow).not.toHaveProperty("expires_at");
+    expect(updatedRow).not.toHaveProperty("grace_period_expires_at");
+    expect(updatedRow).not.toHaveProperty("product_id");
+    expect(updatedRow).not.toHaveProperty("auto_renew_product_id");
+    expect(service.__spies.insert).not.toHaveBeenCalled();
+  });
+
+  it("records auto-renew turning back on", async () => {
+    const service = makeServiceMock({
+      id: "row-1",
+      last_signed_date: new Date(1_600_000_000_000).toISOString(),
+    });
+    await applyAutoRenewStatus(service as never, {
+      payerId: PAYER_ID,
+      environment: "Production",
+      autoRenewStatus: true,
+      signedDate: 1_700_000_000_000,
+    });
+    const updatedRow = service.__spies.update.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(updatedRow.auto_renew_status).toBe(true);
+  });
+
+  it("no_row: never inserts", async () => {
+    const service = makeServiceMock(null);
+    const result = await applyAutoRenewStatus(service as never, {
+      payerId: PAYER_ID,
+      environment: "Production",
+      autoRenewStatus: false,
+      signedDate: 1_700_000_000_000,
+    });
+    expect(result).toEqual({ applied: false, reason: "no_row" });
+    expect(service.__spies.update).not.toHaveBeenCalled();
+    expect(service.__spies.insert).not.toHaveBeenCalled();
+  });
+
+  it("WATERMARK: drops a stale or equal signedDate — no write", async () => {
+    const service = makeServiceMock({
+      id: "row-1",
+      last_signed_date: new Date(1_700_000_000_000).toISOString(),
+    });
+    const result = await applyAutoRenewStatus(service as never, {
+      payerId: PAYER_ID,
+      environment: "Production",
+      autoRenewStatus: false,
+      signedDate: 1_700_000_000_000,
+    });
+    expect(result).toEqual({ applied: false, reason: "stale" });
+    expect(service.__spies.update).not.toHaveBeenCalled();
+  });
+
+  it("RACE backstop: UPDATE matching 0 rows returns stale", async () => {
+    const service = makeServiceMock({
+      id: "row-1",
+      last_signed_date: new Date(1_600_000_000_000).toISOString(),
+    });
+    service.__spies.updateLt.mockResolvedValueOnce({ error: null, count: 0 });
+    const result = await applyAutoRenewStatus(service as never, {
+      payerId: PAYER_ID,
+      environment: "Production",
+      autoRenewStatus: false,
+      signedDate: 1_700_000_000_000,
+    });
+    expect(result).toEqual({ applied: false, reason: "stale" });
   });
 });
 

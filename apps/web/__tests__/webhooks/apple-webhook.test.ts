@@ -44,6 +44,7 @@ vi.mock("@/lib/subscriptions/apple-server", () => ({
 
 const applyAppleSnapshotMock = vi.fn();
 const applyPendingRenewalProductMock = vi.fn();
+const applyAutoRenewStatusMock = vi.fn();
 vi.mock("@/lib/subscriptions/apple-lifecycle", async () => {
   const actual = await vi.importActual<
     typeof import("@/lib/subscriptions/apple-lifecycle")
@@ -52,6 +53,7 @@ vi.mock("@/lib/subscriptions/apple-lifecycle", async () => {
     ...actual,
     applyAppleSnapshot: (...args: unknown[]) => applyAppleSnapshotMock(...args),
     applyPendingRenewalProduct: (...args: unknown[]) => applyPendingRenewalProductMock(...args),
+    applyAutoRenewStatus: (...args: unknown[]) => applyAutoRenewStatusMock(...args),
   };
 });
 
@@ -59,6 +61,9 @@ let subRowsByOtid: Record<string, { payer_id: string } | undefined> = {};
 let tokenRowsByToken: Record<string, { payer_id: string } | undefined> = {};
 let sandboxAllowlistedPayers = new Set<string>();
 let profileRolesByPayer: Record<string, string | undefined> = {};
+/** Current apple_subscriptions.status, keyed by payer id. Read only by the
+ *  DID_CHANGE_RENEWAL_STATUS path (FV-713). */
+let statusByPayer: Record<string, string | undefined> = {};
 
 function makeServiceMock() {
   return {
@@ -66,12 +71,21 @@ function makeServiceMock() {
       if (table === "apple_subscriptions") {
         return {
           select: () => ({
-            eq: (_col1: string, otid: string) => ({
+            eq: (col: string, value: string) => ({
               eq: () => ({
-                maybeSingle: async () => ({
-                  data: subRowsByOtid[otid] ?? null,
-                  error: null,
-                }),
+                maybeSingle: async () => {
+                  if (col === "payer_id") {
+                    const status = statusByPayer[value];
+                    return {
+                      data: status ? { status } : null,
+                      error: null,
+                    };
+                  }
+                  return {
+                    data: subRowsByOtid[value] ?? null,
+                    error: null,
+                  };
+                },
               }),
             }),
           }),
@@ -184,13 +198,16 @@ beforeEach(() => {
   tokenRowsByToken = { TOKEN_1: { payer_id: PAYER_ID } };
   sandboxAllowlistedPayers = new Set();
   profileRolesByPayer = { [PAYER_ID]: "parent" };
+  statusByPayer = {};
   verifyAndDecodeNotificationMock.mockReset();
   describeVerificationFailureMock.mockClear();
   applyAppleSnapshotMock.mockReset();
   applyPendingRenewalProductMock.mockReset();
+  applyAutoRenewStatusMock.mockReset();
   notifyErrorMock.mockClear();
   applyAppleSnapshotMock.mockResolvedValue({ applied: true, created: true });
   applyPendingRenewalProductMock.mockResolvedValue({ applied: true });
+  applyAutoRenewStatusMock.mockResolvedValue({ applied: true });
 });
 
 describe("POST /api/webhooks/apple", () => {
@@ -663,5 +680,100 @@ describe("POST /api/webhooks/apple", () => {
 
     expect(res.status).toBe(500);
     expect(notifyErrorMock).toHaveBeenCalledTimes(1);
+  });
+
+  // ---------------------------------------------------------------------------
+  // FV-713: REFUND_REVERSED restores access. DID_CHANGE_RENEWAL_STATUS
+  // preserves grace / billing retry and only updates auto-renew; a subscribed
+  // row still takes the full snapshot.
+  // ---------------------------------------------------------------------------
+
+  it("REFUND_REVERSED applies a subscribed snapshot (access restored)", async () => {
+    verifyAndDecodeNotificationMock.mockResolvedValueOnce(
+      makeDecodedNotification({
+        notificationType: "REFUND_REVERSED",
+        subtype: null,
+        renewal: {
+          originalTransactionId: "otid_1",
+          autoRenewStatus: true,
+          gracePeriodExpiresDate: null,
+          signedDate: 1_700_000_000_000,
+          environment: "Production",
+          appAccountToken: "TOKEN_1",
+          autoRenewProductId: null,
+        },
+      }),
+    );
+
+    const res = await POST(makeRequest({ signedPayload: "ey.fake" }));
+
+    expect(res.status).toBe(200);
+    expect(applyAppleSnapshotMock).toHaveBeenCalledTimes(1);
+    expect(applyAutoRenewStatusMock).not.toHaveBeenCalled();
+    const call = applyAppleSnapshotMock.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(call.status).toBe("subscribed");
+  });
+
+  it.each(["in_grace_period", "in_billing_retry"] as const)(
+    "DID_CHANGE_RENEWAL_STATUS on a %s row updates auto-renew only",
+    async (current) => {
+      statusByPayer = { [PAYER_ID]: current };
+      verifyAndDecodeNotificationMock.mockResolvedValueOnce(
+        makeDecodedNotification({
+          notificationType: "DID_CHANGE_RENEWAL_STATUS",
+          subtype: "AUTO_RENEW_DISABLED",
+          renewal: {
+            originalTransactionId: "otid_1",
+            autoRenewStatus: false,
+            gracePeriodExpiresDate: current === "in_grace_period" ? 1_750_000_000_000 : null,
+            signedDate: 1_700_000_000_000,
+            environment: "Production",
+            appAccountToken: "TOKEN_1",
+            autoRenewProductId: null,
+          },
+        }),
+      );
+
+      const res = await POST(makeRequest({ signedPayload: "ey.fake" }));
+
+      expect(res.status).toBe(200);
+      expect(applyAppleSnapshotMock).not.toHaveBeenCalled();
+      expect(applyAutoRenewStatusMock).toHaveBeenCalledTimes(1);
+      const call = applyAutoRenewStatusMock.mock.calls[0]?.[1] as Record<string, unknown>;
+      expect(call).toEqual({
+        payerId: PAYER_ID,
+        environment: "Production",
+        autoRenewStatus: false,
+        signedDate: 1_700_000_000_000,
+      });
+    },
+  );
+
+  it("DID_CHANGE_RENEWAL_STATUS on a subscribed row still applies a full subscribed snapshot", async () => {
+    statusByPayer = { [PAYER_ID]: "subscribed" };
+    verifyAndDecodeNotificationMock.mockResolvedValueOnce(
+      makeDecodedNotification({
+        notificationType: "DID_CHANGE_RENEWAL_STATUS",
+        subtype: "AUTO_RENEW_DISABLED",
+        renewal: {
+          originalTransactionId: "otid_1",
+          autoRenewStatus: false,
+          gracePeriodExpiresDate: null,
+          signedDate: 1_700_000_000_000,
+          environment: "Production",
+          appAccountToken: "TOKEN_1",
+          autoRenewProductId: null,
+        },
+      }),
+    );
+
+    const res = await POST(makeRequest({ signedPayload: "ey.fake" }));
+
+    expect(res.status).toBe(200);
+    expect(applyAutoRenewStatusMock).not.toHaveBeenCalled();
+    expect(applyAppleSnapshotMock).toHaveBeenCalledTimes(1);
+    const call = applyAppleSnapshotMock.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(call.status).toBe("subscribed");
+    expect(call.autoRenewStatus).toBe(false);
   });
 });
