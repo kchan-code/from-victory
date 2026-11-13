@@ -10,6 +10,23 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-13 — The invite link page matches the phone the athlete is using (FV-687)
+
+An athlete who opens an invite link in a phone browser sees a short setup path.
+iPhone and iPad see the App Store badge. The next step says to install, go back
+to the text, and tap the link again. With the app installed, that tap opens
+setup in the app (a username and password, or a new password on a reset). It
+does not finish the invite by itself. If they would rather type the code, the
+page also says to open From Victory, tap "I have an invite", and enter the code.
+Android sees the Google Play badge. The next step says to open From Victory,
+tap "I have an invite", and enter the code. The link does not open the Android
+app. A computer sees both badges and both paths. "Continue in browser" stays
+on the page and finishes setup in the browser. This updates the 2026-11-06 note
+that the link page offers only the App Store.
+
+Why it matters to a buyer: an athlete on Android can install from the invite
+text, and an athlete on iPhone is told the real next step after install.
+
 ## 2026-11-13 - Public trial copy now says 7 days (FV-609)
 
 Kinny decided on 12 Nov 2026 that the live free trial is 7 days. Public pages, structured data, llms.txt, FAQ, pricing, and the paste-ready marketing lines now say a 7-day free trial (or "7 days free"). Checkout is unchanged. A first-time checkout that starts with one athlete still gets 7 days. A first checkout that starts with more than one athlete still starts paid. Prices are unchanged ($5/mo or $49/yr for the first athlete, $3/mo or $29/yr for each additional).

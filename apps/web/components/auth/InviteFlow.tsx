@@ -5,12 +5,17 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useFormState } from "react-dom";
 
-import { AppStoreBadge } from "@/components/landing/AppStoreBadge";
+import { StoreDownloadBadges } from "@/components/landing/StoreDownloadBadges";
 import { checkInvite, type CheckInviteState } from "@/lib/actions/invites";
 import { formatInviteCode } from "@/lib/invites/code";
 import { INVITE_PATH, readCodeFromHash } from "@/lib/invites/universal-link";
+import {
+  detectStorePlatform,
+  type StorePlatform,
+} from "@/lib/marketing/store-platform";
 
 import { Field } from "./Field";
+import { InviteInstallChooser } from "./InviteInstallChooser";
 import { InviteSetupForm } from "./InviteSetupForm";
 import { SubmitButton } from "./SubmitButton";
 
@@ -26,17 +31,20 @@ type Props = {
  *
  *   In the app:     code (from the link, or typed) → setup → /athlete.
  *   In a browser
- *   with a code:    choose: get the app (code shown to type in after install;
- *                   the App Store does not carry the invite through), or
- *                   continue in the browser.
+ *   with a code:    get the app for this device. On iPhone, the next step
+ *                   is to tap the link again (opens setup; they still set
+ *                   a password). Typing the code is the fallback. On
+ *                   Android, typing the code is the main step. Or finish
+ *                   setup on this page.
  *   In a browser
- *   without code:   type the code.
+ *   without code:   type the code. Store badges match the device.
  */
 export function InviteFlow({ nativeShell }: Props) {
   const [state, formAction] = useFormState(checkInvite, initialState);
   const [checking, startTransition] = useTransition();
   const [linkCode, setLinkCode] = useState<string | null>(null);
   const [hashRead, setHashRead] = useState(false);
+  const [platform, setPlatform] = useState<StorePlatform>("unknown");
   const [continueHere, setContinueHere] = useState(nativeShell);
   const [copied, setCopied] = useState(false);
   const autoChecked = useRef(false);
@@ -44,10 +52,20 @@ export function InviteFlow({ nativeShell }: Props) {
   // Read the code once from the fragment, then drop it from the address bar
   // and history so it isn't left behind on a shared device.
   useEffect(() => {
+    setPlatform(
+      detectStorePlatform(navigator.userAgent, navigator.maxTouchPoints),
+    );
+    // Read before clearing. Next.js dev remounts once (Strict Mode); if the
+    // fragment is wiped in the first effect, the second mount sees no code.
+    // The clear is deferred and cancelled on cleanup so both passes read it.
     const code = readCodeFromHash(window.location.hash);
-    if (window.location.hash) {
-      window.history.replaceState(null, "", INVITE_PATH);
-    }
+    let cancelClear = false;
+    queueMicrotask(() => {
+      if (cancelClear) return;
+      if (window.location.hash) {
+        window.history.replaceState(null, "", INVITE_PATH);
+      }
+    });
     setLinkCode(code);
     setHashRead(true);
 
@@ -57,7 +75,10 @@ export function InviteFlow({ nativeShell }: Props) {
       if (readCodeFromHash(window.location.hash)) window.location.reload();
     };
     window.addEventListener("hashchange", onHashChange);
-    return () => window.removeEventListener("hashchange", onHashChange);
+    return () => {
+      cancelClear = true;
+      window.removeEventListener("hashchange", onHashChange);
+    };
   }, []);
 
   // Auto-check a code that arrived by link once the athlete is continuing
@@ -91,61 +112,25 @@ export function InviteFlow({ nativeShell }: Props) {
     );
   }
 
-  // Browser, arrived by link: install or continue.
+  // Browser, arrived by link: install first, code second, browser last.
   if (linkCode && !continueHere) {
     const display = formatInviteCode(linkCode);
     return (
-      <div data-testid="invite-install-chooser">
-        <p className="font-body text-cream/80 text-[15px] leading-relaxed mb-5">
-          Train in the From Victory app on iPhone, or keep going here in your
-          browser.
-        </p>
-
-        <div className="bg-onyx border border-hairline rounded-xl p-5 mb-5">
-          <p className="font-mono font-semibold uppercase tracking-[0.16em] text-[10px] text-gold mb-2">
-            Your invite code
-          </p>
-          <p
-            data-testid="invite-chooser-code"
-            className="font-mono text-[18px] sm:text-[22px] tracking-[0.04em] text-cream mb-3 select-all whitespace-nowrap"
-          >
-            {display}
-          </p>
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(display);
-                setCopied(true);
-                window.setTimeout(() => setCopied(false), 2000);
-              } catch {
-                // Clipboard unavailable; the code is selectable.
-              }
-            }}
-            className="font-heading font-semibold text-[13px] text-cream/80 hover:text-cream bg-charcoal border border-hairline hover:border-cream/30 rounded-pill px-4 min-h-[44px]"
-          >
-            {copied ? "Code copied" : "Copy code"}
-          </button>
-          <p className="font-body text-cream/55 text-[13px] leading-relaxed mt-3">
-            After you install the app, open it, tap{" "}
-            <span className="text-cream">I have an invite</span>, and enter
-            this code. Or tap the link again once the app is installed.
-          </p>
-        </div>
-
-        <div className="mb-6">
-          <AppStoreBadge />
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setContinueHere(true)}
-          data-testid="invite-continue-browser"
-          className="w-full bg-charcoal text-cream border border-hairline hover:border-cream/30 font-heading font-semibold text-[15px] rounded-pill px-6 py-3 transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx"
-        >
-          Continue in browser
-        </button>
-      </div>
+      <InviteInstallChooser
+        displayCode={display}
+        platform={platform}
+        copied={copied}
+        onCopy={async () => {
+          try {
+            await navigator.clipboard.writeText(display);
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 2000);
+          } catch {
+            // Clipboard unavailable; the code is selectable.
+          }
+        }}
+        onContinueInBrowser={() => setContinueHere(true)}
+      />
     );
   }
 
@@ -176,10 +161,13 @@ export function InviteFlow({ nativeShell }: Props) {
         <SubmitButton pendingLabel="Checking…">Continue</SubmitButton>
       </form>
       {!nativeShell ? (
-        <p className="font-body text-cream/55 text-[13px] leading-relaxed mt-6">
-          On iPhone? Get the app, then tap{" "}
-          <span className="text-cream">I have an invite</span>.
-        </p>
+        <div className="mt-8 border-t border-hairline pt-5">
+          <p className="font-body text-cream/80 text-[15px] leading-relaxed mb-3">
+            You can also get the From Victory app. Open it, tap I have an
+            invite, and enter your invite code.
+          </p>
+          <StoreDownloadBadges platform={platform} />
+        </div>
       ) : null}
     </div>
   );
