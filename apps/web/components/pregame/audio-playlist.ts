@@ -14,6 +14,7 @@
 // path calls a parallel helper here that reads from AssembledTimeline instead
 // of two separate AudioTimeline sidecars.
 
+import { hostedClipUrl, hostedManifestUrl } from "@/lib/audio/hosting";
 import type { Phase } from "./audio/types";
 import type { PracticeState, PrayerStyle } from "./types";
 import {
@@ -156,7 +157,7 @@ export function bustUrl(url: string): string {
   const pathPart = url.split("?")[0] ?? url;
   if (CONTENT_ADDRESSED_RE.test(pathPart)) {
     // Content-addressed URL — filename IS the version, no ?v= needed.
-    return url;
+    return hostedClipUrl(url);
   }
   // Legacy or non-hashed URL — append the global bust for backward compat.
   const sep = url.includes("?") ? "&" : "?";
@@ -170,7 +171,7 @@ export function bustUrl(url: string): string {
  * CDN + browser fetches the updated manifest — no stale-manifest risk.
  */
 export function manifestUrl(): string {
-  return `/audio/pregame/clips/manifest.json?mv=${MANIFEST_VERSION}`;
+  return hostedManifestUrl() ?? `/audio/pregame/clips/manifest.json?mv=${MANIFEST_VERSION}`;
 }
 
 // ---------------------------------------------------------------------------
