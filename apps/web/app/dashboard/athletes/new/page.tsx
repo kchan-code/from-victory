@@ -2,6 +2,7 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { AthleteForm, type TrialConversionInfo } from "@/components/dashboard/AthleteForm";
 import { requireParent } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { createServiceClient } from "@/lib/supabase/service";
 import { capacityForAppleProduct } from "@/lib/subscriptions/apple-capacity";
 import { getActiveAppleProductId } from "@/lib/subscriptions/apple";
@@ -38,7 +39,7 @@ export default async function NewAthletePage() {
   // adding an athlete can change Stripe billing, so a deep link here renders
   // the plain, non-tappable website notice instead of the form — and skips the
   // trial-quote (Stripe) read entirely. ios-iap and web are unchanged.
-  if (getRequestShellCapability() === "legacy-native") {
+  if (isRestrictedShell(getRequestShellCapability())) {
     return (
       <AuthShell title="Add an athlete">
         <div

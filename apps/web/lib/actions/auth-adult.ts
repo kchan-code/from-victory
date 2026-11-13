@@ -9,6 +9,7 @@ import { isAdultSignupEnabled } from "@/lib/flags";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { getRequestShellCapability } from "@/lib/native-shell";
+import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { SUPPORTED_SPORTS } from "@/lib/sports";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -178,7 +179,7 @@ export async function signUpAdultAthlete(
   // redirect() throws internally and must not be called inside a try/catch —
   // both branches below sit at the top level, matching the pattern in
   // lib/actions/billing-portal.ts.
-  if (getRequestShellCapability() === "legacy-native") {
+  if (isRestrictedShell(getRequestShellCapability())) {
     redirect("/athlete");
   }
   redirect("/subscribe");

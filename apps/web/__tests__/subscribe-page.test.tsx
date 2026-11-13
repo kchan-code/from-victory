@@ -50,7 +50,7 @@ const {
   // describe blocks below override this per test to "legacy-native" /
   // "ios-iap".
   shellCapabilityMock: vi.fn(
-    (): "ios-iap" | "legacy-native" | null => null,
+    (): "ios-iap" | "legacy-native" | "android-play" | null => null,
   ),
   // FV-581: default "not_entitled" so every pre-existing test in this file
   // (written before the duplicate-billing guard existed) sees the exact
@@ -974,5 +974,58 @@ describe("SubscribePage — account settings route for a blocked adult (FV-645)"
     const { container } = await renderBlocked("adult_athlete", "legacy-native");
     expect(container.textContent).not.toMatch(/\$|stripe|checkout/i);
     expect(container.querySelector('a[href*="stripe"]')).toBeNull();
+  });
+});
+
+describe("SubscribePage — android-play renders exactly like legacy-native (FV-659)", () => {
+  const asParent = () =>
+    requireSubscriberMock.mockResolvedValue({
+      userId: "parent-1",
+      profile: { id: "parent-1", role: "parent", first_name: "Kim" },
+    });
+
+  async function htmlFor(capability: "legacy-native" | "android-play") {
+    shellCapabilityMock.mockReturnValue(capability);
+    const { container } = render(await SubscribePage({ searchParams: {} }));
+    const html = container.innerHTML;
+    cleanup();
+    return html;
+  }
+
+  it("not_entitled: identical markup — compliance notice, no price, no form, no Apple section", async () => {
+    asParent();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
+
+    const legacy = await htmlFor("legacy-native");
+    const play = await htmlFor("android-play");
+
+    expect(play).toBe(legacy);
+    expect(play).toContain("native-shell-subscribe-notice");
+    expect(play).not.toContain("subscribe-form-stub");
+    expect(play).not.toContain("apple-subscribe-section-stub");
+    expect(play).not.toMatch(/\$5|\$49|\$3|\$29/);
+  });
+
+  it.each(["stripe", "apple", "comp", null] as const)(
+    "entitled via %s: identical markup, provider status with no subscribe prompt",
+    async (provider) => {
+      asParent();
+      entitlementStateMock.mockResolvedValue({ status: "entitled", provider });
+
+      const legacy = await htmlFor("legacy-native");
+      const play = await htmlFor("android-play");
+
+      expect(play).toBe(legacy);
+      expect(play).toContain("subscribe-status-entitled");
+      expect(play).not.toContain("native-shell-subscribe-notice");
+    },
+  );
+
+  it("android-play never reads the Apple product (ios-iap only)", async () => {
+    asParent();
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "apple" });
+    await htmlFor("android-play");
+    expect(activeAppleProductIdMock).not.toHaveBeenCalled();
   });
 });
