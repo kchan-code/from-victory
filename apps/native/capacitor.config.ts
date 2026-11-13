@@ -150,8 +150,8 @@ const config: CapacitorConfig = {
  *   - UA: appends the `FVAuth/1` capability marker to each platform's
  *     EFFECTIVE token. iOS becomes "FVNativeShell/1 (ios) FVAuth/1". Android
  *     gets a per-platform override of its effective token plus the marker:
- *     today "FVNativeShell/1 FVAuth/1"; once C1's `(play)` override lands it
- *     becomes "FVNativeShell/1 (play) FVAuth/1" with no edit here. The
+ *     "FVNativeShell/1 FVAuth/1", or "FVNativeShell/1 (play) FVAuth/1" when
+ *     FV-664's `FV_PLAY_BILLING=1` has set the `(play)` token in `config`. The
  *     top-level bare token never changes. The marker is a presentation hint
  *     only (apps/web/lib/native-shell.ts `hasAuthCapability`), never
  *     authorization.
@@ -203,14 +203,14 @@ export function withSsoStagingBuild(base: CapacitorConfig): CapacitorConfig {
 /**
  * Build switches compose in a fixed order on top of the unchanged `config`:
  *   1. platform-token switches, which SET a platform's base UA token
- *      (FV-664's FV_PLAY_BILLING branch, `android.appendUserAgent =
- *      "FVNativeShell/1 (play)"`, belongs here — not implemented in FV-675);
+ *      (FV-664's FV_PLAY_BILLING sets `android.appendUserAgent =
+ *      "FVNativeShell/1 (play)"` inside `config` itself, above);
  *   2. capability-marker switches, which APPEND to whatever token is then in
  *      effect (FV_SSO_STAGING_BUILD → " FVAuth/1").
  * With every env unset, `buildConfig` is `config` itself.
  */
 let buildConfig: CapacitorConfig = config;
-// 1. Platform-token switches (FV-664 FV_PLAY_BILLING goes here).
+// 1. Platform-token switches: already applied in `config` (FV-664 FV_PLAY_BILLING).
 // 2. Capability markers, appended to the token in effect after step 1.
 if (process.env.FV_SSO_STAGING_BUILD === "1") {
   // A staging switch on a production-URL shell would advertise FVAuth/1
