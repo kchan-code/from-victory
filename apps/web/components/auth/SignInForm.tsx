@@ -1,15 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { useFormState } from "react-dom";
 
 import { signIn, type AuthActionState } from "@/lib/actions/auth";
-import { verifyEmailOnly } from "@/lib/actions/email-signup";
 
 import { Field } from "./Field";
 import { SubmitButton } from "./SubmitButton";
-import { VerifyCodeStep } from "./VerifyCodeStep";
 
 const initialState: AuthActionState = null;
 
@@ -27,32 +24,13 @@ type Props = {
 
 export function SignInForm({ legacyNative = false }: Props) {
   const [state, formAction] = useFormState(signIn, initialState);
-  const [dismissed, setDismissed] = useState<AuthActionState>(null);
-  const showCode =
-    state !== null &&
-    "step" in state &&
-    state.step === "verify_code" &&
-    state !== dismissed;
   const fieldError = (name: string) =>
     state && !state.ok && state.field === name ? state.error : undefined;
   const formError =
     state && !state.ok && !state.field ? state.error : undefined;
 
   return (
-    <>
-      {showCode && state && "step" in state ? (
-        <VerifyCodeStep
-          email={state.email}
-          purpose="signin"
-          action={verifyEmailOnly}
-          onChangeEmail={() => {
-            setDismissed(state);
-            // Return focus to the email field the user is about to change.
-            requestAnimationFrame(() => document.getElementById("email")?.focus());
-          }}
-        />
-      ) : null}
-      <form action={formAction} noValidate hidden={showCode}>
+    <form action={formAction} noValidate>
       <Field
         id="email"
         name="email"
@@ -107,7 +85,6 @@ export function SignInForm({ legacyNative = false }: Props) {
           </Link>
         </p>
       )}
-      </form>
-    </>
+    </form>
   );
 }
