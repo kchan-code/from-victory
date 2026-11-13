@@ -1,19 +1,14 @@
 /**
- * Regression guard (FV-33 hotfix).
+ * Regression guard (FV-33 hotfix, kept on the Next 15 / React 19 upgrade).
  *
- * This app runs on React 18 (Next 14). React 19 hooks — `useActionState`,
- * `useOptimistic`, `use` — are NOT exported from the installed `react` runtime,
- * even though `@types/react@18.3.x` *declares* `useActionState` (so `tsc`
- * passes and the build only emits a soft "Attempted import error" WARNING).
- * At runtime the import resolves to `undefined` and the component crashes when
- * it calls the hook.
+ * Forms in this app use `useFormState` / `useFormStatus` from "react-dom".
+ * React 19 still exports those hooks. `useActionState` is the replacement and
+ * is available now, but swapping one form at a time changes how pending state
+ * is read. This upgrade keeps every form on the existing hooks.
  *
- * SportPicker shipped with `import { useActionState } from "react"` and crashed
- * the first-run sport gate in prod. This test makes that class of mistake a hard
- * failure: scan all client source for a React-19 hook imported from "react".
- *
- * The correct React-18 pattern is `useFormState` / `useFormStatus` from
- * "react-dom" (see SubscribeForm.tsx and the auth forms).
+ * SportPicker once shipped `import { useActionState } from "react"` against a
+ * React 18 runtime and crashed the first-run sport gate. The scan remains so
+ * a partial migration cannot land beside the useFormState forms.
  */
 
 import { readdirSync, readFileSync, statSync } from "fs";
@@ -25,7 +20,7 @@ import { describe, it, expect } from "vitest";
 const WEB_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SCAN_DIRS = ["app", "components", "lib"].map((d) => path.join(WEB_ROOT, d));
 
-// React 19 hooks that are not available on the React 18 runtime.
+// Kept off the form surfaces. useFormState / useFormStatus stay the pattern.
 const FORBIDDEN_HOOKS = ["useActionState", "useOptimistic"];
 
 function sourceFiles(dir: string): string[] {
@@ -67,7 +62,7 @@ function importsFromReact(src: string, name: string): boolean {
   return false;
 }
 
-describe("no React 19 hooks imported from 'react' (this app is React 18)", () => {
+describe("forms stay on react-dom useFormState (no useActionState migration)", () => {
   const files = SCAN_DIRS.flatMap(sourceFiles);
 
   it("scans a non-trivial number of source files", () => {
@@ -82,9 +77,9 @@ describe("no React 19 hooks imported from 'react' (this app is React 18)", () =>
         .map((f) => path.relative(WEB_ROOT, f));
       expect(
         offenders,
-        `These files import the React 19 hook \`${hook}\` from "react", which is ` +
-          `undefined on this React 18 runtime. Use react-dom's useFormState / ` +
-          `useFormStatus instead. Offenders:\n  ${offenders.join("\n  ")}`,
+        `These files import \`${hook}\` from "react". Forms in this app use ` +
+          `react-dom's useFormState / useFormStatus so pending-state behavior ` +
+          `stays the same. Offenders:\n  ${offenders.join("\n  ")}`,
       ).toEqual([]);
     });
   }

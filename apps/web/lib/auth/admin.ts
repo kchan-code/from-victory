@@ -34,7 +34,7 @@ export async function requireAdminParent() {
   const ctx = await requireParent();
 
   // Re-fetch the user to read the email (requireParent only returns profile).
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

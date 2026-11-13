@@ -100,7 +100,7 @@ export async function createAthlete(
   // Stripe call — families add athletes on the website. The UA is a hint, not
   // authorization; this branch only ever removes an action. ios-iap and
   // web/PWA are unchanged.
-  if (isRestrictedShell(getRequestShellCapability())) {
+  if (isRestrictedShell(await getRequestShellCapability())) {
     return {
       ok: false,
       error: "Add athletes from a web browser at fromvictoryapp.com.",

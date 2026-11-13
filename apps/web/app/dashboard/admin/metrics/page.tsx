@@ -56,18 +56,19 @@ function parseRange(v: string | string[] | undefined): number {
   return RANGES.includes(s as (typeof RANGES)[number]) ? s : 30;
 }
 
-export default async function OwnerMetricsPage({
-  searchParams,
-}: {
-  searchParams: { tab?: string; range?: string };
-}) {
+export default async function OwnerMetricsPage(
+  props: {
+    searchParams: Promise<{ tab?: string; range?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   // 1) Owner gate. 404 for anyone who isn't in ADMIN_EMAILS.
   await requireAdminParent();
 
   // 2) Audit log (GDPR Art. 30 record-of-processing). Who viewed which metric
   //    view, when. Minimum bar is a structured server log line; wire to a log
   //    drain before any external audit.
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

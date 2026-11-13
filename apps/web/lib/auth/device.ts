@@ -93,11 +93,11 @@ function resolveSecret(): string | null {
  * no `.` separator) silently returns null and the caller falls through to the
  * generic parent sign-in form.
  */
-export function getDeviceAthleteId(): string | null {
+export async function getDeviceAthleteId(): Promise<string | null> {
   const secret = resolveSecret();
   if (!secret) return null;
 
-  const store = cookies();
+  const store = await cookies();
   const raw =
     store.get(COOKIE_NAME_PROD)?.value ?? store.get(COOKIE_NAME_DEV)?.value;
 
@@ -121,11 +121,11 @@ export function getDeviceAthleteId(): string | null {
  *   - path: "/" (required by __Host-)
  *   - NO domain attribute (required by __Host-)
  */
-export function setDeviceAthleteId(athleteId: string): void {
+export async function setDeviceAthleteId(athleteId: string): Promise<void> {
   const secret = resolveSecret();
   if (!secret) return; // Degrade: no cookie written in prod without secret.
 
-  const store = cookies();
+  const store = await cookies();
   const isProduction = process.env.NODE_ENV === "production";
 
   store.set(COOKIE_NAME, signDeviceValue(athleteId, secret), {
@@ -157,8 +157,8 @@ export function setDeviceAthleteId(athleteId: string): void {
  * (secure: true, path: "/", no domain) via `.set(name, "", { ...options,
  * maxAge: 0 })` so the deletion Set-Cookie is accepted.
  */
-export function clearDeviceAthleteId(): void {
-  const store = cookies();
+export async function clearDeviceAthleteId(): Promise<void> {
+  const store = await cookies();
 
   store.set(COOKIE_NAME_PROD, "", {
     httpOnly: true,

@@ -53,8 +53,8 @@ beforeEach(() => {
 });
 
 describe("clearDeviceAthleteId — __Host- cookie deletion parity", () => {
-  it("clears the __Host- cookie via .set() (not the bare .delete()) so the Set-Cookie carries required attributes", () => {
-    clearDeviceAthleteId();
+  it("clears the __Host- cookie via .set() (not the bare .delete()) so the Set-Cookie carries required attributes", async () => {
+    await clearDeviceAthleteId();
 
     // The bare `.delete()` form silently drops secure/path/sameSite and gets
     // rejected by the browser for a __Host- cookie — it must not be used for
@@ -67,8 +67,8 @@ describe("clearDeviceAthleteId — __Host- cookie deletion parity", () => {
     expect(call).toBeDefined();
   });
 
-  it("the __Host- cookie deletion carries secure: true, path: '/', and no domain attribute", () => {
-    clearDeviceAthleteId();
+  it("the __Host- cookie deletion carries secure: true, path: '/', and no domain attribute", async () => {
+    await clearDeviceAthleteId();
 
     const call = cookiesMock.set.mock.calls.find(
       (args) => args[0] === COOKIE_NAME_PROD,
@@ -85,8 +85,8 @@ describe("clearDeviceAthleteId — __Host- cookie deletion parity", () => {
     expect(options).not.toHaveProperty("domain");
   });
 
-  it("also clears the legacy/dev plain-name cookie", () => {
-    clearDeviceAthleteId();
+  it("also clears the legacy/dev plain-name cookie", async () => {
+    await clearDeviceAthleteId();
 
     const call = cookiesMock.set.mock.calls.find(
       (args) => args[0] === COOKIE_NAME_DEV,

@@ -49,7 +49,7 @@ export function ScrollNav() {
           className="flex items-center h-[72px] md:h-[80px]"
           aria-label="Primary"
         >
-          <a
+          <Link
             href="/"
             aria-label="From Victory home"
             className="flex items-center gap-2 sm:gap-3 md:gap-4 text-cream no-underline shrink-0"
@@ -76,7 +76,7 @@ export function ScrollNav() {
               className="hidden min-[400px]:block h-9 min-[400px]:h-10 sm:h-11 xl:h-[72px] w-auto translate-y-[3px] xl:translate-y-[2px]"
               priority
             />
-          </a>
+          </Link>
           <div className="flex-1 min-w-2 sm:min-w-12 md:min-w-16" aria-hidden />
           <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Desktop nav — the hamburger drawer owns everything below

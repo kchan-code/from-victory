@@ -171,8 +171,8 @@ export function isNativeShellUserAgent(
  * privacy issue); it can never be used to bypass a restriction. Treat this
  * as a UX/compliance signal, not an authorization boundary.
  */
-export function isNativeShell(): boolean {
-  const userAgent = headers().get("user-agent") ?? "";
+export async function isNativeShell(): Promise<boolean> {
+  const userAgent = (await headers()).get("user-agent") ?? "";
   return isNativeShellUserAgent(userAgent);
 }
 
@@ -191,7 +191,7 @@ export function isNativeShell(): boolean {
  * hint only, never an entitlement or authorization boundary (see
  * `getShellCapability()`'s doc comment above).
  */
-export function getRequestShellCapability(): ShellCapability | null {
-  const userAgent = headers().get("user-agent") ?? "";
+export async function getRequestShellCapability(): Promise<ShellCapability | null> {
+  const userAgent = (await headers()).get("user-agent") ?? "";
   return getShellCapability(userAgent);
 }

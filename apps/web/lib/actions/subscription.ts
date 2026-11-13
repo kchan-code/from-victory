@@ -157,9 +157,9 @@ import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guar
  * never throw; this wrapper adds one more belt-and-suspenders try/catch
  * around the cookies() read itself).
  */
-function readAttributionFromCookie(): Attribution {
+async function readAttributionFromCookie(): Promise<Attribution> {
   try {
-    const value = cookies().get(ATTRIBUTION_COOKIE_NAME)?.value;
+    const value = (await cookies()).get(ATTRIBUTION_COOKIE_NAME)?.value;
     return parseAttributionCookieValue(value);
   } catch {
     return {};
@@ -269,7 +269,7 @@ async function startSubscriptionCheckout(
   //    The subscription read serves two purposes:
   //    (a) customer reuse: pass the existing Stripe customer ID if present.
   //    (b) trial eligibility: no row → first-time subscriber → trial offered.
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: existingSub, error: subReadError } = await supabase
     .from("subscriptions")
@@ -341,7 +341,7 @@ async function startSubscriptionCheckout(
   // fv_attribution cookie (if any) so "where did they come from" rides
   // along on the Stripe objects. Absent/malformed cookie → empty object →
   // no attribution fields added; checkout proceeds unaffected either way.
-  const attribution = readAttributionFromCookie();
+  const attribution = await readAttributionFromCookie();
   // Metadata values must be strings; Attribution's fields already are, so
   // this is just a type-narrowing spread (no undefined keys survive).
   const attributionMetadata: Record<string, string> = { ...attribution };
@@ -465,7 +465,7 @@ export async function createCheckoutSession(
   //   quantity 1  → first-athlete price tier ($5/mo | $49/yr)
   //   quantity 2+ → additional athletes at the graduated tier ($3/mo | $29/yr)
   // Floor at 1: a parent with 0 linked athletes still buys at least 1 seat.
-  const supabase = createClient();
+  const supabase = await createClient();
   const athleteCountResult = await supabase
     .from("parent_athlete_links")
     .select("athlete_id", { count: "exact", head: true })

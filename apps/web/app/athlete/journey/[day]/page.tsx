@@ -16,7 +16,7 @@ import { getJourneyEntry } from "@/lib/athlete/journey-entry";
 import { TOTAL_TRAINING_DAYS } from "@/lib/daily/progression";
 
 interface JourneyDayPageProps {
-  params: { day: string };
+  params: Promise<{ day: string }>;
 }
 
 /** Format a completed_at ISO timestamp as a readable date. */
@@ -30,7 +30,8 @@ function formatDate(iso: string): string {
   });
 }
 
-export async function generateMetadata({ params }: JourneyDayPageProps) {
+export async function generateMetadata(props: JourneyDayPageProps) {
+  const params = await props.params;
   const dayNum = parseInt(params.day, 10);
   if (!Number.isInteger(dayNum) || dayNum < 1 || dayNum > TOTAL_TRAINING_DAYS) {
     return { title: "Session Not Found" };
@@ -38,7 +39,8 @@ export async function generateMetadata({ params }: JourneyDayPageProps) {
   return { title: `Day ${dayNum} · Journey` };
 }
 
-export default async function JourneyDayPage({ params }: JourneyDayPageProps) {
+export default async function JourneyDayPage(props: JourneyDayPageProps) {
+  const params = await props.params;
   // Auth guard — redirects to /signin if not authenticated.
   await requireAthlete();
 

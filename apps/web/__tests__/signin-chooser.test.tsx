@@ -95,7 +95,7 @@ afterEach(() => {
 async function renderPage(
   searchParams: { reset?: string; error?: string } = {},
 ) {
-  render(await SignInPage({ searchParams }));
+  render(await SignInPage({ searchParams: Promise.resolve(searchParams) }));
 }
 
 describe("SignInChooser doors (FV-707)", () => {

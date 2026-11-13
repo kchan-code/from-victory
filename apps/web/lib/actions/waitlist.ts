@@ -92,7 +92,7 @@ export async function submitWaitlist(
     return { ok: true, alreadyOnList: false };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.from("waitlist_signups").insert({
     email: data.email,
     // waitlist_signups.name is NOT NULL with no default — the form no

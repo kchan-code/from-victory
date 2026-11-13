@@ -104,7 +104,7 @@ export default async function DashboardSettingsPage() {
   // use Stripe's portal, so it stays suppressed for ios-iap too (out of this
   // issue's entry-point scope). `legacyNative` / `iosIap` below scope the
   // NEW three-way branch to the "no subscription yet" entry link only.
-  const shellCapability = getRequestShellCapability();
+  const shellCapability = await getRequestShellCapability();
   const nativeShell = shellCapability !== null;
   const legacyNative = isRestrictedShell(shellCapability);
   const iosIap = shellCapability === "ios-iap";
@@ -112,7 +112,7 @@ export default async function DashboardSettingsPage() {
   // Read the parent's own email from the authenticated session. This is the
   // parent's real account email — not an athlete synthetic address. We read it
   // from auth.getUser() so it's always current (not stale from the profiles row).
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

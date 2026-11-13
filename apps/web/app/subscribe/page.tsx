@@ -24,7 +24,7 @@ export const metadata = {
 };
 
 type Props = {
-  searchParams: { status?: string };
+  searchParams: Promise<{ status?: string }>;
 };
 
 /**
@@ -50,7 +50,8 @@ function StatusCard({
   );
 }
 
-export default async function SubscribePage({ searchParams }: Props) {
+export default async function SubscribePage(props: Props) {
+  const searchParams = await props.searchParams;
   const { userId, profile } = await requireSubscriber();
 
   // FV-442: reused below for the trial gate (FV-574), the price paragraph,
@@ -74,7 +75,7 @@ export default async function SubscribePage({ searchParams }: Props) {
     // first-time subscriber → eligible. Reuses the same RLS-scoped client pattern
     // as the checkout action. We only need to know whether the row exists — we
     // don't need any column values — so select a minimal field.
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: existingSub, error: subReadError } = await supabase
       .from("subscriptions")
       .select("stripe_customer_id")
@@ -120,7 +121,7 @@ export default async function SubscribePage({ searchParams }: Props) {
   // additionally distinguishes an iOS build capable of a native StoreKit
   // purchase surface ("ios-iap") from every other/older native shell
   // ("legacy-native", restricted, unchanged) — see getRequestShellCapability().
-  const shellCapability = getRequestShellCapability();
+  const shellCapability = await getRequestShellCapability();
   const nativeShell = shellCapability !== null;
 
   // FV-464: when subscription enforcement would bounce this user straight

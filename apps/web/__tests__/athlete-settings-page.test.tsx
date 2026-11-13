@@ -155,7 +155,7 @@ async function renderSettings(role: "athlete" | "adult_athlete") {
   });
   maybeSingleMock.mockResolvedValue({ data: null, error: null });
 
-  const jsx = await AthleteSettingsPage({ searchParams: {} });
+  const jsx = await AthleteSettingsPage({ searchParams: Promise.resolve({}) });
   return render(jsx);
 }
 

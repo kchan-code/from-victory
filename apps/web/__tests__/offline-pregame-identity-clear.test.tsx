@@ -111,7 +111,11 @@ describe("identity-switch entry points clear the previous athlete's offline entr
       },
     });
     athleteMock.mockResolvedValue({ data: { first_name: "New", username: null } });
-    render(await PairClaimPage({ searchParams: { code: "legacy-raw-code-value" } }));
+    render(
+      await PairClaimPage({
+        searchParams: Promise.resolve({ code: "legacy-raw-code-value" }),
+      }),
+    );
     expect(store.has(ATHLETE_CACHE_KEY)).toBe(false);
   });
 });

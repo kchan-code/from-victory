@@ -107,7 +107,7 @@ export async function savePersonalizationQuiz(
     };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Both forms (primary submit + skip) always include both hidden inputs.
   // Write whatever the schema resolved — null for skipped/omitted fields.
@@ -159,7 +159,7 @@ export async function updatePersonalizationQuiz(
     };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { error } = await supabase
     .from("profiles")

@@ -84,7 +84,13 @@ describe("error boundaries (FV-729, FV-731)", () => {
       <GlobalError error={new Error("layout blew up")} reset={vi.fn()} />,
     );
     const button = screen.getByRole("button", { name: "Reload" });
-    const painted = container.querySelector("body")?.getAttribute("style") ?? "";
+    // React 19 will not nest <html>/<body> inside Testing Library's <div>,
+    // so the onyx paint can land on document.body or in the inlined <style>.
+    const painted = [
+      container.querySelector("body")?.getAttribute("style") ?? "",
+      document.body.getAttribute("style") ?? "",
+      ...Array.from(document.querySelectorAll("style"), (el) => el.textContent ?? ""),
+    ].join(" ");
     expect(painted.toLowerCase()).toMatch(/050505|5,\s*5,\s*5/);
     expect(screen.getByText("From Victory")).toBeTruthy();
     expect(screen.getByText(/your training is safe/i)).toBeTruthy();

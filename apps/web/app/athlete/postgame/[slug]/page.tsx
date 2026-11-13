@@ -23,11 +23,12 @@ import {
 export const dynamicParams = true;
 
 // Static metadata for the shell; actual title injected inline per module.
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   const mod = moduleBySlug(params.slug);
   return {
     title: mod ? mod.title : "After the Game",
@@ -42,11 +43,12 @@ const SCENARIO_EYEBROW: Record<PostgameScenario, string> = {
   praise: "The Hard Night",
 };
 
-export default async function PostgameModulePage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function PostgameModulePage(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   // Auth guard first — unauthorized users should never see module content.
   const { profile } = await requireAthlete();
 

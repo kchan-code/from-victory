@@ -111,7 +111,7 @@ export async function savePushReminder(input: {
   }
 
   const { userId } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { error } = await supabase.from("push_subscriptions").upsert(
     {
@@ -152,7 +152,7 @@ export async function updateReminderTime(hour: number): Promise<ReminderResult> 
   }
 
   const { userId } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Single atomic update keyed on the athlete's own row (RLS-scoped). Using
   // .select() to return the affected rows lets us detect the "no subscription
@@ -199,7 +199,7 @@ export async function updateReminderTime(hour: number): Promise<ReminderResult> 
 
 export async function disablePushReminder(): Promise<ReminderResult> {
   const { userId } = await requireAthlete();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { error } = await supabase
     .from("push_subscriptions")

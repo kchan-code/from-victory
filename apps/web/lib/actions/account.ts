@@ -353,11 +353,11 @@ export async function deleteAccount(
   }
 
   // Clear the now-orphaned session cookies, then send them home.
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.auth.signOut();
   // Same shell/browser split as signOut() in lib/actions/auth.ts (FV-489):
   // "/" is the gated marketing root in-shell (real prices, trial CTA), a
   // Play Payments violation on this account-deletion sign-out too. Browser
   // behavior is unchanged.
-  redirect(isNativeShell() ? "/signin" : "/");
+  redirect((await isNativeShell()) ? "/signin" : "/");
 }

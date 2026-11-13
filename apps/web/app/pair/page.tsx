@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 };
 
 type Search = {
-  searchParams: { code?: string | string[] };
+  searchParams: Promise<{ code?: string | string[] }>;
 };
 
 function readCode(raw: string | string[] | undefined): string | null {
@@ -50,7 +50,8 @@ function readCode(raw: string | string[] | undefined): string | null {
   return raw;
 }
 
-export default async function PairClaimPage({ searchParams }: Search) {
+export default async function PairClaimPage(props: Search) {
+  const searchParams = await props.searchParams;
   const code = readCode(searchParams.code);
 
   if (!code) {

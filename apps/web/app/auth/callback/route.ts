@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/signin?reset=invalid", url.origin));
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
     console.error(

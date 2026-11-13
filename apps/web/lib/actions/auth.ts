@@ -68,7 +68,7 @@ export async function signUp(
     };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
@@ -155,7 +155,7 @@ export async function signIn(
     };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
     password: parsed.data.password,
@@ -190,7 +190,7 @@ export async function signIn(
 }
 
 export async function signOut() {
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.auth.signOut();
   // Inside the native shell, "/" is the gated marketing root — real prices,
   // "Start your athlete's 7-day free trial": a Google Play Payments policy
@@ -198,7 +198,7 @@ export async function signOut() {
   // instead, mirroring the native-shell entry-point router's own signed-out
   // target (NATIVE_SHELL_SIGNED_OUT_TARGET in lib/native-shell-router.ts).
   // Browser/PWA sign-out is unchanged — still lands on "/".
-  redirect(isNativeShell() ? "/signin" : "/");
+  redirect((await isNativeShell()) ? "/signin" : "/");
 }
 
 // -----------------------------------------------------------------------------
@@ -263,7 +263,7 @@ export async function requestPasswordReset(
     };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(
     parsed.data.email,
     {
@@ -310,7 +310,7 @@ export async function updatePassword(
     };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.auth.updateUser({
     password: parsed.data.password,
   });

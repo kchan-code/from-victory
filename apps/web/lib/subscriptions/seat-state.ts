@@ -225,7 +225,7 @@ export async function getPayerSeatState(
  * dashboard route).
  */
 export async function getPayerSeatStateForCurrentParent(): Promise<PayerSeatState> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -281,7 +281,7 @@ function seatStatusForAthlete(state: SeatState, athleteId: string): AthleteSeatS
  * billing level, so its own errors must not manufacture a block.
  */
 export async function getAthleteSeatStatusForCurrentUser(): Promise<AthleteSeatStatus> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

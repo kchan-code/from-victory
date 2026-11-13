@@ -116,7 +116,7 @@ type PayerResolution =
 
 /** Session user + role gate (parent | adult_athlete). Writes nothing. */
 async function resolvePayer(): Promise<PayerResolution> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

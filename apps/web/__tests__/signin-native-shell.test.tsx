@@ -62,7 +62,7 @@ afterEach(() => {
 });
 
 async function renderPage() {
-  render(await SignInPage({ searchParams: {} }));
+  render(await SignInPage({ searchParams: Promise.resolve({}) }));
 }
 
 function openCredentialForm() {
