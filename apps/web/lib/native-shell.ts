@@ -104,6 +104,40 @@ export function getShellCapability(
 }
 
 /**
+ * The additive sign-in capability marker (FV-675, FV-569 spec §3 / §13a).
+ * Appended by shell builds that bundle the app-local FVAuth plugin, after the
+ * platform token: "FVNativeShell/1 (ios) FVAuth/1" on iOS, and on Android
+ * "FVNativeShell/1 FVAuth/1" (staging) or "FVNativeShell/1 (play) FVAuth/1".
+ * Every already-fielded build lacks it, so older builds never show SSO.
+ */
+const AUTH_CAPABILITY_UA_TOKEN = "FVAuth/1";
+
+/** `FVAuth/1` as a whole whitespace-delimited token (so `FVAuth/10` never matches). */
+const AUTH_CAPABILITY_UA_PATTERN = /(?:^|\s)FVAuth\/1(?=\s|$)/;
+
+/**
+ * True when the User-Agent is a native-shell build that can run native
+ * sign-in (the FVAuth plugin): the shell token AND the `FVAuth/1` marker.
+ *
+ * ORTHOGONAL to `getShellCapability()`: it never changes `ShellCapability`
+ * and does not care which platform marker (`(ios)`, `(play)`, or
+ * none) is present. A browser UA that happens to contain `FVAuth/1` without
+ * the shell token is NOT capable — the marker only means something from the
+ * shell, which is the only runtime with the plugin.
+ *
+ * Same caveat as `getShellCapability()`: a presentation hint for which
+ * sign-in buttons render, NEVER authorization (spec §13a invariant 4).
+ */
+export function hasAuthCapability(userAgent: string | null | undefined): boolean {
+  const ua = userAgent ?? "";
+  return (
+    getShellCapability(ua) !== null &&
+    ua.includes(AUTH_CAPABILITY_UA_TOKEN) &&
+    AUTH_CAPABILITY_UA_PATTERN.test(ua)
+  );
+}
+
+/**
  * Pure "is this the native shell at all?" check against a raw User-Agent
  * string. Routes through `getShellCapability()` above — `true` for ALL
  * of `ios-iap`, `android-play` and `legacy-native`, exactly as the single flat-token substring

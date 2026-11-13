@@ -14,5 +14,13 @@
 	<array>
 		<string>applinks:www.fromvictoryapp.com</string>
 	</array>
+	<!-- FV-675 (FV-569 spec §6): Sign in with Apple for parents and 18+
+	     athletes via FVAuthPlugin.signInWithApple. Requires the Sign in with
+	     Apple capability on the App ID and a REFRESHED provisioning profile
+	     before any signed build (KC, Apple Developer portal). -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
 </dict>
 </plist>
