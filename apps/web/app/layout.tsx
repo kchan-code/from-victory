@@ -100,7 +100,9 @@ export default function RootLayout({
         {/* FV-630: routes invite universal links in the iOS app. No-op on
             the web / PWA (no window.Capacitor). */}
         <NativeInviteLinkHandler />
-        {/* FV-395: Vercel Web Analytics — public-marketing-only via beforeSend allowlist, renders nothing */}
+        {/* FV-395 / FV-727: Vercel Web Analytics. Client gate, fail-closed
+            until auth is confirmed. No cookies() or headers() here, so
+            marketing pages stay static. */}
         <AnalyticsMount />
       </body>
     </html>
