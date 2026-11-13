@@ -11,6 +11,9 @@
 --   sport, dimension, value):
 --   selection_count = ALL picks: +1 for every completed pregame that chose it.
 --   athlete_count   = DISTINCT ATHLETES who chose it that month.
+--   athletes_2plus / athletes_4plus / athletes_8plus = how many of those athletes
+--   picked the option at least 2 / 4 / 8 times that month (cumulative, so
+--   athletes_8plus <= athletes_4plus <= athletes_2plus <= athlete_count).
 --   The read floor is on athlete_count, NOT selection_count: a cell with 500
 --   picks from 9 athletes is never readable.
 --
@@ -27,13 +30,18 @@
 --   database AND the server secret could test a known athlete id + option
 --   against the markers. Markers are deleted once their month ends.
 --   record_pregame_selections() does, in ONE statement (one transaction):
---     claimed = INSERT markers ... ON CONFLICT DO NOTHING RETURNING marker
+--     claimed = INSERT markers ... ON CONFLICT DO UPDATE pick_count + 1
+--               RETURNING marker, pick_count
 --     counts  = upsert every valid pair: selection_count + 1 ALWAYS,
---               athlete_count + 1 ONLY for pairs whose marker was newly claimed.
+--               athlete_count + 1 when the marker's pick_count is now 1,
+--               athletes_2plus / 4plus / 8plus + 1 when it is now exactly 2 / 4 / 8,
+--               so each threshold counter moves once per athlete per option per
+--               month, at the crossing. The marker row also holds how many times
+--               that athlete picked that option this month (pick_count).
 --   Concurrency: two simultaneous calls from the same athlete for the same
 --   option insert the same marker; the second blocks on the primary key until
---   the first commits, then conflicts, so it is not "claimed": the cell ends at
---   athlete_count +1 and selection_count +2. Marker inserts and count upserts
+--   the first commits, then updates the same row (pick_count 2): the cell ends at
+--   athlete_count +1, athletes_2plus +1 and selection_count +2. Marker inserts and count upserts
 --   both run in (dimension, value) order, so calls cannot deadlock each other.
 --   If two pairs in one call carry the SAME marker, only the first (in
 --   dimension, value order) can be claimed, so it cannot be exploited to add
@@ -78,6 +86,16 @@ alter table public.pregame_selection_counts
 alter table public.pregame_selection_counts
   add constraint pregame_selection_counts_athlete_count_check
   check (athlete_count >= 0 and athlete_count <= selection_count);
+alter table public.pregame_selection_counts
+  add column athletes_2plus integer not null default 0,
+  add column athletes_4plus integer not null default 0,
+  add column athletes_8plus integer not null default 0;
+alter table public.pregame_selection_counts
+  add constraint pregame_selection_counts_repeat_check
+  check (athletes_8plus >= 0
+         and athletes_8plus <= athletes_4plus
+         and athletes_4plus <= athletes_2plus
+         and athletes_2plus <= athlete_count);
 
 -- ---------------------------------------------------------------------------
 -- Marker table: keyed one-way digest + month. NO athlete id, NO FK to profiles
@@ -88,6 +106,9 @@ alter table public.pregame_selection_counts
 create table public.pregame_selection_contributors (
   marker       text not null check (marker ~ '^[0-9a-f]{64}$'),
   period_start date not null,
+  -- How many times this keyed digest (athlete + option + month) has been picked
+  -- this month. Opaque: no athlete id and no option in the clear.
+  pick_count   integer not null default 1 check (pick_count >= 1),
   primary key (marker)
 );
 
@@ -98,7 +119,8 @@ create index pregame_selection_contributors_period_idx
 comment on table public.pregame_selection_contributors is
   'One keyed one-way digest (HMAC-SHA256, computed by the application server) '
   'per (athlete, UTC month, sport, option): "this athlete was already counted '
-  'for this option this month". The database holds no athlete identifier, but '
+  'for this option this month" and how many times (pick_count). The database '
+  'holds no athlete identifier, but '
   'someone holding BOTH the database and the server secret could test a known '
   'athlete id + option against these. No sport/dimension/value/timestamp '
   'columns. Rows are deleted once their month ends (prune_pregame_selection_totals). '
@@ -123,6 +145,12 @@ comment on table public.pregame_selection_counts is
 
 comment on column public.pregame_selection_counts.selection_count is
   'ALL picks: +1 for every completed pregame that chose this option.';
+comment on column public.pregame_selection_counts.athletes_2plus is
+  'Athletes who picked this option at least 2 times this UTC month (<= athlete_count).';
+comment on column public.pregame_selection_counts.athletes_4plus is
+  'Athletes who picked this option at least 4 times this UTC month (<= athletes_2plus).';
+comment on column public.pregame_selection_counts.athletes_8plus is
+  'Athletes who picked this option at least 8 times this UTC month (<= athletes_4plus).';
 comment on column public.pregame_selection_counts.athlete_count is
   'DISTINCT athletes who chose this option this UTC month. The privacy floor '
   'is applied to THIS column.';
@@ -234,34 +262,52 @@ begin
     return 0;
   end if;
 
-  -- One statement, one transaction: claim markers, then count. selection_count
-  -- always +1; athlete_count +1 only where THIS statement newly claimed the
-  -- pair's marker. mrn = 1 limits a marker shared by several pairs in one call
-  -- to its first pair (dimension, value order), so reuse cannot add athletes.
+  -- One statement, one transaction: bump markers, then count. selection_count
+  -- always +1. The marker upsert returns the athlete's pick_count for the option
+  -- THIS month; the threshold counters move exactly at the crossing: athlete_count
+  -- at 1, athletes_2plus at 2, athletes_4plus at 4, athletes_8plus at 8. mrn = 1
+  -- limits a marker shared by several pairs in one call to its first pair
+  -- (dimension, value order), so a duplicate marker increments pick_count once.
+  -- The where clause on the update keeps a row from another period untouched
+  -- (cannot happen: the digest includes the period); it then counts picks only.
   with pairs as (
     select t.dimension, t.value, t.marker,
            row_number() over (partition by t.marker order by t.dimension, t.value) as mrn
     from jsonb_to_recordset(v_valid) as t(dimension text, value text, marker text)
   ),
   claimed as (
-    insert into public.pregame_selection_contributors (marker, period_start)
-    select p.marker, v_period
+    insert into public.pregame_selection_contributors as m (marker, period_start, pick_count)
+    select p.marker, v_period, 1
     from pairs p
     where p.mrn = 1
     order by p.dimension, p.value   -- same order in every call: no deadlocks
-    on conflict (marker) do nothing
-    returning marker
+    on conflict (marker) do update set pick_count = m.pick_count + 1
+      where m.period_start = excluded.period_start
+    returning m.marker, m.pick_count
   )
   insert into public.pregame_selection_counts as c
-    (period_start, sport, dimension, value, selection_count, athlete_count)
+    (period_start, sport, dimension, value, selection_count,
+     athlete_count, athletes_2plus, athletes_4plus, athletes_8plus)
+  -- The proposed tuple is CUMULATIVE (pick 2 -> athlete_count 1, 2plus 1, ...),
+  -- because the table CHECK (8plus <= 4plus <= 2plus <= athlete_count) is
+  -- evaluated on the proposed row BEFORE conflict handling. The DO UPDATE then
+  -- converts the cumulative proposal back into per-counter deltas by
+  -- differencing: pick 1 -> (+1,0,0,0); 2 -> (0,+1,0,0); 4 -> (0,0,+1,0);
+  -- 8 -> (0,0,0,+1); any other pick -> (0,0,0,0).
   select v_period, p_sport, p.dimension, p.value, 1,
-         case when p.mrn = 1 and cl.marker is not null then 1 else 0 end
+         case when p.mrn = 1 and cl.pick_count in (1, 2, 4, 8) then 1 else 0 end,
+         case when p.mrn = 1 and cl.pick_count in (2, 4, 8)    then 1 else 0 end,
+         case when p.mrn = 1 and cl.pick_count in (4, 8)       then 1 else 0 end,
+         case when p.mrn = 1 and cl.pick_count = 8             then 1 else 0 end
   from pairs p
   left join claimed cl on cl.marker = p.marker
   order by p.dimension, p.value
   on conflict (period_start, sport, dimension, value)
   do update set selection_count = c.selection_count + 1,
-                athlete_count   = c.athlete_count + excluded.athlete_count;
+                athlete_count   = c.athlete_count  + (excluded.athlete_count  - excluded.athletes_2plus),
+                athletes_2plus  = c.athletes_2plus + (excluded.athletes_2plus - excluded.athletes_4plus),
+                athletes_4plus  = c.athletes_4plus + (excluded.athletes_4plus - excluded.athletes_8plus),
+                athletes_8plus  = c.athletes_8plus + excluded.athletes_8plus;
 
   get diagnostics affected = row_count;
   return affected;
@@ -270,8 +316,9 @@ $$;
 
 comment on function public.record_pregame_selections(date, text, jsonb) is
   'Records a completed pregame''s selections (FV-749): selection_count +1 per '
-  'pair always; athlete_count +1 only when the pair''s keyed digest marker is '
-  'newly claimed this month. The database never receives an athlete identifier. '
+  'pair always; athlete_count +1 when the pair''s keyed digest marker is first '
+  'seen this month, and athletes_2plus/4plus/8plus +1 when its pick_count reaches '
+  '2/4/8. The database never receives an athlete identifier. '
   'Counts only when p_period is the current UTC month (else 0, nothing written). '
   'Also prunes (see prune_pregame_selection_totals). Service-role-only (EXECUTE '
   'revoked from PUBLIC/anon/authenticated).';
@@ -297,14 +344,18 @@ returns table (
   dimension       text,
   value           text,
   selection_count bigint,
-  athlete_count   bigint
+  athlete_count   bigint,
+  athletes_2plus  integer,
+  athletes_4plus  integer,
+  athletes_8plus  integer
 )
 language sql
 stable
 set search_path = public
 set timezone = 'UTC'
 as $$
-  select c.period_start, c.sport, c.dimension, c.value, c.selection_count, c.athlete_count
+  select c.period_start, c.sport, c.dimension, c.value, c.selection_count, c.athlete_count,
+         c.athletes_2plus, c.athletes_4plus, c.athletes_8plus
   from public.pregame_selection_counts c
   where c.period_start < date_trunc('month', now())::date
     and c.athlete_count >= greatest(coalesce(p_min_athletes, 10), 10)
@@ -314,7 +365,8 @@ $$;
 comment on function public.read_pregame_selection_counts(integer) is
   'ONLY sanctioned read path for pregame_selection_counts (FV-749). Closed UTC '
   'months only; returns cells whose DISTINCT-ATHLETE count (athlete_count) is >= '
-  'greatest(p_min_athletes, 10), with both counters. Service-role-only (EXECUTE '
+  'greatest(p_min_athletes, 10), with all counters (picks, athletes, and the '
+  '2+/4+/8+ repeat breakdown). Service-role-only (EXECUTE '
   'revoked from PUBLIC/anon/authenticated).';
 
 revoke all on function public.read_pregame_selection_counts(integer) from public, anon, authenticated;

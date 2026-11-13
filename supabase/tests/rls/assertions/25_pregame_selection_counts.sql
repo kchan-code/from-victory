@@ -37,14 +37,14 @@ begin
   select array_agg(column_name order by column_name) into cols
     from information_schema.columns
     where table_schema = 'public' and table_name = 'pregame_selection_counts';
-  assert cols = array['athlete_count','dimension','period_start','selection_count','sport','value'],
+  assert cols = array['athlete_count','athletes_2plus','athletes_4plus','athletes_8plus','dimension','period_start','selection_count','sport','value'],
     format('FV-749 FAIL: pregame_selection_counts columns drifted: %s', cols);
 
   select array_agg(column_name order by column_name) into mcols
     from information_schema.columns
     where table_schema = 'public' and table_name = 'pregame_selection_contributors';
-  assert mcols = array['marker','period_start'],
-    format('FV-749 FAIL: marker table must hold ONLY (marker, period_start) — no athlete/sport/dimension/value column, got %s', mcols);
+  assert mcols = array['marker','period_start','pick_count'],
+    format('FV-749 FAIL: marker table must hold ONLY (marker, pick_count, period_start) — no athlete/sport/dimension/value column, got %s', mcols);
 
   assert not exists (select 1 from pg_constraint
                       where conrelid = 'public.pregame_selection_contributors'::regclass and contype = 'f'),
@@ -178,6 +178,65 @@ begin;
 rollback;
 
 -- ---------------------------------------------------------------------------
+-- Repeat breakdown: athletes_2plus / 4plus / 8plus move exactly once per marker
+-- (athlete + option + month), at pick 2 / 4 / 8, and never again.
+-- ---------------------------------------------------------------------------
+begin;
+  delete from public.pregame_selection_counts;
+  delete from public.pregame_selection_contributors;
+  set local role service_role;
+  do $$
+  declare
+    i int; r record; r2 record; pc int;
+    a text := pg_temp.fv749_m('repeatA');
+    b text := pg_temp.fv749_m('repeatB');
+  begin
+    for i in 1..9 loop
+      perform public.record_pregame_selections(pg_temp.fv749_cur(), 'hockey',
+        jsonb_build_array(pg_temp.fv749_sel('need', 'Calm', a)));
+      select * into r from public.pregame_selection_counts where value = 'Calm';
+      assert r.selection_count = i, format('FV-749 FAIL: pick %s: selection_count %s', i, r.selection_count);
+      assert r.athlete_count = 1, format('FV-749 FAIL: pick %s: athlete_count %s', i, r.athlete_count);
+      assert r.athletes_2plus = case when i >= 2 then 1 else 0 end, format('FV-749 FAIL: pick %s: athletes_2plus %s', i, r.athletes_2plus);
+      assert r.athletes_4plus = case when i >= 4 then 1 else 0 end, format('FV-749 FAIL: pick %s: athletes_4plus %s', i, r.athletes_4plus);
+      assert r.athletes_8plus = case when i >= 8 then 1 else 0 end, format('FV-749 FAIL: pick %s: athletes_8plus %s', i, r.athletes_8plus);
+      select pick_count into pc from public.pregame_selection_contributors where marker = a;
+      assert pc = i, format('FV-749 FAIL: marker pick_count must be %s, got %s', i, pc);
+    end loop;
+
+    -- A second marker (another athlete) crosses independently of the first.
+    for i in 1..4 loop
+      perform public.record_pregame_selections(pg_temp.fv749_cur(), 'hockey',
+        jsonb_build_array(pg_temp.fv749_sel('need', 'Calm', b)));
+    end loop;
+    select * into r from public.pregame_selection_counts where value = 'Calm';
+    assert r.athlete_count = 2 and r.athletes_2plus = 2 and r.athletes_4plus = 2 and r.athletes_8plus = 1,
+      format('FV-749 FAIL: two markers must cross independently (2,2,2,1), got %s/%s/%s/%s',
+             r.athlete_count, r.athletes_2plus, r.athletes_4plus, r.athletes_8plus);
+
+    -- A duplicate marker for two pairs inside ONE call bumps pick_count once.
+    perform public.record_pregame_selections(pg_temp.fv749_cur(), 'hockey', jsonb_build_array(
+      pg_temp.fv749_sel('need',   'D1', pg_temp.fv749_m('dupm')),
+      pg_temp.fv749_sel('anchor', 'D2', pg_temp.fv749_m('dupm'))));
+    select pick_count into pc from public.pregame_selection_contributors where marker = pg_temp.fv749_m('dupm');
+    assert pc = 1, format('FV-749 FAIL: a duplicate marker in one call must increment pick_count once, got %s', pc);
+
+    -- CHECK ordering is enforced by the table.
+    declare ok boolean := false; begin
+      begin
+        update public.pregame_selection_counts set athletes_8plus = athletes_4plus + 1 where value = 'Calm';
+      exception when check_violation then ok := true; end;
+      assert ok, 'FV-749 FAIL: athletes_8plus <= athletes_4plus must be enforced';
+      ok := false;
+      begin
+        update public.pregame_selection_counts set athletes_2plus = athlete_count + 1 where value = 'Calm';
+      exception when check_violation then ok := true; end;
+      assert ok, 'FV-749 FAIL: athletes_2plus <= athlete_count must be enforced';
+    end;
+  end $$;
+rollback;
+
+-- ---------------------------------------------------------------------------
 -- Reader floor is on athlete_count: 500 picks from 9 athletes is NOT readable;
 -- 10 athletes is, and both numbers are returned. Floor cannot be lowered.
 -- ---------------------------------------------------------------------------
@@ -217,6 +276,9 @@ begin;
     select * into r from public.read_pregame_selection_counts() where value = 'Calm';
     assert r.selection_count = 30 and r.athlete_count = 10,
       format('FV-749 FAIL: reader must return both counters (30 picks / 10 athletes), got %s / %s', r.selection_count, r.athlete_count);
+    -- Each of the 10 athletes picked it 3 times: all are in 2+, none in 4+/8+.
+    assert r.athletes_2plus = 10 and r.athletes_4plus = 0 and r.athletes_8plus = 0,
+      format('FV-749 FAIL: reader must return the repeat breakdown (10,0,0), got %s/%s/%s', r.athletes_2plus, r.athletes_4plus, r.athletes_8plus);
 
     -- A cell with 500 picks but 9 athletes stays suppressed.
     update public.pregame_selection_counts set selection_count = 500 where value = 'Joy';

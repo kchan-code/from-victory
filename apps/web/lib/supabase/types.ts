@@ -228,14 +228,17 @@ export type Database = {
         Row: {
           marker: string
           period_start: string
+          pick_count: number
         }
         Insert: {
           marker: string
           period_start: string
+          pick_count?: number
         }
         Update: {
           marker?: string
           period_start?: string
+          pick_count?: number
         }
         Relationships: []
       }
@@ -248,6 +251,9 @@ export type Database = {
       pregame_selection_counts: {
         Row: {
           athlete_count: number
+          athletes_2plus: number
+          athletes_4plus: number
+          athletes_8plus: number
           dimension: string
           period_start: string
           selection_count: number
@@ -256,6 +262,9 @@ export type Database = {
         }
         Insert: {
           athlete_count?: number
+          athletes_2plus?: number
+          athletes_4plus?: number
+          athletes_8plus?: number
           dimension: string
           period_start: string
           selection_count: number
@@ -264,6 +273,9 @@ export type Database = {
         }
         Update: {
           athlete_count?: number
+          athletes_2plus?: number
+          athletes_4plus?: number
+          athletes_8plus?: number
           dimension?: string
           period_start?: string
           selection_count?: number
@@ -1179,6 +1191,9 @@ export type Database = {
           value: string
           selection_count: number
           athlete_count: number
+          athletes_2plus: number
+          athletes_4plus: number
+          athletes_8plus: number
         }[]
       }
     }

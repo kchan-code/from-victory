@@ -289,17 +289,19 @@ export default function PrivacyPage() {
         </p>
         <p className="mt-3">
           Separately, so that we can learn which training options are useful, we keep
-          aggregate totals of how often each preset pregame option is chosen, and by how
-          many different athletes (for example, how many times a particular focus area or
-          visualization was picked), counted by sport and by month. These totals do not
+          aggregate totals of how often each preset pregame option is chosen, by how many
+          different athletes, and how many of those athletes chose it repeatedly (for
+          example, how many times a particular focus area or visualization was picked, and
+          how many athletes picked it four or more times), counted by sport and by month. These totals do not
           contain an account identifier or a timestamp for any one athlete, and each option
           is counted on its own, never in combination with an athlete&apos;s other choices. To
           know how many different athletes chose an option, we keep short-lived, one-way
           codes, each made from an athlete&apos;s account together with one option. A code
-          shows that the athlete has already been counted for that option this month. The
-          codes cannot be read without a secret key held on our servers; with that key and
-          an athlete&apos;s account, someone could check which options that athlete chose in
-          the current month. We therefore keep them only while the month is open and delete
+          shows that the athlete has already been counted for that option this month, and
+          how many times they have chosen it this month. The codes cannot be read without a
+          secret key held on our servers; with that key and an athlete&apos;s account,
+          someone could check which options that athlete chose in the current month and how
+          often. We therefore keep them only while the month is open and delete
           them within a few days after it ends. To stop one account from inflating the
           totals, we also keep a one-way record of how recently an account sent its choices;
           it does not contain the choices and is deleted within about a day. Our reporting only reads a total once its
