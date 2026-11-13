@@ -24,7 +24,9 @@ vi.mock("server-only", () => ({}));
 const constructEventMock = vi.fn();
 const subscriptionsRetrieveMock = vi.fn();
 const subscriptionsListMock = vi.fn();
-const notifyErrorMock = vi.fn(async (..._args: unknown[]) => {});
+const { notifyErrorMock } = vi.hoisted(() => ({
+  notifyErrorMock: vi.fn(async (..._args: unknown[]) => {}),
+}));
 vi.mock("@/lib/monitoring/notify", () => ({
   notifyError: (...args: unknown[]) => notifyErrorMock(...args),
 }));
