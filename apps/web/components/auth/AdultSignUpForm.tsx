@@ -4,27 +4,12 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { useFormState } from "react-dom";
 
-import {
-  completeEmailSignup,
-  startEmailSignup,
-} from "@/lib/actions/email-signup";
+import { signUpAdultAthlete } from "@/lib/actions/auth-adult";
 import type { AuthActionState } from "@/lib/actions/auth";
 import { SUPPORTED_SPORTS, sportLabel } from "@/lib/sports";
 
 import { Field } from "./Field";
 import { SubmitButton } from "./SubmitButton";
-import { useTwoStepSignup } from "./useTwoStepSignup";
-import { VerifyCodeStep } from "./VerifyCodeStep";
-
-const RETAINED_KEYS = [
-  "role",
-  "email",
-  "first_name",
-  "birthdate",
-  "sport",
-  "age_attestation",
-  "consent",
-] as const;
 
 const initialState: AuthActionState = null;
 
@@ -35,39 +20,14 @@ type Props = {
 };
 
 export function AdultSignUpForm({ afterSubmit }: Props = {}) {
-  const { wrapped, retained, dismissed, setDismissed } = useTwoStepSignup(
-    startEmailSignup,
-    RETAINED_KEYS,
-  );
-  const [state, formAction] = useFormState(wrapped, initialState);
-  const showCode =
-    state !== null &&
-    "step" in state &&
-    state.step === "verify_code" &&
-    state !== dismissed;
+  const [state, formAction] = useFormState(signUpAdultAthlete, initialState);
   const fieldError = (name: string) =>
     state && !state.ok && state.field === name ? state.error : undefined;
   const formError =
     state && !state.ok && !state.field ? state.error : undefined;
 
   return (
-    <>
-      {showCode && state && "step" in state ? (
-        <VerifyCodeStep
-          email={state.email}
-          purpose="signup"
-          role="adult_athlete"
-          action={completeEmailSignup}
-          retained={retained}
-          onChangeEmail={() => {
-            setDismissed(state);
-            // Return focus to the email field the user is about to change.
-            requestAnimationFrame(() => document.getElementById("email")?.focus());
-          }}
-        />
-      ) : null}
-      <form action={formAction} noValidate hidden={showCode}>
-        <input type="hidden" name="role" value="adult_athlete" />
+    <form action={formAction} noValidate>
       <Field
         id="first_name"
         name="first_name"
@@ -226,7 +186,6 @@ export function AdultSignUpForm({ afterSubmit }: Props = {}) {
           Sign in
         </Link>
       </p>
-      </form>
-    </>
+    </form>
   );
 }

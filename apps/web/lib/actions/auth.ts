@@ -5,59 +5,127 @@ import { z } from "zod";
 
 import { isSyntheticAthleteEmail } from "@/lib/auth/athlete-email";
 import { rateLimitGate, getRequestIp } from "@/lib/actions/rate-limit-store";
-import { startEmailSignup } from "@/lib/actions/email-signup";
+import { deliverInBackground } from "@/lib/monitoring/deliver";
+import { notifyError } from "@/lib/monitoring/notify";
 import { isNativeShell } from "@/lib/native-shell";
+import { createServiceClient } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
+
+const SignUpSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Enter a valid email."),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters.")
+    .max(72, "Password is too long."),
+  first_name: z
+    .string()
+    .trim()
+    .min(1, "First name is required.")
+    .max(50, "First name is too long."),
+  consent: z.literal("on", {
+    message:
+      "You need to agree to the Terms of Use and acknowledge the Privacy Policy.",
+  }),
+});
 
 const SignInSchema = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email."),
   password: z.string().min(1, "Password is required."),
 });
 
-/**
- * Action state shared by every auth form action.
- *
- * FV-671 (SSO A1): a verified email signup / unconfirmed sign-in is a TWO-STEP
- * flow, so besides `{ ok: true }` (nothing more to show) and `{ ok: false }`
- * (render `error`, optionally against `field`), an action can return
- * `{ ok: true, step: "verify_code" }`: the UI must now render the 6-digit code
- * screen for `email` (with resend), and submit it to `completeEmailSignup`
- * (purpose "signup") or `verifyEmailOnly` (purpose "signin").
- */
-export type VerifyCodeStep = {
-  ok: true;
-  step: "verify_code";
-  /** The normalized address the code was sent to (echoed so the UI needn't keep it). */
-  email: string;
-  /** signup -> completeEmailSignup; signin (legacy / unconfirmed account) -> verifyEmailOnly. */
-  purpose: "signup" | "signin";
-  /** Only for purpose "signup": the role being created. */
-  role?: "parent" | "adult_athlete";
-};
-
 export type AuthActionState =
   | { ok: true }
-  | VerifyCodeStep
   | { ok: false; error: string; field?: string }
   | null;
 
-/**
- * @deprecated FV-671 — the legacy parent signup entry point, kept so existing
- * forms keep compiling. It is now step 1 of the verified two-step signup: it
- * delegates to startEmailSignup (role "parent") and returns the same
- * `{ ok: true, step: "verify_code" }` state. There is NO profile insert and NO
- * delete-on-failure rollback any more (profiles are created by
- * complete_pending_profile after the code is verified). New UI should call
- * startEmailSignup / completeEmailSignup directly.
- */
 export async function signUp(
-  prev: AuthActionState,
+  _prev: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
-  const f = new FormData();
-  for (const [k, v] of formData.entries()) f.append(k, v);
-  f.set("role", "parent");
-  return startEmailSignup(prev, f);
+  const parsed = SignUpSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+    first_name: formData.get("first_name"),
+    consent: formData.get("consent"),
+  });
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    return {
+      ok: false,
+      error: issue?.message ?? "Invalid input.",
+      field: issue?.path[0]?.toString(),
+    };
+  }
+
+  // Rate limiting (FV-13): keyed on request IP — no stable identity at signup
+  // yet. Threat: mass-account creation / email-send-quota exhaustion.
+  const ip = await getRequestIp();
+  const { limited } = await rateLimitGate("sign_up", ip);
+  if (limited) {
+    return {
+      ok: false,
+      error: "Too many attempts. Please wait a few minutes and try again.",
+    };
+  }
+
+  const supabase = createClient();
+  const { data, error } = await supabase.auth.signUp({
+    email: parsed.data.email,
+    password: parsed.data.password,
+  });
+  if (error) {
+    // Generic message: returning Supabase's raw error (e.g. "User already
+    // registered", "over_email_send_rate_limit") enables account enumeration.
+    // Log full diagnostic info server-side so Vercel logs surface code+status
+    // when something breaks.
+    console.error(
+      `[auth.signUp] supabase.auth.signUp failed: ${error.message} (status=${error.status ?? "n/a"} code=${error.code ?? "n/a"})`,
+    );
+    return {
+      ok: false,
+      error:
+        "We couldn't create that account. Try signing in, or use a different email.",
+    };
+  }
+  if (!data.user) {
+    console.error("[auth.signUp] no user returned from supabase.auth.signUp");
+    return {
+      ok: false,
+      error:
+        "We couldn't create that account. Try signing in, or use a different email.",
+    };
+  }
+
+  const { error: profileError } = await supabase.from("profiles").insert({
+    id: data.user.id,
+    role: "parent",
+    first_name: parsed.data.first_name,
+    birthdate: null,
+  });
+  if (profileError) {
+    // Atomic rollback: delete the orphan auth.users row so the email is freed
+    // for a retry. Closes HIGH #2 from PR #19's kids-privacy-officer review.
+    const service = createServiceClient();
+    const userId = data.user.id;
+    const { error: rollbackError } =
+      await service.auth.admin.deleteUser(userId);
+    console.error(
+      `[auth.signUp] profile insert failed (userId=${userId}); rolled back auth.users (rollback_ok=${!rollbackError}): ${profileError.message}${
+        rollbackError ? ` | rollback error: ${rollbackError.message}` : ""
+      }`,
+    );
+    deliverInBackground(notifyError(
+      "[auth] signUp profile insert failed",
+      profileError.message,
+      { rollback_ok: String(!rollbackError) },
+    ));
+    return {
+      ok: false,
+      error: "Could not create your profile. Please try again.",
+    };
+  }
+
+  redirect("/dashboard");
 }
 
 export async function signIn(
@@ -93,36 +161,6 @@ export async function signIn(
     password: parsed.data.password,
   });
   if (error) {
-    // FV-671: GoTrue reports `email_not_confirmed` ONLY after the password was
-    // correct (bad credentials always win), so this branch cannot be used to
-    // enumerate accounts — a caller without the password still gets the generic
-    // message below. A legacy account whose email is unconfirmed (or a signup
-    // whose code was never entered) is sent a fresh code and the UI shows the
-    // code screen (-> verifyEmailOnly).
-    if (error.code === "email_not_confirmed") {
-      const { limited: resendLimited } = await rateLimitGate(
-        "signup_resend",
-        parsed.data.email,
-      );
-      if (!resendLimited) {
-        const { error: resendError } = await supabase.auth.resend({
-          type: "signup",
-          email: parsed.data.email,
-        });
-        if (resendError) {
-          // Includes the 60s cooldown (the previous code is still valid).
-          console.error(
-            `[auth.signIn] resend after email_not_confirmed failed: ${resendError.message} (status=${resendError.status ?? "n/a"} code=${resendError.code ?? "n/a"})`,
-          );
-        }
-      }
-      return {
-        ok: true,
-        step: "verify_code",
-        email: parsed.data.email,
-        purpose: "signin",
-      };
-    }
     // Generic user-facing message (no enumeration). Server-side log carries
     // the diagnostic — distinguishes "invalid_credentials" from rate-limit
     // / network / Supabase-down conditions.
