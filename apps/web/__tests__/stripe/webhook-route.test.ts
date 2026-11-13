@@ -39,6 +39,9 @@ vi.mock("@/lib/stripe/server", () => ({
     },
   }),
 }));
+vi.mock("@/lib/monitoring/notify", () => ({
+  notifyError: notifyErrorMock,
+}));
 
 // Mutable service mock — replaced per test via makeServiceMock().
 let upsertCalls: unknown[] = [];
@@ -169,6 +172,82 @@ function makeInvoice(
 }
 
 /**
+ * Builds a minimal Stripe.Charge-shaped object.
+ */
+function makeCharge(
+  overrides: Partial<{
+    id: string;
+    payment_intent: string | { id: string } | null;
+    customer: string | { id: string } | null;
+    amount: number;
+    currency: string;
+    billing_details_email: string;
+    billing_details_name: string;
+  }> = {},
+): Stripe.Charge {
+  const {
+    id = "ch_test",
+    payment_intent = "pi_test",
+    customer = "cus_test",
+    amount = 899,
+    currency = "usd",
+    billing_details_email = "athlete-parent@example.com",
+    billing_details_name = "Parent Name",
+  } = overrides;
+
+  return {
+    id,
+    object: "charge",
+    payment_intent,
+    customer,
+    amount,
+    currency,
+    billing_details: {
+      email: billing_details_email,
+      name: billing_details_name,
+    },
+  } as unknown as Stripe.Charge;
+}
+
+/**
+ * Builds a minimal Stripe.Dispute-shaped object.
+ */
+function makeDispute(
+  overrides: Partial<{
+    id: string;
+    charge: string | Record<string, unknown>;
+    payment_intent: string | { id: string } | null;
+    amount: number;
+    currency: string;
+    reason: string;
+    due_by: number | null;
+  }> = {},
+): Stripe.Dispute {
+  const {
+    id = "dp_test",
+    charge = "ch_test",
+    payment_intent = "pi_test",
+    amount = 899,
+    currency = "usd",
+    reason = "fraudulent",
+    due_by = 1763000000,
+  } = overrides;
+
+  return {
+    id,
+    object: "dispute",
+    charge,
+    payment_intent,
+    amount,
+    currency,
+    reason,
+    evidence_details: {
+      due_by,
+    },
+  } as unknown as Stripe.Dispute;
+}
+
+/**
  * Builds a configurable service-client stub.
  *
  * Supports two access patterns the route uses:
@@ -227,6 +306,8 @@ describe("POST /api/webhooks/stripe", () => {
     process.env.STRIPE_WEBHOOK_SECRET = DUMMY_SECRET;
     constructEventMock.mockReset();
     subscriptionsRetrieveMock.mockReset();
+    notifyErrorMock.mockReset();
+    notifyErrorMock.mockResolvedValue(undefined);
     // Default: retrieve returns an active subscription matching the checkout tests.
     subscriptionsRetrieveMock.mockResolvedValue(makeSubscription());
     // Default: the customer has exactly one subscription (no duplicate alert).
@@ -1275,5 +1356,241 @@ describe("POST /api/webhooks/stripe", () => {
       "reason",
       "tracked_sub",
     ]);
+  });
+
+  // -------------------------------------------------------------------------
+  // 18. Dispatch coverage — charge.refunded alerts ops and does not write subscriptions
+  // -------------------------------------------------------------------------
+  it("returns 200 and alerts with ids only for charge.refunded without subscription writes", async () => {
+    const charge = makeCharge({
+      id: "ch_refunded",
+      payment_intent: "pi_refunded",
+      customer: "cus_refunded",
+      amount: 1200,
+      currency: "usd",
+      billing_details_email: "parent@example.com",
+      billing_details_name: "Parent Name",
+    });
+    const event = makeEvent("charge.refunded", charge, 2000, "evt_refund");
+    constructEventMock.mockReturnValueOnce(event);
+
+    const res = await POST(
+      makeRequest("raw_body", { "stripe-signature": "sig_valid" }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(upsertCalls).toHaveLength(0);
+    expect(notifyErrorMock).toHaveBeenCalledTimes(1);
+
+    const [label, message, context] = notifyErrorMock.mock.calls[0]! as unknown as [
+      string,
+      string,
+      Record<string, string>,
+    ];
+    expect(label).toBe("[stripe/webhook] charge.refunded");
+    expect(message).toContain("refunded");
+    expect(context).toMatchObject({
+      event_id: "evt_refund",
+      charge_id: "ch_refunded",
+      payment_intent_id: "pi_refunded",
+      customer_id: "cus_refunded",
+      amount: "1200",
+      currency: "usd",
+    });
+    expect(Object.keys(context).sort()).toEqual(
+      [
+        "amount",
+        "charge_id",
+        "currency",
+        "customer_id",
+        "event_id",
+        "payment_intent_id",
+      ].sort(),
+    );
+    expect(context).not.toHaveProperty("email");
+    expect(context).not.toHaveProperty("name");
+    expect(Object.values(context).join(" ")).not.toContain("parent@example.com");
+    expect(Object.values(context).join(" ")).not.toContain("Parent Name");
+  });
+
+  it("returns 200 and alerts with only ids when refund customer/payment_intent are expanded objects", async () => {
+    const charge = makeCharge({
+      id: "ch_refunded_expanded",
+      payment_intent: { id: "pi_refunded_expanded" },
+      customer: { id: "cus_refunded_expanded" },
+      amount: 5000,
+      currency: "usd",
+      billing_details_email: "parent@example.com",
+      billing_details_name: "Parent Name",
+    });
+    const event = makeEvent("charge.refunded", charge, 2000, "evt_refund_expanded");
+    constructEventMock.mockReturnValueOnce(event);
+
+    const res = await POST(
+      makeRequest("raw_body", { "stripe-signature": "sig_valid" }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(upsertCalls).toHaveLength(0);
+    expect(notifyErrorMock).toHaveBeenCalledTimes(1);
+    const [, , context] = notifyErrorMock.mock.calls[0]! as unknown as [
+      string,
+      string,
+      Record<string, string>,
+    ];
+    expect(context).toMatchObject({
+      event_id: "evt_refund_expanded",
+      charge_id: "ch_refunded_expanded",
+      payment_intent_id: "pi_refunded_expanded",
+      customer_id: "cus_refunded_expanded",
+      amount: "5000",
+      currency: "usd",
+    });
+    expect(Object.keys(context).sort()).toEqual(
+      [
+        "amount",
+        "charge_id",
+        "currency",
+        "customer_id",
+        "event_id",
+        "payment_intent_id",
+      ].sort(),
+    );
+    expect(context).not.toHaveProperty("email");
+    expect(context).not.toHaveProperty("name");
+  });
+
+  // -------------------------------------------------------------------------
+  // 19. Dispatch coverage — charge.dispute.created alerts ops and does not write subscriptions
+  // -------------------------------------------------------------------------
+  it("returns 200 and alerts with ids only for charge.dispute.created without subscription writes", async () => {
+    const dispute = makeDispute({
+      id: "dp_created",
+      charge: "ch_disputed",
+      payment_intent: "pi_disputed",
+      amount: 899,
+      currency: "usd",
+      reason: "fraudulent",
+      due_by: 1763000000,
+    });
+    const event = makeEvent(
+      "charge.dispute.created",
+      dispute,
+      2000,
+      "evt_dispute",
+    );
+    constructEventMock.mockReturnValueOnce(event);
+
+    const res = await POST(
+      makeRequest("raw_body", { "stripe-signature": "sig_valid" }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(upsertCalls).toHaveLength(0);
+    expect(notifyErrorMock).toHaveBeenCalledTimes(1);
+
+    const [label, message, context] = notifyErrorMock.mock.calls[0]! as unknown as [
+      string,
+      string,
+      Record<string, string>,
+    ];
+    expect(label).toBe("[stripe/webhook] charge.dispute.created");
+    expect(message).toContain("dispute");
+    expect(context).toMatchObject({
+      event_id: "evt_dispute",
+      dispute_id: "dp_created",
+      charge_id: "ch_disputed",
+      payment_intent_id: "pi_disputed",
+      customer_id: "null",
+      amount: "899",
+      currency: "usd",
+      reason: "fraudulent",
+      evidence_due_by: new Date(1763000000 * 1000).toISOString(),
+    });
+    expect(Object.keys(context).sort()).toEqual(
+      [
+        "amount",
+        "charge_id",
+        "currency",
+        "customer_id",
+        "dispute_id",
+        "event_id",
+        "evidence_due_by",
+        "payment_intent_id",
+        "reason",
+      ].sort(),
+    );
+    expect(context).not.toHaveProperty("email");
+    expect(context).not.toHaveProperty("name");
+    expect(Object.values(context).join(" ")).not.toContain("parent@example.com");
+    expect(Object.values(context).join(" ")).not.toContain("Parent Name");
+  });
+
+  it("returns 200 and includes customer_id when charge.dispute.created has expanded charge object", async () => {
+    const dispute = makeDispute({
+      id: "dp_created_expanded",
+      charge: {
+        id: "ch_disputed_expanded",
+        object: "charge",
+        customer: "cus_disputed_expanded",
+        payment_intent: "pi_disputed_expanded",
+        billing_details: {
+          email: "parent@example.com",
+          name: "Parent Name",
+        },
+      },
+      payment_intent: "pi_disputed_expanded",
+      amount: 999,
+      currency: "usd",
+      reason: "fraudulent",
+      due_by: 1763000001,
+    });
+    const event = makeEvent(
+      "charge.dispute.created",
+      dispute,
+      2000,
+      "evt_dispute_expanded",
+    );
+    constructEventMock.mockReturnValueOnce(event);
+
+    const res = await POST(
+      makeRequest("raw_body", { "stripe-signature": "sig_valid" }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(upsertCalls).toHaveLength(0);
+    expect(notifyErrorMock).toHaveBeenCalledTimes(1);
+
+    const [, , context] = notifyErrorMock.mock.calls[0]! as unknown as [
+      string,
+      string,
+      Record<string, string>,
+    ];
+    expect(context).toMatchObject({
+      event_id: "evt_dispute_expanded",
+      dispute_id: "dp_created_expanded",
+      charge_id: "ch_disputed_expanded",
+      payment_intent_id: "pi_disputed_expanded",
+      customer_id: "cus_disputed_expanded",
+      amount: "999",
+      currency: "usd",
+      reason: "fraudulent",
+      evidence_due_by: new Date(1763000001 * 1000).toISOString(),
+    });
+    expect(Object.keys(context).sort()).toEqual(
+      [
+        "amount",
+        "charge_id",
+        "currency",
+        "customer_id",
+        "dispute_id",
+        "event_id",
+        "evidence_due_by",
+        "payment_intent_id",
+        "reason",
+      ].sort(),
+    );
+    expect(context).not.toHaveProperty("email");
+    expect(context).not.toHaveProperty("name");
   });
 });
