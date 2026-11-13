@@ -16,8 +16,14 @@ vi.mock("@/lib/subscriptions/apple-server", async () => {
   );
   return {
     ...actual,
-    verifyAndDecodeNotification: (...args: unknown[]) => verifyAndDecodeNotificationMock(...args),
-    describeVerificationFailure: (...args: unknown[]) => describeVerificationFailureMock(...args),
+    verifyAndDecodeNotification: (
+      ...args: Parameters<typeof actual.verifyAndDecodeNotification>
+    ): ReturnType<typeof actual.verifyAndDecodeNotification> =>
+      verifyAndDecodeNotificationMock(...args),
+    describeVerificationFailure: (
+      ...args: Parameters<typeof actual.describeVerificationFailure>
+    ): ReturnType<typeof actual.describeVerificationFailure> =>
+      describeVerificationFailureMock(...args),
   };
 });
 
@@ -35,9 +41,18 @@ import { createServiceClient } from "@/lib/supabase/service";
 import type { Database } from "@/lib/supabase/types";
 import type { DecodedNotification, DecodedRenewalInfo, DecodedTransactionInfo } from "@/lib/subscriptions/apple-server";
 
-const hasDbEnv = Boolean(
-  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY,
-);
+const hasLocalSupabaseUrl = (() => {
+  const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!rawUrl) return false;
+  try {
+    const parsed = new URL(rawUrl);
+    return parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+})();
+
+const hasDbEnv = Boolean(hasLocalSupabaseUrl && process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 const describeDb = hasDbEnv ? describe : describe.skip;
 
@@ -221,8 +236,8 @@ describeDb("POST /api/webhooks/apple (DB-backed)", () => {
     const row = await readAppleRow();
     expect(row.status).toBe("in_grace_period");
     expect(row.product_id).toBe(PRODUCT_ID);
-    expect(row.expires_at).toBe(EXPIRES_AT_ISO);
-    expect(row.grace_period_expires_at).toBe(GRACE_EXPIRES_AT_ISO);
+    expect(Date.parse(row.expires_at)).toBe(Date.parse(EXPIRES_AT_ISO));
+    expect(Date.parse(row.grace_period_expires_at ?? "")).toBe(Date.parse(GRACE_EXPIRES_AT_ISO));
     expect(row.auto_renew_status).toBe(false);
     expect(Date.parse(row.last_signed_date)).toBe(1_800_000_000_000);
     expect(Date.parse(row.last_signed_date)).toBeGreaterThan(Date.parse(oldSignedIso));
@@ -259,7 +274,7 @@ describeDb("POST /api/webhooks/apple (DB-backed)", () => {
     const row = await readAppleRow();
     expect(row.status).toBe("in_grace_period");
     expect(row.auto_renew_status).toBe(true);
-    expect(row.last_signed_date).toBe(storedSignedIso);
-    expect(row.grace_period_expires_at).toBe(GRACE_EXPIRES_AT_ISO);
+    expect(Date.parse(row.last_signed_date)).toBe(Date.parse(storedSignedIso));
+    expect(Date.parse(row.grace_period_expires_at ?? "")).toBe(Date.parse(GRACE_EXPIRES_AT_ISO));
   });
 });
