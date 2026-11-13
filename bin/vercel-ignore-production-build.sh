@@ -5,6 +5,10 @@
 # Exit 1 (or any non-zero) = build.
 # Vercel treats 0 as "Ignored" and anything else as "proceed". Do not invert these.
 #
+# vercel.json runs this from the project root. That root is apps/web, so the
+# command tries bin/ (repo root) and ../../bin/ (apps/web). A missing file is
+# exit 127, which Vercel records as a failed deployment, not as "build".
+#
 # Production builds are skipped only when ALL of these are true:
 #   1. VERCEL_ENV=production
 #   2. This is not the post-migration deploy (FV_DEPLOY_AFTER_MIGRATE!=1)

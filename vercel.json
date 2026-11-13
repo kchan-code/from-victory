@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "ignoreCommand": "bash bin/vercel-ignore-production-build.sh",
+  "ignoreCommand": "bash -c 'if [ -f bin/vercel-ignore-production-build.sh ]; then exec bash bin/vercel-ignore-production-build.sh; elif [ -f ../../bin/vercel-ignore-production-build.sh ]; then exec bash ../../bin/vercel-ignore-production-build.sh; else exit 1; fi'",
   "installCommand": "npm ci",
   "crons": [
     {

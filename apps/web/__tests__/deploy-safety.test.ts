@@ -103,6 +103,25 @@ describe("migrate-before-deploy gate (FV-731)", () => {
     expect(forced.stdout).toContain("post-migration");
   });
 
+  it("finds the script when Vercel runs the command from apps/web", () => {
+    const { dir } = tempRepo();
+    mkdirSync(path.join(dir, "apps/web"), { recursive: true });
+    const command = JSON.parse(
+      readFileSync(path.join(REPO_ROOT, "vercel.json"), "utf8"),
+    ).ignoreCommand as string;
+    const result = spawnSync("bash", ["-lc", command], {
+      cwd: path.join(dir, "apps/web"),
+      env: {
+        PATH: process.env.PATH ?? "",
+        HOME: process.env.HOME ?? "",
+        VERCEL_ENV: "preview",
+      } as unknown as NodeJS.ProcessEnv,
+      encoding: "utf8",
+    });
+    // Preview exits 1, which means "build". Exit 127 would be "script missing".
+    expect(result.status).toBe(1);
+  });
+
   it("fails open when the SHAs are missing", () => {
     const { dir } = tempRepo();
     expect(
@@ -112,7 +131,13 @@ describe("migrate-before-deploy gate (FV-731)", () => {
 
   it("wires ignoreCommand and deploys only after the migration push", () => {
     const vercel = readFileSync(path.join(REPO_ROOT, "vercel.json"), "utf8");
+    // The Vercel project root is apps/web, so the command must also find the
+    // script two directories up. A missing script is exit 127, which Vercel
+    // treats as a failed deployment rather than "build".
     expect(vercel).toContain("bash bin/vercel-ignore-production-build.sh");
+    expect(vercel).toContain("../../bin/vercel-ignore-production-build.sh");
+    const command = JSON.parse(vercel).ignoreCommand as string;
+    expect(command.length).toBeLessThanOrEqual(256);
 
     const workflow = readFileSync(
       path.join(REPO_ROOT, ".github/workflows/db-migrate.yml"),
