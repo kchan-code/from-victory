@@ -9,7 +9,10 @@ import {
   DELETION_RATE_LIMIT,
   DELETION_WINDOW_MINUTES,
 } from "@/lib/actions/deletion-rate-limit";
-import { isBenignCancelError } from "@/lib/stripe/cancel-errors";
+import {
+  isBenignCancelError,
+  isBenignCustomerDeleteError,
+} from "@/lib/stripe/cancel-errors";
 import { getStripe } from "@/lib/stripe/server";
 import { syncAthleteQuantity } from "@/lib/stripe/sync-athlete-quantity";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
@@ -225,7 +228,7 @@ export async function deleteAccount(
   // ---------------------------------------------------------------------------
   const { data: sub } = await service
     .from("subscriptions")
-    .select("stripe_subscription_id")
+    .select("stripe_subscription_id, stripe_customer_id")
     .eq("parent_id", parentId)
     .maybeSingle();
 
@@ -263,6 +266,65 @@ export async function deleteAccount(
     }
   }
   // No subscription row or no stripe_subscription_id — nothing to cancel.
+
+  // ---------------------------------------------------------------------------
+  // Step 1b (FV-726): delete the Stripe CUSTOMER so the payer's email and name
+  // do not outlive the account. Stripe keeps the invoices/payment records it
+  // must retain. Runs after the cancel and BEFORE any database delete, with the
+  // same abort-on-unexpected-error rule: a non-benign failure leaves our data
+  // fully intact so the user can retry.
+  //
+  // Only a customer id we hold (subscriptions.stripe_customer_id) is deleted —
+  // comp grants / App Store / Play payers have none and skip this step.
+  // Logs carry ids only, never the customer's email or name.
+  // ---------------------------------------------------------------------------
+  if (sub?.stripe_customer_id) {
+    try {
+      await getStripe().customers.del(sub.stripe_customer_id);
+      console.log(
+        `[account.deleteAccount] deleted Stripe customer=${sub.stripe_customer_id} for parent=${parentId}`,
+      );
+    } catch (err) {
+      if (isBenignCustomerDeleteError(err)) {
+        console.warn(
+          `[account.deleteAccount] Stripe customer delete returned resource_missing for customer=${sub.stripe_customer_id} parent=${parentId} — already absent, proceeding with deletion`,
+        );
+      } else {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(
+          `[account.deleteAccount] Stripe customer delete failed for customer=${sub.stripe_customer_id} parent=${parentId}: ${message}`,
+        );
+        return {
+          ok: false,
+          error:
+            "Could not remove your billing profile before deleting your account. Please try again or contact support.",
+        };
+      }
+    }
+
+    // Clear the now-dead reference. subscriptions.stripe_customer_id is
+    // NOT NULL + unique, so the only no-migration way to drop it is to delete
+    // the row. If a LATER step aborts (e.g. a sole-managed athlete fails to
+    // delete) the account survives; leaving the row would make a later
+    // checkout / billing-portal call / reconcile pass use a deleted customer.
+    // With no row, every consumer treats the payer as "no subscription" and
+    // checkout creates a fresh customer. On success the row would be
+    // cascade-deleted anyway. A failure here aborts (retry is safe: cancel and
+    // customer delete are both benign the second time).
+    const { error: clearError } = await service
+      .from("subscriptions")
+      .delete()
+      .eq("parent_id", parentId);
+    if (clearError) {
+      console.error(
+        `[account.deleteAccount] could not clear subscription row after customer delete (parent=${parentId}): ${clearError.message}`,
+      );
+      return {
+        ok: false,
+        error: "Could not delete your account. Please try again.",
+      };
+    }
+  }
 
   // ---------------------------------------------------------------------------
   // Step 2: Delete sole-managed athletes.

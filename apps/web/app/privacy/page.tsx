@@ -527,6 +527,12 @@ export default function PrivacyPage() {
           record does not contain names, email addresses, birthdates, or any session content.
         </p>
         <p className="mt-3">
+          If you subscribed on our website, deleting your account also cancels that
+          subscription and deletes the customer record our payment processor holds for it,
+          which includes your email address. Our payment processor keeps the invoices and
+          payment records it is required to keep by law, under its own policies.
+        </p>
+        <p className="mt-3">
           Deleting a From Victory account does <strong>not</strong> cancel a subscription
           bought through the Apple App Store, because only you can cancel it with Apple. If you
           subscribed in our iOS app, cancel the subscription in your Apple Account settings

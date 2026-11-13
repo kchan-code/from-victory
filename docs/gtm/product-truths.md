@@ -10,6 +10,18 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-13: Deleting an account also deletes the Stripe customer record (FV-726; effective when the PR deploys)
+
+- When a parent or adult athlete deletes their account, a subscription bought on the
+  website is canceled and the customer record our payment processor holds for it (which
+  includes their email) is deleted. The payment processor keeps the invoices and payment
+  records it must keep by law.
+- This does not apply to App Store subscriptions: deleting the account does not cancel
+  those, and the subscriber must cancel with Apple.
+- A checkout that was started on the website but never completed can leave a record with
+  the payment processor that is removed on request (FV-751 tracks removing it
+  automatically).
+
 ## 2026-11-13: Privacy Policy and Terms updated for App Store billing and usage data (FV-723, FV-724; effective when the PR deploys)
 
 - The Privacy Policy now says: subscriptions bought in the iOS app are sold and billed by

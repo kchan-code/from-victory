@@ -214,9 +214,11 @@ export default function DeleteAccountPage() {
           <li>Push-notification subscription details, if reminders were turned on</li>
           <li>Any journal data associated with the account</li>
           <li>
-            The billing link with our payment processor (subscription and
-            customer identifiers) &mdash; the subscription itself is canceled
-            first, then the link is deleted
+            Your billing profile for a subscription bought on our website: the
+            subscription is canceled first, then we delete the customer record
+            our payment processor holds for it (which includes your email
+            address), along with the subscription and customer identifiers in
+            our own systems
           </li>
         </ul>
 
@@ -227,6 +229,14 @@ export default function DeleteAccountPage() {
           date. This record does not contain names, email addresses,
           birthdates, or any session content. We keep it for security and
           recordkeeping purposes.
+        </p>
+        <p className="mb-3">
+          Our payment processor keeps the invoices and payment records it is
+          required to keep by law, under its own policies. If you began a
+          checkout on our website but never completed it, our payment
+          processor may hold a record of that attempt that is not tied to a
+          subscription; contact us at <PrivacyEmailLink /> and we will have it
+          removed.
         </p>
         <p>
           Deletion completes immediately when you finish the steps above
