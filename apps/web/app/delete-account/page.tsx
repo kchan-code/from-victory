@@ -232,7 +232,11 @@ export default function DeleteAccountPage() {
         </p>
         <p className="mb-3">
           Our payment processor keeps the invoices and payment records it is
-          required to keep by law, under its own policies. If you began a
+          required to keep by law, under its own policies. Those records can
+          still show the name and email address used for the purchase, and
+          may carry the marketing-channel label described in Section 7 of our
+          Privacy Policy and an internal account identifier that no longer
+          points to any account. If you began a
           checkout on our website but never completed it, our payment
           processor may hold a record of that attempt that is not tied to a
           subscription; contact us at <PrivacyEmailLink /> and we will have it
