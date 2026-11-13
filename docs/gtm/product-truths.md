@@ -204,6 +204,18 @@ offline under the same rules. Before this change, Pregame did not open for them 
 Why it matters to a buyer: Pregame is part of the subscription, like all training, and
 it stops when the subscription ends.
 
+## 2026-11-09 — Athlete username setup explains unique usernames and suggests alternatives (FV-634; effective when the PR deploys)
+
+During first-time setup from an invite, the athlete is asked to choose a
+unique username: 3 to 20 letters, numbers, or underscores, not
+case-sensitive, with a reminder to use a nickname rather than a full name or
+birthday. If the username is already taken, the athlete sees three suggested
+alternatives built from neutral words and a number (never from their name,
+birthday, team, or sport). Tapping one fills it in; it is not reserved or
+checked in advance, so a suggestion can still be taken by the time it is
+submitted, in which case new suggestions appear. The invite stays usable and
+nothing typed is lost. Sign-in and password reset are unchanged.
+
 ## 2026-11-06 — Athlete invites replace device pairing links; password reset keeps the username (FV-630; effective when the PR deploys, iOS link-opening needs the next iOS build)
 
 A parent invites an athlete from the parent dashboard. The invite is a

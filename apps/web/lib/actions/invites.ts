@@ -205,7 +205,7 @@ export async function checkInvite(
 // ---------------------------------------------------------------------------
 
 export type ClaimInviteState =
-  | { ok: false; error: string; field?: string }
+  | { ok: false; error: string; field?: string; suggestions?: string[] }
   | null;
 
 const ClaimSchema = z
@@ -262,6 +262,8 @@ export async function claimAthleteInvite(
   return completeInviteClaim({
     codeHash,
     username,
+    usernameHadCapitals:
+      typeof rawUsername === "string" && /[A-Z]/.test(rawUsername),
     password: parsed.data.password,
   });
 }
