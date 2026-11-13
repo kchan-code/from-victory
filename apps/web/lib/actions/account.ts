@@ -297,7 +297,7 @@ export async function deleteAccount(
         return {
           ok: false,
           error:
-            "Could not remove your billing profile before deleting your account. Nothing was deleted. Please try again in a few minutes. If it keeps happening, contact us and we will delete the account for you.",
+            "Could not remove your billing profile before deleting your account. None of your account data was deleted, though your subscription may already be canceled. Please try again in a few minutes. If it keeps happening, contact us and we will delete the account for you.",
         };
       }
     }
