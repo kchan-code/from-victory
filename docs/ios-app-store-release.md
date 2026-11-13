@@ -421,32 +421,36 @@ Privacy posture. Plugin allowlist is core / app / splash-screen / status-bar
 only. No Advertising Identifier. `ITSAppUsesNonExemptEncryption` is already
 false.
 
-### Live answers as read on 2026-11-13 (FV-722)
+### Live answers, corrected 2026-11-13 (FV-722)
 
-App Store Connect → App Privacy, "Published 2 months ago", read directly from
-the console:
+App Store Connect → App Privacy, as published on 2026-11-13 after the three
+corrections below. Read back from the console after publishing:
 
-| Data type | Purpose | Linked to identity |
-|---|---|---|
-| Contact Info: Name | App Functionality | Yes |
-| Contact Info: Email Address | App Functionality | Yes |
-| Usage Data: Product Interaction | App Functionality | Yes |
-| Other Data: Other Data Types | App Functionality | Yes |
+| Data type | Purpose | Linked to identity | Tracking |
+|---|---|---|---|
+| Contact Info: Name | App Functionality | Yes | No |
+| Contact Info: Email Address | App Functionality | Yes | No |
+| Identifiers: User ID | App Functionality | Yes | No |
+| Purchases: Purchase History | App Functionality | Yes | No |
+| Usage Data: Product Interaction | App Functionality, Analytics | Yes | No |
+| Other Data: Other Data Types | App Functionality | Yes | No |
 
-Nothing is declared as used for tracking.
+**What was corrected** (KC's instruction; the label had last been published
+about two months earlier, before in-app purchase went live):
 
-**Gaps against what 1.0.1 collects** (to be corrected in the console by KC;
-these edits apply immediately, no new app version needed):
-
-1. **Purchases: Purchase History is not declared.** In-app purchase is live
+1. **Purchase History added.** In-app purchase is live
    (`FVAppleIAPPlugin.swift`); we store Apple transaction identifiers, product,
-   status and dates per account. Add it: App Functionality, linked.
-2. **Identifiers: User ID is not declared.** We store a username and account
-   ids. Add it: App Functionality, linked. (Google Play already declares
-   "User IDs".)
-3. **Product Interaction lists only App Functionality.** The first-party usage
-   events (`activity_events`: app opened, session started or finished) are used
-   to count active and returning athletes. Add the **Analytics** purpose.
+   status and dates per account.
+2. **User ID added.** We store a username and account ids. (Google Play
+   already declared "User IDs".)
+3. **Analytics added as a purpose of Product Interaction.** The first-party
+   usage events (`activity_events`: app opened, session started or finished)
+   are used to count active and returning athletes.
+
+Console quirk to know about: adding a purpose to an existing data type
+published it as BOTH "linked" and "not linked" on the product page preview.
+Re-opening the type, re-selecting "Yes, linked" and publishing again cleared
+the "not linked" entry. Check the preview after any edit.
 
 Not gaps: date of birth is covered by "Other Data"; no location, contacts,
 photos, advertising identifier, or third-party SDK data is collected.
