@@ -124,7 +124,10 @@ export default defineConfig({
     // ------------------------------------------------------------------
     {
       name: "chromium-mobile-noauth",
-      testMatch: /landing-truthfulness\.e2e\.ts$/,
+      testMatch: [
+        /landing-truthfulness\.e2e\.ts$/,
+        /signin-chooser\.e2e\.ts$/,
+      ],
       use: {
         ...devices["iPhone 14"],
         browserName: "chromium",

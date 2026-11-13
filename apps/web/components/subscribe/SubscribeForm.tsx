@@ -239,7 +239,7 @@ export function SubscribeForm({
             data-testid="trial-autocharge-disclosure"
             className="font-body text-cream/50 text-[12px] leading-relaxed mt-1"
           >
-            Card required — it will be charged automatically when the trial
+            Card required. It will be charged automatically when the trial
             ends unless you cancel first.
           </p>
         </div>
@@ -256,7 +256,7 @@ export function SubscribeForm({
           <>One subscription, just for you. Cancel any time.</>
         ) : (
           <>
-            Your first athlete is $5/mo or $49/yr &mdash; each additional
+            Your first athlete is $5/mo or $49/yr. Each additional
             athlete is $3/mo or $29/yr.
           </>
         )}

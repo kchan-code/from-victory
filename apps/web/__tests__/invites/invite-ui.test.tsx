@@ -30,6 +30,12 @@ vi.mock("@/lib/actions/invites", () => ({
   claimAthleteInvite: vi.fn(),
 }));
 vi.mock("@/lib/actions/auth", () => ({ signIn: vi.fn() }));
+vi.mock("@/lib/actions/email-signup", () => ({
+  startEmailSignup: vi.fn(),
+  completeEmailSignup: vi.fn(),
+  verifyEmailOnly: vi.fn(),
+  resendSignupCode: vi.fn(),
+}));
 vi.mock("@/lib/actions/pairings", () => ({ athleteUsernameSignIn: vi.fn() }));
 vi.mock("@/lib/pregame/session-cache", () => ({ clearPregameSession: vi.fn() }));
 vi.mock("next/image", () => ({
@@ -430,8 +436,13 @@ describe("InviteSetupForm", () => {
 
 // ===========================================================================
 describe("SignInChooser", () => {
-  it("offers 'I have an invite' on both tabs", () => {
+  it("offers invite on the welcome doors, and still on both sign-in tabs", () => {
     render(<SignInChooser />);
+    const door = screen.getByTestId("signin-have-invite");
+    expect(door).toHaveAttribute("href", "/invite");
+    expect(door).toHaveTextContent("For athletes under 18.");
+
+    fireEvent.click(screen.getByTestId("signin-show-form"));
     const link = screen.getByTestId("signin-have-invite");
     expect(link).toHaveAttribute("href", "/invite");
     fireEvent.click(screen.getByTestId("signin-tab-athlete"));

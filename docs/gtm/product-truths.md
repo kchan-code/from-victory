@@ -10,6 +10,18 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-13: Signed-out screen says Welcome, then parent, 18+, or invite (FV-707, FV-708; effective when the PR deploys)
+
+The signed-out screen on the website, in the iPhone app, and in the Android app says "Welcome" and asks how the person will use From Victory. The choices are "I'm a parent" (parent account), "I'm 18+ and training myself" (own account, only when adult signup is enabled), and "I have an invite" (athletes under 18). "Sign in" opens the existing parent email form and the athlete username form. A device that already belongs to an athlete still says "Welcome back" plus that athlete's first name.
+
+The parent dashboard says "Welcome" plus the parent's first name until at least one athlete is linked, then "Welcome back" plus the first name.
+
+Adult signup still requires age 18 or older, an 18+ confirmation, and agreement to the Terms of Use and Privacy Policy. Athletes under 18 are not offered a way to create their own account. In the iPhone app and the Android app, the signup screens do not show a web price or a trial length. The iPhone purchase screen still shows the App Store price. An adult who creates an account inside the Android app still lands in training rather than checkout. The Android sign-in form still tells a new customer to subscribe on the website.
+
+The parent signup page and the adult signup page, on the website, say 7 days free, then $5/mo or $49/yr, for a first-time subscriber. The adult page no longer says 14 days.
+
+Why it matters to a buyer: a first visit is not greeted as a return, and an athlete 18 or older can see how to create their own account from the first screen.
+
 ## 2026-11-13 — The invite link page matches the phone the athlete is using (FV-687)
 
 An athlete who opens an invite link in a phone browser sees a short setup path.

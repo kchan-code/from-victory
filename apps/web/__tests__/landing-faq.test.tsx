@@ -250,7 +250,12 @@ describe("Faq — subscriber sign-in and recovery entries (FV-681)", () => {
   it("sign-in answer covers parent, 18+ self-payer and athlete on a parent's subscription", () => {
     const a = find("How do we sign in to the app?");
     for (const label of [
+      "“Welcome”",
       "“Welcome back”",
+      "“I’m a parent”",
+      "“I’m 18+ and training myself”",
+      "“I have an invite”",
+      "“Sign in”",
       "“Parent”",
       "“Athlete”",
       "“Not [name]? Sign in as someone else”",

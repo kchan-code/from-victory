@@ -611,14 +611,14 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
   });
 
   describe("status: entitled — web (no native shell)", () => {
-    it("provider apple → 'manage it on your iPhone' status copy, no Stripe checkout", async () => {
+    it("provider apple → 'Manage it on your iPhone' status copy, no Stripe checkout", async () => {
       asParent();
       entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "apple" });
 
       const { getByTestId, queryByTestId, text } = await renderPage();
 
       expect(getByTestId("subscribe-status-entitled").textContent).toContain(
-        "manage it on your iPhone",
+        "Manage it on your iPhone",
       );
       expect(text).not.toMatch(/stripe/i);
       expect(queryByTestId("apple-subscribe-section-stub")).toBeNull();
