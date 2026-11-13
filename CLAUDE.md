@@ -398,8 +398,14 @@ self-onboard/self-pay fork (post-MVP).
   with attorney before relying on it.
 - Minors 13-17 still carry protections: state age-appropriate design codes
   (CA, FL, TX, others), GDPR-K (under-16 in parts of the EU), platform
-  policies. No behavioral analytics, no third-party tracking, no ads on
-  any 13-17 account.
+  policies. No third-party analytics or tracking, no ads, and no behavioral
+  profiling on any 13-17 account. A first-party, event-only activity record
+  (`activity_events`: app opened, daily or pregame session started or
+  finished; no content, no selections; raw rows pruned at 90 days) IS kept
+  for every athlete account and is disclosed in Privacy Policy section 1i
+  (KC decision 2026-11-13, FV-724). Do not add a selection, preference, or
+  free text to it, or start recording a new event, without changing the
+  policy first.
 - Athletes 18+ are legal adults. A future fork treats 18+ differently
   (self-onboard, self-pay). For MVP, the parent is the buyer across the
   whole band.

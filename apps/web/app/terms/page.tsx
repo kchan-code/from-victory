@@ -32,7 +32,9 @@ export const metadata: Metadata = {
   },
 };
 
-const EFFECTIVE_DATE = "May 22, 2026";
+// Effective date: the day KC approved the FV-723 wording (2026-11-13).
+// Previous: May 22, 2026.
+const EFFECTIVE_DATE = "November 13, 2026";
 const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
 export default function TermsPage() {
@@ -376,17 +378,48 @@ export default function TermsPage() {
       </Section>
 
       <Section title="15. Paid Features, Subscriptions, and Purchases">
+        {/* FV-723: approved by KC on 2026-11-13. Replaces the "may in the future
+            offer paid features" text, which predated live subscriptions and
+            in-app purchase. Google Play Billing is not described because it is
+            not live; add it here before Play purchases are turned on. */}
         <p>
-          From Victory may in the future offer paid features, subscriptions, premium content,
-          in-app purchases, or other paid services.
+          Access to From Victory training requires a paid subscription, bought by the account
+          holder (a parent or guardian, or an adult athlete). An athlete under 18 cannot buy a
+          subscription. The price, billing period, and any free trial are shown before you
+          confirm a purchase.
         </p>
         <p className="mt-3">
-          If paid features are offered, additional payment terms may apply and will be provided at
-          or before the time of purchase. Those terms may include pricing, billing frequency,
-          renewal, cancellation, refund, and app store payment rules.
+          <strong>Automatic renewal.</strong> A subscription renews automatically at the end of
+          each billing period, at the price shown when you subscribed (or a new price we have
+          told you about in advance), until it is cancelled. If you start with a free trial,
+          the paid subscription begins when the trial ends unless you cancel before then.
         </p>
         <p className="mt-3">
-          Unless otherwise stated at the time of purchase or required by law, fees may be
+          <strong>Subscriptions bought on our website</strong> are billed by us through our
+          payment processor. You can cancel at any time from your account settings. Cancelling
+          stops future renewals; access continues until the end of the period you have paid
+          for.
+        </p>
+        <p className="mt-3">
+          <strong>Subscriptions bought in our iOS app</strong> are sold and billed by Apple
+          through your Apple Account, and Apple&rsquo;s terms apply to the purchase. We cannot
+          cancel, change, or refund an Apple subscription for you. To cancel, use the
+          Subscriptions section of your Apple Account settings at least 24 hours before the
+          end of the current period. Refund requests for App Store purchases are handled by
+          Apple under its own policies.
+        </p>
+        <p className="mt-3">
+          <strong>Deleting your account does not cancel an App Store subscription.</strong> If
+          you subscribed in our iOS app and delete your From Victory account, you must also
+          cancel the subscription with Apple, or Apple will continue to bill you.
+        </p>
+        <p className="mt-3">
+          <strong>Failed payments.</strong> If a renewal payment fails, we or the app store may
+          retry it. Training access may be paused until payment is collected, and returns when
+          it is.
+        </p>
+        <p className="mt-3">
+          Unless otherwise stated at the time of purchase or required by law, fees are
           non-refundable.
         </p>
         <p className="mt-3">
