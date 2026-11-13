@@ -9,6 +9,17 @@ import Link from "next/link";
 // self-managed accounts (own email + password, self-pay, no parent link).
 // Adult self-serve is built but gated behind ENABLE_ADULT_SIGNUP — coordinate
 // publication with the flag flip and attorney sign-off (FV-329).
+// FV-723 / FV-724 (2026-11-13) — PROPOSED WORDING, NOT YET APPROVED. Adds the
+// App Store purchase path (1e, 7, 8), discloses first-party usage activity
+// (new 1i, 3, 6), and corrects statements the shipped app contradicts
+// ("no behavioral ... analytics" for 13-17 accounts, and the matching line
+// in section 6). The push sentence in 1f ("We do not track whether
+// notifications are opened or clicked") is left as is: a `push_click` event
+// exists in the vocabulary but nothing records it today. If that changes, 1f
+// and 1i must change first. Section 1i is accurate only once the companion
+// change that stops storing pregame selections with usage events has merged. For KC + attorney review:
+// do not publish until approved, then set EFFECTIVE_DATE to the publication
+// date. Google Play Billing is NOT described because it is not live.
 // Every factual claim here is grounded in the verified data inventory
 // (schema + code). Launch notes:
 //   1. EFFECTIVE_DATE below is set to June 24, 2026 (KC, 2026-06-25); the
@@ -199,12 +210,33 @@ export default function PrivacyPage() {
 
         <SubHeading>e. Payment information</SubHeading>
         <p>
-          Subscriptions are processed by Stripe, our payment processor. Stripe collects and
-          stores your payment details (such as card information) directly; we do{" "}
-          <strong>not</strong> receive or store your full card number. In our own systems we
-          store only the information needed to manage your subscription, such as a Stripe
-          customer and subscription identifier, your plan, your subscription status, and the
-          current billing-period end date.
+          How a subscription is paid for depends on where you subscribe.
+        </p>
+        <p className="mt-3">
+          <strong>On our website.</strong> Subscriptions bought on our website are processed
+          by Stripe, our payment processor. Stripe collects and stores your payment details
+          (such as card information) directly; we do <strong>not</strong> receive or store
+          your full card number. In our own systems we store only the information needed to
+          manage your subscription, such as a Stripe customer and subscription identifier,
+          your plan, your subscription status, and the current billing-period end date.
+        </p>
+        <p className="mt-3">
+          <strong>In the iPhone and iPad app.</strong> Subscriptions bought in our iOS app are
+          sold and billed by Apple through your Apple Account, as an in-app purchase. Apple
+          does <strong>not</strong> share your payment card details with us. From Apple we
+          receive, and store, only what is needed to recognize and manage the subscription: an
+          Apple transaction identifier for the subscription, which plan was purchased, the
+          subscription status, its renewal or expiration date (and the end of any billing
+          grace period), and whether automatic renewal is on. We also store an identifier we
+          generate ourselves to connect the purchase to your From Victory account. Apple
+          sends us notices when a subscription renews, is cancelled, expires, or is refunded,
+          so that access in the app stays accurate. Apple&apos;s handling of your purchase and
+          payment information is governed by Apple&apos;s own privacy policy.
+        </p>
+        <p className="mt-3">
+          A subscription is always bought by the account holder (a parent or guardian, or an
+          adult athlete). An athlete under 18 cannot make a purchase, and no purchase
+          information is collected from a minor.
         </p>
 
         <SubHeading>f. Push notifications (only if enabled)</SubHeading>
@@ -233,6 +265,34 @@ export default function PrivacyPage() {
           through our email provider; we do not store contact submissions in a separate
           database. Please do not include sensitive personal, medical, or financial
           information in your message.
+        </p>
+
+        <SubHeading>i. App usage activity</SubHeading>
+        <p>
+          So that we can tell whether the app is being used and is working, we keep a simple
+          record of a small set of actions an athlete takes in the app: opening the app, and
+          starting or finishing a daily session or a pregame session. Each record contains
+          the action, when it happened, the part of the app it happened in, the athlete&apos;s
+          sport, and limited technical details (for example, whether the device was online
+          and whether the audio played through). A record is connected to the athlete&apos;s
+          account. It does not contain what the athlete selected or was shown inside a
+          session.
+        </p>
+        <p className="mt-3">
+          We collect this ourselves, in our own database. We do not use a third-party
+          analytics or advertising service for it, we do not share it with anyone for their
+          own use, and we do not use it to advertise to anyone or to build a profile of an
+          athlete. It is used to count how many athletes are active and returning and to find
+          problems. A parent cannot see these records; the parent dashboard shows only the
+          participation rhythm described in &ldquo;The athlete&apos;s private space&rdquo;
+          below.
+        </p>
+        <p className="mt-3">
+          Individual usage records are deleted after about 90 days. Before they are deleted
+          they are added to running totals (for example, the number of athletes active in a
+          week) that contain no account identifiers and cannot be traced back to an athlete.
+          This applies to every athlete account, including accounts for athletes ages 13 to
+          17.
         </p>
       </Section>
 
@@ -288,7 +348,15 @@ export default function PrivacyPage() {
         </p>
         <ul className="mt-2 mb-3 pl-5 list-disc">
           <li>No advertising</li>
-          <li>No behavioral or advertising analytics</li>
+          <li>
+            No advertising analytics and no behavioral profiling: we do not track a minor
+            across apps or websites, and we do not build a profile of a minor&apos;s behavior
+          </li>
+          <li>
+            No third-party analytics: the only usage information we keep about a minor is the
+            limited, first-party activity record described in &ldquo;App usage activity&rdquo;
+            above
+          </li>
           <li>No third-party tracking</li>
           <li>No sale of personal information</li>
         </ul>
@@ -361,9 +429,10 @@ export default function PrivacyPage() {
           your information using safeguards appropriate to the type of information involved.
         </p>
         <p className="mt-3">
-          We do not use advertising or behavioral-analytics tracking technologies in the app,
-          and we do not embed third-party advertising or tracking SDKs on any signed-in
-          surface. On our public marketing pages only (for example, the home page and pricing
+          We do not use advertising technologies or third-party analytics services in the
+          app, and we do not embed third-party advertising or tracking SDKs on any signed-in
+          surface. The only usage information recorded in the app is the first-party activity
+          record described in &ldquo;App usage activity&rdquo; above. On our public marketing pages only (for example, the home page and pricing
           page), we use a cookieless, privacy-focused web-analytics service provided by our
           web-hosting provider to count anonymous, aggregate page visits. It sets no cookies,
           collects no names or other identifiers, does not follow visitors across other
@@ -379,7 +448,11 @@ export default function PrivacyPage() {
         </p>
         <ul className="mt-2 mb-3 pl-5 list-disc">
           <li>A cloud database, authentication, and storage provider</li>
-          <li>A payment processor (for subscriptions and billing)</li>
+          <li>A payment processor (for subscriptions and billing bought on our website)</li>
+          <li>
+            Apple, if you subscribe in our iOS app: Apple processes the purchase and tells us
+            the status of the subscription, and we confirm the subscription with Apple
+          </li>
           <li>A web-hosting and serverless-infrastructure provider</li>
           <li>An email delivery provider</li>
           <li>
@@ -419,6 +492,13 @@ export default function PrivacyPage() {
           within 30 days of the request. We keep a minimal, content-free record of deletion
           (for example, that a deletion occurred and when) for security and recordkeeping; this
           record does not contain names, email addresses, birthdates, or any session content.
+        </p>
+        <p className="mt-3">
+          Deleting a From Victory account does <strong>not</strong> cancel a subscription
+          bought through the Apple App Store, because only you can cancel it with Apple. If you
+          subscribed in our iOS app, cancel the subscription in your Apple Account settings
+          before or after deleting your account, or Apple will continue to bill you. Apple
+          keeps its own records of your purchases under its own policies.
         </p>
         <p className="mt-3">
           For step-by-step deletion instructions — including the path for a minor athlete — see
