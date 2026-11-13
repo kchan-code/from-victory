@@ -29,7 +29,16 @@ const {
   activeAppleProductIdMock,
   capacityForAppleProductMock,
   getConfiguredAppleProductsMock,
+  billingIssueMock,
 } = vi.hoisted(() => ({
+  // FV-710: payer-facing failed-payment read. Default null = no notice, so
+  // every pre-existing test sees the page it always did.
+  billingIssueMock: vi.fn(
+    async (): Promise<null | {
+      provider: "apple" | "stripe";
+      stage: "grace" | "lapsed";
+    }> => null,
+  ),
   requireSubscriberMock: vi.fn(),
   maybeSingleMock: vi.fn(),
   // FV-574: the page's parent_athlete_links count read (banner trial gate).
@@ -60,6 +69,7 @@ const {
     async (): Promise<{
       status: "entitled" | "not_entitled" | "unknown";
       provider: "apple" | "stripe" | "comp" | null;
+      accessPaused?: true;
     }> => ({ status: "not_entitled", provider: null }),
   ),
   // FV-586 (KC decision D3): defaults preserve "no upgrade available" for
@@ -79,6 +89,9 @@ vi.mock("@/lib/auth/guards", () => ({
 // FV-581 duplicate-billing guard — mocked wholesale (its real implementation
 // hits the service-role Supabase client) so this file stays scoped to the
 // page's own branching logic on the returned status/provider.
+vi.mock("@/lib/subscriptions/billing-issue", () => ({
+  getPayerBillingIssue: billingIssueMock,
+}));
 vi.mock("@/lib/subscriptions/subscribe-guard", () => ({
   getSubscribeEntitlementState: entitlementStateMock,
 }));
@@ -214,6 +227,7 @@ afterEach(() => {
   activeAppleProductIdMock.mockResolvedValue(null);
   capacityForAppleProductMock.mockReturnValue(null);
   getConfiguredAppleProductsMock.mockReturnValue([]);
+  billingIssueMock.mockResolvedValue(null);
 });
 
 describe("SubscribePage — price paragraph (parent vs adult)", () => {
@@ -306,6 +320,20 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
     maybeSingleMock.mockResolvedValue({ data: null, error: null });
     enforcementEnabledMock.mockReturnValue(true);
     accessLevelMock.mockResolvedValue("blocked");
+    const { queryByTestId } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
+    expect(queryByTestId("clear-offline-pregame")).not.toBeNull();
+  });
+
+  it("FV-710: a blocked payer whose App Store payment is failing past grace also revokes it", async () => {
+    asParent();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    enforcementEnabledMock.mockReturnValue(true);
+    accessLevelMock.mockResolvedValue("blocked");
+    entitlementStateMock.mockResolvedValue({
+      status: "entitled",
+      provider: "apple",
+      accessPaused: true,
+    });
     const { queryByTestId } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
     expect(queryByTestId("clear-offline-pregame")).not.toBeNull();
   });
@@ -663,8 +691,8 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
     });
   });
 
-  // FV-584 (KC decision D1): a DEGRADED payer (e.g. past_due Stripe, or an
-  // Apple row in in_billing_retry) now resolves to `status: "entitled"` too
+  // FV-584 (KC decision D1): a DEGRADED payer (e.g. past_due Stripe; an
+  // Apple row in in_billing_retry was degraded until FV-710 blocked it) resolves to `status: "entitled"` too
   // — this page only ever branches on status/provider, never on the
   // underlying full-vs-degraded level (that fold lives in
   // subscribe-guard.ts, see subscribe-guard.test.ts), so a degraded payer
@@ -682,7 +710,7 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
       expectNoBuyAffordances(queryByTestId, text);
     });
 
-    it("provider apple (degraded, e.g. in_billing_retry) → AppleSubscribeSection in manage mode, no Subscribe button", async () => {
+    it("provider apple (degraded) → AppleSubscribeSection in manage mode, no Subscribe button", async () => {
       asParent();
       shellCapabilityMock.mockReturnValue("ios-iap");
       entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "apple" });
@@ -1027,5 +1055,81 @@ describe("SubscribePage — android-play renders exactly like legacy-native (FV-
     entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "apple" });
     await htmlFor("android-play");
     expect(activeAppleProductIdMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("SubscribePage — failed-payment notice (FV-710)", () => {
+  async function renderAs(role: "parent" | "adult_athlete") {
+    requireSubscriberMock.mockResolvedValue({
+      userId: "payer-1",
+      profile: { id: "payer-1", role, first_name: "Kim" },
+    });
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    const jsx = await SubscribePage({ searchParams: Promise.resolve({}) });
+    return render(jsx);
+  }
+
+  it("shows no notice when there is no billing issue", async () => {
+    const { queryByTestId } = await renderAs("parent");
+    expect(queryByTestId("subscribe-payment-issue")).toBeNull();
+  });
+
+  it("shows the lapsed Apple notice (text-only fix, no link) for a not_entitled payer", async () => {
+    billingIssueMock.mockResolvedValue({ provider: "apple", stage: "lapsed" });
+    const { getByTestId, queryByTestId } = await renderAs("parent");
+    const notice = getByTestId("subscribe-payment-issue");
+    expect(notice).toHaveAttribute("role", "status");
+    expect(notice.textContent).toContain("Training is paused because your last payment didn't go through.");
+    expect(notice.textContent).toContain("Payment & Shipping");
+    expect(notice.querySelector("a")).toBeNull();
+    expect(queryByTestId("subscribe-payment-issue-fix")).toBeNull();
+  });
+
+  it("shows the grace notice with a settings link beside the entitled Stripe card on web", async () => {
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "stripe" });
+    billingIssueMock.mockResolvedValue({ provider: "stripe", stage: "grace" });
+    const { getByTestId } = await renderAs("parent");
+    expect(getByTestId("subscribe-payment-issue").textContent).toContain(
+      "Your last payment didn't go through.",
+    );
+    expect(getByTestId("subscribe-payment-issue-fix")).toHaveAttribute(
+      "href",
+      "/dashboard/settings",
+    );
+  });
+
+  it("points an adult athlete's Stripe fix at /athlete/settings", async () => {
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "stripe" });
+    billingIssueMock.mockResolvedValue({ provider: "stripe", stage: "grace" });
+    const { getByTestId } = await renderAs("adult_athlete");
+    expect(getByTestId("subscribe-payment-issue-fix")).toHaveAttribute(
+      "href",
+      "/athlete/settings",
+    );
+  });
+
+  it("Stripe grace in a native shell: no link, browser instruction, no price", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "stripe" });
+    billingIssueMock.mockResolvedValue({ provider: "stripe", stage: "grace" });
+    const { getByTestId } = await renderAs("parent");
+    const notice = getByTestId("subscribe-payment-issue");
+    expect(notice.querySelector("a")).toBeNull();
+    expect(notice.textContent).toContain("web browser at fromvictoryapp.com");
+    expect(notice.textContent).not.toMatch(/\$\d/);
+  });
+
+  it("does not show a grace notice when the payer is not entitled", async () => {
+    billingIssueMock.mockResolvedValue({ provider: "apple", stage: "grace" });
+    const { queryByTestId } = await renderAs("parent");
+    expect(queryByTestId("subscribe-payment-issue")).toBeNull();
+  });
+
+  it("does not read or show anything when the entitlement status is unknown", async () => {
+    entitlementStateMock.mockResolvedValue({ status: "unknown", provider: null });
+    billingIssueMock.mockResolvedValue({ provider: "apple", stage: "lapsed" });
+    const { queryByTestId } = await renderAs("parent");
+    expect(queryByTestId("subscribe-payment-issue")).toBeNull();
+    expect(billingIssueMock).not.toHaveBeenCalled();
   });
 });

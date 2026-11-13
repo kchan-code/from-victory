@@ -66,7 +66,7 @@ import "server-only";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getParentAccessLevel } from "./access";
 import { subscriptionAccessLevel, type SubscriptionStatus } from "./access-level";
-import { getActiveAppleProductId } from "./apple";
+import { getActiveAppleProductIdResult } from "./apple";
 
 type ServiceClient = ReturnType<typeof createServiceClient>;
 
@@ -85,6 +85,15 @@ export type SubscribeEntitlementProvider = "apple" | "stripe" | "comp" | null;
 export interface SubscribeEntitlementState {
   status: SubscribeEntitlementStatus;
   provider: SubscribeEntitlementProvider;
+  /**
+   * FV-710: set (true) only when the payer still holds a live App Store
+   * subscription whose payment is failing past the grace period (Apple
+   * `in_billing_retry`). Training access is BLOCKED, but the subscription
+   * exists and Apple may still collect, so the state is "entitled / apple":
+   * no second purchase on any provider. `enforce.ts` reads this to tell a
+   * confirmed block from "the reads disagree".
+   */
+  accessPaused?: true;
 }
 
 // ---------------------------------------------------------------------------
@@ -178,6 +187,17 @@ export async function getSubscribeEntitlementState(
   // subscription that needs fixing, not a fresh purchase.
   const level = await getParentAccessLevel(userId);
   if (level === "blocked") {
+    // FV-710: blocked, but a live App Store subscription in billing retry
+    // must not be offered a second purchase (Apple can still collect on the
+    // first). A read error here is "unknown" (refuse to start a purchase),
+    // never a guessed not_entitled.
+    const apple = await getActiveAppleProductIdResult(service, userId);
+    if (apple.readError) {
+      return { status: "unknown", provider: null };
+    }
+    if (apple.productId !== null && apple.paymentLapsed) {
+      return { status: "entitled", provider: "apple", accessPaused: true };
+    }
     return { status: "not_entitled", provider: null };
   }
 
@@ -189,8 +209,17 @@ export async function getSubscribeEntitlementState(
   // status already fetched above (no second read, no unchecked-error
   // fall-through), broadened the same way so a degraded Stripe payer
   // resolves provider "stripe" rather than falling through to "comp".
-  const appleProductId = await getActiveAppleProductId(service, userId);
-  if (appleProductId !== null) {
+  // FV-710: a billing-retry Apple row (`paymentLapsed`) grants no access, so
+  // it is never the provider CARRYING a non-blocked level: a payer who is
+  // paid through Stripe or comped and also has a stale retry row resolves to
+  // "stripe" / "comp", not "apple". A read error keeps the fail-open
+  // behavior of `getActiveAppleProductId` (not an Apple payer).
+  const appleResult = await getActiveAppleProductIdResult(service, userId);
+  if (
+    !appleResult.readError &&
+    appleResult.productId !== null &&
+    !appleResult.paymentLapsed
+  ) {
     return { status: "entitled", provider: "apple" };
   }
 

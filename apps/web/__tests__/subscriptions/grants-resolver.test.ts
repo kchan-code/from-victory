@@ -808,10 +808,10 @@ describe("getParentAccessLevel — Apple provider fold (FV-570)", () => {
     expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
   });
 
-  it("degraded Apple (in_billing_retry, Production) folds with blocked Stripe to degraded", async () => {
+  it("Apple in_billing_retry (Production) is blocked and folds with blocked Stripe to blocked (FV-710)", async () => {
     setSubscriptionNone(); // stripeLevel = blocked
     setAppleProductionRow("in_billing_retry");
-    expect(await getParentAccessLevel(PARENT_ID)).toBe("degraded");
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("blocked");
   });
 });
 

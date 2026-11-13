@@ -110,6 +110,19 @@ vi.mock("@/lib/supabase/service", () => ({
   createServiceClient: () => ({}),
 }));
 
+// FV-710: payer-facing failed-payment read. Default null = no notice.
+const { billingIssueMock } = vi.hoisted(() => ({
+  billingIssueMock: vi.fn(
+    async (): Promise<null | {
+      provider: "apple" | "stripe";
+      stage: "grace" | "lapsed";
+    }> => null,
+  ),
+}));
+vi.mock("@/lib/subscriptions/billing-issue", () => ({
+  getPayerBillingIssue: billingIssueMock,
+}));
+
 vi.mock("@/lib/subscriptions/apple", () => ({
   getDisplayedAppleProductIdResult: getDisplayedAppleProductIdResultMock,
 }));
@@ -132,6 +145,7 @@ afterEach(() => {
   // clearAllMocks keeps mockReturnValue overrides — restore defaults so
   // test order never matters.
   shellCapabilityMock.mockReturnValue(null);
+  billingIssueMock.mockResolvedValue(null);
   subscriptionsMaybeSingleMock.mockResolvedValue({ data: null, error: null });
   getDisplayedAppleProductIdResultMock.mockResolvedValue({
     productId: null,
@@ -703,4 +717,35 @@ describe("/athlete/settings — daily reminder in a store shell (FV-716)", () =>
       expect(screen.queryByText(/your browser/i)).not.toBeInTheDocument();
     },
   );
+});
+
+describe("/athlete/settings — failed-payment notice (FV-710)", () => {
+  it("an adult athlete sees the grace notice above the portal button (no self-link)", async () => {
+    billingIssueMock.mockResolvedValue({ provider: "stripe", stage: "grace" });
+    await renderSettings("adult_athlete");
+    const notice = screen.getByTestId("settings-payment-issue");
+    expect(notice).toHaveTextContent("Your last payment didn't go through.");
+    expect(notice.querySelector("a")).toBeNull();
+  });
+
+  it("an adult athlete with no billing issue sees no notice", async () => {
+    await renderSettings("adult_athlete");
+    expect(screen.queryByTestId("settings-payment-issue")).not.toBeInTheDocument();
+  });
+
+  it("a minor athlete never sees the notice and the read is never issued", async () => {
+    billingIssueMock.mockResolvedValue({ provider: "stripe", stage: "grace" });
+    await renderSettings("athlete");
+    expect(screen.queryByTestId("settings-payment-issue")).not.toBeInTheDocument();
+    expect(billingIssueMock).not.toHaveBeenCalled();
+  });
+
+  it("Stripe grace in a native shell: no link, browser instruction", async () => {
+    shellCapabilityMock.mockReturnValue("legacy-native");
+    billingIssueMock.mockResolvedValue({ provider: "stripe", stage: "grace" });
+    await renderSettings("adult_athlete");
+    const notice = screen.getByTestId("settings-payment-issue");
+    expect(notice.querySelector("a")).toBeNull();
+    expect(notice).toHaveTextContent("web browser at fromvictoryapp.com");
+  });
 });

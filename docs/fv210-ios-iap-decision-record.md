@@ -220,7 +220,8 @@ begins (privacy review recorded no objection).
   - `subscribed` → `full` (while within time bounds)
   - `in_grace_period` → **`full`** — Apple's billing grace period retains
     full entitlement by Apple's own contract with the user.
-  - `in_billing_retry` (grace disabled/exhausted) → `degraded`
+  - `in_billing_retry` (grace disabled/exhausted) → `blocked` (changed by
+    FV-710, KC decision 2026-11-13; was `degraded` with no time limit)
   - `expired | revoked` → `blocked`
 - **Resolver change** (`lib/subscriptions/access.ts`): resolution order
   `access_grants` → Stripe mirror → Apple mirror; return the **best** level

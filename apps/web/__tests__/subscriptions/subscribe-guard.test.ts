@@ -13,7 +13,7 @@
  *   - entitled via Stripe (active row)
  *   - entitled via a comp grant (no Stripe row, no Apple row)
  *   - entitled via a DEGRADED Stripe row (past_due) and a DEGRADED Apple row
- *     (in_billing_retry) — KC decision D1 / FV-584: `degraded` is entitled,
+ *     (grace past its bound, inside the skew) — KC decision D1 / FV-584: `degraded` is entitled,
  *     same as `full`, so a payer with a subscription that needs fixing is
  *     blocked from starting a second one
  *   - not entitled (no subscription anywhere)
@@ -231,7 +231,7 @@ describe("getSubscribeEntitlementState", () => {
     expect(result).toEqual({ status: "entitled", provider: "stripe" });
   });
 
-  it("entitled via Apple: Production row with status=in_billing_retry (degraded, FV-584)", async () => {
+  it("entitled via Apple with accessPaused: a Production in_billing_retry row blocks training but also blocks a second purchase (FV-710)", async () => {
     appleSubsListResult = {
       data: [
         {
@@ -254,7 +254,34 @@ describe("getSubscribeEntitlementState", () => {
     };
 
     const result = await getSubscribeEntitlementState(PAYER_ID);
-    expect(result).toEqual({ status: "entitled", provider: "apple" });
+    expect(result).toEqual({ status: "entitled", provider: "apple", accessPaused: true });
+  });
+
+  it("a payer paid through Stripe with a stale Apple in_billing_retry row resolves to stripe, not apple (FV-710)", async () => {
+    subscriptionsResult = { data: { status: "active" }, error: null };
+    appleSubsListResult = {
+      data: [
+        {
+          environment: "Production",
+          status: "in_billing_retry",
+          expires_at: FUTURE_ISO,
+          grace_period_expires_at: null,
+        },
+      ],
+      error: null,
+    };
+    appleSubsProductionSingleResult = {
+      data: {
+        product_id: "tier_1_1athlete",
+        status: "in_billing_retry",
+        expires_at: FUTURE_ISO,
+        grace_period_expires_at: null,
+      },
+      error: null,
+    };
+
+    const result = await getSubscribeEntitlementState(PAYER_ID);
+    expect(result).toEqual({ status: "entitled", provider: "stripe" });
   });
 
   it("prefers apple as the reported provider when BOTH Apple and Stripe are active (duplicate billing)", async () => {

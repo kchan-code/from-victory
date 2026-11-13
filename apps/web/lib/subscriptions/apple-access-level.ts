@@ -75,9 +75,14 @@ export const DEFAULT_APPLE_SKEW_MS = 6 * 60 * 60 * 1000;
  *       trusting an absent bound as "full forever" or dropping straight to
  *       `blocked` on a payload shape we didn't expect.
  *
- *   - `in_billing_retry` (grace disabled or exhausted): always `degraded`.
- *     No time gate — Apple itself is still retrying the charge, so there is
- *     no forward-looking bound to gate against.
+ *   - `in_billing_retry` (grace disabled or exhausted): always `blocked`
+ *     (FV-710, KC decision 2026-11-13). Apple's Billing Grace Period is the
+ *     cushion: access is kept for exactly that window (`in_grace_period`
+ *     above). Once it ends, or when it is switched off in App Store Connect,
+ *     Apple's guidance is to turn access off while it keeps retrying the
+ *     charge for up to 60 days. A recovered charge arrives as DID_RENEW and
+ *     the row returns to `subscribed`. Before FV-710 this was `degraded`
+ *     with no time gate, which was up to 60 days of unpaid training.
  *
  *   - `expired` | `revoked`: always `blocked`. No time dimension and no
  *     skew — a definitively closed state is never re-opened by a clock
@@ -121,8 +126,8 @@ export function appleSubscriptionAccessLevel(
     }
 
     case "in_billing_retry":
-      // No time gate: Apple is actively retrying the charge.
-      return "degraded";
+      // FV-710: grace (if any) is over; no access while Apple keeps retrying.
+      return "blocked";
 
     case "expired":
     case "revoked":

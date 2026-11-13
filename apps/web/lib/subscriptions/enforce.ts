@@ -122,7 +122,12 @@ async function isPayerStatusUnknownForCurrentUser(): Promise<boolean> {
   try {
     const payerId = await getPayerIdForCurrentUser();
     if (payerId === null) return false;
-    return (await getSubscribeEntitlementState(payerId)).status !== "not_entitled";
+    const state = await getSubscribeEntitlementState(payerId);
+    if (state.status === "not_entitled") return false;
+    // FV-710: a live App Store subscription whose payment is failing past
+    // grace is a CONFIRMED block (the reads agree), not "couldn't check".
+    if (state.status === "entitled" && state.accessPaused === true) return false;
+    return true;
   } catch (err) {
     console.error(
       "[enforce] entitlement status check threw:",

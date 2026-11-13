@@ -260,6 +260,31 @@ describe("FV-656 — an unreadable status is a block, but not a lapse", () => {
     });
   });
 
+  it("FV-710: a live App Store subscription with a failed payment past grace is a confirmed block, not 'couldn't check'", async () => {
+    entitlementMock.mockResolvedValue({
+      status: "entitled",
+      provider: "apple",
+      accessPaused: true,
+    });
+    await expect(resolveTrainingAccess({ role: "athlete" })).resolves.toEqual({
+      allowed: false,
+      redirectTo: "/athlete/paused",
+    });
+    await expect(resolveTrainingAccess({ role: "parent" })).resolves.toEqual({
+      allowed: false,
+      redirectTo: "/subscribe",
+    });
+  });
+
+  it("FV-710: entitled WITHOUT accessPaused while blocked still means the reads disagree (unknown)", async () => {
+    entitlementMock.mockResolvedValue({ status: "entitled", provider: "apple" });
+    await expect(resolveTrainingAccess({ role: "athlete" })).resolves.toEqual({
+      allowed: false,
+      redirectTo: "/athlete/paused?reason=unavailable",
+      statusUnknown: true,
+    });
+  });
+
   it("a throw from the status check counts as unknown (couldn't check), still blocked", async () => {
     entitlementMock.mockRejectedValue(new Error("boom"));
     vi.spyOn(console, "error").mockImplementation(() => {});

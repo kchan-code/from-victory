@@ -167,6 +167,95 @@ export async function getAppleEntitlementEndForPayer(
   return (await readAppleEntitlementForPayer(service, payerId, now)).latestEnd;
 }
 
+/**
+ * FV-710: result of the payer-facing "payment problem" read for Apple.
+ *
+ *   - `stage: "grace"`  — an eligible row is `in_grace_period` and still
+ *     grants access (Apple is retrying the charge; training continues).
+ *   - `stage: "lapsed"` — an eligible row is `in_billing_retry`, or an
+ *     `in_grace_period` row whose bound has passed (access is blocked while
+ *     Apple keeps retrying).
+ *   - `stage: null`     — no Apple payment problem to report.
+ *   - `cleanlyPaid`     — an eligible row is `subscribed` with non-blocked
+ *     access. Takes precedence: stage is then always null.
+ *   - `readError`       — a read failed; `stage` is null and callers must
+ *     show nothing (never a payment warning on a guess).
+ */
+export type AppleBillingIssueResult = {
+  stage: "grace" | "lapsed" | null;
+  cleanlyPaid: boolean;
+  readError: boolean;
+};
+
+/**
+ * Reads whether the payer has an Apple payment problem, using the SAME
+ * environment-eligibility rule as `getAppleAccessLevelForPayer` /
+ * `getActiveAppleProductIdResult` (Production rows always; Sandbox rows only
+ * for an allowlisted payer — record §4.9). Error-visible like
+ * `getActiveAppleProductIdResult`: a failed allowlist or subscriptions read
+ * returns `readError: true`, never a silent "no issue" the caller could
+ * mistake for a verified one.
+ */
+export async function getAppleBillingIssueForPayer(
+  service: ServiceClient,
+  payerId: string,
+  now: Date = new Date(),
+): Promise<AppleBillingIssueResult> {
+  const { isAllowlisted, readError: allowlistReadError } =
+    await readSandboxAllowlistMembership(service, payerId);
+  if (allowlistReadError) {
+    return { stage: null, cleanlyPaid: false, readError: true };
+  }
+
+  const { data: rows, error: subsError } = await service
+    .from("apple_subscriptions")
+    .select("environment, status, expires_at, grace_period_expires_at")
+    .eq("payer_id", payerId);
+
+  if (subsError) {
+    console.error(
+      `[subscriptions/apple] getAppleBillingIssueForPayer read failed (payer=${payerId}):`,
+      subsError.message,
+    );
+    return { stage: null, cleanlyPaid: false, readError: true };
+  }
+
+  const eligibleRows = (rows ?? []).filter(
+    (row) =>
+      row.environment === "Production" ||
+      (row.environment === "Sandbox" && isAllowlisted),
+  );
+
+  let cleanlyPaid = false;
+  let grace = false;
+  let lapsed = false;
+  for (const row of eligibleRows) {
+    const status = row.status as AppleSubscriptionStatus;
+    const level = appleSubscriptionAccessLevel(
+      status,
+      row.expires_at,
+      row.grace_period_expires_at,
+      now,
+    );
+    if (status === "subscribed" && level !== "blocked") {
+      cleanlyPaid = true;
+    } else if (status === "in_grace_period") {
+      if (level !== "blocked") grace = true;
+      else lapsed = true;
+    } else if (status === "in_billing_retry") {
+      lapsed = true;
+    }
+  }
+
+  if (cleanlyPaid) return { stage: null, cleanlyPaid: true, readError: false };
+  // A row that still grants access (grace) outranks one that doesn't.
+  return {
+    stage: grace ? "grace" : lapsed ? "lapsed" : null,
+    cleanlyPaid: false,
+    readError: false,
+  };
+}
+
 async function readAppleEntitlementForPayer(
   service: ServiceClient,
   payerId: string,
@@ -299,6 +388,14 @@ export type ActiveAppleProductIdResult = {
    * trustworthy "no active row") in that case; it is always `null` on error
    * so callers can't accidentally branch on a stale/default value. */
   readError: boolean;
+  /**
+   * FV-710: true when the returned row is `in_billing_retry` — the
+   * subscription still exists at Apple (it is retrying the charge and can
+   * bill again without notice) but grants NO training access. Callers that
+   * decide ACCESS must not read `productId !== null` as "has access"; that
+   * decision is `getAppleAccessLevelForPayer`. Absent/false otherwise.
+   */
+  paymentLapsed?: boolean;
 };
 
 /**
@@ -398,6 +495,18 @@ export async function getActiveAppleProductIdResult(
     );
     if (level === "full" || level === "degraded") {
       return { productId: row.product_id, readError: false };
+    }
+  }
+
+  // FV-710: no row grants access. A row in billing retry is still a LIVE
+  // Apple subscription: Apple keeps retrying the charge for up to 60 days and
+  // only the payer can cancel it. It therefore still counts as "this payer
+  // subscribes through Apple" for everything this accessor feeds (the
+  // delete-account warning, the manage screen, the seat ceiling, and the
+  // duplicate-purchase guard), even though training access is blocked.
+  for (const row of ordered) {
+    if (row.status === "in_billing_retry") {
+      return { productId: row.product_id, readError: false, paymentLapsed: true };
     }
   }
 

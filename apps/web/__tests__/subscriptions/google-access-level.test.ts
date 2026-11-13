@@ -10,7 +10,6 @@ import {
   type GoogleSubscriptionStatus,
 } from "@/lib/subscriptions/google-access-level";
 import { appleSubscriptionAccessLevel } from "@/lib/subscriptions/apple-access-level";
-import { subscriptionAccessLevel } from "@/lib/subscriptions/access-level";
 
 const NOW = new Date("2026-11-12T12:00:00.000Z");
 const FUTURE = "2026-12-12T12:00:00.000Z";
@@ -53,12 +52,12 @@ describe("googleSubscriptionAccessLevel", () => {
     expect(level("canceled", JUST_PAST, NOW)).toBe("blocked");
   });
 
-  it("on_hold is degraded: the same level Apple billing retry and Stripe past_due map to", () => {
-    expect(level("on_hold", FUTURE, NOW)).toBe("degraded");
+  it("on_hold is blocked, the same as Apple billing retry (FV-710); grace before it keeps access", () => {
+    expect(level("in_grace_period", FUTURE, NOW)).toBe("full");
+    expect(level("on_hold", FUTURE, NOW)).toBe("blocked");
     expect(level("on_hold", FUTURE, NOW)).toBe(
       appleSubscriptionAccessLevel("in_billing_retry", FUTURE, null, NOW),
     );
-    expect(level("on_hold", FUTURE, NOW)).toBe(subscriptionAccessLevel("past_due"));
   });
 
   it("pending, paused, expired and pending_purchase_canceled grant nothing even with a future expiry", () => {
