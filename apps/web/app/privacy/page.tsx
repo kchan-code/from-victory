@@ -17,7 +17,8 @@ import Link from "next/link";
 // notifications are opened or clicked") is left as is: a `push_click` event
 // exists in the vocabulary but nothing records it today. If that changes, 1f
 // and 1i must change first. Section 1i is accurate only once the companion
-// change that stops storing pregame selections with usage events has merged. For KC + attorney review:
+// change (PR #643) has merged: it stops storing pregame selections with usage
+// events and keeps anonymous monthly totals instead. For KC + attorney review:
 // do not publish until approved, then set EFFECTIVE_DATE to the publication
 // date. Google Play Billing is NOT described because it is not live.
 // Every factual claim here is grounded in the verified data inventory
@@ -277,6 +278,14 @@ export default function PrivacyPage() {
           and whether the audio played through). A record is connected to the athlete&apos;s
           account. It does not contain what the athlete selected or was shown inside a
           session.
+        </p>
+        <p className="mt-3">
+          Separately, so that we can learn which training options are useful, we keep
+          anonymous totals of how often each preset pregame option is chosen (for example,
+          how many times a particular focus area or visualization was picked), counted by
+          sport and by month. These totals contain no account identifier and no record of who
+          chose what or when, and each option is counted on its own, never in combination with
+          an athlete&apos;s other choices. Anything an athlete types is never counted.
         </p>
         <p className="mt-3">
           We collect this ourselves, in our own database. We do not use a third-party
