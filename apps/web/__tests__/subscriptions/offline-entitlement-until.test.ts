@@ -38,6 +38,13 @@ let subError: { message: string } | null = null;
 let apple: AppleRow[] = [];
 let appleError: { message: string } | null = null;
 let allowlisted = false;
+let googleRows: Array<{
+  product_id: string;
+  purchase_token: string;
+  status: string;
+  expires_at: string | null;
+}> = [];
+let googleError: { message: string } | null = null;
 const servicePayerIds: string[] = [];
 
 function thenable<T>(value: T) {
@@ -71,6 +78,9 @@ vi.mock("@/lib/supabase/service", () => ({
               : { data: allowlisted ? { payer_id: "p" } : null, error: null },
         };
         return b;
+      }
+      if (table === "google_subscriptions") {
+        return thenable({ data: googleRows, error: googleError });
       }
       throw new Error(`unexpected table ${table}`);
     },
@@ -112,6 +122,9 @@ beforeEach(() => {
   apple = [];
   appleError = null;
   allowlisted = false;
+  googleRows = [];
+  googleError = null;
+  delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
   servicePayerIds.length = 0;
   sessionUser = null;
   sessionRole = null;
@@ -229,6 +242,37 @@ describe("Apple", () => {
   it("an apple_subscriptions read error drops Apple (fail closed)", async () => {
     apple = [row({})];
     appleError = { message: "boom" };
+    await expect(until()).resolves.toBeNull();
+  });
+});
+
+describe("Google", () => {
+  const row = (status: string, expiresAt: string | null) => ({
+    product_id: "family.2",
+    purchase_token: "tok_google",
+    status,
+    expires_at: expiresAt,
+  });
+
+  beforeEach(() => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+  });
+
+  it("active -> contributes expires_at", async () => {
+    googleRows = [row("active", iso(12))];
+    await expect(until()).resolves.toBe(iso(12));
+  });
+
+  it("on_hold / expired contribute nothing", async () => {
+    googleRows = [row("on_hold", iso(12))];
+    await expect(until()).resolves.toBeNull();
+    googleRows = [row("expired", iso(12))];
+    await expect(until()).resolves.toBeNull();
+  });
+
+  it("a google_subscriptions read error drops Google (fail closed)", async () => {
+    googleRows = [row("active", iso(12))];
+    googleError = { message: "boom" };
     await expect(until()).resolves.toBeNull();
   });
 });

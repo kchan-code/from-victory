@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { AppPreview } from "@/components/landing/AppPreview";
 import { Faq } from "@/components/landing/Faq";
@@ -14,6 +15,7 @@ import { StructuredData } from "@/components/landing/StructuredData";
 import { Visualization } from "@/components/landing/Visualization";
 import { Waitlist } from "@/components/landing/Waitlist";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
+import { AccountDeletionNotice } from "@/components/landing/AccountDeletionNotice";
 
 // Canonical for the landing page — UTM/source-parameterized URLs all
 // consolidate here (FV-418).
@@ -39,6 +41,9 @@ export default function LandingPage() {
       <ScrollNav />
       <a id="top" />
       <main id="main-content">
+        <Suspense fallback={null}>
+          <AccountDeletionNotice />
+        </Suspense>
         <Hero />
         <PregameSample />
         <Visualization />

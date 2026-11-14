@@ -41,6 +41,7 @@ export interface ParsedGooglePurchase {
   readonly linkedPurchaseToken: string | null;
   readonly acknowledged: boolean;
   readonly offerId: string | null;
+  readonly latestOrderId: string | null;
 }
 
 export type ParseGooglePurchaseResult =
@@ -175,6 +176,7 @@ export function parseSubscriptionPurchaseV2(raw: unknown): ParseGooglePurchaseRe
       linkedPurchaseToken: body.linkedPurchaseToken || null,
       acknowledged: body.acknowledgementState === "ACKNOWLEDGEMENT_STATE_ACKNOWLEDGED",
       offerId: current.item.offerDetails?.offerId || null,
+      latestOrderId: current.item.latestSuccessfulOrderId || null,
     },
   };
 }
@@ -298,4 +300,35 @@ export async function acknowledgeWithRetry(
     }
   }
   return false;
+}
+
+/**
+ * `purchases.subscriptionsv2.cancel` (record G5): stops renewal with no
+ * refund. Returns true on success.
+ */
+export async function cancelSubscriptionRenewal(
+  purchaseToken: string,
+  deps: PlayApiDeps = {},
+): Promise<boolean> {
+  const getToken = deps.getAccessToken ?? getPlayAccessToken;
+  const doFetch = deps.fetchImpl ?? fetch;
+  try {
+    const accessToken = await getToken();
+    const response = await doFetch(
+      `${API_ROOT}/applications/${GOOGLE_PLAY_PACKAGE_NAME}/purchases/subscriptionsv2/tokens/${encodeURIComponent(purchaseToken)}:cancel`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: "{}",
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        cache: "no-store",
+      },
+    );
+    return response.ok;
+  } catch {
+    return false;
+  }
 }

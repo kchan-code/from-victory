@@ -93,7 +93,13 @@ afterEach(() => {
 });
 
 async function renderPage(
-  searchParams: { reset?: string; error?: string } = {},
+  searchParams: {
+    reset?: string;
+    error?: string;
+    account_deleted?: string;
+    google_play_cancel?: string;
+    google_play_cancel_unknown?: string;
+  } = {},
 ) {
   render(await SignInPage({ searchParams: Promise.resolve(searchParams) }));
 }
@@ -205,5 +211,41 @@ describe("/signin welcome copy (FV-708)", () => {
 
     expect(screen.getByRole("alert")).toHaveTextContent(/session was invalid/i);
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
+  });
+
+  it("shows the Google cancel failure notice only when both deletion flags are present", async () => {
+    await renderPage({ account_deleted: "1", google_play_cancel: "1" });
+
+    expect(
+      screen.getByTestId("signin-account-deleted-google-cancel-notice"),
+    ).toHaveTextContent(
+      "Your account is deleted. Your Google Play subscription could not be cancelled automatically. Please cancel it in Google Play.",
+    );
+  });
+
+  it("does not show the Google cancel failure notice when only one flag is present", async () => {
+    await renderPage({ account_deleted: "1" });
+    expect(
+      screen.queryByTestId("signin-account-deleted-google-cancel-notice"),
+    ).toBeNull();
+
+    cleanup();
+    await renderPage({ google_play_cancel: "1" });
+    expect(
+      screen.queryByTestId("signin-account-deleted-google-cancel-notice"),
+    ).toBeNull();
+  });
+
+  it("shows the softer unknown-Google notice when account deletion is confirmed but Google read was unavailable", async () => {
+    await renderPage({
+      account_deleted: "1",
+      google_play_cancel_unknown: "1",
+    });
+
+    expect(
+      screen.getByTestId("signin-account-deleted-google-cancel-notice"),
+    ).toHaveTextContent(
+      "Your account is deleted. If you subscribed through Google Play, please check your subscriptions in Google Play and cancel it there.",
+    );
   });
 });

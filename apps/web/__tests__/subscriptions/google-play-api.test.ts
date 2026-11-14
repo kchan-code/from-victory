@@ -18,6 +18,7 @@ vi.mock("@/lib/subscriptions/google-play-auth", () => ({
 import {
   acknowledgeSubscriptionPurchase,
   acknowledgeWithRetry,
+  cancelSubscriptionRenewal,
   getSubscriptionPurchaseV2,
   parseSubscriptionPurchaseV2,
 } from "@/lib/subscriptions/google-play-api";
@@ -63,6 +64,7 @@ describe("parseSubscriptionPurchaseV2", () => {
       linkedPurchaseToken: SENTINEL_LINKED_TOKEN,
       acknowledged: false,
       offerId: "trial-7d",
+      latestOrderId: null,
     });
   });
 
@@ -108,6 +110,22 @@ describe("parseSubscriptionPurchaseV2", () => {
     const r = parseSubscriptionPurchaseV2(subscriptionV2Fixture({ acknowledged: true, accountId: null }));
     expect(r.ok && r.purchase.acknowledged).toBe(true);
     expect(r.ok && r.purchase.obfuscatedAccountId).toBeNull();
+  });
+
+  it("captures the latest successful order id on the selected line item", () => {
+    const r = parseSubscriptionPurchaseV2({
+      ...subscriptionV2Fixture({}),
+      lineItems: [
+        {
+          productId: "family.1",
+          expiryTime: "2099-12-12T12:00:00.000Z",
+          latestSuccessfulOrderId: "GPA.1111-2222-3333-44444",
+          autoRenewingPlan: { autoRenewEnabled: true },
+          offerDetails: { basePlanId: "monthly" },
+        },
+      ],
+    });
+    expect(r.ok && r.purchase.latestOrderId).toBe("GPA.1111-2222-3333-44444");
   });
 
   it("takes the earliest-expiring line item as current when several are listed", () => {
@@ -342,6 +360,41 @@ describe("acknowledge", () => {
       },
     });
     expect(ok).toBe(false);
+    expect(logged.join("\n")).not.toContain(SENTINEL_TOKEN);
+  });
+});
+
+describe("cancelSubscriptionRenewal", () => {
+  it("POSTs the subscriptionsv2 cancel endpoint keyed by purchase token", async () => {
+    const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
+    const ok = await cancelSubscriptionRenewal(SENTINEL_TOKEN, {
+      getAccessToken,
+      fetchImpl,
+    });
+    expect(ok).toBe(true);
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toContain(
+      "/applications/com.fromvictoryapp.app/purchases/subscriptionsv2/tokens/",
+    );
+    expect(url).toContain(SENTINEL_TOKEN);
+    expect(url.endsWith(":cancel")).toBe(true);
+    expect(init.method).toBe("POST");
+  });
+
+  it("maps non-2xx and thrown fetch/auth errors to false without logging token", async () => {
+    const bad = await cancelSubscriptionRenewal(SENTINEL_TOKEN, {
+      getAccessToken,
+      fetchImpl: async () => new Response("{}", { status: 503 }),
+    });
+    expect(bad).toBe(false);
+
+    const net = await cancelSubscriptionRenewal(SENTINEL_TOKEN, {
+      getAccessToken,
+      fetchImpl: async () => {
+        throw new Error(`boom ${SENTINEL_TOKEN}`);
+      },
+    });
+    expect(net).toBe(false);
     expect(logged.join("\n")).not.toContain(SENTINEL_TOKEN);
   });
 });

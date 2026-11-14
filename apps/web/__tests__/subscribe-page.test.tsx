@@ -18,6 +18,8 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
+vi.mock("server-only", () => ({}));
+
 const {
   requireSubscriberMock,
   maybeSingleMock,
@@ -27,6 +29,8 @@ const {
   shellCapabilityMock,
   entitlementStateMock,
   activeAppleProductIdMock,
+  hasEverHeldAppleEntitlementMock,
+  hasEverHeldGoogleEntitlementMock,
   capacityForAppleProductMock,
   getConfiguredAppleProductsMock,
   billingIssueMock,
@@ -68,7 +72,7 @@ const {
   entitlementStateMock: vi.fn(
     async (): Promise<{
       status: "entitled" | "not_entitled" | "unknown";
-      provider: "apple" | "stripe" | "comp" | null;
+      provider: "apple" | "stripe" | "google" | "comp" | null;
       accessPaused?: true;
     }> => ({ status: "not_entitled", provider: null }),
   ),
@@ -76,6 +80,8 @@ const {
   // every test written before the upgrade wiring existed — not an Apple
   // payer / no mapped product / no configured product ever exceeds it.
   activeAppleProductIdMock: vi.fn(async (): Promise<string | null> => null),
+  hasEverHeldAppleEntitlementMock: vi.fn(async () => false),
+  hasEverHeldGoogleEntitlementMock: vi.fn(async () => false),
   capacityForAppleProductMock: vi.fn((): number | null => null),
   getConfiguredAppleProductsMock: vi.fn(
     (): { productId: string; athleteCapacity: number; displayName?: string }[] => [],
@@ -137,6 +143,10 @@ vi.mock("@/components/subscribe/AppleSubscribeSection", () => ({
 // rationale as the FV-581 duplicate-billing guard mock above.
 vi.mock("@/lib/subscriptions/apple", () => ({
   getActiveAppleProductId: activeAppleProductIdMock,
+  hasEverHeldAppleEntitlement: hasEverHeldAppleEntitlementMock,
+}));
+vi.mock("@/lib/subscriptions/google", () => ({
+  hasEverHeldGoogleEntitlement: hasEverHeldGoogleEntitlementMock,
 }));
 vi.mock("@/lib/subscriptions/apple-capacity", () => ({
   capacityForAppleProduct: capacityForAppleProductMock,
@@ -217,6 +227,7 @@ import SubscribePage from "@/app/subscribe/page";
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
   // clearAllMocks keeps mockReturnValue overrides — restore the FV-464 /
   // shell-capability / FV-574 / FV-581 defaults so test order never matters.
   enforcementEnabledMock.mockReturnValue(false);
@@ -225,6 +236,8 @@ afterEach(() => {
   athleteCountMock.mockResolvedValue({ count: 1, error: null });
   entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
   activeAppleProductIdMock.mockResolvedValue(null);
+  hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+  hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
   capacityForAppleProductMock.mockReturnValue(null);
   getConfiguredAppleProductsMock.mockReturnValue([]);
   billingIssueMock.mockResolvedValue(null);
@@ -527,6 +540,38 @@ describe("SubscribePage — 7-day trial banner gate (FV-574)", () => {
 
     expect(await renderedText()).toContain("trialEligible:false");
   });
+
+  it("no Stripe row but Google entitlement history -> trialEligible:false", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    asParent();
+    noExistingSub();
+    hasEverHeldGoogleEntitlementMock.mockResolvedValue(true);
+    athleteCountMock.mockResolvedValue({ count: 1, error: null });
+
+    expect(await renderedText()).toContain("trialEligible:false");
+  });
+
+  it("provider history read error -> trialEligible:false (fail closed)", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    asParent();
+    noExistingSub();
+    hasEverHeldGoogleEntitlementMock.mockRejectedValue(new Error("read failed"));
+    athleteCountMock.mockResolvedValue({ count: 1, error: null });
+
+    expect(await renderedText()).toContain("trialEligible:false");
+  });
+
+  it("flag off -> trial banner is unchanged and does not read Apple/Google history", async () => {
+    asParent();
+    noExistingSub();
+    athleteCountMock.mockResolvedValue({ count: 1, error: null });
+    hasEverHeldAppleEntitlementMock.mockResolvedValue(true);
+    hasEverHeldGoogleEntitlementMock.mockResolvedValue(true);
+
+    expect(await renderedText()).toContain("trialEligible:true");
+    expect(hasEverHeldAppleEntitlementMock).not.toHaveBeenCalled();
+    expect(hasEverHeldGoogleEntitlementMock).not.toHaveBeenCalled();
+  });
 });
 
 describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
@@ -623,6 +668,20 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
       expectNoBuyAffordances(queryByTestId, text);
     });
 
+    it("provider google -> status copy points to Android phone management", async () => {
+      asParent();
+      shellCapabilityMock.mockReturnValue("ios-iap");
+      entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "google" });
+
+      const { getByTestId, queryByTestId, text } = await renderPage();
+
+      expect(getByTestId("subscribe-status-entitled").textContent).toBe(
+        "You’re subscribed through Google Play. Manage it on your Android phone.",
+      );
+      expect(queryByTestId("apple-subscribe-section-stub")).toBeNull();
+      expectNoBuyAffordances(queryByTestId, text);
+    });
+
     it("provider comp → nothing-to-manage status copy", async () => {
       asParent();
       shellCapabilityMock.mockReturnValue("ios-iap");
@@ -689,6 +748,20 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
       );
       expectNoBuyAffordances(queryByTestId, text);
     });
+
+    it("provider google -> Android management status copy, no Stripe checkout", async () => {
+      asParent();
+      entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "google" });
+
+      const { getByTestId, queryByTestId, text } = await renderPage();
+
+      expect(getByTestId("subscribe-status-entitled").textContent).toContain(
+        "Manage it on your Android phone",
+      );
+      expect(text).not.toMatch(/stripe/i);
+      expect(queryByTestId("apple-subscribe-section-stub")).toBeNull();
+      expectNoBuyAffordances(queryByTestId, text);
+    });
   });
 
   // FV-584 (KC decision D1): a DEGRADED payer (e.g. past_due Stripe; an
@@ -727,6 +800,7 @@ describe("SubscribePage — duplicate-billing guard (FV-581)", () => {
     it.each([
       ["stripe", "You’re already subscribed. Manage your subscription from a web browser at fromvictoryapp.com."],
       ["apple", "You’re subscribed through the App Store. Manage it on your iPhone."],
+      ["google", "You’re subscribed through Google Play. Manage it on your Android phone."],
       ["comp", "You have access to From Victory."],
       [null, "You have access to From Victory."],
     ] as const)("provider %s → provider status, no subscribe notice, no link", async (provider, copy) => {
@@ -1035,7 +1109,7 @@ describe("SubscribePage — android-play renders exactly like legacy-native (FV-
     expect(play).not.toMatch(/\$5|\$49|\$3|\$29/);
   });
 
-  it.each(["stripe", "apple", "comp", null] as const)(
+  it.each(["stripe", "apple", "google", "comp", null] as const)(
     "entitled via %s: identical markup, provider status with no subscribe prompt",
     async (provider) => {
       asParent();

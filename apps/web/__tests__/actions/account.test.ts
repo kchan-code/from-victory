@@ -70,6 +70,45 @@ vi.mock("@/lib/auth/guards", () => ({
   requireSubscriber: () => requireSubscriberMock(),
 }));
 
+const {
+  notifyErrorMock,
+  cancelGoogleRenewalMock,
+  googleCancelableRowsMock,
+  getSubscriptionPurchaseV2Mock,
+} = vi.hoisted(() => ({
+  notifyErrorMock: vi.fn(async (..._args: unknown[]) => undefined),
+  cancelGoogleRenewalMock: vi.fn(async (..._args: unknown[]) => true),
+  getSubscriptionPurchaseV2Mock: vi.fn(
+    async (): Promise<
+      | {
+          ok: true;
+          purchase: {
+            latestOrderId: string | null;
+            status: string;
+          };
+        }
+      | { ok: false; reason: string }
+    > => ({
+      ok: true,
+      purchase: { latestOrderId: "GPA.1111-2222-3333-44444", status: "active" },
+    }),
+  ),
+  googleCancelableRowsMock: vi.fn(
+    async (): Promise<{
+      rows: Array<{
+        product_id: string;
+        purchase_token: string;
+        status: string;
+        expires_at: string | null;
+      }>;
+      readError: boolean;
+    }> => ({
+      rows: [],
+      readError: false,
+    }),
+  ),
+}));
+
 // Stripe client — only deleteAccount's cancel-before-delete step touches
 // this. Tests that don't reach the cancel step never call it.
 const stripeCancelMock = vi.fn(async (..._args: unknown[]) => ({}));
@@ -95,6 +134,19 @@ vi.mock("@/lib/monitoring/deliver", () => ({
     // Swallow so an unawaited rejection never fails the test run.
     void p.catch(() => {});
   },
+}));
+vi.mock("@/lib/monitoring/notify", () => ({
+  notifyError: (...args: unknown[]) => notifyErrorMock(...args),
+}));
+
+vi.mock("@/lib/subscriptions/google-play-api", () => ({
+  cancelSubscriptionRenewal: (...args: unknown[]) =>
+    cancelGoogleRenewalMock(...args),
+  getSubscriptionPurchaseV2: (...args: unknown[]) =>
+    getSubscriptionPurchaseV2Mock(...(args as [])),
+}));
+vi.mock("@/lib/subscriptions/google", () => ({
+  getGoogleCancelableSubscriptionsForPayer: googleCancelableRowsMock,
 }));
 
 // Anon server client — used only for deleteAccount's final signOut().
@@ -323,6 +375,12 @@ beforeEach(() => {
   requireSubscriberMock.mockImplementation(async () => ({ userId: PARENT_ID }));
   serviceMockImpl = makeServiceMock();
   isNativeShellMock.mockReturnValue(false);
+  googleCancelableRowsMock.mockResolvedValue({ rows: [], readError: false });
+  cancelGoogleRenewalMock.mockResolvedValue(true);
+  getSubscriptionPurchaseV2Mock.mockResolvedValue({
+    ok: true,
+    purchase: { latestOrderId: "GPA.1111-2222-3333-44444", status: "active" },
+  });
 });
 
 // ===========================================================================
@@ -483,6 +541,115 @@ describe("deleteAccount — happy path", () => {
     const deleteIdx = callOrder.indexOf(`delete_user:${PARENT_ID}`);
     expect(cancelIdx).toBeLessThan(deleteIdx);
   });
+
+  it("cancels every Google row that may still bill before deleting the parent", async () => {
+    googleCancelableRowsMock.mockResolvedValue({
+      rows: [
+        {
+          product_id: "family.5",
+          purchase_token: "tok_google_active",
+          status: "active",
+          expires_at: "2099-12-12T12:00:00.000Z",
+        },
+        {
+          product_id: "family.5",
+          purchase_token: "tok_google_hold",
+          status: "on_hold",
+          expires_at: "2099-12-10T12:00:00.000Z",
+        },
+        {
+          product_id: "family.5",
+          purchase_token: "tok_google_paused",
+          status: "paused",
+          expires_at: "2099-12-09T12:00:00.000Z",
+        },
+        {
+          product_id: "family.5",
+          purchase_token: "tok_google_null_expiry",
+          status: "expired",
+          expires_at: null,
+        },
+      ],
+      readError: false,
+    });
+    serviceMockImpl = makeServiceMock({
+      subscriptionRow: null,
+      parentLinks: [],
+    });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(cancelGoogleRenewalMock).toHaveBeenCalledTimes(4);
+    expect(cancelGoogleRenewalMock).toHaveBeenCalledWith("tok_google_active");
+    expect(cancelGoogleRenewalMock).toHaveBeenCalledWith("tok_google_hold");
+    expect(cancelGoogleRenewalMock).toHaveBeenCalledWith("tok_google_paused");
+    expect(cancelGoogleRenewalMock).toHaveBeenCalledWith("tok_google_null_expiry");
+    expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
+    expect(signOutMock).toHaveBeenCalledOnce();
+  });
+
+  it("Google cancel failure does not block deletion, raises an alert, and adds a post-signout notice", async () => {
+    googleCancelableRowsMock.mockResolvedValue({
+      rows: [
+        {
+          product_id: "family.2",
+          purchase_token: "tok_google_live",
+          status: "active",
+          expires_at: "2099-12-12T12:00:00.000Z",
+        },
+      ],
+      readError: false,
+    });
+    cancelGoogleRenewalMock.mockResolvedValue(false);
+    serviceMockImpl = makeServiceMock({
+      subscriptionRow: null,
+      parentLinks: [],
+    });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(cancelGoogleRenewalMock).toHaveBeenCalledTimes(2);
+    expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
+    expect(signOutMock).toHaveBeenCalledOnce();
+    expect(redirectMock).toHaveBeenCalledWith(
+      "/?account_deleted=1&google_play_cancel=1",
+    );
+    expect(notifyErrorMock).toHaveBeenCalledWith(
+      "[account.deleteAccount] Google Play cancel failed",
+      expect.stringContaining("cancel in Google Play"),
+    );
+    expect(notifyErrorMock).toHaveBeenCalledWith(
+      "[account.deleteAccount] Google Play cancel failed",
+      expect.stringContaining("com.fromvictoryapp.app/family.2"),
+    );
+    expect(notifyErrorMock).toHaveBeenCalledWith(
+      "[account.deleteAccount] Google Play cancel failed",
+      expect.stringContaining("order_id=GPA.1111-2222-3333-44444"),
+    );
+  });
+
+  it("Google read error does not block deletion and adds the post-signout notice", async () => {
+    googleCancelableRowsMock.mockResolvedValue({
+      rows: [],
+      readError: true,
+    });
+    serviceMockImpl = makeServiceMock({
+      subscriptionRow: null,
+      parentLinks: [],
+    });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(cancelGoogleRenewalMock).not.toHaveBeenCalled();
+    expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
+    expect(redirectMock).toHaveBeenCalledWith(
+      "/?account_deleted=1&google_play_cancel_unknown=1",
+    );
+    expect(notifyErrorMock).toHaveBeenCalledWith(
+      "[account.deleteAccount] Google Play cancel skipped",
+      expect.stringContaining("check Google Play subscriptions manually"),
+    );
+  });
 });
 
 describe("deleteAccount — auth-guard rejection", () => {
@@ -557,6 +724,41 @@ describe("deleteAccount — in-shell redirect target (FV-489)", () => {
 
     expect(redirectMock).toHaveBeenCalledWith("/");
     expect(redirectMock).not.toHaveBeenCalledWith("/signin");
+  });
+
+  it("includes the Google-cancel notice flag in the in-shell redirect when Play cancel fails", async () => {
+    isNativeShellMock.mockReturnValue(true);
+    googleCancelableRowsMock.mockResolvedValue({
+      rows: [
+        {
+          product_id: "family.1",
+          purchase_token: "tok_google_live",
+          status: "active",
+          expires_at: "2099-12-12T12:00:00.000Z",
+        },
+      ],
+      readError: false,
+    });
+    cancelGoogleRenewalMock.mockResolvedValue(false);
+    serviceMockImpl = makeServiceMock({ subscriptionRow: null, parentLinks: [] });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(redirectMock).toHaveBeenCalledWith(
+      "/signin?account_deleted=1&google_play_cancel=1",
+    );
+  });
+
+  it("uses the softer in-shell unknown flag when Google entitlement state could not be read", async () => {
+    isNativeShellMock.mockReturnValue(true);
+    googleCancelableRowsMock.mockResolvedValue({ rows: [], readError: true });
+    serviceMockImpl = makeServiceMock({ subscriptionRow: null, parentLinks: [] });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(redirectMock).toHaveBeenCalledWith(
+      "/signin?account_deleted=1&google_play_cancel_unknown=1",
+    );
   });
 });
 

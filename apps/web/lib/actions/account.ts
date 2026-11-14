@@ -1,5 +1,7 @@
 "use server";
 
+import { createHash } from "node:crypto";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -16,7 +18,14 @@ import {
 import { getStripe } from "@/lib/stripe/server";
 import { syncAthleteQuantity } from "@/lib/stripe/sync-athlete-quantity";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
+import { notifyError } from "@/lib/monitoring/notify";
 import { isNativeShell } from "@/lib/native-shell";
+import {
+  cancelSubscriptionRenewal,
+  getSubscriptionPurchaseV2,
+} from "@/lib/subscriptions/google-play-api";
+import { GOOGLE_PLAY_PACKAGE_NAME } from "@/lib/subscriptions/google-product-catalog";
+import { getGoogleCancelableSubscriptionsForPayer } from "@/lib/subscriptions/google";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -169,6 +178,10 @@ export async function deleteAthlete(
 
 export type DeleteAccountState = { ok: false; error: string } | null;
 
+function googleTokenTag(token: string): string {
+  return createHash("sha256").update(token.slice(-8)).digest("hex").slice(0, 12);
+}
+
 export async function deleteAccount(
   _prev: DeleteAccountState,
   formData: FormData,
@@ -186,6 +199,8 @@ export async function deleteAccount(
   // against the rest of this well-tested function.
   const { userId: parentId } = await requireSubscriber();
   const service = createServiceClient();
+  let googleCancelFailureNoticeRequired = false;
+  let googleCancelUnknownNoticeRequired = false;
 
   // ---------------------------------------------------------------------------
   // Rate limiting (FV-14): reject BEFORE any side effect — Stripe cancel OR DB
@@ -327,6 +342,52 @@ export async function deleteAccount(
   }
 
   // ---------------------------------------------------------------------------
+  // Step 1c (FV-663 / G5): best-effort Google Play renewal cancellation.
+  // Never blocks deletion. We cancel every row that may still bill, not just
+  // whichever row is currently carrying access.
+  // ---------------------------------------------------------------------------
+  const google = await getGoogleCancelableSubscriptionsForPayer(service, parentId);
+  if (google.readError) {
+    googleCancelUnknownNoticeRequired = true;
+    deliverInBackground(
+      notifyError(
+        "[account.deleteAccount] Google Play cancel skipped",
+        "Could not read Google entitlement state during account deletion; user should check Google Play subscriptions manually",
+      ),
+    );
+  } else {
+    const failedCancels: string[] = [];
+
+    for (const row of google.rows) {
+      let canceled = false;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        canceled = await cancelSubscriptionRenewal(row.purchase_token);
+        if (canceled) break;
+      }
+      if (!canceled) {
+        let orderId = "unknown";
+        const live = await getSubscriptionPurchaseV2(row.purchase_token);
+        if (live.ok && live.purchase.latestOrderId) {
+          orderId = live.purchase.latestOrderId;
+        }
+        failedCancels.push(
+          `${GOOGLE_PLAY_PACKAGE_NAME}/${row.product_id} order_id=${orderId} status=${row.status} expires=${row.expires_at ?? "null"} token_tag=${googleTokenTag(row.purchase_token)}`,
+        );
+      }
+    }
+
+    if (failedCancels.length > 0) {
+      googleCancelFailureNoticeRequired = true;
+      deliverInBackground(
+        notifyError(
+          "[account.deleteAccount] Google Play cancel failed",
+          `Google Play cancel failed during account deletion; user must cancel in Google Play. targets=${failedCancels.join(";")}`,
+        ),
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Step 2: Delete sole-managed athletes.
   //
   // Delete only athletes this parent SOLELY manages. An athlete also linked
@@ -417,9 +478,20 @@ export async function deleteAccount(
   // Clear the now-orphaned session cookies, then send them home.
   const supabase = await createClient();
   await supabase.auth.signOut();
+  let redirectUrl = "";
+  if (googleCancelFailureNoticeRequired) {
+    redirectUrl = "?account_deleted=1&google_play_cancel=1";
+  } else if (googleCancelUnknownNoticeRequired) {
+    redirectUrl = "?account_deleted=1&google_play_cancel_unknown=1";
+  }
+  if (googleCancelFailureNoticeRequired || googleCancelUnknownNoticeRequired) {
+    console.warn(
+      "[account.deleteAccount] account deleted but Google Play cancel was not confirmed; user should cancel in Google Play.",
+    );
+  }
   // Same shell/browser split as signOut() in lib/actions/auth.ts (FV-489):
   // "/" is the gated marketing root in-shell (real prices, trial CTA), a
   // Play Payments violation on this account-deletion sign-out too. Browser
   // behavior is unchanged.
-  redirect((await isNativeShell()) ? "/signin" : "/");
+  redirect((await isNativeShell()) ? `/signin${redirectUrl}` : `/${redirectUrl}`);
 }

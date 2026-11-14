@@ -49,6 +49,7 @@ import { APPLE_PRODUCT_CATALOG } from "@/lib/subscriptions/apple-product-catalog
 
 const PAYER_ID = "eeeeeeee-0000-4000-8000-000000000005";
 const CATALOG_FLAG = "APPLE_CATALOG_ACTIVE";
+const GOOGLE_CATALOG_FLAG = "GOOGLE_PLAY_CATALOG_ACTIVE";
 
 beforeEach(() => {
   getActiveAppleProductIdMock.mockReset();
@@ -60,6 +61,7 @@ beforeEach(() => {
   hasActiveCompGrantMock.mockReset();
   hasActiveCompGrantMock.mockResolvedValue(false);
   delete process.env[CATALOG_FLAG];
+  delete process.env[GOOGLE_CATALOG_FLAG];
 });
 
 // ---------------------------------------------------------------------------
@@ -112,9 +114,9 @@ describe("capacityForAppleProduct", () => {
 // ---------------------------------------------------------------------------
 
 describe("payerCapacityCeiling", () => {
-  it("returns null for provider 'stripe' regardless of any appleProductId noise (never capped)", () => {
+  it("returns null for provider 'stripe' regardless of any productId noise (never capped)", () => {
     expect(
-      payerCapacityCeiling({ provider: "stripe", appleProductId: "anything" }),
+      payerCapacityCeiling({ provider: "stripe", productId: "anything" }),
     ).toBeNull();
   });
 
@@ -132,8 +134,21 @@ describe("payerCapacityCeiling", () => {
 
   it("returns null for provider 'apple' with an unmapped product id (empty map today)", () => {
     expect(
-      payerCapacityCeiling({ provider: "apple", appleProductId: "tier_1" }),
+      payerCapacityCeiling({ provider: "apple", productId: "tier_1" }),
     ).toBeNull();
+  });
+
+  it("returns null for provider 'google' while the catalog is inactive", () => {
+    expect(
+      payerCapacityCeiling({ provider: "google", productId: "family.3" }),
+    ).toBeNull();
+  });
+
+  it("returns Google capacity when the catalog flag is on", () => {
+    process.env[GOOGLE_CATALOG_FLAG] = "1";
+    expect(
+      payerCapacityCeiling({ provider: "google", productId: "family.4" }),
+    ).toBe(4);
   });
 });
 
@@ -165,6 +180,58 @@ describe("assertAthleteCapacity", () => {
     const service = { marker: "service" };
     await assertAthleteCapacity(service as never, PAYER_ID, 0);
     expect(getActiveAppleProductIdMock).toHaveBeenCalledWith(service, PAYER_ID);
+  });
+
+  it("refuses adding a 6th athlete on Google family.5 tier", async () => {
+    process.env[GOOGLE_CATALOG_FLAG] = "1";
+    const service = {
+      from: (table: string) => {
+        if (table === "subscriptions") {
+          return {
+            select: () => ({
+              eq: () => ({
+                maybeSingle: async () => ({ data: null, error: null }),
+              }),
+            }),
+          };
+        }
+        if (table === "google_subscriptions") {
+          return {
+            select: () => ({
+              eq: () => ({
+                then: (
+                  resolve: (
+                    v: {
+                      data: Array<{
+                        product_id: string;
+                        status: string;
+                        expires_at: string;
+                      }>;
+                      error: null;
+                    },
+                  ) => void,
+                ) =>
+                  resolve({
+                    data: [
+                      {
+                        product_id: "family.5",
+                        status: "active",
+                        expires_at: "2099-01-01T00:00:00.000Z",
+                      },
+                    ],
+                    error: null,
+                  }),
+              }),
+            }),
+          };
+        }
+        throw new Error(`unexpected table: ${table}`);
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- reason: test double only
+    } as any;
+
+    const result = await assertAthleteCapacity(service, PAYER_ID, 5);
+    expect(result).toEqual({ allowed: false, reason: "capacity_reached" });
   });
 });
 

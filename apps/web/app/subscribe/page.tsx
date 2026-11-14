@@ -6,11 +6,16 @@ import { requireSubscriber } from "@/lib/auth/guards";
 import { createCheckoutSession, createAdultCheckoutSession } from "@/lib/actions/subscription";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
-import { getActiveAppleProductId } from "@/lib/subscriptions/apple";
+import {
+  getActiveAppleProductId,
+  hasEverHeldAppleEntitlement,
+} from "@/lib/subscriptions/apple";
 import { capacityForAppleProduct } from "@/lib/subscriptions/apple-capacity";
 import { getConfiguredAppleProducts } from "@/lib/subscriptions/apple-products";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { isSubscriptionEnforcementEnabled } from "@/lib/subscriptions/enforce";
+import { hasEverHeldGoogleEntitlement } from "@/lib/subscriptions/google";
+import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
 import { getPayerBillingIssue } from "@/lib/subscriptions/billing-issue";
 import { PaymentIssueNotice } from "@/components/billing/PaymentIssueNotice";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
@@ -110,8 +115,30 @@ export default async function SubscribePage(props: Props) {
 
     // Fail closed on a read error: never promise a trial the action (the
     // authoritative gate) might not grant.
+    let appleEverHeld = false;
+    let googleEverHeld = false;
+    let providerHistoryReadError = false;
+    if (
+      isGooglePlayCatalogActive() &&
+      subReadError === null &&
+      existingSub === null
+    ) {
+      try {
+        const service = createServiceClient();
+        appleEverHeld = await hasEverHeldAppleEntitlement(service, userId);
+        googleEverHeld = await hasEverHeldGoogleEntitlement(service, userId);
+      } catch {
+        providerHistoryReadError = true;
+      }
+    }
+
     trialEligible =
-      subReadError === null && existingSub === null && trialQuantityEligible;
+      subReadError === null &&
+      existingSub === null &&
+      trialQuantityEligible &&
+      !providerHistoryReadError &&
+      !appleEverHeld &&
+      !googleEverHeld;
   }
 
   // FV-710: failed-payment notice. `lapsed` always shows (this is where a
@@ -374,6 +401,8 @@ export default async function SubscribePage(props: Props) {
                   You&rsquo;re already subscribed. Manage your subscription
                   from a web browser at fromvictoryapp.com.
                 </>
+              ) : entitlementState.provider === "google" ? (
+                <>You&rsquo;re subscribed through Google Play. Manage it on your Android phone.</>
               ) : entitlementState.provider === "apple" ? (
                 <>
                   You&rsquo;re subscribed through the App Store. Manage it on
@@ -406,6 +435,12 @@ export default async function SubscribePage(props: Props) {
                 from a web browser at fromvictoryapp.com.
               </p>
             </StatusCard>
+          ) : entitlementState.provider === "google" ? (
+            <StatusCard testId="subscribe-status-entitled">
+              <p className="font-body text-cream/70 text-[15px] leading-relaxed">
+                You&rsquo;re subscribed through Google Play. Manage it on your Android phone.
+              </p>
+            </StatusCard>
           ) : (
             <StatusCard testId="subscribe-status-entitled">
               {/* FV-657: comp/free access is access, not a paid subscription. */}
@@ -419,6 +454,13 @@ export default async function SubscribePage(props: Props) {
             <p className="font-body text-cream/70 text-[15px] leading-relaxed">
               You&rsquo;re subscribed through the App Store.
               Manage it on your iPhone.
+            </p>
+          </StatusCard>
+        ) : entitlementState.provider === "google" ? (
+          <StatusCard testId="subscribe-status-entitled">
+            <p className="font-body text-cream/70 text-[15px] leading-relaxed">
+              You&rsquo;re subscribed through Google Play.
+              Manage it on your Android phone.
             </p>
           </StatusCard>
         ) : entitlementState.provider === "stripe" ? (

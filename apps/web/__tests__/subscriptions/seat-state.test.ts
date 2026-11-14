@@ -16,16 +16,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-// FV-745: seat state reads the CAPACITY accessor from ./apple-capacity (which
-// ignores a billing-retry Apple row for a payer who is paid elsewhere). The
-// mock keeps its old name; it now stands in for that accessor.
-const getActiveAppleProductIdMock = vi.fn();
-const payerCapacityCeilingMock = vi.fn();
+// FV-663: seat state reads the provider-aware capacity accessor from
+// ./apple-capacity.
+const getPayerCapacityCeilingMock = vi.fn();
 vi.mock("@/lib/subscriptions/apple-capacity", () => ({
-  getCapacityAppleProductId: (...args: unknown[]) =>
-    getActiveAppleProductIdMock(...args),
-  payerCapacityCeiling: (...args: unknown[]) =>
-    payerCapacityCeilingMock(...args),
+  getPayerCapacityCeiling: (...args: unknown[]) =>
+    getPayerCapacityCeilingMock(...args),
 }));
 
 const getUserMock = vi.fn();
@@ -47,8 +43,7 @@ const ATHLETE_B = "aaaaaaaa-0000-4000-8000-000000000002";
 const ATHLETE_C = "aaaaaaaa-0000-4000-8000-000000000003";
 
 beforeEach(() => {
-  getActiveAppleProductIdMock.mockReset();
-  payerCapacityCeilingMock.mockReset();
+  getPayerCapacityCeilingMock.mockReset();
   getUserMock.mockReset();
 });
 
@@ -180,7 +175,7 @@ function makeService(linksResult: { data: unknown; error: { message: string } | 
 
 describe("getPayerSeatState", () => {
   it("resolves uncapped when the payer has no active Apple product", async () => {
-    getActiveAppleProductIdMock.mockResolvedValue(null);
+    getPayerCapacityCeilingMock.mockResolvedValue(null);
     const service = makeService({
       data: [{ athlete_id: ATHLETE_A, seat_active: true }],
       error: null,
@@ -188,14 +183,12 @@ describe("getPayerSeatState", () => {
 
     const result = await getPayerSeatState(service, PARENT_ID);
 
-    expect(payerCapacityCeilingMock).not.toHaveBeenCalled();
     expect(result.status).toBe("uncapped");
     expect(result.readError).toBeUndefined();
   });
 
   it("folds a numeric Apple ceiling through deriveSeatState", async () => {
-    getActiveAppleProductIdMock.mockResolvedValue("apple.tier.two");
-    payerCapacityCeilingMock.mockReturnValue(2);
+    getPayerCapacityCeilingMock.mockResolvedValue(2);
     const service = makeService({
       data: [
         { athlete_id: ATHLETE_A, seat_active: true },
@@ -213,8 +206,7 @@ describe("getPayerSeatState", () => {
   });
 
   it("fails OPEN (uncapped, readError=true) when the links read errors — never locks an athlete out on a transient failure", async () => {
-    getActiveAppleProductIdMock.mockResolvedValue("apple.tier.two");
-    payerCapacityCeilingMock.mockReturnValue(2);
+    getPayerCapacityCeilingMock.mockResolvedValue(2);
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const service = makeService({
       data: null,
@@ -231,7 +223,7 @@ describe("getPayerSeatState", () => {
   });
 
   it("adult_athlete payer (no active Apple product, no links) resolves uncapped, never paused", async () => {
-    getActiveAppleProductIdMock.mockResolvedValue(null);
+    getPayerCapacityCeilingMock.mockResolvedValue(null);
     const service = makeService({ data: [], error: null });
 
     const result = await getPayerSeatState(service, PARENT_ID);
