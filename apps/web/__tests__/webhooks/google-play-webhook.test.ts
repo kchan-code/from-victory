@@ -535,7 +535,7 @@ describe("each Google state is written as Google reports it and maps to the reco
     ["ACTIVE", { state: "SUBSCRIPTION_STATE_ACTIVE" }, "active", "full", true],
     ["CANCELED, not yet expired", { state: "SUBSCRIPTION_STATE_CANCELED", autoRenew: false }, "canceled", "full", true],
     ["IN_GRACE_PERIOD", { state: "SUBSCRIPTION_STATE_IN_GRACE_PERIOD" }, "in_grace_period", "full", true],
-    ["ON_HOLD (decision G3: degraded)", { state: "SUBSCRIPTION_STATE_ON_HOLD" }, "on_hold", "degraded", false],
+    ["ON_HOLD (FV-710: blocked)", { state: "SUBSCRIPTION_STATE_ON_HOLD" }, "on_hold", "blocked", false],
     ["PAUSED", { state: "SUBSCRIPTION_STATE_PAUSED" }, "paused", "blocked", false],
     ["EXPIRED", { state: "SUBSCRIPTION_STATE_EXPIRED", expiryTime: PAST }, "expired", "blocked", false],
     ["PENDING", { state: "SUBSCRIPTION_STATE_PENDING", expiryTime: null }, "pending", "blocked", false],
@@ -554,11 +554,11 @@ describe("each Google state is written as Google reports it and maps to the reco
     });
   }
 
-  it("on hold stays degraded even with an expiry in the past (no time gate), via the one existing mapping", async () => {
+  it("on hold stays blocked even with an expiry in the past (no time gate), via the one existing mapping", async () => {
     seedRow();
     googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_ON_HOLD", expiryTime: PAST });
     await push(subNote());
-    expect(levelOf(SENTINEL_TOKEN)).toBe("degraded");
+    expect(levelOf(SENTINEL_TOKEN)).toBe("blocked");
   });
 
   it("the notification type is never trusted: a 'canceled'-typed message with Google ACTIVE writes active", async () => {
@@ -642,7 +642,7 @@ describe("voided purchases and revokes remove access (AC4)", () => {
     expect(levelOf(SENTINEL_TOKEN)).toBe("blocked");
   });
 
-  it("an on-hold (degraded) row that is voided is closed too", async () => {
+  it("an on-hold (blocked) row that is voided is closed too", async () => {
     seedRow({ status: "on_hold", expires_at: PAST });
     googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_ON_HOLD", expiryTime: PAST, acknowledged: true });
     await push(voidNote());
