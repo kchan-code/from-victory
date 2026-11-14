@@ -76,6 +76,14 @@ enum OfflineEntryFallback {
         return URLComponents(string: currentURL)?.host?.lowercased() == "fv-offline.invalid"
     }
 
+    /// True only for the exact address `showOfflinePage` loads the bundled
+    /// HTML under. Used to keep that load inside the WebView: Capacitor's
+    /// allow-list would otherwise treat it as an outside link and hand it to
+    /// Safari.
+    static func isOfflinePageLoad(_ url: String?) -> Bool {
+        url == offlinePageBase
+    }
+
     static func pregameURLString(_ appURL: String?) -> String? {
         guard let appURL, let app = URLComponents(string: appURL), let host = app.host, !host.isEmpty else {
             return nil
