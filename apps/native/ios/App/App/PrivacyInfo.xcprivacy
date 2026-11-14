@@ -5,7 +5,7 @@
 	<!-- FV-721. App-target manifest. Tracking is off. Collected types match the
 	     nutrition-label intent in docs/ios-app-store-release.md section 9,
 	     including the hosted WebView, not only native APIs. Checked against
-	     the live App Store Connect answers on 2026-11-13 (FV-722): the six
+	     the live App Store Connect answers on 2026-11-13 (FV-722): the seven
 	     types, purposes, linked and tracking values below match the published
 	     label. Keep the two in step when either changes. Date of birth has no dedicated
 	     manifest type; it is declared as Other Data Types. Do not switch that
@@ -105,6 +105,33 @@
 			<string>NSPrivacyCollectedDataTypeOtherDataTypes</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
 			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<!-- FV-722: Product Personalization as well as App Functionality.
+			     Besides date of birth this type covers sport, position and
+			     focus area, which tailor what the athlete sees. The optional
+			     game date is also here; it only times a reminder and is then
+			     cleared (App Functionality). -->
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+				<string>NSPrivacyCollectedDataTypePurposeProductPersonalization</string>
+			</array>
+		</dict>
+		<!-- FV-722: automated error reports (apps/web/app/api/client-error,
+		     FV-729). When a screen fails to load the app sends the screen's
+		     path, the app shell type, the build, and an error message of at
+		     most 160 characters with emails, ids and tokens stripped. NOT
+		     linked: the handler reads no cookie or session and accepts no
+		     user id, account ids in the path become ":id", and nothing is
+		     written to the database. If the report ever carries an account
+		     identifier, this must become linked here AND on the App Store
+		     Connect label. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeOtherDiagnosticData</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
 			<false/>
 			<key>NSPrivacyCollectedDataTypePurposes</key>

@@ -442,21 +442,26 @@ Source of truth for the native shell: [docs/native-capacitor.md](./native-capaci
 Privacy posture. Plugin allowlist is core / app / splash-screen / status-bar
 only. `INTERNET` only. `allowBackup=false`. No Advertising ID.
 
-### Live answers as read on 2026-11-13 (FV-722)
+### Data safety answers, 2026-11-13 (FV-722)
 
-From the public listing's Data safety page:
+**Live on the public listing** (published 2026-11-13; read back from the
+public Data safety page the same day). No data shared; encrypted in transit;
+deletion can be requested. Collected:
 
-- **Shared with third parties:** none declared.
-- **Collected:** Device or other IDs; Financial info (Purchase history);
-  Personal info (Name, Email address, User IDs, Other info); App activity (App
-  interactions).
-- **Security practices:** data encrypted in transit; users can request deletion.
+| Data type | Purposes |
+|---|---|
+| Name | App functionality, Account management |
+| Email address | App functionality, Developer communications, Account management |
+| User IDs | App functionality, Account management |
+| Other info | App functionality, Personalization, Account management |
+| Purchase history | App functionality, Account management |
+| Diagnostics | App functionality |
+| App interactions | App functionality, Analytics, Personalization |
 
-Compared with what the shipped app collects, no missing category was found.
-The purposes selected for each type were not read (the console form was not
-opened step by step); check that App interactions includes **Analytics**,
-because first-party usage events (`activity_events`) are used to count active
-and returning athletes.
+All collected, none shared, none ephemeral, all required. Device or other IDs
+was removed from the declaration on 2026-11-13: nothing in the Android app
+collects one (web push endpoints are web only). Diagnostics covers
+the automated error report (`apps/web/app/api/client-error`, FV-729).
 
 ### Declare (typical — confirm against the live privacy policy)
 
