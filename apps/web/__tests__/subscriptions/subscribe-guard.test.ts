@@ -54,6 +54,14 @@ let appleSubsProductionSingleResult: Result<{
   grace_period_expires_at: string | null;
 } | null>;
 let allowlistResult: Result<{ payer_id: string } | null>;
+let googleSubsListResult: Result<
+  Array<{
+    product_id: string;
+    purchase_token: string;
+    status: string;
+    expires_at: string | null;
+  }>
+>;
 
 function resetState() {
   accessGrantsResult = { data: [], error: null };
@@ -61,6 +69,8 @@ function resetState() {
   appleSubsListResult = { data: [], error: null };
   appleSubsProductionSingleResult = { data: null, error: null };
   allowlistResult = { data: null, error: null };
+  googleSubsListResult = { data: [], error: null };
+  delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
 }
 
 beforeEach(() => {
@@ -129,6 +139,8 @@ function makeServiceMock() {
           });
         case "apple_sandbox_testers":
           return makeTable({ single: allowlistResult });
+        case "google_subscriptions":
+          return makeTable({ list: googleSubsListResult as Result<unknown[]> });
         default:
           throw new Error(`unexpected table: ${table}`);
       }
@@ -151,6 +163,10 @@ import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guar
 // ---------------------------------------------------------------------------
 
 describe("getSubscribeEntitlementState", () => {
+  beforeEach(() => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+  });
+
   it("entitled via Apple: Production row with status=subscribed", async () => {
     appleSubsListResult = {
       data: [
@@ -311,6 +327,23 @@ describe("getSubscribeEntitlementState", () => {
     expect(result).toEqual({ status: "entitled", provider: "apple" });
   });
 
+  it("entitled via Google when Apple/Stripe/comp do not carry access", async () => {
+    googleSubsListResult = {
+      data: [
+        {
+          product_id: "family.3",
+          purchase_token: "tok_google",
+          status: "active",
+          expires_at: FUTURE_ISO,
+        },
+      ],
+      error: null,
+    };
+
+    const result = await getSubscribeEntitlementState(PAYER_ID);
+    expect(result).toEqual({ status: "entitled", provider: "google" });
+  });
+
   it("read error: access_grants -> unknown, never not_entitled", async () => {
     accessGrantsResult = { data: [], error: { message: "connection timeout" } };
 
@@ -334,6 +367,13 @@ describe("getSubscribeEntitlementState", () => {
 
   it("read error: apple_sandbox_testers -> unknown, never not_entitled", async () => {
     allowlistResult = { data: null, error: { message: "connection timeout" } };
+
+    const result = await getSubscribeEntitlementState(PAYER_ID);
+    expect(result).toEqual({ status: "unknown", provider: null });
+  });
+
+  it("read error: google_subscriptions -> unknown, never not_entitled", async () => {
+    googleSubsListResult = { data: [], error: { message: "connection timeout" } };
 
     const result = await getSubscribeEntitlementState(PAYER_ID);
     expect(result).toEqual({ status: "unknown", provider: null });

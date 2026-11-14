@@ -27,6 +27,8 @@ import type { Database } from "@/lib/supabase/types";
 import { subscriptionAccessLevel, type SubscriptionStatus } from "./access-level";
 import { getActiveAppleProductId, getActiveAppleProductIdResult } from "./apple";
 import { catalogCapacityMap, isAppleCatalogActive } from "./apple-product-catalog";
+import { googleCapacityForProduct } from "./google-product-catalog";
+import { getGoogleEntitlementSnapshotForPayer } from "./google";
 import { hasActiveCompGrant } from "./grants";
 
 type ServiceClient = SupabaseClient<Database>;
@@ -104,7 +106,7 @@ export function capacityForAppleProduct(productId: string): number | null {
 // Provider-aware ceiling resolution
 // ---------------------------------------------------------------------------
 
-export type CapacityProvider = "stripe" | "comp" | "apple" | "none";
+export type CapacityProvider = "stripe" | "comp" | "apple" | "google" | "none";
 
 /**
  * Resolves the athlete-count ceiling for a payer's provider.
@@ -115,12 +117,13 @@ export type CapacityProvider = "stripe" | "comp" | "apple" | "none";
  * then only when the product id is in the (currently empty) capacity map.
  *
  * @param input.provider        The payer's resolved entitlement provider.
- * @param input.appleProductId  The payer's active Apple product id, if
- *                               provider === "apple". Ignored otherwise.
+ * @param input.productId       The payer's active provider product id, if
+ *                               provider === "apple" | "google". Ignored
+ *                               otherwise.
  */
 export function payerCapacityCeiling(input: {
   provider: CapacityProvider;
-  appleProductId?: string | null;
+  productId?: string | null;
 }): number | null {
   if (input.provider === "stripe" || input.provider === "comp") {
     // Stripe families are never capped — explicit invariant (record §4.6).
@@ -128,8 +131,13 @@ export function payerCapacityCeiling(input: {
   }
 
   if (input.provider === "apple") {
-    if (!input.appleProductId) return null;
-    return capacityForAppleProduct(input.appleProductId);
+    if (!input.productId) return null;
+    return capacityForAppleProduct(input.productId);
+  }
+
+  if (input.provider === "google") {
+    if (!input.productId) return null;
+    return googleCapacityForProduct(input.productId);
   }
 
   // "none" — no provider at all (e.g. a payer who hasn't subscribed yet).
@@ -198,6 +206,51 @@ export async function getCapacityAppleProductId(
 }
 
 /**
+ * The Google product that sets this payer's athlete ceiling, or null when no
+ * Google entitlement is currently carrying access. Dormant while
+ * GOOGLE_PLAY_CATALOG_ACTIVE is off (google snapshot returns blocked/null).
+ *
+ * Uses the same fail-open direction as the Apple accessor above: read errors
+ * or non-entitling rows resolve uncapped (null), never a false cap.
+ */
+export async function getCapacityGoogleProductId(
+  service: ServiceClient,
+  payerId: string,
+): Promise<string | null> {
+  const google = await getGoogleEntitlementSnapshotForPayer(service, payerId);
+  if (google.readError) return null;
+  if (google.level === "blocked") return null;
+  return google.activeProductId;
+}
+
+/**
+ * Provider-aware athlete ceiling (Apple first, then Google). Stripe/comp/none
+ * remain uncapped.
+ */
+export async function getPayerCapacityCeiling(
+  service: ServiceClient,
+  payerId: string,
+): Promise<number | null> {
+  const appleProductId = await getCapacityAppleProductId(service, payerId);
+  if (appleProductId) {
+    return payerCapacityCeiling({
+      provider: "apple",
+      productId: appleProductId,
+    });
+  }
+
+  const googleProductId = await getCapacityGoogleProductId(service, payerId);
+  if (googleProductId) {
+    return payerCapacityCeiling({
+      provider: "google",
+      productId: googleProductId,
+    });
+  }
+
+  return null;
+}
+
+/**
  * Server-side add-gate: determines whether a payer may add another athlete.
  *
  * Resolves the payer's provider by checking for an active Apple subscription
@@ -230,23 +283,11 @@ export async function assertAthleteCapacity(
   payerId: string,
   currentAthleteCount: number,
 ): Promise<AssertAthleteCapacityResult> {
-  const appleProductId = await getCapacityAppleProductId(service, payerId);
-
-  if (!appleProductId) {
-    // No active Apple subscription — not an Apple payer for capacity
-    // purposes (Stripe/comp/none payers are never capped here).
-    return { allowed: true };
-  }
-
-  const ceiling = payerCapacityCeiling({
-    provider: "apple",
-    appleProductId,
-  });
+  const ceiling = await getPayerCapacityCeiling(service, payerId);
 
   if (ceiling === null) {
-    // No ceiling data for this product id (empty map, or an unmapped
-    // product) — fail open for adds. See capacityForAppleProduct's doc
-    // comment for the rationale.
+    // No active Apple/Google subscription carrying capacity, or no ceiling
+    // data for that provider's current product — fail open for adds.
     return { allowed: true };
   }
 

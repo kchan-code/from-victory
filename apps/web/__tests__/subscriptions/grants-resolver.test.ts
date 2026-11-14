@@ -42,7 +42,7 @@ vi.mock("@/lib/subscriptions/apple", async (importOriginal) => {
   };
 });
 
-const payerCapacityCeilingMock = vi.fn(() => null as number | null);
+const payerCapacityCeilingMock = vi.fn((..._args: unknown[]) => null as number | null);
 vi.mock("@/lib/subscriptions/apple-capacity", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/subscriptions/apple-capacity")>();
   return {
@@ -54,6 +54,11 @@ vi.mock("@/lib/subscriptions/apple-capacity", async (importOriginal) => {
       getActiveAppleProductIdMock(...(args as [])),
     payerCapacityCeiling: (...args: unknown[]) =>
       payerCapacityCeilingMock(...(args as [])),
+    getPayerCapacityCeiling: async (...args: unknown[]) => {
+      const productId = await getActiveAppleProductIdMock(...(args as []));
+      if (!productId) return null;
+      return payerCapacityCeilingMock({ provider: "apple", productId });
+    },
   };
 });
 
@@ -86,6 +91,14 @@ let appleSubRows: AppleSubRow[] = [];
 let appleSubSelectError: { message: string } | null = null;
 let appleAllowlistRow: { payer_id: string } | null = null;
 let appleAllowlistError: { message: string } | null = null;
+type GoogleSubRow = {
+  product_id: string;
+  purchase_token: string;
+  status: string;
+  expires_at: string | null;
+};
+let googleSubRows: GoogleSubRow[] = [];
+let googleSubSelectError: { message: string } | null = null;
 
 // FV-585: parent_athlete_links rows as read by lib/subscriptions/seat-state.ts
 // via the SERVICE-ROLE client (distinct from the RLS-scoped `rlsLinkParentId`
@@ -151,6 +164,17 @@ function makeServiceMock() {
             data: appleAllowlistRow,
             error: appleAllowlistError,
           }),
+        };
+      }
+      if (table === "google_subscriptions") {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          then: (
+            resolve: (
+              v: { data: GoogleSubRow[]; error: typeof googleSubSelectError },
+            ) => void,
+          ) => resolve({ data: googleSubRows, error: googleSubSelectError }),
         };
       }
       if (table === "parent_athlete_links") {
@@ -345,6 +369,21 @@ function setAppleError() {
   appleSubRows = [];
   appleSubSelectError = { message: "apple DB error" };
 }
+function resetGoogleState() {
+  googleSubRows = [];
+  googleSubSelectError = null;
+  delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
+}
+function setGoogleRows(rows: GoogleSubRow[]) {
+  googleSubRows = rows;
+  googleSubSelectError = null;
+  process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+}
+function setGoogleError() {
+  googleSubRows = [];
+  googleSubSelectError = { message: "google DB error" };
+  process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+}
 
 // File-level hook (runs before every test in this file, ahead of any
 // describe-scoped beforeEach): keeps the Apple mock state from leaking
@@ -352,6 +391,7 @@ function setAppleError() {
 // state inside their own `it()` body via the setApple* helpers above.
 beforeEach(() => {
   resetAppleState();
+  resetGoogleState();
   resetSeatLinks();
   getActiveAppleProductIdMock.mockReset();
   getActiveAppleProductIdMock.mockResolvedValue(null);
@@ -763,6 +803,7 @@ describe("getParentAccessLevel — Apple provider fold (FV-570)", () => {
     setGrantNone();
     setSubscriptionNone();
     resetAppleState();
+    resetGoogleState();
   });
 
   it("comp grant short-circuit is unchanged — full even with Apple state present", async () => {
@@ -816,6 +857,58 @@ describe("getParentAccessLevel — Apple provider fold (FV-570)", () => {
   it("Apple in_billing_retry (Production) is blocked and folds with blocked Stripe to blocked (FV-710)", async () => {
     setSubscriptionNone(); // stripeLevel = blocked
     setAppleProductionRow("in_billing_retry");
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("blocked");
+  });
+});
+
+describe("getParentAccessLevel — provider matrix with Google (FV-663)", () => {
+  const g = (status: string): GoogleSubRow => ({
+    product_id: "family.1",
+    purchase_token: "tok_google",
+    status,
+    expires_at: FUTURE_ISO,
+  });
+
+  beforeEach(() => {
+    setGrantNone();
+    setSubscriptionNone();
+    resetAppleState();
+    resetGoogleState();
+  });
+
+  it("blocked everywhere (comp/stripe/apple/google) -> blocked", async () => {
+    setSubscription("canceled");
+    setAppleProductionRow("revoked");
+    setGoogleRows([g("expired")]);
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("blocked");
+  });
+
+  it("google active upgrades a blocked stripe+apple payer to full", async () => {
+    setSubscription("canceled");
+    setAppleProductionRow("revoked");
+    setGoogleRows([g("active")]);
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("google on_hold stays blocked (G3) while stripe past_due carries degraded", async () => {
+    setSubscription("past_due");
+    setAppleProductionRow("revoked");
+    setGoogleRows([g("on_hold")]);
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("degraded");
+  });
+
+  it("comp still short-circuits full, regardless of Google state", async () => {
+    setGrantActive();
+    setSubscription("canceled");
+    setAppleProductionRow("revoked");
+    setGoogleRows([g("expired")]);
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("google read error is fail-closed and does not upgrade blocked providers", async () => {
+    setSubscription("canceled");
+    setAppleProductionRow("revoked");
+    setGoogleError();
     expect(await getParentAccessLevel(PARENT_ID)).toBe("blocked");
   });
 });

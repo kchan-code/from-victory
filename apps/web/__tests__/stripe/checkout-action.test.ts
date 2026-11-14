@@ -108,6 +108,11 @@ vi.mock("@/lib/subscriptions/apple", () => ({
   hasEverHeldAppleEntitlement: (...args: unknown[]) =>
     hasEverHeldAppleEntitlementMock(...args),
 }));
+const hasEverHeldGoogleEntitlementMock = vi.fn();
+vi.mock("@/lib/subscriptions/google", () => ({
+  hasEverHeldGoogleEntitlement: (...args: unknown[]) =>
+    hasEverHeldGoogleEntitlementMock(...args),
+}));
 
 // FV-581: entitlement-guard stub. Defaults to "not_entitled" (set per-test
 // below) so every pre-existing test in this file is unaffected.
@@ -181,6 +186,7 @@ function makeFormData(plan: "monthly" | "annual"): FormData {
 // mockResolvedValue — so this only needs to run once. Individual FV-570
 // tests override it directly.
 hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
 
 // File-level default (FV-581): same rationale — "not_entitled" so every
 // pre-existing test proceeds through checkout exactly as before. The
@@ -613,6 +619,7 @@ describe("createCheckoutSession — cross-provider Apple trial history (FV-570)"
     });
     // Default: never held an Apple entitlement. Individual tests override.
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+    hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
   });
 
   it("no Stripe row + apple-history=true → NO trial (Apple history blocks a fresh Stripe trial)", async () => {
@@ -632,6 +639,7 @@ describe("createCheckoutSession — cross-provider Apple trial history (FV-570)"
   it("no Stripe row + apple-history=false → trial still granted (existing behavior preserved)", async () => {
     supabaseMockImpl = makeSubMock(null);
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+    hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
 
     await createCheckoutSession(null, makeFormData("monthly"));
 
@@ -664,6 +672,7 @@ describe("createCheckoutSession — cross-provider Apple trial history (FV-570)"
     // deny a trial.
     supabaseMockImpl = makeSubMock({ stripe_customer_id: "cus_existing" });
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+    hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
 
     await createCheckoutSession(null, makeFormData("monthly"));
 
@@ -671,6 +680,32 @@ describe("createCheckoutSession — cross-provider Apple trial history (FV-570)"
     expect(
       (params.subscription_data as Record<string, unknown>).trial_period_days,
     ).toBeUndefined();
+  });
+
+  it("no Stripe row + google-history=true -> NO trial (Google history blocks a fresh Stripe trial)", async () => {
+    supabaseMockImpl = makeSubMock(null);
+    hasEverHeldGoogleEntitlementMock.mockResolvedValue(true);
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(
+      (params.subscription_data as Record<string, unknown>).trial_period_days,
+    ).toBeUndefined();
+    expect(params.payment_method_collection).toBeUndefined();
+  });
+
+  it("fails CLOSED when the Google entitlement-history read throws — no trial granted, no Stripe call", async () => {
+    supabaseMockImpl = makeSubMock(null);
+    hasEverHeldGoogleEntitlementMock.mockRejectedValue(
+      new Error("google_subscriptions read failed"),
+    );
+
+    const result = await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(result?.ok).toBe(false);
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
   });
 });
 
@@ -697,6 +732,7 @@ describe("createCheckoutSession — one-athlete trial gate (FV-574)", () => {
       url: "https://checkout.stripe.com/pay/cs_test",
     });
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+    hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
   });
 
   it("multi-athlete first checkout (3 athletes) → quantity 3 but NO trial fields", async () => {
@@ -807,6 +843,7 @@ describe("startSubscriptionCheckout — native-shell refusal guard (FV-715)", ()
       url: "https://checkout.stripe.com/pay/cs_test",
     });
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+    hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
     getSubscribeEntitlementStateMock.mockResolvedValue({
       status: "not_entitled",
       provider: null,
@@ -888,6 +925,7 @@ describe("startSubscriptionCheckout — duplicate-billing guard (FV-581)", () =>
       url: "https://checkout.stripe.com/pay/cs_test",
     });
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
+    hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
     supabaseMockImpl = makeSubMock(null);
   });
 

@@ -79,11 +79,13 @@
  *   Trial eligibility additionally requires that the account has NEVER held a
  *   Production Apple entitlement (`hasEverHeldAppleEntitlement`, scoped to
  *   Production only — see that function's doc comment for why Sandbox rows
- *   don't count). This stops a payer who already had a real trial/subscription
- *   on iOS from getting a second free trial on the web. The Apple-mirror read
- *   uses the SAME fail-closed contract as the existing Stripe read immediately
- *   below (PR #185): a read error aborts checkout through the identical
- *   user-facing error path rather than risking a duplicate trial.
+ *   don't count) OR a Google entitlement
+ *   (`hasEverHeldGoogleEntitlement`). This stops a payer who already had a
+ *   real trial/subscription on iOS or Android from getting a second free
+ *   trial on the web. These reads use the SAME fail-closed contract as the
+ *   existing Stripe read immediately below (PR #185): a read error aborts
+ *   checkout through the identical user-facing error path rather than
+ *   risking a duplicate trial.
  *   (The 7-day/one-athlete trial-DURATION policy itself is FV-574 — see the
  *   trial-strategy section above.)
  *
@@ -141,6 +143,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { planToPriceEnvVar } from "@/lib/subscriptions/plans";
 import { hasEverHeldAppleEntitlement } from "@/lib/subscriptions/apple";
+import { hasEverHeldGoogleEntitlement } from "@/lib/subscriptions/google";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 
 // ---------------------------------------------------------------------------
@@ -322,16 +325,18 @@ async function startSubscriptionCheckout(
   // must never risk granting a trial the account shouldn't have, so it
   // aborts checkout through the identical user-facing error path.
   let appleEverHeld: boolean;
+  let googleEverHeld: boolean;
   try {
     const service = createServiceClient();
     appleEverHeld = await hasEverHeldAppleEntitlement(service, accountId);
+    googleEverHeld = await hasEverHeldGoogleEntitlement(service, accountId);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(
-      `[subscription.startSubscriptionCheckout] apple entitlement read failed (account=${accountId}): ${message}`,
+      `[subscription.startSubscriptionCheckout] cross-provider entitlement read failed (account=${accountId}): ${message}`,
     );
     deliverInBackground(
-      notifyError("[checkout] apple entitlement read failed", message, {
+      notifyError("[checkout] cross-provider entitlement read failed", message, {
         parent_id: accountId,
       }),
     );
@@ -344,12 +349,15 @@ async function startSubscriptionCheckout(
   // Trial is ONLY offered when there is no existing Stripe row AND the
   // account never held a Production Apple entitlement AND the checkout
   // starts with exactly one athlete seat (FV-574). If ANY Stripe row exists
-  // (any status — active, canceled, trialing) OR Apple entitlement history
-  // exists, the account has already had a trial on one provider or the
-  // other; if the checkout is multi-athlete, the KC-approved offering grants
-  // no trial.
+  // (any status — active, canceled, trialing) OR Apple/Google entitlement
+  // history exists, the account has already had a trial on one provider or
+  // the other; if the checkout is multi-athlete, the KC-approved offering
+  // grants no trial.
   const isTrialEligible =
-    existingSub === null && !appleEverHeld && trialQuantityEligible;
+    existingSub === null &&
+    !appleEverHeld &&
+    !googleEverHeld &&
+    trialQuantityEligible;
 
   // 5. Build site URL for success/cancel redirects.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";

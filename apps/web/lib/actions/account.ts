@@ -16,7 +16,10 @@ import {
 import { getStripe } from "@/lib/stripe/server";
 import { syncAthleteQuantity } from "@/lib/stripe/sync-athlete-quantity";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
+import { notifyError } from "@/lib/monitoring/notify";
 import { isNativeShell } from "@/lib/native-shell";
+import { cancelSubscriptionRenewal } from "@/lib/subscriptions/google-play-api";
+import { getGoogleEntitlementSnapshotForPayer } from "@/lib/subscriptions/google";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -186,6 +189,7 @@ export async function deleteAccount(
   // against the rest of this well-tested function.
   const { userId: parentId } = await requireSubscriber();
   const service = createServiceClient();
+  let googleCancelNoticeRequired = false;
 
   // ---------------------------------------------------------------------------
   // Rate limiting (FV-14): reject BEFORE any side effect — Stripe cancel OR DB
@@ -327,6 +331,38 @@ export async function deleteAccount(
   }
 
   // ---------------------------------------------------------------------------
+  // Step 1c (FV-663 / G5): for a Google-entitled payer, cancel renewal in
+  // Google Play. This is best effort: a cancel failure NEVER blocks deletion.
+  // We retry once; if still failing, deletion proceeds and ops is alerted so
+  // support can intervene.
+  // ---------------------------------------------------------------------------
+  const google = await getGoogleEntitlementSnapshotForPayer(service, parentId);
+  if (google.readError) {
+    googleCancelNoticeRequired = true;
+    deliverInBackground(
+      notifyError(
+        "[account.deleteAccount] Google Play cancel skipped",
+        "Could not read Google entitlement state during account deletion; user must cancel in Google Play",
+      ),
+    );
+  } else if (google.activePurchaseToken && google.activeProductId) {
+    let canceled = false;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      canceled = await cancelSubscriptionRenewal(google.activePurchaseToken);
+      if (canceled) break;
+    }
+    if (!canceled) {
+      googleCancelNoticeRequired = true;
+      deliverInBackground(
+        notifyError(
+          "[account.deleteAccount] Google Play cancel failed",
+          "Google Play cancel failed during account deletion; user must cancel in Google Play",
+        ),
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Step 2: Delete sole-managed athletes.
   //
   // Delete only athletes this parent SOLELY manages. An athlete also linked
@@ -417,6 +453,11 @@ export async function deleteAccount(
   // Clear the now-orphaned session cookies, then send them home.
   const supabase = await createClient();
   await supabase.auth.signOut();
+  if (googleCancelNoticeRequired) {
+    console.warn(
+      "[account.deleteAccount] account deleted but Google Play cancel was not confirmed; user should cancel in Google Play.",
+    );
+  }
   // Same shell/browser split as signOut() in lib/actions/auth.ts (FV-489):
   // "/" is the gated marketing root in-shell (real prices, trial CTA), a
   // Play Payments violation on this account-deletion sign-out too. Browser

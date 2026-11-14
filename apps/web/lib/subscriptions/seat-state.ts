@@ -55,7 +55,7 @@ import type { Database } from "@/lib/supabase/types";
 
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getCapacityAppleProductId, payerCapacityCeiling } from "./apple-capacity";
+import { getPayerCapacityCeiling } from "./apple-capacity";
 
 type ServiceClient = SupabaseClient<Database>;
 
@@ -161,16 +161,13 @@ export type PayerSeatState = SeatState & {
 /**
  * Resolves the seat state for a payer (parent or adult_athlete profile id).
  *
- * Capacity resolution mirrors `assertAthleteCapacity` exactly: the
- * `getCapacityAppleProductId` (`./apple-capacity`, FV-745; it wraps the
- * sanctioned `./apple` accessor) determines whether an Apple plan caps this
- * payer at all — Production, or Sandbox for an
- * allowlisted payer (record §4.9, FV-596); `payerCapacityCeiling` maps that
- * to a numeric ceiling (or `null` for stripe/comp/none/unmapped-Apple-product,
- * per the §4.6 invariant). That accessor itself never throws —
- * it logs and returns `null` on any read error — so a transient
- * `apple_subscriptions` hiccup here already resolves to "uncapped" by
- * construction, matching this module's fail-OPEN direction.
+ * Capacity resolution mirrors `assertAthleteCapacity` exactly via
+ * `getPayerCapacityCeiling` (`./apple-capacity`, FV-745/FV-663): Apple and
+ * Google provider ceilings (when active) can cap the payer; stripe/comp/none
+ * resolve uncapped (`null`). The accessor itself never throws — it logs and
+ * returns `null` on any read error — so a transient read hiccup here already
+ * resolves to "uncapped" by construction, matching this module's fail-OPEN
+ * direction.
  *
  * An `adult_athlete` payer has no `parent_athlete_links` rows on either
  * side (enforced by `check_parent_athlete_link_roles()`), so `links` is
@@ -181,12 +178,7 @@ export async function getPayerSeatState(
   service: ServiceClient,
   payerId: string,
 ): Promise<PayerSeatState> {
-  // FV-745: an Apple row in billing retry is not the ceiling for a payer who
-  // is paid through Stripe or comped (see getCapacityAppleProductId).
-  const appleProductId = await getCapacityAppleProductId(service, payerId);
-  const capacity = appleProductId
-    ? payerCapacityCeiling({ provider: "apple", appleProductId })
-    : null;
+  const capacity = await getPayerCapacityCeiling(service, payerId);
 
   const { data, error } = await service
     .from("parent_athlete_links")

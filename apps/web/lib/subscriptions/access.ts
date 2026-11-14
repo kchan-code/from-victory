@@ -51,6 +51,10 @@ import {
   getAppleEntitlementEndForPayer,
 } from "./apple";
 import {
+  getGoogleAccessLevelForPayer,
+  getGoogleEntitlementEndForPayer,
+} from "./google";
+import {
   subscriptionAccessLevel,
   type AccessLevel,
   type SubscriptionStatus,
@@ -87,8 +91,12 @@ function bestOf(a: AccessLevel, b: AccessLevel): AccessLevel {
  *   2. Otherwise: read the Stripe subscription row and derive a level from
  *      status.
  *   3. Read the Apple mirror via the centralized `./apple` accessor and
- *      derive a second level. Return the BEST of the Stripe and Apple
- *      levels (record Section 4.1: "return the best level across
+ *      derive a second level.
+ *   4. Read the Google mirror via the centralized `./google` accessor
+ *      (dormant unless `GOOGLE_PLAY_CATALOG_ACTIVE` is "1") and derive a
+ *      third level.
+ *      Return the BEST of the Stripe, Apple, and Google levels (record
+ *      Section 4.1 / FV-651 Section 7.5: "return the best level across
  *      providers") — this is what lets a payer who is `full` via Stripe on
  *      the web and never purchased on Apple (or vice versa) keep full
  *      access everywhere, and what makes the "always-persist" duplicate-
@@ -148,10 +156,15 @@ export async function getParentAccessLevel(
 
   // Step 3: Apple mirror path (FV-570). getAppleAccessLevelForPayer is
   // itself fail-closed (returns "blocked" on any DB error) — no try/catch
-  // needed here. Return the BEST of the two billing-provider levels.
+  // needed here.
   const appleLevel = await getAppleAccessLevelForPayer(service, parentId);
 
-  return bestOf(stripeLevel, appleLevel);
+  // Step 4: Google mirror path (FV-663 / FV-651 §7.5). The Google accessor
+  // is dormant unless GOOGLE_PLAY_CATALOG_ACTIVE is "1" and is fail-closed
+  // on read errors.
+  const googleLevel = await getGoogleAccessLevelForPayer(service, parentId);
+
+  return bestOf(bestOf(stripeLevel, appleLevel), googleLevel);
 }
 
 // ---------------------------------------------------------------------------
@@ -265,6 +278,9 @@ async function resolvePayerIdForCurrentUser(): Promise<string | null> {
  *     end; see ./trial-conversion).
  *   - Apple: the active row's `expires_at` / grace end via the centralized
  *     accessor in ./apple (no skew added).
+ *   - Google: the latest `expires_at` among active/grace/canceled rows via
+ *     the centralized accessor in ./google (dormant unless
+ *     GOOGLE_PLAY_CATALOG_ACTIVE is "1").
  *
  * Returns null when no entitling source has a finite end still in the future
  * — the caller then gives NO offline window (online-only), never an unbounded
@@ -309,6 +325,11 @@ export async function getParentOfflineEntitlementUntil(
   const appleEnd = await getAppleEntitlementEndForPayer(service, parentId, now);
   if (appleEnd !== null) {
     ends.push(new Date(appleEnd).getTime());
+  }
+
+  const googleEnd = await getGoogleEntitlementEndForPayer(service, parentId, now);
+  if (googleEnd !== null) {
+    ends.push(new Date(googleEnd).getTime());
   }
 
   const finite = ends.filter((ms) => Number.isFinite(ms));

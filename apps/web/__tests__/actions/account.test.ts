@@ -70,6 +70,30 @@ vi.mock("@/lib/auth/guards", () => ({
   requireSubscriber: () => requireSubscriberMock(),
 }));
 
+const {
+  notifyErrorMock,
+  cancelGoogleRenewalMock,
+  googleSnapshotMock,
+} = vi.hoisted(() => ({
+  notifyErrorMock: vi.fn(async (..._args: unknown[]) => undefined),
+  cancelGoogleRenewalMock: vi.fn(async (..._args: unknown[]) => true),
+  googleSnapshotMock: vi.fn(
+    async (): Promise<{
+      level: "full" | "degraded" | "blocked";
+      latestEnd: string | null;
+      activeProductId: string | null;
+      activePurchaseToken: string | null;
+      readError: boolean;
+    }> => ({
+      level: "blocked",
+      latestEnd: null,
+      activeProductId: null,
+      activePurchaseToken: null,
+      readError: false,
+    }),
+  ),
+}));
+
 // Stripe client — only deleteAccount's cancel-before-delete step touches
 // this. Tests that don't reach the cancel step never call it.
 const stripeCancelMock = vi.fn(async (..._args: unknown[]) => ({}));
@@ -95,6 +119,17 @@ vi.mock("@/lib/monitoring/deliver", () => ({
     // Swallow so an unawaited rejection never fails the test run.
     void p.catch(() => {});
   },
+}));
+vi.mock("@/lib/monitoring/notify", () => ({
+  notifyError: (...args: unknown[]) => notifyErrorMock(...args),
+}));
+
+vi.mock("@/lib/subscriptions/google-play-api", () => ({
+  cancelSubscriptionRenewal: (...args: unknown[]) =>
+    cancelGoogleRenewalMock(...args),
+}));
+vi.mock("@/lib/subscriptions/google", () => ({
+  getGoogleEntitlementSnapshotForPayer: googleSnapshotMock,
 }));
 
 // Anon server client — used only for deleteAccount's final signOut().
@@ -323,6 +358,14 @@ beforeEach(() => {
   requireSubscriberMock.mockImplementation(async () => ({ userId: PARENT_ID }));
   serviceMockImpl = makeServiceMock();
   isNativeShellMock.mockReturnValue(false);
+  googleSnapshotMock.mockResolvedValue({
+    level: "blocked",
+    latestEnd: null,
+    activeProductId: null,
+    activePurchaseToken: null,
+    readError: false,
+  });
+  cancelGoogleRenewalMock.mockResolvedValue(true);
 });
 
 // ===========================================================================
@@ -482,6 +525,52 @@ describe("deleteAccount — happy path", () => {
     const cancelIdx = callOrder.indexOf("subscription_check");
     const deleteIdx = callOrder.indexOf(`delete_user:${PARENT_ID}`);
     expect(cancelIdx).toBeLessThan(deleteIdx);
+  });
+
+  it("cancels a live Google Play renewal before deleting the parent", async () => {
+    googleSnapshotMock.mockResolvedValue({
+      level: "full",
+      latestEnd: "2099-12-12T12:00:00.000Z",
+      activeProductId: "family.2",
+      activePurchaseToken: "tok_google_live",
+      readError: false,
+    });
+    serviceMockImpl = makeServiceMock({
+      subscriptionRow: null,
+      parentLinks: [],
+    });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(cancelGoogleRenewalMock).toHaveBeenCalledWith("tok_google_live");
+    expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
+    expect(signOutMock).toHaveBeenCalledOnce();
+  });
+
+  it("Google cancel failure does not block deletion, and raises an alert", async () => {
+    googleSnapshotMock.mockResolvedValue({
+      level: "full",
+      latestEnd: "2099-12-12T12:00:00.000Z",
+      activeProductId: "family.2",
+      activePurchaseToken: "tok_google_live",
+      readError: false,
+    });
+    cancelGoogleRenewalMock.mockResolvedValue(false);
+    serviceMockImpl = makeServiceMock({
+      subscriptionRow: null,
+      parentLinks: [],
+    });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(cancelGoogleRenewalMock).toHaveBeenCalledTimes(2);
+    expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
+    expect(signOutMock).toHaveBeenCalledOnce();
+    expect(redirectMock).toHaveBeenCalledWith("/");
+    expect(notifyErrorMock).toHaveBeenCalledWith(
+      "[account.deleteAccount] Google Play cancel failed",
+      expect.stringContaining("cancel in Google Play"),
+    );
   });
 });
 

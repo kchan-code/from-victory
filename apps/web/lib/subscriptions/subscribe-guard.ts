@@ -67,6 +67,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getParentAccessLevel } from "./access";
 import { subscriptionAccessLevel, type SubscriptionStatus } from "./access-level";
 import { getActiveAppleProductIdResult } from "./apple";
+import { getGoogleEntitlementSnapshotForPayer } from "./google";
 
 type ServiceClient = ReturnType<typeof createServiceClient>;
 
@@ -80,7 +81,12 @@ export type SubscribeEntitlementStatus = "entitled" | "not_entitled" | "unknown"
  * carrying the entitlement, for the frontend's manage-subscription routing
  * (e.g. "manage on your iPhone" vs the Stripe billing portal vs no manage
  * action for a comp grant). Always `null` for `not_entitled` / `unknown`. */
-export type SubscribeEntitlementProvider = "apple" | "stripe" | "comp" | null;
+export type SubscribeEntitlementProvider =
+  | "apple"
+  | "stripe"
+  | "google"
+  | "comp"
+  | null;
 
 export interface SubscribeEntitlementState {
   status: SubscribeEntitlementStatus;
@@ -115,7 +121,11 @@ export interface SubscribeEntitlementState {
 async function readUnderlyingSources(
   service: ServiceClient,
   userId: string,
-): Promise<{ anyError: boolean; stripeStatus: SubscriptionStatus | null }> {
+): Promise<{
+  anyError: boolean;
+  stripeStatus: SubscriptionStatus | null;
+  googleLevel: "full" | "degraded" | "blocked";
+}> {
   const [grants, stripeSub, appleSubs, allowlist] = await Promise.all([
     // Mirrors hasActiveCompGrant's query (./grants.ts).
     service
@@ -135,13 +145,19 @@ async function readUnderlyingSources(
       .maybeSingle(),
   ]);
 
+  const google = await getGoogleEntitlementSnapshotForPayer(service, userId);
+
   const anyError = Boolean(
-    grants.error || stripeSub.error || appleSubs.error || allowlist.error,
+    grants.error ||
+      stripeSub.error ||
+      appleSubs.error ||
+      allowlist.error ||
+      google.readError,
   );
   // Only meaningful when anyError is false (caller returns "unknown" first
   // otherwise, so a null-on-error status is never consulted).
   const stripeStatus = (stripeSub.data?.status as SubscriptionStatus | undefined) ?? null;
-  return { anyError, stripeStatus };
+  return { anyError, stripeStatus, googleLevel: google.level };
 }
 
 // ---------------------------------------------------------------------------
@@ -173,7 +189,10 @@ export async function getSubscribeEntitlementState(
 ): Promise<SubscribeEntitlementState> {
   const service = createServiceClient();
 
-  const { anyError, stripeStatus } = await readUnderlyingSources(service, userId);
+  const { anyError, stripeStatus, googleLevel } = await readUnderlyingSources(
+    service,
+    userId,
+  );
   if (anyError) {
     return { status: "unknown", provider: null };
   }
@@ -227,7 +246,12 @@ export async function getSubscribeEntitlementState(
     return { status: "entitled", provider: "stripe" };
   }
 
-  // full or degraded, but neither Apple nor Stripe is the source -> a comp
+  if (googleLevel !== "blocked") {
+    return { status: "entitled", provider: "google" };
+  }
+
+  // full or degraded, but neither Apple, Stripe, nor Google is the source
+  // -> a comp
   // grant (comp grants are always "full" — see hasActiveCompGrant/access.ts;
   // there is no "degraded" comp state).
   return { status: "entitled", provider: "comp" };
