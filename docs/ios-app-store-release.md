@@ -448,8 +448,9 @@ about two months earlier, before in-app purchase went live):
    usage events (`activity_events`: app opened, session started or finished)
    are used to count active and returning athletes.
 4. **Product Personalization added as a purpose of Other Data Types.** Besides
-   date of birth, this type covers sport, position, focus area and an optional
-   game date, which tailor what the athlete sees.
+   date of birth, this type covers sport, position and focus area, which tailor
+   what the athlete sees. It also covers an optional game date, which is used
+   only to time a reminder and then cleared (App Functionality).
 5. **Other Diagnostic Data added, not linked.** The automated error report
    (`apps/web/app/api/client-error`, FV-729) sends the failing screen's path,
    the shell type, the build and an error message of at most 160 characters

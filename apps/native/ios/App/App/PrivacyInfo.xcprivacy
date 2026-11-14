@@ -108,9 +108,10 @@
 			<key>NSPrivacyCollectedDataTypeTracking</key>
 			<false/>
 			<!-- FV-722: Product Personalization as well as App Functionality.
-			     Besides date of birth this type covers sport, position, focus
-			     area and an optional game date, which tailor what the athlete
-			     sees. -->
+			     Besides date of birth this type covers sport, position and
+			     focus area, which tailor what the athlete sees. The optional
+			     game date is also here; it only times a reminder and is then
+			     cleared (App Functionality). -->
 			<key>NSPrivacyCollectedDataTypePurposes</key>
 			<array>
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
