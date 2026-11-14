@@ -22,10 +22,6 @@ final class FVOfflineNavigationDelegate: NSObject, WKNavigationDelegate {
 
     private var pregameRetries = 0
     private var pendingRetry: DispatchWorkItem?
-    /// Set by `showOfflinePage` just before it loads the bundled HTML, and
-    /// cleared by the navigation decision that consumes it. Only a load this
-    /// class started is kept inside the WebView.
-    private var offlinePageLoadPending = false
     private let logger = os.Logger(subsystem: Bundle.main.bundleIdentifier ?? "app", category: "offline")
 
     init(forward: WKNavigationDelegate?) {
@@ -55,18 +51,19 @@ final class FVOfflineNavigationDelegate: NSObject, WKNavigationDelegate {
 
     /// The bundled offline page is loaded under `https://fv-offline.invalid/`.
     /// Capacitor's handler sees that as a top-level link outside the app and
-    /// opens it in Safari, leaving the WebView blank. Allow that one load here;
-    /// every other decision still goes to Capacitor (allow-list, plugins,
-    /// external links).
+    /// opens it in Safari, leaving the WebView blank. Allow a main-frame load
+    /// of that exact address here, including a reload (Capacitor reloads after
+    /// the web process is terminated) or a back/forward return to it. The host
+    /// is a reserved `.invalid` name that cannot resolve, so this lets nothing
+    /// in from the network. Every other decision still goes to Capacitor
+    /// (allow-list, plugins, external links).
     func webView(
         _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
-        if offlinePageLoadPending,
-           navigationAction.targetFrame?.isMainFrame == true,
+        if navigationAction.targetFrame?.isMainFrame == true,
            OfflineEntryFallback.isOfflinePageLoad(navigationAction.request.url?.absoluteString) {
-            offlinePageLoadPending = false
             decisionHandler(.allow)
             return
         }
@@ -104,6 +101,19 @@ final class FVOfflineNavigationDelegate: NSObject, WKNavigationDelegate {
         decisionHandler(.allow)
     }
 
+    /// iOS can kill the web process while the app is in the background.
+    /// Capacitor answers with `reload()`, which cannot bring back a page that
+    /// was loaded from a string, so the view stayed blank. When the offline
+    /// page was the one showing, load it again; otherwise let Capacitor reload.
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        if OfflineEntryFallback.isLocalOfflinePageURL(webView.url?.absoluteString) {
+            logger.info("FV-718 web process ended on the offline page -> local offline page")
+            showOfflinePage(on: webView)
+            return
+        }
+        forward?.webViewWebContentProcessDidTerminate(webView)
+    }
+
     /// Optional WKWebView delegate methods Capacitor implements (navigation
     /// allow-list, TLS, process termination) must still be offered. Methods
     /// this class implements have to report `true` even when the superclass
@@ -131,6 +141,13 @@ final class FVOfflineNavigationDelegate: NSObject, WKNavigationDelegate {
         guard nsError.domain == NSURLErrorDomain, nsError.code != NSURLErrorCancelled else { return }
         let failed = (nsError.userInfo[NSURLErrorFailingURLStringErrorKey] as? String)
             ?? (nsError.userInfo[NSURLErrorFailingURLErrorKey] as? URL)?.absoluteString
+        // A reload of the offline page asks the network for its `.invalid`
+        // address and fails. Put the bundled page back instead of a blank view.
+        if OfflineEntryFallback.isOfflinePageLoad(failed) {
+            logger.info("FV-718 offline page reload (code \(nsError.code, privacy: .public)) -> local offline page")
+            showOfflinePage(on: webView)
+            return
+        }
         let action = OfflineEntryFallback.decide(
             failedURL: failed,
             isMainFrame: true,
@@ -190,7 +207,6 @@ final class FVOfflineNavigationDelegate: NSObject, WKNavigationDelegate {
         webView.isOpaque = true
         webView.backgroundColor = onyx
         webView.scrollView.backgroundColor = onyx
-        offlinePageLoadPending = true
         webView.loadHTMLString(html, baseURL: URL(string: OfflineEntryFallback.offlinePageBase))
     }
 }

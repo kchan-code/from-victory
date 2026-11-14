@@ -77,7 +77,7 @@ enum OfflineEntryFallback {
     }
 
     /// True only for the exact address `showOfflinePage` loads the bundled
-    /// HTML under. Used to keep that one load inside the WebView: Capacitor's
+    /// HTML under. Used to keep that load inside the WebView: Capacitor's
     /// allow-list would otherwise treat it as an outside link and hand it to
     /// Safari.
     static func isOfflinePageLoad(_ url: String?) -> Bool {
