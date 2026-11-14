@@ -1,5 +1,7 @@
 "use server";
 
+import { createHash } from "node:crypto";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -19,7 +21,8 @@ import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { isNativeShell } from "@/lib/native-shell";
 import { cancelSubscriptionRenewal } from "@/lib/subscriptions/google-play-api";
-import { getGoogleEntitlementSnapshotForPayer } from "@/lib/subscriptions/google";
+import { GOOGLE_PLAY_PACKAGE_NAME } from "@/lib/subscriptions/google-product-catalog";
+import { getGoogleCancelableSubscriptionsForPayer } from "@/lib/subscriptions/google";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -171,6 +174,10 @@ export async function deleteAthlete(
 }
 
 export type DeleteAccountState = { ok: false; error: string } | null;
+
+function googleTokenTag(token: string): string {
+  return createHash("sha256").update(token.slice(-8)).digest("hex").slice(0, 12);
+}
 
 export async function deleteAccount(
   _prev: DeleteAccountState,
@@ -331,12 +338,11 @@ export async function deleteAccount(
   }
 
   // ---------------------------------------------------------------------------
-  // Step 1c (FV-663 / G5): for a Google-entitled payer, cancel renewal in
-  // Google Play. This is best effort: a cancel failure NEVER blocks deletion.
-  // We retry once; if still failing, deletion proceeds and ops is alerted so
-  // support can intervene.
+  // Step 1c (FV-663 / G5): best-effort Google Play renewal cancellation.
+  // Never blocks deletion. We cancel every row that may still bill, not just
+  // whichever row is currently carrying access.
   // ---------------------------------------------------------------------------
-  const google = await getGoogleEntitlementSnapshotForPayer(service, parentId);
+  const google = await getGoogleCancelableSubscriptionsForPayer(service, parentId);
   if (google.readError) {
     googleCancelNoticeRequired = true;
     deliverInBackground(
@@ -345,18 +351,28 @@ export async function deleteAccount(
         "Could not read Google entitlement state during account deletion; user must cancel in Google Play",
       ),
     );
-  } else if (google.activePurchaseToken && google.activeProductId) {
-    let canceled = false;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      canceled = await cancelSubscriptionRenewal(google.activePurchaseToken);
-      if (canceled) break;
+  } else {
+    const failedCancels: string[] = [];
+
+    for (const row of google.rows) {
+      let canceled = false;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        canceled = await cancelSubscriptionRenewal(row.purchase_token);
+        if (canceled) break;
+      }
+      if (!canceled) {
+        failedCancels.push(
+          `${GOOGLE_PLAY_PACKAGE_NAME}/${row.product_id} status=${row.status} expires=${row.expires_at ?? "null"} token_tag=${googleTokenTag(row.purchase_token)}`,
+        );
+      }
     }
-    if (!canceled) {
+
+    if (failedCancels.length > 0) {
       googleCancelNoticeRequired = true;
       deliverInBackground(
         notifyError(
           "[account.deleteAccount] Google Play cancel failed",
-          "Google Play cancel failed during account deletion; user must cancel in Google Play",
+          `Google Play cancel failed during account deletion; user must cancel in Google Play. targets=${failedCancels.join(";")}`,
         ),
       );
     }
@@ -453,6 +469,9 @@ export async function deleteAccount(
   // Clear the now-orphaned session cookies, then send them home.
   const supabase = await createClient();
   await supabase.auth.signOut();
+  const redirectUrl = googleCancelNoticeRequired
+    ? "?account_deleted=1&google_play_cancel=1"
+    : "";
   if (googleCancelNoticeRequired) {
     console.warn(
       "[account.deleteAccount] account deleted but Google Play cancel was not confirmed; user should cancel in Google Play.",
@@ -462,5 +481,5 @@ export async function deleteAccount(
   // "/" is the gated marketing root in-shell (real prices, trial CTA), a
   // Play Payments violation on this account-deletion sign-out too. Browser
   // behavior is unchanged.
-  redirect((await isNativeShell()) ? "/signin" : "/");
+  redirect((await isNativeShell()) ? `/signin${redirectUrl}` : `/${redirectUrl}`);
 }

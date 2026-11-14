@@ -54,11 +54,10 @@ vi.mock("@/lib/subscriptions/apple-capacity", async (importOriginal) => {
       getActiveAppleProductIdMock(...(args as [])),
     payerCapacityCeiling: (...args: unknown[]) =>
       payerCapacityCeilingMock(...(args as [])),
-    getPayerCapacityCeiling: async (...args: unknown[]) => {
-      const productId = await getActiveAppleProductIdMock(...(args as []));
-      if (!productId) return null;
-      return payerCapacityCeilingMock({ provider: "apple", productId });
-    },
+    // Use the real provider-aware resolver so Google ceilings are exercised
+    // end-to-end in this suite.
+    getPayerCapacityCeiling: async (...args: unknown[]) =>
+      actual.getPayerCapacityCeiling(...(args as Parameters<typeof actual.getPayerCapacityCeiling>)),
   };
 });
 
@@ -890,6 +889,73 @@ describe("getParentAccessLevel — provider matrix with Google (FV-663)", () => 
     expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
   });
 
+  it("stripe active remains full alongside google active", async () => {
+    setSubscription("active");
+    setAppleProductionRow("revoked");
+    setGoogleRows([g("active")]);
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("apple active remains full alongside google active", async () => {
+    setSubscription("canceled");
+    setAppleProductionRow("subscribed");
+    setGoogleRows([g("active")]);
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("google grace contributes degraded when expired within skew and stripe/apple are blocked", async () => {
+    setSubscription("canceled");
+    setAppleProductionRow("revoked");
+    setGoogleRows([
+      {
+        ...g("in_grace_period"),
+        expires_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+      },
+    ]);
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("degraded");
+  });
+
+  it("google canceled but paid through contributes full while unexpired", async () => {
+    setSubscription("canceled");
+    setAppleProductionRow("revoked");
+    setGoogleRows([
+      {
+        ...g("canceled"),
+        expires_at: FUTURE_ISO,
+      },
+    ]);
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("multiple Google rows fold to best level", async () => {
+    setSubscription("canceled");
+    setAppleProductionRow("revoked");
+    setGoogleRows([
+      {
+        ...g("expired"),
+        expires_at: PAST_ISO,
+      },
+      {
+        ...g("in_grace_period"),
+        purchase_token: "tok-google-grace",
+        expires_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        ...g("active"),
+        purchase_token: "tok-google-active",
+      },
+    ]);
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("full");
+  });
+
+  it("google rows are ignored while GOOGLE_PLAY_CATALOG_ACTIVE is off", async () => {
+    setSubscriptionNone();
+    setAppleProductionRow("revoked");
+    setGoogleRows([g("active")]);
+    delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
+    expect(await getParentAccessLevel(PARENT_ID)).toBe("blocked");
+  });
+
   it("google on_hold stays blocked (G3) while stripe past_due carries degraded", async () => {
     setSubscription("past_due");
     setAppleProductionRow("revoked");
@@ -954,43 +1020,59 @@ describe("getAccessForCurrentUser — athlete path returns the bare AccessLevel 
 describe("requireActiveAccess — seat overlay (FV-585)", () => {
   beforeEach(() => {
     process.env.ENFORCE_SUBSCRIPTION_GATING = "true";
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
     vi.mocked(redirect).mockClear();
     resetRlsState();
     resetSeatLinks();
     setGrantNone();
     setSubscriptionNone();
-    getActiveAppleProductIdMock.mockResolvedValue(null);
-    payerCapacityCeilingMock.mockReturnValue(null);
   });
 
   afterEach(() => {
     delete process.env.ENFORCE_SUBSCRIPTION_GATING;
   });
 
-  it("redirects a billing-entitled athlete to /athlete/paused?reason=seats when seats are over capacity with no selection", async () => {
+  it("redirects a billing-entitled athlete to /athlete/paused?reason=seats for a 6th athlete on Google 5-athlete tier", async () => {
     rlsUserId = ATHLETE_ID;
     rlsProfileRole = "athlete";
     rlsLinkParentId = PARENT_ID;
-    setGrantActive(); // billing level: full
-    getActiveAppleProductIdMock.mockResolvedValue("apple.tier.one");
-    payerCapacityCeilingMock.mockReturnValue(1);
+    setSubscription("active");
+    setGoogleRows([
+      {
+        product_id: "family.5",
+        purchase_token: "tok-google-tier-5",
+        status: "active",
+        expires_at: FUTURE_ISO,
+      },
+    ]);
     setSeatLinks([
       { parent_id: PARENT_ID, athlete_id: ATHLETE_ID, seat_active: true },
       { parent_id: PARENT_ID, athlete_id: OTHER_ATHLETE_ID, seat_active: true },
+      { parent_id: PARENT_ID, athlete_id: "athlete-3", seat_active: true },
+      { parent_id: PARENT_ID, athlete_id: "athlete-4", seat_active: true },
+      { parent_id: PARENT_ID, athlete_id: "athlete-5", seat_active: true },
+      { parent_id: PARENT_ID, athlete_id: "athlete-6", seat_active: true },
     ]);
 
     await requireActiveAccess({ role: "athlete" });
 
     expect(redirect).toHaveBeenCalledWith("/athlete/paused?reason=seats");
+    expect(redirect).not.toHaveBeenCalledWith("/subscribe");
   });
 
   it("does not redirect a billing-entitled athlete who is within capacity", async () => {
     rlsUserId = ATHLETE_ID;
     rlsProfileRole = "athlete";
     rlsLinkParentId = PARENT_ID;
-    setGrantActive();
-    getActiveAppleProductIdMock.mockResolvedValue("apple.tier.one");
-    payerCapacityCeilingMock.mockReturnValue(1);
+    setSubscription("active");
+    setGoogleRows([
+      {
+        product_id: "family.1",
+        purchase_token: "tok-google-tier-1",
+        status: "active",
+        expires_at: FUTURE_ISO,
+      },
+    ]);
     setSeatLinks([{ parent_id: PARENT_ID, athlete_id: ATHLETE_ID, seat_active: true }]);
 
     const result = await requireActiveAccess({ role: "athlete" });
@@ -1003,9 +1085,15 @@ describe("requireActiveAccess — seat overlay (FV-585)", () => {
     rlsUserId = ATHLETE_ID;
     rlsProfileRole = "athlete";
     rlsLinkParentId = PARENT_ID;
-    setGrantActive();
-    getActiveAppleProductIdMock.mockResolvedValue("apple.tier.one");
-    payerCapacityCeilingMock.mockReturnValue(1);
+    setSubscription("active");
+    setGoogleRows([
+      {
+        product_id: "family.1",
+        purchase_token: "tok-google-tier-1",
+        status: "active",
+        expires_at: FUTURE_ISO,
+      },
+    ]);
     setSeatLinks([
       { parent_id: PARENT_ID, athlete_id: ATHLETE_ID, seat_active: true },
       { parent_id: PARENT_ID, athlete_id: OTHER_ATHLETE_ID, seat_active: false },
@@ -1020,9 +1108,15 @@ describe("requireActiveAccess — seat overlay (FV-585)", () => {
   it("does not apply the seat overlay to a parent, even if the family is seat-paused", async () => {
     rlsUserId = PARENT_ID;
     rlsProfileRole = "parent";
-    setGrantActive();
-    getActiveAppleProductIdMock.mockResolvedValue("apple.tier.one");
-    payerCapacityCeilingMock.mockReturnValue(1);
+    setSubscription("active");
+    setGoogleRows([
+      {
+        product_id: "family.1",
+        purchase_token: "tok-google-tier-1",
+        status: "active",
+        expires_at: FUTURE_ISO,
+      },
+    ]);
     setSeatLinks([
       { parent_id: PARENT_ID, athlete_id: ATHLETE_ID, seat_active: true },
       { parent_id: PARENT_ID, athlete_id: OTHER_ATHLETE_ID, seat_active: true },
@@ -1040,8 +1134,7 @@ describe("requireActiveAccess — seat overlay (FV-585)", () => {
     rlsLinkParentId = PARENT_ID;
     setGrantNone();
     setSubscriptionNone(); // billing level: blocked
-    getActiveAppleProductIdMock.mockResolvedValue("apple.tier.one");
-    payerCapacityCeilingMock.mockReturnValue(1);
+    resetGoogleState();
     setSeatLinks([
       { parent_id: PARENT_ID, athlete_id: ATHLETE_ID, seat_active: true },
       { parent_id: PARENT_ID, athlete_id: OTHER_ATHLETE_ID, seat_active: true },
@@ -1058,9 +1151,15 @@ describe("requireActiveAccess — seat overlay (FV-585)", () => {
     rlsUserId = ATHLETE_ID;
     rlsProfileRole = "athlete";
     rlsLinkParentId = PARENT_ID;
-    setGrantActive();
-    getActiveAppleProductIdMock.mockResolvedValue("apple.tier.one");
-    payerCapacityCeilingMock.mockReturnValue(1);
+    setSubscription("active");
+    setGoogleRows([
+      {
+        product_id: "family.1",
+        purchase_token: "tok-google-tier-1",
+        status: "active",
+        expires_at: FUTURE_ISO,
+      },
+    ]);
     setSeatLinks([
       { parent_id: PARENT_ID, athlete_id: ATHLETE_ID, seat_active: true },
       { parent_id: PARENT_ID, athlete_id: OTHER_ATHLETE_ID, seat_active: true },

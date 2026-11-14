@@ -15,6 +15,7 @@ import { getConfiguredAppleProducts } from "@/lib/subscriptions/apple-products";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { isSubscriptionEnforcementEnabled } from "@/lib/subscriptions/enforce";
 import { hasEverHeldGoogleEntitlement } from "@/lib/subscriptions/google";
+import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
 import { getPayerBillingIssue } from "@/lib/subscriptions/billing-issue";
 import { PaymentIssueNotice } from "@/components/billing/PaymentIssueNotice";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
@@ -117,7 +118,11 @@ export default async function SubscribePage(props: Props) {
     let appleEverHeld = false;
     let googleEverHeld = false;
     let providerHistoryReadError = false;
-    if (subReadError === null && existingSub === null) {
+    if (
+      isGooglePlayCatalogActive() &&
+      subReadError === null &&
+      existingSub === null
+    ) {
       try {
         const service = createServiceClient();
         appleEverHeld = await hasEverHeldAppleEntitlement(service, userId);

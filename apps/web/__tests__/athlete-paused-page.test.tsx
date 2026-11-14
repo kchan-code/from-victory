@@ -175,6 +175,14 @@ describe("/athlete/paused — seat-pause copy variant (FV-585, KC decision D2)",
       /\bkid\b/i,
     );
   });
+
+  it("android-play seat pause shows no website steering, no Stripe mention, and no price", async () => {
+    shellCapabilityMock.mockReturnValue("android-play");
+    const { container } = await renderPage("athlete", { reason: "seats" });
+    const text = container.textContent ?? "";
+    expect(text).not.toMatch(/web browser|fromvictoryapp\\.com|stripe/i);
+    expect(text).not.toMatch(/\$/);
+  });
 });
 
 describe("/athlete/paused — FV-625 offline pregame revocation", () => {

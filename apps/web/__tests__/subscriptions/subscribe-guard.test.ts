@@ -163,10 +163,6 @@ import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guar
 // ---------------------------------------------------------------------------
 
 describe("getSubscribeEntitlementState", () => {
-  beforeEach(() => {
-    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
-  });
-
   it("entitled via Apple: Production row with status=subscribed", async () => {
     appleSubsListResult = {
       data: [
@@ -328,6 +324,7 @@ describe("getSubscribeEntitlementState", () => {
   });
 
   it("entitled via Google when Apple/Stripe/comp do not carry access", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
     googleSubsListResult = {
       data: [
         {
@@ -373,6 +370,7 @@ describe("getSubscribeEntitlementState", () => {
   });
 
   it("read error: google_subscriptions -> unknown, never not_entitled", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
     googleSubsListResult = { data: [], error: { message: "connection timeout" } };
 
     const result = await getSubscribeEntitlementState(PAYER_ID);
@@ -387,6 +385,23 @@ describe("getSubscribeEntitlementState", () => {
 
     const result = await getSubscribeEntitlementState(PAYER_ID);
     expect(result).toEqual({ status: "unknown", provider: null });
+  });
+
+  it("flag off: Google rows are ignored and status stays not_entitled when no other provider carries access", async () => {
+    googleSubsListResult = {
+      data: [
+        {
+          product_id: "family.3",
+          purchase_token: "tok_google",
+          status: "active",
+          expires_at: FUTURE_ISO,
+        },
+      ],
+      error: null,
+    };
+
+    const result = await getSubscribeEntitlementState(PAYER_ID);
+    expect(result).toEqual({ status: "not_entitled", provider: null });
   });
 
   // -------------------------------------------------------------------------

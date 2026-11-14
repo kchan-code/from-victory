@@ -37,7 +37,12 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: Promise<{ reset?: string; error?: string }>;
+  searchParams: Promise<{
+    reset?: string;
+    error?: string;
+    account_deleted?: string;
+    google_play_cancel?: string;
+  }>;
 };
 
 export default async function SignInPage(props: Props) {
@@ -46,6 +51,9 @@ export default async function SignInPage(props: Props) {
 
   const resetInvalid = searchParams.reset === "invalid";
   const sessionInvalid = searchParams.error === "session_invalid";
+  const showGoogleCancelNotice =
+    searchParams.account_deleted === "1" &&
+    searchParams.google_play_cancel === "1";
 
   const deviceAthleteId = await getDeviceAthleteId();
 
@@ -117,6 +125,15 @@ export default async function SignInPage(props: Props) {
           className="mb-6 rounded-[10px] border border-[rgba(229,62,76,0.4)] bg-[rgba(229,62,76,0.08)] px-3.5 py-3 text-[13px] text-[#ffb3b9]"
         >
           Your session was invalid. Please sign in again.
+        </div>
+      ) : null}
+      {showGoogleCancelNotice ? (
+        <div
+          role="status"
+          className="mb-6 rounded-[10px] border border-hairline bg-charcoal px-3.5 py-3 text-[13px] text-cream/80"
+        >
+          Your account is deleted. Your Google Play subscription could not be
+          cancelled automatically. Please cancel it in Google Play.
         </div>
       ) : null}
       {/* FV-707: welcome doors first (parent, 18+ when enabled, invite).

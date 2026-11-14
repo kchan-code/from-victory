@@ -18,6 +18,8 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
+vi.mock("server-only", () => ({}));
+
 const {
   requireSubscriberMock,
   maybeSingleMock,
@@ -225,6 +227,7 @@ import SubscribePage from "@/app/subscribe/page";
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
   // clearAllMocks keeps mockReturnValue overrides — restore the FV-464 /
   // shell-capability / FV-574 / FV-581 defaults so test order never matters.
   enforcementEnabledMock.mockReturnValue(false);
@@ -539,6 +542,7 @@ describe("SubscribePage — 7-day trial banner gate (FV-574)", () => {
   });
 
   it("no Stripe row but Google entitlement history -> trialEligible:false", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
     asParent();
     noExistingSub();
     hasEverHeldGoogleEntitlementMock.mockResolvedValue(true);
@@ -548,12 +552,25 @@ describe("SubscribePage — 7-day trial banner gate (FV-574)", () => {
   });
 
   it("provider history read error -> trialEligible:false (fail closed)", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
     asParent();
     noExistingSub();
     hasEverHeldGoogleEntitlementMock.mockRejectedValue(new Error("read failed"));
     athleteCountMock.mockResolvedValue({ count: 1, error: null });
 
     expect(await renderedText()).toContain("trialEligible:false");
+  });
+
+  it("flag off -> trial banner is unchanged and does not read Apple/Google history", async () => {
+    asParent();
+    noExistingSub();
+    athleteCountMock.mockResolvedValue({ count: 1, error: null });
+    hasEverHeldAppleEntitlementMock.mockResolvedValue(true);
+    hasEverHeldGoogleEntitlementMock.mockResolvedValue(true);
+
+    expect(await renderedText()).toContain("trialEligible:true");
+    expect(hasEverHeldAppleEntitlementMock).not.toHaveBeenCalled();
+    expect(hasEverHeldGoogleEntitlementMock).not.toHaveBeenCalled();
   });
 });
 

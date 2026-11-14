@@ -333,10 +333,10 @@ async function startSubscriptionCheckout(
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(
-      `[subscription.startSubscriptionCheckout] cross-provider entitlement read failed (account=${accountId}): ${message}`,
+      `[subscription.startSubscriptionCheckout] apple/google entitlement read failed (account=${accountId}): ${message}`,
     );
     deliverInBackground(
-      notifyError("[checkout] cross-provider entitlement read failed", message, {
+      notifyError("[checkout] apple entitlement read failed", message, {
         parent_id: accountId,
       }),
     );

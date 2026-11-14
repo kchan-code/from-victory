@@ -21,6 +21,12 @@ const LEVEL_RANK: Record<AccessLevel, number> = {
 
 type GoogleEntitlementRow = {
   product_id: string;
+  status: GoogleSubscriptionStatus;
+  expires_at: string | null;
+};
+
+type GoogleCancelableSubscriptionRow = {
+  product_id: string;
   purchase_token: string;
   status: GoogleSubscriptionStatus;
   expires_at: string | null;
@@ -30,7 +36,11 @@ export interface GoogleEntitlementSnapshot {
   level: AccessLevel;
   latestEnd: string | null;
   activeProductId: string | null;
-  activePurchaseToken: string | null;
+  readError: boolean;
+}
+
+export interface GoogleCancelableSubscriptionsResult {
+  rows: GoogleCancelableSubscriptionRow[];
   readError: boolean;
 }
 
@@ -48,14 +58,13 @@ export async function getGoogleEntitlementSnapshotForPayer(
       level: "blocked",
       latestEnd: null,
       activeProductId: null,
-      activePurchaseToken: null,
       readError: false,
     };
   }
 
   const { data, error } = await service
     .from("google_subscriptions")
-    .select("product_id, purchase_token, status, expires_at")
+    .select("product_id, status, expires_at")
     .eq("payer_id", payerId);
 
   if (error) {
@@ -67,7 +76,6 @@ export async function getGoogleEntitlementSnapshotForPayer(
       level: "blocked",
       latestEnd: null,
       activeProductId: null,
-      activePurchaseToken: null,
       readError: true,
     };
   }
@@ -76,7 +84,6 @@ export async function getGoogleEntitlementSnapshotForPayer(
   let latestEndMs: number | null = null;
   let latestEnd: string | null = null;
   let activeProductId: string | null = null;
-  let activePurchaseToken: string | null = null;
   let activeLevelRank = -1;
   let activeExpiryMs = -1;
 
@@ -107,7 +114,6 @@ export async function getGoogleEntitlementSnapshotForPayer(
       activeLevelRank = rowLevelRank;
       activeExpiryMs = rowExpiryMs;
       activeProductId = row.product_id;
-      activePurchaseToken = row.purchase_token;
     }
   }
 
@@ -115,7 +121,6 @@ export async function getGoogleEntitlementSnapshotForPayer(
     level,
     latestEnd,
     activeProductId,
-    activePurchaseToken,
     readError: false,
   };
 }
@@ -146,7 +151,10 @@ export async function hasEverHeldGoogleEntitlement(
   const { count, error } = await service
     .from("google_subscriptions")
     .select("id", { count: "exact", head: true })
-    .eq("payer_id", payerId);
+    .eq("payer_id", payerId)
+    .eq("is_test_purchase", false)
+    .eq("acknowledged", true)
+    .not("status", "in", "(pending,pending_purchase_canceled)");
 
   if (error) {
     throw new Error(
@@ -155,4 +163,59 @@ export async function hasEverHeldGoogleEntitlement(
   }
 
   return (count ?? 0) > 0;
+}
+
+function shouldCancelGoogleSubscription(
+  row: GoogleCancelableSubscriptionRow,
+  nowMs: number,
+): boolean {
+  if (row.expires_at === null) return true;
+
+  const expiryMs = new Date(row.expires_at).getTime();
+  const hasFutureExpiry = Number.isFinite(expiryMs) && expiryMs > nowMs;
+
+  if (
+    row.status === "active" ||
+    row.status === "in_grace_period" ||
+    row.status === "on_hold" ||
+    row.status === "paused"
+  ) {
+    return true;
+  }
+
+  // Cancel-pending and still paid through.
+  if (row.status === "canceled" && hasFutureExpiry) {
+    return true;
+  }
+
+  return false;
+}
+
+export async function getGoogleCancelableSubscriptionsForPayer(
+  service: ServiceClient,
+  payerId: string,
+  now: Date = new Date(),
+): Promise<GoogleCancelableSubscriptionsResult> {
+  if (!isGooglePlayCatalogActive()) {
+    return { rows: [], readError: false };
+  }
+
+  const { data, error } = await service
+    .from("google_subscriptions")
+    .select("product_id, purchase_token, status, expires_at")
+    .eq("payer_id", payerId);
+
+  if (error) {
+    console.error(
+      `[subscriptions/google] google_subscriptions cancel-read failed (payer=${payerId}):`,
+      error.message,
+    );
+    return { rows: [], readError: true };
+  }
+
+  const nowMs = now.getTime();
+  const rows = ((data ?? []) as GoogleCancelableSubscriptionRow[]).filter((row) =>
+    shouldCancelGoogleSubscription(row, nowMs),
+  );
+  return { rows, readError: false };
 }
