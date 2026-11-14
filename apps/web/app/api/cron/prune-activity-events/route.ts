@@ -134,6 +134,33 @@ async function runPrune(req: NextRequest) {
     Date.now() - ACTIVITY_EVENTS_RETENTION_DAYS * 24 * 60 * 60 * 1000,
   ).toISOString();
 
+  // FV-749: retention for the pregame selection totals (closed-month markers
+  // and closed-month totals below 10). Runs FIRST and independently of the
+  // rollup/prune below, so a rollup failure can never delay this retention, and
+  // a failure here is alerted + logged but never blocks or fails the rollup/prune.
+  let selectionPruned = 0;
+  try {
+    const { data: sel, error: selError } = await service.rpc(
+      "prune_pregame_selection_totals",
+    );
+    if (selError) {
+      console.error("[cron/prune-activity-events] selection totals prune failed");
+      alertCronFailure(
+        "[cron/prune-activity-events] selection totals prune failed",
+        "pregame selection totals prune failed",
+        { code: opaqueDbCode(selError.code) },
+      );
+    } else {
+      selectionPruned = typeof sel === "number" ? sel : 0;
+    }
+  } catch (err) {
+    console.error("[cron/prune-activity-events] selection totals prune threw");
+    alertCronFailure(
+      "[cron/prune-activity-events] selection totals prune threw",
+      err instanceof Error ? err.name : "Error",
+    );
+  }
+
   // 3. ROLL UP FIRST (FV-415). Aggregate the still-retained raw window into
   //    activity_rollup at day/week/month grains BEFORE pruning, so the
   //    non-additive distinct-athlete counts are captured while raw exists. The
@@ -185,10 +212,10 @@ async function runPrune(req: NextRequest) {
   const pruned = data?.length ?? 0;
 
   console.info(
-    `[cron/prune-activity-events] done — rolled=${rolledCount} pruned=${pruned}`,
+    `[cron/prune-activity-events] done — rolled=${rolledCount} pruned=${pruned} selectionPruned=${selectionPruned}`,
   );
 
-  return NextResponse.json({ rolled: rolledCount, pruned });
+  return NextResponse.json({ rolled: rolledCount, pruned, selectionPruned });
 }
 
 /** Postgres SQLSTATE when it looks like one. Never the message (it can echo a value). */

@@ -195,6 +195,9 @@ export async function getAdminMetrics(
     supabase
       .from("auth_rate_limit_events")
       .select("action, created_at")
+      // FV-749: the pregame selections throttle shares this table but is not
+      // auth traffic; keep it out of the auth-abuse panel.
+      .neq("action", "pregame_selections")
       .gte("created_at", rangeCutoffIso),
     fetchAllRows<ActivityRow>("activity_events", (from, to) =>
       supabase

@@ -405,7 +405,15 @@ self-onboard/self-pay fork (post-MVP).
   for every athlete account and is disclosed in Privacy Policy section 1i
   (KC decision 2026-11-13, FV-724). Do not add a selection, preference, or
   free text to it, or start recording a new event, without changing the
-  policy first.
+  policy first. Pregame option totals (`pregame_selection_counts`: picks,
+  distinct athletes, and athletes with 2+/4+/8+ picks per option per month, readable only for closed months
+  once 10 or more athletes chose the option) and their markers
+  (`pregame_selection_contributors`: one keyed one-way digest per athlete
+  per option per month, plus the month and that athlete's pick count for it; no athlete id and no option in the
+  clear; throttle rows for this action in `auth_rate_limit_events` are
+  pruned within about a day) are also disclosed in section 1i; do not add an athlete identifier or any
+  athlete-keyed field to either, or read the raw totals table for display,
+  without changing the policy first (FV-749).
 - Athletes 18+ are legal adults. A future fork treats 18+ differently
   (self-onboard, self-pay). For MVP, the parent is the buyer across the
   whole band.

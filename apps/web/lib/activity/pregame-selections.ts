@@ -1,22 +1,37 @@
 import "server-only";
 
-// Anonymous pregame selection counts — SERVER WRITE PATH (server-only).
+// Pregame selection counts — SERVER WRITE PATH (server-only).
 //
-// Writes via the SERVICE-ROLE client because pregame_selection_counts is
-// service-role-only (RLS enabled, no policies). This function takes NO athlete
-// identifier by design: the caller (lib/actions/activity.ts) uses the athlete's
-// id ONLY to confirm an athlete is signed in, and never passes it here. The
-// RPC receives just (sport, [{dimension, value}]) — nothing that identifies who
-// chose it, and no timestamp beyond the DB's UTC-month bucket.
+// Writes via the SERVICE-ROLE client because the count tables are service-role-
+// only (RLS enabled, no policies). The database NEVER receives an athlete id
+// (FV-749): this module turns the athlete id into an opaque keyed one-way digest
+// (lib/activity/pregame-marker.ts) so each athlete is counted at most once per
+// UTC month, and passes only that digest plus the validated {dimension, value}
+// pairs. Neither the id nor the digest is ever logged or returned.
+//
+// The HMAC secret is its OWN env var, PREGAME_MARKER_SECRET (NOT the
+// rate-limit secret: rotating that one mid-month would let athletes be counted
+// again and inflate athlete_count). If it is not set, NOTHING is recorded: no
+// dev fallback, no fallback to another secret, never the raw id. Rotate it only
+// right after a month's totals close.
 //
 // NEVER throws. On failure it logs one generic line — never the selections,
-// never an id.
+// never an id or digest.
 
+import { deliverInBackground } from "@/lib/monitoring/deliver";
+import { notifyError } from "@/lib/monitoring/notify";
 import { createServiceClient } from "@/lib/supabase/service";
 
+import { pregameOptionMarker, utcPeriodStartIso } from "./pregame-marker";
 import { buildSelectionCounts, type PregameSelectionsInput } from "./pregame-selection-core";
 
+// Operator alert for a missing secret in production, at most once per server
+// instance (the rate-limit helper's equivalent alert has no dedupe, and one
+// alert per pregame completion would be noise). Never includes an id.
+let missingSecretAlerted = false;
+
 export async function recordPregameSelectionCounts(
+  athleteId: string,
   sport: unknown,
   input: PregameSelectionsInput | null | undefined,
 ): Promise<void> {
@@ -24,10 +39,35 @@ export async function recordPregameSelectionCounts(
     const built = buildSelectionCounts(sport, input);
     if (!built || built.selections.length === 0) return;
 
+    const secret = process.env.PREGAME_MARKER_SECRET;
+    if (!secret) {
+      console.error("[activity] pregame selection counts skipped: marker secret not configured");
+      if (process.env.NODE_ENV === "production" && !missingSecretAlerted) {
+        missingSecretAlerted = true;
+        deliverInBackground(
+          notifyError(
+            "[activity] PREGAME_MARKER_SECRET not set in production",
+            "Pregame option totals are NOT being recorded. Set PREGAME_MARKER_SECRET in Vercel env vars (do not rotate it mid-month).",
+          ),
+        );
+      }
+      return;
+    }
+    // ONE clock reading: the digests' month and the period passed to the
+    // database are the same value. The database counts only if it is the current
+    // UTC month (a call straddling midnight at a month boundary is not counted).
+    const period = utcPeriodStartIso(new Date());
+    const selections = built.selections.map((sel) => ({
+      dimension: sel.dimension,
+      value: sel.value,
+      marker: pregameOptionMarker(athleteId, secret, period, built.sport, sel.dimension, sel.value),
+    }));
+
     const supabase = createServiceClient();
-    const { error } = await supabase.rpc("increment_pregame_selection_counts", {
+    const { error } = await supabase.rpc("record_pregame_selections", {
+      p_period: period,
       p_sport: built.sport,
-      p_selections: built.selections,
+      p_selections: selections,
     });
     if (error) {
       console.error("[activity] pregame selection counts write failed");

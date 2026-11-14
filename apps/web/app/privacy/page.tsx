@@ -289,15 +289,26 @@ export default function PrivacyPage() {
         </p>
         <p className="mt-3">
           Separately, so that we can learn which training options are useful, we keep
-          aggregate totals of how often each preset pregame option is chosen (for example,
-          how many times a particular focus area or visualization was picked), counted by
-          sport and by month. These totals do not contain an account identifier or a
-          timestamp for any one athlete, and each option is counted on its own, never in
-          combination with an athlete&apos;s other choices. We do not look at a total unless
-          at least ten different athletes in that sport completed a pregame session that
-          month and the total itself is at least ten. This is a safeguard against singling
-          out one athlete, not a guarantee of anonymity. Anything an athlete types is never
-          counted.
+          aggregate totals of how often each preset pregame option is chosen, by how many
+          different athletes, and how many of those athletes chose it repeatedly (for
+          example, how many times a particular focus area or visualization was picked, and
+          how many athletes picked it four or more times), counted by sport and by month. These totals do not
+          contain an account identifier or a timestamp for any one athlete, and each option
+          is counted on its own, never in combination with an athlete&apos;s other choices. To
+          know how many different athletes chose an option, we keep short-lived, one-way
+          codes, each made from an athlete&apos;s account together with one option. A code
+          shows that the athlete has already been counted for that option this month, and
+          how many times they have chosen it this month. The codes cannot be read without a
+          secret key held on our servers; with that key and an athlete&apos;s account,
+          someone could check which options that athlete chose in the current month and how
+          often. We therefore keep them only while the month is open and delete
+          them within a few days after it ends. To stop one account from inflating the
+          totals, we also keep a one-way record of how recently an account sent its choices;
+          it does not contain the choices and is deleted within about a day. Our reporting only reads a total once its
+          month has ended and at least ten different athletes chose that option. Totals for
+          options chosen by fewer than ten athletes are deleted within a few days after the
+          month ends; the others are kept. This is a safeguard against singling out one
+          athlete, not a guarantee of anonymity. Anything an athlete types is never counted.
         </p>
         <p className="mt-3">
           We collect this ourselves, in our own database. We do not use a third-party
@@ -406,7 +417,8 @@ export default function PrivacyPage() {
           personalizes their experience by choosing from preset options we provide — for example
           a focus area or pregame selections — rather than by typing their own words. The app does
           not give an athlete a free-text journal, notes, or comment field. The choices an athlete
-          makes are kept private to that athlete and are not shown on the parent dashboard.
+          makes are not shown to parents or to other athletes, and our totals do not identify
+          them.
         </p>
         <p>
           A parent&apos;s dashboard shows participation information only — such as how often the
@@ -525,6 +537,8 @@ export default function PrivacyPage() {
           within 30 days of the request. We keep a minimal, content-free record of deletion
           (for example, that a deletion occurred and when) for security and recordkeeping; this
           record does not contain names, email addresses, birthdates, or any session content.
+          Totals that include a deleted athlete are not recalculated, and short-lived one-way
+          counting codes are removed when their month ends.
         </p>
         <p className="mt-3">
           If you subscribed on our website, deleting your account also cancels that

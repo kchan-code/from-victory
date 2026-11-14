@@ -18,6 +18,7 @@ import type { ActivityEventInput } from "@/lib/activity/event-core";
 import type { PregameSelectionsInput } from "@/lib/activity/pregame-selection-core";
 import { recordPregameSelectionCounts } from "@/lib/activity/pregame-selections";
 import { recordActivityEvent } from "@/lib/activity/record";
+import { rateLimitGate } from "@/lib/actions/rate-limit-store";
 import { createClient } from "@/lib/supabase/server";
 
 // Events that may be triggered from the client. Deliberately excludes app_open
@@ -59,13 +60,15 @@ export async function logActivityEvent(input: ActivityEventInput): Promise<void>
   }
 }
 
-// Anonymous pregame selection totals (FV-724 follow-up). Called once per
-// completed pregame. The caller must be a signed-in athlete so this cannot be
-// spammed anonymously — but the athlete's id is used ONLY for that check. It is
-// never passed to the writer or the database function, and nothing is logged
-// alongside the selections. The writer validates every value against the
-// sport's fixed vocabulary and drops the rest (the cue word is never accepted).
-// Best-effort: never throws, never navigates.
+// Pregame selection totals (FV-724 follow-up, FV-749). Called once per completed
+// pregame. The caller must be a signed-in athlete so this cannot be spammed
+// anonymously. The athlete's id is passed only to the server-only writer, which
+// derives a keyed one-way digest so each athlete is counted at most once per
+// UTC month; the database never receives the id, and nothing is logged
+// alongside the selections. The
+// writer validates every value against the sport's fixed vocabulary and drops
+// the rest (the cue word is never accepted). Best-effort: never throws, never
+// navigates.
 export async function logPregameSelections(
   sport: string,
   selections: PregameSelectionsInput,
@@ -86,7 +89,15 @@ export async function logPregameSelections(
       return;
     }
 
-    await recordPregameSelectionCounts(sport, selections);
+    // Throttle (every call adds picks): keyed on the signed-in athlete via the
+    // shared rate-limit store (digest only, no raw id stored). Over the limit:
+    // record nothing, no error to the client.
+    const { limited } = await rateLimitGate("pregame_selections", user.id);
+    if (limited) return;
+
+    // The id goes only to the server-only writer, which turns it into a keyed
+    // digest; the database never receives it.
+    await recordPregameSelectionCounts(user.id, sport, selections);
   } catch {
     // Telemetry is best-effort: never surface an error to the client.
   }

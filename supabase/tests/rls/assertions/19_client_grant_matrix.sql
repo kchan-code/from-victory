@@ -67,7 +67,8 @@ select relname, relacl
  where relnamespace = 'public'::regnamespace
    and relname in (
      'access_grants', 'account_deletion_events', 'activity_events',
-     'activity_rollup', 'pregame_selection_counts', 'athlete_session_metadata',
+     'activity_rollup', 'pregame_selection_counts', 'pregame_selection_contributors',
+     'athlete_session_metadata',
      'athlete_sessions', 'auth_rate_limit_events', 'device_pairings', 'journal_entries',
      'parent_athlete_links', 'profiles', 'push_subscriptions',
      'safety_events', 'subscriptions', 'training_sessions_catalog',
@@ -94,7 +95,8 @@ select p.proname, p.proacl
      'check_journal_entry_consistency', 'check_safety_event_consistency',
      'enforce_birthdate_immutable', 'due_push_reminders',
      'due_game_day_reminders', 'rollup_activity_events',
-     'increment_pregame_selection_counts', 'read_pregame_selection_counts',
+     'record_pregame_selections', 'read_pregame_selection_counts',
+     'prune_pregame_selection_totals',
      'get_own_personalization', 'get_own_username'
    )
  order by p.proname;
@@ -129,6 +131,8 @@ begin
       ('activity_rollup',            'authenticated',  true,  false, false, false),
       ('pregame_selection_counts',   'anon',           true,  false, false, false),
       ('pregame_selection_counts',   'authenticated',  true,  false, false, false),
+      ('pregame_selection_contributors', 'anon',       true,  false, false, false),
+      ('pregame_selection_contributors', 'authenticated', true, false, false, false),
       ('athlete_session_metadata',   'anon',           false, false, false, false),
       ('athlete_session_metadata',   'authenticated',  true,  false, false, false),
       ('athlete_sessions',           'anon',           false, false, false, false),
@@ -204,8 +208,8 @@ declare
 begin
   foreach tbl in array array[
     'access_grants', 'account_deletion_events', 'activity_events',
-    'activity_rollup', 'pregame_selection_counts', 'athlete_sessions',
-    'auth_rate_limit_events', 'device_pairings', 'journal_entries', 'parent_athlete_links',
+    'activity_rollup', 'pregame_selection_counts', 'pregame_selection_contributors',
+    'athlete_sessions', 'auth_rate_limit_events', 'device_pairings', 'journal_entries', 'parent_athlete_links',
     'profiles', 'push_subscriptions', 'safety_events', 'subscriptions',
     'training_sessions_catalog', 'waitlist_signups',
     'google_subscriptions', 'google_purchase_bindings', 'google_license_testers'
@@ -386,8 +390,9 @@ begin
     'public.due_push_reminders()',
     'public.due_game_day_reminders()',
     'public.rollup_activity_events(integer)',
-    'public.increment_pregame_selection_counts(text, jsonb)',
-    'public.read_pregame_selection_counts(integer, integer)'
+    'public.record_pregame_selections(date, text, jsonb)',
+    'public.prune_pregame_selection_totals()',
+    'public.read_pregame_selection_counts(integer)'
   ]
   loop
     select has_function_privilege('anon', fn, 'execute') into got;
@@ -755,8 +760,8 @@ begin;
   declare n int;
   begin
     begin
-      insert into public.pregame_selection_counts (period_start, sport, dimension, value, selection_count)
-        values (current_date, 'hockey', 'need', 'fv724_probe', 1);
+      insert into public.pregame_selection_counts (period_start, sport, dimension, value, selection_count, athlete_count)
+        values (current_date, 'hockey', 'need', 'fv724_probe', 1, 1);
       raise exception 'AC(g) FAIL: pregame_selection_counts INSERT by authenticated unexpectedly SUCCEEDED';
     exception when insufficient_privilege then null; end;
 
@@ -777,6 +782,41 @@ begin;
         raise exception 'AC(g) FAIL: pregame_selection_counts DELETE REMOVED % ROW(S) — RLS/policy gap', n;
       else
         raise exception 'AC(g) FAIL: pregame_selection_counts DELETE was a zero-row RLS no-op — grant layer missing; check 20261113120000_pregame_selection_counts.sql';
+      end if;
+    exception when insufficient_privilege then null; end;
+  end $$;
+rollback;
+
+-- ---- pregame_selection_contributors ----
+begin;
+  set local request.jwt.claims to '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated"}';
+  set local role authenticated;
+  do $$
+  declare n int;
+  begin
+    begin
+      insert into public.pregame_selection_contributors (marker, period_start)
+        values (repeat('a', 64), current_date);
+      raise exception 'AC(g) FAIL: pregame_selection_contributors INSERT by authenticated unexpectedly SUCCEEDED';
+    exception when insufficient_privilege then null; end;
+
+    begin
+      update public.pregame_selection_contributors set period_start = current_date;
+      get diagnostics n = row_count;
+      if n > 0 then
+        raise exception 'AC(g) FAIL: pregame_selection_contributors UPDATE CHANGED % ROW(S) — RLS/policy gap', n;
+      else
+        raise exception 'AC(g) FAIL: pregame_selection_contributors UPDATE was a zero-row RLS no-op — grant layer missing; check 20261113140000_pregame_selection_distinct_athletes.sql';
+      end if;
+    exception when insufficient_privilege then null; end;
+
+    begin
+      delete from public.pregame_selection_contributors;
+      get diagnostics n = row_count;
+      if n > 0 then
+        raise exception 'AC(g) FAIL: pregame_selection_contributors DELETE REMOVED % ROW(S) — RLS/policy gap', n;
+      else
+        raise exception 'AC(g) FAIL: pregame_selection_contributors DELETE was a zero-row RLS no-op — grant layer missing; check 20261113140000_pregame_selection_distinct_athletes.sql';
       end if;
     exception when insufficient_privilege then null; end;
   end $$;

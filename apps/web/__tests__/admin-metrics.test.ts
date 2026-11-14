@@ -361,6 +361,38 @@ describe("instrumented metrics (activity_events)", () => {
   });
 });
 
+describe("FV-749 — pregame throttle rows are not auth abuse", () => {
+  it("excludes action=pregame_selections from the authAbuse panel", () => {
+    const withThrottle: AuthEventRow[] = [
+      ...authEvents,
+      { action: "pregame_selections", created_at: "2026-06-29T00:00:00Z" },
+      { action: "pregame_selections", created_at: "2026-06-29T01:00:00Z" },
+    ];
+    const m = shapeAdminMetrics({
+      now: NOW,
+      rangeDays: 30,
+      profiles,
+      sessions,
+      catalog,
+      subscriptions,
+      waitlist,
+      pushOptInCount: 2,
+      safetyEvents,
+      deletions,
+      parentLinks,
+      pairings,
+      authEvents: withThrottle,
+      activityEvents,
+      athleteSportSelectedCount: 5,
+      athleteQuizCompleteCount: 3,
+      planLabelFor,
+    });
+    const panel = JSON.stringify(m.trust.authAbuse);
+    expect(panel).not.toContain("pregame_selections");
+    expect(panel).toContain("sign_in");
+  });
+});
+
 describe("FV-415 part 2 — longRange is a metrics.ts concern, not this pure core's", () => {
   // shapeAdminMetrics (this pure core) NEVER sets `longRange` — metrics.ts
   // attaches it separately, after fetching activity_rollup, only for >90d

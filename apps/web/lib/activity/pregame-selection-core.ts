@@ -80,8 +80,14 @@ export function buildSelectionCounts(
   const config = getSportConfig(sport);
   const src = input && typeof input === "object" ? input : {};
   const out: SelectionCount[] = [];
+  // No duplicate (dimension, value) pair is ever emitted: a cell must never get
+  // more than +1 from one athlete.
+  const seenPairs = new Set<string>();
   const add = (dimension: SelectionDimension, value: string | null) => {
     if (value !== null && value.length >= 1 && value.length <= MAX_VALUE_LEN) {
+      const key = `${dimension}\u0000${value}`;
+      if (seenPairs.has(key)) return;
+      seenPairs.add(key);
       out.push({ dimension, value });
     }
   };
