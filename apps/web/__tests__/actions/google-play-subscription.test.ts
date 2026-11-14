@@ -51,7 +51,9 @@ let rowAtAck: Row | null;
 let nextRowId: number;
 let racePayer: string | null;
 /** When set, the fake service client fails that (table, op) with a message that carries secrets. */
-let dbFault: { table: string; op: string } | null;
+let dbFault: { table: string; op: string; skip?: number } | null;
+let faultSeen: number;
+let beforeExec: ((table: string, op: string) => void) | null;
 let authThrows: boolean;
 
 let googleByToken: Map<string, { status: number; body?: unknown }>;
@@ -99,10 +101,15 @@ function builder(table: keyof typeof tables) {
   let ignoreDuplicates = false;
   const filters: Array<[string, unknown]> = [];
 
-  const matches = (r: Row) => filters.every(([c, v]) => r[c] === v);
+  const notFilters: Array<[string, unknown]> = [];
+
+  const matches = (r: Row) =>
+    filters.every(([c, v]) => r[c] === v) && notFilters.every(([c, v]) => r[c] !== v);
 
   function exec(): { data: unknown; error: { code?: string; message: string } | null } {
-    if (dbFault && dbFault.table === table && dbFault.op === op) {
+    // Test hook: change the world between the action's read and its write.
+    if (beforeExec) beforeExec(table, op);
+    if (dbFault && dbFault.table === table && dbFault.op === op && faultSeen++ >= (dbFault.skip ?? 0)) {
       // A realistic driver error: the message quotes the row.
       return {
         data: null,
@@ -163,6 +170,10 @@ function builder(table: keyof typeof tables) {
     select: () => api,
     eq: (c: string, v: unknown) => {
       filters.push([c, v]);
+      return api;
+    },
+    neq: (c: string, v: unknown) => {
+      notFilters.push([c, v]);
       return api;
     },
     insert: (p: Row) => {
@@ -264,6 +275,8 @@ beforeEach(() => {
   nextRowId = 1;
   racePayer = null;
   dbFault = null;
+  faultSeen = 0;
+  beforeExec = null;
   authThrows = false;
   googleByToken = new Map();
   ackStatus = 200;
@@ -445,6 +458,109 @@ describe("submitGooglePurchase: happy path", () => {
 // Binding and ownership (criterion 2)
 // ---------------------------------------------------------------------------
 
+describe("submitGooglePurchase: a closed purchase stays closed", () => {
+  it("re-submitting a token whose row is held as expired never restores access or acknowledges, even if Google still reports active", async () => {
+    // e.g. a refund or chargeback forced the row to expired while Google lags.
+    tables.google_subscriptions.push({
+      id: "row-closed",
+      payer_id: PAYER,
+      purchase_token: SENTINEL_TOKEN,
+      status: "expired",
+      expires_at: "2020-01-01T00:00:00.000Z",
+      acknowledged: true,
+    });
+    googleReturns(SENTINEL_TOKEN, { acknowledged: false });
+    expect(await submit()).toEqual({ ok: true, entitled: false, acknowledged: false });
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: "2020-01-01T00:00:00.000Z" });
+    expect(fetchCalls.some((u) => u.includes(":acknowledge"))).toBe(false);
+    expect(JSON.stringify(alerts)).toContain("row-closed");
+  });
+
+  it("QA fix 1: the row is closed between the action's read and its write: the granting update matches nothing, stays closed, no acknowledge", async () => {
+    tables.google_subscriptions.push({
+      id: "row-race",
+      payer_id: PAYER,
+      purchase_token: SENTINEL_TOKEN,
+      status: "active",
+      expires_at: "2099-01-01T00:00:00.000Z",
+      acknowledged: false,
+    });
+    googleReturns(SENTINEL_TOKEN, { acknowledged: false });
+    beforeExec = (table, op) => {
+      // The refund lands after ownership/read checks, right before the write.
+      if (table === "google_subscriptions" && op === "update") {
+        beforeExec = null;
+        Object.assign(rowFor(SENTINEL_TOKEN)!, { status: "expired", expires_at: "2026-11-12T00:00:00.000Z" });
+      }
+    };
+    expect(await submit()).toEqual({ ok: true, entitled: false, acknowledged: false });
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: "2026-11-12T00:00:00.000Z" });
+    expect(fetchCalls.some((u) => u.includes(":acknowledge"))).toBe(false);
+    expect(JSON.stringify(alerts)).toContain("row-race");
+  });
+
+  it("QA fix 1: a conditional update that matches nothing for a row that is not this payer's is a conflict", async () => {
+    tables.google_subscriptions.push({ id: "row-x", payer_id: PAYER, purchase_token: SENTINEL_TOKEN, status: "active" });
+    googleReturns(SENTINEL_TOKEN);
+    beforeExec = (table, op) => {
+      if (table === "google_subscriptions" && op === "update") {
+        beforeExec = null;
+        Object.assign(rowFor(SENTINEL_TOKEN)!, { payer_id: OTHER_PAYER });
+      }
+    };
+    expect(await submit()).toEqual({ ok: false, error: "ownership_conflict" });
+    expect(fetchCalls.some((u) => u.includes(":acknowledge"))).toBe(false);
+  });
+
+  it("QA fix 2: a refund (void) written before the client submit leaves the token closed: entitled false, no acknowledge", async () => {
+    // What the webhook writes for a void that arrived first.
+    tables.google_subscriptions.push({
+      id: "row-void-first",
+      payer_id: PAYER,
+      purchase_token: SENTINEL_TOKEN,
+      status: "expired",
+      expires_at: "2026-11-12T00:00:00.000Z",
+      acknowledged: false,
+    });
+    googleReturns(SENTINEL_TOKEN); // Google still reports ACTIVE, unacknowledged
+    expect(await submit()).toEqual({ ok: true, entitled: false, acknowledged: false });
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired" });
+    expect(fetchCalls.some((u) => u.includes(":acknowledge"))).toBe(false);
+  });
+
+  it("an expired row is terminal: when Google also reports it as not granting, only last_verified_at moves and there is no alert", async () => {
+    tables.google_subscriptions.push({
+      id: "row-closed",
+      payer_id: PAYER,
+      purchase_token: SENTINEL_TOKEN,
+      status: "expired",
+      expires_at: "2020-01-01T00:00:00.000Z",
+    });
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_EXPIRED", expiryTime: "2020-02-01T00:00:00.000Z" });
+    expect(await submit()).toEqual({ ok: true, entitled: false, acknowledged: false });
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: "2020-01-01T00:00:00.000Z" });
+    expect(typeof rowFor(SENTINEL_TOKEN)?.last_verified_at).toBe("string");
+    expect(alerts).toEqual([]);
+  });
+
+  it("an expired row never moves to an intermediate state (PAUSED) that a later submit could re-open", async () => {
+    tables.google_subscriptions.push({
+      id: "row-closed",
+      payer_id: PAYER,
+      purchase_token: SENTINEL_TOKEN,
+      status: "expired",
+      expires_at: "2020-01-01T00:00:00.000Z",
+    });
+    googleReturns(SENTINEL_TOKEN, { state: "SUBSCRIPTION_STATE_PAUSED" });
+    expect(await submit()).toEqual({ ok: true, entitled: false, acknowledged: false });
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired" });
+    googleReturns(SENTINEL_TOKEN, { acknowledged: false });
+    expect(await submit()).toEqual({ ok: true, entitled: false, acknowledged: false });
+    expect(rowFor(SENTINEL_TOKEN)).toMatchObject({ status: "expired", expires_at: "2020-01-01T00:00:00.000Z" });
+    expect(fetchCalls.some((u) => u.includes(":acknowledge"))).toBe(false);
+  });
+});
+
 describe("submitGooglePurchase: binding and ownership", () => {
   it("refuses a purchase with NO account id: nothing written, never acknowledged, alert has no ids", async () => {
     googleReturns(SENTINEL_TOKEN, { accountId: null });
@@ -523,6 +639,33 @@ describe("submitGooglePurchase: database and auth failures", () => {
     });
   }
 
+  // QA fix 7: the remaining queries (the 1st google_subscriptions select is the
+  // ownership read; later ones are subscription_read / linked_read).
+  it("subscription_read (inside the row write) fails: internal_error, never acknowledged", async () => {
+    googleReturns(SENTINEL_TOKEN);
+    dbFault = { table: "google_subscriptions", op: "select", skip: 1 };
+    expect(await submit()).toEqual({ ok: false, error: "internal_error" });
+    expect(logged.join("\n")).toContain("subscription_read:XX000");
+    expect(fetchCalls.some((u) => u.includes(":acknowledge"))).toBe(false);
+  });
+
+  it("linked_read fails: internal_error, nothing written", async () => {
+    googleReturns(SENTINEL_TOKEN, { linkedPurchaseToken: SENTINEL_LINKED_TOKEN });
+    dbFault = { table: "google_subscriptions", op: "select", skip: 1 };
+    expect(await submit()).toEqual({ ok: false, error: "internal_error" });
+    expect(logged.join("\n")).toContain("linked_read:XX000");
+    expect(tables.google_subscriptions).toEqual([]);
+  });
+
+  it("subscription_touch (closing an expired row) fails: internal_error, never acknowledged", async () => {
+    tables.google_subscriptions.push({ id: "row-closed", payer_id: PAYER, purchase_token: SENTINEL_TOKEN, status: "expired", expires_at: "2020-01-01T00:00:00.000Z" });
+    googleReturns(SENTINEL_TOKEN);
+    dbFault = { table: "google_subscriptions", op: "update" };
+    expect(await submit()).toEqual({ ok: false, error: "internal_error" });
+    expect(logged.join("\n")).toContain("subscription_touch:XX000");
+    expect(fetchCalls.some((u) => u.includes(":acknowledge"))).toBe(false);
+  });
+
   it("a thrown auth client is internal_error from both actions, not an unhandled rejection", async () => {
     authThrows = true;
     googleReturns(SENTINEL_TOKEN);
@@ -595,6 +738,22 @@ describe("submitGooglePurchase: linked purchase token", () => {
       product_id: "family.2",
       linked_purchase_token: SENTINEL_LINKED_TOKEN,
     });
+  });
+
+  it("never re-opens a linked older row that is already expired, even if Google still reports that token as active", async () => {
+    // e.g. the old purchase was refunded (row forced to expired) and Google lags.
+    subRows().push({
+      id: "row-old",
+      payer_id: PAYER,
+      purchase_token: SENTINEL_LINKED_TOKEN,
+      status: "expired",
+      expires_at: "2020-01-01T00:00:00.000Z",
+    });
+    googleReturns(SENTINEL_LINKED_TOKEN, { state: "SUBSCRIPTION_STATE_ACTIVE" });
+    googleReturns(SENTINEL_TOKEN, { productId: "family.2", linkedPurchaseToken: SENTINEL_LINKED_TOKEN });
+
+    expect(await submit()).toEqual({ ok: true, entitled: true, acknowledged: true });
+    expect(rowFor(SENTINEL_LINKED_TOKEN)).toMatchObject({ status: "expired", expires_at: "2020-01-01T00:00:00.000Z" });
   });
 
   it("does not cut off a deferred downgrade early: the old row keeps what Google reports", async () => {
