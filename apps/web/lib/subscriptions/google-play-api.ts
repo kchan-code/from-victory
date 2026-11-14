@@ -41,6 +41,7 @@ export interface ParsedGooglePurchase {
   readonly linkedPurchaseToken: string | null;
   readonly acknowledged: boolean;
   readonly offerId: string | null;
+  readonly latestOrderId: string | null;
 }
 
 export type ParseGooglePurchaseResult =
@@ -175,6 +176,7 @@ export function parseSubscriptionPurchaseV2(raw: unknown): ParseGooglePurchaseRe
       linkedPurchaseToken: body.linkedPurchaseToken || null,
       acknowledged: body.acknowledgementState === "ACKNOWLEDGEMENT_STATE_ACKNOWLEDGED",
       offerId: current.item.offerDetails?.offerId || null,
+      latestOrderId: current.item.latestSuccessfulOrderId || null,
     },
   };
 }

@@ -181,6 +181,58 @@ describe("assertAthleteCapacity", () => {
     await assertAthleteCapacity(service as never, PAYER_ID, 0);
     expect(getActiveAppleProductIdMock).toHaveBeenCalledWith(service, PAYER_ID);
   });
+
+  it("refuses adding a 6th athlete on Google family.5 tier", async () => {
+    process.env[GOOGLE_CATALOG_FLAG] = "1";
+    const service = {
+      from: (table: string) => {
+        if (table === "subscriptions") {
+          return {
+            select: () => ({
+              eq: () => ({
+                maybeSingle: async () => ({ data: null, error: null }),
+              }),
+            }),
+          };
+        }
+        if (table === "google_subscriptions") {
+          return {
+            select: () => ({
+              eq: () => ({
+                then: (
+                  resolve: (
+                    v: {
+                      data: Array<{
+                        product_id: string;
+                        status: string;
+                        expires_at: string;
+                      }>;
+                      error: null;
+                    },
+                  ) => void,
+                ) =>
+                  resolve({
+                    data: [
+                      {
+                        product_id: "family.5",
+                        status: "active",
+                        expires_at: "2099-01-01T00:00:00.000Z",
+                      },
+                    ],
+                    error: null,
+                  }),
+              }),
+            }),
+          };
+        }
+        throw new Error(`unexpected table: ${table}`);
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- reason: test double only
+    } as any;
+
+    const result = await assertAthleteCapacity(service, PAYER_ID, 5);
+    expect(result).toEqual({ allowed: false, reason: "capacity_reached" });
+  });
 });
 
 // ---------------------------------------------------------------------------

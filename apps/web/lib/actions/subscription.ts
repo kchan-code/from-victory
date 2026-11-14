@@ -144,6 +144,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { planToPriceEnvVar } from "@/lib/subscriptions/plans";
 import { hasEverHeldAppleEntitlement } from "@/lib/subscriptions/apple";
 import { hasEverHeldGoogleEntitlement } from "@/lib/subscriptions/google";
+import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 
 // ---------------------------------------------------------------------------
@@ -332,11 +333,14 @@ async function startSubscriptionCheckout(
     googleEverHeld = await hasEverHeldGoogleEntitlement(service, accountId);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
+    const alertTitle = isGooglePlayCatalogActive()
+      ? "[checkout] apple/google entitlement read failed"
+      : "[checkout] apple entitlement read failed";
     console.error(
-      `[subscription.startSubscriptionCheckout] apple/google entitlement read failed (account=${accountId}): ${message}`,
+      `[subscription.startSubscriptionCheckout] ${isGooglePlayCatalogActive() ? "apple/google" : "apple"} entitlement read failed (account=${accountId}): ${message}`,
     );
     deliverInBackground(
-      notifyError("[checkout] apple entitlement read failed", message, {
+      notifyError(alertTitle, message, {
         parent_id: accountId,
       }),
     );

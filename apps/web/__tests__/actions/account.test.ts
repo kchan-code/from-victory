@@ -74,9 +74,25 @@ const {
   notifyErrorMock,
   cancelGoogleRenewalMock,
   googleCancelableRowsMock,
+  getSubscriptionPurchaseV2Mock,
 } = vi.hoisted(() => ({
   notifyErrorMock: vi.fn(async (..._args: unknown[]) => undefined),
   cancelGoogleRenewalMock: vi.fn(async (..._args: unknown[]) => true),
+  getSubscriptionPurchaseV2Mock: vi.fn(
+    async (): Promise<
+      | {
+          ok: true;
+          purchase: {
+            latestOrderId: string | null;
+            status: string;
+          };
+        }
+      | { ok: false; reason: string }
+    > => ({
+      ok: true,
+      purchase: { latestOrderId: "GPA.1111-2222-3333-44444", status: "active" },
+    }),
+  ),
   googleCancelableRowsMock: vi.fn(
     async (): Promise<{
       rows: Array<{
@@ -126,6 +142,8 @@ vi.mock("@/lib/monitoring/notify", () => ({
 vi.mock("@/lib/subscriptions/google-play-api", () => ({
   cancelSubscriptionRenewal: (...args: unknown[]) =>
     cancelGoogleRenewalMock(...args),
+  getSubscriptionPurchaseV2: (...args: unknown[]) =>
+    getSubscriptionPurchaseV2Mock(...(args as [])),
 }));
 vi.mock("@/lib/subscriptions/google", () => ({
   getGoogleCancelableSubscriptionsForPayer: googleCancelableRowsMock,
@@ -359,6 +377,10 @@ beforeEach(() => {
   isNativeShellMock.mockReturnValue(false);
   googleCancelableRowsMock.mockResolvedValue({ rows: [], readError: false });
   cancelGoogleRenewalMock.mockResolvedValue(true);
+  getSubscriptionPurchaseV2Mock.mockResolvedValue({
+    ok: true,
+    purchase: { latestOrderId: "GPA.1111-2222-3333-44444", status: "active" },
+  });
 });
 
 // ===========================================================================
@@ -600,6 +622,10 @@ describe("deleteAccount — happy path", () => {
       "[account.deleteAccount] Google Play cancel failed",
       expect.stringContaining("com.fromvictoryapp.app/family.2"),
     );
+    expect(notifyErrorMock).toHaveBeenCalledWith(
+      "[account.deleteAccount] Google Play cancel failed",
+      expect.stringContaining("order_id=GPA.1111-2222-3333-44444"),
+    );
   });
 
   it("Google read error does not block deletion and adds the post-signout notice", async () => {
@@ -617,11 +643,11 @@ describe("deleteAccount — happy path", () => {
     expect(cancelGoogleRenewalMock).not.toHaveBeenCalled();
     expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
     expect(redirectMock).toHaveBeenCalledWith(
-      "/?account_deleted=1&google_play_cancel=1",
+      "/?account_deleted=1&google_play_cancel_unknown=1",
     );
     expect(notifyErrorMock).toHaveBeenCalledWith(
       "[account.deleteAccount] Google Play cancel skipped",
-      expect.stringContaining("cancel in Google Play"),
+      expect.stringContaining("check Google Play subscriptions manually"),
     );
   });
 });
@@ -720,6 +746,18 @@ describe("deleteAccount — in-shell redirect target (FV-489)", () => {
 
     expect(redirectMock).toHaveBeenCalledWith(
       "/signin?account_deleted=1&google_play_cancel=1",
+    );
+  });
+
+  it("uses the softer in-shell unknown flag when Google entitlement state could not be read", async () => {
+    isNativeShellMock.mockReturnValue(true);
+    googleCancelableRowsMock.mockResolvedValue({ rows: [], readError: true });
+    serviceMockImpl = makeServiceMock({ subscriptionRow: null, parentLinks: [] });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(redirectMock).toHaveBeenCalledWith(
+      "/signin?account_deleted=1&google_play_cancel_unknown=1",
     );
   });
 });

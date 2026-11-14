@@ -9,6 +9,7 @@ import {
   googleSubscriptionAccessLevel,
   type GoogleSubscriptionStatus,
 } from "./google-access-level";
+import { getSubscriptionPurchaseV2 } from "./google-play-api";
 import { isGooglePlayCatalogActive } from "./google-product-catalog";
 
 type ServiceClient = SupabaseClient<Database>;
@@ -214,8 +215,19 @@ export async function getGoogleCancelableSubscriptionsForPayer(
   }
 
   const nowMs = now.getTime();
-  const rows = ((data ?? []) as GoogleCancelableSubscriptionRow[]).filter((row) =>
-    shouldCancelGoogleSubscription(row, nowMs),
-  );
+  const rows: GoogleCancelableSubscriptionRow[] = [];
+  for (const row of (data ?? []) as GoogleCancelableSubscriptionRow[]) {
+    if (!shouldCancelGoogleSubscription(row, nowMs)) continue;
+
+    // Null expiry can mean stale local state. If Google now reports the token
+    // as expired, skip cancel to avoid false "cancel failed" alerts.
+    if (row.expires_at === null) {
+      const live = await getSubscriptionPurchaseV2(row.purchase_token);
+      if (live.ok && live.purchase.status === "expired") {
+        continue;
+      }
+    }
+    rows.push(row);
+  }
   return { rows, readError: false };
 }

@@ -64,6 +64,7 @@ describe("parseSubscriptionPurchaseV2", () => {
       linkedPurchaseToken: SENTINEL_LINKED_TOKEN,
       acknowledged: false,
       offerId: "trial-7d",
+      latestOrderId: null,
     });
   });
 
@@ -109,6 +110,22 @@ describe("parseSubscriptionPurchaseV2", () => {
     const r = parseSubscriptionPurchaseV2(subscriptionV2Fixture({ acknowledged: true, accountId: null }));
     expect(r.ok && r.purchase.acknowledged).toBe(true);
     expect(r.ok && r.purchase.obfuscatedAccountId).toBeNull();
+  });
+
+  it("captures the latest successful order id on the selected line item", () => {
+    const r = parseSubscriptionPurchaseV2({
+      ...subscriptionV2Fixture({}),
+      lineItems: [
+        {
+          productId: "family.1",
+          expiryTime: "2099-12-12T12:00:00.000Z",
+          latestSuccessfulOrderId: "GPA.1111-2222-3333-44444",
+          autoRenewingPlan: { autoRenewEnabled: true },
+          offerDetails: { basePlanId: "monthly" },
+        },
+      ],
+    });
+    expect(r.ok && r.purchase.latestOrderId).toBe("GPA.1111-2222-3333-44444");
   });
 
   it("takes the earliest-expiring line item as current when several are listed", () => {

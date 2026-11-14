@@ -20,7 +20,10 @@ import { syncAthleteQuantity } from "@/lib/stripe/sync-athlete-quantity";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { isNativeShell } from "@/lib/native-shell";
-import { cancelSubscriptionRenewal } from "@/lib/subscriptions/google-play-api";
+import {
+  cancelSubscriptionRenewal,
+  getSubscriptionPurchaseV2,
+} from "@/lib/subscriptions/google-play-api";
 import { GOOGLE_PLAY_PACKAGE_NAME } from "@/lib/subscriptions/google-product-catalog";
 import { getGoogleCancelableSubscriptionsForPayer } from "@/lib/subscriptions/google";
 import { createClient } from "@/lib/supabase/server";
@@ -196,7 +199,8 @@ export async function deleteAccount(
   // against the rest of this well-tested function.
   const { userId: parentId } = await requireSubscriber();
   const service = createServiceClient();
-  let googleCancelNoticeRequired = false;
+  let googleCancelFailureNoticeRequired = false;
+  let googleCancelUnknownNoticeRequired = false;
 
   // ---------------------------------------------------------------------------
   // Rate limiting (FV-14): reject BEFORE any side effect — Stripe cancel OR DB
@@ -344,11 +348,11 @@ export async function deleteAccount(
   // ---------------------------------------------------------------------------
   const google = await getGoogleCancelableSubscriptionsForPayer(service, parentId);
   if (google.readError) {
-    googleCancelNoticeRequired = true;
+    googleCancelUnknownNoticeRequired = true;
     deliverInBackground(
       notifyError(
         "[account.deleteAccount] Google Play cancel skipped",
-        "Could not read Google entitlement state during account deletion; user must cancel in Google Play",
+        "Could not read Google entitlement state during account deletion; user should check Google Play subscriptions manually",
       ),
     );
   } else {
@@ -361,14 +365,19 @@ export async function deleteAccount(
         if (canceled) break;
       }
       if (!canceled) {
+        let orderId = "unknown";
+        const live = await getSubscriptionPurchaseV2(row.purchase_token);
+        if (live.ok && live.purchase.latestOrderId) {
+          orderId = live.purchase.latestOrderId;
+        }
         failedCancels.push(
-          `${GOOGLE_PLAY_PACKAGE_NAME}/${row.product_id} status=${row.status} expires=${row.expires_at ?? "null"} token_tag=${googleTokenTag(row.purchase_token)}`,
+          `${GOOGLE_PLAY_PACKAGE_NAME}/${row.product_id} order_id=${orderId} status=${row.status} expires=${row.expires_at ?? "null"} token_tag=${googleTokenTag(row.purchase_token)}`,
         );
       }
     }
 
     if (failedCancels.length > 0) {
-      googleCancelNoticeRequired = true;
+      googleCancelFailureNoticeRequired = true;
       deliverInBackground(
         notifyError(
           "[account.deleteAccount] Google Play cancel failed",
@@ -469,10 +478,13 @@ export async function deleteAccount(
   // Clear the now-orphaned session cookies, then send them home.
   const supabase = await createClient();
   await supabase.auth.signOut();
-  const redirectUrl = googleCancelNoticeRequired
-    ? "?account_deleted=1&google_play_cancel=1"
-    : "";
-  if (googleCancelNoticeRequired) {
+  let redirectUrl = "";
+  if (googleCancelFailureNoticeRequired) {
+    redirectUrl = "?account_deleted=1&google_play_cancel=1";
+  } else if (googleCancelUnknownNoticeRequired) {
+    redirectUrl = "?account_deleted=1&google_play_cancel_unknown=1";
+  }
+  if (googleCancelFailureNoticeRequired || googleCancelUnknownNoticeRequired) {
     console.warn(
       "[account.deleteAccount] account deleted but Google Play cancel was not confirmed; user should cancel in Google Play.",
     );

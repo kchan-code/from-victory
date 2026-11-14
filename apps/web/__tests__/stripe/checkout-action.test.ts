@@ -51,6 +51,7 @@ const { requestHeadersMock, requestCookiesMock, headerState } = vi.hoisted(() =>
   requestCookiesMock: vi.fn(),
   headerState: { userAgent: "Mozilla/5.0" },
 }));
+const notifyErrorMock = vi.hoisted(() => vi.fn(async () => undefined));
 vi.mock("next/headers", () => ({
   headers: requestHeadersMock,
   cookies: requestCookiesMock,
@@ -72,7 +73,7 @@ vi.mock("@/lib/monitoring/deliver", () => ({
   deliverInBackground: () => undefined,
 }));
 vi.mock("@/lib/monitoring/notify", () => ({
-  notifyError: async () => undefined,
+  notifyError: (...args: unknown[]) => notifyErrorMock(...(args as [])),
 }));
 
 // Mutable Stripe sessions.create stub — replaced per test.
@@ -450,6 +451,7 @@ describe("createCheckoutSession — quantity from athlete count (FV-283)", () =>
     process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
     process.env.STRIPE_PRICE_ID_MONTHLY = "price_monthly_500";
     process.env.STRIPE_PRICE_ID_ANNUAL = "price_annual_4900";
+    delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
 
     sessionsCreateMock.mockResolvedValue({
       url: "https://checkout.stripe.com/pay/cs_test",
@@ -706,6 +708,37 @@ describe("createCheckoutSession — cross-provider Apple trial history (FV-570)"
     expect(result?.ok).toBe(false);
     expect(sessionsCreateMock).not.toHaveBeenCalled();
     expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it("uses the original apple-only alert title when GOOGLE_PLAY_CATALOG_ACTIVE is off", async () => {
+    supabaseMockImpl = makeSubMock(null);
+    hasEverHeldAppleEntitlementMock.mockRejectedValue(
+      new Error("apple_subscriptions read failed"),
+    );
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(notifyErrorMock).toHaveBeenCalledWith(
+      "[checkout] apple entitlement read failed",
+      expect.any(String),
+      expect.objectContaining({ parent_id: "parent-uuid-test" }),
+    );
+  });
+
+  it("uses the combined apple/google alert title when GOOGLE_PLAY_CATALOG_ACTIVE is on", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    supabaseMockImpl = makeSubMock(null);
+    hasEverHeldGoogleEntitlementMock.mockRejectedValue(
+      new Error("google_subscriptions read failed"),
+    );
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(notifyErrorMock).toHaveBeenCalledWith(
+      "[checkout] apple/google entitlement read failed",
+      expect.any(String),
+      expect.objectContaining({ parent_id: "parent-uuid-test" }),
+    );
   });
 });
 

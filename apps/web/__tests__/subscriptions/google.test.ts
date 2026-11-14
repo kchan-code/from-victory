@@ -1,6 +1,19 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
+const getSubscriptionPurchaseV2Mock = vi.fn(
+  async (): Promise<
+    | {
+        ok: true;
+        purchase: { status: string; latestOrderId: string | null };
+      }
+    | { ok: false; reason: string }
+  > => ({ ok: true, purchase: { status: "active", latestOrderId: null } }),
+);
+vi.mock("@/lib/subscriptions/google-play-api", () => ({
+  getSubscriptionPurchaseV2: (...args: unknown[]) =>
+    getSubscriptionPurchaseV2Mock(...(args as [])),
+}));
 
 import {
   getGoogleCancelableSubscriptionsForPayer,
@@ -11,6 +24,11 @@ const PAYER_ID = "eeeeeeee-0000-4000-8000-000000000005";
 
 afterEach(() => {
   delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
+  getSubscriptionPurchaseV2Mock.mockReset();
+  getSubscriptionPurchaseV2Mock.mockResolvedValue({
+    ok: true,
+    purchase: { status: "active", latestOrderId: null },
+  });
 });
 
 describe("getGoogleCancelableSubscriptionsForPayer", () => {
@@ -65,6 +83,36 @@ describe("getGoogleCancelableSubscriptionsForPayer", () => {
 
     const result = await getGoogleCancelableSubscriptionsForPayer(service, PAYER_ID);
     expect(result).toEqual({ rows: [], readError: true });
+  });
+
+  it("skips a null-expiry row when Google now reports the token as expired", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    getSubscriptionPurchaseV2Mock.mockResolvedValue({
+      ok: true,
+      purchase: { status: "expired", latestOrderId: "GPA.1" },
+    });
+    const service = {
+      from: () => ({
+        select: () => ({
+          eq: () =>
+            Promise.resolve({
+              data: [
+                {
+                  product_id: "family.1",
+                  purchase_token: "tok-expired",
+                  status: "expired",
+                  expires_at: null,
+                },
+              ],
+              error: null,
+            }),
+        }),
+      }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- reason: test double only
+    } as any;
+
+    const result = await getGoogleCancelableSubscriptionsForPayer(service, PAYER_ID);
+    expect(result.rows).toEqual([]);
   });
 });
 

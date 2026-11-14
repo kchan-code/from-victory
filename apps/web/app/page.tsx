@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { AppPreview } from "@/components/landing/AppPreview";
 import { Faq } from "@/components/landing/Faq";
@@ -40,7 +41,9 @@ export default function LandingPage() {
       <ScrollNav />
       <a id="top" />
       <main id="main-content">
-        <AccountDeletionNotice />
+        <Suspense fallback={null}>
+          <AccountDeletionNotice />
+        </Suspense>
         <Hero />
         <PregameSample />
         <Visualization />

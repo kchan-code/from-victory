@@ -39,4 +39,16 @@ describe("Landing page Google-cancel deletion notice", () => {
       screen.queryByTestId("account-deleted-google-cancel-notice"),
     ).toBeNull();
   });
+
+  it("renders the softer notice for uncertain Google status", async () => {
+    useSearchParamsMock.mockReturnValue(
+      new URLSearchParams("account_deleted=1&google_play_cancel_unknown=1"),
+    );
+    render(<AccountDeletionNotice />);
+    expect(
+      screen.getByTestId("account-deleted-google-cancel-notice"),
+    ).toHaveTextContent(
+      "Your account is deleted. If you subscribed through Google Play, please check your subscriptions in Google Play and cancel it there.",
+    );
+  });
 });

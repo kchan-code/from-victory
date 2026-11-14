@@ -42,6 +42,7 @@ type Props = {
     error?: string;
     account_deleted?: string;
     google_play_cancel?: string;
+    google_play_cancel_unknown?: string;
   }>;
 };
 
@@ -51,9 +52,12 @@ export default async function SignInPage(props: Props) {
 
   const resetInvalid = searchParams.reset === "invalid";
   const sessionInvalid = searchParams.error === "session_invalid";
-  const showGoogleCancelNotice =
+  const showGoogleCancelFailureNotice =
     searchParams.account_deleted === "1" &&
     searchParams.google_play_cancel === "1";
+  const showGoogleCancelUnknownNotice =
+    searchParams.account_deleted === "1" &&
+    searchParams.google_play_cancel_unknown === "1";
 
   const deviceAthleteId = await getDeviceAthleteId();
 
@@ -127,13 +131,15 @@ export default async function SignInPage(props: Props) {
           Your session was invalid. Please sign in again.
         </div>
       ) : null}
-      {showGoogleCancelNotice ? (
+      {showGoogleCancelFailureNotice || showGoogleCancelUnknownNotice ? (
         <div
           role="status"
+          data-testid="signin-account-deleted-google-cancel-notice"
           className="mb-6 rounded-[10px] border border-hairline bg-charcoal px-3.5 py-3 text-[13px] text-cream/80"
         >
-          Your account is deleted. Your Google Play subscription could not be
-          cancelled automatically. Please cancel it in Google Play.
+          {showGoogleCancelFailureNotice
+            ? "Your account is deleted. Your Google Play subscription could not be cancelled automatically. Please cancel it in Google Play."
+            : "Your account is deleted. If you subscribed through Google Play, please check your subscriptions in Google Play and cancel it there."}
         </div>
       ) : null}
       {/* FV-707: welcome doors first (parent, 18+ when enabled, invite).
