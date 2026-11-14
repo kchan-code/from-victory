@@ -14,8 +14,10 @@
  * finding):
  *   - An active comp grant → null.
  *   - Any read error → null (logged: payer id + message only).
- *   - "lapsed" only when the payer's OVERALL level (`getParentAccessLevel`,
- *     the best across providers) is `blocked`.
+ *   - "lapsed" only when the payer's OVERALL level is `blocked`. Decided from
+ *     the reads made here (best of the Stripe level and Apple's grantsAccess,
+ *     as `getParentAccessLevel` computes) — never a second, fail-closed
+ *     re-read that would turn a read error into `blocked` (FV-746).
  *   - "grace" only when no other provider is cleanly paid (Stripe
  *     `active`/`trialing`, or Apple `subscribed`).
  *
@@ -26,9 +28,9 @@
 import "server-only";
 
 import { createServiceClient } from "@/lib/supabase/service";
-import { getParentAccessLevel } from "./access";
+import { subscriptionAccessLevel, type SubscriptionStatus } from "./access-level";
 import { getAppleBillingIssueForPayer } from "./apple";
-import { hasActiveCompGrant } from "./grants";
+import { getActiveCompGrantSummary } from "./grants";
 
 export type PayerBillingIssue =
   | null
@@ -43,11 +45,12 @@ export async function getPayerBillingIssue(
   try {
     const service = createServiceClient();
 
-    if (await hasActiveCompGrant(service, payerId)) return null;
+    const grant = await getActiveCompGrantSummary(service, payerId);
+    if (grant.readError || grant.active) return null;
 
     const { data: sub, error: subError } = await service
       .from("subscriptions")
-      .select("status")
+      .select("status, cancel_at_period_end, current_period_end")
       .eq("parent_id", payerId)
       .maybeSingle();
     if (subError) {
@@ -75,7 +78,16 @@ export async function getPayerBillingIssue(
     }
 
     if (apple.stage === "lapsed") {
-      if ((await getParentAccessLevel(payerId)) === "blocked") {
+      // Same best-of the resolver computes when no read fails: Stripe level
+      // (no row = blocked) vs Apple. Lapsed only when neither grants access.
+      const stripeLevel = sub
+        ? subscriptionAccessLevel(
+            sub.status as SubscriptionStatus,
+            sub.cancel_at_period_end,
+            sub.current_period_end,
+          )
+        : "blocked";
+      if (stripeLevel === "blocked" && !apple.grantsAccess) {
         return { provider: "apple", stage: "lapsed" };
       }
     }

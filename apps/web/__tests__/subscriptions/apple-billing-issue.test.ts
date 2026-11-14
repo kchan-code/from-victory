@@ -78,17 +78,17 @@ const prod = (status: string, expires = FUTURE, grace: string | null = null): Ro
 
 describe("getAppleBillingIssueForPayer", () => {
   it("no rows -> no issue", async () => {
-    expect(await read()).toEqual({ stage: null, cleanlyPaid: false, readError: false });
+    expect(await read()).toEqual({ stage: null, cleanlyPaid: false, grantsAccess: false, readError: false });
   });
 
   it("in_grace_period still inside its bound -> grace", async () => {
     rows = [prod("in_grace_period", PAST, FUTURE)];
-    expect(await read()).toEqual({ stage: "grace", cleanlyPaid: false, readError: false });
+    expect(await read()).toEqual({ stage: "grace", cleanlyPaid: false, grantsAccess: true, readError: false });
   });
 
   it("in_billing_retry -> lapsed", async () => {
     rows = [prod("in_billing_retry", PAST, null)];
-    expect(await read()).toEqual({ stage: "lapsed", cleanlyPaid: false, readError: false });
+    expect(await read()).toEqual({ stage: "lapsed", cleanlyPaid: false, grantsAccess: false, readError: false });
   });
 
   it("in_grace_period past its bound plus skew (blocked) -> lapsed", async () => {
@@ -98,7 +98,7 @@ describe("getAppleBillingIssueForPayer", () => {
 
   it("subscribed with non-blocked access -> no issue, cleanly paid (wins over a retry row)", async () => {
     rows = [prod("in_billing_retry", PAST, null), prod("subscribed", FUTURE)];
-    expect(await read()).toEqual({ stage: null, cleanlyPaid: true, readError: false });
+    expect(await read()).toEqual({ stage: null, cleanlyPaid: true, grantsAccess: true, readError: false });
   });
 
   it("expired / revoked -> no issue (not a payment failure)", async () => {
@@ -117,14 +117,28 @@ describe("getAppleBillingIssueForPayer", () => {
     expect((await read()).stage).toBe("lapsed");
   });
 
+  it("grantsAccess is true for any non-blocked eligible row, false for blocked ones", async () => {
+    rows = [prod("subscribed", PAST)]; // past expiry + skew: blocked
+    expect((await read()).grantsAccess).toBe(false);
+    rows = [prod("in_grace_period", PAST, null)]; // anomaly: degraded, still grants
+    expect(await read()).toMatchObject({ stage: "grace", grantsAccess: true });
+    rows = [prod("expired", FUTURE), prod("revoked", FUTURE), prod("in_billing_retry", FUTURE)];
+    expect((await read()).grantsAccess).toBe(false);
+  });
+
+  it("grantsAccess ignores an ineligible Sandbox row", async () => {
+    rows = [{ ...prod("subscribed", FUTURE), environment: "Sandbox" }];
+    expect((await read()).grantsAccess).toBe(false);
+  });
+
   it("subscriptions read error -> readError, no stage", async () => {
     rowsError = { message: "boom" };
-    expect(await read()).toEqual({ stage: null, cleanlyPaid: false, readError: true });
+    expect(await read()).toEqual({ stage: null, cleanlyPaid: false, grantsAccess: false, readError: true });
   });
 
   it("allowlist read error -> readError, no stage", async () => {
     allowlistError = { message: "boom" };
     rows = [prod("in_billing_retry", PAST)];
-    expect(await read()).toEqual({ stage: null, cleanlyPaid: false, readError: true });
+    expect(await read()).toEqual({ stage: null, cleanlyPaid: false, grantsAccess: false, readError: true });
   });
 });

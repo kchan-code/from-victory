@@ -53,13 +53,19 @@ export async function hasActiveCompGrant(
  *     ends only when an admin revokes it, which a device can learn only
  *     online. No period is invented for it.
  *
- * Fail-closed on DB error: `{ active: false, latestFiniteEnd: null }`.
+ * Fail-closed on DB error: `{ active: false, latestFiniteEnd: null,
+ * readError: true }` (FV-746: `readError` lets a caller that must not act on a
+ * guess, e.g. the payment-problem notice, tell "no grant" from "couldn't tell").
  */
 export async function getActiveCompGrantSummary(
   service: ServiceClient,
   parentId: string,
   nowMs: number = Date.now(),
-): Promise<{ active: boolean; latestFiniteEnd: string | null }> {
+): Promise<{
+  active: boolean;
+  latestFiniteEnd: string | null;
+  readError: boolean;
+}> {
   // Fetch all non-revoked grants for this parent. Typically 0–3 rows.
   const { data, error } = await service
     .from("access_grants")
@@ -74,11 +80,11 @@ export async function getActiveCompGrantSummary(
     );
     // Fail-closed: on DB error, do NOT grant access. The underlying
     // subscription check in getParentAccessLevel will still run.
-    return { active: false, latestFiniteEnd: null };
+    return { active: false, latestFiniteEnd: null, readError: true };
   }
 
   if (!data || data.length === 0) {
-    return { active: false, latestFiniteEnd: null };
+    return { active: false, latestFiniteEnd: null, readError: false };
   }
 
   // Check whether any non-revoked grant is also not expired.
@@ -100,5 +106,5 @@ export async function getActiveCompGrantSummary(
       }
     }
   }
-  return { active, latestFiniteEnd: latestIso };
+  return { active, latestFiniteEnd: latestIso, readError: false };
 }
