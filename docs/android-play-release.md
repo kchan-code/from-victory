@@ -444,16 +444,9 @@ only. `INTERNET` only. `allowBackup=false`. No Advertising ID.
 
 ### Data safety answers, 2026-11-13 (FV-722)
 
-**Live on the public listing** (read 2026-11-13): no data shared; collected:
-Name (App functionality, Account management), Email address (Developer
-communications, Account management), User IDs (App functionality, Account
-management), Other info (App functionality, Account management), App
-interactions (App functionality), Purchase history (Account management),
-Device or other IDs, optional (App functionality, Developer communications);
-encrypted in transit; deletion can be requested.
-
-**Saved in Play Console on 2026-11-13, NOT yet sent for review** (Publishing
-overview → "Changes not yet submitted for review"; KC sends it):
+**Live on the public listing** (published 2026-11-13; read back from the
+public Data safety page the same day). No data shared; encrypted in transit;
+deletion can be requested. Collected:
 
 | Data type | Purposes |
 |---|---|
@@ -462,15 +455,13 @@ overview → "Changes not yet submitted for review"; KC sends it):
 | User IDs | App functionality, Account management |
 | Other info | App functionality, Personalization, Account management |
 | Purchase history | App functionality, Account management |
-| Diagnostics (new) | App functionality |
+| Diagnostics | App functionality |
 | App interactions | App functionality, Analytics, Personalization |
-| Device or other IDs | removed: nothing in the Android app collects one (web push endpoints are web only) |
 
-All collected, none shared, none ephemeral, all required. Diagnostics covers
+All collected, none shared, none ephemeral, all required. Device or other IDs
+was removed from the declaration on 2026-11-13: nothing in the Android app
+collects one (web push endpoints are web only). Diagnostics covers
 the automated error report (`apps/web/app/api/client-error`, FV-729).
-
-Once Google approves and the change is published, replace the "live" paragraph
-above with the table.
 
 ### Declare (typical — confirm against the live privacy policy)
 
