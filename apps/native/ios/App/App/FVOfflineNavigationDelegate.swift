@@ -22,6 +22,10 @@ final class FVOfflineNavigationDelegate: NSObject, WKNavigationDelegate {
 
     private var pregameRetries = 0
     private var pendingRetry: DispatchWorkItem?
+    /// Set by `showOfflinePage` just before it loads the bundled HTML, and
+    /// cleared by the navigation decision that consumes it. Only a load this
+    /// class started is kept inside the WebView.
+    private var offlinePageLoadPending = false
     private let logger = os.Logger(subsystem: Bundle.main.bundleIdentifier ?? "app", category: "offline")
 
     init(forward: WKNavigationDelegate?) {
@@ -47,6 +51,30 @@ final class FVOfflineNavigationDelegate: NSObject, WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         forward?.webView(webView, didFailProvisionalNavigation: navigation, withError: error)
         applyConnectivityFailure(webView, error: error)
+    }
+
+    /// The bundled offline page is loaded under `https://fv-offline.invalid/`.
+    /// Capacitor's handler sees that as a top-level link outside the app and
+    /// opens it in Safari, leaving the WebView blank. Allow that one load here;
+    /// every other decision still goes to Capacitor (allow-list, plugins,
+    /// external links).
+    func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationAction: WKNavigationAction,
+        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+    ) {
+        if offlinePageLoadPending,
+           navigationAction.targetFrame?.isMainFrame == true,
+           OfflineEntryFallback.isOfflinePageLoad(navigationAction.request.url?.absoluteString) {
+            offlinePageLoadPending = false
+            decisionHandler(.allow)
+            return
+        }
+        guard let forward else {
+            decisionHandler(.allow)
+            return
+        }
+        forward.webView(webView, decidePolicyFor: navigationAction, decisionHandler: decisionHandler)
     }
 
     func webView(
@@ -162,6 +190,7 @@ final class FVOfflineNavigationDelegate: NSObject, WKNavigationDelegate {
         webView.isOpaque = true
         webView.backgroundColor = onyx
         webView.scrollView.backgroundColor = onyx
+        offlinePageLoadPending = true
         webView.loadHTMLString(html, baseURL: URL(string: OfflineEntryFallback.offlinePageBase))
     }
 }
