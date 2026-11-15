@@ -231,11 +231,17 @@ export default async function DashboardSettingsPage() {
     | null = null;
   let googleStatusUnavailable = false;
   let googleEntitledElsewhereProvider: "stripe" | "apple" | null = null;
-  if (googlePlayUiEnabled) {
+  if (androidPlayCatalogEnabled) {
     const entitlement =
       googleEntitlementState ??
       (await getSubscribeEntitlementState(userId));
-    if (entitlement.status === "entitled") {
+    if (
+      entitlement.status === "entitled" &&
+      (entitlement.provider === "stripe" || entitlement.provider === "apple")
+    ) {
+      googleEntitledElsewhereProvider = entitlement.provider;
+    }
+    if (googlePlayUiEnabled && entitlement.status === "entitled") {
       if (entitlement.provider === "google") {
         const service = createServiceClient();
         const now = new Date();
@@ -309,11 +315,6 @@ export default async function DashboardSettingsPage() {
             googleStatusUnavailable = true;
           }
         }
-      } else if (
-        entitlement.provider === "stripe" ||
-        entitlement.provider === "apple"
-      ) {
-        googleEntitledElsewhereProvider = entitlement.provider;
       }
     }
   }
@@ -433,7 +434,7 @@ export default async function DashboardSettingsPage() {
                 trialOfferId: entry.trialOfferId,
               }))}
             />
-          ) : googlePlayUiEnabled && googleEntitledElsewhereProvider ? (
+          ) : androidPlayCatalogEnabled && googleEntitledElsewhereProvider ? (
             <GooglePlaySubscribeSection
               mode="entitled_elsewhere"
               entitledElsewhereProvider={googleEntitledElsewhereProvider}

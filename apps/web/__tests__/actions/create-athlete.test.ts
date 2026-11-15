@@ -533,7 +533,7 @@ describe("createAthlete — android-play shell guard (FV-659)", () => {
     expect(syncAthleteQuantityMock).not.toHaveBeenCalled();
   });
 
-  it("android-play flag on + not_entitled: allows create and sync flow", async () => {
+  it("android-play flag on + not_entitled: allows create without Stripe sync", async () => {
     process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
     shellCapabilityMock.mockReturnValue("android-play");
     subscribeEntitlementStateMock.mockResolvedValue({
@@ -545,7 +545,32 @@ describe("createAthlete — android-play shell guard (FV-659)", () => {
       "NEXT_REDIRECT",
     );
     expect(profileInsertPayload).not.toBeNull();
-    expect(syncAthleteQuantityMock).toHaveBeenCalledWith("parent-uuid-123");
+    expect(syncAthleteQuantityMock).not.toHaveBeenCalled();
+  });
+
+  it("android-play flag on + google entitlement never calls Stripe APIs even when a Stripe trial row exists", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    shellCapabilityMock.mockReturnValue("android-play");
+    subscribeEntitlementStateMock.mockResolvedValue({
+      status: "entitled",
+      provider: "google",
+    });
+    trialConversionStateResult = {
+      kind: "stripe_trial",
+      stripeSubscriptionId: "sub_trial_123",
+      currentAthleteCount: 2,
+      trialEndsAt: "2026-12-01T00:00:00Z",
+    };
+
+    await expect(
+      createAthlete(null, makeFormData({ trialConversionConfirmed: "true" })),
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(profileInsertPayload).not.toBeNull();
+    expect(getTrialConversionStateMock).not.toHaveBeenCalled();
+    expect(stripeSubscriptionsRetrieveMock).not.toHaveBeenCalled();
+    expect(stripeSubscriptionsUpdateMock).not.toHaveBeenCalled();
+    expect(syncAthleteQuantityMock).not.toHaveBeenCalled();
   });
 
   it.each(["stripe", "apple", "comp"] as const)(

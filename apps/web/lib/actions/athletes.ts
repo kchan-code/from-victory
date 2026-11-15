@@ -95,8 +95,6 @@ export async function createAthlete(
   _prev: CreateAthleteState,
   formData: FormData,
 ): Promise<CreateAthleteState> {
-  const { userId: parentId } = await requireParent();
-
   // FV-622 (Android Path A, KC 2026-11-03): the legacy-native shell (every
   // Android build) is consumption-only. Adding an athlete can change Stripe
   // billing (syncAthleteQuantity's tiered quantity bump, or the FV-586 trial
@@ -107,8 +105,11 @@ export async function createAthlete(
   const shellCapability = await getRequestShellCapability();
   const androidPlayCatalogEnabled =
     shellCapability === "android-play" && isGooglePlayCatalogActive();
+  let parentId: string | null = null;
   let androidPlayPurchaseEligible = false;
   if (androidPlayCatalogEnabled) {
+    const auth = await requireParent();
+    parentId = auth.userId;
     const entitlement = await getSubscribeEntitlementState(parentId);
     androidPlayPurchaseEligible =
       entitlement.status === "not_entitled" ||
@@ -136,6 +137,11 @@ export async function createAthlete(
       error: issue?.message ?? "Invalid input.",
       field: issue?.path[0]?.toString(),
     };
+  }
+
+  if (!parentId) {
+    const auth = await requireParent();
+    parentId = auth.userId;
   }
 
   const service = createServiceClient();
@@ -175,7 +181,9 @@ export async function createAthlete(
   // confirmation that ENDS the trial and STARTS the paid family plan
   // IMMEDIATELY — never a silent conversion or charge. Read the trial state
   // BEFORE any write below.
-  const trialConversionState = await getTrialConversionState(service, parentId);
+  const trialConversionState = androidPlayCatalogEnabled
+    ? { kind: "not_trialing" as const }
+    : await getTrialConversionState(service, parentId);
 
   // Fail CLOSED: a state-read failure must never let a silent mid-trial
   // conversion through undetected. Refuse the same way an un-confirmed
@@ -198,6 +206,7 @@ export async function createAthlete(
   // one-athlete trial itself (currentAthleteCount === 0, the FIRST athlete)
   // is not a conversion.
   if (
+    !androidPlayCatalogEnabled &&
     trialConversionState.kind === "stripe_trial" &&
     trialConversionState.currentAthleteCount >= 1
   ) {
@@ -376,7 +385,9 @@ export async function createAthlete(
   // deliverInBackground registers the promise with waitUntil so the
   // serverless runtime can't freeze the instance mid-Stripe-write — a
   // dropped sync is silent under-/over-billing, not a caught error.
-  deliverInBackground(syncAthleteQuantity(parentId));
+  if (!androidPlayCatalogEnabled) {
+    deliverInBackground(syncAthleteQuantity(parentId));
+  }
 
   redirect("/dashboard");
 }

@@ -275,6 +275,56 @@ export function AthleteForm({
     });
   }
 
+  function handleGoogleUpgradeRestore() {
+    if (!googleUpgrade) return;
+    startUpgradeTransition(async () => {
+      const restored = await restore();
+      if (!restored.ok) {
+        setUpgradeState(mapPlayErrorToUpgradeState(restored.error));
+        return;
+      }
+      const replacement = findReplacementPurchaseToken(
+        restored.purchases,
+        googleUpgrade.currentProductId,
+      );
+      if (replacement.pending) {
+        setUpgradeState("pending");
+        return;
+      }
+      if (!replacement.token) {
+        setUpgradeState("error");
+        return;
+      }
+      const submitted = await submitGooglePurchase({
+        purchaseToken: replacement.token,
+      });
+      if (!submitted.ok) {
+        if (
+          submitted.error === "account_mismatch" ||
+          submitted.error === "ownership_conflict"
+        ) {
+          setUpgradeState("already_owned_other_account");
+          return;
+        }
+        if (submitted.error === "verification_unavailable") {
+          setUpgradeState("play_unavailable");
+          return;
+        }
+        if (!navigator.onLine) {
+          setUpgradeState("offline");
+          return;
+        }
+        setUpgradeState("error");
+        return;
+      }
+      if (!submitted.entitled) {
+        setUpgradeState("pending");
+        return;
+      }
+      formRef.current?.requestSubmit();
+    });
+  }
+
   return (
     <form ref={formRef} action={formAction} noValidate>
       <Field
@@ -456,6 +506,16 @@ export function AthleteForm({
                                 ? "Connect to the internet to subscribe or restore a purchase."
                                 : "Google Play couldn't complete this. Please try again."}
                     </p>
+                    {upgradeState === "already_owned_restore" ? (
+                      <button
+                        type="button"
+                        className="mt-3 w-full bg-gold text-onyx border border-gold rounded-pill min-h-[44px] font-heading font-semibold text-[14px] disabled:opacity-60"
+                        onClick={handleGoogleUpgradeRestore}
+                        disabled={upgradePending}
+                      >
+                        Restore purchases
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       className="mt-3 w-full bg-transparent text-cream border border-hairline rounded-pill min-h-[44px] font-heading font-semibold text-[14px]"

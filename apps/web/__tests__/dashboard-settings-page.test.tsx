@@ -170,7 +170,13 @@ vi.mock("@/components/subscribe/GooglePlaySubscribeSection", () => ({
       data-trial={String(manageState?.trial ?? null)}
       data-status-label={String(manageState?.statusLabel ?? null)}
       data-provider={String(entitledElsewhereProvider ?? null)}
-    />
+    >
+      {mode === "entitled_elsewhere"
+        ? entitledElsewhereProvider === "stripe"
+          ? "You're subscribed on the web. Manage your plan from a browser at fromvictoryapp.com."
+          : "You're subscribed through the App Store. Manage it on your iPhone."
+        : null}
+    </div>
   ),
 }));
 
@@ -753,7 +759,7 @@ describe("/dashboard/settings — android-play renders exactly like legacy-nativ
 });
 
 describe("/dashboard/settings — android-play Google Play gating and trial window (FV-665)", () => {
-  it("flag on + Stripe entitlement keeps the legacy-native suppression path", async () => {
+  it("flag on + Stripe entitlement renders the entitled-elsewhere card", async () => {
     process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
     shellCapabilityMock.mockReturnValue("android-play");
     subscribeEntitlementStateMock.mockResolvedValue({
@@ -764,10 +770,29 @@ describe("/dashboard/settings — android-play Google Play gating and trial wind
 
     await renderPage();
 
-    expect(screen.queryByTestId("google-play-section-stub")).not.toBeInTheDocument();
-    expect(screen.getByTestId("no-subscription")).toHaveTextContent(
-      "Subscribe to From Victory from a web browser at fromvictoryapp.com.",
+    expect(screen.getByTestId("google-play-section-stub")).toHaveAttribute(
+      "data-mode",
+      "entitled_elsewhere",
     );
+    expect(screen.getByText("You're subscribed on the web. Manage your plan from a browser at fromvictoryapp.com.")).toBeInTheDocument();
+  });
+
+  it("flag on + Apple entitlement renders the entitled-elsewhere card", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    shellCapabilityMock.mockReturnValue("android-play");
+    subscribeEntitlementStateMock.mockResolvedValue({
+      status: "entitled",
+      provider: "apple",
+    });
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    await renderPage();
+
+    expect(screen.getByTestId("google-play-section-stub")).toHaveAttribute(
+      "data-mode",
+      "entitled_elsewhere",
+    );
+    expect(screen.getByText("You're subscribed through the App Store. Manage it on your iPhone.")).toBeInTheDocument();
   });
 
   it("flag on + Google entitlement with failed row read shows neutral status-unavailable", async () => {

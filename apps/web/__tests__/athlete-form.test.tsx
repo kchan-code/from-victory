@@ -404,4 +404,54 @@ describe("AthleteForm — error codes (FV-586 / FV-570)", () => {
     await waitFor(() => expect(requestSubmitSpy).toHaveBeenCalled());
     requestSubmitSpy.mockRestore();
   });
+
+  it("already-owned upgrade state offers Restore purchases and resumes athlete creation after restore", async () => {
+    const playBilling = await import("@/lib/native/play-billing");
+    const googleSubmit = await import("@/lib/actions/google-play-subscription");
+    const requestSubmitSpy = vi
+      .spyOn(HTMLFormElement.prototype, "requestSubmit")
+      .mockImplementation(() => {});
+    vi.mocked(playBilling.purchase).mockResolvedValueOnce({
+      status: "error",
+      error: "already_owned",
+    } as any);
+    vi.mocked(googleSubmit.submitGooglePurchase).mockResolvedValue({
+      ok: true,
+      entitled: true,
+    } as any);
+    formStateOverride.current = {
+      ok: false,
+      error: "capacity_reached",
+      code: "capacity_reached",
+    };
+    render(
+      <AthleteForm
+        googleUpgrade={{
+          currentCapacity: 1,
+          nextCapacity: 2,
+          currentProductId: "family.1",
+          currentBasePlanId: "yearly",
+          nextProductId: "family.2",
+          nextBasePlanId: "yearly",
+          trialEndingToday: false,
+          pricePeriodLabel: "per month",
+        }}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("First name"), {
+      target: { value: "Jordan" },
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId("google-upgrade-submit")).not.toBeDisabled(),
+    );
+    fireEvent.click(screen.getByTestId("google-upgrade-submit"));
+    await waitFor(() =>
+      expect(screen.getByText("Restore purchases")).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByText("Restore purchases"));
+    await waitFor(() => expect(playBilling.restore).toHaveBeenCalled());
+    await waitFor(() => expect(requestSubmitSpy).toHaveBeenCalled());
+    requestSubmitSpy.mockRestore();
+  });
 });

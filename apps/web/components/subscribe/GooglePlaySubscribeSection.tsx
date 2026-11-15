@@ -105,6 +105,7 @@ export function GooglePlaySubscribeSection({
   const [pricesLoaded, setPricesLoaded] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [pricingErrorState, setPricingErrorState] = useState<"play_unavailable" | "error" | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   const visibleCatalog = useMemo(() => {
     if (mode === "purchase") return catalog;
@@ -143,6 +144,7 @@ export function GooglePlaySubscribeSection({
 
   useEffect(() => {
     let active = true;
+    setPricesLoaded(false);
     const ids = Array.from(
       new Set(visibleCatalog.map((entry) => entry.productId)),
     );
@@ -180,7 +182,7 @@ export function GooglePlaySubscribeSection({
     return () => {
       active = false;
     };
-  }, [mode, visibleCatalog]);
+  }, [mode, retryKey, visibleCatalog]);
 
   useEffect(() => {
     if (mode !== "purchase" || !pricesLoaded || purchaseState !== "idle") return;
@@ -303,6 +305,75 @@ export function GooglePlaySubscribeSection({
     });
   }
 
+  function renderStateCard() {
+    if (purchaseState === "idle") return null;
+    const titleMap: Record<Exclude<PurchaseState, "idle">, string | null> = {
+      pending: "Purchase pending",
+      cancelled: "Purchase cancelled",
+      already_owned_restore: "Already subscribed",
+      already_owned_other_account: "Already subscribed",
+      play_unavailable: "Google Play unavailable",
+      offline: "You're offline",
+      error: "Something went wrong",
+      no_purchases_to_restore: null,
+    };
+    const bodyMap: Record<Exclude<PurchaseState, "idle">, string> = {
+      pending:
+        "Your purchase is waiting on Google Play. Training unlocks when Google Play confirms it. This can take a little while.",
+      cancelled: "You weren't charged. You can subscribe whenever you're ready.",
+      already_owned_restore:
+        "This Google account already has a From Victory subscription. If that's your purchase, restore it here.",
+      already_owned_other_account:
+        "This Google Play subscription belongs to another From Victory account. Sign in to that account to use it.",
+      play_unavailable:
+        "Google Play isn't available on this device right now, so you can't subscribe or restore a purchase here.",
+      offline: "Connect to the internet to subscribe or restore a purchase.",
+      error: "Google Play couldn't complete this. Please try again.",
+      no_purchases_to_restore: "No purchases to restore on this Google account.",
+    };
+    const title = titleMap[purchaseState];
+    return (
+      <div
+        data-testid={`google-state-${purchaseState}`}
+        className="bg-charcoal border border-hairline rounded-xl px-5 py-5"
+      >
+        {title ? (
+          <h3 className="font-body text-cream text-[42px] leading-[1.1] mb-4">
+            {title}
+          </h3>
+        ) : null}
+        <p className="font-body text-cream/80 text-[16px] leading-relaxed mb-6">
+          {bodyMap[purchaseState]}
+        </p>
+        {purchaseState === "already_owned_restore" ? (
+          <button
+            type="button"
+            onClick={handleRestore}
+            disabled={pending}
+            className="w-full bg-gold text-onyx border border-gold rounded-pill min-h-[52px] font-heading font-semibold text-[16px] mb-3 disabled:opacity-60"
+          >
+            Restore purchases
+          </button>
+        ) : null}
+        <button
+          type="button"
+          data-testid="google-state-primary"
+          onClick={() => {
+            clearState();
+            if (mode === "purchase") {
+              setPricesLoaded(false);
+              setPricingErrorState(null);
+              setRetryKey((value) => value + 1);
+            }
+          }}
+          className="w-full bg-transparent text-cream border border-hairline rounded-pill min-h-[52px] font-heading font-semibold text-[16px]"
+        >
+          {actionLabel(purchaseState)}
+        </button>
+      </div>
+    );
+  }
+
   if (mode === "entitled_elsewhere") {
     return (
       <div
@@ -386,6 +457,7 @@ export function GooglePlaySubscribeSection({
         >
           Restore purchases
         </button>
+        {renderStateCard()}
         {message ? (
           <p className="mt-3 text-cream/70 text-[13px]" role="status">
             {message}
@@ -396,63 +468,7 @@ export function GooglePlaySubscribeSection({
   }
 
   if (purchaseState !== "idle") {
-    const titleMap: Record<Exclude<PurchaseState, "idle">, string> = {
-      pending: "Purchase pending",
-      cancelled: "Purchase cancelled",
-      already_owned_restore: "Already subscribed",
-      already_owned_other_account: "Already subscribed",
-      play_unavailable: "Google Play unavailable",
-      offline: "You're offline",
-      error: "Something went wrong",
-      no_purchases_to_restore: "No purchases to restore",
-    };
-    const bodyMap: Record<Exclude<PurchaseState, "idle">, string> = {
-      pending:
-        "Your purchase is waiting on Google Play. Training unlocks when Google Play confirms it. This can take a little while.",
-      cancelled: "You weren't charged. You can subscribe whenever you're ready.",
-      already_owned_restore:
-        "This Google account already has a From Victory subscription. If that's your purchase, restore it here.",
-      already_owned_other_account:
-        "This Google Play subscription belongs to another From Victory account. Sign in to that account to use it.",
-      play_unavailable:
-        "Google Play isn't available on this device right now, so you can't subscribe or restore a purchase here.",
-      offline: "Connect to the internet to subscribe or restore a purchase.",
-      error: "Google Play couldn't complete this. Please try again.",
-      no_purchases_to_restore: "No purchases to restore on this Google account.",
-    };
-    return (
-      <div
-        data-testid={`google-state-${purchaseState}`}
-        className="bg-charcoal border border-hairline rounded-xl px-5 py-5"
-      >
-        <h3 className="font-body text-cream text-[42px] leading-[1.1] mb-4">
-          {titleMap[purchaseState]}
-        </h3>
-        <p className="font-body text-cream/80 text-[16px] leading-relaxed mb-6">
-          {bodyMap[purchaseState]}
-        </p>
-        {purchaseState === "already_owned_restore" ? (
-          <button
-            type="button"
-            onClick={handleRestore}
-            disabled={pending}
-            className="w-full bg-gold text-onyx border border-gold rounded-pill min-h-[52px] font-heading font-semibold text-[16px] mb-3 disabled:opacity-60"
-          >
-            Restore purchases
-          </button>
-        ) : null}
-        <button
-          type="button"
-          data-testid="google-state-primary"
-          onClick={() => {
-            clearState();
-          }}
-          className="w-full bg-transparent text-cream border border-hairline rounded-pill min-h-[52px] font-heading font-semibold text-[16px]"
-        >
-          {actionLabel(purchaseState)}
-        </button>
-      </div>
-    );
+    return renderStateCard();
   }
 
   const intervalLabel = periodLabel(interval);
