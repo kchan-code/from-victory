@@ -67,6 +67,10 @@ export const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
   // account by username alone, so a collision would let it overwrite a real
   // minor's password — and let --teardown delete that real account.
   "fvplayreview",
+  // Apple App Store Connect reviewer test athlete (FV-752). Same reasoning as
+  // "fvplayreview" above, for the separate Apple reviewer account provisioned
+  // by provision-app-store-review-account.ts.
+  "fvapplereview",
 ]);
 
 // ---------------------------------------------------------------------------
