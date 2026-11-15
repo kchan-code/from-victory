@@ -15,7 +15,10 @@ import { getConfiguredAppleProducts } from "@/lib/subscriptions/apple-products";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { isSubscriptionEnforcementEnabled } from "@/lib/subscriptions/enforce";
 import { hasEverHeldGoogleEntitlement } from "@/lib/subscriptions/google";
-import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
+import {
+  GOOGLE_PLAY_CATALOG,
+  isGooglePlayCatalogActive,
+} from "@/lib/subscriptions/google-product-catalog";
 import { getPayerBillingIssue } from "@/lib/subscriptions/billing-issue";
 import { PaymentIssueNotice } from "@/components/billing/PaymentIssueNotice";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
@@ -23,6 +26,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { SubscribeForm } from "@/components/subscribe/SubscribeForm";
 import { AppleSubscribeSection } from "@/components/subscribe/AppleSubscribeSection";
+import { GooglePlaySubscribeSection } from "@/components/subscribe/GooglePlaySubscribeSection";
 import { ClearOfflinePregameOnMount } from "@/components/pregame/ClearOfflinePregameOnMount";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 
@@ -163,6 +167,8 @@ export default async function SubscribePage(props: Props) {
   // purchase surface ("ios-iap") from every other/older native shell
   // ("legacy-native", restricted, unchanged) — see getRequestShellCapability().
   const shellCapability = await getRequestShellCapability();
+  const googlePlayUiEnabled =
+    shellCapability === "android-play" && isGooglePlayCatalogActive();
   const nativeShell = shellCapability !== null;
 
   // FV-464: when subscription enforcement would bounce this user straight
@@ -360,7 +366,20 @@ export default async function SubscribePage(props: Props) {
                - "ios-iap": an iOS build capable of the native StoreKit
                  purchase surface — render AppleSubscribeSection.
                - null: ordinary web/PWA flow — completely unchanged. */
-          isRestrictedShell(shellCapability) ? (
+          googlePlayUiEnabled ? (
+            <GooglePlaySubscribeSection
+              mode="purchase"
+              trialEligible={trialEligible}
+              catalog={GOOGLE_PLAY_CATALOG.map((entry) => ({
+                productId: entry.productId,
+                basePlanId: entry.basePlanId,
+                athleteCapacity: entry.athleteCapacity,
+                interval: entry.interval,
+                trialOfferId: entry.trialOfferId,
+              }))}
+              dashboardHref={dashboardHref}
+            />
+          ) : isRestrictedShell(shellCapability) ? (
             <div
               role="status"
               data-testid="native-shell-subscribe-notice"

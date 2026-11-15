@@ -38,10 +38,16 @@ import { requireParent } from "@/lib/auth/guards";
 import { getDigestOptOut } from "@/lib/actions/digest-preferences";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
+import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
+import {
+  GOOGLE_PLAY_CATALOG,
+  isGooglePlayCatalogActive,
+} from "@/lib/subscriptions/google-product-catalog";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
 import { priceIdToLabel } from "@/lib/subscriptions/plans";
+import { GooglePlaySubscribeSection } from "@/components/subscribe/GooglePlaySubscribeSection";
 
 export const metadata = {
   title: "Account settings",
@@ -106,8 +112,11 @@ export default async function DashboardSettingsPage() {
   // NEW three-way branch to the "no subscription yet" entry link only.
   const shellCapability = await getRequestShellCapability();
   const nativeShell = shellCapability !== null;
-  const legacyNative = isRestrictedShell(shellCapability);
   const iosIap = shellCapability === "ios-iap";
+  const googlePlayUiEnabled =
+    shellCapability === "android-play" && isGooglePlayCatalogActive();
+  const legacyNative =
+    isRestrictedShell(shellCapability) && !googlePlayUiEnabled;
 
   // Read the parent's own email from the authenticated session. This is the
   // parent's real account email — not an athlete synthetic address. We read it
@@ -179,6 +188,66 @@ export default async function DashboardSettingsPage() {
     : { productId: null, readError: false };
   const appleActive = appleResult.productId !== null;
   const appleReadError = appleResult.readError;
+
+  let googleManageState:
+    | {
+        statusLabel: "Active" | "Free trial";
+        productId: string;
+        basePlanId: string;
+        athleteCapacity: number;
+        interval: "month" | "year";
+        offerId: string | null;
+        priceSuffix: "/ month" | "/ year";
+        expiresAtLabel: string | null;
+        trial: boolean;
+      }
+    | null = null;
+  let googleEntitledElsewhereProvider: "stripe" | "apple" | null = null;
+  if (googlePlayUiEnabled) {
+    const entitlement = await getSubscribeEntitlementState(userId);
+    if (entitlement.status === "entitled") {
+      if (entitlement.provider === "google") {
+        const { data: googleRows, error: googleRowsError } = await createServiceClient()
+          .from("google_subscriptions")
+          .select("product_id, base_plan_id, offer_id, status, expires_at, acknowledged")
+          .eq("payer_id", userId)
+          .eq("is_test_purchase", false);
+        if (!googleRowsError && googleRows && googleRows.length > 0) {
+          const sorted = [...googleRows].sort((a, b) =>
+            (b.expires_at ? new Date(b.expires_at).getTime() : 0) -
+            (a.expires_at ? new Date(a.expires_at).getTime() : 0),
+          );
+          const current = sorted.find((row) => row.acknowledged) ?? sorted[0] ?? null;
+          if (current) {
+            const entry = GOOGLE_PLAY_CATALOG.find(
+              (catalogEntry) =>
+                catalogEntry.productId === current.product_id &&
+                catalogEntry.basePlanId === current.base_plan_id,
+            );
+            if (entry) {
+              const trial = current.offer_id === "trial-7d" && current.status === "active";
+              googleManageState = {
+                statusLabel: trial ? "Free trial" : "Active",
+                productId: current.product_id,
+                basePlanId: current.base_plan_id,
+                athleteCapacity: entry.athleteCapacity,
+                interval: entry.interval,
+                offerId: current.offer_id,
+                priceSuffix: entry.interval === "month" ? "/ month" : "/ year",
+                expiresAtLabel: formatDate(current.expires_at),
+                trial,
+              };
+            }
+          }
+        }
+      } else if (
+        entitlement.provider === "stripe" ||
+        entitlement.provider === "apple"
+      ) {
+        googleEntitledElsewhereProvider = entitlement.provider;
+      }
+    }
+  }
 
   // Digest opt-out preference (FV-226).
   const digestOptOut = await getDigestOptOut();
@@ -283,7 +352,31 @@ export default async function DashboardSettingsPage() {
             Subscription
           </h2>
 
-          {iosIap && appleActive ? (
+          {googlePlayUiEnabled && googleManageState ? (
+            <GooglePlaySubscribeSection
+              mode="manage"
+              manageState={googleManageState}
+              catalog={GOOGLE_PLAY_CATALOG.map((entry) => ({
+                productId: entry.productId,
+                basePlanId: entry.basePlanId,
+                athleteCapacity: entry.athleteCapacity,
+                interval: entry.interval,
+                trialOfferId: entry.trialOfferId,
+              }))}
+            />
+          ) : googlePlayUiEnabled && googleEntitledElsewhereProvider ? (
+            <GooglePlaySubscribeSection
+              mode="entitled_elsewhere"
+              entitledElsewhereProvider={googleEntitledElsewhereProvider}
+              catalog={GOOGLE_PLAY_CATALOG.map((entry) => ({
+                productId: entry.productId,
+                basePlanId: entry.basePlanId,
+                athleteCapacity: entry.athleteCapacity,
+                interval: entry.interval,
+                trialOfferId: entry.trialOfferId,
+              }))}
+            />
+          ) : iosIap && appleActive ? (
             /* Apple-entitled payer (record §4.4 — Apple precedence over any
                Stripe/comp status). Price-free, accurate status + an in-app
                manage entry: StoreKit purchases route through Apple's own

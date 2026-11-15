@@ -6,6 +6,7 @@ import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
+import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { getPayerSeatStateForCurrentParent } from "@/lib/subscriptions/seat-state";
@@ -86,7 +87,10 @@ export default async function DashboardPage() {
   // bridge, FV-572) instead gets a price-free in-app entry to /subscribe,
   // where AppleSubscribeSection renders the real StoreKit purchase surface.
   const shellCapability = await getRequestShellCapability();
-  const legacyNative = isRestrictedShell(shellCapability);
+  const googlePlayUiEnabled =
+    shellCapability === "android-play" && isGooglePlayCatalogActive();
+  const legacyNative =
+    isRestrictedShell(shellCapability) && !googlePlayUiEnabled;
   const iosIap = shellCapability === "ios-iap";
 
   // FV-85: rhythm + session-count metadata. getAthleteMetadataMap() creates its
@@ -220,7 +224,7 @@ export default async function DashboardPage() {
                     Subscribe to From Victory from a web browser at
                     fromvictoryapp.com.
                   </>
-                ) : iosIap ? (
+                ) : iosIap || googlePlayUiEnabled ? (
                   <>
                     Daily mental-toughness training with faith built
                     in&nbsp;&mdash; one session per day combining a mental

@@ -3,6 +3,10 @@ import { AthleteForm, type TrialConversionInfo } from "@/components/dashboard/At
 import { requireParent } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
+import {
+  GOOGLE_PLAY_CATALOG,
+  isGooglePlayCatalogActive,
+} from "@/lib/subscriptions/google-product-catalog";
 import { createServiceClient } from "@/lib/supabase/service";
 import {
   capacityForAppleProduct,
@@ -41,7 +45,10 @@ export default async function NewAthletePage() {
   // adding an athlete can change Stripe billing, so a deep link here renders
   // the plain, non-tappable website notice instead of the form — and skips the
   // trial-quote (Stripe) read entirely. ios-iap and web are unchanged.
-  if (isRestrictedShell(await getRequestShellCapability())) {
+  const shellCapability = await getRequestShellCapability();
+  const googlePlayUiEnabled =
+    shellCapability === "android-play" && isGooglePlayCatalogActive();
+  if (isRestrictedShell(shellCapability) && !googlePlayUiEnabled) {
     return (
       <AuthShell title="Add an athlete">
         <div
@@ -58,6 +65,10 @@ export default async function NewAthletePage() {
   }
 
   const service = createServiceClient();
+  const { count: currentAthleteCount } = await service
+    .from("parent_athlete_links")
+    .select("athlete_id", { count: "exact", head: true })
+    .eq("parent_id", parentId);
 
   // FV-586 (KC decision D3, 2026-09-17): adding a second (or later) athlete
   // while the parent's Stripe subscription is mid-trial requires EXPLICIT
@@ -106,6 +117,71 @@ export default async function NewAthletePage() {
     appleCapacity = capacityForAppleProduct(appleProductId);
   }
 
+  let googleUpgrade:
+    | {
+        currentCapacity: number;
+        nextCapacity: number | null;
+        currentProductId: string;
+        currentBasePlanId: string;
+        currentPurchaseToken: string;
+        nextProductId: string | null;
+        nextBasePlanId: string | null;
+        trialEndingToday: boolean;
+        pricePeriodLabel: "per month" | "per year";
+      }
+    | undefined;
+
+  if (googlePlayUiEnabled) {
+    const { data: googleRows } = await service
+      .from("google_subscriptions")
+      .select(
+        "product_id, base_plan_id, purchase_token, offer_id, status, acknowledged, expires_at",
+      )
+      .eq("payer_id", parentId)
+      .eq("is_test_purchase", false);
+    const sorted = [...(googleRows ?? [])].sort(
+      (a, b) =>
+        (b.expires_at ? new Date(b.expires_at).getTime() : 0) -
+        (a.expires_at ? new Date(a.expires_at).getTime() : 0),
+    );
+    const current = sorted.find((row) => row.acknowledged) ?? sorted[0];
+    if (current) {
+      const entry = GOOGLE_PLAY_CATALOG.find(
+        (catalogEntry) =>
+          catalogEntry.productId === current.product_id &&
+          catalogEntry.basePlanId === current.base_plan_id,
+      );
+      if (entry) {
+        const nextCapacity = entry.athleteCapacity < 5 ? entry.athleteCapacity + 1 : null;
+        const nextEntry =
+          nextCapacity === null
+            ? null
+            : GOOGLE_PLAY_CATALOG.find(
+                (catalogEntry) =>
+                  catalogEntry.athleteCapacity === nextCapacity &&
+                  catalogEntry.interval === entry.interval,
+              );
+        const count = currentAthleteCount ?? 0;
+        if (count >= entry.athleteCapacity) {
+          googleUpgrade = {
+            currentCapacity: entry.athleteCapacity,
+            nextCapacity,
+            currentProductId: current.product_id,
+            currentBasePlanId: current.base_plan_id,
+            currentPurchaseToken: current.purchase_token,
+            nextProductId: nextEntry?.productId ?? null,
+            nextBasePlanId: nextEntry?.basePlanId ?? null,
+            trialEndingToday:
+              entry.athleteCapacity === 1 &&
+              current.offer_id === "trial-7d" &&
+              current.status === "active",
+            pricePeriodLabel: entry.interval === "month" ? "per month" : "per year",
+          };
+        }
+      }
+    }
+  }
+
   return (
     <AuthShell
       title="Add an athlete"
@@ -114,6 +190,7 @@ export default async function NewAthletePage() {
       <AthleteForm
         trialConversion={trialConversion}
         appleCapacity={appleCapacity}
+        googleUpgrade={googleUpgrade}
       />
     </AuthShell>
   );

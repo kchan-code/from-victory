@@ -18,6 +18,8 @@ const {
   requireParentMock,
   trialStateMock,
   trialQuoteMock,
+  athleteCountMock,
+  googleRowsMock,
   activeAppleProductIdMock,
   capacityForAppleProductMock,
   shellCapabilityMock,
@@ -26,6 +28,8 @@ const {
   requireParentMock: vi.fn(),
   trialStateMock: vi.fn(),
   trialQuoteMock: vi.fn(),
+  athleteCountMock: vi.fn(async () => ({ count: 0, error: null })),
+  googleRowsMock: vi.fn(async () => ({ data: [], error: null })),
   activeAppleProductIdMock: vi.fn(async () => null as string | null),
   capacityForAppleProductMock: vi.fn(),
 }));
@@ -41,7 +45,29 @@ vi.mock("@/lib/auth/guards", () => ({
 }));
 
 vi.mock("@/lib/supabase/service", () => ({
-  createServiceClient: () => ({}),
+  createServiceClient: () => ({
+    from: (table: string) => {
+      if (table === "parent_athlete_links") {
+        return {
+          select: () => ({ eq: athleteCountMock }),
+        };
+      }
+      if (table === "google_subscriptions") {
+        return {
+          select: () => ({
+            eq: () => ({
+              eq: googleRowsMock,
+            }),
+          }),
+        };
+      }
+      return {
+        select: () => ({
+          eq: async () => ({ data: [], error: null }),
+        }),
+      };
+    },
+  }),
 }));
 
 vi.mock("@/lib/subscriptions/trial-conversion", () => ({
@@ -76,6 +102,9 @@ afterEach(() => {
   vi.clearAllMocks();
   activeAppleProductIdMock.mockResolvedValue(null);
   shellCapabilityMock.mockReturnValue(null);
+  athleteCountMock.mockResolvedValue({ count: 0, error: null });
+  googleRowsMock.mockResolvedValue({ data: [], error: null });
+  delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
 });
 
 describe("NewAthletePage — legacy-native shell (FV-622, Android Path A)", () => {

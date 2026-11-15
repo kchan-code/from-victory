@@ -45,6 +45,13 @@ vi.mock("react-dom", async (importOriginal) => {
 vi.mock("@/lib/actions/athletes", () => ({
   createAthlete: vi.fn(),
 }));
+vi.mock("@/lib/actions/google-play-subscription", () => ({
+  beginGooglePlayPurchase: vi.fn(),
+  submitGooglePurchase: vi.fn(),
+}));
+vi.mock("@/lib/native/play-billing", () => ({
+  purchase: vi.fn(),
+}));
 
 import { AthleteForm } from "@/components/dashboard/AthleteForm";
 
@@ -231,5 +238,88 @@ describe("AthleteForm — error codes (FV-586 / FV-570)", () => {
 
     const err = screen.getByTestId("athlete-form-error");
     expect(err.textContent).toContain("You’ve reached your plan’s athlete limit.");
+  });
+
+  it("capacity_reached + Google trial upgrade renders the trial-ending variant with Play controls", () => {
+    formStateOverride.current = {
+      ok: false,
+      error: "capacity_reached",
+      code: "capacity_reached",
+    };
+    render(
+      <AthleteForm
+        googleUpgrade={{
+          currentCapacity: 1,
+          nextCapacity: 2,
+          currentProductId: "family.1",
+          currentBasePlanId: "yearly",
+          currentPurchaseToken: "tok_1",
+          nextProductId: "family.2",
+          nextBasePlanId: "yearly",
+          trialEndingToday: true,
+          pricePeriodLabel: "per month",
+        }}
+      />,
+    );
+
+    const err = screen.getByTestId("athlete-form-error");
+    expect(err.textContent).toContain("Your trial ends today");
+    expect(err.textContent).toContain("Continue to Google Play");
+    expect(err.textContent).toContain("Not now");
+  });
+
+  it("capacity_reached + Google paid upgrade renders the prorated variant", () => {
+    formStateOverride.current = {
+      ok: false,
+      error: "capacity_reached",
+      code: "capacity_reached",
+    };
+    render(
+      <AthleteForm
+        googleUpgrade={{
+          currentCapacity: 1,
+          nextCapacity: 2,
+          currentProductId: "family.1",
+          currentBasePlanId: "yearly",
+          currentPurchaseToken: "tok_1",
+          nextProductId: "family.2",
+          nextBasePlanId: "yearly",
+          trialEndingToday: false,
+          pricePeriodLabel: "per month",
+        }}
+      />,
+    );
+
+    const err = screen.getByTestId("athlete-form-error");
+    expect(err.textContent).toContain(
+      "Google Play will charge the difference for the time left in this period.",
+    );
+  });
+
+  it("capacity_reached at the 5-athlete limit renders plan-limit state and dashboard route", () => {
+    formStateOverride.current = {
+      ok: false,
+      error: "capacity_reached",
+      code: "capacity_reached",
+    };
+    render(
+      <AthleteForm
+        googleUpgrade={{
+          currentCapacity: 5,
+          nextCapacity: null,
+          currentProductId: "family.5",
+          currentBasePlanId: "yearly",
+          currentPurchaseToken: "tok_5",
+          nextProductId: null,
+          nextBasePlanId: null,
+          trialEndingToday: false,
+          pricePeriodLabel: "per year",
+        }}
+      />,
+    );
+
+    const err = screen.getByTestId("athlete-form-error");
+    expect(err.textContent).toContain("Plan limit reached");
+    expect(err.querySelector('a[href="/dashboard"]')).not.toBeNull();
   });
 });
