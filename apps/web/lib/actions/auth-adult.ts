@@ -11,7 +11,6 @@ import { notifyError } from "@/lib/monitoring/notify";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { SUPPORTED_SPORTS } from "@/lib/sports";
-import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -180,10 +179,7 @@ export async function signUpAdultAthlete(
   // redirect() throws internally and must not be called inside a try/catch —
   // both branches below sit at the top level, matching the pattern in
   // lib/actions/billing-portal.ts.
-  const shellCapability = await getRequestShellCapability();
-  const googlePlayUiEnabled =
-    shellCapability === "android-play" && isGooglePlayCatalogActive();
-  if (isRestrictedShell(shellCapability) && !googlePlayUiEnabled) {
+  if (isRestrictedShell(await getRequestShellCapability())) {
     redirect("/athlete");
   }
   redirect("/subscribe");

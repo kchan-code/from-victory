@@ -7,6 +7,9 @@ import {
   GOOGLE_PLAY_CATALOG,
   isGooglePlayCatalogActive,
 } from "@/lib/subscriptions/google-product-catalog";
+import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
+import { getGoogleEntitlementSnapshotForPayer } from "@/lib/subscriptions/google";
+import { googleSubscriptionAccessLevel } from "@/lib/subscriptions/google-access-level";
 import { createServiceClient } from "@/lib/supabase/service";
 import {
   capacityForAppleProduct,
@@ -16,10 +19,22 @@ import {
   getTrialConversionQuote,
   getTrialConversionState,
 } from "@/lib/subscriptions/trial-conversion";
+import type { GoogleSubscriptionStatus } from "@/lib/subscriptions/google-access-level";
 
 export const metadata = {
   title: "Add an athlete",
 };
+
+function isGoogleTrialActive(
+  offerId: string | null,
+  createdAt: string | null | undefined,
+  now: Date,
+): boolean {
+  if (offerId !== "trial-7d" || !createdAt) return false;
+  const createdMs = new Date(createdAt).getTime();
+  if (!Number.isFinite(createdMs)) return false;
+  return now.getTime() - createdMs < 7 * 24 * 60 * 60 * 1000;
+}
 
 /**
  * Formats a cents amount as a locale-aware currency string ("$54.00"). Never
@@ -46,8 +61,18 @@ export default async function NewAthletePage() {
   // the plain, non-tappable website notice instead of the form — and skips the
   // trial-quote (Stripe) read entirely. ios-iap and web are unchanged.
   const shellCapability = await getRequestShellCapability();
-  const googlePlayUiEnabled =
+  const androidPlayCatalogEnabled =
     shellCapability === "android-play" && isGooglePlayCatalogActive();
+  let androidPlayPurchaseEligible = false;
+  if (androidPlayCatalogEnabled) {
+    const entitlement = await getSubscribeEntitlementState(parentId);
+    androidPlayPurchaseEligible =
+      entitlement.status === "not_entitled" ||
+      (entitlement.status === "entitled" &&
+        entitlement.provider === "google");
+  }
+  const googlePlayUiEnabled =
+    androidPlayCatalogEnabled && androidPlayPurchaseEligible;
   if (isRestrictedShell(shellCapability) && !googlePlayUiEnabled) {
     return (
       <AuthShell title="Add an athlete">
@@ -123,7 +148,6 @@ export default async function NewAthletePage() {
         nextCapacity: number | null;
         currentProductId: string;
         currentBasePlanId: string;
-        currentPurchaseToken: string;
         nextProductId: string | null;
         nextBasePlanId: string | null;
         trialEndingToday: boolean;
@@ -132,20 +156,46 @@ export default async function NewAthletePage() {
     | undefined;
 
   if (googlePlayUiEnabled) {
+    const now = new Date();
+    const snapshot = await getGoogleEntitlementSnapshotForPayer(
+      service,
+      parentId,
+      now,
+    );
     const { data: googleRows } = await service
       .from("google_subscriptions")
       .select(
-        "product_id, base_plan_id, purchase_token, offer_id, status, acknowledged, expires_at",
+        "product_id, base_plan_id, offer_id, status, acknowledged, expires_at, created_at",
       )
       .eq("payer_id", parentId)
       .eq("is_test_purchase", false);
-    const sorted = [...(googleRows ?? [])].sort(
-      (a, b) =>
-        (b.expires_at ? new Date(b.expires_at).getTime() : 0) -
-        (a.expires_at ? new Date(a.expires_at).getTime() : 0),
-    );
-    const current = sorted.find((row) => row.acknowledged) ?? sorted[0];
-    if (current) {
+    const sorted =
+      snapshot.activeProductId === null
+        ? []
+        : [...(googleRows ?? [])]
+            .filter((row) => row.product_id === snapshot.activeProductId)
+            .sort((a, b) => {
+              const levelRank = { full: 2, degraded: 1, blocked: 0 } as const;
+              const aLevel = googleSubscriptionAccessLevel(
+                a.status as GoogleSubscriptionStatus,
+                a.expires_at,
+                now,
+              );
+              const bLevel = googleSubscriptionAccessLevel(
+                b.status as GoogleSubscriptionStatus,
+                b.expires_at,
+                now,
+              );
+              const levelDelta = levelRank[bLevel] - levelRank[aLevel];
+              if (levelDelta !== 0) return levelDelta;
+              const expiryDelta =
+                (b.expires_at ? new Date(b.expires_at).getTime() : 0) -
+                (a.expires_at ? new Date(a.expires_at).getTime() : 0);
+              if (expiryDelta !== 0) return expiryDelta;
+              return Number(b.acknowledged) - Number(a.acknowledged);
+            });
+    const current = snapshot.level === "blocked" ? null : sorted[0];
+    if (current && current.status !== "pending") {
       const entry = GOOGLE_PLAY_CATALOG.find(
         (catalogEntry) =>
           catalogEntry.productId === current.product_id &&
@@ -168,13 +218,13 @@ export default async function NewAthletePage() {
             nextCapacity,
             currentProductId: current.product_id,
             currentBasePlanId: current.base_plan_id,
-            currentPurchaseToken: current.purchase_token,
             nextProductId: nextEntry?.productId ?? null,
             nextBasePlanId: nextEntry?.basePlanId ?? null,
-            trialEndingToday:
-              entry.athleteCapacity === 1 &&
-              current.offer_id === "trial-7d" &&
-              current.status === "active",
+            trialEndingToday: isGoogleTrialActive(
+              current.offer_id,
+              current.created_at,
+              now,
+            ),
             pricePeriodLabel: entry.interval === "month" ? "per month" : "per year",
           };
         }

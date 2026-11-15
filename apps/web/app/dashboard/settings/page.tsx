@@ -48,6 +48,9 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getDisplayedAppleProductIdResult } from "@/lib/subscriptions/apple";
 import { priceIdToLabel } from "@/lib/subscriptions/plans";
 import { GooglePlaySubscribeSection } from "@/components/subscribe/GooglePlaySubscribeSection";
+import { getGoogleEntitlementSnapshotForPayer } from "@/lib/subscriptions/google";
+import { googleSubscriptionAccessLevel } from "@/lib/subscriptions/google-access-level";
+import type { GoogleSubscriptionStatus } from "@/lib/subscriptions/google-access-level";
 
 export const metadata = {
   title: "Account settings",
@@ -92,6 +95,18 @@ function statusLabel(status: string): string {
   }
 }
 
+function isGoogleTrialActive(
+  offerId: string | null,
+  createdAt: string | null | undefined,
+  now: Date,
+): boolean {
+  if (offerId !== "trial-7d" || !createdAt) return false;
+  const createdMs = new Date(createdAt).getTime();
+  if (!Number.isFinite(createdMs)) return false;
+  const trialWindowMs = 7 * 24 * 60 * 60 * 1000;
+  return now.getTime() - createdMs < trialWindowMs;
+}
+
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
@@ -113,8 +128,20 @@ export default async function DashboardSettingsPage() {
   const shellCapability = await getRequestShellCapability();
   const nativeShell = shellCapability !== null;
   const iosIap = shellCapability === "ios-iap";
-  const googlePlayUiEnabled =
+  const androidPlayCatalogEnabled =
     shellCapability === "android-play" && isGooglePlayCatalogActive();
+  let googleEntitlementState:
+    | Awaited<ReturnType<typeof getSubscribeEntitlementState>>
+    | null = null;
+  if (androidPlayCatalogEnabled) {
+    googleEntitlementState = await getSubscribeEntitlementState(userId);
+  }
+  const googlePlayUiEnabled =
+    androidPlayCatalogEnabled &&
+    googleEntitlementState !== null &&
+    (googleEntitlementState.status === "not_entitled" ||
+      (googleEntitlementState.status === "entitled" &&
+        googleEntitlementState.provider === "google"));
   const legacyNative =
     isRestrictedShell(shellCapability) && !googlePlayUiEnabled;
 
@@ -202,30 +229,65 @@ export default async function DashboardSettingsPage() {
         trial: boolean;
       }
     | null = null;
+  let googleStatusUnavailable = false;
   let googleEntitledElsewhereProvider: "stripe" | "apple" | null = null;
   if (googlePlayUiEnabled) {
-    const entitlement = await getSubscribeEntitlementState(userId);
+    const entitlement =
+      googleEntitlementState ??
+      (await getSubscribeEntitlementState(userId));
     if (entitlement.status === "entitled") {
       if (entitlement.provider === "google") {
-        const { data: googleRows, error: googleRowsError } = await createServiceClient()
+        const service = createServiceClient();
+        const now = new Date();
+        const snapshot = await getGoogleEntitlementSnapshotForPayer(
+          service,
+          userId,
+          now,
+        );
+        if (
+          snapshot.readError ||
+          snapshot.level === "blocked" ||
+          snapshot.activeProductId === null
+        ) {
+          googleStatusUnavailable = true;
+        } else {
+          const { data: googleRows, error: googleRowsError } = await service
           .from("google_subscriptions")
-          .select("product_id, base_plan_id, offer_id, status, expires_at, acknowledged")
+          .select("product_id, base_plan_id, offer_id, status, expires_at, acknowledged, created_at")
           .eq("payer_id", userId)
           .eq("is_test_purchase", false);
-        if (!googleRowsError && googleRows && googleRows.length > 0) {
-          const sorted = [...googleRows].sort((a, b) =>
-            (b.expires_at ? new Date(b.expires_at).getTime() : 0) -
-            (a.expires_at ? new Date(a.expires_at).getTime() : 0),
-          );
-          const current = sorted.find((row) => row.acknowledged) ?? sorted[0] ?? null;
-          if (current) {
+          if (!googleRowsError && googleRows && googleRows.length > 0) {
+            const levelRank = { full: 2, degraded: 1, blocked: 0 } as const;
+            const sorted = [...googleRows]
+              .filter((row) => row.product_id === snapshot.activeProductId)
+              .sort((a, b) => {
+                const aLevel = googleSubscriptionAccessLevel(
+                  a.status as GoogleSubscriptionStatus,
+                  a.expires_at,
+                  now,
+                );
+                const bLevel = googleSubscriptionAccessLevel(
+                  b.status as GoogleSubscriptionStatus,
+                  b.expires_at,
+                  now,
+                );
+                const levelDelta = levelRank[bLevel] - levelRank[aLevel];
+                if (levelDelta !== 0) return levelDelta;
+                const expiryDelta =
+                  (b.expires_at ? new Date(b.expires_at).getTime() : 0) -
+                  (a.expires_at ? new Date(a.expires_at).getTime() : 0);
+                if (expiryDelta !== 0) return expiryDelta;
+                return Number(b.acknowledged) - Number(a.acknowledged);
+              });
+            const current = sorted[0] ?? null;
+            if (current) {
             const entry = GOOGLE_PLAY_CATALOG.find(
               (catalogEntry) =>
                 catalogEntry.productId === current.product_id &&
                 catalogEntry.basePlanId === current.base_plan_id,
             );
             if (entry) {
-              const trial = current.offer_id === "trial-7d" && current.status === "active";
+              const trial = isGoogleTrialActive(current.offer_id, current.created_at, now);
               googleManageState = {
                 statusLabel: trial ? "Free trial" : "Active",
                 productId: current.product_id,
@@ -237,7 +299,14 @@ export default async function DashboardSettingsPage() {
                 expiresAtLabel: formatDate(current.expires_at),
                 trial,
               };
+            } else {
+              googleStatusUnavailable = true;
             }
+            } else {
+              googleStatusUnavailable = true;
+            }
+          } else {
+            googleStatusUnavailable = true;
           }
         }
       } else if (
@@ -471,7 +540,7 @@ export default async function DashboardSettingsPage() {
                 )}
               </div>
             </>
-          ) : iosIap && appleReadError ? (
+          ) : googleStatusUnavailable || (iosIap && appleReadError) ? (
             /* FV-580: no Stripe row exists AND the Apple status read failed —
                we genuinely don't know whether this payer is Apple-entitled.
                Rendering the no-subscription "Choose a plan" branch here would

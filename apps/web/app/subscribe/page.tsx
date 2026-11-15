@@ -81,6 +81,7 @@ export default async function SubscribePage(props: Props) {
   // or unknown-status payer never reaches the trial banner or SubscribeForm,
   // so skip these reads entirely rather than run them for no reason.
   let trialEligible = false;
+  let parentAthleteCount: number | null = null;
   if (entitlementState.status === "not_entitled") {
     // Derive trial eligibility server-side: no existing subscriptions row →
     // first-time subscriber → eligible. Reuses the same RLS-scoped client pattern
@@ -112,6 +113,7 @@ export default async function SubscribePage(props: Props) {
         .from("parent_athlete_links")
         .select("athlete_id", { count: "exact", head: true })
         .eq("parent_id", userId);
+      parentAthleteCount = athleteCountResult.count ?? 0;
       trialQuantityEligible =
         athleteCountResult.error === null &&
         (athleteCountResult.count ?? 0) <= 1;
@@ -167,9 +169,24 @@ export default async function SubscribePage(props: Props) {
   // purchase surface ("ios-iap") from every other/older native shell
   // ("legacy-native", restricted, unchanged) — see getRequestShellCapability().
   const shellCapability = await getRequestShellCapability();
-  const googlePlayUiEnabled =
+  const androidPlayCatalogEnabled =
     shellCapability === "android-play" && isGooglePlayCatalogActive();
+  const googlePlayUiEnabled =
+    androidPlayCatalogEnabled &&
+    (entitlementState.status === "not_entitled" ||
+      (entitlementState.status === "entitled" &&
+        entitlementState.provider === "google"));
   const nativeShell = shellCapability !== null;
+
+  if (googlePlayUiEnabled && !isAdult && parentAthleteCount === null) {
+    const supabase = await createClient();
+    const athleteCountResult = await supabase
+      .from("parent_athlete_links")
+      .select("athlete_id", { count: "exact", head: true })
+      .eq("parent_id", userId);
+    parentAthleteCount =
+      athleteCountResult.error === null ? (athleteCountResult.count ?? 0) : 0;
+  }
 
   // FV-464: when subscription enforcement would bounce this user straight
   // back here, the app targets below are a dead loop — send them to the
@@ -370,6 +387,12 @@ export default async function SubscribePage(props: Props) {
             <GooglePlaySubscribeSection
               mode="purchase"
               trialEligible={trialEligible}
+              minAthleteCount={
+                isAdult
+                  ? 1
+                  : Math.min(5, Math.max(1, parentAthleteCount ?? 1))
+              }
+              showAthletePicker={!isAdult}
               catalog={GOOGLE_PLAY_CATALOG.map((entry) => ({
                 productId: entry.productId,
                 basePlanId: entry.basePlanId,

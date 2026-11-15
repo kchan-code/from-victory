@@ -33,6 +33,7 @@ import { notifyError } from "@/lib/monitoring/notify";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
 import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
+import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { createServiceClient } from "@/lib/supabase/service";
 import { assertAthleteCapacity } from "@/lib/subscriptions/apple-capacity";
 import { getTrialConversionState } from "@/lib/subscriptions/trial-conversion";
@@ -94,6 +95,8 @@ export async function createAthlete(
   _prev: CreateAthleteState,
   formData: FormData,
 ): Promise<CreateAthleteState> {
+  const { userId: parentId } = await requireParent();
+
   // FV-622 (Android Path A, KC 2026-11-03): the legacy-native shell (every
   // Android build) is consumption-only. Adding an athlete can change Stripe
   // billing (syncAthleteQuantity's tiered quantity bump, or the FV-586 trial
@@ -102,8 +105,18 @@ export async function createAthlete(
   // authorization; this branch only ever removes an action. ios-iap and
   // web/PWA are unchanged.
   const shellCapability = await getRequestShellCapability();
-  const googlePlayUiEnabled =
+  const androidPlayCatalogEnabled =
     shellCapability === "android-play" && isGooglePlayCatalogActive();
+  let androidPlayPurchaseEligible = false;
+  if (androidPlayCatalogEnabled) {
+    const entitlement = await getSubscribeEntitlementState(parentId);
+    androidPlayPurchaseEligible =
+      entitlement.status === "not_entitled" ||
+      (entitlement.status === "entitled" &&
+        entitlement.provider === "google");
+  }
+  const googlePlayUiEnabled =
+    androidPlayCatalogEnabled && androidPlayPurchaseEligible;
   if (isRestrictedShell(shellCapability) && !googlePlayUiEnabled) {
     return {
       ok: false,
@@ -125,7 +138,6 @@ export async function createAthlete(
     };
   }
 
-  const { userId: parentId } = await requireParent();
   const service = createServiceClient();
 
   // FV-570 (record §4.6): Apple-tier athlete-capacity gate, BEFORE the

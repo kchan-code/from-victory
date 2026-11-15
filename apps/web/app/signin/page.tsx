@@ -3,14 +3,12 @@ import type { Metadata } from "next";
 import { AthleteSignInForm } from "@/components/auth/AthleteSignInForm";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { ClearCacheOnMount } from "@/components/auth/ClearCacheOnMount";
-import { GooglePlayDeleteNotice } from "@/components/auth/GooglePlayDeleteNotice";
 import { SignInChooser } from "@/components/auth/SignInChooser";
 import { getDeviceAthleteId } from "@/lib/auth/device";
 import { redirectIfAuthed } from "@/lib/auth/guards";
 import { isAdultSignupEnabled } from "@/lib/flags";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
-import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const siteUrl = "https://www.fromvictoryapp.com";
@@ -60,9 +58,6 @@ export default async function SignInPage(props: Props) {
   const showGoogleCancelUnknownNotice =
     searchParams.account_deleted === "1" &&
     searchParams.google_play_cancel_unknown === "1";
-  const shellCapability = await getRequestShellCapability();
-  const googlePlayUiEnabled =
-    shellCapability === "android-play" && isGooglePlayCatalogActive();
 
   const deviceAthleteId = await getDeviceAthleteId();
 
@@ -137,25 +132,15 @@ export default async function SignInPage(props: Props) {
         </div>
       ) : null}
       {showGoogleCancelFailureNotice || showGoogleCancelUnknownNotice ? (
-        googlePlayUiEnabled ? (
-          <GooglePlayDeleteNotice
-            body={
-              showGoogleCancelFailureNotice
-                ? "Your account is deleted. Your Google Play subscription could not be cancelled automatically. Please cancel it in Google Play."
-                : "Your account is deleted. If you subscribed through Google Play, please check your subscriptions in Google Play and cancel it there."
-            }
-          />
-        ) : (
-          <div
-            role="status"
-            data-testid="signin-account-deleted-google-cancel-notice"
-            className="mb-6 rounded-[10px] border border-hairline bg-charcoal px-3.5 py-3 text-[13px] text-cream/80"
-          >
-            {showGoogleCancelFailureNotice
-              ? "Your account is deleted. Your Google Play subscription could not be cancelled automatically. Please cancel it in Google Play."
-              : "Your account is deleted. If you subscribed through Google Play, please check your subscriptions in Google Play and cancel it there."}
-          </div>
-        )
+        <div
+          role="status"
+          data-testid="signin-account-deleted-google-cancel-notice"
+          className="mb-6 rounded-[10px] border border-hairline bg-charcoal px-3.5 py-3 text-[13px] text-cream/80"
+        >
+          {showGoogleCancelFailureNotice
+            ? "Your account is deleted. Your Google Play subscription could not be cancelled automatically. Please cancel it in Google Play."
+            : "Your account is deleted. If you subscribed through Google Play, please check your subscriptions in Google Play and cancel it there."}
+        </div>
       ) : null}
       {/* FV-707: welcome doors first (parent, 18+ when enabled, invite).
           The existing parent and athlete forms sit behind Sign in.
@@ -163,9 +148,7 @@ export default async function SignInPage(props: Props) {
           FV-621: the credential form in a restricted shell still swaps the
           signup link for website guidance. */}
       <SignInChooser
-        legacyNative={
-          isRestrictedShell(shellCapability) && !googlePlayUiEnabled
-        }
+        legacyNative={isRestrictedShell(await getRequestShellCapability())}
         adultSignupEnabled={isAdultSignupEnabled()}
         startOnSignIn={resetInvalid || sessionInvalid}
       />
