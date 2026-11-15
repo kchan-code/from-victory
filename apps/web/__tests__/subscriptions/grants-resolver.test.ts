@@ -276,7 +276,10 @@ vi.mock("@/lib/supabase/server", () => ({
 // Import after mocks
 // ---------------------------------------------------------------------------
 
-import { hasActiveCompGrant } from "@/lib/subscriptions/grants";
+import {
+  getActiveCompGrantSummary,
+  hasActiveCompGrant,
+} from "@/lib/subscriptions/grants";
 import { getParentAccessLevel, getAccessForCurrentUser } from "@/lib/subscriptions/access";
 import {
   isSubscriptionEnforcementEnabled,
@@ -434,6 +437,38 @@ describe("hasActiveCompGrant", () => {
     setGrantError();
     const service = makeServiceMock();
     expect(await hasActiveCompGrant(service as never, PARENT_ID)).toBe(false);
+  });
+});
+
+// FV-746: the summary must say when it could not read, so the payment-problem
+// notice can tell "no grant" from "couldn't tell".
+describe("getActiveCompGrantSummary — readError", () => {
+  it("reports readError on a DB error and stays fail-closed", async () => {
+    setGrantError();
+    const service = makeServiceMock();
+    expect(await getActiveCompGrantSummary(service as never, PARENT_ID)).toEqual({
+      active: false,
+      latestFiniteEnd: null,
+      readError: true,
+    });
+  });
+
+  it("reports no readError when the read succeeds with no grant", async () => {
+    setGrantNone();
+    const service = makeServiceMock();
+    expect(await getActiveCompGrantSummary(service as never, PARENT_ID)).toEqual({
+      active: false,
+      latestFiniteEnd: null,
+      readError: false,
+    });
+  });
+
+  it("reports no readError for an active perpetual grant", async () => {
+    setGrantActive(null);
+    const service = makeServiceMock();
+    const summary = await getActiveCompGrantSummary(service as never, PARENT_ID);
+    expect(summary.active).toBe(true);
+    expect(summary.readError).toBe(false);
   });
 });
 

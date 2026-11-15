@@ -6,12 +6,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-const { hasGrantMock, accessLevelMock, appleMock, state } = vi.hoisted(() => ({
-  hasGrantMock: vi.fn(async () => false),
-  accessLevelMock: vi.fn(async () => "blocked" as "full" | "degraded" | "blocked"),
+const { grantMock, appleMock, state } = vi.hoisted(() => ({
+  grantMock: vi.fn(),
   appleMock: vi.fn(),
   state: {
     sub: null as { status: string } | null,
+    subReads: 0,
     subError: null as { message: string } | null,
   },
 }));
@@ -21,29 +21,46 @@ vi.mock("@/lib/supabase/service", () => ({
     from: () => ({
       select: () => ({
         eq: () => ({
-          maybeSingle: async () => ({ data: state.sub, error: state.subError }),
+          maybeSingle: async () => {
+            state.subReads += 1;
+            return {
+              data: state.sub && {
+                cancel_at_period_end: false,
+                current_period_end: null,
+                ...state.sub,
+              },
+              error: state.subError,
+            };
+          },
         }),
       }),
     }),
   }),
 }));
-vi.mock("@/lib/subscriptions/grants", () => ({ hasActiveCompGrant: hasGrantMock }));
-vi.mock("@/lib/subscriptions/access", () => ({ getParentAccessLevel: accessLevelMock }));
+vi.mock("@/lib/subscriptions/grants", () => ({
+  getActiveCompGrantSummary: grantMock,
+}));
 vi.mock("@/lib/subscriptions/apple", () => ({
   getAppleBillingIssueForPayer: appleMock,
 }));
 
 import { getPayerBillingIssue } from "@/lib/subscriptions/billing-issue";
 
-const noApple = { stage: null, cleanlyPaid: false, readError: false };
+const noApple = {
+  stage: null,
+  cleanlyPaid: false,
+  grantsAccess: false,
+  readError: false,
+};
+const noGrant = { active: false, latestFiniteEnd: null, readError: false };
 
 beforeEach(() => {
   vi.clearAllMocks();
   vi.spyOn(console, "error").mockImplementation(() => {});
   state.sub = null;
   state.subError = null;
-  hasGrantMock.mockResolvedValue(false);
-  accessLevelMock.mockResolvedValue("blocked");
+  state.subReads = 0;
+  grantMock.mockResolvedValue(noGrant);
   appleMock.mockResolvedValue(noApple);
 });
 
@@ -54,7 +71,6 @@ describe("getPayerBillingIssue", () => {
 
   it("Stripe past_due -> stripe grace", async () => {
     state.sub = { status: "past_due" };
-    accessLevelMock.mockResolvedValue("degraded");
     expect(await getPayerBillingIssue("p1")).toEqual({ provider: "stripe", stage: "grace" });
   });
 
@@ -64,8 +80,7 @@ describe("getPayerBillingIssue", () => {
   });
 
   it("Apple grace -> apple grace", async () => {
-    appleMock.mockResolvedValue({ ...noApple, stage: "grace" });
-    accessLevelMock.mockResolvedValue("full");
+    appleMock.mockResolvedValue({ ...noApple, stage: "grace", grantsAccess: true });
     expect(await getPayerBillingIssue("p1")).toEqual({ provider: "apple", stage: "grace" });
   });
 
@@ -76,12 +91,12 @@ describe("getPayerBillingIssue", () => {
 
   it("Apple lapsed but overall level is not blocked -> null", async () => {
     appleMock.mockResolvedValue({ ...noApple, stage: "lapsed" });
-    accessLevelMock.mockResolvedValue("full");
+    state.sub = { status: "paused" }; // degraded Stripe level is not blocked
     expect(await getPayerBillingIssue("p1")).toBeNull();
   });
 
   it("active comp grant -> null even with a failing payment", async () => {
-    hasGrantMock.mockResolvedValue(true);
+    grantMock.mockResolvedValue({ ...noGrant, active: true });
     state.sub = { status: "past_due" };
     appleMock.mockResolvedValue({ ...noApple, stage: "lapsed" });
     expect(await getPayerBillingIssue("p1")).toBeNull();
@@ -104,7 +119,6 @@ describe("getPayerBillingIssue", () => {
   it("Apple lapsed suppressed when Stripe is active (overall full)", async () => {
     state.sub = { status: "active" };
     appleMock.mockResolvedValue({ ...noApple, stage: "lapsed" });
-    accessLevelMock.mockResolvedValue("full");
     expect(await getPayerBillingIssue("p1")).toBeNull();
   });
 
@@ -122,6 +136,37 @@ describe("getPayerBillingIssue", () => {
     state.sub = { status: "past_due" };
     appleMock.mockResolvedValue({ ...noApple, readError: true });
     expect(await getPayerBillingIssue("p1")).toBeNull();
+  });
+
+  it("comp-grant read error -> null even with a lapsed Apple row (FV-746)", async () => {
+    grantMock.mockResolvedValue({ ...noGrant, readError: true });
+    appleMock.mockResolvedValue({ ...noApple, stage: "lapsed" });
+    expect(await getPayerBillingIssue("p1")).toBeNull();
+  });
+
+  it("Stripe read error with a lapsed Apple row -> null, no second re-read (FV-746)", async () => {
+    state.subError = { message: "stripe boom" };
+    appleMock.mockResolvedValue({ ...noApple, stage: "lapsed" });
+    expect(await getPayerBillingIssue("p1")).toBeNull();
+    expect(state.subReads).toBe(1);
+  });
+
+  it("Apple read error (allowlist or subscriptions) with a lapsed-looking payer -> null", async () => {
+    appleMock.mockResolvedValue({ ...noApple, readError: true });
+    expect(await getPayerBillingIssue("p1")).toBeNull();
+  });
+
+  it("Apple lapsed, Stripe active, subscriptions read fine -> null; reads subscriptions once", async () => {
+    state.sub = { status: "active" };
+    appleMock.mockResolvedValue({ ...noApple, stage: "lapsed" });
+    expect(await getPayerBillingIssue("p1")).toBeNull();
+    expect(state.subReads).toBe(1);
+  });
+
+  it("Apple lapsed, Stripe canceled -> lapsed", async () => {
+    state.sub = { status: "canceled" };
+    appleMock.mockResolvedValue({ ...noApple, stage: "lapsed" });
+    expect(await getPayerBillingIssue("p1")).toEqual({ provider: "apple", stage: "lapsed" });
   });
 
   it("an unexpected throw -> null", async () => {

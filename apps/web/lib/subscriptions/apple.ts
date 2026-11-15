@@ -184,6 +184,13 @@ export async function getAppleEntitlementEndForPayer(
 export type AppleBillingIssueResult = {
   stage: "grace" | "lapsed" | null;
   cleanlyPaid: boolean;
+  /**
+   * FV-746: an eligible row currently grants access (level !== "blocked"),
+   * i.e. the same rows `getAppleAccessLevelForPayer` would rate above
+   * `blocked`. Lets callers decide the overall access level from this one
+   * read instead of re-reading. False on `readError`.
+   */
+  grantsAccess: boolean;
   readError: boolean;
 };
 
@@ -204,7 +211,7 @@ export async function getAppleBillingIssueForPayer(
   const { isAllowlisted, readError: allowlistReadError } =
     await readSandboxAllowlistMembership(service, payerId);
   if (allowlistReadError) {
-    return { stage: null, cleanlyPaid: false, readError: true };
+    return { stage: null, cleanlyPaid: false, grantsAccess: false, readError: true };
   }
 
   const { data: rows, error: subsError } = await service
@@ -217,7 +224,7 @@ export async function getAppleBillingIssueForPayer(
       `[subscriptions/apple] getAppleBillingIssueForPayer read failed (payer=${payerId}):`,
       subsError.message,
     );
-    return { stage: null, cleanlyPaid: false, readError: true };
+    return { stage: null, cleanlyPaid: false, grantsAccess: false, readError: true };
   }
 
   const eligibleRows = (rows ?? []).filter(
@@ -229,6 +236,7 @@ export async function getAppleBillingIssueForPayer(
   let cleanlyPaid = false;
   let grace = false;
   let lapsed = false;
+  let grantsAccess = false;
   for (const row of eligibleRows) {
     const status = row.status as AppleSubscriptionStatus;
     const level = appleSubscriptionAccessLevel(
@@ -237,6 +245,7 @@ export async function getAppleBillingIssueForPayer(
       row.grace_period_expires_at,
       now,
     );
+    if (level !== "blocked") grantsAccess = true;
     if (status === "subscribed" && level !== "blocked") {
       cleanlyPaid = true;
     } else if (status === "in_grace_period") {
@@ -247,11 +256,14 @@ export async function getAppleBillingIssueForPayer(
     }
   }
 
-  if (cleanlyPaid) return { stage: null, cleanlyPaid: true, readError: false };
+  if (cleanlyPaid) {
+    return { stage: null, cleanlyPaid: true, grantsAccess, readError: false };
+  }
   // A row that still grants access (grace) outranks one that doesn't.
   return {
     stage: grace ? "grace" : lapsed ? "lapsed" : null,
     cleanlyPaid: false,
+    grantsAccess,
     readError: false,
   };
 }
