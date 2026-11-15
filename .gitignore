@@ -38,6 +38,10 @@ supabase/.temp
 # CI artifacts (kids-privacy-officer staging dir — diff + review output)
 .pr-review/
 
+# Per-session/per-agent git worktrees (parallel-streams pattern, FV-30) — each
+# is its own checkout with its own .git file; never commit one as content.
+.claude/worktrees/
+
 # Playwright
 apps/web/.env.test
 apps/web/e2e/.auth/
