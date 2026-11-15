@@ -134,6 +134,19 @@ function findReplacementPurchaseToken(
   return { token: null, pending: false };
 }
 
+function prioritizeRestoredPurchasesForUpgrade(
+  restoredPurchases: PlayRestoredPurchase[],
+  nextProductId: string,
+): PlayRestoredPurchase[] {
+  const nextTier = restoredPurchases.filter((purchaseRow) =>
+    purchaseRow.productIds.includes(nextProductId),
+  );
+  const others = restoredPurchases.filter(
+    (purchaseRow) => !purchaseRow.productIds.includes(nextProductId),
+  );
+  return [...nextTier, ...others];
+}
+
 export function AthleteForm({
   trialConversion,
   appleCapacity = null,
@@ -276,52 +289,70 @@ export function AthleteForm({
   }
 
   function handleGoogleUpgradeRestore() {
-    if (!googleUpgrade) return;
+    if (!googleUpgrade?.nextProductId) return;
+    const nextProductId = googleUpgrade.nextProductId;
     startUpgradeTransition(async () => {
       const restored = await restore();
       if (!restored.ok) {
         setUpgradeState(mapPlayErrorToUpgradeState(restored.error));
         return;
       }
-      const replacement = findReplacementPurchaseToken(
+      if (restored.purchases.length === 0) {
+        setUpgradeState("error");
+        return;
+      }
+
+      const sortedPurchases = prioritizeRestoredPurchasesForUpgrade(
         restored.purchases,
-        googleUpgrade.currentProductId,
+        nextProductId,
       );
-      if (replacement.pending) {
+      let sawPending = false;
+      let sawNotEntitled = false;
+      for (const purchaseRow of sortedPurchases) {
+        if (purchaseRow.purchaseState === "pending") {
+          sawPending = true;
+          continue;
+        }
+
+        const submitted = await submitGooglePurchase({
+          purchaseToken: purchaseRow.purchaseToken,
+        });
+        if (!submitted.ok) {
+          if (
+            submitted.error === "account_mismatch" ||
+            submitted.error === "ownership_conflict"
+          ) {
+            setUpgradeState("already_owned_other_account");
+            return;
+          }
+          if (submitted.error === "verification_unavailable") {
+            setUpgradeState("play_unavailable");
+            return;
+          }
+          if (!navigator.onLine) {
+            setUpgradeState("offline");
+            return;
+          }
+          setUpgradeState("error");
+          return;
+        }
+
+        if (!submitted.entitled) {
+          sawNotEntitled = true;
+          continue;
+        }
+
+        if (purchaseRow.productIds.includes(nextProductId)) {
+          formRef.current?.requestSubmit();
+          return;
+        }
+      }
+
+      if (sawPending || sawNotEntitled) {
         setUpgradeState("pending");
         return;
       }
-      if (!replacement.token) {
-        setUpgradeState("error");
-        return;
-      }
-      const submitted = await submitGooglePurchase({
-        purchaseToken: replacement.token,
-      });
-      if (!submitted.ok) {
-        if (
-          submitted.error === "account_mismatch" ||
-          submitted.error === "ownership_conflict"
-        ) {
-          setUpgradeState("already_owned_other_account");
-          return;
-        }
-        if (submitted.error === "verification_unavailable") {
-          setUpgradeState("play_unavailable");
-          return;
-        }
-        if (!navigator.onLine) {
-          setUpgradeState("offline");
-          return;
-        }
-        setUpgradeState("error");
-        return;
-      }
-      if (!submitted.entitled) {
-        setUpgradeState("pending");
-        return;
-      }
-      formRef.current?.requestSubmit();
+      setUpgradeState("error");
     });
   }
 
