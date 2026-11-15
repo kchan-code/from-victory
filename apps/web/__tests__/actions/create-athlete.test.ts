@@ -31,8 +31,18 @@ vi.mock("server-only", () => ({}));
 const shellCapabilityMock = vi.fn(
   () => null as "legacy-native" | "ios-iap" | "android-play" | null,
 );
+const subscribeEntitlementStateMock = vi.fn(
+  async () => ({ status: "not_entitled", provider: null }) as {
+    status: "entitled" | "not_entitled" | "unknown";
+    provider: "google" | "stripe" | "apple" | "comp" | null;
+  },
+);
 vi.mock("@/lib/native-shell", () => ({
   getRequestShellCapability: () => shellCapabilityMock(),
+}));
+vi.mock("@/lib/subscriptions/subscribe-guard", () => ({
+  getSubscribeEntitlementState: (..._args: unknown[]) =>
+    subscribeEntitlementStateMock(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -196,6 +206,10 @@ function makeFormData(
 
 beforeEach(() => {
   shellCapabilityMock.mockReturnValue(null);
+  subscribeEntitlementStateMock.mockResolvedValue({
+    status: "not_entitled",
+    provider: null,
+  });
   lastServiceMockInstance = null;
   profileInsertPayload = null;
   profileInsertError = null;
@@ -209,6 +223,7 @@ beforeEach(() => {
     items: { data: [{ id: "si_existing_item" }] },
   });
   stripeSubscriptionsUpdateMock = vi.fn(async (..._args: unknown[]) => ({}));
+  delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
 });
 
 // ===========================================================================
@@ -492,7 +507,7 @@ describe("createAthlete — legacy-native shell guard (FV-622)", () => {
 });
 
 describe("createAthlete — android-play shell guard (FV-659)", () => {
-  it("android-play: refuses with website guidance before any DB or Stripe side effect, exactly like legacy-native", async () => {
+  it("android-play flag off: refuses with website guidance before any DB or Stripe side effect, exactly like legacy-native", async () => {
     shellCapabilityMock.mockReturnValue("android-play");
     trialConversionStateResult = {
       kind: "stripe_trial",
@@ -517,4 +532,40 @@ describe("createAthlete — android-play shell guard (FV-659)", () => {
     expect(stripeSubscriptionsUpdateMock).not.toHaveBeenCalled();
     expect(syncAthleteQuantityMock).not.toHaveBeenCalled();
   });
+
+  it("android-play flag on + not_entitled: allows create and sync flow", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    shellCapabilityMock.mockReturnValue("android-play");
+    subscribeEntitlementStateMock.mockResolvedValue({
+      status: "not_entitled",
+      provider: null,
+    });
+
+    await expect(createAthlete(null, makeFormData())).rejects.toThrow(
+      "NEXT_REDIRECT",
+    );
+    expect(profileInsertPayload).not.toBeNull();
+    expect(syncAthleteQuantityMock).toHaveBeenCalledWith("parent-uuid-123");
+  });
+
+  it.each(["stripe", "apple", "comp"] as const)(
+    "android-play flag on + %s entitlement keeps website guidance and blocks side effects",
+    async (provider) => {
+      process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+      shellCapabilityMock.mockReturnValue("android-play");
+      subscribeEntitlementStateMock.mockResolvedValue({
+        status: "entitled",
+        provider,
+      });
+
+      const result = await createAthlete(null, makeFormData());
+
+      expect(result).toEqual({
+        ok: false,
+        error: "Add athletes from a web browser at fromvictoryapp.com.",
+      });
+      expect(lastServiceMockInstance).toBeNull();
+      expect(syncAthleteQuantityMock).not.toHaveBeenCalled();
+    },
+  );
 });

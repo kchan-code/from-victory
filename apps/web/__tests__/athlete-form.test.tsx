@@ -16,7 +16,7 @@
 
 import type { ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
 import type { CreateAthleteState } from "@/lib/actions/athletes";
@@ -46,11 +46,45 @@ vi.mock("@/lib/actions/athletes", () => ({
   createAthlete: vi.fn(),
 }));
 vi.mock("@/lib/actions/google-play-subscription", () => ({
-  beginGooglePlayPurchase: vi.fn(),
-  submitGooglePurchase: vi.fn(),
+  beginGooglePlayPurchase: vi.fn(async () => ({
+    ok: true,
+    obfuscatedAccountId: "bind_1",
+  })),
+  submitGooglePurchase: vi.fn(async () => ({ ok: true, entitled: true })),
 }));
 vi.mock("@/lib/native/play-billing", () => ({
-  purchase: vi.fn(),
+  getProducts: vi.fn(async () => ({
+    ok: true,
+    products: [
+      {
+        productId: "family.2",
+        offers: [
+          {
+            basePlanId: "yearly",
+            pricingPhases: [{ formattedPrice: "$78.00" }],
+          },
+        ],
+      },
+    ],
+  })),
+  restore: vi.fn(async () => ({
+    ok: true,
+    purchases: [
+      {
+        purchaseToken: "tok_live",
+        productIds: ["family.1"],
+        purchaseState: "purchased",
+        acknowledged: true,
+        autoRenewing: true,
+        obfuscatedAccountId: "bind_1",
+      },
+    ],
+  })),
+  purchase: vi.fn(async () => ({
+    status: "purchased",
+    purchaseToken: "tok_new",
+    productId: "family.2",
+  })),
 }));
 
 import { AthleteForm } from "@/components/dashboard/AthleteForm";
@@ -253,7 +287,6 @@ describe("AthleteForm — error codes (FV-586 / FV-570)", () => {
           nextCapacity: 2,
           currentProductId: "family.1",
           currentBasePlanId: "yearly",
-          currentPurchaseToken: "tok_1",
           nextProductId: "family.2",
           nextBasePlanId: "yearly",
           trialEndingToday: true,
@@ -263,7 +296,19 @@ describe("AthleteForm — error codes (FV-586 / FV-570)", () => {
     );
 
     const err = screen.getByTestId("athlete-form-error");
+    fireEvent.change(screen.getByLabelText("First name"), {
+      target: { value: "Jordan" },
+    });
+    expect(err.textContent).toContain(
+      "You're adding Jordan. That takes you from 1 athlete to 2 athletes.",
+    );
     expect(err.textContent).toContain("Your trial ends today");
+    expect(err.textContent).toContain(
+      "Your 7-day free trial ends today, and the 2-athlete plan starts now.",
+    );
+    expect(err.textContent).toContain(
+      "This starts now. Google Play will charge you today. The plan renews automatically until you cancel in Google Play.",
+    );
     expect(err.textContent).toContain("Continue to Google Play");
     expect(err.textContent).toContain("Not now");
   });
@@ -281,7 +326,6 @@ describe("AthleteForm — error codes (FV-586 / FV-570)", () => {
           nextCapacity: 2,
           currentProductId: "family.1",
           currentBasePlanId: "yearly",
-          currentPurchaseToken: "tok_1",
           nextProductId: "family.2",
           nextBasePlanId: "yearly",
           trialEndingToday: false,
@@ -293,6 +337,9 @@ describe("AthleteForm — error codes (FV-586 / FV-570)", () => {
     const err = screen.getByTestId("athlete-form-error");
     expect(err.textContent).toContain(
       "Google Play will charge the difference for the time left in this period.",
+    );
+    expect(err.textContent).toContain(
+      "This starts now. The plan renews automatically until you cancel in Google Play.",
     );
   });
 
@@ -309,7 +356,6 @@ describe("AthleteForm — error codes (FV-586 / FV-570)", () => {
           nextCapacity: null,
           currentProductId: "family.5",
           currentBasePlanId: "yearly",
-          currentPurchaseToken: "tok_5",
           nextProductId: null,
           nextBasePlanId: null,
           trialEndingToday: false,
@@ -321,5 +367,41 @@ describe("AthleteForm — error codes (FV-586 / FV-570)", () => {
     const err = screen.getByTestId("athlete-form-error");
     expect(err.textContent).toContain("Plan limit reached");
     expect(err.querySelector('a[href="/dashboard"]')).not.toBeNull();
+  });
+
+  it("after successful Google upgrade, the form is resubmitted to create the athlete", async () => {
+    const requestSubmitSpy = vi
+      .spyOn(HTMLFormElement.prototype, "requestSubmit")
+      .mockImplementation(() => {});
+    formStateOverride.current = {
+      ok: false,
+      error: "capacity_reached",
+      code: "capacity_reached",
+    };
+    render(
+      <AthleteForm
+        googleUpgrade={{
+          currentCapacity: 1,
+          nextCapacity: 2,
+          currentProductId: "family.1",
+          currentBasePlanId: "yearly",
+          nextProductId: "family.2",
+          nextBasePlanId: "yearly",
+          trialEndingToday: false,
+          pricePeriodLabel: "per month",
+        }}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("First name"), {
+      target: { value: "Jordan" },
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId("google-upgrade-submit")).not.toBeDisabled(),
+    );
+    fireEvent.click(screen.getByTestId("google-upgrade-submit"));
+
+    await waitFor(() => expect(requestSubmitSpy).toHaveBeenCalled());
+    requestSubmitSpy.mockRestore();
   });
 });

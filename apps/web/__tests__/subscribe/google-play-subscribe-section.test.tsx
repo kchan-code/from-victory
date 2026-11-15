@@ -21,7 +21,7 @@ const {
   })),
   submitGooglePurchaseMock: vi.fn(async () => ({ ok: true, entitled: true, acknowledged: true } as any)),
   getProductsMock: vi.fn(async () => ({
-    ok: true as const,
+    ok: true,
     products: [
       {
         productId: "family.1",
@@ -38,7 +38,10 @@ const {
             basePlanId: "yearly",
             offerId: "trial-7d",
             offerToken: "token-trial",
-            pricingPhases: [{ formattedPrice: "$49.00", priceAmountMicros: 0, priceCurrencyCode: "USD", billingPeriod: "P1Y", billingCycleCount: 0, recurrenceMode: 0 }],
+            pricingPhases: [
+              { formattedPrice: "$0.00", priceAmountMicros: 0, priceCurrencyCode: "USD", billingPeriod: "P7D", billingCycleCount: 1, recurrenceMode: 0 },
+              { formattedPrice: "$49.00", priceAmountMicros: 0, priceCurrencyCode: "USD", billingPeriod: "P1Y", billingCycleCount: 0, recurrenceMode: 0 },
+            ],
           },
           {
             basePlanId: "monthly",
@@ -157,6 +160,30 @@ describe("GooglePlaySubscribeSection purchase mode", () => {
     fireEvent.click(screen.getByText("Monthly"));
     expect(screen.getByText("$5.00")).toBeInTheDocument();
   });
+
+  it("uses the recurring phase for trial-offer display pricing", async () => {
+    render(
+      <GooglePlaySubscribeSection
+        mode="purchase"
+        trialEligible
+        catalog={CATALOG}
+      />,
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId("google-subscribe-submit")).not.toBeDisabled(),
+    );
+    expect(screen.getByText("$49.00")).toBeInTheDocument();
+    expect(screen.queryByText("$0.00")).toBeNull();
+  });
+
+  it("getProducts failure enters the unavailable state and does not render the design placeholder", async () => {
+    getProductsMock.mockResolvedValueOnce({ ok: false, error: "unavailable" } as any);
+    render(<GooglePlaySubscribeSection mode="purchase" catalog={CATALOG} />);
+    await waitFor(() =>
+      expect(screen.getByTestId("google-state-play_unavailable")).toBeInTheDocument(),
+    );
+    expect(screen.queryByText("{price from Google Play}")).toBeNull();
+  });
 });
 
 describe("GooglePlaySubscribeSection purchase states", () => {
@@ -166,6 +193,12 @@ describe("GooglePlaySubscribeSection purchase states", () => {
     await waitFor(() => expect(screen.getByTestId("google-subscribe-submit")).not.toBeDisabled());
     fireEvent.click(screen.getByTestId("google-subscribe-submit"));
     await waitFor(() => expect(screen.getByTestId("google-state-pending")).toBeInTheDocument());
+    expect(screen.getByText("Purchase pending")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Your purchase is waiting on Google Play. Training unlocks when Google Play confirms it. This can take a little while.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("shows cancelled state", async () => {
@@ -174,6 +207,10 @@ describe("GooglePlaySubscribeSection purchase states", () => {
     await waitFor(() => expect(screen.getByTestId("google-subscribe-submit")).not.toBeDisabled());
     fireEvent.click(screen.getByTestId("google-subscribe-submit"));
     await waitFor(() => expect(screen.getByTestId("google-state-cancelled")).toBeInTheDocument());
+    expect(screen.getByText("Purchase cancelled")).toBeInTheDocument();
+    expect(
+      screen.getByText("You weren't charged. You can subscribe whenever you're ready."),
+    ).toBeInTheDocument();
   });
 
   it("shows already-owned restore state", async () => {
@@ -184,6 +221,12 @@ describe("GooglePlaySubscribeSection purchase states", () => {
     await waitFor(() =>
       expect(screen.getByTestId("google-state-already_owned_restore")).toBeInTheDocument(),
     );
+    expect(screen.getByText("Already subscribed")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "This Google account already has a From Victory subscription. If that's your purchase, restore it here.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("shows already-owned other-account state", async () => {
@@ -194,6 +237,11 @@ describe("GooglePlaySubscribeSection purchase states", () => {
     await waitFor(() =>
       expect(screen.getByTestId("google-state-already_owned_other_account")).toBeInTheDocument(),
     );
+    expect(
+      screen.getByText(
+        "This Google Play subscription belongs to another From Victory account. Sign in to that account to use it.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("shows Play unavailable, offline, and generic error states", async () => {
@@ -204,6 +252,11 @@ describe("GooglePlaySubscribeSection purchase states", () => {
     await waitFor(() =>
       expect(screen.getByTestId("google-state-play_unavailable")).toBeInTheDocument(),
     );
+    expect(
+      screen.getByText(
+        "Google Play isn't available on this device right now, so you can't subscribe or restore a purchase here.",
+      ),
+    ).toBeInTheDocument();
 
     Object.defineProperty(window.navigator, "onLine", { value: false, configurable: true });
     purchaseMock.mockResolvedValueOnce({ status: "error", error: "network" } as unknown);
@@ -211,6 +264,9 @@ describe("GooglePlaySubscribeSection purchase states", () => {
     await waitFor(() => expect(screen.getByTestId("google-subscribe-submit")).not.toBeDisabled());
     fireEvent.click(screen.getByTestId("google-subscribe-submit"));
     await waitFor(() => expect(screen.getByTestId("google-state-offline")).toBeInTheDocument());
+    expect(
+      screen.getByText("Connect to the internet to subscribe or restore a purchase."),
+    ).toBeInTheDocument();
 
     Object.defineProperty(window.navigator, "onLine", { value: true, configurable: true });
     purchaseMock.mockResolvedValueOnce({ status: "error", error: "unknown" } as unknown);
@@ -218,6 +274,25 @@ describe("GooglePlaySubscribeSection purchase states", () => {
     await waitFor(() => expect(screen.getByTestId("google-subscribe-submit")).not.toBeDisabled());
     fireEvent.click(screen.getByTestId("google-subscribe-submit"));
     await waitFor(() => expect(screen.getByTestId("google-state-error")).toBeInTheDocument());
+    expect(
+      screen.getByText("Google Play couldn't complete this. Please try again."),
+    ).toBeInTheDocument();
+  });
+
+  it("restore with zero purchases shows the explicit no-purchases message", async () => {
+    purchaseMock.mockResolvedValueOnce({ status: "error", error: "already_owned" } as unknown);
+    restoreMock.mockResolvedValueOnce({ ok: true, purchases: [] });
+    render(<GooglePlaySubscribeSection mode="purchase" catalog={CATALOG} />);
+    await waitFor(() => expect(screen.getByTestId("google-subscribe-submit")).not.toBeDisabled());
+    fireEvent.click(screen.getByTestId("google-subscribe-submit"));
+    await waitFor(() => screen.getByTestId("google-state-already_owned_restore"));
+    fireEvent.click(screen.getByText("Restore purchases"));
+    await waitFor(() =>
+      expect(screen.getByTestId("google-state-no_purchases_to_restore")).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByText("No purchases to restore on this Google account."),
+    ).toBeInTheDocument();
   });
 });
 
@@ -256,6 +331,8 @@ describe("GooglePlaySubscribeSection manage and entitled-elsewhere modes", () =>
       />,
     );
     expect(screen.getByTestId("google-entitled-elsewhere")).toBeInTheDocument();
+    expect(screen.queryByText("Subscription")).toBeNull();
+    expect(screen.queryByText("Settings")).toBeNull();
     expect(screen.queryByText("Subscribe with Google Play")).toBeNull();
     expect(screen.queryByText("Restore purchases")).toBeNull();
   });

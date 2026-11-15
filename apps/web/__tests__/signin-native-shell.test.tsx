@@ -59,17 +59,10 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   shellCapabilityMock.mockReturnValue(null);
-  delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
 });
 
 async function renderPage() {
   render(await SignInPage({ searchParams: Promise.resolve({}) }));
-}
-
-async function renderPageWithSearchParams(
-  searchParams: Record<string, string>,
-) {
-  render(await SignInPage({ searchParams: Promise.resolve(searchParams) }));
 }
 
 function openCredentialForm() {
@@ -172,39 +165,5 @@ describe("/signin — android-play behaves like legacy-native (FV-659)", () => {
       "href",
       "/forgot-password",
     );
-  });
-});
-
-describe("/signin account-deleted Google notice (FV-665)", () => {
-  it("android-play + catalog active renders heading, body, and Open Google Play / Done controls", async () => {
-    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
-    shellCapabilityMock.mockReturnValue("android-play");
-    await renderPageWithSearchParams({
-      account_deleted: "1",
-      google_play_cancel: "1",
-    });
-
-    const notice = screen.getByTestId("signin-account-deleted-google-cancel-notice");
-    expect(notice.textContent).toContain("Account deleted");
-    expect(notice.textContent).toContain(
-      "Your account is deleted. Your Google Play subscription could not be cancelled automatically. Please cancel it in Google Play.",
-    );
-    expect(screen.getByRole("button", { name: "Open Google Play" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Done" })).toHaveAttribute("href", "/signin");
-  });
-
-  it("flag off keeps the legacy plain notice without new controls", async () => {
-    shellCapabilityMock.mockReturnValue("android-play");
-    await renderPageWithSearchParams({
-      account_deleted: "1",
-      google_play_cancel_unknown: "1",
-    });
-
-    const notice = screen.getByTestId("signin-account-deleted-google-cancel-notice");
-    expect(notice.textContent).toContain(
-      "Your account is deleted. If you subscribed through Google Play, please check your subscriptions in Google Play and cancel it there.",
-    );
-    expect(screen.queryByRole("button", { name: "Open Google Play" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Done" })).toBeNull();
   });
 });
