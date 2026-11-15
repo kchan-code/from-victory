@@ -35,7 +35,7 @@ type PurchaseState =
   | "play_unavailable"
   | "offline"
   | "error"
-  | "plan_limit";
+  | "no_purchases_to_restore";
 
 type GoogleManageState = {
   statusLabel: "Active" | "Free trial";
@@ -56,6 +56,8 @@ type Props = {
   manageState?: GoogleManageState;
   entitledElsewhereProvider?: "stripe" | "apple";
   dashboardHref?: string;
+  minAthleteCount?: number;
+  showAthletePicker?: boolean;
 };
 
 function periodLabel(interval: Interval): "per month" | "per year" {
@@ -78,8 +80,6 @@ function actionLabel(state: PurchaseState): string {
       return "Try again";
     case "error":
       return "Try again";
-    case "plan_limit":
-      return "Go to dashboard";
     default:
       return "OK";
   }
@@ -92,15 +92,19 @@ export function GooglePlaySubscribeSection({
   manageState,
   entitledElsewhereProvider,
   dashboardHref = "/dashboard",
+  minAthleteCount = 1,
+  showAthletePicker = true,
 }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [athleteCount, setAthleteCount] = useState(1);
+  const clampedMinAthleteCount = Math.min(5, Math.max(1, minAthleteCount));
+  const [athleteCount, setAthleteCount] = useState(clampedMinAthleteCount);
   const [interval, setInterval] = useState<Interval>("year");
   const [purchaseState, setPurchaseState] = useState<PurchaseState>("idle");
   const [prices, setPrices] = useState<Map<string, string>>(new Map());
   const [pricesLoaded, setPricesLoaded] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [pricingErrorState, setPricingErrorState] = useState<"play_unavailable" | "error" | null>(null);
 
   const visibleCatalog = useMemo(() => {
     if (mode === "purchase") return catalog;
@@ -127,9 +131,15 @@ export function GooglePlaySubscribeSection({
   const selectedPriceKey = selected
     ? `${selected.productId}:${selected.basePlanId}:${useTrial ? selected.trialOfferId ?? "" : ""}`
     : null;
-  const selectedPrice =
-    (selectedPriceKey ? prices.get(selectedPriceKey) : null) ??
-    "{price from Google Play}";
+  const selectedPrice = selectedPriceKey ? (prices.get(selectedPriceKey) ?? null) : null;
+
+  useEffect(() => {
+    if (!showAthletePicker) {
+      setAthleteCount(1);
+      return;
+    }
+    setAthleteCount((current) => Math.max(clampedMinAthleteCount, Math.min(5, current)));
+  }, [clampedMinAthleteCount, showAthletePicker]);
 
   useEffect(() => {
     let active = true;
@@ -137,19 +147,21 @@ export function GooglePlaySubscribeSection({
       new Set(visibleCatalog.map((entry) => entry.productId)),
     );
     if (ids.length === 0) {
+      setPricingErrorState(mode === "purchase" ? "error" : null);
       setPricesLoaded(true);
       return;
     }
     void getProducts(ids).then((result) => {
       if (!active) return;
       if (!result.ok) {
+        setPricingErrorState("play_unavailable");
         setPricesLoaded(true);
         return;
       }
       const next = new Map<string, string>();
       for (const product of result.products) {
         for (const offer of product.offers) {
-          const phase = offer.pricingPhases[0];
+          const phase = offer.pricingPhases[offer.pricingPhases.length - 1];
           if (!phase?.formattedPrice) continue;
           const offerId = offer.offerId ?? "";
           next.set(
@@ -162,12 +174,24 @@ export function GooglePlaySubscribeSection({
         }
       }
       setPrices(next);
+      setPricingErrorState(null);
       setPricesLoaded(true);
     });
     return () => {
       active = false;
     };
-  }, [visibleCatalog]);
+  }, [mode, visibleCatalog]);
+
+  useEffect(() => {
+    if (mode !== "purchase" || !pricesLoaded || purchaseState !== "idle") return;
+    if (pricingErrorState) {
+      setPurchaseState(pricingErrorState);
+      return;
+    }
+    if (!selected || !selectedPrice) {
+      setPurchaseState("error");
+    }
+  }, [mode, pricesLoaded, pricingErrorState, purchaseState, selected, selectedPrice]);
 
   const clearState = () => {
     setPurchaseState("idle");
@@ -232,8 +256,8 @@ export function GooglePlaySubscribeSection({
         setPurchaseState("pending");
         return;
       }
-      setMessage("Purchase complete.");
       router.refresh();
+      window.location.href = dashboardHref;
     });
   }
 
@@ -245,10 +269,14 @@ export function GooglePlaySubscribeSection({
         return;
       }
       if (restored.purchases.length === 0) {
-        setPurchaseState("already_owned_restore");
+        setPurchaseState("no_purchases_to_restore");
         return;
       }
       for (const restoredPurchase of restored.purchases) {
+        if (restoredPurchase.purchaseState === "pending") {
+          setPurchaseState("pending");
+          return;
+        }
         const submitted = await submitGooglePurchase({
           purchaseToken: restoredPurchase.purchaseToken,
         });
@@ -262,6 +290,8 @@ export function GooglePlaySubscribeSection({
           setPurchaseState(mapSubmitError(submitted.error));
           return;
         }
+        setPurchaseState("pending");
+        return;
       }
       setPurchaseState("error");
     });
@@ -279,12 +309,6 @@ export function GooglePlaySubscribeSection({
         data-testid="google-entitled-elsewhere"
         className="bg-charcoal border border-hairline rounded-xl px-5 py-5"
       >
-        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-cream/50 mb-3">
-          Subscription
-        </p>
-        <p className="font-body text-cream text-[28px] leading-tight mb-5">
-          Settings
-        </p>
         <p className="font-body text-cream/85 text-[16px] leading-relaxed">
           {entitledElsewhereProvider === "stripe"
             ? "You're subscribed on the web. Manage your plan from a browser at fromvictoryapp.com."
@@ -296,7 +320,7 @@ export function GooglePlaySubscribeSection({
 
   if (mode === "manage" && manageState) {
     const managePriceKey = `${manageState.productId}:${manageState.basePlanId}:`;
-    const managePrice = prices.get(managePriceKey) ?? "{price from Google Play}";
+    const managePrice = prices.get(managePriceKey) ?? null;
     return (
       <div data-testid="google-manage-section">
         <div className="bg-charcoal border border-hairline rounded-xl px-5 py-5 mb-5">
@@ -310,17 +334,33 @@ export function GooglePlaySubscribeSection({
             <span className="text-cream text-right">{`${manageState.athleteCapacity} athlete${manageState.athleteCapacity === 1 ? "" : "s"}, ${manageState.interval === "month" ? "monthly" : "yearly"}`}</span>
             {manageState.trial ? (
               <>
-                <span className="text-cream/60">After trial</span>
-                <span className="text-cream text-right">{`${managePrice} ${manageState.priceSuffix}`}</span>
-                <span className="text-cream/60">Trial ends</span>
-                <span className="text-cream text-right">{manageState.expiresAtLabel ?? "—"}</span>
+                {managePrice ? (
+                  <>
+                    <span className="text-cream/60">After trial</span>
+                    <span className="text-cream text-right">{`${managePrice} ${manageState.priceSuffix}`}</span>
+                  </>
+                ) : null}
+                {manageState.expiresAtLabel ? (
+                  <>
+                    <span className="text-cream/60">Trial ends</span>
+                    <span className="text-cream text-right">{manageState.expiresAtLabel}</span>
+                  </>
+                ) : null}
               </>
             ) : (
               <>
-                <span className="text-cream/60">Price</span>
-                <span className="text-cream text-right">{`${managePrice} ${manageState.priceSuffix}`}</span>
-                <span className="text-cream/60">Renews</span>
-                <span className="text-cream text-right">{manageState.expiresAtLabel ?? "—"}</span>
+                {managePrice ? (
+                  <>
+                    <span className="text-cream/60">Price</span>
+                    <span className="text-cream text-right">{`${managePrice} ${manageState.priceSuffix}`}</span>
+                  </>
+                ) : null}
+                {manageState.expiresAtLabel ? (
+                  <>
+                    <span className="text-cream/60">Renews</span>
+                    <span className="text-cream text-right">{manageState.expiresAtLabel}</span>
+                  </>
+                ) : null}
               </>
             )}
           </div>
@@ -364,7 +404,7 @@ export function GooglePlaySubscribeSection({
       play_unavailable: "Google Play unavailable",
       offline: "You're offline",
       error: "Something went wrong",
-      plan_limit: "Plan limit reached",
+      no_purchases_to_restore: "No purchases to restore",
     };
     const bodyMap: Record<Exclude<PurchaseState, "idle">, string> = {
       pending:
@@ -378,8 +418,7 @@ export function GooglePlaySubscribeSection({
         "Google Play isn't available on this device right now, so you can't subscribe or restore a purchase here.",
       offline: "Connect to the internet to subscribe or restore a purchase.",
       error: "Google Play couldn't complete this. Please try again.",
-      plan_limit:
-        "Your plan covers up to 5 athletes, the most available in the app. To change who is covered, remove an athlete on the dashboard, under Your athletes.",
+      no_purchases_to_restore: "No purchases to restore on this Google account.",
     };
     return (
       <div
@@ -406,10 +445,6 @@ export function GooglePlaySubscribeSection({
           type="button"
           data-testid="google-state-primary"
           onClick={() => {
-            if (purchaseState === "plan_limit") {
-              window.location.href = dashboardHref;
-              return;
-            }
             clearState();
           }}
           className="w-full bg-transparent text-cream border border-hairline rounded-pill min-h-[52px] font-heading font-semibold text-[16px]"
@@ -421,6 +456,11 @@ export function GooglePlaySubscribeSection({
   }
 
   const intervalLabel = periodLabel(interval);
+  const selectorCounts = showAthletePicker
+    ? Array.from({ length: 5 - clampedMinAthleteCount + 1 }, (_v, idx) => clampedMinAthleteCount + idx)
+    : [1];
+  const purchaseDisabled =
+    pending || !selected || !pricesLoaded || !selectedPrice || pricingErrorState !== null;
 
   return (
     <section data-testid="google-subscribe-section">
@@ -431,29 +471,33 @@ export function GooglePlaySubscribeSection({
         Choose how many athletes you want to cover, then pick monthly or yearly.
       </p>
 
-      <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-cream/50 mb-2">
-        Athletes
-      </p>
-      <div className="flex gap-2 mb-3">
-        {[1, 2, 3, 4, 5].map((count) => (
-          <button
-            key={count}
-            type="button"
-            onClick={() => setAthleteCount(count)}
-            className={[
-              "w-11 h-11 rounded-full border text-[16px] font-heading",
-              athleteCount === count
-                ? "bg-gold text-onyx border-gold"
-                : "bg-transparent text-cream border-hairline",
-            ].join(" ")}
-          >
-            {count}
-          </button>
-        ))}
-      </div>
-      <p className="font-body text-cream text-[16px] mb-6">
-        {athleteCount} athlete{athleteCount === 1 ? "" : "s"}
-      </p>
+      {showAthletePicker ? (
+        <>
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-cream/50 mb-2">
+            Athletes
+          </p>
+          <div className="flex gap-2 mb-3">
+            {selectorCounts.map((count) => (
+              <button
+                key={count}
+                type="button"
+                onClick={() => setAthleteCount(count)}
+                className={[
+                  "w-11 h-11 rounded-full border text-[16px] font-heading",
+                  athleteCount === count
+                    ? "bg-gold text-onyx border-gold"
+                    : "bg-transparent text-cream border-hairline",
+                ].join(" ")}
+              >
+                {count}
+              </button>
+            ))}
+          </div>
+          <p className="font-body text-cream text-[16px] mb-6">
+            {athleteCount} athlete{athleteCount === 1 ? "" : "s"}
+          </p>
+        </>
+      ) : null}
 
       <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-cream/50 mb-2">
         Billing
@@ -486,7 +530,11 @@ export function GooglePlaySubscribeSection({
       </p>
       <div className="rounded-xl border border-gold/60 px-4 py-3 mb-5">
         <p className="font-body text-[16px] text-cream">
-          <span className="text-gold">{selectedPrice}</span> {intervalLabel}
+          {selectedPrice ? (
+            <>
+              <span className="text-gold">{selectedPrice}</span> {intervalLabel}
+            </>
+          ) : null}
         </p>
       </div>
 
@@ -519,14 +567,10 @@ export function GooglePlaySubscribeSection({
         type="button"
         data-testid="google-subscribe-submit"
         onClick={handlePrimaryPurchase}
-        disabled={pending || !selected || !pricesLoaded}
+        disabled={purchaseDisabled}
         className="w-full bg-gold text-onyx border border-gold rounded-pill min-h-[56px] font-heading font-semibold text-[18px] disabled:opacity-60"
       >
-        {pending
-          ? "Opening Google Play…"
-          : useTrial
-            ? "Start 7-day free trial"
-            : "Subscribe with Google Play"}
+        {useTrial ? "Start 7-day free trial" : "Subscribe with Google Play"}
       </button>
 
       {message ? (
