@@ -54,6 +54,37 @@ a normal HTTPS origin, so the existing PWA Cache Storage + SW path may work
 without a Filesystem rewrite. Re-validate empirically before implementing
 `NativeCacheStrategy`.
 
+**Service worker on iOS (FV-753).** Android's WebView runs the site's service
+worker with no extra setup. WKWebView does not: it only runs a service worker
+for app-bound domains. Up to and including iOS build 8 (1.0.2) the app had no
+service worker, so a saved Pregame could not open offline. From the next build
+the app runs in app-bound mode:
+
+- `ios.limitsNavigationsToAppBoundDomains: true` in `capacitor.config.ts`.
+- `WKAppBoundDomains` in `ios/App/App/Info.plist` (Apple's limit is 10 hosts):
+  the two production hosts, the staging web host, `localhost`, and
+  `fv-offline.invalid` (the address the bundled offline page loads under).
+
+Rules that follow from it:
+
+- A `CAPACITOR_SERVER_URL` host that is not in `WKAppBoundDomains` will not
+  load at all. Add the host to the list before building against it.
+- Removing `fv-offline.invalid` from the list makes the offline page a blank
+  screen.
+- In-WebView navigation is limited to the listed hosts. Capacitor's allow-list
+  still decides which of them the app may open; other links still go to the
+  system browser.
+
+Simulator evidence (2026-11-16, iPhone 17 Pro, iOS 26.5, the real
+`public/sw.js` served with stand-in pages): the worker registers and controls
+the page; after one online visit to `/athlete/pregame`, a cold start with the
+server unreachable opens the cached Pregame shell; with nothing cached the
+bundled offline page appears; the Capacitor bridge and the app-local plugins
+are still available. Requests the worker makes on iOS carried the app's
+User-Agent in this run, unlike the Android behaviour recorded under FV-489.
+Not checked: a real iPhone, the production site, an update over an installed
+build that has a signed-in session, sign-in, purchase, or narration.
+
 **Coexistence with the PWA**
 
 | Channel | Role |

@@ -10,6 +10,17 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-16: Offline Pregame does not work in the iOS app yet (FV-753)
+
+- In the iOS app, opening Pregame with no signal does not work. This is true of the App
+  Store version (1.0.1) and of build 1.0.2 (8). Found on the iOS simulator on 2026-11-16;
+  not yet confirmed on a real iPhone.
+- Offline Pregame as described further down this file applies to the Android app and
+  to the website added to a home screen.
+- A fix is written and needs a new iOS build. It has been checked on the iOS simulator
+  only. Do not describe offline Pregame as available on iPhone until an entry here says a
+  released build has it.
+
 ## 2026-11-13: Deleting an account also deletes the Stripe customer record (FV-726; effective when the PR deploys)
 
 - When a parent or adult athlete deletes their account, a subscription bought on the
