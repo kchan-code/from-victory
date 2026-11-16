@@ -543,7 +543,9 @@ describe("iOS app-bound mode — service worker for offline Pregame (FV-753)", (
   function appBoundDomains(): string[] {
     const block = /<key>WKAppBoundDomains<\/key>\s*<array>([\s\S]*?)<\/array>/.exec(infoPlist);
     expect(block, "Info.plist should declare WKAppBoundDomains").not.toBeNull();
-    return [...(block?.[1] ?? "").matchAll(/<string>([^<]+)<\/string>/g)].map((m) => m[1]);
+    return [...(block?.[1] ?? "").matchAll(/<string>([^<]+)<\/string>/g)].flatMap((m) =>
+      m[1] === undefined ? [] : [m[1]],
+    );
   }
 
   function hostOf(url: string): string {
@@ -566,14 +568,14 @@ describe("iOS app-bound mode — service worker for offline Pregame (FV-753)", (
     expect(url, "capacitor.config.ts should name the production server URL").toBeTruthy();
     expect(appBoundDomains()).toContain(hostOf(url as string));
     const allow = /allowNavigation:\s*\[([^\]]*)\]/.exec(configSource)?.[1] ?? "";
-    const hosts = [...allow.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+    const hosts = [...allow.matchAll(/"([^"]+)"/g)].flatMap((m) => (m[1] === undefined ? [] : [m[1]]));
     expect(hosts.length).toBeGreaterThan(0);
     for (const host of hosts) expect(appBoundDomains()).toContain(host);
   });
 
   it("lists every staging host a staging build can point at", () => {
     const hosts = /SSO_STAGING_NAVIGATION_HOSTS\s*=\s*\[([^\]]*)\]/.exec(configSource)?.[1] ?? "";
-    const staging = [...hosts.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+    const staging = [...hosts.matchAll(/"([^"]+)"/g)].flatMap((m) => (m[1] === undefined ? [] : [m[1]]));
     expect(staging.length).toBeGreaterThan(0);
     for (const host of staging) expect(appBoundDomains()).toContain(host);
   });
