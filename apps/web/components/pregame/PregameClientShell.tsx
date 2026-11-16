@@ -104,6 +104,7 @@ import {
   readAthleteCache,
   writeAthleteCache,
 } from "@/lib/pregame/athlete-cache";
+import { warmPregameShell } from "@/lib/pregame/warm-shell";
 import { isTrainingBlockedRedirect } from "@/lib/subscriptions/training-redirects";
 import { PregameFlow } from "./PregameFlow";
 import { SUPPORTED_SPORTS, type Sport } from "@/lib/sports";
@@ -362,6 +363,10 @@ export function PregameClientShell() {
             ? rawUntil
             : null;
         writeAthleteCache({ sport, firstName, offlineUntil, verifiedAt: Date.now() });
+        // FV-753: have the service worker save this page for a no-signal
+        // cold start. A link tap does not load the page itself, so without
+        // this nothing is saved. Fire and forget; it never throws.
+        void warmPregameShell();
 
         setState({ kind: "ready", sport, firstName });
       } catch (err) {
