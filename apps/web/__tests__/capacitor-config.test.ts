@@ -584,6 +584,36 @@ describe("iOS app-bound mode — service worker for offline Pregame (FV-753)", (
     expect(appBoundDomains()).toContain(hostOf(base as string));
   });
 
+  // The checks above read hosts out of the source text. This one evaluates
+  // the config the way `cap copy` does, for the production and the staging
+  // build, and checks the values a build would actually carry.
+  it("every host an evaluated config loads or may navigate to is app-bound", async () => {
+    const configPath = resolve(nativeRoot, "capacitor.config.ts");
+    interface Evaluated {
+      server?: { url?: string; allowNavigation?: string[] };
+      ios?: { limitsNavigationsToAppBoundDomains?: boolean };
+    }
+    const domains = appBoundDomains();
+    for (const staging of [false, true]) {
+      vi.resetModules();
+      vi.stubEnv(
+        "CAPACITOR_SERVER_URL",
+        staging ? "https://fv-android-staging-web.vercel.app" : undefined,
+      );
+      vi.stubEnv("FV_SSO_STAGING_BUILD", staging ? "1" : undefined);
+      vi.stubEnv("FV_PLAY_BILLING", undefined);
+      const mod = (await import(/* @vite-ignore */ configPath)) as { default: Evaluated };
+      const config = mod.default;
+      vi.unstubAllEnvs();
+      expect(config.ios?.limitsNavigationsToAppBoundDomains).toBe(true);
+      expect(config.server?.url).toBeTruthy();
+      expect(domains).toContain(hostOf(config.server?.url as string));
+      const allow = config.server?.allowNavigation ?? [];
+      expect(allow.length).toBeGreaterThan(0);
+      for (const host of allow) expect(domains).toContain(host);
+    }
+  });
+
   it("stays within Apple's limit of 10 and names no third-party host", () => {
     const domains = appBoundDomains();
     expect(domains.length).toBeLessThanOrEqual(10);
