@@ -88,5 +88,28 @@
 	<false/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<false/>
+	<!-- FV-753: WKWebView only runs a service worker on app-bound domains.
+	     Without this list the saved Pregame shell (apps/web/public/sw.js)
+	     cannot be served offline on iOS. Paired with
+	     ios.limitsNavigationsToAppBoundDomains in capacitor.config.ts, which
+	     also limits in-WebView navigation to these hosts. Apple allows at
+	     most 10 entries. Production hosts first; the staging host and
+	     localhost are here because the list is fixed at build time and a
+	     staging or local build (CAPACITOR_SERVER_URL) could not load at all
+	     without them. Being listed does not let the app navigate there:
+	     Capacitor's allow-list (server.url plus allowNavigation) still
+	     decides that. fv-offline.invalid is the address the bundled offline
+	     page is loaded under (OfflineEntryFallback.offlinePageBase); in
+	     app-bound mode WebKit refuses that load unless the host is listed,
+	     and the app then shows a blank screen. It is a reserved name that
+	     cannot resolve. Do not add a third-party host. -->
+	<key>WKAppBoundDomains</key>
+	<array>
+		<string>www.fromvictoryapp.com</string>
+		<string>fromvictoryapp.com</string>
+		<string>fv-android-staging-web.vercel.app</string>
+		<string>localhost</string>
+		<string>fv-offline.invalid</string>
+	</array>
 </dict>
 </plist>

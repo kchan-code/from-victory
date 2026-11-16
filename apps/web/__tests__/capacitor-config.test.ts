@@ -516,3 +516,118 @@ describe("capacitor.config — FV_SSO_STAGING_BUILD switch (FV-675)", () => {
     expect(stripped).toEqual(unset);
   });
 });
+
+/**
+ * FV-753 regression guard.
+ *
+ * WKWebView only runs the site's service worker in app-bound mode. The saved
+ * Pregame shell is served by that worker, so without both halves below an
+ * athlete with no signal cannot open Pregame in the iOS app (that shipped in
+ * builds 1 to 8). The halves live in two files that nothing compiles
+ * together, so this reads them as text.
+ *
+ * In app-bound mode WebKit refuses a main-frame load of any host missing
+ * from the list. That covers the app's own server URL, the staging host a
+ * staging build points at, and the address the bundled offline page is
+ * loaded under. A missing entry is a blank screen, not an error.
+ */
+describe("iOS app-bound mode — service worker for offline Pregame (FV-753)", () => {
+  const nativeRoot = resolve(__dirname, "../../native");
+  const configSource = readFileSync(resolve(nativeRoot, "capacitor.config.ts"), "utf8");
+  const infoPlist = readFileSync(resolve(nativeRoot, "ios/App/App/Info.plist"), "utf8");
+  const fallbackSwift = readFileSync(
+    resolve(nativeRoot, "ios/App/App/OfflineEntryFallback.swift"),
+    "utf8",
+  );
+
+  function appBoundDomains(): string[] {
+    const block = /<key>WKAppBoundDomains<\/key>\s*<array>([\s\S]*?)<\/array>/.exec(infoPlist);
+    expect(block, "Info.plist should declare WKAppBoundDomains").not.toBeNull();
+    return [...(block?.[1] ?? "").matchAll(/<string>([^<]+)<\/string>/g)].flatMap((m) =>
+      m[1] === undefined ? [] : [m[1]],
+    );
+  }
+
+  function hostOf(url: string): string {
+    return new URL(url).hostname;
+  }
+
+  it("turns on app-bound navigation under ios, and only there", () => {
+    const matches = configSource.match(/^\s*limitsNavigationsToAppBoundDomains:\s*true,/gm) ?? [];
+    expect(matches).toHaveLength(1);
+    const iosStart = configSource.indexOf("\n  ios: {");
+    const key = configSource.indexOf("limitsNavigationsToAppBoundDomains: true");
+    expect(iosStart).toBeGreaterThan(-1);
+    expect(key).toBeGreaterThan(iosStart);
+    // Still inside the first ios block: no closing brace at block depth before it.
+    expect(configSource.slice(iosStart, key)).not.toMatch(/\n  \},/);
+  });
+
+  it("lists the production server host and every host the app may navigate to", () => {
+    const url = /CAPACITOR_SERVER_URL \?\? "([^"]+)"/.exec(configSource)?.[1];
+    expect(url, "capacitor.config.ts should name the production server URL").toBeTruthy();
+    expect(appBoundDomains()).toContain(hostOf(url as string));
+    const allow = /allowNavigation:\s*\[([^\]]*)\]/.exec(configSource)?.[1] ?? "";
+    const hosts = [...allow.matchAll(/"([^"]+)"/g)].flatMap((m) => (m[1] === undefined ? [] : [m[1]]));
+    expect(hosts.length).toBeGreaterThan(0);
+    for (const host of hosts) expect(appBoundDomains()).toContain(host);
+  });
+
+  it("lists every staging host a staging build can point at", () => {
+    const hosts = /SSO_STAGING_NAVIGATION_HOSTS\s*=\s*\[([^\]]*)\]/.exec(configSource)?.[1] ?? "";
+    const staging = [...hosts.matchAll(/"([^"]+)"/g)].flatMap((m) => (m[1] === undefined ? [] : [m[1]]));
+    expect(staging.length).toBeGreaterThan(0);
+    for (const host of staging) expect(appBoundDomains()).toContain(host);
+  });
+
+  it("lists the host the bundled offline page is loaded under", () => {
+    const base = /static let offlinePageBase = "([^"]+)"/.exec(fallbackSwift)?.[1];
+    expect(base, "OfflineEntryFallback.swift should declare offlinePageBase").toBeTruthy();
+    expect(appBoundDomains()).toContain(hostOf(base as string));
+  });
+
+  // The checks above read hosts out of the source text. This one evaluates
+  // the config the way `cap copy` does, for the production and the staging
+  // build, and checks the values a build would actually carry.
+  it("every host an evaluated config loads or may navigate to is app-bound", async () => {
+    const configPath = resolve(nativeRoot, "capacitor.config.ts");
+    interface Evaluated {
+      server?: { url?: string; allowNavigation?: string[] };
+      ios?: { limitsNavigationsToAppBoundDomains?: boolean };
+    }
+    const domains = appBoundDomains();
+    for (const staging of [false, true]) {
+      vi.resetModules();
+      vi.stubEnv(
+        "CAPACITOR_SERVER_URL",
+        staging ? "https://fv-android-staging-web.vercel.app" : undefined,
+      );
+      vi.stubEnv("FV_SSO_STAGING_BUILD", staging ? "1" : undefined);
+      vi.stubEnv("FV_PLAY_BILLING", undefined);
+      const mod = (await import(/* @vite-ignore */ configPath)) as { default: Evaluated };
+      const config = mod.default;
+      vi.unstubAllEnvs();
+      expect(config.ios?.limitsNavigationsToAppBoundDomains).toBe(true);
+      expect(config.server?.url).toBeTruthy();
+      expect(domains).toContain(hostOf(config.server?.url as string));
+      const allow = config.server?.allowNavigation ?? [];
+      expect(allow.length).toBeGreaterThan(0);
+      for (const host of allow) expect(domains).toContain(host);
+    }
+  });
+
+  it("stays within Apple's limit of 10 and names no third-party host", () => {
+    const domains = appBoundDomains();
+    expect(domains.length).toBeLessThanOrEqual(10);
+    expect(new Set(domains).size).toBe(domains.length);
+    expect([...domains].sort()).toEqual(
+      [
+        "fromvictoryapp.com",
+        "fv-android-staging-web.vercel.app",
+        "fv-offline.invalid",
+        "localhost",
+        "www.fromvictoryapp.com",
+      ].sort(),
+    );
+  });
+});
