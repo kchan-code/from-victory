@@ -265,6 +265,8 @@ device the next time it is online and opens Pregame or any other training page, 
 stays stopped offline. A subscription set to cancel at the end of its period keeps working
 until that period ends. Accounts with free access that has no end date (for example a
 reviewer account) can use Pregame online but not offline.
+(Superseded 2026-11-16 by FV-757, recorded near the top of this file: those accounts now
+get 30 days of offline use from the last online open.)
 
 Adult (18+) athletes who pay for their own account can now open Pregame online and
 offline under the same rules. Before this change, Pregame did not open for them at all.
