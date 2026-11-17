@@ -27,10 +27,11 @@
  * Customer reuse strategy:
  *   If the account already has a `subscriptions` row with a `stripe_customer_id`,
  *   we pass `customer: <id>` to Checkout so Stripe links the new session to the
- *   existing Customer record. If no row exists yet, we pass no customer params and
- *   let Checkout create the Customer; the webhook upserts the row on
- *   checkout.session.completed. We do NOT create a Customer ourselves here —
- *   Checkout does it, the webhook records it.
+ *   existing Customer record. If no row exists yet, we create the Customer
+ *   ourselves first (`metadata.payer_id = <account uuid>`), persist the id
+ *   immediately in `subscriptions.stripe_customer_id`, then pass that id to
+ *   Checkout. This guarantees account deletion can remove abandoned-checkout
+ *   customers by an id we control (FV-751).
  *
  * 7-day / one-athlete free trial strategy (FV-574; originally 14-day, FV-217):
  *   The trial is applied conditionally in code — NOT baked into the Stripe Price
@@ -294,7 +295,7 @@ async function startSubscriptionCheckout(
 
   const { data: existingSub, error: subReadError } = await supabase
     .from("subscriptions")
-    .select("stripe_customer_id")
+    .select("stripe_customer_id, stripe_subscription_id")
     .eq("parent_id", accountId)
     .maybeSingle();
 
@@ -319,6 +320,9 @@ async function startSubscriptionCheckout(
   }
 
   const existingCustomerId = existingSub?.stripe_customer_id ?? null;
+  const hadStripeSubscriptionBeforeCheckout =
+    existingSub?.stripe_subscription_id !== null &&
+    existingSub?.stripe_subscription_id !== undefined;
 
   // Cross-provider one-trial rule (FV-570, record Section 4.5): also check
   // whether this account ever held a Production Apple entitlement. Same
@@ -358,10 +362,84 @@ async function startSubscriptionCheckout(
   // the other; if the checkout is multi-athlete, the KC-approved offering
   // grants no trial.
   const isTrialEligible =
-    existingSub === null &&
+    !hadStripeSubscriptionBeforeCheckout &&
     !appleEverHeld &&
     !googleEverHeld &&
     trialQuantityEligible;
+
+  // FV-751 Option 1: create the Stripe customer ourselves before Checkout
+  // when no stored customer exists yet, tag it with a payer id we control,
+  // and persist that customer id immediately so account deletion can always
+  // delete it (including abandoned checkouts).
+  let checkoutCustomerId = existingCustomerId;
+  if (!checkoutCustomerId) {
+    const stripe = getStripe();
+    let createdCustomerId: string | null = null;
+    try {
+      const createdCustomer = await stripe.customers.create({
+        metadata: { payer_id: accountId },
+      });
+      createdCustomerId = createdCustomer.id;
+
+      const service = createServiceClient();
+      const { error: insertError } = await service.from("subscriptions").insert({
+        parent_id: accountId,
+        stripe_customer_id: createdCustomerId,
+        stripe_subscription_id: null,
+        status: "incomplete",
+        price_id: null,
+        current_period_end: null,
+        cancel_at_period_end: false,
+      });
+      if (insertError) {
+        // A duplicate parent row means another writer won the race. Re-read
+        // and reuse its customer id; then remove the orphan customer we just
+        // created so we don't leave untracked billing data behind.
+        if (insertError.code === "23505") {
+          const { data: racedSub, error: racedReadError } = await supabase
+            .from("subscriptions")
+            .select("stripe_customer_id")
+            .eq("parent_id", accountId)
+            .maybeSingle();
+          if (racedReadError || !racedSub?.stripe_customer_id) {
+            throw new Error(
+              racedReadError?.message ??
+                "subscriptions row appeared without stripe_customer_id",
+            );
+          }
+          checkoutCustomerId = racedSub.stripe_customer_id;
+          await stripe.customers.del(createdCustomerId);
+        } else {
+          throw new Error(insertError.message);
+        }
+      } else {
+        checkoutCustomerId = createdCustomerId;
+      }
+    } catch (err) {
+      if (createdCustomerId) {
+        try {
+          await stripe.customers.del(createdCustomerId);
+        } catch {
+          // Best-effort cleanup; report the original failure below.
+        }
+      }
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(
+        `[subscription.startSubscriptionCheckout] could not persist pre-checkout customer (account=${accountId}): ${message}`,
+      );
+      deliverInBackground(
+        notifyError(
+          "[checkout] pre-checkout customer persist failed",
+          message,
+          { parent_id: accountId },
+        ),
+      );
+      return {
+        ok: false,
+        error: "Couldn't start checkout right now. Try again in a moment.",
+      };
+    }
+  }
 
   // 5. Build site URL for success/cancel redirects.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -416,15 +494,12 @@ async function startSubscriptionCheckout(
       sessionParams.payment_method_collection = "always";
     }
 
-    // Customer reuse: pass the existing Stripe customer ID if present so
-    // Checkout links to the existing record; otherwise let Checkout create one.
-    if (existingCustomerId) {
-      sessionParams.customer = existingCustomerId;
+    // Customer reuse / FV-751 pre-creation: pass a customer id in all cases.
+    if (checkoutCustomerId) {
+      sessionParams.customer = checkoutCustomerId;
     }
-    // No `else`: in subscription mode Checkout ALWAYS creates a Customer, and
-    // Stripe rejects the `customer_creation` param outright ("only valid in
-    // payment mode") — the first live API call failed on it (hotfix, FV-217).
-    // The webhook binds the created Customer to the account via metadata.
+    // customer_creation is invalid in subscription mode; we always pass
+    // `customer` instead of relying on Checkout-created customers.
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 

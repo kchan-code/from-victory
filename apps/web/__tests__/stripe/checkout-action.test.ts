@@ -78,12 +78,18 @@ vi.mock("@/lib/monitoring/notify", () => ({
 
 // Mutable Stripe sessions.create stub — replaced per test.
 const sessionsCreateMock = vi.fn();
+const customersCreateMock = vi.fn();
+const customersDeleteMock = vi.fn();
 vi.mock("@/lib/stripe/server", () => ({
   getStripe: () => ({
     checkout: {
       sessions: {
         create: sessionsCreateMock,
       },
+    },
+    customers: {
+      create: customersCreateMock,
+      del: customersDeleteMock,
     },
   }),
 }));
@@ -94,11 +100,16 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: () => supabaseMockImpl,
 }));
 
-// FV-570: the trial-history check also creates a service-role client. The
-// action only ever passes it straight to hasEverHeldAppleEntitlement (mocked
-// below), so an empty stub object is sufficient — no `.from()` shape needed.
+// FV-751/FV-570: the checkout action now uses the service-role client for
+// Apple/Google entitlement reads AND immediate persistence of pre-checkout
+// Stripe customer ids when no customer is stored yet.
+const serviceInsertMock = vi.fn();
 vi.mock("@/lib/supabase/service", () => ({
-  createServiceClient: () => ({}),
+  createServiceClient: () => ({
+    from: (_table: string) => ({
+      insert: (...args: unknown[]) => serviceInsertMock(...args),
+    }),
+  }),
 }));
 
 // FV-570: Apple entitlement-history stub. Defaults to "never held" (resolved
@@ -133,7 +144,9 @@ import { createCheckoutSession, createAdultCheckoutSession } from "@/lib/actions
 // Helpers
 // ---------------------------------------------------------------------------
 
-type SubRow = { stripe_customer_id: string } | null;
+type SubRow =
+  | { stripe_customer_id: string; stripe_subscription_id?: string | null }
+  | null;
 
 /**
  * Builds a minimal chainable Supabase client stub.
@@ -144,10 +157,20 @@ type SubRow = { stripe_customer_id: string } | null;
  *                       back to 1 in the action)
  */
 function makeSubMock(row: SubRow, athleteCount: number | null = 1) {
+  const normalizedRow =
+    row === null
+      ? null
+      : {
+          stripe_customer_id: row.stripe_customer_id,
+          stripe_subscription_id:
+            row.stripe_subscription_id === undefined
+              ? "sub_existing"
+              : row.stripe_subscription_id,
+        };
   const subChain = {
     select: () => subChain,
     eq: () => subChain,
-    maybeSingle: async () => ({ data: row, error: null }),
+    maybeSingle: async () => ({ data: normalizedRow, error: null }),
   };
 
   // The athlete-count query uses { count: "exact", head: true } — the chain
@@ -216,6 +239,9 @@ describe("createCheckoutSession — 7-day trial logic (FV-217, duration+gate FV-
     sessionsCreateMock.mockResolvedValue({
       url: "https://checkout.stripe.com/pay/cs_test",
     });
+    customersCreateMock.mockResolvedValue({ id: "cus_new_test" });
+    customersDeleteMock.mockResolvedValue({ deleted: true });
+    serviceInsertMock.mockResolvedValue({ error: null });
   });
 
   // -------------------------------------------------------------------------
@@ -226,6 +252,18 @@ describe("createCheckoutSession — 7-day trial logic (FV-217, duration+gate FV-
 
     await createCheckoutSession(null, makeFormData("monthly"));
 
+    expect(customersCreateMock).toHaveBeenCalledWith({
+      metadata: { payer_id: "parent-uuid-test" },
+    });
+    expect(serviceInsertMock).toHaveBeenCalledWith({
+      parent_id: "parent-uuid-test",
+      stripe_customer_id: "cus_new_test",
+      stripe_subscription_id: null,
+      status: "incomplete",
+      price_id: null,
+      current_period_end: null,
+      cancel_at_period_end: false,
+    });
     expect(sessionsCreateMock).toHaveBeenCalledOnce();
     const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
 
@@ -302,6 +340,8 @@ describe("createCheckoutSession — 7-day trial logic (FV-217, duration+gate FV-
 
     await createCheckoutSession(null, makeFormData("monthly"));
 
+    expect(customersCreateMock).not.toHaveBeenCalled();
+    expect(serviceInsertMock).not.toHaveBeenCalled();
     const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(params.customer).toBe("cus_existing_456");
     // customer_creation should NOT be set when we already have a customer.
@@ -327,14 +367,14 @@ describe("createCheckoutSession — 7-day trial logic (FV-217, duration+gate FV-
   // the live-checkout hotfix. Checkout auto-creates the Customer; the webhook
   // binds it via metadata.parent_id.
   // -------------------------------------------------------------------------
-  it("sends neither customer nor customer_creation when no row exists", async () => {
+  it("when no row exists, sends customer=<precreated id> and still omits customer_creation", async () => {
     supabaseMockImpl = makeSubMock(null);
 
     await createCheckoutSession(null, makeFormData("monthly"));
 
     const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(params.customer_creation).toBeUndefined();
-    expect(params.customer).toBeUndefined();
+    expect(params.customer).toBe("cus_new_test");
   });
 
   // -------------------------------------------------------------------------
@@ -456,6 +496,9 @@ describe("createCheckoutSession — quantity from athlete count (FV-283)", () =>
     sessionsCreateMock.mockResolvedValue({
       url: "https://checkout.stripe.com/pay/cs_test",
     });
+    customersCreateMock.mockResolvedValue({ id: "cus_new_test" });
+    customersDeleteMock.mockResolvedValue({ deleted: true });
+    serviceInsertMock.mockResolvedValue({ error: null });
   });
 
   it("passes quantity=3 when the parent has 3 linked athletes", async () => {
@@ -523,6 +566,9 @@ describe("createAdultCheckoutSession (FV-327)", () => {
     sessionsCreateMock.mockResolvedValue({
       url: "https://checkout.stripe.com/pay/cs_test_adult",
     });
+    customersCreateMock.mockResolvedValue({ id: "cus_new_test" });
+    customersDeleteMock.mockResolvedValue({ deleted: true });
+    serviceInsertMock.mockResolvedValue({ error: null });
   });
 
   // -------------------------------------------------------------------------
@@ -619,6 +665,9 @@ describe("createCheckoutSession — cross-provider Apple trial history (FV-570)"
     sessionsCreateMock.mockResolvedValue({
       url: "https://checkout.stripe.com/pay/cs_test",
     });
+    customersCreateMock.mockResolvedValue({ id: "cus_new_test" });
+    customersDeleteMock.mockResolvedValue({ deleted: true });
+    serviceInsertMock.mockResolvedValue({ error: null });
     // Default: never held an Apple entitlement. Individual tests override.
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
     hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
@@ -764,6 +813,9 @@ describe("createCheckoutSession — one-athlete trial gate (FV-574)", () => {
     sessionsCreateMock.mockResolvedValue({
       url: "https://checkout.stripe.com/pay/cs_test",
     });
+    customersCreateMock.mockResolvedValue({ id: "cus_new_test" });
+    customersDeleteMock.mockResolvedValue({ deleted: true });
+    serviceInsertMock.mockResolvedValue({ error: null });
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
     hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
   });
@@ -841,6 +893,22 @@ describe("createCheckoutSession — one-athlete trial gate (FV-574)", () => {
     expect(params.payment_method_collection).toBe("always");
   });
 
+  it("abandoned-checkout placeholder row (customer id + null subscription id) still qualifies for trial", async () => {
+    supabaseMockImpl = makeSubMock({
+      stripe_customer_id: "cus_precreated",
+      stripe_subscription_id: null,
+    });
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(params.customer).toBe("cus_precreated");
+    expect(
+      (params.subscription_data as Record<string, unknown>).trial_period_days,
+    ).toBe(7);
+    expect(params.payment_method_collection).toBe("always");
+  });
+
   it("one athlete but prior Apple history → still NO trial (FV-570 AND-semantics preserved)", async () => {
     supabaseMockImpl = makeSubMock(null, 1);
     hasEverHeldAppleEntitlementMock.mockResolvedValue(true);
@@ -875,6 +943,9 @@ describe("startSubscriptionCheckout — native-shell refusal guard (FV-715)", ()
     sessionsCreateMock.mockResolvedValue({
       url: "https://checkout.stripe.com/pay/cs_test",
     });
+    customersCreateMock.mockResolvedValue({ id: "cus_new_test" });
+    customersDeleteMock.mockResolvedValue({ deleted: true });
+    serviceInsertMock.mockResolvedValue({ error: null });
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
     hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
     getSubscribeEntitlementStateMock.mockResolvedValue({
@@ -957,6 +1028,9 @@ describe("startSubscriptionCheckout — duplicate-billing guard (FV-581)", () =>
     sessionsCreateMock.mockResolvedValue({
       url: "https://checkout.stripe.com/pay/cs_test",
     });
+    customersCreateMock.mockResolvedValue({ id: "cus_new_test" });
+    customersDeleteMock.mockResolvedValue({ deleted: true });
+    serviceInsertMock.mockResolvedValue({ error: null });
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
     hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
     supabaseMockImpl = makeSubMock(null);

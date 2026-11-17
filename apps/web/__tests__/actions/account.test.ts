@@ -952,6 +952,18 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
     expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
   });
 
+  it("abandoned-checkout customer is removed at account deletion (no sub id persisted yet)", async () => {
+    serviceMockImpl = makeServiceMock({
+      subscriptionRow: { stripe_subscription_id: null, stripe_customer_id: "cus_abandoned" },
+    });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(stripeCancelMock).not.toHaveBeenCalled();
+    expect(stripeCustomerDelMock).toHaveBeenCalledWith("cus_abandoned");
+    expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
+  });
+
   it("proceeds when the customer is already gone (resource_missing)", async () => {
     stripeCustomerDelMock.mockRejectedValueOnce(stripeInvalid("resource_missing"));
     serviceMockImpl = makeServiceMock({ subscriptionRow: SUB });
