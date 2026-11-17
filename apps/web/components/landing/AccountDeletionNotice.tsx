@@ -4,17 +4,24 @@ import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { clearOfflineAudioCaches } from "@/lib/audio/clear-audio-cache";
+import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
+import { clearPregameSession } from "@/lib/pregame/session-cache";
 
 export function AccountDeletionNotice() {
   const searchParams = useSearchParams();
   const accountDeleted = searchParams?.get("account_deleted") === "1";
 
-  // FV-754: deleteAccount() redirects the web shell here (the native shell
-  // lands on /signin, which clears itself). This param only exists after a
-  // completed deletion, so it is the one landing-page moment that is safe to
-  // drop the downloaded clips on this device. Plain visits to / never clear.
+  // FV-754: deleteAccount() redirects the web shell here with
+  // account_deleted=1 on EVERY completed deletion (the native shell lands on
+  // /signin, which clears itself). That param is the one landing-page moment
+  // that is safe to drop what this device still holds for the account: the
+  // downloaded clips, the local name/sport entry and the saved session.
+  // Plain visits to / never clear.
   useEffect(() => {
-    if (accountDeleted) void clearOfflineAudioCaches();
+    if (!accountDeleted) return;
+    clearAthleteCache();
+    clearPregameSession();
+    void clearOfflineAudioCaches();
   }, [accountDeleted]);
 
   const showGoogleCancelFailureNotice =
