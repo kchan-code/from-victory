@@ -3,6 +3,7 @@
 
 import { useEffect } from "react";
 import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
+import { clearOfflineAudioCaches } from "@/lib/audio/clear-audio-cache";
 
 /**
  * ClearOfflinePregameOnMount (FV-625)
@@ -32,10 +33,22 @@ import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
  * again, which requires a fresh online entitlement check — and keeping them
  * means a reactivated athlete still gets "Run it like last time".
  */
-export function ClearOfflinePregameOnMount() {
+export function ClearOfflinePregameOnMount({
+  clearAudio = false,
+}: {
+  /**
+   * FV-754: also delete the downloaded `fv-audio-*` clips. Pass it only on the
+   * IDENTITY-SWITCH surfaces (/invite, /pair): the clips reflect the previous
+   * athlete's sport/position. Leave it off on the REVOCATION surfaces
+   * (/athlete/paused, /subscribe): same account, so a reactivated athlete keeps
+   * their download instead of re-fetching it.
+   */
+  clearAudio?: boolean;
+} = {}) {
   useEffect(() => {
     clearAthleteCache();
-  }, []);
+    if (clearAudio) void clearOfflineAudioCaches();
+  }, [clearAudio]);
 
   return null;
 }

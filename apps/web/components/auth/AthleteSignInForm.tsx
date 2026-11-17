@@ -9,6 +9,7 @@ import {
 } from "@/lib/actions/pairings";
 import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
 import { clearPregameSession } from "@/lib/pregame/session-cache";
+import { clearOfflineAudioCaches } from "@/lib/audio/clear-audio-cache";
 
 import { Field } from "./Field";
 import { SubmitButton } from "./SubmitButton";
@@ -88,6 +89,7 @@ export function AthleteSignInForm({ firstName, accountEmail }: Props) {
           // ClearCacheOnMount clear — same treatment for both caches.
           clearAthleteCache();
           clearPregameSession();
+          void clearOfflineAudioCaches(); // FV-754
         }}
         className="mt-4 font-body text-[14px] text-cream/60 text-center"
       >

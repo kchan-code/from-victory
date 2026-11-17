@@ -10,6 +10,7 @@ import {
   type ClaimInviteState,
 } from "@/lib/actions/invites";
 import { clearPregameSession } from "@/lib/pregame/session-cache";
+import { clearOfflineAudioCaches } from "@/lib/audio/clear-audio-cache";
 
 import { Field } from "./Field";
 import { SubmitButton } from "./SubmitButton";
@@ -46,6 +47,7 @@ export function InviteSetupForm({ code, firstName, mode, username }: Props) {
   // athlete's saved pregame setup first (FV-223 privacy parity).
   useEffect(() => {
     clearPregameSession();
+    void clearOfflineAudioCaches(); // FV-754: same identity switch, same clips
   }, []);
 
   const fieldError = (name: string) =>

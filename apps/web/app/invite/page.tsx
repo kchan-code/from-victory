@@ -72,7 +72,7 @@ export default async function InvitePage() {
       {/* FV-625: finishing an invite can switch the signed-in athlete on this
           device without passing /signin — drop the previous athlete's
           offline-pregame entry first (see the component's doc). */}
-      <ClearOfflinePregameOnMount />
+      <ClearOfflinePregameOnMount clearAudio />
       <InviteFlow
         nativeShell={nativeShell}
         initialPlatform={initialPlatform}
