@@ -37,11 +37,11 @@
  *   The trial is applied conditionally in code — NOT baked into the Stripe Price
  *   object — so we can enforce a one-trial-per-account rule. An account is
  *   trial-eligible if and only if:
- *     (a) they have NO `subscriptions` row at checkout time — the webhook
- *         writes the row when checkout.session.completed fires, so any
- *         subsequent checkout attempt (cancel-and-resubscribe, plan change)
- *         finds an existing row and receives no trial (we reuse the
- *         `existingSub` read — no second DB query);
+ *     (a) they have NO prior Stripe subscription id at checkout time
+ *         (`stripe_subscription_id` is null/absent) — the first completed
+ *         checkout writes that id, so any later checkout attempt
+ *         (cancel-and-resubscribe, plan change) receives no trial (we reuse
+ *         the `existingSub` read — no second DB query);
  *     (b) they have never held a Production Apple entitlement (cross-provider
  *         one-trial rule, FV-570 — see next section); and
  *     (c) the checkout starts with exactly ONE athlete seat (KC-approved
