@@ -478,7 +478,12 @@ export async function deleteAccount(
   // Clear the now-orphaned session cookies, then send them home.
   const supabase = await createClient();
   await supabase.auth.signOut();
-  let redirectUrl = "";
+  // FV-754: every completed deletion carries account_deleted=1, so the
+  // landing page (AccountDeletionNotice on "/", ClearCacheOnMount on /signin)
+  // can clear what this device still holds for the deleted account. The
+  // Google Play flags stay additive: the notices only show when one of them
+  // is present too.
+  let redirectUrl = "?account_deleted=1";
   if (googleCancelFailureNoticeRequired) {
     redirectUrl = "?account_deleted=1&google_play_cancel=1";
   } else if (googleCancelUnknownNoticeRequired) {

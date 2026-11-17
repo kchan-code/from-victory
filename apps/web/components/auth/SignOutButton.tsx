@@ -5,6 +5,7 @@
 
 import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
 import { clearPregameSession } from "@/lib/pregame/session-cache";
+import { clearOfflineAudioCaches } from "@/lib/audio/clear-audio-cache";
 import { clearTourFlags } from "@/components/athlete/CoachmarkTour";
 import { signOut } from "@/lib/actions/auth";
 
@@ -39,6 +40,10 @@ export function SignOutButton({ className, children = "Sign out" }: SignOutButto
     // browsing, SSR guard hit somehow).
     clearAthleteCache();
     clearPregameSession();
+    // FV-754: also drop the downloaded clips (they reveal the previous
+    // athlete's sport/position). Async: the server action is a fetch + soft
+    // navigation so this finishes; /signin clears again on mount if not.
+    void clearOfflineAudioCaches();
     // FV-313: reset tour flags so the next athlete on this device sees the tour.
     clearTourFlags();
   }

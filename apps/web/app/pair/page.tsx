@@ -105,7 +105,7 @@ export default async function PairClaimPage(props: Search) {
     <AuthShell title={`Welcome, ${athlete.first_name}.`}>
       {/* FV-625: claiming signs this athlete in on the device — drop any
           previous athlete's offline-pregame entry first. */}
-      <ClearOfflinePregameOnMount />
+      <ClearOfflinePregameOnMount clearAudio />
       <InviteSetupForm
         code={code}
         firstName={athlete.first_name}

@@ -525,7 +525,7 @@ describe("deleteAccount — happy path", () => {
 
     expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
     expect(signOutMock).toHaveBeenCalledOnce();
-    expect(redirectMock).toHaveBeenCalledWith("/");
+    expect(redirectMock).toHaveBeenCalledWith("/?account_deleted=1");
   });
 
   it("cancels the Stripe subscription before deleting the parent, when one exists", async () => {
@@ -712,8 +712,8 @@ describe("deleteAccount — in-shell redirect target (FV-489)", () => {
     await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
 
     expect(signOutMock).toHaveBeenCalledOnce();
-    expect(redirectMock).toHaveBeenCalledWith("/signin");
-    expect(redirectMock).not.toHaveBeenCalledWith("/");
+    expect(redirectMock).toHaveBeenCalledWith("/signin?account_deleted=1");
+    expect(redirectMock).not.toHaveBeenCalledWith("/?account_deleted=1");
   });
 
   it("still redirects to / when isNativeShell() is false (browser/PWA unchanged)", async () => {
@@ -722,8 +722,8 @@ describe("deleteAccount — in-shell redirect target (FV-489)", () => {
 
     await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
 
-    expect(redirectMock).toHaveBeenCalledWith("/");
-    expect(redirectMock).not.toHaveBeenCalledWith("/signin");
+    expect(redirectMock).toHaveBeenCalledWith("/?account_deleted=1");
+    expect(redirectMock).not.toHaveBeenCalledWith("/signin?account_deleted=1");
   });
 
   it("includes the Google-cancel notice flag in the in-shell redirect when Play cancel fails", async () => {
@@ -815,7 +815,7 @@ describe("deleteAccount — adult_athlete self-delete (FV-440)", () => {
 
     expect(serviceMockImpl.__deleteUserCalls()).toEqual([ADULT_ID]);
     expect(signOutMock).toHaveBeenCalledOnce();
-    expect(redirectMock).toHaveBeenCalledWith("/");
+    expect(redirectMock).toHaveBeenCalledWith("/?account_deleted=1");
   });
 
   it("cancels the Stripe subscription before deleting an adult_athlete with a live subscription", async () => {
@@ -960,7 +960,7 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
 
     expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
     expect(callOrder).toContain("subscription_row_cleared");
-    expect(redirectMock).toHaveBeenCalledWith("/");
+    expect(redirectMock).toHaveBeenCalledWith("/?account_deleted=1");
   });
 
   it("aborts with NO database delete when the customer delete fails non-benignly", async () => {
