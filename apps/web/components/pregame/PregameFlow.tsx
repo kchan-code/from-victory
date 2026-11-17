@@ -160,6 +160,16 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   // True between "Run it like last time" and the post-breath jump. A ref,
   // not state: it only steers the next goNext, never renders.
   const fromSavedRef = useRef(false);
+  // FV-758: the same fact as fromSavedRef, as state, so the breathing step can
+  // render its saved-run wording and recording. Always written together with
+  // the ref through markFromSaved. Once the post-breath jump has happened the
+  // run is an ordinary one again: walking back to breath then leads on to
+  // Today's Focus, where the fresh-run wording is correct.
+  const [savedRunActive, setSavedRunActive] = useState(false);
+  const markFromSaved = (value: boolean) => {
+    fromSavedRef.current = value;
+    setSavedRunActive(value);
+  };
 
   // Latches pregame_complete to fire exactly ONCE per session. The card view is
   // re-enterable (its header has a back arrow → last flow step → forward again),
@@ -237,17 +247,17 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   };
 
   const beginFull = () => {
-    fromSavedRef.current = false;
+    markFromSaved(false);
     completionFiredRef.current = false;
     fireEvent("pregame_start", { src: "full" });
     setView({ kind: "flow", index: 0 });
   };
   const beginQuick = () => {
-    fromSavedRef.current = false;
+    markFromSaved(false);
     setView({ kind: "quick" });
   };
   const goStart = () => {
-    fromSavedRef.current = false;
+    markFromSaved(false);
     setView({ kind: "start" });
     // Refresh saved session in case a just-completed run wrote a new one —
     // and clear it when the read fails/invalidates, so the button never
@@ -285,7 +295,7 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
       bedId: null,
       audioCompleted: false,
     });
-    fromSavedRef.current = true;
+    markFromSaved(true);
     completionFiredRef.current = false;
     fireEvent("pregame_start", { src: "saved" });
     // Start at breath (index 0) — the threshold step that's always first.
@@ -295,7 +305,7 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
   // Prepare-ahead entry: start the PREPARE flow from step 0 of prepareFlow.
   // Resets state so the athlete starts fresh (no stale data from a prior run).
   const beginPrepare = () => {
-    fromSavedRef.current = false;
+    markFromSaved(false);
     completionFiredRef.current = false;
     setData(INITIAL_STATE);
     setView({ kind: "prepare-flow", index: 0 });
@@ -374,7 +384,7 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
     // deliberately lands on Review pre-filled so the athlete can inspect or
     // edit the restored choices.
     if (fromSavedRef.current && activeFlow[view.index]?.id === "breath") {
-      fromSavedRef.current = false;
+      markFromSaved(false);
       const audioIndex = activeFlow.findIndex((s) => s.id === "audio");
       if (audioIndex !== -1) {
         setView({ kind: "flow", index: audioIndex });
@@ -605,6 +615,7 @@ export function PregameFlow({ athleteFirstName, sport = "hockey" }: Props) {
           state={data}
           set={set}
           onContinue={goNext}
+          savedRun={savedRunActive}
           sportConfig={sportConfig}
           sport={sport}
         />
@@ -634,7 +645,10 @@ function ScreenSwitch({
   sportConfig,
   sport,
   prepareMode = false,
+  savedRun = false,
 }: {
+  /** FV-758: true on the breathing step of a saved run. */
+  savedRun?: boolean;
   stepId: string;
   state: PregameState;
   set: <K extends keyof PregameState>(k: K, v: PregameState[K]) => void;
@@ -650,7 +664,7 @@ function ScreenSwitch({
 }) {
   switch (stepId) {
     case "breath":
-      return <BreathScreen state={state} set={set} onContinue={onContinue} />;
+      return <BreathScreen state={state} set={set} onContinue={onContinue} savedRun={savedRun} />;
     case "todaysFocus":
       // sportConfig.needs is sport-keyed (FV-117).
       return <TodaysFocusScreen state={state} set={set} sportConfig={sportConfig} />;

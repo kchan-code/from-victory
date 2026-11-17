@@ -53,7 +53,7 @@ import {
 } from "../components/pregame/audio/clips.ts";
 import { syncFromBooks, loadBookProse, loadBookProseWithPauses, type BookEntry } from "./apply-scripts.ts";
 import type { ClipManifest, ClipPhaseEntry } from "../components/pregame/audio-playlist.ts";
-import { BREATH_THRESHOLD_SCRIPT } from "../components/pregame/audio/breath-threshold.ts";
+import { BREATH_THRESHOLD_SCRIPT, BREATH_THRESHOLD_SAVED_SCRIPT } from "../components/pregame/audio/breath-threshold.ts";
 import { SESSION_FORWARD_MISSED_CHANCE_SCRIPT } from "../components/pregame/audio/session-forward-missed-chance.ts";
 import { SESSION_GOALIE_COACH_YELLS_SCRIPT } from "../components/pregame/audio/session-goalie-coach-yells.ts";
 import { SESSION_DEFENSE_BEATEN_WIDE_SCRIPT } from "../components/pregame/audio/session-defense-beaten-wide.ts";
@@ -176,6 +176,7 @@ async function findHashedMp3(dir: string, slug: string): Promise<string | null> 
 // (see the import.meta.url guard at the bottom of the file).
 export const SCRIPTS: AudioScript[] = [
   BREATH_THRESHOLD_SCRIPT,
+  BREATH_THRESHOLD_SAVED_SCRIPT,
   // Need-specific identity openers — stitched at runtime in front of
   // the cell-specific session MP3. Selected by athlete's "today's focus"
   // setup tap.

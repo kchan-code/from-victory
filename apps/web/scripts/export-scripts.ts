@@ -34,7 +34,7 @@ import { fileURLToPath } from "node:url";
 
 import { CLIP_SCRIPTS } from "../components/pregame/audio/clips.ts";
 import type { AudioScript, Segment } from "../components/pregame/audio/types";
-import { BREATH_THRESHOLD_SCRIPT } from "../components/pregame/audio/breath-threshold.ts";
+import { BREATH_THRESHOLD_SCRIPT, BREATH_THRESHOLD_SAVED_SCRIPT } from "../components/pregame/audio/breath-threshold.ts";
 import { OPENER_CONFIDENCE_SCRIPT } from "../components/pregame/audio/opener-confidence.ts";
 import { OPENER_CALM_SCRIPT } from "../components/pregame/audio/opener-calm.ts";
 import { OPENER_COMPETE_LEVEL_SCRIPT } from "../components/pregame/audio/opener-compete-level.ts";
@@ -620,7 +620,7 @@ async function main() {
   // Also bucket the SCRIPTS-array items: openers, breath-threshold, session-*.
   // These are spoken clips outside CLIP_SCRIPTS that KC needs to read + edit.
   // breath-threshold → shared; openers → hockey/basketball; session-* → hockey.
-  buckets.get("shared")!.unshift(BREATH_THRESHOLD_SCRIPT);
+  buckets.get("shared")!.unshift(BREATH_THRESHOLD_SCRIPT, BREATH_THRESHOLD_SAVED_SCRIPT);
   for (const s of HOCKEY_OPENERS) buckets.get("hockey")!.unshift(s);
   for (const s of BB_OPENERS) buckets.get("basketball")!.unshift(s);
   for (const s of SESSION_SCRIPTS) buckets.get("hockey")!.push(s);
@@ -833,8 +833,8 @@ async function main() {
   const sharedStats = await writeBook(
     "shared.md", "Shared (cross-sport)", false,
     [
-      { header: "Breath Threshold", scripts: sharedScripts.filter((s) => s.slug === "breath-threshold") },
-      { header: "Shared Structural Clips", scripts: sharedScripts.filter((s) => s.slug !== "breath-threshold") },
+      { header: "Breath Threshold", scripts: sharedScripts.filter((s) => s.slug.startsWith("breath-threshold")) },
+      { header: "Shared Structural Clips", scripts: sharedScripts.filter((s) => !s.slug.startsWith("breath-threshold")) },
     ],
   );
 

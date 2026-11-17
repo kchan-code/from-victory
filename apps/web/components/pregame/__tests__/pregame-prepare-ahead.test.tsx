@@ -227,7 +227,7 @@ describe("PregameFlow start screen — play-saved-offline entry", () => {
     // Advance past breath threshold — picks were restored, so fromSavedRef
     // intercepts the goNext and jumps straight to audio.
     fireEvent.click(screen.getByRole("button", { name: /already settled/i }));
-    fireEvent.click(screen.getByRole("button", { name: /set my focus/i }));
+    fireEvent.click(screen.getByRole("button", { name: /start my session/i }));
 
     // CORRECTED BEHAVIOR: lands on the audio step (Step 11 · Guided Session).
     expect(screen.getByText(/Step 11 · Guided Session/i)).toBeInTheDocument();

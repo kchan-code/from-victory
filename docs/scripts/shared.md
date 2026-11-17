@@ -51,6 +51,26 @@ _(pause: 4s)_
 _(pause: 6s)_
 _(pause: 0.8s)_
 8. Ready. Now set your focus.
+
+### breath-threshold-saved
+<!-- slug: breath-threshold-saved | file: components/pregame/audio/clips.ts -->
+
+1. Breathe first and reset. 4 seconds in, 6 seconds out, from the diaphragm, not the chest.
+_(pause: 1s)_
+2. Inhale.
+_(pause: 4s)_
+3. Exhale.
+_(pause: 6s)_
+4. Inhale.
+_(pause: 4s)_
+5. Exhale. Release.
+_(pause: 6s)_
+6. Inhale.
+_(pause: 4s)_
+7. Exhale.
+_(pause: 6s)_
+_(pause: 0.8s)_
+8. Ready.
 ## Shared Structural Clips
 
 ### Shared · Opening

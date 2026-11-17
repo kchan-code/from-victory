@@ -12,7 +12,7 @@ vi.mock("../BreathingSphere", () => ({
 let audio: BreathAudioState;
 beforeEach(() => {
   audio = {
-    nativeNarrationPlayer: null,
+    nativeNarrationPlayer: null, resolvedSlug: "breath-threshold",
     status: "loading", isPlaying: false, hasStarted: false, usesNativeAudio: true,
     controlled: { phase: "idle", t: 0, round: 0, isPlaying: false },
     rawPhase: "idle", rounds: 3, audioRef: { current: null },

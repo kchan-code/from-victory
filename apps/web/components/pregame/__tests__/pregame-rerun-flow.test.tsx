@@ -118,13 +118,40 @@ describe("PregameFlow saved-session restore (FV-223)", () => {
     const skip = screen.getByRole("button", { name: /already settled/i });
     fireEvent.click(skip);
 
+    // FV-758: a saved run never tells the athlete to choose or set a focus.
+    expect(screen.queryByText(/focus/i)).not.toBeInTheDocument();
+    expect(screen.getByText("Your session is set.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /set my focus/i })).not.toBeInTheDocument();
+
     // The breath CTA advances the flow.
-    fireEvent.click(screen.getByRole("button", { name: /set my focus/i }));
+    fireEvent.click(screen.getByRole("button", { name: /start my session/i }));
 
     // FIXED BEHAVIOUR: we land on the audio session step…
     expect(screen.getByText(/Step 11 · Guided Session/i)).toBeInTheDocument();
     // …and never on the Today's Focus setup screen.
     expect(screen.queryByText(/Step 02/i)).not.toBeInTheDocument();
+  });
+
+  it("walking back from the audio step to breathing shows the fresh-run wording (FV-758)", () => {
+    seedSavedSession();
+    render(<PregameFlow athleteFirstName="Alex" sport="hockey" />);
+    fireEvent.click(screen.getByTestId("run-last-time-btn"));
+    fireEvent.click(screen.getByRole("button", { name: /already settled/i }));
+    fireEvent.click(screen.getByRole("button", { name: /start my session/i }));
+    expect(screen.getByText(/Step 11 · Guided Session/i)).toBeInTheDocument();
+
+    // Back walks the setup screens one at a time until breathing is on screen.
+    for (let i = 0; i < 12 && !screen.queryByText(/Step 01 · Threshold/i); i++) {
+      fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    }
+    expect(screen.getByText(/Step 01 · Threshold/i)).toBeInTheDocument();
+
+    // The saved-run jump is spent: the next step from here is Today's Focus,
+    // so the fresh-run wording is the correct one.
+    expect(screen.getByRole("button", { name: /set my focus/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /start my session/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /set my focus/i }));
+    expect(screen.queryByText(/Step 11 · Guided Session/i)).not.toBeInTheDocument();
   });
 
   it("a saved session with an unknown need shows NO restore button (silent fallback)", () => {
@@ -147,7 +174,11 @@ describe("PregameFlow saved-session restore (FV-223)", () => {
 
     // Take the primary path even though a saved session exists.
     fireEvent.click(screen.getByRole("button", { name: /^begin/i }));
+    // FV-758: the fresh-run wording is unchanged.
+    expect(screen.getByText(/Before you choose your focus/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /already settled/i }));
+    expect(screen.getByText("Ready. Now set your focus.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /start my session/i })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /set my focus/i }));
 
     // Sequential flow: next is the Today's Focus setup screen, NOT audio.
@@ -172,7 +203,7 @@ describe("PregameFlow saved-session restore (FV-223)", () => {
     // Trigger the re-run path.
     fireEvent.click(screen.getByTestId("run-last-time-btn"));
     fireEvent.click(screen.getByRole("button", { name: /already settled/i }));
-    fireEvent.click(screen.getByRole("button", { name: /set my focus/i }));
+    fireEvent.click(screen.getByRole("button", { name: /start my session/i }));
 
     // The audio step must have rendered.
     expect(screen.getByText(/Step 11 · Guided Session/i)).toBeInTheDocument();
