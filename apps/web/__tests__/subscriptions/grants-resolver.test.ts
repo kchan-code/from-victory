@@ -449,6 +449,7 @@ describe("getActiveCompGrantSummary — readError", () => {
     expect(await getActiveCompGrantSummary(service as never, PARENT_ID)).toEqual({
       active: false,
       latestFiniteEnd: null,
+      hasOpenEnded: false,
       readError: true,
     });
   });
@@ -459,6 +460,7 @@ describe("getActiveCompGrantSummary — readError", () => {
     expect(await getActiveCompGrantSummary(service as never, PARENT_ID)).toEqual({
       active: false,
       latestFiniteEnd: null,
+      hasOpenEnded: false,
       readError: false,
     });
   });
@@ -469,6 +471,53 @@ describe("getActiveCompGrantSummary — readError", () => {
     const summary = await getActiveCompGrantSummary(service as never, PARENT_ID);
     expect(summary.active).toBe(true);
     expect(summary.readError).toBe(false);
+  });
+});
+
+// FV-757: `hasOpenEnded` tells the offline bound that an ACTIVE no-end-date
+// grant exists. `latestFiniteEnd` keeps its meaning (dated grants only).
+describe("getActiveCompGrantSummary — hasOpenEnded (FV-757)", () => {
+  it("is true for an active perpetual grant, with no finite end", async () => {
+    setGrantActive(null);
+    const summary = await getActiveCompGrantSummary(makeServiceMock() as never, PARENT_ID);
+    expect(summary.hasOpenEnded).toBe(true);
+    expect(summary.latestFiniteEnd).toBeNull();
+  });
+
+  it("is false when the only grant is dated (and keeps latestFiniteEnd)", async () => {
+    setGrantActive(FUTURE_ISO);
+    const summary = await getActiveCompGrantSummary(makeServiceMock() as never, PARENT_ID);
+    expect(summary.hasOpenEnded).toBe(false);
+    expect(summary.latestFiniteEnd).toBe(FUTURE_ISO);
+  });
+
+  it("is true for perpetual + dated, and still reports the dated end", async () => {
+    grantRows = [
+      { id: "g1", expires_at: null },
+      { id: "g2", expires_at: FUTURE_ISO },
+    ];
+    grantSelectError = null;
+    const summary = await getActiveCompGrantSummary(makeServiceMock() as never, PARENT_ID);
+    expect(summary.hasOpenEnded).toBe(true);
+    expect(summary.latestFiniteEnd).toBe(FUTURE_ISO);
+  });
+
+  it("is false when the only grant is expired", async () => {
+    setGrantExpired();
+    const summary = await getActiveCompGrantSummary(makeServiceMock() as never, PARENT_ID);
+    expect(summary.hasOpenEnded).toBe(false);
+  });
+
+  it("is false when there are no grants", async () => {
+    setGrantNone();
+    const summary = await getActiveCompGrantSummary(makeServiceMock() as never, PARENT_ID);
+    expect(summary.hasOpenEnded).toBe(false);
+  });
+
+  it("is false on a read error (fail closed)", async () => {
+    setGrantError();
+    const summary = await getActiveCompGrantSummary(makeServiceMock() as never, PARENT_ID);
+    expect(summary.hasOpenEnded).toBe(false);
   });
 });
 

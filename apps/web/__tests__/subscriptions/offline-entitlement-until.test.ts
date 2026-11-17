@@ -6,9 +6,10 @@
  * sources that currently grant access, or null (online-only). Pins:
  *   - Stripe: current_period_end when not blocked (trialing → trial end);
  *     canceled / incomplete_expired contribute nothing.
- *   - Comp grants: the latest dated active grant; a PERPETUAL grant
- *     (expires_at null — the Play reviewer account) contributes NOTHING, so a
- *     perpetual-only payer gets null (no invented period, no unbounded offline).
+ *   - Comp grants: the latest dated active grant; an ACTIVE open-ended grant
+ *     (expires_at null — the Play reviewer account) contributes now + 30 days
+ *     (KC decision 2026-11-16, FV-757), best-of with the other sources. A
+ *     revoked grant or a failed grants read contributes nothing.
  *   - Apple: subscribed → expires_at; in_grace_period → grace end; billing
  *     retry / expired / revoked → nothing; Sandbox only when allowlisted.
  *   - Best-of across sources; a bound at/before now → null; read errors drop
@@ -23,7 +24,7 @@ vi.mock("server-only", () => ({}));
 const NOW = new Date("2026-11-09T12:00:00.000Z");
 const iso = (days: number) => new Date(NOW.getTime() + days * 86_400_000).toISOString();
 
-type GrantRow = { id: string; expires_at: string | null };
+type GrantRow = { id: string; expires_at: string | null; revoked_at?: string | null };
 type AppleRow = {
   environment: "Production" | "Sandbox";
   status: string;
@@ -63,7 +64,23 @@ function thenable<T>(value: T) {
 vi.mock("@/lib/supabase/service", () => ({
   createServiceClient: () => ({
     from: (table: string) => {
-      if (table === "access_grants") return thenable({ data: grants, error: grantsError });
+      if (table === "access_grants") {
+        // Mirrors the real query's `.is("revoked_at", null)` filter so a
+        // revoked row is dropped server-side, as in production.
+        const b: Record<string, unknown> = {
+          select: () => b,
+          eq: () => b,
+          is: () => b,
+          then: (resolve: (v: unknown) => void) =>
+            resolve({
+              data: grants
+                .filter((g) => (g.revoked_at ?? null) === null)
+                .map((g) => ({ id: g.id, expires_at: g.expires_at })),
+              error: grantsError,
+            }),
+        };
+        return b;
+      }
       if (table === "apple_subscriptions") return thenable({ data: apple, error: appleError });
       if (table === "subscriptions" || table === "apple_sandbox_testers") {
         const b: Record<string, unknown> = {
@@ -110,6 +127,7 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 import {
+  OPEN_ENDED_GRANT_OFFLINE_DAYS,
   getOfflineEntitlementUntilForCurrentUser,
   getParentOfflineEntitlementUntil,
 } from "@/lib/subscriptions/access";
@@ -172,9 +190,13 @@ describe("Stripe", () => {
 });
 
 describe("comp grants (incl. the perpetual Play reviewer grant)", () => {
-  it("a perpetual grant alone → null: online-only, no invented period", async () => {
+  it("a perpetual grant alone → now + 30 days", async () => {
     grants = [{ id: "g1", expires_at: null }];
-    await expect(until()).resolves.toBeNull();
+    await expect(until()).resolves.toBe(iso(30));
+  });
+
+  it("the open-ended window is the exported constant (30 days)", () => {
+    expect(OPEN_ENDED_GRANT_OFFLINE_DAYS).toBe(30);
   });
 
   it("a dated grant → its expires_at", async () => {
@@ -182,18 +204,82 @@ describe("comp grants (incl. the perpetual Play reviewer grant)", () => {
     await expect(until()).resolves.toBe(iso(45));
   });
 
-  it("perpetual + dated → the dated end (the perpetual one adds nothing)", async () => {
+  it("perpetual + dated grant at +10 days → now + 30 days", async () => {
     grants = [
       { id: "g1", expires_at: null },
       { id: "g2", expires_at: iso(10) },
     ];
-    await expect(until()).resolves.toBe(iso(10));
+    await expect(until()).resolves.toBe(iso(30));
   });
 
-  it("perpetual grant + active Stripe → the Stripe period end", async () => {
+  it("perpetual + dated grant at +45 days → the dated end", async () => {
+    grants = [
+      { id: "g1", expires_at: null },
+      { id: "g2", expires_at: iso(45) },
+    ];
+    await expect(until()).resolves.toBe(iso(45));
+  });
+
+  it("perpetual + Stripe at +25 days → now + 30 days", async () => {
     grants = [{ id: "g1", expires_at: null }];
     sub = { status: "active", current_period_end: iso(25) };
-    await expect(until()).resolves.toBe(iso(25));
+    await expect(until()).resolves.toBe(iso(30));
+  });
+
+  it("perpetual + Stripe at +60 days → the Stripe end", async () => {
+    grants = [{ id: "g1", expires_at: null }];
+    sub = { status: "active", current_period_end: iso(60) };
+    await expect(until()).resolves.toBe(iso(60));
+  });
+
+  it("perpetual + Apple at +60 days → the Apple end", async () => {
+    grants = [{ id: "g1", expires_at: null }];
+    apple = [
+      {
+        environment: "Production",
+        status: "subscribed",
+        expires_at: iso(60),
+        grace_period_expires_at: null,
+      },
+    ];
+    await expect(until()).resolves.toBe(iso(60));
+  });
+
+  it("perpetual + Apple at +5 days → now + 30 days", async () => {
+    grants = [{ id: "g1", expires_at: null }];
+    apple = [
+      {
+        environment: "Production",
+        status: "subscribed",
+        expires_at: iso(5),
+        grace_period_expires_at: null,
+      },
+    ];
+    await expect(until()).resolves.toBe(iso(30));
+  });
+
+  it("perpetual + Google at +60 days → the Google end", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    grants = [{ id: "g1", expires_at: null }];
+    googleRows = [
+      { product_id: "family.1", purchase_token: "t", status: "active", expires_at: iso(60) },
+    ];
+    await expect(until()).resolves.toBe(iso(60));
+  });
+
+  it("a revoked perpetual grant contributes nothing (null)", async () => {
+    // The real query filters revoked rows server-side (`revoked_at is null`);
+    // the mock mirrors that filter on `revoked_at`.
+    grants = [{ id: "g1", expires_at: null, revoked_at: iso(-1) }];
+    await expect(until()).resolves.toBeNull();
+  });
+
+  it("a revoked perpetual grant + an active dated grant → only the dated end", async () => {
+    grants = [
+      { id: "g1", expires_at: null, revoked_at: iso(-1) },
+      { id: "g2", expires_at: iso(10) },
+    ];
+    await expect(until()).resolves.toBe(iso(10));
   });
 
   it("an already-expired dated grant contributes nothing", async () => {
@@ -205,6 +291,19 @@ describe("comp grants (incl. the perpetual Play reviewer grant)", () => {
     grants = [{ id: "g1", expires_at: iso(45) }];
     grantsError = { message: "boom" };
     await expect(until()).resolves.toBeNull();
+  });
+
+  it("a grants read error with a perpetual grant → null (no window invented)", async () => {
+    grants = [{ id: "g1", expires_at: null }];
+    grantsError = { message: "boom" };
+    await expect(until()).resolves.toBeNull();
+  });
+
+  it("a grants read error does not drop other sources", async () => {
+    grants = [{ id: "g1", expires_at: null }];
+    grantsError = { message: "boom" };
+    sub = { status: "active", current_period_end: iso(5) };
+    await expect(until()).resolves.toBe(iso(5));
   });
 });
 

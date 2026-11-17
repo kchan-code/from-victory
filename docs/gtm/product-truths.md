@@ -10,7 +10,27 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
-## 2026-11-16: Offline Pregame does not work in the iOS app yet (FV-753)
+## 2026-11-16: Offline Pregame for free-access accounts with no end date (FV-757; effective when the PR deploys)
+
+- Accounts with free access that has no end date (for example a reviewer account) can now
+  use Pregame offline. Offline use lasts 30 days from the last time Pregame was opened
+  online on that device, and each online open renews it.
+- This replaces the earlier rule, recorded further down this file, that such accounts could
+  use Pregame online but not offline.
+- Nothing changes for subscriptions, free trials, or free access that has an end date:
+  offline use still lasts until the end of the period last confirmed online.
+
+## 2026-11-16: Offline Pregame in the iOS app (FV-753): fixed in the app and on the website, not yet confirmed end to end
+
+- The App Store version (1.0.1) cannot open Pregame from a cold start with no signal.
+- iOS build 1.0.2 (9), in TestFlight only and not released, has the app-side fix. The
+  website-side fix is live. On a real iPhone on 2026-11-16 the saved Pregame page opened
+  with no signal on that build. A full offline session with audio has not yet been
+  confirmed on a real iPhone.
+- Do not describe offline Pregame as available on iPhone until an entry here says a
+  released build has it.
+
+## 2026-11-16: Offline Pregame did not work in the iOS app (FV-753; superseded by the entry above)
 
 - In the iOS app, opening Pregame with no signal does not work. This is true of the App
   Store version (1.0.1) and of build 1.0.2 (8). Found on the iOS simulator on 2026-11-16;
@@ -245,6 +265,8 @@ device the next time it is online and opens Pregame or any other training page, 
 stays stopped offline. A subscription set to cancel at the end of its period keeps working
 until that period ends. Accounts with free access that has no end date (for example a
 reviewer account) can use Pregame online but not offline.
+(Superseded 2026-11-16 by FV-757, recorded near the top of this file: those accounts now
+get 30 days of offline use from the last online open.)
 
 Adult (18+) athletes who pay for their own account can now open Pregame online and
 offline under the same rules. Before this change, Pregame did not open for them at all.

@@ -52,7 +52,12 @@ const noApple = {
   grantsAccess: false,
   readError: false,
 };
-const noGrant = { active: false, latestFiniteEnd: null, readError: false };
+const noGrant = {
+  active: false,
+  latestFiniteEnd: null,
+  hasOpenEnded: false,
+  readError: false,
+};
 
 beforeEach(() => {
   vi.clearAllMocks();

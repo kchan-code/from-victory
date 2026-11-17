@@ -16,8 +16,9 @@
  * `offlineUntil` (KC policy 2026-11-09): the end of the last verified
  * entitlement period — the subscription's current period end (the trial end
  * while trialing), a dated comp grant's expiry, or the Apple expiry — as an
- * ISO timestamp; null when the entitlement has no end date (a perpetual comp
- * grant), when gating is off, or when blocked. The shell reuses a verified
+ * ISO timestamp (an open-ended comp grant counts as a rolling 30 days from
+ * this check, FV-757); null when no source gives an end, when gating is off,
+ * or when blocked. The shell reuses a verified
  * answer offline only until that moment.
  *
  * PRIVACY: a redirect path plus that ONE timestamp cross the wire — never the
