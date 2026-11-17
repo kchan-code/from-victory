@@ -354,13 +354,12 @@ async function startSubscriptionCheckout(
     };
   }
 
-  // Trial is ONLY offered when there is no existing Stripe row AND the
-  // account never held a Production Apple entitlement AND the checkout
-  // starts with exactly one athlete seat (FV-574). If ANY Stripe row exists
-  // (any status — active, canceled, trialing) OR Apple/Google entitlement
-  // history exists, the account has already had a trial on one provider or
-  // the other; if the checkout is multi-athlete, the KC-approved offering
-  // grants no trial.
+  // Trial is ONLY offered when there is no prior Stripe subscription id AND
+  // the account never held a Production Apple/Google entitlement AND the
+  // checkout starts with exactly one athlete seat (FV-574). A pre-checkout
+  // placeholder row (created to persist stripe_customer_id for abandoned
+  // checkouts) has `stripe_subscription_id = null` and does NOT consume trial
+  // eligibility by itself.
   const isTrialEligible =
     !hadStripeSubscriptionBeforeCheckout &&
     !appleEverHeld &&

@@ -123,7 +123,9 @@ async function readUnderlyingSources(
   userId: string,
 ): Promise<{
   anyError: boolean;
+  hasCompGrant: boolean;
   stripeStatus: SubscriptionStatus | null;
+  stripeSubscriptionId: string | null;
   googleLevel: "full" | "degraded" | "blocked";
 }> {
   const [grants, stripeSub, appleSubs, allowlist] = await Promise.all([
@@ -134,7 +136,11 @@ async function readUnderlyingSources(
       .eq("parent_id", userId)
       .is("revoked_at", null),
     // Mirrors getParentAccessLevel's Stripe read (./access.ts).
-    service.from("subscriptions").select("status").eq("parent_id", userId).maybeSingle(),
+    service
+      .from("subscriptions")
+      .select("status, stripe_subscription_id")
+      .eq("parent_id", userId)
+      .maybeSingle(),
     // Mirrors getAppleAccessLevelForPayer's row read (./apple.ts).
     service.from("apple_subscriptions").select("status").eq("payer_id", userId),
     // Mirrors getAppleAccessLevelForPayer's allowlist read (./apple.ts).
@@ -154,10 +160,21 @@ async function readUnderlyingSources(
       allowlist.error ||
       google.readError,
   );
+  const hasCompGrant = (grants.data?.length ?? 0) > 0;
   // Only meaningful when anyError is false (caller returns "unknown" first
   // otherwise, so a null-on-error status is never consulted).
   const stripeStatus = (stripeSub.data?.status as SubscriptionStatus | undefined) ?? null;
-  return { anyError, stripeStatus, googleLevel: google.level };
+  const stripeSubscriptionId =
+    typeof stripeSub.data?.stripe_subscription_id === "string"
+      ? stripeSub.data.stripe_subscription_id
+      : null;
+  return {
+    anyError,
+    hasCompGrant,
+    stripeStatus,
+    stripeSubscriptionId,
+    googleLevel: google.level,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -189,10 +206,11 @@ export async function getSubscribeEntitlementState(
 ): Promise<SubscribeEntitlementState> {
   const service = createServiceClient();
 
-  const { anyError, stripeStatus, googleLevel } = await readUnderlyingSources(
+  const { anyError, hasCompGrant, stripeStatus, stripeSubscriptionId, googleLevel } =
+    await readUnderlyingSources(
     service,
     userId,
-  );
+    );
   if (anyError) {
     return { status: "unknown", provider: null };
   }
@@ -234,6 +252,23 @@ export async function getSubscribeEntitlementState(
   // "stripe" / "comp", not "apple". A read error keeps the fail-open
   // behavior of `getActiveAppleProductId` (not an Apple payer).
   const appleResult = await getActiveAppleProductIdResult(service, userId);
+  const isCheckoutPlaceholderRow =
+    stripeStatus === "incomplete" && stripeSubscriptionId === null;
+  // FV-751 inserts a pre-checkout placeholder row so abandoned checkouts can
+  // still be cleaned up at account deletion. That row must not block retries:
+  // it is not a real started Stripe subscription yet.
+  if (
+    isCheckoutPlaceholderRow &&
+    !hasCompGrant &&
+    googleLevel === "blocked" &&
+    !(
+      !appleResult.readError &&
+      appleResult.productId !== null &&
+      !appleResult.paymentLapsed
+    )
+  ) {
+    return { status: "not_entitled", provider: null };
+  }
   if (
     !appleResult.readError &&
     appleResult.productId !== null &&
@@ -242,7 +277,11 @@ export async function getSubscribeEntitlementState(
     return { status: "entitled", provider: "apple" };
   }
 
-  if (stripeStatus && subscriptionAccessLevel(stripeStatus) !== "blocked") {
+  if (
+    stripeStatus &&
+    subscriptionAccessLevel(stripeStatus) !== "blocked" &&
+    !isCheckoutPlaceholderRow
+  ) {
     return { status: "entitled", provider: "stripe" };
   }
 
