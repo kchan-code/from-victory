@@ -27,11 +27,13 @@
  * Customer reuse strategy:
  *   If the account already has a `subscriptions` row with a `stripe_customer_id`,
  *   we pass `customer: <id>` to Checkout so Stripe links the new session to the
- *   existing Customer record. If no row exists yet, we create the Customer
- *   ourselves first (`metadata.payer_id = <account uuid>`), persist the id
- *   immediately in `subscriptions.stripe_customer_id`, then pass that id to
- *   Checkout. This guarantees account deletion can remove abandoned-checkout
- *   customers by an id we control (FV-751).
+ *   existing Customer record. If there is no subscription row yet, we check
+ *   `stripe_customers` (payer -> customer mirror); if still empty, we create
+ *   the Customer ourselves (`metadata.payer_id = <account uuid>`) and persist
+ *   the id there before redirecting to Checkout. This guarantees account
+ *   deletion can remove abandoned-checkout customers by an id we control
+ *   (FV-751), without inserting entitlement-bearing placeholder rows into
+ *   `subscriptions`.
  *
  * 7-day / one-athlete free trial strategy (FV-574; originally 14-day, FV-217):
  *   The trial is applied conditionally in code — NOT baked into the Stripe Price
@@ -324,6 +326,31 @@ async function startSubscriptionCheckout(
     existingSub?.stripe_subscription_id !== null &&
     existingSub?.stripe_subscription_id !== undefined;
 
+  // FV-751: standalone mirror for pre-checkout customer ids (service-role only).
+  const service = createServiceClient();
+  const { data: mirroredCustomer, error: mirroredCustomerReadError } = await service
+    .from("stripe_customers")
+    .select("stripe_customer_id")
+    .eq("payer_id", accountId)
+    .maybeSingle();
+
+  if (mirroredCustomerReadError) {
+    console.error(
+      `[subscription.startSubscriptionCheckout] stripe_customers read failed (account=${accountId}): ${mirroredCustomerReadError.message}`,
+    );
+    deliverInBackground(
+      notifyError(
+        "[checkout] stripe customer mirror read failed",
+        mirroredCustomerReadError.message,
+        { parent_id: accountId },
+      ),
+    );
+    return {
+      ok: false,
+      error: "Couldn't start checkout right now. Try again in a moment.",
+    };
+  }
+
   // Cross-provider one-trial rule (FV-570, record Section 4.5): also check
   // whether this account ever held a Production Apple entitlement. Same
   // fail-CLOSED contract as the Stripe read above (PR #185) — a read error
@@ -356,10 +383,7 @@ async function startSubscriptionCheckout(
 
   // Trial is ONLY offered when there is no prior Stripe subscription id AND
   // the account never held a Production Apple/Google entitlement AND the
-  // checkout starts with exactly one athlete seat (FV-574). A pre-checkout
-  // placeholder row (created to persist stripe_customer_id for abandoned
-  // checkouts) has `stripe_subscription_id = null` and does NOT consume trial
-  // eligibility by itself.
+  // checkout starts with exactly one athlete seat (FV-574).
   const isTrialEligible =
     !hadStripeSubscriptionBeforeCheckout &&
     !appleEverHeld &&
@@ -370,58 +394,75 @@ async function startSubscriptionCheckout(
   // when no stored customer exists yet, tag it with a payer id we control,
   // and persist that customer id immediately so account deletion can always
   // delete it (including abandoned checkouts).
-  let checkoutCustomerId = existingCustomerId;
+  let checkoutCustomerId =
+    existingCustomerId ?? mirroredCustomer?.stripe_customer_id ?? null;
   if (!checkoutCustomerId) {
     const stripe = getStripe();
     let createdCustomerId: string | null = null;
+    const cleanupCreatedCustomer = async (message: string) => {
+      if (!createdCustomerId) return;
+      try {
+        await stripe.customers.del(createdCustomerId);
+      } catch (cleanupErr) {
+        deliverInBackground(
+          notifyError(
+            "[checkout] pre-checkout customer cleanup failed",
+            cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr),
+            { parent_id: accountId, customer: createdCustomerId },
+          ),
+        );
+      }
+      throw new Error(message);
+    };
+
     try {
       const createdCustomer = await stripe.customers.create({
         metadata: { payer_id: accountId },
+      }, {
+        idempotencyKey: `checkout-customer:${accountId}`,
       });
       createdCustomerId = createdCustomer.id;
 
-      const service = createServiceClient();
-      const { error: insertError } = await service.from("subscriptions").insert({
-        parent_id: accountId,
+      const { error: insertError } = await service.from("stripe_customers").insert({
+        payer_id: accountId,
         stripe_customer_id: createdCustomerId,
-        stripe_subscription_id: null,
-        status: "incomplete",
-        price_id: null,
-        current_period_end: null,
-        cancel_at_period_end: false,
       });
       if (insertError) {
-        // A duplicate parent row means another writer won the race. Re-read
-        // and reuse its customer id; then remove the orphan customer we just
-        // created so we don't leave untracked billing data behind.
         if (insertError.code === "23505") {
-          const { data: racedSub, error: racedReadError } = await supabase
-            .from("subscriptions")
+          const { data: racedMirror, error: racedReadError } = await service
+            .from("stripe_customers")
             .select("stripe_customer_id")
-            .eq("parent_id", accountId)
+            .eq("payer_id", accountId)
             .maybeSingle();
-          if (racedReadError || !racedSub?.stripe_customer_id) {
-            throw new Error(
+          const racedCustomerId = racedMirror?.stripe_customer_id ?? null;
+          if (racedReadError || !racedCustomerId) {
+            await cleanupCreatedCustomer(
               racedReadError?.message ??
-                "subscriptions row appeared without stripe_customer_id",
+                "stripe_customers row appeared without stripe_customer_id",
             );
           }
-          checkoutCustomerId = racedSub.stripe_customer_id;
-          await stripe.customers.del(createdCustomerId);
+          checkoutCustomerId = racedCustomerId;
+          try {
+            await stripe.customers.del(createdCustomerId);
+          } catch (cleanupErr) {
+            deliverInBackground(
+              notifyError(
+                "[checkout] concurrent customer cleanup failed",
+                cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr),
+                {
+                  parent_id: accountId,
+                  ...(createdCustomerId ? { customer: createdCustomerId } : {}),
+                },
+              ),
+            );
+          }
         } else {
-          throw new Error(insertError.message);
+          await cleanupCreatedCustomer(insertError.message);
         }
       } else {
         checkoutCustomerId = createdCustomerId;
       }
     } catch (err) {
-      if (createdCustomerId) {
-        try {
-          await stripe.customers.del(createdCustomerId);
-        } catch {
-          // Best-effort cleanup; report the original failure below.
-        }
-      }
       const message = err instanceof Error ? err.message : String(err);
       console.error(
         `[subscription.startSubscriptionCheckout] could not persist pre-checkout customer (account=${accountId}): ${message}`,
@@ -430,7 +471,10 @@ async function startSubscriptionCheckout(
         notifyError(
           "[checkout] pre-checkout customer persist failed",
           message,
-          { parent_id: accountId },
+          {
+            parent_id: accountId,
+            ...(createdCustomerId ? { customer: createdCustomerId } : {}),
+          },
         ),
       );
       return {

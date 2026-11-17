@@ -186,8 +186,8 @@ interface ServiceOptions {
     stripe_subscription_id: string | null;
     stripe_customer_id?: string | null;
   } | null;
-  // deleteAccount — error returned when clearing the dead subscriptions row
-  subscriptionClearError?: { message: string } | null;
+  mirroredStripeCustomerId?: string | null;
+  mirroredStripeCustomerReadError?: { message: string } | null;
   // deleteAccount — this parent's athlete links
   parentLinks?: { athlete_id: string }[];
   // deleteAccount — co-parent count per athlete id (>1 means shared/kept)
@@ -201,7 +201,8 @@ function makeServiceMock(opts: ServiceOptions = {}) {
     recentEventCount = 0,
     deleteUserErrorFor = {},
     subscriptionRow = null,
-    subscriptionClearError = null,
+    mirroredStripeCustomerId = null,
+    mirroredStripeCustomerReadError = null,
     parentLinks = [],
     coParentCountFor = {},
   } = opts;
@@ -293,12 +294,26 @@ function makeServiceMock(opts: ServiceOptions = {}) {
               },
             }),
           }),
-          // FV-726: .delete().eq("parent_id", p) clears the dead reference.
-          delete: () => ({
-            eq: async (_c: string, _v: unknown) => {
-              callOrder.push("subscription_row_cleared");
-              return { error: subscriptionClearError };
-            },
+        };
+      }
+
+      if (table === "stripe_customers") {
+        return {
+          select: (_cols: string) => ({
+            eq: (_c: string, _v: unknown) => ({
+              maybeSingle: async () => {
+                callOrder.push("stripe_customer_mirror_check");
+                if (mirroredStripeCustomerReadError) {
+                  return { data: null, error: mirroredStripeCustomerReadError };
+                }
+                return {
+                  data: mirroredStripeCustomerId
+                    ? { stripe_customer_id: mirroredStripeCustomerId }
+                    : null,
+                  error: null,
+                };
+              },
+            }),
           }),
         };
       }
@@ -904,19 +919,29 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
     expect(del).toBeLessThan(callOrder.indexOf(`delete_user:${PARENT_ID}`));
   });
 
-  it("clears the dead subscriptions row right after the customer delete, before athlete/parent deletes", async () => {
+  it("dedupes customer ids found in both mirrors and deletes once", async () => {
     serviceMockImpl = makeServiceMock({
       subscriptionRow: SUB,
-      parentLinks: [{ athlete_id: ATHLETE_ID }],
-      coParentCountFor: { [ATHLETE_ID]: 1 },
+      mirroredStripeCustomerId: "cus_1",
     });
 
     await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
 
-    const del = callOrder.indexOf("stripe_customer_del");
-    const clear = callOrder.indexOf("subscription_row_cleared");
-    expect(clear).toBe(del + 1);
-    expect(clear).toBeLessThan(callOrder.indexOf(`delete_user:${ATHLETE_ID}`));
+    expect(stripeCustomerDelMock).toHaveBeenCalledTimes(1);
+    expect(stripeCustomerDelMock).toHaveBeenCalledWith("cus_1");
+  });
+
+  it("deletes both customer ids when subscriptions and stripe_customers hold different ids", async () => {
+    serviceMockImpl = makeServiceMock({
+      subscriptionRow: { stripe_subscription_id: "sub_1", stripe_customer_id: "cus_sub" },
+      mirroredStripeCustomerId: "cus_mirror",
+    });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(stripeCustomerDelMock).toHaveBeenCalledTimes(2);
+    expect(stripeCustomerDelMock).toHaveBeenNthCalledWith(1, "cus_sub");
+    expect(stripeCustomerDelMock).toHaveBeenNthCalledWith(2, "cus_mirror");
   });
 
   it("skips the customer delete when there is no stripe_customer_id", async () => {
@@ -927,7 +952,6 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
     await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
 
     expect(stripeCustomerDelMock).not.toHaveBeenCalled();
-    expect(callOrder).not.toContain("subscription_row_cleared");
     expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
   });
 
@@ -954,7 +978,8 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
 
   it("abandoned-checkout customer is removed at account deletion (no sub id persisted yet)", async () => {
     serviceMockImpl = makeServiceMock({
-      subscriptionRow: { stripe_subscription_id: null, stripe_customer_id: "cus_abandoned" },
+      subscriptionRow: { stripe_subscription_id: null, stripe_customer_id: null },
+      mirroredStripeCustomerId: "cus_abandoned",
     });
 
     await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
@@ -971,7 +996,6 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
     await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
 
     expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
-    expect(callOrder).toContain("subscription_row_cleared");
     expect(redirectMock).toHaveBeenCalledWith("/?account_deleted=1");
   });
 
@@ -990,7 +1014,6 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
       error: expect.stringContaining("billing profile"),
     });
     expect(serviceMockImpl.__deleteUserCalls()).toHaveLength(0);
-    expect(callOrder).not.toContain("subscription_row_cleared");
     expect(callOrder).not.toContain("links_fetch");
     expect(signOutMock).not.toHaveBeenCalled();
     expect(redirectMock).not.toHaveBeenCalled();
@@ -1014,19 +1037,19 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
 
     expect(result).toMatchObject({ ok: false });
     expect(stripeCustomerDelMock).not.toHaveBeenCalled();
-    expect(callOrder).not.toContain("subscription_row_cleared");
     expect(serviceMockImpl.__deleteUserCalls()).toHaveLength(0);
   });
 
-  it("aborts without deleting anyone if the dead row cannot be cleared", async () => {
+  it("aborts without deleting anyone if stripe_customers mirror read fails", async () => {
     serviceMockImpl = makeServiceMock({
       subscriptionRow: SUB,
-      subscriptionClearError: { message: "db down" },
+      mirroredStripeCustomerReadError: { message: "db down" },
     });
 
     const result = await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
 
     expect(result).toMatchObject({ ok: false });
+    expect(stripeCustomerDelMock).not.toHaveBeenCalled();
     expect(serviceMockImpl.__deleteUserCalls()).toHaveLength(0);
   });
 
@@ -1040,7 +1063,6 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
     });
     const first = await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
     expect(first).toMatchObject({ ok: false });
-    expect(callOrder).toContain("subscription_row_cleared");
     expect(serviceMockImpl.__deleteUserCalls()).not.toContain(PARENT_ID);
 
     // Attempt 2: the row is gone (cleared), so Step 1/1b skip entirely.

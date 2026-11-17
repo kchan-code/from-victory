@@ -104,11 +104,28 @@ vi.mock("@/lib/supabase/server", () => ({
 // Apple/Google entitlement reads AND immediate persistence of pre-checkout
 // Stripe customer ids when no customer is stored yet.
 const serviceInsertMock = vi.fn();
+const serviceMirrorReadMock = vi.fn();
 vi.mock("@/lib/supabase/service", () => ({
   createServiceClient: () => ({
-    from: (_table: string) => ({
-      insert: (...args: unknown[]) => serviceInsertMock(...args),
-    }),
+    from: (table: string) => {
+      if (table === "stripe_customers") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: (...args: unknown[]) => serviceMirrorReadMock(...args),
+            }),
+          }),
+          insert: (...args: unknown[]) => serviceInsertMock(...args),
+        };
+      }
+      return {
+        select: () => ({
+          eq: () => ({
+            maybeSingle: async () => ({ data: null, error: null }),
+          }),
+        }),
+      };
+    },
   }),
 }));
 
@@ -242,6 +259,7 @@ describe("createCheckoutSession — 7-day trial logic (FV-217, duration+gate FV-
     customersCreateMock.mockResolvedValue({ id: "cus_new_test" });
     customersDeleteMock.mockResolvedValue({ deleted: true });
     serviceInsertMock.mockResolvedValue({ error: null });
+    serviceMirrorReadMock.mockResolvedValue({ data: null, error: null });
   });
 
   // -------------------------------------------------------------------------
@@ -254,15 +272,12 @@ describe("createCheckoutSession — 7-day trial logic (FV-217, duration+gate FV-
 
     expect(customersCreateMock).toHaveBeenCalledWith({
       metadata: { payer_id: "parent-uuid-test" },
+    }, {
+      idempotencyKey: "checkout-customer:parent-uuid-test",
     });
     expect(serviceInsertMock).toHaveBeenCalledWith({
-      parent_id: "parent-uuid-test",
+      payer_id: "parent-uuid-test",
       stripe_customer_id: "cus_new_test",
-      stripe_subscription_id: null,
-      status: "incomplete",
-      price_id: null,
-      current_period_end: null,
-      cancel_at_period_end: false,
     });
     expect(sessionsCreateMock).toHaveBeenCalledOnce();
     const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
@@ -461,6 +476,77 @@ describe("createCheckoutSession — 7-day trial logic (FV-217, duration+gate FV-
     expect(redirectMock).not.toHaveBeenCalled();
   });
 
+  it("fails when customers.create throws (no mirror insert, no checkout session)", async () => {
+    supabaseMockImpl = makeSubMock(null);
+    customersCreateMock.mockRejectedValue(new Error("stripe customer create failed"));
+
+    const result = await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(result?.ok).toBe(false);
+    expect(serviceInsertMock).not.toHaveBeenCalled();
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("fails when stripe_customers insert fails with non-23505, and deletes the orphan customer", async () => {
+    supabaseMockImpl = makeSubMock(null);
+    serviceInsertMock.mockResolvedValue({
+      error: { code: "23514", message: "insert failed" },
+    });
+
+    const result = await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(result?.ok).toBe(false);
+    expect(customersDeleteMock).toHaveBeenCalledWith("cus_new_test");
+    expect(sessionsCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("on 23505 race: reuses existing mirrored id, best-effort deletes ours, and still creates checkout", async () => {
+    supabaseMockImpl = makeSubMock(null);
+    serviceInsertMock.mockResolvedValue({
+      error: { code: "23505", message: "duplicate key value violates unique constraint" },
+    });
+    serviceMirrorReadMock
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({
+        data: { stripe_customer_id: "cus_existing_race" },
+        error: null,
+      });
+    customersDeleteMock.mockRejectedValueOnce(new Error("cleanup failed"));
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(params.customer).toBe("cus_existing_race");
+    expect(notifyErrorMock).toHaveBeenCalledWith(
+      "[checkout] concurrent customer cleanup failed",
+      "cleanup failed",
+      expect.objectContaining({
+        parent_id: "parent-uuid-test",
+        customer: "cus_new_test",
+      }),
+    );
+  });
+
+  it("when orphan cleanup delete fails after non-23505 insert failure, emits alert with customer id", async () => {
+    supabaseMockImpl = makeSubMock(null);
+    serviceInsertMock.mockResolvedValue({
+      error: { code: "23514", message: "insert failed" },
+    });
+    customersDeleteMock.mockRejectedValueOnce(new Error("delete failed"));
+
+    const result = await createCheckoutSession(null, makeFormData("monthly"));
+
+    expect(result?.ok).toBe(false);
+    expect(notifyErrorMock).toHaveBeenCalledWith(
+      "[checkout] pre-checkout customer cleanup failed",
+      "delete failed",
+      expect.objectContaining({
+        parent_id: "parent-uuid-test",
+        customer: "cus_new_test",
+      }),
+    );
+  });
+
   it("returns a validation error for an invalid plan value", async () => {
     supabaseMockImpl = makeSubMock(null);
     const fd = new FormData();
@@ -499,6 +585,7 @@ describe("createCheckoutSession — quantity from athlete count (FV-283)", () =>
     customersCreateMock.mockResolvedValue({ id: "cus_new_test" });
     customersDeleteMock.mockResolvedValue({ deleted: true });
     serviceInsertMock.mockResolvedValue({ error: null });
+    serviceMirrorReadMock.mockResolvedValue({ data: null, error: null });
   });
 
   it("passes quantity=3 when the parent has 3 linked athletes", async () => {
@@ -569,6 +656,7 @@ describe("createAdultCheckoutSession (FV-327)", () => {
     customersCreateMock.mockResolvedValue({ id: "cus_new_test" });
     customersDeleteMock.mockResolvedValue({ deleted: true });
     serviceInsertMock.mockResolvedValue({ error: null });
+    serviceMirrorReadMock.mockResolvedValue({ data: null, error: null });
   });
 
   // -------------------------------------------------------------------------
@@ -668,6 +756,7 @@ describe("createCheckoutSession — cross-provider Apple trial history (FV-570)"
     customersCreateMock.mockResolvedValue({ id: "cus_new_test" });
     customersDeleteMock.mockResolvedValue({ deleted: true });
     serviceInsertMock.mockResolvedValue({ error: null });
+    serviceMirrorReadMock.mockResolvedValue({ data: null, error: null });
     // Default: never held an Apple entitlement. Individual tests override.
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
     hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
@@ -816,6 +905,7 @@ describe("createCheckoutSession — one-athlete trial gate (FV-574)", () => {
     customersCreateMock.mockResolvedValue({ id: "cus_new_test" });
     customersDeleteMock.mockResolvedValue({ deleted: true });
     serviceInsertMock.mockResolvedValue({ error: null });
+    serviceMirrorReadMock.mockResolvedValue({ data: null, error: null });
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
     hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
   });
@@ -893,16 +983,18 @@ describe("createCheckoutSession — one-athlete trial gate (FV-574)", () => {
     expect(params.payment_method_collection).toBe("always");
   });
 
-  it("abandoned-checkout placeholder row (customer id + null subscription id) still qualifies for trial", async () => {
-    supabaseMockImpl = makeSubMock({
-      stripe_customer_id: "cus_precreated",
-      stripe_subscription_id: null,
+  it("uses an existing mirrored stripe_customer_id and still grants trial when no prior Stripe subscription id exists", async () => {
+    supabaseMockImpl = makeSubMock(null);
+    serviceMirrorReadMock.mockResolvedValue({
+      data: { stripe_customer_id: "cus_precreated" },
+      error: null,
     });
 
     await createCheckoutSession(null, makeFormData("monthly"));
 
     const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(params.customer).toBe("cus_precreated");
+    expect(customersCreateMock).not.toHaveBeenCalled();
     expect(
       (params.subscription_data as Record<string, unknown>).trial_period_days,
     ).toBe(7);
@@ -946,6 +1038,7 @@ describe("startSubscriptionCheckout — native-shell refusal guard (FV-715)", ()
     customersCreateMock.mockResolvedValue({ id: "cus_new_test" });
     customersDeleteMock.mockResolvedValue({ deleted: true });
     serviceInsertMock.mockResolvedValue({ error: null });
+    serviceMirrorReadMock.mockResolvedValue({ data: null, error: null });
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
     hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
     getSubscribeEntitlementStateMock.mockResolvedValue({
@@ -1031,6 +1124,7 @@ describe("startSubscriptionCheckout — duplicate-billing guard (FV-581)", () =>
     customersCreateMock.mockResolvedValue({ id: "cus_new_test" });
     customersDeleteMock.mockResolvedValue({ deleted: true });
     serviceInsertMock.mockResolvedValue({ error: null });
+    serviceMirrorReadMock.mockResolvedValue({ data: null, error: null });
     hasEverHeldAppleEntitlementMock.mockResolvedValue(false);
     hasEverHeldGoogleEntitlementMock.mockResolvedValue(false);
     supabaseMockImpl = makeSubMock(null);

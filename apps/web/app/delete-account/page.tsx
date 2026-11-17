@@ -239,6 +239,9 @@ export default function DeleteAccountPage() {
           points to any account. If you began a checkout on our website but
           never completed it, deleting your account also removes the billing
           customer profile our payment processor created for that attempt.
+          Our payment processor may still keep a record of the checkout
+          attempt; contact us at privacy@fromvictoryapp.com and we will have
+          it removed.
         </p>
         <p>
           Deletion completes immediately when you finish the steps above

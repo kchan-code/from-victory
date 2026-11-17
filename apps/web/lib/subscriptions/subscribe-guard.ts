@@ -125,7 +125,6 @@ async function readUnderlyingSources(
   anyError: boolean;
   hasCompGrant: boolean;
   stripeStatus: SubscriptionStatus | null;
-  stripeSubscriptionId: string | null;
   googleLevel: "full" | "degraded" | "blocked";
 }> {
   const [grants, stripeSub, appleSubs, allowlist] = await Promise.all([
@@ -138,7 +137,7 @@ async function readUnderlyingSources(
     // Mirrors getParentAccessLevel's Stripe read (./access.ts).
     service
       .from("subscriptions")
-      .select("status, stripe_subscription_id")
+      .select("status")
       .eq("parent_id", userId)
       .maybeSingle(),
     // Mirrors getAppleAccessLevelForPayer's row read (./apple.ts).
@@ -164,15 +163,10 @@ async function readUnderlyingSources(
   // Only meaningful when anyError is false (caller returns "unknown" first
   // otherwise, so a null-on-error status is never consulted).
   const stripeStatus = (stripeSub.data?.status as SubscriptionStatus | undefined) ?? null;
-  const stripeSubscriptionId =
-    typeof stripeSub.data?.stripe_subscription_id === "string"
-      ? stripeSub.data.stripe_subscription_id
-      : null;
   return {
     anyError,
     hasCompGrant,
     stripeStatus,
-    stripeSubscriptionId,
     googleLevel: google.level,
   };
 }
@@ -206,7 +200,7 @@ export async function getSubscribeEntitlementState(
 ): Promise<SubscribeEntitlementState> {
   const service = createServiceClient();
 
-  const { anyError, hasCompGrant, stripeStatus, stripeSubscriptionId, googleLevel } =
+  const { anyError, hasCompGrant, stripeStatus, googleLevel } =
     await readUnderlyingSources(
     service,
     userId,
@@ -252,23 +246,6 @@ export async function getSubscribeEntitlementState(
   // "stripe" / "comp", not "apple". A read error keeps the fail-open
   // behavior of `getActiveAppleProductId` (not an Apple payer).
   const appleResult = await getActiveAppleProductIdResult(service, userId);
-  const isCheckoutPlaceholderRow =
-    stripeStatus === "incomplete" && stripeSubscriptionId === null;
-  // FV-751 inserts a pre-checkout placeholder row so abandoned checkouts can
-  // still be cleaned up at account deletion. That row must not block retries:
-  // it is not a real started Stripe subscription yet.
-  if (
-    isCheckoutPlaceholderRow &&
-    !hasCompGrant &&
-    googleLevel === "blocked" &&
-    !(
-      !appleResult.readError &&
-      appleResult.productId !== null &&
-      !appleResult.paymentLapsed
-    )
-  ) {
-    return { status: "not_entitled", provider: null };
-  }
   if (
     !appleResult.readError &&
     appleResult.productId !== null &&
@@ -279,8 +256,7 @@ export async function getSubscribeEntitlementState(
 
   if (
     stripeStatus &&
-    subscriptionAccessLevel(stripeStatus) !== "blocked" &&
-    !isCheckoutPlaceholderRow
+    subscriptionAccessLevel(stripeStatus) !== "blocked"
   ) {
     return { status: "entitled", provider: "stripe" };
   }

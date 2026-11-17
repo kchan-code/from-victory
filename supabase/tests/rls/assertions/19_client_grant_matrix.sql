@@ -71,7 +71,7 @@ select relname, relacl
      'athlete_session_metadata',
      'athlete_sessions', 'auth_rate_limit_events', 'device_pairings', 'journal_entries',
      'parent_athlete_links', 'profiles', 'push_subscriptions',
-     'safety_events', 'subscriptions', 'training_sessions_catalog',
+     'safety_events', 'subscriptions', 'stripe_customers', 'training_sessions_catalog',
      'waitlist_signups', 'activity_events_id_seq',
      'google_subscriptions', 'google_purchase_bindings', 'google_license_testers'
    )
@@ -162,6 +162,8 @@ begin
       ('safety_events',              'authenticated',  true,  false, false, false),
       ('subscriptions',              'anon',           false, false, false, false),
       ('subscriptions',              'authenticated',  true,  false, false, false),
+      ('stripe_customers',           'anon',           false, false, false, false),
+      ('stripe_customers',           'authenticated',  false, false, false, false),
       ('training_sessions_catalog',  'anon',           true,  false, false, false),
       ('training_sessions_catalog',  'authenticated',  true,  false, false, false),
       ('waitlist_signups',           'anon',           false, true,  false, false),
@@ -211,6 +213,7 @@ begin
     'activity_rollup', 'pregame_selection_counts', 'pregame_selection_contributors',
     'athlete_sessions', 'auth_rate_limit_events', 'device_pairings', 'journal_entries', 'parent_athlete_links',
     'profiles', 'push_subscriptions', 'safety_events', 'subscriptions',
+    'stripe_customers',
     'training_sessions_catalog', 'waitlist_signups',
     'google_subscriptions', 'google_purchase_bindings', 'google_license_testers'
   ]
@@ -817,6 +820,43 @@ begin;
         raise exception 'AC(g) FAIL: pregame_selection_contributors DELETE REMOVED % ROW(S) — RLS/policy gap', n;
       else
         raise exception 'AC(g) FAIL: pregame_selection_contributors DELETE was a zero-row RLS no-op — grant layer missing; check 20261113140000_pregame_selection_distinct_athletes.sql';
+      end if;
+    exception when insufficient_privilege then null; end;
+  end $$;
+rollback;
+
+-- ---- stripe_customers ----
+begin;
+  set local request.jwt.claims to '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated"}';
+  set local role authenticated;
+  do $$
+  declare n int;
+  begin
+    begin
+      insert into public.stripe_customers (payer_id, stripe_customer_id)
+        values ('20000000-0000-4000-8000-00000000000a', 'cus_fv751_probe');
+      raise exception 'AC(g) FAIL: stripe_customers INSERT by authenticated unexpectedly SUCCEEDED';
+    exception when insufficient_privilege then null; end;
+
+    begin
+      update public.stripe_customers set stripe_customer_id = 'cus_fv751_tamper'
+       where payer_id = '10000000-0000-4000-8000-000000000001';
+      get diagnostics n = row_count;
+      if n > 0 then
+        raise exception 'AC(g) FAIL: stripe_customers UPDATE CHANGED % ROW(S) — RLS/policy gap', n;
+      else
+        raise exception 'AC(g) FAIL: stripe_customers UPDATE was a zero-row RLS no-op — grant layer missing; check 20261117163000_fv751_stripe_customers.sql';
+      end if;
+    exception when insufficient_privilege then null; end;
+
+    begin
+      delete from public.stripe_customers
+       where payer_id = '10000000-0000-4000-8000-000000000001';
+      get diagnostics n = row_count;
+      if n > 0 then
+        raise exception 'AC(g) FAIL: stripe_customers DELETE REMOVED % ROW(S) — RLS/policy gap', n;
+      else
+        raise exception 'AC(g) FAIL: stripe_customers DELETE was a zero-row RLS no-op — grant layer missing; check 20261117163000_fv751_stripe_customers.sql';
       end if;
     exception when insufficient_privilege then null; end;
   end $$;

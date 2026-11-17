@@ -227,14 +227,14 @@ describe("getSubscribeEntitlementState", () => {
     expect(result).toEqual({ status: "not_entitled", provider: null });
   });
 
-  it("not entitled: checkout placeholder row (incomplete + null stripe_subscription_id) can retry checkout", async () => {
+  it("entitled via Stripe: incomplete row is degraded and still blocks a second purchase", async () => {
     subscriptionsResult = {
       data: { status: "incomplete", stripe_subscription_id: null },
       error: null,
     };
 
     const result = await getSubscribeEntitlementState(PAYER_ID);
-    expect(result).toEqual({ status: "not_entitled", provider: null });
+    expect(result).toEqual({ status: "entitled", provider: "stripe" });
   });
 
   // -------------------------------------------------------------------------

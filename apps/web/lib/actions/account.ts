@@ -246,6 +246,20 @@ export async function deleteAccount(
     .select("stripe_subscription_id, stripe_customer_id")
     .eq("parent_id", parentId)
     .maybeSingle();
+  const { data: mirroredCustomer, error: mirroredCustomerError } = await service
+    .from("stripe_customers")
+    .select("stripe_customer_id")
+    .eq("payer_id", parentId)
+    .maybeSingle();
+  if (mirroredCustomerError) {
+    console.error(
+      `[account.deleteAccount] stripe_customers read failed (parent=${parentId}): ${mirroredCustomerError.message}`,
+    );
+    return {
+      ok: false,
+      error: "Could not delete your account. Please try again.",
+    };
+  }
 
   if (sub?.stripe_subscription_id) {
     try {
@@ -289,25 +303,29 @@ export async function deleteAccount(
   // same abort-on-unexpected-error rule: a non-benign failure leaves our data
   // fully intact so the user can retry.
   //
-  // Only a customer id we hold (subscriptions.stripe_customer_id) is deleted —
-  // comp grants / App Store / Play payers have none and skip this step.
+  // Delete EVERY customer id we hold for this payer (deduped) from both
+  // mirrors. Comp grants / App Store / Play payers usually have none.
   // Logs carry ids only, never the customer's email or name.
   // ---------------------------------------------------------------------------
-  if (sub?.stripe_customer_id) {
+  const customerIds = [...new Set([
+    sub?.stripe_customer_id ?? null,
+    mirroredCustomer?.stripe_customer_id ?? null,
+  ].filter((id): id is string => Boolean(id)))];
+  for (const customerId of customerIds) {
     try {
-      await getStripe().customers.del(sub.stripe_customer_id);
+      await getStripe().customers.del(customerId);
       console.log(
-        `[account.deleteAccount] deleted Stripe customer=${sub.stripe_customer_id} for parent=${parentId}`,
+        `[account.deleteAccount] deleted Stripe customer=${customerId} for parent=${parentId}`,
       );
     } catch (err) {
       if (isBenignCustomerDeleteError(err)) {
         console.warn(
-          `[account.deleteAccount] Stripe customer delete returned resource_missing for customer=${sub.stripe_customer_id} parent=${parentId} — already absent, proceeding with deletion`,
+          `[account.deleteAccount] Stripe customer delete returned resource_missing for customer=${customerId} parent=${parentId} — already absent, proceeding with deletion`,
         );
       } else {
         const message = err instanceof Error ? err.message : String(err);
         console.error(
-          `[account.deleteAccount] Stripe customer delete failed for customer=${sub.stripe_customer_id} parent=${parentId}: ${message}`,
+          `[account.deleteAccount] Stripe customer delete failed for customer=${customerId} parent=${parentId}: ${message}`,
         );
         return {
           ok: false,
@@ -315,29 +333,6 @@ export async function deleteAccount(
             "Could not remove your billing profile before deleting your account. None of your account data was deleted, though your subscription may already be canceled. Please try again in a few minutes. If it keeps happening, contact us and we will delete the account for you.",
         };
       }
-    }
-
-    // Clear the now-dead reference. subscriptions.stripe_customer_id is
-    // NOT NULL + unique, so the only no-migration way to drop it is to delete
-    // the row. If a LATER step aborts (e.g. a sole-managed athlete fails to
-    // delete) the account survives; leaving the row would make a later
-    // checkout / billing-portal call / reconcile pass use a deleted customer.
-    // With no row, every consumer treats the payer as "no subscription" and
-    // checkout creates a fresh customer. On success the row would be
-    // cascade-deleted anyway. A failure here aborts (retry is safe: cancel and
-    // customer delete are both benign the second time).
-    const { error: clearError } = await service
-      .from("subscriptions")
-      .delete()
-      .eq("parent_id", parentId);
-    if (clearError) {
-      console.error(
-        `[account.deleteAccount] could not clear subscription row after customer delete (parent=${parentId}): ${clearError.message}`,
-      );
-      return {
-        ok: false,
-        error: "Could not delete your account. Please try again.",
-      };
     }
   }
 
