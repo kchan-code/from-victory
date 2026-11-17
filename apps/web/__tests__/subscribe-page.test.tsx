@@ -489,6 +489,24 @@ describe("SubscribePage — 7-day trial banner gate (FV-574)", () => {
     return container.textContent ?? "";
   };
 
+  it("parity: no subscriptions row means the trial banner shows", async () => {
+    asParent();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    athleteCountMock.mockResolvedValue({ count: 1, error: null });
+
+    expect(await renderedText()).toContain("trialEligible:true");
+  });
+
+  it("parity: stripe_customers-only state (no subscriptions row yet) still shows the trial banner", async () => {
+    asParent();
+    // Pre-checkout customer mirrors are tracked separately; /subscribe trial
+    // banner eligibility still keys off the subscriptions row.
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    athleteCountMock.mockResolvedValue({ count: 1, error: null });
+
+    expect(await renderedText()).toContain("trialEligible:true");
+  });
+
   it("first-time parent with one athlete → trialEligible:true", async () => {
     asParent();
     noExistingSub();

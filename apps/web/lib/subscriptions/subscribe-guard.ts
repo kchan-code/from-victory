@@ -123,7 +123,6 @@ async function readUnderlyingSources(
   userId: string,
 ): Promise<{
   anyError: boolean;
-  hasCompGrant: boolean;
   stripeStatus: SubscriptionStatus | null;
   googleLevel: "full" | "degraded" | "blocked";
 }> {
@@ -135,11 +134,7 @@ async function readUnderlyingSources(
       .eq("parent_id", userId)
       .is("revoked_at", null),
     // Mirrors getParentAccessLevel's Stripe read (./access.ts).
-    service
-      .from("subscriptions")
-      .select("status")
-      .eq("parent_id", userId)
-      .maybeSingle(),
+    service.from("subscriptions").select("status").eq("parent_id", userId).maybeSingle(),
     // Mirrors getAppleAccessLevelForPayer's row read (./apple.ts).
     service.from("apple_subscriptions").select("status").eq("payer_id", userId),
     // Mirrors getAppleAccessLevelForPayer's allowlist read (./apple.ts).
@@ -159,16 +154,10 @@ async function readUnderlyingSources(
       allowlist.error ||
       google.readError,
   );
-  const hasCompGrant = (grants.data?.length ?? 0) > 0;
   // Only meaningful when anyError is false (caller returns "unknown" first
   // otherwise, so a null-on-error status is never consulted).
   const stripeStatus = (stripeSub.data?.status as SubscriptionStatus | undefined) ?? null;
-  return {
-    anyError,
-    hasCompGrant,
-    stripeStatus,
-    googleLevel: google.level,
-  };
+  return { anyError, stripeStatus, googleLevel: google.level };
 }
 
 // ---------------------------------------------------------------------------
@@ -200,11 +189,10 @@ export async function getSubscribeEntitlementState(
 ): Promise<SubscribeEntitlementState> {
   const service = createServiceClient();
 
-  const { anyError, hasCompGrant, stripeStatus, googleLevel } =
-    await readUnderlyingSources(
+  const { anyError, stripeStatus, googleLevel } = await readUnderlyingSources(
     service,
     userId,
-    );
+  );
   if (anyError) {
     return { status: "unknown", provider: null };
   }
@@ -254,10 +242,7 @@ export async function getSubscribeEntitlementState(
     return { status: "entitled", provider: "apple" };
   }
 
-  if (
-    stripeStatus &&
-    subscriptionAccessLevel(stripeStatus) !== "blocked"
-  ) {
+  if (stripeStatus && subscriptionAccessLevel(stripeStatus) !== "blocked") {
     return { status: "entitled", provider: "stripe" };
   }
 

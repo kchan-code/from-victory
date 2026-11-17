@@ -272,8 +272,6 @@ describe("createCheckoutSession — 7-day trial logic (FV-217, duration+gate FV-
 
     expect(customersCreateMock).toHaveBeenCalledWith({
       metadata: { payer_id: "parent-uuid-test" },
-    }, {
-      idempotencyKey: "checkout-customer:parent-uuid-test",
     });
     expect(serviceInsertMock).toHaveBeenCalledWith({
       payer_id: "parent-uuid-test",
@@ -525,6 +523,25 @@ describe("createCheckoutSession — 7-day trial logic (FV-217, duration+gate FV-
         customer: "cus_new_test",
       }),
     );
+  });
+
+  it("on 23505 race: does NOT delete when created customer id matches the raced mirror id", async () => {
+    supabaseMockImpl = makeSubMock(null);
+    serviceInsertMock.mockResolvedValue({
+      error: { code: "23505", message: "duplicate key value violates unique constraint" },
+    });
+    serviceMirrorReadMock
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({
+        data: { stripe_customer_id: "cus_new_test" },
+        error: null,
+      });
+
+    await createCheckoutSession(null, makeFormData("monthly"));
+
+    const params = sessionsCreateMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(params.customer).toBe("cus_new_test");
+    expect(customersDeleteMock).not.toHaveBeenCalled();
   });
 
   it("when orphan cleanup delete fails after non-23505 insert failure, emits alert with customer id", async () => {

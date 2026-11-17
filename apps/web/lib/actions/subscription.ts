@@ -418,8 +418,6 @@ async function startSubscriptionCheckout(
     try {
       const createdCustomer = await stripe.customers.create({
         metadata: { payer_id: accountId },
-      }, {
-        idempotencyKey: `checkout-customer:${accountId}`,
       });
       createdCustomerId = createdCustomer.id;
 
@@ -442,19 +440,21 @@ async function startSubscriptionCheckout(
             );
           }
           checkoutCustomerId = racedCustomerId;
-          try {
-            await stripe.customers.del(createdCustomerId);
-          } catch (cleanupErr) {
-            deliverInBackground(
-              notifyError(
-                "[checkout] concurrent customer cleanup failed",
-                cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr),
-                {
-                  parent_id: accountId,
-                  ...(createdCustomerId ? { customer: createdCustomerId } : {}),
-                },
-              ),
-            );
+          if (createdCustomerId !== racedCustomerId) {
+            try {
+              await stripe.customers.del(createdCustomerId);
+            } catch (cleanupErr) {
+              deliverInBackground(
+                notifyError(
+                  "[checkout] concurrent customer cleanup failed",
+                  cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr),
+                  {
+                    parent_id: accountId,
+                    ...(createdCustomerId ? { customer: createdCustomerId } : {}),
+                  },
+                ),
+              );
+            }
           }
         } else {
           await cleanupCreatedCustomer(insertError.message);

@@ -337,7 +337,42 @@ export async function deleteAccount(
   }
 
   // ---------------------------------------------------------------------------
-  // Step 1c (FV-663 / G5): best-effort Google Play renewal cancellation.
+  // Step 1c: clear any local billing rows for this payer BEFORE deleting
+  // athletes/parent. If either delete fails, abort so nothing is partially
+  // deleted past this point.
+  // ---------------------------------------------------------------------------
+  const { error: subDeleteError } = await service
+    .from("subscriptions")
+    .delete()
+    .eq("parent_id", parentId);
+  if (subDeleteError) {
+    console.error(
+      `[account.deleteAccount] subscriptions delete failed (parent=${parentId}): ${subDeleteError.message}`,
+    );
+    return {
+      ok: false,
+      error:
+        "Could not remove your subscription record before deleting your account. Please try again.",
+    };
+  }
+
+  const { error: mirrorDeleteError } = await service
+    .from("stripe_customers")
+    .delete()
+    .eq("payer_id", parentId);
+  if (mirrorDeleteError) {
+    console.error(
+      `[account.deleteAccount] stripe_customers delete failed (parent=${parentId}): ${mirrorDeleteError.message}`,
+    );
+    return {
+      ok: false,
+      error:
+        "Could not remove your billing profile before deleting your account. Please try again.",
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step 1d (FV-663 / G5): best-effort Google Play renewal cancellation.
   // Never blocks deletion. We cancel every row that may still bill, not just
   // whichever row is currently carrying access.
   // ---------------------------------------------------------------------------
