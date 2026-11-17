@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 import { NarrationVolumeControl } from "./NarrationVolumeControl";
 import { BreathingSphere } from "./BreathingSphere";
@@ -273,21 +273,59 @@ export function PregameStart({
 //   2. Standalone fallback — if MP3/JSON 404 or autoplay fails, sphere
 //      runs on its internal rAF timer (tap-to-start). This is the path
 //      until the generator runs and commits the audio.
+//
+// FV-758: on a saved run ("Run it like last time" / saved offline session) the
+// focus is already chosen and this step leads straight into the audio, so the
+// text, the button and the spoken ending must not tell the athlete to choose
+// or set a focus. `savedRun` switches all three.
+export const BREATH_SLUG = "breath-threshold";
+export const BREATH_SAVED_SLUG = "breath-threshold-saved";
+
 export function BreathScreen({
   state,
   set,
   onContinue,
+  savedRun = false,
 }: {
   state: PregameState;
   set: SetFn;
   onContinue: () => void;
+  /** True while the athlete is on the breathing step of a saved run. */
+  savedRun?: boolean;
 }) {
   const markDone = useCallback(() => set("breathDone", true), [set]);
   const audio = useBreathAudio({
-    slug: "breath-threshold",
+    slug: savedRun ? BREATH_SAVED_SLUG : BREATH_SLUG,
+    // A device that has never fetched the saved-run recording (offline, or a
+    // deploy that lacks it) plays the standard one instead of going silent.
+    fallbackSlug: BREATH_SLUG,
     expectedRounds: 3,
     onComplete: markDone,
   });
+
+  // Fresh run, online, service worker in control: fetch the saved-run
+  // recording once so the worker's audio cache (cache-first for
+  // /audio/pregame/*) holds it before the athlete's next saved run, which may
+  // be offline. MP3 first, so a cached timeline implies a cached MP3. Failure
+  // is fine: the saved run falls back to the standard recording.
+  const audioStatus = audio.status;
+  useEffect(() => {
+    if (savedRun || audioStatus !== "ready") return;
+    if (typeof navigator === "undefined" || !navigator.serviceWorker?.controller) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const mp3 = await fetch(audioAssetUrl(BREATH_SAVED_SLUG, "mp3"));
+        if (cancelled || !mp3.ok) return;
+        await fetch(audioAssetUrl(BREATH_SAVED_SLUG, "json"));
+      } catch {
+        // Best effort only.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [savedRun, audioStatus]);
 
   const audioReady = audio.status === "ready";
   const done = state.breathDone;
@@ -301,7 +339,7 @@ export function BreathScreen({
             Body&rsquo;s ready.
           </h1>
           <p className="mb-4 font-body text-[15px] leading-[1.5] text-cream/70">
-            Now your mind chooses what to train.
+            {savedRun ? "Your session is set." : "Now your mind chooses what to train."}
           </p>
         </>
       ) : (
@@ -310,7 +348,9 @@ export function BreathScreen({
             Breathe first.
           </h1>
           <p className="mb-4 font-body text-[15px] leading-[1.5] text-cream/70">
-            Before you choose your focus, lead your body back to ready.
+            {savedRun
+              ? "Lead your body back to ready."
+              : "Before you choose your focus, lead your body back to ready."}
           </p>
         </>
       )}
@@ -321,7 +361,7 @@ export function BreathScreen({
         // eslint-disable-next-line jsx-a11y/media-has-caption
         <audio
           ref={audio.audioRef}
-          src={audioAssetUrl("breath-threshold", "mp3")}
+          src={audioAssetUrl(audio.resolvedSlug, "mp3")}
           preload="auto"
         />
       )}
@@ -332,10 +372,10 @@ export function BreathScreen({
         // bottom bar is suppressed on this step via hideBottomBar=true.
         <div className="relative flex flex-1 flex-col items-center justify-center gap-6 py-8">
           <p className="text-center font-heading text-[17px] font-semibold text-gold">
-            Ready. Now set your focus.
+            {savedRun ? "Ready." : "Ready. Now set your focus."}
           </p>
           <Button variant="coach" onClick={onContinue}>
-            SET MY FOCUS
+            {savedRun ? "START MY SESSION" : "SET MY FOCUS"}
           </Button>
         </div>
       ) : (
