@@ -25,7 +25,7 @@ import { fileURLToPath } from "node:url";
 
 import type { AudioScript, Segment } from "../components/pregame/audio/types";
 import { CLIP_SCRIPTS } from "../components/pregame/audio/clips.ts";
-import { BREATH_THRESHOLD_SCRIPT } from "../components/pregame/audio/breath-threshold.ts";
+import { BREATH_THRESHOLD_SCRIPT, BREATH_THRESHOLD_SAVED_SCRIPT } from "../components/pregame/audio/breath-threshold.ts";
 import { SESSION_FORWARD_MISSED_CHANCE_SCRIPT } from "../components/pregame/audio/session-forward-missed-chance.ts";
 import { SESSION_GOALIE_COACH_YELLS_SCRIPT } from "../components/pregame/audio/session-goalie-coach-yells.ts";
 import { SESSION_DEFENSE_BEATEN_WIDE_SCRIPT } from "../components/pregame/audio/session-defense-beaten-wide.ts";
@@ -94,6 +94,7 @@ const __dirname = dirname(__filename);
 // All scripts — SCRIPTS-array items + CLIP_SCRIPTS
 const SCRIPTS: AudioScript[] = [
   BREATH_THRESHOLD_SCRIPT,
+  BREATH_THRESHOLD_SAVED_SCRIPT,
   OPENER_CONFIDENCE_SCRIPT,
   OPENER_CALM_SCRIPT,
   OPENER_COMPETE_LEVEL_SCRIPT,
