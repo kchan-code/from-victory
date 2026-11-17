@@ -124,7 +124,17 @@ export function useBreathAudio({
         const isLast = i === candidates.length - 1;
         try {
           const res = await fetch(audioAssetUrl(candidate, "json"), { signal: controller.signal });
-          if (res.ok) return { slug: candidate, json: (await res.json()) as AudioTimeline };
+          if (!res.ok) continue;
+          // A candidate that has a fallback behind it is only accepted when
+          // its MP3 is reachable too. Otherwise a cached timeline with an
+          // uncached MP3 (offline) would end in the silent sphere instead of
+          // the fallback recording. The service worker answers HEAD from its
+          // audio cache.
+          if (!isLast) {
+            const head = await fetch(audioAssetUrl(candidate, "mp3"), { method: "HEAD", signal: controller.signal });
+            if (!head.ok) continue;
+          }
+          return { slug: candidate, json: (await res.json()) as AudioTimeline };
         } catch (err) {
           if (isLast || controller.signal.aborted) throw err;
         }

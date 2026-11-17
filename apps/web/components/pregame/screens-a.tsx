@@ -303,14 +303,16 @@ export function BreathScreen({
     onComplete: markDone,
   });
 
-  // Fresh run, online, service worker in control: fetch the saved-run
-  // recording once so the worker's audio cache (cache-first for
+  // Fresh run, service worker in control, breathing finished: fetch the
+  // saved-run recording once so the worker's audio cache (cache-first for
   // /audio/pregame/*) holds it before the athlete's next saved run, which may
-  // be offline. MP3 first, so a cached timeline implies a cached MP3. Failure
-  // is fine: the saved run falls back to the standard recording.
-  const audioStatus = audio.status;
+  // be offline. It waits for breathing to finish so it never competes with
+  // the recording that is about to play. MP3 first, so a cached timeline
+  // implies a cached MP3. Failure is fine: the saved run falls back to the
+  // standard recording.
+  const breathDone = state.breathDone;
   useEffect(() => {
-    if (savedRun || audioStatus !== "ready") return;
+    if (savedRun || !breathDone) return;
     if (typeof navigator === "undefined" || !navigator.serviceWorker?.controller) return;
     let cancelled = false;
     void (async () => {
@@ -325,7 +327,7 @@ export function BreathScreen({
     return () => {
       cancelled = true;
     };
-  }, [savedRun, audioStatus]);
+  }, [savedRun, breathDone]);
 
   const audioReady = audio.status === "ready";
   const done = state.breathDone;

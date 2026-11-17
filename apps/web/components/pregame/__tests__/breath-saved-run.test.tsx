@@ -81,6 +81,37 @@ describe("BreathScreen wording (FV-758)", () => {
   });
 });
 
+describe("BreathScreen saved-recording warm (FV-758)", () => {
+  const withController = (present: boolean) =>
+    vi.stubGlobal("navigator", { ...navigator, serviceWorker: { controller: present ? {} : null } });
+  const done = { ...INITIAL_STATE, breathDone: true };
+  beforeEach(() => {
+    vi.spyOn(breathAudio, "useBreathAudio").mockImplementation(() => stubAudio());
+  });
+
+  it("fresh run, breathing finished, worker in control: fetches the MP3 and then the timeline", async () => {
+    withController(true);
+    const fetchMock = vi.fn(async (_url: string) => new Response("", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<BreathScreen state={done} set={vi.fn()} onContinue={vi.fn()} />);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(fetchMock.mock.calls[0]?.[0]).toContain(`${BREATH_SAVED_SLUG}.mp3`);
+    expect(fetchMock.mock.calls[1]?.[0]).toContain(`${BREATH_SAVED_SLUG}.json`);
+  });
+
+  it("does not fetch before breathing finishes, on a saved run, or without a worker", async () => {
+    const fetchMock = vi.fn(async (_url: string) => new Response("", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    withController(true);
+    render(<BreathScreen state={INITIAL_STATE} set={vi.fn()} onContinue={vi.fn()} />);
+    render(<BreathScreen state={done} set={vi.fn()} onContinue={vi.fn()} savedRun />);
+    withController(false);
+    render(<BreathScreen state={done} set={vi.fn()} onContinue={vi.fn()} />);
+    await new Promise((r) => setTimeout(r, 20));
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
 describe("useBreathAudio fallback (FV-758)", () => {
   const run = () =>
     renderHook(() =>
@@ -93,7 +124,22 @@ describe("useBreathAudio fallback (FV-758)", () => {
     const { result } = run();
     await waitFor(() => expect(result.current.status).toBe("ready"));
     expect(result.current.resolvedSlug).toBe(BREATH_SAVED_SLUG);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // Timeline, then a HEAD for its MP3.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("falls back when the saved timeline loads but its MP3 is not reachable", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) =>
+        url.includes(BREATH_SAVED_SLUG) && init?.method === "HEAD"
+          ? new Response(null, { status: 503 })
+          : okJson(),
+      ),
+    );
+    const { result } = run();
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+    expect(result.current.resolvedSlug).toBe(BREATH_SLUG);
   });
 
   it("falls back to the standard recording when the saved one is a 404", async () => {

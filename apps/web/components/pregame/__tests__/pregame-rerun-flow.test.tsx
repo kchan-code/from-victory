@@ -132,6 +132,28 @@ describe("PregameFlow saved-session restore (FV-223)", () => {
     expect(screen.queryByText(/Step 02/i)).not.toBeInTheDocument();
   });
 
+  it("walking back from the audio step to breathing shows the fresh-run wording (FV-758)", () => {
+    seedSavedSession();
+    render(<PregameFlow athleteFirstName="Alex" sport="hockey" />);
+    fireEvent.click(screen.getByTestId("run-last-time-btn"));
+    fireEvent.click(screen.getByRole("button", { name: /already settled/i }));
+    fireEvent.click(screen.getByRole("button", { name: /start my session/i }));
+    expect(screen.getByText(/Step 11 · Guided Session/i)).toBeInTheDocument();
+
+    // Back walks the setup screens one at a time until breathing is on screen.
+    for (let i = 0; i < 12 && !screen.queryByText(/Step 01 · Threshold/i); i++) {
+      fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    }
+    expect(screen.getByText(/Step 01 · Threshold/i)).toBeInTheDocument();
+
+    // The saved-run jump is spent: the next step from here is Today's Focus,
+    // so the fresh-run wording is the correct one.
+    expect(screen.getByRole("button", { name: /set my focus/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /start my session/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /set my focus/i }));
+    expect(screen.queryByText(/Step 11 · Guided Session/i)).not.toBeInTheDocument();
+  });
+
   it("a saved session with an unknown need shows NO restore button (silent fallback)", () => {
     seedSavedSession({ need: "Renamed Need That No Longer Exists" });
     render(<PregameFlow athleteFirstName="Alex" sport="hockey" />);
