@@ -1,0 +1,76 @@
+name: cross-model-review
+
+# Merge gate: a PR passes only when @kchan-code has posted a marker comment
+# recording a CLEAN review of the PR's current head SHA by a model from a
+# different family than the coder model. Marker format: CONTRIBUTING.md →
+# "Cross-model review marker". Logic + tests: .github/scripts/cross-model-review.cjs.
+#
+# The gate is the `cross-model-review` job on the `pull_request` run. A new push
+# starts a new run for the new SHA, which fails until a marker naming that SHA
+# is posted. A check run from an `issue_comment`-triggered workflow attaches to
+# the default branch rather than the PR, so the comment path does not evaluate
+# anything itself: it re-runs the PR's latest `pull_request` run for the head
+# SHA, which turns the PR's check green (or red) in place.
+#
+# Make `cross-model-review` a required status check in the `main` ruleset for
+# the gate to block merge.
+#
+# Scope: internal branches only, same as privacy-verdict.yml. Do NOT switch the
+# trigger to `pull_request_target` without a trusted-ref checkout.
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created, edited, deleted]
+
+# Scoped by event_name so a marker comment's re-evaluate run never cancels the
+# PR's own gate run (same reasoning as privacy-verdict.yml, FV-42).
+concurrency:
+  group: cross-model-review-${{ github.event.pull_request.number || github.event.issue.number }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  cross-model-review:
+    name: cross-model-review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/github-script@v9
+        with:
+          script: |
+            const { run } = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/cross-model-review.cjs`)
+            await run({ github, context, core })
+
+  reevaluate:
+    name: cross-model-review (re-evaluate on comment)
+    if: github.event_name == 'issue_comment' && github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/github-script@v9
+        with:
+          script: |
+            const { reevaluate } = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/cross-model-review.cjs`)
+            await reevaluate({ github, context, core })
+
+  test-logic:
+    name: cross-model-review logic unit tests
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+      - run: node --test .github/scripts/cross-model-review.test.cjs
