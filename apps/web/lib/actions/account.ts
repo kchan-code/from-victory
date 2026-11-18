@@ -1,6 +1,7 @@
 "use server";
 
 import { createHash } from "node:crypto";
+import Stripe from "stripe";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -177,6 +178,7 @@ export async function deleteAthlete(
 }
 
 export type DeleteAccountState = { ok: false; error: string } | null;
+const MAX_CHECKOUT_SESSION_LIST_ITERATIONS = 20;
 
 function googleTokenTag(token: string): string {
   return createHash("sha256").update(token.slice(-8)).digest("hex").slice(0, 12);
@@ -201,6 +203,32 @@ export async function deleteAccount(
   const service = createServiceClient();
   let googleCancelFailureNoticeRequired = false;
   let googleCancelUnknownNoticeRequired = false;
+  const getStripeErrorCode = (err: unknown): string =>
+    err instanceof Error ? (err as { code?: string }).code ?? "unknown" : "unknown";
+  const logCheckoutResourceMissing = ({
+    operation,
+    customerId,
+    sessionId,
+    code,
+  }: {
+    operation: "list" | "expire";
+    customerId: string;
+    sessionId?: string;
+    code: string;
+  }) => {
+    const target = sessionId ? ` session=${sessionId}` : "";
+    console.warn(
+      `[account.deleteAccount] Checkout Session ${operation} returned resource_missing (code=${code}) for customer=${customerId}${target} parent=${parentId} — already absent, proceeding`,
+    );
+  };
+  const abortCheckoutSessionCleanup = (logMessage: string): DeleteAccountState => {
+    console.error(logMessage);
+    return {
+      ok: false,
+      error:
+        "Could not clear pending checkout sessions before deleting your account. None of your account data was deleted, though your subscription may already be canceled. Please try again in a few minutes. If it keeps happening, contact us and we will delete the account for you.",
+    };
+  };
 
   // ---------------------------------------------------------------------------
   // Rate limiting (FV-14): reject BEFORE any side effect — Stripe cancel OR DB
@@ -297,11 +325,10 @@ export async function deleteAccount(
   // No subscription row or no stripe_subscription_id — nothing to cancel.
 
   // ---------------------------------------------------------------------------
-  // Step 1b (FV-726): delete the Stripe CUSTOMER so the payer's email and name
-  // do not outlive the account. Stripe keeps the invoices/payment records it
-  // must retain. Runs after the cancel and BEFORE any database delete, with the
-  // same abort-on-unexpected-error rule: a non-benign failure leaves our data
-  // fully intact so the user can retry.
+  // Step 1b (FV-760): expire every OPEN Checkout Session for each Stripe
+  // customer id we hold for this payer, BEFORE deleting the customer and
+  // BEFORE any local database delete. This prevents abandoned, still-open
+  // Checkout URLs from lingering after account deletion.
   //
   // Delete EVERY customer id we hold for this payer (deduped) from both
   // mirrors. Comp grants / App Store / Play payers usually have none.
@@ -311,6 +338,111 @@ export async function deleteAccount(
     sub?.stripe_customer_id ?? null,
     mirroredCustomer?.stripe_customer_id ?? null,
   ].filter((id): id is string => Boolean(id)))];
+  for (const customerId of customerIds) {
+    let listAttempts = 0;
+    const attemptedSessionIds = new Set<string>();
+    let hitCheckoutSessionListCap = true;
+    for (let iteration = 0; iteration < MAX_CHECKOUT_SESSION_LIST_ITERATIONS; iteration++) {
+      listAttempts++;
+      try {
+        const sessions = await getStripe().checkout.sessions.list({
+          customer: customerId,
+          status: "open",
+          limit: 100,
+        });
+        if (sessions.data.length === 0) {
+          hitCheckoutSessionListCap = false;
+          break;
+        }
+
+        const sessionsToExpire = sessions.data.filter(
+          (session) => !attemptedSessionIds.has(session.id),
+        );
+        if (sessionsToExpire.length === 0) {
+          return abortCheckoutSessionCleanup(
+            `[account.deleteAccount] Checkout Session list returned only already-attempted ids for customer=${customerId} parent=${parentId} — aborting to avoid skipping open sessions`,
+          );
+        }
+
+        for (const session of sessionsToExpire) {
+          attemptedSessionIds.add(session.id);
+          try {
+            await getStripe().checkout.sessions.expire(session.id);
+            console.log(
+              `[account.deleteAccount] expired Checkout Session session=${session.id} customer=${customerId} parent=${parentId}`,
+            );
+          } catch (err) {
+            if (isBenignCustomerDeleteError(err)) {
+              logCheckoutResourceMissing({
+                operation: "expire",
+                customerId,
+                sessionId: session.id,
+                code: getStripeErrorCode(err),
+              });
+              continue;
+            }
+
+            if (err instanceof Stripe.errors.StripeInvalidRequestError) {
+              const code = getStripeErrorCode(err);
+              const message = err.message;
+              try {
+                const current = await getStripe().checkout.sessions.retrieve(session.id);
+                if (current.status !== "open") {
+                  console.warn(
+                    `[account.deleteAccount] Checkout Session expire raced to terminal state for session=${session.id} customer=${customerId} parent=${parentId} status=${current.status} code=${code} message=${message} — proceeding`,
+                  );
+                  continue;
+                }
+
+                return abortCheckoutSessionCleanup(
+                  `[account.deleteAccount] Checkout Session expire failed but retrieve remained open for session=${session.id} customer=${customerId} parent=${parentId} status=${current.status} code=${code} message=${message}`,
+                );
+              } catch (retrieveErr) {
+                const message =
+                  retrieveErr instanceof Error ? retrieveErr.message : String(retrieveErr);
+                return abortCheckoutSessionCleanup(
+                  `[account.deleteAccount] Checkout Session retrieve failed after expire error for session=${session.id} customer=${customerId} parent=${parentId}: ${message}`,
+                );
+              }
+            }
+
+            const message = err instanceof Error ? err.message : String(err);
+            return abortCheckoutSessionCleanup(
+              `[account.deleteAccount] Checkout Session expire failed for session=${session.id} customer=${customerId} parent=${parentId}: ${message}`,
+            );
+          }
+        }
+      } catch (err) {
+        if (listAttempts === 1 && isBenignCustomerDeleteError(err)) {
+          logCheckoutResourceMissing({
+            operation: "list",
+            customerId,
+            code: getStripeErrorCode(err),
+          });
+          hitCheckoutSessionListCap = false;
+          break;
+        }
+
+        const message = err instanceof Error ? err.message : String(err);
+        return abortCheckoutSessionCleanup(
+          `[account.deleteAccount] Checkout Session list failed for customer=${customerId} parent=${parentId}: ${message}`,
+        );
+      }
+    }
+    if (hitCheckoutSessionListCap) {
+      return abortCheckoutSessionCleanup(
+        `[account.deleteAccount] Checkout Session list hit cap for customer=${customerId} parent=${parentId} cap=${MAX_CHECKOUT_SESSION_LIST_ITERATIONS} — aborting to avoid skipping open sessions`,
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step 1c (FV-726): delete the Stripe CUSTOMER so the payer's email and name
+  // do not outlive the account. Stripe keeps the invoices/payment records it
+  // must retain. Runs after Checkout Session expiry and BEFORE any database
+  // delete, with the same abort-on-unexpected-error rule: a non-benign
+  // failure leaves our data fully intact so the user can retry.
+  // ---------------------------------------------------------------------------
   for (const customerId of customerIds) {
     try {
       await getStripe().customers.del(customerId);
@@ -337,7 +469,7 @@ export async function deleteAccount(
   }
 
   // ---------------------------------------------------------------------------
-  // Step 1c: clear any local billing rows for this payer BEFORE deleting
+  // Step 1d: clear any local billing rows for this payer BEFORE deleting
   // athletes/parent. If either delete fails, abort so nothing is partially
   // deleted past this point.
   // ---------------------------------------------------------------------------
@@ -372,7 +504,7 @@ export async function deleteAccount(
   }
 
   // ---------------------------------------------------------------------------
-  // Step 1d (FV-663 / G5): best-effort Google Play renewal cancellation.
+  // Step 1e (FV-663 / G5): best-effort Google Play renewal cancellation.
   // Never blocks deletion. We cancel every row that may still bill, not just
   // whichever row is currently carrying access.
   // ---------------------------------------------------------------------------
