@@ -30,8 +30,8 @@ import Link from "next/link";
 //     points are not live. Add the identifiers before they are.
 // Every factual claim here is grounded in the verified data inventory
 // (schema + code). Launch notes:
-//   1. EFFECTIVE_DATE below is November 18, 2026, including the FV-762
-//      abandoned-checkout wording approved by KC.
+//   1. EFFECTIVE_DATE below is November 18, 2026 (FV-762), approved by KC on
+//      2026-11-18. Previous: November 13, 2026. Attorney sign-off: see FV-329.
 //   2. The private-journal infrastructure is built but DORMANT (FV-135, zero
 //      production callers) and is intentionally NOT described as an active
 //      feature here. Revisit if/when it is wired.
@@ -67,7 +67,8 @@ export const metadata: Metadata = {
   },
 };
 
-// Effective date: latest attorney-approved policy update.
+// Effective date: KC approved the FV-762 wording on 2026-11-18.
+// Previous: November 13, 2026. Attorney sign-off is tracked in FV-329.
 const EFFECTIVE_DATE = "November 18, 2026";
 const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
