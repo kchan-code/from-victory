@@ -43,14 +43,53 @@ test('modelFamily maps id prefixes to families', () => {
     'codex-mini': 'gpt',
     codex: 'gpt',
     'gemini-4-carbon-high': 'gemini',
-    'composer-2.5': 'other',
-    'cursor-grok-4.6-high': 'other', // prefix rule: only grok-* is grok
-    claude: 'other', // bare name has no claude- prefix
-    gpt5: 'other',
-    '': 'other',
   };
   for (const [id, family] of Object.entries(cases)) {
     assert.equal(modelFamily(id), family, id);
+  }
+});
+
+test('modelFamily strips cursor- and provider prefixes', () => {
+  const cases = {
+    'cursor-grok-4.6-high': 'grok',
+    'cursor-claude-opus-5-5': 'claude',
+    'xai/grok-4.7': 'grok',
+    'XAI/grok-4.7': 'grok',
+    'anthropic/claude-opus-5-5': 'claude',
+    'openai/gpt-5.6-sol-high': 'gpt',
+    'openai/codex-mini': 'gpt',
+    'google/gemini-4-carbon-high': 'gemini',
+    'xai/cursor-grok-4.6-high': 'grok',
+  };
+  for (const [id, family] of Object.entries(cases)) {
+    assert.equal(modelFamily(id), family, id);
+  }
+});
+
+test('modelFamily classifies bare family names', () => {
+  for (const family of ['claude', 'grok', 'gpt', 'gemini']) {
+    assert.equal(modelFamily(family), family, family);
+  }
+  assert.equal(modelFamily('xai/grok'), 'grok');
+});
+
+test('modelFamily returns null for ids it cannot classify', () => {
+  for (const id of [
+    'composer-2.5',
+    'muse-wonder-1.0',
+    'codexposition', // no token boundary after "codex"
+    'grokking-1',
+    'gpt5',
+    'claudette',
+    'cursor-',
+    'xai/',
+    'openai/claude-opus-5-5', // provider contradicts the model name
+    'anthropic/grok-4.7',
+    'mistral/large-2',
+    '',
+    undefined,
+  ]) {
+    assert.equal(modelFamily(id), null, String(id));
   }
 });
 
@@ -181,7 +220,11 @@ test('decide fails when reviewer and coder share a family', () => {
     ['codex-mini', 'gpt-5.6-sol-high'],
     ['grok-4.7-high', 'grok-4.7-low'],
     ['gemini-4-carbon-high', 'gemini-4-hydrogen-low'],
-    ['composer-2.5', 'muse-wonder-1.0'], // both "other"
+    ['cursor-grok-4.6-high', 'grok-4.7-high'],
+    ['grok', 'grok-4.7-high'],
+    ['claude', 'claude-opus-5-5'],
+    ['xai/grok-4.7', 'grok-4.7'],
+    ['anthropic/claude-opus-5-5', 'cursor-claude-sonnet-5-5'],
   ];
   for (const [reviewer, coder] of pairs) {
     const r = decide({ prAuthor: 'x', headSha: SHA, comments: [comment(marker({ reviewer, coder }))] });
@@ -190,11 +233,25 @@ test('decide fails when reviewer and coder share a family', () => {
   }
 });
 
+test('decide fails when either model id cannot be classified', () => {
+  const pairs = [
+    ['composer-2.5', 'claude-opus-5-5'],
+    ['garbage', 'claude-opus-5-5'],
+    ['grok-4.7-high', 'codexposition'],
+    ['composer-2.5', 'muse-wonder-1.0'],
+  ];
+  for (const [reviewer, coder] of pairs) {
+    const r = decide({ prAuthor: 'x', headSha: SHA, comments: [comment(marker({ reviewer, coder }))] });
+    assert.equal(r.pass, false, `${reviewer} vs ${coder}`);
+    assert.match(r.message, /Cannot classify/);
+  }
+});
+
 test('decide accepts every cross-family pairing', () => {
-  const ids = ['claude-opus-5-5', 'grok-4.7-high', 'gpt-5.6-sol-high', 'gemini-4-carbon-high', 'composer-2.5'];
+  const ids = ['claude-opus-5-5', 'grok-4.7-high', 'gpt-5.6-sol-high', 'gemini-4-carbon-high', 'xai/grok-4.7'];
   for (const reviewer of ids) {
     for (const coder of ids) {
-      if (reviewer === coder) continue;
+      if (reviewer === coder || (reviewer.includes('grok') && coder.includes('grok'))) continue;
       const r = decide({ prAuthor: 'x', headSha: SHA, comments: [comment(marker({ reviewer, coder }))] });
       assert.equal(r.pass, true, `${reviewer} vs ${coder}`);
     }
