@@ -174,7 +174,7 @@ describe("paths that must NOT clear audio (offline Pregame stays usable)", () =>
     expect([...buckets].sort()).toEqual([...SEEDED].sort());
   });
 
-  it("an ordinary landing visit (no account_deleted) keeps the download", async () => {
+  it("AccountDeletionNotice without account_deleted keeps the download (the signed-out landing clear is ClearDeviceWhenSignedOut, FV-759)", async () => {
     render(<AccountDeletionNotice />);
     await Promise.resolve();
     await Promise.resolve();
