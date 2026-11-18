@@ -35,9 +35,12 @@ Head: 0123456789abcdef0123456789abcdef01234567
   cannot be ordered, the gate fails.
 - Any comment on the PR (posting, editing, or deleting a marker) re-evaluates
   the status in place. No re-run is needed.
-- Dependabot PRs are exempt only while every commit on the PR is a verified
-  commit authored by `dependabot[bot]`. A commit from anyone else removes the
-  exemption.
+- Dependabot PRs are exempt only when the PR was opened by `dependabot[bot]`
+  and every commit on it, including the head commit, is authored by
+  `dependabot[bot]`, committed by `dependabot[bot]` or `web-flow` (the
+  committer GitHub records on commits it signs, which is what Dependabot's
+  commits show), and has a signature GitHub reports as `valid`. A human author
+  or committer on any commit removes the exemption.
 
 ### Changes to the gate only take effect after merge
 
@@ -65,7 +68,11 @@ appears, then make `cross-model-review` a required status check. Making it
 required before the merge would block the bootstrap PR, which never gets the
 status.
 
-**Known limit.** A same-repo PR can add a new workflow that posts a status or
-job with any name, including `cross-model-review`. GitHub Actions cannot stop
-that by itself. Review every PR that changes `.github/workflows/**` before
-trusting its checks.
+**Known limit: the status can be forged by a same-repo PR.** Anyone who can
+push a branch to this repository can add or edit a workflow that runs on
+`pull_request` and posts a green `cross-model-review` status (or a job with that
+name) on their own PR. The required check would then pass with no marker.
+GitHub Actions cannot prevent this, and this gate does not detect it. A green
+`cross-model-review` is therefore not proof of a review on any PR that changes
+`.github/workflows/**`: open the PR's comments and confirm the marker yourself
+before merging such a PR.
