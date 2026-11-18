@@ -16,6 +16,7 @@ import { Visualization } from "@/components/landing/Visualization";
 import { Waitlist } from "@/components/landing/Waitlist";
 import { AttributionCapture } from "@/components/marketing/AttributionCapture";
 import { AccountDeletionNotice } from "@/components/landing/AccountDeletionNotice";
+import { ClearDeviceWhenSignedOut } from "@/components/landing/ClearDeviceWhenSignedOut";
 
 // Canonical for the landing page — UTM/source-parameterized URLs all
 // consolidate here (FV-418).
@@ -37,6 +38,7 @@ export default function LandingPage() {
     <>
       <StructuredData />
       <AttributionCapture />
+      <ClearDeviceWhenSignedOut />
       <LandingIconDefs />
       <ScrollNav />
       <a id="top" />

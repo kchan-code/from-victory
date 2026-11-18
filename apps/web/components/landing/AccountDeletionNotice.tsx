@@ -16,7 +16,8 @@ export function AccountDeletionNotice() {
   // /signin, which clears itself). That param is the one landing-page moment
   // that is safe to drop what this device still holds for the account: the
   // downloaded clips, the local name/sport entry and the saved session.
-  // Plain visits to / never clear.
+  // This component clears only on that flag; a signed-out visit to / is
+  // handled separately by ClearDeviceWhenSignedOut (FV-759).
   useEffect(() => {
     if (!accountDeleted) return;
     clearAthleteCache();
