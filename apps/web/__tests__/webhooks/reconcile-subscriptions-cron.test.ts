@@ -417,6 +417,10 @@ describe("bounded work", () => {
 });
 
 describe("apple pass", () => {
+  it("pins the expired lookback window to exactly 7 days", () => {
+    expect(APPLE_EXPIRED_LOOKBACK_MS).toBe(7 * 24 * 60 * 60 * 1000);
+  });
+
   it("Production row with live renewal -> reconcile called and counted", async () => {
     const before = appleRow({
       payer_id: "payer-1",
