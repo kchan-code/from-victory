@@ -56,32 +56,3 @@ export function isBenignCustomerDeleteError(err: unknown): boolean {
     err.code === "resource_missing"
   );
 }
-
-/**
- * Returns `true` when expiring a Checkout Session failed only because there is
- * nothing left to expire:
- *   - resource_missing (session/customer already gone)
- *   - session already completed/expired by the time we attempted expiry
- *
- * This can happen in account-deletion races (tab closes, webhook settles, or a
- * retry after partial progress). Any other Stripe error remains fatal.
- */
-export function isBenignCheckoutSessionExpireError(err: unknown): boolean {
-  if (!(err instanceof Stripe.errors.StripeInvalidRequestError)) {
-    return false;
-  }
-
-  const code = err.code ?? "";
-  const benignCodes = new Set([
-    "resource_missing",
-    "checkout_session_completed",
-    "checkout_session_expired",
-    "session_not_expireable",
-  ]);
-  if (benignCodes.has(code)) {
-    return true;
-  }
-
-  const message = err.message.toLowerCase();
-  return message.includes("already expired") || message.includes("already completed");
-}

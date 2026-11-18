@@ -1,6 +1,7 @@
 "use server";
 
 import { createHash } from "node:crypto";
+import Stripe from "stripe";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -13,7 +14,6 @@ import {
 } from "@/lib/actions/deletion-rate-limit";
 import {
   isBenignCancelError,
-  isBenignCheckoutSessionExpireError,
   isBenignCustomerDeleteError,
 } from "@/lib/stripe/cancel-errors";
 import { getStripe } from "@/lib/stripe/server";
@@ -202,6 +202,14 @@ export async function deleteAccount(
   const service = createServiceClient();
   let googleCancelFailureNoticeRequired = false;
   let googleCancelUnknownNoticeRequired = false;
+  const abortCheckoutSessionCleanup = (logMessage: string): DeleteAccountState => {
+    console.error(logMessage);
+    return {
+      ok: false,
+      error:
+        "Could not clear pending checkout sessions before deleting your account. None of your account data was deleted, though your subscription may already be canceled. Please try again in a few minutes. If it keeps happening, contact us and we will delete the account for you.",
+    };
+  };
 
   // ---------------------------------------------------------------------------
   // Rate limiting (FV-14): reject BEFORE any side effect — Stripe cancel OR DB
@@ -329,55 +337,60 @@ export async function deleteAccount(
               `[account.deleteAccount] expired Checkout Session session=${session.id} customer=${customerId} parent=${parentId}`,
             );
           } catch (err) {
-            if (isBenignCheckoutSessionExpireError(err)) {
+            if (isBenignCustomerDeleteError(err)) {
               const code =
                 err instanceof Error
                   ? (err as { code?: string }).code ?? "unknown"
                   : "unknown";
               console.warn(
-                `[account.deleteAccount] Checkout Session expire returned benign error (code=${code}) for session=${session.id} customer=${customerId} parent=${parentId} — already terminal/absent, proceeding`,
+                `[account.deleteAccount] Checkout Session expire returned resource_missing (code=${code}) for session=${session.id} customer=${customerId} parent=${parentId} — already absent, proceeding`,
               );
               continue;
             }
 
+            if (err instanceof Stripe.errors.StripeInvalidRequestError) {
+              try {
+                const current = await getStripe().checkout.sessions.retrieve(session.id);
+                if (current.status !== "open") {
+                  console.warn(
+                    `[account.deleteAccount] Checkout Session expire raced to terminal state for session=${session.id} customer=${customerId} parent=${parentId} status=${current.status} — proceeding`,
+                  );
+                  continue;
+                }
+              } catch (retrieveErr) {
+                const message =
+                  retrieveErr instanceof Error ? retrieveErr.message : String(retrieveErr);
+                return abortCheckoutSessionCleanup(
+                  `[account.deleteAccount] Checkout Session retrieve failed after expire error for session=${session.id} customer=${customerId} parent=${parentId}: ${message}`,
+                );
+              }
+            }
+
             const message = err instanceof Error ? err.message : String(err);
-            console.error(
+            return abortCheckoutSessionCleanup(
               `[account.deleteAccount] Checkout Session expire failed for session=${session.id} customer=${customerId} parent=${parentId}: ${message}`,
             );
-            return {
-              ok: false,
-              error:
-                "Could not clear pending checkout sessions before deleting your account. None of your account data was deleted. Please try again in a few minutes. If it keeps happening, contact us and we will delete the account for you.",
-            };
           }
         }
 
-        if (sessions.has_more && sessions.data.length > 0) {
-          startingAfter = sessions.data[sessions.data.length - 1].id;
-        } else {
-          startingAfter = undefined;
-        }
+        const last = sessions.data.at(-1);
+        startingAfter = sessions.has_more && last ? last.id : undefined;
       } catch (err) {
-        if (isBenignCheckoutSessionExpireError(err)) {
+        if (isBenignCustomerDeleteError(err)) {
           const code =
             err instanceof Error
               ? (err as { code?: string }).code ?? "unknown"
               : "unknown";
           console.warn(
-            `[account.deleteAccount] Checkout Session list returned benign error (code=${code}) for customer=${customerId} parent=${parentId} — already terminal/absent, proceeding`,
+            `[account.deleteAccount] Checkout Session list returned resource_missing (code=${code}) for customer=${customerId} parent=${parentId} — customer already absent, proceeding`,
           );
           break;
         }
 
         const message = err instanceof Error ? err.message : String(err);
-        console.error(
+        return abortCheckoutSessionCleanup(
           `[account.deleteAccount] Checkout Session list failed for customer=${customerId} parent=${parentId}: ${message}`,
         );
-        return {
-          ok: false,
-          error:
-            "Could not clear pending checkout sessions before deleting your account. None of your account data was deleted. Please try again in a few minutes. If it keeps happening, contact us and we will delete the account for you.",
-        };
       }
     } while (startingAfter);
   }

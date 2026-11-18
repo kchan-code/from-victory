@@ -11,7 +11,6 @@ import { describe, it, expect } from "vitest";
 
 import {
   isBenignCancelError,
-  isBenignCheckoutSessionExpireError,
   isBenignCustomerDeleteError,
 } from "@/lib/stripe/cancel-errors";
 
@@ -145,49 +144,3 @@ describe("isBenignCustomerDeleteError (FV-726)", () => {
   });
 });
 
-describe("isBenignCheckoutSessionExpireError (FV-760)", () => {
-  it("returns true for resource_missing", () => {
-    expect(
-      isBenignCheckoutSessionExpireError(makeInvalidRequestError("resource_missing")),
-    ).toBe(true);
-  });
-
-  it("returns true for completed/expired session codes", () => {
-    expect(
-      isBenignCheckoutSessionExpireError(
-        makeInvalidRequestError("checkout_session_completed"),
-      ),
-    ).toBe(true);
-    expect(
-      isBenignCheckoutSessionExpireError(
-        makeInvalidRequestError("checkout_session_expired"),
-      ),
-    ).toBe(true);
-    expect(
-      isBenignCheckoutSessionExpireError(
-        makeInvalidRequestError("session_not_expireable"),
-      ),
-    ).toBe(true);
-  });
-
-  it("returns true for recognized already-terminal messages even with unknown code", () => {
-    const err = new Stripe.errors.StripeInvalidRequestError({
-      type: "invalid_request_error",
-      code: "unknown_code",
-      message: "This session is already expired.",
-    });
-    expect(isBenignCheckoutSessionExpireError(err)).toBe(true);
-  });
-
-  it("returns false for other invalid-request codes and non-Stripe errors", () => {
-    expect(
-      isBenignCheckoutSessionExpireError(
-        makeInvalidRequestError("parameter_invalid_empty"),
-      ),
-    ).toBe(false);
-    expect(isBenignCheckoutSessionExpireError(new Error("resource_missing"))).toBe(
-      false,
-    );
-    expect(isBenignCheckoutSessionExpireError(null)).toBe(false);
-  });
-});
