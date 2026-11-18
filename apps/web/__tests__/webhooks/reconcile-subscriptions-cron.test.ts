@@ -55,7 +55,7 @@ function applyAppleFilters(rows: Row[], filters: AppleFilter[]) {
           Date.parse(cell) <= Date.parse(value)
         );
       }
-      return false;
+      throw new Error(`unsupported apple filter operator: ${String(op)}`);
     }),
   );
 }
@@ -645,15 +645,16 @@ describe("apple pass", () => {
     });
     expect(liveCalls).toHaveLength(60);
     expect(expiredCalls).toHaveLength(40);
+    expect(payers.slice(0, 60).every((p) => p.startsWith("live-"))).toBe(true);
   });
 
   it("rotation: expired rows are still rotated across days when they fill remaining capacity", async () => {
-    const recentExpired = new Date(Date.now() - 1_000).toISOString();
+    const fixedExpiredInWindow = "2026-11-17T12:00:00.000Z";
     appleRows = Array.from({ length: APPLE_BATCH_CAP + 20 }, (_, i) =>
       appleRow({
         payer_id: `expired-${i}`,
         status: "expired",
-        expires_at: recentExpired,
+        expires_at: fixedExpiredInWindow,
       }),
     );
     reconcileAppleMock.mockResolvedValue({ ok: true, applied: false });
@@ -663,6 +664,7 @@ describe("apple pass", () => {
       Date.now() + 60_000,
       new Date("2026-11-18T00:00:00.000Z"),
     );
+    const dayOneCalls = reconcileAppleMock.mock.calls.length;
     const dayOneFirst = String(reconcileAppleMock.mock.calls[0]?.[1]);
     reconcileAppleMock.mockClear();
 
@@ -671,8 +673,12 @@ describe("apple pass", () => {
       Date.now() + 60_000,
       new Date("2026-11-19T00:00:00.000Z"),
     );
+    const dayTwoCalls = reconcileAppleMock.mock.calls.length;
     const dayTwoFirst = String(reconcileAppleMock.mock.calls[0]?.[1]);
-    expect(dayOneFirst).not.toBe(dayTwoFirst);
+    expect(dayOneCalls).toBe(APPLE_BATCH_CAP);
+    expect(dayTwoCalls).toBe(APPLE_BATCH_CAP);
+    expect(dayOneFirst).toBe("expired-60");
+    expect(dayTwoFirst).toBe("expired-40");
   });
 });
 

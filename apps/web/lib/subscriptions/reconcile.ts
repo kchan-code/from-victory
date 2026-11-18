@@ -349,6 +349,10 @@ async function listAppleRows(
     APPLE_BATCH_CAP,
   );
   const remainingCap = Math.max(0, APPLE_BATCH_CAP - liveBatch.length);
+  // Expired-row rotation is intentionally bounded by the leftover capacity:
+  // when live load is high, fewer expired rows are reached this run. Any
+  // unreached expired rows contribute to deferred and therefore the route's
+  // deferred alert surface (same as unreached live rows).
   const expiredBatch =
     remainingCap === 0
       ? []
