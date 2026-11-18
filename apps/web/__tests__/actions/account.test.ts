@@ -112,6 +112,13 @@ const {
 // Stripe client — only deleteAccount's cancel-before-delete step touches
 // this. Tests that don't reach the cancel step never call it.
 const stripeCancelMock = vi.fn(async (..._args: unknown[]) => ({}));
+const stripeCheckoutListMock = vi.fn(
+  async (..._args: unknown[]) => ({ data: [], has_more: false }),
+);
+const stripeCheckoutExpireMock = vi.fn(async (sessionId: string) => {
+  callOrder.push(`stripe_checkout_expire:${sessionId}`);
+  return { id: sessionId, object: "checkout.session" };
+});
 // FV-726: customers.del runs right after the cancel, before any DB delete.
 const stripeCustomerDelMock = vi.fn(async (..._args: unknown[]) => {
   callOrder.push("stripe_customer_del");
@@ -120,6 +127,15 @@ const stripeCustomerDelMock = vi.fn(async (..._args: unknown[]) => {
 vi.mock("@/lib/stripe/server", () => ({
   getStripe: () => ({
     subscriptions: { cancel: stripeCancelMock },
+    checkout: {
+      sessions: {
+        list: (...args: unknown[]) => {
+          callOrder.push("stripe_checkout_list");
+          return stripeCheckoutListMock(...args);
+        },
+        expire: (sessionId: string) => stripeCheckoutExpireMock(sessionId),
+      },
+    },
     customers: { del: stripeCustomerDelMock },
   }),
 }));
@@ -411,6 +427,11 @@ beforeEach(() => {
   getSubscriptionPurchaseV2Mock.mockResolvedValue({
     ok: true,
     purchase: { latestOrderId: "GPA.1111-2222-3333-44444", status: "active" },
+  });
+  stripeCheckoutListMock.mockResolvedValue({ data: [], has_more: false });
+  stripeCheckoutExpireMock.mockResolvedValue({
+    id: "cs_default",
+    object: "checkout.session",
   });
 });
 
@@ -921,18 +942,88 @@ function stripeInvalid(code: string) {
 const SUB = { stripe_subscription_id: "sub_1", stripe_customer_id: "cus_1" };
 
 describe("deleteAccount — Stripe customer delete (FV-726)", () => {
-  it("deletes the customer after a successful cancel and before any DB delete", async () => {
+  it("expires open checkout sessions before deleting the customer and before any DB delete", async () => {
+    stripeCheckoutListMock.mockResolvedValueOnce({
+      data: [{ id: "cs_open_1" }],
+      has_more: false,
+    });
     serviceMockImpl = makeServiceMock({ subscriptionRow: SUB });
 
     await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
 
     expect(stripeCancelMock).toHaveBeenCalledWith("sub_1");
+    expect(stripeCheckoutListMock).toHaveBeenCalledWith({
+      customer: "cus_1",
+      status: "open",
+      limit: 100,
+    });
+    expect(stripeCheckoutExpireMock).toHaveBeenCalledWith("cs_open_1");
     expect(stripeCustomerDelMock).toHaveBeenCalledWith("cus_1");
     expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
+    const checkoutExpireIdx = callOrder.indexOf("stripe_checkout_expire:cs_open_1");
     const del = callOrder.indexOf("stripe_customer_del");
+    const subDeleteIdx = callOrder.indexOf("subscriptions_row_delete");
     expect(del).toBeGreaterThan(callOrder.indexOf("subscription_check"));
+    expect(checkoutExpireIdx).toBeGreaterThan(callOrder.indexOf("stripe_checkout_list"));
+    expect(checkoutExpireIdx).toBeLessThan(del);
+    expect(checkoutExpireIdx).toBeLessThan(subDeleteIdx);
     expect(del).toBeLessThan(callOrder.indexOf("links_fetch"));
     expect(del).toBeLessThan(callOrder.indexOf(`delete_user:${PARENT_ID}`));
+  });
+
+  it("proceeds when no open checkout sessions exist", async () => {
+    stripeCheckoutListMock.mockResolvedValueOnce({ data: [], has_more: false });
+    serviceMockImpl = makeServiceMock({ subscriptionRow: SUB });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(stripeCheckoutListMock).toHaveBeenCalledTimes(1);
+    expect(stripeCheckoutExpireMock).not.toHaveBeenCalled();
+    expect(stripeCustomerDelMock).toHaveBeenCalledWith("cus_1");
+    expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
+  });
+
+  it("treats already-expired/completed Checkout Sessions as benign and proceeds", async () => {
+    stripeCheckoutListMock.mockResolvedValueOnce({
+      data: [{ id: "cs_open_1" }],
+      has_more: false,
+    });
+    stripeCheckoutExpireMock.mockRejectedValueOnce(
+      stripeInvalid("session_not_expireable"),
+    );
+    serviceMockImpl = makeServiceMock({ subscriptionRow: SUB });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(stripeCustomerDelMock).toHaveBeenCalledWith("cus_1");
+    expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
+    expect(redirectMock).toHaveBeenCalledWith("/?account_deleted=1");
+  });
+
+  it("aborts with NO database delete when checkout-session expiry fails non-benignly", async () => {
+    stripeCheckoutListMock.mockResolvedValueOnce({
+      data: [{ id: "cs_open_1" }],
+      has_more: false,
+    });
+    stripeCheckoutExpireMock.mockRejectedValueOnce(new Error("Stripe is down"));
+    serviceMockImpl = makeServiceMock({
+      subscriptionRow: SUB,
+      parentLinks: [{ athlete_id: ATHLETE_ID }],
+      coParentCountFor: { [ATHLETE_ID]: 1 },
+    });
+
+    const result = await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: expect.stringContaining("pending checkout sessions"),
+    });
+    expect(stripeCustomerDelMock).not.toHaveBeenCalled();
+    expect(callOrder).not.toContain("links_fetch");
+    expect(callOrder).not.toContain("subscriptions_row_delete");
+    expect(serviceMockImpl.__deleteUserCalls()).toHaveLength(0);
+    expect(signOutMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
   });
 
   it("dedupes customer ids found in both mirrors and deletes once", async () => {

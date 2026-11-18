@@ -13,6 +13,7 @@ import {
 } from "@/lib/actions/deletion-rate-limit";
 import {
   isBenignCancelError,
+  isBenignCheckoutSessionExpireError,
   isBenignCustomerDeleteError,
 } from "@/lib/stripe/cancel-errors";
 import { getStripe } from "@/lib/stripe/server";
@@ -297,11 +298,10 @@ export async function deleteAccount(
   // No subscription row or no stripe_subscription_id — nothing to cancel.
 
   // ---------------------------------------------------------------------------
-  // Step 1b (FV-726): delete the Stripe CUSTOMER so the payer's email and name
-  // do not outlive the account. Stripe keeps the invoices/payment records it
-  // must retain. Runs after the cancel and BEFORE any database delete, with the
-  // same abort-on-unexpected-error rule: a non-benign failure leaves our data
-  // fully intact so the user can retry.
+  // Step 1b (FV-760): expire every OPEN Checkout Session for each Stripe
+  // customer id we hold for this payer, BEFORE deleting the customer and
+  // BEFORE any local database delete. This prevents abandoned, still-open
+  // Checkout URLs from lingering after account deletion.
   //
   // Delete EVERY customer id we hold for this payer (deduped) from both
   // mirrors. Comp grants / App Store / Play payers usually have none.
@@ -311,6 +311,84 @@ export async function deleteAccount(
     sub?.stripe_customer_id ?? null,
     mirroredCustomer?.stripe_customer_id ?? null,
   ].filter((id): id is string => Boolean(id)))];
+  for (const customerId of customerIds) {
+    let startingAfter: string | undefined;
+    do {
+      try {
+        const sessions = await getStripe().checkout.sessions.list({
+          customer: customerId,
+          status: "open",
+          limit: 100,
+          ...(startingAfter ? { starting_after: startingAfter } : {}),
+        });
+
+        for (const session of sessions.data) {
+          try {
+            await getStripe().checkout.sessions.expire(session.id);
+            console.log(
+              `[account.deleteAccount] expired Checkout Session session=${session.id} customer=${customerId} parent=${parentId}`,
+            );
+          } catch (err) {
+            if (isBenignCheckoutSessionExpireError(err)) {
+              const code =
+                err instanceof Error
+                  ? (err as { code?: string }).code ?? "unknown"
+                  : "unknown";
+              console.warn(
+                `[account.deleteAccount] Checkout Session expire returned benign error (code=${code}) for session=${session.id} customer=${customerId} parent=${parentId} — already terminal/absent, proceeding`,
+              );
+              continue;
+            }
+
+            const message = err instanceof Error ? err.message : String(err);
+            console.error(
+              `[account.deleteAccount] Checkout Session expire failed for session=${session.id} customer=${customerId} parent=${parentId}: ${message}`,
+            );
+            return {
+              ok: false,
+              error:
+                "Could not clear pending checkout sessions before deleting your account. None of your account data was deleted. Please try again in a few minutes. If it keeps happening, contact us and we will delete the account for you.",
+            };
+          }
+        }
+
+        if (sessions.has_more && sessions.data.length > 0) {
+          startingAfter = sessions.data[sessions.data.length - 1].id;
+        } else {
+          startingAfter = undefined;
+        }
+      } catch (err) {
+        if (isBenignCheckoutSessionExpireError(err)) {
+          const code =
+            err instanceof Error
+              ? (err as { code?: string }).code ?? "unknown"
+              : "unknown";
+          console.warn(
+            `[account.deleteAccount] Checkout Session list returned benign error (code=${code}) for customer=${customerId} parent=${parentId} — already terminal/absent, proceeding`,
+          );
+          break;
+        }
+
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(
+          `[account.deleteAccount] Checkout Session list failed for customer=${customerId} parent=${parentId}: ${message}`,
+        );
+        return {
+          ok: false,
+          error:
+            "Could not clear pending checkout sessions before deleting your account. None of your account data was deleted. Please try again in a few minutes. If it keeps happening, contact us and we will delete the account for you.",
+        };
+      }
+    } while (startingAfter);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step 1c (FV-726): delete the Stripe CUSTOMER so the payer's email and name
+  // do not outlive the account. Stripe keeps the invoices/payment records it
+  // must retain. Runs after Checkout Session expiry and BEFORE any database
+  // delete, with the same abort-on-unexpected-error rule: a non-benign
+  // failure leaves our data fully intact so the user can retry.
+  // ---------------------------------------------------------------------------
   for (const customerId of customerIds) {
     try {
       await getStripe().customers.del(customerId);
@@ -337,7 +415,7 @@ export async function deleteAccount(
   }
 
   // ---------------------------------------------------------------------------
-  // Step 1c: clear any local billing rows for this payer BEFORE deleting
+  // Step 1d: clear any local billing rows for this payer BEFORE deleting
   // athletes/parent. If either delete fails, abort so nothing is partially
   // deleted past this point.
   // ---------------------------------------------------------------------------
@@ -372,7 +450,7 @@ export async function deleteAccount(
   }
 
   // ---------------------------------------------------------------------------
-  // Step 1d (FV-663 / G5): best-effort Google Play renewal cancellation.
+  // Step 1e (FV-663 / G5): best-effort Google Play renewal cancellation.
   // Never blocks deletion. We cancel every row that may still bill, not just
   // whichever row is currently carrying access.
   // ---------------------------------------------------------------------------
