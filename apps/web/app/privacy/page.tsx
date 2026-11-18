@@ -67,9 +67,8 @@ export const metadata: Metadata = {
   },
 };
 
-// Effective date: the day KC approved the FV-723 / FV-724 wording
-// (2026-11-13). Previous: June 24, 2026. Attorney sign-off: see FV-329.
-const EFFECTIVE_DATE = "November 13, 2026";
+// Effective date: latest attorney-approved policy update.
+const EFFECTIVE_DATE = "November 18, 2026";
 const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
 export default function PrivacyPage() {
@@ -548,6 +547,12 @@ export default function PrivacyPage() {
           records can still show the name and email address used for the purchase, and may
           carry the marketing-channel label described in Section 7 and an internal account
           identifier that no longer points to any account.
+        </p>
+        <p className="mt-3">
+          If you began a checkout on our website but never completed it, deleting your
+          account also removes the billing customer profile our payment processor created for
+          that attempt. Our payment processor may still keep a record of the checkout
+          attempt; contact us at <PrivacyEmailLink /> and we will have it removed.
         </p>
         <p className="mt-3">
           Deleting a From Victory account does <strong>not</strong> cancel a subscription
