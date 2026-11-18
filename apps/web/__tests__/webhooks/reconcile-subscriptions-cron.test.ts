@@ -22,10 +22,11 @@ vi.mock("@/lib/subscriptions/apple-lifecycle", () => ({
 
 type Row = Record<string, unknown>;
 let stripeRows: Row[] = [];
-let appleRows: Row[] = [];
+let appleLiveRows: Row[] = [];
+let appleExpiredRows: Row[] = [];
 let updates: Row[] = [];
 let updateResult: Row[] = [{ parent_id: "p" }];
-let appleFilters: Array<[string, unknown]> = [];
+let appleFilters: Array<[string, string, unknown]> = [];
 // Filters applied to `subscriptions` AFTER .update() — i.e. the write guard.
 let stripeUpdateFilters: Array<[string, string, unknown]> = [];
 // Row returned by the post-reconcile re-read (appleRowChanged).
@@ -33,20 +34,35 @@ let appleAfter: Row | null = null;
 
 function builder(table: string) {
   let isUpdate = false;
+  let appleStatusFilter: unknown = null;
   const b: Record<string, unknown> = {};
   const self = () => b;
-  for (const m of ["select", "not", "order", "range", "lte"]) b[m] = self;
+  for (const m of ["select", "not", "order", "range"]) b[m] = self;
+  b.lte = (col: string, val: unknown) => {
+    if (table === "apple_subscriptions") appleFilters.push(["lte", col, val]);
+    return b;
+  };
+  b.gt = (col: string, val: unknown) => {
+    if (table === "apple_subscriptions") appleFilters.push(["gt", col, val]);
+    return b;
+  };
   b.is = (col: string, val: unknown) => {
     if (table === "subscriptions" && isUpdate) stripeUpdateFilters.push(["is", col, val]);
     return b;
   };
   b.eq = (col: string, val: unknown) => {
-    if (table === "apple_subscriptions") appleFilters.push([col, val]);
+    if (table === "apple_subscriptions") {
+      appleFilters.push(["eq", col, val]);
+      if (col === "status") appleStatusFilter = val;
+    }
     if (table === "subscriptions" && isUpdate) stripeUpdateFilters.push(["eq", col, val]);
     return b;
   };
   b.in = (col: string, val: unknown) => {
-    if (table === "apple_subscriptions") appleFilters.push([col, val]);
+    if (table === "apple_subscriptions") {
+      appleFilters.push(["in", col, val]);
+      if (col === "status") appleStatusFilter = val;
+    }
     return b;
   };
   b.update = (payload: Row) => {
@@ -57,7 +73,14 @@ function builder(table: string) {
   b.maybeSingle = () => Promise.resolve({ data: appleAfter, error: null });
   b.then = (resolve: (v: unknown) => void) =>
     resolve({
-      data: isUpdate ? updateResult : table === "subscriptions" ? stripeRows : appleRows,
+      data:
+        isUpdate
+          ? updateResult
+          : table === "subscriptions"
+            ? stripeRows
+            : appleStatusFilter === "expired"
+              ? appleExpiredRows
+              : appleLiveRows,
       error: null,
     });
   return b;
@@ -68,8 +91,11 @@ vi.mock("@/lib/supabase/service", () => ({
 
 import { GET, POST } from "@/app/api/cron/reconcile-subscriptions/route";
 import {
+  APPLE_BATCH_CAP,
+  APPLE_EXPIRED_LOOKBACK_MS,
   CLOCK_SKEW_MARGIN_MS,
   STRIPE_BATCH_CAP,
+  reconcileApplePass,
   reconcileStripePass,
   rotateWindow,
 } from "@/lib/subscriptions/reconcile";
@@ -112,7 +138,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   process.env.CRON_SECRET = "test-cron-secret";
   stripeRows = [];
-  appleRows = [];
+  appleLiveRows = [];
+  appleExpiredRows = [];
   updates = [];
   appleFilters = [];
   stripeUpdateFilters = [];
@@ -359,7 +386,7 @@ describe("apple pass", () => {
       expires_at: "2026-11-01T00:00:00+00:00",
       grace_period_expires_at: null,
     };
-    appleRows = [before];
+    appleLiveRows = [before];
     // The lost DID_RENEW: Apple says the period was extended.
     appleAfter = { ...before, expires_at: "2026-12-01T00:00:00+00:00" };
     reconcileAppleMock.mockResolvedValue({ ok: true, applied: true });
@@ -377,7 +404,7 @@ describe("apple pass", () => {
       expires_at: "2026-11-14T00:00:00+00:00",
       grace_period_expires_at: null,
     };
-    appleRows = [before];
+    appleLiveRows = [before];
     // Same instant, different serialization: must still compare equal.
     appleAfter = { ...before, expires_at: "2026-11-14T00:00:00.000Z" };
     reconcileAppleMock.mockResolvedValue({ ok: true, applied: true });
@@ -388,15 +415,36 @@ describe("apple pass", () => {
 
   it("query is restricted to Production and live statuses (Sandbox skipped)", async () => {
     await GET(makeReq(OK));
-    expect(appleFilters).toContainEqual(["environment", "Production"]);
+    expect(appleFilters).toContainEqual(["eq", "environment", "Production"]);
     expect(appleFilters).toContainEqual([
+      "in",
       "status",
       ["subscribed", "in_grace_period", "in_billing_retry"],
     ]);
+    expect(appleFilters).toContainEqual(["eq", "status", "expired"]);
+  });
+
+  it("expired bucket selects only recent expired rows and never revoked/older-than-7d", async () => {
+    await GET(makeReq(OK));
+    const gt = appleFilters.find(
+      ([op, col]) => op === "gt" && col === "expires_at",
+    );
+    const lteExpires = appleFilters.filter(
+      ([op, col]) => op === "lte" && col === "expires_at",
+    );
+    expect(gt).toBeDefined();
+    expect(lteExpires.length).toBeGreaterThan(0);
+    const lowerBound = Date.parse(String(gt?.[2]));
+    const hasSevenDayWindow = lteExpires.some(([, , value]) => {
+      const upperBound = Date.parse(String(value));
+      return upperBound - lowerBound === APPLE_EXPIRED_LOOKBACK_MS;
+    });
+    expect(hasSevenDayWindow).toBe(true);
+    expect(appleFilters).not.toContainEqual(["eq", "status", "revoked"]);
   });
 
   it("apple row throwing is counted failed and does not stop the next", async () => {
-    appleRows = [{ payer_id: "p1" }, { payer_id: "p2" }];
+    appleLiveRows = [{ payer_id: "p1" }, { payer_id: "p2" }];
     reconcileAppleMock
       .mockRejectedValueOnce(new Error("apple down"))
       .mockResolvedValueOnce({ ok: true, applied: false });
@@ -405,10 +453,92 @@ describe("apple pass", () => {
   });
 
   it("clean run -> no alert", async () => {
-    appleRows = [{ payer_id: "p1" }];
+    appleLiveRows = [{ payer_id: "p1" }];
     reconcileAppleMock.mockResolvedValue({ ok: true, applied: false });
     await GET(makeReq(OK));
     expect(notifyError).not.toHaveBeenCalled();
+  });
+
+  it("reconciles expired-window rows when live bucket is empty", async () => {
+    appleExpiredRows = [{ payer_id: "expired-payer", status: "expired" }];
+    reconcileAppleMock.mockResolvedValue({ ok: true, applied: false });
+
+    const body = await (await GET(makeReq(OK))).json();
+
+    expect(reconcileAppleMock).toHaveBeenCalledWith(
+      expect.anything(),
+      "expired-payer",
+      "Production",
+    );
+    expect(body.apple).toMatchObject({ checked: 1, corrected: 0 });
+  });
+
+  it("cap priority: live rows consume the cap before expired rows", async () => {
+    appleLiveRows = Array.from({ length: APPLE_BATCH_CAP + 20 }, (_, i) => ({
+      payer_id: `live-${i}`,
+      status: "subscribed",
+    }));
+    appleExpiredRows = Array.from({ length: 50 }, (_, i) => ({
+      payer_id: `expired-${i}`,
+      status: "expired",
+    }));
+    reconcileAppleMock.mockResolvedValue({ ok: true, applied: false });
+
+    const body = await (await GET(makeReq(OK))).json();
+    const payers = reconcileAppleMock.mock.calls.map(([, payerId]) => payerId);
+    expect(body.apple).toMatchObject({
+      checked: APPLE_BATCH_CAP,
+      deferred: 70,
+    });
+    expect(payers.every((payer) => String(payer).startsWith("live-"))).toBe(true);
+  });
+
+  it("cap priority: expired rows fill only the remaining slots after live rows", async () => {
+    appleLiveRows = Array.from({ length: 60 }, (_, i) => ({
+      payer_id: `live-${i}`,
+      status: "subscribed",
+    }));
+    appleExpiredRows = Array.from({ length: 80 }, (_, i) => ({
+      payer_id: `expired-${i}`,
+      status: "expired",
+    }));
+    reconcileAppleMock.mockResolvedValue({ ok: true, applied: false });
+
+    const body = await (await GET(makeReq(OK))).json();
+    const payers = reconcileAppleMock.mock.calls.map(([, payerId]) => String(payerId));
+    const liveCalls = payers.filter((p) => p.startsWith("live-"));
+    const expiredCalls = payers.filter((p) => p.startsWith("expired-"));
+    expect(body.apple).toMatchObject({
+      checked: APPLE_BATCH_CAP,
+      deferred: 40,
+    });
+    expect(liveCalls).toHaveLength(60);
+    expect(expiredCalls).toHaveLength(40);
+  });
+
+  it("rotation: expired rows are still rotated across days when they fill remaining capacity", async () => {
+    appleLiveRows = [];
+    appleExpiredRows = Array.from({ length: APPLE_BATCH_CAP + 20 }, (_, i) => ({
+      payer_id: `expired-${i}`,
+      status: "expired",
+    }));
+    reconcileAppleMock.mockResolvedValue({ ok: true, applied: false });
+
+    await reconcileApplePass(
+      { from: (t: string) => builder(t) } as never,
+      Date.now() + 60_000,
+      new Date("2026-11-18T00:00:00.000Z"),
+    );
+    const dayOneFirst = String(reconcileAppleMock.mock.calls[0]?.[1]);
+    reconcileAppleMock.mockClear();
+
+    await reconcileApplePass(
+      { from: (t: string) => builder(t) } as never,
+      Date.now() + 60_000,
+      new Date("2026-11-19T00:00:00.000Z"),
+    );
+    const dayTwoFirst = String(reconcileAppleMock.mock.calls[0]?.[1]);
+    expect(dayOneFirst).not.toBe(dayTwoFirst);
   });
 });
 
@@ -416,7 +546,7 @@ describe("no PII in alert or response", () => {
   it("alert context and body carry counts only", async () => {
     stripeRows = [dbRow()];
     retrieveMock.mockResolvedValue(stripeSub({ status: "canceled" }));
-    appleRows = [{ payer_id: "payer-uuid-xyz" }];
+    appleLiveRows = [{ payer_id: "payer-uuid-xyz" }];
     reconcileAppleMock.mockResolvedValue({ ok: true, applied: true });
     const res = await GET(makeReq(OK));
     const body = JSON.stringify(await res.json());
