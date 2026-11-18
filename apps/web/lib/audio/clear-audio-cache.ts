@@ -11,7 +11,8 @@
  * page cache and anything else are left alone.
  *
  * Call ONLY where access ended or the account changed (sign-out, /signin,
- * sign-in as a different athlete, account deletion). Never on the ordinary
+ * sign-in as a different athlete, account deletion) or where the browser holds
+ * no session at all (the web landing page, ClearDeviceWhenSignedOut, FV-759). Never on the ordinary
  * Pregame open path: an athlete who downloaded a session must still have the
  * audio on an offline cold start.
  *

@@ -42,6 +42,7 @@ describe("ClearDeviceWhenSignedOut (FV-759)", () => {
   it.each([
     ["a session cookie", "theme=dark; sb-abcd1234-auth-token=base64-xyz"],
     ["a chunked session cookie", "sb-abcd1234-auth-token.0=aaa; sb-abcd1234-auth-token.1=bbb"],
+    ["a session cookie for another project ref", "sb-zzzz9999-auth-token=base64-xyz"],
   ])("clears nothing when the browser holds %s", (_label, cookies) => {
     withCookies(cookies);
     render(<ClearDeviceWhenSignedOut />);

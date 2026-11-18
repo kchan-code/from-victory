@@ -27,9 +27,9 @@ import { clearPregameSession } from "@/lib/pregame/session-cache";
  * start_url, so a signed-in athlete lands here on every launch, including
  * offline with a downloaded session. Their session cookie is on the device and
  * readable without the network, so they are never cleared. Only a browser with
- * no session cookie at all is. The landing HTML itself can be served from the
- * service worker's cache, which is why this decision is made in the browser
- * and not from anything the server rendered.
+ * no session cookie at all is. The decision is made in the browser, from the
+ * cookie, and not from anything the server rendered, so a cached or stale
+ * copy of this page cannot trigger a clear for a signed-in athlete.
  *
  * NOT COVERED HERE: a session that is dead on the server while its cookie is
  * still on the device (for example a parent deleted the athlete). Online, the
