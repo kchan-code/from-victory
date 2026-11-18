@@ -339,11 +339,10 @@ export async function deleteAccount(
     mirroredCustomer?.stripe_customer_id ?? null,
   ].filter((id): id is string => Boolean(id)))];
   for (const customerId of customerIds) {
-    let listAttempts = 0;
     const attemptedSessionIds = new Set<string>();
+    const retrievedSessionIds = new Set<string>();
     let hitCheckoutSessionListCap = true;
     for (let iteration = 0; iteration < MAX_CHECKOUT_SESSION_LIST_ITERATIONS; iteration++) {
-      listAttempts++;
       try {
         const sessions = await getStripe().checkout.sessions.list({
           customer: customerId,
@@ -359,9 +358,41 @@ export async function deleteAccount(
           (session) => !attemptedSessionIds.has(session.id),
         );
         if (sessionsToExpire.length === 0) {
-          return abortCheckoutSessionCleanup(
-            `[account.deleteAccount] Checkout Session list returned only already-attempted ids for customer=${customerId} parent=${parentId} — aborting to avoid skipping open sessions`,
+          if (sessions.has_more) {
+            return abortCheckoutSessionCleanup(
+              `[account.deleteAccount] Checkout Session list remained stuck with has_more=true for customer=${customerId} parent=${parentId} — aborting to avoid skipping open sessions`,
+            );
+          }
+
+          const idsToCheck = sessions.data.filter(
+            (session) => !retrievedSessionIds.has(session.id),
           );
+          if (idsToCheck.length === 0) {
+            hitCheckoutSessionListCap = false;
+            break;
+          }
+
+          for (const session of idsToCheck) {
+            try {
+              const current = await getStripe().checkout.sessions.retrieve(session.id);
+              if (current.status === "open") {
+                return abortCheckoutSessionCleanup(
+                  `[account.deleteAccount] Checkout Session list returned only already-attempted ids but session remained open for session=${session.id} customer=${customerId} parent=${parentId} — aborting to avoid skipping open sessions`,
+                );
+              }
+              retrievedSessionIds.add(session.id);
+              console.warn(
+                `[account.deleteAccount] Checkout Session list returned already-attempted id with non-open status for session=${session.id} customer=${customerId} parent=${parentId} status=${current.status} — treating as benign`,
+              );
+            } catch (retrieveErr) {
+              const message =
+                retrieveErr instanceof Error ? retrieveErr.message : String(retrieveErr);
+              return abortCheckoutSessionCleanup(
+                `[account.deleteAccount] Checkout Session retrieve failed while validating already-attempted ids for session=${session.id} customer=${customerId} parent=${parentId}: ${message}`,
+              );
+            }
+          }
+          continue;
         }
 
         for (const session of sessionsToExpire) {
@@ -395,7 +426,7 @@ export async function deleteAccount(
                 }
 
                 return abortCheckoutSessionCleanup(
-                  `[account.deleteAccount] Checkout Session expire failed but retrieve remained open for session=${session.id} customer=${customerId} parent=${parentId} status=${current.status} code=${code} message=${message}`,
+                  `[account.deleteAccount] Checkout Session expire failed but retrieve remained open for session=${session.id} customer=${customerId} parent=${parentId} code=${code} message=${message}`,
                 );
               } catch (retrieveErr) {
                 const message =
@@ -413,7 +444,7 @@ export async function deleteAccount(
           }
         }
       } catch (err) {
-        if (listAttempts === 1 && isBenignCustomerDeleteError(err)) {
+        if (iteration === 0 && isBenignCustomerDeleteError(err)) {
           logCheckoutResourceMissing({
             operation: "list",
             customerId,
@@ -455,6 +486,16 @@ export async function deleteAccount(
           `[account.deleteAccount] Stripe customer delete returned resource_missing for customer=${customerId} parent=${parentId} — already absent, proceeding with deletion`,
         );
       } else {
+        deliverInBackground(
+          notifyError(
+            "[account.deleteAccount] Stripe customer delete failed",
+            "Stripe customer delete failed during account deletion",
+            {
+              parent_id: parentId,
+              customer_id: customerId,
+            },
+          ),
+        );
         const message = err instanceof Error ? err.message : String(err);
         console.error(
           `[account.deleteAccount] Stripe customer delete failed for customer=${customerId} parent=${parentId}: ${message}`,
