@@ -1244,6 +1244,61 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
         data: [{ id: "cs_open_1" }],
         has_more: false,
       });
+    stripeCheckoutRetrieveMock.mockResolvedValueOnce({
+      id: "cs_open_1",
+      status: "open",
+    });
+    serviceMockImpl = makeServiceMock({ subscriptionRow: SUB });
+
+    const result = await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: expect.stringContaining("subscription may already be canceled"),
+    });
+    expect(stripeCustomerDelMock).not.toHaveBeenCalled();
+    expect(callOrder).not.toContain("subscriptions_row_delete");
+    expect(serviceMockImpl.__deleteUserCalls()).toHaveLength(0);
+  });
+
+  it("treats already-attempted ids as benign when retrieve shows non-open and continues", async () => {
+    stripeCheckoutListMock
+      .mockResolvedValueOnce({
+        data: [{ id: "cs_open_1" }],
+        has_more: false,
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: "cs_open_1" }],
+        has_more: false,
+      })
+      .mockResolvedValueOnce({
+        data: [],
+        has_more: false,
+      });
+    stripeCheckoutRetrieveMock.mockResolvedValueOnce({
+      id: "cs_open_1",
+      status: "expired",
+    });
+    serviceMockImpl = makeServiceMock({ subscriptionRow: SUB });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(stripeCheckoutRetrieveMock).toHaveBeenCalledWith("cs_open_1");
+    expect(stripeCustomerDelMock).toHaveBeenCalledWith("cus_1");
+    expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
+  });
+
+  it("aborts when retrieve fails while validating already-attempted ids", async () => {
+    stripeCheckoutListMock
+      .mockResolvedValueOnce({
+        data: [{ id: "cs_open_1" }],
+        has_more: false,
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: "cs_open_1" }],
+        has_more: false,
+      });
+    stripeCheckoutRetrieveMock.mockRejectedValueOnce(new Error("retrieve unavailable"));
     serviceMockImpl = makeServiceMock({ subscriptionRow: SUB });
 
     const result = await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
@@ -1487,6 +1542,7 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
 
     await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
 
+    expect(notifyErrorMock).not.toHaveBeenCalled();
     expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
     expect(redirectMock).toHaveBeenCalledWith("/?account_deleted=1");
   });
@@ -1505,9 +1561,44 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
       ok: false,
       error: expect.stringContaining("billing profile"),
     });
+    expect(notifyErrorMock).toHaveBeenCalledTimes(1);
+    expect(notifyErrorMock).toHaveBeenNthCalledWith(
+      1,
+      "[account.deleteAccount] Stripe customer delete failed",
+      "Stripe customer delete failed during account deletion",
+      {
+        parent_id: PARENT_ID,
+        customer_id: "cus_1",
+      },
+    );
+    const firstAlert = notifyErrorMock.mock.calls[0];
+    const alertPayload = JSON.stringify(firstAlert ?? []);
+    expect(alertPayload).not.toMatch(/@/);
+    expect(alertPayload).not.toMatch(/\bemail\b|\bname\b/i);
+    expect(alertPayload).not.toMatch(/https?:\/\//i);
+    expect(alertPayload).not.toMatch(/checkout\.stripe\.com/i);
     expect(serviceMockImpl.__deleteUserCalls()).toHaveLength(0);
     expect(callOrder).not.toContain("links_fetch");
     expect(signOutMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it("still aborts cleanly if the alert helper itself fails", async () => {
+    stripeCustomerDelMock.mockRejectedValueOnce(new Error("Stripe is down"));
+    notifyErrorMock.mockImplementationOnce(async () => {
+      throw new Error("alert send failed");
+    });
+    serviceMockImpl = makeServiceMock({ subscriptionRow: SUB });
+
+    const result = await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: expect.stringContaining("billing profile"),
+    });
+    expect(notifyErrorMock).toHaveBeenCalledTimes(1);
+    expect(stripeCustomerDelMock).toHaveBeenCalledTimes(1);
+    expect(serviceMockImpl.__deleteUserCalls()).toHaveLength(0);
     expect(redirectMock).not.toHaveBeenCalled();
   });
 
@@ -1682,5 +1773,7 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
     expect(joined).toContain("message=Only Checkout Sessions with a status in [\"open\"] can be expired.");
     expect(joined).not.toMatch(/@/);
     expect(joined).not.toMatch(/\bemail\b|\bname\b/i);
+    expect(joined).not.toMatch(/https?:\/\//i);
+    expect(joined).not.toMatch(/checkout\.stripe\.com/i);
   });
 });
