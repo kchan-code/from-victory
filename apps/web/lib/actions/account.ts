@@ -178,6 +178,7 @@ export async function deleteAthlete(
 }
 
 export type DeleteAccountState = { ok: false; error: string } | null;
+const MAX_CHECKOUT_SESSION_LIST_ITERATIONS = 20;
 
 function googleTokenTag(token: string): string {
   return createHash("sha256").update(token.slice(-8)).digest("hex").slice(0, 12);
@@ -202,6 +203,24 @@ export async function deleteAccount(
   const service = createServiceClient();
   let googleCancelFailureNoticeRequired = false;
   let googleCancelUnknownNoticeRequired = false;
+  const getStripeErrorCode = (err: unknown): string =>
+    err instanceof Error ? (err as { code?: string }).code ?? "unknown" : "unknown";
+  const logCheckoutResourceMissing = ({
+    operation,
+    customerId,
+    sessionId,
+    code,
+  }: {
+    operation: "list" | "expire";
+    customerId: string;
+    sessionId?: string;
+    code: string;
+  }) => {
+    const target = sessionId ? ` session=${sessionId}` : "";
+    console.warn(
+      `[account.deleteAccount] Checkout Session ${operation} returned resource_missing (code=${code}) for customer=${customerId}${target} parent=${parentId} — already absent, proceeding`,
+    );
+  };
   const abortCheckoutSessionCleanup = (logMessage: string): DeleteAccountState => {
     console.error(logMessage);
     return {
@@ -320,17 +339,33 @@ export async function deleteAccount(
     mirroredCustomer?.stripe_customer_id ?? null,
   ].filter((id): id is string => Boolean(id)))];
   for (const customerId of customerIds) {
-    let startingAfter: string | undefined;
-    do {
+    let listAttempts = 0;
+    const attemptedSessionIds = new Set<string>();
+    let hitCheckoutSessionListCap = true;
+    for (let iteration = 0; iteration < MAX_CHECKOUT_SESSION_LIST_ITERATIONS; iteration++) {
+      listAttempts++;
       try {
         const sessions = await getStripe().checkout.sessions.list({
           customer: customerId,
           status: "open",
           limit: 100,
-          ...(startingAfter ? { starting_after: startingAfter } : {}),
         });
+        if (sessions.data.length === 0) {
+          hitCheckoutSessionListCap = false;
+          break;
+        }
 
-        for (const session of sessions.data) {
+        const sessionsToExpire = sessions.data.filter(
+          (session) => !attemptedSessionIds.has(session.id),
+        );
+        if (sessionsToExpire.length === 0) {
+          return abortCheckoutSessionCleanup(
+            `[account.deleteAccount] Checkout Session list returned only already-attempted ids for customer=${customerId} parent=${parentId} — aborting to avoid skipping open sessions`,
+          );
+        }
+
+        for (const session of sessionsToExpire) {
+          attemptedSessionIds.add(session.id);
           try {
             await getStripe().checkout.sessions.expire(session.id);
             console.log(
@@ -338,25 +373,30 @@ export async function deleteAccount(
             );
           } catch (err) {
             if (isBenignCustomerDeleteError(err)) {
-              const code =
-                err instanceof Error
-                  ? (err as { code?: string }).code ?? "unknown"
-                  : "unknown";
-              console.warn(
-                `[account.deleteAccount] Checkout Session expire returned resource_missing (code=${code}) for session=${session.id} customer=${customerId} parent=${parentId} — already absent, proceeding`,
-              );
+              logCheckoutResourceMissing({
+                operation: "expire",
+                customerId,
+                sessionId: session.id,
+                code: getStripeErrorCode(err),
+              });
               continue;
             }
 
             if (err instanceof Stripe.errors.StripeInvalidRequestError) {
+              const code = getStripeErrorCode(err);
+              const message = err.message;
               try {
                 const current = await getStripe().checkout.sessions.retrieve(session.id);
                 if (current.status !== "open") {
                   console.warn(
-                    `[account.deleteAccount] Checkout Session expire raced to terminal state for session=${session.id} customer=${customerId} parent=${parentId} status=${current.status} — proceeding`,
+                    `[account.deleteAccount] Checkout Session expire raced to terminal state for session=${session.id} customer=${customerId} parent=${parentId} status=${current.status} code=${code} message=${message} — proceeding`,
                   );
                   continue;
                 }
+
+                return abortCheckoutSessionCleanup(
+                  `[account.deleteAccount] Checkout Session expire failed but retrieve remained open for session=${session.id} customer=${customerId} parent=${parentId} status=${current.status} code=${code} message=${message}`,
+                );
               } catch (retrieveErr) {
                 const message =
                   retrieveErr instanceof Error ? retrieveErr.message : String(retrieveErr);
@@ -372,18 +412,14 @@ export async function deleteAccount(
             );
           }
         }
-
-        const last = sessions.data.at(-1);
-        startingAfter = sessions.has_more && last ? last.id : undefined;
       } catch (err) {
-        if (isBenignCustomerDeleteError(err)) {
-          const code =
-            err instanceof Error
-              ? (err as { code?: string }).code ?? "unknown"
-              : "unknown";
-          console.warn(
-            `[account.deleteAccount] Checkout Session list returned resource_missing (code=${code}) for customer=${customerId} parent=${parentId} — customer already absent, proceeding`,
-          );
+        if (listAttempts === 1 && isBenignCustomerDeleteError(err)) {
+          logCheckoutResourceMissing({
+            operation: "list",
+            customerId,
+            code: getStripeErrorCode(err),
+          });
+          hitCheckoutSessionListCap = false;
           break;
         }
 
@@ -392,7 +428,12 @@ export async function deleteAccount(
           `[account.deleteAccount] Checkout Session list failed for customer=${customerId} parent=${parentId}: ${message}`,
         );
       }
-    } while (startingAfter);
+    }
+    if (hitCheckoutSessionListCap) {
+      return abortCheckoutSessionCleanup(
+        `[account.deleteAccount] Checkout Session list hit cap for customer=${customerId} parent=${parentId} cap=${MAX_CHECKOUT_SESSION_LIST_ITERATIONS} — aborting to avoid skipping open sessions`,
+      );
+    }
   }
 
   // ---------------------------------------------------------------------------
