@@ -70,6 +70,13 @@ describe("subscriptionAccessLevel", () => {
     expect(subscriptionAccessLevel(undefined)).toBe("blocked");
   });
 
+  it("abandoned checkout with no subscriptions row grants NO access", () => {
+    // FV-751: pre-checkout customer persistence now lives outside
+    // subscriptions, so abandoning checkout leaves no status row to unlock
+    // access.
+    expect(subscriptionAccessLevel(null)).toBe("blocked");
+  });
+
   // -------------------------------------------------------------------------
   // cancel_at_period_end policy: access follows status, not cancellation flag
   // -------------------------------------------------------------------------

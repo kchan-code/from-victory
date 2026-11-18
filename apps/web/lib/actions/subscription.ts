@@ -27,20 +27,23 @@
  * Customer reuse strategy:
  *   If the account already has a `subscriptions` row with a `stripe_customer_id`,
  *   we pass `customer: <id>` to Checkout so Stripe links the new session to the
- *   existing Customer record. If no row exists yet, we pass no customer params and
- *   let Checkout create the Customer; the webhook upserts the row on
- *   checkout.session.completed. We do NOT create a Customer ourselves here —
- *   Checkout does it, the webhook records it.
+ *   existing Customer record. If there is no subscription row yet, we check
+ *   `stripe_customers` (payer -> customer mirror); if still empty, we create
+ *   the Customer ourselves (`metadata.payer_id = <account uuid>`) and persist
+ *   the id there before redirecting to Checkout. This guarantees account
+ *   deletion can remove abandoned-checkout customers by an id we control
+ *   (FV-751), without inserting entitlement-bearing placeholder rows into
+ *   `subscriptions`.
  *
  * 7-day / one-athlete free trial strategy (FV-574; originally 14-day, FV-217):
  *   The trial is applied conditionally in code — NOT baked into the Stripe Price
  *   object — so we can enforce a one-trial-per-account rule. An account is
  *   trial-eligible if and only if:
- *     (a) they have NO `subscriptions` row at checkout time — the webhook
- *         writes the row when checkout.session.completed fires, so any
- *         subsequent checkout attempt (cancel-and-resubscribe, plan change)
- *         finds an existing row and receives no trial (we reuse the
- *         `existingSub` read — no second DB query);
+ *     (a) they have NO prior Stripe subscription id at checkout time
+ *         (`stripe_subscription_id` is null/absent) — the first completed
+ *         checkout writes that id, so any later checkout attempt
+ *         (cancel-and-resubscribe, plan change) receives no trial (we reuse
+ *         the `existingSub` read — no second DB query);
  *     (b) they have never held a Production Apple entitlement (cross-provider
  *         one-trial rule, FV-570 — see next section); and
  *     (c) the checkout starts with exactly ONE athlete seat (KC-approved
@@ -294,7 +297,7 @@ async function startSubscriptionCheckout(
 
   const { data: existingSub, error: subReadError } = await supabase
     .from("subscriptions")
-    .select("stripe_customer_id")
+    .select("stripe_customer_id, stripe_subscription_id")
     .eq("parent_id", accountId)
     .maybeSingle();
 
@@ -319,6 +322,34 @@ async function startSubscriptionCheckout(
   }
 
   const existingCustomerId = existingSub?.stripe_customer_id ?? null;
+  const hadStripeSubscriptionBeforeCheckout =
+    existingSub?.stripe_subscription_id !== null &&
+    existingSub?.stripe_subscription_id !== undefined;
+
+  // FV-751: standalone mirror for pre-checkout customer ids (service-role only).
+  const service = createServiceClient();
+  const { data: mirroredCustomer, error: mirroredCustomerReadError } = await service
+    .from("stripe_customers")
+    .select("stripe_customer_id")
+    .eq("payer_id", accountId)
+    .maybeSingle();
+
+  if (mirroredCustomerReadError) {
+    console.error(
+      `[subscription.startSubscriptionCheckout] stripe_customers read failed (account=${accountId}): ${mirroredCustomerReadError.message}`,
+    );
+    deliverInBackground(
+      notifyError(
+        "[checkout] stripe customer mirror read failed",
+        mirroredCustomerReadError.message,
+        { parent_id: accountId },
+      ),
+    );
+    return {
+      ok: false,
+      error: "Couldn't start checkout right now. Try again in a moment.",
+    };
+  }
 
   // Cross-provider one-trial rule (FV-570, record Section 4.5): also check
   // whether this account ever held a Production Apple entitlement. Same
@@ -350,18 +381,108 @@ async function startSubscriptionCheckout(
     };
   }
 
-  // Trial is ONLY offered when there is no existing Stripe row AND the
-  // account never held a Production Apple entitlement AND the checkout
-  // starts with exactly one athlete seat (FV-574). If ANY Stripe row exists
-  // (any status — active, canceled, trialing) OR Apple/Google entitlement
-  // history exists, the account has already had a trial on one provider or
-  // the other; if the checkout is multi-athlete, the KC-approved offering
-  // grants no trial.
+  // Trial is ONLY offered when there is no prior Stripe subscription id AND
+  // the account never held a Production Apple/Google entitlement AND the
+  // checkout starts with exactly one athlete seat (FV-574).
   const isTrialEligible =
-    existingSub === null &&
+    !hadStripeSubscriptionBeforeCheckout &&
     !appleEverHeld &&
     !googleEverHeld &&
     trialQuantityEligible;
+
+  // FV-751 Option 1: create the Stripe customer ourselves before Checkout
+  // when no stored customer exists yet, tag it with a payer id we control,
+  // and persist that customer id immediately so account deletion can always
+  // delete it (including abandoned checkouts).
+  let checkoutCustomerId =
+    existingCustomerId ?? mirroredCustomer?.stripe_customer_id ?? null;
+  if (!checkoutCustomerId) {
+    const stripe = getStripe();
+    let createdCustomerId: string | null = null;
+    const cleanupCreatedCustomer = async (message: string) => {
+      if (!createdCustomerId) return;
+      try {
+        await stripe.customers.del(createdCustomerId);
+      } catch (cleanupErr) {
+        deliverInBackground(
+          notifyError(
+            "[checkout] pre-checkout customer cleanup failed",
+            cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr),
+            { parent_id: accountId, customer: createdCustomerId },
+          ),
+        );
+      }
+      throw new Error(message);
+    };
+
+    try {
+      const createdCustomer = await stripe.customers.create({
+        metadata: { payer_id: accountId },
+      });
+      createdCustomerId = createdCustomer.id;
+
+      const { error: insertError } = await service.from("stripe_customers").insert({
+        payer_id: accountId,
+        stripe_customer_id: createdCustomerId,
+      });
+      if (insertError) {
+        if (insertError.code === "23505") {
+          const { data: racedMirror, error: racedReadError } = await service
+            .from("stripe_customers")
+            .select("stripe_customer_id")
+            .eq("payer_id", accountId)
+            .maybeSingle();
+          const racedCustomerId = racedMirror?.stripe_customer_id ?? null;
+          if (racedReadError || !racedCustomerId) {
+            await cleanupCreatedCustomer(
+              racedReadError?.message ??
+                "stripe_customers row appeared without stripe_customer_id",
+            );
+          }
+          checkoutCustomerId = racedCustomerId;
+          if (createdCustomerId !== racedCustomerId) {
+            try {
+              await stripe.customers.del(createdCustomerId);
+            } catch (cleanupErr) {
+              deliverInBackground(
+                notifyError(
+                  "[checkout] concurrent customer cleanup failed",
+                  cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr),
+                  {
+                    parent_id: accountId,
+                    ...(createdCustomerId ? { customer: createdCustomerId } : {}),
+                  },
+                ),
+              );
+            }
+          }
+        } else {
+          await cleanupCreatedCustomer(insertError.message);
+        }
+      } else {
+        checkoutCustomerId = createdCustomerId;
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(
+        `[subscription.startSubscriptionCheckout] could not persist pre-checkout customer (account=${accountId}): ${message}`,
+      );
+      deliverInBackground(
+        notifyError(
+          "[checkout] pre-checkout customer persist failed",
+          message,
+          {
+            parent_id: accountId,
+            ...(createdCustomerId ? { customer: createdCustomerId } : {}),
+          },
+        ),
+      );
+      return {
+        ok: false,
+        error: "Couldn't start checkout right now. Try again in a moment.",
+      };
+    }
+  }
 
   // 5. Build site URL for success/cancel redirects.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -416,15 +537,12 @@ async function startSubscriptionCheckout(
       sessionParams.payment_method_collection = "always";
     }
 
-    // Customer reuse: pass the existing Stripe customer ID if present so
-    // Checkout links to the existing record; otherwise let Checkout create one.
-    if (existingCustomerId) {
-      sessionParams.customer = existingCustomerId;
+    // Customer reuse / FV-751 pre-creation: pass a customer id in all cases.
+    if (checkoutCustomerId) {
+      sessionParams.customer = checkoutCustomerId;
     }
-    // No `else`: in subscription mode Checkout ALWAYS creates a Customer, and
-    // Stripe rejects the `customer_creation` param outright ("only valid in
-    // payment mode") — the first live API call failed on it (hotfix, FV-217).
-    // The webhook binds the created Customer to the account via metadata.
+    // customer_creation is invalid in subscription mode; we always pass
+    // `customer` instead of relying on Checkout-created customers.
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 

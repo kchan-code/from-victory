@@ -146,6 +146,16 @@ values
 on conflict (parent_id) do nothing;
 
 -- ---------------------------------------------------------------------------
+-- stripe_customers — service-role-only payer -> Stripe customer mirror.
+-- Used by FV-751 abandoned-checkout cleanup (separate from subscriptions).
+-- ---------------------------------------------------------------------------
+insert into public.stripe_customers (payer_id, stripe_customer_id)
+values
+  ('10000000-0000-4000-8000-000000000001', 'cus_rls_mirror_parent'),
+  ('70000000-0000-4000-8000-000000000001', 'cus_rls_mirror_adult')
+on conflict (payer_id) do nothing;
+
+-- ---------------------------------------------------------------------------
 -- device_pairings — service-role-only table. Hashed code for A, issued by P.
 -- (Trigger enforces P=parent, A=athlete, and the P→A link exists.)
 -- FV-177: device_pairings stores sha256(code) hex in code_sha256, not plaintext.

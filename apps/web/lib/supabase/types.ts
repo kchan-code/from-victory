@@ -900,6 +900,35 @@ export type Database = {
           },
         ]
       }
+      // FV-751: hand-added (20261117163000_fv751_stripe_customers.sql).
+      // Service-role-only payer -> Stripe customer mirror used to clean up
+      // abandoned checkout customers without creating placeholder subscription rows.
+      stripe_customers: {
+        Row: {
+          payer_id: string
+          stripe_customer_id: string
+          created_at: string
+        }
+        Insert: {
+          payer_id: string
+          stripe_customer_id: string
+          created_at?: string
+        }
+        Update: {
+          payer_id?: string
+          stripe_customer_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_customers_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_sessions_catalog: {
         Row: {
           created_at: string
