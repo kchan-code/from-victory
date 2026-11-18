@@ -340,6 +340,7 @@ export async function deleteAccount(
   ].filter((id): id is string => Boolean(id)))];
   for (const customerId of customerIds) {
     const attemptedSessionIds = new Set<string>();
+    const retrievedSessionIds = new Set<string>();
     let hitCheckoutSessionListCap = true;
     for (let iteration = 0; iteration < MAX_CHECKOUT_SESSION_LIST_ITERATIONS; iteration++) {
       try {
@@ -357,14 +358,29 @@ export async function deleteAccount(
           (session) => !attemptedSessionIds.has(session.id),
         );
         if (sessionsToExpire.length === 0) {
-          for (const session of sessions.data) {
+          if (sessions.has_more) {
+            return abortCheckoutSessionCleanup(
+              `[account.deleteAccount] Checkout Session list remained stuck with has_more=true for customer=${customerId} parent=${parentId} — aborting to avoid skipping open sessions`,
+            );
+          }
+
+          const idsToCheck = sessions.data.filter(
+            (session) => !retrievedSessionIds.has(session.id),
+          );
+          if (idsToCheck.length === 0) {
+            hitCheckoutSessionListCap = false;
+            break;
+          }
+
+          for (const session of idsToCheck) {
             try {
               const current = await getStripe().checkout.sessions.retrieve(session.id);
               if (current.status === "open") {
                 return abortCheckoutSessionCleanup(
-                  `[account.deleteAccount] Checkout Session list returned only already-attempted ids but session remained open for session=${session.id} customer=${customerId} parent=${parentId} status=${current.status} — aborting to avoid skipping open sessions`,
+                  `[account.deleteAccount] Checkout Session list returned only already-attempted ids but session remained open for session=${session.id} customer=${customerId} parent=${parentId} — aborting to avoid skipping open sessions`,
                 );
               }
+              retrievedSessionIds.add(session.id);
               console.warn(
                 `[account.deleteAccount] Checkout Session list returned already-attempted id with non-open status for session=${session.id} customer=${customerId} parent=${parentId} status=${current.status} — treating as benign`,
               );
@@ -410,7 +426,7 @@ export async function deleteAccount(
                 }
 
                 return abortCheckoutSessionCleanup(
-                  `[account.deleteAccount] Checkout Session expire failed but retrieve remained open for session=${session.id} customer=${customerId} parent=${parentId} status=${current.status} code=${code} message=${message}`,
+                  `[account.deleteAccount] Checkout Session expire failed but retrieve remained open for session=${session.id} customer=${customerId} parent=${parentId} code=${code} message=${message}`,
                 );
               } catch (retrieveErr) {
                 const message =

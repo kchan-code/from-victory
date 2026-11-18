@@ -1261,6 +1261,30 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
     expect(serviceMockImpl.__deleteUserCalls()).toHaveLength(0);
   });
 
+  it("aborts when a stuck page reports has_more true", async () => {
+    stripeCheckoutListMock
+      .mockResolvedValueOnce({
+        data: [{ id: "cs_open_1" }],
+        has_more: false,
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: "cs_open_1" }],
+        has_more: true,
+      });
+    serviceMockImpl = makeServiceMock({ subscriptionRow: SUB });
+
+    const result = await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: expect.stringContaining("subscription may already be canceled"),
+    });
+    expect(stripeCheckoutRetrieveMock).not.toHaveBeenCalled();
+    expect(stripeCustomerDelMock).not.toHaveBeenCalled();
+    expect(callOrder).not.toContain("subscriptions_row_delete");
+    expect(serviceMockImpl.__deleteUserCalls()).toHaveLength(0);
+  });
+
   it("treats already-attempted ids as benign when retrieve shows non-open and continues", async () => {
     stripeCheckoutListMock
       .mockResolvedValueOnce({
@@ -1272,7 +1296,7 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
         has_more: false,
       })
       .mockResolvedValueOnce({
-        data: [],
+        data: [{ id: "cs_open_1" }],
         has_more: false,
       });
     stripeCheckoutRetrieveMock.mockResolvedValueOnce({
@@ -1283,9 +1307,42 @@ describe("deleteAccount — Stripe customer delete (FV-726)", () => {
 
     await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
 
+    expect(stripeCheckoutListMock).toHaveBeenCalledTimes(3);
     expect(stripeCheckoutRetrieveMock).toHaveBeenCalledWith("cs_open_1");
+    expect(stripeCheckoutRetrieveMock).toHaveBeenCalledTimes(1);
     expect(stripeCustomerDelMock).toHaveBeenCalledWith("cus_1");
     expect(serviceMockImpl.__deleteUserCalls()).toEqual([PARENT_ID]);
+    expect(redirectMock).toHaveBeenCalledWith("/?account_deleted=1");
+  });
+
+  it("retrieves each stuck-page id at most once before proceeding when all are non-open", async () => {
+    stripeCheckoutListMock
+      .mockResolvedValueOnce({
+        data: [{ id: "cs_open_1" }, { id: "cs_open_2" }],
+        has_more: false,
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: "cs_open_1" }, { id: "cs_open_2" }],
+        has_more: false,
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: "cs_open_1" }, { id: "cs_open_2" }],
+        has_more: false,
+      });
+    stripeCheckoutRetrieveMock.mockImplementation(async (sessionId: unknown) => ({
+      id: String(sessionId),
+      status: "expired",
+    }));
+    serviceMockImpl = makeServiceMock({ subscriptionRow: SUB });
+
+    await deleteAccount(null, makeFormData({ confirm: "DELETE" }));
+
+    expect(stripeCheckoutListMock).toHaveBeenCalledTimes(3);
+    expect(stripeCheckoutRetrieveMock).toHaveBeenCalledTimes(2);
+    expect(stripeCheckoutRetrieveMock).toHaveBeenCalledWith("cs_open_1");
+    expect(stripeCheckoutRetrieveMock).toHaveBeenCalledWith("cs_open_2");
+    expect(stripeCustomerDelMock).toHaveBeenCalledWith("cus_1");
+    expect(redirectMock).toHaveBeenCalledWith("/?account_deleted=1");
   });
 
   it("aborts when retrieve fails while validating already-attempted ids", async () => {
