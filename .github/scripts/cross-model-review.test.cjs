@@ -357,7 +357,7 @@ test('Dependabot exemption is lost when a human is the committer of a signed Dep
 });
 
 test('Dependabot exemption requires verification reason "valid"', () => {
-  for (const reason of ['unsigned', 'bad_email', 'unknown_key', undefined]) {
+  for (const reason of ['unsigned', 'bad_email', 'unknown_key', null]) {
     assert.equal(isDependabotOnly('dependabot[bot]', [botCommit({ reason })], SHA), false, String(reason));
   }
 });

@@ -24,6 +24,9 @@ const STATUS_CONTEXT = 'cross-model-review';
 const REQUIRED_AUTHOR = 'kchan-code';
 
 const DEPENDABOT_LOGIN = 'dependabot[bot]';
+// `web-flow` is the account GitHub uses as committer on commits it signs,
+// including Dependabot's.
+const DEPENDABOT_COMMITTERS = [DEPENDABOT_LOGIN, 'web-flow'];
 
 // Each marker field must be its own line so prose that merely mentions the
 // marker does not count.
@@ -131,23 +134,29 @@ function latestMarkerForSha(comments, headSha, author = REQUIRED_AUTHOR) {
 }
 
 /**
- * True only for a PR opened by Dependabot whose every commit is authored by
- * Dependabot and carries a verified signature (Dependabot's commits are
- * GitHub-signed). A human commit pushed onto a Dependabot branch, or an
- * incomplete commit list, removes the exemption.
+ * True only for a PR opened by Dependabot whose every commit, including the
+ * head commit, is authored by Dependabot, committed by Dependabot or by
+ * GitHub's signing identity, and carries a valid signature. Real Dependabot
+ * commits have committer `web-flow` ("GitHub"), not `dependabot[bot]`. A human
+ * author or committer anywhere on the branch, or an incomplete commit list,
+ * removes the exemption.
  */
-function isDependabotOnly(prAuthor, commits) {
+function isDependabotOnly(prAuthor, commits, headSha) {
   if (prAuthor !== DEPENDABOT_LOGIN) return false;
   if (!Array.isArray(commits) || commits.length === 0) return false;
-  return commits.every(
-    (c) =>
-      c &&
-      c.author &&
-      c.author.login === DEPENDABOT_LOGIN &&
-      c.commit &&
-      c.commit.verification &&
-      c.commit.verification.verified === true,
-  );
+  if (!FULL_SHA_RE.test(String(headSha || ''))) return false;
+  const qualifies = (c) =>
+    c &&
+    c.author &&
+    c.author.login === DEPENDABOT_LOGIN &&
+    c.committer &&
+    DEPENDABOT_COMMITTERS.includes(c.committer.login) &&
+    c.commit &&
+    c.commit.verification &&
+    c.commit.verification.verified === true &&
+    c.commit.verification.reason === 'valid';
+  if (!commits.every(qualifies)) return false;
+  return commits.some((c) => c.sha === headSha);
 }
 
 /**
@@ -164,7 +173,7 @@ function decide({ prAuthor, commits, headSha, comments }) {
     'Format: CONTRIBUTING.md -> "Cross-model review marker".';
   const fail = (message) => ({ pass: false, message, help });
 
-  if (isDependabotOnly(prAuthor, commits)) {
+  if (isDependabotOnly(prAuthor, commits, headSha)) {
     return { pass: true, message: 'Every commit is a verified Dependabot commit — cross-model review not required.', help: '' };
   }
   if (!FULL_SHA_RE.test(String(headSha || ''))) {
