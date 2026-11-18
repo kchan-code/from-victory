@@ -30,8 +30,8 @@ import Link from "next/link";
 //     points are not live. Add the identifiers before they are.
 // Every factual claim here is grounded in the verified data inventory
 // (schema + code). Launch notes:
-//   1. EFFECTIVE_DATE below is November 13, 2026, the date KC approved the
-//      FV-723 / FV-724 wording. Attorney sign-off is tracked in FV-329.
+//   1. EFFECTIVE_DATE below is November 18, 2026, including the FV-762
+//      abandoned-checkout wording approved by KC.
 //   2. The private-journal infrastructure is built but DORMANT (FV-135, zero
 //      production callers) and is intentionally NOT described as an active
 //      feature here. Revisit if/when it is wired.
