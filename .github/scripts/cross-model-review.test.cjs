@@ -11,8 +11,8 @@ const {
   parseMarker,
   latestMarkerForSha,
   decide,
+  isDependabotOnly,
   run,
-  reevaluate,
 } = require('./cross-model-review.cjs');
 
 const SHA = 'a'.repeat(32) + '0123abcd';
@@ -28,8 +28,8 @@ function marker({ status = 'CLEAN', reviewer = 'gpt-5.6-sol-high', coder = 'clau
   ].join('\n');
 }
 
-function comment(body, { login = OWNER, at = '2026-11-18T12:00:00Z' } = {}) {
-  return { body, user: { login }, created_at: at };
+function comment(body, { login = OWNER, at = '2026-11-18T12:00:00Z', id } = {}) {
+  return { body, user: { login }, created_at: at, ...(id !== undefined ? { id } : {}) };
 }
 
 // --- model families ----------------------------------------------------------
@@ -162,21 +162,20 @@ test('latestMarkerForSha picks the newest marker for the SHA', () => {
 test('decide passes on a clean, cross-family marker for the head SHA', () => {
   const r = decide({ prAuthor: 'kchan-code', headSha: SHA, comments: [comment(marker())] });
   assert.equal(r.pass, true, r.message);
-  assert.match(r.message, /gpt-5\.6-sol-high \(gpt\)/);
-  assert.match(r.message, /claude-opus-5-5 \(claude\)/);
+  assert.match(r.message, /reviewer gpt, coder claude/);
 });
 
 test('decide fails when there are no comments', () => {
   const r = decide({ prAuthor: 'kchan-code', headSha: SHA, comments: [] });
   assert.equal(r.pass, false);
-  assert.match(r.message, /No cross-model review marker/);
-  assert.ok(r.message.includes(SHA), 'tells the user which SHA to cite');
+  assert.match(r.message, /No CROSS-MODEL-REVIEW marker/);
+  assert.ok(r.help.includes(SHA), 'tells the user which SHA to cite');
 });
 
 test('decide fails after a new push: the marker names the previous SHA', () => {
   const r = decide({ prAuthor: 'kchan-code', headSha: OTHER_SHA, comments: [comment(marker({ sha: SHA }))] });
   assert.equal(r.pass, false);
-  assert.match(r.message, /No cross-model review marker/);
+  assert.match(r.message, /No CROSS-MODEL-REVIEW marker/);
 });
 
 test('decide fails when the marker omits the SHA', () => {
@@ -265,117 +264,168 @@ test('decide fails on conflicting duplicate fields', () => {
   assert.match(r.message, /invalid: conflicting CODER-MODEL/);
 });
 
-test('decide exempts Dependabot PRs', () => {
-  const r = decide({ prAuthor: 'dependabot[bot]', headSha: SHA, comments: [] });
-  assert.equal(r.pass, true);
-  assert.match(r.message, /dependabot/);
-});
-
 test('decide fails closed on a missing head SHA', () => {
   assert.equal(decide({ prAuthor: 'x', headSha: undefined, comments: [comment(marker())] }).pass, false);
 });
 
-// --- workflow entrypoints (mocked GitHub client) -----------------------------
+// --- same-second markers -------------------------------------------------------
+
+test('same-second markers: the higher comment id wins', () => {
+  const at = '2026-11-18T12:00:00Z';
+  const issuesLast = [comment(marker(), { at, id: 10 }), comment(marker({ status: 'ISSUES' }), { at, id: 11 })];
+  assert.equal(decide({ prAuthor: 'x', headSha: SHA, comments: issuesLast }).pass, false);
+  // List order must not matter: the CLEAN row listed last still loses to id 11.
+  assert.equal(decide({ prAuthor: 'x', headSha: SHA, comments: [...issuesLast].reverse() }).pass, false);
+  const cleanLast = [comment(marker({ status: 'ISSUES' }), { at, id: 10 }), comment(marker(), { at, id: 11 })];
+  assert.equal(decide({ prAuthor: 'x', headSha: SHA, comments: cleanLast }).pass, true);
+});
+
+test('same-second markers that cannot be ordered fail closed', () => {
+  const at = '2026-11-18T12:00:00Z';
+  for (const comments of [
+    [comment(marker({ status: 'ISSUES' }), { at }), comment(marker(), { at })], // no ids
+    [comment(marker(), { at, id: 7 }), comment(marker(), { at, id: 7 })], // equal ids
+    [comment(marker(), { at, id: 7 }), comment(marker(), { at })], // one id missing
+  ]) {
+    const r = decide({ prAuthor: 'x', headSha: SHA, comments });
+    assert.equal(r.pass, false);
+    assert.match(r.message, /cannot be ordered/);
+  }
+});
+
+test('a newer timestamp beats a higher id', () => {
+  const comments = [
+    comment(marker({ status: 'ISSUES' }), { at: '2026-11-18T12:00:00Z', id: 99 }),
+    comment(marker(), { at: '2026-11-18T12:00:01Z', id: 1 }),
+  ];
+  assert.equal(decide({ prAuthor: 'x', headSha: SHA, comments }).pass, true);
+});
+
+// --- Dependabot exemption ------------------------------------------------------
+
+function botCommit({ login = 'dependabot[bot]', verified = true } = {}) {
+  return { author: login === null ? null : { login }, commit: { verification: { verified } } };
+}
+
+test('Dependabot exemption needs a Dependabot opener and only verified Dependabot commits', () => {
+  assert.equal(isDependabotOnly('dependabot[bot]', [botCommit(), botCommit()]), true);
+  const r = decide({ prAuthor: 'dependabot[bot]', commits: [botCommit()], headSha: SHA, comments: [] });
+  assert.equal(r.pass, true);
+  assert.match(r.message, /Dependabot/);
+});
+
+test('Dependabot exemption is lost when anyone else pushes a commit', () => {
+  for (const commits of [
+    [botCommit(), botCommit({ login: 'kchan-code' })],
+    [botCommit(), botCommit({ login: null })], // author not linked to a GitHub account
+    [botCommit(), botCommit({ verified: false })], // spoofed author email, unsigned
+    [], // commit list unavailable or incomplete
+    undefined,
+  ]) {
+    assert.equal(isDependabotOnly('dependabot[bot]', commits), false, JSON.stringify(commits));
+    assert.equal(decide({ prAuthor: 'dependabot[bot]', commits, headSha: SHA, comments: [] }).pass, false);
+  }
+});
+
+test('Dependabot lookalike openers are not exempt', () => {
+  for (const login of ['Dependabot[bot]', 'dependabot', 'dependabot[bot] ', 'mydependabot[bot]', 'kchan-code']) {
+    assert.equal(isDependabotOnly(login, [botCommit()]), false, login);
+    assert.equal(decide({ prAuthor: login, commits: [botCommit()], headSha: SHA, comments: [] }).pass, false, login);
+  }
+});
+
+test('Dependabot commits on a human-opened PR are not exempt', () => {
+  assert.equal(isDependabotOnly('kchan-code', [botCommit()]), false);
+});
+
+// --- workflow entrypoint (mocked GitHub client) --------------------------------
 
 function fakeCore() {
-  const calls = { info: [], failed: [] };
+  const calls = { info: [], failed: [], error: [] };
   return {
     calls,
     info: (m) => calls.info.push(m),
+    error: (m) => calls.error.push(m),
     setFailed: (m) => calls.failed.push(m),
   };
 }
 
-test('run fails the job without a marker and passes with one', async () => {
-  const context = {
-    repo: { owner: 'kchan-code', repo: 'from-victory' },
-    eventName: 'pull_request',
-    payload: { pull_request: { number: 7, user: { login: 'kchan-code' }, head: { sha: SHA } } },
-  };
-  const github = (comments) => ({
-    rest: { issues: { listComments: 'listComments' } },
-    paginate: async (fn, args) => {
-      assert.equal(fn, 'listComments');
-      assert.equal(args.issue_number, 7);
-      return comments;
-    },
-  });
-
-  const red = fakeCore();
-  await run({ github: github([]), context, core: red });
-  assert.equal(red.calls.failed.length, 1);
-
-  const green = fakeCore();
-  await run({ github: github([comment(marker())]), context, core: green });
-  assert.equal(green.calls.failed.length, 0);
-  assert.match(green.calls.info[0], /CLEAN/);
-});
-
-function reevalFixture({ login = OWNER, body = marker(), runs, changes } = {}) {
-  const reruns = [];
+function fakeGithub({ comments = [], prUser = 'kchan-code', commits = [], prCommits, failComments = false } = {}) {
+  const statuses = [];
   const github = {
     rest: {
-      pulls: { get: async () => ({ data: { head: { sha: SHA } } }) },
-      actions: {
-        getWorkflowRun: async () => ({ data: { workflow_id: 42 } }),
-        listWorkflowRuns: async (args) => {
-          assert.equal(args.workflow_id, 42);
-          assert.equal(args.head_sha, SHA);
-          assert.equal(args.event, 'pull_request');
-          return { data: { workflow_runs: runs.shift() || [] } };
+      pulls: {
+        get: async ({ pull_number }) => {
+          assert.equal(pull_number, 7);
+          return {
+            data: { head: { sha: SHA }, user: { login: prUser }, commits: prCommits ?? commits.length },
+          };
         },
-        reRunWorkflow: async (args) => reruns.push(args.run_id),
+        listCommits: 'listCommits',
       },
+      issues: { listComments: 'listComments' },
+      repos: { createCommitStatus: async (args) => statuses.push(args) },
+    },
+    paginate: async (fn) => {
+      if (fn === 'listCommits') return commits;
+      if (failComments) throw new Error('boom');
+      return comments;
     },
   };
-  const context = {
-    repo: { owner: 'kchan-code', repo: 'from-victory' },
-    runId: 1,
-    payload: { issue: { number: 7, pull_request: {} }, comment: { body, user: { login } }, changes },
-  };
-  return { github, context, reruns };
+  return { github, statuses };
 }
 
-test('reevaluate re-runs the completed pull_request run for the head SHA', async () => {
-  const { github, context, reruns } = reevalFixture({
-    runs: [[{ id: 99, status: 'completed', html_url: 'u' }]],
-  });
-  await reevaluate({ github, context, core: fakeCore(), pollMs: 0 });
-  assert.deepEqual(reruns, [99]);
-});
+const REPO = { owner: 'kchan-code', repo: 'from-victory' };
+const PRT = { repo: REPO, eventName: 'pull_request_target', runId: 1, serverUrl: 'https://github.com', payload: { pull_request: { number: 7 } } };
+const COMMENT = {
+  repo: REPO,
+  eventName: 'issue_comment',
+  runId: 2,
+  serverUrl: 'https://github.com',
+  payload: { issue: { number: 7, pull_request: {} } },
+};
 
-test('reevaluate waits for an in-progress run, then re-runs it', async () => {
-  const { github, context, reruns } = reevalFixture({
-    runs: [[{ id: 5, status: 'in_progress' }], [{ id: 5, status: 'completed', html_url: 'u' }]],
-  });
-  await reevaluate({ github, context, core: fakeCore(), pollMs: 0 });
-  assert.deepEqual(reruns, [5]);
-});
-
-test('reevaluate fails loudly if the run never completes', async () => {
-  const { github, context, reruns } = reevalFixture({
-    runs: [[{ id: 5, status: 'queued' }], [{ id: 5, status: 'queued' }]],
-  });
+test('run posts a red status without a marker, without failing the job', async () => {
+  const { github, statuses } = fakeGithub();
   const core = fakeCore();
-  await reevaluate({ github, context, core, pollMs: 0, maxPolls: 1 });
-  assert.deepEqual(reruns, []);
-  assert.equal(core.calls.failed.length, 1);
+  await run({ github, context: PRT, core });
+  assert.equal(statuses.length, 1);
+  assert.equal(statuses[0].sha, SHA);
+  assert.equal(statuses[0].context, 'cross-model-review');
+  assert.equal(statuses[0].state, 'failure');
+  assert.ok(statuses[0].description.length <= 140);
+  assert.equal(core.calls.failed.length, 0);
 });
 
-test('reevaluate ignores comments that are not owner markers', async () => {
-  for (const opts of [{ login: 'someone-else' }, { body: 'LGTM' }]) {
-    const { github, context, reruns } = reevalFixture({ ...opts, runs: [[{ id: 1, status: 'completed' }]] });
-    await reevaluate({ github, context, core: fakeCore(), pollMs: 0 });
-    assert.deepEqual(reruns, [], JSON.stringify(opts));
-  }
+test('run posts a green status from a comment event when the marker is valid', async () => {
+  const { github, statuses } = fakeGithub({ comments: [comment(marker())] });
+  await run({ github, context: COMMENT, core: fakeCore() });
+  assert.equal(statuses[0].state, 'success');
 });
 
-test('reevaluate re-runs when an edit removes the marker', async () => {
-  const { github, context, reruns } = reevalFixture({
-    body: 'never mind',
-    changes: { body: { from: marker() } },
-    runs: [[{ id: 3, status: 'completed', html_url: 'u' }]],
-  });
-  await reevaluate({ github, context, core: fakeCore(), pollMs: 0 });
-  assert.deepEqual(reruns, [3]);
+test('run ignores comments on plain issues and unsupported events', async () => {
+  const { github, statuses } = fakeGithub({ comments: [comment(marker())] });
+  await run({ github, context: { ...COMMENT, payload: { issue: { number: 7 } } }, core: fakeCore() });
+  await run({ github, context: { ...PRT, eventName: 'pull_request' }, core: fakeCore() });
+  assert.equal(statuses.length, 0);
+});
+
+test('run exempts a Dependabot-only PR and drops the exemption on an incomplete commit list', async () => {
+  const ok = fakeGithub({ prUser: 'dependabot[bot]', commits: [botCommit()] });
+  await run({ github: ok.github, context: PRT, core: fakeCore() });
+  assert.equal(ok.statuses[0].state, 'success');
+
+  const truncated = fakeGithub({ prUser: 'dependabot[bot]', commits: [botCommit()], prCommits: 300 });
+  await run({ github: truncated.github, context: PRT, core: fakeCore() });
+  assert.equal(truncated.statuses[0].state, 'failure');
+});
+
+test('run fails closed on an API error', async () => {
+  const { github, statuses } = fakeGithub({ failComments: true });
+  const core = fakeCore();
+  await run({ github, context: PRT, core });
+  assert.equal(statuses.length, 1);
+  assert.equal(statuses[0].state, 'failure');
+  assert.match(statuses[0].description, /gate error/);
+  assert.deepEqual(core.calls.failed, ['boom']);
 });
