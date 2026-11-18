@@ -1,0 +1,3 @@
+{
+  "install": "[ -s \"$HOME/.nvm/nvm.sh\" ] || curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash; . \"$HOME/.nvm/nvm.sh\" && nvm install && nvm alias default \"$(cat .nvmrc)\" && export PATH=\"$NVM_BIN:$PATH\" && node -v && npm ci"
+}
