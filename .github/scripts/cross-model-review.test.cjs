@@ -303,12 +303,26 @@ test('a newer timestamp beats a higher id', () => {
 
 // --- Dependabot exemption ------------------------------------------------------
 
-function botCommit({ login = 'dependabot[bot]', verified = true } = {}) {
-  return { author: login === null ? null : { login }, commit: { verification: { verified } } };
+// Shape of a real Dependabot commit from the GitHub API (PR #660 in this repo):
+// author dependabot[bot], committer web-flow (GitHub's signing identity),
+// verification { verified: true, reason: 'valid' }.
+function botCommit({
+  sha = SHA,
+  login = 'dependabot[bot]',
+  committer = 'web-flow',
+  verified = true,
+  reason = 'valid',
+} = {}) {
+  return {
+    sha,
+    author: login === null ? null : { login },
+    committer: committer === null ? null : { login: committer },
+    commit: { verification: { verified, reason } },
+  };
 }
 
 test('Dependabot exemption needs a Dependabot opener and only verified Dependabot commits', () => {
-  assert.equal(isDependabotOnly('dependabot[bot]', [botCommit(), botCommit()]), true);
+  assert.equal(isDependabotOnly('dependabot[bot]', [botCommit({ sha: OTHER_SHA }), botCommit()], SHA), true);
   const r = decide({ prAuthor: 'dependabot[bot]', commits: [botCommit()], headSha: SHA, comments: [] });
   assert.equal(r.pass, true);
   assert.match(r.message, /Dependabot/);
@@ -322,20 +336,48 @@ test('Dependabot exemption is lost when anyone else pushes a commit', () => {
     [], // commit list unavailable or incomplete
     undefined,
   ]) {
-    assert.equal(isDependabotOnly('dependabot[bot]', commits), false, JSON.stringify(commits));
+    assert.equal(isDependabotOnly('dependabot[bot]', commits, SHA), false, JSON.stringify(commits));
     assert.equal(decide({ prAuthor: 'dependabot[bot]', commits, headSha: SHA, comments: [] }).pass, false);
   }
 });
 
+test('Dependabot exemption accepts dependabot[bot] or web-flow as committer', () => {
+  assert.equal(isDependabotOnly('dependabot[bot]', [botCommit({ committer: 'web-flow' })], SHA), true);
+  assert.equal(isDependabotOnly('dependabot[bot]', [botCommit({ committer: 'dependabot[bot]' })], SHA), true);
+});
+
+test('Dependabot exemption is lost when a human is the committer of a signed Dependabot-authored commit', () => {
+  for (const committer of ['kchan-code', 'Web-Flow', 'github-actions[bot]', null]) {
+    const commits = [botCommit({ committer })];
+    assert.equal(isDependabotOnly('dependabot[bot]', commits, SHA), false, String(committer));
+    assert.equal(decide({ prAuthor: 'dependabot[bot]', commits, headSha: SHA, comments: [] }).pass, false);
+  }
+  const mixed = [botCommit({ sha: OTHER_SHA }), botCommit({ committer: 'kchan-code' })];
+  assert.equal(isDependabotOnly('dependabot[bot]', mixed, SHA), false);
+});
+
+test('Dependabot exemption requires verification reason "valid"', () => {
+  for (const reason of ['unsigned', 'bad_email', 'unknown_key', undefined]) {
+    assert.equal(isDependabotOnly('dependabot[bot]', [botCommit({ reason })], SHA), false, String(reason));
+  }
+});
+
+test('Dependabot exemption requires the head commit to be in the list and qualify', () => {
+  assert.equal(isDependabotOnly('dependabot[bot]', [botCommit({ sha: OTHER_SHA })], SHA), false);
+  assert.equal(isDependabotOnly('dependabot[bot]', [botCommit()], undefined), false);
+  const r = decide({ prAuthor: 'dependabot[bot]', commits: [botCommit({ sha: OTHER_SHA })], headSha: SHA, comments: [] });
+  assert.equal(r.pass, false);
+});
+
 test('Dependabot lookalike openers are not exempt', () => {
   for (const login of ['Dependabot[bot]', 'dependabot', 'dependabot[bot] ', 'mydependabot[bot]', 'kchan-code']) {
-    assert.equal(isDependabotOnly(login, [botCommit()]), false, login);
+    assert.equal(isDependabotOnly(login, [botCommit()], SHA), false, login);
     assert.equal(decide({ prAuthor: login, commits: [botCommit()], headSha: SHA, comments: [] }).pass, false, login);
   }
 });
 
 test('Dependabot commits on a human-opened PR are not exempt', () => {
-  assert.equal(isDependabotOnly('kchan-code', [botCommit()]), false);
+  assert.equal(isDependabotOnly('kchan-code', [botCommit()], SHA), false);
 });
 
 // --- workflow entrypoint (mocked GitHub client) --------------------------------
