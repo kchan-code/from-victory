@@ -56,8 +56,8 @@ Bubblewrap / TWA — Capacitor is the Android track.
 | Display name | `From Victory` |
 | Hosted WebView URL | `https://www.fromvictoryapp.com` (`capacitor.config.ts` `server.url`) |
 | Native project | `apps/native` (`@from-victory/native`) |
-| Current `versionCode` / `versionName` | `9` / `1.0.0` in `apps/native/android/app/build.gradle` — next upload after Play's v8 (build 8 is on Internal testing; run preflight with `--min-version-code 9`; bump by 1 for every further upload) |
-| Billing in the APK | **None in a default build.** Stripe on the web product. A build made with `FV_PLAY_BILLING=1` (FV-664, see section 4) carries Google's Play Billing Library; no such build goes beyond the internal testing track until KC approves the FV-669 release package, and an internal-testing upload needs KC's explicit go-ahead (see the 2026-11-19 update at the top). |
+| Current `versionCode` / `versionName` | `11` / `1.0.1` in `apps/native/android/app/build.gradle` — the next upload after Play production's build 10 (run preflight with `--min-version-code 11`; bump by 1 for every further upload) |
+| Billing in the APK | **None in a default build.** Stripe on the web product. A build made with `FV_PLAY_BILLING=1` (FV-664, see section 4) carries Google's Play Billing Library; no such build goes beyond the internal testing track until all three gates in the 2026-11-19 update are met (FV-763 passed in full, the FV-668 matrix passed, and KC's approval of the FV-669 release package), and an internal-testing upload needs KC's explicit go-ahead (see the 2026-11-19 update at the top). |
 | Tracking / ads / crash SDKs | **None of ours, and none at all in a default build.** Do not add them to satisfy Play. A `FV_PLAY_BILLING=1` build also carries the billing library's own Google components (datatransport telemetry transport, Play services, firebase-encoders), so do not describe that build as free of telemetry code. |
 | Age floor | 13+. Minors 13–17 are parent-managed. Not a kids app. |
 | iOS / App Store | Separate track: [docs/ios-app-store-release.md](./ios-app-store-release.md). Checklist ready; enrollment not started. |
@@ -269,8 +269,9 @@ components (from the Play Billing Library's own dependencies), which the Data
 safety form and privacy page must reflect before such a build goes to any
 track wider than internal testing (FV-667). Whether the form is updated before
 an internal-testing upload is KC's call at that upload. Do not upload a
-billing build to any track wider than internal testing until FV-669's release
-package is approved by KC; an internal-testing upload needs KC's explicit
+billing build to any track wider than internal testing until FV-763 has passed
+in full, the FV-668 matrix has passed, and FV-669's release package is
+approved by KC; an internal-testing upload needs KC's explicit
 go-ahead for that upload (see the 2026-11-19 update at the top).
 
 Confirm the application id before the first upload (this is what Gradle
