@@ -41,6 +41,18 @@ export type ContactActionState =
 const SEND_FAILED_ERROR =
   "Your message did not go through. Please try again shortly, or email support@fromvictoryapp.com.";
 
+const SEND_TIMEOUT_MS = 8000;
+const SEND_TIMEOUT_REASON = "timeout";
+
+type SendFailureCategory = "timeout" | "provider_error" | "exception" | "not_configured";
+
+function failureCategory(reason: string): SendFailureCategory {
+  if (reason === SEND_TIMEOUT_REASON) return "timeout";
+  if (reason.startsWith("Resend error")) return "provider_error";
+  if (reason.startsWith("Resend exception")) return "exception";
+  return "not_configured";
+}
+
 export async function submitContact(
   _prev: ContactActionState,
   formData: FormData,
@@ -101,22 +113,28 @@ export async function submitContact(
     };
   }
 
-  // Success is only shown once the send actually succeeded (FV-770).
-  const result = await sendContactNotification({
-    name: data.name,
-    email: data.email,
-    message: data.message,
-  });
+  // Success is only shown once the send actually succeeded (FV-770). The
+  // send is bounded so a hung provider still ends in the honest error.
+  const result = await Promise.race([
+    sendContactNotification({
+      name: data.name,
+      email: data.email,
+      message: data.message,
+    }),
+    new Promise<{ ok: false; reason: string }>((resolve) =>
+      setTimeout(() => resolve({ ok: false, reason: SEND_TIMEOUT_REASON }), SEND_TIMEOUT_MS),
+    ),
+  ]);
   if (!result.ok) {
-    // Reason only: never the message body or name. The sender's reason can
-    // echo a provider message, so the submitted email is scrubbed from it.
-    const reason = result.reason.split(data.email).join("[redacted]");
-    console.error("[contact] notification not sent:", reason);
+    // Category only. The sender's free-text reason can echo a provider or
+    // exception message containing the name, email or message, so it is
+    // never logged.
+    console.error("[contact] notification not sent:", failureCategory(result.reason));
     // Static label/message per notifyError's PII rule; reason is in the logs.
     deliverInBackground(
       notifyError(
         "contact.send_failed",
-        "Contact notification email was not sent; see function logs for the reason.",
+        "Contact notification email was not sent; see function logs for the category.",
       ),
     );
     return { ok: false, error: SEND_FAILED_ERROR, values };

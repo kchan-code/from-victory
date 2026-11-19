@@ -100,7 +100,7 @@ describe("submitContact send result (FV-770)", () => {
   it("send failure: honest error, values kept, reason-only log", async () => {
     sendMock.mockResolvedValue({
       ok: false,
-      reason: "Resend error: bad address j@example.com",
+      reason: "Resend error: bad address J@Example.com for Jordan: private words here",
     });
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const res = await submitContact(
@@ -117,7 +117,8 @@ describe("submitContact send result (FV-770)", () => {
       },
     });
     const logged = JSON.stringify(errSpy.mock.calls);
-    expect(logged).toContain("Resend error");
+    expect(logged).toContain("provider_error");
+    expect(logged.toLowerCase()).not.toContain("j@example.com");
     expect(logged).not.toContain("private words here");
     expect(logged).not.toContain("Jordan");
     expect(logged).not.toContain("j@example.com");
@@ -137,6 +138,23 @@ describe("submitContact send result (FV-770)", () => {
     const res = await submitContact(null, form());
     expect(res).toMatchObject({ ok: false, error: SEND_ERROR });
     errSpy.mockRestore();
+  });
+
+  it("hung provider: honest error after the timeout, values kept", async () => {
+    vi.useFakeTimers();
+    sendMock.mockReturnValue(new Promise(() => {}));
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const pending = submitContact(null, form());
+    await vi.advanceTimersByTimeAsync(8000);
+    const res = await pending;
+    expect(res).toMatchObject({
+      ok: false,
+      error: SEND_ERROR,
+      values: { name: "Jordan", email: "j@example.com", message: "Hello there" },
+    });
+    expect(JSON.stringify(errSpy.mock.calls)).toContain("timeout");
+    errSpy.mockRestore();
+    vi.useRealTimers();
   });
 
   it("validation error keeps what was typed", async () => {
