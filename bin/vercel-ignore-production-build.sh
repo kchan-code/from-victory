@@ -71,7 +71,10 @@ if ! git -C "$ROOT" cat-file -e "${CUR}^{commit}" 2>/dev/null \
   exit 1
 fi
 
-if git -C "$ROOT" diff --name-only "${CUR}^1" "$CUR" | grep -q '^supabase/migrations/'; then
+# Capture first: `git diff | grep -q` under pipefail can return 141 (SIGPIPE) on
+# a very large commit and fall through to a build.
+CHANGED="$(git -C "$ROOT" diff --name-only "${CUR}^1" "$CUR")"
+if printf '%s\n' "$CHANGED" | grep -q '^supabase/migrations/'; then
   echo "FV migrate-before-deploy: this commit changes supabase/migrations. Skipping the automatic production build so db-migrate can apply schema first."
   exit 0
 fi
