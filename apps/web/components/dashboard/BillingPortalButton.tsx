@@ -38,7 +38,7 @@ export function BillingPortalButton() {
   const errorMessage =
     state?.ok === false
       ? state.code === "portal_unavailable"
-        ? "Billing management is temporarily unavailable — contact support."
+        ? "Billing management is temporarily unavailable. Try again in a moment. If it keeps happening, see fromvictoryapp.com/help."
         : state.code === "native_shell_unavailable"
           ? "Manage your subscription from a web browser at fromvictoryapp.com."
           : "No active subscription found. Refresh the page to update your plan details."
