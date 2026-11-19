@@ -317,7 +317,7 @@ export async function deleteAccount(
         return {
           ok: false,
           error:
-            "Could not cancel your subscription before deleting your account. Please try again or contact support.",
+            "Could not cancel your subscription before deleting your account. Please try again, or see fromvictoryapp.com/help.",
         };
       }
     }
