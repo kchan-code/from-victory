@@ -204,7 +204,7 @@ export async function resolveTrainingAccess(opts: {
  * OFFLINE by the pregame shell (KC policy 2026-11-09: "until the last
  * verified subscription period ends"). Call only after resolveTrainingAccess
  * returned allowed. See getParentOfflineEntitlementUntil in ./access for the
- * per-source rule (perpetual comp grants contribute no end → null).
+ * per-source rule (an open-ended comp grant contributes now + 30 days, FV-757).
  *
  * Gating off → null: with enforcement off there is no verified entitlement
  * period to bound offline use by, so pregame is online-only rather than

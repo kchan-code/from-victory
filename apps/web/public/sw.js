@@ -626,10 +626,18 @@ async function pregameShellNetworkFirst(request) {
 
     // Only cache 200 OK responses. 3xx (redirect to /signin if offline auth
     // somehow runs server-side) or error responses must not be cached.
+    //
+    // FV-756: a response that FOLLOWED a redirect is a 200 for some other
+    // page (for example /update-required once a minimum app build is set).
+    // Storing it under the Pregame address would serve that page as Pregame
+    // offline. A navigation request never gets here with one (its redirect
+    // mode is "manual"), but the in-app warm request (warm-shell.ts, FV-753)
+    // follows redirects. Return it to the caller; do not store it.
     if (
       networkResponse.ok &&
       networkResponse.status === 200 &&
-      networkResponse.type !== "opaque"
+      networkResponse.type !== "opaque" &&
+      !networkResponse.redirected
     ) {
       // Guard: if the response carries a Set-Cookie header (auth token),
       // it's NOT PII-free. Do not cache it — fall through and serve the

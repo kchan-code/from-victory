@@ -381,7 +381,10 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
 
   it("an ENTITLED adult browsing /subscribe keeps their offline pregame", async () => {
     asAdult();
-    maybeSingleMock.mockResolvedValue({ data: { stripe_customer_id: "cus_1" }, error: null });
+    maybeSingleMock.mockResolvedValue({
+      data: { stripe_customer_id: "cus_1", stripe_subscription_id: "sub_1" },
+      error: null,
+    });
     enforcementEnabledMock.mockReturnValue(true);
     accessLevelMock.mockResolvedValue("full");
     const { queryByTestId } = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
@@ -409,7 +412,7 @@ describe("SubscribePage — back-link loop guard (FV-464)", () => {
   it("keeps the role-aware target for an adult with active access", async () => {
     asAdult();
     maybeSingleMock.mockResolvedValue({
-      data: { stripe_customer_id: "cus_1" },
+      data: { stripe_customer_id: "cus_1", stripe_subscription_id: "sub_1" },
       error: null,
     });
     enforcementEnabledMock.mockReturnValue(true);
@@ -514,6 +517,24 @@ describe("SubscribePage — 7-day trial banner gate (FV-574)", () => {
     return container.textContent ?? "";
   };
 
+  it("parity: no subscriptions row means the trial banner shows", async () => {
+    asParent();
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    athleteCountMock.mockResolvedValue({ count: 1, error: null });
+
+    expect(await renderedText()).toContain("trialEligible:true");
+  });
+
+  it("parity: stripe_customers-only state (no subscriptions row yet) still shows the trial banner", async () => {
+    asParent();
+    // Pre-checkout customer mirrors are tracked separately; /subscribe trial
+    // banner eligibility still keys off the subscriptions row.
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    athleteCountMock.mockResolvedValue({ count: 1, error: null });
+
+    expect(await renderedText()).toContain("trialEligible:true");
+  });
+
   it("first-time parent with one athlete → trialEligible:true", async () => {
     asParent();
     noExistingSub();
@@ -561,7 +582,7 @@ describe("SubscribePage — 7-day trial banner gate (FV-574)", () => {
   it("existing subscription row still hides the banner regardless of athlete count", async () => {
     asParent();
     maybeSingleMock.mockResolvedValue({
-      data: { stripe_customer_id: "cus_1" },
+      data: { stripe_customer_id: "cus_1", stripe_subscription_id: "sub_1" },
       error: null,
     });
     athleteCountMock.mockResolvedValue({ count: 1, error: null });
@@ -1020,7 +1041,10 @@ describe("SubscribePage — sign-out exit (FV-644)", () => {
 
   it("an entitled payer browsing /subscribe can also sign out", async () => {
     asRole("adult_athlete");
-    maybeSingleMock.mockResolvedValue({ data: { stripe_customer_id: "cus_1" }, error: null });
+    maybeSingleMock.mockResolvedValue({
+      data: { stripe_customer_id: "cus_1", stripe_subscription_id: "sub_1" },
+      error: null,
+    });
     enforcementEnabledMock.mockReturnValue(true);
     accessLevelMock.mockResolvedValue("full");
     entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "comp" });
@@ -1073,7 +1097,10 @@ describe("SubscribePage — account settings route for a blocked adult (FV-645)"
 
   it("an entitled adult browsing /subscribe sees no extra link (flow unchanged)", async () => {
     asRole("adult_athlete");
-    maybeSingleMock.mockResolvedValue({ data: { stripe_customer_id: "cus_1" }, error: null });
+    maybeSingleMock.mockResolvedValue({
+      data: { stripe_customer_id: "cus_1", stripe_subscription_id: "sub_1" },
+      error: null,
+    });
     enforcementEnabledMock.mockReturnValue(true);
     accessLevelMock.mockResolvedValue("full");
     entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "comp" });

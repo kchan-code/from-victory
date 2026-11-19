@@ -44,6 +44,10 @@ export type BreathAudioState = {
   // Caller wires this to <audio ref={...} /> (or we can render our own
   // element; BreathScreen prefers passing one in).
   audioRef: React.RefObject<HTMLAudioElement | null>;
+  // The slug whose timeline actually loaded: `slug`, or `fallbackSlug` when
+  // the first one was not available. The caller builds the <audio> src from
+  // this, never from the slug it asked for.
+  resolvedSlug: string;
   usesNativeAudio: boolean;
   play: () => Promise<void>;
   pause: () => void;
@@ -66,10 +70,16 @@ function findActivePhaseIndex(
 
 export function useBreathAudio({
   slug,
+  fallbackSlug,
   expectedRounds,
   onComplete,
 }: {
   slug: string;
+  // FV-758: tried when `slug`'s timeline cannot be loaded (404, or not in the
+  // offline audio cache). The saved-run recording is newer than some devices'
+  // caches, so an offline athlete falls back to the standard recording rather
+  // than to a silent sphere.
+  fallbackSlug?: string;
   // Used for the pip count when timeline hasn't loaded yet OR when audio
   // is missing.
   expectedRounds: number;
@@ -78,6 +88,7 @@ export function useBreathAudio({
   const [status, setStatus] = useState<BreathAudioState["status"]>("loading");
   const [timeline, setTimeline] = useState<AudioTimeline | null>(null);
   const [currentSec, setCurrentSec] = useState(0);
+  const [resolvedSlug, setResolvedSlug] = useState(slug);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [nativeNarrationPlayer, setNativeNarrationPlayer] = useState<NativeNarrationPlayer | null>(null);
@@ -100,18 +111,48 @@ export function useBreathAudio({
     setHasStarted(false);
     setNativeNarrationPlayer(null);
     setCurrentSec(0);
-    fetch(audioAssetUrl(slug, "json"), { signal: controller.signal })
-      .then(async (res) => {
+    setResolvedSlug(slug);
+    // Load the first timeline that is available. A failed fetch (offline cache
+    // miss) on a slug that has a fallback moves on to the fallback; on the
+    // last candidate it surfaces as before ("missing" for a 404, "error" for a
+    // rejected fetch).
+    const candidates = fallbackSlug && fallbackSlug !== slug ? [slug, fallbackSlug] : [slug];
+    const loadTimeline = async (): Promise<{ slug: string; json: AudioTimeline } | null> => {
+      for (let i = 0; i < candidates.length; i++) {
+        const candidate = candidates[i];
+        if (candidate === undefined) continue;
+        const isLast = i === candidates.length - 1;
+        try {
+          const res = await fetch(audioAssetUrl(candidate, "json"), { signal: controller.signal });
+          if (!res.ok) continue;
+          // A candidate that has a fallback behind it is only accepted when
+          // its MP3 is reachable too. Otherwise a cached timeline with an
+          // uncached MP3 (offline) would end in the silent sphere instead of
+          // the fallback recording. The service worker answers HEAD from its
+          // audio cache.
+          if (!isLast) {
+            const head = await fetch(audioAssetUrl(candidate, "mp3"), { method: "HEAD", signal: controller.signal });
+            if (!head.ok) continue;
+          }
+          return { slug: candidate, json: (await res.json()) as AudioTimeline };
+        } catch (err) {
+          if (isLast || controller.signal.aborted) throw err;
+        }
+      }
+      return null;
+    };
+    loadTimeline()
+      .then(async (loaded) => {
         if (cancelled) return;
-        if (!res.ok) {
+        if (!loaded) {
           setStatus("missing");
           return;
         }
-        const json = (await res.json()) as AudioTimeline;
-        if (cancelled) return;
+        const json = loaded.json;
+        setResolvedSlug(loaded.slug);
         const bridge = nativeBridgeRef.current;
         if (bridge) {
-          const response = await fetch(audioAssetUrl(slug, "mp3"), { signal: controller.signal });
+          const response = await fetch(audioAssetUrl(loaded.slug, "mp3"), { signal: controller.signal });
           if (!response.ok) throw new Error("Breathing audio unavailable");
           const bytes = await response.arrayBuffer();
           if (cancelled) return;
@@ -151,7 +192,7 @@ export function useBreathAudio({
       nativePlayerRef.current?.remove();
       nativePlayerRef.current = null;
     };
-  }, [slug]);
+  }, [slug, fallbackSlug]);
 
   // Wire audio element listeners
   //
@@ -254,6 +295,7 @@ export function useBreathAudio({
 
   return {
     nativeNarrationPlayer,
+    resolvedSlug,
     status,
     isPlaying,
     hasStarted,

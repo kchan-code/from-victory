@@ -13,12 +13,20 @@ import Foundation
  * A 5xx does not auto-open Pregame. The server answered, so that navigation
  * would hit the same outage. The bundled page's saved-session link is the way
  * into a session the Service Worker may still have cached.
+ *
+ * FV-753: the service worker only exists on iOS because the app runs in
+ * app-bound mode (`WKAppBoundDomains` in Info.plist plus
+ * `ios.limitsNavigationsToAppBoundDomains` in capacitor.config.ts). Without
+ * both, "open Pregame" and the saved-session link have nothing to load from.
  */
 enum OfflineEntryFallback {
     static let pregamePath = "/athlete/pregame"
     static let maxPregameRetries = 3
     /// Reserved `.invalid` host (RFC 2606). Gives the bundled page an origin so
     /// absolute links navigate, without being the app origin.
+    /// FV-753: this host must stay in `WKAppBoundDomains` (Info.plist). In
+    /// app-bound mode WebKit refuses a main-frame load of any other host and
+    /// the offline page never appears.
     static let offlinePageBase = "https://fv-offline.invalid/"
 
     enum Action {

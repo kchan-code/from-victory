@@ -236,10 +236,11 @@ export default function DeleteAccountPage() {
           still show the name and email address used for the purchase, and
           may carry the marketing-channel label described in Section 7 of our
           Privacy Policy and an internal account identifier that no longer
-          points to any account. If you began a
-          checkout on our website but never completed it, our payment
-          processor may hold a record of that attempt that is not tied to a
-          subscription; contact us at <PrivacyEmailLink /> and we will have it
+          points to any account. If you began a checkout on our website but
+          never completed it, deleting your account also removes the billing
+          customer profile our payment processor created for that attempt.
+          Our payment processor may still keep a record of the checkout
+          attempt; contact us at <PrivacyEmailLink /> and we will have it
           removed.
         </p>
         <p>

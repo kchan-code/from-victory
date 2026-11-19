@@ -111,6 +111,7 @@ begin
 
   -- The predicate itself must name the data sources it is documented to cover.
   assert predicate_src ~ '\mpublic\.subscriptions\M'
+     and predicate_src ~ '\mpublic\.stripe_customers\M'
      and predicate_src ~ '\mpublic\.apple_subscriptions\M'
      and predicate_src ~ '\mpublic\.apple_purchase_tokens\M'
      and predicate_src ~ '\mpublic\.google_subscriptions\M'

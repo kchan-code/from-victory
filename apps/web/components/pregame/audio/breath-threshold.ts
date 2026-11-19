@@ -104,3 +104,21 @@ Pauses: The script's typed silence segments carry structural pauses. Let your se
     },
   ],
 };
+
+// Saved-run variant (FV-758). When the athlete starts a SAVED run ("Run it
+// like last time" / saved offline session) the focus is already chosen, so the
+// close must not say "Now set your focus." Derived from the base script so the
+// two cannot drift: same voice, instructions, speed, postFilter, segments and
+// marks; only the final speech text changes.
+const lastSpeechIdx = BREATH_THRESHOLD_SCRIPT.segments.reduce(
+  (acc, seg, i) => (seg.type === "speech" ? i : acc),
+  -1,
+);
+
+export const BREATH_THRESHOLD_SAVED_SCRIPT: AudioScript = {
+  ...BREATH_THRESHOLD_SCRIPT,
+  slug: "breath-threshold-saved",
+  segments: BREATH_THRESHOLD_SCRIPT.segments.map((seg, i) =>
+    i === lastSpeechIdx && seg.type === "speech" ? { ...seg, text: "Ready." } : seg,
+  ),
+};

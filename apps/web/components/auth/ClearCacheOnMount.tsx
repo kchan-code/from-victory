@@ -5,6 +5,7 @@
 import { useEffect } from "react";
 import { clearAthleteCache } from "@/lib/pregame/athlete-cache";
 import { clearPregameSession } from "@/lib/pregame/session-cache";
+import { clearOfflineAudioCaches } from "@/lib/audio/clear-audio-cache";
 
 /**
  * ClearCacheOnMount (FV-154)
@@ -34,6 +35,9 @@ export function ClearCacheOnMount() {
   useEffect(() => {
     clearAthleteCache();
     clearPregameSession();
+    // FV-754: no session here, so the downloaded clips (previous athlete's
+    // sport/position) go too, on every path that lands on /signin.
+    void clearOfflineAudioCaches();
   }, []);
 
   return null;

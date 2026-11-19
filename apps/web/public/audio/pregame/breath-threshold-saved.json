@@ -1,0 +1,44 @@
+{
+  "slug": "breath-threshold-saved",
+  "durationSec": 52.5,
+  "phases": [
+    {
+      "phase": "intro",
+      "startSec": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 8.872,
+      "round": 0
+    },
+    {
+      "phase": "exhale",
+      "startSec": 14.624,
+      "round": 0
+    },
+    {
+      "phase": "inhale",
+      "startSec": 21.68,
+      "round": 1
+    },
+    {
+      "phase": "exhale",
+      "startSec": 28.368,
+      "round": 1
+    },
+    {
+      "phase": "inhale",
+      "startSec": 36.984,
+      "round": 2
+    },
+    {
+      "phase": "exhale",
+      "startSec": 42.904,
+      "round": 2
+    },
+    {
+      "phase": "done",
+      "startSec": 51.408
+    }
+  ]
+}

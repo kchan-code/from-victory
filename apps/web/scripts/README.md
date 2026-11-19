@@ -28,6 +28,29 @@ npm run provision:play-review -- --teardown       # delete both accounts (irreve
 Requires `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` in
 `apps/web/.env.local` (or exported), pointed at the target project.
 
+## provision-app-store-review-account.ts
+
+Provisions the Apple App Store Connect "App Review Information" reviewer
+test account: one parent + one linked 13-17 minor athlete, entitled via a
+durable `access_grants` comp row (no Stripe checkout, works regardless of
+`ENFORCE_SUBSCRIPTION_GATING`). Mirrors `provision-play-review-account.ts`
+(FV-480) exactly, with its own independent credentials — this is a separate,
+independently-revocable account for a different app store, not a shared
+login. **Tier-2, prod-user-data — KC runs this or explicitly approves the
+run.** See the script's header comment for the full design rationale and
+`docs/app-store-review-access-grant.sql` for the SQL-only grant
+revoke/re-grant companion.
+
+```sh
+npm run provision:app-store-review -- --dry-run       # preview, no writes
+npm run provision:app-store-review                    # create/update both accounts + grant
+npm run provision:app-store-review -- --revoke-grant   # turn off entitlement, keep both accounts
+npm run provision:app-store-review -- --teardown       # delete both accounts (irreversible)
+```
+
+Requires `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` in
+`apps/web/.env.local` (or exported), pointed at the target project.
+
 ## generate-pregame-audio.ts
 
 Generates pregame audio MP3s + sidecar JSON timelines from typed

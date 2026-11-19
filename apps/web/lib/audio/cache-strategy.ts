@@ -26,8 +26,11 @@
  * shell loads the hosted app over https (server.url) in a Chromium WebView that
  * runs the Service Worker and Cache Storage exactly like the PWA, so it uses
  * WebCacheStrategy. Only a Capacitor shell WITHOUT Service Worker support
- * (today: the iOS WKWebView, which has no App-Bound Domains configured) gets
- * the NativeCacheStrategy stub — unchanged from before FV-638.
+ * gets the NativeCacheStrategy stub. That was the iOS WKWebView up to and
+ * including iOS build 8, which had no App-Bound Domains configured. FV-753
+ * configures them, so an iOS build made after it exposes a Service Worker and
+ * selects WebCacheStrategy here, the same as Android. Older installed iOS
+ * builds keep the stub.
  *
  * NATIVE IMPLEMENTATION NOTE
  * --------------------------
@@ -90,8 +93,9 @@ function isNativeShell(): boolean {
  *
  * WebCacheStrategy needs BOTH Cache Storage (to warm `fv-audio-<mv>`) and a
  * Service Worker (sw.js audioCacheFirst serves those entries offline). The
- * Android Capacitor WebView has both; the iOS WKWebView (no App-Bound Domains)
- * exposes no `navigator.serviceWorker`, so it keeps the native stub.
+ * Android Capacitor WebView has both. The iOS WKWebView exposes
+ * `navigator.serviceWorker` only in app-bound mode (FV-753): iOS builds up to
+ * 8 have none and keep the native stub; later builds have it.
  */
 function hasServiceWorkerAudioPath(): boolean {
   if (typeof window === "undefined") return false;
@@ -254,7 +258,8 @@ export class WebCacheStrategy implements CacheStrategy {
 //
 // This stub satisfies the CacheStrategy interface so the web build compiles
 // cleanly. It is selected only in a Capacitor shell with no Service Worker
-// support (today: iOS) — see selectCacheStrategy() (FV-638). The real
+// support (iOS builds up to 8; see FV-753) — see selectCacheStrategy()
+// (FV-638). The real
 // Filesystem implementation is a follow-up PR gated on @capacitor/filesystem
 // being approved and installed.
 //
@@ -312,8 +317,8 @@ let _cachedStrategy: CacheStrategy | null = null;
  * WebCacheStrategy whenever the runtime has the Service-Worker audio path —
  * the browser, the installed PWA, AND the Android Capacitor shell (FV-638:
  * selecting the stub there broke "Set up for later" and offline audio).
- * NativeCacheStrategy only for a Capacitor shell WITHOUT that path (today:
- * iOS WKWebView — unchanged). The result is memoized so both consumers
+ * NativeCacheStrategy only for a Capacitor shell WITHOUT that path (iOS
+ * builds up to 8; FV-753 gives later iOS builds the path). The result is memoized so both consumers
  * (audio-precache.ts and useClipPlayer.ts) share a single instance per page
  * load — the instance is stateless today, but memoizing is cheap insurance.
  *

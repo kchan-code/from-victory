@@ -90,9 +90,12 @@ export default async function SubscribePage(props: Props) {
     const supabase = await createClient();
     const { data: existingSub, error: subReadError } = await supabase
       .from("subscriptions")
-      .select("stripe_customer_id")
+      .select("stripe_subscription_id")
       .eq("parent_id", userId)
       .maybeSingle();
+    const hadStripeSubscriptionBeforeCheckout =
+      existingSub?.stripe_subscription_id !== null &&
+      existingSub?.stripe_subscription_id !== undefined;
 
     // FV-574: the 7-day trial applies only to one-athlete checkouts, so the
     // banner (a consumer-protection disclosure — see SubscribeForm) must not
@@ -104,7 +107,7 @@ export default async function SubscribePage(props: Props) {
     let trialQuantityEligible: boolean;
     if (isAdult) {
       trialQuantityEligible = true;
-    } else if (existingSub !== null || subReadError !== null) {
+    } else if (hadStripeSubscriptionBeforeCheckout || subReadError !== null) {
       // Returning subscriber (or unreadable sub row): the banner is hidden
       // regardless, so skip the count read entirely (qa perf note, PR #513).
       trialQuantityEligible = false;
@@ -127,7 +130,7 @@ export default async function SubscribePage(props: Props) {
     if (
       isGooglePlayCatalogActive() &&
       subReadError === null &&
-      existingSub === null
+      !hadStripeSubscriptionBeforeCheckout
     ) {
       try {
         const service = createServiceClient();
@@ -140,7 +143,7 @@ export default async function SubscribePage(props: Props) {
 
     trialEligible =
       subReadError === null &&
-      existingSub === null &&
+      !hadStripeSubscriptionBeforeCheckout &&
       trialQuantityEligible &&
       !providerHistoryReadError &&
       !appleEverHeld &&

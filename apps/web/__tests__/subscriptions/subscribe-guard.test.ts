@@ -38,7 +38,9 @@ const NOW = new Date("2026-09-16T12:00:00.000Z");
 const FUTURE_ISO = new Date(NOW.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
 let accessGrantsResult: Result<Array<{ id: string; expires_at: string | null }>>;
-let subscriptionsResult: Result<{ status: string } | null>;
+let subscriptionsResult: Result<
+  { status: string; stripe_subscription_id?: string | null } | null
+>;
 let appleSubsListResult: Result<
   Array<{
     environment: "Sandbox" | "Production";
@@ -225,6 +227,16 @@ describe("getSubscribeEntitlementState", () => {
     expect(result).toEqual({ status: "not_entitled", provider: null });
   });
 
+  it("entitled via Stripe: incomplete row is degraded and still blocks a second purchase", async () => {
+    subscriptionsResult = {
+      data: { status: "incomplete", stripe_subscription_id: null },
+      error: null,
+    };
+
+    const result = await getSubscribeEntitlementState(PAYER_ID);
+    expect(result).toEqual({ status: "entitled", provider: "stripe" });
+  });
+
   // -------------------------------------------------------------------------
   // FV-584 (KC decision D1): degraded is entitled too
   // -------------------------------------------------------------------------
@@ -238,6 +250,16 @@ describe("getSubscribeEntitlementState", () => {
 
   it("entitled via Stripe: paused subscriptions row (degraded, FV-584)", async () => {
     subscriptionsResult = { data: { status: "paused" }, error: null };
+
+    const result = await getSubscribeEntitlementState(PAYER_ID);
+    expect(result).toEqual({ status: "entitled", provider: "stripe" });
+  });
+
+  it("entitled via Stripe: real incomplete subscription row (has stripe_subscription_id)", async () => {
+    subscriptionsResult = {
+      data: { status: "incomplete", stripe_subscription_id: "sub_real_incomplete" },
+      error: null,
+    };
 
     const result = await getSubscribeEntitlementState(PAYER_ID);
     expect(result).toEqual({ status: "entitled", provider: "stripe" });

@@ -45,7 +45,7 @@
  * dated comp grant or Apple expiry; see getParentOfflineEntitlementUntil). No
  * grace is added past it and there is no indefinite offline access: an
  * entitlement with NO end date (a perpetual comp grant — e.g. the Play
- * reviewer account) gets `offlineUntil: null` → pregame is online-only for it.
+ * reviewer account) gets a rolling 30 days from each online check (FV-757).
  * EXPLICIT revocation is immediate on the first online contact that sees the
  * block, and stays revoked offline (the entry is removed): opening pregame
  * (step 5 clears the cache); for a MINOR athlete, any gated training page
@@ -104,6 +104,7 @@ import {
   readAthleteCache,
   writeAthleteCache,
 } from "@/lib/pregame/athlete-cache";
+import { warmPregameShell } from "@/lib/pregame/warm-shell";
 import { isTrainingBlockedRedirect } from "@/lib/subscriptions/training-redirects";
 import { PregameFlow } from "./PregameFlow";
 import { SUPPORTED_SPORTS, type Sport } from "@/lib/sports";
@@ -362,6 +363,10 @@ export function PregameClientShell() {
             ? rawUntil
             : null;
         writeAthleteCache({ sport, firstName, offlineUntil, verifiedAt: Date.now() });
+        // FV-753: have the service worker save this page for a no-signal
+        // cold start. A link tap does not load the page itself, so without
+        // this nothing is saved. Fire and forget; it never throws.
+        void warmPregameShell();
 
         setState({ kind: "ready", sport, firstName });
       } catch (err) {

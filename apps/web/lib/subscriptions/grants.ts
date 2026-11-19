@@ -49,12 +49,14 @@ export async function hasActiveCompGrant(
  *   - `active`          — same answer `hasActiveCompGrant` gives.
  *   - `latestFiniteEnd` — the latest `expires_at` among ACTIVE grants that
  *     have one (ISO string), or null when there is none. A PERPETUAL grant
- *     (`expires_at = null`) has no end date and contributes nothing here: it
- *     ends only when an admin revokes it, which a device can learn only
- *     online. No period is invented for it.
+ *     (`expires_at = null`) has no end date, so it never appears here.
+ *   - `hasOpenEnded`    — true when at least one ACTIVE (not revoked) grant has
+ *     `expires_at = null`. The offline bound (getParentOfflineEntitlementUntil
+ *     in ./access) turns this into a rolling window; this reader invents no
+ *     period itself (FV-757).
  *
  * Fail-closed on DB error: `{ active: false, latestFiniteEnd: null,
- * readError: true }` (FV-746: `readError` lets a caller that must not act on a
+ * hasOpenEnded: false, readError: true }` (FV-746: `readError` lets a caller that must not act on a
  * guess, e.g. the payment-problem notice, tell "no grant" from "couldn't tell").
  */
 export async function getActiveCompGrantSummary(
@@ -64,6 +66,7 @@ export async function getActiveCompGrantSummary(
 ): Promise<{
   active: boolean;
   latestFiniteEnd: string | null;
+  hasOpenEnded: boolean;
   readError: boolean;
 }> {
   // Fetch all non-revoked grants for this parent. Typically 0–3 rows.
@@ -80,21 +83,23 @@ export async function getActiveCompGrantSummary(
     );
     // Fail-closed: on DB error, do NOT grant access. The underlying
     // subscription check in getParentAccessLevel will still run.
-    return { active: false, latestFiniteEnd: null, readError: true };
+    return { active: false, latestFiniteEnd: null, hasOpenEnded: false, readError: true };
   }
 
   if (!data || data.length === 0) {
-    return { active: false, latestFiniteEnd: null, readError: false };
+    return { active: false, latestFiniteEnd: null, hasOpenEnded: false, readError: false };
   }
 
   // Check whether any non-revoked grant is also not expired.
   // Perpetual grants (expires_at = null) are always active.
   let active = false;
+  let hasOpenEnded = false;
   let latestMs: number | null = null;
   let latestIso: string | null = null;
   for (const grant of data) {
     if (grant.expires_at === null) {
       active = true;
+      hasOpenEnded = true;
       continue;
     }
     const endMs = new Date(grant.expires_at).getTime();
@@ -106,5 +111,5 @@ export async function getActiveCompGrantSummary(
       }
     }
   }
-  return { active, latestFiniteEnd: latestIso, readError: false };
+  return { active, latestFiniteEnd: latestIso, hasOpenEnded, readError: false };
 }

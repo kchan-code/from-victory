@@ -28,8 +28,9 @@
  * said the athlete is entitled:
  *   - `offlineUntil` — the server's answer: the end of the last verified
  *     entitlement period (subscription period / trial end / dated comp
- *     grant), ISO string; or null when the entitlement has no end date
- *     (a perpetual comp grant) or gating is off → NO offline window.
+ *     grant; an open-ended comp grant counts as 30 days from the check),
+ *     ISO string; or null when no source gives an end or gating is off →
+ *     NO offline window.
  *   - `verifiedAt`   — this DEVICE's clock (ms) at that check.
  * Offline, the shell opens pregame only when `hasUsableOfflineEntitlement`
  * says so (see it for the exact rule). Pre-FV-625 entries, legacy

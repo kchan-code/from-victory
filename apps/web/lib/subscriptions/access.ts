@@ -266,13 +266,23 @@ async function resolvePayerIdForCurrentUser(): Promise<string | null> {
 // ---------------------------------------------------------------------------
 
 /**
+ * How far ahead an ACTIVE open-ended (no end date) comp grant bounds offline
+ * Pregame, counted from each online check, so the window rolls. KC decided
+ * 2026-11-16 (FV-757) to allow offline use for such grants; the 30-day length
+ * is a default chosen by the lead, not specified by KC.
+ */
+export const OPEN_ENDED_GRANT_OFFLINE_DAYS = 30;
+
+/**
  * KC's offline policy: a device's offline Pregame access lasts "until the
  * last verified subscription period ends". This returns that end for a payer:
  * the LATEST finite end across the sources that currently grant access —
  *
- *   - comp grants: the latest `expires_at` among active grants. A PERPETUAL
- *     grant (`expires_at = null`, e.g. the Play reviewer account) has no end
- *     date and contributes NOTHING — no period is invented for it.
+ *   - comp grants: the latest `expires_at` among active grants. An ACTIVE
+ *     open-ended grant (`expires_at = null`, e.g. the Play reviewer account)
+ *     contributes `now + OPEN_ENDED_GRANT_OFFLINE_DAYS` (KC decision
+ *     2026-11-16, FV-757); each online check recomputes it, so the window
+ *     rolls. A revoked grant, or a failed grants read, contributes nothing.
  *   - Stripe: `current_period_end` when the status is not blocked (during
  *     `trialing` Stripe's current period IS the trial, so this is the trial
  *     end; see ./trial-conversion).
@@ -282,10 +292,10 @@ async function resolvePayerIdForCurrentUser(): Promise<string | null> {
  *     the centralized accessor in ./google (dormant unless
  *     GOOGLE_PLAY_CATALOG_ACTIVE is "1").
  *
- * Returns null when no entitling source has a finite end still in the future
- * — the caller then gives NO offline window (online-only), never an unbounded
- * one. Every read fails closed (an error drops that source → a shorter or
- * null window, never a longer one).
+ * Returns null when no entitling source has an end still in the future — the
+ * caller then gives NO offline window (online-only), never an unbounded one.
+ * Every read fails closed (an error drops that source → a shorter or null
+ * window, never a longer one).
  *
  * Call only after the access decision said "allowed": this function does not
  * decide access, it only bounds how long a verified answer may be reused
@@ -302,6 +312,9 @@ export async function getParentOfflineEntitlementUntil(
   const grant = await getActiveCompGrantSummary(service, parentId, nowMs);
   if (grant.latestFiniteEnd !== null) {
     ends.push(new Date(grant.latestFiniteEnd).getTime());
+  }
+  if (grant.hasOpenEnded) {
+    ends.push(nowMs + OPEN_ENDED_GRANT_OFFLINE_DAYS * 86_400_000);
   }
 
   const { data, error } = await service

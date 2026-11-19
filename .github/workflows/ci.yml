@@ -85,6 +85,24 @@ jobs:
             exit 0
           fi
 
+          # FV-758 (KC-approved 2026-11-17): a NEWLY ADDED legacy top-level
+          # file (apps/web/public/audio/pregame/<slug>.mp3, not under clips/)
+          # is not in the clips catalog and is served through audioAssetUrl()
+          # at a URL no device has cached, so it needs no MANIFEST_VERSION
+          # bump. Bumping for it would rename the audio cache and drop every
+          # athlete's downloaded offline session. Only git status "A" is
+          # exempt: modifying or replacing an existing top-level file still
+          # trips the guard, as does anything under clips/.
+          ADDED_TOP_LEVEL=$(git diff --name-only --diff-filter=A "$RANGE" | grep -E '^apps/web/public/audio/pregame/[^/]+\.mp3$' || true)
+          if [ -n "$ADDED_TOP_LEVEL" ]; then
+            MP3_CHANGED=$(echo "$MP3_CHANGED" | grep -vxF -f <(echo "$ADDED_TOP_LEVEL") || true)
+            if [ -z "$MP3_CHANGED" ]; then
+              echo "Only newly added top-level pregame MP3s changed — manifest-version guard not applicable:"
+              echo "$ADDED_TOP_LEVEL"
+              exit 0
+            fi
+          fi
+
           echo "Changed clip *.mp3 files:"
           echo "$MP3_CHANGED"
 

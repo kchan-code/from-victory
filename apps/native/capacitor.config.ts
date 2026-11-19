@@ -117,6 +117,11 @@ const config: CapacitorConfig = {
   },
   ios: {
     contentInset: "automatic",
+    // FV-753: turns on app-bound mode so WKWebView runs the site's service
+    // worker, which is what serves a saved Pregame offline. The host list is
+    // WKAppBoundDomains in ios/App/App/Info.plist; a server.url host missing
+    // from that list will not load at all.
+    limitsNavigationsToAppBoundDomains: true,
     // FV-735: do not set `scheme` here. In Capacitor 8, `ios.scheme` is the
     // Xcode scheme `npx cap run ios` builds (default "App", which is this
     // project's scheme). It is not a WKWebView URL scheme. The old value
