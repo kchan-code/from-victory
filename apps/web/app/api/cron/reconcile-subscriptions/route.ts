@@ -10,8 +10,10 @@
  *     documented on reconcileStripeRow in lib/subscriptions/reconcile.ts).
  *     A Stripe `resource_missing` is counted and alerted, never guessed.
  *   - Apple: Production rows in a live status (subscribed / in_grace_period /
- *     in_billing_retry) that are expired or expire within 24h are passed to
- *     `reconcileAppleSubscription`. Sandbox rows are never reconciled.
+ *     in_billing_retry) that are expired or expire within 24h are reconciled
+ *     first; then recently-expired rows (status=expired within the last 7
+ *     days) fill any remaining cap. Sandbox and revoked rows are never
+ *     reconciled.
  *
  * Bounded work: at most 100 Stripe rows and 100 Apple rows per run, a 40s
  * wall-clock budget (maxDuration 60), Stripe calls in groups of 4, Apple

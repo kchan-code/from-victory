@@ -30,8 +30,8 @@ import Link from "next/link";
 //     points are not live. Add the identifiers before they are.
 // Every factual claim here is grounded in the verified data inventory
 // (schema + code). Launch notes:
-//   1. EFFECTIVE_DATE below is November 13, 2026, the date KC approved the
-//      FV-723 / FV-724 wording. Attorney sign-off is tracked in FV-329.
+//   1. EFFECTIVE_DATE below is November 18, 2026 (FV-762), approved by KC on
+//      2026-11-18. Previous: November 13, 2026. Attorney sign-off: see FV-329.
 //   2. The private-journal infrastructure is built but DORMANT (FV-135, zero
 //      production callers) and is intentionally NOT described as an active
 //      feature here. Revisit if/when it is wired.
@@ -67,9 +67,9 @@ export const metadata: Metadata = {
   },
 };
 
-// Effective date: the day KC approved the FV-723 / FV-724 wording
-// (2026-11-13). Previous: June 24, 2026. Attorney sign-off: see FV-329.
-const EFFECTIVE_DATE = "November 13, 2026";
+// Effective date: KC approved the FV-762 wording on 2026-11-18.
+// Previous: November 13, 2026. Attorney sign-off is tracked in FV-329.
+const EFFECTIVE_DATE = "November 18, 2026";
 const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
 export default function PrivacyPage() {
@@ -548,6 +548,12 @@ export default function PrivacyPage() {
           records can still show the name and email address used for the purchase, and may
           carry the marketing-channel label described in Section 7 and an internal account
           identifier that no longer points to any account.
+        </p>
+        <p className="mt-3">
+          If you began a checkout on our website but never completed it, deleting your
+          account also removes the billing customer profile our payment processor created for
+          that attempt. Our payment processor may still keep a record of the checkout
+          attempt; contact us at <PrivacyEmailLink /> and we will have it removed.
         </p>
         <p className="mt-3">
           Deleting a From Victory account does <strong>not</strong> cancel a subscription

@@ -76,7 +76,8 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 - The Terms now describe paid subscriptions in the present tense: automatic renewal,
   cancel in account settings (web) or with Apple (iOS), refunds for App Store purchases
   handled by Apple, deleting an account does not cancel an App Store subscription.
-- Effective date of both documents: November 13, 2026.
+- Effective date: Privacy Policy is November 18, 2026 (FV-762). Terms remain
+  November 13, 2026.
 
 ## 2026-11-13: The store apps can be required to update (FV-717; effective when the PR deploys, off by default)
 
