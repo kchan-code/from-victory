@@ -69,8 +69,9 @@ rate). Recreate the two prices you set up in test mode (FV-283):
 > The sibling-discount amounts ($3 / $29) are tunable on the Price object in the
 > dashboard later with **no code deploy** — the code just reads quantity.
 
-> Do **not** put the 14-day trial on the Price. The trial is applied in code
-> (`trial_period_days: 14`, first-time subscribers only) so repeat-trial abuse
+> Do **not** put the 7-day trial on the Price. The trial is applied in code
+> (`trial_period_days: 7` in `apps/web/lib/actions/subscription.ts`, first-time
+> subscribers, one-athlete plan only) so repeat-trial abuse
 > is preventable. Leave the Price trial-free.
 
 Copy the two **live Price IDs** (`price_...`).
@@ -85,7 +86,17 @@ Developers → Webhooks → **Add endpoint**:
   - `customer.subscription.updated`
   - `customer.subscription.deleted`
   - `invoice.payment_failed`
+  - `charge.refunded`
+  - `charge.dispute.created`
 - Copy the endpoint's **Signing secret** (`whsec_...`).
+
+> **Refund and dispute events (FV-769):** the webhook route alerts on
+> `charge.refunded` and `charge.dispute.created`
+> (`apps/web/app/api/webhooks/stripe/route.ts`), but earlier versions of this
+> runbook listed only the first five events. A read-only check of the live
+> endpoint on 2026-11-19 found it subscribed to those five only, so refund and
+> dispute alerts cannot fire until the two events are added in the Stripe
+> dashboard. That is the owner's action.
 
 > **API version caveat (FV-219):** our integration pins the Stripe API version to
 > `2024-06-20`. Your account's default is newer (`2026-05-27.dahlia`). The pin
@@ -110,9 +121,9 @@ Trigger a production deploy so the new env vars take effect.
 
 ### A6. Smoke test (live)
 1. Sign up as a fresh parent, add one athlete, go to `/subscribe`, pick a plan.
-2. Use a **real card** — the 14-day trial means **$0 charged today**, so this is
+2. Use a **real card** — the 7-day trial means **$0 charged today**, so this is
    safe. (Cancel from the billing portal afterward if you don't want it to
-   convert on day 14.)
+   convert on day 7.)
 3. Confirm in Stripe: a Customer + a `trialing` Subscription appear.
 4. Confirm the webhook delivered (Webhooks → your endpoint → recent deliveries,
    all `200`), and that the parent's `subscriptions` row exists with
