@@ -57,6 +57,9 @@ const {
   shellCapabilityMock,
   getUserMock,
   maybeSingleMock,
+  googleRowsMock,
+  subscribeEntitlementStateMock,
+  googleSnapshotMock,
   getDisplayedAppleProductIdResultMock,
 } = vi.hoisted(() => ({
   requireParentMock: vi.fn(),
@@ -66,6 +69,24 @@ const {
   shellCapabilityMock: vi.fn(() => null as "legacy-native" | "ios-iap" | "android-play" | null),
   getUserMock: vi.fn(async () => ({ data: { user: { email: "kim@example.com" } } })),
   maybeSingleMock: vi.fn(),
+  googleRowsMock: vi.fn(
+    async (): Promise<{ data: Array<Record<string, unknown>>; error: { message: string } | null }> => ({
+      data: [],
+      error: null,
+    }),
+  ),
+  subscribeEntitlementStateMock: vi.fn(
+    async (): Promise<{
+      status: "entitled" | "not_entitled" | "unknown";
+      provider: "google" | "stripe" | "apple" | "comp" | null;
+    }> => ({ status: "not_entitled", provider: null }),
+  ),
+  googleSnapshotMock: vi.fn(async () => ({
+    level: "full",
+    latestEnd: null,
+    activeProductId: "family.1",
+    readError: false,
+  })),
   // FV-578/FV-580 — the centralized `apple_subscriptions` accessor. Defaults
   // to "no active Apple entitlement, read succeeded"; individual tests
   // override per case, including the FV-580 `readError: true` case.
@@ -84,6 +105,12 @@ vi.mock("@/lib/auth/guards", () => ({
 
 vi.mock("@/lib/native-shell", () => ({
   getRequestShellCapability: shellCapabilityMock,
+}));
+vi.mock("@/lib/subscriptions/subscribe-guard", () => ({
+  getSubscribeEntitlementState: subscribeEntitlementStateMock,
+}));
+vi.mock("@/lib/subscriptions/google", () => ({
+  getGoogleEntitlementSnapshotForPayer: googleSnapshotMock,
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -104,11 +131,53 @@ vi.mock("@/lib/supabase/server", () => ({
 // whole module keeps this test file from needing real Supabase env/
 // service-role wiring for a status read.
 vi.mock("@/lib/supabase/service", () => ({
-  createServiceClient: () => ({}),
+  createServiceClient: () => ({
+    from: (table: string) => {
+      if (table === "google_subscriptions") {
+        return {
+          select: () => ({
+            eq: () => ({
+              eq: googleRowsMock,
+            }),
+          }),
+        };
+      }
+      return {
+        select: () => ({
+          eq: async () => ({ data: [], error: null }),
+        }),
+      };
+    },
+  }),
 }));
 
 vi.mock("@/lib/subscriptions/apple", () => ({
   getDisplayedAppleProductIdResult: getDisplayedAppleProductIdResultMock,
+}));
+vi.mock("@/components/subscribe/GooglePlaySubscribeSection", () => ({
+  GooglePlaySubscribeSection: ({
+    mode,
+    manageState,
+    entitledElsewhereProvider,
+  }: {
+    mode: string;
+    manageState?: { trial: boolean; statusLabel: string } | undefined;
+    entitledElsewhereProvider?: string | undefined;
+  }) => (
+    <div
+      data-testid="google-play-section-stub"
+      data-mode={mode}
+      data-trial={String(manageState?.trial ?? null)}
+      data-status-label={String(manageState?.statusLabel ?? null)}
+      data-provider={String(entitledElsewhereProvider ?? null)}
+    >
+      {mode === "entitled_elsewhere"
+        ? entitledElsewhereProvider === "stripe"
+          ? "You're subscribed on the web. Manage your plan from a browser at fromvictoryapp.com."
+          : "You're subscribed through the App Store. Manage it on your iPhone."
+        : null}
+    </div>
+  ),
 }));
 
 vi.mock("@/lib/actions/digest-preferences", () => ({
@@ -129,6 +198,18 @@ afterEach(() => {
   // test order never matters.
   shellCapabilityMock.mockReturnValue(null);
   getUserMock.mockResolvedValue({ data: { user: { email: "kim@example.com" } } });
+  subscribeEntitlementStateMock.mockResolvedValue({
+    status: "not_entitled",
+    provider: null,
+  });
+  googleRowsMock.mockResolvedValue({ data: [], error: null });
+  googleSnapshotMock.mockResolvedValue({
+    level: "full",
+    latestEnd: null,
+    activeProductId: "family.1",
+    readError: false,
+  });
+  delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
   getDisplayedAppleProductIdResultMock.mockResolvedValue({
     productId: null,
     readError: false,
@@ -145,6 +226,11 @@ async function renderPage() {
 }
 
 describe("/dashboard/settings — Billing Portal shell-capability suppression", () => {
+  it("athlete sessions are blocked by requireParent before settings purchase controls can render", async () => {
+    requireParentMock.mockRejectedValueOnce(new Error("redirect:/athlete"));
+    await expect(DashboardSettingsPage()).rejects.toThrow("redirect:/athlete");
+  });
+
   it("renders the real BillingPortalButton when capability is null (web)", async () => {
     shellCapabilityMock.mockReturnValue(null);
     maybeSingleMock.mockResolvedValue({
@@ -669,5 +755,123 @@ describe("/dashboard/settings — android-play renders exactly like legacy-nativ
     await renderPage();
     expect(getDisplayedAppleProductIdResultMock).not.toHaveBeenCalled();
     expect(screen.queryByTestId("settings-apple-manage")).not.toBeInTheDocument();
+  });
+});
+
+describe("/dashboard/settings — android-play Google Play gating and trial window (FV-665)", () => {
+  it("flag on + Stripe entitlement renders the entitled-elsewhere card", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    shellCapabilityMock.mockReturnValue("android-play");
+    subscribeEntitlementStateMock.mockResolvedValue({
+      status: "entitled",
+      provider: "stripe",
+    });
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    await renderPage();
+
+    expect(screen.getByTestId("google-play-section-stub")).toHaveAttribute(
+      "data-mode",
+      "entitled_elsewhere",
+    );
+    expect(screen.getByText("You're subscribed on the web. Manage your plan from a browser at fromvictoryapp.com.")).toBeInTheDocument();
+  });
+
+  it("flag on + Apple entitlement renders the entitled-elsewhere card", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    shellCapabilityMock.mockReturnValue("android-play");
+    subscribeEntitlementStateMock.mockResolvedValue({
+      status: "entitled",
+      provider: "apple",
+    });
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    await renderPage();
+
+    expect(screen.getByTestId("google-play-section-stub")).toHaveAttribute(
+      "data-mode",
+      "entitled_elsewhere",
+    );
+    expect(screen.getByText("You're subscribed through the App Store. Manage it on your iPhone.")).toBeInTheDocument();
+  });
+
+  it("flag on + Google entitlement with failed row read shows neutral status-unavailable", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    shellCapabilityMock.mockReturnValue("android-play");
+    subscribeEntitlementStateMock.mockResolvedValue({
+      status: "entitled",
+      provider: "google",
+    });
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    googleRowsMock.mockResolvedValue({ data: [], error: { message: "read failed" } });
+
+    await renderPage();
+
+    expect(screen.queryByTestId("google-play-section-stub")).not.toBeInTheDocument();
+    expect(screen.getByTestId("subscription-status-unavailable")).toHaveTextContent(
+      "We couldn’t load your subscription status. Please try again.",
+    );
+  });
+
+  it("day 3 from Google purchase start shows Free trial", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    shellCapabilityMock.mockReturnValue("android-play");
+    subscribeEntitlementStateMock.mockResolvedValue({
+      status: "entitled",
+      provider: "google",
+    });
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    googleRowsMock.mockResolvedValue({
+      data: [
+        {
+          product_id: "family.1",
+          base_plan_id: "yearly",
+          offer_id: "trial-7d",
+          status: "active",
+          expires_at: "2099-01-01T00:00:00.000Z",
+          acknowledged: true,
+          created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    const stub = screen.getByTestId("google-play-section-stub");
+    expect(stub).toHaveAttribute("data-mode", "manage");
+    expect(stub).toHaveAttribute("data-trial", "true");
+    expect(stub).toHaveAttribute("data-status-label", "Free trial");
+  });
+
+  it("day 8 from Google purchase start shows Active", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    shellCapabilityMock.mockReturnValue("android-play");
+    subscribeEntitlementStateMock.mockResolvedValue({
+      status: "entitled",
+      provider: "google",
+    });
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    googleRowsMock.mockResolvedValue({
+      data: [
+        {
+          product_id: "family.1",
+          base_plan_id: "yearly",
+          offer_id: "trial-7d",
+          status: "active",
+          expires_at: "2099-01-01T00:00:00.000Z",
+          acknowledged: true,
+          created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    const stub = screen.getByTestId("google-play-section-stub");
+    expect(stub).toHaveAttribute("data-mode", "manage");
+    expect(stub).toHaveAttribute("data-trial", "false");
+    expect(stub).toHaveAttribute("data-status-label", "Active");
   });
 });

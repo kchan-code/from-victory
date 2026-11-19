@@ -157,6 +157,7 @@ afterEach(() => {
   entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
   athleteRows.current = [];
   billingIssueMock.mockResolvedValue(null);
+  delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
 });
 
 async function renderPage() {
@@ -169,6 +170,11 @@ async function renderPage() {
 }
 
 describe("/dashboard greeting (FV-708)", () => {
+  it("athlete sessions are blocked by requireParent before parent dashboard actions can render", async () => {
+    requireParentMock.mockRejectedValueOnce(new Error("redirect:/athlete"));
+    await expect(DashboardPage()).rejects.toThrow("redirect:/athlete");
+  });
+
   it("says Welcome back once an athlete is linked", async () => {
     athleteRows.current = [
       { id: "athlete-1", first_name: "Alex", birthdate: "2010-06-01" },
@@ -414,7 +420,7 @@ describe("/dashboard — android-play renders exactly like legacy-native (FV-659
   }
 
   it.each(["blocked", "full"] as const)(
-    "access %s: identical markup, including the subscribe + Add athlete notices",
+    "flag off, access %s: identical markup, including the subscribe + Add athlete notices",
     async (level) => {
       accessLevelMock.mockResolvedValue(level);
       const legacy = await htmlFor("legacy-native");
@@ -423,7 +429,7 @@ describe("/dashboard — android-play renders exactly like legacy-native (FV-659
     },
   );
 
-  it("android-play: no subscribe CTA, browser-subscribe copy, plain-text Add athlete", async () => {
+  it("flag off, android-play: no subscribe CTA, browser-subscribe copy, plain-text Add athlete", async () => {
     accessLevelMock.mockResolvedValue("blocked");
     shellCapabilityMock.mockReturnValue("android-play");
     await renderPage();
@@ -443,6 +449,39 @@ describe("/dashboard — android-play renders exactly like legacy-native (FV-659
     await renderPage();
     expect(screen.getByTestId("dashboard-subscription-status-unknown")).toBeInTheDocument();
     expect(screen.queryByTestId("dashboard-subscribe-cta")).not.toBeInTheDocument();
+  });
+});
+
+describe("/dashboard — android-play + catalog-on provider gating (FV-665)", () => {
+  it("not_entitled: shows in-app Choose a plan and Add athlete link with Android comma copy", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    shellCapabilityMock.mockReturnValue("android-play");
+    accessLevelMock.mockResolvedValue("blocked");
+    entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
+
+    const { container } = await renderPage();
+    expect(screen.getByTestId("dashboard-subscribe-cta")).toHaveAttribute(
+      "href",
+      "/subscribe",
+    );
+    expect(screen.getByRole("link", { name: "Add athlete" })).toHaveAttribute(
+      "href",
+      "/dashboard/athletes/new",
+    );
+    expect(container.textContent ?? "").toContain(
+      "Daily mental-toughness training with faith built in, one session per day combining a mental skill and a scripture foundation.",
+    );
+  });
+
+  it("Stripe entitlement: keeps legacy browser-only notices and no in-app purchase/add-athlete links", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    shellCapabilityMock.mockReturnValue("android-play");
+    accessLevelMock.mockResolvedValue("blocked");
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "stripe" });
+
+    await renderPage();
+    expect(screen.queryByTestId("dashboard-subscribe-cta")).not.toBeInTheDocument();
+    expect(screen.getByTestId("add-athlete-native-shell-notice")).toBeInTheDocument();
   });
 });
 

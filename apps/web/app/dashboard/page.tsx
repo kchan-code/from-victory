@@ -6,6 +6,7 @@ import { ageFromBirthdate } from "@/lib/age";
 import { requireParent } from "@/lib/auth/guards";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
+import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
 import { getParentAccessLevel } from "@/lib/subscriptions/access";
 import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { getPayerSeatStateForCurrentParent } from "@/lib/subscriptions/seat-state";
@@ -68,6 +69,22 @@ export default async function DashboardPage() {
   ]);
   const appleDeleteNotice = appleSubscriptionNoticeFor(appleLookup);
 
+  const shellCapability = await getRequestShellCapability();
+  const androidPlayCatalogEnabled =
+    shellCapability === "android-play" && isGooglePlayCatalogActive();
+  let androidPlayEntitlementState:
+    | Awaited<ReturnType<typeof getSubscribeEntitlementState>>
+    | null = null;
+  if (androidPlayCatalogEnabled) {
+    androidPlayEntitlementState = await getSubscribeEntitlementState(userId);
+  }
+  const googlePlayUiEnabled =
+    androidPlayCatalogEnabled &&
+    androidPlayEntitlementState !== null &&
+    (androidPlayEntitlementState.status === "not_entitled" ||
+      (androidPlayEntitlementState.status === "entitled" &&
+        androidPlayEntitlementState.provider === "google"));
+
   // FV-655: getParentAccessLevel is fail-closed — a failed read comes back as
   // "blocked" — so a paying family was shown "Start training today / Choose a
   // plan" during an outage. When the level isn't "full", ask the
@@ -76,7 +93,10 @@ export default async function DashboardPage() {
   // prompt. A fully entitled parent pays no extra read.
   const subscriptionStatusUnknown =
     accessLevel !== "full" &&
-    (await getSubscribeEntitlementState(userId)).status === "unknown";
+    (
+      androidPlayEntitlementState ??
+      (await getSubscribeEntitlementState(userId))
+    ).status === "unknown";
 
   // Google Play "no in-app purchase" compliance: inside the Capacitor shell,
   // checkout.stripe.com has no reachable path (see
@@ -85,8 +105,8 @@ export default async function DashboardPage() {
   // exact suppression; `ios-iap` (an iOS build with the StoreKit purchase
   // bridge, FV-572) instead gets a price-free in-app entry to /subscribe,
   // where AppleSubscribeSection renders the real StoreKit purchase surface.
-  const shellCapability = await getRequestShellCapability();
-  const legacyNative = isRestrictedShell(shellCapability);
+  const legacyNative =
+    isRestrictedShell(shellCapability) && !googlePlayUiEnabled;
   const iosIap = shellCapability === "ios-iap";
 
   // FV-85: rhythm + session-count metadata. getAthleteMetadataMap() creates its
@@ -224,6 +244,12 @@ export default async function DashboardPage() {
                   <>
                     Daily mental-toughness training with faith built
                     in&nbsp;&mdash; one session per day combining a mental
+                    skill and a scripture foundation.
+                  </>
+                ) : googlePlayUiEnabled ? (
+                  <>
+                    Daily mental-toughness training with faith built
+                    in, one session per day combining a mental
                     skill and a scripture foundation.
                   </>
                 ) : (
