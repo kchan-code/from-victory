@@ -274,6 +274,17 @@ describe("GooglePlaySubscribeSection purchase mode", () => {
     );
   });
 
+  it("shows no charge sentence and no trial while Play prices are still loading", () => {
+    getProductsMock.mockReturnValueOnce(new Promise(() => {}) as any);
+    render(
+      <GooglePlaySubscribeSection mode="purchase" trialEligible catalog={CATALOG} />,
+    );
+    expect(screen.queryByText(/starting today/)).toBeNull();
+    expect(screen.queryByText("7-day free trial")).toBeNull();
+    expect(screen.queryByText(/won't be charged today/)).toBeNull();
+    expect(screen.getByTestId("google-subscribe-submit")).toBeDisabled();
+  });
+
   it("renders runtime prices from Play product details", async () => {
     render(
       <GooglePlaySubscribeSection

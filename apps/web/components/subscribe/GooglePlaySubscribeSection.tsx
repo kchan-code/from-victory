@@ -594,7 +594,7 @@ export function GooglePlaySubscribeSection({
             {selectedPrice} {intervalLabel}, unless you cancel first.
           </p>
         </div>
-      ) : (
+      ) : selectedPrice ? (
         <div className="bg-charcoal border border-hairline rounded-xl px-4 py-4 mb-4">
           <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-cream/50 mb-2">
             Starts today
@@ -603,7 +603,7 @@ export function GooglePlaySubscribeSection({
             You will be charged {selectedPrice} {intervalLabel}, starting today.
           </p>
         </div>
-      )}
+      ) : null}
 
       <p className="font-body text-cream/70 text-[15px] leading-relaxed mb-6">
         This subscription renews automatically until you cancel. Cancel anytime in Google Play.
