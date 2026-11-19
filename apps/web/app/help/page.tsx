@@ -73,27 +73,19 @@ export default function HelpPage() {
             <strong>App Store.</strong> Apple manages it. On your iPhone, open
             Settings, tap your name, then Subscriptions.
           </li>
-          <li>
-            <strong>Google Play.</strong> Google manages it. Manage or cancel
-            it in Google Play on your Android phone.
-          </li>
         </ul>
         <p className="mt-3">
-          For a question about an App Store or Google Play charge, use Apple or
-          Google directly. They run their own billing process.
+          For a question about an App Store charge, use Apple directly. Apple
+          runs its own billing process.
         </p>
       </Section>
 
-      <Section title="Restore an App Store or Google Play purchase">
+      <Section title="Restore an App Store purchase">
         <ul className={listClass}>
           <li>
             <strong>App Store.</strong> In the iPhone app, open the
             subscription screen and select Restore Purchases. If no purchase is
             found for the Apple ID on that iPhone, the app tells you.
-          </li>
-          <li>
-            <strong>Google Play.</strong> Sign in to the account you
-            subscribed with. If it is still locked, <ContactLink />.
           </li>
         </ul>
       </Section>

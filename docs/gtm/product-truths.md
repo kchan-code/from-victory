@@ -14,13 +14,15 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 - There is now a help page at fromvictoryapp.com/help with short answers on: a paid
   account that is still locked, cancelling (each subscription is cancelled where it was
-  bought: our website, the App Store, or Google Play), restoring an App Store purchase,
+  bought: our website or the App Store), restoring an App Store purchase,
   forgot password and athlete sign-in, adding or inviting an athlete, deleting an
   account or an athlete, and offline Pregame audio.
 - It is linked from the website footer, the parent account settings page, and the
   subscribe page. It links to the contact form. It is not linked from athlete screens.
 - It makes no refund promise and no reply-time promise, and states no deletion timeline
   (the Privacy Policy covers that).
+- It says nothing about Google Play subscriptions, because the Android app does not
+  sell one yet.
 
 ## 2026-11-16: Offline Pregame for free-access accounts with no end date (FV-757; effective when the PR deploys)
 
