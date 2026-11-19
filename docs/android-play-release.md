@@ -5,7 +5,9 @@
 > **Update 2026-11-19 (supersedes the lines below where they disagree).**
 > - Build 10 (1.0.1) was published to Play production on 2026-11-11. `versionCode` in `apps/native/android/app/build.gradle` is now `11`; **the next upload needs `versionCode` 11 or higher.** `versionName` is still `1.0.1`; change it only if the owner wants a new public version number.
 > - R8 is **enabled** for release builds (`minifyEnabled true`, FV-740, PR #669) with keep rules in `apps/native/android/app/proguard-rules.pro`. Statements below that say `minifyEnabled false` are historical.
-> - Do not upload a build with Play Billing switched on (`FV_PLAY_BILLING=1`) until the minified billing check in FV-763 passes.
+> - A build with Play Billing switched on (`FV_PLAY_BILLING=1`) has two separate gates:
+>   - **Internal testing track only, for testing:** allowed with the owner's explicit go-ahead for that upload. The full FV-763 check needs exactly this (a signed internal-track billing build with a license tester; see `docs/fv763-minified-billing-check.md`), so FV-763 cannot be a precondition for it. Do the static and local parts of FV-763 first. This supersedes the older line under "Locked facts" that ties any billing-build upload to the FV-669 package.
+>   - **Any wider track (closed, open, production), and switching billing on for customers:** not until FV-763 has passed in full, the FV-668 test matrix has passed, and the owner approves the FV-669 activation package.
 >
 > **Current state — 2026-11-03 (read this first; it supersedes older lines below).**
 > - Play Console is enrolled as an organization (From Victory LLC). The app record exists. v8 (1.0.0) is on Internal testing (v7 on Closed testing "Alpha"). **The next upload needs `versionCode` ≥ 9.**
