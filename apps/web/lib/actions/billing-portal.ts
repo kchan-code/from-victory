@@ -105,7 +105,7 @@ export async function openBillingPortal(
       ok: false,
       code: "portal_unavailable",
       error:
-        "Billing management is temporarily unavailable — contact support.",
+        "Billing management is temporarily unavailable. Try again in a moment. If it keeps happening, see fromvictoryapp.com/help.",
     };
   }
 
@@ -156,7 +156,7 @@ export async function openBillingPortal(
       ok: false,
       code: "portal_unavailable",
       error:
-        "Billing management is temporarily unavailable — contact support.",
+        "Billing management is temporarily unavailable. Try again in a moment. If it keeps happening, see fromvictoryapp.com/help.",
     };
   }
 

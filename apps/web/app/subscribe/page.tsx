@@ -564,6 +564,14 @@ export default async function SubscribePage(props: Props) {
               Account settings
             </Link>
           ) : null}
+          {/* FV-766: adult-only page (requireSubscriber); same-tab link. */}
+          <Link
+            href="/help"
+            data-testid="subscribe-help-link"
+            className="mb-3 inline-flex items-center justify-center w-full min-h-[44px] rounded-[12px] border border-hairline bg-charcoal px-5 py-4 font-heading text-[14px] font-semibold text-cream/60 no-underline transition-colors duration-fast ease-out hover:text-cream hover:border-cream/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.99]"
+          >
+            Billing help
+          </Link>
           <SignOutButton className="inline-flex items-center justify-center w-full min-h-[44px] rounded-[12px] border border-hairline bg-charcoal px-5 py-4 font-heading text-[14px] font-semibold text-cream/60 transition-colors duration-fast ease-out hover:text-cream hover:border-cream/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-onyx active:scale-[0.99]" />
         </div>
       </div>

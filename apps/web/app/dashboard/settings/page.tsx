@@ -618,6 +618,32 @@ export default async function DashboardSettingsPage() {
         </section>
 
         {/* ------------------------------------------------------------------ */}
+        {/* Help section (FV-766) — parent-only page; same-tab next/link so it */}
+        {/* stays inside the native shell's allowed origin.                     */}
+        {/* ------------------------------------------------------------------ */}
+        <section
+          aria-labelledby="help-heading"
+          className="mb-8 bg-charcoal border border-hairline rounded-2xl px-5 py-6"
+        >
+          <h2
+            id="help-heading"
+            className="font-mono font-semibold uppercase tracking-[0.18em] text-[10px] text-gold mb-5"
+          >
+            Help
+          </h2>
+          <Link
+            href="/help"
+            data-testid="settings-help-link"
+            className="flex items-center justify-between min-h-[44px] font-heading font-semibold text-[15px] text-cream/80 hover:text-cream transition-colors duration-fast ease-out no-underline"
+          >
+            <span>Billing, sign-in, and account help</span>
+            <span className="text-cream/55" aria-hidden="true">
+              &#8594;
+            </span>
+          </Link>
+        </section>
+
+        {/* ------------------------------------------------------------------ */}
         {/* Legal section                                                       */}
         {/* ------------------------------------------------------------------ */}
         <section

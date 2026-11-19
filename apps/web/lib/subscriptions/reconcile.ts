@@ -46,7 +46,7 @@ export const CLOCK_SKEW_MARGIN_MS = 5_000;
 export const STRIPE_CALL_TIMEOUT_MS = 10_000;
 export const APPLE_CALL_TIMEOUT_MS = 15_000;
 
-function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+export function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => reject(new Error("provider call timed out")), ms);
@@ -65,7 +65,7 @@ export type PassCounts = {
   deferred: number;
 };
 
-const emptyCounts = (): PassCounts => ({
+export const emptyCounts = (): PassCounts => ({
   checked: 0,
   corrected: 0,
   failed: 0,

@@ -35,6 +35,12 @@ User ids are not accepted. See `docs/security/log-retention.md` §2d.
 
 ## Turning a monitor on
 
+> **Status (FV-769, 2026-11-19):** the owner reports UptimeRobot monitors are
+> already live on `/api/health` and `/signin`, every 60 seconds, alerting him
+> by email and SMS. This was not re-checked in the vendor's dashboard. The
+> steps below are kept for a new or replacement monitor; adding more monitors
+> or another vendor still goes to product-strategist first.
+
 1. Product-strategist agrees the vendor.
 2. Create the two checks above. No auth header. No custom header that would
    put a secret in the vendor's dashboard.
