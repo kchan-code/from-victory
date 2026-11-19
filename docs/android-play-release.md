@@ -6,7 +6,7 @@
 > - Build 10 (1.0.1) was published to Play production on 2026-11-11. `versionCode` in `apps/native/android/app/build.gradle` is now `11`; **the next upload needs `versionCode` 11 or higher.** `versionName` is still `1.0.1`; change it only if the owner wants a new public version number.
 > - R8 is **enabled** for release builds (`minifyEnabled true`, FV-740, PR #669) with keep rules in `apps/native/android/app/proguard-rules.pro`. Statements below that say `minifyEnabled false` are historical.
 > - A build with Play Billing switched on (`FV_PLAY_BILLING=1`) has two separate gates:
->   - **Internal testing track only, for testing:** allowed with the owner's explicit go-ahead for that upload. The full FV-763 check needs exactly this (a signed internal-track billing build with a license tester; see `docs/fv763-minified-billing-check.md`), so FV-763 cannot be a precondition for it. Do the static and local parts of FV-763 first. This supersedes the older line under "Locked facts" that ties any billing-build upload to the FV-669 package.
+>   - **Internal testing track only, for testing:** allowed with the owner's explicit go-ahead for that upload. The full FV-763 check needs exactly this (a signed internal-track billing build with a license tester; see `docs/fv763-minified-billing-check.md`), so FV-763 cannot be a precondition for it. Do the static and local parts of FV-763 first. A test-only build that carries debug settings is never promoted to another track. The "Locked facts" row and section 4 below say the same.
 >   - **Any wider track (closed, open, production), and switching billing on for customers:** not until FV-763 has passed in full, the FV-668 test matrix has passed, and the owner approves the FV-669 activation package.
 >
 > **Current state — 2026-11-03 (read this first; it supersedes older lines below).**
@@ -57,7 +57,7 @@ Bubblewrap / TWA — Capacitor is the Android track.
 | Hosted WebView URL | `https://www.fromvictoryapp.com` (`capacitor.config.ts` `server.url`) |
 | Native project | `apps/native` (`@from-victory/native`) |
 | Current `versionCode` / `versionName` | `9` / `1.0.0` in `apps/native/android/app/build.gradle` — next upload after Play's v8 (build 8 is on Internal testing; run preflight with `--min-version-code 9`; bump by 1 for every further upload) |
-| Billing in the APK | **None in a default build.** Stripe on the web product. A build made with `FV_PLAY_BILLING=1` (FV-664, see section 4) carries Google's Play Billing Library; no such build is uploaded until KC approves the FV-669 release package. |
+| Billing in the APK | **None in a default build.** Stripe on the web product. A build made with `FV_PLAY_BILLING=1` (FV-664, see section 4) carries Google's Play Billing Library; no such build goes beyond the internal testing track until KC approves the FV-669 release package, and an internal-testing upload needs KC's explicit go-ahead (see the 2026-11-19 update at the top). |
 | Tracking / ads / crash SDKs | **None of ours, and none at all in a default build.** Do not add them to satisfy Play. A `FV_PLAY_BILLING=1` build also carries the billing library's own Google components (datatransport telemetry transport, Play services, firebase-encoders), so do not describe that build as free of telemetry code. |
 | Age floor | 13+. Minors 13–17 are parent-managed. Not a kids app. |
 | iOS / App Store | Separate track: [docs/ios-app-store-release.md](./ios-app-store-release.md). Checklist ready; enrollment not started. |
@@ -266,9 +266,12 @@ After a build, check the merged manifest matches what you meant to build: the
 `BILLING` permission is present if and only if `FV_PLAY_BILLING=1`. A billing
 build also adds `ACCESS_NETWORK_STATE` and Google's billing/transport
 components (from the Play Billing Library's own dependencies), which the Data
-safety form and privacy page must reflect before such a build is uploaded
-(FV-667). Do not upload a billing build until FV-669's release package is
-approved by KC.
+safety form and privacy page must reflect before such a build goes to any
+track wider than internal testing (FV-667). Whether the form is updated before
+an internal-testing upload is KC's call at that upload. Do not upload a
+billing build to any track wider than internal testing until FV-669's release
+package is approved by KC; an internal-testing upload needs KC's explicit
+go-ahead for that upload (see the 2026-11-19 update at the top).
 
 Confirm the application id before the first upload (this is what Gradle
 packages — Play will bind it permanently):
