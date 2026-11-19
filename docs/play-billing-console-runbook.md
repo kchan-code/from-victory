@@ -128,9 +128,10 @@ cannot create a paid subscription without it.
 **Status 2026-11-19 (reported from the live console, not re-checked here):**
 merchant enrollment was submitted and accepted. The payments profile shows
 Google Play Apps / FROM VICTORY LLC with an earnings dashboard. Still open:
-- No payout bank method yet ("Add a payment method to receive your earnings").
-- The page offers enrollment in a 15% service fee program through an account
-  group and terms. Not completed. This is the fee decision in item 7 below.
+- A payout bank account has been added; Google's verification of it is
+  pending.
+- Enrollment in the 15% service fee program is complete (the fee question in
+  item 7 below).
 - Verification and tax readiness are not confirmed.
 - A trader-status declaration is due by 2027-02-01. It is separate from this
   runbook.
