@@ -380,8 +380,12 @@ export default function TermsPage() {
       <Section title="15. Paid Features, Subscriptions, and Purchases">
         {/* FV-723: approved by KC on 2026-11-13. Replaces the "may in the future
             offer paid features" text, which predated live subscriptions and
-            in-app purchase. Google Play Billing is not described because it is
-            not live; add it here before Play purchases are turned on. */}
+            in-app purchase.
+            FV-667: the two Google Play paragraphs below are DRAFT wording, not
+            attorney-approved. Publish them together with turning Play
+            purchases on, not before. Unlike Apple, account deletion DOES ask
+            Google to stop renewal (lib/actions/account.ts step 1e), so the
+            Google text deliberately does not say "we cannot cancel". */}
         <p>
           Access to From Victory training requires a paid subscription, bought by the account
           holder (a parent or guardian, or an adult athlete). An athlete under 18 cannot buy a
@@ -412,6 +416,21 @@ export default function TermsPage() {
           <strong>Deleting your account does not cancel an App Store subscription.</strong> If
           you subscribed in our iOS app and delete your From Victory account, you must also
           cancel the subscription with Apple, or Apple will continue to bill you.
+        </p>
+        <p className="mt-3">
+          <strong>Subscriptions bought in our Android app</strong> are sold and billed by
+          Google through your Google Play account, and Google&rsquo;s terms apply to the
+          purchase. To cancel, use the Subscriptions section of Google Play before the end of
+          the current period. Refund requests for Google Play purchases are handled by Google
+          under its own policies.
+        </p>
+        <p className="mt-3">
+          <strong>Deleting your account and a Google Play subscription.</strong> If you
+          subscribed in our Android app and delete your From Victory account, we ask Google
+          to stop the subscription from renewing. This does not refund a payment already
+          made. If we cannot confirm that the renewal was stopped, we tell you when the
+          deletion finishes, and you must cancel the subscription in Google Play, or Google
+          will continue to bill you.
         </p>
         <p className="mt-3">
           <strong>Failed payments.</strong> If a renewal payment fails, we or the app store may
