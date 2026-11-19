@@ -29,6 +29,8 @@ export const APPLE_BATCH_CAP = 100;
 export const TIME_BUDGET_MS = 40_000;
 /** Apple rows expiring within this window are reconciled before they lapse. */
 export const APPLE_LOOKAHEAD_MS = 24 * 60 * 60 * 1000;
+/** Recently expired Apple rows are reconciled for this long after expiry. */
+export const APPLE_EXPIRED_LOOKBACK_MS = 7 * 24 * 60 * 60 * 1000;
 const PAGE_SIZE = 1000;
 const MAX_PAGES = 10;
 const STRIPE_CONCURRENCY = 4;
@@ -44,7 +46,7 @@ export const CLOCK_SKEW_MARGIN_MS = 5_000;
 export const STRIPE_CALL_TIMEOUT_MS = 10_000;
 export const APPLE_CALL_TIMEOUT_MS = 15_000;
 
-function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+export function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => reject(new Error("provider call timed out")), ms);
@@ -63,7 +65,7 @@ export type PassCounts = {
   deferred: number;
 };
 
-const emptyCounts = (): PassCounts => ({
+export const emptyCounts = (): PassCounts => ({
   checked: 0,
   corrected: 0,
   failed: 0,
@@ -299,11 +301,18 @@ async function appleRowChanged(service: ServiceClient, before: AppleRowLite): Pr
   );
 }
 
-async function listAppleRows(service: ServiceClient, now: Date): Promise<AppleRowLite[]> {
+async function listAppleRows(
+  service: ServiceClient,
+  now: Date,
+): Promise<{ batch: AppleRowLite[]; deferred: number }> {
   const horizon = new Date(now.getTime() + APPLE_LOOKAHEAD_MS).toISOString();
-  const out: AppleRowLite[] = [];
+  const expiredFloor = new Date(
+    now.getTime() - APPLE_EXPIRED_LOOKBACK_MS,
+  ).toISOString();
+  const liveOut: AppleRowLite[] = [];
+  const expiredOut: AppleRowLite[] = [];
   for (let page = 0; page < MAX_PAGES; page++) {
-    const { data, error } = await service
+    const { data: liveData, error: liveError } = await service
       .from("apple_subscriptions")
       .select(APPLE_COLS)
       .eq("environment", "Production")
@@ -311,12 +320,48 @@ async function listAppleRows(service: ServiceClient, now: Date): Promise<AppleRo
       .lte("expires_at", horizon)
       .order("payer_id", { ascending: true })
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-    if (error) throw new Error(`apple row list failed: ${error.message}`);
-    const rows = (data ?? []) as AppleRowLite[];
-    out.push(...rows);
-    if (rows.length < PAGE_SIZE) break;
+    if (liveError) throw new Error(`apple live row list failed: ${liveError.message}`);
+    const liveRows = (liveData ?? []) as AppleRowLite[];
+    liveOut.push(...liveRows);
+    if (liveRows.length < PAGE_SIZE) break;
   }
-  return out;
+
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const { data: expiredData, error: expiredError } = await service
+      .from("apple_subscriptions")
+      .select(APPLE_COLS)
+      .eq("environment", "Production")
+      .eq("status", "expired")
+      .gt("expires_at", expiredFloor)
+      .lte("expires_at", now.toISOString())
+      .order("payer_id", { ascending: true })
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+    if (expiredError) {
+      throw new Error(`apple expired row list failed: ${expiredError.message}`);
+    }
+    const expiredRows = (expiredData ?? []) as AppleRowLite[];
+    expiredOut.push(...expiredRows);
+    if (expiredRows.length < PAGE_SIZE) break;
+  }
+
+  const liveBatch = rotateWindow(liveOut, APPLE_BATCH_CAP, now).slice(
+    0,
+    APPLE_BATCH_CAP,
+  );
+  const remainingCap = Math.max(0, APPLE_BATCH_CAP - liveBatch.length);
+  // Expired-row rotation is intentionally bounded by the leftover capacity:
+  // when live load is high, fewer expired rows are reached this run. Any
+  // unreached expired rows contribute to deferred and therefore the route's
+  // deferred alert surface (same as unreached live rows).
+  const expiredBatch =
+    remainingCap === 0
+      ? []
+      : rotateWindow(expiredOut, remainingCap, now).slice(0, remainingCap);
+
+  const batch = [...liveBatch, ...expiredBatch];
+  const deferred =
+    (liveOut.length - liveBatch.length) + (expiredOut.length - expiredBatch.length);
+  return { batch, deferred };
 }
 
 export async function reconcileApplePass(
@@ -325,9 +370,8 @@ export async function reconcileApplePass(
   now: Date = new Date(),
 ): Promise<PassCounts> {
   const counts = emptyCounts();
-  const all = rotateWindow(await listAppleRows(service, now), APPLE_BATCH_CAP, now);
-  const batch = all.slice(0, APPLE_BATCH_CAP);
-  counts.deferred = Math.max(0, all.length - batch.length);
+  const { batch, deferred } = await listAppleRows(service, now);
+  counts.deferred = Math.max(0, deferred);
 
   for (const [i, row] of batch.entries()) {
     if (Date.now() > deadlineMs) {

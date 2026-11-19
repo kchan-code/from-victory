@@ -10,16 +10,27 @@
  *     documented on reconcileStripeRow in lib/subscriptions/reconcile.ts).
  *     A Stripe `resource_missing` is counted and alerted, never guessed.
  *   - Apple: Production rows in a live status (subscribed / in_grace_period /
- *     in_billing_retry) that are expired or expire within 24h are passed to
- *     `reconcileAppleSubscription`. Sandbox rows are never reconciled.
+ *     in_billing_retry) that are expired or expire within 24h are reconciled
+ *     first; then recently-expired rows (status=expired within the last 7
+ *     days) fill any remaining cap. Sandbox and revoked rows are never
+ *     reconciled.
  *
  * Bounded work: at most 100 Stripe rows and 100 Apple rows per run, a 40s
  * wall-clock budget (maxDuration 60), Stripe calls in groups of 4, Apple
  * sequential, per-row try/catch. Rows beyond the cap rotate daily so none is
  * starved; they are reported as `deferred`. Re-running is idempotent.
  *
+ *   - Google Play (only when GOOGLE_PLAY_CATALOG_ACTIVE is "1"; otherwise
+ *     nothing below runs and the response is `{ stripe, apple }`): rows that can
+ *     still change and expire within 24h (or lapsed <= 30 days ago) are re-read
+ *     from Google and written through the webhook's own path
+ *     (lib/subscriptions/google-reconcile.ts, cap 100). Then the notification
+ *     pipeline stall check (google-play-health.ts, FV-662) runs and alerts a
+ *     COUNT when granting rows sit past expiry unverified. A Google failure
+ *     never affects the Stripe/Apple passes.
+ *
  * Out of scope (do not add here): athlete-quantity drift vs
- * parent_athlete_links (deferred to FV-284); Google Play (FV-662/663).
+ * parent_athlete_links (deferred to FV-284).
  *
  * Security: CRON_SECRET Bearer token, constant-time compare, fail closed when
  * unset — identical to the other cron routes. Service-role client.
@@ -48,6 +59,7 @@ import {
   TIME_BUDGET_MS,
   type PassCounts,
 } from "@/lib/subscriptions/reconcile";
+import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
 
 const FAILED_PASS: PassCounts = {
   checked: 0,
@@ -100,7 +112,31 @@ async function handleCronRequest(req: NextRequest) {
     apple = FAILED_PASS;
   }
 
-  const dirty = [stripe, apple].some(
+  // Google Play (FV-662/663): entirely skipped (no module load, no API call, no
+  // DB access, no alert) unless the server flag is on. Runs after Stripe and
+  // Apple and is fully isolated: nothing it does can change their results.
+  let google: PassCounts | undefined;
+  let googleStalled: number | null | undefined;
+  if (isGooglePlayCatalogActive()) {
+    try {
+      const { reconcileGooglePass } = await import("@/lib/subscriptions/google-reconcile");
+      google = await reconcileGooglePass(service, deadlineMs);
+    } catch {
+      console.error("[cron/reconcile-subscriptions] google pass failed");
+      google = FAILED_PASS;
+    }
+    // After the pass, so rows it just re-verified are not reported as stalled.
+    // Alerts for stalls (count only) come from the check itself.
+    try {
+      const { checkGooglePipelineStalls } = await import("@/lib/subscriptions/google-play-health");
+      googleStalled = await checkGooglePipelineStalls();
+    } catch {
+      console.error("[cron/reconcile-subscriptions] google stall check failed");
+      googleStalled = null;
+    }
+  }
+
+  const dirty = (google ? [stripe, apple, google] : [stripe, apple]).some(
     // `deferred` counts too: rows the run could not reach (cap or time
     // budget) must be visible, or a run that did nothing would look clean.
     (p) => p.corrected > 0 || p.failed > 0 || p.missing > 0 || p.deferred > 0,
@@ -112,16 +148,23 @@ async function handleCronRequest(req: NextRequest) {
       notifyError(
         "[cron/reconcile-subscriptions] drift or failures found",
         "Subscription reconcile run completed with corrections, failures or unreached rows.",
-        { stripe: fmt(stripe), apple: fmt(apple) },
+        {
+          stripe: fmt(stripe),
+          apple: fmt(apple),
+          ...(google ? { google: fmt(google) } : {}),
+        },
       ),
     );
   }
 
   console.info(
-    `[cron/reconcile-subscriptions] done — stripe(${JSON.stringify(stripe)}) apple(${JSON.stringify(apple)})`,
+    `[cron/reconcile-subscriptions] done — stripe(${JSON.stringify(stripe)}) apple(${JSON.stringify(apple)})` +
+      (google ? ` google(${JSON.stringify(google)}) googleStalled(${String(googleStalled)})` : ""),
   );
 
-  return NextResponse.json({ stripe, apple });
+  return NextResponse.json(
+    google ? { stripe, apple, google, googleStalled: googleStalled ?? null } : { stripe, apple },
+  );
 }
 
 // Vercel Cron invokes with GET; POST kept for manual ops triggering.

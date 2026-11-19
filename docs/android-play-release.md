@@ -2,6 +2,13 @@
 
 **Owner:** Kinny (KC) · **Status:** Internal/Closed testing (v7); production not started · **Store presence:** not public
 
+> **Update 2026-11-19 (supersedes the lines below where they disagree).**
+> - Build 10 (1.0.1) was published to Play production on 2026-11-11. `versionCode` in `apps/native/android/app/build.gradle` is now `11`; **the next upload needs `versionCode` 11 or higher.** `versionName` is still `1.0.1`; change it only if the owner wants a new public version number.
+> - R8 is **enabled** for release builds (`minifyEnabled true`, FV-740, PR #669) with keep rules in `apps/native/android/app/proguard-rules.pro`. Statements below that say `minifyEnabled false` are historical.
+> - A build with Play Billing switched on (`FV_PLAY_BILLING=1`) has two separate gates:
+>   - **Internal testing track only, for testing:** allowed with the owner's explicit go-ahead for that upload. The full FV-763 check needs exactly this (a signed internal-track billing build with a license tester; see `docs/fv763-minified-billing-check.md`), so FV-763 cannot be a precondition for it. Do the static and local parts of FV-763 first. A test-only build that carries debug settings is never promoted to another track. The "Locked facts" row and section 4 below say the same.
+>   - **Any wider track (closed, open, production), and switching billing on for customers:** not until FV-763 has passed in full, the FV-668 test matrix has passed, and the owner approves the FV-669 activation package.
+>
 > **Current state — 2026-11-03 (read this first; it supersedes older lines below).**
 > - Play Console is enrolled as an organization (From Victory LLC). The app record exists. v8 (1.0.0) is on Internal testing (v7 on Closed testing "Alpha"). **The next upload needs `versionCode` ≥ 9.**
 > - **Play requires targetSdk 36** for new uploads. That ships with Capacitor 8 in PR #458 (FV-502, held). Capacitor 8 needs **Node 22+** and **JDK 21**. `main` is still targetSdk 35 until #458 merges.
@@ -49,8 +56,8 @@ Bubblewrap / TWA — Capacitor is the Android track.
 | Display name | `From Victory` |
 | Hosted WebView URL | `https://www.fromvictoryapp.com` (`capacitor.config.ts` `server.url`) |
 | Native project | `apps/native` (`@from-victory/native`) |
-| Current `versionCode` / `versionName` | `9` / `1.0.0` in `apps/native/android/app/build.gradle` — next upload after Play's v8 (build 8 is on Internal testing; run preflight with `--min-version-code 9`; bump by 1 for every further upload) |
-| Billing in the APK | **None in a default build.** Stripe on the web product. A build made with `FV_PLAY_BILLING=1` (FV-664, see section 4) carries Google's Play Billing Library; no such build is uploaded until KC approves the FV-669 release package. |
+| Current `versionCode` / `versionName` | `11` / `1.0.1` in `apps/native/android/app/build.gradle` — the next upload after Play production's build 10 (run preflight with `--min-version-code 11`; bump by 1 for every further upload) |
+| Billing in the APK | **None in a default build.** Stripe on the web product. A build made with `FV_PLAY_BILLING=1` (FV-664, see section 4) carries Google's Play Billing Library; no such build goes beyond the internal testing track until all three gates in the 2026-11-19 update are met (FV-763 passed in full, the FV-668 matrix passed, and KC's approval of the FV-669 release package), and an internal-testing upload needs KC's explicit go-ahead (see the 2026-11-19 update at the top). |
 | Tracking / ads / crash SDKs | **None of ours, and none at all in a default build.** Do not add them to satisfy Play. A `FV_PLAY_BILLING=1` build also carries the billing library's own Google components (datatransport telemetry transport, Play services, firebase-encoders), so do not describe that build as free of telemetry code. |
 | Age floor | 13+. Minors 13–17 are parent-managed. Not a kids app. |
 | iOS / App Store | Separate track: [docs/ios-app-store-release.md](./ios-app-store-release.md). Checklist ready; enrollment not started. |
@@ -259,9 +266,13 @@ After a build, check the merged manifest matches what you meant to build: the
 `BILLING` permission is present if and only if `FV_PLAY_BILLING=1`. A billing
 build also adds `ACCESS_NETWORK_STATE` and Google's billing/transport
 components (from the Play Billing Library's own dependencies), which the Data
-safety form and privacy page must reflect before such a build is uploaded
-(FV-667). Do not upload a billing build until FV-669's release package is
-approved by KC.
+safety form and privacy page must reflect before such a build goes to any
+track wider than internal testing (FV-667). Whether the form is updated before
+an internal-testing upload is KC's call at that upload. Do not upload a
+billing build to any track wider than internal testing until FV-763 has passed
+in full, the FV-668 matrix has passed, and FV-669's release package is
+approved by KC; an internal-testing upload needs KC's explicit
+go-ahead for that upload (see the 2026-11-19 update at the top).
 
 Confirm the application id before the first upload (this is what Gradle
 packages — Play will bind it permanently):
@@ -277,10 +288,9 @@ load `https://www.fromvictoryapp.com`).
 Android Studio alternative: `npm run open:android` → Build → Generate Signed
 Bundle / APK → Android App Bundle → the same keystore.
 
-R8/ProGuard: `minifyEnabled` is currently **`false`** in
-`android/app/build.gradle`. Internal testing can use that AAB. Enable minify in
-a **follow-up PR** before Production (see §11). Do not turn it on in an
-unsigned experiment and then forget to re-sign.
+R8/ProGuard: `minifyEnabled` is **`true`** for release builds in
+`android/app/build.gradle` since FV-740 (PR #669), with keep rules in
+`android/app/proguard-rules.pro` (see §11).
 
 - [ ] Signed `app-release.aab` exists locally
 - [ ] Application id is `com.fromvictoryapp.app`
@@ -551,7 +561,7 @@ When you wire it (follow-up PR, **privacy path** because it is `apps/web/**`):
 
 ### R8
 
-`minifyEnabled false` in `apps/native/android/app/build.gradle` today.
+`minifyEnabled true` in `apps/native/android/app/build.gradle` since FV-740 (PR #669); the text below is the history of that follow-up.
 [docs/native-capacitor.md](./native-capacitor.md) follow-ups: enable minify for
 release AABs before the first **production** upload. Capacitor WebView apps need
 keep rules for the bridge (`proguard-rules.pro` is still the default stub).
@@ -576,7 +586,7 @@ Web deploys do **not** need a new AAB. Ship a new bundle when you change:
 - Signing config
 - R8 / packaging options
 
-- [ ] You know the next upload is `versionCode 9` or higher (Play already has 8; see the current-state note at the top)
+- [ ] You know the next upload is `versionCode 11` or higher (Play production has 10; see the 2026-11-19 update at the top)
 
 ---
 

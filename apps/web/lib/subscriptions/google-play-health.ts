@@ -8,10 +8,10 @@
  * arrived). This module finds those rows and alerts with a COUNT ONLY: no row
  * id, token, payer id or product.
  *
- * STATUS: exported, NOT wired to any cron. No existing cron route runs
- * server-side billing checks, and adding a cron (or editing vercel.json) is out
- * of scope. Wire `checkGooglePipelineStalls` into a scheduled route when
- * Play billing is activated.
+ * STATUS: wired into the daily /api/cron/reconcile-subscriptions route, which
+ * calls it only when `isGooglePlayCatalogActive()` and after the Google
+ * reconcile pass. The 24h threshold matches the daily cadence, so no separate
+ * cron entry is needed.
  */
 import "server-only";
 

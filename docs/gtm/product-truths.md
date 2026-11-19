@@ -10,6 +10,20 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 
 ---
 
+## 2026-11-19: A help page exists at /help (FV-766; effective when the PR deploys)
+
+- There is now a help page at fromvictoryapp.com/help with short answers on: a paid
+  account that is still locked, cancelling (each subscription is cancelled where it was
+  bought: our website or the App Store), restoring an App Store purchase,
+  forgot password and athlete sign-in, adding or inviting an athlete, deleting an
+  account or an athlete, and offline Pregame audio.
+- It is linked from the website footer, the parent account settings page, and the
+  subscribe page. It links to the contact form. It is not linked from athlete screens.
+- It makes no refund promise and no reply-time promise, and states no deletion timeline
+  (the Privacy Policy covers that).
+- It says nothing about Google Play subscriptions, because the Android app does not
+  sell one yet.
+
 ## 2026-11-16: Offline Pregame for free-access accounts with no end date (FV-757; effective when the PR deploys)
 
 - Accounts with free access that has no end date (for example a reviewer account) can now
@@ -76,7 +90,8 @@ Format: date, what it is, why it matters to a buyer. Facts only — no positioni
 - The Terms now describe paid subscriptions in the present tense: automatic renewal,
   cancel in account settings (web) or with Apple (iOS), refunds for App Store purchases
   handled by Apple, deleting an account does not cancel an App Store subscription.
-- Effective date of both documents: November 13, 2026.
+- Effective date: Privacy Policy is November 18, 2026 (FV-762). Terms remain
+  November 13, 2026.
 
 ## 2026-11-13: The store apps can be required to update (FV-717; effective when the PR deploys, off by default)
 
