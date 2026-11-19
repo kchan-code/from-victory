@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { sendContactNotification } from "@/lib/email/contact-notification";
+import { getRequestIp, rateLimitGate } from "@/lib/actions/rate-limit-store";
 
 const ContactSchema = z.object({
   name: z
@@ -62,11 +63,21 @@ export async function submitContact(
     return { ok: true };
   }
 
+  // FV-334: throttle per request IP (HMAC digest only; no content stored).
+  // Fails open on any helper/DB problem or missing IP (see rateLimitGate).
+  const ip = await getRequestIp();
+  const { limited } = await rateLimitGate("contact_form", ip);
+  if (limited) {
+    return {
+      ok: false,
+      error:
+        "You've sent several messages recently. Please wait a little while and try again.",
+    };
+  }
+
   // Admin notification — must not break the user-facing success state.
   // deliverInBackground registers the send with the Vercel platform so it
   // completes even after the server action response is returned.
-  // NOTE: no rate limiting yet — tracked as a follow-up (it needs a
-  // companion migration to extend the auth_rate_limit_events action list).
   deliverInBackground(
     sendContactNotification({
       name: data.name,

@@ -1200,6 +1200,12 @@ export type Database = {
       // never receives an athlete id. Returns cells written. service_role only.
       // FV-749: hand-added. Retention: deletes closed-month markers and
       // closed-month cells with athlete_count below 10; returns rows deleted. service_role only.
+      // FV-774: hand-added. Deletes contact_form throttle rows in
+      // auth_rate_limit_events older than 2 hours; returns rows deleted. service_role only.
+      prune_contact_form_rate_limit_events: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       prune_pregame_selection_totals: {
         Args: Record<PropertyKey, never>
         Returns: number

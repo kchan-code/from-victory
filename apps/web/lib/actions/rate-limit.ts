@@ -45,6 +45,9 @@ export const RATE_LIMIT_ACTIONS = [
   // FV-749: throttle on logPregameSelections (keyed on the signed-in athlete).
   // The DB CHECK is extended in 20261113140000.
   "pregame_selections",
+  // FV-334: throttle on the public /contact form (keyed on request IP).
+  // The DB CHECK is extended in 20261118120000.
+  "contact_form",
 ] as const;
 
 export type RateLimitAction = (typeof RATE_LIMIT_ACTIONS)[number];
@@ -190,6 +193,15 @@ export const RATE_LIMIT_CONFIG: Record<RateLimitAction, RateLimitConfig> = {
    * Over the limit the picks are silently not recorded (no error to the client).
    */
   pregame_selections: { limit: 6, windowMinutes: 60 },
+
+  /**
+   * contact_form (FV-334): keyed on request IP. Each accepted submission sends
+   * a real email to the owner via Resend, so unthrottled it is an inbox-flood
+   * and email-quota vector. 6 / 60 min (the shared floor test requires > 5) is generous for a household NAT or a
+   * person who corrects and resends, while blunting scripted loops. Fails open
+   * like every other caller (a lost message is worse than a missed throttle).
+   */
+  contact_form: { limit: 6, windowMinutes: 60 },
 };
 
 // ---------------------------------------------------------------------------
