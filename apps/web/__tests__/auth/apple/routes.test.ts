@@ -43,6 +43,7 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 import { appleHandoffComplete, appleNativeSignIn } from "@/lib/actions/apple-auth";
+import { appleRateLimited } from "@/lib/auth/apple/rate-limit";
 import { GET as startGET } from "@/app/auth/apple/start/route";
 import { POST as callbackPOST } from "@/app/auth/apple/callback/route";
 import { __resetAppleJwksCacheForTests } from "@/lib/auth/apple/verify";
@@ -132,6 +133,50 @@ describe("flags off => no new sign-ins (rollback level 1)", () => {
     expect((await startGET(req("short"))).status).toBe(404); // tokens under 32 chars never match
     delete process.env.SSO_PREVIEW_TOKEN;
     delete process.env.VERCEL_ENV;
+  });
+});
+
+describe("android preview: the gate sits in the WebView, not the Auth Tab (FV-674)", () => {
+  const token = "p".repeat(40);
+  const handoffArgs = { handoff: "h".repeat(43), verifier: "v".repeat(43) };
+  beforeEach(() => {
+    setAppleEnv({ SSO_ANDROID: "preview" });
+    process.env.SSO_PREVIEW_TOKEN = token;
+    previewCookie.value = undefined;
+  });
+
+  it("/auth/apple/start?app=android redirects (303) without the cookie", async () => {
+    const res = await startGET(new NextRequest(`${SITE}/auth/apple/start?app=android&challenge=${"a".repeat(43)}`));
+    expect(res.status).toBe(303);
+  });
+
+  it("web start still needs the cookie under web preview", async () => {
+    setAppleEnv({ SSO_WEB: "preview" });
+    expect((await startGET(new NextRequest(`${SITE}/auth/apple/start`))).status).toBe(404);
+  });
+
+  it("appleHandoffComplete refuses without the cookie and proceeds past the gate with it", async () => {
+    expect(await appleHandoffComplete(handoffArgs)).toMatchObject({ ok: false });
+    expect(appleRateLimited).not.toHaveBeenCalled();
+    previewCookie.value = token;
+    await appleHandoffComplete(handoffArgs); // no such handoff: fails later, past the gate
+    expect(appleRateLimited).toHaveBeenCalledWith("apple_handoff");
+  });
+
+  it("appleHandoffComplete with a wrong cookie refuses", async () => {
+    previewCookie.value = "q".repeat(40);
+    expect(await appleHandoffComplete(handoffArgs)).toMatchObject({ ok: false });
+    expect(appleRateLimited).not.toHaveBeenCalled();
+  });
+
+  it("`on` needs no cookie and `off` always refuses", async () => {
+    setAppleEnv({ SSO_ANDROID: "on" });
+    await appleHandoffComplete(handoffArgs);
+    expect(appleRateLimited).toHaveBeenCalledTimes(1);
+    setAppleEnv({ SSO_ANDROID: "off" });
+    previewCookie.value = token;
+    expect(await appleHandoffComplete(handoffArgs)).toMatchObject({ ok: false });
+    expect(appleRateLimited).toHaveBeenCalledTimes(1);
   });
 });
 
