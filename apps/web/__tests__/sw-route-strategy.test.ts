@@ -375,6 +375,9 @@ describe("decideStrategy (pure, lib/sw/route-strategy.ts)", () => {
     expect(BYPASS_PREFIXES).toContain("/dashboard");
     expect(BYPASS_PREFIXES).not.toContain("/dashboard/");
     expect(BYPASS_PREFIXES).toContain("/audio/");
+    // FV-672: /welcome is per-request + personal; both files list it (the
+    // sync test above pins sw.js == route-strategy.ts).
+    expect(BYPASS_PREFIXES).toContain("/welcome");
     expect(ICON_OR_FONT_RE.test("/icon-192.png")).toBe(true);
     expect(ICON_OR_FONT_RE.test("/_next/static/chunks/x.js")).toBe(false);
   });

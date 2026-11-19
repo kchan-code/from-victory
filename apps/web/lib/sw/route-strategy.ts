@@ -93,6 +93,9 @@ export const BYPASS_PREFIXES = [
   "/forgot-",
   "/reset-",
   "/subscribe",
+  // FV-672: /welcome is per-request + personal (auth email, onboarding form)
+  // and is never served from Cache Storage.
+  "/welcome",
   "/audio/",
 ] as const;
 

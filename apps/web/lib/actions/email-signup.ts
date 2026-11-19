@@ -17,13 +17,12 @@ import {
   firstIssue,
   parseSignupRole,
   pick,
-  type SignupRole,
 } from "@/lib/auth/email-signup-schema";
 import { closePendingAccount } from "@/lib/auth/pending-account";
+import { newAccountHome, roleHome } from "@/lib/auth/post-signup";
 import { isAdultSignupEnabled } from "@/lib/flags";
 import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
-import { getRequestShellCapability } from "@/lib/native-shell";
 import { createClient } from "@/lib/supabase/server";
 
 import type { AuthActionState } from "./auth";
@@ -58,23 +57,6 @@ const START_ERROR =
 const TOO_MANY = "Too many attempts. Please wait a few minutes and try again.";
 const BAD_CODE =
   "That code didn't work. Check it, or request a new one.";
-
-function roleHome(role: string | null | undefined): string {
-  return role === "athlete" || role === "adult_athlete"
-    ? "/athlete"
-    : "/dashboard";
-}
-
-/** Where a brand-new adult goes: same routing as the legacy signUpAdultAthlete. */
-function newAccountHome(role: SignupRole): string {
-  if (role === "parent") return "/dashboard";
-  // Inside the legacy-native shell /subscribe is a no-purchase dead end
-  // (FV-478/FV-482), so a legacy-native adult lands on /athlete; an ios-iap
-  // shell (FV-577) and the web go to /subscribe.
-  return getRequestShellCapability() === "legacy-native"
-    ? "/athlete"
-    : "/subscribe";
-}
 
 // ---------------------------------------------------------------------------
 // Step 1
@@ -302,9 +284,8 @@ export async function verifyEmailOnly(
     .eq("id", data.user.id)
     .maybeSingle();
 
-  // No profile: a signup that was verified but never finished. The /welcome
-  // completion page (A3) handles it; until it ships the guards sign the
-  // orphan session out. TODO(FV-671 A3): /welcome.
+  // No profile: a signup that was verified but never finished. /welcome
+  // (FV-672) completes it.
   if (!profile) redirect("/welcome");
   redirect(roleHome(profile.role));
 }

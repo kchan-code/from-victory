@@ -71,7 +71,7 @@ vi.mock("@supabase/ssr", () => ({
     from: (_table: string) => ({
       select: (_cols: string) => ({
         eq: (_col: string, _val: string) => ({
-          single: async () => ({ data: profileResult, error: null }),
+          maybeSingle: async () => ({ data: profileResult, error: null }),
         }),
       }),
     }),

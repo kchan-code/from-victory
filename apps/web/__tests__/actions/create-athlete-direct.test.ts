@@ -70,7 +70,7 @@ vi.mock("@/lib/supabase/server", () => ({
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({
+          maybeSingle: vi.fn().mockResolvedValue({
             data: { id: currentUserId, role: currentUserRole, first_name: "Admin" },
             error: null,
           }),
@@ -79,7 +79,7 @@ vi.mock("@/lib/supabase/server", () => ({
       return {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
       };
     }),
   }),
