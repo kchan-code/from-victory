@@ -331,6 +331,94 @@ describe("GooglePlaySubscribeSection purchase states", () => {
       screen.queryByRole("heading", { name: "No purchases to restore" }),
     ).toBeNull();
   });
+
+  async function openRestore() {
+    purchaseMock.mockResolvedValueOnce({ status: "error", error: "already_owned" } as unknown);
+    render(<GooglePlaySubscribeSection mode="purchase" catalog={CATALOG} />);
+    await waitFor(() => expect(screen.getByTestId("google-subscribe-submit")).not.toBeDisabled());
+    fireEvent.click(screen.getByTestId("google-subscribe-submit"));
+    await waitFor(() => screen.getByTestId("google-state-already_owned_restore"));
+    fireEvent.click(screen.getByText("Restore purchases"));
+  }
+
+  it("restore skips a non-entitled first purchase and restores the second, in order", async () => {
+    restoreMock.mockReset();
+    submitGooglePurchaseMock.mockReset();
+    restoreMock.mockResolvedValueOnce({
+      ok: true,
+      purchases: [
+        { purchaseToken: "tok_a", purchaseState: "purchased", productIds: ["family.1"] },
+        { purchaseToken: "tok_b", purchaseState: "purchased", productIds: ["family.1"] },
+      ],
+    } as never);
+    submitGooglePurchaseMock
+      .mockResolvedValueOnce({ ok: true, entitled: false } as unknown)
+      .mockResolvedValueOnce({ ok: true, entitled: true } as unknown);
+    await openRestore();
+    await waitFor(() => expect(refreshMock).toHaveBeenCalled());
+    expect((submitGooglePurchaseMock.mock.calls as unknown as Array<[{ purchaseToken: string }]>).map((c) => c[0].purchaseToken)).toEqual(["tok_a", "tok_b"]);
+    expect(screen.queryByTestId("google-state-pending")).toBeNull();
+    expect(screen.queryByTestId("google-state-error")).toBeNull();
+  });
+
+  it("restore with a single entitled purchase succeeds", async () => {
+    restoreMock.mockReset();
+    submitGooglePurchaseMock.mockReset();
+    refreshMock.mockClear();
+    restoreMock.mockResolvedValueOnce({
+      ok: true,
+      purchases: [{ purchaseToken: "tok_a", purchaseState: "purchased", productIds: ["family.1"] }],
+    } as never);
+    submitGooglePurchaseMock.mockResolvedValueOnce({ ok: true, entitled: true } as unknown);
+    await openRestore();
+    await waitFor(() => expect(refreshMock).toHaveBeenCalledTimes(1));
+    expect(submitGooglePurchaseMock).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId("google-state-pending")).toBeNull();
+  });
+
+  it("restore with only pending and not-entitled purchases ends in the pending state", async () => {
+    restoreMock.mockReset();
+    submitGooglePurchaseMock.mockReset();
+    restoreMock.mockResolvedValueOnce({
+      ok: true,
+      purchases: [
+        { purchaseToken: "tok_a", purchaseState: "pending", productIds: ["family.1"] },
+        { purchaseToken: "tok_b", purchaseState: "purchased", productIds: ["family.1"] },
+      ],
+    } as never);
+    submitGooglePurchaseMock.mockResolvedValueOnce({ ok: true, entitled: false } as unknown);
+    await openRestore();
+    await waitFor(() => expect(screen.getByTestId("google-state-pending")).toBeInTheDocument());
+    expect(submitGooglePurchaseMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("restore stops on an ownership conflict", async () => {
+    restoreMock.mockReset();
+    submitGooglePurchaseMock.mockReset();
+    restoreMock.mockResolvedValueOnce({
+      ok: true,
+      purchases: [
+        { purchaseToken: "tok_a", purchaseState: "purchased", productIds: ["family.1"] },
+        { purchaseToken: "tok_b", purchaseState: "purchased", productIds: ["family.1"] },
+      ],
+    } as never);
+    submitGooglePurchaseMock.mockResolvedValueOnce({ ok: false, error: "ownership_conflict" } as unknown);
+    await openRestore();
+    await waitFor(() =>
+      expect(screen.getByTestId("google-state-already_owned_other_account")).toBeInTheDocument(),
+    );
+    expect(submitGooglePurchaseMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("bridge_unavailable shows the Play unavailable state", async () => {
+    purchaseMock.mockResolvedValueOnce({ status: "error", error: "bridge_unavailable" } as unknown);
+    render(<GooglePlaySubscribeSection mode="purchase" catalog={CATALOG} />);
+    await waitFor(() => expect(screen.getByTestId("google-subscribe-submit")).not.toBeDisabled());
+    fireEvent.click(screen.getByTestId("google-subscribe-submit"));
+    await waitFor(() =>
+      expect(screen.getByTestId("google-state-play_unavailable")).toBeInTheDocument(),
+    );
+  });
 });
 
 describe("GooglePlaySubscribeSection manage and entitled-elsewhere modes", () => {

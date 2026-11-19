@@ -90,10 +90,15 @@ export default async function NewAthletePage() {
   }
 
   const service = createServiceClient();
-  const { count: currentAthleteCount } = await service
-    .from("parent_athlete_links")
-    .select("athlete_id", { count: "exact", head: true })
-    .eq("parent_id", parentId);
+  // Only the Google Play upgrade path reads this count.
+  let currentAthleteCount: number | null = null;
+  if (googlePlayUiEnabled) {
+    const { count } = await service
+      .from("parent_athlete_links")
+      .select("athlete_id", { count: "exact", head: true })
+      .eq("parent_id", parentId);
+    currentAthleteCount = count;
+  }
 
   // FV-586 (KC decision D3, 2026-09-17): adding a second (or later) athlete
   // while the parent's Stripe subscription is mid-trial requires EXPLICIT

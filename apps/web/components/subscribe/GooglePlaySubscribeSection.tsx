@@ -202,7 +202,7 @@ export function GooglePlaySubscribeSection({
 
   function mapBridgeError(error: PlayBillingError): PurchaseState {
     if (error === "already_owned") return "already_owned_restore";
-    if (error === "unavailable") return "play_unavailable";
+    if (error === "unavailable" || error === "bridge_unavailable") return "play_unavailable";
     if (error === "network") return navigator.onLine ? "error" : "offline";
     if (!navigator.onLine) return "offline";
     return "error";
@@ -274,24 +274,30 @@ export function GooglePlaySubscribeSection({
         setPurchaseState("no_purchases_to_restore");
         return;
       }
+      let sawPending = false;
+      let sawNotEntitled = false;
       for (const restoredPurchase of restored.purchases) {
         if (restoredPurchase.purchaseState === "pending") {
-          setPurchaseState("pending");
-          return;
+          sawPending = true;
+          continue;
         }
         const submitted = await submitGooglePurchase({
           purchaseToken: restoredPurchase.purchaseToken,
         });
-        if (submitted.ok && submitted.entitled) {
-          setMessage("Your subscription is restored.");
-          setPurchaseState("idle");
-          router.refresh();
-          return;
-        }
         if (!submitted.ok) {
           setPurchaseState(mapSubmitError(submitted.error));
           return;
         }
+        if (!submitted.entitled) {
+          sawNotEntitled = true;
+          continue;
+        }
+        setMessage("Your subscription is restored.");
+        setPurchaseState("idle");
+        router.refresh();
+        return;
+      }
+      if (sawPending || sawNotEntitled) {
         setPurchaseState("pending");
         return;
       }
