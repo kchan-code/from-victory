@@ -5,22 +5,42 @@
 # manual `supabase db push`. Prod ran 6 migrations behind the deployed code
 # and requireAthlete()'s new column selects crashed every athlete login.
 #
-# This job pushes pending migrations the moment a migration lands on main.
+# This job pushes pending migrations on every push to main.
 #
-# Migrate-before-deploy (FV-731): vercel.json ignoreCommand skips the automatic
-# production build when this push changes supabase/migrations AND the Vercel
-# env FV_MIGRATE_BEFORE_DEPLOY=1. This job then applies the schema and runs
-# `vercel deploy --prod` with FV_DEPLOY_AFTER_MIGRATE=1 so that second build
-# is not skipped. Until the flag and the Vercel token secrets below are set,
-# git auto-deploy still races this job (the old v1 window). Order of operations
-# and the rollback rules: docs/runbooks/rollback.md.
+# Migrate-before-deploy (FV-731, reworked FV-777): this workflow is the ONE
+# ordered production deployment lane. It runs on every push to main, not only
+# pushes that touch supabase/migrations. When the Vercel env
+# FV_MIGRATE_BEFORE_DEPLOY=1 is set, vercel.json ignoreCommand skips every
+# production build from Vercel's git integration, and the only production
+# deploy is the `vercel deploy --prod` at the end of this job, run with
+# FV_DEPLOY_AFTER_MIGRATE=1 so that build is not skipped.
+#
+# Ordering: the concurrency group below runs one job at a time and never
+# cancels a running one. For a migration commit M followed by a plain commit
+# N, M's run finishes or fails before N's starts. If M's migration failed,
+# nothing was deployed, and N's run retries `supabase db push --include-all`
+# and deploys only if that succeeds. A failed migration blocks every later
+# deploy until it is fixed.
+#
+# Stale runs: before deploying, the job checks that its commit is still the
+# tip of main. If it is not (a newer push is queued, or someone re-ran an old
+# run), it applies migrations but does not deploy, so an old checkout cannot
+# replace newer production. The newer commit's run deploys.
 #
 # Manual run (workflow_dispatch, on main only): applies any pending migrations,
-# then deploys current main. Use it to ship a commit whose automatic build was
-# skipped and never deployed. A manual run on any other ref does nothing.
+# then deploys the tip of main as of when the run was started (the checked-out
+# github.sha), and only if it is still the tip when the deploy step is
+# reached. A manual run on any other ref does nothing.
+#
+# Cost of the single lane: docs-only and CI-only pushes to main also run this
+# job (a no-op db push, then a deploy). While the flag is off, Vercel's git
+# integration still builds every push as well, so each push produces two
+# production deployments and the old race remains. Order of operations and
+# the rollback rules: docs/runbooks/rollback.md.
 #
 #   VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID — set these BEFORE turning
-#   on FV_MIGRATE_BEFORE_DEPLOY, or a migration commit is skipped and never ships.
+#   on FV_MIGRATE_BEFORE_DEPLOY. With the flag on and these missing, nothing
+#   deploys to production.
 #
 # Required repo secrets (KC sets these — the job fails LOUDLY without them):
 #   SUPABASE_ACCESS_TOKEN — personal access token (supabase.com/dashboard/account/tokens)
@@ -32,8 +52,6 @@ name: db-migrate
 on:
   push:
     branches: [main]
-    paths:
-      - "supabase/migrations/**"
   workflow_dispatch:
 
 concurrency:
@@ -99,16 +117,32 @@ jobs:
             echo "configured=yes" >> "$GITHUB_OUTPUT"
           else
             echo "configured=no" >> "$GITHUB_OUTPUT"
-            echo "::warning::VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID are not all set. This job applied migrations but did not deploy. Leave Vercel env FV_MIGRATE_BEFORE_DEPLOY unset until those secrets exist, or the automatic production build is skipped and this commit never ships. See docs/runbooks/rollback.md."
+            echo "::warning::VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID are not all set. This job applied migrations but did not deploy. If Vercel env FV_MIGRATE_BEFORE_DEPLOY=1 is set, Vercel skips every production build and nothing ships until these secrets exist. Leave that flag unset until they do. See docs/runbooks/rollback.md."
+          fi
+
+      # A queued run for a newer push, or a re-run of an old run, must not put
+      # an older checkout over newer production. Migrations above still applied.
+      # A failed fetch fails the job, so nothing deploys.
+      - name: Check this commit is still the tip of main
+        id: tip
+        if: steps.vercel.outputs.configured == 'yes'
+        run: |
+          git fetch --no-tags --depth=1 origin main
+          tip="$(git rev-parse FETCH_HEAD)"
+          if [ "$tip" = "$GITHUB_SHA" ]; then
+            echo "is_tip=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_tip=no" >> "$GITHUB_OUTPUT"
+            echo "::notice::Not deploying $GITHUB_SHA: main is now at $tip. Migrations were applied. The run for the newer commit will deploy."
           fi
 
       - uses: actions/setup-node@v7
-        if: steps.vercel.outputs.configured == 'yes'
+        if: steps.vercel.outputs.configured == 'yes' && steps.tip.outputs.is_tip == 'yes'
         with:
           node-version: "22"
 
       - name: Deploy production after migrations
-        if: steps.vercel.outputs.configured == 'yes'
+        if: steps.vercel.outputs.configured == 'yes' && steps.tip.outputs.is_tip == 'yes'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}

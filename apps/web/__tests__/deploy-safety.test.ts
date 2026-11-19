@@ -1,22 +1,19 @@
-import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync, chmodSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 
 const REPO_ROOT = path.resolve(__dirname, "../../..");
 const SCRIPT = path.join(REPO_ROOT, "bin/vercel-ignore-production-build.sh");
+const WORKFLOW = path.join(REPO_ROOT, ".github/workflows/db-migrate.yml");
 
-function git(cwd: string, args: string[]) {
-  execFileSync("git", args, { cwd, stdio: "pipe" });
-}
-
-function runIgnore(
+function run(
+  args: string[],
   cwd: string,
   env: Record<string, string>,
 ): { status: number | null; stdout: string } {
-  const result = spawnSync("bash", [path.join(cwd, "bin/vercel-ignore-production-build.sh")], {
+  const result = spawnSync("bash", args, {
     cwd,
     env: {
       PATH: process.env.PATH ?? "",
@@ -28,156 +25,71 @@ function runIgnore(
   return { status: result.status, stdout: result.stdout ?? "" };
 }
 
-describe("migrate-before-deploy gate (FV-731)", () => {
-  const dirs: string[] = [];
+function runIgnore(env: Record<string, string>) {
+  return run([SCRIPT], REPO_ROOT, env);
+}
 
-  afterEach(() => {
-    for (const dir of dirs.splice(0)) {
-      rmSync(dir, { recursive: true, force: true });
+// The text of one workflow step, from its `- name:` line to the next step.
+function step(workflow: string, name: string): string {
+  const start = workflow.indexOf(`      - name: ${name}\n`);
+  expect(start, `step "${name}" exists`).toBeGreaterThan(-1);
+  const next = workflow.indexOf("\n      - ", start + 1);
+  return workflow.slice(start, next === -1 ? undefined : next);
+}
+
+describe("migrate-before-deploy gate (FV-731, FV-777)", () => {
+  it("skips every production build from the git lane when the flag is on", () => {
+    // The script never reads the commit, so the answer is the same for a
+    // migration commit M, a plain commit N pushed while M's migration is
+    // pending or failed, a missing SHA, or an unknown one. N cannot ship
+    // M's code ahead of its schema because the git lane never builds N.
+    const base = { VERCEL_ENV: "production", FV_MIGRATE_BEFORE_DEPLOY: "1" };
+    const commits: Record<string, string>[] = [
+      {},
+      { VERCEL_GIT_COMMIT_SHA: "0".repeat(40) },
+      { VERCEL_GIT_COMMIT_SHA: "a".repeat(40), VERCEL_GIT_PREVIOUS_SHA: "b".repeat(40) },
+    ];
+    for (const commit of commits) {
+      const result = runIgnore({ ...base, ...commit });
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain("Skipping");
     }
   });
 
-  function tempRepo(): {
-    dir: string;
-    prev: string;
-    cur: string;
-    curNoMigration: string;
-    curAfterMigration: string;
-  } {
-    const dir = mkdtempSync(path.join(tmpdir(), "fv-ignore-"));
-    dirs.push(dir);
-    mkdirSync(path.join(dir, "bin"));
-    writeFileSync(
-      path.join(dir, "bin/vercel-ignore-production-build.sh"),
-      readFileSync(SCRIPT),
-    );
-    chmodSync(path.join(dir, "bin/vercel-ignore-production-build.sh"), 0o755);
-    git(dir, ["init", "-b", "main"]);
-    git(dir, ["config", "user.email", "dev@example.com"]);
-    git(dir, ["config", "user.name", "Test"]);
-    writeFileSync(path.join(dir, "README.md"), "one\n");
-    git(dir, ["add", "README.md"]);
-    git(dir, ["commit", "-m", "base"]);
-    const prev = execFileSync("git", ["rev-parse", "HEAD"], { cwd: dir, encoding: "utf8" }).trim();
+  it("does not inspect git at all", () => {
+    const code = readFileSync(SCRIPT, "utf8")
+      .split("\n")
+      .filter((line) => !line.trimStart().startsWith("#"))
+      .join("\n");
+    expect(code).not.toMatch(/\bgit\b/);
+    expect(code).not.toContain("grep");
+    expect(code).not.toContain("VERCEL_GIT_");
+  });
 
-    writeFileSync(path.join(dir, "README.md"), "two\n");
-    git(dir, ["add", "README.md"]);
-    git(dir, ["commit", "-m", "no migration"]);
-    const curNoMigration = execFileSync("git", ["rev-parse", "HEAD"], {
-      cwd: dir,
-      encoding: "utf8",
-    }).trim();
-
-    mkdirSync(path.join(dir, "supabase/migrations"), { recursive: true });
-    writeFileSync(path.join(dir, "supabase/migrations/001.sql"), "select 1;\n");
-    git(dir, ["add", "supabase/migrations/001.sql"]);
-    git(dir, ["commit", "-m", "migration"]);
-    const cur = execFileSync("git", ["rev-parse", "HEAD"], { cwd: dir, encoding: "utf8" }).trim();
-
-    writeFileSync(path.join(dir, "README.md"), "three\n");
-    git(dir, ["add", "README.md"]);
-    git(dir, ["commit", "-m", "after migration"]);
-    const curAfterMigration = execFileSync("git", ["rev-parse", "HEAD"], {
-      cwd: dir,
-      encoding: "utf8",
-    }).trim();
-    return { dir, prev, cur, curNoMigration, curAfterMigration };
-  }
-
-  it("builds unless production, the opt-in flag, and a migration diff all agree", () => {
-    const { dir, prev, cur, curNoMigration } = tempRepo();
-    const shas = { VERCEL_GIT_PREVIOUS_SHA: prev, VERCEL_GIT_COMMIT_SHA: cur };
-
-    expect(runIgnore(dir, { ...shas, VERCEL_ENV: "preview", FV_MIGRATE_BEFORE_DEPLOY: "1" }).status).toBe(1);
-    expect(runIgnore(dir, { ...shas, VERCEL_ENV: "production" }).status).toBe(1);
-    expect(
-      runIgnore(dir, {
-        VERCEL_ENV: "production",
-        FV_MIGRATE_BEFORE_DEPLOY: "1",
-        VERCEL_GIT_PREVIOUS_SHA: prev,
-        VERCEL_GIT_COMMIT_SHA: curNoMigration,
-      }).status,
-    ).toBe(1);
-
-    const skipped = runIgnore(dir, {
-      ...shas,
-      VERCEL_ENV: "production",
-      FV_MIGRATE_BEFORE_DEPLOY: "1",
-    });
-    expect(skipped.status).toBe(0);
-    expect(skipped.stdout).toContain("Skipping");
-
-    const forced = runIgnore(dir, {
-      ...shas,
+  it("builds the deploy that the db-migrate workflow runs", () => {
+    const result = runIgnore({
       VERCEL_ENV: "production",
       FV_MIGRATE_BEFORE_DEPLOY: "1",
       FV_DEPLOY_AFTER_MIGRATE: "1",
     });
-    expect(forced.status).toBe(1);
-    expect(forced.stdout).toContain("post-migration");
-  });
-
-  it("finds the script when Vercel runs the command from apps/web", () => {
-    const { dir } = tempRepo();
-    mkdirSync(path.join(dir, "apps/web"), { recursive: true });
-    const command = JSON.parse(
-      readFileSync(path.join(REPO_ROOT, "vercel.json"), "utf8"),
-    ).ignoreCommand as string;
-    const result = spawnSync("bash", ["-lc", command], {
-      cwd: path.join(dir, "apps/web"),
-      env: {
-        PATH: process.env.PATH ?? "",
-        HOME: process.env.HOME ?? "",
-        VERCEL_ENV: "preview",
-      } as unknown as NodeJS.ProcessEnv,
-      encoding: "utf8",
-    });
-    // Preview exits 1, which means "build". Exit 127 would be "script missing".
     expect(result.status).toBe(1);
-  });
-
-  it("builds a later commit with no migration even when the previous deployed SHA predates one", () => {
-    // 2026-11-19: the CLI deploy from db-migrate does not advance
-    // VERCEL_GIT_PREVIOUS_SHA, so it still pointed before the migration
-    // commit and every later push was skipped.
-    const { dir, prev, curAfterMigration } = tempRepo();
-    const result = runIgnore(dir, {
-      VERCEL_ENV: "production",
-      FV_MIGRATE_BEFORE_DEPLOY: "1",
-      VERCEL_GIT_PREVIOUS_SHA: prev,
-      VERCEL_GIT_COMMIT_SHA: curAfterMigration,
-    });
-    expect(result.status).toBe(1);
+    expect(result.stdout).toContain("db-migrate workflow");
     expect(result.stdout).not.toContain("Skipping");
   });
 
-  it("skips a migration commit whatever the previous deployed SHA is", () => {
-    const { dir, cur } = tempRepo();
-    const base = { VERCEL_ENV: "production", FV_MIGRATE_BEFORE_DEPLOY: "1", VERCEL_GIT_COMMIT_SHA: cur };
-    expect(runIgnore(dir, base).status).toBe(0);
-    expect(runIgnore(dir, { ...base, VERCEL_GIT_PREVIOUS_SHA: cur }).status).toBe(0);
+  it("builds production when the opt-in flag is unset or not 1", () => {
+    expect(runIgnore({ VERCEL_ENV: "production" }).status).toBe(1);
+    expect(runIgnore({ VERCEL_ENV: "production", FV_MIGRATE_BEFORE_DEPLOY: "0" }).status).toBe(1);
+    expect(runIgnore({ VERCEL_ENV: "production", FV_MIGRATE_BEFORE_DEPLOY: "" }).status).toBe(1);
   });
 
-  it("fails open when the SHAs are missing", () => {
-    const { dir } = tempRepo();
-    expect(
-      runIgnore(dir, { VERCEL_ENV: "production", FV_MIGRATE_BEFORE_DEPLOY: "1" }).status,
-    ).toBe(1);
+  it("builds previews and other non-production environments", () => {
+    expect(runIgnore({ VERCEL_ENV: "preview", FV_MIGRATE_BEFORE_DEPLOY: "1" }).status).toBe(1);
+    expect(runIgnore({ VERCEL_ENV: "development", FV_MIGRATE_BEFORE_DEPLOY: "1" }).status).toBe(1);
+    expect(runIgnore({ FV_MIGRATE_BEFORE_DEPLOY: "1" }).status).toBe(1);
   });
 
-  it("fails open when the commit or its parent is not available", () => {
-    const { dir, prev } = tempRepo();
-    const env = { VERCEL_ENV: "production", FV_MIGRATE_BEFORE_DEPLOY: "1" };
-    // The root commit has no parent to compare against.
-    const root = runIgnore(dir, { ...env, VERCEL_GIT_COMMIT_SHA: prev });
-    expect(root.status).toBe(1);
-    expect(root.stdout).toContain("fail open");
-    const unknown = runIgnore(dir, { ...env, VERCEL_GIT_COMMIT_SHA: "0".repeat(40) });
-    expect(unknown.status).toBe(1);
-    expect(unknown.stdout).toContain("fail open");
-  });
-
-  it("wires ignoreCommand and deploys only after the migration push", () => {
+  it("finds the script when Vercel runs the command from apps/web or the repo root", () => {
     const vercel = readFileSync(path.join(REPO_ROOT, "vercel.json"), "utf8");
     // The Vercel project root is apps/web, so the command must also find the
     // script two directories up. A missing script is exit 127, which Vercel
@@ -187,18 +99,64 @@ describe("migrate-before-deploy gate (FV-731)", () => {
     const command = JSON.parse(vercel).ignoreCommand as string;
     expect(command.length).toBeLessThanOrEqual(256);
 
-    const workflow = readFileSync(
-      path.join(REPO_ROOT, ".github/workflows/db-migrate.yml"),
-      "utf8",
-    );
-    const pushAt = workflow.indexOf("name: Push migrations");
-    const deployAt = workflow.indexOf("name: Deploy production after migrations");
-    expect(pushAt).toBeGreaterThan(-1);
-    expect(deployAt).toBeGreaterThan(pushAt);
-    expect(workflow).toContain("FV_DEPLOY_AFTER_MIGRATE=1");
-    expect(workflow).toContain("vercel@65.15.0");
-    // Manual run ships a skipped commit, and only from main.
-    expect(workflow).toMatch(/^  workflow_dispatch:$/m);
+    const skip = { VERCEL_ENV: "production", FV_MIGRATE_BEFORE_DEPLOY: "1" };
+    for (const cwd of [REPO_ROOT, path.join(REPO_ROOT, "apps/web")]) {
+      // Preview exits 1 ("build"). Exit 0 with the skip text proves the
+      // script itself ran, not the command's own `else exit 1` fallback.
+      expect(run(["-c", command], cwd, { VERCEL_ENV: "preview" }).status).toBe(1);
+      const skipped = run(["-c", command], cwd, skip);
+      expect(skipped.status).toBe(0);
+      expect(skipped.stdout).toContain("Skipping");
+    }
+  });
+
+  it("runs db-migrate as the single ordered production lane", () => {
+    const workflow = readFileSync(WORKFLOW, "utf8");
+
+    // Every push to main, plus manual runs. No paths filter.
+    expect(workflow).toMatch(/^on:\n  push:\n    branches: \[main\]\n  workflow_dispatch:\n/m);
+    expect(workflow).not.toMatch(/^\s*paths(-ignore)?:/m);
+    // Only main may touch production.
     expect(workflow).toMatch(/^    if: github\.ref == 'refs\/heads\/main'$/m);
+    // One run at a time, and a running one is never cancelled.
+    expect(workflow).toMatch(
+      /^concurrency:\n  group: db-migrate-prod\n  cancel-in-progress: false\n/m,
+    );
+  });
+
+  it("deploys only after the migration push, and only the tip of main", () => {
+    const workflow = readFileSync(WORKFLOW, "utf8");
+    const pushAt = workflow.indexOf("      - name: Push migrations\n");
+    const tipAt = workflow.indexOf("      - name: Check this commit is still the tip of main\n");
+    const deployAt = workflow.indexOf("      - name: Deploy production after migrations\n");
+    expect(pushAt).toBeGreaterThan(-1);
+    expect(tipAt).toBeGreaterThan(pushAt);
+    expect(deployAt).toBeGreaterThan(tipAt);
+
+    // No step may carry on past a failed migration push.
+    expect(workflow).not.toContain("continue-on-error");
+    expect(workflow).not.toMatch(/always\(\)|failure\(\)|cancelled\(\)/);
+
+    const push = step(workflow, "Push migrations");
+    expect(push).toContain("supabase db push --include-all");
+    expect(push).not.toMatch(/^\s+if:/m);
+
+    const tip = step(workflow, "Check this commit is still the tip of main");
+    expect(tip).toContain("id: tip");
+    expect(tip).toContain("git fetch --no-tags --depth=1 origin main");
+    expect(tip).toContain('"$tip" = "$GITHUB_SHA"');
+    expect(tip).toContain("is_tip=yes");
+    expect(tip).toContain("is_tip=no");
+    expect(tip).toContain("::notice::");
+
+    const deploy = step(workflow, "Deploy production after migrations");
+    expect(deploy).toMatch(
+      /^        if: steps\.vercel\.outputs\.configured == 'yes' && steps\.tip\.outputs\.is_tip == 'yes'$/m,
+    );
+    expect(deploy).toContain("vercel deploy --prod");
+    expect(deploy).toContain("FV_DEPLOY_AFTER_MIGRATE=1");
+    expect(deploy).toContain("vercel@65.15.0");
+    // The only place the workflow deploys.
+    expect(workflow.match(/vercel deploy/g)?.length).toBe(1 + (workflow.match(/^#.*vercel deploy/gm)?.length ?? 0));
   });
 });
