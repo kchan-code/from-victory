@@ -128,6 +128,16 @@ export const STOREKIT_PRODUCT_RETRY_DELAYS_MS: readonly number[] = [1000, 2000, 
 const PRODUCT_UNAVAILABLE_COPY =
   "This plan isn’t available right now. Please try again in a moment.";
 const PURCHASE_ERROR_COPY = "We couldn’t complete that purchase. Please try again.";
+// FV-706: the server returned `ownership_conflict`, so Apple already took
+// payment but the subscription belongs to another From Victory account.
+// Never says to buy again; never names the other account.
+const OWNERSHIP_CONFLICT_COPY =
+  "Your Apple purchase went through, but it is already linked to a different From Victory account. Sign in to that account, or use Restore Purchases there, to use it for your athlete. Please don’t buy again.";
+// Restore on the wrong account hits the same result: nothing was just bought,
+// so the copy does not say a purchase went through or send them to Restore.
+const RESTORE_OWNERSHIP_CONFLICT_COPY =
+  "This Apple purchase is already linked to a different From Victory account. Sign in to that account to use it. Please don’t buy again.";
+const OWNERSHIP_CONFLICT_HELP_COPY = "Can’t get into that account?";
 const PURCHASE_PENDING_COPY =
   "Your purchase is waiting on approval. Check back soon.";
 const PURCHASE_SUCCESS_COPY = "You’re subscribed. Welcome to From Victory.";
@@ -191,11 +201,30 @@ export interface AppleSubscribeSectionProps {
 
 type DisplayProduct = AppleProductConfig & { livePrice?: string };
 
+function OwnershipConflictNotice({ source }: { source: "purchase" | "restore" }) {
+  return (
+    <div
+      role="alert"
+      data-testid="apple-subscribe-conflict"
+      className="mb-5 font-body text-[14px] text-danger leading-snug"
+    >
+      <p>{source === "restore" ? RESTORE_OWNERSHIP_CONFLICT_COPY : OWNERSHIP_CONFLICT_COPY}</p>
+      <p className="mt-2">
+        {OWNERSHIP_CONFLICT_HELP_COPY}{" "}
+        <Link href="/contact" className="underline" data-testid="apple-subscribe-conflict-contact">
+          Contact us and we’ll help.
+        </Link>
+      </p>
+    </div>
+  );
+}
+
 type ActionState =
   | { kind: "idle" }
   | { kind: "purchasing" }
   | { kind: "purchase-pending" }
   | { kind: "purchase-error"; message: string }
+  | { kind: "purchase-conflict"; source: "purchase" | "restore" }
   | { kind: "restoring" }
   | { kind: "restore-empty" }
   | { kind: "restore-error"; message: string }
@@ -782,6 +811,10 @@ export function AppleSubscribeSection({
       });
 
       if (!submitResult.ok) {
+        if (submitResult.error === "ownership_conflict") {
+          setActionState({ kind: "purchase-conflict", source: "purchase" });
+          return;
+        }
         setActionState({ kind: "purchase-error", message: PURCHASE_ERROR_COPY });
         return;
       }
@@ -834,6 +867,10 @@ export function AppleSubscribeSection({
       });
 
       if (!submitResult.ok) {
+        if (submitResult.error === "ownership_conflict") {
+          setActionState({ kind: "purchase-conflict", source: "restore" });
+          return;
+        }
         setActionState({ kind: "restore-error", message: RESTORE_ERROR_COPY });
         return;
       }
@@ -1038,6 +1075,10 @@ export function AppleSubscribeSection({
                   </p>
                 ) : null}
 
+                {actionState.kind === "purchase-conflict" ? (
+        <OwnershipConflictNotice source={actionState.source} />
+      ) : null}
+
                 {actionState.kind === "purchase-pending" ? (
                   <p
                     role="status"
@@ -1107,6 +1148,10 @@ export function AppleSubscribeSection({
         >
           {actionState.message}
         </p>
+      ) : null}
+
+      {actionState.kind === "purchase-conflict" ? (
+        <OwnershipConflictNotice source={actionState.source} />
       ) : null}
 
       {actionState.kind === "purchase-pending" ? (
