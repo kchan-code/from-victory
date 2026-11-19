@@ -32,6 +32,8 @@ import { deliverInBackground } from "@/lib/monitoring/deliver";
 import { notifyError } from "@/lib/monitoring/notify";
 import { getRequestShellCapability } from "@/lib/native-shell";
 import { isRestrictedShell } from "@/lib/native-shell-restricted";
+import { isGooglePlayCatalogActive } from "@/lib/subscriptions/google-product-catalog";
+import { getSubscribeEntitlementState } from "@/lib/subscriptions/subscribe-guard";
 import { createServiceClient } from "@/lib/supabase/service";
 import { assertAthleteCapacity } from "@/lib/subscriptions/apple-capacity";
 import { getTrialConversionState } from "@/lib/subscriptions/trial-conversion";
@@ -100,7 +102,23 @@ export async function createAthlete(
   // Stripe call — families add athletes on the website. The UA is a hint, not
   // authorization; this branch only ever removes an action. ios-iap and
   // web/PWA are unchanged.
-  if (isRestrictedShell(await getRequestShellCapability())) {
+  const shellCapability = await getRequestShellCapability();
+  const androidPlayCatalogEnabled =
+    shellCapability === "android-play" && isGooglePlayCatalogActive();
+  let parentId: string | null = null;
+  let androidPlayPurchaseEligible = false;
+  if (androidPlayCatalogEnabled) {
+    const auth = await requireParent();
+    parentId = auth.userId;
+    const entitlement = await getSubscribeEntitlementState(parentId);
+    androidPlayPurchaseEligible =
+      entitlement.status === "not_entitled" ||
+      (entitlement.status === "entitled" &&
+        entitlement.provider === "google");
+  }
+  const googlePlayUiEnabled =
+    androidPlayCatalogEnabled && androidPlayPurchaseEligible;
+  if (isRestrictedShell(shellCapability) && !googlePlayUiEnabled) {
     return {
       ok: false,
       error: "Add athletes from a web browser at fromvictoryapp.com.",
@@ -121,7 +139,11 @@ export async function createAthlete(
     };
   }
 
-  const { userId: parentId } = await requireParent();
+  if (!parentId) {
+    const auth = await requireParent();
+    parentId = auth.userId;
+  }
+
   const service = createServiceClient();
 
   // FV-570 (record §4.6): Apple-tier athlete-capacity gate, BEFORE the
@@ -159,7 +181,9 @@ export async function createAthlete(
   // confirmation that ENDS the trial and STARTS the paid family plan
   // IMMEDIATELY — never a silent conversion or charge. Read the trial state
   // BEFORE any write below.
-  const trialConversionState = await getTrialConversionState(service, parentId);
+  const trialConversionState = androidPlayCatalogEnabled
+    ? { kind: "not_trialing" as const }
+    : await getTrialConversionState(service, parentId);
 
   // Fail CLOSED: a state-read failure must never let a silent mid-trial
   // conversion through undetected. Refuse the same way an un-confirmed
@@ -182,6 +206,7 @@ export async function createAthlete(
   // one-athlete trial itself (currentAthleteCount === 0, the FIRST athlete)
   // is not a conversion.
   if (
+    !androidPlayCatalogEnabled &&
     trialConversionState.kind === "stripe_trial" &&
     trialConversionState.currentAthleteCount >= 1
   ) {
@@ -360,7 +385,9 @@ export async function createAthlete(
   // deliverInBackground registers the promise with waitUntil so the
   // serverless runtime can't freeze the instance mid-Stripe-write — a
   // dropped sync is silent under-/over-billing, not a caught error.
-  deliverInBackground(syncAthleteQuantity(parentId));
+  if (!androidPlayCatalogEnabled) {
+    deliverInBackground(syncAthleteQuantity(parentId));
+  }
 
   redirect("/dashboard");
 }

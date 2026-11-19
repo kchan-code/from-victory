@@ -16,7 +16,7 @@
 
 import type { ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
 import type { CreateAthleteState } from "@/lib/actions/athletes";
@@ -45,12 +45,54 @@ vi.mock("react-dom", async (importOriginal) => {
 vi.mock("@/lib/actions/athletes", () => ({
   createAthlete: vi.fn(),
 }));
+vi.mock("@/lib/actions/google-play-subscription", () => ({
+  beginGooglePlayPurchase: vi.fn(async () => ({
+    ok: true,
+    obfuscatedAccountId: "bind_1",
+  })),
+  submitGooglePurchase: vi.fn(async () => ({ ok: true, entitled: true })),
+}));
+vi.mock("@/lib/native/play-billing", () => ({
+  getProducts: vi.fn(async () => ({
+    ok: true,
+    products: [
+      {
+        productId: "family.2",
+        offers: [
+          {
+            basePlanId: "yearly",
+            pricingPhases: [{ formattedPrice: "$78.00" }],
+          },
+        ],
+      },
+    ],
+  })),
+  restore: vi.fn(async () => ({
+    ok: true,
+    purchases: [
+      {
+        purchaseToken: "tok_live",
+        productIds: ["family.1"],
+        purchaseState: "purchased",
+        acknowledged: true,
+        autoRenewing: true,
+        obfuscatedAccountId: "bind_1",
+      },
+    ],
+  })),
+  purchase: vi.fn(async () => ({
+    status: "purchased",
+    purchaseToken: "tok_new",
+    productId: "family.2",
+  })),
+}));
 
 import { AthleteForm } from "@/components/dashboard/AthleteForm";
 
 afterEach(() => {
   cleanup();
   formStateOverride.current = null;
+  vi.clearAllMocks();
 });
 
 const QUOTED: NonNullable<
@@ -231,5 +273,298 @@ describe("AthleteForm — error codes (FV-586 / FV-570)", () => {
 
     const err = screen.getByTestId("athlete-form-error");
     expect(err.textContent).toContain("You’ve reached your plan’s athlete limit.");
+  });
+
+  it("capacity_reached + Google trial upgrade renders the trial-ending variant with Play controls", () => {
+    formStateOverride.current = {
+      ok: false,
+      error: "capacity_reached",
+      code: "capacity_reached",
+    };
+    render(
+      <AthleteForm
+        googleUpgrade={{
+          currentCapacity: 1,
+          nextCapacity: 2,
+          currentProductId: "family.1",
+          currentBasePlanId: "yearly",
+          nextProductId: "family.2",
+          nextBasePlanId: "yearly",
+          trialEndingToday: true,
+          pricePeriodLabel: "per month",
+        }}
+      />,
+    );
+
+    const err = screen.getByTestId("athlete-form-error");
+    fireEvent.change(screen.getByLabelText("First name"), {
+      target: { value: "Jordan" },
+    });
+    expect(err.textContent).toContain(
+      "You're adding Jordan. That takes you from 1 athlete to 2 athletes.",
+    );
+    expect(err.textContent).toContain("Your trial ends today");
+    expect(err.textContent).toContain(
+      "Your 7-day free trial ends today, and the 2-athlete plan starts now.",
+    );
+    expect(err.textContent).toContain(
+      "This starts now. Google Play will charge you today. The plan renews automatically until you cancel in Google Play.",
+    );
+    expect(err.textContent).toContain("Continue to Google Play");
+    expect(err.textContent).toContain("Not now");
+  });
+
+  it("capacity_reached + Google paid upgrade renders the prorated variant", () => {
+    formStateOverride.current = {
+      ok: false,
+      error: "capacity_reached",
+      code: "capacity_reached",
+    };
+    render(
+      <AthleteForm
+        googleUpgrade={{
+          currentCapacity: 1,
+          nextCapacity: 2,
+          currentProductId: "family.1",
+          currentBasePlanId: "yearly",
+          nextProductId: "family.2",
+          nextBasePlanId: "yearly",
+          trialEndingToday: false,
+          pricePeriodLabel: "per month",
+        }}
+      />,
+    );
+
+    const err = screen.getByTestId("athlete-form-error");
+    expect(err.textContent).toContain(
+      "Google Play will charge the difference for the time left in this period.",
+    );
+    expect(err.textContent).toContain(
+      "This starts now. The plan renews automatically until you cancel in Google Play.",
+    );
+  });
+
+  it("capacity_reached at the 5-athlete limit renders plan-limit state and dashboard route", () => {
+    formStateOverride.current = {
+      ok: false,
+      error: "capacity_reached",
+      code: "capacity_reached",
+    };
+    render(
+      <AthleteForm
+        googleUpgrade={{
+          currentCapacity: 5,
+          nextCapacity: null,
+          currentProductId: "family.5",
+          currentBasePlanId: "yearly",
+          nextProductId: null,
+          nextBasePlanId: null,
+          trialEndingToday: false,
+          pricePeriodLabel: "per year",
+        }}
+      />,
+    );
+
+    const err = screen.getByTestId("athlete-form-error");
+    expect(err.textContent).toContain("Plan limit reached");
+    expect(err.querySelector('a[href="/dashboard"]')).not.toBeNull();
+  });
+
+  it("after successful Google upgrade, the form is resubmitted to create the athlete", async () => {
+    const requestSubmitSpy = vi
+      .spyOn(HTMLFormElement.prototype, "requestSubmit")
+      .mockImplementation(() => {});
+    formStateOverride.current = {
+      ok: false,
+      error: "capacity_reached",
+      code: "capacity_reached",
+    };
+    render(
+      <AthleteForm
+        googleUpgrade={{
+          currentCapacity: 1,
+          nextCapacity: 2,
+          currentProductId: "family.1",
+          currentBasePlanId: "yearly",
+          nextProductId: "family.2",
+          nextBasePlanId: "yearly",
+          trialEndingToday: false,
+          pricePeriodLabel: "per month",
+        }}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("First name"), {
+      target: { value: "Jordan" },
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId("google-upgrade-submit")).not.toBeDisabled(),
+    );
+    fireEvent.click(screen.getByTestId("google-upgrade-submit"));
+
+    await waitFor(() => expect(requestSubmitSpy).toHaveBeenCalled());
+    requestSubmitSpy.mockRestore();
+  });
+
+  it("already-owned upgrade restore submits next-tier purchase first and only resubmits athlete after entitled next-tier verification", async () => {
+    const playBilling = await import("@/lib/native/play-billing");
+    const googleSubmit = await import("@/lib/actions/google-play-subscription");
+    const requestSubmitSpy = vi
+      .spyOn(HTMLFormElement.prototype, "requestSubmit")
+      .mockImplementation(() => {});
+    vi.mocked(playBilling.purchase).mockResolvedValueOnce({
+      status: "error",
+      error: "already_owned",
+    } as any);
+    vi.mocked(playBilling.restore).mockResolvedValue({
+      ok: true,
+      purchases: [
+        {
+          purchaseToken: "tok_old_tier",
+          productIds: ["family.1"],
+          purchaseState: "purchased",
+          acknowledged: true,
+          autoRenewing: true,
+          obfuscatedAccountId: "bind_1",
+        },
+        {
+          purchaseToken: "tok_next_tier",
+          productIds: ["family.2"],
+          purchaseState: "purchased",
+          acknowledged: true,
+          autoRenewing: true,
+          obfuscatedAccountId: "bind_1",
+        },
+      ],
+    } as any);
+    vi.mocked(googleSubmit.submitGooglePurchase).mockResolvedValueOnce({
+      ok: true,
+      entitled: true,
+    } as any);
+    formStateOverride.current = {
+      ok: false,
+      error: "capacity_reached",
+      code: "capacity_reached",
+    };
+    render(
+      <AthleteForm
+        googleUpgrade={{
+          currentCapacity: 1,
+          nextCapacity: 2,
+          currentProductId: "family.1",
+          currentBasePlanId: "yearly",
+          nextProductId: "family.2",
+          nextBasePlanId: "yearly",
+          trialEndingToday: false,
+          pricePeriodLabel: "per month",
+        }}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("First name"), {
+      target: { value: "Jordan" },
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId("google-upgrade-submit")).not.toBeDisabled(),
+    );
+    fireEvent.click(screen.getByTestId("google-upgrade-submit"));
+    await waitFor(() =>
+      expect(screen.getByText("Restore purchases")).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByText("Restore purchases"));
+    await waitFor(() => expect(playBilling.restore).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(googleSubmit.submitGooglePurchase).toHaveBeenCalledWith({
+        purchaseToken: "tok_next_tier",
+      }),
+    );
+    expect(googleSubmit.submitGooglePurchase).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(requestSubmitSpy).toHaveBeenCalled());
+    requestSubmitSpy.mockRestore();
+  });
+
+  it("already-owned upgrade restore does not resubmit athlete when verification is not entitled", async () => {
+    const playBilling = await import("@/lib/native/play-billing");
+    const googleSubmit = await import("@/lib/actions/google-play-subscription");
+    const requestSubmitSpy = vi
+      .spyOn(HTMLFormElement.prototype, "requestSubmit")
+      .mockImplementation(() => {});
+    vi.mocked(playBilling.purchase).mockResolvedValueOnce({
+      status: "error",
+      error: "already_owned",
+    } as any);
+    vi.mocked(playBilling.restore)
+      .mockResolvedValueOnce({
+        ok: true,
+        purchases: [
+          {
+            purchaseToken: "tok_old_tier",
+            productIds: ["family.1"],
+            purchaseState: "purchased",
+            acknowledged: true,
+            autoRenewing: true,
+            obfuscatedAccountId: "bind_1",
+          },
+        ],
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        purchases: [
+          {
+            purchaseToken: "tok_next_tier_not_entitled",
+            productIds: ["family.2"],
+            purchaseState: "purchased",
+            acknowledged: true,
+            autoRenewing: true,
+            obfuscatedAccountId: "bind_1",
+          },
+        ],
+      } as any);
+    vi.mocked(googleSubmit.submitGooglePurchase).mockResolvedValueOnce({
+      ok: true,
+      entitled: false,
+    } as any);
+    formStateOverride.current = {
+      ok: false,
+      error: "capacity_reached",
+      code: "capacity_reached",
+    };
+    render(
+      <AthleteForm
+        googleUpgrade={{
+          currentCapacity: 1,
+          nextCapacity: 2,
+          currentProductId: "family.1",
+          currentBasePlanId: "yearly",
+          nextProductId: "family.2",
+          nextBasePlanId: "yearly",
+          trialEndingToday: false,
+          pricePeriodLabel: "per month",
+        }}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("First name"), {
+      target: { value: "Jordan" },
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId("google-upgrade-submit")).not.toBeDisabled(),
+    );
+    fireEvent.click(screen.getByTestId("google-upgrade-submit"));
+    await waitFor(() =>
+      expect(screen.getByText("Restore purchases")).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByText("Restore purchases"));
+
+    await waitFor(() =>
+      expect(googleSubmit.submitGooglePurchase).toHaveBeenCalledWith({
+        purchaseToken: "tok_next_tier_not_entitled",
+      }),
+    );
+    expect(requestSubmitSpy).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(screen.getByTestId("google-upgrade-state-pending")).toBeInTheDocument(),
+    );
+    requestSubmitSpy.mockRestore();
   });
 });

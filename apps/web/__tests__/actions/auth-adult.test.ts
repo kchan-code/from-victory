@@ -188,6 +188,52 @@ describe("signUpAdultAthlete", () => {
         expect(mockRedirect).not.toHaveBeenCalledWith("/subscribe");
       });
 
+      it("redirects to /subscribe when 'android-play' and GOOGLE_PLAY_CATALOG_ACTIVE=1 (FV-665 C7)", async () => {
+        vi.stubEnv("GOOGLE_PLAY_CATALOG_ACTIVE", "1");
+        mockGetRequestShellCapability.mockReturnValue("android-play");
+
+        await expect(signUpAdultAthlete(null, fd(VALID))).rejects.toThrow(
+          "NEXT_REDIRECT:/subscribe",
+        );
+        expect(mockRedirect).not.toHaveBeenCalledWith("/athlete");
+        vi.unstubAllEnvs();
+      });
+
+      it.each(["legacy-native", "android-play"] as const)(
+        "flag on: '%s' redirects per gate (legacy-native stays /athlete, android-play lifts)",
+        async (capability) => {
+          vi.stubEnv("GOOGLE_PLAY_CATALOG_ACTIVE", "1");
+          mockGetRequestShellCapability.mockReturnValue(capability);
+          const expected =
+            capability === "legacy-native" ? "/athlete" : "/subscribe";
+
+          await expect(signUpAdultAthlete(null, fd(VALID))).rejects.toThrow(
+            `NEXT_REDIRECT:${expected}`,
+          );
+          vi.unstubAllEnvs();
+        },
+      );
+
+      it("android-play with a flag value other than exactly '1' stays /athlete", async () => {
+        vi.stubEnv("GOOGLE_PLAY_CATALOG_ACTIVE", "true");
+        mockGetRequestShellCapability.mockReturnValue("android-play");
+
+        await expect(signUpAdultAthlete(null, fd(VALID))).rejects.toThrow(
+          "NEXT_REDIRECT:/athlete",
+        );
+        vi.unstubAllEnvs();
+      });
+
+      it("ios-iap with the flag on still redirects to /subscribe", async () => {
+        vi.stubEnv("GOOGLE_PLAY_CATALOG_ACTIVE", "1");
+        mockGetRequestShellCapability.mockReturnValue("ios-iap");
+
+        await expect(signUpAdultAthlete(null, fd(VALID))).rejects.toThrow(
+          "NEXT_REDIRECT:/subscribe",
+        );
+        vi.unstubAllEnvs();
+      });
+
       it("still redirects to /subscribe when capability is null (web)", async () => {
         mockGetRequestShellCapability.mockReturnValue(null);
 

@@ -18,6 +18,10 @@ const {
   requireParentMock,
   trialStateMock,
   trialQuoteMock,
+  athleteCountMock,
+  googleRowsMock,
+  entitlementStateMock,
+  googleSnapshotMock,
   activeAppleProductIdMock,
   capacityForAppleProductMock,
   shellCapabilityMock,
@@ -26,6 +30,25 @@ const {
   requireParentMock: vi.fn(),
   trialStateMock: vi.fn(),
   trialQuoteMock: vi.fn(),
+  athleteCountMock: vi.fn(async () => ({ count: 0, error: null })),
+  googleRowsMock: vi.fn(
+    async (): Promise<{ data: Array<Record<string, unknown>>; error: { message: string } | null }> => ({
+      data: [],
+      error: null,
+    }),
+  ),
+  entitlementStateMock: vi.fn(
+    async (): Promise<{
+      status: "entitled" | "not_entitled" | "unknown";
+      provider: "google" | "stripe" | "apple" | "comp" | null;
+    }> => ({ status: "not_entitled", provider: null }),
+  ),
+  googleSnapshotMock: vi.fn(async () => ({
+    level: "full",
+    latestEnd: null,
+    activeProductId: "family.1",
+    readError: false,
+  })),
   activeAppleProductIdMock: vi.fn(async () => null as string | null),
   capacityForAppleProductMock: vi.fn(),
 }));
@@ -41,12 +64,40 @@ vi.mock("@/lib/auth/guards", () => ({
 }));
 
 vi.mock("@/lib/supabase/service", () => ({
-  createServiceClient: () => ({}),
+  createServiceClient: () => ({
+    from: (table: string) => {
+      if (table === "parent_athlete_links") {
+        return {
+          select: () => ({ eq: athleteCountMock }),
+        };
+      }
+      if (table === "google_subscriptions") {
+        return {
+          select: () => ({
+            eq: () => ({
+              eq: googleRowsMock,
+            }),
+          }),
+        };
+      }
+      return {
+        select: () => ({
+          eq: async () => ({ data: [], error: null }),
+        }),
+      };
+    },
+  }),
 }));
 
 vi.mock("@/lib/subscriptions/trial-conversion", () => ({
   getTrialConversionState: trialStateMock,
   getTrialConversionQuote: trialQuoteMock,
+}));
+vi.mock("@/lib/subscriptions/subscribe-guard", () => ({
+  getSubscribeEntitlementState: entitlementStateMock,
+}));
+vi.mock("@/lib/subscriptions/google", () => ({
+  getGoogleEntitlementSnapshotForPayer: googleSnapshotMock,
 }));
 
 // FV-745: the page reads the CAPACITY accessor (a billing-retry Apple row is
@@ -60,11 +111,13 @@ vi.mock("@/components/dashboard/AthleteForm", () => ({
   AthleteForm: (props: {
     trialConversion?: unknown;
     appleCapacity?: number | null;
+    googleUpgrade?: unknown;
   }) => (
     <div
       data-testid="athlete-form-stub"
       data-trial-conversion={JSON.stringify(props.trialConversion ?? null)}
       data-apple-capacity={String(props.appleCapacity ?? null)}
+      data-google-upgrade={JSON.stringify(props.googleUpgrade ?? null)}
     />
   ),
 }));
@@ -76,9 +129,27 @@ afterEach(() => {
   vi.clearAllMocks();
   activeAppleProductIdMock.mockResolvedValue(null);
   shellCapabilityMock.mockReturnValue(null);
+  athleteCountMock.mockResolvedValue({ count: 0, error: null });
+  googleRowsMock.mockResolvedValue({ data: [], error: null });
+  entitlementStateMock.mockResolvedValue({
+    status: "not_entitled",
+    provider: null,
+  });
+  googleSnapshotMock.mockResolvedValue({
+    level: "full",
+    latestEnd: null,
+    activeProductId: "family.1",
+    readError: false,
+  });
+  delete process.env.GOOGLE_PLAY_CATALOG_ACTIVE;
 });
 
 describe("NewAthletePage — legacy-native shell (FV-622, Android Path A)", () => {
+  it("athlete sessions are blocked by requireParent before add-athlete purchase controls can render", async () => {
+    requireParentMock.mockRejectedValueOnce(new Error("redirect:/athlete"));
+    await expect(NewAthletePage()).rejects.toThrow("redirect:/athlete");
+  });
+
   it("legacy-native: renders the plain website notice, no form, no Stripe quote read", async () => {
     requireParentMock.mockResolvedValue({ userId: "parent-1" });
     shellCapabilityMock.mockReturnValue("legacy-native");
@@ -244,7 +315,7 @@ describe("NewAthletePage — Apple capacity wiring (FV-586)", () => {
 });
 
 describe("NewAthletePage — android-play behaves like legacy-native (FV-659)", () => {
-  it("android-play: plain website notice, no form, no Stripe/Apple reads", async () => {
+  it("android-play + flag off: plain website notice, no form, no Stripe/Apple reads", async () => {
     requireParentMock.mockResolvedValue({ userId: "parent-1" });
     shellCapabilityMock.mockReturnValue("android-play");
 
@@ -259,5 +330,110 @@ describe("NewAthletePage — android-play behaves like legacy-native (FV-659)", 
     expect(trialStateMock).not.toHaveBeenCalled();
     expect(trialQuoteMock).not.toHaveBeenCalled();
     expect(activeAppleProductIdMock).not.toHaveBeenCalled();
+  });
+
+  it("android-play + flag on + Stripe entitlement keeps legacy website notice", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    requireParentMock.mockResolvedValue({ userId: "parent-1" });
+    shellCapabilityMock.mockReturnValue("android-play");
+    entitlementStateMock.mockResolvedValue({
+      status: "entitled",
+      provider: "stripe",
+    });
+
+    render(await NewAthletePage());
+
+    expect(screen.getByTestId("add-athlete-native-shell-notice")).toBeInTheDocument();
+    expect(screen.queryByTestId("athlete-form-stub")).toBeNull();
+  });
+
+  it("android-play + flag on + no subscription shows the add-athlete form", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    requireParentMock.mockResolvedValue({ userId: "parent-1" });
+    shellCapabilityMock.mockReturnValue("android-play");
+    entitlementStateMock.mockResolvedValue({
+      status: "not_entitled",
+      provider: null,
+    });
+    trialStateMock.mockResolvedValue({ kind: "not_trialing" });
+
+    render(await NewAthletePage());
+
+    expect(screen.getByTestId("athlete-form-stub")).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("add-athlete-native-shell-notice"),
+    ).toBeNull();
+  });
+});
+
+describe("NewAthletePage — Google trial detection window (FV-665)", () => {
+  function nowPlusDays(daysAgo: number): string {
+    return new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
+  }
+
+  it("day 3 from purchase start stays in trial", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    requireParentMock.mockResolvedValue({ userId: "parent-1" });
+    shellCapabilityMock.mockReturnValue("android-play");
+    entitlementStateMock.mockResolvedValue({
+      status: "entitled",
+      provider: "google",
+    });
+    trialStateMock.mockResolvedValue({ kind: "not_trialing" });
+    athleteCountMock.mockResolvedValue({ count: 1, error: null });
+    googleRowsMock.mockResolvedValue({
+      data: [
+        {
+          product_id: "family.1",
+          base_plan_id: "yearly",
+          offer_id: "trial-7d",
+          status: "active",
+          acknowledged: true,
+          expires_at: "2099-01-01T00:00:00.000Z",
+          created_at: nowPlusDays(3),
+        },
+      ],
+      error: null,
+    });
+
+    render(await NewAthletePage());
+
+    const upgrade = JSON.parse(
+      screen.getByTestId("athlete-form-stub").getAttribute("data-google-upgrade")!,
+    );
+    expect(upgrade.trialEndingToday).toBe(true);
+  });
+
+  it("day 8 from purchase start is paying", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    requireParentMock.mockResolvedValue({ userId: "parent-1" });
+    shellCapabilityMock.mockReturnValue("android-play");
+    entitlementStateMock.mockResolvedValue({
+      status: "entitled",
+      provider: "google",
+    });
+    trialStateMock.mockResolvedValue({ kind: "not_trialing" });
+    athleteCountMock.mockResolvedValue({ count: 1, error: null });
+    googleRowsMock.mockResolvedValue({
+      data: [
+        {
+          product_id: "family.1",
+          base_plan_id: "yearly",
+          offer_id: "trial-7d",
+          status: "active",
+          acknowledged: true,
+          expires_at: "2099-01-01T00:00:00.000Z",
+          created_at: nowPlusDays(8),
+        },
+      ],
+      error: null,
+    });
+
+    render(await NewAthletePage());
+
+    const upgrade = JSON.parse(
+      screen.getByTestId("athlete-form-stub").getAttribute("data-google-upgrade")!,
+    );
+    expect(upgrade.trialEndingToday).toBe(false);
   });
 });

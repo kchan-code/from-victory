@@ -15,7 +15,7 @@
  */
 
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { render, cleanup } from "@testing-library/react";
+import { render, cleanup, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
 vi.mock("server-only", () => ({}));
@@ -138,6 +138,27 @@ vi.mock("@/components/subscribe/AppleSubscribeSection", () => ({
     />
   ),
 }));
+vi.mock("@/components/subscribe/GooglePlaySubscribeSection", () => ({
+  GooglePlaySubscribeSection: ({
+    mode,
+    trialEligible,
+    minAthleteCount,
+    showAthletePicker,
+  }: {
+    mode: "purchase" | "manage" | "entitled_elsewhere";
+    trialEligible?: boolean;
+    minAthleteCount?: number;
+    showAthletePicker?: boolean;
+  }) => (
+    <div
+      data-testid="google-play-subscribe-section-stub"
+      data-mode={mode}
+      data-trial-eligible={String(trialEligible ?? false)}
+      data-min-athlete-count={String(minAthleteCount ?? null)}
+      data-show-athlete-picker={String(showAthletePicker ?? true)}
+    />
+  ),
+}));
 
 // FV-586 (KC decision D3) upgrade-wiring reads — mocked wholesale, same
 // rationale as the FV-581 duplicate-billing guard mock above.
@@ -244,6 +265,13 @@ afterEach(() => {
 });
 
 describe("SubscribePage — price paragraph (parent vs adult)", () => {
+  it("athlete sessions are blocked by requireSubscriber before purchase UI can render", async () => {
+    requireSubscriberMock.mockRejectedValueOnce(new Error("redirect:/athlete"));
+    await expect(
+      SubscribePage({ searchParams: Promise.resolve({}) }),
+    ).rejects.toThrow("redirect:/athlete");
+  });
+
   it("renders today's parent tiering copy unchanged for a parent profile", async () => {
     requireSubscriberMock.mockResolvedValue({
       userId: "parent-1",
@@ -1156,6 +1184,67 @@ describe("SubscribePage — android-play renders exactly like legacy-native (FV-
     entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "apple" });
     await htmlFor("android-play");
     expect(activeAppleProductIdMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("SubscribePage — android-play + catalog-on eligibility and picker defaults (FV-665)", () => {
+  const asParent = () =>
+    requireSubscriberMock.mockResolvedValue({
+      userId: "parent-1",
+      profile: { id: "parent-1", role: "parent", first_name: "Kim" },
+    });
+  const asAdult = () =>
+    requireSubscriberMock.mockResolvedValue({
+      userId: "adult-1",
+      profile: { id: "adult-1", role: "adult_athlete", first_name: "Jordan" },
+    });
+
+  it("parent not_entitled: renders Google Play purchase section with min/default athlete count from linked athletes", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    asParent();
+    shellCapabilityMock.mockReturnValue("android-play");
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
+    athleteCountMock.mockResolvedValue({ count: 3, error: null });
+
+    const { getByTestId } = await (async () => {
+      const rendered = render(await SubscribePage({ searchParams: Promise.resolve({}) }));
+      return rendered;
+    })();
+    const stub = getByTestId("google-play-subscribe-section-stub");
+    expect(stub).toHaveAttribute("data-mode", "purchase");
+    expect(stub).toHaveAttribute("data-min-athlete-count", "3");
+    expect(stub).toHaveAttribute("data-show-athlete-picker", "true");
+  });
+
+  it("adult not_entitled: hides athlete picker and forces 1-athlete plan", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    asAdult();
+    shellCapabilityMock.mockReturnValue("android-play");
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    entitlementStateMock.mockResolvedValue({ status: "not_entitled", provider: null });
+
+    const { getByTestId } = render(
+      await SubscribePage({ searchParams: Promise.resolve({}) }),
+    );
+    const stub = getByTestId("google-play-subscribe-section-stub");
+    expect(stub).toHaveAttribute("data-min-athlete-count", "1");
+    expect(stub).toHaveAttribute("data-show-athlete-picker", "false");
+  });
+
+  it("Stripe entitlement: keeps restricted-shell status path and does not render Google Play purchase UI", async () => {
+    process.env.GOOGLE_PLAY_CATALOG_ACTIVE = "1";
+    asParent();
+    shellCapabilityMock.mockReturnValue("android-play");
+    entitlementStateMock.mockResolvedValue({ status: "entitled", provider: "stripe" });
+
+    const { queryByTestId } = render(
+      await SubscribePage({ searchParams: Promise.resolve({}) }),
+    );
+    expect(queryByTestId("google-play-subscribe-section-stub")).toBeNull();
+    expect(screen.getByTestId("subscribe-status-entitled")).toHaveTextContent(
+      "You’re already subscribed. Manage your subscription from a web browser at fromvictoryapp.com.",
+    );
   });
 });
 
