@@ -59,7 +59,7 @@ A daily job (04:30 UTC, `vercel.json`, `apps/web/app/api/cron/reconcile-subscrip
 
 > Hi [name],
 >
-> Thanks for writing. I can see your payment. The app is showing as locked because [you are signed in with a different account than the one you paid with / our system did not record the payment the first time].
+> Thanks for writing. [I can see your payment. / I could not find a payment under this email yet; which email did you pay with?] The app is showing as locked because [you are signed in with a different account than the one you paid with / our system did not record the payment the first time].
 >
 > [Please tap Sign out, then sign in with EMAIL. / I have fixed it on our side. Please close the app fully and open it again.]
 >
@@ -78,7 +78,7 @@ A daily job (04:30 UTC, `vercel.json`, `apps/web/app/api/cron/reconcile-subscrip
 **Check.**
 
 1. Vercel logs: `[apple-subscription] rejected: original_transaction_id already linked to a different payer (payer=<id>). Restore cannot transfer ownership.` The id is the account that was refused. No alert email is sent for this case.
-   - If the log instead says `appAccountToken mismatch`, the code is `token_mismatch`: the subscription was bought under an account that has since been deleted, or under a different account whose row is gone. Same handling as below.
+   - If the log instead says `appAccountToken mismatch`, the code is `token_mismatch`: the subscription was bought under an account that has since been deleted, or under a different account whose row is gone. The re-link sketch in Fix step 3 does NOT apply here: deleting the payer removes the `apple_subscriptions` row, so there is nothing to repoint and step 2 below finds no row. A relink would have to create a new mapping (`docs/fv210-ios-iap-decision-record.md` section 4.7); no procedure exists. Offer sign-in to the right account if one exists, a comp grant, or an Apple refund, and take it to backend-engineer.
 2. Find the owning account. The log does not name it. Ask the parent which other emails they may have signed up with (a spouse's account is common), look each up in Supabase, and check `apple_subscriptions` for a `Production` row.
 3. Ask the parent to forward Apple's receipt email so you can confirm the Apple purchase is theirs. Use it to verify only; do not store it.
 4. Whether Apple took a second payment or this is one existing subscription: `UNVERIFIED`. Ask what their Apple purchase history shows. Tracked as FV-706 (`UNVERIFIED`: I did not read that issue).
@@ -87,7 +87,7 @@ A daily job (04:30 UTC, `vercel.json`, `apps/web/app/api/cron/reconcile-subscrip
 
 1. **Sign in to the account that owns the subscription.** No change on our side. This is the right answer whenever that account is theirs and they are happy to use it. If their athletes are on the other account, see step 3.
 2. **They want a refund instead.** Only Apple can refund (see (d)).
-3. **Move the Apple subscription to the account they want (manual re-link, KC only).** There is no script or tested procedure for this in the repo. `UNVERIFIED` sketch, derived from the schema (`supabase/migrations/20260911120000_apple_provider_access.sql`); have backend-engineer review before the first real use:
+3. **Move the Apple subscription to the account they want (manual re-link, KC only; `ownership_conflict` with both accounts alive only).** This edits production data and is hard to undo: copy the rows you are about to change first. There is no script or tested procedure for this in the repo. `UNVERIFIED` sketch, derived from the schema (`supabase/migrations/20260911120000_apple_provider_access.sql`); have backend-engineer review before the first real use:
    - Verify ownership out of band (Apple receipt) and that the parent controls both accounts.
    - With the service role, repoint the `apple_subscriptions` row (`payer_id`) to the target account. `unique (payer_id, environment)` means the target must not already have a row for that environment.
    - Renewals then follow the row, because the Apple webhook matches on `(original_transaction_id, environment)` first (`apps/web/app/api/webhooks/apple/route.ts`).
@@ -105,7 +105,7 @@ While this is open, a short dated comp grant on the account they want to use kee
 >
 > The quickest fix: in the app, tap Sign out, then sign in with the account you first subscribed with. Do you have another From Victory account, maybe under a different email?
 >
-> If you would rather keep using the account you are in now, reply and tell me, and please forward the receipt email Apple sent you so I can confirm the purchase. I will link it for you.
+> If you would rather keep using the account you are in now, reply and tell me, and please forward the receipt email Apple sent you so I can confirm the purchase. I will then look at moving it for you and tell you what is possible.
 >
 > Please do not tap Subscribe again in the meantime.
 >
@@ -277,7 +277,7 @@ Athlete sign-in:
 
 **Check.** Verify the request comes from the current account email. If they have lost access to that mailbox, ask for details only the account holder has before doing anything, and be cautious: an email change is an account takeover if you get it wrong.
 
-**Fix (manual, `UNVERIFIED`).** No procedure exists in the repo. The likely path is Supabase > Authentication > Users > edit the user's email. Before doing it the first time, confirm with backend-engineer:
+**Fix (manual, `UNVERIFIED`).** This edits production data: note the current email first so it can be put back. No procedure exists in the repo. The likely path is Supabase > Authentication > Users > edit the user's email. Before doing it the first time, confirm with backend-engineer:
 
 - that the new email is not already an account;
 - whether the Stripe customer email (collected by Stripe Checkout, used for receipts) also needs changing in Stripe; the app does not sync it;
@@ -289,9 +289,7 @@ An athlete 18+ has the same gap. A minor athlete has no email.
 
 > Hi [name],
 >
-> The app does not have a way to change your account email yourself yet, so I will do it for you. To confirm it is your account, please reply from the email currently on the account and tell me the new address you want to use.
->
-> Your password, your subscription, and your athlete's training history will stay the same.
+> The app does not have a way to change your account email yourself yet, so I will look at changing it for you. To confirm it is your account, please reply from the email currently on the account and tell me the new address you want to use.
 >
 > KC, From Victory
 
@@ -318,10 +316,10 @@ An athlete 18+ has the same gap. A minor athlete has no email.
 - Alert `[account.deleteAccount] Stripe customer delete failed` (FV-761): the account is gone but the Stripe customer remains. Delete that customer in Stripe by hand.
 - Alert `Google Play cancel failed` / `skipped`: not applicable until Play Billing is live.
 
-**They cannot sign in, so KC must delete for them.** `/delete-account` promises this. There is no admin delete tool. `UNVERIFIED` manual procedure, mirroring `deleteAccount` in order; have backend-engineer confirm before first use:
+**They cannot sign in, so KC must delete for them.** `/delete-account` promises this. There is no admin delete tool. `UNVERIFIED` manual procedure, mirroring `deleteAccount` in order; have backend-engineer confirm before first use. **Deletion cannot be undone.** Double-check the account id before each step:
 
 1. Verify the requester owns the account (written from the account email, or account holder's first name plus account email as the page asks).
-2. Stripe: cancel the subscription, expire any open Checkout Sessions for the customer, delete the customer.
+2. Stripe: cancel the subscription, then for every customer id on this account (from both `subscriptions` and `stripe_customers`) expire any open Checkout Sessions and delete the customer. Once Play Billing is live, also cancel any Google Play renewal.
 3. Supabase: for each athlete in `parent_athlete_links` for this parent that has no other parent, delete the athlete's auth user. Then delete the parent's auth user. Deleting an auth user cascades to that user's rows.
 4. Insert an `account_deletion_events` row (event only, no content) so the audit trail matches self-serve.
 5. If they pay through Apple, tell them to cancel with Apple.
