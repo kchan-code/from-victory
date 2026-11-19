@@ -25,7 +25,7 @@ begin;
   declare deleted int;
   begin
     deleted := public.prune_contact_form_rate_limit_events();
-    assert deleted >= 2, format('FV-774 FAIL: prune must report the expired contact_form rows, reported %s', deleted);
+    assert deleted = 2, format('FV-774 FAIL: prune must report the expired contact_form rows, reported %s', deleted);
     assert (select count(*) from public.auth_rate_limit_events where bucket in ('fv774-inactive-old', 'fv774-ancient')) = 0,
       'FV-774 FAIL: expired contact_form rows of buckets that never submit again must be deleted';
     assert (select count(*) from public.auth_rate_limit_events where bucket = 'fv774-fresh') = 1,
