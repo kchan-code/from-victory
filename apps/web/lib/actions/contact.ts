@@ -24,10 +24,9 @@ const ContactSchema = z.object({
     .trim()
     .min(1, "Message is required.")
     .max(2000, "Message is too long (max 2000 characters)."),
-  // Honeypot. Real users leave this blank; bots fill every field.
-  // Submissions with a non-empty value are silently accepted (no send,
-  // no error surfaced) so bots get no feedback signal.
-  website: z.string().max(0).optional().or(z.literal("")),
+  // Honeypot. Handled before validation in submitContact; accepted here as
+  // any string so a filled trap never surfaces as a validation error.
+  website: z.string().optional(),
 });
 
 /** What the person typed, echoed back ONLY on error so the form can refill. */
@@ -72,6 +71,14 @@ export async function submitContact(
     message: typed(raw.message),
   };
 
+  // Honeypot. Real users leave this hidden field blank; bots fill every
+  // field. A filled trap gets the same success response as a real send, with
+  // nothing sent, no error and nothing echoed, so there is no signal to retry.
+  // Checked before validation so it can never show as "Invalid input."
+  if (typeof raw.website === "string" && raw.website.trim().length > 0) {
+    return { ok: true };
+  }
+
   const parsed = ContactSchema.safeParse(raw);
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
@@ -84,12 +91,6 @@ export async function submitContact(
   }
 
   const data = parsed.data;
-
-  // Honeypot tripped — pretend success without notifying.
-  // Bots see the same response as real users; no signal to retry.
-  if (data.website && data.website.length > 0) {
-    return { ok: true };
-  }
 
   // FV-334: throttle per request IP (HMAC digest only; no content stored).
   // Fails open on any helper/DB problem or missing IP (see rateLimitGate).

@@ -166,9 +166,14 @@ describe("submitContact send result (FV-770)", () => {
     });
   });
 
-  it("honeypot value never sends", async () => {
-    await submitContact(null, form({ website: "spam" }));
+  it("filled honeypot: silent success, nothing sent, no limit used, no echo", async () => {
+    const res = await submitContact(null, form({ website: "spam" }));
+    expect(res).toEqual({ ok: true });
     expect(sendMock).not.toHaveBeenCalled();
+    expect(rateLimitGateMock).not.toHaveBeenCalled();
+    // Even with otherwise invalid fields a bot sees success, not an error.
+    const res2 = await submitContact(null, form({ website: "spam", email: "nope" }));
+    expect(res2).toEqual({ ok: true });
   });
 
   it("rate-limit gate rejecting fails open and still sends", async () => {
