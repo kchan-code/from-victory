@@ -6,7 +6,7 @@
 
 **Marking:** anything tagged `UNVERIFIED` comes from general Android / Capacitor / Play knowledge, not from this repo. Check it the first time you use it. The full list is in section 11.
 
-**Stale doc warning (not fixed here):** `docs/android-play-release.md` still says `minifyEnabled` is `false` (its sections 4 and 11) and that the current version is `versionCode 9` / `1.0.0` (its "Locked facts" table and section 11; its own section 9 says 10). The build file says otherwise: `minifyEnabled true` and `versionCode 10` / `versionName "1.0.1"` in `apps/native/android/app/build.gradle`. Trust the build file.
+**Doc note:** `docs/android-play-release.md` was corrected on 2026-11-19 (PR #682): R8 is on, `versionCode` is 11, and the two-gate rule for billing builds is stated at its top. Older lines further down that file may still describe the pre-R8 state; its dated note says which wins.
 
 ---
 
