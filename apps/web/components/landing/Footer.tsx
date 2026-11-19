@@ -31,6 +31,7 @@ const forLinks = [
 
 const companyLinks = [
   { href: "/about", label: "About" },
+  { href: "/help", label: "Help" },
   { href: "/contact", label: "Contact" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
