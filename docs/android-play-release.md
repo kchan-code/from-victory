@@ -2,6 +2,11 @@
 
 **Owner:** Kinny (KC) · **Status:** Internal/Closed testing (v7); production not started · **Store presence:** not public
 
+> **Update 2026-11-19 (supersedes the lines below where they disagree).**
+> - Build 10 (1.0.1) was published to Play production on 2026-11-11. `versionCode` in `apps/native/android/app/build.gradle` is now `11`; **the next upload needs `versionCode` 11 or higher.** `versionName` is still `1.0.1`; change it only if the owner wants a new public version number.
+> - R8 is **enabled** for release builds (`minifyEnabled true`, FV-740, PR #669) with keep rules in `apps/native/android/app/proguard-rules.pro`. Statements below that say `minifyEnabled false` are historical.
+> - Do not upload a build with Play Billing switched on (`FV_PLAY_BILLING=1`) until the minified billing check in FV-763 passes.
+>
 > **Current state — 2026-11-03 (read this first; it supersedes older lines below).**
 > - Play Console is enrolled as an organization (From Victory LLC). The app record exists. v8 (1.0.0) is on Internal testing (v7 on Closed testing "Alpha"). **The next upload needs `versionCode` ≥ 9.**
 > - **Play requires targetSdk 36** for new uploads. That ships with Capacitor 8 in PR #458 (FV-502, held). Capacitor 8 needs **Node 22+** and **JDK 21**. `main` is still targetSdk 35 until #458 merges.
@@ -277,10 +282,9 @@ load `https://www.fromvictoryapp.com`).
 Android Studio alternative: `npm run open:android` → Build → Generate Signed
 Bundle / APK → Android App Bundle → the same keystore.
 
-R8/ProGuard: `minifyEnabled` is currently **`false`** in
-`android/app/build.gradle`. Internal testing can use that AAB. Enable minify in
-a **follow-up PR** before Production (see §11). Do not turn it on in an
-unsigned experiment and then forget to re-sign.
+R8/ProGuard: `minifyEnabled` is **`true`** for release builds in
+`android/app/build.gradle` since FV-740 (PR #669), with keep rules in
+`android/app/proguard-rules.pro` (see §11).
 
 - [ ] Signed `app-release.aab` exists locally
 - [ ] Application id is `com.fromvictoryapp.app`
@@ -551,7 +555,7 @@ When you wire it (follow-up PR, **privacy path** because it is `apps/web/**`):
 
 ### R8
 
-`minifyEnabled false` in `apps/native/android/app/build.gradle` today.
+`minifyEnabled true` in `apps/native/android/app/build.gradle` since FV-740 (PR #669); the text below is the history of that follow-up.
 [docs/native-capacitor.md](./native-capacitor.md) follow-ups: enable minify for
 release AABs before the first **production** upload. Capacitor WebView apps need
 keep rules for the bridge (`proguard-rules.pro` is still the default stub).
@@ -576,7 +580,7 @@ Web deploys do **not** need a new AAB. Ship a new bundle when you change:
 - Signing config
 - R8 / packaging options
 
-- [ ] You know the next upload is `versionCode 9` or higher (Play already has 8; see the current-state note at the top)
+- [ ] You know the next upload is `versionCode 11` or higher (Play production has 10; see the 2026-11-19 update at the top)
 
 ---
 
