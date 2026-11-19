@@ -161,6 +161,33 @@ async function runPrune(req: NextRequest) {
     );
   }
 
+  // FV-774: retention for expired 'contact_form' throttle rows (IP-derived
+  // digests). Runs independently of any new submission, and like the selection
+  // prune above it is alerted on failure but never blocks (or is blocked by)
+  // the rollup-before-prune ordering below. Counts only in logs.
+  let contactPruned = 0;
+  try {
+    const { data: contact, error: contactError } = await service.rpc(
+      "prune_contact_form_rate_limit_events",
+    );
+    if (contactError) {
+      console.error("[cron/prune-activity-events] contact form prune failed");
+      alertCronFailure(
+        "[cron/prune-activity-events] contact form prune failed",
+        "contact form rate-limit prune failed",
+        { code: opaqueDbCode(contactError.code) },
+      );
+    } else {
+      contactPruned = typeof contact === "number" ? contact : 0;
+    }
+  } catch (err) {
+    console.error("[cron/prune-activity-events] contact form prune threw");
+    alertCronFailure(
+      "[cron/prune-activity-events] contact form prune threw",
+      err instanceof Error ? err.name : "Error",
+    );
+  }
+
   // 3. ROLL UP FIRST (FV-415). Aggregate the still-retained raw window into
   //    activity_rollup at day/week/month grains BEFORE pruning, so the
   //    non-additive distinct-athlete counts are captured while raw exists. The
@@ -212,10 +239,15 @@ async function runPrune(req: NextRequest) {
   const pruned = data?.length ?? 0;
 
   console.info(
-    `[cron/prune-activity-events] done — rolled=${rolledCount} pruned=${pruned} selectionPruned=${selectionPruned}`,
+    `[cron/prune-activity-events] done — rolled=${rolledCount} pruned=${pruned} selectionPruned=${selectionPruned} contactPruned=${contactPruned}`,
   );
 
-  return NextResponse.json({ rolled: rolledCount, pruned, selectionPruned });
+  return NextResponse.json({
+    rolled: rolledCount,
+    pruned,
+    selectionPruned,
+    contactPruned,
+  });
 }
 
 /** Postgres SQLSTATE when it looks like one. Never the message (it can echo a value). */
