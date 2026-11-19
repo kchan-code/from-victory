@@ -603,6 +603,32 @@ describe("AppleSubscribeSection — first purchase, single-tier catalog", () => 
     expect(refreshMock).toHaveBeenCalledTimes(1);
   });
 
+  it("FV-706: restore that hits ownership_conflict shows the conflict notice, then clears on the next tap", async () => {
+    restoreMock.mockResolvedValue({
+      ok: true,
+      transactions: [{ signedTransactionInfo: "jws-newest" }],
+    });
+    submitApplePurchaseMock.mockResolvedValue({ ok: false, error: "ownership_conflict" });
+
+    await renderReady();
+    fireEvent.click(screen.getByTestId("apple-restore-submit"));
+
+    const notice = await screen.findByTestId("apple-subscribe-conflict");
+    expect(notice).toHaveTextContent("already linked to a different From Victory account");
+    expect(notice).not.toHaveTextContent("went through");
+    expect(notice).not.toHaveTextContent("Restore Purchases");
+    expect(screen.getByTestId("apple-subscribe-conflict-contact")).toHaveAttribute("href", "/contact");
+    expect(screen.queryByTestId("apple-restore-error")).toBeNull();
+    expect(screen.getByTestId("apple-restore-submit")).not.toBeDisabled();
+    expect(screen.getByTestId("apple-purchase-submit")).not.toBeDisabled();
+
+    // A second restore that finds nothing replaces the notice.
+    restoreMock.mockResolvedValue({ ok: true, transactions: [] });
+    fireEvent.click(screen.getByTestId("apple-restore-submit"));
+    await waitFor(() => expect(screen.getByTestId("apple-restore-empty")).toBeInTheDocument());
+    expect(screen.queryByTestId("apple-subscribe-conflict")).toBeNull();
+  });
+
   it("restore with nothing found shows a calm empty message, not an error", async () => {
     restoreMock.mockResolvedValue({ ok: true, transactions: [] });
 
