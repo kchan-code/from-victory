@@ -85,6 +85,10 @@ function actionLabel(state: PurchaseState): string {
   }
 }
 
+// Play can report a one-week phase as "P7D" or "P1W". The copy says 7 days,
+// so only these two count as the trial; any other length shows no trial.
+const SEVEN_DAY_PERIODS = new Set(["P7D", "P1W"]);
+
 export function GooglePlaySubscribeSection({
   mode,
   catalog,
@@ -181,7 +185,7 @@ export function GooglePlaySubscribeSection({
             offerId &&
             offer.pricingPhases.length > 1 &&
             firstPhase?.priceAmountMicros === 0 &&
-            firstPhase.billingPeriod === "P7D"
+            SEVEN_DAY_PERIODS.has(firstPhase.billingPeriod)
           ) {
             nextTrialOffers.add(`${product.productId}:${offer.basePlanId}:${offerId}`);
           }

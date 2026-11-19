@@ -194,6 +194,67 @@ describe("GooglePlaySubscribeSection purchase mode", () => {
     expect(screen.queryByText(/won't be charged today/)).toBeNull();
   });
 
+  it("accepts a one-week trial phase reported as P1W", async () => {
+    getProductsMock.mockResolvedValueOnce({
+      ok: true,
+      products: [
+        {
+          productId: "family.1",
+          name: "1 athlete",
+          title: "1 athlete",
+          offers: [
+            { basePlanId: "yearly", offerId: null, offerToken: "token-year", pricingPhases: [{ formattedPrice: "$49.00", priceAmountMicros: 49000000, priceCurrencyCode: "USD", billingPeriod: "P1Y", billingCycleCount: 0, recurrenceMode: 1 }] },
+            { basePlanId: "yearly", offerId: "trial-7d", offerToken: "token-trial", pricingPhases: [
+              { formattedPrice: "Free", priceAmountMicros: 0, priceCurrencyCode: "USD", billingPeriod: "P1W", billingCycleCount: 1, recurrenceMode: 2 },
+              { formattedPrice: "$49.00", priceAmountMicros: 49000000, priceCurrencyCode: "USD", billingPeriod: "P1Y", billingCycleCount: 0, recurrenceMode: 1 },
+            ] },
+          ],
+        },
+      ],
+    } as any);
+    render(<GooglePlaySubscribeSection mode="purchase" trialEligible catalog={CATALOG} />);
+    await waitFor(() => expect(screen.getByTestId("google-subscribe-submit")).not.toBeDisabled());
+    expect(screen.getByTestId("google-subscribe-submit")).toHaveTextContent("Start 7-day free trial");
+    fireEvent.click(screen.getByTestId("google-subscribe-submit"));
+    await waitFor(() => expect(purchaseMock).toHaveBeenCalled());
+    expect(purchaseMock).toHaveBeenCalledWith(expect.objectContaining({ basePlanId: "yearly", offerId: "trial-7d" }));
+  });
+
+  it("a free first phase of another length (P14D) is not shown as a 7-day trial", async () => {
+    getProductsMock.mockResolvedValueOnce({
+      ok: true,
+      products: [
+        {
+          productId: "family.1",
+          name: "1 athlete",
+          title: "1 athlete",
+          offers: [
+            { basePlanId: "yearly", offerId: null, offerToken: "token-year", pricingPhases: [{ formattedPrice: "$49.00", priceAmountMicros: 49000000, priceCurrencyCode: "USD", billingPeriod: "P1Y", billingCycleCount: 0, recurrenceMode: 1 }] },
+            { basePlanId: "yearly", offerId: "trial-7d", offerToken: "token-trial", pricingPhases: [
+              { formattedPrice: "Free", priceAmountMicros: 0, priceCurrencyCode: "USD", billingPeriod: "P14D", billingCycleCount: 1, recurrenceMode: 2 },
+              { formattedPrice: "$49.00", priceAmountMicros: 49000000, priceCurrencyCode: "USD", billingPeriod: "P1Y", billingCycleCount: 0, recurrenceMode: 1 },
+            ] },
+          ],
+        },
+      ],
+    } as any);
+    render(<GooglePlaySubscribeSection mode="purchase" trialEligible catalog={CATALOG} />);
+    await waitFor(() => expect(screen.getByTestId("google-subscribe-submit")).not.toBeDisabled());
+    expect(screen.getByTestId("google-subscribe-submit")).toHaveTextContent("Subscribe with Google Play");
+    expect(screen.queryByText(/won't be charged today/)).toBeNull();
+  });
+
+  it("server says not eligible but Play returns the trial offer: no trial claim, and the base plan is bought", async () => {
+    render(<GooglePlaySubscribeSection mode="purchase" catalog={CATALOG} />);
+    await waitFor(() => expect(screen.getByTestId("google-subscribe-submit")).not.toBeDisabled());
+    expect(screen.getByTestId("google-subscribe-submit")).toHaveTextContent("Subscribe with Google Play");
+    expect(screen.queryByText(/won't be charged today/)).toBeNull();
+    fireEvent.click(screen.getByTestId("google-subscribe-submit"));
+    await waitFor(() => expect(purchaseMock).toHaveBeenCalled());
+    const arg = (purchaseMock.mock.calls[0] as unknown[])[0] as { offerId?: string | null };
+    expect(arg.offerId ?? null).toBeNull();
+  });
+
   it("hides the trial when selecting 2 athletes even when trial eligible", async () => {
     render(
       <GooglePlaySubscribeSection
