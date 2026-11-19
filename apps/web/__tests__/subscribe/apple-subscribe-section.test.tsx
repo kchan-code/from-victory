@@ -483,6 +483,27 @@ describe("AppleSubscribeSection — first purchase, single-tier catalog", () => 
     await renderReady();
     fireEvent.click(screen.getByTestId("apple-purchase-submit"));
     await waitFor(() => expect(screen.getByTestId("apple-subscribe-error")).toBeInTheDocument());
+    expect(screen.getByTestId("apple-subscribe-error")).toHaveTextContent(
+      "We couldn’t complete that purchase. Please try again.",
+    );
+    expect(screen.queryByTestId("apple-subscribe-conflict")).toBeNull();
+    expect(finishTransactionsMock).not.toHaveBeenCalled();
+  });
+
+  it("FV-706: ownership_conflict shows the specific message with a contact link, no buy-again", async () => {
+    beginApplePurchaseMock.mockResolvedValue({ ok: true, appAccountToken: "token-abc" });
+    purchaseMock.mockResolvedValue({ ok: true, signedTransactionInfo: "jws-txn", transactionId: "tx-1" });
+    submitApplePurchaseMock.mockResolvedValue({ ok: false, error: "ownership_conflict" });
+
+    await renderReady();
+    fireEvent.click(screen.getByTestId("apple-purchase-submit"));
+    const notice = await screen.findByTestId("apple-subscribe-conflict");
+    expect(notice).toHaveTextContent("Your Apple purchase went through");
+    expect(notice).toHaveTextContent("already linked to a different From Victory account");
+    expect(notice).toHaveTextContent("Restore Purchases");
+    expect(notice).toHaveTextContent("Please don’t buy again");
+    expect(screen.getByTestId("apple-subscribe-conflict-contact")).toHaveAttribute("href", "/contact");
+    expect(screen.queryByTestId("apple-subscribe-error")).toBeNull();
     expect(finishTransactionsMock).not.toHaveBeenCalled();
   });
 
