@@ -36,7 +36,7 @@ record wins and this file is wrong.
 | Needed first | Why | Where it comes from |
 |---|---|---|
 | G1 approved (step 1 of this runbook) | Product IDs are permanent | Record 5.2, 13 |
-| FV-609 closed (no document still says a 14-day trial) | So nobody types 14 into the trial offer. The trial is 7 days. | Record 5.2 "Trial" |
+| You know the trial is 7 days, not 14 | So nobody types 14 into the trial offer. `CLAUDE.md` and the code say 7; `docs/stripe-go-live-runbook.md` said 14 until it was corrected under FV-769. | Record 5.2 "Trial" |
 | G7 decided (key file or keyless) | Decides what you create in step 3 and set in step 5 | Record 13 |
 | The grace-period list read in the console (G4) | The record expects 14 days but could not confirm the list | Record 13, risk 7 |
 | Owner access to the Play Console developer account | Only the owner can set up payments and invite users | `docs/android-play-release.md` section 1 |
@@ -70,7 +70,7 @@ later. IDs cannot.
 
 The IDs come from the code, which marks them "PROVISIONAL IDS, NOT APPROVED":
 `apps/web/lib/subscriptions/google-product-catalog.ts` (constants block, lines
-25 to 36). They match record 5.2. The code holds no prices; prices are from the
+22 to 36). They match record 5.2. The code holds no prices; prices are from the
 record's G2 table (Section 5, decided by KC on 2026-11-11).
 
 App package name: `com.fromvictoryapp.app`
@@ -124,6 +124,19 @@ After you approve G1, tell the lead agent. A follow-up PR removes the
 
 The record says this was missing as of 2026-11-03 (record Section 8). You
 cannot create a paid subscription without it.
+
+**Status 2026-11-19 (reported from the live console, not re-checked here):**
+merchant enrollment was submitted and accepted. The payments profile shows
+Google Play Apps / FROM VICTORY LLC with an earnings dashboard. Still open:
+- No payout bank method yet ("Add a payment method to receive your earnings").
+- The page offers enrollment in a 15% service fee program through an account
+  group and terms. Not completed. This is the fee decision in item 7 below.
+- Verification and tax readiness are not confirmed.
+- A trader-status declaration is due by 2027-02-01. It is separate from this
+  runbook.
+
+An accepted merchant account is not approval to create products. Step 1 (the
+ID sign-off) still gates step 4.
 
 1. Sign in to Play Console as the account owner. `CHECK IN CONSOLE`
 2. Find out whether a merchant account (Google calls it a payments profile)
