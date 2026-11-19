@@ -17,6 +17,11 @@ vi.mock("@/lib/email/contact-notification", () => ({
   sendContactNotification: (...a: unknown[]) => sendMock(...a),
 }));
 
+const notifyErrorMock: Mock = vi.fn(async () => undefined);
+vi.mock("@/lib/monitoring/notify", () => ({
+  notifyError: (...a: unknown[]) => notifyErrorMock(...a),
+}));
+
 vi.mock("@/lib/monitoring/deliver", () => ({
   deliverInBackground: (p: Promise<unknown>) => {
     void p;
@@ -43,6 +48,7 @@ beforeEach(() => {
   rateLimitGateMock.mockResolvedValue({ limited: false });
   getRequestIpMock.mockResolvedValue("1.2.3.4");
   sendMock.mockResolvedValue({ ok: true });
+  notifyErrorMock.mockResolvedValue(undefined);
 });
 
 describe("submitContact rate limit (FV-334)", () => {
@@ -60,6 +66,7 @@ describe("submitContact rate limit (FV-334)", () => {
       ok: false,
       error:
         "You've sent several messages recently. Please wait a little while and try again.",
+      values: { name: "Jordan", email: "j@example.com", message: "Hello there" },
     });
     expect(sendMock).not.toHaveBeenCalled();
   });
@@ -78,5 +85,89 @@ describe("submitContact rate limit (FV-334)", () => {
     await submitContact(null, form({ website: "spam" }));
     expect(rateLimitGateMock).not.toHaveBeenCalled();
     expect(sendMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("submitContact send result (FV-770)", () => {
+  const SEND_ERROR =
+    "Your message did not go through. Please try again shortly, or email support@fromvictoryapp.com.";
+
+  it("success: ok:true with no echoed values", async () => {
+    const res = await submitContact(null, form());
+    expect(res).toEqual({ ok: true });
+  });
+
+  it("send failure: honest error, values kept, reason-only log", async () => {
+    sendMock.mockResolvedValue({
+      ok: false,
+      reason: "Resend error: bad address j@example.com",
+    });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await submitContact(
+      null,
+      form({ message: "private words here" }),
+    );
+    expect(res).toEqual({
+      ok: false,
+      error: SEND_ERROR,
+      values: {
+        name: "Jordan",
+        email: "j@example.com",
+        message: "private words here",
+      },
+    });
+    const logged = JSON.stringify(errSpy.mock.calls);
+    expect(logged).toContain("Resend error");
+    expect(logged).not.toContain("private words here");
+    expect(logged).not.toContain("Jordan");
+    expect(logged).not.toContain("j@example.com");
+    expect(JSON.stringify(notifyErrorMock.mock.calls)).not.toContain(
+      "private words here",
+    );
+    expect(notifyErrorMock).toHaveBeenCalledTimes(1);
+    errSpy.mockRestore();
+  });
+
+  it("not configured: same honest error", async () => {
+    sendMock.mockResolvedValue({
+      ok: false,
+      reason: "RESEND_API_KEY not configured",
+    });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await submitContact(null, form());
+    expect(res).toMatchObject({ ok: false, error: SEND_ERROR });
+    errSpy.mockRestore();
+  });
+
+  it("validation error keeps what was typed", async () => {
+    const res = await submitContact(null, form({ email: "nope" }));
+    expect(res).toMatchObject({
+      ok: false,
+      field: "email",
+      values: { name: "Jordan", email: "nope", message: "Hello there" },
+    });
+  });
+
+  it("honeypot value never sends", async () => {
+    await submitContact(null, form({ website: "spam" }));
+    expect(sendMock).not.toHaveBeenCalled();
+  });
+
+  it("rate-limit gate rejecting fails open and still sends", async () => {
+    rateLimitGateMock.mockRejectedValue(new Error("db down"));
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await submitContact(null, form());
+    expect(res).toEqual({ ok: true });
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    errSpy.mockRestore();
+  });
+
+  it("getRequestIp throwing fails open and still sends", async () => {
+    getRequestIpMock.mockRejectedValue(new Error("no headers"));
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await submitContact(null, form());
+    expect(res).toEqual({ ok: true });
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    errSpy.mockRestore();
   });
 });
