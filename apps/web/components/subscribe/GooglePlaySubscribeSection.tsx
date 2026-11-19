@@ -103,6 +103,11 @@ export function GooglePlaySubscribeSection({
   const [purchaseState, setPurchaseState] = useState<PurchaseState>("idle");
   const [prices, setPrices] = useState<Map<string, string>>(new Map());
   const [pricesLoaded, setPricesLoaded] = useState(false);
+  // Offers Google Play actually returned for THIS Google account as a real
+  // 7-day free trial. Play only returns offers the account is eligible for,
+  // so this (not our own server-side eligibility alone) decides whether the
+  // trial button and the "not charged today" line may be shown.
+  const [playTrialOffers, setPlayTrialOffers] = useState<Set<string>>(new Set());
   const [message, setMessage] = useState<string | null>(null);
   const [pricingErrorState, setPricingErrorState] = useState<"play_unavailable" | "error" | null>(null);
   const [retryKey, setRetryKey] = useState(0);
@@ -126,7 +131,11 @@ export function GooglePlaySubscribeSection({
       selected &&
       trialEligible &&
       athleteCount === 1 &&
-      selected.trialOfferId,
+      selected.trialOfferId &&
+      pricesLoaded &&
+      playTrialOffers.has(
+        `${selected.productId}:${selected.basePlanId}:${selected.trialOfferId}`,
+      ),
   );
 
   const selectedPriceKey = selected
@@ -161,11 +170,21 @@ export function GooglePlaySubscribeSection({
         return;
       }
       const next = new Map<string, string>();
+      const nextTrialOffers = new Set<string>();
       for (const product of result.products) {
         for (const offer of product.offers) {
           const phase = offer.pricingPhases[offer.pricingPhases.length - 1];
           if (!phase?.formattedPrice) continue;
           const offerId = offer.offerId ?? "";
+          const firstPhase = offer.pricingPhases[0];
+          if (
+            offerId &&
+            offer.pricingPhases.length > 1 &&
+            firstPhase?.priceAmountMicros === 0 &&
+            firstPhase.billingPeriod === "P7D"
+          ) {
+            nextTrialOffers.add(`${product.productId}:${offer.basePlanId}:${offerId}`);
+          }
           next.set(
             `${product.productId}:${offer.basePlanId}:${offerId}`,
             phase.formattedPrice,
@@ -176,6 +195,7 @@ export function GooglePlaySubscribeSection({
         }
       }
       setPrices(next);
+      setPlayTrialOffers(nextTrialOffers);
       setPricingErrorState(null);
       setPricesLoaded(true);
     });
