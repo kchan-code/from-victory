@@ -15,6 +15,10 @@
 # git auto-deploy still races this job (the old v1 window). Order of operations
 # and the rollback rules: docs/runbooks/rollback.md.
 #
+# Manual run (workflow_dispatch, on main only): applies any pending migrations,
+# then deploys current main. Use it to ship a commit whose automatic build was
+# skipped and never deployed. A manual run on any other ref does nothing.
+#
 #   VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID — set these BEFORE turning
 #   on FV_MIGRATE_BEFORE_DEPLOY, or a migration commit is skipped and never ships.
 #
@@ -30,6 +34,7 @@ on:
     branches: [main]
     paths:
       - "supabase/migrations/**"
+  workflow_dispatch:
 
 concurrency:
   group: db-migrate-prod
@@ -38,6 +43,9 @@ concurrency:
 jobs:
   push-migrations:
     name: Apply migrations to production
+    # workflow_dispatch can be started on any branch. Only main may touch
+    # the production schema or deploy production.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
     steps:

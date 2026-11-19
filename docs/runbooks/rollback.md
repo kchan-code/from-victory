@@ -64,8 +64,8 @@ Turn it on in this order:
 2. Confirm a migration commit: the workflow's "Deploy production after
    migrations" step goes green, and the deployment is Ready (not Canceled).
 3. Only then set Vercel env `FV_MIGRATE_BEFORE_DEPLOY=1` on Production.
-   After that, a production git build that contains new migration files is
-   skipped. The workflow applies SQL, then `vercel deploy --prod` with
+   After that, a production git build whose own commit adds or changes
+   migration files is skipped. The workflow applies SQL, then `vercel deploy --prod` with
    build env `FV_DEPLOY_AFTER_MIGRATE=1`, which is the signal the ignore
    script uses to build that second deploy instead of skipping it again.
 
@@ -75,6 +75,12 @@ every production build through and the gate would never skip.
 If step 2 shows the CLI deploy Canceled, the build env is not visible to
 `ignoreCommand`. Unset `FV_MIGRATE_BEFORE_DEPLOY` so git auto-deploy keeps
 shipping, and do not leave the project in the skip state.
+
+If a commit never ships: its Vercel status on GitHub reads "Canceled by
+Ignored Build Step" and no later production deployment exists. Run the
+`db-migrate` workflow by hand on `main` (Actions → db-migrate → Run workflow).
+It applies any pending migrations, then deploys current `main`. A manual run
+on another branch does nothing.
 
 Preview deployments are not gated (`VERCEL_ENV` is not `production`).
 

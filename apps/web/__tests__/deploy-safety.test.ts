@@ -37,7 +37,13 @@ describe("migrate-before-deploy gate (FV-731)", () => {
     }
   });
 
-  function tempRepo(): { dir: string; prev: string; cur: string; curNoMigration: string } {
+  function tempRepo(): {
+    dir: string;
+    prev: string;
+    cur: string;
+    curNoMigration: string;
+    curAfterMigration: string;
+  } {
     const dir = mkdtempSync(path.join(tmpdir(), "fv-ignore-"));
     dirs.push(dir);
     mkdirSync(path.join(dir, "bin"));
@@ -67,7 +73,15 @@ describe("migrate-before-deploy gate (FV-731)", () => {
     git(dir, ["add", "supabase/migrations/001.sql"]);
     git(dir, ["commit", "-m", "migration"]);
     const cur = execFileSync("git", ["rev-parse", "HEAD"], { cwd: dir, encoding: "utf8" }).trim();
-    return { dir, prev, cur, curNoMigration };
+
+    writeFileSync(path.join(dir, "README.md"), "three\n");
+    git(dir, ["add", "README.md"]);
+    git(dir, ["commit", "-m", "after migration"]);
+    const curAfterMigration = execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd: dir,
+      encoding: "utf8",
+    }).trim();
+    return { dir, prev, cur, curNoMigration, curAfterMigration };
   }
 
   it("builds unless production, the opt-in flag, and a migration diff all agree", () => {
@@ -122,11 +136,45 @@ describe("migrate-before-deploy gate (FV-731)", () => {
     expect(result.status).toBe(1);
   });
 
+  it("builds a later commit with no migration even when the previous deployed SHA predates one", () => {
+    // 2026-11-19: the CLI deploy from db-migrate does not advance
+    // VERCEL_GIT_PREVIOUS_SHA, so it still pointed before the migration
+    // commit and every later push was skipped.
+    const { dir, prev, curAfterMigration } = tempRepo();
+    const result = runIgnore(dir, {
+      VERCEL_ENV: "production",
+      FV_MIGRATE_BEFORE_DEPLOY: "1",
+      VERCEL_GIT_PREVIOUS_SHA: prev,
+      VERCEL_GIT_COMMIT_SHA: curAfterMigration,
+    });
+    expect(result.status).toBe(1);
+    expect(result.stdout).not.toContain("Skipping");
+  });
+
+  it("skips a migration commit whatever the previous deployed SHA is", () => {
+    const { dir, cur } = tempRepo();
+    const base = { VERCEL_ENV: "production", FV_MIGRATE_BEFORE_DEPLOY: "1", VERCEL_GIT_COMMIT_SHA: cur };
+    expect(runIgnore(dir, base).status).toBe(0);
+    expect(runIgnore(dir, { ...base, VERCEL_GIT_PREVIOUS_SHA: cur }).status).toBe(0);
+  });
+
   it("fails open when the SHAs are missing", () => {
     const { dir } = tempRepo();
     expect(
       runIgnore(dir, { VERCEL_ENV: "production", FV_MIGRATE_BEFORE_DEPLOY: "1" }).status,
     ).toBe(1);
+  });
+
+  it("fails open when the commit or its parent is not available", () => {
+    const { dir, prev } = tempRepo();
+    const env = { VERCEL_ENV: "production", FV_MIGRATE_BEFORE_DEPLOY: "1" };
+    // The root commit has no parent to compare against.
+    const root = runIgnore(dir, { ...env, VERCEL_GIT_COMMIT_SHA: prev });
+    expect(root.status).toBe(1);
+    expect(root.stdout).toContain("fail open");
+    const unknown = runIgnore(dir, { ...env, VERCEL_GIT_COMMIT_SHA: "0".repeat(40) });
+    expect(unknown.status).toBe(1);
+    expect(unknown.stdout).toContain("fail open");
   });
 
   it("wires ignoreCommand and deploys only after the migration push", () => {
@@ -149,5 +197,8 @@ describe("migrate-before-deploy gate (FV-731)", () => {
     expect(deployAt).toBeGreaterThan(pushAt);
     expect(workflow).toContain("FV_DEPLOY_AFTER_MIGRATE=1");
     expect(workflow).toContain("vercel@65.15.0");
+    // Manual run ships a skipped commit, and only from main.
+    expect(workflow).toMatch(/^  workflow_dispatch:$/m);
+    expect(workflow).toMatch(/^    if: github\.ref == 'refs\/heads\/main'$/m);
   });
 });
