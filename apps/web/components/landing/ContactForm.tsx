@@ -40,6 +40,8 @@ export function ContactForm() {
 
   const errorField = state && !state.ok ? state.field : undefined;
   const errorMessage = state && !state.ok ? state.error : undefined;
+  // Refill on error only (React 19 resets uncontrolled fields after an action).
+  const kept = state && !state.ok ? state.values : undefined;
 
   return (
     <form
@@ -64,6 +66,7 @@ export function ContactForm() {
             autoComplete="given-name"
             placeholder="Jordan"
             required
+            defaultValue={kept?.name}
             maxLength={120}
             aria-invalid={errorField === "name"}
             className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[16px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18]"
@@ -77,6 +80,7 @@ export function ContactForm() {
             autoComplete="email"
             placeholder="you@email.com"
             required
+            defaultValue={kept?.email}
             maxLength={320}
             aria-invalid={errorField === "email"}
             className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[16px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18]"
@@ -90,6 +94,7 @@ export function ContactForm() {
           name="message"
           placeholder="Questions about the app, pricing, teams, or anything else."
           required
+          defaultValue={kept?.message}
           maxLength={2000}
           aria-invalid={errorField === "message"}
           className="bg-surface-1 border border-hairline rounded-[12px] px-4 py-3.5 text-cream font-body text-[16px] outline-none transition-colors duration-base ease-out w-full focus:border-cobalt focus:ring-2 focus:ring-cobalt/[0.18] resize-y min-h-[140px]"
