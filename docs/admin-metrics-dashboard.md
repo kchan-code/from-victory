@@ -125,7 +125,7 @@ API calls.
 | Metric | Definition | Avail | Pri |
 |---|---|---|---|
 | Deletion rate | account vs athlete-only deletions / wk | now | P0 |
-| Auth rate-limit hits | `auth_rate_limit_events` by action | now | P2 |
+| Auth rate-limit hits | `auth_rate_limit_events` by action, about the last day only (rows are deleted after 2 hours plus the daily run, FV-775) | now | P2 |
 | Push opt-in rate | `push_subscriptions` ÷ athletes | now | P1 |
 | Safety detections | category × week, suppressed <5 (dormant) | instrument | P1 |
 

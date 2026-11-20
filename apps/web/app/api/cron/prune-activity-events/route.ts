@@ -161,29 +161,31 @@ async function runPrune(req: NextRequest) {
     );
   }
 
-  // FV-774: retention for expired 'contact_form' throttle rows (IP-derived
-  // digests). Runs independently of any new submission, and like the selection
-  // prune above it is alerted on failure but never blocks (or is blocked by)
-  // the rollup-before-prune ordering below. Counts only in logs.
-  let contactPruned = 0;
+  // FV-775 (extends FV-774): retention for expired throttle rows of EVERY
+  // action in auth_rate_limit_events (keyed digests of an email address, an
+  // account id, a request IP, or a username plus IP). Runs independently of any
+  // new request, and like the selection prune above it is alerted on failure
+  // but never blocks (or is blocked by) the rollup-before-prune ordering below.
+  // Counts only in logs.
+  let throttlePruned = 0;
   try {
-    const { data: contact, error: contactError } = await service.rpc(
-      "prune_contact_form_rate_limit_events",
+    const { data: throttle, error: throttleError } = await service.rpc(
+      "prune_rate_limit_events",
     );
-    if (contactError) {
-      console.error("[cron/prune-activity-events] contact form prune failed");
+    if (throttleError) {
+      console.error("[cron/prune-activity-events] rate-limit prune failed");
       alertCronFailure(
-        "[cron/prune-activity-events] contact form prune failed",
-        "contact form rate-limit prune failed",
-        { code: opaqueDbCode(contactError.code) },
+        "[cron/prune-activity-events] rate-limit prune failed",
+        "rate-limit events prune failed",
+        { code: opaqueDbCode(throttleError.code) },
       );
     } else {
-      contactPruned = typeof contact === "number" ? contact : 0;
+      throttlePruned = typeof throttle === "number" ? throttle : 0;
     }
   } catch (err) {
-    console.error("[cron/prune-activity-events] contact form prune threw");
+    console.error("[cron/prune-activity-events] rate-limit prune threw");
     alertCronFailure(
-      "[cron/prune-activity-events] contact form prune threw",
+      "[cron/prune-activity-events] rate-limit prune threw",
       err instanceof Error ? err.name : "Error",
     );
   }
@@ -239,14 +241,14 @@ async function runPrune(req: NextRequest) {
   const pruned = data?.length ?? 0;
 
   console.info(
-    `[cron/prune-activity-events] done — rolled=${rolledCount} pruned=${pruned} selectionPruned=${selectionPruned} contactPruned=${contactPruned}`,
+    `[cron/prune-activity-events] done — rolled=${rolledCount} pruned=${pruned} selectionPruned=${selectionPruned} throttlePruned=${throttlePruned}`,
   );
 
   return NextResponse.json({
     rolled: rolledCount,
     pruned,
     selectionPruned,
-    contactPruned,
+    throttlePruned,
   });
 }
 

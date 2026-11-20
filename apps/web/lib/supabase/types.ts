@@ -1206,6 +1206,12 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      // FV-775: hand-added. Deletes auth_rate_limit_events rows of every action
+      // older than 2 hours; returns rows deleted. service_role only.
+      prune_rate_limit_events: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       prune_pregame_selection_totals: {
         Args: Record<PropertyKey, never>
         Returns: number
