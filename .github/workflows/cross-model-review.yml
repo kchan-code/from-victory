@@ -1,0 +1,79 @@
+name: cross-model-review
+
+# Merge gate: a PR passes only when @kchan-code has posted a marker comment
+# recording a CLEAN review of the PR's current head SHA by a model from a
+# different family than the coder model. Marker format: CONTRIBUTING.md ->
+# "Cross-model review marker". Logic + tests: .github/scripts/cross-model-review.cjs.
+#
+# The gate is the `cross-model-review` COMMIT STATUS on the PR head SHA. Make
+# that status a required check in the `main` ruleset.
+#
+# Trust boundary: the job that publishes the status never runs PR code. It is
+# triggered by `pull_request_target` and `issue_comment`, both of which run this
+# file from the default branch, and it checks out the default branch explicitly
+# (never the PR head) before loading the gate script. A PR that edits the gate
+# script or this workflow therefore changes nothing until it is merged. Do NOT
+# add a PR-head checkout, `npm ci`, or any PR-controlled input to that job:
+# `pull_request_target` carries a write token even for fork PRs.
+#
+# A new push fires `pull_request_target` (synchronize) and the status for the
+# new SHA starts red until a marker naming that SHA is posted. Any comment on
+# the PR re-evaluates and rewrites the status in place, no re-run needed.
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created, edited, deleted]
+
+permissions: {}
+
+# Scoped by event_name so a comment-triggered evaluation never cancels the PR's
+# own runs (same reasoning as privacy-verdict.yml, FV-42).
+concurrency:
+  group: cross-model-review-${{ github.event.pull_request.number || github.event.issue.number }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  cross-model-review:
+    name: Publish cross-model-review status
+    if: >-
+      github.event_name == 'pull_request_target' ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/github-script@v9
+        with:
+          script: |
+            const { run } = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/cross-model-review.cjs`)
+            await run({ github, context, core })
+
+  # Unit tests for the PR's own copy of the gate logic. This runs PR code, so
+  # it gets a read-only token, no secrets, and publishes nothing.
+  test-logic:
+    name: cross-model-review logic unit tests
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+      - run: node --test .github/scripts/cross-model-review.test.cjs
