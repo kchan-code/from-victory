@@ -30,13 +30,15 @@ import Link from "next/link";
 //     points are not live. Add the identifiers before they are.
 // Every factual claim here is grounded in the verified data inventory
 // (schema + code). Launch notes:
-//   1. EFFECTIVE_DATE below is November 20, 2026 (FV-775 wording for 1g/1h).
-//      KC confirms the date when he merges. Previous: November 18, 2026
-//      (FV-762). Attorney sign-off: see FV-329.
-//   1a. 1g and 1h describe the rows in auth_rate_limit_events. Their retention
-//      sentences must match FV-774 (contact form, shipped) and FV-775 (other
-//      actions, open). Tighten 1g when FV-775 ships. Do not call these records
-//      anonymous or non-identifying: a keyed digest is pseudonymous.
+//   1. EFFECTIVE_DATE below is November 21, 2026 (FV-775: deletion schedule
+//      for 1g, Section 8 clause). KC confirms the date when he merges.
+//      Previous: November 20, 2026. Attorney sign-off: see FV-329.
+//   1a. 1g, 1h and the Section 8 clause describe the rows in
+//      auth_rate_limit_events. Their retention sentences must match
+//      prune_rate_limit_events() (FV-775, shipped): every action deleted once
+//      older than 2 hours by the daily cron. Say "about a day", never a hard
+//      2 hours. Do not call these records anonymous or non-identifying: a
+//      keyed digest is pseudonymous.
 //   2. The private-journal infrastructure is built but DORMANT (FV-135, zero
 //      production callers) and is intentionally NOT described as an active
 //      feature here. Revisit if/when it is wired.
@@ -74,7 +76,7 @@ export const metadata: Metadata = {
 
 // Effective date: FV-775 wording for 1g/1h; KC confirms the date at merge.
 // Previous: November 18, 2026 (FV-762). Attorney sign-off is tracked in FV-329.
-const EFFECTIVE_DATE = "November 20, 2026";
+const EFFECTIVE_DATE = "November 21, 2026";
 const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
 export default function PrivacyPage() {
@@ -279,10 +281,9 @@ export default function PrivacyPage() {
           anonymous and we treat them as personal information.
         </p>
         <p>
-          A record is removed the next time the same action is allowed for the same email
-          address, account, or IP address after its 15 to 60 minute window. Contact form
-          records are also deleted by a daily job (see &quot;Contact form&quot; below). For
-          other actions there is not yet a fixed deletion schedule.
+          A daily job deletes these records, for every kind of action, once they are more
+          than 2 hours old, so a record normally lasts no more than about a day. If a daily
+          run is missed, a record can last until the next run.
         </p>
 
         <SubHeading>h. Contact form</SubHeading>
@@ -565,6 +566,13 @@ export default function PrivacyPage() {
           record does not contain names, email addresses, birthdates, or any session content.
           Totals that include a deleted athlete are not recalculated, and short-lived one-way
           counting codes are removed when their month ends.
+        </p>
+        <p className="mt-3">
+          The sign-in and security records described in Section 1g are not removed by
+          deleting an account, because they do not hold an account identifier in readable
+          form. This includes records made from an account, such as an athlete&apos;s sign-in
+          attempts. They are deleted on the schedule described in Section 1g, normally within
+          about a day.
         </p>
         <p className="mt-3">
           If you subscribed on our website, deleting your account also cancels that
