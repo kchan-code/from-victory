@@ -953,6 +953,19 @@ first child issues runs far past Section 10.
 | G10 | Timing | Run the full implementation now, in reviewed stages (Section 10.3), within the limits at the top of this record |
 | Trial | Trial policy | Keep the agreed 7-day, one-athlete trial |
 
+**Decided by KC (2026-11-19, recorded on FV-666):**
+
+| # | Decision | Outcome |
+|---|---|---|
+| G1 | Product, base plan and offer IDs in Section 5.2 | Approved as written: `family.1` to `family.5`, `monthly` / `yearly`, `trial-7d` on the one-athlete tier only |
+| G2 scope | Countries | United States only at launch. No non-US prices. |
+| G4 | Grace period, account hold, pause, resubscribe | As resolved below: grace 14 days (KC confirms against the Console list), hold at Google's default, pause off, resubscribe off |
+| G7 | Server credential | Service-account key for launch, held as a server-only secret, least privilege, never logged. Keyless federation is a later follow-up; the code supports only the key today. KC creates the credential. |
+| Names | "From Victory" prefix | No prefix. Names match the Apple product names. |
+
+The G1 and Names rows in the next table, and the G4 and G7 rows in the table
+after it, are kept for the record.
+
 **Needs KC before the step it gates:**
 
 | # | Decision | Recommendation | Gates |
