@@ -30,8 +30,13 @@ import Link from "next/link";
 //     points are not live. Add the identifiers before they are.
 // Every factual claim here is grounded in the verified data inventory
 // (schema + code). Launch notes:
-//   1. EFFECTIVE_DATE below is November 18, 2026 (FV-762), approved by KC on
-//      2026-11-18. Previous: November 13, 2026. Attorney sign-off: see FV-329.
+//   1. EFFECTIVE_DATE below is November 20, 2026 (FV-775 wording for 1g/1h).
+//      KC confirms the date when he merges. Previous: November 18, 2026
+//      (FV-762). Attorney sign-off: see FV-329.
+//   1a. 1g and 1h describe the rows in auth_rate_limit_events. Their retention
+//      sentences must match FV-774 (contact form, shipped) and FV-775 (other
+//      actions, open). Tighten 1g when FV-775 ships. Do not call these records
+//      anonymous or non-identifying: a keyed digest is pseudonymous.
 //   2. The private-journal infrastructure is built but DORMANT (FV-135, zero
 //      production callers) and is intentionally NOT described as an active
 //      feature here. Revisit if/when it is wired.
@@ -67,9 +72,9 @@ export const metadata: Metadata = {
   },
 };
 
-// Effective date: KC approved the FV-762 wording on 2026-11-18.
-// Previous: November 13, 2026. Attorney sign-off is tracked in FV-329.
-const EFFECTIVE_DATE = "November 18, 2026";
+// Effective date: FV-775 wording for 1g/1h; KC confirms the date at merge.
+// Previous: November 18, 2026 (FV-762). Attorney sign-off is tracked in FV-329.
+const EFFECTIVE_DATE = "November 20, 2026";
 const PRIVACY_EMAIL = "privacy@fromvictoryapp.com";
 
 export default function PrivacyPage() {
@@ -262,9 +267,22 @@ export default function PrivacyPage() {
         <p>
           To keep accounts secure we use authentication session cookies, and, on an
           athlete&apos;s device, an optional sign-in helper cookie that remembers which
-          sign-in screen to show. To prevent abuse we keep short-lived, non-identifying
-          security records (for example, one-way, irreversible counters used for rate
-          limiting) that do not contain raw email addresses, usernames, or IP addresses.
+          sign-in screen to show.
+        </p>
+        <p>
+          To prevent abuse we limit how often actions such as sign-in, sign-up, password
+          reset, and the contact form can be repeated. For each attempt we keep the kind of
+          action, the time, and a one-way code made with a secret key from the email address
+          typed, the account, or the IP address of the request. For a username sign-in the
+          code is made from the username together with the IP address. We do not store the
+          raw email address, username, or IP address in these records, but the codes are not
+          anonymous and we treat them as personal information.
+        </p>
+        <p>
+          A record is removed the next time the same action is allowed for the same email
+          address, account, or IP address after its 15 to 60 minute window. Contact form
+          records are also deleted by a daily job (see &quot;Contact form&quot; below). For
+          other actions there is not yet a fixed deletion schedule.
         </p>
 
         <SubHeading>h. Contact form</SubHeading>
@@ -274,6 +292,14 @@ export default function PrivacyPage() {
           through our email provider; we do not store contact submissions in a separate
           database. Please do not include sensitive personal, medical, or financial
           information in your message.
+        </p>
+        <p>
+          To limit spam, each time the form is sent we also keep a security record of the
+          kind described in &quot;Sign-in and security data&quot; above: the time, and a
+          one-way code made with a secret key from the IP address the message was sent from.
+          It does not contain your name, email address, or message. A daily job deletes these
+          records once they are more than 2 hours old, so a record normally lasts no more
+          than about a day. If a daily run is missed, a record can last until the next run.
         </p>
 
         <SubHeading>i. App usage activity</SubHeading>
