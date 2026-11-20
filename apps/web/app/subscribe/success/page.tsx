@@ -50,8 +50,9 @@ export default async function SubscribeSuccessPage() {
           </p>
 
           <p className="font-body text-cream/50 text-[13px] leading-relaxed mb-10 max-w-[40ch]">
-            A receipt will arrive at your email address. If you have questions,
-            reach out any time.
+            We&rsquo;ll email a receipt each time you&rsquo;re charged. If you
+            started with a free trial, your first receipt comes when the trial
+            ends. If you have questions, reach out any time.
           </p>
 
           {/* CTAs — primary action bottom-reachable on mobile */}
