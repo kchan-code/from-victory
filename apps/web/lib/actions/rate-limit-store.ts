@@ -33,8 +33,12 @@ import {
  *
  * Table self-pruning (inline TTL):
  *   After a successful NOT-limited insert, we opportunistically delete
- *   expired rows for this bucket. This bounds table size to
- *   approximately (limit × active-identifiers) rows — no cron required.
+ *   expired rows for this bucket. That alone leaves the rows of a bucket
+ *   that is never written again, so the daily cron route
+ *   /api/cron/prune-activity-events also calls prune_rate_limit_events(),
+ *   which deletes rows of every action older than 2 hours (FV-775). Max age
+ *   is therefore 2 hours plus about one day. Keep every windowMinutes at or
+ *   under 60 so that prune never removes a row the limiter still counts.
  */
 
 // ---------------------------------------------------------------------------
@@ -160,8 +164,9 @@ export async function rateLimitGate(
   }
 
   // ---------------------------------------------------------------------------
-  // Opportunistic prune: delete expired rows for this bucket so the table
-  // self-bounds (inline TTL — no cron required). Best-effort; ignore errors.
+  // Opportunistic prune: delete expired rows for this bucket. Best-effort;
+  // ignore errors. Buckets never written again are covered by the daily
+  // prune_rate_limit_events() cron call (FV-775).
   // ---------------------------------------------------------------------------
   const { error: pruneError } = await service
     .from("auth_rate_limit_events")

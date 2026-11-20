@@ -39,14 +39,22 @@ flags). Per the CLAUDE.md minimal-PII rule:
 
 ### 2a. `auth_rate_limit_events` (added FV-13 Part A)
 
-**Retention:** TRANSIENT — self-pruning within the rate-limit window.
+**Retention:** TRANSIENT — at most 2 hours plus about one day (FV-775).
 
-- The writing server action prunes rows older than the rate-limit window on
-  every write, so the table never grows unboundedly.
-- Rows contain only: a non-reversible HMAC digest of the client identifier
-  (no raw IP address, no email), an event type enum, and a timestamp.
-- This satisfies CLAUDE.md's "no long-term IP-derived data" rule: the
-  digest is one-way, scoped to the rate-limit window, and auto-deleted.
+- The writing server action deletes a bucket's expired rows when that same
+  bucket is written again. On its own that leaves the rows of a visitor or
+  account that never repeats the action.
+- The daily cron route `/api/cron/prune-activity-events` therefore calls
+  `prune_rate_limit_events()`, which deletes rows of every action older than
+  2 hours (the longest limiter window is 60 minutes). A row lives at most
+  2 hours plus the gap between runs (about a day), longer only if a run is
+  missed; a failed run raises a cron alert.
+- Rows contain only: a keyed HMAC digest of the client identifier (an email
+  address, an account id, a request IP, or a username plus IP; never the raw
+  value), an action name, and a timestamp.
+- The digest is pseudonymous personal data, not anonymous data. Deletion is
+  the control that satisfies CLAUDE.md's "no long-term IP-derived data" rule,
+  not the hashing.
 
 ### 2b. `account_deletion_events` (FV-14)
 

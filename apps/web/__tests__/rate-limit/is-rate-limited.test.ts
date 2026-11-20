@@ -71,6 +71,16 @@ describe("RATE_LIMIT_CONFIG", () => {
     }
   });
 
+  // FV-775: prune_rate_limit_events() deletes rows of every action once they
+  // are older than 2 hours. A window above 60 minutes would let that prune
+  // remove rows the limiter still counts. Raising a window means changing the
+  // SQL function and the Privacy Policy retention text first.
+  it("no window exceeds 60 minutes (the scheduled prune deletes at 2 hours)", () => {
+    for (const action of RATE_LIMIT_ACTIONS) {
+      expect(RATE_LIMIT_CONFIG[action].windowMinutes).toBeLessThanOrEqual(60);
+    }
+  });
+
   // -------------------------------------------------------------------------
   // Constants sanity-check: verify the designed calibration values are in
   // place so a future change requires an intentional test update.

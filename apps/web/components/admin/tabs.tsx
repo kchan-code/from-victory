@@ -441,7 +441,7 @@ export function TrustTab({ m }: { m: AdminMetrics }) {
           </p>
         </Panel>
         <Panel>
-          <SectionHeader eyebrow={`last ${m.rangeDays} days`} title="Auth rate-limit hits" />
+          <SectionHeader eyebrow="about the last day" title="Auth rate-limit hits" />
           {t.authAbuse.length === 0 ? (
             <p className="font-body text-cream/55 text-[13px]">No rate-limit events — clean.</p>
           ) : (
@@ -449,7 +449,8 @@ export function TrustTab({ m }: { m: AdminMetrics }) {
           )}
           <p className="font-body text-cream/55 text-[11px] mt-3">
             A spike on sign-in or pairing means abuse or a broken client — an
-            ops signal, not user analytics.
+            ops signal, not user analytics. These records are deleted within
+            about a day, so this panel never covers a longer range.
           </p>
         </Panel>
       </div>

@@ -97,6 +97,7 @@ select p.proname, p.proacl
      'due_game_day_reminders', 'rollup_activity_events',
      'record_pregame_selections', 'read_pregame_selection_counts',
      'prune_pregame_selection_totals', 'prune_contact_form_rate_limit_events',
+     'prune_rate_limit_events',
      'get_own_personalization', 'get_own_username'
    )
  order by p.proname;
@@ -396,6 +397,7 @@ begin
     'public.record_pregame_selections(date, text, jsonb)',
     'public.prune_pregame_selection_totals()',
     'public.prune_contact_form_rate_limit_events()',
+    'public.prune_rate_limit_events()',
     'public.read_pregame_selection_counts(integer)'
   ]
   loop
