@@ -1827,3 +1827,27 @@ _(pause: 2s)_
 _(pause: 2s)_
 7. You were secure before the first shot and you're secure after the last one, so see the next ball free.
 _(pause: 2s)_
+
+## Personalization cues (FV-629)
+
+<!-- Exact transcription of shipped FV-407 scripts (PR #418); speech and pauses unchanged. -->
+
+### Lacrosse · anc-lax-tap-stick
+<!-- slug: anc-lax-tap-stick | file: components/pregame/audio/clips.ts -->
+
+1. Tap your stick.
+
+### Lacrosse · anc-lax-glove-tap-shaft
+<!-- slug: anc-lax-glove-tap-shaft | file: components/pregame/audio/clips.ts -->
+
+1. Glove tap on the shaft.
+
+### Lacrosse · anc-lax-reset-at-x
+<!-- slug: anc-lax-reset-at-x | file: components/pregame/audio/clips.ts -->
+
+1. Reset at the X.
+
+### Lacrosse · st-lax-01
+<!-- slug: st-lax-01 | file: components/pregame/audio/clips.ts -->
+
+1. You're okay. Next whistle.
