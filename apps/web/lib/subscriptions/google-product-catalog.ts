@@ -3,11 +3,11 @@
  * Billing C3), per `docs/fv651-android-play-billing-decision-record.md`
  * Section 5.2.
  *
- * PROVISIONAL IDS — NOT APPROVED. KC has NOT yet approved these product /
- * base-plan / offer ids (record decision G1). Play product ids can never be
- * changed or reused once created in Play Console, so nothing may be created
- * there until KC signs off. Every id lives in the CONSTANTS BLOCK below and
- * nowhere else in the repo, so a change is a one-line edit here.
+ * IDS APPROVED. KC approved these product / base-plan / offer ids as written
+ * on 2026-11-19 (record decision G1, recorded on FV-666). Play product ids can
+ * never be changed or reused once created in Play Console, so do NOT edit the
+ * constants below once the products exist. Every id lives in the CONSTANTS
+ * BLOCK below and nowhere else in the repo.
  *
  * STATUS: DORMANT BY DEFAULT. This file is DATA ONLY. Nothing consults the
  * catalog as active, and the Play server actions refuse, until the server env
@@ -19,20 +19,20 @@
 import "server-only";
 
 // ---------------------------------------------------------------------------
-// Constants block — the single place Play ids live. PROVISIONAL (see header).
+// Constants block — the single place Play ids live. APPROVED (see header).
 // ---------------------------------------------------------------------------
 
 /** Android application id (Play package name). */
 export const GOOGLE_PLAY_PACKAGE_NAME = "com.fromvictoryapp.app";
 
-/** Product id for a tier: `family.<athletes>`. PROVISIONAL. */
+/** Product id for a tier: `family.<athletes>`. */
 const PRODUCT_ID_PREFIX = "family.";
 
-/** Base plan ids. PROVISIONAL. */
+/** Base plan ids. */
 const BASE_PLAN_MONTHLY = "monthly";
 const BASE_PLAN_YEARLY = "yearly";
 
-/** Free-trial offer id, tier 1 base plans only. PROVISIONAL. */
+/** Free-trial offer id, tier 1 base plans only. */
 const TRIAL_OFFER_ID = "trial-7d";
 
 // ---------------------------------------------------------------------------

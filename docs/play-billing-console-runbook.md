@@ -68,7 +68,8 @@ even after the product is deleted.** Nothing in step 4 may be created until you
 have approved the exact strings below. Display names and prices can be edited
 later. IDs cannot.
 
-The IDs come from the code, which marks them "PROVISIONAL IDS, NOT APPROVED":
+**Approved by KC on 2026-11-19 (FV-666): the IDs exactly as in the table below.**
+The IDs come from the code:
 `apps/web/lib/subscriptions/google-product-catalog.ts` (constants block, lines
 22 to 36). They match record 5.2. The code holds no prices; prices are from the
 record's G2 table (Section 5, decided by KC on 2026-11-11).
@@ -112,8 +113,10 @@ Open items to settle here, before step 4:
    for on a subscription. If you write any, it is customer-facing copy and
    follows `docs/gtm/voice-and-guardrails.md`.
 
-After you approve G1, tell the lead agent. A follow-up PR removes the
-"PROVISIONAL" wording from the catalog file. That is not your task.
+Settled on 2026-11-19 (FV-666): G1 approved as written; names carry no
+"From Victory" prefix; United States only at launch, no non-US prices typed.
+Item 4 (description or benefits text) is still open and only matters if the
+Console asks for it. The catalog file no longer says "PROVISIONAL".
 
 **Check:** FV-666 carries the G1 line and answers to items 2 to 4.
 **Undo:** fully reversible until step 4. Nothing exists in Google yet.
@@ -230,7 +233,7 @@ grant: the push identity then holds no Play permission at all.
    calls to Google Play. Give it no project roles in Cloud. Its rights come
    from Play Console in step 3f. Write its email on the worksheet.
    `CHECK IN CONSOLE`
-3. **TO DECIDE (G7): key file or keyless federation.** The record prefers
+3. **DECIDED 2026-11-19 (G7): key file for launch; keyless later.** The record prefers
    keyless federation from the hosting platform "if it works in testing",
    otherwise a key held as a server-only secret (record 7.6, 13).
    - The code on `main` supports only the key file today:
