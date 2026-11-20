@@ -1,7 +1,7 @@
 /**
  * Unit tests for lib/subscriptions/google-product-catalog.ts and
  * subscription-plan-key.ts (FV-661). Mirrors apple-product-catalog.test.ts.
- * The ids under test are PROVISIONAL (record 5.2, decision G1 not approved).
+ * The ids under test were approved by KC on 2026-11-19 (record 5.2, G1).
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
