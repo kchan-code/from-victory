@@ -273,9 +273,10 @@ export default function PrivacyPage() {
           To prevent abuse we limit how often actions such as sign-in, sign-up, password
           reset, and the contact form can be repeated. For each attempt we keep the kind of
           action, the time, and a one-way code made with a secret key from the email address
-          typed, the account, or the IP address of the request. We do not store the raw email
-          address, username, or IP address in these records, but the codes are not anonymous
-          and we treat them as personal information.
+          typed, the account, or the IP address of the request. For a username sign-in the
+          code is made from the username together with the IP address. We do not store the
+          raw email address, username, or IP address in these records, but the codes are not
+          anonymous and we treat them as personal information.
         </p>
         <p>
           A record is removed the next time the same action is allowed for the same email
