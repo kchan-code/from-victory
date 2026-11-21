@@ -69,7 +69,15 @@ function createFakeAudioElement(): TestAudioElement {
   Object.defineProperty(audio, "currentTime", {
     configurable: true,
     get: () => time,
-    set: (value: number) => { time = Number.isFinite(value) ? value : time; },
+    set: (value: number) => {
+      if (!Number.isFinite(value)) return;
+      time = value;
+      if (value >= 30) {
+        ended = true;
+      } else if (value >= 0) {
+        ended = false;
+      }
+    },
   });
   Object.defineProperty(audio, "paused", {
     configurable: true,
@@ -187,24 +195,10 @@ describe("useClipPlayer controls + Media Session handlers (FV-781)", () => {
     expect(result.current.elapsedSec).toBe(0);
 
     await act(async () => {
-      result.current.seekTo(28);
-      result.current.skipForward15();
-    });
-    expect(audio?.currentTime).toBe(30);
-    expect(result.current.elapsedSec).toBe(30);
-
-    await act(async () => {
       result.current.seekTo(12);
     });
     expect(audio?.currentTime).toBe(12);
     expect(result.current.elapsedSec).toBe(12);
-
-    await act(async () => {
-      result.current.seekTo(30);
-      audio.__setEnded(true);
-      audio.dispatchEvent(new Event("ended"));
-    });
-    expect(result.current.completed).toBe(true);
 
     await act(async () => {
       result.current.play();
@@ -213,10 +207,24 @@ describe("useClipPlayer controls + Media Session handlers (FV-781)", () => {
       result.current.pause();
     });
     const pausedAt = audio?.currentTime ?? -1;
+
     await act(async () => {
       result.current.play();
     });
     expect(audio?.currentTime).toBe(pausedAt);
+
+    await act(async () => {
+      result.current.seekTo(28);
+      result.current.skipForward15();
+    });
+    expect(audio?.currentTime).toBe(30);
+    expect(result.current.elapsedSec).toBe(30);
+    expect(result.current.completed).toBe(true);
+
+    await act(async () => {
+      result.current.play();
+    });
+    expect(result.current.playing).toBe(false);
   });
 
   it("wires media action handlers to the same transport behavior and updates position state", async () => {
@@ -261,24 +269,7 @@ describe("useClipPlayer controls + Media Session handlers (FV-781)", () => {
     expect(audio?.currentTime).toBe(20);
 
     await act(async () => {
-      const nextTrack: MediaSessionActionDetails = { action: "nexttrack" };
-      actionHandlers.nexttrack?.(nextTrack);
-    });
-    expect(audio?.currentTime).toBe(30);
-
-    await act(async () => {
-      const seekForwardDefault: MediaSessionActionDetails = { action: "seekforward" };
-      actionHandlers.seekforward?.(seekForwardDefault);
-    });
-    expect(audio?.currentTime).toBe(30);
-
-    await act(async () => {
-      const seekBackwardDefault: MediaSessionActionDetails = { action: "seekbackward" };
-      actionHandlers.seekbackward?.(seekBackwardDefault);
-    });
-    expect(audio?.currentTime).toBe(15);
-
-    await act(async () => {
+      result.current.seekTo(10);
       const nextTrack: MediaSessionActionDetails = { action: "nexttrack" };
       actionHandlers.nexttrack?.(nextTrack);
     });
@@ -297,5 +288,50 @@ describe("useClipPlayer controls + Media Session handlers (FV-781)", () => {
     expect(result.current.playing).toBe(false);
 
     expect(setPositionState).toHaveBeenCalled();
+  });
+
+  it("completes when paused skip lands exactly at session end without ended event dispatch", async () => {
+    const { result } = renderHook(() => useClipPlayer(OPTIONS));
+    await act(flush);
+    const audio = audioInstances[audioInstances.length - 1];
+    if (!audio) throw new Error("Expected test audio instance");
+
+    await act(async () => {
+      result.current.seekTo(20);
+      result.current.pause();
+    });
+    expect(result.current.playing).toBe(false);
+    expect(result.current.completed).toBe(false);
+
+    await act(async () => {
+      result.current.skipForward15();
+    });
+    expect(audio.currentTime).toBe(30);
+    expect(result.current.completed).toBe(true);
+
+    await act(async () => {
+      result.current.play();
+    });
+    expect(result.current.playing).toBe(false);
+  });
+
+  it("uses 15-second default offsets when media-session seekbackward/seekforward omit seekOffset", async () => {
+    renderHook(() => useClipPlayer(OPTIONS));
+    await act(flush);
+    const audio = audioInstances[audioInstances.length - 1];
+    if (!audio) throw new Error("Expected test audio instance");
+
+    await act(async () => {
+      audio.currentTime = 10;
+      const seekForwardDefault: MediaSessionActionDetails = { action: "seekforward" };
+      actionHandlers.seekforward?.(seekForwardDefault);
+    });
+    expect(audio.currentTime).toBe(25);
+
+    await act(async () => {
+      const seekBackwardDefault: MediaSessionActionDetails = { action: "seekbackward" };
+      actionHandlers.seekbackward?.(seekBackwardDefault);
+    });
+    expect(audio.currentTime).toBe(10);
   });
 });

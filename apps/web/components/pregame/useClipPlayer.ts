@@ -249,7 +249,8 @@ const NETWORK_DEADLINE_MS = 15_000;
  * the same CDN; a hung connection is cancelled and the athlete is unblocked.
  */
 const BED_DEADLINE_MS = 5_000;
-const MEDIA_SESSION_INVALID_OFFSET_FALLBACK_SECONDS = 10;
+const TRANSPORT_SKIP_SECONDS = 15;
+const INVALID_MEDIA_SESSION_SKIP_SECONDS = 10;
 
 /**
  * Fetch a URL as ArrayBuffer. Returns null on network/HTTP failure — including
@@ -447,6 +448,28 @@ export function useClipPlayer({
     syncMediaSessionPosition(audio);
   }, [syncMediaSessionPosition]);
 
+  const completeSession = useCallback((audio: NarrationPlayer | null) => {
+    if (!audio || completedRef.current) return;
+    completedRef.current = true;
+    intendedPlayingRef.current = false;
+    const fallbackTotal = timelineRef.current?.totalDurationSec ?? 0;
+    const totalDur = audio instanceof NativeNarrationPlayer
+      ? audio.duration
+      : (Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : fallbackTotal);
+    setCompleted(true);
+    setElapsedSec(totalDur);
+    setPlaying(false);
+    stopRaf();
+    const nav = navigator as NavigatorWithMediaSession;
+    if (nav.mediaSession) {
+      nav.mediaSession.playbackState = "paused";
+    }
+    syncMediaSessionPosition(audio);
+    audio.removeAttribute("data-fv-guided-session");
+    document.dispatchEvent(new Event("fv:guided-session-end"));
+    onCompletedRef.current?.();
+  }, [stopRaf, syncMediaSessionPosition]);
+
   const seekTo = useCallback((seconds: number) => {
     const audio = audioRef.current;
     if (!audio || audio instanceof NativeNarrationPlayer) return;
@@ -458,8 +481,13 @@ export function useClipPlayer({
     const maxDuration = duration > 0 ? duration : seconds;
     const bounded = Math.min(maxDuration, Math.max(0, seconds));
     audio.currentTime = bounded;
+    const landedAtEnd = (duration > 0 && bounded >= duration) || audio.ended;
+    if (landedAtEnd) {
+      completeSession(audio);
+      return;
+    }
     reconcilePlaybackState(audio);
-  }, [reconcilePlaybackState]);
+  }, [completeSession, reconcilePlaybackState]);
 
   const skipBy = useCallback((deltaSec: number) => {
     const audio = audioRef.current;
@@ -492,11 +520,11 @@ export function useClipPlayer({
   }, [seekTo]);
 
   const skipBackward15 = useCallback(() => {
-    skipBy(-15);
+    skipBy(-TRANSPORT_SKIP_SECONDS);
   }, [skipBy]);
 
   const skipForward15 = useCallback(() => {
-    skipBy(15);
+    skipBy(TRANSPORT_SKIP_SECONDS);
   }, [skipBy]);
   const hasStepNavigation = stepStartSecRef.current.length > 1;
 
@@ -570,7 +598,7 @@ export function useClipPlayer({
         const offset = seekOffset;
         skipBy(-offset);
       } else {
-        skipBy(-MEDIA_SESSION_INVALID_OFFSET_FALLBACK_SECONDS);
+        skipBy(-INVALID_MEDIA_SESSION_SKIP_SECONDS);
       }
     });
     registerHandler("seekforward", (details) => {
@@ -585,7 +613,7 @@ export function useClipPlayer({
         const offset = seekOffset;
         skipBy(offset);
       } else {
-        skipBy(MEDIA_SESSION_INVALID_OFFSET_FALLBACK_SECONDS);
+        skipBy(INVALID_MEDIA_SESSION_SKIP_SECONDS);
       }
     });
     registerHandler("seekto", (details) => {
@@ -1015,21 +1043,7 @@ export function useClipPlayer({
       audio.addEventListener("durationchange", onPlaybackStateHint);
 
       audio.addEventListener("ended", () => {
-        if (completedRef.current) return;
-        completedRef.current = true;
-        intendedPlayingRef.current = false;
-        const totalDur = audio instanceof NativeNarrationPlayer
-          ? audio.duration : timelineRef.current?.totalDurationSec ?? 0;
-        setCompleted(true);
-        setElapsedSec(totalDur);
-        setPlaying(false);
-        stopRaf();
-        syncMediaSessionPosition(audio);
-        // FV-494 — session over: clear the reload guard and tell the
-        // registrar, so a deploy that landed mid-session can complete.
-        audio.removeAttribute("data-fv-guided-session");
-        document.dispatchEvent(new Event("fv:guided-session-end"));
-        onCompletedRef.current?.();
+        completeSession(audio);
       });
 
       if (nativeBridge) {
@@ -1046,7 +1060,11 @@ export function useClipPlayer({
         wireMediaSession(practice ? "Pre-Practice" : "Pregame");
       }
 
-      reconcilePlaybackState(audio);
+      if (audio.ended) {
+        completeSession(audio);
+      } else {
+        reconcilePlaybackState(audio);
+      }
       setReady(true);
     }
 
@@ -1077,7 +1095,7 @@ export function useClipPlayer({
         blobUrlRef.current = null;
       }
     };
-  }, [need, position, adversity, anchor, selfTalk, cueWord, positivePlays, practice, practiceState, practiceFocus, sport, prayerStyle, bedId, startRaf, stopRaf, reconcilePlaybackState, syncMediaSessionPosition, wireMediaSession]);
+  }, [need, position, adversity, anchor, selfTalk, cueWord, positivePlays, practice, practiceState, practiceFocus, sport, prayerStyle, bedId, completeSession, startRaf, stopRaf, reconcilePlaybackState, syncMediaSessionPosition, wireMediaSession]);
 
   // ── Lightweight visibilitychange nudge ──
   // iOS may pause the audio element when the app is briefly backgrounded (e.g.
@@ -1124,7 +1142,7 @@ export function useClipPlayer({
     const audio = audioRef.current;
     if (!audio) return;
     if (audio.ended) {
-      reconcilePlaybackState(audio);
+      completeSession(audio);
       return;
     }
     if (!audio.paused) {
@@ -1149,7 +1167,7 @@ export function useClipPlayer({
       // — leave UI intact so the athlete can tap again.
       intendedPlayingRef.current = false;
     });
-  }, [ready, completed, reconcilePlaybackState]);
+  }, [ready, completed, completeSession, reconcilePlaybackState]);
 
   // ── pause ──
   const pause = useCallback(() => {

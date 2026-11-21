@@ -1589,7 +1589,11 @@ export function AudioSessionScreen({
   // hook. Decoding starts on mount so this window is brief — no layout shift
   // since disabled:opacity-50 is already wired on the button (no size change).
   const clipLoading = isClipActive && !clipPlayer.ready && !renderCompleted;
-  const canShowSeekPanel = isClipActive && !renderCompleted && !clipPlayer.nativeNarrationPlayer;
+  const canShowSeekPanel =
+    isClipActive &&
+    !renderCompleted &&
+    !clipPlayer.nativeNarrationPlayer &&
+    !getNarrationBridge();
   const [scrubDraftSec, setScrubDraftSec] = useState<number | null>(null);
   const [scrubDragging, setScrubDragging] = useState(false);
   const scrubMaxSec = Math.max(0, Math.floor(renderTotal));
