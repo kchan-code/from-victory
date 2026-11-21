@@ -233,20 +233,16 @@ grant: the push identity then holds no Play permission at all.
    calls to Google Play. Give it no project roles in Cloud. Its rights come
    from Play Console in step 3f. Write its email on the worksheet.
    `CHECK IN CONSOLE`
-3. **DECIDED 2026-11-19 (G7): key file for launch; keyless later.** The record prefers
-   keyless federation from the hosting platform "if it works in testing",
-   otherwise a key held as a server-only secret (record 7.6, 13).
-   - The code on `main` supports only the key file today:
-     `google-play-auth.ts` `buildAuth()` reads
-     `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` and nothing else. Keyless would need a
-     code change first. Tell the lead agent if you choose keyless, and do not
-     create a key.
-   - If you choose the key file: create one JSON key for the Play API identity
-     only. Creating a credential is your decision at that moment. Your browser
-     downloads a file. Keep it out of the repo folder, do not open it in a
-     shared screen, and do not paste it anywhere except Vercel in step 5.
-     After step 5, delete the downloaded file and empty the trash.
-     `CHECK IN CONSOLE`
+3. **DECIDED 2026-11-21 (G7, FV-779): keyless federation.** This reverses the
+   2026-11-19 "key file for launch" call. Creating a service-account key is
+   blocked by org policy, so do not create one.
+   - `google-play-auth.ts` `buildAuth()` supports keyless: Vercel's OIDC token
+     is exchanged through Google workload identity federation and the Play API
+     identity is impersonated. Two non-secret Vercel variables select it (step
+     5): `GOOGLE_PLAY_WIF_PROVIDER` and `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL`.
+   - **TO BE ADDED after KC approves the exact trust (FV-666):** the console
+     steps for the workload identity pool, the provider, and letting the
+     provider's identity impersonate the Play API identity.
 
 ### 3d. Pub/Sub topic
 
@@ -490,7 +486,9 @@ Vercel offers that. Never put them in a `NEXT_PUBLIC_` variable.
 |---|---|---|
 | `GOOGLE_PLAY_PUBSUB_AUDIENCE` | Yes | The audience string you typed on the push subscription in step 3e (worksheet). Must match exactly. |
 | `GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT` | Yes | The email of the push identity service account from step 3c (worksheet). |
-| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Yes, if G7 = key file | The whole contents of the key file downloaded in step 3c, pasted as is. If G7 = keyless, leave it unset and wait for the code change. |
+| `GOOGLE_PLAY_WIF_PROVIDER` | Yes (keyless, chosen route) | Non-secret. The full provider name from step 3c: `projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/<POOL_ID>/providers/<PROVIDER_ID>`. |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` | Yes (keyless, chosen route) | Non-secret. The email of the Play API identity from step 3c. If only one of these two is set, Play auth fails closed. |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | No | Leave unset in keyless mode. Key creation is blocked by org policy (KC decision 2026-11-21, FV-779). |
 | `GOOGLE_PLAY_CATALOG_ACTIVE` | **No. Leave it unset.** | Nothing. See below. |
 
 1. Add the variables in Vercel's project settings. `CHECK IN CONSOLE`
@@ -502,14 +500,14 @@ Vercel offers that. Never put them in a `NEXT_PUBLIC_` variable.
    runbook (FV-669) says so.
 3. Redeploy production. A changed variable does not reach the running site
    until the next deployment.
-4. If you used a key file: delete the downloaded file now.
+4. If a key file was ever downloaded despite the org policy: delete it now.
 
 What you should expect after this step: the webhook authenticates each push
 and answers 200, and does nothing else. While the flag is unset it does not
 read the message, call Google, or write to the database (`route.ts`,
 "DORMANT").
 
-**Check:** Vercel shows three variables (two if keyless) for Production and
+**Check:** Vercel shows four variables (the two Pub/Sub ones and the two keyless ones) for Production and
 no `GOOGLE_PLAY_CATALOG_ACTIVE`. The newest production deployment is later
 than the last variable edit.
 **Undo:** delete the variables and redeploy. With the two Pub/Sub variables

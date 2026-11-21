@@ -60,6 +60,11 @@ describe("server-only boundary", () => {
     expect(importers).toEqual(["lib/subscriptions/google-play-auth.ts"]);
   });
 
+  it("exactly one module imports @vercel/oidc: google-play-auth.ts (FV-779)", () => {
+    const importers = SOURCE_FILES.filter((f) => /["'`]@vercel\/oidc(?:\/[^"'`]*)?["'`]/.test(read(f))).map(rel);
+    expect(importers).toEqual(["lib/subscriptions/google-play-auth.ts"]);
+  });
+
   it("the library is imported lazily (dynamic import), never at module load", () => {
     const src = read(path.join(WEB_ROOT, "lib/subscriptions/google-play-auth.ts"));
     expect(src).not.toMatch(/^import[^;]*from ["']google-auth-library["']/m);

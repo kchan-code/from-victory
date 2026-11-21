@@ -7,9 +7,15 @@
  * asserts this is the only importer of the package and that no client file
  * imports this module.
  *
- * Credentials (decision G7 is not final): today a service-account key JSON in
- * the server env var `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`. If KC picks keyless
- * federation, only `buildAuth()` below changes.
+ * Credentials, two modes chosen in `buildAuth()` (FV-779 reverses the G7
+ * "key for launch" call; KC decision 2026-11-21):
+ *   - Keyless (preferred): `GOOGLE_PLAY_WIF_PROVIDER` +
+ *     `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` (both non-secret). Vercel's OIDC
+ *     token is exchanged through Google workload identity federation, then the
+ *     service account is impersonated. If EITHER variable is set this mode is
+ *     chosen and BOTH must be valid; there is no silent fallback to the key.
+ *   - Key: neither keyless variable set, so a service-account key JSON in the
+ *     server env var `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` is used, as before.
  *
  * NEVER log or put in an error: the credential JSON, any part of it, or an
  * access token. Every error thrown here is a static string; the underlying
@@ -37,7 +43,70 @@ interface TokenSource {
 
 let cachedSource: TokenSource | null = null;
 
+// provider: projects/<digits>/locations/global/workloadIdentityPools/<pool>/providers/<provider>
+const WIF_PROVIDER_RE =
+  /^projects\/\d{1,20}\/locations\/global\/workloadIdentityPools\/[a-z0-9-]{4,32}\/providers\/[a-z0-9-]{4,32}$/;
+const SERVICE_ACCOUNT_EMAIL_RE = /^[a-z][a-z0-9-]{4,28}[a-z0-9]@[a-z][a-z0-9-]{4,28}[a-z0-9]\.iam\.gserviceaccount\.com$/;
+
+// reason: narrow structural views of the two library pieces used for keyless.
+interface ExternalAccountClientLike {
+  getAccessToken(): Promise<{ token?: string | null } | string | null | undefined>;
+}
+
+async function buildKeylessAuth(providerRaw: string | undefined, emailRaw: string | undefined): Promise<TokenSource> {
+  const provider = providerRaw?.trim();
+  const email = emailRaw?.trim();
+  if (!provider || !email) {
+    throw new PlayAuthError("Play keyless configuration is incomplete.");
+  }
+  if (!WIF_PROVIDER_RE.test(provider)) {
+    throw new PlayAuthError("Play keyless provider is not valid.");
+  }
+  if (!SERVICE_ACCOUNT_EMAIL_RE.test(email)) {
+    throw new PlayAuthError("Play keyless service account is not valid.");
+  }
+
+  // Lazy imports, same rule as the key path: never at module load.
+  const { ExternalAccountClient } = (await import("google-auth-library")) as unknown as {
+    ExternalAccountClient: { fromJSON(opts: object): ExternalAccountClientLike | null };
+  };
+  const { getVercelOidcToken } = (await import("@vercel/oidc")) as unknown as {
+    getVercelOidcToken: (opts: { audience: string }) => Promise<string>;
+  };
+
+  const client = ExternalAccountClient.fromJSON({
+    type: "external_account",
+    audience: `//iam.googleapis.com/${provider}`,
+    subject_token_type: "urn:ietf:params:oauth:token-type:jwt",
+    token_url: "https://sts.googleapis.com/v1/token",
+    service_account_impersonation_url: `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${email}:generateAccessToken`,
+    subject_token_supplier: {
+      // Fetched per exchange, never cached or logged here. The Vercel token's
+      // audience is the provider's https URL (not the // form above).
+      getSubjectToken: () => getVercelOidcToken({ audience: `https://iam.googleapis.com/${provider}` }),
+    },
+    scopes: [ANDROID_PUBLISHER_SCOPE],
+  });
+  if (!client) {
+    throw new PlayAuthError("Play keyless credential could not be built.");
+  }
+  return {
+    async getAccessToken() {
+      const res = await client.getAccessToken();
+      return typeof res === "string" || res == null ? res : res.token;
+    },
+  };
+}
+
 async function buildAuth(): Promise<TokenSource> {
+  const wifProvider = process.env.GOOGLE_PLAY_WIF_PROVIDER;
+  const wifEmail = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL;
+  if (wifProvider !== undefined || wifEmail !== undefined) {
+    // Either keyless variable present (even empty) selects keyless: fail
+    // closed rather than fall back to a key.
+    return buildKeylessAuth(wifProvider, wifEmail);
+  }
+
   const raw = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON;
   if (!raw) {
     throw new PlayAuthError("Play credentials are not configured.");
